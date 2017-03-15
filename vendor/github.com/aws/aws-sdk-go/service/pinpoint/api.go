@@ -46,9 +46,8 @@ func (c *Pinpoint) CreateCampaignRequest(input *CreateCampaignInput) (req *reque
 		input = &CreateCampaignInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateCampaignOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -127,9 +126,8 @@ func (c *Pinpoint) CreateImportJobRequest(input *CreateImportJobInput) (req *req
 		input = &CreateImportJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateImportJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -208,9 +206,8 @@ func (c *Pinpoint) CreateSegmentRequest(input *CreateSegmentInput) (req *request
 		input = &CreateSegmentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateSegmentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -289,9 +286,8 @@ func (c *Pinpoint) DeleteApnsChannelRequest(input *DeleteApnsChannelInput) (req 
 		input = &DeleteApnsChannelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteApnsChannelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -370,9 +366,8 @@ func (c *Pinpoint) DeleteCampaignRequest(input *DeleteCampaignInput) (req *reque
 		input = &DeleteCampaignInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteCampaignOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -451,9 +446,8 @@ func (c *Pinpoint) DeleteGcmChannelRequest(input *DeleteGcmChannelInput) (req *r
 		input = &DeleteGcmChannelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteGcmChannelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -532,9 +526,8 @@ func (c *Pinpoint) DeleteSegmentRequest(input *DeleteSegmentInput) (req *request
 		input = &DeleteSegmentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteSegmentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -613,9 +606,8 @@ func (c *Pinpoint) GetApnsChannelRequest(input *GetApnsChannelInput) (req *reque
 		input = &GetApnsChannelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetApnsChannelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -694,9 +686,8 @@ func (c *Pinpoint) GetApplicationSettingsRequest(input *GetApplicationSettingsIn
 		input = &GetApplicationSettingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetApplicationSettingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -775,9 +766,8 @@ func (c *Pinpoint) GetCampaignRequest(input *GetCampaignInput) (req *request.Req
 		input = &GetCampaignInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetCampaignOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -856,9 +846,8 @@ func (c *Pinpoint) GetCampaignActivitiesRequest(input *GetCampaignActivitiesInpu
 		input = &GetCampaignActivitiesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetCampaignActivitiesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -937,9 +926,8 @@ func (c *Pinpoint) GetCampaignVersionRequest(input *GetCampaignVersionInput) (re
 		input = &GetCampaignVersionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetCampaignVersionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1018,9 +1006,8 @@ func (c *Pinpoint) GetCampaignVersionsRequest(input *GetCampaignVersionsInput) (
 		input = &GetCampaignVersionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetCampaignVersionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1099,9 +1086,8 @@ func (c *Pinpoint) GetCampaignsRequest(input *GetCampaignsInput) (req *request.R
 		input = &GetCampaignsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetCampaignsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1180,9 +1166,8 @@ func (c *Pinpoint) GetEndpointRequest(input *GetEndpointInput) (req *request.Req
 		input = &GetEndpointInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetEndpointOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1261,9 +1246,8 @@ func (c *Pinpoint) GetGcmChannelRequest(input *GetGcmChannelInput) (req *request
 		input = &GetGcmChannelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetGcmChannelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1342,9 +1326,8 @@ func (c *Pinpoint) GetImportJobRequest(input *GetImportJobInput) (req *request.R
 		input = &GetImportJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetImportJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1423,9 +1406,8 @@ func (c *Pinpoint) GetImportJobsRequest(input *GetImportJobsInput) (req *request
 		input = &GetImportJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetImportJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1504,9 +1486,8 @@ func (c *Pinpoint) GetSegmentRequest(input *GetSegmentInput) (req *request.Reque
 		input = &GetSegmentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetSegmentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1585,9 +1566,8 @@ func (c *Pinpoint) GetSegmentImportJobsRequest(input *GetSegmentImportJobsInput)
 		input = &GetSegmentImportJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetSegmentImportJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1666,9 +1646,8 @@ func (c *Pinpoint) GetSegmentVersionRequest(input *GetSegmentVersionInput) (req 
 		input = &GetSegmentVersionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetSegmentVersionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1747,9 +1726,8 @@ func (c *Pinpoint) GetSegmentVersionsRequest(input *GetSegmentVersionsInput) (re
 		input = &GetSegmentVersionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetSegmentVersionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1828,9 +1806,8 @@ func (c *Pinpoint) GetSegmentsRequest(input *GetSegmentsInput) (req *request.Req
 		input = &GetSegmentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetSegmentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1909,9 +1886,8 @@ func (c *Pinpoint) UpdateApnsChannelRequest(input *UpdateApnsChannelInput) (req 
 		input = &UpdateApnsChannelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateApnsChannelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1990,9 +1966,8 @@ func (c *Pinpoint) UpdateApplicationSettingsRequest(input *UpdateApplicationSett
 		input = &UpdateApplicationSettingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateApplicationSettingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2071,9 +2046,8 @@ func (c *Pinpoint) UpdateCampaignRequest(input *UpdateCampaignInput) (req *reque
 		input = &UpdateCampaignInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateCampaignOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2152,9 +2126,8 @@ func (c *Pinpoint) UpdateEndpointRequest(input *UpdateEndpointInput) (req *reque
 		input = &UpdateEndpointInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateEndpointOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2233,9 +2206,8 @@ func (c *Pinpoint) UpdateEndpointsBatchRequest(input *UpdateEndpointsBatchInput)
 		input = &UpdateEndpointsBatchInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateEndpointsBatchOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2314,9 +2286,8 @@ func (c *Pinpoint) UpdateGcmChannelRequest(input *UpdateGcmChannelInput) (req *r
 		input = &UpdateGcmChannelInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateGcmChannelOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2395,9 +2366,8 @@ func (c *Pinpoint) UpdateSegmentRequest(input *UpdateSegmentInput) (req *request
 		input = &UpdateSegmentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateSegmentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

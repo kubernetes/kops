@@ -118,24 +118,16 @@ func (g *Generator) genTypeEncoderNoCheck(t reflect.Type, in string, tags fieldT
 		iVar := g.uniqueVarName()
 		vVar := g.uniqueVarName()
 
-		if t.Elem().Kind() == reflect.Uint8 {
-			fmt.Fprintln(g.out, ws+"out.Base64Bytes("+in+")")
-		} else {
-			fmt.Fprintln(g.out, ws+"if "+in+" == nil {")
-			fmt.Fprintln(g.out, ws+`  out.RawString("null")`)
-			fmt.Fprintln(g.out, ws+"} else {")
-			fmt.Fprintln(g.out, ws+"  out.RawByte('[')")
-			fmt.Fprintln(g.out, ws+"  for "+iVar+", "+vVar+" := range "+in+" {")
-			fmt.Fprintln(g.out, ws+"    if "+iVar+" > 0 {")
-			fmt.Fprintln(g.out, ws+"      out.RawByte(',')")
-			fmt.Fprintln(g.out, ws+"    }")
+		fmt.Fprintln(g.out, ws+"out.RawByte('[')")
+		fmt.Fprintln(g.out, ws+"for "+iVar+", "+vVar+" := range "+in+" {")
+		fmt.Fprintln(g.out, ws+"  if "+iVar+" > 0 {")
+		fmt.Fprintln(g.out, ws+"    out.RawByte(',')")
+		fmt.Fprintln(g.out, ws+"  }")
 
-			g.genTypeEncoder(elem, vVar, tags, indent+2)
+		g.genTypeEncoder(elem, vVar, tags, indent+1)
 
-			fmt.Fprintln(g.out, ws+"  }")
-			fmt.Fprintln(g.out, ws+"  out.RawByte(']')")
-			fmt.Fprintln(g.out, ws+"}")
-		}
+		fmt.Fprintln(g.out, ws+"}")
+		fmt.Fprintln(g.out, ws+"out.RawByte(']')")
 
 	case reflect.Struct:
 		enc := g.getEncoderName(t)

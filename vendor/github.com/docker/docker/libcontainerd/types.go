@@ -1,10 +1,6 @@
 package libcontainerd
 
-import (
-	"io"
-
-	"golang.org/x/net/context"
-)
+import "io"
 
 // State constants used in state change reporting.
 const (
@@ -20,12 +16,13 @@ const (
 	stateLive         = "live"
 )
 
-// CommonStateInfo contains the state info common to all platforms.
-type CommonStateInfo struct { // FIXME: event?
+// StateInfo contains description about the new state container has entered.
+type StateInfo struct { // FIXME: event?
 	State     string
 	Pid       uint32
 	ExitCode  uint32
 	ProcessID string
+	OOMKilled bool // TODO Windows containerd factor out
 }
 
 // Backend defines callbacks that the client of the library needs to implement.
@@ -38,8 +35,7 @@ type Backend interface {
 type Client interface {
 	Create(containerID string, spec Spec, options ...CreateOption) error
 	Signal(containerID string, sig int) error
-	SignalProcess(containerID string, processFriendlyName string, sig int) error
-	AddProcess(ctx context.Context, containerID, processFriendlyName string, process Process) error
+	AddProcess(containerID, processFriendlyName string, process Process) error
 	Resize(containerID, processFriendlyName string, width, height int) error
 	Pause(containerID string) error
 	Resume(containerID string) error

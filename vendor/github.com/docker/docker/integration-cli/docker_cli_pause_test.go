@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/docker/docker/pkg/integration/checker"
@@ -21,7 +22,7 @@ func (s *DockerSuite) TestPause(c *check.C) {
 
 	dockerCmd(c, "unpause", name)
 
-	out, _ := dockerCmd(c, "events", "--since=0", "--until", daemonUnixTime(c))
+	out, _ := dockerCmd(c, "events", "--since=0", fmt.Sprintf("--until=%d", daemonTime(c).Unix()))
 	events := strings.Split(strings.TrimSpace(out), "\n")
 	actions := eventActionsByIDAndType(c, events, name, "container")
 
@@ -47,7 +48,7 @@ func (s *DockerSuite) TestPauseMultipleContainers(c *check.C) {
 
 	dockerCmd(c, append([]string{"unpause"}, containers...)...)
 
-	out, _ := dockerCmd(c, "events", "--since=0", "--until", daemonUnixTime(c))
+	out, _ := dockerCmd(c, "events", "--since=0", fmt.Sprintf("--until=%d", daemonTime(c).Unix()))
 	events := strings.Split(strings.TrimSpace(out), "\n")
 
 	for _, name := range containers {

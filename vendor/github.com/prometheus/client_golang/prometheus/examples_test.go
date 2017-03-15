@@ -14,6 +14,7 @@
 package prometheus_test
 
 import (
+	"flag"
 	"fmt"
 	"math"
 	"net/http"
@@ -47,12 +48,16 @@ func ExampleGauge() {
 }
 
 func ExampleGaugeVec() {
+	binaryVersion := flag.String("binary_version", "debug", "Version of the binary: debug, canary, production.")
+	flag.Parse()
+
 	opsQueued := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
 			Namespace:   "our_company",
 			Subsystem:   "blob_storage",
 			Name:        "ops_queued",
 			Help:        "Number of blob storage operations waiting to be processed, partitioned by user and type.",
+			ConstLabels: prometheus.Labels{"binary_version": *binaryVersion},
 		},
 		[]string{
 			// Which user has requested the operation?
@@ -120,10 +125,14 @@ func ExampleCounter() {
 }
 
 func ExampleCounterVec() {
+	binaryVersion := flag.String("environment", "test", "Execution environment: test, staging, production.")
+	flag.Parse()
+
 	httpReqs := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
 			Name:        "http_requests_total",
 			Help:        "How many HTTP requests processed, partitioned by status code and HTTP method.",
+			ConstLabels: prometheus.Labels{"env": *binaryVersion},
 		},
 		[]string{"code", "method"},
 	)

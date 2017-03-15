@@ -15,7 +15,7 @@ trust makes use of five different types of keys:
 
 | Key                 | Description                                                                                                                                                                                                                                                                                                                                                                         |
 |---------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| root key         | Root of content trust for an image tag. When content trust is enabled, you create the root key once. Also known as the offline key, because it should be kept offline. |
+| root key         | Root of content trust for a image tag. When content trust is enabled, you create the root key once. Also known as the offline key, because it should be kept offline. |
 | targets          | This key allows you to sign image tags, to manage delegations including delegated keys or permitted delegation paths. Also known as the repository key, since this key determines what tags can be signed into an image repository. |
 | snapshot         | This key signs the current collection of image tags, preventing mix and match attacks.
 | timestamp        | This key allows Docker image repositories to have freshness security guarantees without requiring periodic content refreshes on the client's side. |
@@ -37,7 +37,7 @@ workflow.  They need to be
 
 Note: Prior to Docker Engine 1.11, the snapshot key was also generated and stored
 locally client-side. [Use the Notary CLI to manage your snapshot key locally
-again](/notary/advanced_usage.md#rotate-keys) for
+again](https://docs.docker.com/notary/advanced_usage/#rotate-keys) for
 repositories created with newer versions of Docker.
 
 ## Choosing a passphrase
@@ -64,16 +64,6 @@ Before backing them up, you should `tar` them into an archive:
 $ umask 077; tar -zcvf private_keys_backup.tar.gz ~/.docker/trust/private; umask 022
 ```
 
-## Hardware storage and signing
-
-Docker Content Trust can store and sign with root keys from a Yubikey 4. The
-Yubikey is prioritized over keys stored in the filesystem. When you initialize a
-new repository with content trust, Docker Engine looks for a root key locally. If a
-key is not found and the Yubikey 4 exists, Docker Engine creates a root key in the
-Yubikey 4. Please consult the [Notary documentation](/notary/advanced_usage.md#use-a-yubikey) for more details.
-
-Prior to Docker Engine 1.11, this feature was only in the experimental branch.
-
 ## Lost keys
 
 If a publisher loses keys it means losing the ability to sign trusted content for
@@ -86,7 +76,7 @@ the tagged image prior to the loss. Image consumers would get an error for
 content that they already downloaded:
 
 ```
-Warning: potential malicious behavior - trust data has insufficient signatures for remote repository docker.io/my/image: valid signatures did not meet threshold
+could not validate the path to a trusted root: failed to validate data with current trusted certificates
 ```
 
 To correct this, they need to download a new image tag with that is signed with

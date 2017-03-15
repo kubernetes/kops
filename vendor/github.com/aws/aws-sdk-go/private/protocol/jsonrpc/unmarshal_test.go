@@ -133,9 +133,8 @@ func (c *OutputService1ProtocolTest) OutputService1TestCaseOperation1Request(inp
 		input = &OutputService1TestShapeOutputService1TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService1TestShapeOutputService1TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -315,9 +314,8 @@ func (c *OutputService2ProtocolTest) OutputService2TestCaseOperation1Request(inp
 		input = &OutputService2TestShapeOutputService2TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService2TestShapeOutputService2TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -463,9 +461,8 @@ func (c *OutputService3ProtocolTest) OutputService3TestCaseOperation1Request(inp
 		input = &OutputService3TestShapeOutputService3TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService3TestShapeOutputService3TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -609,9 +606,8 @@ func (c *OutputService4ProtocolTest) OutputService4TestCaseOperation1Request(inp
 		input = &OutputService4TestShapeOutputService4TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService4TestShapeOutputShape{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -664,9 +660,8 @@ func (c *OutputService4ProtocolTest) OutputService4TestCaseOperation2Request(inp
 		input = &OutputService4TestShapeOutputService4TestCaseOperation2Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService4TestShapeOutputShape{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -814,9 +809,8 @@ func (c *OutputService5ProtocolTest) OutputService5TestCaseOperation1Request(inp
 		input = &OutputService5TestShapeOutputService5TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService5TestShapeOutputService5TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -940,9 +934,8 @@ func (c *OutputService6ProtocolTest) OutputService6TestCaseOperation1Request(inp
 		input = &OutputService6TestShapeOutputService6TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService6TestShapeOutputService6TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

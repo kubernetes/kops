@@ -1,18 +1,18 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/p5FXF_1mPQyFYKDH4p0vfLLFmRE\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/YpZuvK74mAv8xW5BuHR69lCp4_8\"",
  "discoveryVersion": "v1",
  "id": "dns:v2beta1",
  "name": "dns",
  "version": "v2beta1",
- "revision": "20160601",
+ "revision": "20161110",
  "title": "Google Cloud DNS API",
  "description": "Configures and serves authoritative DNS records.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/cloud-dns",
  "protocol": "rest",
@@ -370,7 +370,7 @@
     },
     "name": {
      "type": "string",
-     "description": "User assigned name for this resource. Must be unique within the project. The name must be 1-32 characters long, must begin with a letter, end with a letter or digit, and only contain lowercase letters, digits or dashes."
+     "description": "User assigned name for this resource. Must be unique within the project. The name must be 1-63 characters long, must begin with a letter, end with a letter or digit, and only contain lowercase letters, digits or dashes."
     },
     "nameServerSet": {
      "type": "string",
@@ -869,10 +869,10 @@
     }
    }
   },
-  "dnskeys": {
+  "dnsKeys": {
    "methods": {
     "get": {
-     "id": "dns.dnskeys.get",
+     "id": "dns.dnsKeys.get",
      "path": "{project}/managedZones/{managedZone}/dnsKeys/{dnsKeyId}",
      "httpMethod": "GET",
      "description": "Fetch the representation of an existing DnsKey.",
@@ -922,7 +922,7 @@
      ]
     },
     "list": {
-     "id": "dns.dnskeys.list",
+     "id": "dns.dnsKeys.list",
      "path": "{project}/managedZones/{managedZone}/dnsKeys",
      "httpMethod": "GET",
      "description": "Enumerate DnsKeys to a ResourceRecordSet collection.",

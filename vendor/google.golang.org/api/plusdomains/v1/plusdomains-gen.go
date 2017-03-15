@@ -194,12 +194,20 @@ type Acl struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Acl) MarshalJSON() ([]byte, error) {
 	type noMethod Acl
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Activity struct {
@@ -287,12 +295,20 @@ type Activity struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Access") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Activity) MarshalJSON() ([]byte, error) {
 	type noMethod Activity
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityActor: The person who performed this activity.
@@ -326,12 +342,21 @@ type ActivityActor struct {
 	// field is empty or not. This may be used to include empty fields in
 	// Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ClientSpecificActorInfo")
+	// to include in API requests with the JSON null value. By default,
+	// fields with empty values are omitted from API requests. However, any
+	// field with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityActor) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityActor
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityActorClientSpecificActorInfo: Actor info specific to
@@ -347,12 +372,21 @@ type ActivityActorClientSpecificActorInfo struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "YoutubeActorInfo") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityActorClientSpecificActorInfo) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityActorClientSpecificActorInfo
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityActorClientSpecificActorInfoYoutubeActorInfo: Actor info
@@ -368,12 +402,20 @@ type ActivityActorClientSpecificActorInfoYoutubeActorInfo struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityActorClientSpecificActorInfoYoutubeActorInfo) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityActorClientSpecificActorInfoYoutubeActorInfo
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityActorImage: The image representation of the actor.
@@ -390,12 +432,20 @@ type ActivityActorImage struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Url") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityActorImage) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityActorImage
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityActorName: An object representation of the individual
@@ -414,12 +464,20 @@ type ActivityActorName struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FamilyName") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityActorName) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityActorName
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityActorVerification: Verification status of actor.
@@ -434,12 +492,20 @@ type ActivityActorVerification struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AdHocVerified") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityActorVerification) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityActorVerification
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObject: The object of this activity.
@@ -492,12 +558,20 @@ type ActivityObject struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Actor") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObject) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObject
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectActor: If this activity's object is itself another
@@ -531,12 +605,21 @@ type ActivityObjectActor struct {
 	// field is empty or not. This may be used to include empty fields in
 	// Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ClientSpecificActorInfo")
+	// to include in API requests with the JSON null value. By default,
+	// fields with empty values are omitted from API requests. However, any
+	// field with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectActor) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectActor
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectActorClientSpecificActorInfo: Actor info specific to
@@ -552,12 +635,21 @@ type ActivityObjectActorClientSpecificActorInfo struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "YoutubeActorInfo") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectActorClientSpecificActorInfo) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectActorClientSpecificActorInfo
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectActorClientSpecificActorInfoYoutubeActorInfo: Actor
@@ -573,12 +665,20 @@ type ActivityObjectActorClientSpecificActorInfoYoutubeActorInfo struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectActorClientSpecificActorInfoYoutubeActorInfo) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectActorClientSpecificActorInfoYoutubeActorInfo
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectActorImage: The image representation of the original
@@ -594,12 +694,20 @@ type ActivityObjectActorImage struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Url") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectActorImage) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectActorImage
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectActorVerification: Verification status of actor.
@@ -614,12 +722,20 @@ type ActivityObjectActorVerification struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AdHocVerified") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectActorVerification) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectActorVerification
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ActivityObjectAttachments struct {
@@ -672,12 +788,20 @@ type ActivityObjectAttachments struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Content") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectAttachments) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectAttachments
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectAttachmentsEmbed: If the attachment is a video, the
@@ -696,12 +820,20 @@ type ActivityObjectAttachmentsEmbed struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Type") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectAttachmentsEmbed) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectAttachmentsEmbed
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectAttachmentsFullImage: The full image URL for photo
@@ -726,12 +858,20 @@ type ActivityObjectAttachmentsFullImage struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Height") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectAttachmentsFullImage) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectAttachmentsFullImage
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectAttachmentsImage: The preview image for photos or
@@ -756,12 +896,20 @@ type ActivityObjectAttachmentsImage struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Height") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectAttachmentsImage) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectAttachmentsImage
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ActivityObjectAttachmentsPreviewThumbnails struct {
@@ -775,12 +923,20 @@ type ActivityObjectAttachmentsPreviewThumbnails struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Url") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectAttachmentsPreviewThumbnails) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectAttachmentsPreviewThumbnails
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ActivityObjectAttachmentsThumbnails struct {
@@ -800,12 +956,20 @@ type ActivityObjectAttachmentsThumbnails struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectAttachmentsThumbnails) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectAttachmentsThumbnails
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectAttachmentsThumbnailsImage: Image resource.
@@ -829,12 +993,20 @@ type ActivityObjectAttachmentsThumbnailsImage struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Height") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectAttachmentsThumbnailsImage) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectAttachmentsThumbnailsImage
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectPlusoners: People who +1'd this activity.
@@ -853,12 +1025,20 @@ type ActivityObjectPlusoners struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "SelfLink") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectPlusoners) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectPlusoners
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectReplies: Comments in reply to this activity.
@@ -877,12 +1057,20 @@ type ActivityObjectReplies struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "SelfLink") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectReplies) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectReplies
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectResharers: People who reshared this activity.
@@ -900,12 +1088,20 @@ type ActivityObjectResharers struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "SelfLink") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectResharers) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectResharers
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityObjectStatusForViewer: Status of the activity as seen by the
@@ -933,12 +1129,20 @@ type ActivityObjectStatusForViewer struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CanComment") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityObjectStatusForViewer) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityObjectStatusForViewer
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ActivityProvider: The service provider that initially published this
@@ -954,12 +1158,20 @@ type ActivityProvider struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Title") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityProvider) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityProvider
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ActivityFeed struct {
@@ -1006,12 +1218,20 @@ type ActivityFeed struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ActivityFeed) MarshalJSON() ([]byte, error) {
 	type noMethod ActivityFeed
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Audience struct {
@@ -1044,12 +1264,20 @@ type Audience struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Audience) MarshalJSON() ([]byte, error) {
 	type noMethod Audience
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type AudiencesFeed struct {
@@ -1083,12 +1311,20 @@ type AudiencesFeed struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *AudiencesFeed) MarshalJSON() ([]byte, error) {
 	type noMethod AudiencesFeed
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Circle struct {
@@ -1124,12 +1360,20 @@ type Circle struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Circle) MarshalJSON() ([]byte, error) {
 	type noMethod Circle
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // CirclePeople: The people in this circle.
@@ -1144,12 +1388,20 @@ type CirclePeople struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "TotalItems") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CirclePeople) MarshalJSON() ([]byte, error) {
 	type noMethod CirclePeople
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type CircleFeed struct {
@@ -1192,12 +1444,20 @@ type CircleFeed struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CircleFeed) MarshalJSON() ([]byte, error) {
 	type noMethod CircleFeed
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Comment struct {
@@ -1249,12 +1509,20 @@ type Comment struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Actor") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Comment) MarshalJSON() ([]byte, error) {
 	type noMethod Comment
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // CommentActor: The person who posted this comment.
@@ -1285,12 +1553,21 @@ type CommentActor struct {
 	// field is empty or not. This may be used to include empty fields in
 	// Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ClientSpecificActorInfo")
+	// to include in API requests with the JSON null value. By default,
+	// fields with empty values are omitted from API requests. However, any
+	// field with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CommentActor) MarshalJSON() ([]byte, error) {
 	type noMethod CommentActor
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // CommentActorClientSpecificActorInfo: Actor info specific to
@@ -1306,12 +1583,21 @@ type CommentActorClientSpecificActorInfo struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "YoutubeActorInfo") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CommentActorClientSpecificActorInfo) MarshalJSON() ([]byte, error) {
 	type noMethod CommentActorClientSpecificActorInfo
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // CommentActorClientSpecificActorInfoYoutubeActorInfo: Actor info
@@ -1327,12 +1613,20 @@ type CommentActorClientSpecificActorInfoYoutubeActorInfo struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ChannelId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CommentActorClientSpecificActorInfoYoutubeActorInfo) MarshalJSON() ([]byte, error) {
 	type noMethod CommentActorClientSpecificActorInfoYoutubeActorInfo
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // CommentActorImage: The image representation of this actor.
@@ -1349,12 +1643,20 @@ type CommentActorImage struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Url") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CommentActorImage) MarshalJSON() ([]byte, error) {
 	type noMethod CommentActorImage
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // CommentActorVerification: Verification status of actor.
@@ -1369,12 +1671,20 @@ type CommentActorVerification struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AdHocVerified") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CommentActorVerification) MarshalJSON() ([]byte, error) {
 	type noMethod CommentActorVerification
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type CommentInReplyTo struct {
@@ -1391,12 +1701,20 @@ type CommentInReplyTo struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CommentInReplyTo) MarshalJSON() ([]byte, error) {
 	type noMethod CommentInReplyTo
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // CommentObject: The object of this comment.
@@ -1420,12 +1738,20 @@ type CommentObject struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Content") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CommentObject) MarshalJSON() ([]byte, error) {
 	type noMethod CommentObject
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // CommentPlusoners: People who +1'd this comment.
@@ -1440,12 +1766,20 @@ type CommentPlusoners struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "TotalItems") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CommentPlusoners) MarshalJSON() ([]byte, error) {
 	type noMethod CommentPlusoners
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type CommentFeed struct {
@@ -1488,12 +1822,20 @@ type CommentFeed struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *CommentFeed) MarshalJSON() ([]byte, error) {
 	type noMethod CommentFeed
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Media struct {
@@ -1574,12 +1916,20 @@ type Media struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Author") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Media) MarshalJSON() ([]byte, error) {
 	type noMethod Media
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // MediaAuthor: The person who uploaded this media.
@@ -1603,12 +1953,20 @@ type MediaAuthor struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DisplayName") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *MediaAuthor) MarshalJSON() ([]byte, error) {
 	type noMethod MediaAuthor
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // MediaAuthorImage: The author's Google profile image.
@@ -1625,12 +1983,20 @@ type MediaAuthorImage struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Url") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *MediaAuthorImage) MarshalJSON() ([]byte, error) {
 	type noMethod MediaAuthorImage
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // MediaExif: Exif information of the media item.
@@ -1646,12 +2012,20 @@ type MediaExif struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Time") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *MediaExif) MarshalJSON() ([]byte, error) {
 	type noMethod MediaExif
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PeopleFeed struct {
@@ -1694,12 +2068,20 @@ type PeopleFeed struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Etag") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PeopleFeed) MarshalJSON() ([]byte, error) {
 	type noMethod PeopleFeed
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Person struct {
@@ -1825,12 +2207,20 @@ type Person struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AboutMe") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Person) MarshalJSON() ([]byte, error) {
 	type noMethod Person
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // PersonCover: The cover photo content.
@@ -1853,12 +2243,20 @@ type PersonCover struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CoverInfo") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PersonCover) MarshalJSON() ([]byte, error) {
 	type noMethod PersonCover
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // PersonCoverCoverInfo: Extra information about the cover photo.
@@ -1880,12 +2278,21 @@ type PersonCoverCoverInfo struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "LeftImageOffset") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PersonCoverCoverInfo) MarshalJSON() ([]byte, error) {
 	type noMethod PersonCoverCoverInfo
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // PersonCoverCoverPhoto: The person's primary cover image.
@@ -1906,12 +2313,20 @@ type PersonCoverCoverPhoto struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Height") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PersonCoverCoverPhoto) MarshalJSON() ([]byte, error) {
 	type noMethod PersonCoverCoverPhoto
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PersonEmails struct {
@@ -1933,12 +2348,20 @@ type PersonEmails struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Type") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PersonEmails) MarshalJSON() ([]byte, error) {
 	type noMethod PersonEmails
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // PersonImage: The representation of the person's profile photo.
@@ -1958,12 +2381,20 @@ type PersonImage struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "IsDefault") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PersonImage) MarshalJSON() ([]byte, error) {
 	type noMethod PersonImage
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // PersonName: An object representation of the individual components of
@@ -1997,12 +2428,20 @@ type PersonName struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FamilyName") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PersonName) MarshalJSON() ([]byte, error) {
 	type noMethod PersonName
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PersonOrganizations struct {
@@ -2045,12 +2484,20 @@ type PersonOrganizations struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Department") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PersonOrganizations) MarshalJSON() ([]byte, error) {
 	type noMethod PersonOrganizations
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PersonPlacesLived struct {
@@ -2069,12 +2516,20 @@ type PersonPlacesLived struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Primary") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PersonPlacesLived) MarshalJSON() ([]byte, error) {
 	type noMethod PersonPlacesLived
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PersonUrls struct {
@@ -2100,12 +2555,20 @@ type PersonUrls struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Label") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PersonUrls) MarshalJSON() ([]byte, error) {
 	type noMethod PersonUrls
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Place struct {
@@ -2131,12 +2594,20 @@ type Place struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Address") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Place) MarshalJSON() ([]byte, error) {
 	type noMethod Place
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // PlaceAddress: The physical address of the place.
@@ -2151,12 +2622,20 @@ type PlaceAddress struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Formatted") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PlaceAddress) MarshalJSON() ([]byte, error) {
 	type noMethod PlaceAddress
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // PlacePosition: The position of the place.
@@ -2174,12 +2653,20 @@ type PlacePosition struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Latitude") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PlacePosition) MarshalJSON() ([]byte, error) {
 	type noMethod PlacePosition
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PlusDomainsAclentryResource struct {
@@ -2209,12 +2696,20 @@ type PlusDomainsAclentryResource struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DisplayName") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PlusDomainsAclentryResource) MarshalJSON() ([]byte, error) {
 	type noMethod PlusDomainsAclentryResource
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type Videostream struct {
@@ -2237,12 +2732,20 @@ type Videostream struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Height") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Videostream) MarshalJSON() ([]byte, error) {
 	type noMethod Videostream
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "plusDomains.activities.get":
@@ -2253,6 +2756,7 @@ type ActivitiesGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Get an activity.
@@ -2288,8 +2792,20 @@ func (c *ActivitiesGetCall) Context(ctx context.Context) *ActivitiesGetCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ActivitiesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ActivitiesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2303,10 +2819,7 @@ func (c *ActivitiesGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"activityId": c.activityId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.activities.get" call.
@@ -2382,6 +2895,7 @@ type ActivitiesInsertCall struct {
 	activity   *Activity
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Insert: Create a new activity for the authenticated user.
@@ -2417,8 +2931,20 @@ func (c *ActivitiesInsertCall) Context(ctx context.Context) *ActivitiesInsertCal
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ActivitiesInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ActivitiesInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.activity)
@@ -2434,10 +2960,7 @@ func (c *ActivitiesInsertCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.activities.insert" call.
@@ -2522,6 +3045,7 @@ type ActivitiesListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: List all of the activities in the specified collection for a
@@ -2577,8 +3101,20 @@ func (c *ActivitiesListCall) Context(ctx context.Context) *ActivitiesListCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ActivitiesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ActivitiesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2593,10 +3129,7 @@ func (c *ActivitiesListCall) doRequest(alt string) (*http.Response, error) {
 		"userId":     c.userId,
 		"collection": c.collection,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.activities.list" call.
@@ -2720,6 +3253,7 @@ type AudiencesListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: List all of the audiences to which a user can share.
@@ -2773,8 +3307,20 @@ func (c *AudiencesListCall) Context(ctx context.Context) *AudiencesListCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *AudiencesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *AudiencesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2788,10 +3334,7 @@ func (c *AudiencesListCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.audiences.list" call.
@@ -2901,6 +3444,7 @@ type CirclesAddPeopleCall struct {
 	circleId   string
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // AddPeople: Add a person to a circle. Google+ limits certain circle
@@ -2941,8 +3485,20 @@ func (c *CirclesAddPeopleCall) Context(ctx context.Context) *CirclesAddPeopleCal
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CirclesAddPeopleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *CirclesAddPeopleCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -2953,10 +3509,7 @@ func (c *CirclesAddPeopleCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"circleId": c.circleId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.circles.addPeople" call.
@@ -3043,6 +3596,7 @@ type CirclesGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Get a circle.
@@ -3078,8 +3632,20 @@ func (c *CirclesGetCall) Context(ctx context.Context) *CirclesGetCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CirclesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *CirclesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -3093,10 +3659,7 @@ func (c *CirclesGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"circleId": c.circleId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.circles.get" call.
@@ -3171,6 +3734,7 @@ type CirclesInsertCall struct {
 	circle     *Circle
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Insert: Create a new circle for the authenticated user.
@@ -3197,8 +3761,20 @@ func (c *CirclesInsertCall) Context(ctx context.Context) *CirclesInsertCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CirclesInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *CirclesInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.circle)
@@ -3214,10 +3790,7 @@ func (c *CirclesInsertCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.circles.insert" call.
@@ -3296,6 +3869,7 @@ type CirclesListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: List all of the circles for a user.
@@ -3349,8 +3923,20 @@ func (c *CirclesListCall) Context(ctx context.Context) *CirclesListCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CirclesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *CirclesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -3364,10 +3950,7 @@ func (c *CirclesListCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.circles.list" call.
@@ -3478,6 +4061,7 @@ type CirclesPatchCall struct {
 	circle     *Circle
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Patch: Update a circle's description. This method supports patch
@@ -3505,8 +4089,20 @@ func (c *CirclesPatchCall) Context(ctx context.Context) *CirclesPatchCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CirclesPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *CirclesPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.circle)
@@ -3522,10 +4118,7 @@ func (c *CirclesPatchCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"circleId": c.circleId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.circles.patch" call.
@@ -3602,6 +4195,7 @@ type CirclesRemoveCall struct {
 	circleId   string
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Remove: Delete a circle.
@@ -3627,8 +4221,20 @@ func (c *CirclesRemoveCall) Context(ctx context.Context) *CirclesRemoveCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CirclesRemoveCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *CirclesRemoveCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -3639,10 +4245,7 @@ func (c *CirclesRemoveCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"circleId": c.circleId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.circles.remove" call.
@@ -3688,6 +4291,7 @@ type CirclesRemovePeopleCall struct {
 	circleId   string
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // RemovePeople: Remove a person from a circle.
@@ -3727,8 +4331,20 @@ func (c *CirclesRemovePeopleCall) Context(ctx context.Context) *CirclesRemovePeo
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CirclesRemovePeopleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *CirclesRemovePeopleCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -3739,10 +4355,7 @@ func (c *CirclesRemovePeopleCall) doRequest(alt string) (*http.Response, error) 
 	googleapi.Expand(req.URL, map[string]string{
 		"circleId": c.circleId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.circles.removePeople" call.
@@ -3801,6 +4414,7 @@ type CirclesUpdateCall struct {
 	circle     *Circle
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Update: Update a circle's description.
@@ -3827,8 +4441,20 @@ func (c *CirclesUpdateCall) Context(ctx context.Context) *CirclesUpdateCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CirclesUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *CirclesUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.circle)
@@ -3844,10 +4470,7 @@ func (c *CirclesUpdateCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"circleId": c.circleId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.circles.update" call.
@@ -3925,6 +4548,7 @@ type CommentsGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Get a comment.
@@ -3960,8 +4584,20 @@ func (c *CommentsGetCall) Context(ctx context.Context) *CommentsGetCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *CommentsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -3975,10 +4611,7 @@ func (c *CommentsGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"commentId": c.commentId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.comments.get" call.
@@ -4053,6 +4686,7 @@ type CommentsInsertCall struct {
 	comment    *Comment
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Insert: Create a new comment in reply to an activity.
@@ -4079,8 +4713,20 @@ func (c *CommentsInsertCall) Context(ctx context.Context) *CommentsInsertCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *CommentsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.comment)
@@ -4096,10 +4742,7 @@ func (c *CommentsInsertCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"activityId": c.activityId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.comments.insert" call.
@@ -4177,6 +4820,7 @@ type CommentsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: List all of the comments for an activity.
@@ -4241,8 +4885,20 @@ func (c *CommentsListCall) Context(ctx context.Context) *CommentsListCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *CommentsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *CommentsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -4256,10 +4912,7 @@ func (c *CommentsListCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"activityId": c.activityId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.comments.list" call.
@@ -4389,6 +5042,7 @@ type MediaInsertCall struct {
 	mediaSize_       int64 // mediaSize, if known.  Used only for calls to progressUpdater_.
 	progressUpdater_ googleapi.ProgressUpdater
 	ctx_             context.Context
+	header_          http.Header
 }
 
 // Insert: Add a new media item to an album. The current upload size
@@ -4467,8 +5121,20 @@ func (c *MediaInsertCall) Context(ctx context.Context) *MediaInsertCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *MediaInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *MediaInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.media)
@@ -4506,10 +5172,7 @@ func (c *MediaInsertCall) doRequest(alt string) (*http.Response, error) {
 		"userId":     c.userId,
 		"collection": c.collection,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.media.insert" call.
@@ -4644,6 +5307,7 @@ type PeopleGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Get a person's profile.
@@ -4679,8 +5343,20 @@ func (c *PeopleGetCall) Context(ctx context.Context) *PeopleGetCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PeopleGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PeopleGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -4694,10 +5370,7 @@ func (c *PeopleGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"userId": c.userId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.people.get" call.
@@ -4776,6 +5449,7 @@ type PeopleListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: List all of the people in the specified collection.
@@ -4841,8 +5515,20 @@ func (c *PeopleListCall) Context(ctx context.Context) *PeopleListCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PeopleListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PeopleListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -4857,10 +5543,7 @@ func (c *PeopleListCall) doRequest(alt string) (*http.Response, error) {
 		"userId":     c.userId,
 		"collection": c.collection,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.people.list" call.
@@ -4998,6 +5681,7 @@ type PeopleListByActivityCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // ListByActivity: List all of the people in the specified collection
@@ -5053,8 +5737,20 @@ func (c *PeopleListByActivityCall) Context(ctx context.Context) *PeopleListByAct
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PeopleListByActivityCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PeopleListByActivityCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -5069,10 +5765,7 @@ func (c *PeopleListByActivityCall) doRequest(alt string) (*http.Response, error)
 		"activityId": c.activityId,
 		"collection": c.collection,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.people.listByActivity" call.
@@ -5199,6 +5892,7 @@ type PeopleListByCircleCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // ListByCircle: List all of the people who are members of a circle.
@@ -5252,8 +5946,20 @@ func (c *PeopleListByCircleCall) Context(ctx context.Context) *PeopleListByCircl
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PeopleListByCircleCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PeopleListByCircleCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -5267,10 +5973,7 @@ func (c *PeopleListByCircleCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"circleId": c.circleId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "plusDomains.people.listByCircle" call.

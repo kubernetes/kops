@@ -17,13 +17,17 @@ limitations under the License.
 package dockershim
 
 import (
+	"fmt"
 	"testing"
 
+	"github.com/blang/semver"
+	dockertypes "github.com/docker/engine-api/types"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
 	"k8s.io/kubernetes/pkg/api/v1"
 	runtimeapi "k8s.io/kubernetes/pkg/kubelet/api/v1alpha1/runtime"
+	"k8s.io/kubernetes/pkg/kubelet/dockertools"
 	"k8s.io/kubernetes/pkg/security/apparmor"
 )
 
@@ -95,7 +99,7 @@ func TestGetContainerSecurityOpts(t *testing.T) {
 	}}
 
 	for i, test := range tests {
-		opts, err := getContainerSecurityOpts(containerName, test.config, "test/seccomp/profile/root")
+		opts, err := getContainerSecurityOpts(containerName, test.config, "test/seccomp/profile/root", '=')
 		assert.NoError(t, err, "TestCase[%d]: %s", i, test.msg)
 		assert.Len(t, opts, len(test.expectedOpts), "TestCase[%d]: %s", i, test.msg)
 		for _, opt := range test.expectedOpts {
@@ -140,7 +144,7 @@ func TestGetSandboxSecurityOpts(t *testing.T) {
 	}}
 
 	for i, test := range tests {
-		opts, err := getSandboxSecurityOpts(test.config, "test/seccomp/profile/root")
+		opts, err := getSandboxSecurityOpts(test.config, "test/seccomp/profile/root", '=')
 		assert.NoError(t, err, "TestCase[%d]: %s", i, test.msg)
 		assert.Len(t, opts, len(test.expectedOpts), "TestCase[%d]: %s", i, test.msg)
 		for _, opt := range test.expectedOpts {
@@ -192,11 +196,10 @@ func TestGetSystclsFromAnnotations(t *testing.T) {
 // TestGetUserFromImageUser tests the logic of getting image uid or user name of image user.
 func TestGetUserFromImageUser(t *testing.T) {
 	newI64 := func(i int64) *int64 { return &i }
-	newStr := func(s string) *string { return &s }
 	for c, test := range map[string]struct {
 		user string
 		uid  *int64
-		name *string
+		name string
 	}{
 		"no gid": {
 			user: "0",
@@ -215,11 +218,11 @@ func TestGetUserFromImageUser(t *testing.T) {
 		},
 		"root username": {
 			user: "root:root",
-			name: newStr("root"),
+			name: "root",
 		},
 		"username": {
 			user: "test:test",
-			name: newStr("test"),
+			name: "test",
 		},
 	} {
 		t.Logf("TestCase - %q", c)
@@ -236,4 +239,65 @@ func TestParsingCreationConflictError(t *testing.T) {
 	matches := conflictRE.FindStringSubmatch(msg)
 	require.Len(t, matches, 2)
 	require.Equal(t, matches[1], "24666ab8c814d16f986449e504ea0159468ddf8da01897144a770f66dce0e14e")
+}
+
+func TestGetSecurityOptSeparator(t *testing.T) {
+	for c, test := range map[string]struct {
+		desc     string
+		version  *semver.Version
+		expected rune
+	}{
+		"older docker version": {
+			version:  &semver.Version{Major: 1, Minor: 22, Patch: 0},
+			expected: ':',
+		},
+		"changed docker version": {
+			version:  &semver.Version{Major: 1, Minor: 23, Patch: 0},
+			expected: '=',
+		},
+		"newer docker version": {
+			version:  &semver.Version{Major: 1, Minor: 24, Patch: 0},
+			expected: '=',
+		},
+	} {
+		actual := getSecurityOptSeparator(test.version)
+		assert.Equal(t, test.expected, actual, c)
+	}
+}
+
+func TestEnsureSandboxImageExists(t *testing.T) {
+	sandboxImage := "gcr.io/test/image"
+	for desc, test := range map[string]struct {
+		injectImage bool
+		injectErr   error
+		calls       []string
+		err         bool
+	}{
+		"should not pull image when it already exists": {
+			injectImage: true,
+			injectErr:   nil,
+			calls:       []string{"inspect_image"},
+		},
+		"should pull image when it doesn't exist": {
+			injectImage: false,
+			injectErr:   dockertools.ImageNotFoundError{ID: "image_id"},
+			calls:       []string{"inspect_image", "pull"},
+		},
+		"should return error when inspect image fails": {
+			injectImage: false,
+			injectErr:   fmt.Errorf("arbitrary error"),
+			calls:       []string{"inspect_image"},
+			err:         true,
+		},
+	} {
+		t.Logf("TestCase: %q", desc)
+		_, fakeDocker, _ := newTestDockerService()
+		if test.injectImage {
+			fakeDocker.InjectImages([]dockertypes.Image{{ID: sandboxImage}})
+		}
+		fakeDocker.InjectError("inspect_image", test.injectErr)
+		err := ensureSandboxImageExists(fakeDocker, sandboxImage)
+		assert.NoError(t, fakeDocker.AssertCalls(test.calls))
+		assert.Equal(t, test.err, err != nil)
+	}
 }

@@ -27,15 +27,17 @@ import (
 	"testing"
 
 	"github.com/spf13/cobra"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/rest/fake"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apimachinery/registered"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/restclient/fake"
+	"k8s.io/kubernetes/pkg/api/v1"
 	cmdtesting "k8s.io/kubernetes/pkg/kubectl/cmd/testing"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
-	"k8s.io/kubernetes/pkg/util/intstr"
 )
 
 func TestGetRestartPolicy(t *testing.T) {
@@ -112,7 +114,13 @@ func TestGetEnv(t *testing.T) {
 }
 
 func TestRunArgsFollowDashRules(t *testing.T) {
-	_, _, rc := testData()
+	one := int32(1)
+	rc := &v1.ReplicationController{
+		ObjectMeta: metav1.ObjectMeta{Name: "rc1", Namespace: "test", ResourceVersion: "18"},
+		Spec: v1.ReplicationControllerSpec{
+			Replicas: &one,
+		},
+	}
 
 	tests := []struct {
 		args          []string
@@ -154,9 +162,17 @@ func TestRunArgsFollowDashRules(t *testing.T) {
 	for _, test := range tests {
 		f, tf, codec, ns := cmdtesting.NewAPIFactory()
 		tf.Client = &fake.RESTClient{
+			APIRegistry:          api.Registry,
 			NegotiatedSerializer: ns,
 			Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
-				return &http.Response{StatusCode: 201, Header: defaultHeader(), Body: objBody(codec, &rc.Items[0])}, nil
+				if req.URL.Path == "/namespaces/test/replicationcontrollers" {
+					return &http.Response{StatusCode: 201, Header: defaultHeader(), Body: objBody(codec, rc)}, nil
+				} else {
+					return &http.Response{
+						StatusCode: http.StatusOK,
+						Body:       ioutil.NopCloser(&bytes.Buffer{}),
+					}, nil
+				}
 			}),
 		}
 		tf.Namespace = "test"
@@ -196,7 +212,7 @@ func TestGenerateService(t *testing.T) {
 			expectErr: false,
 			name:      "basic",
 			service: api.Service{
-				ObjectMeta: api.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "foo",
 				},
 				Spec: api.ServiceSpec{
@@ -227,7 +243,7 @@ func TestGenerateService(t *testing.T) {
 			expectErr: false,
 			name:      "custom labels",
 			service: api.Service{
-				ObjectMeta: api.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:   "foo",
 					Labels: map[string]string{"app": "bar"},
 				},
@@ -268,9 +284,10 @@ func TestGenerateService(t *testing.T) {
 	for _, test := range tests {
 		sawPOST := false
 		f, tf, codec, ns := cmdtesting.NewAPIFactory()
-		tf.ClientConfig = &restclient.Config{ContentConfig: restclient.ContentConfig{GroupVersion: &registered.GroupOrDie(api.GroupName).GroupVersion}}
+		tf.ClientConfig = &restclient.Config{ContentConfig: restclient.ContentConfig{GroupVersion: &api.Registry.GroupOrDie(api.GroupName).GroupVersion}}
 		tf.Printer = &testPrinter{}
 		tf.Client = &fake.RESTClient{
+			APIRegistry:          api.Registry,
 			NegotiatedSerializer: ns,
 			Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 				switch p, m := req.URL.Path, req.Method; {
@@ -406,6 +423,7 @@ func TestRunValidations(t *testing.T) {
 		f, tf, codec, ns := cmdtesting.NewTestFactory()
 		tf.Printer = &testPrinter{}
 		tf.Client = &fake.RESTClient{
+			APIRegistry:          api.Registry,
 			NegotiatedSerializer: ns,
 			Resp:                 &http.Response{StatusCode: 200, Header: defaultHeader(), Body: objBody(codec, cmdtesting.NewInternalType("", "", ""))},
 		}

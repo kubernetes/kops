@@ -138,12 +138,20 @@ type AwsAccessKey struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AccessKeyId") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *AwsAccessKey) MarshalJSON() ([]byte, error) {
 	type noMethod AwsAccessKey
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // AwsS3Data: An AwsS3Data can be a data source, but not a data sink. In
@@ -166,12 +174,20 @@ type AwsS3Data struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AwsAccessKey") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *AwsS3Data) MarshalJSON() ([]byte, error) {
 	type noMethod AwsS3Data
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Date: Represents a whole calendar date, e.g. date of birth. The time
@@ -203,12 +219,20 @@ type Date struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Day") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Date) MarshalJSON() ([]byte, error) {
 	type noMethod Date
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Empty: A generic empty message that you can re-use to avoid defining
@@ -239,12 +263,20 @@ type ErrorLogEntry struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ErrorDetails") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ErrorLogEntry) MarshalJSON() ([]byte, error) {
 	type noMethod ErrorLogEntry
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ErrorSummary: A summary of errors by error code, plus a count and
@@ -285,12 +317,20 @@ type ErrorSummary struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ErrorCode") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ErrorSummary) MarshalJSON() ([]byte, error) {
 	type noMethod ErrorSummary
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // GcsData: In a GcsData, an object's name is the Google Cloud Storage
@@ -310,12 +350,20 @@ type GcsData struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BucketName") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *GcsData) MarshalJSON() ([]byte, error) {
 	type noMethod GcsData
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // GoogleServiceAccount: Google service account
@@ -334,12 +382,20 @@ type GoogleServiceAccount struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AccountEmail") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *GoogleServiceAccount) MarshalJSON() ([]byte, error) {
 	type noMethod GoogleServiceAccount
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // HttpData: An HttpData specifies a list of objects on the web to be
@@ -376,12 +432,20 @@ type HttpData struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ListUrl") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *HttpData) MarshalJSON() ([]byte, error) {
 	type noMethod HttpData
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListOperationsResponse: The response message for
@@ -406,12 +470,20 @@ type ListOperationsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListOperationsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListOperationsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListTransferJobsResponse: Response from ListTransferJobs.
@@ -433,12 +505,20 @@ type ListTransferJobsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListTransferJobsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListTransferJobsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ObjectConditions: Conditions that determine which objects will be
@@ -492,12 +572,21 @@ type ObjectConditions struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ExcludePrefixes") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ObjectConditions) MarshalJSON() ([]byte, error) {
 	type noMethod ObjectConditions
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Operation: This resource represents a long-running operation that is
@@ -512,7 +601,7 @@ type Operation struct {
 	Error *Status `json:"error,omitempty"`
 
 	// Metadata: Represents the transfer operation object.
-	Metadata OperationMetadata `json:"metadata,omitempty"`
+	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
 
 	// Name: The server-assigned name, which is only unique within the same
 	// service that originally returns it. If you use the default HTTP
@@ -528,7 +617,7 @@ type Operation struct {
 	// `XxxResponse`, where `Xxx` is the original method name. For example,
 	// if the original method name is `TakeSnapshot()`, the inferred
 	// response type is `TakeSnapshotResponse`.
-	Response OperationResponse `json:"response,omitempty"`
+	Response googleapi.RawMessage `json:"response,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -541,17 +630,21 @@ type Operation struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Done") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Operation) MarshalJSON() ([]byte, error) {
 	type noMethod Operation
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
-
-type OperationMetadata interface{}
-
-type OperationResponse interface{}
 
 // PauseTransferOperationRequest: Request passed to
 // PauseTransferOperation.
@@ -587,12 +680,21 @@ type Schedule struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ScheduleEndDate") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Schedule) MarshalJSON() ([]byte, error) {
 	type noMethod Schedule
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Status: The `Status` type defines a logical error model that is
@@ -639,7 +741,7 @@ type Status struct {
 
 	// Details: A list of messages that carry the error details. There will
 	// be a common set of message types for APIs to use.
-	Details []StatusDetails `json:"details,omitempty"`
+	Details []googleapi.RawMessage `json:"details,omitempty"`
 
 	// Message: A developer-facing error message, which should be in
 	// English. Any user-facing error message should be localized and sent
@@ -654,15 +756,21 @@ type Status struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Status) MarshalJSON() ([]byte, error) {
 	type noMethod Status
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
-
-type StatusDetails interface{}
 
 // TimeOfDay: Represents a time of day. The date and time zone are
 // either not significant or are specified elsewhere. An API may chose
@@ -692,12 +800,20 @@ type TimeOfDay struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Hours") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TimeOfDay) MarshalJSON() ([]byte, error) {
 	type noMethod TimeOfDay
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // TransferCounters: A collection of counters that report the progress
@@ -771,12 +887,21 @@ type TransferCounters struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BytesCopiedToSink") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TransferCounters) MarshalJSON() ([]byte, error) {
 	type noMethod TransferCounters
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // TransferJob: This resource represents the configuration of a transfer
@@ -836,12 +961,20 @@ type TransferJob struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CreationTime") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TransferJob) MarshalJSON() ([]byte, error) {
 	type noMethod TransferJob
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // TransferOperation: A description of the execution of a transfer.
@@ -891,12 +1024,20 @@ type TransferOperation struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Counters") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TransferOperation) MarshalJSON() ([]byte, error) {
 	type noMethod TransferOperation
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // TransferOptions: TransferOptions uses three boolean parameters to
@@ -922,12 +1063,21 @@ type TransferOptions struct {
 	// the field is empty or not. This may be used to include empty fields
 	// in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g.
+	// "DeleteObjectsFromSourceAfterTransfer") to include in API requests
+	// with the JSON null value. By default, fields with empty values are
+	// omitted from API requests. However, any field with an empty value
+	// appearing in NullFields will be sent to the server as null. It is an
+	// error if a field in this list has a non-empty value. This may be used
+	// to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TransferOptions) MarshalJSON() ([]byte, error) {
 	type noMethod TransferOptions
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // TransferSpec: Configuration for running a transfer.
@@ -962,12 +1112,21 @@ type TransferSpec struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AwsS3DataSource") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TransferSpec) MarshalJSON() ([]byte, error) {
 	type noMethod TransferSpec
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // UpdateTransferJobRequest: Request passed to UpdateTransferJob.
@@ -995,12 +1154,20 @@ type UpdateTransferJobRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ProjectId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *UpdateTransferJobRequest) MarshalJSON() ([]byte, error) {
 	type noMethod UpdateTransferJobRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "storagetransfer.googleServiceAccounts.get":
@@ -1011,6 +1178,7 @@ type GoogleServiceAccountsGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Returns the Google service account that is used by Storage
@@ -1053,8 +1221,20 @@ func (c *GoogleServiceAccountsGetCall) Context(ctx context.Context) *GoogleServi
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *GoogleServiceAccountsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *GoogleServiceAccountsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1068,10 +1248,7 @@ func (c *GoogleServiceAccountsGetCall) doRequest(alt string) (*http.Response, er
 	googleapi.Expand(req.URL, map[string]string{
 		"projectId": c.projectId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.googleServiceAccounts.get" call.
@@ -1144,6 +1321,7 @@ type TransferJobsCreateCall struct {
 	transferjob *TransferJob
 	urlParams_  gensupport.URLParams
 	ctx_        context.Context
+	header_     http.Header
 }
 
 // Create: Creates a transfer job that runs periodically.
@@ -1169,8 +1347,20 @@ func (c *TransferJobsCreateCall) Context(ctx context.Context) *TransferJobsCreat
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *TransferJobsCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *TransferJobsCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.transferjob)
@@ -1183,11 +1373,7 @@ func (c *TransferJobsCreateCall) doRequest(alt string) (*http.Response, error) {
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.transferJobs.create" call.
@@ -1253,6 +1439,7 @@ type TransferJobsGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets a transfer job.
@@ -1295,8 +1482,20 @@ func (c *TransferJobsGetCall) Context(ctx context.Context) *TransferJobsGetCall 
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *TransferJobsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *TransferJobsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1310,10 +1509,7 @@ func (c *TransferJobsGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"jobName": c.jobName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.transferJobs.get" call.
@@ -1392,6 +1588,7 @@ type TransferJobsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists transfer jobs.
@@ -1454,8 +1651,20 @@ func (c *TransferJobsListCall) Context(ctx context.Context) *TransferJobsListCal
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *TransferJobsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *TransferJobsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1466,11 +1675,7 @@ func (c *TransferJobsListCall) doRequest(alt string) (*http.Response, error) {
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.transferJobs.list" call.
@@ -1572,6 +1777,7 @@ type TransferJobsPatchCall struct {
 	updatetransferjobrequest *UpdateTransferJobRequest
 	urlParams_               gensupport.URLParams
 	ctx_                     context.Context
+	header_                  http.Header
 }
 
 // Patch: Updates a transfer job. Updating a job's transfer spec does
@@ -1600,8 +1806,20 @@ func (c *TransferJobsPatchCall) Context(ctx context.Context) *TransferJobsPatchC
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *TransferJobsPatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *TransferJobsPatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.updatetransferjobrequest)
@@ -1617,10 +1835,7 @@ func (c *TransferJobsPatchCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"jobName": c.jobName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.transferJobs.patch" call.
@@ -1697,6 +1912,7 @@ type TransferOperationsCancelCall struct {
 	name       string
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Cancel: Cancels a transfer. Use the get method to check whether the
@@ -1724,8 +1940,20 @@ func (c *TransferOperationsCancelCall) Context(ctx context.Context) *TransferOpe
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *TransferOperationsCancelCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *TransferOperationsCancelCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -1736,10 +1964,7 @@ func (c *TransferOperationsCancelCall) doRequest(alt string) (*http.Response, er
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.transferOperations.cancel" call.
@@ -1813,6 +2038,7 @@ type TransferOperationsDeleteCall struct {
 	name       string
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: This method is not supported and the server returns
@@ -1839,8 +2065,20 @@ func (c *TransferOperationsDeleteCall) Context(ctx context.Context) *TransferOpe
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *TransferOperationsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *TransferOperationsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -1851,10 +2089,7 @@ func (c *TransferOperationsDeleteCall) doRequest(alt string) (*http.Response, er
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.transferOperations.delete" call.
@@ -1929,6 +2164,7 @@ type TransferOperationsGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets the latest state of a long-running operation. Clients can
@@ -1966,8 +2202,20 @@ func (c *TransferOperationsGetCall) Context(ctx context.Context) *TransferOperat
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *TransferOperationsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *TransferOperationsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1981,10 +2229,7 @@ func (c *TransferOperationsGetCall) doRequest(alt string) (*http.Response, error
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.transferOperations.get" call.
@@ -2059,6 +2304,7 @@ type TransferOperationsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists operations that match the specified filter in the
@@ -2119,8 +2365,20 @@ func (c *TransferOperationsListCall) Context(ctx context.Context) *TransferOpera
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *TransferOperationsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *TransferOperationsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2134,10 +2392,7 @@ func (c *TransferOperationsListCall) doRequest(alt string) (*http.Response, erro
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.transferOperations.list" call.
@@ -2249,6 +2504,7 @@ type TransferOperationsPauseCall struct {
 	pausetransferoperationrequest *PauseTransferOperationRequest
 	urlParams_                    gensupport.URLParams
 	ctx_                          context.Context
+	header_                       http.Header
 }
 
 // Pause: Pauses a transfer operation.
@@ -2275,8 +2531,20 @@ func (c *TransferOperationsPauseCall) Context(ctx context.Context) *TransferOper
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *TransferOperationsPauseCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *TransferOperationsPauseCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.pausetransferoperationrequest)
@@ -2292,10 +2560,7 @@ func (c *TransferOperationsPauseCall) doRequest(alt string) (*http.Response, err
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.transferOperations.pause" call.
@@ -2373,6 +2638,7 @@ type TransferOperationsResumeCall struct {
 	resumetransferoperationrequest *ResumeTransferOperationRequest
 	urlParams_                     gensupport.URLParams
 	ctx_                           context.Context
+	header_                        http.Header
 }
 
 // Resume: Resumes a transfer operation that is paused.
@@ -2399,8 +2665,20 @@ func (c *TransferOperationsResumeCall) Context(ctx context.Context) *TransferOpe
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *TransferOperationsResumeCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *TransferOperationsResumeCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.resumetransferoperationrequest)
@@ -2416,10 +2694,7 @@ func (c *TransferOperationsResumeCall) doRequest(alt string) (*http.Response, er
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.transferOperations.resume" call.
@@ -2496,6 +2771,7 @@ type V1GetGoogleServiceAccountCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // GetGoogleServiceAccount: Returns the Google service account that is
@@ -2545,8 +2821,20 @@ func (c *V1GetGoogleServiceAccountCall) Context(ctx context.Context) *V1GetGoogl
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *V1GetGoogleServiceAccountCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *V1GetGoogleServiceAccountCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2557,11 +2845,7 @@ func (c *V1GetGoogleServiceAccountCall) doRequest(alt string) (*http.Response, e
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "storagetransfer.getGoogleServiceAccount" call.

@@ -16,9 +16,6 @@ package log
 import (
 	"flag"
 	"fmt"
-	"log"
-	"net/url"
-	"os"
 	"runtime"
 	"strings"
 
@@ -42,65 +39,10 @@ func (f levelFlag) Set(level string) error {
 	return nil
 }
 
-// setSyslogFormatter is nil if the target architecture does not support syslog.
-var setSyslogFormatter func(string, string) error
-
-func setJSONFormatter() {
-	origLogger.Formatter = &logrus.JSONFormatter{}
-}
-
-type logFormatFlag struct{ uri string }
-
-// String implements flag.Value.
-func (f logFormatFlag) String() string {
-	return f.uri
-}
-
-// Set implements flag.Value.
-func (f logFormatFlag) Set(format string) error {
-	f.uri = format
-	u, err := url.Parse(format)
-	if err != nil {
-		return err
-	}
-	if u.Scheme != "logger" {
-		return fmt.Errorf("invalid scheme %s", u.Scheme)
-	}
-	jsonq := u.Query().Get("json")
-	if jsonq == "true" {
-		setJSONFormatter()
-	}
-
-	switch u.Opaque {
-	case "syslog":
-		if setSyslogFormatter == nil {
-			return fmt.Errorf("system does not support syslog")
-		}
-		appname := u.Query().Get("appname")
-		facility := u.Query().Get("local")
-		return setSyslogFormatter(appname, facility)
-	case "stdout":
-		origLogger.Out = os.Stdout
-	case "stderr":
-		origLogger.Out = os.Stderr
-
-	default:
-		return fmt.Errorf("unsupported logger %s", u.Opaque)
-	}
-	return nil
-}
-
 func init() {
-	AddFlags(flag.CommandLine)
-}
-
-// AddFlags adds the flags used by this package to the given FlagSet. That's
-// useful if working with a custom FlagSet. The init function of this package
-// adds the flags to flag.CommandLine anyway. Thus, it's usually enough to call
-// flag.Parse() to make the logging flags take effect.
-func AddFlags(fs *flag.FlagSet) {
-	fs.Var(levelFlag{}, "log.level", "Only log messages with the given severity or above. Valid levels: [debug, info, warn, error, fatal].")
-	fs.Var(logFormatFlag{}, "log.format", "If set use a syslog logger or JSON logging. Example: logger:syslog?appname=bob&local=7 or logger:stdout?json=true. Defaults to stderr.")
+	// In order for this flag to take effect, the user of the package must call
+	// flag.Parse() before logging anything.
+	flag.Var(levelFlag{}, "log.level", "Only log messages with the given severity or above. Valid levels: [debug, info, warn, error, fatal].")
 }
 
 type Logger interface {
@@ -308,17 +250,4 @@ func Fatalln(args ...interface{}) {
 // Fatalf logs a message at level Fatal on the standard logger.
 func Fatalf(format string, args ...interface{}) {
 	baseLogger.sourced().Fatalf(format, args...)
-}
-
-type errorLogWriter struct{}
-
-func (errorLogWriter) Write(b []byte) (int, error) {
-	baseLogger.sourced().Error(string(b))
-	return len(b), nil
-}
-
-// NewErrorLogger returns a log.Logger that is meant to be used
-// in the ErrorLog field of an http.Server to log HTTP server errors.
-func NewErrorLogger() *log.Logger {
-	return log.New(&errorLogWriter{}, "", 0)
 }

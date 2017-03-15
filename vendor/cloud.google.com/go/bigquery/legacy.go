@@ -68,23 +68,3 @@ func (c *Client) Read(ctx context.Context, src ReadSource, options ...ReadOption
 	}
 	return nil, fmt.Errorf("src (%T) does not support the Read operation", src)
 }
-
-// ListTables returns a list of all the tables contained in the Dataset.
-//
-// Deprecated: use Dataset.Tables instead.
-func (d *Dataset) ListTables(ctx context.Context) ([]*Table, error) {
-	var tables []*Table
-
-	err := getPages("", func(pageToken string) (string, error) {
-		ts, tok, err := d.service.listTables(ctx, d.projectID, d.id, -1, pageToken)
-		if err == nil {
-			tables = append(tables, ts...)
-		}
-		return tok, err
-	})
-
-	if err != nil {
-		return nil, err
-	}
-	return tables, nil
-}

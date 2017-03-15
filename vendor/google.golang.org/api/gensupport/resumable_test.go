@@ -81,10 +81,18 @@ func (t *interruptibleTransport) RoundTrip(req *http.Request) (*http.Response, e
 
 	tc := &trackingCloser{unexpectedReader{}, t.bodies}
 	tc.Open()
+	h := http.Header{}
+	status := ev.responseStatus
+
+	// Support "X-GUploader-No-308" like Google:
+	if status == 308 && req.Header.Get("X-GUploader-No-308") == "yes" {
+		status = 200
+		h.Set("X-Http-Status-Code-Override", "308")
+	}
 
 	res := &http.Response{
-		StatusCode: ev.responseStatus,
-		Header:     http.Header{},
+		StatusCode: status,
+		Header:     h,
 		Body:       tc,
 	}
 	return res, nil

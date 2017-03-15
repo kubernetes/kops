@@ -19,7 +19,6 @@ import (
 	"github.com/docker/docker/image"
 	imagev1 "github.com/docker/docker/image/v1"
 	"github.com/docker/docker/layer"
-	"github.com/docker/docker/pkg/ioutils"
 	"github.com/docker/docker/reference"
 )
 
@@ -161,7 +160,12 @@ func calculateLayerChecksum(graphDir, id string, ls checksumCalculator) error {
 		return err
 	}
 
-	if err := ioutils.AtomicWriteFile(filepath.Join(graphDir, id, migrationDiffIDFileName), []byte(diffID), 0600); err != nil {
+	tmpFile := filepath.Join(graphDir, id, migrationDiffIDFileName+".tmp")
+	if err := ioutil.WriteFile(tmpFile, []byte(diffID), 0600); err != nil {
+		return err
+	}
+
+	if err := os.Rename(tmpFile, filepath.Join(graphDir, id, migrationDiffIDFileName)); err != nil {
 		return err
 	}
 

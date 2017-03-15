@@ -1,18 +1,18 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/l7rO6CbXZHG1D23xOowyyvnzSns\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/BGGdGHRirBgse4vGkz5llVRWBM8\"",
  "discoveryVersion": "v1",
  "id": "fitness:v1",
  "name": "fitness",
  "version": "v1",
- "revision": "20160609",
+ "revision": "20160907",
  "title": "Fitness",
  "description": "Stores and accesses user data in the fitness store from apps on any platform.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/fit/rest/",
  "protocol": "rest",
@@ -86,6 +86,12 @@
     },
     "https://www.googleapis.com/auth/fitness.location.write": {
      "description": "View and store your location data in Google Fit"
+    },
+    "https://www.googleapis.com/auth/fitness.nutrition.read": {
+     "description": "View nutrition information in Google Fit"
+    },
+    "https://www.googleapis.com/auth/fitness.nutrition.write": {
+     "description": "View and store nutrition information in Google Fit"
     }
    }
   }
@@ -159,6 +165,7 @@
   "AggregateRequest": {
    "id": "AggregateRequest",
    "type": "object",
+   "description": "Next id: 10",
    "properties": {
     "aggregateBy": {
      "type": "array",
@@ -195,6 +202,37 @@
      "annotations": {
       "required": [
        "fitness.users.dataset.aggregate"
+      ]
+     }
+    },
+    "filteredDataQualityStandard": {
+     "type": "array",
+     "description": "A list of acceptable data quality standards. Only data points which conform to at least one of the specified data quality standards will be returned. If the list is empty, all data points are returned.",
+     "items": {
+      "type": "string",
+      "enum": [
+       "dataQualityBloodGlucoseIso151972003",
+       "dataQualityBloodGlucoseIso151972013",
+       "dataQualityBloodPressureAami",
+       "dataQualityBloodPressureBhsAA",
+       "dataQualityBloodPressureBhsAB",
+       "dataQualityBloodPressureBhsBA",
+       "dataQualityBloodPressureBhsBB",
+       "dataQualityBloodPressureEsh2002",
+       "dataQualityBloodPressureEsh2010",
+       "dataQualityUnknown"
+      ],
+      "enumDescriptions": [
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       ""
       ]
      }
     },
@@ -408,10 +446,26 @@
      "items": {
       "type": "string",
       "enum": [
+       "dataQualityBloodGlucoseIso151972003",
+       "dataQualityBloodGlucoseIso151972013",
+       "dataQualityBloodPressureAami",
+       "dataQualityBloodPressureBhsAA",
+       "dataQualityBloodPressureBhsAB",
+       "dataQualityBloodPressureBhsBA",
+       "dataQualityBloodPressureBhsBB",
        "dataQualityBloodPressureEsh2002",
+       "dataQualityBloodPressureEsh2010",
        "dataQualityUnknown"
       ],
       "enumDescriptions": [
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
+       "",
        "",
        ""
       ]
@@ -634,6 +688,7 @@
      "description": "A constant representing the type of the device.",
      "enum": [
       "chestStrap",
+      "headMounted",
       "phone",
       "scale",
       "tablet",
@@ -641,6 +696,7 @@
       "watch"
      ],
      "enumDescriptions": [
+      "",
       "",
       "",
       "",
@@ -700,6 +756,10 @@
      "items": {
       "$ref": "Session"
      }
+    },
+    "hasMoreData": {
+     "type": "boolean",
+     "description": "Flag to indicate server has more data to transfer"
     },
     "nextPageToken": {
      "type": "string",
@@ -875,7 +935,8 @@
        "scopes": [
         "https://www.googleapis.com/auth/fitness.activity.write",
         "https://www.googleapis.com/auth/fitness.body.write",
-        "https://www.googleapis.com/auth/fitness.location.write"
+        "https://www.googleapis.com/auth/fitness.location.write",
+        "https://www.googleapis.com/auth/fitness.nutrition.write"
        ]
       },
       "delete": {
@@ -907,7 +968,8 @@
        "scopes": [
         "https://www.googleapis.com/auth/fitness.activity.write",
         "https://www.googleapis.com/auth/fitness.body.write",
-        "https://www.googleapis.com/auth/fitness.location.write"
+        "https://www.googleapis.com/auth/fitness.location.write",
+        "https://www.googleapis.com/auth/fitness.nutrition.write"
        ]
       },
       "get": {
@@ -942,7 +1004,9 @@
         "https://www.googleapis.com/auth/fitness.body.read",
         "https://www.googleapis.com/auth/fitness.body.write",
         "https://www.googleapis.com/auth/fitness.location.read",
-        "https://www.googleapis.com/auth/fitness.location.write"
+        "https://www.googleapis.com/auth/fitness.location.write",
+        "https://www.googleapis.com/auth/fitness.nutrition.read",
+        "https://www.googleapis.com/auth/fitness.nutrition.write"
        ]
       },
       "list": {
@@ -976,7 +1040,9 @@
         "https://www.googleapis.com/auth/fitness.body.read",
         "https://www.googleapis.com/auth/fitness.body.write",
         "https://www.googleapis.com/auth/fitness.location.read",
-        "https://www.googleapis.com/auth/fitness.location.write"
+        "https://www.googleapis.com/auth/fitness.location.write",
+        "https://www.googleapis.com/auth/fitness.nutrition.read",
+        "https://www.googleapis.com/auth/fitness.nutrition.write"
        ]
       },
       "patch": {
@@ -1011,7 +1077,8 @@
        "scopes": [
         "https://www.googleapis.com/auth/fitness.activity.write",
         "https://www.googleapis.com/auth/fitness.body.write",
-        "https://www.googleapis.com/auth/fitness.location.write"
+        "https://www.googleapis.com/auth/fitness.location.write",
+        "https://www.googleapis.com/auth/fitness.nutrition.write"
        ]
       },
       "update": {
@@ -1046,7 +1113,8 @@
        "scopes": [
         "https://www.googleapis.com/auth/fitness.activity.write",
         "https://www.googleapis.com/auth/fitness.body.write",
-        "https://www.googleapis.com/auth/fitness.location.write"
+        "https://www.googleapis.com/auth/fitness.location.write",
+        "https://www.googleapis.com/auth/fitness.nutrition.write"
        ]
       }
      },
@@ -1098,7 +1166,8 @@
          "scopes": [
           "https://www.googleapis.com/auth/fitness.activity.write",
           "https://www.googleapis.com/auth/fitness.body.write",
-          "https://www.googleapis.com/auth/fitness.location.write"
+          "https://www.googleapis.com/auth/fitness.location.write",
+          "https://www.googleapis.com/auth/fitness.nutrition.write"
          ]
         },
         "get": {
@@ -1121,7 +1190,7 @@
           },
           "limit": {
            "type": "integer",
-           "description": "If specified, no more than this many data points will be included in the dataset. If the there are more data points in the dataset, nextPageToken will be set in the dataset response.",
+           "description": "If specified, no more than this many data points will be included in the dataset. If there are more data points in the dataset, nextPageToken will be set in the dataset response.",
            "format": "int32",
            "location": "query"
           },
@@ -1151,7 +1220,9 @@
           "https://www.googleapis.com/auth/fitness.body.read",
           "https://www.googleapis.com/auth/fitness.body.write",
           "https://www.googleapis.com/auth/fitness.location.read",
-          "https://www.googleapis.com/auth/fitness.location.write"
+          "https://www.googleapis.com/auth/fitness.location.write",
+          "https://www.googleapis.com/auth/fitness.nutrition.read",
+          "https://www.googleapis.com/auth/fitness.nutrition.write"
          ]
         },
         "patch": {
@@ -1199,7 +1270,8 @@
          "scopes": [
           "https://www.googleapis.com/auth/fitness.activity.write",
           "https://www.googleapis.com/auth/fitness.body.write",
-          "https://www.googleapis.com/auth/fitness.location.write"
+          "https://www.googleapis.com/auth/fitness.location.write",
+          "https://www.googleapis.com/auth/fitness.nutrition.write"
          ]
         }
        }
@@ -1236,7 +1308,9 @@
         "https://www.googleapis.com/auth/fitness.body.read",
         "https://www.googleapis.com/auth/fitness.body.write",
         "https://www.googleapis.com/auth/fitness.location.read",
-        "https://www.googleapis.com/auth/fitness.location.write"
+        "https://www.googleapis.com/auth/fitness.location.write",
+        "https://www.googleapis.com/auth/fitness.nutrition.read",
+        "https://www.googleapis.com/auth/fitness.nutrition.write"
        ]
       }
      }
@@ -1321,7 +1395,9 @@
         "https://www.googleapis.com/auth/fitness.body.read",
         "https://www.googleapis.com/auth/fitness.body.write",
         "https://www.googleapis.com/auth/fitness.location.read",
-        "https://www.googleapis.com/auth/fitness.location.write"
+        "https://www.googleapis.com/auth/fitness.location.write",
+        "https://www.googleapis.com/auth/fitness.nutrition.read",
+        "https://www.googleapis.com/auth/fitness.nutrition.write"
        ]
       },
       "update": {

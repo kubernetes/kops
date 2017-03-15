@@ -128,12 +128,20 @@ type Label struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Key") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Label) MarshalJSON() ([]byte, error) {
 	type noMethod Label
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // RegionViewsAddResourcesRequest: The request to add resources to the
@@ -149,12 +157,20 @@ type RegionViewsAddResourcesRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Resources") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RegionViewsAddResourcesRequest) MarshalJSON() ([]byte, error) {
 	type noMethod RegionViewsAddResourcesRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // RegionViewsInsertResponse: The response to a resource view insert
@@ -174,12 +190,20 @@ type RegionViewsInsertResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Resource") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RegionViewsInsertResponse) MarshalJSON() ([]byte, error) {
 	type noMethod RegionViewsInsertResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // RegionViewsListResourcesResponse: The response to the list resource
@@ -202,12 +226,20 @@ type RegionViewsListResourcesResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Members") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RegionViewsListResourcesResponse) MarshalJSON() ([]byte, error) {
 	type noMethod RegionViewsListResourcesResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // RegionViewsListResponse: The response to the list resource view
@@ -230,12 +262,20 @@ type RegionViewsListResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RegionViewsListResponse) MarshalJSON() ([]byte, error) {
 	type noMethod RegionViewsListResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // RegionViewsRemoveResourcesRequest: The request to remove resources
@@ -251,12 +291,20 @@ type RegionViewsRemoveResourcesRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Resources") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RegionViewsRemoveResourcesRequest) MarshalJSON() ([]byte, error) {
 	type noMethod RegionViewsRemoveResourcesRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ResourceView: The resource view object.
@@ -302,12 +350,20 @@ type ResourceView struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CreationTime") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ResourceView) MarshalJSON() ([]byte, error) {
 	type noMethod ResourceView
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ZoneViewsAddResourcesRequest: The request to add resources to the
@@ -323,12 +379,20 @@ type ZoneViewsAddResourcesRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Resources") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ZoneViewsAddResourcesRequest) MarshalJSON() ([]byte, error) {
 	type noMethod ZoneViewsAddResourcesRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ZoneViewsInsertResponse: The response to an insert request.
@@ -347,12 +411,20 @@ type ZoneViewsInsertResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Resource") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ZoneViewsInsertResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ZoneViewsInsertResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ZoneViewsListResourcesResponse: The response to a list resource
@@ -375,12 +447,20 @@ type ZoneViewsListResourcesResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Members") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ZoneViewsListResourcesResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ZoneViewsListResourcesResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ZoneViewsListResponse: The response to a list request.
@@ -403,12 +483,20 @@ type ZoneViewsListResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ZoneViewsListResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ZoneViewsListResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ZoneViewsRemoveResourcesRequest: The request to remove resources from
@@ -424,12 +512,20 @@ type ZoneViewsRemoveResourcesRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Resources") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ZoneViewsRemoveResourcesRequest) MarshalJSON() ([]byte, error) {
 	type noMethod ZoneViewsRemoveResourcesRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "resourceviews.regionViews.addresources":
@@ -442,6 +538,7 @@ type RegionViewsAddresourcesCall struct {
 	regionviewsaddresourcesrequest *RegionViewsAddResourcesRequest
 	urlParams_                     gensupport.URLParams
 	ctx_                           context.Context
+	header_                        http.Header
 }
 
 // Addresources: Add resources to the view.
@@ -470,8 +567,20 @@ func (c *RegionViewsAddresourcesCall) Context(ctx context.Context) *RegionViewsA
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *RegionViewsAddresourcesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *RegionViewsAddresourcesCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.regionviewsaddresourcesrequest)
@@ -489,10 +598,7 @@ func (c *RegionViewsAddresourcesCall) doRequest(alt string) (*http.Response, err
 		"region":           c.region,
 		"resourceViewName": c.resourceViewName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.regionViews.addresources" call.
@@ -558,6 +664,7 @@ type RegionViewsDeleteCall struct {
 	resourceViewName string
 	urlParams_       gensupport.URLParams
 	ctx_             context.Context
+	header_          http.Header
 }
 
 // Delete: Delete a resource view.
@@ -585,8 +692,20 @@ func (c *RegionViewsDeleteCall) Context(ctx context.Context) *RegionViewsDeleteC
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *RegionViewsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *RegionViewsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -599,10 +718,7 @@ func (c *RegionViewsDeleteCall) doRequest(alt string) (*http.Response, error) {
 		"region":           c.region,
 		"resourceViewName": c.resourceViewName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.regionViews.delete" call.
@@ -666,6 +782,7 @@ type RegionViewsGetCall struct {
 	urlParams_       gensupport.URLParams
 	ifNoneMatch_     string
 	ctx_             context.Context
+	header_          http.Header
 }
 
 // Get: Get the information of a resource view.
@@ -703,8 +820,20 @@ func (c *RegionViewsGetCall) Context(ctx context.Context) *RegionViewsGetCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *RegionViewsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *RegionViewsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -720,10 +849,7 @@ func (c *RegionViewsGetCall) doRequest(alt string) (*http.Response, error) {
 		"region":           c.region,
 		"resourceViewName": c.resourceViewName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.regionViews.get" call.
@@ -817,6 +943,7 @@ type RegionViewsInsertCall struct {
 	resourceview *ResourceView
 	urlParams_   gensupport.URLParams
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Insert: Create a resource view.
@@ -844,8 +971,20 @@ func (c *RegionViewsInsertCall) Context(ctx context.Context) *RegionViewsInsertC
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *RegionViewsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *RegionViewsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.resourceview)
@@ -862,10 +1001,7 @@ func (c *RegionViewsInsertCall) doRequest(alt string) (*http.Response, error) {
 		"projectName": c.projectName,
 		"region":      c.region,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.regionViews.insert" call.
@@ -952,6 +1088,7 @@ type RegionViewsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: List resource views.
@@ -1005,8 +1142,20 @@ func (c *RegionViewsListCall) Context(ctx context.Context) *RegionViewsListCall 
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *RegionViewsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *RegionViewsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1021,10 +1170,7 @@ func (c *RegionViewsListCall) doRequest(alt string) (*http.Response, error) {
 		"projectName": c.projectName,
 		"region":      c.region,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.regionViews.list" call.
@@ -1146,6 +1292,7 @@ type RegionViewsListresourcesCall struct {
 	resourceViewName string
 	urlParams_       gensupport.URLParams
 	ctx_             context.Context
+	header_          http.Header
 }
 
 // Listresources: List the resources in the view.
@@ -1190,8 +1337,20 @@ func (c *RegionViewsListresourcesCall) Context(ctx context.Context) *RegionViews
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *RegionViewsListresourcesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *RegionViewsListresourcesCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -1204,10 +1363,7 @@ func (c *RegionViewsListresourcesCall) doRequest(alt string) (*http.Response, er
 		"region":           c.region,
 		"resourceViewName": c.resourceViewName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.regionViews.listresources" call.
@@ -1316,6 +1472,7 @@ type RegionViewsRemoveresourcesCall struct {
 	regionviewsremoveresourcesrequest *RegionViewsRemoveResourcesRequest
 	urlParams_                        gensupport.URLParams
 	ctx_                              context.Context
+	header_                           http.Header
 }
 
 // Removeresources: Remove resources from the view.
@@ -1344,8 +1501,20 @@ func (c *RegionViewsRemoveresourcesCall) Context(ctx context.Context) *RegionVie
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *RegionViewsRemoveresourcesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *RegionViewsRemoveresourcesCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.regionviewsremoveresourcesrequest)
@@ -1363,10 +1532,7 @@ func (c *RegionViewsRemoveresourcesCall) doRequest(alt string) (*http.Response, 
 		"region":           c.region,
 		"resourceViewName": c.resourceViewName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.regionViews.removeresources" call.
@@ -1433,6 +1599,7 @@ type ZoneViewsAddresourcesCall struct {
 	zoneviewsaddresourcesrequest *ZoneViewsAddResourcesRequest
 	urlParams_                   gensupport.URLParams
 	ctx_                         context.Context
+	header_                      http.Header
 }
 
 // Addresources: Add resources to the view.
@@ -1461,8 +1628,20 @@ func (c *ZoneViewsAddresourcesCall) Context(ctx context.Context) *ZoneViewsAddre
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ZoneViewsAddresourcesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ZoneViewsAddresourcesCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.zoneviewsaddresourcesrequest)
@@ -1480,10 +1659,7 @@ func (c *ZoneViewsAddresourcesCall) doRequest(alt string) (*http.Response, error
 		"zone":             c.zone,
 		"resourceViewName": c.resourceViewName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.zoneViews.addresources" call.
@@ -1549,6 +1725,7 @@ type ZoneViewsDeleteCall struct {
 	resourceViewName string
 	urlParams_       gensupport.URLParams
 	ctx_             context.Context
+	header_          http.Header
 }
 
 // Delete: Delete a resource view.
@@ -1576,8 +1753,20 @@ func (c *ZoneViewsDeleteCall) Context(ctx context.Context) *ZoneViewsDeleteCall 
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ZoneViewsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ZoneViewsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -1590,10 +1779,7 @@ func (c *ZoneViewsDeleteCall) doRequest(alt string) (*http.Response, error) {
 		"zone":             c.zone,
 		"resourceViewName": c.resourceViewName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.zoneViews.delete" call.
@@ -1657,6 +1843,7 @@ type ZoneViewsGetCall struct {
 	urlParams_       gensupport.URLParams
 	ifNoneMatch_     string
 	ctx_             context.Context
+	header_          http.Header
 }
 
 // Get: Get the information of a zonal resource view.
@@ -1694,8 +1881,20 @@ func (c *ZoneViewsGetCall) Context(ctx context.Context) *ZoneViewsGetCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ZoneViewsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ZoneViewsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1711,10 +1910,7 @@ func (c *ZoneViewsGetCall) doRequest(alt string) (*http.Response, error) {
 		"zone":             c.zone,
 		"resourceViewName": c.resourceViewName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.zoneViews.get" call.
@@ -1808,6 +2004,7 @@ type ZoneViewsInsertCall struct {
 	resourceview *ResourceView
 	urlParams_   gensupport.URLParams
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Insert: Create a resource view.
@@ -1835,8 +2032,20 @@ func (c *ZoneViewsInsertCall) Context(ctx context.Context) *ZoneViewsInsertCall 
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ZoneViewsInsertCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ZoneViewsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.resourceview)
@@ -1853,10 +2062,7 @@ func (c *ZoneViewsInsertCall) doRequest(alt string) (*http.Response, error) {
 		"projectName": c.projectName,
 		"zone":        c.zone,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.zoneViews.insert" call.
@@ -1943,6 +2149,7 @@ type ZoneViewsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: List resource views.
@@ -1996,8 +2203,20 @@ func (c *ZoneViewsListCall) Context(ctx context.Context) *ZoneViewsListCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ZoneViewsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ZoneViewsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2012,10 +2231,7 @@ func (c *ZoneViewsListCall) doRequest(alt string) (*http.Response, error) {
 		"projectName": c.projectName,
 		"zone":        c.zone,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.zoneViews.list" call.
@@ -2137,6 +2353,7 @@ type ZoneViewsListresourcesCall struct {
 	resourceViewName string
 	urlParams_       gensupport.URLParams
 	ctx_             context.Context
+	header_          http.Header
 }
 
 // Listresources: List the resources of the resource view.
@@ -2181,8 +2398,20 @@ func (c *ZoneViewsListresourcesCall) Context(ctx context.Context) *ZoneViewsList
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ZoneViewsListresourcesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ZoneViewsListresourcesCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -2195,10 +2424,7 @@ func (c *ZoneViewsListresourcesCall) doRequest(alt string) (*http.Response, erro
 		"zone":             c.zone,
 		"resourceViewName": c.resourceViewName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.zoneViews.listresources" call.
@@ -2307,6 +2533,7 @@ type ZoneViewsRemoveresourcesCall struct {
 	zoneviewsremoveresourcesrequest *ZoneViewsRemoveResourcesRequest
 	urlParams_                      gensupport.URLParams
 	ctx_                            context.Context
+	header_                         http.Header
 }
 
 // Removeresources: Remove resources from the view.
@@ -2335,8 +2562,20 @@ func (c *ZoneViewsRemoveresourcesCall) Context(ctx context.Context) *ZoneViewsRe
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ZoneViewsRemoveresourcesCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ZoneViewsRemoveresourcesCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.zoneviewsremoveresourcesrequest)
@@ -2354,10 +2593,7 @@ func (c *ZoneViewsRemoveresourcesCall) doRequest(alt string) (*http.Response, er
 		"zone":             c.zone,
 		"resourceViewName": c.resourceViewName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "resourceviews.zoneViews.removeresources" call.

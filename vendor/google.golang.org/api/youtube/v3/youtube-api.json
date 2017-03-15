@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/hBapjF02HWnkK75qjOEKH6irVTc\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/A3ttvUq-FH-9G6uAbfXxwyLfegU\"",
  "discoveryVersion": "v1",
  "id": "youtube:v3",
  "name": "youtube",
  "canonicalName": "YouTube",
  "version": "v3",
- "revision": "20160613",
+ "revision": "20161017",
  "title": "YouTube Data API",
  "description": "Supports core YouTube features, such as uploading videos, creating and managing playlists, searching for content, and much more.",
  "ownerDomain": "google.com",
@@ -920,10 +920,6 @@
    "type": "object",
    "description": "Details about the content of a channel.",
    "properties": {
-    "googlePlusUserId": {
-     "type": "string",
-     "description": "The googlePlusUserId object identifies the Google+ profile ID associated with this channel."
-    },
     "relatedPlaylists": {
      "type": "object",
      "properties": {
@@ -1571,10 +1567,6 @@
     "authorDisplayName": {
      "type": "string",
      "description": "The name of the user who posted the comment."
-    },
-    "authorGoogleplusProfileUrl": {
-     "type": "string",
-     "description": "Link to the author's Google+ profile, if any."
     },
     "authorProfileImageUrl": {
      "type": "string",
@@ -2478,11 +2470,17 @@
      "enum": [
       "grfilmE",
       "grfilmK",
+      "grfilmK12",
       "grfilmK13",
+      "grfilmK15",
       "grfilmK17",
+      "grfilmK18",
       "grfilmUnrated"
      ],
      "enumDescriptions": [
+      "",
+      "",
+      "",
       "",
       "",
       "",
@@ -4033,13 +4031,7 @@
     "scheduledEndTime": {
      "type": "string",
      "description": "The date and time that the broadcast is scheduled to end. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
-     "format": "date-time",
-     "annotations": {
-      "required": [
-       "youtube.liveBroadcasts.insert",
-       "youtube.liveBroadcasts.update"
-      ]
-     }
+     "format": "date-time"
     },
     "scheduledStartTime": {
      "type": "string",
@@ -6371,6 +6363,10 @@
      "type": "string",
      "description": "The length of the video. The tag value is an ISO 8601 duration in the format PT#M#S, in which the letters PT indicate that the value specifies a period of time, and the letters M and S refer to length in minutes and seconds, respectively. The # characters preceding the M and S letters are both integers that specify the number of minutes (or seconds) of the video. For example, a value of PT15M51S indicates that the video is 15 minutes and 51 seconds long."
     },
+    "hasCustomThumbnail": {
+     "type": "boolean",
+     "description": "Indicates whether the video uploader has provided a custom thumbnail image for the video. This property is only visible to the video uploader."
+    },
     "licensedContent": {
      "type": "boolean",
      "description": "The value of is_license_content indicates whether the video is licensed content."
@@ -6474,10 +6470,6 @@
       "",
       ""
      ]
-    },
-    "recordingLocation": {
-     "$ref": "GeoPoint",
-     "description": "Geographic coordinates that identify the place where the uploaded video was recorded. Coordinates are defined using WGS 84."
     },
     "videoStreams": {
      "type": "array",
@@ -6712,9 +6704,18 @@
    "type": "object",
    "description": "Player to be used for a video playback.",
    "properties": {
+    "embedHeight": {
+     "type": "string",
+     "format": "int64"
+    },
     "embedHtml": {
      "type": "string",
      "description": "An \u003ciframe\u003e tag that embeds a player that will play the video."
+    },
+    "embedWidth": {
+     "type": "string",
+     "description": "The embed width",
+     "format": "int64"
     }
    }
   },
@@ -9242,6 +9243,11 @@
        "description": "The id parameter specifies the YouTube playlist item ID for the playlist item that is being deleted. In a playlistItem resource, the id property specifies the playlist item's ID.",
        "required": true,
        "location": "query"
+      },
+      "onBehalfOfContentOwner": {
+       "type": "string",
+       "description": "Note: This parameter is intended exclusively for YouTube content partners.\n\nThe onBehalfOfContentOwner parameter indicates that the request's authorization credentials identify a YouTube CMS user who is acting on behalf of the content owner specified in the parameter value. This parameter is intended for YouTube content partners that own and manage many different YouTube channels. It allows content owners to authenticate once and get access to all their video and channel data, without having to provide authentication credentials for each individual channel. The CMS account that the user authenticates with must be linked to the specified YouTube content owner.",
+       "location": "query"
       }
      },
      "parameterOrder": [
@@ -9353,6 +9359,11 @@
      "httpMethod": "PUT",
      "description": "Modifies a playlist item. For example, you could update the item's position in the playlist.",
      "parameters": {
+      "onBehalfOfContentOwner": {
+       "type": "string",
+       "description": "Note: This parameter is intended exclusively for YouTube content partners.\n\nThe onBehalfOfContentOwner parameter indicates that the request's authorization credentials identify a YouTube CMS user who is acting on behalf of the content owner specified in the parameter value. This parameter is intended for YouTube content partners that own and manage many different YouTube channels. It allows content owners to authenticate once and get access to all their video and channel data, without having to provide authentication credentials for each individual channel. The CMS account that the user authenticates with must be linked to the specified YouTube content owner.",
+       "location": "query"
+      },
       "part": {
        "type": "string",
        "description": "The part parameter serves two purposes in this operation. It identifies the properties that the write operation will set as well as the properties that the API response will include.\n\nNote that this method will override the existing values for all of the mutable properties that are contained in any parts that the parameter value specifies. For example, a playlist item can specify a start time and end time, which identify the times portion of the video that should play when users watch the video in the playlist. If your request is updating a playlist item that sets these values, and the request's part parameter value includes the contentDetails part, the playlist item's start and end times will be updated to whatever value the request body specifies. If the request body does not specify values, the existing start and end times will be removed and replaced with the default settings.",
@@ -10365,6 +10376,14 @@
        "description": "DEPRECATED",
        "location": "query"
       },
+      "maxHeight": {
+       "type": "integer",
+       "description": "The maxHeight parameter specifies a maximum height of the embedded player. If maxWidth is provided, maxHeight may not be reached in order to not violate the width request.",
+       "format": "uint32",
+       "minimum": "72",
+       "maximum": "8192",
+       "location": "query"
+      },
       "maxResults": {
        "type": "integer",
        "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.\n\nNote: This parameter is supported for use in conjunction with the myRating parameter, but it is not supported for use in conjunction with the id parameter.",
@@ -10372,6 +10391,14 @@
        "format": "uint32",
        "minimum": "1",
        "maximum": "50",
+       "location": "query"
+      },
+      "maxWidth": {
+       "type": "integer",
+       "description": "The maxWidth parameter specifies a maximum width of the embedded player. If maxHeight is provided, maxWidth may not be reached in order to not violate the height request.",
+       "format": "uint32",
+       "minimum": "72",
+       "maximum": "8192",
        "location": "query"
       },
       "myRating": {

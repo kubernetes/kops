@@ -38,6 +38,13 @@ checkpointed.`,
 		if err != nil {
 			return err
 		}
+		status, err := container.Status()
+		if err != nil {
+			return(err)
+		}
+		if status == libcontainer.Created {
+			fatalf("Container cannot be checkpointed in created state")
+		}
 		defer destroy(container)
 		options := criuOptions(context)
 		// these are the mandatory criu options for a container

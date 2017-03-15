@@ -91,12 +91,20 @@ type ReconcileCandidate struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Confidence") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ReconcileCandidate) MarshalJSON() ([]byte, error) {
 	type noMethod ReconcileCandidate
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ReconcileCandidateNotable: Type or profession the candidate is
@@ -115,12 +123,20 @@ type ReconcileCandidateNotable struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Id") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ReconcileCandidateNotable) MarshalJSON() ([]byte, error) {
 	type noMethod ReconcileCandidateNotable
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ReconcileGet struct {
@@ -155,12 +171,20 @@ type ReconcileGet struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Candidate") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ReconcileGet) MarshalJSON() ([]byte, error) {
 	type noMethod ReconcileGet
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ReconcileGetCosts: Server costs for reconciling.
@@ -178,12 +202,20 @@ type ReconcileGetCosts struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Hits") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ReconcileGetCosts) MarshalJSON() ([]byte, error) {
 	type noMethod ReconcileGetCosts
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type ReconcileGetWarning struct {
@@ -203,12 +235,20 @@ type ReconcileGetWarning struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Location") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ReconcileGetWarning) MarshalJSON() ([]byte, error) {
 	type noMethod ReconcileGetWarning
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "freebase.reconcile":
@@ -306,11 +346,7 @@ func (c *ReconcileCall) doRequest(alt string) (*http.Response, error) {
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "freebase.reconcile" call.
@@ -652,11 +688,7 @@ func (c *SearchCall) doRequest(alt string) (*http.Response, error) {
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Download fetches the API endpoint's "media" value, instead of the normal

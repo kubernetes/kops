@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/qqTEAwY0Qxp4UsR5ltoW-UrtYgA\"",
+ "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/qBcgfnv8LaBwEppyThW1YG_JvBU\"",
  "discoveryVersion": "v1",
  "id": "books:v1",
  "name": "books",
  "version": "v1",
- "revision": "20160531",
+ "revision": "20161005",
  "title": "Books API",
  "description": "Searches for books and manages your Google Books library.",
  "ownerDomain": "google.com",
@@ -1374,6 +1374,7 @@
     },
     "series": {
      "type": "array",
+     "description": "Series info list. The client always expects this element in the JSON output, hence declared here as OutputAlways.",
      "items": {
       "type": "object",
       "properties": {
@@ -1983,6 +1984,24 @@
        "type": "integer",
        "description": "Total number of pages as per publisher metadata.",
        "format": "int32"
+      },
+      "panelizationSummary": {
+       "type": "object",
+       "description": "A top-level summary of the panelization info in this volume.",
+       "properties": {
+        "containsEpubBubbles": {
+         "type": "boolean"
+        },
+        "containsImageBubbles": {
+         "type": "boolean"
+        },
+        "epubBubbleVersion": {
+         "type": "string"
+        },
+        "imageBubbleVersion": {
+         "type": "string"
+        }
+       }
       },
       "previewLink": {
        "type": "string",
@@ -4166,6 +4185,19 @@
        ],
        "location": "query"
       },
+      "maxAllowedMaturityRating": {
+       "type": "string",
+       "description": "The maximum allowed maturity rating of returned recommendations. Books with a higher maturity rating are filtered out.",
+       "enum": [
+        "mature",
+        "not-mature"
+       ],
+       "enumDescriptions": [
+        "Show books which are rated mature or lower.",
+        "Show books which are rated not mature."
+       ],
+       "location": "query"
+      },
       "maxResults": {
        "type": "integer",
        "description": "Maximum number of results to return.",
@@ -4331,8 +4363,9 @@
        "parameters": {
         "acquireMethod": {
          "type": "string",
-         "description": "How the book was aquired",
+         "description": "How the book was acquired",
          "enum": [
+          "FAMILY_SHARED",
           "PREORDERED",
           "PREVIOUSLY_RENTED",
           "PUBLIC_DOMAIN",
@@ -4342,6 +4375,7 @@
           "UPLOADED"
          ],
          "enumDescriptions": [
+          "Books acquired via Family Sharing",
           "Preordered books (not yet available)",
           "User-rented books past their expiration time",
           "Public domain books",

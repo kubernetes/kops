@@ -51,9 +51,8 @@ func (c *Inspector) AddAttributesToFindingsRequest(input *AddAttributesToFinding
 		input = &AddAttributesToFindingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddAttributesToFindingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -129,9 +128,8 @@ func (c *Inspector) CreateAssessmentTargetRequest(input *CreateAssessmentTargetI
 		input = &CreateAssessmentTargetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateAssessmentTargetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -213,9 +211,8 @@ func (c *Inspector) CreateAssessmentTemplateRequest(input *CreateAssessmentTempl
 		input = &CreateAssessmentTemplateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateAssessmentTemplateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -295,9 +292,8 @@ func (c *Inspector) CreateResourceGroupRequest(input *CreateResourceGroupInput) 
 		input = &CreateResourceGroupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateResourceGroupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -375,11 +371,10 @@ func (c *Inspector) DeleteAssessmentRunRequest(input *DeleteAssessmentRunInput) 
 		input = &DeleteAssessmentRunInput{}
 	}
 
+	output = &DeleteAssessmentRunOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteAssessmentRunOutput{}
-	req.Data = output
 	return
 }
 
@@ -459,11 +454,10 @@ func (c *Inspector) DeleteAssessmentTargetRequest(input *DeleteAssessmentTargetI
 		input = &DeleteAssessmentTargetInput{}
 	}
 
+	output = &DeleteAssessmentTargetOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteAssessmentTargetOutput{}
-	req.Data = output
 	return
 }
 
@@ -543,11 +537,10 @@ func (c *Inspector) DeleteAssessmentTemplateRequest(input *DeleteAssessmentTempl
 		input = &DeleteAssessmentTemplateInput{}
 	}
 
+	output = &DeleteAssessmentTemplateOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteAssessmentTemplateOutput{}
-	req.Data = output
 	return
 }
 
@@ -627,9 +620,8 @@ func (c *Inspector) DescribeAssessmentRunsRequest(input *DescribeAssessmentRunsI
 		input = &DescribeAssessmentRunsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAssessmentRunsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -698,9 +690,8 @@ func (c *Inspector) DescribeAssessmentTargetsRequest(input *DescribeAssessmentTa
 		input = &DescribeAssessmentTargetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAssessmentTargetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -769,9 +760,8 @@ func (c *Inspector) DescribeAssessmentTemplatesRequest(input *DescribeAssessment
 		input = &DescribeAssessmentTemplatesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAssessmentTemplatesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -840,9 +830,8 @@ func (c *Inspector) DescribeCrossAccountAccessRoleRequest(input *DescribeCrossAc
 		input = &DescribeCrossAccountAccessRoleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeCrossAccountAccessRoleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -906,9 +895,8 @@ func (c *Inspector) DescribeFindingsRequest(input *DescribeFindingsInput) (req *
 		input = &DescribeFindingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeFindingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -976,9 +964,8 @@ func (c *Inspector) DescribeResourceGroupsRequest(input *DescribeResourceGroupsI
 		input = &DescribeResourceGroupsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeResourceGroupsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1047,9 +1034,8 @@ func (c *Inspector) DescribeRulesPackagesRequest(input *DescribeRulesPackagesInp
 		input = &DescribeRulesPackagesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeRulesPackagesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1118,9 +1104,8 @@ func (c *Inspector) GetTelemetryMetadataRequest(input *GetTelemetryMetadataInput
 		input = &GetTelemetryMetadataInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetTelemetryMetadataOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1196,9 +1181,8 @@ func (c *Inspector) ListAssessmentRunAgentsRequest(input *ListAssessmentRunAgent
 		input = &ListAssessmentRunAgentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListAssessmentRunAgentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1274,9 +1258,8 @@ func (c *Inspector) ListAssessmentRunsRequest(input *ListAssessmentRunsInput) (r
 		input = &ListAssessmentRunsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListAssessmentRunsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1352,9 +1335,8 @@ func (c *Inspector) ListAssessmentTargetsRequest(input *ListAssessmentTargetsInp
 		input = &ListAssessmentTargetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListAssessmentTargetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1427,9 +1409,8 @@ func (c *Inspector) ListAssessmentTemplatesRequest(input *ListAssessmentTemplate
 		input = &ListAssessmentTemplatesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListAssessmentTemplatesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1505,9 +1486,8 @@ func (c *Inspector) ListEventSubscriptionsRequest(input *ListEventSubscriptionsI
 		input = &ListEventSubscriptionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListEventSubscriptionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1584,9 +1564,8 @@ func (c *Inspector) ListFindingsRequest(input *ListFindingsInput) (req *request.
 		input = &ListFindingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListFindingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1662,9 +1641,8 @@ func (c *Inspector) ListRulesPackagesRequest(input *ListRulesPackagesInput) (req
 		input = &ListRulesPackagesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListRulesPackagesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1735,9 +1713,8 @@ func (c *Inspector) ListTagsForResourceRequest(input *ListTagsForResourceInput) 
 		input = &ListTagsForResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTagsForResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1812,9 +1789,8 @@ func (c *Inspector) PreviewAgentsRequest(input *PreviewAgentsInput) (req *reques
 		input = &PreviewAgentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PreviewAgentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1894,11 +1870,10 @@ func (c *Inspector) RegisterCrossAccountAccessRoleRequest(input *RegisterCrossAc
 		input = &RegisterCrossAccountAccessRoleInput{}
 	}
 
+	output = &RegisterCrossAccountAccessRoleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RegisterCrossAccountAccessRoleOutput{}
-	req.Data = output
 	return
 }
 
@@ -1974,9 +1949,8 @@ func (c *Inspector) RemoveAttributesFromFindingsRequest(input *RemoveAttributesF
 		input = &RemoveAttributesFromFindingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RemoveAttributesFromFindingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2053,11 +2027,10 @@ func (c *Inspector) SetTagsForResourceRequest(input *SetTagsForResourceInput) (r
 		input = &SetTagsForResourceInput{}
 	}
 
+	output = &SetTagsForResourceOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetTagsForResourceOutput{}
-	req.Data = output
 	return
 }
 
@@ -2133,9 +2106,8 @@ func (c *Inspector) StartAssessmentRunRequest(input *StartAssessmentRunInput) (r
 		input = &StartAssessmentRunInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartAssessmentRunOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2224,11 +2196,10 @@ func (c *Inspector) StopAssessmentRunRequest(input *StopAssessmentRunInput) (req
 		input = &StopAssessmentRunInput{}
 	}
 
+	output = &StopAssessmentRunOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &StopAssessmentRunOutput{}
-	req.Data = output
 	return
 }
 
@@ -2303,11 +2274,10 @@ func (c *Inspector) SubscribeToEventRequest(input *SubscribeToEventInput) (req *
 		input = &SubscribeToEventInput{}
 	}
 
+	output = &SubscribeToEventOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SubscribeToEventOutput{}
-	req.Data = output
 	return
 }
 
@@ -2387,11 +2357,10 @@ func (c *Inspector) UnsubscribeFromEventRequest(input *UnsubscribeFromEventInput
 		input = &UnsubscribeFromEventInput{}
 	}
 
+	output = &UnsubscribeFromEventOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UnsubscribeFromEventOutput{}
-	req.Data = output
 	return
 }
 
@@ -2467,11 +2436,10 @@ func (c *Inspector) UpdateAssessmentTargetRequest(input *UpdateAssessmentTargetI
 		input = &UpdateAssessmentTargetInput{}
 	}
 
+	output = &UpdateAssessmentTargetOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateAssessmentTargetOutput{}
-	req.Data = output
 	return
 }
 

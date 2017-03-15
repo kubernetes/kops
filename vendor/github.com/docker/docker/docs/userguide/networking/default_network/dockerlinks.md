@@ -11,7 +11,7 @@ weight=-2
 
 # Legacy container links
 
-The information in this section explains legacy container links within the Docker default bridge. This is a `bridge` network named `bridge` created automatically when you install Docker.
+The information in this section explains legacy container links within the Docker default bridge. This is a `bridge` network named `bridge` created automatically when you install Docker. 
 
 Before the [Docker networks feature](../dockernetworks.md), you could use the
 Docker link feature to allow containers to discover each other and securely
@@ -25,7 +25,7 @@ detail on container linking in default `bridge` network.
 
 ## Connect using network port mapping
 
-In [Run a simple application](../../../tutorials/usingdocker.md), you created a
+In [the Using Docker section](../../containers/usingdocker.md), you created a
 container that ran a Python Flask application:
 
     $ docker run -d -P training/webapp python app.py
@@ -33,7 +33,7 @@ container that ran a Python Flask application:
 > **Note:**
 > Containers have an internal network and an IP address
 > (as we saw when we used the `docker inspect` command to show the container's
-> IP address in [Run a simple application](../../../tutorials/usingdocker.md) section).
+> IP address in the [Using Docker](../../containers/usingdocker.md) section).
 > Docker can have a variety of network configurations. You can see more
 > information on Docker networking [here](../index.md).
 
@@ -43,7 +43,6 @@ range* on your Docker host. Next, when `docker ps` was run, you saw that port
 5000 in the container was bound to port 49155 on the host.
 
     $ docker ps nostalgic_morse
-
     CONTAINER ID  IMAGE                   COMMAND       CREATED        STATUS        PORTS                    NAMES
     bc533791f3f5  training/webapp:latest  python app.py 5 seconds ago  Up 2 seconds  0.0.0.0:49155->5000/tcp  nostalgic_morse
 
@@ -89,7 +88,6 @@ configurations. For example, if you've bound the container port to the
 `localhost` on the host machine, then the `docker port` output will reflect that.
 
     $ docker port nostalgic_morse 5000
-
     127.0.0.1:49155
 
 > **Note:**
@@ -134,7 +132,6 @@ name the container `web`. You can see the container's name using the
 `docker ps` command.
 
     $ docker ps -l
-
     CONTAINER ID  IMAGE                  COMMAND        CREATED       STATUS       PORTS                    NAMES
     aed84ee21bde  training/webapp:latest python app.py  12 hours ago  Up 2 seconds 0.0.0.0:49154->5000/tcp  web
 
@@ -190,7 +187,6 @@ example as:
 Next, inspect your linked containers with `docker inspect`:
 
     $ docker inspect -f "{{ .HostConfig.Links }}" web
-
     [/db:/web/db]
 
 You can see that the `web` container is now linked to the `db` container
@@ -277,7 +273,6 @@ command to list the specified container's environment variables.
 
 ```
     $ docker run --rm --name web2 --link db:db training/webapp env
-
     . . .
     DB_NAME=/web2/db
     DB_PORT=tcp://172.17.0.5:5432
@@ -315,9 +310,7 @@ source container to the `/etc/hosts` file. Here's an entry for the `web`
 container:
 
     $ docker run -t -i --rm --link db:webdb training/webapp /bin/bash
-
     root@aed84ee21bde:/opt/webapp# cat /etc/hosts
-
     172.17.0.7  aed84ee21bde
     . . .
     172.17.0.5  webdb 6e5cdeb2d300 db
@@ -331,9 +324,7 @@ also be added in `/etc/hosts` for the linked container's IP address. You can pin
 that host now via any of these entries:
 
     root@aed84ee21bde:/opt/webapp# apt-get install -yqq inetutils-ping
-
     root@aed84ee21bde:/opt/webapp# ping webdb
-
     PING webdb (172.17.0.5): 48 data bytes
     56 bytes from 172.17.0.5: icmp_seq=0 ttl=64 time=0.267 ms
     56 bytes from 172.17.0.5: icmp_seq=1 ttl=64 time=0.250 ms
@@ -357,13 +348,9 @@ will be automatically updated with the source container's new IP address,
 allowing linked communication to continue.
 
     $ docker restart db
-
     db
-
     $ docker run -t -i --rm --link db:db training/webapp /bin/bash
-
     root@aed84ee21bde:/opt/webapp# cat /etc/hosts
-
     172.17.0.7  aed84ee21bde
     . . .
     172.17.0.9  db

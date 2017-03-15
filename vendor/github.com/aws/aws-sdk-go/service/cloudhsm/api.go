@@ -48,9 +48,8 @@ func (c *CloudHSM) AddTagsToResourceRequest(input *AddTagsToResourceInput) (req 
 		input = &AddTagsToResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddTagsToResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -122,9 +121,8 @@ func (c *CloudHSM) CreateHapgRequest(input *CreateHapgInput) (req *request.Reque
 		input = &CreateHapgInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateHapgOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -195,9 +193,8 @@ func (c *CloudHSM) CreateHsmRequest(input *CreateHsmInput) (req *request.Request
 		input = &CreateHsmInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateHsmOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -277,9 +274,8 @@ func (c *CloudHSM) CreateLunaClientRequest(input *CreateLunaClientInput) (req *r
 		input = &CreateLunaClientInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateLunaClientOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -349,9 +345,8 @@ func (c *CloudHSM) DeleteHapgRequest(input *DeleteHapgInput) (req *request.Reque
 		input = &DeleteHapgInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteHapgOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -421,9 +416,8 @@ func (c *CloudHSM) DeleteHsmRequest(input *DeleteHsmInput) (req *request.Request
 		input = &DeleteHsmInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteHsmOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -494,9 +488,8 @@ func (c *CloudHSM) DeleteLunaClientRequest(input *DeleteLunaClientInput) (req *r
 		input = &DeleteLunaClientInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteLunaClientOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -566,9 +559,8 @@ func (c *CloudHSM) DescribeHapgRequest(input *DescribeHapgInput) (req *request.R
 		input = &DescribeHapgInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeHapgOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -638,9 +630,8 @@ func (c *CloudHSM) DescribeHsmRequest(input *DescribeHsmInput) (req *request.Req
 		input = &DescribeHsmInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeHsmOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -711,9 +702,8 @@ func (c *CloudHSM) DescribeLunaClientRequest(input *DescribeLunaClientInput) (re
 		input = &DescribeLunaClientInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeLunaClientOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -783,9 +773,8 @@ func (c *CloudHSM) GetConfigRequest(input *GetConfigInput) (req *request.Request
 		input = &GetConfigInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetConfigOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -856,9 +845,8 @@ func (c *CloudHSM) ListAvailableZonesRequest(input *ListAvailableZonesInput) (re
 		input = &ListAvailableZonesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListAvailableZonesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -928,9 +916,8 @@ func (c *CloudHSM) ListHapgsRequest(input *ListHapgsInput) (req *request.Request
 		input = &ListHapgsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListHapgsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1005,9 +992,8 @@ func (c *CloudHSM) ListHsmsRequest(input *ListHsmsInput) (req *request.Request, 
 		input = &ListHsmsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListHsmsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1083,9 +1069,8 @@ func (c *CloudHSM) ListLunaClientsRequest(input *ListLunaClientsInput) (req *req
 		input = &ListLunaClientsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListLunaClientsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1160,9 +1145,8 @@ func (c *CloudHSM) ListTagsForResourceRequest(input *ListTagsForResourceInput) (
 		input = &ListTagsForResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTagsForResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1232,9 +1216,8 @@ func (c *CloudHSM) ModifyHapgRequest(input *ModifyHapgInput) (req *request.Reque
 		input = &ModifyHapgInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ModifyHapgOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1304,9 +1287,8 @@ func (c *CloudHSM) ModifyHsmRequest(input *ModifyHsmInput) (req *request.Request
 		input = &ModifyHsmInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ModifyHsmOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1382,9 +1364,8 @@ func (c *CloudHSM) ModifyLunaClientRequest(input *ModifyLunaClientInput) (req *r
 		input = &ModifyLunaClientInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ModifyLunaClientOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1451,9 +1432,8 @@ func (c *CloudHSM) RemoveTagsFromResourceRequest(input *RemoveTagsFromResourceIn
 		input = &RemoveTagsFromResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RemoveTagsFromResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

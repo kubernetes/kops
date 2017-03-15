@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,22 +17,22 @@ limitations under the License.
 package fake
 
 import (
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/discovery"
+	fakediscovery "k8s.io/client-go/discovery/fake"
+	"k8s.io/client-go/testing"
 	clientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
-	v1batch "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/batch/v1"
-	fakev1batch "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/batch/v1/fake"
-	v1core "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/core/v1"
-	fakev1core "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/core/v1/fake"
-	v1beta1extensions "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/extensions/v1beta1"
-	fakev1beta1extensions "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/extensions/v1beta1/fake"
-	v1beta1federation "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/federation/v1beta1"
-	fakev1beta1federation "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/federation/v1beta1/fake"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apimachinery/registered"
-	"k8s.io/kubernetes/pkg/client/testing/core"
-	"k8s.io/kubernetes/pkg/client/typed/discovery"
-	fakediscovery "k8s.io/kubernetes/pkg/client/typed/discovery/fake"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/watch"
+	autoscalingv1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/autoscaling/v1"
+	fakeautoscalingv1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/autoscaling/v1/fake"
+	batchv1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/batch/v1"
+	fakebatchv1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/batch/v1/fake"
+	corev1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/core/v1"
+	fakecorev1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/core/v1/fake"
+	extensionsv1beta1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/extensions/v1beta1"
+	fakeextensionsv1beta1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/extensions/v1beta1/fake"
+	federationv1beta1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/federation/v1beta1"
+	fakefederationv1beta1 "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/typed/federation/v1beta1/fake"
 )
 
 // NewSimpleClientset returns a clientset that will respond with the provided objects.
@@ -40,17 +40,17 @@ import (
 // without applying any validations and/or defaults. It shouldn't be considered a replacement
 // for a real clientset and is mostly useful in simple unit tests.
 func NewSimpleClientset(objects ...runtime.Object) *Clientset {
-	o := core.NewObjectTracker(api.Scheme, api.Codecs.UniversalDecoder())
+	o := testing.NewObjectTracker(registry, scheme, codecs.UniversalDecoder())
 	for _, obj := range objects {
 		if err := o.Add(obj); err != nil {
 			panic(err)
 		}
 	}
 
-	fakePtr := core.Fake{}
-	fakePtr.AddReactor("*", "*", core.ObjectReaction(o, registered.RESTMapper()))
+	fakePtr := testing.Fake{}
+	fakePtr.AddReactor("*", "*", testing.ObjectReaction(o, registry.RESTMapper()))
 
-	fakePtr.AddWatchReactor("*", core.DefaultWatchReactor(watch.NewFake(), nil))
+	fakePtr.AddWatchReactor("*", testing.DefaultWatchReactor(watch.NewFake(), nil))
 
 	return &Clientset{fakePtr}
 }
@@ -59,7 +59,7 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 // struct to get a default implementation. This makes faking out just the method
 // you want to test easier.
 type Clientset struct {
-	core.Fake
+	testing.Fake
 }
 
 func (c *Clientset) Discovery() discovery.DiscoveryInterface {
@@ -69,41 +69,51 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 var _ clientset.Interface = &Clientset{}
 
 // CoreV1 retrieves the CoreV1Client
-func (c *Clientset) CoreV1() v1core.CoreV1Interface {
-	return &fakev1core.FakeCoreV1{Fake: &c.Fake}
+func (c *Clientset) CoreV1() corev1.CoreV1Interface {
+	return &fakecorev1.FakeCoreV1{Fake: &c.Fake}
 }
 
 // Core retrieves the CoreV1Client
-func (c *Clientset) Core() v1core.CoreV1Interface {
-	return &fakev1core.FakeCoreV1{Fake: &c.Fake}
+func (c *Clientset) Core() corev1.CoreV1Interface {
+	return &fakecorev1.FakeCoreV1{Fake: &c.Fake}
+}
+
+// AutoscalingV1 retrieves the AutoscalingV1Client
+func (c *Clientset) AutoscalingV1() autoscalingv1.AutoscalingV1Interface {
+	return &fakeautoscalingv1.FakeAutoscalingV1{Fake: &c.Fake}
+}
+
+// Autoscaling retrieves the AutoscalingV1Client
+func (c *Clientset) Autoscaling() autoscalingv1.AutoscalingV1Interface {
+	return &fakeautoscalingv1.FakeAutoscalingV1{Fake: &c.Fake}
 }
 
 // BatchV1 retrieves the BatchV1Client
-func (c *Clientset) BatchV1() v1batch.BatchV1Interface {
-	return &fakev1batch.FakeBatchV1{Fake: &c.Fake}
+func (c *Clientset) BatchV1() batchv1.BatchV1Interface {
+	return &fakebatchv1.FakeBatchV1{Fake: &c.Fake}
 }
 
 // Batch retrieves the BatchV1Client
-func (c *Clientset) Batch() v1batch.BatchV1Interface {
-	return &fakev1batch.FakeBatchV1{Fake: &c.Fake}
+func (c *Clientset) Batch() batchv1.BatchV1Interface {
+	return &fakebatchv1.FakeBatchV1{Fake: &c.Fake}
 }
 
 // ExtensionsV1beta1 retrieves the ExtensionsV1beta1Client
-func (c *Clientset) ExtensionsV1beta1() v1beta1extensions.ExtensionsV1beta1Interface {
-	return &fakev1beta1extensions.FakeExtensionsV1beta1{Fake: &c.Fake}
+func (c *Clientset) ExtensionsV1beta1() extensionsv1beta1.ExtensionsV1beta1Interface {
+	return &fakeextensionsv1beta1.FakeExtensionsV1beta1{Fake: &c.Fake}
 }
 
 // Extensions retrieves the ExtensionsV1beta1Client
-func (c *Clientset) Extensions() v1beta1extensions.ExtensionsV1beta1Interface {
-	return &fakev1beta1extensions.FakeExtensionsV1beta1{Fake: &c.Fake}
+func (c *Clientset) Extensions() extensionsv1beta1.ExtensionsV1beta1Interface {
+	return &fakeextensionsv1beta1.FakeExtensionsV1beta1{Fake: &c.Fake}
 }
 
 // FederationV1beta1 retrieves the FederationV1beta1Client
-func (c *Clientset) FederationV1beta1() v1beta1federation.FederationV1beta1Interface {
-	return &fakev1beta1federation.FakeFederationV1beta1{Fake: &c.Fake}
+func (c *Clientset) FederationV1beta1() federationv1beta1.FederationV1beta1Interface {
+	return &fakefederationv1beta1.FakeFederationV1beta1{Fake: &c.Fake}
 }
 
 // Federation retrieves the FederationV1beta1Client
-func (c *Clientset) Federation() v1beta1federation.FederationV1beta1Interface {
-	return &fakev1beta1federation.FakeFederationV1beta1{Fake: &c.Fake}
+func (c *Clientset) Federation() federationv1beta1.FederationV1beta1Interface {
+	return &fakefederationv1beta1.FakeFederationV1beta1{Fake: &c.Fake}
 }

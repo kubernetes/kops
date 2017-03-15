@@ -1,15 +1,10 @@
 #!/bin/bash
 set -e
 
-# This script exists as backwards compatibility for CI
 (
-    DEST="${DEST}-client"
-    ABS_DEST="${ABS_DEST}-client"
-    . hack/make/dynbinary-client
-)
-(
-
-    DEST="${DEST}-daemon"
-    ABS_DEST="${ABS_DEST}-daemon"
-    . hack/make/dynbinary-daemon
+	export IAMSTATIC="false"
+	export LDFLAGS_STATIC_DOCKER=''
+	export BUILDFLAGS=( "${BUILDFLAGS[@]/netgo /}" ) # disable netgo, since we don't need it for a dynamic binary
+	export BUILDFLAGS=( "${BUILDFLAGS[@]/static_build /}" ) # we're not building a "static" binary here
+	source "${MAKEDIR}/binary"
 )

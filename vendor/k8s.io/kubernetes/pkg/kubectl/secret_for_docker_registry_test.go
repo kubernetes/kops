@@ -20,12 +20,17 @@ import (
 	"reflect"
 	"testing"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/api"
 )
 
 func TestSecretForDockerRegistryGenerate(t *testing.T) {
 	username, password, email, server := "test-user", "test-password", "test-user@example.org", "https://index.docker.io/v1/"
 	secretData, err := handleDockercfgContent(username, password, email, server)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	secretDataNoEmail, err := handleDockercfgContent(username, password, "", server)
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
@@ -44,11 +49,29 @@ func TestSecretForDockerRegistryGenerate(t *testing.T) {
 				"docker-email":    email,
 			},
 			expected: &api.Secret{
-				ObjectMeta: api.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: "foo",
 				},
 				Data: map[string][]byte{
 					api.DockerConfigKey: secretData,
+				},
+				Type: api.SecretTypeDockercfg,
+			},
+			expectErr: false,
+		},
+		"test-valid-use-no-email": {
+			params: map[string]interface{}{
+				"name":            "foo",
+				"docker-server":   server,
+				"docker-username": username,
+				"docker-password": password,
+			},
+			expected: &api.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "foo",
+				},
+				Data: map[string][]byte{
+					api.DockerConfigKey: secretDataNoEmail,
 				},
 				Type: api.SecretTypeDockercfg,
 			},

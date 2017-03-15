@@ -27,7 +27,6 @@ import (
 	"github.com/golang/protobuf/proto"
 	"golang.org/x/net/context"
 	pb "google.golang.org/genproto/googleapis/datastore/v1"
-	"google.golang.org/grpc"
 )
 
 type (
@@ -1686,100 +1685,4 @@ func TestValidGeoPoint(t *testing.T) {
 			t.Errorf("%s: got %v, want %v", tc.desc, got, tc.want)
 		}
 	}
-}
-
-func TestPutInvalidEntity(t *testing.T) {
-	// Test that trying to put an invalid entity always returns the correct error
-	// type.
-
-	// Fake client that can pretend to start a transaction.
-	fakeClient := &fakeDatastoreClient{
-		beginTransaction: func(*pb.BeginTransactionRequest) (*pb.BeginTransactionResponse, error) {
-			return &pb.BeginTransactionResponse{
-				Transaction: []byte("deadbeef"),
-			}, nil
-		},
-	}
-	client := &Client{
-		client: fakeClient,
-	}
-
-	ctx := context.Background()
-	key := NewIncompleteKey(ctx, "kind", nil)
-
-	_, err := client.Put(ctx, key, "invalid entity")
-	if err != ErrInvalidEntityType {
-		t.Errorf("client.Put returned err %v, want %v", err, ErrInvalidEntityType)
-	}
-
-	_, err = client.PutMulti(ctx, []*Key{key}, []interface{}{"invalid entity"})
-	if me, ok := err.(MultiError); !ok {
-		t.Errorf("client.PutMulti returned err %v, want MultiError type", err)
-	} else if len(me) != 1 || me[0] != ErrInvalidEntityType {
-		t.Errorf("client.PutMulti returned err %v, want MulitError{ErrInvalidEntityType}", err)
-	}
-
-	client.RunInTransaction(ctx, func(tx *Transaction) error {
-		_, err := tx.Put(key, "invalid entity")
-		if err != ErrInvalidEntityType {
-			t.Errorf("tx.Put returned err %v, want %v", err, ErrInvalidEntityType)
-		}
-
-		_, err = tx.PutMulti([]*Key{key}, []interface{}{"invalid entity"})
-		if me, ok := err.(MultiError); !ok {
-			t.Errorf("tx.PutMulti returned err %v, want MultiError type", err)
-		} else if len(me) != 1 || me[0] != ErrInvalidEntityType {
-			t.Errorf("tx.PutMulti returned err %v, want MulitError{ErrInvalidEntityType}", err)
-		}
-
-		return errors.New("bang!") // Return error: we don't actually want to commit.
-	})
-}
-
-type fakeDatastoreClient struct {
-	// Optional handlers for the datastore methods.
-	// Any handlers left undefined will return an error.
-	lookup           func(*pb.LookupRequest) (*pb.LookupResponse, error)
-	runQuery         func(*pb.RunQueryRequest) (*pb.RunQueryResponse, error)
-	beginTransaction func(*pb.BeginTransactionRequest) (*pb.BeginTransactionResponse, error)
-	commit           func(*pb.CommitRequest) (*pb.CommitResponse, error)
-	rollback         func(*pb.RollbackRequest) (*pb.RollbackResponse, error)
-	allocateIds      func(*pb.AllocateIdsRequest) (*pb.AllocateIdsResponse, error)
-}
-
-func (c *fakeDatastoreClient) Lookup(ctx context.Context, in *pb.LookupRequest, opts ...grpc.CallOption) (*pb.LookupResponse, error) {
-	if c.lookup == nil {
-		return nil, errors.New("no lookup handler defined")
-	}
-	return c.lookup(in)
-}
-func (c *fakeDatastoreClient) RunQuery(ctx context.Context, in *pb.RunQueryRequest, opts ...grpc.CallOption) (*pb.RunQueryResponse, error) {
-	if c.runQuery == nil {
-		return nil, errors.New("no runQuery handler defined")
-	}
-	return c.runQuery(in)
-}
-func (c *fakeDatastoreClient) BeginTransaction(ctx context.Context, in *pb.BeginTransactionRequest, opts ...grpc.CallOption) (*pb.BeginTransactionResponse, error) {
-	if c.beginTransaction == nil {
-		return nil, errors.New("no beginTransaction handler defined")
-	}
-	return c.beginTransaction(in)
-}
-func (c *fakeDatastoreClient) Commit(ctx context.Context, in *pb.CommitRequest, opts ...grpc.CallOption) (*pb.CommitResponse, error) {
-	if c.commit == nil {
-		return nil, errors.New("no commit handler defined")
-	}
-	return c.commit(in)
-}
-func (c *fakeDatastoreClient) Rollback(ctx context.Context, in *pb.RollbackRequest, opts ...grpc.CallOption) (*pb.RollbackResponse, error) {
-	if c.rollback == nil {
-		return nil, errors.New("no rollback handler defined")
-	}
-	return c.rollback(in)
-}
-func (c *fakeDatastoreClient) AllocateIds(ctx context.Context, in *pb.AllocateIdsRequest, opts ...grpc.CallOption) (*pb.AllocateIdsResponse, error) {
-	if c.allocateIds == nil {
-		return nil, errors.New("no allocateIds handler defined")
-	}
-	return c.allocateIds(in)
 }

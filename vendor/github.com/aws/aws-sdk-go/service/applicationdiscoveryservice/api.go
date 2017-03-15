@@ -49,9 +49,8 @@ func (c *ApplicationDiscoveryService) AssociateConfigurationItemsToApplicationRe
 		input = &AssociateConfigurationItemsToApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AssociateConfigurationItemsToApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -126,9 +125,8 @@ func (c *ApplicationDiscoveryService) CreateApplicationRequest(input *CreateAppl
 		input = &CreateApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -203,9 +201,8 @@ func (c *ApplicationDiscoveryService) CreateTagsRequest(input *CreateTagsInput) 
 		input = &CreateTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -286,9 +283,8 @@ func (c *ApplicationDiscoveryService) DeleteApplicationsRequest(input *DeleteApp
 		input = &DeleteApplicationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteApplicationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -364,9 +360,8 @@ func (c *ApplicationDiscoveryService) DeleteTagsRequest(input *DeleteTagsInput) 
 		input = &DeleteTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -446,9 +441,8 @@ func (c *ApplicationDiscoveryService) DescribeAgentsRequest(input *DescribeAgent
 		input = &DescribeAgentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAgentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -524,9 +518,8 @@ func (c *ApplicationDiscoveryService) DescribeConfigurationsRequest(input *Descr
 		input = &DescribeConfigurationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeConfigurationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -608,9 +601,8 @@ func (c *ApplicationDiscoveryService) DescribeExportConfigurationsRequest(input 
 		input = &DescribeExportConfigurationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeExportConfigurationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -690,9 +682,8 @@ func (c *ApplicationDiscoveryService) DescribeTagsRequest(input *DescribeTagsInp
 		input = &DescribeTagsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTagsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -772,9 +763,8 @@ func (c *ApplicationDiscoveryService) DisassociateConfigurationItemsFromApplicat
 		input = &DisassociateConfigurationItemsFromApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DisassociateConfigurationItemsFromApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -849,9 +839,8 @@ func (c *ApplicationDiscoveryService) ExportConfigurationsRequest(input *ExportC
 		input = &ExportConfigurationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ExportConfigurationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -933,9 +922,8 @@ func (c *ApplicationDiscoveryService) GetDiscoverySummaryRequest(input *GetDisco
 		input = &GetDiscoverySummaryInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDiscoverySummaryOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1010,9 +998,8 @@ func (c *ApplicationDiscoveryService) ListConfigurationsRequest(input *ListConfi
 		input = &ListConfigurationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListConfigurationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1092,9 +1079,8 @@ func (c *ApplicationDiscoveryService) ListServerNeighborsRequest(input *ListServ
 		input = &ListServerNeighborsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListServerNeighborsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1170,9 +1156,8 @@ func (c *ApplicationDiscoveryService) StartDataCollectionByAgentIdsRequest(input
 		input = &StartDataCollectionByAgentIdsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartDataCollectionByAgentIdsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1247,9 +1232,8 @@ func (c *ApplicationDiscoveryService) StopDataCollectionByAgentIdsRequest(input 
 		input = &StopDataCollectionByAgentIdsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StopDataCollectionByAgentIdsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1324,9 +1308,8 @@ func (c *ApplicationDiscoveryService) UpdateApplicationRequest(input *UpdateAppl
 		input = &UpdateApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

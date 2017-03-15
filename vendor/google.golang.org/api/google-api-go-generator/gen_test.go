@@ -26,12 +26,13 @@ func TestAPIs(t *testing.T) {
 		"param-rename",
 		"quotednum",
 		"repeated",
-		"resource-named-service", // blogger/v3/blogger-api.json + s/BlogUserInfo/Service/
+		"resource-named-service", // appengine/v1/appengine-api.json
 		"unfortunatedefaults",
 		"variants",
 		"wrapnewlines",
 	}
 	for _, name := range names {
+		t.Logf("TEST %s", name)
 		api, err := apiFromFile(filepath.Join("testdata", name+".json"))
 		if err != nil {
 			t.Errorf("Error loading API testdata/%s.json: %v", name, err)

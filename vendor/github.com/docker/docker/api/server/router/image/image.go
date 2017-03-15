@@ -1,22 +1,17 @@
 package image
 
-import (
-	"github.com/docker/docker/api/server/httputils"
-	"github.com/docker/docker/api/server/router"
-)
+import "github.com/docker/docker/api/server/router"
 
 // imageRouter is a router to talk with the image controller
 type imageRouter struct {
 	backend Backend
-	decoder httputils.ContainerDecoder
 	routes  []router.Route
 }
 
 // NewRouter initializes a new image router
-func NewRouter(backend Backend, decoder httputils.ContainerDecoder) router.Router {
+func NewRouter(backend Backend) router.Router {
 	r := &imageRouter{
 		backend: backend,
-		decoder: decoder,
 	}
 	r.initRoutes()
 	return r
@@ -39,9 +34,9 @@ func (r *imageRouter) initRoutes() {
 		router.NewGetRoute("/images/{name:.*}/json", r.getImagesByName),
 		// POST
 		router.NewPostRoute("/commit", r.postCommit),
+		router.NewPostRoute("/images/create", r.postImagesCreate),
 		router.NewPostRoute("/images/load", r.postImagesLoad),
-		router.Cancellable(router.NewPostRoute("/images/create", r.postImagesCreate)),
-		router.Cancellable(router.NewPostRoute("/images/{name:.*}/push", r.postImagesPush)),
+		router.NewPostRoute("/images/{name:.*}/push", r.postImagesPush),
 		router.NewPostRoute("/images/{name:.*}/tag", r.postImagesTag),
 		// DELETE
 		router.NewDeleteRoute("/images/{name:.*}", r.deleteImages),

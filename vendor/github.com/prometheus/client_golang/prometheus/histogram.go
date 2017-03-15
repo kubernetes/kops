@@ -15,6 +15,7 @@ package prometheus
 
 import (
 	"fmt"
+	"hash/fnv"
 	"math"
 	"sort"
 	"sync/atomic"
@@ -304,6 +305,7 @@ func NewHistogramVec(opts HistogramOpts, labelNames []string) *HistogramVec {
 		MetricVec: MetricVec{
 			children: map[uint64]Metric{},
 			desc:     desc,
+			hash:     fnv.New64a(),
 			newMetric: func(lvs ...string) Metric {
 				return newHistogram(desc, opts, lvs...)
 			},

@@ -43,7 +43,6 @@ docker-create - Create a new container
 [**-l**|**--label**[=*[]*]]
 [**--label-file**[=*[]*]]
 [**--link**[=*[]*]]
-[**--link-local-ip**[=*[]*]]
 [**--log-driver**[=*[]*]]
 [**--log-opt**[=*[]*]]
 [**-m**|**--memory**[=*MEMORY*]]
@@ -52,23 +51,21 @@ docker-create - Create a new container
 [**--memory-swap**[=*LIMIT*]]
 [**--memory-swappiness**[=*MEMORY-SWAPPINESS*]]
 [**--name**[=*NAME*]]
-[**--network-alias**[=*[]*]]
-[**--network**[=*"bridge"*]]
+[**--net**[=*"bridge"*]]
+[**--net-alias**[=*[]*]]
 [**--oom-kill-disable**]
 [**--oom-score-adj**[=*0*]]
 [**-P**|**--publish-all**]
 [**-p**|**--publish**[=*[]*]]
-[**--pid**[=*[PID]*]]
+[**--pid**[=*[]*]]
 [**--userns**[=*[]*]]
 [**--pids-limit**[=*PIDS_LIMIT*]]
 [**--privileged**]
 [**--read-only**]
 [**--restart**[=*RESTART*]]
 [**--security-opt**[=*[]*]]
-[**--storage-opt**[=*[]*]]
 [**--stop-signal**[=*SIGNAL*]]
 [**--shm-size**[=*[]*]]
-[**--sysctl**[=*[]*]]
 [**-t**|**--tty**]
 [**--tmpfs**[=*[CONTAINER-DIR[:<OPTIONS>]*]]
 [**-u**|**--user**[=*USER*]]
@@ -198,9 +195,7 @@ two memory nodes.
                                'host': use the host shared memory,semaphores and message queues inside the container.  Note: the host mode gives the container full access to local shared memory and is therefore considered insecure.
 
 **--isolation**="*default*"
-   Isolation specifies the type of isolation technology used by containers. Note
-that the default on Windows server is `process`, and the default on Windows client
-is `hyperv`. Linux only supports `default`.
+   Isolation specifies the type of isolation technology used by containers. 
 
 **--kernel-memory**=""
    Kernel memory limit (format: `<number>[<unit>]`, where unit = b, k, m or g)
@@ -221,11 +216,8 @@ millions of trillions.
    Add link to another container in the form of <name or id>:alias or just
    <name or id> in which case the alias will match the name.
 
-**--link-local-ip**=[]
-   Add one or more link-local IPv4/IPv6 addresses to the container's interface
-
 **--log-driver**="*json-file*|*syslog*|*journald*|*gelf*|*fluentd*|*awslogs*|*splunk*|*etwlogs*|*gcplogs*|*none*"
-  Logging driver for the container. Default is defined by daemon `--log-driver` flag.
+  Logging driver for container. Default is defined by daemon `--log-driver` flag.
   **Warning**: the `docker logs` command works only for the `json-file` and
   `journald` logging drivers.
 
@@ -276,7 +268,7 @@ unit, `b` is used. Set LIMIT to `-1` to enable unlimited swap.
                                'host': use the Docker host network stack.  Note: the host mode gives the container full access to local system services such as D-bus and is therefore considered insecure.
                                '<network-name>|<network-id>': connect to a user-defined network
 
-**--network-alias**=[]
+**--net-alias**=[]
    Add network-scoped alias for the container
 
 **--oom-kill-disable**=*true*|*false*
@@ -295,11 +287,10 @@ unit, `b` is used. Set LIMIT to `-1` to enable unlimited swap.
                                When specifying ranges for both, the number of container ports in the range must match the number of host ports in the range. (e.g., `-p 1234-1236:1234-1236/tcp`)
                                (use 'docker port' to see the actual mapping)
 
-**--pid**=""
+**--pid**=*host*
    Set the PID mode for the container
-   Default is to create a private PID namespace for the container
-                               'container:<name|id>': join another container's PID namespace
-                               'host': use the host's PID namespace for the container. Note: the host mode gives the container full access to local PID and is therefore considered insecure.
+     **host**: use the host's PID namespace inside the container.
+     Note: the host mode gives the container full access to local PID and is therefore considered insecure.
 
 **--userns**=""
    Set the usernamespace mode for the container when `userns-remap` option is enabled.
@@ -334,31 +325,8 @@ unit, `b` is used. Set LIMIT to `-1` to enable unlimited swap.
     "seccomp:unconfined" : Turn off seccomp confinement for the container
     "seccomp:profile.json :  White listed syscalls seccomp Json file to be used as a seccomp filter
 
-**--storage-opt**=[]
-   Storage driver options per container
-
-   $ docker create -it --storage-opt size=120G fedora /bin/bash
-
-   This (size) will allow to set the container rootfs size to 120G at creation time. User cannot pass a size less than the Default BaseFS Size.
-   This option is only available for the `devicemapper`, `btrfs`, and `zfs` graph drivers.
-  
 **--stop-signal**=*SIGTERM*
   Signal to stop a container. Default is SIGTERM.
-
-**--sysctl**=SYSCTL
-  Configure namespaced kernel parameters at runtime
-
-  IPC Namespace - current sysctls allowed:
-
-  kernel.msgmax, kernel.msgmnb, kernel.msgmni, kernel.sem, kernel.shmall, kernel.shmmax, kernel.shmmni, kernel.shm_rmid_forced
-  Sysctls beginning with fs.mqueue.*
-
-  Note: if you use --ipc=host using these sysctls will not be allowed.
-
-  Network Namespace - current sysctls allowed:
-      Sysctls beginning with net.*
-
-  Note: if you use --net=host using these sysctls will not be allowed.
 
 **-t**, **--tty**=*true*|*false*
    Allocate a pseudo-TTY. The default is *false*.
