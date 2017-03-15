@@ -24,7 +24,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	utiltesting "k8s.io/kubernetes/pkg/util/testing"
+	utiltesting "k8s.io/client-go/util/testing"
 	. "k8s.io/kubernetes/pkg/volume"
 	volumetest "k8s.io/kubernetes/pkg/volume/testing"
 )
@@ -80,7 +80,7 @@ func TestMetricsDuRequirePath(t *testing.T) {
 	metrics := NewMetricsDu("")
 	actual, err := metrics.GetMetrics()
 	expected := &Metrics{}
-	if *actual != *expected {
+	if !volumetest.MetricsEqualIgnoreTimestamp(actual, expected) {
 		t.Errorf("Expected empty Metrics from uninitialized MetricsDu, actual %v", *actual)
 	}
 	if err == nil {
@@ -94,7 +94,7 @@ func TestMetricsDuRequireRealDirectory(t *testing.T) {
 	metrics := NewMetricsDu("/not/a/real/directory")
 	actual, err := metrics.GetMetrics()
 	expected := &Metrics{}
-	if *actual != *expected {
+	if !volumetest.MetricsEqualIgnoreTimestamp(actual, expected) {
 		t.Errorf("Expected empty Metrics from incorrectly initialized MetricsDu, actual %v", *actual)
 	}
 	if err == nil {

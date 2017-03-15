@@ -12194,7 +12194,7 @@ var mainLookup = [4864]uint16{
 }
 
 // mainCTEntries: 248 entries, 992 bytes
-var mainCTEntries = [248]struct{ L, H, N, I uint8 }{
+var mainCTEntries = [248]struct{ l, h, n, i uint8 }{
 	{0xCE, 0x1, 1, 255},
 	{0xC2, 0x0, 1, 255},
 	{0xB7, 0xB7, 0, 1},

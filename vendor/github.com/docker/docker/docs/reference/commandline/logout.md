@@ -10,15 +10,12 @@ parent = "smn_cli"
 
 # logout
 
-```markdown
-Usage:  docker logout [SERVER]
+    Usage: docker logout [SERVER]
 
-Log out from a Docker registry.
-If no server is specified, the default is defined by the daemon.
+    Log out from a Docker registry, if no server is
+	specified "https://index.docker.io/v1/" is the default.
 
-Options:
-      --help   Print usage
-```
+      --help          Print usage
 
 For example:
 

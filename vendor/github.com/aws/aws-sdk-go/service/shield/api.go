@@ -48,9 +48,8 @@ func (c *Shield) CreateProtectionRequest(input *CreateProtectionInput) (req *req
 		input = &CreateProtectionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateProtectionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -138,9 +137,8 @@ func (c *Shield) CreateSubscriptionRequest(input *CreateSubscriptionInput) (req 
 		input = &CreateSubscriptionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateSubscriptionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -208,9 +206,8 @@ func (c *Shield) DeleteProtectionRequest(input *DeleteProtectionInput) (req *req
 		input = &DeleteProtectionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteProtectionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -282,9 +279,8 @@ func (c *Shield) DeleteSubscriptionRequest(input *DeleteSubscriptionInput) (req 
 		input = &DeleteSubscriptionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteSubscriptionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -356,9 +352,8 @@ func (c *Shield) DescribeAttackRequest(input *DescribeAttackInput) (req *request
 		input = &DescribeAttackInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAttackOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -426,9 +421,8 @@ func (c *Shield) DescribeProtectionRequest(input *DescribeProtectionInput) (req 
 		input = &DescribeProtectionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeProtectionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -496,9 +490,8 @@ func (c *Shield) DescribeSubscriptionRequest(input *DescribeSubscriptionInput) (
 		input = &DescribeSubscriptionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeSubscriptionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -566,9 +559,8 @@ func (c *Shield) ListAttacksRequest(input *ListAttacksInput) (req *request.Reque
 		input = &ListAttacksInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListAttacksOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -641,9 +633,8 @@ func (c *Shield) ListProtectionsRequest(input *ListProtectionsInput) (req *reque
 		input = &ListProtectionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListProtectionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

@@ -10,21 +10,13 @@ parent = "smn_cli"
 
 # cp
 
-```markdown
-Usage:  docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH|-
-        docker cp [OPTIONS] SRC_PATH|- CONTAINER:DEST_PATH
+    Usage: docker cp [OPTIONS] CONTAINER:SRC_PATH DEST_PATH | -
+           docker cp [OPTIONS] SRC_PATH | - CONTAINER:DEST_PATH
 
-Copy files/folders between a container and the local filesystem
+    Copy files/folders between a container and the local filesystem
 
-Use '-' as the source to read a tar archive from stdin
-and extract it to a directory destination in a container.
-Use '-' as the destination to stream a tar archive of a
-container source to stdout.
-
-Options:
-  -L, --follow-link   Always follow symbol link in SRC_PATH
-      --help          Print usage
-```
+      -L, --follow-link          Always follow symbol link in SRC_PATH
+      --help                     Print usage
 
 The `docker cp` utility copies the contents of `SRC_PATH` to the `DEST_PATH`.
 You can copy from the container's file system to the local machine or the
@@ -89,17 +81,7 @@ you must be explicit with a relative or absolute path, for example:
     `/path/to/file:name.txt` or `./file:name.txt`
 
 It is not possible to copy certain system files such as resources under
-`/proc`, `/sys`, `/dev`, [tmpfs](run.md#mount-tmpfs-tmpfs), and mounts created by
-the user in the container. However, you can still copy such files by manually
-running `tar` in `docker exec`. For example (consider `SRC_PATH` and `DEST_PATH`
-are directories):
-
-    $ docker exec foo tar Ccf $(dirname SRC_PATH) - $(basename SRC_PATH) | tar Cxf DEST_PATH -
-
-or
-
-    $ tar Ccf $(dirname SRC_PATH) - $(basename SRC_PATH) | docker exec -i foo tar Cxf DEST_PATH -
-
+`/proc`, `/sys`, `/dev`, and mounts created by the user in the container.
 
 Using `-` as the `SRC_PATH` streams the contents of `STDIN` as a tar archive.
 The command extracts the content of the tar to the `DEST_PATH` in container's

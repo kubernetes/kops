@@ -18,7 +18,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"reflect"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -81,8 +80,6 @@ func init() {
 		"ap-northeast-1",
 		"ap-northeast-2",
 		"sa-east-1",
-		"cn-north-1",
-		"us-gov-west-1",
 	} {
 		validRegions[region] = struct{}{}
 	}
@@ -270,21 +267,33 @@ func FromParameters(parameters map[string]interface{}) (*Driver, error) {
 // bucketName
 func New(params DriverParameters) (*Driver, error) {
 	awsConfig := aws.NewConfig()
-	if params.RegionEndpoint != "" {
+	var creds *credentials.Credentials
+	if params.RegionEndpoint == "" {
+		creds = credentials.NewChainCredentials([]credentials.Provider{
+			&credentials.StaticProvider{
+				Value: credentials.Value{
+					AccessKeyID:     params.AccessKey,
+					SecretAccessKey: params.SecretKey,
+				},
+			},
+			&credentials.EnvProvider{},
+			&credentials.SharedCredentialsProvider{},
+			&ec2rolecreds.EC2RoleProvider{Client: ec2metadata.New(session.New())},
+		})
+
+	} else {
+		creds = credentials.NewChainCredentials([]credentials.Provider{
+			&credentials.StaticProvider{
+				Value: credentials.Value{
+					AccessKeyID:     params.AccessKey,
+					SecretAccessKey: params.SecretKey,
+				},
+			},
+			&credentials.EnvProvider{},
+		})
 		awsConfig.WithS3ForcePathStyle(true)
 		awsConfig.WithEndpoint(params.RegionEndpoint)
 	}
-	creds := credentials.NewChainCredentials([]credentials.Provider{
-		&credentials.StaticProvider{
-			Value: credentials.Value{
-				AccessKeyID:     params.AccessKey,
-				SecretAccessKey: params.SecretKey,
-			},
-		},
-		&credentials.EnvProvider{},
-		&credentials.SharedCredentialsProvider{},
-		&ec2rolecreds.EC2RoleProvider{Client: ec2metadata.New(session.New())},
-	})
 
 	awsConfig.WithCredentials(creds)
 	awsConfig.WithRegion(params.Region)
@@ -549,62 +558,45 @@ func (d *driver) Move(ctx context.Context, sourcePath string, destPath string) e
 	return d.Delete(ctx, sourcePath)
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 // Delete recursively deletes all objects stored at "path" and its subpaths.
-// We must be careful since S3 does not guarantee read after delete consistency
 func (d *driver) Delete(ctx context.Context, path string) error {
-	s3Objects := make([]*s3.ObjectIdentifier, 0, listMax)
-	listObjectsInput := &s3.ListObjectsInput{
+	resp, err := d.S3.ListObjects(&s3.ListObjectsInput{
 		Bucket: aws.String(d.Bucket),
 		Prefix: aws.String(d.s3Path(path)),
+	})
+	if err != nil || len(resp.Contents) == 0 {
+		return storagedriver.PathNotFoundError{Path: path}
 	}
-	for {
-		// list all the objects
-		resp, err := d.S3.ListObjects(listObjectsInput)
 
-		// resp.Contents can only be empty on the first call
-		// if there were no more results to return after the first call, resp.IsTruncated would have been false
-		// and the loop would be exited without recalling ListObjects
-		if err != nil || len(resp.Contents) == 0 {
-			return storagedriver.PathNotFoundError{Path: path}
-		}
+	s3Objects := make([]*s3.ObjectIdentifier, 0, listMax)
 
+	for len(resp.Contents) > 0 {
 		for _, key := range resp.Contents {
 			s3Objects = append(s3Objects, &s3.ObjectIdentifier{
 				Key: key.Key,
 			})
 		}
 
-		// resp.Contents must have at least one element or we would have returned not found
-		listObjectsInput.Marker = resp.Contents[len(resp.Contents)-1].Key
-
-		// from the s3 api docs, IsTruncated "specifies whether (true) or not (false) all of the results were returned"
-		// if everything has been returned, break
-		if resp.IsTruncated == nil || !*resp.IsTruncated {
-			break
-		}
-	}
-
-	// need to chunk objects into groups of 1000 per s3 restrictions
-	total := len(s3Objects)
-	for i := 0; i < total; i += 1000 {
 		_, err := d.S3.DeleteObjects(&s3.DeleteObjectsInput{
 			Bucket: aws.String(d.Bucket),
 			Delete: &s3.Delete{
-				Objects: s3Objects[i:min(i+1000, total)],
+				Objects: s3Objects,
 				Quiet:   aws.Bool(false),
 			},
+		})
+		if err != nil {
+			return nil
+		}
+
+		resp, err = d.S3.ListObjects(&s3.ListObjectsInput{
+			Bucket: aws.String(d.Bucket),
+			Prefix: aws.String(d.s3Path(path)),
 		})
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -726,12 +718,6 @@ func (d *driver) newWriter(key, uploadID string, parts []*s3.Part) storagedriver
 	}
 }
 
-type completedParts []*s3.CompletedPart
-
-func (a completedParts) Len() int           { return len(a) }
-func (a completedParts) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a completedParts) Less(i, j int) bool { return *a[i].PartNumber < *a[j].PartNumber }
-
 func (w *writer) Write(p []byte) (int, error) {
 	if w.closed {
 		return 0, fmt.Errorf("already closed")
@@ -744,22 +730,19 @@ func (w *writer) Write(p []byte) (int, error) {
 	// If the last written part is smaller than minChunkSize, we need to make a
 	// new multipart upload :sadface:
 	if len(w.parts) > 0 && int(*w.parts[len(w.parts)-1].Size) < minChunkSize {
-		var completedUploadedParts completedParts
+		var completedParts []*s3.CompletedPart
 		for _, part := range w.parts {
-			completedUploadedParts = append(completedUploadedParts, &s3.CompletedPart{
+			completedParts = append(completedParts, &s3.CompletedPart{
 				ETag:       part.ETag,
 				PartNumber: part.PartNumber,
 			})
 		}
-
-		sort.Sort(completedUploadedParts)
-
 		_, err := w.driver.S3.CompleteMultipartUpload(&s3.CompleteMultipartUploadInput{
 			Bucket:   aws.String(w.driver.Bucket),
 			Key:      aws.String(w.key),
 			UploadId: aws.String(w.uploadID),
 			MultipartUpload: &s3.CompletedMultipartUpload{
-				Parts: completedUploadedParts,
+				Parts: completedParts,
 			},
 		})
 		if err != nil {
@@ -899,23 +882,19 @@ func (w *writer) Commit() error {
 		return err
 	}
 	w.committed = true
-
-	var completedUploadedParts completedParts
+	var completedParts []*s3.CompletedPart
 	for _, part := range w.parts {
-		completedUploadedParts = append(completedUploadedParts, &s3.CompletedPart{
+		completedParts = append(completedParts, &s3.CompletedPart{
 			ETag:       part.ETag,
 			PartNumber: part.PartNumber,
 		})
 	}
-
-	sort.Sort(completedUploadedParts)
-
 	_, err = w.driver.S3.CompleteMultipartUpload(&s3.CompleteMultipartUploadInput{
 		Bucket:   aws.String(w.driver.Bucket),
 		Key:      aws.String(w.key),
 		UploadId: aws.String(w.uploadID),
 		MultipartUpload: &s3.CompletedMultipartUpload{
-			Parts: completedUploadedParts,
+			Parts: completedParts,
 		},
 	})
 	if err != nil {

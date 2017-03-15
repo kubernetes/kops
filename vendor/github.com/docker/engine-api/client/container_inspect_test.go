@@ -3,10 +3,8 @@ package client
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/docker/engine-api/types"
@@ -36,12 +34,8 @@ func TestContainerInspectContainerNotFound(t *testing.T) {
 }
 
 func TestContainerInspect(t *testing.T) {
-	expectedURL := "/containers/container_id/json"
 	client := &Client{
 		transport: newMockClient(nil, func(req *http.Request) (*http.Response, error) {
-			if !strings.HasPrefix(req.URL.Path, expectedURL) {
-				return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, req.URL)
-			}
 			content, err := json.Marshal(types.ContainerJSON{
 				ContainerJSONBase: &types.ContainerJSONBase{
 					ID:    "container_id",

@@ -49,9 +49,8 @@ func (c *MarketplaceMetering) BatchMeterUsageRequest(input *BatchMeterUsageInput
 		input = &BatchMeterUsageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchMeterUsageOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -142,9 +141,8 @@ func (c *MarketplaceMetering) MeterUsageRequest(input *MeterUsageInput) (req *re
 		input = &MeterUsageInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &MeterUsageOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -236,9 +234,8 @@ func (c *MarketplaceMetering) ResolveCustomerRequest(input *ResolveCustomerInput
 		input = &ResolveCustomerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ResolveCustomerOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

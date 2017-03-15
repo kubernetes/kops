@@ -172,12 +172,20 @@ type ErrorContext struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "HttpRequest") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ErrorContext) MarshalJSON() ([]byte, error) {
 	type noMethod ErrorContext
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ErrorEvent: An error event which is returned by the Error Reporting
@@ -207,12 +215,20 @@ type ErrorEvent struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Context") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ErrorEvent) MarshalJSON() ([]byte, error) {
 	type noMethod ErrorEvent
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ErrorGroup: Description of a group of similar error events.
@@ -241,20 +257,28 @@ type ErrorGroup struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "GroupId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ErrorGroup) MarshalJSON() ([]byte, error) {
 	type noMethod ErrorGroup
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ErrorGroupStats: Data extracted for a specific group based on certain
-// selection criteria,
+// filter criteria,
 // such as a given time period and/or service filter.
 type ErrorGroupStats struct {
 	// AffectedServices: Service contexts with a non-zero error count for
-	// the given selection
+	// the given filter
 	// criteria. This list can be truncated if multiple services are
 	// affected.
 	// Refer to `num_affected_services` for the total count.
@@ -262,7 +286,7 @@ type ErrorGroupStats struct {
 
 	// AffectedUsersCount: Approximate number of affected users in the given
 	// group that
-	// match the selection criteria.
+	// match the filter criteria.
 	// Users are distinguished by data in the `ErrorContext` of
 	// the
 	// individual error events, such as their login name or their remote
@@ -280,25 +304,27 @@ type ErrorGroupStats struct {
 
 	// Count: Approximate total number of events in the given group that
 	// match
-	// the selection criteria.
+	// the filter criteria.
 	Count int64 `json:"count,omitempty,string"`
 
-	// FirstSeenTime: Approximate first occurrence that was seen for this
-	// group and
-	// which matches the given selection criteria.
+	// FirstSeenTime: Approximate first occurrence that was ever seen for
+	// this group
+	// and which matches the given filter criteria, ignoring the
+	// time_range that was specified in the request.
 	FirstSeenTime string `json:"firstSeenTime,omitempty"`
 
-	// Group: Group data that is independent of the selection criteria.
+	// Group: Group data that is independent of the filter criteria.
 	Group *ErrorGroup `json:"group,omitempty"`
 
-	// LastSeenTime: Approximate last occurrence that was seen for this
-	// group
-	// and which matches the given selection criteria.
+	// LastSeenTime: Approximate last occurrence that was ever seen for this
+	// group and
+	// which matches the given filter criteria, ignoring the time_range
+	// that was specified in the request.
 	LastSeenTime string `json:"lastSeenTime,omitempty"`
 
 	// NumAffectedServices: The total number of services with a non-zero
 	// error count for the given
-	// selection criteria.
+	// filter criteria.
 	NumAffectedServices int64 `json:"numAffectedServices,omitempty"`
 
 	// Representative: An arbitrary event that is chosen as representative
@@ -327,12 +353,21 @@ type ErrorGroupStats struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AffectedServices") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ErrorGroupStats) MarshalJSON() ([]byte, error) {
 	type noMethod ErrorGroupStats
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // HttpRequestContext: HTTP request data that is related to a reported
@@ -372,12 +407,20 @@ type HttpRequestContext struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Method") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *HttpRequestContext) MarshalJSON() ([]byte, error) {
 	type noMethod HttpRequestContext
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListEventsResponse: Contains a set of requested error events.
@@ -391,6 +434,10 @@ type ListEventsResponse struct {
 	// request, to view the next page of results.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
+	// TimeRangeBegin: The timestamp specifies the start time to which the
+	// request was restricted.
+	TimeRangeBegin string `json:"timeRangeBegin,omitempty"`
+
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
 	googleapi.ServerResponse `json:"-"`
@@ -402,12 +449,20 @@ type ListEventsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ErrorEvents") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListEventsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListEventsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListGroupStatsResponse: Contains a set of requested error group
@@ -422,6 +477,15 @@ type ListGroupStatsResponse struct {
 	// request, to view the next page of results.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
+	// TimeRangeBegin: The timestamp specifies the start time to which the
+	// request was restricted.
+	// The start time is set based on the requested time range. It may be
+	// adjusted
+	// to a later time if a project has exceeded the storage quota and older
+	// data
+	// has been deleted.
+	TimeRangeBegin string `json:"timeRangeBegin,omitempty"`
+
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
 	googleapi.ServerResponse `json:"-"`
@@ -433,12 +497,78 @@ type ListGroupStatsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ErrorGroupStats") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListGroupStatsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListGroupStatsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ReportErrorEventResponse: Response for reporting an individual error
+// event.
+// Data may be added to this message in the future.
+type ReportErrorEventResponse struct {
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+}
+
+// ReportedErrorEvent: An error event which is reported to the Error
+// Reporting system.
+type ReportedErrorEvent struct {
+	// Context: [Optional] A description of the context in which the error
+	// occurred.
+	Context *ErrorContext `json:"context,omitempty"`
+
+	// EventTime: [Optional] Time when the event occurred.
+	// If not provided, the time when the event was received by the
+	// Error Reporting system will be used.
+	EventTime string `json:"eventTime,omitempty"`
+
+	// Message: [Required] A message describing the error. The message can
+	// contain an
+	// exception stack in one of the supported programming languages and
+	// formats.
+	// In that case, the message is parsed and detailed exception
+	// information
+	// is returned when retrieving the error event again.
+	Message string `json:"message,omitempty"`
+
+	// ServiceContext: [Required] The service context in which this error
+	// has occurred.
+	ServiceContext *ServiceContext `json:"serviceContext,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Context") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Context") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ReportedErrorEvent) MarshalJSON() ([]byte, error) {
+	type noMethod ReportedErrorEvent
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ServiceContext: Describes a running service that sends errors.
@@ -447,15 +577,15 @@ func (s *ListGroupStatsResponse) MarshalJSON() ([]byte, error) {
 type ServiceContext struct {
 	// Service: An identifier of the service, such as the name of
 	// the
-	// executable, job, or Google App Engine module name. This field is
+	// executable, job, or Google App Engine service name. This field is
 	// expected
 	// to have a low number of values that are relatively stable over time,
 	// as
 	// opposed to `version`, which can be changed whenever new code is
 	// deployed.
 	//
-	// Contains the module name for error reports extracted from Google
-	// App Engine logs or `default` if the App Engine default module is
+	// Contains the service name for error reports extracted from Google
+	// App Engine logs or `default` if the App Engine default service is
 	// used.
 	Service string `json:"service,omitempty"`
 
@@ -472,12 +602,20 @@ type ServiceContext struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Service") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ServiceContext) MarshalJSON() ([]byte, error) {
 	type noMethod ServiceContext
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // SourceLocation: Indicates a location in the source code of the
@@ -510,12 +648,20 @@ type SourceLocation struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "FilePath") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *SourceLocation) MarshalJSON() ([]byte, error) {
 	type noMethod SourceLocation
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // TimedCount: The number of errors in a given time period.
@@ -539,12 +685,20 @@ type TimedCount struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Count") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TimedCount) MarshalJSON() ([]byte, error) {
 	type noMethod TimedCount
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // TrackingIssue: Information related to tracking the progress on
@@ -562,12 +716,20 @@ type TrackingIssue struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Url") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TrackingIssue) MarshalJSON() ([]byte, error) {
 	type noMethod TrackingIssue
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "clouderrorreporting.projects.deleteEvents":
@@ -577,6 +739,7 @@ type ProjectsDeleteEventsCall struct {
 	projectName string
 	urlParams_  gensupport.URLParams
 	ctx_        context.Context
+	header_     http.Header
 }
 
 // DeleteEvents: Deletes all error events of a given project.
@@ -602,8 +765,20 @@ func (c *ProjectsDeleteEventsCall) Context(ctx context.Context) *ProjectsDeleteE
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsDeleteEventsCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsDeleteEventsCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -614,10 +789,7 @@ func (c *ProjectsDeleteEventsCall) doRequest(alt string) (*http.Response, error)
 	googleapi.Expand(req.URL, map[string]string{
 		"projectName": c.projectName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "clouderrorreporting.projects.deleteEvents" call.
@@ -669,7 +841,7 @@ func (c *ProjectsDeleteEventsCall) Do(opts ...googleapi.CallOption) (*DeleteEven
 	//     "projectName": {
 	//       "description": "[Required] The resource name of the Google Cloud Platform project. Written\nas `projects/` plus the\n[Google Cloud Platform project ID](https://support.google.com/cloud/answer/6158840).\nExample: `projects/my-project-123`.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -693,6 +865,7 @@ type ProjectsEventsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists the specified events.
@@ -784,8 +957,20 @@ func (c *ProjectsEventsListCall) Context(ctx context.Context) *ProjectsEventsLis
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsEventsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsEventsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -799,10 +984,7 @@ func (c *ProjectsEventsListCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"projectName": c.projectName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "clouderrorreporting.projects.events.list" call.
@@ -870,7 +1052,7 @@ func (c *ProjectsEventsListCall) Do(opts ...googleapi.CallOption) (*ListEventsRe
 	//     "projectName": {
 	//       "description": "[Required] The resource name of the Google Cloud Platform project. Written\nas `projects/` plus the\n[Google Cloud Platform project ID](https://support.google.com/cloud/answer/6158840).\nExample: `projects/my-project-123`.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -930,6 +1112,152 @@ func (c *ProjectsEventsListCall) Pages(ctx context.Context, f func(*ListEventsRe
 	}
 }
 
+// method id "clouderrorreporting.projects.events.report":
+
+type ProjectsEventsReportCall struct {
+	s                  *Service
+	projectName        string
+	reportederrorevent *ReportedErrorEvent
+	urlParams_         gensupport.URLParams
+	ctx_               context.Context
+	header_            http.Header
+}
+
+// Report: Report an individual error event.
+//
+// This endpoint accepts <strong>either</strong> an OAuth
+// token,
+// <strong>or</strong> an
+// <a href="https://support.google.com/cloud/answer/6158862">API
+// key</a>
+// for authentication. To use an API key, append it to the URL as the
+// value of
+// a `key` parameter. For example:
+// <pre>POST
+// https://clouderrorreporting.googleapis.com/v1beta1/projects/example-project/events:report?key=123ABC456</pre>
+func (r *ProjectsEventsService) Report(projectName string, reportederrorevent *ReportedErrorEvent) *ProjectsEventsReportCall {
+	c := &ProjectsEventsReportCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.projectName = projectName
+	c.reportederrorevent = reportederrorevent
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsEventsReportCall) Fields(s ...googleapi.Field) *ProjectsEventsReportCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsEventsReportCall) Context(ctx context.Context) *ProjectsEventsReportCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsEventsReportCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsEventsReportCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.reportederrorevent)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/{+projectName}/events:report")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"projectName": c.projectName,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "clouderrorreporting.projects.events.report" call.
+// Exactly one of *ReportErrorEventResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *ReportErrorEventResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsEventsReportCall) Do(opts ...googleapi.CallOption) (*ReportErrorEventResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &ReportErrorEventResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Report an individual error event.\n\nThis endpoint accepts \u003cstrong\u003eeither\u003c/strong\u003e an OAuth token,\n\u003cstrong\u003eor\u003c/strong\u003e an\n\u003ca href=\"https://support.google.com/cloud/answer/6158862\"\u003eAPI key\u003c/a\u003e\nfor authentication. To use an API key, append it to the URL as the value of\na `key` parameter. For example:\n\u003cpre\u003ePOST https://clouderrorreporting.googleapis.com/v1beta1/projects/example-project/events:report?key=123ABC456\u003c/pre\u003e",
+	//   "flatPath": "v1beta1/projects/{projectsId}/events:report",
+	//   "httpMethod": "POST",
+	//   "id": "clouderrorreporting.projects.events.report",
+	//   "parameterOrder": [
+	//     "projectName"
+	//   ],
+	//   "parameters": {
+	//     "projectName": {
+	//       "description": "[Required] The resource name of the Google Cloud Platform project. Written\nas `projects/` plus the\n[Google Cloud Platform project ID](https://support.google.com/cloud/answer/6158840).\nExample: `projects/my-project-123`.",
+	//       "location": "path",
+	//       "pattern": "^projects/[^/]+$",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "v1beta1/{+projectName}/events:report",
+	//   "request": {
+	//     "$ref": "ReportedErrorEvent"
+	//   },
+	//   "response": {
+	//     "$ref": "ReportErrorEventResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
 // method id "clouderrorreporting.projects.groupStats.list":
 
 type ProjectsGroupStatsListCall struct {
@@ -938,6 +1266,7 @@ type ProjectsGroupStatsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists the specified groups.
@@ -970,9 +1299,6 @@ func (c *ProjectsGroupStatsListCall) AlignmentTime(alignmentTime string) *Projec
 
 // GroupId sets the optional parameter "groupId": [Optional] List all
 // <code>ErrorGroupStats</code> with these IDs.
-// If not specified, all error group stats with a non-zero error
-// count
-// for the given selection criteria are returned.
 func (c *ProjectsGroupStatsListCall) GroupId(groupId ...string) *ProjectsGroupStatsListCall {
 	c.urlParams_.SetMulti("groupId", append([]string{}, groupId...))
 	return c
@@ -1081,8 +1407,20 @@ func (c *ProjectsGroupStatsListCall) Context(ctx context.Context) *ProjectsGroup
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsGroupStatsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsGroupStatsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1096,10 +1434,7 @@ func (c *ProjectsGroupStatsListCall) doRequest(alt string) (*http.Response, erro
 	googleapi.Expand(req.URL, map[string]string{
 		"projectName": c.projectName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "clouderrorreporting.projects.groupStats.list" call.
@@ -1165,7 +1500,7 @@ func (c *ProjectsGroupStatsListCall) Do(opts ...googleapi.CallOption) (*ListGrou
 	//       "type": "string"
 	//     },
 	//     "groupId": {
-	//       "description": "[Optional] List all \u003ccode\u003eErrorGroupStats\u003c/code\u003e with these IDs.\nIf not specified, all error group stats with a non-zero error count\nfor the given selection criteria are returned.",
+	//       "description": "[Optional] List all \u003ccode\u003eErrorGroupStats\u003c/code\u003e with these IDs.",
 	//       "location": "query",
 	//       "repeated": true,
 	//       "type": "string"
@@ -1196,7 +1531,7 @@ func (c *ProjectsGroupStatsListCall) Do(opts ...googleapi.CallOption) (*ListGrou
 	//     "projectName": {
 	//       "description": "[Required] The resource name of the Google Cloud Platform project. Written\nas \u003ccode\u003eprojects/\u003c/code\u003e plus the\n\u003ca href=\"https://support.google.com/cloud/answer/6158840\"\u003eGoogle Cloud\nPlatform project ID\u003c/a\u003e.\n\nExample: \u003ccode\u003eprojects/my-project-123\u003c/code\u003e.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -1270,6 +1605,7 @@ type ProjectsGroupsGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Get the specified group.
@@ -1305,8 +1641,20 @@ func (c *ProjectsGroupsGetCall) Context(ctx context.Context) *ProjectsGroupsGetC
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsGroupsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsGroupsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1320,10 +1668,7 @@ func (c *ProjectsGroupsGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"groupName": c.groupName,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "clouderrorreporting.projects.groups.get" call.
@@ -1375,7 +1720,7 @@ func (c *ProjectsGroupsGetCall) Do(opts ...googleapi.CallOption) (*ErrorGroup, e
 	//     "groupName": {
 	//       "description": "[Required] The group resource name. Written as\n\u003ccode\u003eprojects/\u003cvar\u003eprojectID\u003c/var\u003e/groups/\u003cvar\u003egroup_name\u003c/var\u003e\u003c/code\u003e.\nCall\n\u003ca href=\"/error-reporting/reference/rest/v1beta1/projects.groupStats/list\"\u003e\n\u003ccode\u003egroupStats.list\u003c/code\u003e\u003c/a\u003e to return a list of groups belonging to\nthis project.\n\nExample: \u003ccode\u003eprojects/my-project-123/groups/my-group\u003c/code\u003e",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/groups/[^/]*$",
+	//       "pattern": "^projects/[^/]+/groups/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -1399,6 +1744,7 @@ type ProjectsGroupsUpdateCall struct {
 	errorgroup *ErrorGroup
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Update: Replace the data for the specified group.
@@ -1426,8 +1772,20 @@ func (c *ProjectsGroupsUpdateCall) Context(ctx context.Context) *ProjectsGroupsU
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsGroupsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsGroupsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.errorgroup)
@@ -1443,10 +1801,7 @@ func (c *ProjectsGroupsUpdateCall) doRequest(alt string) (*http.Response, error)
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "clouderrorreporting.projects.groups.update" call.
@@ -1498,7 +1853,7 @@ func (c *ProjectsGroupsUpdateCall) Do(opts ...googleapi.CallOption) (*ErrorGroup
 	//     "name": {
 	//       "description": "The group resource name.\nExample: \u003ccode\u003eprojects/my-project-123/groups/my-groupid\u003c/code\u003e",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/groups/[^/]*$",
+	//       "pattern": "^projects/[^/]+/groups/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }

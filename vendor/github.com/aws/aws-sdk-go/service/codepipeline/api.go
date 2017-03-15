@@ -51,9 +51,8 @@ func (c *CodePipeline) AcknowledgeJobRequest(input *AcknowledgeJobInput) (req *r
 		input = &AcknowledgeJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AcknowledgeJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -124,9 +123,8 @@ func (c *CodePipeline) AcknowledgeThirdPartyJobRequest(input *AcknowledgeThirdPa
 		input = &AcknowledgeThirdPartyJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AcknowledgeThirdPartyJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -200,9 +198,8 @@ func (c *CodePipeline) CreateCustomActionTypeRequest(input *CreateCustomActionTy
 		input = &CreateCustomActionTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateCustomActionTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -271,9 +268,8 @@ func (c *CodePipeline) CreatePipelineRequest(input *CreatePipelineInput) (req *r
 		input = &CreatePipelineInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePipelineOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -356,11 +352,10 @@ func (c *CodePipeline) DeleteCustomActionTypeRequest(input *DeleteCustomActionTy
 		input = &DeleteCustomActionTypeInput{}
 	}
 
+	output = &DeleteCustomActionTypeOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteCustomActionTypeOutput{}
-	req.Data = output
 	return
 }
 
@@ -428,11 +423,10 @@ func (c *CodePipeline) DeletePipelineRequest(input *DeletePipelineInput) (req *r
 		input = &DeletePipelineInput{}
 	}
 
+	output = &DeletePipelineOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeletePipelineOutput{}
-	req.Data = output
 	return
 }
 
@@ -496,11 +490,10 @@ func (c *CodePipeline) DisableStageTransitionRequest(input *DisableStageTransiti
 		input = &DisableStageTransitionInput{}
 	}
 
+	output = &DisableStageTransitionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DisableStageTransitionOutput{}
-	req.Data = output
 	return
 }
 
@@ -571,11 +564,10 @@ func (c *CodePipeline) EnableStageTransitionRequest(input *EnableStageTransition
 		input = &EnableStageTransitionInput{}
 	}
 
+	output = &EnableStageTransitionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &EnableStageTransitionOutput{}
-	req.Data = output
 	return
 }
 
@@ -645,9 +637,8 @@ func (c *CodePipeline) GetJobDetailsRequest(input *GetJobDetailsInput) (req *req
 		input = &GetJobDetailsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetJobDetailsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -719,9 +710,8 @@ func (c *CodePipeline) GetPipelineRequest(input *GetPipelineInput) (req *request
 		input = &GetPipelineInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetPipelineOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -794,9 +784,8 @@ func (c *CodePipeline) GetPipelineExecutionRequest(input *GetPipelineExecutionIn
 		input = &GetPipelineExecutionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetPipelineExecutionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -869,9 +858,8 @@ func (c *CodePipeline) GetPipelineStateRequest(input *GetPipelineStateInput) (re
 		input = &GetPipelineStateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetPipelineStateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -939,9 +927,8 @@ func (c *CodePipeline) GetThirdPartyJobDetailsRequest(input *GetThirdPartyJobDet
 		input = &GetThirdPartyJobDetailsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetThirdPartyJobDetailsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1020,9 +1007,8 @@ func (c *CodePipeline) ListActionTypesRequest(input *ListActionTypesInput) (req 
 		input = &ListActionTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListActionTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1091,9 +1077,8 @@ func (c *CodePipeline) ListPipelinesRequest(input *ListPipelinesInput) (req *req
 		input = &ListPipelinesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPipelinesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1158,9 +1143,8 @@ func (c *CodePipeline) PollForJobsRequest(input *PollForJobsInput) (req *request
 		input = &PollForJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PollForJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1232,9 +1216,8 @@ func (c *CodePipeline) PollForThirdPartyJobsRequest(input *PollForThirdPartyJobs
 		input = &PollForThirdPartyJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PollForThirdPartyJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1306,9 +1289,8 @@ func (c *CodePipeline) PutActionRevisionRequest(input *PutActionRevisionInput) (
 		input = &PutActionRevisionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutActionRevisionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1381,9 +1363,8 @@ func (c *CodePipeline) PutApprovalResultRequest(input *PutApprovalResultInput) (
 		input = &PutApprovalResultInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutApprovalResultOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1463,11 +1444,10 @@ func (c *CodePipeline) PutJobFailureResultRequest(input *PutJobFailureResultInpu
 		input = &PutJobFailureResultInput{}
 	}
 
+	output = &PutJobFailureResultOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutJobFailureResultOutput{}
-	req.Data = output
 	return
 }
 
@@ -1538,11 +1518,10 @@ func (c *CodePipeline) PutJobSuccessResultRequest(input *PutJobSuccessResultInpu
 		input = &PutJobSuccessResultInput{}
 	}
 
+	output = &PutJobSuccessResultOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutJobSuccessResultOutput{}
-	req.Data = output
 	return
 }
 
@@ -1613,11 +1592,10 @@ func (c *CodePipeline) PutThirdPartyJobFailureResultRequest(input *PutThirdParty
 		input = &PutThirdPartyJobFailureResultInput{}
 	}
 
+	output = &PutThirdPartyJobFailureResultOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutThirdPartyJobFailureResultOutput{}
-	req.Data = output
 	return
 }
 
@@ -1691,11 +1669,10 @@ func (c *CodePipeline) PutThirdPartyJobSuccessResultRequest(input *PutThirdParty
 		input = &PutThirdPartyJobSuccessResultInput{}
 	}
 
+	output = &PutThirdPartyJobSuccessResultOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutThirdPartyJobSuccessResultOutput{}
-	req.Data = output
 	return
 }
 
@@ -1769,9 +1746,8 @@ func (c *CodePipeline) RetryStageExecutionRequest(input *RetryStageExecutionInpu
 		input = &RetryStageExecutionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RetryStageExecutionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1851,9 +1827,8 @@ func (c *CodePipeline) StartPipelineExecutionRequest(input *StartPipelineExecuti
 		input = &StartPipelineExecutionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartPipelineExecutionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1921,9 +1896,8 @@ func (c *CodePipeline) UpdatePipelineRequest(input *UpdatePipelineInput) (req *r
 		input = &UpdatePipelineInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdatePipelineOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

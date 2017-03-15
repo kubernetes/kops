@@ -41,6 +41,6 @@ func TestSignAndVerify(t *testing.T) {
 func TestVerifyFailsOnMalformedClaim(t *testing.T) {
 	err := Verify("abc.def", nil)
 	if err == nil {
-		t.Error("Improperly formed JWT should fail.")
+		t.Error("got no errors; want improperly formed JWT not to be verified")
 	}
 }

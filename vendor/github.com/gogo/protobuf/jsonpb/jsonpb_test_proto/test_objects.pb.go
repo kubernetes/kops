@@ -480,9 +480,9 @@ func _MsgWithOneof_OneofSizer(msg proto.Message) (n int) {
 }
 
 type Real struct {
-	Value                        *float64 `protobuf:"fixed64,1,opt,name=value" json:"value,omitempty"`
-	proto.XXX_InternalExtensions `json:"-"`
-	XXX_unrecognized             []byte `json:"-"`
+	Value            *float64                  `protobuf:"fixed64,1,opt,name=value" json:"value,omitempty"`
+	XXX_extensions   map[int32]proto.Extension `json:"-"`
+	XXX_unrecognized []byte                    `json:"-"`
 }
 
 func (m *Real) Reset()                    { *m = Real{} }
@@ -497,6 +497,12 @@ var extRange_Real = []proto.ExtensionRange{
 func (*Real) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_Real
 }
+func (m *Real) ExtensionMap() map[int32]proto.Extension {
+	if m.XXX_extensions == nil {
+		m.XXX_extensions = make(map[int32]proto.Extension)
+	}
+	return m.XXX_extensions
+}
 
 func (m *Real) GetValue() float64 {
 	if m != nil && m.Value != nil {
@@ -506,9 +512,9 @@ func (m *Real) GetValue() float64 {
 }
 
 type Complex struct {
-	Imaginary                    *float64 `protobuf:"fixed64,1,opt,name=imaginary" json:"imaginary,omitempty"`
-	proto.XXX_InternalExtensions `json:"-"`
-	XXX_unrecognized             []byte `json:"-"`
+	Imaginary        *float64                  `protobuf:"fixed64,1,opt,name=imaginary" json:"imaginary,omitempty"`
+	XXX_extensions   map[int32]proto.Extension `json:"-"`
+	XXX_unrecognized []byte                    `json:"-"`
 }
 
 func (m *Complex) Reset()                    { *m = Complex{} }
@@ -522,6 +528,12 @@ var extRange_Complex = []proto.ExtensionRange{
 
 func (*Complex) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_Complex
+}
+func (m *Complex) ExtensionMap() map[int32]proto.Extension {
+	if m.XXX_extensions == nil {
+		m.XXX_extensions = make(map[int32]proto.Extension)
+	}
+	return m.XXX_extensions
 }
 
 func (m *Complex) GetImaginary() float64 {
@@ -559,8 +571,6 @@ func init() {
 	proto.RegisterExtension(E_Complex_RealExtension)
 	proto.RegisterExtension(E_Name)
 }
-
-func init() { proto.RegisterFile("test_objects.proto", fileDescriptorTestObjects) }
 
 var fileDescriptorTestObjects = []byte{
 	// 784 bytes of a gzipped FileDescriptorProto

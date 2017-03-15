@@ -1224,13 +1224,17 @@ func (p *marshalto) Generate(file *generator.FileDescriptor) {
 		}
 		if message.DescriptorProto.HasExtension() {
 			if gogoproto.HasExtensionsMap(file.FileDescriptorProto, message.DescriptorProto) {
-				p.P(`n, err := `, p.protoPkg.Use(), `.EncodeInternalExtension(m, data[i:])`)
+				p.P(`if len(m.XXX_extensions) > 0 {`)
+				p.In()
+				p.P(`n, err := `, p.protoPkg.Use(), `.EncodeExtensionMap(m.XXX_extensions, data[i:])`)
 				p.P(`if err != nil {`)
 				p.In()
 				p.P(`return 0, err`)
 				p.Out()
 				p.P(`}`)
 				p.P(`i+=n`)
+				p.Out()
+				p.P(`}`)
 			} else {
 				p.P(`if m.XXX_extensions != nil {`)
 				p.In()

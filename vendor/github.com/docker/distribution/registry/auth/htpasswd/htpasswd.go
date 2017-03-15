@@ -6,8 +6,6 @@ import (
 	"io"
 	"strings"
 
-	"github.com/docker/distribution/registry/auth"
-
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -35,12 +33,12 @@ func (htpasswd *htpasswd) authenticateUser(username string, password string) err
 		// timing attack paranoia
 		bcrypt.CompareHashAndPassword([]byte{}, []byte(password))
 
-		return auth.ErrAuthenticationFailure
+		return ErrAuthenticationFailure
 	}
 
 	err := bcrypt.CompareHashAndPassword([]byte(credentials), []byte(password))
 	if err != nil {
-		return auth.ErrAuthenticationFailure
+		return ErrAuthenticationFailure
 	}
 
 	return nil
@@ -48,7 +46,7 @@ func (htpasswd *htpasswd) authenticateUser(username string, password string) err
 
 // parseHTPasswd parses the contents of htpasswd. This will read all the
 // entries in the file, whether or not they are needed. An error is returned
-// if a syntax errors are encountered or if the reader fails.
+// if an syntax errors are encountered or if the reader fails.
 func parseHTPasswd(rd io.Reader) (map[string][]byte, error) {
 	entries := map[string][]byte{}
 	scanner := bufio.NewScanner(rd)

@@ -3,8 +3,8 @@ sudo: false
 language: go
 
 go:
-  - 1.5
   - 1.6
+  - 1.7
 
 before_install:
   - openssl aes-256-cbc -K $encrypted_7fd28a0c5534_key -iv $encrypted_7fd28a0c5534_iv -in key.json.enc -out key.json -d

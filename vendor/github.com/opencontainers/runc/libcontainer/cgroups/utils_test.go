@@ -134,7 +134,7 @@ func TestGetCgroupMounts(t *testing.T) {
 	}
 	for _, td := range testTable {
 		mi := bytes.NewBufferString(td.mountInfo)
-		cgMounts, err := getCgroupMountsHelper(td.subsystems, mi)
+		cgMounts, err := getCgroupMountsHelper(td.subsystems, mi, false)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -187,7 +187,7 @@ func BenchmarkGetCgroupMounts(b *testing.B) {
 		b.StopTimer()
 		mi := bytes.NewBufferString(fedoraMountinfo)
 		b.StartTimer()
-		if _, err := getCgroupMountsHelper(subsystems, mi); err != nil {
+		if _, err := getCgroupMountsHelper(subsystems, mi, false); err != nil {
 			b.Fatal(err)
 		}
 	}

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
-	"strings"
 	"testing"
 
 	"github.com/docker/engine-api/types"
@@ -24,7 +23,6 @@ func TestContainerCommitError(t *testing.T) {
 }
 
 func TestContainerCommit(t *testing.T) {
-	expectedURL := "/commit"
 	expectedContainerID := "container_id"
 	specifiedReference := "repository_name:tag"
 	expectedRepositoryName := "repository_name"
@@ -35,9 +33,6 @@ func TestContainerCommit(t *testing.T) {
 
 	client := &Client{
 		transport: newMockClient(nil, func(req *http.Request) (*http.Response, error) {
-			if !strings.HasPrefix(req.URL.Path, expectedURL) {
-				return nil, fmt.Errorf("Expected URL '%s', got '%s'", expectedURL, req.URL)
-			}
 			query := req.URL.Query()
 			containerID := query.Get("container")
 			if containerID != expectedContainerID {

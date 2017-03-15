@@ -23,7 +23,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -33,6 +32,7 @@ import (
 
 	"github.com/fsnotify/fsnotify"
 	"github.com/mitchellh/mapstructure"
+	"github.com/spf13/afero"
 	"github.com/spf13/cast"
 	jww "github.com/spf13/jwalterweatherman"
 	"github.com/spf13/pflag"
@@ -132,6 +132,9 @@ type Viper struct {
 	// A set of paths to look for the config file in
 	configPaths []string
 
+	// The filesystem to read config from.
+	fs afero.Fs
+
 	// A set of remote providers to search for the configuration
 	remoteProviders []*defaultRemoteProvider
 
@@ -161,6 +164,7 @@ func New() *Viper {
 	v := new(Viper)
 	v.keyDelim = "."
 	v.configName = "config"
+	v.fs = afero.NewOsFs()
 	v.config = make(map[string]interface{})
 	v.override = make(map[string]interface{})
 	v.defaults = make(map[string]interface{})
@@ -446,6 +450,11 @@ func (v *Viper) SetTypeByDefaultValue(enable bool) {
 	v.typeByDefValue = enable
 }
 
+// GetViper gets the global Viper instance.
+func GetViper() *Viper {
+	return v
+}
+
 // Viper is essentially repository for configurations
 // Get can retrieve any value given the key to use
 // Get has the behavior of returning the value associated with the first
@@ -549,6 +558,12 @@ func (v *Viper) GetBool(key string) bool {
 func GetInt(key string) int { return v.GetInt(key) }
 func (v *Viper) GetInt(key string) int {
 	return cast.ToInt(v.Get(key))
+}
+
+// Returns the value associated with the key as an integer
+func GetInt64(key string) int64 { return v.GetInt64(key) }
+func (v *Viper) GetInt64(key string) int64 {
+	return cast.ToInt64(v.Get(key))
 }
 
 // Returns the value associated with the key as a float64
@@ -660,8 +675,8 @@ func (v *Viper) BindPFlags(flags *pflag.FlagSet) (err error) {
 	return v.BindFlagValues(pflagValueSet{flags})
 }
 
-// Bind a specific key to a pflag (as used by cobra)
-// Example(where serverCmd is a Cobra instance):
+// Bind a specific key to a pflag (as used by cobra).
+// Example (where serverCmd is a Cobra instance):
 //
 //	 serverCmd.Flags().Int("port", 1138, "Port to run Application server on")
 //	 Viper.BindPFlag("port", serverCmd.Flags().Lookup("port"))
@@ -930,7 +945,7 @@ func (v *Viper) ReadInConfig() error {
 		return UnsupportedConfigError(v.getConfigType())
 	}
 
-	file, err := ioutil.ReadFile(v.getConfigFile())
+	file, err := afero.ReadFile(v.fs, v.getConfigFile())
 	if err != nil {
 		return err
 	}
@@ -948,7 +963,7 @@ func (v *Viper) MergeInConfig() error {
 		return UnsupportedConfigError(v.getConfigType())
 	}
 
-	file, err := ioutil.ReadFile(v.getConfigFile())
+	file, err := afero.ReadFile(v.fs, v.getConfigFile())
 	if err != nil {
 		return err
 	}
@@ -1202,12 +1217,19 @@ func (v *Viper) AllSettings() map[string]interface{} {
 	return m
 }
 
+// Se the filesystem to use to read configuration.
+func SetFs(fs afero.Fs) { v.SetFs(fs) }
+func (v *Viper) SetFs(fs afero.Fs) {
+	v.fs = fs
+}
+
 // Name for the config file.
 // Does not include extension.
 func SetConfigName(in string) { v.SetConfigName(in) }
 func (v *Viper) SetConfigName(in string) {
 	if in != "" {
 		v.configName = in
+		v.configFile = ""
 	}
 }
 

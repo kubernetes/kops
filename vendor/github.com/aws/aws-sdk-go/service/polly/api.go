@@ -49,9 +49,8 @@ func (c *Polly) DeleteLexiconRequest(input *DeleteLexiconInput) (req *request.Re
 		input = &DeleteLexiconInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteLexiconOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -127,9 +126,8 @@ func (c *Polly) DescribeVoicesRequest(input *DescribeVoicesInput) (req *request.
 		input = &DescribeVoicesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeVoicesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -213,9 +211,8 @@ func (c *Polly) GetLexiconRequest(input *GetLexiconInput) (req *request.Request,
 		input = &GetLexiconInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetLexiconOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -288,9 +285,8 @@ func (c *Polly) ListLexiconsRequest(input *ListLexiconsInput) (req *request.Requ
 		input = &ListLexiconsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListLexiconsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -359,9 +355,8 @@ func (c *Polly) PutLexiconRequest(input *PutLexiconInput) (req *request.Request,
 		input = &PutLexiconInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutLexiconOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -451,9 +446,8 @@ func (c *Polly) SynthesizeSpeechRequest(input *SynthesizeSpeechInput) (req *requ
 		input = &SynthesizeSpeechInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SynthesizeSpeechOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

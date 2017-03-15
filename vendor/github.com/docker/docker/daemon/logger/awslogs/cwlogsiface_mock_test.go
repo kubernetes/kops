@@ -44,14 +44,7 @@ func (m *mockcwlogsclient) CreateLogStream(input *cloudwatchlogs.CreateLogStream
 }
 
 func (m *mockcwlogsclient) PutLogEvents(input *cloudwatchlogs.PutLogEventsInput) (*cloudwatchlogs.PutLogEventsOutput, error) {
-	events := make([]*cloudwatchlogs.InputLogEvent, len(input.LogEvents))
-	copy(events, input.LogEvents)
-	m.putLogEventsArgument <- &cloudwatchlogs.PutLogEventsInput{
-		LogEvents:     events,
-		SequenceToken: input.SequenceToken,
-		LogGroupName:  input.LogGroupName,
-		LogStreamName: input.LogStreamName,
-	}
+	m.putLogEventsArgument <- input
 	output := <-m.putLogEventsResult
 	return output.successResult, output.errorResult
 }
@@ -74,4 +67,10 @@ func newMockMetadataClient() *mockmetadataclient {
 func (m *mockmetadataclient) Region() (string, error) {
 	output := <-m.regionResult
 	return output.successResult, output.errorResult
+}
+
+func test() {
+	_ = &logStream{
+		client: newMockClient(),
+	}
 }

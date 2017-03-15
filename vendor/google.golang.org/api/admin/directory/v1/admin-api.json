@@ -1,20 +1,20 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"jQLIOHBVnDZie4rQHGH1WJF-INE/rR5KtGkUMGICtJVpSsF4OCZZlC4\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/KNzMHbJpO5huP0rtdsc26pLegT0\"",
  "discoveryVersion": "v1",
  "id": "admin:directory_v1",
  "name": "admin",
  "canonicalName": "directory",
  "version": "directory_v1",
- "revision": "20160323",
+ "revision": "20161020",
  "title": "Admin Directory API",
  "description": "The Admin SDK Directory API lets you view and manage enterprise resources such as users and groups, administrative notifications, security features, and more.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "packagePath": "admin",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/admin-sdk/directory/",
  "protocol": "rest",
@@ -533,6 +533,25 @@
     }
    }
   },
+  "ChromeOsDeviceAction": {
+   "id": "ChromeOsDeviceAction",
+   "type": "object",
+   "description": "JSON request template for firing actions on ChromeOs Device in Directory Devices API.",
+   "properties": {
+    "action": {
+     "type": "string",
+     "description": "Action to be taken on the ChromeOs Device",
+     "annotations": {
+      "required": [
+       "directory.chromeosdevices.action"
+      ]
+     }
+    },
+    "deprovisionReason": {
+     "type": "string"
+    }
+   }
+  },
   "ChromeOsDevices": {
    "id": "ChromeOsDevices",
    "type": "object",
@@ -890,6 +909,10 @@
      "type": "string",
      "description": "Role of member"
     },
+    "status": {
+     "type": "string",
+     "description": "Status of member (Immutable)"
+    },
     "type": {
      "type": "string",
      "description": "Type of member (Immutable)"
@@ -969,6 +992,14 @@
      "type": "string",
      "description": "Mobile Device Baseband version (Read-only)"
     },
+    "bootloaderVersion": {
+     "type": "string",
+     "description": "Mobile Device Bootloader version (Read-only)"
+    },
+    "brand": {
+     "type": "string",
+     "description": "Mobile Device Brand (Read-only)"
+    },
     "buildNumber": {
      "type": "string",
      "description": "Mobile Device Build number (Read-only)"
@@ -989,12 +1020,20 @@
      "type": "string",
      "description": "Mobile Device serial number (Read-only)"
     },
+    "devicePasswordStatus": {
+     "type": "string",
+     "description": "DevicePasswordStatus (Read-only)"
+    },
     "email": {
      "type": "array",
      "description": "List of owner user's email addresses (Read-only)",
      "items": {
       "type": "string"
      }
+    },
+    "encryptionStatus": {
+     "type": "string",
+     "description": "Mobile Device Encryption Status (Read-only)"
     },
     "etag": {
      "type": "string",
@@ -1004,6 +1043,10 @@
      "type": "string",
      "description": "Date and time the device was first synchronized with the policy settings in the Google Apps administrator control panel (Read-only)",
      "format": "date-time"
+    },
+    "hardware": {
+     "type": "string",
+     "description": "Mobile Device Hardware (Read-only)"
     },
     "hardwareId": {
      "type": "string",
@@ -1030,6 +1073,10 @@
     "managedAccountIsOnOwnerProfile": {
      "type": "boolean",
      "description": "Boolean indicating if this account is on owner/primary profile or not (Read-only)"
+    },
+    "manufacturer": {
+     "type": "string",
+     "description": "Mobile Device manufacturer (Read-only)"
     },
     "meid": {
      "type": "string",
@@ -1061,9 +1108,22 @@
       "type": "string"
      }
     },
+    "privilege": {
+     "type": "string",
+     "description": "DMAgentPermission (Read-only)"
+    },
+    "releaseVersion": {
+     "type": "string",
+     "description": "Mobile Device release version version (Read-only)"
+    },
     "resourceId": {
      "type": "string",
      "description": "Unique identifier of Mobile Device (Read-only)"
+    },
+    "securityPatchLevel": {
+     "type": "string",
+     "description": "Mobile Device Security patch level (Read-only)",
+     "format": "int64"
     },
     "serialNumber": {
      "type": "string",
@@ -2448,6 +2508,36 @@
   },
   "chromeosdevices": {
    "methods": {
+    "action": {
+     "id": "directory.chromeosdevices.action",
+     "path": "customer/{customerId}/devices/chromeos/{resourceId}/action",
+     "httpMethod": "POST",
+     "description": "Take action on Chrome OS Device",
+     "parameters": {
+      "customerId": {
+       "type": "string",
+       "description": "Immutable id of the Google Apps account",
+       "required": true,
+       "location": "path"
+      },
+      "resourceId": {
+       "type": "string",
+       "description": "Immutable id of Chrome OS Device",
+       "required": true,
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "customerId",
+      "resourceId"
+     ],
+     "request": {
+      "$ref": "ChromeOsDeviceAction"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/admin.directory.device.chromeos"
+     ]
+    },
     "get": {
      "id": "directory.chromeosdevices.get",
      "path": "customer/{customerId}/devices/chromeos/{deviceId}",
@@ -2682,7 +2772,7 @@
      "id": "directory.customers.get",
      "path": "customers/{customerKey}",
      "httpMethod": "GET",
-     "description": "Retrives a customer.",
+     "description": "Retrieves a customer.",
      "parameters": {
       "customerKey": {
        "type": "string",
@@ -2906,7 +2996,7 @@
      "id": "directory.domains.get",
      "path": "customer/{customer}/domains/{domainName}",
      "httpMethod": "GET",
-     "description": "Retrives a domain of the customer.",
+     "description": "Retrieves a domain of the customer.",
      "parameters": {
       "customer": {
        "type": "string",

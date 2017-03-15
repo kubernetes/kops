@@ -18,13 +18,12 @@
 
 FROM java:openjdk-8-jre
 
-MAINTAINER Mik Vyatskov "vmik@google.com"
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV ELASTICSEARCH_VERSION 2.4.1
 
 RUN apt-get update \
-    && apt-get install -y curl \
+    && apt-get install -y curl gosu \
     && apt-get clean
 
 RUN set -x \
@@ -49,4 +48,4 @@ RUN useradd --no-create-home --user-group elasticsearch \
 VOLUME ["/data"]
 EXPOSE 9200 9300
 
-CMD /run.sh
+CMD ["/run.sh"]

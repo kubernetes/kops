@@ -6,7 +6,6 @@ import (
 	"syscall"
 
 	"github.com/docker/engine-api/types"
-	"github.com/opencontainers/specs/specs-go"
 	libseccomp "github.com/seccomp/libseccomp-golang"
 )
 
@@ -29,17 +28,16 @@ func arches() []types.Arch {
 		return []types.Arch{types.ArchMIPSEL, types.ArchMIPSEL64, types.ArchMIPSEL64N32}
 	case "mipsel64n32":
 		return []types.Arch{types.ArchMIPSEL, types.ArchMIPSEL64, types.ArchMIPSEL64N32}
-	case "s390x":
-		return []types.Arch{types.ArchS390, types.ArchS390X}
 	default:
 		return []types.Arch{}
 	}
 }
 
 // DefaultProfile defines the whitelist for the default seccomp profile.
-func DefaultProfile(rs *specs.Spec) *types.Seccomp {
-
-	syscalls := []*types.Syscall{
+var DefaultProfile = &types.Seccomp{
+	DefaultAction: types.ActErrno,
+	Architectures: arches(),
+	Syscalls: []*types.Syscall{
 		{
 			Name:   "accept",
 			Action: types.ActAllow,
@@ -57,6 +55,11 @@ func DefaultProfile(rs *specs.Spec) *types.Seccomp {
 		},
 		{
 			Name:   "alarm",
+			Action: types.ActAllow,
+			Args:   []*types.Arg{},
+		},
+		{
+			Name:   "arch_prctl",
 			Action: types.ActAllow,
 			Args:   []*types.Arg{},
 		},
@@ -100,7 +103,11 @@ func DefaultProfile(rs *specs.Spec) *types.Seccomp {
 			Action: types.ActAllow,
 			Args:   []*types.Arg{},
 		},
-
+		{
+			Name:   "chroot",
+			Action: types.ActAllow,
+			Args:   []*types.Arg{},
+		},
 		{
 			Name:   "clock_getres",
 			Action: types.ActAllow,
@@ -115,6 +122,18 @@ func DefaultProfile(rs *specs.Spec) *types.Seccomp {
 			Name:   "clock_nanosleep",
 			Action: types.ActAllow,
 			Args:   []*types.Arg{},
+		},
+		{
+			Name:   "clone",
+			Action: types.ActAllow,
+			Args: []*types.Arg{
+				{
+					Index:    0,
+					Value:    syscall.CLONE_NEWNS | syscall.CLONE_NEWUTS | syscall.CLONE_NEWIPC | syscall.CLONE_NEWUSER | syscall.CLONE_NEWPID | syscall.CLONE_NEWNET,
+					ValueTwo: 0,
+					Op:       types.OpMaskedEqual,
+				},
+			},
 		},
 		{
 			Name:   "close",
@@ -233,6 +252,11 @@ func DefaultProfile(rs *specs.Spec) *types.Seccomp {
 		},
 		{
 			Name:   "fallocate",
+			Action: types.ActAllow,
+			Args:   []*types.Arg{},
+		},
+		{
+			Name:   "fanotify_init",
 			Action: types.ActAllow,
 			Args:   []*types.Arg{},
 		},
@@ -1185,6 +1209,11 @@ func DefaultProfile(rs *specs.Spec) *types.Seccomp {
 			Args:   []*types.Arg{},
 		},
 		{
+			Name:   "setdomainname",
+			Action: types.ActAllow,
+			Args:   []*types.Arg{},
+		},
+		{
 			Name:   "setfsgid",
 			Action: types.ActAllow,
 			Args:   []*types.Arg{},
@@ -1221,6 +1250,11 @@ func DefaultProfile(rs *specs.Spec) *types.Seccomp {
 		},
 		{
 			Name:   "setgroups32",
+			Action: types.ActAllow,
+			Args:   []*types.Arg{},
+		},
+		{
+			Name:   "sethostname",
 			Action: types.ActAllow,
 			Args:   []*types.Arg{},
 		},
@@ -1565,6 +1599,11 @@ func DefaultProfile(rs *specs.Spec) *types.Seccomp {
 			Args:   []*types.Arg{},
 		},
 		{
+			Name:   "vhangup",
+			Action: types.ActAllow,
+			Args:   []*types.Arg{},
+		},
+		{
 			Name:   "vmsplice",
 			Action: types.ActAllow,
 			Args:   []*types.Arg{},
@@ -1594,286 +1633,27 @@ func DefaultProfile(rs *specs.Spec) *types.Seccomp {
 			Action: types.ActAllow,
 			Args:   []*types.Arg{},
 		},
-	}
-
-	var sysCloneFlagsIndex uint
-	var arch string
-	var native, err = libseccomp.GetNativeArch()
-	if err == nil {
-		arch = native.String()
-	}
-	switch arch {
-	case "arm", "arm64":
-		syscalls = append(syscalls, []*types.Syscall{
-			{
-				Name:   "breakpoint",
-				Action: types.ActAllow,
-				Args:   []*types.Arg{},
-			},
-			{
-				Name:   "cacheflush",
-				Action: types.ActAllow,
-				Args:   []*types.Arg{},
-			},
-			{
-				Name:   "set_tls",
-				Action: types.ActAllow,
-				Args:   []*types.Arg{},
-			},
-		}...)
-	case "amd64", "x32":
-		syscalls = append(syscalls, []*types.Syscall{
-			{
-				Name:   "arch_prctl",
-				Action: types.ActAllow,
-				Args:   []*types.Arg{},
-			},
-		}...)
-		fallthrough
-	case "x86":
-		syscalls = append(syscalls, []*types.Syscall{
-			{
-				Name:   "modify_ldt",
-				Action: types.ActAllow,
-				Args:   []*types.Arg{},
-			},
-		}...)
-	case "s390", "s390x":
-		syscalls = append(syscalls, []*types.Syscall{
-			{
-				Name:   "s390_pci_mmio_read",
-				Action: types.ActAllow,
-				Args:   []*types.Arg{},
-			},
-			{
-				Name:   "s390_pci_mmio_write",
-				Action: types.ActAllow,
-				Args:   []*types.Arg{},
-			},
-			{
-				Name:   "s390_runtime_instr",
-				Action: types.ActAllow,
-				Args:   []*types.Arg{},
-			},
-		}...)
-		/* Flags parameter of the clone syscall is the 2nd on s390 */
-		sysCloneFlagsIndex = 1
-	}
-
-	capSysAdmin := false
-
-	var cap string
-	for _, cap = range rs.Process.Capabilities {
-		switch cap {
-		case "CAP_DAC_READ_SEARCH":
-			syscalls = append(syscalls, []*types.Syscall{
-				{
-					Name:   "name_to_handle_at",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "open_by_handle_at",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-			}...)
-		case "CAP_SYS_ADMIN":
-			capSysAdmin = true
-			syscalls = append(syscalls, []*types.Syscall{
-				{
-					Name:   "bpf",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "clone",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "fanotify_init",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "lookup_dcookie",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "mount",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "perf_event_open",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "setdomainname",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "sethostname",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "setns",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "umount",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "umount2",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "unshare",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-			}...)
-		case "CAP_SYS_BOOT":
-			syscalls = append(syscalls, []*types.Syscall{
-				{
-					Name:   "reboot",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-			}...)
-		case "CAP_SYS_CHROOT":
-			syscalls = append(syscalls, []*types.Syscall{
-				{
-					Name:   "chroot",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-			}...)
-		case "CAP_SYS_MODULE":
-			syscalls = append(syscalls, []*types.Syscall{
-				{
-					Name:   "delete_module",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "init_module",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "finit_module",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "query_module",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-			}...)
-		case "CAP_SYS_PACCT":
-			syscalls = append(syscalls, []*types.Syscall{
-				{
-					Name:   "acct",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-			}...)
-		case "CAP_SYS_PTRACE":
-			syscalls = append(syscalls, []*types.Syscall{
-				{
-					Name:   "kcmp",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "process_vm_readv",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "process_vm_writev",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "ptrace",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-			}...)
-		case "CAP_SYS_RAWIO":
-			syscalls = append(syscalls, []*types.Syscall{
-				{
-					Name:   "iopl",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "ioperm",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-			}...)
-		case "CAP_SYS_TIME":
-			syscalls = append(syscalls, []*types.Syscall{
-				{
-					Name:   "settimeofday",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "stime",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-				{
-					Name:   "adjtimex",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-			}...)
-		case "CAP_SYS_TTY_CONFIG":
-			syscalls = append(syscalls, []*types.Syscall{
-				{
-					Name:   "vhangup",
-					Action: types.ActAllow,
-					Args:   []*types.Arg{},
-				},
-			}...)
-		}
-	}
-
-	if !capSysAdmin {
-		syscalls = append(syscalls, []*types.Syscall{
-			{
-				Name:   "clone",
-				Action: types.ActAllow,
-				Args: []*types.Arg{
-					{
-						Index:    sysCloneFlagsIndex,
-						Value:    syscall.CLONE_NEWNS | syscall.CLONE_NEWUTS | syscall.CLONE_NEWIPC | syscall.CLONE_NEWUSER | syscall.CLONE_NEWPID | syscall.CLONE_NEWNET,
-						ValueTwo: 0,
-						Op:       types.OpMaskedEqual,
-					},
-				},
-			},
-		}...)
-	}
-
-	return &types.Seccomp{
-		DefaultAction: types.ActErrno,
-		Architectures: arches(),
-		Syscalls:      syscalls,
-	}
+		// i386 specific syscalls
+		{
+			Name:   "modify_ldt",
+			Action: types.ActAllow,
+			Args:   []*types.Arg{},
+		},
+		// arm specific syscalls
+		{
+			Name:   "breakpoint",
+			Action: types.ActAllow,
+			Args:   []*types.Arg{},
+		},
+		{
+			Name:   "cacheflush",
+			Action: types.ActAllow,
+			Args:   []*types.Arg{},
+		},
+		{
+			Name:   "set_tls",
+			Action: types.ActAllow,
+			Args:   []*types.Arg{},
+		},
+	},
 }

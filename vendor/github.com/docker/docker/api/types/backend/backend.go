@@ -6,7 +6,6 @@ package backend
 import (
 	"io"
 
-	"github.com/docker/docker/pkg/streamformatter"
 	"github.com/docker/engine-api/types"
 )
 
@@ -18,7 +17,7 @@ type ContainerAttachConfig struct {
 	UseStderr  bool
 	Logs       bool
 	Stream     bool
-	DetachKeys string
+	DetachKeys []byte
 
 	// Used to signify that streams are multiplexed and therefore need a StdWriter to encode stdout/sderr messages accordingly.
 	// TODO @cpuguy83: This shouldn't be needed. It was only added so that http and websocket endpoints can use the same function, and the websocket function was not using a stdwriter prior to this change...
@@ -32,6 +31,7 @@ type ContainerAttachConfig struct {
 type ContainerLogsConfig struct {
 	types.ContainerLogsOptions
 	OutStream io.Writer
+	Stop      <-chan bool
 }
 
 // ContainerStatsConfig holds information for configuring the runtime
@@ -39,6 +39,7 @@ type ContainerLogsConfig struct {
 type ContainerStatsConfig struct {
 	Stream    bool
 	OutStream io.Writer
+	Stop      <-chan bool
 	Version   string
 }
 
@@ -65,21 +66,4 @@ type ExecProcessConfig struct {
 	Arguments  []string `json:"arguments"`
 	Privileged *bool    `json:"privileged,omitempty"`
 	User       string   `json:"user,omitempty"`
-}
-
-// ContainerCommitConfig is a wrapper around
-// types.ContainerCommitConfig that also
-// transports configuration changes for a container.
-type ContainerCommitConfig struct {
-	types.ContainerCommitConfig
-	Changes []string
-}
-
-// ProgressWriter is an interface
-// to transport progress streams.
-type ProgressWriter struct {
-	Output             io.Writer
-	StdoutFormatter    *streamformatter.StdoutFormatter
-	StderrFormatter    *streamformatter.StderrFormatter
-	ProgressReaderFunc func(io.ReadCloser) io.ReadCloser
 }

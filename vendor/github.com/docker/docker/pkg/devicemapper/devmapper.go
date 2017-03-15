@@ -279,7 +279,7 @@ func LogInit(logger DevmapperLogger) {
 // SetDevDir sets the dev folder for the device mapper library (usually /dev).
 func SetDevDir(dir string) error {
 	if res := DmSetDevDir(dir); res != 1 {
-		logrus.Debug("devicemapper: Error dm_set_dev_dir")
+		logrus.Debugf("devicemapper: Error dm_set_dev_dir")
 		return ErrSetDevDir
 	}
 	return nil

@@ -16,7 +16,6 @@ package pubsub
 
 import (
 	"encoding/base64"
-	"time"
 
 	raw "google.golang.org/api/pubsub/v1"
 )
@@ -38,15 +37,12 @@ type Message struct {
 	// ackID is the identifier to acknowledge this message.
 	ackID string
 
-	// The time at which the message was published.
-	// This is populated by the server for Messages obtained from a subscription.
-	// This field is read-only.
-	PublishTime time.Time
+	// TODO(mcgreevy): add publish time.
 
 	calledDone bool
 
 	// The iterator that created this Message.
-	it *MessageIterator
+	it *Iterator
 }
 
 func toMessage(resp *raw.ReceivedMessage) (*Message, error) {
@@ -57,27 +53,20 @@ func toMessage(resp *raw.ReceivedMessage) (*Message, error) {
 	if err != nil {
 		return nil, err
 	}
-	pubTime, err := time.Parse(time.RFC3339, resp.Message.PublishTime)
-	if err != nil {
-		return nil, err
-	}
 	return &Message{
-		ackID:       resp.AckId,
-		Data:        data,
-		Attributes:  resp.Message.Attributes,
-		ID:          resp.Message.MessageId,
-		PublishTime: pubTime,
+		ackID:      resp.AckId,
+		Data:       data,
+		Attributes: resp.Message.Attributes,
+		ID:         resp.Message.MessageId,
 	}, nil
 }
 
-// Done completes the processing of a Message that was returned from a MessageIterator.
+// Done completes the processing of a Message that was returned from an Iterator.
 // ack indicates whether the message should be acknowledged.
 // Client code must call Done when finished for each Message returned by an iterator.
-// Done may only be called on Messages returned by a MessageIterator.
+// Done may only be called on Messages returned by an iterator.
 // If message acknowledgement fails, the Message will be redelivered.
 // Calls to Done have no effect after the first call.
-//
-// See MessageIterator.Next for an example.
 func (m *Message) Done(ack bool) {
 	if m.calledDone {
 		return

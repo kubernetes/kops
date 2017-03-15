@@ -48,9 +48,8 @@ func (c *SMS) CreateReplicationJobRequest(input *CreateReplicationJobInput) (req
 		input = &CreateReplicationJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateReplicationJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -143,9 +142,8 @@ func (c *SMS) DeleteReplicationJobRequest(input *DeleteReplicationJobInput) (req
 		input = &DeleteReplicationJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteReplicationJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -228,9 +226,8 @@ func (c *SMS) DeleteServerCatalogRequest(input *DeleteServerCatalogInput) (req *
 		input = &DeleteServerCatalogInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteServerCatalogOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -309,9 +306,8 @@ func (c *SMS) DisassociateConnectorRequest(input *DisassociateConnectorInput) (r
 		input = &DisassociateConnectorInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DisassociateConnectorOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -395,9 +391,8 @@ func (c *SMS) GetConnectorsRequest(input *GetConnectorsInput) (req *request.Requ
 		input = &GetConnectorsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetConnectorsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -493,9 +488,8 @@ func (c *SMS) GetReplicationJobsRequest(input *GetReplicationJobsInput) (req *re
 		input = &GetReplicationJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetReplicationJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -600,9 +594,8 @@ func (c *SMS) GetReplicationRunsRequest(input *GetReplicationRunsInput) (req *re
 		input = &GetReplicationRunsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetReplicationRunsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -707,9 +700,8 @@ func (c *SMS) GetServersRequest(input *GetServersInput) (req *request.Request, o
 		input = &GetServersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetServersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -799,9 +791,8 @@ func (c *SMS) ImportServerCatalogRequest(input *ImportServerCatalogInput) (req *
 		input = &ImportServerCatalogInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ImportServerCatalogOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -885,9 +876,8 @@ func (c *SMS) StartOnDemandReplicationRunRequest(input *StartOnDemandReplication
 		input = &StartOnDemandReplicationRunInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartOnDemandReplicationRunOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -971,9 +961,8 @@ func (c *SMS) UpdateReplicationJobRequest(input *UpdateReplicationJobInput) (req
 		input = &UpdateReplicationJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateReplicationJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
