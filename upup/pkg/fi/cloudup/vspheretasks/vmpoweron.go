@@ -57,6 +57,7 @@ func (_ *VMPowerOn) CheckChanges(a, e, changes *VMPowerOn) error {
 }
 
 func (_ *VMPowerOn) RenderVC(t *vsphere.VSphereAPITarget, a, e, changes *VMPowerOn) error {
-	glog.Info("VMPowerOn.RenderVC invoked!")
-	return nil
+	glog.V(2).Infof("VMPowerOn.RenderVC invoked for vm %s", *changes.AttachISO.VM.Name)
+	err := t.Cloud.PowerOn(*changes.AttachISO.VM.Name)
+	return err
 }

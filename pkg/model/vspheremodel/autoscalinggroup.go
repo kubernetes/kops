@@ -35,7 +35,8 @@ const defaultVmTemplateName = "Ubuntu_16_10"
 
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Note that we are creating a VM per instance group. Instance group represents a group of VMs.
-	// This logic should change once we add support for multiple master and worker nodes.
+	// The following logic should considerably change once we add support for multiple master/worker nodes,
+	// cloud-init etc.
 	for _, ig := range b.InstanceGroups {
 		name := b.AutoscalingGroupName(ig)
 		createVmTask := &vspheretasks.VirtualMachine{
