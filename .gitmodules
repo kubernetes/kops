@@ -247,3 +247,6 @@
 [submodule "_vendor/github.com/chai2010/gettext-go"]
 	path = _vendor/github.com/chai2010/gettext-go
 	url = https://github.com/chai2010/gettext-go
+[submodule "_vendor/vbom.ml/util"]
+	path = _vendor/vbom.ml/util
+	url = https://github.com/fvbommel/util.git
