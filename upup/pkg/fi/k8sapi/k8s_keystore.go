@@ -22,17 +22,17 @@ import (
 	"crypto/x509"
 	"fmt"
 	"github.com/golang/glog"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/v1"
-	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"math/big"
 	"time"
 )
 
 type KubernetesKeystore struct {
-	client    k8s_clientset.Interface
+	client    kubernetes.Interface
 	namespace string
 
 	//mutex     sync.Mutex
@@ -42,7 +42,7 @@ type KubernetesKeystore struct {
 
 var _ fi.Keystore = &KubernetesKeystore{}
 
-func NewKubernetesKeystore(client k8s_clientset.Interface, namespace string) fi.Keystore {
+func NewKubernetesKeystore(client kubernetes.Interface, namespace string) fi.Keystore {
 	c := &KubernetesKeystore{
 		client:    client,
 		namespace: namespace,
@@ -79,9 +79,9 @@ func (c *KubernetesKeystore) issueCert(id string, serial *big.Int, privateKey *f
 }
 
 func (c *KubernetesKeystore) findSecret(id string) (*v1.Secret, error) {
-	secret, err := c.client.Core().Secrets(c.namespace).Get(id, meta_v1.GetOptions{})
+	secret, err := c.client.CoreV1().Secrets(c.namespace).Get(id, meta_v1.GetOptions{})
 	if err != nil {
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("error reading secret %s/%s from kubernetes: %v", c.namespace, id, err)
@@ -134,7 +134,7 @@ func (c *KubernetesKeystore) StoreKeypair(id string, cert *fi.Certificate, priva
 	}
 
 	secret, err := keypair.Encode()
-	createdSecret, err := c.client.Core().Secrets(c.namespace).Create(secret)
+	createdSecret, err := c.client.CoreV1().Secrets(c.namespace).Create(secret)
 	if err != nil {
 		return fmt.Errorf("error creating secret %s/%s: %v", secret.Namespace, secret.Name, err)
 	}

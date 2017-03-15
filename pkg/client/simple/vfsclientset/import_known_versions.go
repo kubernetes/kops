@@ -20,13 +20,13 @@ package vfsclientset
 import (
 	"fmt"
 
+	"k8s.io/kops/pkg/apis/kops"
+
 	_ "k8s.io/kops/pkg/apis/kops/install"
-	_ "k8s.io/kubernetes/pkg/api/install"
-	"k8s.io/kubernetes/pkg/apimachinery/registered"
 )
 
 func init() {
-	if missingVersions := registered.ValidateEnvRequestedVersions(); len(missingVersions) != 0 {
+	if missingVersions := kops.Registry.ValidateEnvRequestedVersions(); len(missingVersions) != 0 {
 		panic(fmt.Sprintf("KUBE_API_VERSIONS contains versions that are not installed: %q.", missingVersions))
 	}
 }

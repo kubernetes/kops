@@ -19,10 +19,10 @@ package components
 import (
 	"fmt"
 	"github.com/blang/semver"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
-	"k8s.io/kubernetes/pkg/api"
 )
 
 // KubeAPIServerOptionsBuilder adds options for the apiserver to the model
@@ -67,10 +67,10 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 			// We prioritize the internal IP above the hostname
 			clusterSpec.KubeAPIServer.KubeletPreferredAddressTypes = []string{
-				string(api.NodeInternalIP),
-				string(api.NodeHostName),
-				string(api.NodeExternalIP),
-				string(api.NodeLegacyHostIP),
+				string(v1.NodeInternalIP),
+				string(v1.NodeHostName),
+				string(v1.NodeExternalIP),
+				string(v1.NodeLegacyHostIP),
 			}
 		}
 	}
