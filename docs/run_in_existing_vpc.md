@@ -1,7 +1,7 @@
 ## Running in a shared VPC
 
 When launching into a shared VPC, the VPC & the Internet Gateway will be reused. By default we create a new subnet per zone,
-and a new route table, but you can also use a shared subnet (see [below](#running-in-a-shared-subnet)).
+and a new route table, but you can also use a shared subnet (see [below](#shared-subnets)).
 
 Use kops create cluster with the `--vpc` argument for your existing VPC:
 
