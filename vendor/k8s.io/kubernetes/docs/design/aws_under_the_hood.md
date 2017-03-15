@@ -76,14 +76,11 @@ multiple ephemeral instance disks.
 
 ### Auto Scaling group
 
-Nodes (but not the master) are run in an
-[Auto Scaling group](http://docs.aws.amazon.com/AutoScaling/latest/DeveloperGuide/AutoScalingGroup.html)
-on AWS. Currently auto-scaling (e.g. based on CPU) is not actually enabled
+Two 
+[Auto Scaling groups](http://docs.aws.amazon.com/AutoScaling/latest/DeveloperGuide/AutoScalingGroup.html) are created
+on AWS: one for the masters and one for the nodes. Currently auto-scaling (e.g. based on CPU) is not actually enabled
 ([#11935](http://issues.k8s.io/11935)). Instead, the Auto Scaling group means
 that AWS will relaunch any nodes that are terminated.
-
-We do not currently run the master in an AutoScalingGroup, but we should
-([#11934](http://issues.k8s.io/11934)).
 
 ### Networking
 
