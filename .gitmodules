@@ -1,9 +1,6 @@
 [submodule "_vendor/k8s.io/kubernetes"]
 	path = _vendor/k8s.io/kubernetes
 	url = https://github.com/kubernetes/kubernetes
-[submodule "_vendor/google.golang.org/cloud"]
-	path = _vendor/google.golang.org/cloud
-	url = https://github.com/GoogleCloudPlatform/gcloud-golang
 [submodule "_vendor/google.golang.org/api"]
 	path = _vendor/google.golang.org/api
 	url = https://github.com/google/google-api-go-client
