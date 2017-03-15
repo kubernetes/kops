@@ -14,21 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kubernetes
+package kubernetestarget
 
 import (
 	"fmt"
+	"k8s.io/client-go/kubernetes"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/kutil"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
 type KubernetesTarget struct {
 	//kubectlContext string
 	//keystore *k8sapi.KubernetesKeystore
-	KubernetesClient k8s_clientset.Interface
+	KubernetesClient kubernetes.Interface
 	cluster          *kopsapi.Cluster
 }
 
@@ -50,7 +50,7 @@ func NewKubernetesTarget(clientset simple.Clientset, keystore fi.Keystore, clust
 		return nil, fmt.Errorf("error building configuration for cluster %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
-	k8sClient, err := k8s_clientset.NewForConfig(clientConfig)
+	k8sClient, err := kubernetes.NewForConfig(clientConfig)
 	if err != nil {
 		return nil, fmt.Errorf("cannot build k8s client: %v", err)
 	}

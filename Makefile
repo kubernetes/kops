@@ -255,6 +255,9 @@ utils-dist:
 # See docs/development/dependencies.md
 copydeps:
 	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
+	ln -sf kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
+	ln -sf kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
+	ln -sf kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
 
 gofmt:
 	gofmt -w -s channels/

@@ -19,8 +19,8 @@ package protokube
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/client-go/tools/clientcmd"
 	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
 	"sync"
 )
 
