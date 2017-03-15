@@ -160,6 +160,9 @@ type ProtokubeFlags struct {
 	Cloud             *string `json:"cloud,omitempty" flag:"cloud"`
 
 	ApplyTaints *bool `json:"applyTaints,omitempty" flag:"apply-taints"`
+
+	// ClusterId flag is required only for vSphere cloud type, to pass cluster id information to protokube. AWS and GCE workflows ignore this flag.
+	ClusterId *string `json:"cluster-id,omitempty" flag:"cluster-id"`
 }
 
 // ProtokubeFlags returns the flags object for protokube
@@ -207,6 +210,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 			f.DNSProvider = fi.String("google-clouddns")
 		case fi.CloudProviderVSphere:
 			f.DNSProvider = fi.String("aws-route53")
+			f.ClusterId = fi.String(t.Cluster.ObjectMeta.Name)
 		default:
 			glog.Warningf("Unknown cloudprovider %q; won't set DNS provider")
 		}

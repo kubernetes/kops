@@ -126,6 +126,18 @@ func run() error {
 		if internalIP == nil {
 			internalIP = gceVolumes.InternalIP()
 		}
+	} else if cloud == "vsphere" {
+		glog.Info("Initializing vSphere volumes")
+		vsphereVolumes, err := protokube.NewVSphereVolumes()
+		if err != nil {
+			glog.Errorf("Error initializing vSphere: %q", err)
+			os.Exit(1)
+		}
+		volumes = vsphereVolumes
+		if internalIP == nil {
+			internalIP = vsphereVolumes.InternalIp()
+		}
+
 	} else {
 		glog.Errorf("Unknown cloud %q", cloud)
 		os.Exit(1)
