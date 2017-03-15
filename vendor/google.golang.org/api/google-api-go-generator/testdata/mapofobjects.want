@@ -66,7 +66,7 @@ func (s *Service) userAgent() string {
 
 type Entity struct {
 	// Properties: The entity's properties.
-	Properties map[string]Property `json:"properties,omitempty"`
+	Properties map[string]EntityProperties `json:"properties,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Properties") to
 	// unconditionally include in API requests. By default, fields with
@@ -75,10 +75,47 @@ type Entity struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Properties") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Entity) MarshalJSON() ([]byte, error) {
 	type noMethod Entity
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type EntityProperties struct {
+	// Name: The name of the property. Properties with names matching regex
+	// "__.*__" are reserved. A reserved property name is forbidden in
+	// certain documented contexts. The name cannot be "".
+	Name string `json:"name,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Name") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Name") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *EntityProperties) MarshalJSON() ([]byte, error) {
+	type noMethod EntityProperties
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }

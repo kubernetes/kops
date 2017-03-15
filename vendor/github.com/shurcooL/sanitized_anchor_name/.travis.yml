@@ -1,14 +1,8 @@
-sudo: false
 language: go
 go:
-  - 1.7
-  - tip
-matrix:
-  allow_failures:
-    - go: tip
-  fast_finish: true
+  - 1.5
 install:
-  - # Do nothing. This is needed to prevent default install action "go get -t -v ./..." from happening here (we want it to happen inside script step).
+  - go get golang.org/x/tools/cmd/vet
 script:
   - go get -t -v ./...
   - diff -u <(echo -n) <(gofmt -d -s .)

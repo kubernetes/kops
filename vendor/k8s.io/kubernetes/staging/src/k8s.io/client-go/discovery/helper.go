@@ -19,26 +19,23 @@ package discovery
 import (
 	"fmt"
 
-	metav1 "k8s.io/client-go/pkg/apis/meta/v1"
-	"k8s.io/client-go/pkg/runtime/schema"
-	"k8s.io/client-go/pkg/util/sets"
-	"k8s.io/client-go/pkg/version"
-	// Import solely to initialize client auth plugins.
-	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/sets"
+	apimachineryversion "k8s.io/apimachinery/pkg/version"
 )
 
 // MatchesServerVersion queries the server to compares the build version
 // (git hash) of the client with the server's build version. It returns an error
 // if it failed to contact the server or if the versions are not an exact match.
-func MatchesServerVersion(client DiscoveryInterface) error {
-	cVer := version.Get()
+func MatchesServerVersion(clientVersion apimachineryversion.Info, client DiscoveryInterface) error {
 	sVer, err := client.ServerVersion()
 	if err != nil {
 		return fmt.Errorf("couldn't read version from server: %v\n", err)
 	}
 	// GitVersion includes GitCommit and GitTreeState, but best to be safe?
-	if cVer.GitVersion != sVer.GitVersion || cVer.GitCommit != sVer.GitCommit || cVer.GitTreeState != sVer.GitTreeState {
-		return fmt.Errorf("server version (%#v) differs from client version (%#v)!\n", sVer, cVer)
+	if clientVersion.GitVersion != sVer.GitVersion || clientVersion.GitCommit != sVer.GitCommit || clientVersion.GitTreeState != sVer.GitTreeState {
+		return fmt.Errorf("server version (%#v) differs from client version (%#v)!\n", sVer, clientVersion)
 	}
 
 	return nil
@@ -50,6 +47,9 @@ func MatchesServerVersion(client DiscoveryInterface) error {
 //   preference.
 // - If version is provided and the server does not support it,
 //   return an error.
+// TODO negotiation should be reserved for cases where we need a version for a given group.  In those cases, it should return an ordered list of
+// server preferences.  From that list, a separate function can match from an ordered list of client versions.
+// This is not what the function has ever done before, but it makes more logical sense.
 func NegotiateVersion(client DiscoveryInterface, requiredGV *schema.GroupVersion, clientRegisteredGVs []schema.GroupVersion) (*schema.GroupVersion, error) {
 	clientVersions := sets.String{}
 	for _, gv := range clientRegisteredGVs {
@@ -105,8 +105,8 @@ func NegotiateVersion(client DiscoveryInterface, requiredGV *schema.GroupVersion
 		return &clientRegisteredGVs[0], nil
 	}
 
-	return nil, fmt.Errorf("failed to negotiate an api version; server supports: %v, client supports: %v",
-		serverVersions, clientVersions)
+	// fall back to an empty GroupVersion.  Most client commands no longer respect a GroupVersion anyway
+	return &schema.GroupVersion{}, nil
 }
 
 // GroupVersionResources converts APIResourceLists to the GroupVersionResources.

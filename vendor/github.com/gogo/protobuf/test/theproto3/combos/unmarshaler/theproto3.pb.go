@@ -50,9 +50,7 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion1
 
 type MapEnum int32
 
@@ -3090,12 +3088,11 @@ func valueToGoStringTheproto3(v interface{}, typ string) string {
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
 }
-func extensionToGoStringTheproto3(m github_com_gogo_protobuf_proto.Message) string {
-	e := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(m)
+func extensionToGoStringTheproto3(e map[int32]github_com_gogo_protobuf_proto.Extension) string {
 	if e == nil {
 		return "nil"
 	}
-	s := "proto.NewUnsafeXXX_InternalExtensions(map[int32]proto.Extension{"
+	s := "map[int32]proto.Extension{"
 	keys := make([]int, 0, len(e))
 	for k := range e {
 		keys = append(keys, int(k))
@@ -3105,7 +3102,7 @@ func extensionToGoStringTheproto3(m github_com_gogo_protobuf_proto.Message) stri
 	for _, k := range keys {
 		ss = append(ss, strconv.Itoa(k)+": "+e[int32(k)].GoString())
 	}
-	s += strings.Join(ss, ",") + "})"
+	s += strings.Join(ss, ",") + "}"
 	return s
 }
 func NewPopulatedMessage(r randyTheproto3, easy bool) *Message {
@@ -9405,8 +9402,6 @@ var (
 	ErrInvalidLengthTheproto3 = fmt.Errorf("proto: negative length found during unmarshaling")
 	ErrIntOverflowTheproto3   = fmt.Errorf("proto: integer overflow")
 )
-
-func init() { proto.RegisterFile("combos/unmarshaler/theproto3.proto", fileDescriptorTheproto3) }
 
 var fileDescriptorTheproto3 = []byte{
 	// 1587 bytes of a gzipped FileDescriptorProto

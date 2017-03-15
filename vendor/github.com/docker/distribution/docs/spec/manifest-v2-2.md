@@ -57,7 +57,7 @@ image manifest based on the Content-Type returned in the HTTP response.
 
     The manifests field contains a list of manifests for specific platforms.
 
-    Fields of an object in the manifests list are:
+    Fields of a object in the manifests list are:
 
     - **`mediaType`** *string*
 
@@ -76,7 +76,7 @@ image manifest based on the Content-Type returned in the HTTP response.
     - **`digest`** *string*
 
         The digest of the content, as defined by the
-        [Registry V2 HTTP API Specificiation](api.md#digest-parameter).
+        [Registry V2 HTTP API Specificiation](https://docs.docker.com/registry/spec/api/#digest-parameter).
 
     - **`platform`** *object*
 
@@ -191,7 +191,7 @@ image. It's the direct replacement for the schema-1 manifest.
     - **`digest`** *string*
 
         The digest of the content, as defined by the
-        [Registry V2 HTTP API Specificiation](api.md#digest-parameter).
+        [Registry V2 HTTP API Specificiation](https://docs.docker.com/registry/spec/api/#digest-parameter).
 
 - **`layers`** *array*
 
@@ -214,15 +214,7 @@ image. It's the direct replacement for the schema-1 manifest.
     - **`digest`** *string*
 
         The digest of the content, as defined by the
-        [Registry V2 HTTP API Specificiation](api.md#digest-parameter).
-
-    - **`urls`** *array*
-
-        For an ordinary layer, this is empty, and the layer contents can be
-        retrieved directly from the registry. For a layer with *`mediatype`* of
-        `application/vnd.docker.image.rootfs.foreign.diff.tar.gzip`, this
-        contains a non-empty list of URLs from which this object can be
-        downloaded.
+        [Registry V2 HTTP API Specificiation](https://docs.docker.com/registry/spec/api/#digest-parameter).
 
 ## Example Image Manifest
 

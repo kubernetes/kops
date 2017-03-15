@@ -1,19 +1,19 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/ujhyOwj_v419bKIpxmJcr2_DeWw\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/XZ8FPmt5VRZnJqZoZVRr98B87Wg\"",
  "discoveryVersion": "v1",
  "id": "games:v1",
  "name": "games",
  "canonicalName": "Games",
  "version": "v1",
- "revision": "20160516",
+ "revision": "20161103",
  "title": "Google Play Game Services API",
  "description": "The API for Google Play Game Services.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/games/services/",
  "protocol": "rest",

@@ -174,12 +174,20 @@ type Cardinality struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Number") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Cardinality) MarshalJSON() ([]byte, error) {
 	type noMethod Cardinality
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Empty: A generic empty message that you can re-use to avoid defining
@@ -212,12 +220,20 @@ type EndCondition struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Cardinality") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *EndCondition) MarshalJSON() ([]byte, error) {
 	type noMethod EndCondition
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListConfigsResponse: `ListConfigs()` returns the following response.
@@ -253,12 +269,20 @@ type ListConfigsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Configs") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListConfigsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListConfigsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListVariablesResponse: Response for the `ListVariables()` method.
@@ -290,12 +314,20 @@ type ListVariablesResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListVariablesResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListVariablesResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListWaitersResponse: Response for the `ListWaiters()` method.
@@ -326,12 +358,20 @@ type ListWaitersResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListWaitersResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListWaitersResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Operation: This resource represents a long-running operation that is
@@ -345,7 +385,8 @@ type Operation struct {
 	// available.
 	Done bool `json:"done,omitempty"`
 
-	// Error: The error result of the operation in case of failure.
+	// Error: The error result of the operation in case of failure or
+	// cancellation.
 	Error *Status `json:"error,omitempty"`
 
 	// Metadata: Service-specific metadata associated with the operation.
@@ -355,7 +396,7 @@ type Operation struct {
 	// Some services might not provide such metadata.  Any method that
 	// returns a
 	// long-running operation should document the metadata type, if any.
-	Metadata OperationMetadata `json:"metadata,omitempty"`
+	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
 
 	// Name: The server-assigned name, which is only unique within the same
 	// service that
@@ -379,7 +420,7 @@ type Operation struct {
 	// is `TakeSnapshot()`, the inferred response type
 	// is
 	// `TakeSnapshotResponse`.
-	Response OperationResponse `json:"response,omitempty"`
+	Response googleapi.RawMessage `json:"response,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -392,17 +433,21 @@ type Operation struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Done") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Operation) MarshalJSON() ([]byte, error) {
 	type noMethod Operation
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
-
-type OperationMetadata interface{}
-
-type OperationResponse interface{}
 
 // RuntimeConfig: A RuntimeConfig resource is the primary resource in
 // the Cloud RuntimeConfig
@@ -411,7 +456,6 @@ type OperationResponse interface{}
 // variables.
 type RuntimeConfig struct {
 	// Description: An optional description of the RuntimeConfig object.
-	// The length of the description must be less than 256 bytes.
 	Description string `json:"description,omitempty"`
 
 	// Name: The resource name of a runtime config. The name must have the
@@ -443,12 +487,20 @@ type RuntimeConfig struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RuntimeConfig) MarshalJSON() ([]byte, error) {
 	type noMethod RuntimeConfig
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Status: The `Status` type defines a logical error model that is
@@ -538,7 +590,7 @@ type Status struct {
 	// Details: A list of messages that carry the error details.  There will
 	// be a
 	// common set of message types for APIs to use.
-	Details []StatusDetails `json:"details,omitempty"`
+	Details []googleapi.RawMessage `json:"details,omitempty"`
 
 	// Message: A developer-facing error message, which should be in
 	// English. Any
@@ -554,15 +606,21 @@ type Status struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Status) MarshalJSON() ([]byte, error) {
 	type noMethod Status
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
-
-type StatusDetails interface{}
 
 // Variable: Describes a single variable within a RuntimeConfig
 // resource.
@@ -615,13 +673,21 @@ type Variable struct {
 	// executing.
 	State string `json:"state,omitempty"`
 
+	// Text: The string value of the variable. The length of the value must
+	// be less
+	// than 4096 bytes. Empty values are also accepted. For
+	// example,
+	// <code>text: "my text value"</code>.
+	Text string `json:"text,omitempty"`
+
 	// UpdateTime: [Output Only] The time of the last variable update.
 	UpdateTime string `json:"updateTime,omitempty"`
 
-	// Value: The value of the variable. The length of the value must be
-	// less than 4096
-	// bytes. Empty values are also accepted. The value must be Base64
-	// encoded.
+	// Value: The binary value of the variable. The length of the value must
+	// be less
+	// than 4096 bytes. Empty values are also accepted. The value must
+	// be
+	// base64 encoded. Only one of `value` or `text` can be set.
 	Value string `json:"value,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -635,12 +701,20 @@ type Variable struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Name") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Variable) MarshalJSON() ([]byte, error) {
 	type noMethod Variable
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Waiter: A Waiter resource waits for some end condition within a
@@ -663,9 +737,9 @@ func (s *Variable) MarshalJSON() ([]byte, error) {
 //
 // To learn more about using waiters, read the
 // [Creating a
-// Waiter](/deployment-manager/runtime-config/creating-a-water)
-// documenta
-// tion.
+// Waiter](/deployment-manager/runtime-configurator/creating-a-waiter)
+// do
+// cumentation.
 type Waiter struct {
 	// CreateTime: [Output Only] The instant at which this Waiter resource
 	// was created. Adding
@@ -686,7 +760,6 @@ type Waiter struct {
 	// Error: [Output Only] If the waiter ended due to a failure or timeout,
 	// this value
 	// will be set.
-	//
 	Error *Status `json:"error,omitempty"`
 
 	// Failure: [Optional] The failure condition of this waiter. If this
@@ -747,12 +820,20 @@ type Waiter struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CreateTime") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Waiter) MarshalJSON() ([]byte, error) {
 	type noMethod Waiter
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // WatchVariableRequest: Request for the `WatchVariable()` method.
@@ -775,12 +856,20 @@ type WatchVariableRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NewerThan") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *WatchVariableRequest) MarshalJSON() ([]byte, error) {
 	type noMethod WatchVariableRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "runtimeconfig.projects.configs.create":
@@ -791,6 +880,7 @@ type ProjectsConfigsCreateCall struct {
 	runtimeconfig *RuntimeConfig
 	urlParams_    gensupport.URLParams
 	ctx_          context.Context
+	header_       http.Header
 }
 
 // Create: Creates a new RuntimeConfig resource. The configuration name
@@ -800,6 +890,25 @@ func (r *ProjectsConfigsService) Create(parent string, runtimeconfig *RuntimeCon
 	c := &ProjectsConfigsCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	c.runtimeconfig = runtimeconfig
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional but
+// recommended unique <code>request_id</code>. If the server
+// receives two <code>create()</code> requests  with the
+// same
+// <code>request_id</code>, then the second request will be ignored and
+// the
+// first resource created and stored in the backend is returned.
+// Empty <code>request_id</code> fields are ignored.
+//
+// It is responsibility of the client to ensure uniqueness of
+// the
+// <code>request_id</code> strings.
+//
+// <code>request_id</code> strings are limited to 64 characters.
+func (c *ProjectsConfigsCreateCall) RequestId(requestId string) *ProjectsConfigsCreateCall {
+	c.urlParams_.Set("requestId", requestId)
 	return c
 }
 
@@ -819,8 +928,20 @@ func (c *ProjectsConfigsCreateCall) Context(ctx context.Context) *ProjectsConfig
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.runtimeconfig)
@@ -836,10 +957,7 @@ func (c *ProjectsConfigsCreateCall) doRequest(alt string) (*http.Response, error
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.create" call.
@@ -891,8 +1009,13 @@ func (c *ProjectsConfigsCreateCall) Do(opts ...googleapi.CallOption) (*RuntimeCo
 	//     "parent": {
 	//       "description": "The [project ID](https://support.google.com/cloud/answer/6158840?hl=en\u0026ref_topic=6158848)\nfor this request, in the format `projects/[PROJECT_ID]`.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional but recommended unique \u003ccode\u003erequest_id\u003c/code\u003e. If the server\nreceives two \u003ccode\u003ecreate()\u003c/code\u003e requests  with the same\n\u003ccode\u003erequest_id\u003c/code\u003e, then the second request will be ignored and the\nfirst resource created and stored in the backend is returned.\nEmpty \u003ccode\u003erequest_id\u003c/code\u003e fields are ignored.\n\nIt is responsibility of the client to ensure uniqueness of the\n\u003ccode\u003erequest_id\u003c/code\u003e strings.\n\n\u003ccode\u003erequest_id\u003c/code\u003e strings are limited to 64 characters.",
+	//       "location": "query",
 	//       "type": "string"
 	//     }
 	//   },
@@ -918,6 +1041,7 @@ type ProjectsConfigsDeleteCall struct {
 	name       string
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a RuntimeConfig resource.
@@ -943,8 +1067,20 @@ func (c *ProjectsConfigsDeleteCall) Context(ctx context.Context) *ProjectsConfig
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -955,10 +1091,7 @@ func (c *ProjectsConfigsDeleteCall) doRequest(alt string) (*http.Response, error
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.delete" call.
@@ -1010,7 +1143,7 @@ func (c *ProjectsConfigsDeleteCall) Do(opts ...googleapi.CallOption) (*Empty, er
 	//     "name": {
 	//       "description": "The RuntimeConfig resource to delete, in the format:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -1035,6 +1168,7 @@ type ProjectsConfigsGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets information about a RuntimeConfig resource.
@@ -1070,8 +1204,20 @@ func (c *ProjectsConfigsGetCall) Context(ctx context.Context) *ProjectsConfigsGe
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1085,10 +1231,7 @@ func (c *ProjectsConfigsGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.get" call.
@@ -1140,7 +1283,7 @@ func (c *ProjectsConfigsGetCall) Do(opts ...googleapi.CallOption) (*RuntimeConfi
 	//     "name": {
 	//       "description": "The name of the RuntimeConfig resource to retrieve, in the format:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -1165,6 +1308,7 @@ type ProjectsConfigsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists all the RuntimeConfig resources within project.
@@ -1216,8 +1360,20 @@ func (c *ProjectsConfigsListCall) Context(ctx context.Context) *ProjectsConfigsL
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1231,10 +1387,7 @@ func (c *ProjectsConfigsListCall) doRequest(alt string) (*http.Response, error) 
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.list" call.
@@ -1297,7 +1450,7 @@ func (c *ProjectsConfigsListCall) Do(opts ...googleapi.CallOption) (*ListConfigs
 	//     "parent": {
 	//       "description": "The [project ID](https://support.google.com/cloud/answer/6158840?hl=en\u0026ref_topic=6158848)\nfor this request, in the format `projects/[PROJECT_ID]`.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -1343,6 +1496,7 @@ type ProjectsConfigsUpdateCall struct {
 	runtimeconfig *RuntimeConfig
 	urlParams_    gensupport.URLParams
 	ctx_          context.Context
+	header_       http.Header
 }
 
 // Update: Updates a RuntimeConfig resource. The configuration must
@@ -1370,8 +1524,20 @@ func (c *ProjectsConfigsUpdateCall) Context(ctx context.Context) *ProjectsConfig
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.runtimeconfig)
@@ -1387,10 +1553,7 @@ func (c *ProjectsConfigsUpdateCall) doRequest(alt string) (*http.Response, error
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.update" call.
@@ -1442,7 +1605,7 @@ func (c *ProjectsConfigsUpdateCall) Do(opts ...googleapi.CallOption) (*RuntimeCo
 	//     "name": {
 	//       "description": "The name of the RuntimeConfig resource to update, in the format:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -1470,6 +1633,7 @@ type ProjectsConfigsOperationsGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets the latest state of a long-running operation.  Clients can
@@ -1509,8 +1673,20 @@ func (c *ProjectsConfigsOperationsGetCall) Context(ctx context.Context) *Project
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsOperationsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsOperationsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1524,10 +1700,7 @@ func (c *ProjectsConfigsOperationsGetCall) doRequest(alt string) (*http.Response
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.operations.get" call.
@@ -1579,7 +1752,7 @@ func (c *ProjectsConfigsOperationsGetCall) Do(opts ...googleapi.CallOption) (*Op
 	//     "name": {
 	//       "description": "The name of the operation resource.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*/operations/.*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+/operations/.+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -1604,6 +1777,7 @@ type ProjectsConfigsVariablesCreateCall struct {
 	variable   *Variable
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Create: Creates a variable within the given configuration. You cannot
@@ -1614,13 +1788,32 @@ type ProjectsConfigsVariablesCreateCall struct {
 //
 // To learn more about creating a variable, read the
 // [Setting and Getting
-// Data](/deployment-manager/runtime-configurator/seta-and-get-variables)
+// Data](/deployment-manager/runtime-configurator/set-and-get-variables)
 //
 // documentation.
 func (r *ProjectsConfigsVariablesService) Create(parent string, variable *Variable) *ProjectsConfigsVariablesCreateCall {
 	c := &ProjectsConfigsVariablesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.parent = parent
 	c.variable = variable
+	return c
+}
+
+// RequestId sets the optional parameter "requestId": An optional but
+// recommended unique <code>request_id</code>. If the server
+// receives two <code>create()</code> requests  with the
+// same
+// <code>request_id</code>, then the second request will be ignored and
+// the
+// first resource created and stored in the backend is returned.
+// Empty <code>request_id</code> fields are ignored.
+//
+// It is responsibility of the client to ensure uniqueness of
+// the
+// <code>request_id</code> strings.
+//
+// <code>request_id</code> strings are limited to 64 characters.
+func (c *ProjectsConfigsVariablesCreateCall) RequestId(requestId string) *ProjectsConfigsVariablesCreateCall {
+	c.urlParams_.Set("requestId", requestId)
 	return c
 }
 
@@ -1640,8 +1833,20 @@ func (c *ProjectsConfigsVariablesCreateCall) Context(ctx context.Context) *Proje
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsVariablesCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsVariablesCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.variable)
@@ -1657,10 +1862,7 @@ func (c *ProjectsConfigsVariablesCreateCall) doRequest(alt string) (*http.Respon
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.variables.create" call.
@@ -1701,7 +1903,7 @@ func (c *ProjectsConfigsVariablesCreateCall) Do(opts ...googleapi.CallOption) (*
 	}
 	return ret, nil
 	// {
-	//   "description": "Creates a variable within the given configuration. You cannot create\na variable with a name that is a prefix of an existing variable name, or a\nname that has an existing variable name as a prefix.\n\nTo learn more about creating a variable, read the\n[Setting and Getting Data](/deployment-manager/runtime-configurator/seta-and-get-variables)\ndocumentation.",
+	//   "description": "Creates a variable within the given configuration. You cannot create\na variable with a name that is a prefix of an existing variable name, or a\nname that has an existing variable name as a prefix.\n\nTo learn more about creating a variable, read the\n[Setting and Getting Data](/deployment-manager/runtime-configurator/set-and-get-variables)\ndocumentation.",
 	//   "flatPath": "v1beta1/projects/{projectsId}/configs/{configsId}/variables",
 	//   "httpMethod": "POST",
 	//   "id": "runtimeconfig.projects.configs.variables.create",
@@ -1712,8 +1914,13 @@ func (c *ProjectsConfigsVariablesCreateCall) Do(opts ...googleapi.CallOption) (*
 	//     "parent": {
 	//       "description": "The path to the RutimeConfig resource that this variable should belong to.\nThe configuration must exist beforehand; the path must by in the format:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+$",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional but recommended unique \u003ccode\u003erequest_id\u003c/code\u003e. If the server\nreceives two \u003ccode\u003ecreate()\u003c/code\u003e requests  with the same\n\u003ccode\u003erequest_id\u003c/code\u003e, then the second request will be ignored and the\nfirst resource created and stored in the backend is returned.\nEmpty \u003ccode\u003erequest_id\u003c/code\u003e fields are ignored.\n\nIt is responsibility of the client to ensure uniqueness of the\n\u003ccode\u003erequest_id\u003c/code\u003e strings.\n\n\u003ccode\u003erequest_id\u003c/code\u003e strings are limited to 64 characters.",
+	//       "location": "query",
 	//       "type": "string"
 	//     }
 	//   },
@@ -1739,6 +1946,7 @@ type ProjectsConfigsVariablesDeleteCall struct {
 	name       string
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a variable or multiple variables.
@@ -1780,8 +1988,20 @@ func (c *ProjectsConfigsVariablesDeleteCall) Context(ctx context.Context) *Proje
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsVariablesDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsVariablesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -1792,10 +2012,7 @@ func (c *ProjectsConfigsVariablesDeleteCall) doRequest(alt string) (*http.Respon
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.variables.delete" call.
@@ -1847,7 +2064,7 @@ func (c *ProjectsConfigsVariablesDeleteCall) Do(opts ...googleapi.CallOption) (*
 	//     "name": {
 	//       "description": "The name of the variable to delete, in the format:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]/variables/[VARIABLE_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*/variables/.*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+/variables/.+$",
 	//       "required": true,
 	//       "type": "string"
 	//     },
@@ -1877,6 +2094,7 @@ type ProjectsConfigsVariablesGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets information about a single variable.
@@ -1912,8 +2130,20 @@ func (c *ProjectsConfigsVariablesGetCall) Context(ctx context.Context) *Projects
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsVariablesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsVariablesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1927,10 +2157,7 @@ func (c *ProjectsConfigsVariablesGetCall) doRequest(alt string) (*http.Response,
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.variables.get" call.
@@ -1982,7 +2209,7 @@ func (c *ProjectsConfigsVariablesGetCall) Do(opts ...googleapi.CallOption) (*Var
 	//     "name": {
 	//       "description": "The name of the variable to return, in the format:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]/variables/[VARIBLE_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*/variables/.*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+/variables/.+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -2007,6 +2234,7 @@ type ProjectsConfigsVariablesListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists variables within given a configuration, matching any
@@ -2071,8 +2299,20 @@ func (c *ProjectsConfigsVariablesListCall) Context(ctx context.Context) *Project
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsVariablesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsVariablesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2086,10 +2326,7 @@ func (c *ProjectsConfigsVariablesListCall) doRequest(alt string) (*http.Response
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.variables.list" call.
@@ -2157,7 +2394,7 @@ func (c *ProjectsConfigsVariablesListCall) Do(opts ...googleapi.CallOption) (*Li
 	//     "parent": {
 	//       "description": "The path to the RuntimeConfig resource for which you want to list variables.\nThe configuration must exist beforehand; the path must by in the format:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -2203,6 +2440,7 @@ type ProjectsConfigsVariablesUpdateCall struct {
 	variable   *Variable
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Update: Updates an existing variable with a new value.
@@ -2229,8 +2467,20 @@ func (c *ProjectsConfigsVariablesUpdateCall) Context(ctx context.Context) *Proje
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsVariablesUpdateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsVariablesUpdateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.variable)
@@ -2246,10 +2496,7 @@ func (c *ProjectsConfigsVariablesUpdateCall) doRequest(alt string) (*http.Respon
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.variables.update" call.
@@ -2301,7 +2548,7 @@ func (c *ProjectsConfigsVariablesUpdateCall) Do(opts ...googleapi.CallOption) (*
 	//     "name": {
 	//       "description": "The name of the variable to update, in the format:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]/variables/[VARIABLE_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*/variables/.*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+/variables/.+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -2329,6 +2576,7 @@ type ProjectsConfigsVariablesWatchCall struct {
 	watchvariablerequest *WatchVariableRequest
 	urlParams_           gensupport.URLParams
 	ctx_                 context.Context
+	header_              http.Header
 }
 
 // Watch: Watches a specific variable and waits for a change in the
@@ -2375,8 +2623,20 @@ func (c *ProjectsConfigsVariablesWatchCall) Context(ctx context.Context) *Projec
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsVariablesWatchCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsVariablesWatchCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.watchvariablerequest)
@@ -2392,10 +2652,7 @@ func (c *ProjectsConfigsVariablesWatchCall) doRequest(alt string) (*http.Respons
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.variables.watch" call.
@@ -2447,7 +2704,7 @@ func (c *ProjectsConfigsVariablesWatchCall) Do(opts ...googleapi.CallOption) (*V
 	//     "name": {
 	//       "description": "The name of the variable to watch, in the format:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*/variables/.*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+/variables/.+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -2475,6 +2732,7 @@ type ProjectsConfigsWaitersCreateCall struct {
 	waiter     *Waiter
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Create: Creates a Waiter resource. This operation returns a
@@ -2494,6 +2752,25 @@ func (r *ProjectsConfigsWaitersService) Create(parent string, waiter *Waiter) *P
 	return c
 }
 
+// RequestId sets the optional parameter "requestId": An optional but
+// recommended unique <code>request_id</code>. If the server
+// receives two <code>create()</code> requests  with the
+// same
+// <code>request_id</code>, then the second request will be ignored and
+// the
+// first resource created and stored in the backend is returned.
+// Empty <code>request_id</code> fields are ignored.
+//
+// It is responsibility of the client to ensure uniqueness of
+// the
+// <code>request_id</code> strings.
+//
+// <code>request_id</code> strings are limited to 64 characters.
+func (c *ProjectsConfigsWaitersCreateCall) RequestId(requestId string) *ProjectsConfigsWaitersCreateCall {
+	c.urlParams_.Set("requestId", requestId)
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
 // https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
@@ -2510,8 +2787,20 @@ func (c *ProjectsConfigsWaitersCreateCall) Context(ctx context.Context) *Project
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsWaitersCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsWaitersCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.waiter)
@@ -2527,10 +2816,7 @@ func (c *ProjectsConfigsWaitersCreateCall) doRequest(alt string) (*http.Response
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.waiters.create" call.
@@ -2582,8 +2868,13 @@ func (c *ProjectsConfigsWaitersCreateCall) Do(opts ...googleapi.CallOption) (*Op
 	//     "parent": {
 	//       "description": "The path to the configuration that will own the waiter.\nThe configuration must exist beforehand; the path must by in the format:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]`.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+$",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "requestId": {
+	//       "description": "An optional but recommended unique \u003ccode\u003erequest_id\u003c/code\u003e. If the server\nreceives two \u003ccode\u003ecreate()\u003c/code\u003e requests  with the same\n\u003ccode\u003erequest_id\u003c/code\u003e, then the second request will be ignored and the\nfirst resource created and stored in the backend is returned.\nEmpty \u003ccode\u003erequest_id\u003c/code\u003e fields are ignored.\n\nIt is responsibility of the client to ensure uniqueness of the\n\u003ccode\u003erequest_id\u003c/code\u003e strings.\n\n\u003ccode\u003erequest_id\u003c/code\u003e strings are limited to 64 characters.",
+	//       "location": "query",
 	//       "type": "string"
 	//     }
 	//   },
@@ -2609,6 +2900,7 @@ type ProjectsConfigsWaitersDeleteCall struct {
 	name       string
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes the waiter with the specified name.
@@ -2634,8 +2926,20 @@ func (c *ProjectsConfigsWaitersDeleteCall) Context(ctx context.Context) *Project
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsWaitersDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsWaitersDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -2646,10 +2950,7 @@ func (c *ProjectsConfigsWaitersDeleteCall) doRequest(alt string) (*http.Response
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.waiters.delete" call.
@@ -2701,7 +3002,7 @@ func (c *ProjectsConfigsWaitersDeleteCall) Do(opts ...googleapi.CallOption) (*Em
 	//     "name": {
 	//       "description": "The Waiter resource to delete, in the format:\n\n `projects/[PROJECT_ID]/configs/[CONFIG_NAME]/waiters/[WAITER_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*/waiters/[^/]*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+/waiters/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -2726,6 +3027,7 @@ type ProjectsConfigsWaitersGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets information about a single waiter.
@@ -2761,8 +3063,20 @@ func (c *ProjectsConfigsWaitersGetCall) Context(ctx context.Context) *ProjectsCo
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsWaitersGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsWaitersGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2776,10 +3090,7 @@ func (c *ProjectsConfigsWaitersGetCall) doRequest(alt string) (*http.Response, e
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.waiters.get" call.
@@ -2831,7 +3142,7 @@ func (c *ProjectsConfigsWaitersGetCall) Do(opts ...googleapi.CallOption) (*Waite
 	//     "name": {
 	//       "description": "The fully-qualified name of the Waiter resource object to retrieve, in the\nformat:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]/waiters/[WAITER_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*/waiters/[^/]*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+/waiters/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -2856,6 +3167,7 @@ type ProjectsConfigsWaitersListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: List waiters within the given configuration.
@@ -2907,8 +3219,20 @@ func (c *ProjectsConfigsWaitersListCall) Context(ctx context.Context) *ProjectsC
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsConfigsWaitersListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *ProjectsConfigsWaitersListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2922,10 +3246,7 @@ func (c *ProjectsConfigsWaitersListCall) doRequest(alt string) (*http.Response, 
 	googleapi.Expand(req.URL, map[string]string{
 		"parent": c.parent,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "runtimeconfig.projects.configs.waiters.list" call.
@@ -2988,7 +3309,7 @@ func (c *ProjectsConfigsWaitersListCall) Do(opts ...googleapi.CallOption) (*List
 	//     "parent": {
 	//       "description": "The path to the configuration for which you want to get a list of waiters.\nThe configuration must exist beforehand; the path must by in the format:\n\n`projects/[PROJECT_ID]/configs/[CONFIG_NAME]`",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*/configs/[^/]*$",
+	//       "pattern": "^projects/[^/]+/configs/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }

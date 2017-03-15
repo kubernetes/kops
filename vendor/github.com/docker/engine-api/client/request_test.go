@@ -8,7 +8,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/docker/engine-api/types"
 	"golang.org/x/net/context"
 )
 
@@ -74,18 +73,5 @@ func TestSetHostHeader(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-	}
-}
-
-// TestPlainTextError tests the server returning an error in plain text for
-// backwards compatibility with API versions <1.24. All other tests use
-// errors returned as JSON
-func TestPlainTextError(t *testing.T) {
-	client := &Client{
-		transport: newMockClient(nil, plainTextErrorMock(http.StatusInternalServerError, "Server error")),
-	}
-	_, err := client.ContainerList(context.Background(), types.ContainerListOptions{})
-	if err == nil || err.Error() != "Error response from daemon: Server error" {
-		t.Fatalf("expected a Server Error, got %v", err)
 	}
 }

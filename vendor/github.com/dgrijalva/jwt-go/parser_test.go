@@ -222,7 +222,7 @@ func TestParser_Parse(t *testing.T) {
 		}
 
 		if (err == nil && !token.Valid) || (err != nil && token.Valid) {
-			t.Errorf("[%v] Inconsistent behavior between returned error and token.Valid", data.name)
+			t.Errorf("[%v] Inconsistent behavior between returned error and token.Valid")
 		}
 
 		if data.errors != 0 {

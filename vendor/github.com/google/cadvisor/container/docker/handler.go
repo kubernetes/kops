@@ -243,7 +243,7 @@ func newDockerContainerHandler(
 
 	if !ignoreMetrics.Has(container.DiskUsageMetrics) {
 		handler.fsHandler = &dockerFsHandler{
-			fsHandler:       common.NewFsHandler(time.Minute, rootfsStorageDir, otherStorageDir, fsInfo),
+			fsHandler:       common.NewFsHandler(common.DefaultPeriod, rootfsStorageDir, otherStorageDir, fsInfo),
 			thinPoolWatcher: thinPoolWatcher,
 			deviceID:        handler.deviceID,
 		}
@@ -252,9 +252,11 @@ func newDockerContainerHandler(
 	// split env vars to get metadata map.
 	for _, exposedEnv := range metadataEnvs {
 		for _, envVar := range ctnr.Config.Env {
-			splits := strings.SplitN(envVar, "=", 2)
-			if splits[0] == exposedEnv {
-				handler.envs[strings.ToLower(exposedEnv)] = splits[1]
+			if envVar != "" {
+				splits := strings.SplitN(envVar, "=", 2)
+				if len(splits) == 2 && splits[0] == exposedEnv {
+					handler.envs[strings.ToLower(exposedEnv)] = splits[1]
+				}
 			}
 		}
 	}
@@ -283,8 +285,8 @@ func (h *dockerFsHandler) Stop() {
 	h.fsHandler.Stop()
 }
 
-func (h *dockerFsHandler) Usage() (uint64, uint64) {
-	baseUsage, usage := h.fsHandler.Usage()
+func (h *dockerFsHandler) Usage() common.FsUsage {
+	usage := h.fsHandler.Usage()
 
 	// When devicemapper is the storage driver, the base usage of the container comes from the thin pool.
 	// We still need the result of the fsHandler for any extra storage associated with the container.
@@ -294,14 +296,17 @@ func (h *dockerFsHandler) Usage() (uint64, uint64) {
 	if h.thinPoolWatcher != nil {
 		thinPoolUsage, err := h.thinPoolWatcher.GetUsage(h.deviceID)
 		if err != nil {
-			glog.Errorf("unable to get fs usage from thin pool for device %v: %v", h.deviceID, err)
+			// TODO: ideally we should keep track of how many times we failed to get the usage for this
+			// device vs how many refreshes of the cache there have been, and display an error e.g. if we've
+			// had at least 1 refresh and we still can't find the device.
+			glog.V(5).Infof("unable to get fs usage from thin pool for device %s: %v", h.deviceID, err)
 		} else {
-			baseUsage = thinPoolUsage
-			usage += thinPoolUsage
+			usage.BaseUsageBytes = thinPoolUsage
+			usage.TotalUsageBytes += thinPoolUsage
 		}
 	}
 
-	return baseUsage, usage
+	return usage
 }
 
 func (self *dockerContainerHandler) Start() {
@@ -384,7 +389,10 @@ func (self *dockerContainerHandler) getFsStats(stats *info.ContainerStats) error
 	}
 
 	fsStat := info.FsStats{Device: device, Type: fsType, Limit: limit}
-	fsStat.BaseUsage, fsStat.Usage = self.fsHandler.Usage()
+	usage := self.fsHandler.Usage()
+	fsStat.BaseUsage = usage.BaseUsageBytes
+	fsStat.Usage = usage.TotalUsageBytes
+	fsStat.Inodes = usage.InodeUsage
 
 	stats.Filesystem = append(stats.Filesystem, fsStat)
 

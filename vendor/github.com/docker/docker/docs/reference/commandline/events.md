@@ -10,25 +10,22 @@ parent = "smn_cli"
 
 # events
 
-```markdown
-Usage:  docker events [OPTIONS]
+    Usage: docker events [OPTIONS]
 
-Get real time events from the server
+    Get real time events from the server
 
-Options:
-  -f, --filter value   Filter output based on conditions provided (default [])
-      --help           Print usage
-      --since string   Show all events created since timestamp
-      --until string   Stream events until this timestamp
-```
+      -f, --filter=[]    Filter output based on conditions provided
+      --help             Print usage
+      --since=""         Show all events created since timestamp
+      --until=""         Stream events until this timestamp
 
 Docker containers report the following events:
 
-    attach, commit, copy, create, destroy, detach, die, exec_create, exec_detach, exec_start, export, kill, oom, pause, rename, resize, restart, start, stop, top, unpause, update
+    attach, commit, copy, create, destroy, die, exec_create, exec_start, export, kill, oom, pause, rename, resize, restart, start, stop, top, unpause, update
 
 Docker images report the following events:
 
-    delete, import, load, pull, push, save, tag, untag
+    delete, import, pull, push, tag, untag
 
 Docker volumes report the following events:
 
@@ -37,10 +34,6 @@ Docker volumes report the following events:
 Docker networks report the following events:
 
     create, connect, disconnect, destroy
-
-Docker daemon report the following events:
-
-    reload
 
 The `--since` and `--until` parameters can be Unix timestamps, date formatted
 timestamps, or Go duration strings (e.g. `10m`, `1h30m`) computed
@@ -75,10 +68,9 @@ The currently supported filters are:
 * event (`event=<event action>`)
 * image (`image=<tag or id>`)
 * label (`label=<key>` or `label=<key>=<value>`)
-* type (`type=<container or image or volume or network or daemon>`)
+* type (`type=<container or image or volume or network>`)
 * volume (`volume=<name or id>`)
 * network (`network=<name or id>`)
-* daemon (`daemon=<name or id>`)
 
 ## Examples
 

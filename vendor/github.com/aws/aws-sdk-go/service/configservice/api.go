@@ -51,11 +51,10 @@ func (c *ConfigService) DeleteConfigRuleRequest(input *DeleteConfigRuleInput) (r
 		input = &DeleteConfigRuleInput{}
 	}
 
+	output = &DeleteConfigRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteConfigRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -130,11 +129,10 @@ func (c *ConfigService) DeleteConfigurationRecorderRequest(input *DeleteConfigur
 		input = &DeleteConfigurationRecorderInput{}
 	}
 
+	output = &DeleteConfigurationRecorderOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteConfigurationRecorderOutput{}
-	req.Data = output
 	return
 }
 
@@ -207,11 +205,10 @@ func (c *ConfigService) DeleteDeliveryChannelRequest(input *DeleteDeliveryChanne
 		input = &DeleteDeliveryChannelInput{}
 	}
 
+	output = &DeleteDeliveryChannelOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteDeliveryChannelOutput{}
-	req.Data = output
 	return
 }
 
@@ -282,9 +279,8 @@ func (c *ConfigService) DeleteEvaluationResultsRequest(input *DeleteEvaluationRe
 		input = &DeleteEvaluationResultsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteEvaluationResultsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -356,9 +352,8 @@ func (c *ConfigService) DeliverConfigSnapshotRequest(input *DeliverConfigSnapsho
 		input = &DeliverConfigSnapshotInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeliverConfigSnapshotOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -438,9 +433,8 @@ func (c *ConfigService) DescribeComplianceByConfigRuleRequest(input *DescribeCom
 		input = &DescribeComplianceByConfigRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeComplianceByConfigRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -531,9 +525,8 @@ func (c *ConfigService) DescribeComplianceByResourceRequest(input *DescribeCompl
 		input = &DescribeComplianceByResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeComplianceByResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -626,9 +619,8 @@ func (c *ConfigService) DescribeConfigRuleEvaluationStatusRequest(input *Describ
 		input = &DescribeConfigRuleEvaluationStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeConfigRuleEvaluationStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -700,9 +692,8 @@ func (c *ConfigService) DescribeConfigRulesRequest(input *DescribeConfigRulesInp
 		input = &DescribeConfigRulesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeConfigRulesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -767,9 +758,8 @@ func (c *ConfigService) DescribeConfigurationRecorderStatusRequest(input *Descri
 		input = &DescribeConfigurationRecorderStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeConfigurationRecorderStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -838,9 +828,8 @@ func (c *ConfigService) DescribeConfigurationRecordersRequest(input *DescribeCon
 		input = &DescribeConfigurationRecordersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeConfigurationRecordersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -909,9 +898,8 @@ func (c *ConfigService) DescribeDeliveryChannelStatusRequest(input *DescribeDeli
 		input = &DescribeDeliveryChannelStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeDeliveryChannelStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -979,9 +967,8 @@ func (c *ConfigService) DescribeDeliveryChannelsRequest(input *DescribeDeliveryC
 		input = &DescribeDeliveryChannelsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeDeliveryChannelsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1049,9 +1036,8 @@ func (c *ConfigService) GetComplianceDetailsByConfigRuleRequest(input *GetCompli
 		input = &GetComplianceDetailsByConfigRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetComplianceDetailsByConfigRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1126,9 +1112,8 @@ func (c *ConfigService) GetComplianceDetailsByResourceRequest(input *GetComplian
 		input = &GetComplianceDetailsByResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetComplianceDetailsByResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1195,9 +1180,8 @@ func (c *ConfigService) GetComplianceSummaryByConfigRuleRequest(input *GetCompli
 		input = &GetComplianceSummaryByConfigRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetComplianceSummaryByConfigRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1257,9 +1241,8 @@ func (c *ConfigService) GetComplianceSummaryByResourceTypeRequest(input *GetComp
 		input = &GetComplianceSummaryByResourceTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetComplianceSummaryByResourceTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1332,9 +1315,8 @@ func (c *ConfigService) GetResourceConfigHistoryRequest(input *GetResourceConfig
 		input = &GetResourceConfigHistoryInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetResourceConfigHistoryOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1453,9 +1435,8 @@ func (c *ConfigService) ListDiscoveredResourcesRequest(input *ListDiscoveredReso
 		input = &ListDiscoveredResourcesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDiscoveredResourcesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1543,11 +1524,10 @@ func (c *ConfigService) PutConfigRuleRequest(input *PutConfigRuleInput) (req *re
 		input = &PutConfigRuleInput{}
 	}
 
+	output = &PutConfigRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutConfigRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -1668,11 +1648,10 @@ func (c *ConfigService) PutConfigurationRecorderRequest(input *PutConfigurationR
 		input = &PutConfigurationRecorderInput{}
 	}
 
+	output = &PutConfigurationRecorderOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutConfigurationRecorderOutput{}
-	req.Data = output
 	return
 }
 
@@ -1756,11 +1735,10 @@ func (c *ConfigService) PutDeliveryChannelRequest(input *PutDeliveryChannelInput
 		input = &PutDeliveryChannelInput{}
 	}
 
+	output = &PutDeliveryChannelOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &PutDeliveryChannelOutput{}
-	req.Data = output
 	return
 }
 
@@ -1856,9 +1834,8 @@ func (c *ConfigService) PutEvaluationsRequest(input *PutEvaluationsInput) (req *
 		input = &PutEvaluationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &PutEvaluationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1932,9 +1909,8 @@ func (c *ConfigService) StartConfigRulesEvaluationRequest(input *StartConfigRule
 		input = &StartConfigRulesEvaluationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartConfigRulesEvaluationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2040,11 +2016,10 @@ func (c *ConfigService) StartConfigurationRecorderRequest(input *StartConfigurat
 		input = &StartConfigurationRecorderInput{}
 	}
 
+	output = &StartConfigurationRecorderOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &StartConfigurationRecorderOutput{}
-	req.Data = output
 	return
 }
 
@@ -2115,11 +2090,10 @@ func (c *ConfigService) StopConfigurationRecorderRequest(input *StopConfiguratio
 		input = &StopConfigurationRecorderInput{}
 	}
 
+	output = &StopConfigurationRecorderOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(jsonrpc.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &StopConfigurationRecorderOutput{}
-	req.Data = output
 	return
 }
 
@@ -2889,9 +2863,6 @@ func (s *ConfigStreamDeliveryInfo) SetLastStatusChangeTime(v time.Time) *ConfigS
 }
 
 // A list that contains detailed configurations of a specified resource.
-//
-// Currently, the list does not contain information about non-AWS components
-// (for example, applications on your Amazon EC2 instances).
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/config-2014-11-12/ConfigurationItem
 type ConfigurationItem struct {
 	_ struct{} `type:"structure"`
@@ -5797,17 +5768,25 @@ type SourceDetail struct {
 	// then MessageType must use the ScheduledNotification value.
 	MaximumExecutionFrequency *string `type:"string" enum:"MaximumExecutionFrequency"`
 
-	// The type of notification that triggers AWS Config to run an evaluation. You
-	// can specify the following notification types:
+	// The type of notification that triggers AWS Config to run an evaluation for
+	// a rule. You can specify the following notification types:
 	//
-	// ConfigurationItemChangeNotification - Triggers an evaluation when AWS Config
-	// delivers a configuration item change notification.
+	//    * ConfigurationItemChangeNotification - Triggers an evaluation when AWS
+	//    Config delivers a configuration item as a result of a resource change.
 	//
-	// ScheduledNotification - Triggers a periodic evaluation at the frequency specified
-	// for MaximumExecutionFrequency.
+	//    * OversizedConfigurationItemChangeNotification - Triggers an evaluation
+	//    when AWS Config delivers an oversized configuration item. AWS Config may
+	//    generate this notification type when a resource changes and the notification
+	//    exceeds the maximum size allowed by Amazon SNS.
 	//
-	// ConfigurationSnapshotDeliveryCompleted - Triggers a periodic evaluation when
-	// AWS Config delivers a configuration snapshot.
+	//    * ScheduledNotification - Triggers a periodic evaluation at the frequency
+	//    specified for MaximumExecutionFrequency.
+	//
+	//    * ConfigurationSnapshotDeliveryCompleted - Triggers a periodic evaluation
+	//    when AWS Config delivers a configuration snapshot.
+	//
+	// If you want your custom rule to be triggered by configuration changes, specify
+	// both ConfigurationItemChangeNotification and OversizedConfigurationItemChangeNotification.
 	MessageType *string `type:"string" enum:"MessageType"`
 }
 
@@ -6102,6 +6081,9 @@ const (
 
 	// MessageTypeScheduledNotification is a MessageType enum value
 	MessageTypeScheduledNotification = "ScheduledNotification"
+
+	// MessageTypeOversizedConfigurationItemChangeNotification is a MessageType enum value
+	MessageTypeOversizedConfigurationItemChangeNotification = "OversizedConfigurationItemChangeNotification"
 )
 
 const (

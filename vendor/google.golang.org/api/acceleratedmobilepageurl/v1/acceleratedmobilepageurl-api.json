@@ -38,7 +38,7 @@
           "type": "string"
         },
         "cdnAmpUrl": {
-          "description": "The [AMP Cache URL](/amp/cache/overview#amp-cache-url-format) pointing to the cached document in the Google AMP Cache.",
+          "description": "The [AMP Cache URL](/amp/cache/overview#amp-cache-url-format) pointing to\nthe cached document in the Google AMP Cache.",
           "type": "string"
         }
       },
@@ -64,11 +64,11 @@
           ],
           "enumDescriptions": [
             "Not specified error.",
-            "Indicates the requested URL is not found for some reason -- for example,\nwe receive an HTTP error code 404 when it is crawled.",
-            "Indicates no AMP URL has been found in the HTML of the requested URL.",
+            "Indicates the requested URL is not found in the index, possibly because\nit's unable to be found, not able to be accessed by Googlebot, or some\nother error.",
+            "Indicates no AMP URL has been found that corresponds to the requested\nURL.",
             "Indicates some kind of application error occurred at the server.\nClient advised to retry.",
-            "Indicates the requested URL is a valid AMP URL.\nDEPRECATED: API no longer returns URL_IS_INVALID_AMP error code and will\nbe removed in API version 2. Instead of returning error, the requested\nURL is returned as an AMP URL in AmpUrl response.",
-            "Indicates that the requested URL is an invalid AMP URL."
+            "DEPRECATED: Indicates the requested URL is a valid AMP URL.  This is a\nnon-error state, should not be relied upon as a sign of success or\nfailure.  It will be removed in future versions of the API.",
+            "Indicates that an AMP URL has been found that corresponds to the request\nURL, but it is not valid AMP HTML."
           ],
           "type": "string"
         },
@@ -96,7 +96,7 @@
           "type": "string"
         },
         "urls": {
-          "description": "List of URLs to look up for the paired AMP URLs.\nThe URLs are case-sensitive. Up to 10 URLs per lookup\n(see [Usage Limits](/amp/cache/reference/limits)).",
+          "description": "List of URLs to look up for the paired AMP URLs.\nThe URLs are case-sensitive. Up to 50 URLs per lookup\n(see [Usage Limits](/amp/cache/reference/limits)).",
           "type": "array",
           "items": {
             "type": "string"
@@ -127,7 +127,7 @@
       "id": "BatchGetAmpUrlsResponse"
     }
   },
-  "revision": "20160621",
+  "revision": "20160928",
   "basePath": "",
   "icons": {
     "x32": "http://www.google.com/images/icons/product/search-32.gif",

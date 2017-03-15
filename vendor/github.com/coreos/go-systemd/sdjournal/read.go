@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"strings"
 	"time"
 )
 
@@ -47,10 +46,9 @@ type JournalReaderConfig struct {
 }
 
 // JournalReader is an io.ReadCloser which provides a simple interface for iterating through the
-// systemd journal. A JournalReader is not safe for concurrent use by multiple goroutines.
+// systemd journal.
 type JournalReader struct {
-	journal   *Journal
-	msgReader *strings.Reader
+	journal *Journal
 }
 
 // NewJournalReader creates a new JournalReader with configuration options that are similar to the
@@ -90,16 +88,8 @@ func NewJournalReader(config JournalReaderConfig) (*JournalReader, error) {
 		// Move the read pointer into position near the tail. Go one further than
 		// the option so that the initial cursor advancement positions us at the
 		// correct starting point.
-		skip, err := r.journal.PreviousSkip(config.NumFromTail + 1)
-		if err != nil {
+		if _, err := r.journal.PreviousSkip(config.NumFromTail + 1); err != nil {
 			return nil, err
-		}
-		// If we skipped fewer lines than expected, we have reached journal start.
-		// Thus, we seek to head so that next invocation can read the first line.
-		if skip != config.NumFromTail+1 {
-			if err := r.journal.SeekHead(); err != nil {
-				return nil, err
-			}
 		}
 	} else if config.Cursor != "" {
 		// Start based on a custom cursor
@@ -111,60 +101,35 @@ func NewJournalReader(config JournalReaderConfig) (*JournalReader, error) {
 	return r, nil
 }
 
-// Read reads entries from the journal. Read follows the Reader interface so
-// it must be able to read a specific amount of bytes. Journald on the other
-// hand only allows us to read full entries of arbitrary size (without byte
-// granularity). JournalReader is therefore internally buffering entries that
-// don't fit in the read buffer. Callers should keep calling until 0 and/or an
-// error is returned.
 func (r *JournalReader) Read(b []byte) (int, error) {
 	var err error
+	var c int
 
-	if r.msgReader == nil {
-		var c int
+	// Advance the journal cursor
+	c, err = r.journal.Next()
 
-		// Advance the journal cursor. It has to be called at least one time
-		// before reading
-		c, err = r.journal.Next()
+	// An unexpected error
+	if err != nil {
+		return 0, err
+	}
 
-		// An unexpected error
-		if err != nil {
-			return 0, err
-		}
+	// EOF detection
+	if c == 0 {
+		return 0, io.EOF
+	}
 
-		// EOF detection
-		if c == 0 {
-			return 0, io.EOF
-		}
+	// Build a message
+	var msg string
+	msg, err = r.buildMessage()
 
-		// Build a message
-		var msg string
-		msg, err = r.buildMessage()
-
-		if err != nil {
-			return 0, err
-		}
-		r.msgReader = strings.NewReader(msg)
+	if err != nil {
+		return 0, err
 	}
 
 	// Copy and return the message
-	var sz int
-	sz, err = r.msgReader.Read(b)
-	if err == io.EOF {
-		// The current entry has been fully read. Don't propagate this
-		// EOF, so the next entry can be read at the next Read()
-		// iteration.
-		r.msgReader = nil
-		return sz, nil
-	}
-	if err != nil {
-		return sz, err
-	}
-	if r.msgReader.Len() == 0 {
-		r.msgReader = nil
-	}
+	copy(b, []byte(msg))
 
-	return sz, nil
+	return len(msg), nil
 }
 
 // Close closes the JournalReader's handle to the journal.
@@ -174,7 +139,6 @@ func (r *JournalReader) Close() error {
 
 // Rewind attempts to rewind the JournalReader to the first entry.
 func (r *JournalReader) Rewind() error {
-	r.msgReader = nil
 	return r.journal.SeekHead()
 }
 
@@ -197,9 +161,7 @@ process:
 			return ErrExpired
 		default:
 			if c > 0 {
-				if _, err = writer.Write(msg[:c]); err != nil {
-					break process
-				}
+				writer.Write(msg[:c])
 				continue process
 			}
 		}

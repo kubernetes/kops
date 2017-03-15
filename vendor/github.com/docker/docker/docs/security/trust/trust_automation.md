@@ -10,7 +10,7 @@ parent= "smn_content_trust"
 
 # Automation with content trust
 
-Your automation systems that pull or build images can also work with trust. Any automation environment must set `DOCKER_TRUST_ENABLED` either manually or in a scripted fashion before processing images.
+Your automation systems that pull or build images can also work with trust. Any automation environment must set `DOCKER_TRUST_ENABLED` either manually or in in a scripted fashion before processing images.
 
 ## Bypass requests for passphrases
 
@@ -41,11 +41,9 @@ latest: digest: sha256:d149ab53f871 size: 3355
 Signing and pushing trust metadata
 ```
 
-When working directly with the Notary client, it will use its [own set of environment variables](/notary/reference/client-config.md#environment-variables-optional).
-
 ## Building with content trust
 
-You can also build with content trust. Before running the `docker build` command, you should set the environment variable `DOCKER_CONTENT_TRUST` either manually or in a scripted fashion. Consider the simple Dockerfile below.
+You can also build with content trust. Before running the `docker build` command, you should set the environment variable `DOCKER_CONTENT_TRUST` either manually or in in a scripted fashion. Consider the simple Dockerfile below.
 
 ```Dockerfile
 FROM docker/trusttest:latest

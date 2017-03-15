@@ -1,6 +1,7 @@
 {
 	"ImportPath": "github.com/opencontainers/runc",
 	"GoVersion": "go1.5.3",
+	"GodepVersion": "v74",
 	"Deps": [
 		{
 			"ImportPath": "github.com/Sirupsen/logrus",
@@ -9,8 +10,8 @@
 		},
 		{
 			"ImportPath": "github.com/urfave/cli",
-			"Comment": "v1.17.0-57-gedb24d0",
-			"Rev": "edb24d02aa3cea2319c33f2836d4a5133907fe4c"
+			"Comment": "v1.18.0-67-gd53eb99",
+			"Rev": "d53eb991652b1d438abdd34ce4bfa3ef1539108e"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-systemd/activation",
@@ -58,8 +59,8 @@
 		},
 		{
 			"ImportPath": "github.com/opencontainers/runtime-spec/specs-go",
-			"Comment": "v1.0.0-rc1",
-			"Rev": "06479209bdc0d4135911688c18157bd39bd99c22"
+			"Comment": "v1.0.0-rc2-38-g1c7c27d",
+			"Rev": "1c7c27d043c2a5e513a44084d2b10d77d1402b8c"
 		},
 		{
 			"ImportPath": "github.com/seccomp/libseccomp-golang",
@@ -67,7 +68,7 @@
 		},
 		{
 			"ImportPath": "github.com/syndtr/gocapability/capability",
-			"Rev": "2c00daeb6c3b45114c80ac44119e7b8801fdd852"
+			"Rev": "e7cb7fa329f456b3855136a2642b197bad7366ba"
 		},
 		{
 			"ImportPath": "github.com/vishvananda/netlink",

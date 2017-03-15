@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"jQLIOHBVnDZie4rQHGH1WJF-INE/WMHCCoquLKng7CUJBG6EbXy4RDk\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/mo0qLr7wMmlAX-U4DWVexdxTH80\"",
  "discoveryVersion": "v1",
  "id": "adexchangebuyer:v1.3",
  "name": "adexchangebuyer",
  "canonicalName": "Ad Exchange Buyer",
  "version": "v1.3",
- "revision": "20160428",
+ "revision": "20161020",
  "title": "Ad Exchange Buyer API",
  "description": "Accesses your bidding-account information, submits creatives for validation, finds available direct deals, and retrieves performance reports.",
  "ownerDomain": "google.com",
@@ -545,7 +545,7 @@
     },
     "videoURL": {
      "type": "string",
-     "description": "The url to fetch a video ad. If set, HTMLSnippet should not be set."
+     "description": "The URL to fetch a video ad. If set, HTMLSnippet and the nativeAd should not be set."
     },
     "width": {
      "type": "integer",

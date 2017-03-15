@@ -9,16 +9,6 @@ set -e
 #
 bundle_test_unit() {
 	TESTFLAGS+=" -test.timeout=${TIMEOUT}"
-	INCBUILD="-i"
-	count=0
-	for flag in "${BUILDFLAGS[@]}"; do
-		if [ "${flag}" == ${INCBUILD} ]; then
-			unset BUILDFLAGS[${count}]
-			break
-		fi
-		count=$[ ${count} + 1 ]
-	done
-
 	date
 	if [ -z "$TESTDIRS" ]; then
 		TEST_PATH=./...
@@ -32,7 +22,6 @@ bundle_test_unit() {
 		"${BUILDFLAGS[@]}" $TEST_PATH \
 		| grep github.com/docker/docker \
 		| grep -v github.com/docker/docker/vendor \
-		| grep -v github.com/docker/docker/man \
 		| grep -v github.com/docker/docker/integration-cli)
 	go test $COVER $GCCGOFLAGS -ldflags "$LDFLAGS" "${BUILDFLAGS[@]}" $TESTFLAGS $pkg_list
 }

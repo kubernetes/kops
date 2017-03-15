@@ -37,7 +37,11 @@ func TestTransfer(t *testing.T) {
 	go func() {
 		for p := range progressChan {
 			val, present := receivedProgress[p.ID]
-			if present && p.Current <= val {
+			if !present {
+				if p.Current != 0 {
+					t.Fatalf("got unexpected progress value: %d (expected 0)", p.Current)
+				}
+			} else if p.Current <= val {
 				t.Fatalf("got unexpected progress value: %d (expected %d)", p.Current, val+1)
 			}
 			receivedProgress[p.ID] = p.Current

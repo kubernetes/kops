@@ -21,61 +21,6 @@ import (
 	"testing"
 )
 
-func TestEqual(t *testing.T) {
-	tests := map[string]struct {
-		in1, in2 SampleValue
-		want     bool
-	}{
-		"equal floats": {
-			in1:  3.14,
-			in2:  3.14,
-			want: true,
-		},
-		"unequal floats": {
-			in1:  3.14,
-			in2:  3.1415,
-			want: false,
-		},
-		"positive inifinities": {
-			in1:  SampleValue(math.Inf(+1)),
-			in2:  SampleValue(math.Inf(+1)),
-			want: true,
-		},
-		"negative inifinities": {
-			in1:  SampleValue(math.Inf(-1)),
-			in2:  SampleValue(math.Inf(-1)),
-			want: true,
-		},
-		"different inifinities": {
-			in1:  SampleValue(math.Inf(+1)),
-			in2:  SampleValue(math.Inf(-1)),
-			want: false,
-		},
-		"number and infinity": {
-			in1:  42,
-			in2:  SampleValue(math.Inf(+1)),
-			want: false,
-		},
-		"number and NaN": {
-			in1:  42,
-			in2:  SampleValue(math.NaN()),
-			want: false,
-		},
-		"NaNs": {
-			in1:  SampleValue(math.NaN()),
-			in2:  SampleValue(math.NaN()),
-			want: true, // !!!
-		},
-	}
-
-	for name, test := range tests {
-		got := test.in1.Equal(test.in2)
-		if got != test.want {
-			t.Errorf("Comparing %s, %f and %f: got %t, want %t", name, test.in1, test.in2, got, test.want)
-		}
-	}
-}
-
 func TestSamplePairJSON(t *testing.T) {
 	input := []struct {
 		plain string

@@ -1,19 +1,19 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"bRFOOrZKfO9LweMbPqu0kcu6De8/mP0X0J9scme9uxhB3oYtWrSUhT0\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/2IuExnuYIfWTklADntnFv6u9T0g\"",
  "discoveryVersion": "v1",
  "id": "qpxExpress:v1",
  "name": "qpxExpress",
  "canonicalName": "QPX Express",
  "version": "v1",
- "revision": "20160307",
+ "revision": "20160708",
  "title": "QPX Express API",
  "description": "Finds the least expensive flights between an origin and a destination.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "http://developers.google.com/qpx-express",
  "protocol": "rest",
@@ -816,6 +816,10 @@
      "type": "integer",
      "description": "The number of solutions to return, maximum 500.",
      "format": "int32"
+    },
+    "ticketingCountry": {
+     "type": "string",
+     "description": "IATA country code representing the point of ticketing."
     }
    }
   },

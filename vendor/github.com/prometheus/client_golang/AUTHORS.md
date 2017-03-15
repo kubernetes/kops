@@ -12,7 +12,7 @@ The following individuals have contributed code to this repository
 * Björn Rabenstein <beorn@soundcloud.com>
 * Daniel Bornkessel <daniel@soundcloud.com>
 * Jeff Younker <jeff@drinktomi.com>
-* Julius Volz <julius.volz@gmail.com>
+* Julius Volz <julius@soundcloud.com>
 * Matt T. Proud <matt.proud@gmail.com>
 * Tobias Schmidt <ts@soundcloud.com>
 

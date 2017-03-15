@@ -6,12 +6,21 @@
 package htpasswd
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/docker/distribution/context"
 	"github.com/docker/distribution/registry/auth"
+)
+
+var (
+	// ErrInvalidCredential is returned when the auth token does not authenticate correctly.
+	ErrInvalidCredential = errors.New("invalid authorization credential")
+
+	// ErrAuthenticationFailure returned when authentication failure to be presented to agent.
+	ErrAuthenticationFailure = errors.New("authentication failure")
 )
 
 type accessController struct {
@@ -56,23 +65,19 @@ func (ac *accessController) Authorized(ctx context.Context, accessRecords ...aut
 	if !ok {
 		return nil, &challenge{
 			realm: ac.realm,
-			err:   auth.ErrInvalidCredential,
+			err:   ErrInvalidCredential,
 		}
 	}
 
-	if err := ac.AuthenticateUser(username, password); err != nil {
+	if err := ac.htpasswd.authenticateUser(username, password); err != nil {
 		context.GetLogger(ctx).Errorf("error authenticating user %q: %v", username, err)
 		return nil, &challenge{
 			realm: ac.realm,
-			err:   auth.ErrAuthenticationFailure,
+			err:   ErrAuthenticationFailure,
 		}
 	}
 
 	return auth.WithUser(ctx, auth.UserInfo{Name: username}), nil
-}
-
-func (ac *accessController) AuthenticateUser(username, password string) error {
-	return ac.htpasswd.authenticateUser(username, password)
 }
 
 // challenge implements the auth.Challenge interface.

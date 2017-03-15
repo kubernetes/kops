@@ -376,9 +376,8 @@ A Dockerfile is similar to a Makefile.
   defined and the `what_user` value was passed on the command line. Prior to its definition by an
   `ARG` instruction, any use of a variable results in an empty string.
 
-  > **Warning:** It is not recommended to use build-time variables for
-  >  passing secrets like github keys, user credentials etc. Build-time variable
-  >  values are visible to any user of the image with the `docker history` command.
+  > **Note:** It is not recommended to use build-time variables for
+  >  passing secrets like github keys, user credentials etc.
 
   You can use an `ARG` or an `ENV` instruction to specify variables that are
   available to the `RUN` instruction. Environment variables defined using the

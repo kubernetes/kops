@@ -21,12 +21,13 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path"
-	"strings"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 
 	kubeadmapi "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm"
+	kubeadmapiext "k8s.io/kubernetes/cmd/kubeadm/app/apis/kubeadm/v1alpha1"
+	kubeadmconstants "k8s.io/kubernetes/cmd/kubeadm/app/constants"
 	"k8s.io/kubernetes/cmd/kubeadm/app/preflight"
 	kubeadmutil "k8s.io/kubernetes/cmd/kubeadm/app/util"
 	"k8s.io/kubernetes/pkg/util/initsystem"
@@ -34,12 +35,13 @@ import (
 
 // NewCmdReset returns the "kubeadm reset" command
 func NewCmdReset(out io.Writer) *cobra.Command {
-	var skipPreFlight, removeNode bool
+	var skipPreFlight bool
+	var certsDir string
 	cmd := &cobra.Command{
 		Use:   "reset",
 		Short: "Run this to revert any changes made to this host by 'kubeadm init' or 'kubeadm join'.",
 		Run: func(cmd *cobra.Command, args []string) {
-			r, err := NewReset(skipPreFlight, removeNode)
+			r, err := NewReset(skipPreFlight, certsDir)
 			kubeadmutil.CheckErr(err)
 			kubeadmutil.CheckErr(r.Run(out))
 		},
@@ -50,19 +52,19 @@ func NewCmdReset(out io.Writer) *cobra.Command {
 		"Skip preflight checks normally run before modifying the system",
 	)
 
-	cmd.PersistentFlags().BoolVar(
-		&removeNode, "remove-node", true,
-		"Remove this node from the pool of nodes in this cluster",
+	cmd.PersistentFlags().StringVar(
+		&certsDir, "cert-dir", kubeadmapiext.DefaultCertificatesDir,
+		"The path to the directory where the certificates are stored. If specified, clean this directory.",
 	)
 
 	return cmd
 }
 
 type Reset struct {
-	removeNode bool
+	certsDir string
 }
 
-func NewReset(skipPreFlight, removeNode bool) (*Reset, error) {
+func NewReset(skipPreFlight bool, certsDir string) (*Reset, error) {
 	if !skipPreFlight {
 		fmt.Println("[preflight] Running pre-flight checks")
 
@@ -74,18 +76,12 @@ func NewReset(skipPreFlight, removeNode bool) (*Reset, error) {
 	}
 
 	return &Reset{
-		removeNode: removeNode,
+		certsDir: certsDir,
 	}, nil
 }
 
 // Run reverts any changes made to this host by "kubeadm init" or "kubeadm join".
 func (r *Reset) Run(out io.Writer) error {
-
-	// Try to drain and remove the node from the cluster
-	err := drainAndRemoveNode(r.removeNode)
-	if err != nil {
-		fmt.Printf("[reset] Failed to cleanup node: [%v]\n", err)
-	}
 
 	// Try to stop the kubelet service
 	initSystem, err := initsystem.GetInitSystem()
@@ -108,7 +104,7 @@ func (r *Reset) Run(out io.Writer) error {
 		fmt.Printf("[reset] Failed to unmount mounted directories in /var/lib/kubelet: %s\n", string(umountOutputBytes))
 	}
 
-	dockerCheck := preflight.ServiceCheck{Service: "docker"}
+	dockerCheck := preflight.ServiceCheck{Service: "docker", CheckIfActive: true}
 	if warnings, errors := dockerCheck.Check(); len(warnings) == 0 && len(errors) == 0 {
 		fmt.Println("[reset] Removing kubernetes-managed containers")
 		if err := exec.Command("sh", "-c", "docker ps | grep 'k8s_' | awk '{print $1}' | xargs -r docker rm --force --volumes").Run(); err != nil {
@@ -122,7 +118,7 @@ func (r *Reset) Run(out io.Writer) error {
 
 	// Only clear etcd data when the etcd manifest is found. In case it is not found, we must assume that the user
 	// provided external etcd endpoints. In that case, it is his own responsibility to reset etcd
-	etcdManifestPath := path.Join(kubeadmapi.GlobalEnvParams.KubernetesDir, "manifests/etcd.json")
+	etcdManifestPath := filepath.Join(kubeadmapi.GlobalEnvParams.KubernetesDir, "manifests/etcd.yaml")
 	if _, err := os.Stat(etcdManifestPath); err == nil {
 		dirsToClean = append(dirsToClean, "/var/lib/etcd")
 	} else {
@@ -136,57 +132,20 @@ func (r *Reset) Run(out io.Writer) error {
 	}
 
 	// Remove contents from the config and pki directories
-	resetConfigDir(kubeadmapi.GlobalEnvParams.KubernetesDir, kubeadmapi.GlobalEnvParams.HostPKIPath)
-
-	return nil
-}
-
-func drainAndRemoveNode(removeNode bool) error {
-
-	hostname, err := os.Hostname()
-	if err != nil {
-		return fmt.Errorf("failed to detect node hostname")
-	}
-	hostname = strings.ToLower(hostname)
-
-	// TODO: Use the "native" k8s client for this once we're confident the versioned is working
-	kubeConfigPath := path.Join(kubeadmapi.GlobalEnvParams.KubernetesDir, "kubelet.conf")
-
-	getNodesCmd := fmt.Sprintf("kubectl --kubeconfig %s get nodes | grep %s", kubeConfigPath, hostname)
-	output, err := exec.Command("sh", "-c", getNodesCmd).Output()
-	if err != nil || len(output) == 0 {
-		// kubeadm shouldn't drain and/or remove the node when it doesn't exist anymore
-		return nil
-	}
-
-	fmt.Printf("[reset] Draining node: %q\n", hostname)
-
-	output, err = exec.Command("kubectl", "--kubeconfig", kubeConfigPath, "drain", hostname, "--delete-local-data", "--force", "--ignore-daemonsets").Output()
-	if err != nil {
-		return fmt.Errorf("failed to drain node %q [%s]", hostname, output)
-	}
-
-	if removeNode {
-		fmt.Printf("[reset] Removing node: %q\n", hostname)
-
-		output, err = exec.Command("kubectl", "--kubeconfig", kubeConfigPath, "delete", "node", hostname).Output()
-		if err != nil {
-			return fmt.Errorf("failed to remove node %q [%s]", hostname, output)
-		}
-	}
+	resetConfigDir(kubeadmapi.GlobalEnvParams.KubernetesDir, r.certsDir)
 
 	return nil
 }
 
 // cleanDir removes everything in a directory, but not the directory itself
-func cleanDir(filepath string) error {
+func cleanDir(filePath string) error {
 	// If the directory doesn't even exist there's nothing to do, and we do
 	// not consider this an error
-	if _, err := os.Stat(filepath); os.IsNotExist(err) {
+	if _, err := os.Stat(filePath); os.IsNotExist(err) {
 		return nil
 	}
 
-	d, err := os.Open(filepath)
+	d, err := os.Open(filePath)
 	if err != nil {
 		return err
 	}
@@ -196,7 +155,7 @@ func cleanDir(filepath string) error {
 		return err
 	}
 	for _, name := range names {
-		err = os.RemoveAll(path.Join(filepath, name))
+		err = os.RemoveAll(filepath.Join(filePath, name))
 		if err != nil {
 			return err
 		}
@@ -207,7 +166,7 @@ func cleanDir(filepath string) error {
 // resetConfigDir is used to cleanup the files kubeadm writes in /etc/kubernetes/.
 func resetConfigDir(configPathDir, pkiPathDir string) {
 	dirsToClean := []string{
-		path.Join(configPathDir, "manifests"),
+		filepath.Join(configPathDir, "manifests"),
 		pkiPathDir,
 	}
 	fmt.Printf("[reset] Deleting contents of config directories: %v\n", dirsToClean)
@@ -219,8 +178,10 @@ func resetConfigDir(configPathDir, pkiPathDir string) {
 	}
 
 	filesToClean := []string{
-		path.Join(configPathDir, "admin.conf"),
-		path.Join(configPathDir, "kubelet.conf"),
+		filepath.Join(configPathDir, kubeadmconstants.AdminKubeConfigFileName),
+		filepath.Join(configPathDir, kubeadmconstants.KubeletKubeConfigFileName),
+		filepath.Join(configPathDir, kubeadmconstants.ControllerManagerKubeConfigFileName),
+		filepath.Join(configPathDir, kubeadmconstants.SchedulerKubeConfigFileName),
 	}
 	fmt.Printf("[reset] Deleting files: %v\n", filesToClean)
 	for _, path := range filesToClean {

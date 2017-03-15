@@ -48,9 +48,8 @@ func (c *OpsWorksCM) AssociateNodeRequest(input *AssociateNodeInput) (req *reque
 		input = &AssociateNodeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AssociateNodeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -119,9 +118,8 @@ func (c *OpsWorksCM) CreateBackupRequest(input *CreateBackupInput) (req *request
 		input = &CreateBackupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateBackupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -208,9 +206,8 @@ func (c *OpsWorksCM) CreateServerRequest(input *CreateServerInput) (req *request
 		input = &CreateServerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateServerOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -305,9 +302,8 @@ func (c *OpsWorksCM) DeleteBackupRequest(input *DeleteBackupInput) (req *request
 		input = &DeleteBackupInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteBackupOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -384,9 +380,8 @@ func (c *OpsWorksCM) DeleteServerRequest(input *DeleteServerInput) (req *request
 		input = &DeleteServerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteServerOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -467,9 +462,8 @@ func (c *OpsWorksCM) DescribeAccountAttributesRequest(input *DescribeAccountAttr
 		input = &DescribeAccountAttributesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAccountAttributesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -531,9 +525,8 @@ func (c *OpsWorksCM) DescribeBackupsRequest(input *DescribeBackupsInput) (req *r
 		input = &DescribeBackupsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeBackupsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -609,9 +602,8 @@ func (c *OpsWorksCM) DescribeEventsRequest(input *DescribeEventsInput) (req *req
 		input = &DescribeEventsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEventsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -687,9 +679,8 @@ func (c *OpsWorksCM) DescribeNodeAssociationStatusRequest(input *DescribeNodeAss
 		input = &DescribeNodeAssociationStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeNodeAssociationStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -754,9 +745,8 @@ func (c *OpsWorksCM) DescribeServersRequest(input *DescribeServersInput) (req *r
 		input = &DescribeServersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeServersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -833,9 +823,8 @@ func (c *OpsWorksCM) DisassociateNodeRequest(input *DisassociateNodeInput) (req 
 		input = &DisassociateNodeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DisassociateNodeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -904,9 +893,8 @@ func (c *OpsWorksCM) RestoreServerRequest(input *RestoreServerInput) (req *reque
 		input = &RestoreServerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RestoreServerOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -987,9 +975,8 @@ func (c *OpsWorksCM) StartMaintenanceRequest(input *StartMaintenanceInput) (req 
 		input = &StartMaintenanceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartMaintenanceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1068,9 +1055,8 @@ func (c *OpsWorksCM) UpdateServerRequest(input *UpdateServerInput) (req *request
 		input = &UpdateServerInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateServerOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1143,9 +1129,8 @@ func (c *OpsWorksCM) UpdateServerEngineAttributesRequest(input *UpdateServerEngi
 		input = &UpdateServerEngineAttributesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateServerEngineAttributesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

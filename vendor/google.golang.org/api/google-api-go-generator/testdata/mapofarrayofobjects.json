@@ -52,6 +52,10 @@
    "additionalProperties": {
     "type": "string"
    }
+  },
+  "Property": {
+   "id": "Property",
+   "type": "object"
   }
  },
  "resources": {

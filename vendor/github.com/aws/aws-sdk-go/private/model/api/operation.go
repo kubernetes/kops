@@ -100,12 +100,12 @@ func (c *{{ .API.StructName }}) {{ .ExportedName }}Request(` +
 		input = &{{ .InputRef.GoTypeElem }}{}
 	}
 
+	output = &{{ .OutputRef.GoTypeElem }}{}
 	req = c.newRequest(op, input, output){{ if eq .OutputRef.Shape.Placeholder true }}
 	req.Handlers.Unmarshal.Remove({{ .API.ProtocolPackage }}.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler){{ end }}
 	{{ if eq .AuthType "none" }}req.Config.Credentials = credentials.AnonymousCredentials
-	output = &{{ .OutputRef.GoTypeElem }}{} {{ else }} output = &{{ .OutputRef.GoTypeElem }}{} {{ end }}
-	req.Data = output
+	{{ end -}}
 	return
 }
 

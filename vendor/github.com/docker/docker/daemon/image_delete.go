@@ -76,7 +76,7 @@ func (daemon *Daemon) ImageDelete(imageRef string, force, prune bool) ([]types.I
 		// first. We can only remove this reference if either force is
 		// true, there are multiple repository references to this
 		// image, or there are no containers using the given reference.
-		if !force && isSingleReference(repoRefs) {
+		if !(force || len(repoRefs) > 1) {
 			if container := daemon.getContainerUsingImage(imgID); container != nil {
 				// If we removed the repository reference then
 				// this image would remain "dangling" and since
@@ -104,34 +104,27 @@ func (daemon *Daemon) ImageDelete(imageRef string, force, prune bool) ([]types.I
 
 		repoRefs = daemon.referenceStore.References(imgID)
 
-		// If a tag reference was removed and the only remaining
-		// references to the same repository are digest references,
-		// then clean up those digest references.
+		// If this is a tag reference and all the remaining references
+		// to this image are digest references, delete the remaining
+		// references so that they don't prevent removal of the image.
 		if _, isCanonical := parsedRef.(reference.Canonical); !isCanonical {
-			foundRepoTagRef := false
+			foundTagRef := false
 			for _, repoRef := range repoRefs {
-				if _, repoRefIsCanonical := repoRef.(reference.Canonical); !repoRefIsCanonical && parsedRef.Name() == repoRef.Name() {
-					foundRepoTagRef = true
+				if _, repoRefIsCanonical := repoRef.(reference.Canonical); !repoRefIsCanonical {
+					foundTagRef = true
 					break
 				}
 			}
-			if !foundRepoTagRef {
-				// Remove canonical references from same repository
-				remainingRefs := []reference.Named{}
+			if !foundTagRef {
 				for _, repoRef := range repoRefs {
-					if _, repoRefIsCanonical := repoRef.(reference.Canonical); repoRefIsCanonical && parsedRef.Name() == repoRef.Name() {
-						if _, err := daemon.removeImageRef(repoRef); err != nil {
-							return records, err
-						}
-
-						untaggedRecord := types.ImageDelete{Untagged: repoRef.String()}
-						records = append(records, untaggedRecord)
-					} else {
-						remainingRefs = append(remainingRefs, repoRef)
-
+					if _, err := daemon.removeImageRef(repoRef); err != nil {
+						return records, err
 					}
+
+					untaggedRecord := types.ImageDelete{Untagged: repoRef.String()}
+					records = append(records, untaggedRecord)
 				}
-				repoRefs = remainingRefs
+				repoRefs = []reference.Named{}
 			}
 		}
 
@@ -142,10 +135,11 @@ func (daemon *Daemon) ImageDelete(imageRef string, force, prune bool) ([]types.I
 
 		removedRepositoryRef = true
 	} else {
-		// If an ID reference was given AND there is at most one tag
-		// reference to the image AND all references are within one
-		// repository, then remove all references.
-		if isSingleReference(repoRefs) {
+		// If an ID reference was given AND there is exactly one
+		// repository reference to the image then we will want to
+		// remove that reference.
+		// FIXME: Is this the behavior we want?
+		if len(repoRefs) == 1 {
 			c := conflictHard
 			if !force {
 				c |= conflictSoft &^ conflictActiveReference
@@ -154,46 +148,19 @@ func (daemon *Daemon) ImageDelete(imageRef string, force, prune bool) ([]types.I
 				return nil, conflict
 			}
 
-			for _, repoRef := range repoRefs {
-				parsedRef, err := daemon.removeImageRef(repoRef)
-				if err != nil {
-					return nil, err
-				}
-
-				untaggedRecord := types.ImageDelete{Untagged: parsedRef.String()}
-
-				daemon.LogImageEvent(imgID.String(), imgID.String(), "untag")
-				records = append(records, untaggedRecord)
+			parsedRef, err := daemon.removeImageRef(repoRefs[0])
+			if err != nil {
+				return nil, err
 			}
+
+			untaggedRecord := types.ImageDelete{Untagged: parsedRef.String()}
+
+			daemon.LogImageEvent(imgID.String(), imgID.String(), "untag")
+			records = append(records, untaggedRecord)
 		}
 	}
 
 	return records, daemon.imageDeleteHelper(imgID, &records, force, prune, removedRepositoryRef)
-}
-
-// isSingleReference returns true when all references are from one repository
-// and there is at most one tag. Returns false for empty input.
-func isSingleReference(repoRefs []reference.Named) bool {
-	if len(repoRefs) <= 1 {
-		return len(repoRefs) == 1
-	}
-	var singleRef reference.Named
-	canonicalRefs := map[string]struct{}{}
-	for _, repoRef := range repoRefs {
-		if _, isCanonical := repoRef.(reference.Canonical); isCanonical {
-			canonicalRefs[repoRef.Name()] = struct{}{}
-		} else if singleRef == nil {
-			singleRef = repoRef
-		} else {
-			return false
-		}
-	}
-	if singleRef == nil {
-		// Just use first canonical ref
-		singleRef = repoRefs[0]
-	}
-	_, ok := canonicalRefs[singleRef.Name()]
-	return len(canonicalRefs) == 1 && ok
 }
 
 // isImageIDPrefix returns whether the given possiblePrefix is a prefix of the
@@ -375,7 +342,7 @@ func (daemon *Daemon) checkImageDeleteConflict(imgID image.ID, mask conflictType
 	if mask&conflictActiveReference != 0 && len(daemon.referenceStore.References(imgID)) > 0 {
 		return &imageDeleteConflict{
 			imgID:   imgID,
-			message: "image is referenced in multiple repositories",
+			message: "image is referenced in one or more repositories",
 		}
 	}
 

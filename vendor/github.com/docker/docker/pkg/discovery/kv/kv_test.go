@@ -251,7 +251,7 @@ func (ds *DiscoverySuite) TestWatch(c *check.C) {
 
 	close(mockCh)
 	// Give it enough time to call WatchTree.
-	time.Sleep(3 * time.Second)
+	time.Sleep(3)
 
 	// Stop and make sure it closes all channels.
 	close(stopCh)

@@ -2,7 +2,7 @@
    runc ps - ps displays the processes running inside a container
 
 # SYNOPSIS
-   runc ps [command options] <container-id> [ps options]
+   runc ps [command options] <container-id> [-- ps options]
 
 # OPTIONS
    --format value, -f value     select one of: table(default) or json

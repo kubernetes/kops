@@ -43,17 +43,19 @@ import (
 	"github.com/docker/docker/pkg/directory"
 	"github.com/docker/docker/pkg/idtools"
 	mountpk "github.com/docker/docker/pkg/mount"
+	"github.com/docker/docker/pkg/stringid"
 
 	"github.com/opencontainers/runc/libcontainer/label"
-	rsystem "github.com/opencontainers/runc/libcontainer/system"
 )
 
 var (
 	// ErrAufsNotSupported is returned if aufs is not supported by the host.
 	ErrAufsNotSupported = fmt.Errorf("AUFS was not found in /proc/filesystems")
-	// ErrAufsNested means aufs cannot be used bc we are in a user namespace
-	ErrAufsNested = fmt.Errorf("AUFS cannot be used in non-init user namespace")
-	backingFs     = "<unknown>"
+	incompatibleFsMagic = []graphdriver.FsMagic{
+		graphdriver.FsMagicBtrfs,
+		graphdriver.FsMagicAufs,
+	}
+	backingFs = "<unknown>"
 
 	enableDirpermLock sync.Once
 	enableDirperm     bool
@@ -69,7 +71,6 @@ type Driver struct {
 	root          string
 	uidMaps       []idtools.IDMap
 	gidMaps       []idtools.IDMap
-	ctr           *graphdriver.RefCounter
 	pathCacheLock sync.Mutex
 	pathCache     map[string]string
 }
@@ -91,10 +92,10 @@ func Init(root string, options []string, uidMaps, gidMaps []idtools.IDMap) (grap
 		backingFs = fsName
 	}
 
-	switch fsMagic {
-	case graphdriver.FsMagicAufs, graphdriver.FsMagicBtrfs, graphdriver.FsMagicEcryptfs:
-		logrus.Errorf("AUFS is not supported over %s", backingFs)
-		return nil, graphdriver.ErrIncompatibleFS
+	for _, magic := range incompatibleFsMagic {
+		if fsMagic == magic {
+			return nil, graphdriver.ErrIncompatibleFS
+		}
 	}
 
 	paths := []string{
@@ -108,7 +109,6 @@ func Init(root string, options []string, uidMaps, gidMaps []idtools.IDMap) (grap
 		uidMaps:   uidMaps,
 		gidMaps:   gidMaps,
 		pathCache: make(map[string]string),
-		ctr:       graphdriver.NewRefCounter(graphdriver.NewFsChecker(graphdriver.FsMagicAufs)),
 	}
 
 	rootUID, rootGID, err := idtools.GetRootUIDGID(uidMaps, gidMaps)
@@ -145,10 +145,6 @@ func supportsAufs() error {
 	// We can try to modprobe aufs first before looking at
 	// proc/filesystems for when aufs is supported
 	exec.Command("modprobe", "aufs").Run()
-
-	if rsystem.RunningInUserNS() {
-		return ErrAufsNested
-	}
 
 	f, err := os.Open("/proc/filesystems")
 	if err != nil {
@@ -198,20 +194,9 @@ func (a *Driver) Exists(id string) bool {
 	return true
 }
 
-// CreateReadWrite creates a layer that is writable for use as a container
-// file system.
-func (a *Driver) CreateReadWrite(id, parent, mountLabel string, storageOpt map[string]string) error {
-	return a.Create(id, parent, mountLabel, storageOpt)
-}
-
 // Create three folders for each id
 // mnt, layers, and diff
-func (a *Driver) Create(id, parent, mountLabel string, storageOpt map[string]string) error {
-
-	if len(storageOpt) != 0 {
-		return fmt.Errorf("--storage-opt is not supported for aufs")
-	}
-
+func (a *Driver) Create(id, parent, mountLabel string) error {
 	if err := a.createDirsFor(id); err != nil {
 		return err
 	}
@@ -304,7 +289,7 @@ func (a *Driver) Remove(id string) error {
 }
 
 // Get returns the rootfs path for the id.
-// This will mount the dir at its given path
+// This will mount the dir at it's given path
 func (a *Driver) Get(id, mountLabel string) (string, error) {
 	parents, err := a.getParentLayerPaths(id)
 	if err != nil && !os.IsNotExist(err) {
@@ -320,9 +305,6 @@ func (a *Driver) Get(id, mountLabel string) (string, error) {
 		if len(parents) > 0 {
 			m = a.getMountpoint(id)
 		}
-	}
-	if count := a.ctr.Increment(m); count > 1 {
-		return m, nil
 	}
 
 	// If a dir does not have a parent ( no layers )do not try to mount
@@ -348,9 +330,6 @@ func (a *Driver) Put(id string) error {
 		a.pathCache[id] = m
 	}
 	a.pathCacheLock.Unlock()
-	if count := a.ctr.Decrement(m); count > 0 {
-		return nil
-	}
 
 	err := a.unmount(m)
 	if err != nil {
@@ -491,7 +470,7 @@ func (a *Driver) Cleanup() error {
 
 	for _, m := range dirs {
 		if err := a.unmount(m); err != nil {
-			logrus.Debugf("aufs error unmounting %s: %s", m, err)
+			logrus.Debugf("aufs error unmounting %s: %s", stringid.TruncateID(m), err)
 		}
 	}
 	return mountpk.Unmount(a.root)

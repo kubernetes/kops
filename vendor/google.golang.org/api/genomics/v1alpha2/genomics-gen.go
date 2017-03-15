@@ -130,12 +130,20 @@ type ComputeEngine struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DiskNames") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ComputeEngine) MarshalJSON() ([]byte, error) {
 	type noMethod ComputeEngine
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ControllerConfig: Stores the information that the controller will
@@ -169,12 +177,20 @@ type ControllerConfig struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Cmd") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ControllerConfig) MarshalJSON() ([]byte, error) {
 	type noMethod ControllerConfig
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Disk: A Google Compute Engine disk resource specification.
@@ -229,24 +245,34 @@ type Disk struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AutoDelete") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Disk) MarshalJSON() ([]byte, error) {
 	type noMethod Disk
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // DockerExecutor: The Docker execuctor specification.
 type DockerExecutor struct {
-	// Cmd: Required. The command string to run. Parameters that do not have
-	// `localCopy` specified should be used as environment variables, while
-	// those that do can be accessed at the defined paths.
+	// Cmd: Required. The command or newline delimited script to run. The
+	// command string will be executed within a bash shell. If the command
+	// exits with a non-zero exit code, output parameter de-localization
+	// will be skipped and the pipeline operation's `error` field will be
+	// populated. Maximum command string length is 16384.
 	Cmd string `json:"cmd,omitempty"`
 
 	// ImageName: Required. Image name from either Docker Hub or Google
-	// Container Repository. Users that run pipelines must have READ access
-	// to the image.
+	// Container Registry. Users that run pipelines must have READ access to
+	// the image.
 	ImageName string `json:"imageName,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Cmd") to
@@ -256,12 +282,20 @@ type DockerExecutor struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Cmd") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *DockerExecutor) MarshalJSON() ([]byte, error) {
 	type noMethod DockerExecutor
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Empty: A generic empty message that you can re-use to avoid defining
@@ -288,12 +322,21 @@ type ImportReadGroupSetsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ReadGroupSetIds") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ImportReadGroupSetsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ImportReadGroupSetsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ImportVariantsResponse: The variant data import response.
@@ -308,12 +351,20 @@ type ImportVariantsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CallSetIds") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ImportVariantsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ImportVariantsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListOperationsResponse: The response message for
@@ -337,12 +388,20 @@ type ListOperationsResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListOperationsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListOperationsResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ListPipelinesResponse: The response of ListPipelines. Contains at
@@ -368,12 +427,20 @@ type ListPipelinesResponse struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ListPipelinesResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListPipelinesResponse
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // LocalCopy: LocalCopy defines how a remote file should be copied to
@@ -397,12 +464,20 @@ type LocalCopy struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Disk") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *LocalCopy) MarshalJSON() ([]byte, error) {
 	type noMethod LocalCopy
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // LoggingOptions: The logging options for the pipeline run.
@@ -424,12 +499,20 @@ type LoggingOptions struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "GcsPath") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *LoggingOptions) MarshalJSON() ([]byte, error) {
 	type noMethod LoggingOptions
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Operation: This resource represents a long-running operation that is
@@ -440,12 +523,13 @@ type Operation struct {
 	// `response` is available.
 	Done bool `json:"done,omitempty"`
 
-	// Error: The error result of the operation in case of failure.
+	// Error: The error result of the operation in case of failure or
+	// cancellation.
 	Error *Status `json:"error,omitempty"`
 
 	// Metadata: An OperationMetadata object. This will always be returned
 	// with the Operation.
-	Metadata OperationMetadata `json:"metadata,omitempty"`
+	Metadata googleapi.RawMessage `json:"metadata,omitempty"`
 
 	// Name: The server-assigned name, which is only unique within the same
 	// service that originally returns it. For example:
@@ -455,7 +539,7 @@ type Operation struct {
 	// Response: If importing ReadGroupSets, an ImportReadGroupSetsResponse
 	// is returned. If importing Variants, an ImportVariantsResponse is
 	// returned. For exports, an empty response is returned.
-	Response OperationResponse `json:"response,omitempty"`
+	Response googleapi.RawMessage `json:"response,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -468,17 +552,21 @@ type Operation struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Done") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Operation) MarshalJSON() ([]byte, error) {
 	type noMethod Operation
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
-
-type OperationMetadata interface{}
-
-type OperationResponse interface{}
 
 // OperationEvent: An event that occurred during an Operation.
 type OperationEvent struct {
@@ -500,18 +588,27 @@ type OperationEvent struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *OperationEvent) MarshalJSON() ([]byte, error) {
 	type noMethod OperationEvent
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// OperationMetadata1: Metadata describing an Operation.
-type OperationMetadata1 struct {
-	// ClientId: Optionally provided by the caller when submitting the
-	// request that creates the operation.
+// OperationMetadata: Metadata describing an Operation.
+type OperationMetadata struct {
+	// ClientId: This field is deprecated. Use `labels` instead. Optionally
+	// provided by the caller when submitting the request that creates the
+	// operation.
 	ClientId string `json:"clientId,omitempty"`
 
 	// CreateTime: The time at which the job was submitted to the Genomics
@@ -526,6 +623,10 @@ type OperationMetadata1 struct {
 	// import or export.
 	Events []*OperationEvent `json:"events,omitempty"`
 
+	// Labels: Optionally provided by the caller when submitting the request
+	// that creates the operation.
+	Labels map[string]string `json:"labels,omitempty"`
+
 	// ProjectId: The Google Cloud Project in which the job is scoped.
 	ProjectId string `json:"projectId,omitempty"`
 
@@ -533,10 +634,10 @@ type OperationMetadata1 struct {
 	// this will be in current version of the API. If the operation was
 	// started with v1beta2 API and a GetOperation is performed on v1 API, a
 	// v1 request will be returned.
-	Request OperationMetadataRequest `json:"request,omitempty"`
+	Request googleapi.RawMessage `json:"request,omitempty"`
 
 	// RuntimeMetadata: Runtime metadata on this Operation.
-	RuntimeMetadata OperationMetadataRuntimeMetadata `json:"runtimeMetadata,omitempty"`
+	RuntimeMetadata googleapi.RawMessage `json:"runtimeMetadata,omitempty"`
 
 	// StartTime: The time at which the job began to run.
 	StartTime string `json:"startTime,omitempty"`
@@ -548,17 +649,21 @@ type OperationMetadata1 struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ClientId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
-func (s *OperationMetadata1) MarshalJSON() ([]byte, error) {
-	type noMethod OperationMetadata1
+func (s *OperationMetadata) MarshalJSON() ([]byte, error) {
+	type noMethod OperationMetadata
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
-
-type OperationMetadataRequest interface{}
-
-type OperationMetadataRuntimeMetadata interface{}
 
 // Pipeline: The pipeline object. Represents a transformation from a set
 // of input parameters to a set of output parameters. The transformation
@@ -611,12 +716,20 @@ type Pipeline struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Pipeline) MarshalJSON() ([]byte, error) {
 	type noMethod Pipeline
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // PipelineParameter: Parameters facilitate setting and delivering data
@@ -684,12 +797,20 @@ type PipelineParameter struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DefaultValue") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PipelineParameter) MarshalJSON() ([]byte, error) {
 	type noMethod PipelineParameter
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // PipelineResources: The system resources for the pipeline run.
@@ -706,9 +827,24 @@ type PipelineResources struct {
 	// MinimumRamGb: The minimum amount of RAM to use. Defaults to 3.75 (GB)
 	MinimumRamGb float64 `json:"minimumRamGb,omitempty"`
 
-	// Preemptible: At create time means that preemptible machines may be
-	// used for the run. At run time, means they should be used. Cannot be
-	// true at run time if false at create time. Defaults to `false`.
+	// NoAddress: Whether to assign an external IP to the instance. This is
+	// an experimental feature that may go away. Defaults to false.
+	// Corresponds to `--no_address` flag for [gcloud compute instances
+	// create]
+	// (https://cloud.google.com/sdk/gcloud/reference/compute/instances/creat
+	// e). In order to use this, must be true for both create time and run
+	// time. Cannot be true at run time if false at create time. If you need
+	// to ssh into a private IP VM for debugging, you can ssh to a public VM
+	// and then ssh into the private VM's Internal IP. If noAddress is set,
+	// this pipeline run may only load docker images from Google Container
+	// Registry and not Docker Hub. ** Note: To use this option, your
+	// project must be in Google Access for Private IPs Early Access
+	// Program.**
+	NoAddress bool `json:"noAddress,omitempty"`
+
+	// Preemptible: Whether to use preemptible VMs. Defaults to `false`. In
+	// order to use this, must be true for both create time and run time.
+	// Cannot be true at run time if false at create time.
 	Preemptible bool `json:"preemptible,omitempty"`
 
 	// Zones: List of Google Compute Engine availability zones to which
@@ -722,12 +858,21 @@ type PipelineResources struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BootDiskSizeGb") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *PipelineResources) MarshalJSON() ([]byte, error) {
 	type noMethod PipelineResources
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type RepeatedString struct {
@@ -740,17 +885,26 @@ type RepeatedString struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Values") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RepeatedString) MarshalJSON() ([]byte, error) {
 	type noMethod RepeatedString
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // RunPipelineArgs: The pipeline run arguments.
 type RunPipelineArgs struct {
-	// ClientId: Client-specified pipeline operation identifier.
+	// ClientId: This field is deprecated. Use `labels` instead.
+	// Client-specified pipeline operation identifier.
 	ClientId string `json:"clientId,omitempty"`
 
 	// Inputs: Pipeline input arguments; keys are defined in the pipeline
@@ -758,6 +912,25 @@ type RunPipelineArgs struct {
 	// must be specified. If parameters with defaults are specified here,
 	// the defaults will be overridden.
 	Inputs map[string]string `json:"inputs,omitempty"`
+
+	// KeepVmAliveOnFailureDuration: How long to keep the VM up after a
+	// failure (for example docker command failed, copying input or output
+	// files failed, etc). While the VM is up, one can ssh into the VM to
+	// debug. Default is 0; maximum allowed value is 1 day.
+	KeepVmAliveOnFailureDuration string `json:"keepVmAliveOnFailureDuration,omitempty"`
+
+	// Labels: Labels to apply to this pipeline run. Labels will also be
+	// applied to compute resources (VM, disks) created by this pipeline
+	// run. When listing operations, operations can filtered by labels.
+	// Label keys may not be empty; label values may be empty. Non-empty
+	// labels must be 1-63 characters long, and comply with [RFC1035]
+	// (https://www.ietf.org/rfc/rfc1035.txt). Specifically, the name must
+	// be 1-63 characters long and match the regular expression
+	// `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be
+	// a lowercase letter, and all following characters must be a dash,
+	// lowercase letter, or digit, except the last character, which cannot
+	// be a dash.
+	Labels map[string]string `json:"labels,omitempty"`
 
 	// Logging: Required. Logging options. Used by the service to
 	// communicate results to the user.
@@ -790,12 +963,20 @@ type RunPipelineArgs struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ClientId") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RunPipelineArgs) MarshalJSON() ([]byte, error) {
 	type noMethod RunPipelineArgs
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // RunPipelineRequest: The request to run a pipeline. If `pipelineId` is
@@ -821,12 +1002,21 @@ type RunPipelineRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EphemeralPipeline") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RunPipelineRequest) MarshalJSON() ([]byte, error) {
 	type noMethod RunPipelineRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // RuntimeMetadata: Runtime metadata that will be populated in the
@@ -844,12 +1034,20 @@ type RuntimeMetadata struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ComputeEngine") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *RuntimeMetadata) MarshalJSON() ([]byte, error) {
 	type noMethod RuntimeMetadata
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // ServiceAccount: A Google Cloud Service Account.
@@ -859,10 +1057,12 @@ type ServiceAccount struct {
 	Email string `json:"email,omitempty"`
 
 	// Scopes: List of scopes to be enabled for this service account on the
-	// pipeline virtual machine. The following scopes are automatically
-	// included: * https://www.googleapis.com/auth/genomics *
+	// VM. The following scopes are automatically included: *
 	// https://www.googleapis.com/auth/compute *
-	// https://www.googleapis.com/auth/devstorage.full_control
+	// https://www.googleapis.com/auth/devstorage.full_control *
+	// https://www.googleapis.com/auth/genomics *
+	// https://www.googleapis.com/auth/logging.write *
+	// https://www.googleapis.com/auth/monitoring.write
 	Scopes []string `json:"scopes,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Email") to
@@ -872,12 +1072,20 @@ type ServiceAccount struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Email") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *ServiceAccount) MarshalJSON() ([]byte, error) {
 	type noMethod ServiceAccount
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // SetOperationStatusRequest: Request to set operation status. Should
@@ -919,12 +1127,20 @@ type SetOperationStatusRequest struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ErrorCode") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *SetOperationStatusRequest) MarshalJSON() ([]byte, error) {
 	type noMethod SetOperationStatusRequest
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Status: The `Status` type defines a logical error model that is
@@ -970,7 +1186,7 @@ type Status struct {
 
 	// Details: A list of messages that carry the error details. There will
 	// be a common set of message types for APIs to use.
-	Details []StatusDetails `json:"details,omitempty"`
+	Details []googleapi.RawMessage `json:"details,omitempty"`
 
 	// Message: A developer-facing error message, which should be in
 	// English. Any user-facing error message should be localized and sent
@@ -984,15 +1200,21 @@ type Status struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Code") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *Status) MarshalJSON() ([]byte, error) {
 	type noMethod Status
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
-
-type StatusDetails interface{}
 
 // TimestampEvent: Stores the list of events and times they occured for
 // major events in job execution.
@@ -1010,12 +1232,20 @@ type TimestampEvent struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Description") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *TimestampEvent) MarshalJSON() ([]byte, error) {
 	type noMethod TimestampEvent
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "genomics.operations.cancel":
@@ -1026,6 +1256,7 @@ type OperationsCancelCall struct {
 	canceloperationrequest *CancelOperationRequest
 	urlParams_             gensupport.URLParams
 	ctx_                   context.Context
+	header_                http.Header
 }
 
 // Cancel: Starts asynchronous cancellation on a long-running operation.
@@ -1056,8 +1287,20 @@ func (c *OperationsCancelCall) Context(ctx context.Context) *OperationsCancelCal
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *OperationsCancelCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *OperationsCancelCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.canceloperationrequest)
@@ -1073,10 +1316,7 @@ func (c *OperationsCancelCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "genomics.operations.cancel" call.
@@ -1127,7 +1367,7 @@ func (c *OperationsCancelCall) Do(opts ...googleapi.CallOption) (*Empty, error) 
 	//     "name": {
 	//       "description": "The name of the operation resource to be cancelled.",
 	//       "location": "path",
-	//       "pattern": "^operations/.*$",
+	//       "pattern": "^operations/.+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -1155,6 +1395,7 @@ type OperationsGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Gets the latest state of a long-running operation. Clients can
@@ -1192,8 +1433,20 @@ func (c *OperationsGetCall) Context(ctx context.Context) *OperationsGetCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *OperationsGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *OperationsGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1207,10 +1460,7 @@ func (c *OperationsGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "genomics.operations.get" call.
@@ -1261,7 +1511,7 @@ func (c *OperationsGetCall) Do(opts ...googleapi.CallOption) (*Operation, error)
 	//     "name": {
 	//       "description": "The name of the operation resource.",
 	//       "location": "path",
-	//       "pattern": "^operations/.*$",
+	//       "pattern": "^operations/.+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -1286,6 +1536,7 @@ type OperationsListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists operations that match the specified filter in the
@@ -1302,7 +1553,9 @@ func (r *OperationsService) List(name string) *OperationsListCall {
 // The time this job was created, in seconds from the
 // [epoch](http://en.wikipedia.org/wiki/Unix_time). Can use `>=` and/or
 // `= 1432140000` * `projectId = my-project AND createTime >= 1432140000
-// AND createTime <= 1432150000 AND status = RUNNING`
+// AND createTime <= 1432150000 AND status = RUNNING` * `projectId =
+// my-project AND labels.color = *` * `projectId = my-project AND
+// labels.color = red`
 func (c *OperationsListCall) Filter(filter string) *OperationsListCall {
 	c.urlParams_.Set("filter", filter)
 	return c
@@ -1349,8 +1602,20 @@ func (c *OperationsListCall) Context(ctx context.Context) *OperationsListCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *OperationsListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *OperationsListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1364,10 +1629,7 @@ func (c *OperationsListCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"name": c.name,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "genomics.operations.list" call.
@@ -1416,7 +1678,7 @@ func (c *OperationsListCall) Do(opts ...googleapi.CallOption) (*ListOperationsRe
 	//   ],
 	//   "parameters": {
 	//     "filter": {
-	//       "description": "A string for filtering Operations. The following filter fields are supported: * projectId: Required. Corresponds to OperationMetadata.projectId. * createTime: The time this job was created, in seconds from the [epoch](http://en.wikipedia.org/wiki/Unix_time). Can use `\u003e=` and/or `= 1432140000` * `projectId = my-project AND createTime \u003e= 1432140000 AND createTime \u003c= 1432150000 AND status = RUNNING`",
+	//       "description": "A string for filtering Operations. The following filter fields are supported: * projectId: Required. Corresponds to OperationMetadata.projectId. * createTime: The time this job was created, in seconds from the [epoch](http://en.wikipedia.org/wiki/Unix_time). Can use `\u003e=` and/or `= 1432140000` * `projectId = my-project AND createTime \u003e= 1432140000 AND createTime \u003c= 1432150000 AND status = RUNNING` * `projectId = my-project AND labels.color = *` * `projectId = my-project AND labels.color = red`",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -1479,6 +1741,7 @@ type PipelinesCreateCall struct {
 	pipeline   *Pipeline
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Create: Creates a pipeline that can be run later. Create takes a
@@ -1508,8 +1771,20 @@ func (c *PipelinesCreateCall) Context(ctx context.Context) *PipelinesCreateCall 
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PipelinesCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PipelinesCreateCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.pipeline)
@@ -1522,11 +1797,7 @@ func (c *PipelinesCreateCall) doRequest(alt string) (*http.Response, error) {
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "genomics.pipelines.create" call.
@@ -1592,6 +1863,7 @@ type PipelinesDeleteCall struct {
 	pipelineId string
 	urlParams_ gensupport.URLParams
 	ctx_       context.Context
+	header_    http.Header
 }
 
 // Delete: Deletes a pipeline based on ID. Caller must have WRITE
@@ -1618,8 +1890,20 @@ func (c *PipelinesDeleteCall) Context(ctx context.Context) *PipelinesDeleteCall 
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PipelinesDeleteCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PipelinesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -1630,10 +1914,7 @@ func (c *PipelinesDeleteCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"pipelineId": c.pipelineId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "genomics.pipelines.delete" call.
@@ -1708,6 +1989,7 @@ type PipelinesGetCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // Get: Retrieves a pipeline based on ID. Caller must have READ
@@ -1744,8 +2026,20 @@ func (c *PipelinesGetCall) Context(ctx context.Context) *PipelinesGetCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PipelinesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PipelinesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1759,10 +2053,7 @@ func (c *PipelinesGetCall) doRequest(alt string) (*http.Response, error) {
 	googleapi.Expand(req.URL, map[string]string{
 		"pipelineId": c.pipelineId,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "genomics.pipelines.get" call.
@@ -1836,6 +2127,7 @@ type PipelinesGetControllerConfigCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // GetControllerConfig: Gets controller configuration information.
@@ -1885,8 +2177,20 @@ func (c *PipelinesGetControllerConfigCall) Context(ctx context.Context) *Pipelin
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PipelinesGetControllerConfigCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PipelinesGetControllerConfigCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -1897,11 +2201,7 @@ func (c *PipelinesGetControllerConfigCall) doRequest(alt string) (*http.Response
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "genomics.pipelines.getControllerConfig" call.
@@ -1976,6 +2276,7 @@ type PipelinesListCall struct {
 	urlParams_   gensupport.URLParams
 	ifNoneMatch_ string
 	ctx_         context.Context
+	header_      http.Header
 }
 
 // List: Lists pipelines. Caller must have READ permission to the
@@ -2042,8 +2343,20 @@ func (c *PipelinesListCall) Context(ctx context.Context) *PipelinesListCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PipelinesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PipelinesListCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -2054,11 +2367,7 @@ func (c *PipelinesListCall) doRequest(alt string) (*http.Response, error) {
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("GET", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "genomics.pipelines.list" call.
@@ -2165,6 +2474,7 @@ type PipelinesRunCall struct {
 	runpipelinerequest *RunPipelineRequest
 	urlParams_         gensupport.URLParams
 	ctx_               context.Context
+	header_            http.Header
 }
 
 // Run: Runs a pipeline. If `pipelineId` is specified in the request,
@@ -2195,8 +2505,20 @@ func (c *PipelinesRunCall) Context(ctx context.Context) *PipelinesRunCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PipelinesRunCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PipelinesRunCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.runpipelinerequest)
@@ -2209,11 +2531,7 @@ func (c *PipelinesRunCall) doRequest(alt string) (*http.Response, error) {
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "genomics.pipelines.run" call.
@@ -2280,12 +2598,13 @@ type PipelinesSetOperationStatusCall struct {
 	setoperationstatusrequest *SetOperationStatusRequest
 	urlParams_                gensupport.URLParams
 	ctx_                      context.Context
+	header_                   http.Header
 }
 
-// SetOperationStatus: Sets status of a given operation. All timestamps
-// are sent on each call, and the whole series of events is replaced, in
-// case intermediate calls are lost. Should only be called by VMs
-// created by the Pipelines Service and not by end users.
+// SetOperationStatus: Sets status of a given operation. Any new
+// timestamps (as determined by description) are appended to
+// TimestampEvents. Should only be called by VMs created by the
+// Pipelines Service and not by end users.
 func (r *PipelinesService) SetOperationStatus(setoperationstatusrequest *SetOperationStatusRequest) *PipelinesSetOperationStatusCall {
 	c := &PipelinesSetOperationStatusCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.setoperationstatusrequest = setoperationstatusrequest
@@ -2308,8 +2627,20 @@ func (c *PipelinesSetOperationStatusCall) Context(ctx context.Context) *Pipeline
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PipelinesSetOperationStatusCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PipelinesSetOperationStatusCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	body, err := googleapi.WithoutDataWrapper.JSONReader(c.setoperationstatusrequest)
@@ -2322,11 +2653,7 @@ func (c *PipelinesSetOperationStatusCall) doRequest(alt string) (*http.Response,
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("PUT", urls, body)
 	req.Header = reqHeaders
-	googleapi.SetOpaque(req.URL)
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "genomics.pipelines.setOperationStatus" call.
@@ -2367,7 +2694,7 @@ func (c *PipelinesSetOperationStatusCall) Do(opts ...googleapi.CallOption) (*Emp
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets status of a given operation. All timestamps are sent on each call, and the whole series of events is replaced, in case intermediate calls are lost. Should only be called by VMs created by the Pipelines Service and not by end users.",
+	//   "description": "Sets status of a given operation. Any new timestamps (as determined by description) are appended to TimestampEvents. Should only be called by VMs created by the Pipelines Service and not by end users.",
 	//   "httpMethod": "PUT",
 	//   "id": "genomics.pipelines.setOperationStatus",
 	//   "path": "v1alpha2/pipelines:setOperationStatus",

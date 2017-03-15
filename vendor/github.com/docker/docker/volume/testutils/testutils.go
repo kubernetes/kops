@@ -19,13 +19,10 @@ func (NoopVolume) DriverName() string { return "noop" }
 func (NoopVolume) Path() string { return "noop" }
 
 // Mount mounts the volume in the container
-func (NoopVolume) Mount(_ string) (string, error) { return "noop", nil }
+func (NoopVolume) Mount() (string, error) { return "noop", nil }
 
 // Unmount unmounts the volume from the container
-func (NoopVolume) Unmount(_ string) error { return nil }
-
-// Status proivdes low-level details about the volume
-func (NoopVolume) Status() map[string]interface{} { return nil }
+func (NoopVolume) Unmount() error { return nil }
 
 // FakeVolume is a fake volume with a random name
 type FakeVolume struct {
@@ -48,13 +45,10 @@ func (f FakeVolume) DriverName() string { return f.driverName }
 func (FakeVolume) Path() string { return "fake" }
 
 // Mount mounts the volume in the container
-func (FakeVolume) Mount(_ string) (string, error) { return "fake", nil }
+func (FakeVolume) Mount() (string, error) { return "fake", nil }
 
 // Unmount unmounts the volume from the container
-func (FakeVolume) Unmount(_ string) error { return nil }
-
-// Status proivdes low-level details about the volume
-func (FakeVolume) Status() map[string]interface{} { return nil }
+func (FakeVolume) Unmount() error { return nil }
 
 // FakeDriver is a driver that generates fake volumes
 type FakeDriver struct {
@@ -108,9 +102,4 @@ func (d *FakeDriver) Get(name string) (volume.Volume, error) {
 		return v, nil
 	}
 	return nil, fmt.Errorf("no such volume")
-}
-
-// Scope returns the local scope
-func (*FakeDriver) Scope() string {
-	return "local"
 }

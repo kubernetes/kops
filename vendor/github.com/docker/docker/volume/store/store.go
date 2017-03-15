@@ -25,27 +25,13 @@ type volumeMetadata struct {
 	Labels map[string]string
 }
 
-type volumeWrapper struct {
+type volumeWithLabels struct {
 	volume.Volume
 	labels map[string]string
-	scope  string
 }
 
-func (v volumeWrapper) Labels() map[string]string {
+func (v volumeWithLabels) Labels() map[string]string {
 	return v.labels
-}
-
-func (v volumeWrapper) Scope() string {
-	return v.scope
-}
-
-func (v volumeWrapper) CachedPath() string {
-	if vv, ok := v.Volume.(interface {
-		CachedPath() string
-	}); ok {
-		return vv.CachedPath()
-	}
-	return v.Volume.Path()
 }
 
 // New initializes a VolumeStore to keep
@@ -157,15 +143,14 @@ func (s *VolumeStore) List() ([]volume.Volume, []string, error) {
 
 // list goes through each volume driver and asks for its list of volumes.
 func (s *VolumeStore) list() ([]volume.Volume, []string, error) {
-	var (
-		ls       []volume.Volume
-		warnings []string
-	)
-
 	drivers, err := volumedrivers.GetAllDrivers()
 	if err != nil {
 		return nil, nil, err
 	}
+	var (
+		ls       []volume.Volume
+		warnings []string
+	)
 
 	type vols struct {
 		vols       []volume.Volume
@@ -181,10 +166,6 @@ func (s *VolumeStore) list() ([]volume.Volume, []string, error) {
 				chVols <- vols{driverName: d.Name(), err: &OpErr{Err: err, Name: d.Name(), Op: "list"}}
 				return
 			}
-			for i, v := range vs {
-				vs[i] = volumeWrapper{v, s.labels[v.Name()], d.Scope()}
-			}
-
 			chVols <- vols{vols: vs}
 		}(vd)
 	}
@@ -212,6 +193,7 @@ func (s *VolumeStore) list() ([]volume.Volume, []string, error) {
 }
 
 // CreateWithRef creates a volume with the given name and driver and stores the ref
+// This is just like Create() except we store the reference while holding the lock.
 // This ensures there's no race between creating a volume and then storing a reference.
 func (s *VolumeStore) CreateWithRef(name, driverName, ref string, opts, labels map[string]string) (volume.Volume, error) {
 	name = normaliseVolumeName(name)
@@ -228,9 +210,17 @@ func (s *VolumeStore) CreateWithRef(name, driverName, ref string, opts, labels m
 }
 
 // Create creates a volume with the given name and driver.
-// This is just like CreateWithRef() except we don't store a reference while holding the lock.
 func (s *VolumeStore) Create(name, driverName string, opts, labels map[string]string) (volume.Volume, error) {
-	return s.CreateWithRef(name, driverName, "", opts, labels)
+	name = normaliseVolumeName(name)
+	s.locks.Lock(name)
+	defer s.locks.Unlock(name)
+
+	v, err := s.create(name, driverName, opts, labels)
+	if err != nil {
+		return nil, &OpErr{Err: err, Name: name, Op: "create"}
+	}
+	s.setNamed(v, "")
+	return v, nil
 }
 
 // create asks the given driver to create a volume with the name/opts.
@@ -301,7 +291,7 @@ func (s *VolumeStore) create(name, driverName string, opts, labels map[string]st
 		}
 	}
 
-	return volumeWrapper{v, labels, vd.Scope()}, nil
+	return volumeWithLabels{v, labels}, nil
 }
 
 // GetWithRef gets a volume with the given name from the passed in driver and stores the ref
@@ -323,8 +313,10 @@ func (s *VolumeStore) GetWithRef(name, driverName, ref string) (volume.Volume, e
 	}
 
 	s.setNamed(v, ref)
-
-	return volumeWrapper{v, s.labels[name], vd.Scope()}, nil
+	if labels, ok := s.labels[name]; ok {
+		return volumeWithLabels{v, labels}, nil
+	}
+	return v, nil
 }
 
 // Get looks if a volume with the given name exists and returns it if so
@@ -384,7 +376,7 @@ func (s *VolumeStore) getVolume(name string) (volume.Volume, error) {
 		if err != nil {
 			return nil, err
 		}
-		return volumeWrapper{vol, labels, vd.Scope()}, nil
+		return volumeWithLabels{vol, labels}, nil
 	}
 
 	logrus.Debugf("Probing all drivers for volume with name: %s", name)
@@ -399,7 +391,7 @@ func (s *VolumeStore) getVolume(name string) (volume.Volume, error) {
 			continue
 		}
 
-		return volumeWrapper{v, labels, d.Scope()}, nil
+		return volumeWithLabels{v, labels}, nil
 	}
 	return nil, errNoSuchVolume
 }
@@ -420,7 +412,7 @@ func (s *VolumeStore) Remove(v volume.Volume) error {
 	}
 
 	logrus.Debugf("Removing volume reference: driver %s, name %s", v.DriverName(), name)
-	vol := unwrapVolume(v)
+	vol := withoutLabels(v)
 	if err := vd.Remove(vol); err != nil {
 		return &OpErr{Err: err, Name: name, Op: "remove"}
 	}
@@ -473,9 +465,6 @@ func (s *VolumeStore) FilterByDriver(name string) ([]volume.Volume, error) {
 	if err != nil {
 		return nil, &OpErr{Err: err, Name: name, Op: "list"}
 	}
-	for i, v := range ls {
-		ls[i] = volumeWrapper{v, s.labels[v.Name()], vd.Scope()}
-	}
 	return ls, nil
 }
 
@@ -508,8 +497,8 @@ func (s *VolumeStore) filter(vols []volume.Volume, f filterFunc) []volume.Volume
 	return ls
 }
 
-func unwrapVolume(v volume.Volume) volume.Volume {
-	if vol, ok := v.(volumeWrapper); ok {
+func withoutLabels(v volume.Volume) volume.Volume {
+	if vol, ok := v.(volumeWithLabels); ok {
 		return vol.Volume
 	}
 

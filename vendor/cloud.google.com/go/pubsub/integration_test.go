@@ -26,7 +26,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-// messageData is used to hold the contents of a message so that it can be compared against the contents
+// messageData is used to hold the contents of a message so that it can be compared againts the contents
 // of another message without regard to irrelevant fields.
 type messageData struct {
 	ID         string

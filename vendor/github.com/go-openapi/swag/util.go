@@ -246,9 +246,6 @@ func ToJSONName(name string) string {
 // ToVarName camelcases a name which can be underscored or pascal cased
 func ToVarName(name string) string {
 	res := ToGoName(name)
-	if _, ok := commonInitialisms[res]; ok {
-		return lower(res)
-	}
 	if len(res) <= 1 {
 		return lower(res)
 	}
