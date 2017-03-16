@@ -5,3 +5,4 @@ Docker:
   IPMasq: false
   # Note the alternative syntax... with a comma we will try each of the filesystems in turn
   Storage: overlay,aufs
+  LogOpt: "max-size=10m"
