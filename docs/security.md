@@ -25,6 +25,21 @@ To change the SSH public key on an existing cluster:
 All Pods running on your cluster have access to underlying instance IAM role.
 Currently permission scope is quite broad. See [iam_roles.md](iam_roles.md) for details and ways to mitigate that.
 
+## authRole ALPHA SUPPORT
+
+This configuration allows a cluster to utilize existing auth roles.  Currently this configuration only supports aws.  
+In order to use this feature you have to have to have the arn of a pre-existing role, and use the kops feature flag by setting
+`export KOPS_FEATURE_FLAGS=+CustomRoleSupport`.  This feature is in ALPHA release only, and can cause very unusual behavior
+with Kubernetes if use incorrectly.
+
+AuthRole example:
+
+```yaml
+spec:
+  authRole:
+    master: arn:aws:iam::123417490108:role/kops-custom-master-role
+    node: arn:aws:iam::123417490108:role/kops-custom-node-role
+```
 
 ## Kubernetes API
 

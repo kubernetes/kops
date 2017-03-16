@@ -191,6 +191,12 @@ type terraformIAMRole struct {
 }
 
 func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMRole) error {
+
+	// TODO how can I do this better, but we are reusing the role
+	if e.RolePolicyDocument == nil {
+		return nil
+	}
+
 	policy, err := t.AddFile("aws_iam_role", *e.Name, "policy", e.RolePolicyDocument)
 	if err != nil {
 		return fmt.Errorf("error rendering RolePolicyDocument: %v", err)
@@ -210,7 +216,11 @@ func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *I
 }
 
 func (e *IAMRole) TerraformLink() *terraform.Literal {
-	return terraform.LiteralProperty("aws_iam_role", *e.Name, "name")
+	if e.RolePolicyDocument != nil {
+		return terraform.LiteralProperty("aws_iam_role", *e.Name, "name")
+	}
+
+	return terraform.LiteralFromStringValue(*e.ID)
 }
 
 type cloudformationIAMRole struct {

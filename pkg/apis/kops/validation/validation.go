@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"net"
+	"regexp"
 	"strings"
 )
 
@@ -57,6 +58,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 
 	for i := range spec.Hooks {
 		allErrs = append(allErrs, validateHook(&spec.Hooks[i], fieldPath.Child("hooks").Index(i))...)
+	}
+
+	if spec.AuthRole != nil {
+		allErrs = append(allErrs, validateAuthRole(spec.AuthRole, fieldPath.Child("authPolicy"))...)
 	}
 
 	return allErrs
@@ -149,6 +154,31 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 
 	if v.Image == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("Image"), "Image must be specified"))
+	}
+
+	return allErrs
+}
+
+// format is arn:aws:iam::123456789012:role/S3Access
+var validARN = regexp.MustCompile(`^arn:aws:iam::\d+:role\/\S+$`)
+
+// validateAuthRole checks the String values for the AuthRole
+func validateAuthRole(v *kops.AuthRole, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if v.Node != nil {
+		arn := *v.Node
+		if !validARN.MatchString(arn) {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("Node"), arn,
+				"Node AuthRole must be a valid aws arn such as arn:aws:iam::123456789012:role/KopsNodeExampleRole"))
+		}
+	}
+	if v.Master != nil {
+		arn := *v.Master
+		if !validARN.MatchString(arn) {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("Master"), arn,
+				"Node AuthRole must be a valid aws arn such as arn:aws:iam::123456789012:role/KopsMasterExampleRole"))
+		}
 	}
 
 	return allErrs

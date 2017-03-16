@@ -52,6 +52,9 @@ var VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
 
 var EnableExternalDNS = New("EnableExternalDNS", Bool(false))
 
+// CustomRoleSupport if set will allow for the setting of Custom Security Policies for Node and Master.
+var CustomRoleSupport = New("CustomRoleSupport", Bool(false))
+
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex
 

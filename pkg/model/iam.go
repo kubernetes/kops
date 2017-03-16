@@ -19,14 +19,17 @@ package model
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/model/iam"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"reflect"
 	"strings"
 	"text/template"
+
+	"github.com/golang/glog"
+
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/model/iam"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
 
 // IAMModelBuilder configures IAM objects
@@ -48,6 +51,7 @@ const RolePolicyTemplate = `{
 }`
 
 func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
+
 	// Collect the roles in use
 	var roles []kops.InstanceGroupRole
 	for _, ig := range b.InstanceGroups {
@@ -67,47 +71,102 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		name := b.IAMName(role)
 
 		var iamRole *awstasks.IAMRole
-		{
-			rolePolicy, err := b.buildAWSIAMRolePolicy()
-			if err != nil {
-				return err
-			}
 
-			iamRole = &awstasks.IAMRole{
-				Name:               s(name),
-				RolePolicyDocument: fi.WrapResource(rolePolicy),
-				ExportWithID:       s(strings.ToLower(string(role)) + "s"),
+		arn := ""
+
+		// Want to use a FeatureFlag in front of this to allow the validation to harden
+		if b.Cluster.Spec.AuthRole != nil && featureflag.CustomRoleSupport.Enabled() {
+
+			roleAsString := string(role)
+
+			if role == kops.InstanceGroupRoleMaster && b.Cluster.Spec.AuthRole.Master != nil {
+				arn = *b.Cluster.Spec.AuthRole.Master
+				glog.Warningf("Custom Role Support is enabled, kops will use %s, for %s role, this is an advanced feature please use with great care", arn, roleAsString)
+			} else if role == kops.InstanceGroupRoleNode && b.Cluster.Spec.AuthRole.Node != nil {
+				arn = *b.Cluster.Spec.AuthRole.Node
+				glog.Warningf("Custom Role Support is enabled, kops will use %s, for %s role, this is an advanced feature please use with great care", arn, roleAsString)
 			}
-			c.AddTask(iamRole)
 
 		}
 
-		{
-			iamPolicy := &iam.IAMPolicyResource{
-				Builder: &iam.IAMPolicyBuilder{
-					Cluster: b.Cluster,
-					Role:    role,
-					Region:  b.Region,
-				},
+		// If we've specified an IAMRoleArn for this cluster role,
+		// do not create a new one
+		if arn != "" {
+			{
+
+				rs := strings.Split(arn, "/")
+
+				length := len(rs)
+
+				if length != 2 {
+					return fmt.Errorf("unable to parse role arn %q", arn)
+				}
+
+				roleName := rs[length-1]
+				iamRole = &awstasks.IAMRole{
+					Name: &roleName,
+					ID:   &arn,
+
+					// We set Policy Document to nil as this role will be managed externally
+					RolePolicyDocument: nil,
+				}
+
+				// TODO Validate role against role that kops generates
+				// TODO Where is out entry point to validate the role?
+				// TODO We need to run the aws finder and we do not have access to the cloud context.
+				// TODO We need to validate somewhere else.
+
+				// Steps to validate
+				// 1. get the role
+				// 2. generate the role out of iam_builder
+				// 3. diff the two
+
+				c.AddTask(iamRole)
+			}
+		} else {
+
+			{
+				rolePolicy, err := b.buildAWSIAMRolePolicy()
+				if err != nil {
+					return err
+				}
+
+				iamRole = &awstasks.IAMRole{
+					Name:               s(name),
+					RolePolicyDocument: fi.WrapResource(rolePolicy),
+					ExportWithID:       s(strings.ToLower(string(role)) + "s"),
+				}
+				c.AddTask(iamRole)
+
 			}
 
-			// This is slightly tricky; we need to know the hosted zone id,
-			// but we might be creating the hosted zone dynamically.
+			{
+				iamPolicy := &iam.IAMPolicyResource{
+					Builder: &iam.IAMPolicyBuilder{
+						Cluster: b.Cluster,
+						Role:    role,
+						Region:  b.Region,
+					},
+				}
 
-			// TODO: I don't love this technique for finding the task by name & modifying it
-			dnsZoneTask, found := c.Tasks["DNSZone/"+b.NameForDNSZone()]
-			if found {
-				iamPolicy.DNSZone = dnsZoneTask.(*awstasks.DNSZone)
-			} else {
-				glog.V(2).Infof("Task %q not found; won't set route53 permissions in IAM", "DNSZone/"+b.NameForDNSZone())
-			}
+				// This is slightly tricky; we need to know the hosted zone id,
+				// but we might be creating the hosted zone dynamically.
 
-			t := &awstasks.IAMRolePolicy{
-				Name:           s(name),
-				Role:           iamRole,
-				PolicyDocument: iamPolicy,
+				// TODO: I don't love this technique for finding the task by name & modifying it
+				dnsZoneTask, found := c.Tasks["DNSZone/"+b.NameForDNSZone()]
+				if found {
+					iamPolicy.DNSZone = dnsZoneTask.(*awstasks.DNSZone)
+				} else {
+					glog.V(2).Infof("Task %q not found; won't set route53 permissions in IAM", "DNSZone/"+b.NameForDNSZone())
+				}
+
+				t := &awstasks.IAMRolePolicy{
+					Name:           s(name),
+					Role:           iamRole,
+					PolicyDocument: iamPolicy,
+				}
+				c.AddTask(t)
 			}
-			c.AddTask(t)
 		}
 
 		var iamInstanceProfile *awstasks.IAMInstanceProfile

@@ -129,6 +129,10 @@ type ClusterSpec struct {
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 
+	// Use an existing custom cloud security policy for the instances.  One example is to specify the name
+	// of an AWS IAM role for the master and another for the nodes.
+	AuthRole *AuthRole `json:"authRole,omitempty"`
+
 	// Additional policies to add for roles
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 
@@ -300,13 +304,16 @@ type KubeDNSConfig struct {
 	ServerIP string `json:"serverIP,omitempty"`
 }
 
-//type MasterConfig struct {
-//	Name string `json:",omitempty"`
-//
-//	Image       string `json:",omitempty"`
-//	Zone        string `json:",omitempty"`
-//	MachineType string `json:",omitempty"`
-//}
+type AuthRole struct {
+
+	// Name is the name of the policy to use for the master
+	// Format expected is arn:aws:iam::123456789012:role/ExampleMasterRole
+	Master *string `json:"master,omitempty"`
+
+	// Name is the name of the policy to use for the node
+	// Format expected is arn:aws:iam::123456789012:role/ExampleNodeRole
+	Node *string `json:"node,omitempty"`
+}
 
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)

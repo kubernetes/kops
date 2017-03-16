@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"testing"
 )
 
@@ -80,10 +81,64 @@ func TestValidateCIDR(t *testing.T) {
 	}
 }
 
+func s(v string) *string {
+	return fi.String(v)
+}
+
+func TestValidateAuth(t *testing.T) {
+	grid := []struct {
+		Input          *kops.AuthRole
+		ExpectedErrors []string
+		ExpectedDetail string
+	}{
+		{
+			Input: &kops.AuthRole{
+				Master: s("arn:aws:iam::123456789012:role/S3Access"),
+			},
+		},
+		{
+			Input: &kops.AuthRole{
+				Master: s("42"),
+			},
+			ExpectedErrors: []string{"Invalid value::AuthRole.Master"},
+			ExpectedDetail: "Node AuthRole must be a valid aws arn such as arn:aws:iam::123456789012:role/KopsMasterExampleRole",
+		},
+		{
+			Input: &kops.AuthRole{
+				Node: s("arn:aws:iam::123456789012:group/division_abc/subdivision_xyz/product_A/Developers"),
+			},
+			ExpectedErrors: []string{"Invalid value::AuthRole.Node"},
+			ExpectedDetail: "Node AuthRole must be a valid aws arn such as arn:aws:iam::123456789012:role/KopsNodeExampleRole",
+		},
+	}
+
+	for _, g := range grid {
+		errs := validateAuthRole(g.Input, field.NewPath("AuthRole"))
+
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+
+		if g.ExpectedDetail != "" {
+			found := false
+			for _, err := range errs {
+				if err.Detail == g.ExpectedDetail {
+					found = true
+				}
+			}
+			if !found {
+				for _, err := range errs {
+					t.Logf("found detail: %q", err.Detail)
+				}
+
+				t.Errorf("did not find expected error %q", g.ExpectedDetail)
+			}
+		}
+	}
+}
+
 func testErrors(t *testing.T, context interface{}, actual field.ErrorList, expectedErrors []string) {
 	if len(expectedErrors) == 0 {
 		if len(actual) != 0 {
-			t.Errorf("unexpected errors from %q: %v", context, actual)
+			t.Errorf("unexpected errors from %v: %+v", context, actual)
 		}
 	} else {
 		errStrings := sets.NewString()
