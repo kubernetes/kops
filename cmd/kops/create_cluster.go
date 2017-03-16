@@ -96,9 +96,10 @@ type CreateClusterOptions struct {
 	NodeTenancy   string
 
 	// vSphere options
-	VSphereServer       string
-	VSphereDatacenter   string
-	VSphereResourcePool string
+	VSphereServer        string
+	VSphereDatacenter    string
+	VSphereResourcePool  string
+	VSphereCoreDNSServer string
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -211,6 +212,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.VSphereServer, "vsphere-server", options.VSphereServer, "vsphere-server is required for vSphere. Set vCenter URL Ex: 10.192.10.30 or myvcenter.io (without https://)")
 	cmd.Flags().StringVar(&options.VSphereDatacenter, "vsphere-datacenter", options.VSphereDatacenter, "vsphere-datacenter is required for vSphere. Set the name of the datacenter in which to deploy Kubernetes VMs.")
 	cmd.Flags().StringVar(&options.VSphereResourcePool, "vsphere-resource-pool", options.VSphereDatacenter, "vsphere-resource-pool is required for vSphere. Set a valid Cluster, Host or Resource Pool in which to deploy Kubernetes VMs.")
+	cmd.Flags().StringVar(&options.VSphereCoreDNSServer, "vsphere-coredns-server", options.VSphereCoreDNSServer, "vsphere-coredns-server is required for vSphere.")
 	return cmd
 }
 
@@ -544,6 +546,11 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				return fmt.Errorf("vsphere-resource-pool is required for vSphere. Set a valid Cluster, Host or Resource Pool in which to deploy Kubernetes VMs.")
 			}
 			cluster.Spec.CloudConfig.VSphereResourcePool = fi.String(c.VSphereResourcePool)
+
+			if c.VSphereCoreDNSServer == "" {
+				return fmt.Errorf("A coredns server is required for vSphere.")
+			}
+			cluster.Spec.CloudConfig.VSphereCoreDNSServer = fi.String(c.VSphereCoreDNSServer)
 		}
 	}
 
