@@ -273,6 +273,11 @@ gofmt:
 	gofmt -w -s dns-controller/cmd
 	gofmt -w -s dns-controller/pkg
 
+goimports:
+	sh -c hack/update-goimports
+
+verify-goimports:
+	sh -c hack/verify-goimports
 
 govet:
 	go vet \
