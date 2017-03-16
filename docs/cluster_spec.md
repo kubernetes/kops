@@ -19,6 +19,23 @@ spec:
     dns: {}
 ```
 
+### authProfile ALPHA SUPPORT
+
+This configuration allows a cluster to utilize existing IAM instance profiles.  Currently this configuration only supports aws.  
+In order to use this feature you have to have to have the instance profile arn of a pre-existing role, and use the kops feature flag by setting
+`export KOPS_FEATURE_FLAGS=+CustomAuthProfileSupport`.  This feature is in ALPHA release only, and can cause very unusual behavior
+with Kubernetes if use incorrectly.
+
+AuthRole example:
+
+```yaml
+spec:
+  authPofile:
+    master: arn:aws:iam::123417490108:instance-profile/kops-custom-master-role
+    node: arn:aws:iam::123417490108:instance-profile/kops-custom-node-role
+```
+
+### api
 
 When configuring a LoadBalancer, you can also choose to have a public ELB or an internal (VPC only) ELB.  The `type`
 field should be `Public` or `Internal`.

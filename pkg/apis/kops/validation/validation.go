@@ -19,6 +19,7 @@ package validation
 import (
 	"fmt"
 	"net"
+	"regexp"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/validation"
@@ -87,6 +88,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 
 	if spec.Networking != nil {
 		allErrs = append(allErrs, validateNetworking(spec.Networking, fieldPath.Child("networking"))...)
+	}
+
+	if spec.AuthProfile != nil {
+		allErrs = append(allErrs, validateAuthProfile(spec.AuthProfile, fieldPath.Child("authProfile"))...)
 	}
 
 	return allErrs
@@ -240,6 +245,31 @@ func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Pat
 		// OK
 	default:
 		allErrs = append(allErrs, field.NotSupported(fldPath.Child("Backend"), v.Backend, []string{"udp", "vxlan"}))
+	}
+
+	return allErrs
+}
+
+// format is arn:aws:iam::123456789012:instance-profile/S3Access
+var validARN = regexp.MustCompile(`^arn:aws:iam::\d+:instance-profile\/\S+$`)
+
+// validateAuthProfile checks the String values for the AuthProfile
+func validateAuthProfile(v *kops.AuthProfile, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if v.Node != nil {
+		arn := *v.Node
+		if !validARN.MatchString(arn) {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("Node"), arn,
+				"Node AuthProfile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsNodeExampleRole"))
+		}
+	}
+	if v.Master != nil {
+		arn := *v.Master
+		if !validARN.MatchString(arn) {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("Master"), arn,
+				"Node AuthProfile must be a valid aws arn such as arn:aws:iam::123456789012:instance-profile/KopsMasterExampleRole"))
+		}
 	}
 
 	return allErrs

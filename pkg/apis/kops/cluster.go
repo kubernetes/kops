@@ -117,7 +117,13 @@ type ClusterSpec struct {
 	//   'external' do not apply updates automatically - they are applied manually or by an external system
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
+
+	// AutoProfile an existing custom cloud security policy name for the instances.
+	// Only supported for AWS
+	AuthProfile *AuthProfile `json:"authProfile,omitempty"`
+
 	// Additional policies to add for roles
+	// Map is keyed by: master, node
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 	// A collection of files assets for deployed cluster wide
 	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
@@ -280,6 +286,27 @@ type ExternalDNSConfig struct {
 	WatchIngress *bool `json:"watchIngress,omitempty"`
 	// WatchNamespace is namespace to watch, detaults to all (use to control whom can creates dns entries)
 	WatchNamespace string `json:"watchNamespace,omitempty"`
+}
+
+// AuthProfile are the names of different instance profiles to use for IAM
+// At this point only AWS is supported for this option.
+// This is a very advanced option, which can really impact a kubernets cluster if not used properly,
+// or open security holes as wel. We recommend using kops to construct the profile, or re-using a
+// duplicate profile that kops uses. If users are not able to create auth profiles, a user
+// with the correct auth can run `kops update` using the iam phase.
+type AuthProfile struct {
+
+	// Master is the name of the instance profile to use for the master
+	// Format expected is arn:aws:iam::123456789012:instance-profile/ExampleMasterRole
+	Master *string `json:"master,omitempty"`
+
+	// Node is the name of the instance profile to use for the node
+	// Format expected is arn:aws:iam::123456789012:instance-profile/ExampleNodeRole
+	Node *string `json:"node,omitempty"`
+
+	// Bastion is the name of the instance profile to use for the bastion
+	// Format expected is arn:aws:iam::123456789012:instance-profile/ExampleBastionRole
+	Bastion *string `json:"bastion,omitempty"`
 }
 
 // EtcdClusterSpec is the etcd cluster specification

@@ -24,7 +24,10 @@ import (
 	"text/template"
 
 	"github.com/golang/glog"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -51,23 +54,83 @@ const RolePolicyTemplate = `{
 }`
 
 func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	// Collect the roles in use
+	hasAuthProfile := false
+	if b.Cluster.Spec.AuthProfile != nil {
+		hasAuthProfile = true
+		if !featureflag.CustomAuthProfileSupport.Enabled() {
+			glog.Warningf("found auth profile, but the feature flag is not enabled")
+		}
+	}
+
 	var roles []kops.InstanceGroupRole
+	hasRole := sets.NewString()
+
+	// collect all roles in use
 	for _, ig := range b.InstanceGroups {
-		found := false
-		for _, r := range roles {
-			if r == ig.Spec.Role {
-				found = true
+		// Test if we have a shared iam instance profile
+		// We are hiding this behind a feature flag, because this is can
+		// mess up clusters big time.
+
+		// If we've specified a custom instance profile for this cluster role,
+		// do not create a task for a shared instance profile
+		// TODO Validate instance profile role against role that kops generates
+		// TODO We also need to validate that we do not have additional policies as well
+		if hasAuthProfile && featureflag.CustomAuthProfileSupport.Enabled() {
+			switch ig.Spec.Role {
+			case kops.InstanceGroupRoleBastion:
+				if b.Cluster.Spec.AuthProfile.Bastion != nil {
+					// this may not be the name, but we are setting it for the task
+					// we may want to set the id in launchconfiguration
+					if err := b.buildShareIAMInstanceProfile(b.Cluster.Spec.AuthProfile.Bastion, c); err != nil {
+						return fmt.Errorf("unable to get name for bastion role: %v", err)
+					}
+					// we set this so the role is not built
+					continue
+				}
+			case kops.InstanceGroupRoleNode:
+				if b.Cluster.Spec.AuthProfile.Node != nil {
+					// this may not be the name, but we are setting it for the task
+					// TODO we may want to set the id in launchconfiguration
+					if err := b.buildShareIAMInstanceProfile(b.Cluster.Spec.AuthProfile.Node, c); err != nil {
+						return fmt.Errorf("unable to get name for node role: %v", err)
+					}
+					// we set this so the role is not built
+					continue
+				}
+			case kops.InstanceGroupRoleMaster:
+				if b.Cluster.Spec.AuthProfile.Master != nil {
+					// this may not be the name, but we are setting it for the task
+					// TODO we may want to set the id in launchconfiguration
+					if err := b.buildShareIAMInstanceProfile(b.Cluster.Spec.AuthProfile.Master, c); err != nil {
+						return fmt.Errorf("unable to get name for master role: %v", err)
+					}
+					// we set this so the role is not built
+					continue
+				}
+			default:
+				return fmt.Errorf("unrecognised instance group type: %s", ig.Spec.Role)
 			}
 		}
-		if !found {
+
+		if !hasRole.Has(string(ig.Spec.Role)) {
 			roles = append(roles, ig.Spec.Role)
 		}
+
+		hasRole.Insert(string(ig.Spec.Role))
+
+		// we have found as many role as we have
+		if hasRole.Len() == len(kops.AllInstanceGroupRoles) {
+			break
+		}
+
 	}
 
 	// Generate IAM objects etc for each role
 	for _, role := range roles {
-		name := b.IAMName(role)
+		name, err := b.IAMName(role)
+		if err != nil {
+			return err
+		}
 
 		var iamRole *awstasks.IAMRole
 		{
@@ -179,6 +242,25 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	return nil
+}
+
+// buildShareIAMInstanceProfile adds a shared IAMInstanceProfile task to the ModelBuilderContext
+func (b *IAMModelBuilder) buildShareIAMInstanceProfile(id *string, c *fi.ModelBuilderContext) error {
+	name, err := findCustomAuthNameFromArn(id)
+	if err != nil {
+		return fmt.Errorf("unable to parse instance profile name from arn %q: %v", name, err)
+	}
+	var iamInstanceProfile *awstasks.IAMInstanceProfile
+	{
+		iamInstanceProfile = &awstasks.IAMInstanceProfile{
+			Name:      fi.String(name),
+			Lifecycle: b.Lifecycle,
+			ID:        id,
+			Shared:    fi.Bool(true),
+		}
+		c.AddTask(iamInstanceProfile)
+	}
 	return nil
 }
 

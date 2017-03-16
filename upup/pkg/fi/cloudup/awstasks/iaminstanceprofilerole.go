@@ -117,6 +117,9 @@ type terraformIAMInstanceProfile struct {
 }
 
 func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfileRole) error {
+	if fi.BoolValue(e.InstanceProfile.Shared) {
+		return nil
+	}
 	tf := &terraformIAMInstanceProfile{
 		Name: e.InstanceProfile.Name,
 		Role: e.Role.TerraformLink(),
@@ -131,6 +134,9 @@ type cloudformationIAMInstanceProfile struct {
 }
 
 func (_ *IAMInstanceProfileRole) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *IAMInstanceProfileRole) error {
+	if fi.BoolValue(e.InstanceProfile.Shared) {
+		return nil
+	}
 	cf := &cloudformationIAMInstanceProfile{
 		//Path:  e.InstanceProfile.Name,
 		Roles: []*cloudformation.Literal{e.Role.CloudformationLink()},

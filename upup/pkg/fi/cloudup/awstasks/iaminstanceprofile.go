@@ -34,8 +34,9 @@ import (
 type IAMInstanceProfile struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
-
-	ID *string
+	// Shared is set if this is a shared instance profile
+	Shared *bool
+	ID     *string
 }
 
 var _ fi.CompareWithID = &IAMInstanceProfile{}
@@ -93,9 +94,16 @@ func (e *IAMInstanceProfile) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (s *IAMInstanceProfile) CheckChanges(a, e, changes *IAMInstanceProfile) error {
+func (_ *IAMInstanceProfile) ShouldCreate(a, e, changes *IAMInstanceProfile) (bool, error) {
+	if fi.BoolValue(e.Shared) {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (_ *IAMInstanceProfile) CheckChanges(a, e, changes *IAMInstanceProfile) error {
 	if a != nil {
-		if fi.StringValue(e.Name) == "" {
+		if fi.StringValue(e.Name) == "" && !fi.BoolValue(e.Shared) {
 			return fi.RequiredField("Name")
 		}
 	}
@@ -103,7 +111,11 @@ func (s *IAMInstanceProfile) CheckChanges(a, e, changes *IAMInstanceProfile) err
 }
 
 func (_ *IAMInstanceProfile) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *IAMInstanceProfile) error {
-	if a == nil {
+	if fi.BoolValue(e.Shared) {
+		if a == nil {
+			return fmt.Errorf("instance role profile with id %q not found", fi.StringValue(e.ID))
+		}
+	} else if a == nil {
 		glog.V(2).Infof("Creating IAMInstanceProfile with Name:%q", *e.Name)
 
 		request := &iam.CreateInstanceProfileInput{
@@ -154,6 +166,9 @@ func (_ *IAMInstanceProfile) RenderTerraform(t *terraform.TerraformTarget, a, e,
 }
 
 func (e *IAMInstanceProfile) TerraformLink() *terraform.Literal {
+	if fi.BoolValue(e.Shared) {
+		return terraform.LiteralFromStringValue(fi.StringValue(e.ID))
+	}
 	return terraform.LiteralProperty("aws_iam_instance_profile", *e.Name, "id")
 }
 
@@ -163,5 +178,10 @@ func (_ *IAMInstanceProfile) RenderCloudformation(t *cloudformation.Cloudformati
 }
 
 func (e *IAMInstanceProfile) CloudformationLink() *cloudformation.Literal {
-	return cloudformation.Ref("AWS::IAM::InstanceProfile", *e.Name)
+	if fi.BoolValue(e.Shared) {
+		// FIXME no idea how to get this to work
+		glog.Warning("cf does not support custom iam profiles at this time")
+		return nil
+	}
+	return cloudformation.Ref("AWS::IAM::InstanceProfile", fi.StringValue(e.Name))
 }

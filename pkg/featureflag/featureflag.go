@@ -61,6 +61,9 @@ var EnableSeparateConfigBase = New("EnableSeparateConfigBase", Bool(false))
 // SpecOverrideFlag allows setting spec values on create
 var SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))
 
+// CustomAuthProfileSupport if set will allow for the reuse of an existing security profile
+var CustomAuthProfileSupport = New("CustomAuthProfileSupport", Bool(false))
+
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex
 
