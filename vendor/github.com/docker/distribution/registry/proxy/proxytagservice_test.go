@@ -1,7 +1,6 @@
 package proxy
 
 import (
-	"reflect"
 	"sort"
 	"sync"
 	"testing"
@@ -93,7 +92,7 @@ func TestGet(t *testing.T) {
 		t.Fatalf("Expected 1 auth challenge call, got %#v", proxyTags.authChallenger)
 	}
 
-	if !reflect.DeepEqual(d, remoteDesc) {
+	if d != remoteDesc {
 		t.Fatal("unable to get put tag")
 	}
 
@@ -102,7 +101,7 @@ func TestGet(t *testing.T) {
 		t.Fatal("remote tag not pulled into store")
 	}
 
-	if !reflect.DeepEqual(local, remoteDesc) {
+	if local != remoteDesc {
 		t.Fatalf("unexpected descriptor pulled through")
 	}
 
@@ -122,7 +121,7 @@ func TestGet(t *testing.T) {
 		t.Fatalf("Expected 2 auth challenge calls, got %#v", proxyTags.authChallenger)
 	}
 
-	if !reflect.DeepEqual(d, newRemoteDesc) {
+	if d != newRemoteDesc {
 		t.Fatal("unable to get put tag")
 	}
 

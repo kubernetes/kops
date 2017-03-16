@@ -40,7 +40,7 @@ func NewCtx(authZPlugins []Plugin, user, userAuthNMethod, requestMethod, request
 	}
 }
 
-// Ctx stores a single request-response interaction context
+// Ctx stores a a single request-response interaction context
 type Ctx struct {
 	user            string
 	userAuthNMethod string
@@ -85,7 +85,7 @@ func (ctx *Ctx) AuthZRequest(w http.ResponseWriter, r *http.Request) error {
 		}
 
 		if !authRes.Allow {
-			return newAuthorizationError(plugin.Name(), authRes.Msg)
+			return fmt.Errorf("authorization denied by plugin %s: %s", plugin.Name(), authRes.Msg)
 		}
 	}
 
@@ -110,7 +110,7 @@ func (ctx *Ctx) AuthZResponse(rm ResponseModifier, r *http.Request) error {
 		}
 
 		if !authRes.Allow {
-			return newAuthorizationError(plugin.Name(), authRes.Msg)
+			return fmt.Errorf("authorization denied by plugin %s: %s", plugin.Name(), authRes.Msg)
 		}
 	}
 
@@ -119,7 +119,7 @@ func (ctx *Ctx) AuthZResponse(rm ResponseModifier, r *http.Request) error {
 	return nil
 }
 
-// drainBody dump the body (if its length is less than 1MB) without modifying the request state
+// drainBody dump the body (if it's length is less than 1MB) without modifying the request state
 func drainBody(body io.ReadCloser) ([]byte, io.ReadCloser, error) {
 	bufReader := bufio.NewReaderSize(body, maxBodySize)
 	newBody := ioutils.NewReadCloserWrapper(bufReader, func() error { return body.Close() })
@@ -162,18 +162,4 @@ func headers(header http.Header) map[string]string {
 		}
 	}
 	return v
-}
-
-// authorizationError represents an authorization deny error
-type authorizationError struct {
-	error
-}
-
-// HTTPErrorStatusCode returns the authorization error status code (forbidden)
-func (e authorizationError) HTTPErrorStatusCode() int {
-	return http.StatusForbidden
-}
-
-func newAuthorizationError(plugin, msg string) authorizationError {
-	return authorizationError{error: fmt.Errorf("authorization denied by plugin %s: %s", plugin, msg)}
 }

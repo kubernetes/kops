@@ -15,23 +15,7 @@
 
 ## 下载安装
 
-使用一个特定版本：
-
     go get gopkg.in/ini.v1
-
-使用最新版：
-
-	go get github.com/go-ini/ini
-
-如需更新请添加 `-u` 选项。
-
-### 测试安装
-
-如果您想要在自己的机器上运行测试，请使用 `-t` 标记：
-
-	go get -t gopkg.in/ini.v1
-
-如需更新请添加 `-u` 选项。
 
 ## 开始使用
 
@@ -54,31 +38,6 @@ cfg := ini.Empty()
 ```go
 err := cfg.Append("other file", []byte("other raw data"))
 ```
-
-当您想要加载一系列文件，但是不能够确定其中哪些文件是不存在的，可以通过调用函数 `LooseLoad` 来忽略它们（`Load` 会因为文件不存在而返回错误）：
-
-```go
-cfg, err := ini.LooseLoad("filename", "filename_404")
-```
-
-更牛逼的是，当那些之前不存在的文件在重新调用 `Reload` 方法的时候突然出现了，那么它们会被正常加载。
-
-有时候分区和键的名称大小写混合非常烦人，这个时候就可以通过 `InsensitiveLoad` 将所有分区和键名在读取里强制转换为小写：
-
-```go
-cfg, err := ini.InsensitiveLoad("filename")
-//...
-
-// sec1 和 sec2 指向同一个分区对象
-sec1, err := cfg.GetSection("Section")
-sec2, err := cfg.GetSection("SecTIOn")
-
-// key1 和 key2 指向同一个键对象
-key1, err := cfg.GetKey("Key")
-key2, err := cfg.GetKey("KeY")
-```
-
-如果您想要更加自定义的加载选项，可以使用 `LoadSources` 方法并参见 [`LoadOptions`](https://github.com/go-ini/ini/blob/v1.16.1/ini.go#L156)。
 
 ### 操作分区（Section）
 
@@ -151,7 +110,7 @@ names := cfg.Section("").KeyStrings()
 获取分区下的所有键值对的克隆：
 
 ```go
-hash := cfg.Section("").KeysHash()
+hash := cfg.GetSection("").KeysHash()
 ```
 
 ### 操作键值（Value）
@@ -189,8 +148,8 @@ yes := cfg.Section("").HasValue("test value")
 
 ```go
 // 布尔值的规则：
-// true 当值为：1, t, T, TRUE, true, True, YES, yes, Yes, y, ON, on, On
-// false 当值为：0, f, F, FALSE, false, False, NO, no, No, n, OFF, off, Off
+// true 当值为：1, t, T, TRUE, true, True, YES, yes, Yes, ON, on, On
+// false 当值为：0, f, F, FALSE, false, False, NO, no, No, OFF, off, Off
 v, err = cfg.Section("").Key("BOOL").Bool()
 v, err = cfg.Section("").Key("FLOAT64").Float64()
 v, err = cfg.Section("").Key("INT").Int()
@@ -264,16 +223,6 @@ cfg.Section("advance").Key("two_lines").String() // how about continuation lines
 cfg.Section("advance").Key("lots_of_lines").String() // 1 2 3 4
 ```
 
-可是我有时候觉得两行连在一起特别没劲，怎么才能不自动连接两行呢？
-
-```go
-cfg, err := ini.LoadSources(ini.LoadOptions{
-	IgnoreContinuation: true,
-}, "filename")
-```
-
-哇靠给力啊！
-
 需要注意的是，值两侧的单引号会被自动剔除：
 
 ```ini
@@ -312,13 +261,9 @@ vals = cfg.Section("").Key("TIME").RangeTimeFormat(time.RFC3339, time.Now(), min
 vals = cfg.Section("").Key("TIME").RangeTime(time.Now(), minTime, maxTime) // RFC3339
 ```
 
-##### 自动分割键值到切片（slice）
-
-当存在无效输入时，使用零值代替：
+自动分割键值为切片（slice）：
 
 ```go
-// Input: 1.1, 2.2, 3.3, 4.4 -> [1.1 2.2 3.3 4.4]
-// Input: how, 2.2, are, you -> [0.0 2.2 0.0 0.0]
 vals = cfg.Section("").Key("STRINGS").Strings(",")
 vals = cfg.Section("").Key("FLOAT64S").Float64s(",")
 vals = cfg.Section("").Key("INTS").Ints(",")
@@ -326,32 +271,6 @@ vals = cfg.Section("").Key("INT64S").Int64s(",")
 vals = cfg.Section("").Key("UINTS").Uints(",")
 vals = cfg.Section("").Key("UINT64S").Uint64s(",")
 vals = cfg.Section("").Key("TIMES").Times(",")
-```
-
-从结果切片中剔除无效输入：
-
-```go
-// Input: 1.1, 2.2, 3.3, 4.4 -> [1.1 2.2 3.3 4.4]
-// Input: how, 2.2, are, you -> [2.2]
-vals = cfg.Section("").Key("FLOAT64S").ValidFloat64s(",")
-vals = cfg.Section("").Key("INTS").ValidInts(",")
-vals = cfg.Section("").Key("INT64S").ValidInt64s(",")
-vals = cfg.Section("").Key("UINTS").ValidUints(",")
-vals = cfg.Section("").Key("UINT64S").ValidUint64s(",")
-vals = cfg.Section("").Key("TIMES").ValidTimes(",")
-```
-
-当存在无效输入时，直接返回错误：
-
-```go
-// Input: 1.1, 2.2, 3.3, 4.4 -> [1.1 2.2 3.3 4.4]
-// Input: how, 2.2, are, you -> error
-vals = cfg.Section("").Key("FLOAT64S").StrictFloat64s(",")
-vals = cfg.Section("").Key("INTS").StrictInts(",")
-vals = cfg.Section("").Key("INT64S").StrictInt64s(",")
-vals = cfg.Section("").Key("UINTS").StrictUints(",")
-vals = cfg.Section("").Key("UINT64S").StrictUint64s(",")
-vals = cfg.Section("").Key("TIMES").StrictTimes(",")
 ```
 
 ### 保存配置
@@ -413,12 +332,6 @@ CLONE_URL = https://%(IMPORT_PATH)s
 
 ```go
 cfg.Section("package.sub").Key("CLONE_URL").String()	// https://gopkg.in/ini.v1
-```
-
-#### 获取上级父分区下的所有键名
-
-```go
-cfg.Section("package.sub").ParentKeys() // ["CLONE_URL"]
 ```
 
 #### 读取自增键名
@@ -560,7 +473,7 @@ type Info struct{
 }
 
 func main() {
-	err = ini.MapToWithMapper(&Info{}, ini.TitleUnderscore, []byte("package_name=ini"))
+	err = ini.MapToWithMapper(&Info{}, ini.TitleUnderscore, []byte("packag_name=ini"))
 	// ...
 
 	cfg, err := ini.Load([]byte("PACKAGE_NAME=ini"))

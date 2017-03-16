@@ -6,100 +6,12 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"os"
 	"strings"
 	"testing"
 
 	"github.com/docker/engine-api/types"
 	"golang.org/x/net/context"
 )
-
-func TestNewEnvClient(t *testing.T) {
-	cases := []struct {
-		envs            map[string]string
-		expectedError   string
-		expectedVersion string
-	}{
-		{
-			envs:            map[string]string{},
-			expectedVersion: DefaultVersion,
-		},
-		{
-			envs: map[string]string{
-				"DOCKER_CERT_PATH": "invalid/path",
-			},
-			expectedError: "Could not load X509 key pair: open invalid/path/cert.pem: no such file or directory. Make sure the key is not encrypted",
-		},
-		{
-			envs: map[string]string{
-				"DOCKER_CERT_PATH": "testdata/",
-			},
-			expectedVersion: DefaultVersion,
-		},
-		{
-			envs: map[string]string{
-				"DOCKER_HOST": "host",
-			},
-			expectedError: "unable to parse docker host `host`",
-		},
-		{
-			envs: map[string]string{
-				"DOCKER_HOST": "invalid://url",
-			},
-			expectedVersion: DefaultVersion,
-		},
-		{
-			envs: map[string]string{
-				"DOCKER_API_VERSION": "anything",
-			},
-			expectedVersion: "anything",
-		},
-		{
-			envs: map[string]string{
-				"DOCKER_API_VERSION": "1.22",
-			},
-			expectedVersion: "1.22",
-		},
-	}
-	for _, c := range cases {
-		recoverEnvs := setupEnvs(t, c.envs)
-		apiclient, err := NewEnvClient()
-		if c.expectedError != "" {
-			if err == nil || err.Error() != c.expectedError {
-				t.Errorf("expected an error %s, got %s, for %v", c.expectedError, err.Error(), c)
-			}
-		} else {
-			if err != nil {
-				t.Error(err)
-			}
-			version := apiclient.ClientVersion()
-			if version != c.expectedVersion {
-				t.Errorf("expected %s, got %s, for %v", c.expectedVersion, version, c)
-			}
-		}
-		recoverEnvs(t)
-	}
-}
-
-func setupEnvs(t *testing.T, envs map[string]string) func(*testing.T) {
-	oldEnvs := map[string]string{}
-	for key, value := range envs {
-		oldEnv := os.Getenv(key)
-		oldEnvs[key] = oldEnv
-		err := os.Setenv(key, value)
-		if err != nil {
-			t.Error(err)
-		}
-	}
-	return func(t *testing.T) {
-		for key, value := range oldEnvs {
-			err := os.Setenv(key, value)
-			if err != nil {
-				t.Error(err)
-			}
-		}
-	}
-}
 
 func TestGetAPIPath(t *testing.T) {
 	cases := []struct {
@@ -203,43 +115,5 @@ func TestUpdateClientVersion(t *testing.T) {
 		if strings.TrimPrefix(r.APIVersion, "v") != strings.TrimPrefix(cs.v, "v") {
 			t.Fatalf("Expected %s, got %s", cs.v, r.APIVersion)
 		}
-	}
-}
-
-func TestNewEnvClientSetsDefaultVersion(t *testing.T) {
-	// Unset environment variables
-	envVarKeys := []string{
-		"DOCKER_HOST",
-		"DOCKER_API_VERSION",
-		"DOCKER_TLS_VERIFY",
-		"DOCKER_CERT_PATH",
-	}
-	envVarValues := make(map[string]string)
-	for _, key := range envVarKeys {
-		envVarValues[key] = os.Getenv(key)
-		os.Setenv(key, "")
-	}
-
-	client, err := NewEnvClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if client.version != DefaultVersion {
-		t.Fatalf("Expected %s, got %s", DefaultVersion, client.version)
-	}
-
-	expected := "1.22"
-	os.Setenv("DOCKER_API_VERSION", expected)
-	client, err = NewEnvClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-	if client.version != expected {
-		t.Fatalf("Expected %s, got %s", expected, client.version)
-	}
-
-	// Restore environment variables
-	for _, key := range envVarKeys {
-		os.Setenv(key, envVarValues[key])
 	}
 }

@@ -18,43 +18,39 @@ package protokube
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/client/unversioned/clientcmd"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 	"sync"
 )
 
 type KubernetesContext struct {
 	mutex  sync.Mutex
-	client *k8s_clientset.Clientset
+	client kubernetes.Interface
 }
 
 func NewKubernetesContext() *KubernetesContext {
 	return &KubernetesContext{}
 }
 
-func (c *KubernetesContext) KubernetesClient() (*k8s_clientset.Clientset, error) {
+func (c *KubernetesContext) KubernetesClient() (kubernetes.Interface, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
 	if c.client == nil {
-		config := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
-			clientcmd.NewDefaultClientConfigLoadingRules(),
-			&clientcmd.ConfigOverrides{})
-		clientConfig, err := config.ClientConfig()
-		if err != nil {
-			if clientcmd.IsEmptyConfig(err) {
-				glog.V(2).Infof("No client config found; will use default config")
-				clientConfig, err = clientcmd.DefaultClientConfig.ClientConfig()
-				if err != nil {
-					return nil, fmt.Errorf("cannot build default kube config settings: %v", err)
-				}
-			} else {
-				return nil, fmt.Errorf("cannot load kubecfg settings: %v", err)
-			}
+		loadingRules := clientcmd.NewDefaultClientConfigLoadingRules()
+		loadingRules.DefaultClientConfig = &clientcmd.DefaultClientConfig
+
+		configOverrides := &clientcmd.ConfigOverrides{
+			ClusterDefaults: clientcmd.ClusterDefaults,
 		}
 
-		k8sClient, err := k8s_clientset.NewForConfig(clientConfig)
+		kubeConfig := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(loadingRules, configOverrides)
+		config, err := kubeConfig.ClientConfig()
+		if err != nil {
+			return nil, fmt.Errorf("cannot load kubecfg settings: %v", err)
+		}
+
+		k8sClient, err := kubernetes.NewForConfig(config)
 		if err != nil {
 			return nil, fmt.Errorf("cannot build kube client: %v", err)
 		}

@@ -61,7 +61,7 @@
       "id": "PivotHeader"
     },
     "Metric": {
-      "description": "A metric in the request.",
+      "description": "[Metrics](https://support.google.com/analytics/answer/1033861)\nare the quantitative measurements. For example, the metric `ga:users`\nindicates the total number of users for the requested time period.",
       "type": "object",
       "properties": {
         "alias": {
@@ -312,7 +312,7 @@
           "$ref": "CohortGroup"
         },
         "dimensions": {
-          "description": "Dimensions requested in the request.",
+          "description": "The dimensions requested.\nRequests can have a total of 7 dimensions.",
           "type": "array",
           "items": {
             "$ref": "Dimension"
@@ -341,7 +341,7 @@
           }
         },
         "pivots": {
-          "description": "The pivot definitions.",
+          "description": "The pivot definitions. Requests can have a maximum of 2 pivots.",
           "type": "array",
           "items": {
             "$ref": "Pivot"
@@ -378,7 +378,7 @@
           "type": "string"
         },
         "metrics": {
-          "description": "Metrics, the quantitative measurements, requested in the request.\nRequests must specify at least one metric.",
+          "description": "The metrics requested.\nRequests must specify at least one metric. Requests can have a\ntotal of 10 metrics.",
           "type": "array",
           "items": {
             "$ref": "Metric"
@@ -781,14 +781,14 @@
       "type": "object",
       "properties": {
         "dimensions": {
-          "description": "A list of dimensions to show as pivot columns.",
+          "description": "A list of dimensions to show as pivot columns. A Pivot can have a maximum\nof 4 dimensions. Pivot dimensions are part of the restriction on the\ntotal number of dimensions allowed in the request.",
           "type": "array",
           "items": {
             "$ref": "Dimension"
           }
         },
         "metrics": {
-          "description": "Metrics to aggregate and return.",
+          "description": "The pivot metrics. Pivot metrics are part of the\nrestriction on total number of metrics allowed in the request.",
           "type": "array",
           "items": {
             "$ref": "Metric"
@@ -915,7 +915,7 @@
       "id": "ReportRow"
     },
     "CohortGroup": {
-      "description": "Defines a cohort group.\nFor example:\n\n    \"cohortGroup\": {\n      \"cohorts\": [{\n        \"name\": \"cohort 1\",\n        \"type\": \"FIRST_VISIT_DATE\",\n        \"dateRange\": { \"startDate\": \"2015-08-01\", \"endDate\": \"2015-08-01\" }\n      },{\n        \"name\": \"cohort 2\"\n         \"type\": \"FIRST_VISIT_DATE\"\n         \"dateRange\": { \"startDate\": \"2015-07-01\", \"endDate\": \"2015-07-01\" }\n      }]\n    }\n",
+      "description": "Defines a cohort group.\nFor example:\n\n    \"cohortGroup\": {\n      \"cohorts\": [{\n        \"name\": \"cohort 1\",\n        \"type\": \"FIRST_VISIT_DATE\",\n        \"dateRange\": { \"startDate\": \"2015-08-01\", \"endDate\": \"2015-08-01\" }\n      },{\n        \"name\": \"cohort 2\"\n         \"type\": \"FIRST_VISIT_DATE\"\n         \"dateRange\": { \"startDate\": \"2015-07-01\", \"endDate\": \"2015-07-01\" }\n      }]\n    }",
       "type": "object",
       "properties": {
         "lifetimeValue": {
@@ -1015,7 +1015,7 @@
       "id": "MetricFilter"
     },
     "Dimension": {
-      "description": "A dimension in the request.",
+      "description": "[Dimensions](https://support.google.com/analytics/answer/1033861)\nare attributes of your data. For example, the dimension `ga:city`\nindicates the city, for example, \"Paris\" or \"New York\", from which\na session originates.",
       "type": "object",
       "properties": {
         "histogramBuckets": {
@@ -1048,7 +1048,7 @@
       "id": "PivotValueRegion"
     }
   },
-  "revision": "20160616",
+  "revision": "20160809",
   "basePath": "",
   "icons": {
     "x32": "http://www.google.com/images/icons/product/search-32.gif",

@@ -199,17 +199,6 @@ func testRlimit(t *testing.T, userns bool) {
 	}
 }
 
-func newTestRoot() (string, error) {
-	dir, err := ioutil.TempDir("", "libcontainer")
-	if err != nil {
-		return "", err
-	}
-	if err := os.MkdirAll(dir, 0700); err != nil {
-		return "", err
-	}
-	return dir, nil
-}
-
 func TestEnter(t *testing.T) {
 	if testing.Short() {
 		return

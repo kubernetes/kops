@@ -6,11 +6,11 @@
 
 ## Releases
 
-`runc` depends on and tracks the [specs](https://github.com/opencontainers/runtime-spec) repository.
+`runc` depends on and tracks the [runtime-spec](https://github.com/opencontainers/runtime-spec) repository.
 We will try to make sure that `runc` and the OCI specification major versions stay in lockstep.
 This means that `runc` 1.0.0 should implement the 1.0 version of the specification.
 
-You can find officials releases of `runc` on the [release](https://github.com/opencontainers/runc/releases) page.
+You can find official releases of `runc` on the [release](https://github.com/opencontainers/runc/releases) page.
 
 ## Building
 

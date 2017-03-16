@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/5YUbYxLxa72ehcJmTz_Kdpmpnc0\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/sdWGjK18RRF0Jy_-SVhZDih5U4M\"",
  "discoveryVersion": "v1",
  "id": "genomics:v1alpha2",
  "name": "genomics",
  "version": "v1alpha2",
- "revision": "20160622",
+ "revision": "20160928",
  "title": "Genomics API",
  "description": "Stores, processes, explores and shares genomic data.",
  "ownerDomain": "google.com",
@@ -116,6 +116,24 @@
   }
  },
  "schemas": {
+  "ListOperationsResponse": {
+   "id": "ListOperationsResponse",
+   "type": "object",
+   "description": "The response message for Operations.ListOperations.",
+   "properties": {
+    "operations": {
+     "type": "array",
+     "description": "A list of operations that matches the specified filter in the request.",
+     "items": {
+      "$ref": "Operation"
+     }
+    },
+    "nextPageToken": {
+     "type": "string",
+     "description": "The standard List next-page token."
+    }
+   }
+  },
   "Operation": {
    "id": "Operation",
    "type": "object",
@@ -130,7 +148,7 @@
      "description": "An OperationMetadata object. This will always be returned with the Operation.",
      "additionalProperties": {
       "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
+      "description": "Properties of the object. Contains field @type with type URL."
      }
     },
     "done": {
@@ -139,14 +157,14 @@
     },
     "error": {
      "$ref": "Status",
-     "description": "The error result of the operation in case of failure."
+     "description": "The error result of the operation in case of failure or cancellation."
     },
     "response": {
      "type": "object",
      "description": "If importing ReadGroupSets, an ImportReadGroupSetsResponse is returned. If importing Variants, an ImportVariantsResponse is returned. For exports, an empty response is returned.",
      "additionalProperties": {
       "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
+      "description": "Properties of the object. Contains field @type with type URL."
      }
     }
    }
@@ -172,27 +190,9 @@
       "type": "object",
       "additionalProperties": {
        "type": "any",
-       "description": "Properties of the object. Contains field @ype with type URL."
+       "description": "Properties of the object. Contains field @type with type URL."
       }
      }
-    }
-   }
-  },
-  "ListOperationsResponse": {
-   "id": "ListOperationsResponse",
-   "type": "object",
-   "description": "The response message for Operations.ListOperations.",
-   "properties": {
-    "operations": {
-     "type": "array",
-     "description": "A list of operations that matches the specified filter in the request.",
-     "items": {
-      "$ref": "Operation"
-     }
-    },
-    "nextPageToken": {
-     "type": "string",
-     "description": "The standard List next-page token."
     }
    }
   },
@@ -296,11 +296,11 @@
    "properties": {
     "imageName": {
      "type": "string",
-     "description": "Required. Image name from either Docker Hub or Google Container Repository. Users that run pipelines must have READ access to the image."
+     "description": "Required. Image name from either Docker Hub or Google Container Registry. Users that run pipelines must have READ access to the image."
     },
     "cmd": {
      "type": "string",
-     "description": "Required. The command string to run. Parameters that do not have `localCopy` specified should be used as environment variables, while those that do can be accessed at the defined paths."
+     "description": "Required. The command or newline delimited script to run. The command string will be executed within a bash shell. If the command exits with a non-zero exit code, output parameter de-localization will be skipped and the pipeline operation's `error` field will be populated. Maximum command string length is 16384."
     }
    }
   },
@@ -316,7 +316,7 @@
     },
     "preemptible": {
      "type": "boolean",
-     "description": "At create time means that preemptible machines may be used for the run. At run time, means they should be used. Cannot be true at run time if false at create time. Defaults to `false`."
+     "description": "Whether to use preemptible VMs. Defaults to `false`. In order to use this, must be true for both create time and run time. Cannot be true at run time if false at create time."
     },
     "minimumRamGb": {
      "type": "number",
@@ -341,6 +341,10 @@
      "type": "integer",
      "description": "The size of the boot disk. Defaults to 10 (GB).",
      "format": "int32"
+    },
+    "noAddress": {
+     "type": "boolean",
+     "description": "Whether to assign an external IP to the instance. This is an experimental feature that may go away. Defaults to false. Corresponds to `--no_address` flag for [gcloud compute instances create] (https://cloud.google.com/sdk/gcloud/reference/compute/instances/create). In order to use this, must be true for both create time and run time. Cannot be true at run time if false at create time. If you need to ssh into a private IP VM for debugging, you can ssh to a public VM and then ssh into the private VM's Internal IP. If noAddress is set, this pipeline run may only load docker images from Google Container Registry and not Docker Hub. ** Note: To use this option, your project must be in Google Access for Private IPs Early Access Program.**"
     }
    }
   },
@@ -434,7 +438,7 @@
     },
     "clientId": {
      "type": "string",
-     "description": "Client-specified pipeline operation identifier."
+     "description": "This field is deprecated. Use `labels` instead. Client-specified pipeline operation identifier."
     },
     "resources": {
      "$ref": "PipelineResources",
@@ -443,6 +447,17 @@
     "logging": {
      "$ref": "LoggingOptions",
      "description": "Required. Logging options. Used by the service to communicate results to the user."
+    },
+    "keepVmAliveOnFailureDuration": {
+     "type": "string",
+     "description": "How long to keep the VM up after a failure (for example docker command failed, copying input or output files failed, etc). While the VM is up, one can ssh into the VM to debug. Default is 0; maximum allowed value is 1 day."
+    },
+    "labels": {
+     "type": "object",
+     "description": "Labels to apply to this pipeline run. Labels will also be applied to compute resources (VM, disks) created by this pipeline run. When listing operations, operations can filtered by labels. Label keys may not be empty; label values may be empty. Non-empty labels must be 1-63 characters long, and comply with [RFC1035] (https://www.ietf.org/rfc/rfc1035.txt). Specifically, the name must be 1-63 characters long and match the regular expression `[a-z]([-a-z0-9]*[a-z0-9])?` which means the first character must be a lowercase letter, and all following characters must be a dash, lowercase letter, or digit, except the last character, which cannot be a dash.",
+     "additionalProperties": {
+      "type": "string"
+     }
     }
    }
   },
@@ -457,7 +472,7 @@
     },
     "scopes": {
      "type": "array",
-     "description": "List of scopes to be enabled for this service account on the pipeline virtual machine. The following scopes are automatically included: * https://www.googleapis.com/auth/genomics * https://www.googleapis.com/auth/compute * https://www.googleapis.com/auth/devstorage.full_control",
+     "description": "List of scopes to be enabled for this service account on the VM. The following scopes are automatically included: * https://www.googleapis.com/auth/compute * https://www.googleapis.com/auth/devstorage.full_control * https://www.googleapis.com/auth/genomics * https://www.googleapis.com/auth/logging.write * https://www.googleapis.com/auth/monitoring.write",
      "items": {
       "type": "string"
      }
@@ -662,7 +677,7 @@
      "description": "The original request that started the operation. Note that this will be in current version of the API. If the operation was started with v1beta2 API and a GetOperation is performed on v1 API, a v1 request will be returned.",
      "additionalProperties": {
       "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
+      "description": "Properties of the object. Contains field @type with type URL."
      }
     },
     "events": {
@@ -674,14 +689,21 @@
     },
     "clientId": {
      "type": "string",
-     "description": "Optionally provided by the caller when submitting the request that creates the operation."
+     "description": "This field is deprecated. Use `labels` instead. Optionally provided by the caller when submitting the request that creates the operation."
     },
     "runtimeMetadata": {
      "type": "object",
      "description": "Runtime metadata on this Operation.",
      "additionalProperties": {
       "type": "any",
-      "description": "Properties of the object. Contains field @ype with type URL."
+      "description": "Properties of the object. Contains field @type with type URL."
+     }
+    },
+    "labels": {
+     "type": "object",
+     "description": "Optionally provided by the caller when submitting the request that creates the operation.",
+     "additionalProperties": {
+      "type": "string"
      }
     }
    }
@@ -746,31 +768,6 @@
  "resources": {
   "operations": {
    "methods": {
-    "get": {
-     "id": "genomics.operations.get",
-     "path": "v1alpha2/{+name}",
-     "httpMethod": "GET",
-     "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
-     "parameters": {
-      "name": {
-       "type": "string",
-       "description": "The name of the operation resource.",
-       "required": true,
-       "pattern": "^operations/.*$",
-       "location": "path"
-      }
-     },
-     "parameterOrder": [
-      "name"
-     ],
-     "response": {
-      "$ref": "Operation"
-     },
-     "scopes": [
-      "https://www.googleapis.com/auth/cloud-platform",
-      "https://www.googleapis.com/auth/genomics"
-     ]
-    },
     "list": {
      "id": "genomics.operations.list",
      "path": "v1alpha2/{+name}",
@@ -786,7 +783,7 @@
       },
       "filter": {
        "type": "string",
-       "description": "A string for filtering Operations. The following filter fields are supported: * projectId: Required. Corresponds to OperationMetadata.projectId. * createTime: The time this job was created, in seconds from the [epoch](http://en.wikipedia.org/wiki/Unix_time). Can use `\u003e=` and/or `= 1432140000` * `projectId = my-project AND createTime \u003e= 1432140000 AND createTime \u003c= 1432150000 AND status = RUNNING`",
+       "description": "A string for filtering Operations. The following filter fields are supported: * projectId: Required. Corresponds to OperationMetadata.projectId. * createTime: The time this job was created, in seconds from the [epoch](http://en.wikipedia.org/wiki/Unix_time). Can use `\u003e=` and/or `= 1432140000` * `projectId = my-project AND createTime \u003e= 1432140000 AND createTime \u003c= 1432150000 AND status = RUNNING` * `projectId = my-project AND labels.color = *` * `projectId = my-project AND labels.color = red`",
        "location": "query"
       },
       "pageSize": {
@@ -812,6 +809,31 @@
       "https://www.googleapis.com/auth/genomics"
      ]
     },
+    "get": {
+     "id": "genomics.operations.get",
+     "path": "v1alpha2/{+name}",
+     "httpMethod": "GET",
+     "description": "Gets the latest state of a long-running operation. Clients can use this method to poll the operation result at intervals as recommended by the API service.",
+     "parameters": {
+      "name": {
+       "type": "string",
+       "description": "The name of the operation resource.",
+       "required": true,
+       "pattern": "^operations/.+$",
+       "location": "path"
+      }
+     },
+     "parameterOrder": [
+      "name"
+     ],
+     "response": {
+      "$ref": "Operation"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform",
+      "https://www.googleapis.com/auth/genomics"
+     ]
+    },
     "cancel": {
      "id": "genomics.operations.cancel",
      "path": "v1alpha2/{+name}:cancel",
@@ -822,7 +844,7 @@
        "type": "string",
        "description": "The name of the operation resource to be cancelled.",
        "required": true,
-       "pattern": "^operations/.*$",
+       "pattern": "^operations/.+$",
        "location": "path"
       }
      },
@@ -990,7 +1012,7 @@
      "id": "genomics.pipelines.setOperationStatus",
      "path": "v1alpha2/pipelines:setOperationStatus",
      "httpMethod": "PUT",
-     "description": "Sets status of a given operation. All timestamps are sent on each call, and the whole series of events is replaced, in case intermediate calls are lost. Should only be called by VMs created by the Pipelines Service and not by end users.",
+     "description": "Sets status of a given operation. Any new timestamps (as determined by description) are appended to TimestampEvents. Should only be called by VMs created by the Pipelines Service and not by end users.",
      "request": {
       "$ref": "SetOperationStatusRequest"
      },

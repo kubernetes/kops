@@ -49,9 +49,8 @@ func (c *KinesisAnalytics) AddApplicationInputRequest(input *AddApplicationInput
 		input = &AddApplicationInputInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddApplicationInputOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -138,9 +137,8 @@ func (c *KinesisAnalytics) AddApplicationOutputRequest(input *AddApplicationOutp
 		input = &AddApplicationOutputInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddApplicationOutputOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -237,9 +235,8 @@ func (c *KinesisAnalytics) AddApplicationReferenceDataSourceRequest(input *AddAp
 		input = &AddApplicationReferenceDataSourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddApplicationReferenceDataSourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -328,9 +325,8 @@ func (c *KinesisAnalytics) CreateApplicationRequest(input *CreateApplicationInpu
 		input = &CreateApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -430,9 +426,8 @@ func (c *KinesisAnalytics) DeleteApplicationRequest(input *DeleteApplicationInpu
 		input = &DeleteApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -509,9 +504,8 @@ func (c *KinesisAnalytics) DeleteApplicationOutputRequest(input *DeleteApplicati
 		input = &DeleteApplicationOutputInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteApplicationOutputOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -588,9 +582,8 @@ func (c *KinesisAnalytics) DeleteApplicationReferenceDataSourceRequest(input *De
 		input = &DeleteApplicationReferenceDataSourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteApplicationReferenceDataSourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -673,9 +666,8 @@ func (c *KinesisAnalytics) DescribeApplicationRequest(input *DescribeApplication
 		input = &DescribeApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -746,9 +738,8 @@ func (c *KinesisAnalytics) DiscoverInputSchemaRequest(input *DiscoverInputSchema
 		input = &DiscoverInputSchemaInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DiscoverInputSchemaOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -833,9 +824,8 @@ func (c *KinesisAnalytics) ListApplicationsRequest(input *ListApplicationsInput)
 		input = &ListApplicationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListApplicationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -904,9 +894,8 @@ func (c *KinesisAnalytics) StartApplicationRequest(input *StartApplicationInput)
 		input = &StartApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -993,9 +982,8 @@ func (c *KinesisAnalytics) StopApplicationRequest(input *StopApplicationInput) (
 		input = &StopApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StopApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1069,9 +1057,8 @@ func (c *KinesisAnalytics) UpdateApplicationRequest(input *UpdateApplicationInpu
 		input = &UpdateApplicationInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateApplicationOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

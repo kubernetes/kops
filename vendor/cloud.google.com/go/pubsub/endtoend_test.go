@@ -50,7 +50,7 @@ func (mc *messageCounter) Inc(msgID string) {
 }
 
 // process pulls messages from an iterator and records them in mc.
-func process(t *testing.T, it *MessageIterator, mc *messageCounter) {
+func process(t *testing.T, it *Iterator, mc *messageCounter) {
 	for {
 		m, err := it.Next()
 		if err == Done {
@@ -72,8 +72,8 @@ func process(t *testing.T, it *MessageIterator, mc *messageCounter) {
 	}
 }
 
-// newIter constructs a new MessageIterator.
-func newIter(t *testing.T, ctx context.Context, sub *Subscription) *MessageIterator {
+// newIter constructs a new Iterator.
+func newIter(t *testing.T, ctx context.Context, sub *Subscription) *Iterator {
 	it, err := sub.Pull(ctx)
 	if err != nil {
 		t.Fatalf("error constructing iterator: %v", err)
@@ -81,8 +81,8 @@ func newIter(t *testing.T, ctx context.Context, sub *Subscription) *MessageItera
 	return it
 }
 
-// launchIter launches a number of goroutines to pull from the supplied MessageIterator.
-func launchIter(t *testing.T, ctx context.Context, it *MessageIterator, mc *messageCounter, n int, wg *sync.WaitGroup) {
+// launchIter launches a number of goroutines to pull from the supplied Iterator.
+func launchIter(t *testing.T, ctx context.Context, it *Iterator, mc *messageCounter, n int, wg *sync.WaitGroup) {
 	for j := 0; j < n; j++ {
 		wg.Add(1)
 		go func() {

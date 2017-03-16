@@ -1,7 +1,6 @@
 package logrus
 
 import (
-	"fmt"
 	"testing"
 	"time"
 )
@@ -44,15 +43,6 @@ var largeFields = Fields{
 	"this":      "will",
 	"make":      "thirty",
 	"entries":   "yeah",
-}
-
-var errorFields = Fields{
-	"foo": fmt.Errorf("bar"),
-	"baz": fmt.Errorf("qux"),
-}
-
-func BenchmarkErrorTextFormatter(b *testing.B) {
-	doBenchmark(b, &TextFormatter{DisableColors: true}, errorFields)
 }
 
 func BenchmarkSmallTextFormatter(b *testing.B) {

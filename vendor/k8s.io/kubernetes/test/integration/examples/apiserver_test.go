@@ -17,164 +17,438 @@ limitations under the License.
 package apiserver
 
 import (
-	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
+	"net"
+	"os"
+	"path"
+	"strconv"
+	"strings"
+	"sync/atomic"
 	"testing"
 	"time"
 
-	"k8s.io/kubernetes/cmd/libs/go2idl/client-gen/test_apis/testgroup/v1"
-
-	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
-	"k8s.io/kubernetes/examples/apiserver"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	client "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+	"k8s.io/client-go/util/cert"
+	apiregistrationv1alpha1 "k8s.io/kube-aggregator/pkg/apis/apiregistration/v1alpha1"
+	aggregatorclient "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
+	kubeaggregatorserver "k8s.io/kube-aggregator/pkg/cmd/server"
+	"k8s.io/kubernetes/cmd/kube-apiserver/app"
+	"k8s.io/kubernetes/cmd/kube-apiserver/app/options"
+	"k8s.io/kubernetes/test/integration/framework"
+	"k8s.io/sample-apiserver/pkg/apis/wardle/v1alpha1"
+	sampleserver "k8s.io/sample-apiserver/pkg/cmd/server"
 )
 
-var groupVersion = v1.SchemeGroupVersion
+var groupVersion = v1alpha1.SchemeGroupVersion
 
 var groupVersionForDiscovery = metav1.GroupVersionForDiscovery{
 	GroupVersion: groupVersion.String(),
 	Version:      groupVersion.Version,
 }
 
-func TestRunServer(t *testing.T) {
-	serverIP := fmt.Sprintf("http://localhost:%d", apiserver.InsecurePort)
+func TestAggregatedAPIServer(t *testing.T) {
 	stopCh := make(chan struct{})
+	defer close(stopCh)
+
+	certDir, _ := ioutil.TempDir("", "test-integration-apiserver")
+	defer os.RemoveAll(certDir)
+	_, defaultServiceClusterIPRange, _ := net.ParseCIDR("10.0.0.0/24")
+	proxySigningKey, err := cert.NewPrivateKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+	proxySigningCert, err := cert.NewSelfSignedCACert(cert.Config{CommonName: "front-proxy-ca"}, proxySigningKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	proxyCACertFile, _ := ioutil.TempFile(certDir, "proxy-ca.crt")
+	if err := ioutil.WriteFile(proxyCACertFile.Name(), cert.EncodeCertPEM(proxySigningCert), 0644); err != nil {
+		t.Fatal(err)
+	}
+	clientSigningKey, err := cert.NewPrivateKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+	clientSigningCert, err := cert.NewSelfSignedCACert(cert.Config{CommonName: "client-ca"}, clientSigningKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	clientCACertFile, _ := ioutil.TempFile(certDir, "client-ca.crt")
+	if err := ioutil.WriteFile(clientCACertFile.Name(), cert.EncodeCertPEM(clientSigningCert), 0644); err != nil {
+		t.Fatal(err)
+	}
+
+	kubeClientConfigValue := atomic.Value{}
 	go func() {
-		if err := apiserver.NewServerRunOptions().Run(stopCh); err != nil {
-			t.Fatalf("Error in bringing up the server: %v", err)
+		for {
+			// always get a fresh port in case something claimed the old one
+			kubePort, err := framework.FindFreeLocalPort()
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			kubeAPIServerOptions := options.NewServerRunOptions()
+			kubeAPIServerOptions.SecureServing.ServingOptions.BindAddress = net.ParseIP("127.0.0.1")
+			kubeAPIServerOptions.SecureServing.ServingOptions.BindPort = kubePort
+			kubeAPIServerOptions.SecureServing.ServerCert.CertDirectory = certDir
+			kubeAPIServerOptions.InsecureServing.BindPort = 0
+			kubeAPIServerOptions.Etcd.StorageConfig.ServerList = []string{framework.GetEtcdURLFromEnv()}
+			kubeAPIServerOptions.ServiceClusterIPRange = *defaultServiceClusterIPRange
+			kubeAPIServerOptions.Authentication.RequestHeader.UsernameHeaders = []string{"X-Remote-User"}
+			kubeAPIServerOptions.Authentication.RequestHeader.GroupHeaders = []string{"X-Remote-Group"}
+			kubeAPIServerOptions.Authentication.RequestHeader.ExtraHeaderPrefixes = []string{"X-Remote-Extra-"}
+			kubeAPIServerOptions.Authentication.RequestHeader.AllowedNames = []string{"kube-aggregator"}
+			kubeAPIServerOptions.Authentication.RequestHeader.ClientCAFile = proxyCACertFile.Name()
+			kubeAPIServerOptions.Authentication.ClientCert.ClientCA = clientCACertFile.Name()
+			kubeAPIServerOptions.Authorization.Mode = "RBAC"
+
+			config, sharedInformers, err := app.BuildMasterConfig(kubeAPIServerOptions)
+			if err != nil {
+				t.Fatal(err)
+			}
+			kubeClientConfigValue.Store(config.GenericConfig.LoopbackClientConfig)
+
+			if err := app.RunServer(config, sharedInformers, stopCh); err != nil {
+				t.Log(err)
+			}
+			time.Sleep(100 * time.Millisecond)
 		}
 	}()
-	defer close(stopCh)
-	if err := waitForApiserverUp(serverIP); err != nil {
-		t.Fatalf("%v", err)
-	}
-	testSwaggerSpec(t, serverIP)
-	testAPIGroupList(t, serverIP)
-	testAPIGroup(t, serverIP)
-	testAPIResourceList(t, serverIP)
-}
 
-func TestRunSecureServer(t *testing.T) {
-	serverIP := fmt.Sprintf("https://localhost:%d", apiserver.SecurePort)
-	stopCh := make(chan struct{})
+	// just use json because everyone speaks it
+	err = wait.PollImmediate(100*time.Millisecond, 10*time.Second, func() (done bool, err error) {
+		obj := kubeClientConfigValue.Load()
+		if obj == nil {
+			return false, nil
+		}
+		kubeClientConfig := kubeClientConfigValue.Load().(*rest.Config)
+		kubeClientConfig.ContentType = ""
+		kubeClientConfig.AcceptContentTypes = ""
+		kubeClient, err := client.NewForConfig(kubeClientConfig)
+		if err != nil {
+			// this happens because we race the API server start
+			t.Log(err)
+			return false, nil
+		}
+		if _, err := kubeClient.Discovery().ServerVersion(); err != nil {
+			return false, nil
+		}
+		return true, nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// after this point we won't be mutating, so the race detector will be fine
+	kubeClientConfig := kubeClientConfigValue.Load().(*rest.Config)
+
+	// write a kubeconfig out for starting other API servers with delegated auth.  remember, no in-cluster config
+	adminKubeConfig := createKubeConfig(kubeClientConfig)
+	kubeconfigFile, _ := ioutil.TempFile("", "")
+	defer os.Remove(kubeconfigFile.Name())
+	clientcmd.WriteToFile(*adminKubeConfig, kubeconfigFile.Name())
+	wardleCertDir, _ := ioutil.TempDir("", "test-integration-wardle-server")
+	defer os.RemoveAll(wardleCertDir)
+	wardlePort := new(int32)
+
+	// start the wardle server to prove we can aggregate it
 	go func() {
-		options := apiserver.NewServerRunOptions()
-		options.InsecureServing.BindPort = 0
-		options.SecureServing.ServingOptions.BindPort = apiserver.SecurePort
-		if err := options.Run(stopCh); err != nil {
-			t.Fatalf("Error in bringing up the server: %v", err)
+		for {
+			// always get a fresh port in case something claimed the old one
+			wardlePortInt, err := framework.FindFreeLocalPort()
+			if err != nil {
+				t.Fatal(err)
+			}
+			atomic.StoreInt32(wardlePort, int32(wardlePortInt))
+			wardleCmd := sampleserver.NewCommandStartWardleServer(os.Stdout, os.Stderr, stopCh)
+			wardleCmd.SetArgs([]string{
+				"--bind-address", "127.0.0.1",
+				"--secure-port", strconv.Itoa(wardlePortInt),
+				"--requestheader-username-headers=X-Remote-User",
+				"--requestheader-group-headers=X-Remote-Group",
+				"--requestheader-extra-headers-prefix=X-Remote-Extra-",
+				"--requestheader-client-ca-file=" + proxyCACertFile.Name(),
+				"--requestheader-allowed-names=kube-aggregator",
+				"--authentication-kubeconfig", kubeconfigFile.Name(),
+				"--authorization-kubeconfig", kubeconfigFile.Name(),
+				"--etcd-servers", framework.GetEtcdURLFromEnv(),
+				"--cert-dir", wardleCertDir,
+			})
+			if err := wardleCmd.Execute(); err != nil {
+				t.Log(err)
+			}
+			time.Sleep(100 * time.Millisecond)
 		}
 	}()
-	defer close(stopCh)
-	if err := waitForApiserverUp(serverIP); err != nil {
-		t.Fatalf("%v", err)
-	}
-	testSwaggerSpec(t, serverIP)
-	testAPIGroupList(t, serverIP)
-	testAPIGroup(t, serverIP)
-	testAPIResourceList(t, serverIP)
-}
 
-func waitForApiserverUp(serverIP string) error {
-	for start := time.Now(); time.Since(start) < time.Minute; time.Sleep(5 * time.Second) {
-		glog.Errorf("Waiting for : %#v", serverIP)
-		tr := &http.Transport{
-			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	wardleClientConfig := rest.AnonymousClientConfig(kubeClientConfig)
+	wardleClientConfig.CAFile = path.Join(wardleCertDir, "apiserver.crt")
+	wardleClientConfig.CAData = nil
+	wardleClientConfig.ServerName = ""
+	wardleClientConfig.BearerToken = kubeClientConfig.BearerToken
+	var wardleClient client.Interface
+	err = wait.PollImmediate(100*time.Millisecond, 10*time.Second, func() (done bool, err error) {
+		wardleClientConfig.Host = fmt.Sprintf("https://127.0.0.1:%d", atomic.LoadInt32(wardlePort))
+		wardleClient, err = client.NewForConfig(wardleClientConfig)
+		if err != nil {
+			// this happens because we race the API server start
+			t.Log(err)
+			return false, nil
 		}
-		client := &http.Client{Transport: tr}
-		_, err := client.Get(serverIP)
-		if err == nil {
-			return nil
+		if _, err := wardleClient.Discovery().ServerVersion(); err != nil {
+			t.Log(err)
+			return false, nil
 		}
+		return true, nil
+	})
+	if err != nil {
+		t.Fatal(err)
 	}
-	return fmt.Errorf("waiting for apiserver timed out")
+
+	// start the aggregator
+	aggregatorCertDir, _ := ioutil.TempDir("", "test-integration-aggregator")
+	defer os.RemoveAll(aggregatorCertDir)
+	proxyClientKey, err := cert.NewPrivateKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+	proxyClientCert, err := cert.NewSignedCert(
+		cert.Config{
+			CommonName: "kube-aggregator",
+			Usages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+		},
+		proxyClientKey, proxySigningCert, proxySigningKey,
+	)
+	proxyClientCertFile, _ := ioutil.TempFile(aggregatorCertDir, "proxy-client.crt")
+	proxyClientKeyFile, _ := ioutil.TempFile(aggregatorCertDir, "proxy-client.key")
+	if err := ioutil.WriteFile(proxyClientCertFile.Name(), cert.EncodeCertPEM(proxyClientCert), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := ioutil.WriteFile(proxyClientKeyFile.Name(), cert.EncodePrivateKeyPEM(proxyClientKey), 0644); err != nil {
+		t.Fatal(err)
+	}
+	aggregatorPort := new(int32)
+
+	go func() {
+		for {
+			// always get a fresh port in case something claimed the old one
+			aggregatorPortInt, err := framework.FindFreeLocalPort()
+			if err != nil {
+				t.Fatal(err)
+			}
+			atomic.StoreInt32(aggregatorPort, int32(aggregatorPortInt))
+			aggregatorCmd := kubeaggregatorserver.NewCommandStartAggregator(os.Stdout, os.Stderr, stopCh)
+			aggregatorCmd.SetArgs([]string{
+				"--bind-address", "127.0.0.1",
+				"--secure-port", strconv.Itoa(aggregatorPortInt),
+				"--requestheader-username-headers", "",
+				"--proxy-client-cert-file", proxyClientCertFile.Name(),
+				"--proxy-client-key-file", proxyClientKeyFile.Name(),
+				"--core-kubeconfig", kubeconfigFile.Name(),
+				"--authentication-kubeconfig", kubeconfigFile.Name(),
+				"--authorization-kubeconfig", kubeconfigFile.Name(),
+				"--etcd-servers", framework.GetEtcdURLFromEnv(),
+				"--cert-dir", aggregatorCertDir,
+			})
+			if err := aggregatorCmd.Execute(); err != nil {
+				t.Log(err)
+			}
+			time.Sleep(100 * time.Millisecond)
+		}
+	}()
+
+	aggregatorClientConfig := rest.AnonymousClientConfig(kubeClientConfig)
+	aggregatorClientConfig.CAFile = path.Join(aggregatorCertDir, "apiserver.crt")
+	aggregatorClientConfig.CAData = nil
+	aggregatorClientConfig.ServerName = ""
+	aggregatorClientConfig.BearerToken = kubeClientConfig.BearerToken
+	var aggregatorDiscoveryClient client.Interface
+	err = wait.PollImmediate(100*time.Millisecond, 10*time.Second, func() (done bool, err error) {
+		aggregatorClientConfig.Host = fmt.Sprintf("https://127.0.0.1:%d", atomic.LoadInt32(aggregatorPort))
+		aggregatorDiscoveryClient, err = client.NewForConfig(aggregatorClientConfig)
+		if err != nil {
+			// this happens if we race the API server for writing the cert
+			return false, nil
+		}
+		if _, err := aggregatorDiscoveryClient.Discovery().ServerVersion(); err != nil {
+			return false, nil
+		}
+		return true, nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// now we're finally ready to test. These are what's run by defautl now
+	testAPIGroupList(t, wardleClient.Discovery().RESTClient())
+	testAPIGroup(t, wardleClient.Discovery().RESTClient())
+	testAPIResourceList(t, wardleClient.Discovery().RESTClient())
+
+	wardleCA, err := ioutil.ReadFile(wardleClientConfig.CAFile)
+	if err != nil {
+		t.Fatal(err)
+	}
+	aggregatorClient := aggregatorclient.NewForConfigOrDie(aggregatorClientConfig)
+	_, err = aggregatorClient.ApiregistrationV1alpha1().APIServices().Create(&apiregistrationv1alpha1.APIService{
+		ObjectMeta: metav1.ObjectMeta{Name: "v1alpha1.wardle.k8s.io"},
+		Spec: apiregistrationv1alpha1.APIServiceSpec{
+			Service: apiregistrationv1alpha1.ServiceReference{
+				Namespace: "kube-wardle",
+				Name:      "api",
+			},
+			Group:    "wardle.k8s.io",
+			Version:  "v1alpha1",
+			CABundle: wardleCA,
+			Priority: 200,
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// this is ugly, but sleep just a little bit so that the watch is probably observed.  Since nothing will actually be added to discovery
+	// (the service is missing), we don't have an external signal.
+	time.Sleep(100 * time.Millisecond)
+	if _, err := aggregatorDiscoveryClient.Discovery().ServerResources(); err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = aggregatorClient.ApiregistrationV1alpha1().APIServices().Create(&apiregistrationv1alpha1.APIService{
+		ObjectMeta: metav1.ObjectMeta{Name: "v1."},
+		Spec: apiregistrationv1alpha1.APIServiceSpec{
+			Service: apiregistrationv1alpha1.ServiceReference{
+				Namespace: "default",
+				Name:      "kubernetes",
+			},
+			Group:    "",
+			Version:  "v1",
+			CABundle: kubeClientConfig.CAData,
+			Priority: 100,
+		},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// this is ugly, but sleep just a little bit so that the watch is probably observed.  Since nothing will actually be added to discovery
+	// (the service is missing), we don't have an external signal.
+	time.Sleep(100 * time.Millisecond)
+	_, err = aggregatorDiscoveryClient.Discovery().ServerResources()
+	if err != nil && !strings.Contains(err.Error(), "lookup kubernetes.default.svc") {
+		t.Fatal(err)
+	}
+
+	// TODO figure out how to turn on enough of services and dns to run more
 }
 
-func readResponse(serverURL string) ([]byte, error) {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+func createKubeConfig(clientCfg *rest.Config) *clientcmdapi.Config {
+	clusterNick := "cluster"
+	userNick := "user"
+	contextNick := "context"
+
+	config := clientcmdapi.NewConfig()
+
+	credentials := clientcmdapi.NewAuthInfo()
+	credentials.Token = clientCfg.BearerToken
+	credentials.ClientCertificate = clientCfg.TLSClientConfig.CertFile
+	if len(credentials.ClientCertificate) == 0 {
+		credentials.ClientCertificateData = clientCfg.TLSClientConfig.CertData
 	}
-	client := &http.Client{Transport: tr}
-	response, err := client.Get(serverURL)
-	if err != nil {
-		glog.Errorf("http get err code : %#v", err)
-		return nil, fmt.Errorf("Error in fetching %s: %v", serverURL, err)
+	credentials.ClientKey = clientCfg.TLSClientConfig.KeyFile
+	if len(credentials.ClientKey) == 0 {
+		credentials.ClientKeyData = clientCfg.TLSClientConfig.KeyData
 	}
-	defer response.Body.Close()
-	glog.Errorf("http get response code : %#v", response.StatusCode)
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("unexpected status: %d for URL: %s, expected status: %d", response.StatusCode, serverURL, http.StatusOK)
+	config.AuthInfos[userNick] = credentials
+
+	cluster := clientcmdapi.NewCluster()
+	cluster.Server = clientCfg.Host
+	cluster.CertificateAuthority = clientCfg.CAFile
+	if len(cluster.CertificateAuthority) == 0 {
+		cluster.CertificateAuthorityData = clientCfg.CAData
 	}
-	contents, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, fmt.Errorf("Error reading response from %s: %v", serverURL, err)
+	cluster.InsecureSkipTLSVerify = clientCfg.Insecure
+	if clientCfg.GroupVersion != nil {
+		cluster.APIVersion = clientCfg.GroupVersion.String()
 	}
-	return contents, nil
+	config.Clusters[clusterNick] = cluster
+
+	context := clientcmdapi.NewContext()
+	context.Cluster = clusterNick
+	context.AuthInfo = userNick
+	config.Contexts[contextNick] = context
+	config.CurrentContext = contextNick
+
+	return config
 }
 
-func testSwaggerSpec(t *testing.T, serverIP string) {
-	serverURL := serverIP + "/swaggerapi"
-	_, err := readResponse(serverURL)
+func readResponse(client rest.Interface, location string) ([]byte, error) {
+	return client.Get().AbsPath(location).DoRaw()
+}
+
+func testAPIGroupList(t *testing.T, client rest.Interface) {
+	contents, err := readResponse(client, "/apis")
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
-}
-
-func testAPIGroupList(t *testing.T, serverIP string) {
-	serverURL := serverIP + "/apis"
-	contents, err := readResponse(serverURL)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
+	t.Log(string(contents))
 	var apiGroupList metav1.APIGroupList
 	err = json.Unmarshal(contents, &apiGroupList)
 	if err != nil {
-		t.Fatalf("Error in unmarshalling response from server %s: %v", serverURL, err)
+		t.Fatalf("Error in unmarshalling response from server %s: %v", "/apis", err)
 	}
 	assert.Equal(t, 1, len(apiGroupList.Groups))
-	assert.Equal(t, apiGroupList.Groups[0].Name, groupVersion.Group)
+	assert.Equal(t, groupVersion.Group, apiGroupList.Groups[0].Name)
 	assert.Equal(t, 1, len(apiGroupList.Groups[0].Versions))
-	assert.Equal(t, apiGroupList.Groups[0].Versions[0], groupVersionForDiscovery)
-	assert.Equal(t, apiGroupList.Groups[0].PreferredVersion, groupVersionForDiscovery)
+	assert.Equal(t, groupVersionForDiscovery, apiGroupList.Groups[0].Versions[0])
+	assert.Equal(t, groupVersionForDiscovery, apiGroupList.Groups[0].PreferredVersion)
 }
 
-func testAPIGroup(t *testing.T, serverIP string) {
-	serverURL := serverIP + "/apis/testgroup.k8s.io"
-	contents, err := readResponse(serverURL)
+func testAPIGroup(t *testing.T, client rest.Interface) {
+	contents, err := readResponse(client, "/apis/wardle.k8s.io")
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
+	t.Log(string(contents))
 	var apiGroup metav1.APIGroup
 	err = json.Unmarshal(contents, &apiGroup)
 	if err != nil {
-		t.Fatalf("Error in unmarshalling response from server %s: %v", serverURL, err)
+		t.Fatalf("Error in unmarshalling response from server %s: %v", "/apis/wardle.k8s.io", err)
 	}
-	assert.Equal(t, apiGroup.APIVersion, groupVersion.Version)
-	assert.Equal(t, apiGroup.Name, groupVersion.Group)
+	assert.Equal(t, groupVersion.Group, apiGroup.Name)
 	assert.Equal(t, 1, len(apiGroup.Versions))
-	assert.Equal(t, apiGroup.Versions[0].GroupVersion, groupVersion.String())
-	assert.Equal(t, apiGroup.Versions[0].Version, groupVersion.Version)
-	assert.Equal(t, apiGroup.Versions[0], apiGroup.PreferredVersion)
+	assert.Equal(t, groupVersion.String(), apiGroup.Versions[0].GroupVersion)
+	assert.Equal(t, groupVersion.Version, apiGroup.Versions[0].Version)
+	assert.Equal(t, apiGroup.PreferredVersion, apiGroup.Versions[0])
 }
 
-func testAPIResourceList(t *testing.T, serverIP string) {
-	serverURL := serverIP + "/apis/testgroup.k8s.io/v1"
-	contents, err := readResponse(serverURL)
+func testAPIResourceList(t *testing.T, client rest.Interface) {
+	contents, err := readResponse(client, "/apis/wardle.k8s.io/v1alpha1")
 	if err != nil {
 		t.Fatalf("%v", err)
 	}
+	t.Log(string(contents))
 	var apiResourceList metav1.APIResourceList
 	err = json.Unmarshal(contents, &apiResourceList)
 	if err != nil {
-		t.Fatalf("Error in unmarshalling response from server %s: %v", serverURL, err)
+		t.Fatalf("Error in unmarshalling response from server %s: %v", "/apis/wardle.k8s.io/v1alpha1", err)
 	}
-	assert.Equal(t, apiResourceList.APIVersion, groupVersion.Version)
-	assert.Equal(t, apiResourceList.GroupVersion, groupVersion.String())
+	assert.Equal(t, groupVersion.String(), apiResourceList.GroupVersion)
 	assert.Equal(t, 1, len(apiResourceList.APIResources))
-	assert.Equal(t, apiResourceList.APIResources[0].Name, "testtypes")
+	assert.Equal(t, "flunders", apiResourceList.APIResources[0].Name)
 	assert.True(t, apiResourceList.APIResources[0].Namespaced)
 }
+
+const (
+	policyCachePollInterval = 100 * time.Millisecond
+	policyCachePollTimeout  = 5 * time.Second
+)

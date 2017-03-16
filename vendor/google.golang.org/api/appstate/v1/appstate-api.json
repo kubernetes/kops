@@ -1,19 +1,19 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"ye6orv2F-1npMW3u9suM3a7C5Bo/fq2tcHmUUpw0BqgyQT2jiNE1XgU\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/_SxG1uYND7rQdynfLthiEVVDubk\"",
  "discoveryVersion": "v1",
  "id": "appstate:v1",
  "name": "appstate",
  "canonicalName": "App State",
  "version": "v1",
- "revision": "20150119",
+ "revision": "20161103",
  "title": "Google App State API",
  "description": "The Google App State API.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/games/services/web/api/states",
  "protocol": "rest",

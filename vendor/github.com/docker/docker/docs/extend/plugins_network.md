@@ -13,21 +13,10 @@ parent = "engine_extend"
 Docker Engine network plugins enable Engine deployments to be extended to
 support a wide range of networking technologies, such as VXLAN, IPVLAN, MACVLAN
 or something completely different. Network driver plugins are supported via the
-LibNetwork project. Each plugin is implemented as a  "remote driver" for
+LibNetwork project. Each plugin is implemented asa  "remote driver" for
 LibNetwork, which shares plugin infrastructure with Engine. Effectively, network
 driver plugins are activated in the same way as other plugins, and use the same
 kind of protocol.
-
-## Network driver plugins and swarm mode
-
-Docker 1.12 adds support for cluster management and orchestration called
-[swarm mode](../swarm/index.md). Docker Engine running in swarm mode currently
-only supports the built-in overlay driver for networking. Therefore existing
-networking plugins will not work in swarm mode.
-
-When you run Docker Engine outside of swarm mode, all networking plugins that
-worked in Docker 1.11 will continue to function normally. They do not require
-any modification.
 
 ## Using network driver plugins
 
@@ -46,7 +35,7 @@ Some network driver plugins are listed in [plugins](plugins.md)
 The `mynet` network is now owned by `weave`, so subsequent commands
 referring to that network will be sent to the plugin,
 
-    $ docker run --network=mynet busybox top
+    $ docker run --net=mynet busybox top
 
 
 ## Write a network plugin

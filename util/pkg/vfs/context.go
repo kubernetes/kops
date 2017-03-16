@@ -23,7 +23,7 @@ import (
 	"golang.org/x/oauth2/google"
 	storage "google.golang.org/api/storage/v1"
 	"io/ioutil"
-	"k8s.io/kubernetes/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"net/http"
 	"net/url"
 	"os"

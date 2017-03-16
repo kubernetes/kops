@@ -9,7 +9,7 @@
       }
     }
   },
-  "description": "Accesses the latest features for managing Ad Exchange accounts and Real-Time Bidding configurations.",
+  "description": "Accesses the latest features for managing Ad Exchange accounts, Real-Time Bidding configurations and auction metrics, and Marketplace programmatic deals.",
   "protocol": "rest",
   "title": "Ad Exchange Buyer API II",
   "resources": {
@@ -452,7 +452,7 @@
       "id": "ClientUser"
     },
     "ClientUserInvitation": {
-      "description": "An invitation for a new client user to get access to the AdExchange Buyer UI.\n\nAll fields are required unless otherwise specified.",
+      "description": "An invitation for a new client user to get access to the Ad Exchange\nBuyer UI.\nAll fields are required unless otherwise specified.",
       "type": "object",
       "properties": {
         "email": {
@@ -545,7 +545,7 @@
           "type": "string"
         },
         "role": {
-          "description": "The role which is assigned to the client buyer. Each role implies a set of\npermissions granted to the client. Must be one of `CLIENT_DEAL_VIEWER`,\n`CLIENT_DEAL_NEGOTIATOR`, or `CLIENT_DEAL_APPROVER`.",
+          "description": "The role which is assigned to the client buyer. Each role implies a set of\npermissions granted to the client. Must be one of `CLIENT_DEAL_VIEWER`,\n`CLIENT_DEAL_NEGOTIATOR` or `CLIENT_DEAL_APPROVER`.",
           "enum": [
             "CLIENT_ROLE_UNSPECIFIED",
             "CLIENT_DEAL_VIEWER",
@@ -599,7 +599,7 @@
       "id": "ListClientsResponse"
     }
   },
-  "revision": "20160621",
+  "revision": "20161020",
   "basePath": "",
   "icons": {
     "x32": "http://www.google.com/images/icons/product/search-32.gif",

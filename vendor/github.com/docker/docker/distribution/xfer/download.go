@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/docker/distribution"
 	"github.com/docker/docker/image"
 	"github.com/docker/docker/layer"
 	"github.com/docker/docker/pkg/archive"
@@ -24,11 +23,6 @@ const maxDownloadAttempts = 5
 type LayerDownloadManager struct {
 	layerStore layer.Store
 	tm         TransferManager
-}
-
-// SetConcurrency set the max concurrent downloads for each pull
-func (ldm *LayerDownloadManager) SetConcurrency(concurrency int) {
-	ldm.tm.SetConcurrency(concurrency)
 }
 
 // NewLayerDownloadManager returns a new LayerDownloadManager.
@@ -319,15 +313,7 @@ func (ldm *LayerDownloadManager) makeDownloadFunc(descriptor DownloadDescriptor,
 				return
 			}
 
-			var src distribution.Descriptor
-			if fs, ok := descriptor.(distribution.Describable); ok {
-				src = fs.Descriptor()
-			}
-			if ds, ok := d.layerStore.(layer.DescribableStore); ok {
-				d.layer, err = ds.RegisterWithDescriptor(inflatedLayerData, parentLayer, src)
-			} else {
-				d.layer, err = d.layerStore.Register(inflatedLayerData, parentLayer)
-			}
+			d.layer, err = d.layerStore.Register(inflatedLayerData, parentLayer)
 			if err != nil {
 				select {
 				case <-d.Transfer.Context().Done():
@@ -418,15 +404,7 @@ func (ldm *LayerDownloadManager) makeDownloadFuncFromDownload(descriptor Downloa
 			}
 			defer layerReader.Close()
 
-			var src distribution.Descriptor
-			if fs, ok := l.(distribution.Describable); ok {
-				src = fs.Descriptor()
-			}
-			if ds, ok := d.layerStore.(layer.DescribableStore); ok {
-				d.layer, err = ds.RegisterWithDescriptor(layerReader, parentLayer, src)
-			} else {
-				d.layer, err = d.layerStore.Register(layerReader, parentLayer)
-			}
+			d.layer, err = d.layerStore.Register(layerReader, parentLayer)
 			if err != nil {
 				d.err = fmt.Errorf("failed to register layer: %v", err)
 				return

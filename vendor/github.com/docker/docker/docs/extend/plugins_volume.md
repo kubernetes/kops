@@ -15,22 +15,6 @@ external storage systems, such as Amazon EBS, and enable data volumes to persist
 beyond the lifetime of a single Engine host. See the [plugin
 documentation](plugins.md) for more information.
 
-## Changelog
-
-### 1.12.0
-
-- Add `Status` field to `VolumeDriver.Get` response ([#21006](https://github.com/docker/docker/pull/21006#))
-- Add `VolumeDriver.Capabilities` to get capabilities of the volume driver([#22077](https://github.com/docker/docker/pull/22077))
-
-### 1.10.0
-
-- Add `VolumeDriver.Get` which gets the details about the volume ([#16534](https://github.com/docker/docker/pull/16534))
-- Add `VolumeDriver.List` which lists all volumes owned by the driver ([#16534](https://github.com/docker/docker/pull/16534))
-
-### 1.8.0
-
-- Initial support for volume driver plugins ([#14659](https://github.com/docker/docker/pull/14659))
-
 ## Command-line changes
 
 A volume plugin makes use of the `-v`and `--volume-driver` flag on the `docker run` command.  The `-v` flag accepts a volume name and the `--volume-driver` flag a driver type, for example:
@@ -116,8 +100,7 @@ Respond with a string error if an error occurred.
 **Request**:
 ```json
 {
-    "Name": "volume_name",
-    "ID": "b87d7442095999a92b65b3d9691e697b61713829cc0ffd1bb72e4ccd51aa4d6c"
+    "Name": "volume_name"
 }
 ```
 
@@ -125,8 +108,6 @@ Docker requires the plugin to provide a volume, given a user specified volume
 name. This is called once per container start. If the same volume_name is requested
 more than once, the plugin may need to keep track of each new mount request and provision
 at the first mount request and deprovision at the last corresponding unmount request.
-
-`ID` is a unique ID for the caller that is requesting the mount.
 
 **Response**:
 ```json
@@ -159,24 +140,20 @@ Docker needs reminding of the path to the volume on the host.
 ```
 
 Respond with the path on the host filesystem where the volume has been made
-available, and/or a string error if an error occurred. `Mountpoint` is optional,
-however the plugin may be queried again later if one is not provided.
+available, and/or a string error if an error occurred.
 
 ### /VolumeDriver.Unmount
 
 **Request**:
 ```json
 {
-    "Name": "volume_name",
-    "ID": "b87d7442095999a92b65b3d9691e697b61713829cc0ffd1bb72e4ccd51aa4d6c"
+    "Name": "volume_name"
 }
 ```
 
 Indication that Docker no longer is using the named volume. This is called once
 per container stop.  Plugin may deduce that it is safe to deprovision it at
 this point.
-
-`ID` is a unique ID for the caller that is requesting the mount.
 
 **Response**:
 ```json
@@ -206,14 +183,12 @@ Get the volume info.
   "Volume": {
     "Name": "volume_name",
     "Mountpoint": "/path/to/directory/on/host",
-    "Status": {}
   },
   "Err": ""
 }
 ```
 
-Respond with a string error if an error occurred. `Mountpoint` and `Status` are
-optional.
+Respond with a string error if an error occurred.
 
 
 ### /VolumeDriver.List
@@ -238,30 +213,4 @@ Get the list of volumes registered with the plugin.
 }
 ```
 
-Respond with a string error if an error occurred. `Mountpoint` is optional.
-
-### /VolumeDriver.Capabilities
-
-**Request**:
-```json
-{}
-```
-
-Get the list of capabilities the driver supports.
-The driver is not required to implement this endpoint, however in such cases
-the default values will be taken.
-
-**Response**:
-```json
-{
-  "Capabilities": {
-    "Scope": "global"
-  }
-}
-```
-
-Supported scopes are `global` and `local`. Any other value in `Scope` will be
-ignored and assumed to be `local`. Scope allows cluster managers to handle the
-volume differently, for instance with a scope of `global`, the cluster manager
-knows it only needs to create the volume once instead of on every engine. More
-capabilities may be added in the future.
+Respond with a string error if an error occurred.

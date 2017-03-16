@@ -121,19 +121,6 @@ func (opt maxBytesBilled) customizeQuery(conf *bq.JobConfigurationQuery) {
 	}
 }
 
-// QueryUseStandardSQL returns an Option that set the query to use standard SQL.
-// The default setting is false (using legacy SQL).
-func QueryUseStandardSQL() Option { return queryUseStandardSQL{} }
-
-type queryUseStandardSQL struct{}
-
-func (opt queryUseStandardSQL) implementsOption() {}
-
-func (opt queryUseStandardSQL) customizeQuery(conf *bq.JobConfigurationQuery) {
-	conf.UseLegacySql = false
-	conf.ForceSendFields = append(conf.ForceSendFields, "UseLegacySql")
-}
-
 func (c *Client) query(ctx context.Context, dst *Table, src *Query, options []Option) (*Job, error) {
 	job, options := initJobProto(c.projectID, options)
 	payload := &bq.JobConfigurationQuery{}

@@ -43,3 +43,17 @@ function teardown() {
   [ "$status" -eq 0 ]
   [[ ${lines[0]} =~ [0-9]+ ]]
 }
+
+@test "runc exec ls -la" {
+  # run busybox detached
+  runc run -d --console /dev/pts/ptmx test_busybox
+  [ "$status" -eq 0 ]
+
+  wait_for_container 15 1 test_busybox
+
+  runc exec test_busybox ls -la
+  [ "$status" -eq 0 ]
+  [[ ${lines[0]} == *"total"* ]]
+  [[ ${lines[1]} == *"."* ]]
+  [[ ${lines[2]} == *".."* ]]
+}

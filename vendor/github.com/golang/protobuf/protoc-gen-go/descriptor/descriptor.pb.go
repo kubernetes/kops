@@ -42,7 +42,9 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-const _ = proto.ProtoPackageIsVersion1
+// A compilation error at this line likely means your copy of the
+// proto package needs to be updated.
+const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
 type FieldDescriptorProto_Type int32
 
@@ -943,9 +945,9 @@ type FileOptions struct {
 	// Namespace for generated classes; defaults to the package.
 	CsharpNamespace *string `protobuf:"bytes,37,opt,name=csharp_namespace,json=csharpNamespace" json:"csharp_namespace,omitempty"`
 	// The parser stores options it doesn't recognize here. See above.
-	UninterpretedOption []*UninterpretedOption    `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
-	XXX_extensions      map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized    []byte                    `json:"-"`
+	UninterpretedOption          []*UninterpretedOption `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *FileOptions) Reset()                    { *m = FileOptions{} }
@@ -959,12 +961,6 @@ var extRange_FileOptions = []proto.ExtensionRange{
 
 func (*FileOptions) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_FileOptions
-}
-func (m *FileOptions) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
 }
 
 const Default_FileOptions_JavaMultipleFiles bool = false
@@ -1134,9 +1130,9 @@ type MessageOptions struct {
 	// parser.
 	MapEntry *bool `protobuf:"varint,7,opt,name=map_entry,json=mapEntry" json:"map_entry,omitempty"`
 	// The parser stores options it doesn't recognize here. See above.
-	UninterpretedOption []*UninterpretedOption    `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
-	XXX_extensions      map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized    []byte                    `json:"-"`
+	UninterpretedOption          []*UninterpretedOption `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *MessageOptions) Reset()                    { *m = MessageOptions{} }
@@ -1150,12 +1146,6 @@ var extRange_MessageOptions = []proto.ExtensionRange{
 
 func (*MessageOptions) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_MessageOptions
-}
-func (m *MessageOptions) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
 }
 
 const Default_MessageOptions_MessageSetWireFormat bool = false
@@ -1256,9 +1246,9 @@ type FieldOptions struct {
 	// For Google-internal migration only. Do not use.
 	Weak *bool `protobuf:"varint,10,opt,name=weak,def=0" json:"weak,omitempty"`
 	// The parser stores options it doesn't recognize here. See above.
-	UninterpretedOption []*UninterpretedOption    `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
-	XXX_extensions      map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized    []byte                    `json:"-"`
+	UninterpretedOption          []*UninterpretedOption `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *FieldOptions) Reset()                    { *m = FieldOptions{} }
@@ -1272,12 +1262,6 @@ var extRange_FieldOptions = []proto.ExtensionRange{
 
 func (*FieldOptions) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_FieldOptions
-}
-func (m *FieldOptions) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
 }
 
 const Default_FieldOptions_Ctype FieldOptions_CType = FieldOptions_STRING
@@ -1345,9 +1329,9 @@ type EnumOptions struct {
 	// is a formalization for deprecating enums.
 	Deprecated *bool `protobuf:"varint,3,opt,name=deprecated,def=0" json:"deprecated,omitempty"`
 	// The parser stores options it doesn't recognize here. See above.
-	UninterpretedOption []*UninterpretedOption    `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
-	XXX_extensions      map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized    []byte                    `json:"-"`
+	UninterpretedOption          []*UninterpretedOption `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *EnumOptions) Reset()                    { *m = EnumOptions{} }
@@ -1361,12 +1345,6 @@ var extRange_EnumOptions = []proto.ExtensionRange{
 
 func (*EnumOptions) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_EnumOptions
-}
-func (m *EnumOptions) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
 }
 
 const Default_EnumOptions_Deprecated bool = false
@@ -1399,9 +1377,9 @@ type EnumValueOptions struct {
 	// this is a formalization for deprecating enum values.
 	Deprecated *bool `protobuf:"varint,1,opt,name=deprecated,def=0" json:"deprecated,omitempty"`
 	// The parser stores options it doesn't recognize here. See above.
-	UninterpretedOption []*UninterpretedOption    `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
-	XXX_extensions      map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized    []byte                    `json:"-"`
+	UninterpretedOption          []*UninterpretedOption `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *EnumValueOptions) Reset()                    { *m = EnumValueOptions{} }
@@ -1415,12 +1393,6 @@ var extRange_EnumValueOptions = []proto.ExtensionRange{
 
 func (*EnumValueOptions) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_EnumValueOptions
-}
-func (m *EnumValueOptions) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
 }
 
 const Default_EnumValueOptions_Deprecated bool = false
@@ -1446,9 +1418,9 @@ type ServiceOptions struct {
 	// this is a formalization for deprecating services.
 	Deprecated *bool `protobuf:"varint,33,opt,name=deprecated,def=0" json:"deprecated,omitempty"`
 	// The parser stores options it doesn't recognize here. See above.
-	UninterpretedOption []*UninterpretedOption    `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
-	XXX_extensions      map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized    []byte                    `json:"-"`
+	UninterpretedOption          []*UninterpretedOption `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *ServiceOptions) Reset()                    { *m = ServiceOptions{} }
@@ -1462,12 +1434,6 @@ var extRange_ServiceOptions = []proto.ExtensionRange{
 
 func (*ServiceOptions) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_ServiceOptions
-}
-func (m *ServiceOptions) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
 }
 
 const Default_ServiceOptions_Deprecated bool = false
@@ -1493,9 +1459,9 @@ type MethodOptions struct {
 	// this is a formalization for deprecating methods.
 	Deprecated *bool `protobuf:"varint,33,opt,name=deprecated,def=0" json:"deprecated,omitempty"`
 	// The parser stores options it doesn't recognize here. See above.
-	UninterpretedOption []*UninterpretedOption    `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
-	XXX_extensions      map[int32]proto.Extension `json:"-"`
-	XXX_unrecognized    []byte                    `json:"-"`
+	UninterpretedOption          []*UninterpretedOption `protobuf:"bytes,999,rep,name=uninterpreted_option,json=uninterpretedOption" json:"uninterpreted_option,omitempty"`
+	proto.XXX_InternalExtensions `json:"-"`
+	XXX_unrecognized             []byte `json:"-"`
 }
 
 func (m *MethodOptions) Reset()                    { *m = MethodOptions{} }
@@ -1509,12 +1475,6 @@ var extRange_MethodOptions = []proto.ExtensionRange{
 
 func (*MethodOptions) ExtensionRangeArray() []proto.ExtensionRange {
 	return extRange_MethodOptions
-}
-func (m *MethodOptions) ExtensionMap() map[int32]proto.Extension {
-	if m.XXX_extensions == nil {
-		m.XXX_extensions = make(map[int32]proto.Extension)
-	}
-	return m.XXX_extensions
 }
 
 const Default_MethodOptions_Deprecated bool = false
@@ -1928,6 +1888,8 @@ func init() {
 	proto.RegisterEnum("google.protobuf.FieldOptions_CType", FieldOptions_CType_name, FieldOptions_CType_value)
 	proto.RegisterEnum("google.protobuf.FieldOptions_JSType", FieldOptions_JSType_name, FieldOptions_JSType_value)
 }
+
+func init() { proto.RegisterFile("google/protobuf/descriptor.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
 	// 2247 bytes of a gzipped FileDescriptorProto

@@ -430,13 +430,14 @@ _runc_spec() {
 	esac
 }
 
-_runc_start() {
+_runc_run() {
 	local boolean_options="
 	   --help
 	   --detatch
 	   -d
 	   --no-subreaper
 	   --no-pivot
+	   --no-new-keyring
 	"
 
 	local options_with_args="
@@ -533,6 +534,49 @@ _runc_checkpoint() {
 			__runc_list_all
 			;;
 	esac
+}
+_runc_create() {
+	local boolean_options="
+	   --help
+	   --no-pivot
+	   --no-new-keyring
+	"
+
+	local options_with_args="
+	   --bundle
+	   -b
+	   --console
+	   --pid-file
+	"
+	case "$prev" in
+	    --bundle|-b|--console|--pid-file)
+		case "$cur" in
+		    '')
+			COMPREPLY=( $( compgen -W '/' -- "$cur" ) )
+			__runc_nospace
+			;;
+		    /*)
+			_filedir
+			__runc_nospace
+			;;
+		esac
+		return
+		;;
+
+	   $(__runc_to_extglob "$options_with_args"))
+	       return
+	       ;;
+	esac
+
+	case "$cur" in
+		-*)
+			COMPREPLY=( $( compgen -W "$boolean_options $options_with_args" -- "$cur" ) )
+			;;
+		*)
+			__runc_list_all
+			;;
+	esac
+
 }
 
 _runc_help() {
@@ -635,6 +679,21 @@ _runc_state() {
 		    ;;
 	esac
 }
+_runc_start() {
+	local boolean_options="
+	   --help
+	   -h
+	"
+
+	case "$cur" in
+		-*)
+			COMPREPLY=( $( compgen -W "$boolean_options $options_with_args" -- "$cur" ) )
+			;;
+		*)
+		    __runc_list_all
+		    ;;
+	esac
+}
 _runc_update() {
 	local boolean_options="
 	   --help
@@ -677,6 +736,7 @@ _runc() {
 
 	local commands=(
 	    checkpoint
+	    create
 	    delete
 	    events
 	    exec
@@ -686,6 +746,7 @@ _runc() {
 	    pause
 	    restore
 	    resume
+	    run
 	    spec
 	    start
 	    state

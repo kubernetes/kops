@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,16 +17,14 @@ limitations under the License.
 package v1
 
 import (
-	fmt "fmt"
-	api "k8s.io/kubernetes/pkg/api"
-	registered "k8s.io/kubernetes/pkg/apimachinery/registered"
-	restclient "k8s.io/kubernetes/pkg/client/restclient"
-	schema "k8s.io/kubernetes/pkg/runtime/schema"
-	serializer "k8s.io/kubernetes/pkg/runtime/serializer"
+	serializer "k8s.io/apimachinery/pkg/runtime/serializer"
+	rest "k8s.io/client-go/rest"
+	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/scheme"
+	v1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 type CoreV1Interface interface {
-	RESTClient() restclient.Interface
+	RESTClient() rest.Interface
 	ConfigMapsGetter
 	EventsGetter
 	NamespacesGetter
@@ -34,9 +32,9 @@ type CoreV1Interface interface {
 	ServicesGetter
 }
 
-// CoreV1Client is used to interact with features provided by the k8s.io/kubernetes/pkg/apimachinery/registered.Group group.
+// CoreV1Client is used to interact with features provided by the  group.
 type CoreV1Client struct {
-	restClient restclient.Interface
+	restClient rest.Interface
 }
 
 func (c *CoreV1Client) ConfigMaps(namespace string) ConfigMapInterface {
@@ -60,12 +58,12 @@ func (c *CoreV1Client) Services(namespace string) ServiceInterface {
 }
 
 // NewForConfig creates a new CoreV1Client for the given config.
-func NewForConfig(c *restclient.Config) (*CoreV1Client, error) {
+func NewForConfig(c *rest.Config) (*CoreV1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
 	}
-	client, err := restclient.RESTClientFor(&config)
+	client, err := rest.RESTClientFor(&config)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +72,7 @@ func NewForConfig(c *restclient.Config) (*CoreV1Client, error) {
 
 // NewForConfigOrDie creates a new CoreV1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *restclient.Config) *CoreV1Client {
+func NewForConfigOrDie(c *rest.Config) *CoreV1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -83,34 +81,26 @@ func NewForConfigOrDie(c *restclient.Config) *CoreV1Client {
 }
 
 // New creates a new CoreV1Client for the given RESTClient.
-func New(c restclient.Interface) *CoreV1Client {
+func New(c rest.Interface) *CoreV1Client {
 	return &CoreV1Client{c}
 }
 
-func setConfigDefaults(config *restclient.Config) error {
-	gv, err := schema.ParseGroupVersion("/v1")
-	if err != nil {
-		return err
-	}
-	// if /v1 is not enabled, return an error
-	if !registered.IsEnabledVersion(gv) {
-		return fmt.Errorf("/v1 is not enabled")
-	}
+func setConfigDefaults(config *rest.Config) error {
+	gv := v1.SchemeGroupVersion
+	config.GroupVersion = &gv
 	config.APIPath = "/api"
-	if config.UserAgent == "" {
-		config.UserAgent = restclient.DefaultKubernetesUserAgent()
-	}
-	copyGroupVersion := gv
-	config.GroupVersion = &copyGroupVersion
+	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: scheme.Codecs}
 
-	config.NegotiatedSerializer = serializer.DirectCodecFactory{CodecFactory: api.Codecs}
+	if config.UserAgent == "" {
+		config.UserAgent = rest.DefaultKubernetesUserAgent()
+	}
 
 	return nil
 }
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *CoreV1Client) RESTClient() restclient.Interface {
+func (c *CoreV1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

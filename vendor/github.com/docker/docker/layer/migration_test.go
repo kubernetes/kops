@@ -78,7 +78,7 @@ func TestLayerMigration(t *testing.T) {
 	}
 
 	graphID1 := stringid.GenerateRandomID()
-	if err := graph.Create(graphID1, "", "", nil); err != nil {
+	if err := graph.Create(graphID1, "", ""); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := graph.ApplyDiff(graphID1, "", archive.Reader(bytes.NewReader(tar1))); err != nil {
@@ -123,7 +123,7 @@ func TestLayerMigration(t *testing.T) {
 	}
 
 	graphID2 := stringid.GenerateRandomID()
-	if err := graph.Create(graphID2, graphID1, "", nil); err != nil {
+	if err := graph.Create(graphID2, graphID1, ""); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := graph.ApplyDiff(graphID2, graphID1, archive.Reader(bytes.NewReader(tar2))); err != nil {
@@ -165,7 +165,7 @@ func tarFromFilesInGraph(graph graphdriver.Driver, graphID, parentID string, fil
 		return nil, err
 	}
 
-	if err := graph.Create(graphID, parentID, "", nil); err != nil {
+	if err := graph.Create(graphID, parentID, ""); err != nil {
 		return nil, err
 	}
 	if _, err := graph.ApplyDiff(graphID, parentID, archive.Reader(bytes.NewReader(t))); err != nil {
@@ -320,14 +320,14 @@ func TestMountMigration(t *testing.T) {
 	containerID := stringid.GenerateRandomID()
 	containerInit := fmt.Sprintf("%s-init", containerID)
 
-	if err := graph.Create(containerInit, graphID1, "", nil); err != nil {
+	if err := graph.Create(containerInit, graphID1, ""); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := graph.ApplyDiff(containerInit, graphID1, archive.Reader(bytes.NewReader(initTar))); err != nil {
 		t.Fatal(err)
 	}
 
-	if err := graph.Create(containerID, containerInit, "", nil); err != nil {
+	if err := graph.Create(containerID, containerInit, ""); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := graph.ApplyDiff(containerID, containerInit, archive.Reader(bytes.NewReader(mountTar))); err != nil {
@@ -380,7 +380,9 @@ func TestMountMigration(t *testing.T) {
 		Kind: archive.ChangeAdd,
 	})
 
-	if _, err := ls.CreateRWLayer("migration-mount", layer1.ChainID(), "", nil, nil); err == nil {
+	assertActivityCount(t, rwLayer1, 1)
+
+	if _, err := ls.CreateRWLayer("migration-mount", layer1.ChainID(), "", nil); err == nil {
 		t.Fatal("Expected error creating mount with same name")
 	} else if err != ErrMountNameConflict {
 		t.Fatal(err)
@@ -399,9 +401,15 @@ func TestMountMigration(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	assertActivityCount(t, rwLayer2, 1)
+	assertActivityCount(t, rwLayer1, 1)
+
 	if _, err := rwLayer2.Mount(""); err != nil {
 		t.Fatal(err)
 	}
+
+	assertActivityCount(t, rwLayer2, 2)
+	assertActivityCount(t, rwLayer1, 1)
 
 	if metadata, err := ls.Release(layer1); err != nil {
 		t.Fatal(err)
@@ -412,6 +420,8 @@ func TestMountMigration(t *testing.T) {
 	if err := rwLayer1.Unmount(); err != nil {
 		t.Fatal(err)
 	}
+	assertActivityCount(t, rwLayer2, 2)
+	assertActivityCount(t, rwLayer1, 0)
 
 	if _, err := ls.ReleaseRWLayer(rwLayer1); err != nil {
 		t.Fatal(err)
@@ -419,6 +429,9 @@ func TestMountMigration(t *testing.T) {
 
 	if err := rwLayer2.Unmount(); err != nil {
 		t.Fatal(err)
+	}
+	if _, err := ls.ReleaseRWLayer(rwLayer2); err == nil {
+		t.Fatal("Expected error deleting active mount")
 	}
 	if err := rwLayer2.Unmount(); err != nil {
 		t.Fatal(err)

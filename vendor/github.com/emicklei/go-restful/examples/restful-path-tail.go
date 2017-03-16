@@ -1,9 +1,9 @@
 package main
 
 import (
+	. "github.com/emicklei/go-restful"
 	"io"
 	"net/http"
-	. "github.com/emicklei/go-restful"
 )
 
 // This example shows how to a Route that matches the "tail" of a path.

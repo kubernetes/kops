@@ -1,13 +1,13 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/Q3V4GCHLmXscAyYlS-YwsHmGOX4\"",
+ "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/QjifI48X3fgI9mRgli3ziT84a8U\"",
  "discoveryVersion": "v1",
  "id": "clouddebugger:v2",
  "name": "clouddebugger",
  "canonicalName": "Cloud Debugger",
  "version": "v2",
- "revision": "20160602",
- "title": "Google Cloud Debugger API",
+ "revision": "20160810",
+ "title": "Stackdriver Debugger API",
  "description": "Examines the call stack and variables of a running application without stopping or slowing it down.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
@@ -15,7 +15,7 @@
   "x16": "http://www.google.com/images/icons/product/search-16.gif",
   "x32": "http://www.google.com/images/icons/product/search-32.gif"
  },
- "documentationLink": "https://cloud.google.com/tools/cloud-debugger",
+ "documentationLink": "http://cloud.google.com/debugger",
  "protocol": "rest",
  "baseUrl": "https://clouddebugger.googleapis.com/",
  "basePath": "",
@@ -110,9 +110,6 @@
     },
     "https://www.googleapis.com/auth/cloud_debugger": {
      "description": "Manage cloud debugger"
-    },
-    "https://www.googleapis.com/auth/cloud_debugletcontroller": {
-     "description": "Manage active breakpoints in cloud debugger"
     }
    }
   }
@@ -723,7 +720,7 @@
        },
        "scopes": [
         "https://www.googleapis.com/auth/cloud-platform",
-        "https://www.googleapis.com/auth/cloud_debugletcontroller"
+        "https://www.googleapis.com/auth/cloud_debugger"
        ]
       }
      },
@@ -761,7 +758,7 @@
          },
          "scopes": [
           "https://www.googleapis.com/auth/cloud-platform",
-          "https://www.googleapis.com/auth/cloud_debugletcontroller"
+          "https://www.googleapis.com/auth/cloud_debugger"
          ]
         },
         "update": {
@@ -795,7 +792,7 @@
          },
          "scopes": [
           "https://www.googleapis.com/auth/cloud-platform",
-          "https://www.googleapis.com/auth/cloud_debugletcontroller"
+          "https://www.googleapis.com/auth/cloud_debugger"
          ]
         }
        }

@@ -23,9 +23,8 @@ type IPAMConfig struct {
 
 // EndpointIPAMConfig represents IPAM configurations for the endpoint
 type EndpointIPAMConfig struct {
-	IPv4Address  string   `json:",omitempty"`
-	IPv6Address  string   `json:",omitempty"`
-	LinkLocalIPs []string `json:",omitempty"`
+	IPv4Address string `json:",omitempty"`
+	IPv6Address string `json:",omitempty"`
 }
 
 // EndpointSettings stores the network endpoint details

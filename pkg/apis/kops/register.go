@@ -17,14 +17,26 @@ limitations under the License.
 package kops
 
 import (
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/apimachinery/announced"
+	"k8s.io/apimachinery/pkg/apimachinery/registered"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"os"
 )
 
 var (
 	SchemeBuilder = runtime.NewSchemeBuilder(addKnownTypes)
 	AddToScheme   = SchemeBuilder.AddToScheme
 )
+
+var GroupFactoryRegistry = make(announced.APIGroupFactoryRegistry)
+
+var Registry = registered.NewOrDie(os.Getenv("KOPS_API_VERSIONS"))
+
+var Scheme = runtime.NewScheme()
+
+var Codecs = serializer.NewCodecFactory(Scheme)
 
 // GroupName is the group name use in this package
 const GroupName = "kops"

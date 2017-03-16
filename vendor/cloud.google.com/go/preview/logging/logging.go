@@ -18,15 +18,14 @@
 // - There is no way to provide a protocol buffer payload.
 // - No support for the "partial success" feature when writing log entries.
 
+// TODO(jba): link in google.cloud.audit.AuditLog, to support activity logs (after it is published)
 // TODO(jba): test whether forward-slash characters in the log ID must be URL-encoded.
+
 // These features are missing now, but will likely be added:
 // - There is no way to specify CallOptions.
 
-// Package logging contains a Stackdriver Logging client suitable for writing logs.
-// For reading logs, and working with sinks, metrics and monitored resources,
-// see package cloud.google.com/go/logging/logadmin.
-//
-// This client uses Logging API v2.
+// Package logging contains a Stackdriver Logging client.
+// The client uses Logging API v2.
 // See https://cloud.google.com/logging/docs/api/v2/ for an introduction to the API.
 //
 // This package is experimental and subject to API changes.
@@ -39,6 +38,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"sync"
@@ -46,16 +46,25 @@ import (
 
 	"cloud.google.com/go/internal/bundler"
 	vkit "cloud.google.com/go/logging/apiv2"
-	"cloud.google.com/go/preview/logging/internal"
 	"github.com/golang/protobuf/proto"
 	"github.com/golang/protobuf/ptypes"
 	structpb "github.com/golang/protobuf/ptypes/struct"
 	tspb "github.com/golang/protobuf/ptypes/timestamp"
+	gax "github.com/googleapis/gax-go"
 	"golang.org/x/net/context"
+	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 	mrpb "google.golang.org/genproto/googleapis/api/monitoredres"
 	logtypepb "google.golang.org/genproto/googleapis/logging/type"
 	logpb "google.golang.org/genproto/googleapis/logging/v2"
+)
+
+// For testing:
+var now = time.Now
+
+const (
+	prodAddr = "logging.googleapis.com:443"
+	version  = "0.2.0"
 )
 
 const (
@@ -87,16 +96,15 @@ const (
 	DefaultBufferedByteLimit = 1 << 30 // 1GiB
 )
 
-// For testing:
-var now = time.Now
-
 // ErrOverflow signals that the number of buffered entries for a Logger
 // exceeds its BufferLimit.
 var ErrOverflow = errors.New("logging: log entry overflowed buffer limits")
 
 // Client is a Logging client. A Client is associated with a single Cloud project.
 type Client struct {
-	client    *vkit.Client // client for the logging service
+	lClient   *vkit.Client        // logging client
+	sClient   *vkit.ConfigClient  // sink client
+	mClient   *vkit.MetricsClient // metric client
 	projectID string
 	errc      chan error     // should be buffered to minimize dropped errors
 	donec     chan struct{}  // closed on Client.Close to close Logger bundlers
@@ -118,24 +126,35 @@ type Client struct {
 // NewClient returns a new logging client associated with the provided project ID.
 //
 // By default NewClient uses WriteScope. To use a different scope, call
-// NewClient using a WithScopes option (see https://godoc.org/google.golang.org/api/option#WithScopes).
+// NewClient using a WithScopes option.
 func NewClient(ctx context.Context, projectID string, opts ...option.ClientOption) (*Client, error) {
 	// Check for '/' in project ID to reserve the ability to support various owning resources,
 	// in the form "{Collection}/{Name}", for instance "organizations/my-org".
 	if strings.ContainsRune(projectID, '/') {
 		return nil, errors.New("logging: project ID contains '/'")
 	}
-	opts = append([]option.ClientOption{
-		option.WithEndpoint(internal.ProdAddr),
-		option.WithScopes(WriteScope),
-	}, opts...)
-	c, err := vkit.NewClient(ctx, opts...)
+	opts = append([]option.ClientOption{option.WithEndpoint(prodAddr), option.WithScopes(WriteScope)},
+		opts...)
+	lc, err := vkit.NewClient(ctx, opts...)
 	if err != nil {
 		return nil, err
 	}
-	c.SetGoogleClientInfo("logging", internal.Version)
+	// TODO(jba): pass along any client options that should be provided to all clients.
+	sc, err := vkit.NewConfigClient(ctx, option.WithGRPCConn(lc.Connection()))
+	if err != nil {
+		return nil, err
+	}
+	mc, err := vkit.NewMetricsClient(ctx, option.WithGRPCConn(lc.Connection()))
+	if err != nil {
+		return nil, err
+	}
+	lc.SetGoogleClientInfo("logging", version)
+	sc.SetGoogleClientInfo("logging", version)
+	mc.SetGoogleClientInfo("logging", version)
 	client := &Client{
-		client:    c,
+		lClient:   lc,
+		sClient:   sc,
+		mClient:   mc,
 		projectID: projectID,
 		errc:      make(chan error, defaultErrorCapacity), // create a small buffer for errors
 		donec:     make(chan struct{}),
@@ -182,8 +201,8 @@ func (c *Client) Ping(ctx context.Context) error {
 		Timestamp: unixZeroTimestamp, // Identical timestamps and insert IDs are both
 		InsertId:  "ping",            // necessary for the service to dedup these entries.
 	}
-	_, err := c.client.WriteLogEntries(ctx, &logpb.WriteLogEntriesRequest{
-		LogName:  internal.LogPath(c.parent(), "ping"),
+	_, err := c.lClient.WriteLogEntries(ctx, &logpb.WriteLogEntriesRequest{
+		LogName:  c.logPath("ping"),
 		Resource: &mrpb.MonitoredResource{Type: "global"},
 		Entries:  []*logpb.LogEntry{ent},
 	})
@@ -297,7 +316,7 @@ func (b bufferedByteLimit) set(l *Logger) { l.bundler.BufferedByteLimit = int(b)
 func (c *Client) Logger(logID string, opts ...LoggerOption) *Logger {
 	l := &Logger{
 		client:         c,
-		logName:        internal.LogPath(c.parent(), logID),
+		logName:        c.logPath(logID),
 		commonResource: &mrpb.MonitoredResource{Type: "global"},
 	}
 	// TODO(jba): determine the right context for the bundle handler.
@@ -326,6 +345,11 @@ func (c *Client) Logger(logID string, opts ...LoggerOption) *Logger {
 	return l
 }
 
+func (c *Client) logPath(logID string) string {
+	logID = strings.Replace(logID, "/", "%2F", -1)
+	return fmt.Sprintf("%s/logs/%s", c.parent(), logID)
+}
+
 type severityWriter struct {
 	l *Logger
 	s Severity
@@ -339,6 +363,14 @@ func (w severityWriter) Write(p []byte) (n int, err error) {
 	return len(p), nil
 }
 
+// DeleteLog deletes a log and all its log entries. The log will reappear if it receives new entries.
+// logID identifies the log within the project. An example log ID is "syslog". Requires AdminScope.
+func (c *Client) DeleteLog(ctx context.Context, logID string) error {
+	return c.lClient.DeleteLog(ctx, &logpb.DeleteLogRequest{
+		LogName: c.logPath(logID),
+	})
+}
+
 // Close closes the client.
 func (c *Client) Close() error {
 	if c.closed {
@@ -350,7 +382,9 @@ func (c *Client) Close() error {
 	close(c.errc) // terminate error goroutine
 	// Return only the first error. Since all clients share an underlying connection,
 	// Closes after the first always report a "connection is closing" error.
-	err := c.client.Close()
+	err := c.lClient.Close()
+	_ = c.sClient.Close()
+	_ = c.mClient.Close()
 	c.closed = true
 	return err
 }
@@ -517,6 +551,36 @@ func fromHTTPRequest(r *HTTPRequest) *logtypepb.HttpRequest {
 	}
 }
 
+func toHTTPRequest(p *logtypepb.HttpRequest) (*HTTPRequest, error) {
+	if p == nil {
+		return nil, nil
+	}
+	u, err := url.Parse(p.RequestUrl)
+	if err != nil {
+		return nil, err
+	}
+	hr := &http.Request{
+		Method: p.RequestMethod,
+		URL:    u,
+		Header: map[string][]string{},
+	}
+	if p.UserAgent != "" {
+		hr.Header.Set("User-Agent", p.UserAgent)
+	}
+	if p.Referer != "" {
+		hr.Header.Set("Referer", p.Referer)
+	}
+	return &HTTPRequest{
+		Request:                        hr,
+		RequestSize:                    p.RequestSize,
+		Status:                         int(p.Status),
+		ResponseSize:                   p.ResponseSize,
+		RemoteIP:                       p.RemoteIp,
+		CacheHit:                       p.CacheHit,
+		CacheValidatedWithOriginServer: p.CacheValidatedWithOriginServer,
+	}, nil
+}
+
 // toProtoStruct converts v, which must marshal into a JSON object,
 // into a Google Struct proto.
 func toProtoStruct(v interface{}) (*structpb.Struct, error) {
@@ -576,7 +640,7 @@ func (l *Logger) LogSync(ctx context.Context, e Entry) error {
 	if err != nil {
 		return err
 	}
-	_, err = l.client.client.WriteLogEntries(ctx, &logpb.WriteLogEntriesRequest{
+	_, err = l.client.lClient.WriteLogEntries(ctx, &logpb.WriteLogEntriesRequest{
 		LogName:  l.logName,
 		Resource: l.commonResource,
 		Labels:   l.commonLabels,
@@ -609,7 +673,7 @@ func (l *Logger) writeLogEntries(ctx context.Context, entries []*logpb.LogEntry)
 		Labels:   l.commonLabels,
 		Entries:  entries,
 	}
-	_, err := l.client.client.WriteLogEntries(ctx, req)
+	_, err := l.client.lClient.WriteLogEntries(ctx, req)
 	if err != nil {
 		l.error(err)
 	}
@@ -630,6 +694,133 @@ func (l *Logger) error(err error) {
 // severity level in each Logger. Callers may mutate the returned log.Logger
 // (for example by calling SetFlags or SetPrefix).
 func (l *Logger) StandardLogger(s Severity) *log.Logger { return l.stdLoggers[s] }
+
+// An EntriesOption is an option for listing log entries.
+type EntriesOption interface {
+	set(*logpb.ListLogEntriesRequest)
+}
+
+// ProjectIDs sets the project IDs or project numbers from which to retrieve
+// log entries. Examples of a project ID: "my-project-1A", "1234567890".
+func ProjectIDs(pids []string) EntriesOption { return projectIDs(pids) }
+
+type projectIDs []string
+
+func (p projectIDs) set(r *logpb.ListLogEntriesRequest) { r.ProjectIds = []string(p) }
+
+// Filter sets an advanced logs filter for listing log entries (see
+// https://cloud.google.com/logging/docs/view/advanced_filters). The filter is
+// compared against all log entries in the projects specified by ProjectIDs.
+// Only entries that match the filter are retrieved. An empty filter (the
+// default) matches all log entries.
+//
+// In the filter string, log names must be written in their full form, as
+// "projects/PROJECT-ID/logs/LOG-ID". Forward slashes in LOG-ID must be
+// replaced by %2F before calling Filter.
+//
+// Timestamps in the filter string must be written in RFC 3339 format. See the
+// timestamp example.
+func Filter(f string) EntriesOption { return filter(f) }
+
+type filter string
+
+func (f filter) set(r *logpb.ListLogEntriesRequest) { r.Filter = string(f) }
+
+// NewestFirst causes log entries to be listed from most recent (newest) to
+// least recent (oldest). By default, they are listed from oldest to newest.
+func NewestFirst() EntriesOption { return newestFirst{} }
+
+type newestFirst struct{}
+
+func (newestFirst) set(r *logpb.ListLogEntriesRequest) { r.OrderBy = "timestamp desc" }
+
+// OrderBy determines how a listing of log entries should be sorted. Presently,
+// the only permitted values are "timestamp asc" (default) and "timestamp
+// desc". The first option returns entries in order of increasing values of
+// timestamp (oldest first), and the second option returns entries in order of
+// decreasing timestamps (newest first). Entries with equal timestamps are
+// returned in order of InsertID.
+func OrderBy(ob string) EntriesOption { return orderBy(ob) }
+
+type orderBy string
+
+func (o orderBy) set(r *logpb.ListLogEntriesRequest) { r.OrderBy = string(o) }
+
+// Entries returns an EntryIterator for iterating over log entries. By default,
+// the log entries will be restricted to those from the project passed to
+// NewClient. This may be overridden by passing a ProjectIDs option. Requires ReadScope or AdminScope.
+func (c *Client) Entries(ctx context.Context, opts ...EntriesOption) *EntryIterator {
+	it := &EntryIterator{
+		ctx:    ctx,
+		client: c.lClient,
+		req:    listLogEntriesRequest(c.projectID, opts),
+	}
+	it.pageInfo, it.nextFunc = iterator.NewPageInfo(
+		it.fetch,
+		func() int { return len(it.items) },
+		func() interface{} { b := it.items; it.items = nil; return b })
+	return it
+}
+
+func listLogEntriesRequest(projectID string, opts []EntriesOption) *logpb.ListLogEntriesRequest {
+	req := &logpb.ListLogEntriesRequest{
+		ProjectIds: []string{projectID},
+	}
+	for _, opt := range opts {
+		opt.set(req)
+	}
+	return req
+}
+
+// An EntryIterator iterates over log entries.
+type EntryIterator struct {
+	ctx      context.Context
+	client   *vkit.Client
+	pageInfo *iterator.PageInfo
+	nextFunc func() error
+	req      *logpb.ListLogEntriesRequest
+	items    []*Entry
+}
+
+// PageInfo supports pagination. See the google.golang.org/api/iterator package for details.
+func (it *EntryIterator) PageInfo() *iterator.PageInfo { return it.pageInfo }
+
+// Next returns the next result. Its second return value is iterator.Done if there are
+// no more results. Once Next returns Done, all subsequent calls will return
+// Done.
+func (it *EntryIterator) Next() (*Entry, error) {
+	if err := it.nextFunc(); err != nil {
+		return nil, err
+	}
+	item := it.items[0]
+	it.items = it.items[1:]
+	return item, nil
+}
+
+func (it *EntryIterator) fetch(pageSize int, pageToken string) (string, error) {
+	// TODO(jba): Do this a nicer way if the generated code supports one.
+	// TODO(jba): If the above TODO can't be done, find a way to pass metadata in the call.
+	client := logpb.NewLoggingServiceV2Client(it.client.Connection())
+	var res *logpb.ListLogEntriesResponse
+	err := gax.Invoke(it.ctx, func(ctx context.Context) error {
+		it.req.PageSize = trunc32(pageSize)
+		it.req.PageToken = pageToken
+		var err error
+		res, err = client.ListLogEntries(ctx, it.req)
+		return err
+	}, it.client.CallOptions.ListLogEntries...)
+	if err != nil {
+		return "", err
+	}
+	for _, ep := range res.Entries {
+		e, err := fromLogEntry(ep)
+		if err != nil {
+			return "", err
+		}
+		it.items = append(it.items, e)
+	}
+	return res.NextPageToken, nil
+}
 
 func trunc32(i int) int32 {
 	if i > math.MaxInt32 {
@@ -670,4 +861,48 @@ func toLogEntry(e Entry) (*logpb.LogEntry, error) {
 		ent.Payload = &logpb.LogEntry_JsonPayload{s}
 	}
 	return ent, nil
+}
+
+var slashUnescaper = strings.NewReplacer("%2F", "/", "%2f", "/")
+
+func fromLogEntry(le *logpb.LogEntry) (*Entry, error) {
+	time, err := ptypes.Timestamp(le.Timestamp)
+	if err != nil {
+		return nil, err
+	}
+	var payload interface{}
+	switch x := le.Payload.(type) {
+	case *logpb.LogEntry_TextPayload:
+		payload = x.TextPayload
+
+	case *logpb.LogEntry_ProtoPayload:
+		var d ptypes.DynamicAny
+		if err := ptypes.UnmarshalAny(x.ProtoPayload, &d); err != nil {
+			return nil, fmt.Errorf("logging: unmarshalling proto payload: %v", err)
+		}
+		payload = d.Message
+
+	case *logpb.LogEntry_JsonPayload:
+		// Leave this as a Struct.
+		// TODO(jba): convert to map[string]interface{}?
+		payload = x.JsonPayload
+
+	default:
+		return nil, fmt.Errorf("logging: unknown payload type: %T", le.Payload)
+	}
+	hr, err := toHTTPRequest(le.HttpRequest)
+	if err != nil {
+		return nil, err
+	}
+	return &Entry{
+		Timestamp:   time,
+		Severity:    Severity(le.Severity),
+		Payload:     payload,
+		Labels:      le.Labels,
+		InsertID:    le.InsertId,
+		HTTPRequest: hr,
+		Operation:   le.Operation,
+		LogName:     slashUnescaper.Replace(le.LogName),
+		Resource:    le.Resource,
+	}, nil
 }

@@ -5,7 +5,6 @@ description = "Describes the scope and access fields used for registry authoriza
 keywords = ["registry, on-prem, images, tags, repository, distribution, advanced, access, scope"]
 [menu.main]
 parent="smn_registry_ref"
-weight=103
 +++
 <![end-metadata]-->
 
@@ -57,7 +56,7 @@ it.
 The resource name represent the name which identifies a resource for a resource
 provider. A resource is identified by this name and the provided resource type.
 An example of a resource name would be the name component of an image tag, such
-as "samalba/myapp" or "hostname/samalba/myapp".
+as "samalba/myapp".
 
 ### Resource Actions
 
@@ -84,24 +83,16 @@ scopes.
 scope                   := resourcescope [ ' ' resourcescope ]*
 resourcescope           := resourcetype  ":" resourcename  ":" action [ ',' action ]*
 resourcetype            := /[a-z]*/
-resourcename            := [ hostname '/' ] component [ '/' component ]*
-hostname                := hostcomponent ['.' hostcomponent]* [':' port-number]
-hostcomponent           := /([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9-]*[a-zA-Z0-9])/
-port-number             := /[0-9]+/
+resourcename            := component [ '/' component ]*
 action                  := /[a-z]*/
 component               := alpha-numeric [ separator alpha-numeric ]*
 alpha-numeric           := /[a-z0-9]+/
 separator               := /[_.]|__|[-]*/
 ```
 Full reference grammar is defined
-[here](https://godoc.org/github.com/docker/distribution/reference). Currently
-the scope name grammar is a subset of the reference grammar.
-
-> **NOTE:** that the `resourcename` may contain one `:` due to a possible port
-> number in the hostname component of the `resourcename`, so a naive
-> implementation that interprets the first three `:`-delimited tokens of a
-> `scope` to be the `resourcetype`, `resourcename`, and a list of `action`
-> would be insufficient.
+(here)[https://godoc.org/github.com/docker/distribution/reference]. Currently
+the scope name grammar is a subset of the reference grammar without support
+for hostnames.
 
 ## Resource Provider Use
 

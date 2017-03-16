@@ -24,11 +24,7 @@ func (*wireFormat) parseInterfaceMessage(_ RIBType, b []byte) (Message, error) {
 		Addrs:   make([]Addr, sysRTAX_MAX),
 		raw:     b[:l],
 	}
-	ll := int(nativeEndian.Uint16(b[4:6]))
-	if len(b) < ll {
-		return nil, errInvalidMessage
-	}
-	a, err := parseLinkAddr(b[ll:])
+	a, err := parseLinkAddr(b[int(nativeEndian.Uint16(b[4:6])):])
 	if err != nil {
 		return nil, err
 	}
@@ -46,9 +42,6 @@ func (*wireFormat) parseInterfaceAddrMessage(_ RIBType, b []byte) (Message, erro
 		return nil, errInvalidMessage
 	}
 	bodyOff := int(nativeEndian.Uint16(b[4:6]))
-	if len(b) < bodyOff {
-		return nil, errInvalidMessage
-	}
 	m := &InterfaceAddrMessage{
 		Version: int(b[2]),
 		Type:    int(b[3]),

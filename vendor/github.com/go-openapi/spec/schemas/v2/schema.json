@@ -40,19 +40,11 @@
     },
     "consumes": {
       "description": "A list of MIME types accepted by the API.",
-      "allOf": [
-        {
-          "$ref": "#/definitions/mediaTypeList"
-        }
-      ]
+      "$ref": "#/definitions/mediaTypeList"
     },
     "produces": {
       "description": "A list of MIME types the API can produce.",
-      "allOf": [
-        {
-          "$ref": "#/definitions/mediaTypeList"
-        }
-      ]
+      "$ref": "#/definitions/mediaTypeList"
     },
     "paths": {
       "$ref": "#/definitions/paths"
@@ -271,19 +263,11 @@
         },
         "produces": {
           "description": "A list of MIME types the API can produce.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/mediaTypeList"
-            }
-          ]
+          "$ref": "#/definitions/mediaTypeList"
         },
         "consumes": {
           "description": "A list of MIME types the API can consume.",
-          "allOf": [
-            {
-              "$ref": "#/definitions/mediaTypeList"
-            }
-          ]
+          "$ref": "#/definitions/mediaTypeList"
         },
         "parameters": {
           "$ref": "#/definitions/parametersList"

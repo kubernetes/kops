@@ -234,27 +234,24 @@ func (r *runner) run(config *specs.Process) (int, error) {
 	if !r.create {
 		startFn = r.container.Run
 	}
+	defer tty.Close()
 	if err := startFn(process); err != nil {
 		r.destroy()
-		tty.Close()
 		return -1, err
 	}
 	if err := tty.ClosePostStart(); err != nil {
 		r.terminate(process)
 		r.destroy()
-		tty.Close()
 		return -1, err
 	}
 	if r.pidFile != "" {
 		if err := createPidFile(r.pidFile, process); err != nil {
 			r.terminate(process)
 			r.destroy()
-			tty.Close()
 			return -1, err
 		}
 	}
 	if r.detach || r.create {
-		tty.Close()
 		return 0, nil
 	}
 	status, err := handler.forward(process)
@@ -262,7 +259,6 @@ func (r *runner) run(config *specs.Process) (int, error) {
 		r.terminate(process)
 	}
 	r.destroy()
-	tty.Close()
 	return status, err
 }
 

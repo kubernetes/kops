@@ -48,9 +48,8 @@ func (c *MarketplaceCommerceAnalytics) GenerateDataSetRequest(input *GenerateDat
 		input = &GenerateDataSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GenerateDataSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -123,9 +122,8 @@ func (c *MarketplaceCommerceAnalytics) StartSupportDataExportRequest(input *Star
 		input = &StartSupportDataExportInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartSupportDataExportOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -209,6 +207,8 @@ type GenerateDataSetInput struct {
 	// available from 2012-04-19 until 2015-01-25. After 2015-01-25, this data set
 	// was split into three data sets: disbursed_amount_by_product, disbursed_amount_by_age_of_uncollected_funds,
 	// and disbursed_amount_by_age_of_disbursed_funds.
+	// disbursed_amount_by_instance_hours - Available every 30 days by 5:00 PM Pacific
+	// Time since 2012-09-04.
 	// disbursed_amount_by_customer_geo - Available every 30 days by 5:00 PM Pacific
 	// Time since 2012-04-19.
 	// disbursed_amount_by_age_of_uncollected_funds - Available every 30 days by
@@ -584,6 +584,9 @@ const (
 
 	// DataSetTypeDisbursedAmountByProductWithUncollectedFunds is a DataSetType enum value
 	DataSetTypeDisbursedAmountByProductWithUncollectedFunds = "disbursed_amount_by_product_with_uncollected_funds"
+
+	// DataSetTypeDisbursedAmountByInstanceHours is a DataSetType enum value
+	DataSetTypeDisbursedAmountByInstanceHours = "disbursed_amount_by_instance_hours"
 
 	// DataSetTypeDisbursedAmountByCustomerGeo is a DataSetType enum value
 	DataSetTypeDisbursedAmountByCustomerGeo = "disbursed_amount_by_customer_geo"

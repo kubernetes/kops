@@ -38,11 +38,7 @@ versions.
    Show image digests. The default is *false*.
 
 **-f**, **--filter**=[]
-   Filters the output based on these conditions:
-   - dangling=(true|false) - finds unused images.
-   - label=<key> or label=<key>=<value>
-   - before=(<image-name>[:tag]|<image-id>|<image@digest>)
-   - since=(<image-name>[:tag]|<image-id>|<image@digest>)
+   Filters the output. The dangling=true filter finds unused images. While label=com.foo=amd64 filters for images with a com.foo value of amd64. The label=com.foo filter finds images with the label com.foo of any value.
 
 **--format**="*TEMPLATE*"
    Pretty-print containers using a Go template.

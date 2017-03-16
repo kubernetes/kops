@@ -21,10 +21,9 @@ limitations under the License.
 package v1alpha1
 
 import (
+	conversion "k8s.io/apimachinery/pkg/conversion"
+	runtime "k8s.io/apimachinery/pkg/runtime"
 	kops "k8s.io/kops/pkg/apis/kops"
-	api "k8s.io/kubernetes/pkg/api"
-	conversion "k8s.io/kubernetes/pkg/conversion"
-	runtime "k8s.io/kubernetes/pkg/runtime"
 )
 
 func init() {
@@ -245,9 +244,6 @@ func Convert_kops_CloudConfiguration_To_v1alpha1_CloudConfiguration(in *kops.Clo
 }
 
 func autoConvert_v1alpha1_Cluster_To_kops_Cluster(in *Cluster, out *kops.Cluster, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -263,9 +259,6 @@ func Convert_v1alpha1_Cluster_To_kops_Cluster(in *Cluster, out *kops.Cluster, s 
 }
 
 func autoConvert_kops_Cluster_To_v1alpha1_Cluster(in *kops.Cluster, out *Cluster, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -281,9 +274,6 @@ func Convert_kops_Cluster_To_v1alpha1_Cluster(in *kops.Cluster, out *Cluster, s 
 }
 
 func autoConvert_v1alpha1_ClusterList_To_kops_ClusterList(in *ClusterList, out *kops.ClusterList, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
@@ -304,9 +294,6 @@ func Convert_v1alpha1_ClusterList_To_kops_ClusterList(in *ClusterList, out *kops
 }
 
 func autoConvert_kops_ClusterList_To_v1alpha1_ClusterList(in *kops.ClusterList, out *ClusterList, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
@@ -767,9 +754,6 @@ func Convert_kops_ExternalNetworkingSpec_To_v1alpha1_ExternalNetworkingSpec(in *
 }
 
 func autoConvert_v1alpha1_Federation_To_kops_Federation(in *Federation, out *kops.Federation, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -785,9 +769,6 @@ func Convert_v1alpha1_Federation_To_kops_Federation(in *Federation, out *kops.Fe
 }
 
 func autoConvert_kops_Federation_To_v1alpha1_Federation(in *kops.Federation, out *Federation, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -803,9 +784,6 @@ func Convert_kops_Federation_To_v1alpha1_Federation(in *kops.Federation, out *Fe
 }
 
 func autoConvert_v1alpha1_FederationList_To_kops_FederationList(in *FederationList, out *kops.FederationList, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
@@ -826,9 +804,6 @@ func Convert_v1alpha1_FederationList_To_kops_FederationList(in *FederationList, 
 }
 
 func autoConvert_kops_FederationList_To_v1alpha1_FederationList(in *kops.FederationList, out *FederationList, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
@@ -887,9 +862,6 @@ func Convert_kops_FlannelNetworkingSpec_To_v1alpha1_FlannelNetworkingSpec(in *ko
 }
 
 func autoConvert_v1alpha1_InstanceGroup_To_kops_InstanceGroup(in *InstanceGroup, out *kops.InstanceGroup, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -905,9 +877,6 @@ func Convert_v1alpha1_InstanceGroup_To_kops_InstanceGroup(in *InstanceGroup, out
 }
 
 func autoConvert_kops_InstanceGroup_To_v1alpha1_InstanceGroup(in *kops.InstanceGroup, out *InstanceGroup, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	// TODO: Inefficient conversion - can we improve it?
 	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
 		return err
@@ -923,9 +892,6 @@ func Convert_kops_InstanceGroup_To_v1alpha1_InstanceGroup(in *kops.InstanceGroup
 }
 
 func autoConvert_v1alpha1_InstanceGroupList_To_kops_InstanceGroupList(in *InstanceGroupList, out *kops.InstanceGroupList, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items
@@ -946,9 +912,6 @@ func Convert_v1alpha1_InstanceGroupList_To_kops_InstanceGroupList(in *InstanceGr
 }
 
 func autoConvert_kops_InstanceGroupList_To_v1alpha1_InstanceGroupList(in *kops.InstanceGroupList, out *InstanceGroupList, s conversion.Scope) error {
-	if err := api.Convert_v1_TypeMeta_To_v1_TypeMeta(&in.TypeMeta, &out.TypeMeta, s); err != nil {
-		return err
-	}
 	out.ListMeta = in.ListMeta
 	if in.Items != nil {
 		in, out := &in.Items, &out.Items

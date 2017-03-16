@@ -441,3 +441,32 @@ func ExampleRetryableAuthMethod(t *testing.T) {
 		t.Fatalf("unable to dial remote side: %s", err)
 	}
 }
+
+// Test if username is received on server side when NoClientAuth is used
+func TestClientAuthNone(t *testing.T) {
+	user := "testuser"
+	serverConfig := &ServerConfig{
+		NoClientAuth: true,
+	}
+	serverConfig.AddHostKey(testSigners["rsa"])
+
+	clientConfig := &ClientConfig{
+		User: user,
+	}
+
+	c1, c2, err := netPipe()
+	if err != nil {
+		t.Fatalf("netPipe: %v", err)
+	}
+	defer c1.Close()
+	defer c2.Close()
+
+	go NewClientConn(c2, "", clientConfig)
+	serverConn, err := newServer(c1, serverConfig)
+	if err != nil {
+		t.Fatalf("newServer: %v", err)
+	}
+	if serverConn.User() != user {
+		t.Fatalf("server: got %q, want %q", serverConn.User(), user)
+	}
+}
