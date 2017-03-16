@@ -18,8 +18,13 @@ package model
 
 import (
 	"fmt"
+
+	"regexp"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
 
@@ -96,24 +101,57 @@ func (b *KopsModelContext) NameForDNSZone() string {
 	return name
 }
 
-func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
+func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) (string, error) {
+	hasAuthProfile := false
+	if b.Cluster.Spec.AuthProfile != nil {
+		hasAuthProfile = true
+	}
+
 	switch role {
 	case kops.InstanceGroupRoleMaster:
-		return "masters." + b.ClusterName()
+		if hasAuthProfile && featureflag.CustomAuthProfileSupport.Enabled() {
+			return findCustomAuthNameFromArn(b.Cluster.Spec.AuthProfile.Master)
+		}
+		return "masters." + b.ClusterName(), nil
 	case kops.InstanceGroupRoleBastion:
-		return "bastions." + b.ClusterName()
+		if hasAuthProfile && featureflag.CustomAuthProfileSupport.Enabled() {
+			return findCustomAuthNameFromArn(b.Cluster.Spec.AuthProfile.Bastion)
+		}
+		return "bastions." + b.ClusterName(), nil
 	case kops.InstanceGroupRoleNode:
-		return "nodes." + b.ClusterName()
+		if hasAuthProfile && featureflag.CustomAuthProfileSupport.Enabled() {
+			return findCustomAuthNameFromArn(b.Cluster.Spec.AuthProfile.Node)
+		}
+		return "nodes." + b.ClusterName(), nil
 
 	default:
-		glog.Fatalf("unknown InstanceGroup Role: %q", role)
-		return ""
+		return "", fmt.Errorf("unknown InstanceGroup Role: %q", role)
 	}
 }
 
-func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) *awstasks.IAMInstanceProfile {
-	name := b.IAMName(ig.Spec.Role)
-	return &awstasks.IAMInstanceProfile{Name: &name}
+var RoleNamRegExp = regexp.MustCompile(`([^/]+$)`)
+
+// findCustomAuthNameFromArn parses the name of a instance profile from the arn
+func findCustomAuthNameFromArn(arn *string) (string, error) {
+	a := fi.StringValue(arn)
+	if a == "" {
+		return "", fmt.Errorf("unable to parse role arn as it is not set")
+	}
+	rs := RoleNamRegExp.FindStringSubmatch(a)
+	if len(rs) >= 2 {
+		return rs[1], nil
+	}
+
+	return "", fmt.Errorf("unable to parse role arn %q", arn)
+}
+
+func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) (*awstasks.IAMInstanceProfile, error) {
+
+	name, err := b.IAMName(ig.Spec.Role)
+	if err != nil {
+		return nil, err
+	}
+	return &awstasks.IAMInstanceProfile{Name: &name}, nil
 }
 
 // SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint.
