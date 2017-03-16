@@ -10,12 +10,9 @@ parent = "smn_cli"
 
 # restart
 
-```markdown
-Usage:  docker restart [OPTIONS] CONTAINER [CONTAINER...]
+    Usage: docker restart [OPTIONS] CONTAINER [CONTAINER...]
 
-Restart a container
+    Restart a container
 
-Options:
-      --help       Print usage
-  -t, --time int   Seconds to wait for stop before killing the container (default 10)
-```
+      --help             Print usage
+      -t, --time=10      Seconds to wait for stop before killing the container

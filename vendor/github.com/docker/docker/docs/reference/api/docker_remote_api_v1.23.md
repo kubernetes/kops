@@ -15,7 +15,7 @@ weight=-4
 
  - The Remote API has replaced `rcli`.
  - The daemon listens on `unix:///var/run/docker.sock` but you can
-   [Bind Docker to another host/port or a Unix socket](../commandline/dockerd.md#bind-docker-to-another-host-port-or-a-unix-socket).
+   [Bind Docker to another host/port or a Unix socket](../../quickstart.md#bind-docker-to-another-host-port-or-a-unix-socket).
  - The API tends to be REST. However, for some complex commands, like `attach`
    or `pull`, the HTTP connection is hijacked to transport `stdout`,
    `stdin` and `stderr`.
@@ -296,8 +296,6 @@ Create a container
              "MemorySwappiness": 60,
              "OomKillDisable": false,
              "OomScoreAdj": 500,
-             "PidMode": "",
-             "PidsLimit": -1,
              "PortBindings": { "22/tcp": [{ "HostPort": "11022" }] },
              "PublishAllPorts": false,
              "Privileged": false,
@@ -350,6 +348,32 @@ Json Parameters:
 -   **Domainname** - A string value containing the domain name to use
       for the container.
 -   **User** - A string value specifying the user inside the container.
+-   **Memory** - Memory limit in bytes.
+-   **MemorySwap** - Total memory limit (memory + swap); set `-1` to enable unlimited swap.
+      You must use this with `memory` and make the swap value larger than `memory`.
+-   **MemoryReservation** - Memory soft limit in bytes.
+-   **KernelMemory** - Kernel memory limit in bytes.
+-   **CpuShares** - An integer value containing the container's CPU Shares
+      (ie. the relative weight vs other containers).
+-   **CpuPeriod** - The length of a CPU period in microseconds.
+-   **CpuQuota** - Microseconds of CPU time that the container can get in a CPU period.
+-   **Cpuset** - Deprecated please don't use. Use `CpusetCpus` instead.
+-   **CpusetCpus** - String value containing the `cgroups CpusetCpus` to use.
+-   **CpusetMems** - Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only effective on NUMA systems.
+-   **BlkioWeight** - Block IO weight (relative weight) accepts a weight value between 10 and 1000.
+-   **BlkioWeightDevice** - Block IO weight (relative device weight) in the form of:        `"BlkioWeightDevice": [{"Path": "device_path", "Weight": weight}]`
+-   **BlkioDeviceReadBps** - Limit read rate (bytes per second) from a device in the form of:	`"BlkioDeviceReadBps": [{"Path": "device_path", "Rate": rate}]`, for example:
+	`"BlkioDeviceReadBps": [{"Path": "/dev/sda", "Rate": "1024"}]"`
+-   **BlkioDeviceWriteBps** - Limit write rate (bytes per second) to a device in the form of:	`"BlkioDeviceWriteBps": [{"Path": "device_path", "Rate": rate}]`, for example:
+	`"BlkioDeviceWriteBps": [{"Path": "/dev/sda", "Rate": "1024"}]"`
+-   **BlkioDeviceReadIOps** - Limit read rate (IO per second) from a device in the form of:	`"BlkioDeviceReadIOps": [{"Path": "device_path", "Rate": rate}]`, for example:
+	`"BlkioDeviceReadIOps": [{"Path": "/dev/sda", "Rate": "1000"}]`
+-   **BlkioDeviceWiiteIOps** - Limit write rate (IO per second) to a device in the form of:	`"BlkioDeviceWriteIOps": [{"Path": "device_path", "Rate": rate}]`, for example:
+	`"BlkioDeviceWriteIOps": [{"Path": "/dev/sda", "Rate": "1000"}]`
+-   **MemorySwappiness** - Tune a container's memory swappiness behavior. Accepts an integer between 0 and 100.
+-   **OomKillDisable** - Boolean value, whether to disable OOM Killer for the container or not.
+-   **OomScoreAdj** - An integer value containing the score given to the container in order to tune OOM killer preferences.
+-   **PidsLimit** - Tune a container's pids limit. Set -1 for unlimited.
 -   **AttachStdin** - Boolean value, attaches to `stdin`.
 -   **AttachStdout** - Boolean value, attaches to `stdout`.
 -   **AttachStderr** - Boolean value, attaches to `stderr`.
@@ -379,34 +403,6 @@ Json Parameters:
            + `volume_name:container_path:ro` to make the bind mount read-only inside the container.
     -   **Links** - A list of links for the container. Each link entry should be
           in the form of `container_name:alias`.
-    -   **Memory** - Memory limit in bytes.
-    -   **MemorySwap** - Total memory limit (memory + swap); set `-1` to enable unlimited swap.
-          You must use this with `memory` and make the swap value larger than `memory`.
-    -   **MemoryReservation** - Memory soft limit in bytes.
-    -   **KernelMemory** - Kernel memory limit in bytes.
-    -   **CpuShares** - An integer value containing the container's CPU Shares
-          (ie. the relative weight vs other containers).
-    -   **CpuPeriod** - The length of a CPU period in microseconds.
-    -   **CpuQuota** - Microseconds of CPU time that the container can get in a CPU period.
-    -   **CpusetCpus** - String value containing the `cgroups CpusetCpus` to use.
-    -   **CpusetMems** - Memory nodes (MEMs) in which to allow execution (0-3, 0,1). Only effective on NUMA systems.
-    -   **BlkioWeight** - Block IO weight (relative weight) accepts a weight value between 10 and 1000.
-    -   **BlkioWeightDevice** - Block IO weight (relative device weight) in the form of:        `"BlkioWeightDevice": [{"Path": "device_path", "Weight": weight}]`
-    -   **BlkioDeviceReadBps** - Limit read rate (bytes per second) from a device in the form of:	`"BlkioDeviceReadBps": [{"Path": "device_path", "Rate": rate}]`, for example:
-        `"BlkioDeviceReadBps": [{"Path": "/dev/sda", "Rate": "1024"}]"`
-    -   **BlkioDeviceWriteBps** - Limit write rate (bytes per second) to a device in the form of:	`"BlkioDeviceWriteBps": [{"Path": "device_path", "Rate": rate}]`, for example:
-        `"BlkioDeviceWriteBps": [{"Path": "/dev/sda", "Rate": "1024"}]"`
-    -   **BlkioDeviceReadIOps** - Limit read rate (IO per second) from a device in the form of:	`"BlkioDeviceReadIOps": [{"Path": "device_path", "Rate": rate}]`, for example:
-        `"BlkioDeviceReadIOps": [{"Path": "/dev/sda", "Rate": "1000"}]`
-    -   **BlkioDeviceWiiteIOps** - Limit write rate (IO per second) to a device in the form of:	`"BlkioDeviceWriteIOps": [{"Path": "device_path", "Rate": rate}]`, for example:
-        `"BlkioDeviceWriteIOps": [{"Path": "/dev/sda", "Rate": "1000"}]`
-    -   **MemorySwappiness** - Tune a container's memory swappiness behavior. Accepts an integer between 0 and 100.
-    -   **OomKillDisable** - Boolean value, whether to disable OOM Killer for the container or not.
-    -   **OomScoreAdj** - An integer value containing the score given to the container in order to tune OOM killer preferences.
-    -   **PidMode** - Set the PID (Process) Namespace mode for the container;
-          `"container:<name|id>"`: joins another container's PID namespace
-          `"host"`: use the host's PID namespace inside the container
-    -   **PidsLimit** - Tune a container's pids limit. Set -1 for unlimited.
     -   **PortBindings** - A map of exposed container ports and the host port they
           should map to. A JSON object in the form
           `{ <port>/<protocol>: [{ "HostPort": "<port>" }] }`
@@ -465,10 +461,8 @@ Query Parameters:
 Status Codes:
 
 -   **201** – no error
--   **400** – bad parameter
 -   **404** – no such container
 -   **406** – impossible to attach (container not running)
--   **409** – conflict
 -   **500** – server error
 
 ### Inspect a container
@@ -530,6 +524,7 @@ Return low-level information on the container `id`
 		},
 		"Created": "2015-01-06T15:47:31.485331387Z",
 		"Driver": "devicemapper",
+		"ExecDriver": "native-0.2",
 		"ExecIDs": null,
 		"HostConfig": {
 			"Binds": null,
@@ -561,7 +556,6 @@ Return low-level information on the container `id`
 			"OomKillDisable": false,
 			"OomScoreAdj": 500,
 			"NetworkMode": "bridge",
-			"PidMode": "",
 			"PortBindings": {},
 			"Privileged": false,
 			"ReadonlyRootfs": false,
@@ -1382,7 +1376,6 @@ Status Codes:
 -   **204** – no error
 -   **400** – bad parameter
 -   **404** – no such container
--   **409** – conflict
 -   **500** – server error
 
 ### Copy files or folders from a container
@@ -1426,7 +1419,7 @@ following section.
 
 `GET /containers/(id or name)/archive`
 
-Get a tar archive of a resource in the filesystem of container `id`.
+Get an tar archive of a resource in the filesystem of container `id`.
 
 Query Parameters:
 
@@ -1653,7 +1646,7 @@ the path to the alternate build instructions file to use.
 
 The archive may include any number of other files,
 which are accessible in the build context (See the [*ADD build
-command*](../../reference/builder.md#add)).
+command*](../../reference/builder.md#dockerbuilder)).
 
 The build is canceled if the client drops the connection by quitting
 or being killed.
@@ -1704,14 +1697,14 @@ Query Parameters:
                 }
             }
 
-    This object maps the hostname of a registry to an object containing the
-    "username" and "password" for that registry. Multiple registries may
-    be specified as the build may be based on an image requiring
-    authentication to pull from any arbitrary registry. Only the registry
-    domain name (and port if not the default "443") are required. However
-    (for legacy reasons) the "official" Docker, Inc. hosted registry must
-    be specified with both a "https://" prefix and a "/v1/" suffix even
-    though Docker will prefer to use the v2 registry API.
+        This object maps the hostname of a registry to an object containing the
+        "username" and "password" for that registry. Multiple registries may
+        be specified as the build may be based on an image requiring
+        authentication to pull from any arbitrary registry. Only the registry
+        domain name (and port if not the default "443") are required. However
+        (for legacy reasons) the "official" Docker, Inc. hosted registry must
+        be specified with both a "https://" prefix and a "/v1/" suffix even
+        though Docker will prefer to use the v2 registry API.
 
 Status Codes:
 
@@ -1764,7 +1757,7 @@ Query Parameters:
     {
             "username": "jdoe",
             "password": "secret",
-            "email": "jdoe@acme.com"
+            "email": "jdoe@acme.com",
     }
         ```
 
@@ -2411,158 +2404,49 @@ Docker networks report the following events:
 
     HTTP/1.1 200 OK
     Content-Type: application/json
-    Server: Docker/1.11.0 (linux)
-    Date: Fri, 29 Apr 2016 15:18:06 GMT
-    Transfer-Encoding: chunked
 
-    {
-      "status": "pull",
-      "id": "alpine:latest",
-      "Type": "image",
-      "Action": "pull",
-      "Actor": {
-        "ID": "alpine:latest",
-        "Attributes": {
-          "name": "alpine"
-        }
-      },
-      "time": 1461943101,
-      "timeNano": 1461943101301854122
-    }
-    {
-      "status": "create",
-      "id": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-      "from": "alpine",
-      "Type": "container",
-      "Action": "create",
-      "Actor": {
-        "ID": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-        "Attributes": {
-          "com.example.some-label": "some-label-value",
-          "image": "alpine",
-          "name": "my-container"
-        }
-      },
-      "time": 1461943101,
-      "timeNano": 1461943101381709551
-    }
-    {
-      "status": "attach",
-      "id": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-      "from": "alpine",
-      "Type": "container",
-      "Action": "attach",
-      "Actor": {
-        "ID": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-        "Attributes": {
-          "com.example.some-label": "some-label-value",
-          "image": "alpine",
-          "name": "my-container"
-        }
-      },
-      "time": 1461943101,
-      "timeNano": 1461943101383858412
-    }
-    {
-      "Type": "network",
-      "Action": "connect",
-      "Actor": {
-        "ID": "7dc8ac97d5d29ef6c31b6052f3938c1e8f2749abbd17d1bd1febf2608db1b474",
-        "Attributes": {
-          "container": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-          "name": "bridge",
-          "type": "bridge"
-        }
-      },
-      "time": 1461943101,
-      "timeNano": 1461943101394865557
-    }
-    {
-      "status": "start",
-      "id": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-      "from": "alpine",
-      "Type": "container",
-      "Action": "start",
-      "Actor": {
-        "ID": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-        "Attributes": {
-          "com.example.some-label": "some-label-value",
-          "image": "alpine",
-          "name": "my-container"
-        }
-      },
-      "time": 1461943101,
-      "timeNano": 1461943101607533796
-    }
-    {
-      "status": "resize",
-      "id": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-      "from": "alpine",
-      "Type": "container",
-      "Action": "resize",
-      "Actor": {
-        "ID": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-        "Attributes": {
-          "com.example.some-label": "some-label-value",
-          "height": "46",
-          "image": "alpine",
-          "name": "my-container",
-          "width": "204"
-        }
-      },
-      "time": 1461943101,
-      "timeNano": 1461943101610269268
-    }
-    {
-      "status": "die",
-      "id": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-      "from": "alpine",
-      "Type": "container",
-      "Action": "die",
-      "Actor": {
-        "ID": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-        "Attributes": {
-          "com.example.some-label": "some-label-value",
-          "exitCode": "0",
-          "image": "alpine",
-          "name": "my-container"
-        }
-      },
-      "time": 1461943105,
-      "timeNano": 1461943105079144137
-    }
-    {
-      "Type": "network",
-      "Action": "disconnect",
-      "Actor": {
-        "ID": "7dc8ac97d5d29ef6c31b6052f3938c1e8f2749abbd17d1bd1febf2608db1b474",
-        "Attributes": {
-          "container": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-          "name": "bridge",
-          "type": "bridge"
-        }
-      },
-      "time": 1461943105,
-      "timeNano": 1461943105230860245
-    }
-    {
-      "status": "destroy",
-      "id": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-      "from": "alpine",
-      "Type": "container",
-      "Action": "destroy",
-      "Actor": {
-        "ID": "ede54ee1afda366ab42f824e8a5ffd195155d853ceaec74a927f249ea270c743",
-        "Attributes": {
-          "com.example.some-label": "some-label-value",
-          "image": "alpine",
-          "name": "my-container"
-        }
-      },
-      "time": 1461943105,
-      "timeNano": 1461943105338056026
-    }
-
+    [
+	    {
+		"action": "pull",
+		"type": "image",
+		"actor": {
+			"id": "busybox:latest",
+			"attributes": {}
+		}
+		"time": 1442421700,
+		"timeNano": 1442421700598988358
+	    },
+            {
+		"action": "create",
+		"type": "container",
+		"actor": {
+			"id": "5745704abe9caa5",
+			"attributes": {"image": "busybox"}
+		}
+		"time": 1442421716,
+		"timeNano": 1442421716853979870
+	    },
+            {
+		"action": "attach",
+		"type": "container",
+		"actor": {
+			"id": "5745704abe9caa5",
+			"attributes": {"image": "busybox"}
+		}
+		"time": 1442421716,
+		"timeNano": 1442421716894759198
+	    },
+            {
+		"action": "start",
+		"type": "container",
+		"actor": {
+			"id": "5745704abe9caa5",
+			"attributes": {"image": "busybox"}
+		}
+		"time": 1442421716,
+		"timeNano": 1442421716983607193
+	    }
+    ]
 
 Query Parameters:
 

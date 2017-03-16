@@ -115,9 +115,6 @@ func (c *AdminClient) DeleteBucket(ctx context.Context, bucketName string) error
 }
 
 // Client is a client for interacting with Google Cloud Storage.
-//
-// Clients should be reused instead of created as needed.
-// The methods of Client are safe for concurrent use by multiple goroutines.
 type Client struct {
 	hc  *http.Client
 	raw *raw.Service
@@ -146,8 +143,6 @@ func NewClient(ctx context.Context, opts ...option.ClientOption) (*Client, error
 }
 
 // Close closes the Client.
-//
-// Close need not be called at program exit.
 func (c *Client) Close() error {
 	c.hc = nil
 	return nil
@@ -156,8 +151,8 @@ func (c *Client) Close() error {
 // BucketHandle provides operations on a Google Cloud Storage bucket.
 // Use Client.Bucket to get a handle.
 type BucketHandle struct {
-	acl              ACLHandle
-	defaultObjectACL ACLHandle
+	acl              *ACLHandle
+	defaultObjectACL *ACLHandle
 
 	c    *Client
 	name string
@@ -166,19 +161,18 @@ type BucketHandle struct {
 // Bucket returns a BucketHandle, which provides operations on the named bucket.
 // This call does not perform any network operations.
 //
-// The supplied name must contain only lowercase letters, numbers, dashes,
-// underscores, and dots. The full specification for valid bucket names can be
-// found at:
+// name must contain only lowercase letters, numbers, dashes, underscores, and
+// dots. The full specification for valid bucket names can be found at:
 //   https://cloud.google.com/storage/docs/bucket-naming
 func (c *Client) Bucket(name string) *BucketHandle {
 	return &BucketHandle{
 		c:    c,
 		name: name,
-		acl: ACLHandle{
+		acl: &ACLHandle{
 			c:      c,
 			bucket: name,
 		},
-		defaultObjectACL: ACLHandle{
+		defaultObjectACL: &ACLHandle{
 			c:         c,
 			bucket:    name,
 			isDefault: true,
@@ -325,7 +319,7 @@ type ObjectHandle struct {
 	bucket string
 	object string
 
-	acl   ACLHandle
+	acl   *ACLHandle
 	conds []Condition
 }
 
@@ -333,7 +327,7 @@ type ObjectHandle struct {
 // This controls who can read and write this object.
 // This call does not perform any network operations.
 func (o *ObjectHandle) ACL() *ACLHandle {
-	return &o.acl
+	return o.acl
 }
 
 // WithConditions returns a copy of o using the provided conditions.
@@ -492,8 +486,6 @@ func (o *ObjectHandle) ComposeFrom(ctx context.Context, srcs []*ObjectHandle, at
 // NewReader creates a new Reader to read the contents of the
 // object.
 // ErrObjectNotExist will be returned if the object is not found.
-//
-// The caller must call Close on the returned Reader when done reading.
 func (o *ObjectHandle) NewReader(ctx context.Context) (*Reader, error) {
 	return o.NewRangeReader(ctx, 0, -1)
 }
@@ -553,8 +545,7 @@ func (o *ObjectHandle) NewRangeReader(ctx context.Context, offset, length int64)
 	clHeader := res.Header.Get("X-Goog-Stored-Content-Length")
 	cl, err := strconv.ParseInt(clHeader, 10, 64)
 	if err != nil {
-		res.Body.Close()
-		return nil, fmt.Errorf("storage: can't parse content length %q", clHeader)
+		return nil, fmt.Errorf("storage: can't parse content length %q: %v", clHeader, err)
 	}
 	remain := res.ContentLength
 	body := res.Body
@@ -576,7 +567,7 @@ var emptyBody = ioutil.NopCloser(strings.NewReader(""))
 // NewWriter returns a storage Writer that writes to the GCS object
 // associated with this ObjectHandle.
 //
-// A new object will be created unless an object with this name already exists.
+// A new object will be created if an object with this name already exists.
 // Otherwise any previous object with the same name will be replaced.
 // The object will not be available (and any previous object will remain)
 // until Close has been called.

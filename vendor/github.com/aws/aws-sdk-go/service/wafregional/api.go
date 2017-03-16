@@ -47,9 +47,8 @@ func (c *WAFRegional) AssociateWebACLRequest(input *AssociateWebACLInput) (req *
 		input = &AssociateWebACLInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AssociateWebACLOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -151,9 +150,8 @@ func (c *WAFRegional) CreateByteMatchSetRequest(input *waf.CreateByteMatchSetInp
 		input = &waf.CreateByteMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.CreateByteMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -282,9 +280,8 @@ func (c *WAFRegional) CreateIPSetRequest(input *waf.CreateIPSetInput) (req *requ
 		input = &waf.CreateIPSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.CreateIPSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -413,9 +410,8 @@ func (c *WAFRegional) CreateRuleRequest(input *waf.CreateRuleInput) (req *reques
 		input = &waf.CreateRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.CreateRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -554,9 +550,8 @@ func (c *WAFRegional) CreateSizeConstraintSetRequest(input *waf.CreateSizeConstr
 		input = &waf.CreateSizeConstraintSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.CreateSizeConstraintSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -686,9 +681,8 @@ func (c *WAFRegional) CreateSqlInjectionMatchSetRequest(input *waf.CreateSqlInje
 		input = &waf.CreateSqlInjectionMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.CreateSqlInjectionMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -814,9 +808,8 @@ func (c *WAFRegional) CreateWebACLRequest(input *waf.CreateWebACLInput) (req *re
 		input = &waf.CreateWebACLInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.CreateWebACLOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -954,9 +947,8 @@ func (c *WAFRegional) CreateXssMatchSetRequest(input *waf.CreateXssMatchSetInput
 		input = &waf.CreateXssMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.CreateXssMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1083,9 +1075,8 @@ func (c *WAFRegional) DeleteByteMatchSetRequest(input *waf.DeleteByteMatchSetInp
 		input = &waf.DeleteByteMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.DeleteByteMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1197,9 +1188,8 @@ func (c *WAFRegional) DeleteIPSetRequest(input *waf.DeleteIPSetInput) (req *requ
 		input = &waf.DeleteIPSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.DeleteIPSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1310,9 +1300,8 @@ func (c *WAFRegional) DeleteRuleRequest(input *waf.DeleteRuleInput) (req *reques
 		input = &waf.DeleteRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.DeleteRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1423,9 +1412,8 @@ func (c *WAFRegional) DeleteSizeConstraintSetRequest(input *waf.DeleteSizeConstr
 		input = &waf.DeleteSizeConstraintSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.DeleteSizeConstraintSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1537,9 +1525,8 @@ func (c *WAFRegional) DeleteSqlInjectionMatchSetRequest(input *waf.DeleteSqlInje
 		input = &waf.DeleteSqlInjectionMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.DeleteSqlInjectionMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1652,9 +1639,8 @@ func (c *WAFRegional) DeleteWebACLRequest(input *waf.DeleteWebACLInput) (req *re
 		input = &waf.DeleteWebACLInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.DeleteWebACLOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1762,9 +1748,8 @@ func (c *WAFRegional) DeleteXssMatchSetRequest(input *waf.DeleteXssMatchSetInput
 		input = &waf.DeleteXssMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.DeleteXssMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1876,9 +1861,8 @@ func (c *WAFRegional) DisassociateWebACLRequest(input *DisassociateWebACLInput) 
 		input = &DisassociateWebACLInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DisassociateWebACLOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1976,9 +1960,8 @@ func (c *WAFRegional) GetByteMatchSetRequest(input *waf.GetByteMatchSetInput) (r
 		input = &waf.GetByteMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.GetByteMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2050,9 +2033,8 @@ func (c *WAFRegional) GetChangeTokenRequest(input *waf.GetChangeTokenInput) (req
 		input = &waf.GetChangeTokenInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.GetChangeTokenOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2131,9 +2113,8 @@ func (c *WAFRegional) GetChangeTokenStatusRequest(input *waf.GetChangeTokenStatu
 		input = &waf.GetChangeTokenStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.GetChangeTokenStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2211,9 +2192,8 @@ func (c *WAFRegional) GetIPSetRequest(input *waf.GetIPSetInput) (req *request.Re
 		input = &waf.GetIPSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.GetIPSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2285,9 +2265,8 @@ func (c *WAFRegional) GetRuleRequest(input *waf.GetRuleInput) (req *request.Requ
 		input = &waf.GetRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.GetRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2360,9 +2339,8 @@ func (c *WAFRegional) GetSampledRequestsRequest(input *waf.GetSampledRequestsInp
 		input = &waf.GetSampledRequestsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.GetSampledRequestsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2440,9 +2418,8 @@ func (c *WAFRegional) GetSizeConstraintSetRequest(input *waf.GetSizeConstraintSe
 		input = &waf.GetSizeConstraintSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.GetSizeConstraintSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2514,9 +2491,8 @@ func (c *WAFRegional) GetSqlInjectionMatchSetRequest(input *waf.GetSqlInjectionM
 		input = &waf.GetSqlInjectionMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.GetSqlInjectionMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2588,9 +2564,8 @@ func (c *WAFRegional) GetWebACLRequest(input *waf.GetWebACLInput) (req *request.
 		input = &waf.GetWebACLInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.GetWebACLOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2662,9 +2637,8 @@ func (c *WAFRegional) GetWebACLForResourceRequest(input *GetWebACLForResourceInp
 		input = &GetWebACLForResourceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetWebACLForResourceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2766,9 +2740,8 @@ func (c *WAFRegional) GetXssMatchSetRequest(input *waf.GetXssMatchSetInput) (req
 		input = &waf.GetXssMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.GetXssMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2840,9 +2813,8 @@ func (c *WAFRegional) ListByteMatchSetsRequest(input *waf.ListByteMatchSetsInput
 		input = &waf.ListByteMatchSetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.ListByteMatchSetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2911,9 +2883,8 @@ func (c *WAFRegional) ListIPSetsRequest(input *waf.ListIPSetsInput) (req *reques
 		input = &waf.ListIPSetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.ListIPSetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2982,9 +2953,8 @@ func (c *WAFRegional) ListResourcesForWebACLRequest(input *ListResourcesForWebAC
 		input = &ListResourcesForWebACLInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListResourcesForWebACLOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3056,9 +3026,8 @@ func (c *WAFRegional) ListRulesRequest(input *waf.ListRulesInput) (req *request.
 		input = &waf.ListRulesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.ListRulesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3127,9 +3096,8 @@ func (c *WAFRegional) ListSizeConstraintSetsRequest(input *waf.ListSizeConstrain
 		input = &waf.ListSizeConstraintSetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.ListSizeConstraintSetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3198,9 +3166,8 @@ func (c *WAFRegional) ListSqlInjectionMatchSetsRequest(input *waf.ListSqlInjecti
 		input = &waf.ListSqlInjectionMatchSetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.ListSqlInjectionMatchSetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3269,9 +3236,8 @@ func (c *WAFRegional) ListWebACLsRequest(input *waf.ListWebACLsInput) (req *requ
 		input = &waf.ListWebACLsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.ListWebACLsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3340,9 +3306,8 @@ func (c *WAFRegional) ListXssMatchSetsRequest(input *waf.ListXssMatchSetsInput) 
 		input = &waf.ListXssMatchSetsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.ListXssMatchSetsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3411,9 +3376,8 @@ func (c *WAFRegional) UpdateByteMatchSetRequest(input *waf.UpdateByteMatchSetInp
 		input = &waf.UpdateByteMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.UpdateByteMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3594,9 +3558,8 @@ func (c *WAFRegional) UpdateIPSetRequest(input *waf.UpdateIPSetInput) (req *requ
 		input = &waf.UpdateIPSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.UpdateIPSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3797,9 +3760,8 @@ func (c *WAFRegional) UpdateRuleRequest(input *waf.UpdateRuleInput) (req *reques
 		input = &waf.UpdateRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.UpdateRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3984,9 +3946,8 @@ func (c *WAFRegional) UpdateSizeConstraintSetRequest(input *waf.UpdateSizeConstr
 		input = &waf.UpdateSizeConstraintSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.UpdateSizeConstraintSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4177,9 +4138,8 @@ func (c *WAFRegional) UpdateSqlInjectionMatchSetRequest(input *waf.UpdateSqlInje
 		input = &waf.UpdateSqlInjectionMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.UpdateSqlInjectionMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4355,9 +4315,8 @@ func (c *WAFRegional) UpdateWebACLRequest(input *waf.UpdateWebACLInput) (req *re
 		input = &waf.UpdateWebACLInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.UpdateWebACLOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4554,9 +4513,8 @@ func (c *WAFRegional) UpdateXssMatchSetRequest(input *waf.UpdateXssMatchSetInput
 		input = &waf.UpdateXssMatchSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &waf.UpdateXssMatchSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

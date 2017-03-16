@@ -39,7 +39,7 @@ Use NewImageFromReader to obtain an image from any io.Reader, such as an open fi
 
 	f, err := os.Open("path/to/image.jpg")
 	if err != nil { ... }
-	defer f.Close()
+    defer f.Close()
 	img, err := vision.NewImageFromReader(f)
 	if err != nil { ... }
 

@@ -26,7 +26,6 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	k8sapi "k8s.io/kubernetes/pkg/api"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 )
@@ -64,7 +63,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ReplaceOp
 	}
 
 	// Codecs provides access to encoding and decoding for the scheme
-	codecs := k8sapi.Codecs //serializer.NewCodecFactory(scheme)
+	codecs := kopsapi.Codecs //serializer.NewCodecFactory(scheme)
 
 	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 

@@ -49,11 +49,10 @@ func (c *IoT) AcceptCertificateTransferRequest(input *AcceptCertificateTransferI
 		input = &AcceptCertificateTransferInput{}
 	}
 
+	output = &AcceptCertificateTransferOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AcceptCertificateTransferOutput{}
-	req.Data = output
 	return
 }
 
@@ -137,11 +136,10 @@ func (c *IoT) AttachPrincipalPolicyRequest(input *AttachPrincipalPolicyInput) (r
 		input = &AttachPrincipalPolicyInput{}
 	}
 
+	output = &AttachPrincipalPolicyOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &AttachPrincipalPolicyOutput{}
-	req.Data = output
 	return
 }
 
@@ -221,9 +219,8 @@ func (c *IoT) AttachThingPrincipalRequest(input *AttachThingPrincipalInput) (req
 		input = &AttachThingPrincipalInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AttachThingPrincipalOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -299,11 +296,10 @@ func (c *IoT) CancelCertificateTransferRequest(input *CancelCertificateTransferI
 		input = &CancelCertificateTransferInput{}
 	}
 
+	output = &CancelCertificateTransferOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &CancelCertificateTransferOutput{}
-	req.Data = output
 	return
 }
 
@@ -392,9 +388,8 @@ func (c *IoT) CreateCertificateFromCsrRequest(input *CreateCertificateFromCsrInp
 		input = &CreateCertificateFromCsrInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateCertificateFromCsrOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -504,9 +499,8 @@ func (c *IoT) CreateKeysAndCertificateRequest(input *CreateKeysAndCertificateInp
 		input = &CreateKeysAndCertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateKeysAndCertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -583,9 +577,8 @@ func (c *IoT) CreatePolicyRequest(input *CreatePolicyInput) (req *request.Reques
 		input = &CreatePolicyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePolicyOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -668,9 +661,8 @@ func (c *IoT) CreatePolicyVersionRequest(input *CreatePolicyVersionInput) (req *
 		input = &CreatePolicyVersionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreatePolicyVersionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -759,9 +751,8 @@ func (c *IoT) CreateThingRequest(input *CreateThingInput) (req *request.Request,
 		input = &CreateThingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateThingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -840,9 +831,8 @@ func (c *IoT) CreateThingTypeRequest(input *CreateThingTypeInput) (req *request.
 		input = &CreateThingTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateThingTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -918,11 +908,10 @@ func (c *IoT) CreateTopicRuleRequest(input *CreateTopicRuleInput) (req *request.
 		input = &CreateTopicRuleInput{}
 	}
 
+	output = &CreateTopicRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &CreateTopicRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -997,9 +986,8 @@ func (c *IoT) DeleteCACertificateRequest(input *DeleteCACertificateInput) (req *
 		input = &DeleteCACertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteCACertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1078,11 +1066,10 @@ func (c *IoT) DeleteCertificateRequest(input *DeleteCertificateInput) (req *requ
 		input = &DeleteCertificateInput{}
 	}
 
+	output = &DeleteCertificateOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteCertificateOutput{}
-	req.Data = output
 	return
 }
 
@@ -1169,11 +1156,10 @@ func (c *IoT) DeletePolicyRequest(input *DeletePolicyInput) (req *request.Reques
 		input = &DeletePolicyInput{}
 	}
 
+	output = &DeletePolicyOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeletePolicyOutput{}
-	req.Data = output
 	return
 }
 
@@ -1262,11 +1248,10 @@ func (c *IoT) DeletePolicyVersionRequest(input *DeletePolicyVersionInput) (req *
 		input = &DeletePolicyVersionInput{}
 	}
 
+	output = &DeletePolicyVersionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeletePolicyVersionOutput{}
-	req.Data = output
 	return
 }
 
@@ -1348,9 +1333,8 @@ func (c *IoT) DeleteRegistrationCodeRequest(input *DeleteRegistrationCodeInput) 
 		input = &DeleteRegistrationCodeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteRegistrationCodeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1423,9 +1407,8 @@ func (c *IoT) DeleteThingRequest(input *DeleteThingInput) (req *request.Request,
 		input = &DeleteThingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteThingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1505,9 +1488,8 @@ func (c *IoT) DeleteThingTypeRequest(input *DeleteThingTypeInput) (req *request.
 		input = &DeleteThingTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteThingTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1587,11 +1569,10 @@ func (c *IoT) DeleteTopicRuleRequest(input *DeleteTopicRuleInput) (req *request.
 		input = &DeleteTopicRuleInput{}
 	}
 
+	output = &DeleteTopicRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DeleteTopicRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -1661,9 +1642,8 @@ func (c *IoT) DeprecateThingTypeRequest(input *DeprecateThingTypeInput) (req *re
 		input = &DeprecateThingTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeprecateThingTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1740,9 +1720,8 @@ func (c *IoT) DescribeCACertificateRequest(input *DescribeCACertificateInput) (r
 		input = &DescribeCACertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeCACertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1818,9 +1797,8 @@ func (c *IoT) DescribeCertificateRequest(input *DescribeCertificateInput) (req *
 		input = &DescribeCertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeCertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1896,9 +1874,8 @@ func (c *IoT) DescribeEndpointRequest(input *DescribeEndpointInput) (req *reques
 		input = &DescribeEndpointInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeEndpointOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1965,9 +1942,8 @@ func (c *IoT) DescribeThingRequest(input *DescribeThingInput) (req *request.Requ
 		input = &DescribeThingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeThingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2043,9 +2019,8 @@ func (c *IoT) DescribeThingTypeRequest(input *DescribeThingTypeInput) (req *requ
 		input = &DescribeThingTypeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeThingTypeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2121,11 +2096,10 @@ func (c *IoT) DetachPrincipalPolicyRequest(input *DetachPrincipalPolicyInput) (r
 		input = &DetachPrincipalPolicyInput{}
 	}
 
+	output = &DetachPrincipalPolicyOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DetachPrincipalPolicyOutput{}
-	req.Data = output
 	return
 }
 
@@ -2201,9 +2175,8 @@ func (c *IoT) DetachThingPrincipalRequest(input *DetachThingPrincipalInput) (req
 		input = &DetachThingPrincipalInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DetachThingPrincipalOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2279,11 +2252,10 @@ func (c *IoT) DisableTopicRuleRequest(input *DisableTopicRuleInput) (req *reques
 		input = &DisableTopicRuleInput{}
 	}
 
+	output = &DisableTopicRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &DisableTopicRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -2353,11 +2325,10 @@ func (c *IoT) EnableTopicRuleRequest(input *EnableTopicRuleInput) (req *request.
 		input = &EnableTopicRuleInput{}
 	}
 
+	output = &EnableTopicRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &EnableTopicRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -2427,9 +2398,8 @@ func (c *IoT) GetLoggingOptionsRequest(input *GetLoggingOptionsInput) (req *requ
 		input = &GetLoggingOptionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetLoggingOptionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2496,9 +2466,8 @@ func (c *IoT) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, out
 		input = &GetPolicyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetPolicyOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2575,9 +2544,8 @@ func (c *IoT) GetPolicyVersionRequest(input *GetPolicyVersionInput) (req *reques
 		input = &GetPolicyVersionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetPolicyVersionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2653,9 +2621,8 @@ func (c *IoT) GetRegistrationCodeRequest(input *GetRegistrationCodeInput) (req *
 		input = &GetRegistrationCodeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetRegistrationCodeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2728,9 +2695,8 @@ func (c *IoT) GetTopicRuleRequest(input *GetTopicRuleInput) (req *request.Reques
 		input = &GetTopicRuleInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetTopicRuleOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2800,9 +2766,8 @@ func (c *IoT) ListCACertificatesRequest(input *ListCACertificatesInput) (req *re
 		input = &ListCACertificatesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListCACertificatesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2878,9 +2843,8 @@ func (c *IoT) ListCertificatesRequest(input *ListCertificatesInput) (req *reques
 		input = &ListCertificatesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListCertificatesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2956,9 +2920,8 @@ func (c *IoT) ListCertificatesByCARequest(input *ListCertificatesByCAInput) (req
 		input = &ListCertificatesByCAInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListCertificatesByCAOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3031,9 +2994,8 @@ func (c *IoT) ListOutgoingCertificatesRequest(input *ListOutgoingCertificatesInp
 		input = &ListOutgoingCertificatesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListOutgoingCertificatesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3106,9 +3068,8 @@ func (c *IoT) ListPoliciesRequest(input *ListPoliciesInput) (req *request.Reques
 		input = &ListPoliciesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPoliciesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3181,9 +3142,8 @@ func (c *IoT) ListPolicyPrincipalsRequest(input *ListPolicyPrincipalsInput) (req
 		input = &ListPolicyPrincipalsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPolicyPrincipalsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3259,9 +3219,8 @@ func (c *IoT) ListPolicyVersionsRequest(input *ListPolicyVersionsInput) (req *re
 		input = &ListPolicyVersionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPolicyVersionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3337,9 +3296,8 @@ func (c *IoT) ListPrincipalPoliciesRequest(input *ListPrincipalPoliciesInput) (r
 		input = &ListPrincipalPoliciesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPrincipalPoliciesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3416,9 +3374,8 @@ func (c *IoT) ListPrincipalThingsRequest(input *ListPrincipalThingsInput) (req *
 		input = &ListPrincipalThingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListPrincipalThingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3494,9 +3451,8 @@ func (c *IoT) ListThingPrincipalsRequest(input *ListThingPrincipalsInput) (req *
 		input = &ListThingPrincipalsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListThingPrincipalsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3572,9 +3528,8 @@ func (c *IoT) ListThingTypesRequest(input *ListThingTypesInput) (req *request.Re
 		input = &ListThingTypesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListThingTypesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3647,9 +3602,8 @@ func (c *IoT) ListThingsRequest(input *ListThingsInput) (req *request.Request, o
 		input = &ListThingsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListThingsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3725,9 +3679,8 @@ func (c *IoT) ListTopicRulesRequest(input *ListTopicRulesInput) (req *request.Re
 		input = &ListTopicRulesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTopicRulesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3794,9 +3747,8 @@ func (c *IoT) RegisterCACertificateRequest(input *RegisterCACertificateInput) (r
 		input = &RegisterCACertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterCACertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3887,9 +3839,8 @@ func (c *IoT) RegisterCertificateRequest(input *RegisterCertificateInput) (req *
 		input = &RegisterCertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterCertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -3978,11 +3929,10 @@ func (c *IoT) RejectCertificateTransferRequest(input *RejectCertificateTransferI
 		input = &RejectCertificateTransferInput{}
 	}
 
+	output = &RejectCertificateTransferOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &RejectCertificateTransferOutput{}
-	req.Data = output
 	return
 }
 
@@ -4070,11 +4020,10 @@ func (c *IoT) ReplaceTopicRuleRequest(input *ReplaceTopicRuleInput) (req *reques
 		input = &ReplaceTopicRuleInput{}
 	}
 
+	output = &ReplaceTopicRuleOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &ReplaceTopicRuleOutput{}
-	req.Data = output
 	return
 }
 
@@ -4149,11 +4098,10 @@ func (c *IoT) SetDefaultPolicyVersionRequest(input *SetDefaultPolicyVersionInput
 		input = &SetDefaultPolicyVersionInput{}
 	}
 
+	output = &SetDefaultPolicyVersionOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetDefaultPolicyVersionOutput{}
-	req.Data = output
 	return
 }
 
@@ -4232,11 +4180,10 @@ func (c *IoT) SetLoggingOptionsRequest(input *SetLoggingOptionsInput) (req *requ
 		input = &SetLoggingOptionsInput{}
 	}
 
+	output = &SetLoggingOptionsOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &SetLoggingOptionsOutput{}
-	req.Data = output
 	return
 }
 
@@ -4303,9 +4250,8 @@ func (c *IoT) TransferCertificateRequest(input *TransferCertificateInput) (req *
 		input = &TransferCertificateInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TransferCertificateOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -4399,11 +4345,10 @@ func (c *IoT) UpdateCACertificateRequest(input *UpdateCACertificateInput) (req *
 		input = &UpdateCACertificateInput{}
 	}
 
+	output = &UpdateCACertificateOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateCACertificateOutput{}
-	req.Data = output
 	return
 }
 
@@ -4479,11 +4424,10 @@ func (c *IoT) UpdateCertificateRequest(input *UpdateCertificateInput) (req *requ
 		input = &UpdateCertificateInput{}
 	}
 
+	output = &UpdateCertificateOutput{}
 	req = c.newRequest(op, input, output)
 	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
 	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
-	output = &UpdateCertificateOutput{}
-	req.Data = output
 	return
 }
 
@@ -4568,9 +4512,8 @@ func (c *IoT) UpdateThingRequest(input *UpdateThingInput) (req *request.Request,
 		input = &UpdateThingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateThingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

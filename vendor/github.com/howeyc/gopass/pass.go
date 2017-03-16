@@ -42,10 +42,7 @@ func getPasswd(masked bool) ([]byte, error) {
 		if oldState, err := makeRaw(os.Stdin.Fd()); err != nil {
 			return pass, err
 		} else {
-			defer func() {
-				restore(os.Stdin.Fd(), oldState)
-				fmt.Println()
-			}()
+			defer restore(os.Stdin.Fd(), oldState)
 		}
 	}
 
@@ -77,6 +74,7 @@ func getPasswd(masked bool) ([]byte, error) {
 		err = ErrMaxLengthExceeded
 	}
 
+	fmt.Println()
 	return pass, err
 }
 

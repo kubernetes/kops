@@ -1,9 +1,15 @@
 package credentials
 
 import (
-	"github.com/docker/docker-credential-helpers/client"
-	"github.com/docker/docker-credential-helpers/credentials"
-	"github.com/docker/docker/cliconfig/configfile"
+	"bytes"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"strings"
+
+	"github.com/Sirupsen/logrus"
+	"github.com/docker/docker/cliconfig"
 	"github.com/docker/engine-api/types"
 )
 
@@ -12,27 +18,50 @@ const (
 	tokenUsername           = "<token>"
 )
 
+// Standarize the not found error, so every helper returns
+// the same message and docker can handle it properly.
+var errCredentialsNotFound = errors.New("credentials not found in native keychain")
+
+// command is an interface that remote executed commands implement.
+type command interface {
+	Output() ([]byte, error)
+	Input(in io.Reader)
+}
+
+// credentialsRequest holds information shared between docker and a remote credential store.
+type credentialsRequest struct {
+	ServerURL string
+	Username  string
+	Secret    string
+}
+
+// credentialsGetResponse is the information serialized from a remote store
+// when the plugin sends requests to get the user credentials.
+type credentialsGetResponse struct {
+	Username string
+	Secret   string
+}
+
 // nativeStore implements a credentials store
 // using native keychain to keep credentials secure.
 // It piggybacks into a file store to keep users' emails.
 type nativeStore struct {
-	programFunc client.ProgramFunc
-	fileStore   Store
+	commandFn func(args ...string) command
+	fileStore Store
 }
 
 // NewNativeStore creates a new native store that
 // uses a remote helper program to manage credentials.
-func NewNativeStore(file *configfile.ConfigFile) Store {
-	name := remoteCredentialsPrefix + file.CredentialsStore
+func NewNativeStore(file *cliconfig.ConfigFile) Store {
 	return &nativeStore{
-		programFunc: client.NewShellProgramFunc(name),
-		fileStore:   NewFileStore(file),
+		commandFn: shellCommandFn(file.CredentialsStore),
+		fileStore: NewFileStore(file),
 	}
 }
 
 // Erase removes the given credentials from the native store.
 func (c *nativeStore) Erase(serverAddress string) error {
-	if err := client.Erase(c.programFunc, serverAddress); err != nil {
+	if err := c.eraseCredentialsFromStore(serverAddress); err != nil {
 		return err
 	}
 
@@ -86,7 +115,8 @@ func (c *nativeStore) Store(authConfig types.AuthConfig) error {
 
 // storeCredentialsInStore executes the command to store the credentials in the native store.
 func (c *nativeStore) storeCredentialsInStore(config types.AuthConfig) error {
-	creds := &credentials.Credentials{
+	cmd := c.commandFn("store")
+	creds := &credentialsRequest{
 		ServerURL: config.ServerAddress,
 		Username:  config.Username,
 		Secret:    config.Password,
@@ -97,30 +127,70 @@ func (c *nativeStore) storeCredentialsInStore(config types.AuthConfig) error {
 		creds.Secret = config.IdentityToken
 	}
 
-	return client.Store(c.programFunc, creds)
+	buffer := new(bytes.Buffer)
+	if err := json.NewEncoder(buffer).Encode(creds); err != nil {
+		return err
+	}
+	cmd.Input(buffer)
+
+	out, err := cmd.Output()
+	if err != nil {
+		t := strings.TrimSpace(string(out))
+		logrus.Debugf("error adding credentials - err: %v, out: `%s`", err, t)
+		return fmt.Errorf(t)
+	}
+
+	return nil
 }
 
 // getCredentialsFromStore executes the command to get the credentials from the native store.
 func (c *nativeStore) getCredentialsFromStore(serverAddress string) (types.AuthConfig, error) {
 	var ret types.AuthConfig
 
-	creds, err := client.Get(c.programFunc, serverAddress)
+	cmd := c.commandFn("get")
+	cmd.Input(strings.NewReader(serverAddress))
+
+	out, err := cmd.Output()
 	if err != nil {
-		if credentials.IsErrCredentialsNotFound(err) {
-			// do not return an error if the credentials are not
-			// in the keyckain. Let docker ask for new credentials.
+		t := strings.TrimSpace(string(out))
+
+		// do not return an error if the credentials are not
+		// in the keyckain. Let docker ask for new credentials.
+		if t == errCredentialsNotFound.Error() {
 			return ret, nil
 		}
+
+		logrus.Debugf("error getting credentials - err: %v, out: `%s`", err, t)
+		return ret, fmt.Errorf(t)
+	}
+
+	var resp credentialsGetResponse
+	if err := json.NewDecoder(bytes.NewReader(out)).Decode(&resp); err != nil {
 		return ret, err
 	}
 
-	if creds.Username == tokenUsername {
-		ret.IdentityToken = creds.Secret
+	if resp.Username == tokenUsername {
+		ret.IdentityToken = resp.Secret
 	} else {
-		ret.Password = creds.Secret
-		ret.Username = creds.Username
+		ret.Password = resp.Secret
+		ret.Username = resp.Username
 	}
 
 	ret.ServerAddress = serverAddress
 	return ret, nil
+}
+
+// eraseCredentialsFromStore executes the command to remove the server credentails from the native store.
+func (c *nativeStore) eraseCredentialsFromStore(serverURL string) error {
+	cmd := c.commandFn("erase")
+	cmd.Input(strings.NewReader(serverURL))
+
+	out, err := cmd.Output()
+	if err != nil {
+		t := strings.TrimSpace(string(out))
+		logrus.Debugf("error erasing credentials - err: %v, out: `%s`", err, t)
+		return fmt.Errorf(t)
+	}
+
+	return nil
 }

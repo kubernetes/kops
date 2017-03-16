@@ -133,9 +133,8 @@ func (c *OutputService1ProtocolTest) OutputService1TestCaseOperation1Request(inp
 		input = &OutputService1TestShapeOutputService1TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService1TestShapeOutputService1TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -323,9 +322,8 @@ func (c *OutputService2ProtocolTest) OutputService2TestCaseOperation1Request(inp
 		input = &OutputService2TestShapeOutputService2TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService2TestShapeOutputService2TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -457,9 +455,8 @@ func (c *OutputService3ProtocolTest) OutputService3TestCaseOperation1Request(inp
 		input = &OutputService3TestShapeOutputService3TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService3TestShapeOutputService3TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -584,9 +581,8 @@ func (c *OutputService4ProtocolTest) OutputService4TestCaseOperation1Request(inp
 		input = &OutputService4TestShapeOutputService4TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService4TestShapeOutputService4TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -710,9 +706,8 @@ func (c *OutputService5ProtocolTest) OutputService5TestCaseOperation1Request(inp
 		input = &OutputService5TestShapeOutputService5TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService5TestShapeOutputService5TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -836,9 +831,8 @@ func (c *OutputService6ProtocolTest) OutputService6TestCaseOperation1Request(inp
 		input = &OutputService6TestShapeOutputService6TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService6TestShapeOutputService6TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -962,9 +956,8 @@ func (c *OutputService7ProtocolTest) OutputService7TestCaseOperation1Request(inp
 		input = &OutputService7TestShapeOutputService7TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService7TestShapeOutputService7TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1088,9 +1081,8 @@ func (c *OutputService8ProtocolTest) OutputService8TestCaseOperation1Request(inp
 		input = &OutputService8TestShapeOutputService8TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService8TestShapeOutputService8TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1242,9 +1234,8 @@ func (c *OutputService9ProtocolTest) OutputService9TestCaseOperation1Request(inp
 		input = &OutputService9TestShapeOutputService9TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService9TestShapeOutputService9TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1396,9 +1387,8 @@ func (c *OutputService10ProtocolTest) OutputService10TestCaseOperation1Request(i
 		input = &OutputService10TestShapeOutputService10TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService10TestShapeOutputService10TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1522,9 +1512,8 @@ func (c *OutputService11ProtocolTest) OutputService11TestCaseOperation1Request(i
 		input = &OutputService11TestShapeOutputService11TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService11TestShapeOutputService11TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1660,9 +1649,8 @@ func (c *OutputService12ProtocolTest) OutputService12TestCaseOperation1Request(i
 		input = &OutputService12TestShapeOutputService12TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService12TestShapeOutputService12TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1786,9 +1774,8 @@ func (c *OutputService13ProtocolTest) OutputService13TestCaseOperation1Request(i
 		input = &OutputService13TestShapeOutputService13TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService13TestShapeOutputService13TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1912,9 +1899,8 @@ func (c *OutputService14ProtocolTest) OutputService14TestCaseOperation1Request(i
 		input = &OutputService14TestShapeOutputService14TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService14TestShapeOutputService14TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2038,9 +2024,8 @@ func (c *OutputService15ProtocolTest) OutputService15TestCaseOperation1Request(i
 		input = &OutputService15TestShapeOutputService15TestCaseOperation1Input{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &OutputService15TestShapeOutputService15TestCaseOperation1Output{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

@@ -49,9 +49,8 @@ func (c *Route53Domains) CheckDomainAvailabilityRequest(input *CheckDomainAvaila
 		input = &CheckDomainAvailabilityInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CheckDomainAvailabilityOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -122,9 +121,8 @@ func (c *Route53Domains) DeleteTagsForDomainRequest(input *DeleteTagsForDomainIn
 		input = &DeleteTagsForDomainInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteTagsForDomainOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -200,9 +198,8 @@ func (c *Route53Domains) DisableDomainAutoRenewRequest(input *DisableDomainAutoR
 		input = &DisableDomainAutoRenewInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DisableDomainAutoRenewOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -272,9 +269,8 @@ func (c *Route53Domains) DisableDomainTransferLockRequest(input *DisableDomainTr
 		input = &DisableDomainTransferLockInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DisableDomainTransferLockOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -359,9 +355,8 @@ func (c *Route53Domains) EnableDomainAutoRenewRequest(input *EnableDomainAutoRen
 		input = &EnableDomainAutoRenewInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &EnableDomainAutoRenewOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -442,9 +437,8 @@ func (c *Route53Domains) EnableDomainTransferLockRequest(input *EnableDomainTran
 		input = &EnableDomainTransferLockInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &EnableDomainTransferLockOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -527,9 +521,8 @@ func (c *Route53Domains) GetContactReachabilityStatusRequest(input *GetContactRe
 		input = &GetContactReachabilityStatusInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetContactReachabilityStatusOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -607,9 +600,8 @@ func (c *Route53Domains) GetDomainDetailRequest(input *GetDomainDetailInput) (re
 		input = &GetDomainDetailInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDomainDetailOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -679,9 +671,8 @@ func (c *Route53Domains) GetDomainSuggestionsRequest(input *GetDomainSuggestions
 		input = &GetDomainSuggestionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetDomainSuggestionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -762,9 +753,8 @@ func (c *Route53Domains) GetOperationDetailRequest(input *GetOperationDetailInpu
 		input = &GetOperationDetailInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &GetOperationDetailOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -836,9 +826,8 @@ func (c *Route53Domains) ListDomainsRequest(input *ListDomainsInput) (req *reque
 		input = &ListDomainsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListDomainsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -936,9 +925,8 @@ func (c *Route53Domains) ListOperationsRequest(input *ListOperationsInput) (req 
 		input = &ListOperationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListOperationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1029,9 +1017,8 @@ func (c *Route53Domains) ListTagsForDomainRequest(input *ListTagsForDomainInput)
 		input = &ListTagsForDomainInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTagsForDomainOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1108,9 +1095,8 @@ func (c *Route53Domains) RegisterDomainRequest(input *RegisterDomainInput) (req 
 		input = &RegisterDomainInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterDomainOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1213,9 +1199,8 @@ func (c *Route53Domains) RenewDomainRequest(input *RenewDomainInput) (req *reque
 		input = &RenewDomainInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RenewDomainOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1301,9 +1286,8 @@ func (c *Route53Domains) ResendContactReachabilityEmailRequest(input *ResendCont
 		input = &ResendContactReachabilityEmailInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ResendContactReachabilityEmailOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1378,9 +1362,8 @@ func (c *Route53Domains) RetrieveDomainAuthCodeRequest(input *RetrieveDomainAuth
 		input = &RetrieveDomainAuthCodeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RetrieveDomainAuthCodeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1450,9 +1433,8 @@ func (c *Route53Domains) TransferDomainRequest(input *TransferDomainInput) (req 
 		input = &TransferDomainInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TransferDomainOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1557,9 +1539,8 @@ func (c *Route53Domains) UpdateDomainContactRequest(input *UpdateDomainContactIn
 		input = &UpdateDomainContactInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateDomainContactOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1645,9 +1626,8 @@ func (c *Route53Domains) UpdateDomainContactPrivacyRequest(input *UpdateDomainCo
 		input = &UpdateDomainContactPrivacyInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateDomainContactPrivacyOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1736,9 +1716,8 @@ func (c *Route53Domains) UpdateDomainNameserversRequest(input *UpdateDomainNames
 		input = &UpdateDomainNameserversInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateDomainNameserversOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1824,9 +1803,8 @@ func (c *Route53Domains) UpdateTagsForDomainRequest(input *UpdateTagsForDomainIn
 		input = &UpdateTagsForDomainInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateTagsForDomainOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1902,9 +1880,8 @@ func (c *Route53Domains) ViewBillingRequest(input *ViewBillingInput) (req *reque
 		input = &ViewBillingInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ViewBillingOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

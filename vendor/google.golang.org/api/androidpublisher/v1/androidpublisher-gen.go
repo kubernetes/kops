@@ -92,7 +92,7 @@ type SubscriptionPurchase struct {
 	AutoRenewing bool `json:"autoRenewing,omitempty"`
 
 	// InitiationTimestampMsec: Time at which the subscription was granted,
-	// in milliseconds since Epoch.
+	// in milliseconds since the Epoch.
 	InitiationTimestampMsec int64 `json:"initiationTimestampMsec,omitempty,string"`
 
 	// Kind: This kind represents a subscriptionPurchase object in the
@@ -100,7 +100,7 @@ type SubscriptionPurchase struct {
 	Kind string `json:"kind,omitempty"`
 
 	// ValidUntilTimestampMsec: Time at which the subscription will expire,
-	// in milliseconds since Epoch.
+	// in milliseconds since the Epoch.
 	ValidUntilTimestampMsec int64 `json:"validUntilTimestampMsec,omitempty,string"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -114,12 +114,20 @@ type SubscriptionPurchase struct {
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AutoRenewing") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
 }
 
 func (s *SubscriptionPurchase) MarshalJSON() ([]byte, error) {
 	type noMethod SubscriptionPurchase
 	raw := noMethod(*s)
-	return gensupport.MarshalJSON(raw, s.ForceSendFields)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // method id "androidpublisher.purchases.cancel":
@@ -131,6 +139,7 @@ type PurchasesCancelCall struct {
 	token          string
 	urlParams_     gensupport.URLParams
 	ctx_           context.Context
+	header_        http.Header
 }
 
 // Cancel: Cancels a user's subscription purchase. The subscription
@@ -159,8 +168,20 @@ func (c *PurchasesCancelCall) Context(ctx context.Context) *PurchasesCancelCall 
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PurchasesCancelCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PurchasesCancelCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
 	c.urlParams_.Set("alt", alt)
@@ -173,10 +194,7 @@ func (c *PurchasesCancelCall) doRequest(alt string) (*http.Response, error) {
 		"subscriptionId": c.subscriptionId,
 		"token":          c.token,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "androidpublisher.purchases.cancel" call.
@@ -238,6 +256,7 @@ type PurchasesGetCall struct {
 	urlParams_     gensupport.URLParams
 	ifNoneMatch_   string
 	ctx_           context.Context
+	header_        http.Header
 }
 
 // Get: Checks whether a user's subscription purchase is valid and
@@ -276,8 +295,20 @@ func (c *PurchasesGetCall) Context(ctx context.Context) *PurchasesGetCall {
 	return c
 }
 
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PurchasesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
 func (c *PurchasesGetCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	if c.ifNoneMatch_ != "" {
 		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
@@ -293,10 +324,7 @@ func (c *PurchasesGetCall) doRequest(alt string) (*http.Response, error) {
 		"subscriptionId": c.subscriptionId,
 		"token":          c.token,
 	})
-	if c.ctx_ != nil {
-		return ctxhttp.Do(c.ctx_, c.s.client, req)
-	}
-	return c.s.client.Do(req)
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
 // Do executes the "androidpublisher.purchases.get" call.

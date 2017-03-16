@@ -1,11 +1,8 @@
 <!--[metadata]>
 +++
-title = "Compatibility"
+title = "registry Compatibility"
 description = "describes get by digest pitfall"
 keywords = ["registry, manifest, images, tags, repository, distribution, digest"]
-[menu.main]
-parent="smn_registry_ref"
-weight=9
 +++
 <![end-metadata]-->
 
@@ -18,7 +15,7 @@ will cause the Engine to receive a manifest it cannot use and the pull will fail
 
 ## Registry Manifest Support
 
-Historically, the registry has supported a [single manifest type](./spec/manifest-v2-1.md)
+Historically, the registry has supported a [single manifest type](https://github.com/docker/distribution/blob/master/docs/spec/manifest-v2-1.md)
 known as _Schema 1_.
 
 With the move toward multiple architecture images the distribution project

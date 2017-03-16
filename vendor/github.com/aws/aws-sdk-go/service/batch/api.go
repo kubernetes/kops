@@ -48,9 +48,8 @@ func (c *Batch) CancelJobRequest(input *CancelJobInput) (req *request.Request, o
 		input = &CancelJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CancelJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -123,9 +122,8 @@ func (c *Batch) CreateComputeEnvironmentRequest(input *CreateComputeEnvironmentI
 		input = &CreateComputeEnvironmentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateComputeEnvironmentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -215,9 +213,8 @@ func (c *Batch) CreateJobQueueRequest(input *CreateJobQueueInput) (req *request.
 		input = &CreateJobQueueInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateJobQueueOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -294,9 +291,8 @@ func (c *Batch) DeleteComputeEnvironmentRequest(input *DeleteComputeEnvironmentI
 		input = &DeleteComputeEnvironmentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteComputeEnvironmentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -369,9 +365,8 @@ func (c *Batch) DeleteJobQueueRequest(input *DeleteJobQueueInput) (req *request.
 		input = &DeleteJobQueueInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteJobQueueOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -445,9 +440,8 @@ func (c *Batch) DeregisterJobDefinitionRequest(input *DeregisterJobDefinitionInp
 		input = &DeregisterJobDefinitionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeregisterJobDefinitionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -516,9 +510,8 @@ func (c *Batch) DescribeComputeEnvironmentsRequest(input *DescribeComputeEnviron
 		input = &DescribeComputeEnvironmentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeComputeEnvironmentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -591,9 +584,8 @@ func (c *Batch) DescribeJobDefinitionsRequest(input *DescribeJobDefinitionsInput
 		input = &DescribeJobDefinitionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeJobDefinitionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -663,9 +655,8 @@ func (c *Batch) DescribeJobQueuesRequest(input *DescribeJobQueuesInput) (req *re
 		input = &DescribeJobQueuesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeJobQueuesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -734,9 +725,8 @@ func (c *Batch) DescribeJobsRequest(input *DescribeJobsInput) (req *request.Requ
 		input = &DescribeJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -805,9 +795,8 @@ func (c *Batch) ListJobsRequest(input *ListJobsInput) (req *request.Request, out
 		input = &ListJobsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListJobsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -877,9 +866,8 @@ func (c *Batch) RegisterJobDefinitionRequest(input *RegisterJobDefinitionInput) 
 		input = &RegisterJobDefinitionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterJobDefinitionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -948,9 +936,8 @@ func (c *Batch) SubmitJobRequest(input *SubmitJobInput) (req *request.Request, o
 		input = &SubmitJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SubmitJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1020,9 +1007,8 @@ func (c *Batch) TerminateJobRequest(input *TerminateJobInput) (req *request.Requ
 		input = &TerminateJobInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &TerminateJobOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1093,9 +1079,8 @@ func (c *Batch) UpdateComputeEnvironmentRequest(input *UpdateComputeEnvironmentI
 		input = &UpdateComputeEnvironmentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateComputeEnvironmentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1164,9 +1149,8 @@ func (c *Batch) UpdateJobQueueRequest(input *UpdateJobQueueInput) (req *request.
 		input = &UpdateJobQueueInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateJobQueueOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

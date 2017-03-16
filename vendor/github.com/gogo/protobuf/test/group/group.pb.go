@@ -37,9 +37,7 @@ var _ = math.Inf
 
 // This is a compile-time assertion to ensure that this generated file
 // is compatible with the proto package it is being compiled against.
-// A compilation error at this line likely means your copy of the
-// proto package needs to be updated.
-const _ = proto.GoGoProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.GoGoProtoPackageIsVersion1
 
 type Groups1 struct {
 	G                []*Groups1_G `protobuf:"group,1,rep,name=G,json=g" json:"g,omitempty"`
@@ -733,12 +731,11 @@ func valueToGoStringGroup(v interface{}, typ string) string {
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("func(v %v) *%v { return &v } ( %#v )", typ, typ, pv)
 }
-func extensionToGoStringGroup(m github_com_gogo_protobuf_proto.Message) string {
-	e := github_com_gogo_protobuf_proto.GetUnsafeExtensionsMap(m)
+func extensionToGoStringGroup(e map[int32]github_com_gogo_protobuf_proto.Extension) string {
 	if e == nil {
 		return "nil"
 	}
-	s := "proto.NewUnsafeXXX_InternalExtensions(map[int32]proto.Extension{"
+	s := "map[int32]proto.Extension{"
 	keys := make([]int, 0, len(e))
 	for k := range e {
 		keys = append(keys, int(k))
@@ -748,7 +745,7 @@ func extensionToGoStringGroup(m github_com_gogo_protobuf_proto.Message) string {
 	for _, k := range keys {
 		ss = append(ss, strconv.Itoa(k)+": "+e[int32(k)].GoString())
 	}
-	s += strings.Join(ss, ",") + "})"
+	s += strings.Join(ss, ",") + "}"
 	return s
 }
 func NewPopulatedGroups1(r randyGroup, easy bool) *Groups1 {
@@ -950,8 +947,6 @@ func valueToStringGroup(v interface{}) string {
 	pv := reflect.Indirect(rv).Interface()
 	return fmt.Sprintf("*%v", pv)
 }
-
-func init() { proto.RegisterFile("group.proto", fileDescriptorGroup) }
 
 var fileDescriptorGroup = []byte{
 	// 195 bytes of a gzipped FileDescriptorProto

@@ -89,7 +89,7 @@ func (e *eventObserver) Match(match eventMatcher, process eventMatchProcessor) {
 		err = io.EOF
 	}
 
-	logrus.Debugf("EventObserver scanner loop finished: %v", err)
+	logrus.Debug("EventObserver scanner loop finished: %v", err)
 	e.disconnectionError = err
 }
 
@@ -98,7 +98,7 @@ func (e *eventObserver) CheckEventError(c *check.C, id, event string, match even
 	scannerOut := e.buffer.String()
 
 	if e.disconnectionError != nil {
-		until := daemonUnixTime(c)
+		until := strconv.FormatInt(daemonTime(c).Unix(), 10)
 		out, _ := dockerCmd(c, "events", "--since", e.startTime, "--until", until)
 		events := strings.Split(strings.TrimSpace(out), "\n")
 		for _, e := range events {

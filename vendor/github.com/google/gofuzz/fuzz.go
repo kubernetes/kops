@@ -129,7 +129,7 @@ func (f *Fuzzer) genElementCount() int {
 	if f.minElements == f.maxElements {
 		return f.minElements
 	}
-	return f.minElements + f.r.Intn(f.maxElements-f.minElements)
+	return f.minElements + f.r.Intn(f.maxElements-f.minElements+1)
 }
 
 func (f *Fuzzer) genShouldFill() bool {

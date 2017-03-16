@@ -46,9 +46,8 @@ func (c *Support) AddAttachmentsToSetRequest(input *AddAttachmentsToSetInput) (r
 		input = &AddAttachmentsToSetInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddAttachmentsToSetOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -136,9 +135,8 @@ func (c *Support) AddCommunicationToCaseRequest(input *AddCommunicationToCaseInp
 		input = &AddCommunicationToCaseInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &AddCommunicationToCaseOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -219,9 +217,8 @@ func (c *Support) CreateCaseRequest(input *CreateCaseInput) (req *request.Reques
 		input = &CreateCaseInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateCaseOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -338,9 +335,8 @@ func (c *Support) DescribeAttachmentRequest(input *DescribeAttachmentInput) (req
 		input = &DescribeAttachmentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeAttachmentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -420,9 +416,8 @@ func (c *Support) DescribeCasesRequest(input *DescribeCasesInput) (req *request.
 		input = &DescribeCasesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeCasesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -534,9 +529,8 @@ func (c *Support) DescribeCommunicationsRequest(input *DescribeCommunicationsInp
 		input = &DescribeCommunicationsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeCommunicationsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -637,9 +631,8 @@ func (c *Support) DescribeServicesRequest(input *DescribeServicesInput) (req *re
 		input = &DescribeServicesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeServicesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -713,9 +706,8 @@ func (c *Support) DescribeSeverityLevelsRequest(input *DescribeSeverityLevelsInp
 		input = &DescribeSeverityLevelsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeSeverityLevelsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -781,9 +773,8 @@ func (c *Support) DescribeTrustedAdvisorCheckRefreshStatusesRequest(input *Descr
 		input = &DescribeTrustedAdvisorCheckRefreshStatusesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTrustedAdvisorCheckRefreshStatusesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -852,9 +843,8 @@ func (c *Support) DescribeTrustedAdvisorCheckResultRequest(input *DescribeTruste
 		input = &DescribeTrustedAdvisorCheckResultInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTrustedAdvisorCheckResultOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -937,9 +927,8 @@ func (c *Support) DescribeTrustedAdvisorCheckSummariesRequest(input *DescribeTru
 		input = &DescribeTrustedAdvisorCheckSummariesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTrustedAdvisorCheckSummariesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1006,9 +995,8 @@ func (c *Support) DescribeTrustedAdvisorChecksRequest(input *DescribeTrustedAdvi
 		input = &DescribeTrustedAdvisorChecksInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTrustedAdvisorChecksOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1075,9 +1063,8 @@ func (c *Support) RefreshTrustedAdvisorCheckRequest(input *RefreshTrustedAdvisor
 		input = &RefreshTrustedAdvisorCheckInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RefreshTrustedAdvisorCheckOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1157,9 +1144,8 @@ func (c *Support) ResolveCaseRequest(input *ResolveCaseInput) (req *request.Requ
 		input = &ResolveCaseInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ResolveCaseOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

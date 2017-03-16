@@ -46,7 +46,10 @@ func ResponseFormat(h http.Header) Format {
 		return FmtUnknown
 	}
 
-	const textType = "text/plain"
+	const (
+		textType = "text/plain"
+		jsonType = "application/json"
+	)
 
 	switch mediatype {
 	case ProtoType:
@@ -63,6 +66,22 @@ func ResponseFormat(h http.Header) Format {
 			return FmtUnknown
 		}
 		return FmtText
+
+	case jsonType:
+		var prometheusAPIVersion string
+
+		if params["schema"] == "prometheus/telemetry" && params["version"] != "" {
+			prometheusAPIVersion = params["version"]
+		} else {
+			prometheusAPIVersion = h.Get("X-Prometheus-API-Version")
+		}
+
+		switch prometheusAPIVersion {
+		case "0.0.2", "":
+			return fmtJSON2
+		default:
+			return FmtUnknown
+		}
 	}
 
 	return FmtUnknown
@@ -74,6 +93,8 @@ func NewDecoder(r io.Reader, format Format) Decoder {
 	switch format {
 	case FmtProtoDelim:
 		return &protoDecoder{r: r}
+	case fmtJSON2:
+		return newJSON2Decoder(r)
 	}
 	return &textDecoder{r: r}
 }
@@ -86,32 +107,10 @@ type protoDecoder struct {
 // Decode implements the Decoder interface.
 func (d *protoDecoder) Decode(v *dto.MetricFamily) error {
 	_, err := pbutil.ReadDelimited(d.r, v)
-	if err != nil {
-		return err
-	}
-	if !model.IsValidMetricName(model.LabelValue(v.GetName())) {
-		return fmt.Errorf("invalid metric name %q", v.GetName())
-	}
-	for _, m := range v.GetMetric() {
-		if m == nil {
-			continue
-		}
-		for _, l := range m.GetLabel() {
-			if l == nil {
-				continue
-			}
-			if !model.LabelValue(l.GetValue()).IsValid() {
-				return fmt.Errorf("invalid label value %q", l.GetValue())
-			}
-			if !model.LabelName(l.GetName()).IsValid() {
-				return fmt.Errorf("invalid label name %q", l.GetName())
-			}
-		}
-	}
-	return nil
+	return err
 }
 
-// textDecoder implements the Decoder interface for the text protocol.
+// textDecoder implements the Decoder interface for the text protcol.
 type textDecoder struct {
 	r    io.Reader
 	p    TextParser

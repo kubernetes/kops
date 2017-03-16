@@ -10,30 +10,6 @@ import (
 	"testing"
 )
 
-// Checks whether the expected capability is specified in the capabilities.
-func contains(expected string, values []string) bool {
-	for _, v := range values {
-		if v == expected {
-			return true
-		}
-	}
-	return false
-}
-
-func containsDevice(expected *Device, values []*Device) bool {
-	for _, d := range values {
-		if d.Path == expected.Path &&
-			d.Permissions == expected.Permissions &&
-			d.FileMode == expected.FileMode &&
-			d.Major == expected.Major &&
-			d.Minor == expected.Minor &&
-			d.Type == expected.Type {
-			return true
-		}
-	}
-	return false
-}
-
 func loadConfig(name string) (*Config, error) {
 	f, err := os.Open(filepath.Join("../sample_configs", name))
 	if err != nil {

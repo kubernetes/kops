@@ -5,7 +5,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"sort"
 	"strconv"
 	"strings"
 
@@ -31,19 +30,19 @@ func setResources(s *specs.Spec, r containertypes.Resources) error {
 	if err != nil {
 		return err
 	}
-	readBpsDevice, err := getBlkioThrottleDevices(r.BlkioDeviceReadBps)
+	readBpsDevice, err := getBlkioReadBpsDevices(r)
 	if err != nil {
 		return err
 	}
-	writeBpsDevice, err := getBlkioThrottleDevices(r.BlkioDeviceWriteBps)
+	writeBpsDevice, err := getBlkioWriteBpsDevices(r)
 	if err != nil {
 		return err
 	}
-	readIOpsDevice, err := getBlkioThrottleDevices(r.BlkioDeviceReadIOps)
+	readIOpsDevice, err := getBlkioReadIOpsDevices(r)
 	if err != nil {
 		return err
 	}
-	writeIOpsDevice, err := getBlkioThrottleDevices(r.BlkioDeviceWriteIOps)
+	writeIOpsDevice, err := getBlkioWriteIOpsDevices(r)
 	if err != nil {
 		return err
 	}
@@ -296,25 +295,8 @@ func setNamespaces(daemon *Daemon, s *specs.Spec, c *container.Container) error 
 		setNamespace(s, ns)
 	}
 	// pid
-	if c.HostConfig.PidMode.IsContainer() {
-		ns := specs.Namespace{Type: "pid"}
-		pc, err := daemon.getPidContainer(c)
-		if err != nil {
-			return err
-		}
-		ns.Path = fmt.Sprintf("/proc/%d/ns/pid", pc.State.GetPID())
-		setNamespace(s, ns)
-		if userNS {
-			// to share a PID namespace, they must also share a user namespace
-			nsUser := specs.Namespace{Type: "user"}
-			nsUser.Path = fmt.Sprintf("/proc/%d/ns/user", pc.State.GetPID())
-			setNamespace(s, nsUser)
-		}
-	} else if c.HostConfig.PidMode.IsHost() {
+	if c.HostConfig.PidMode.IsHost() {
 		delNamespace(s, specs.NamespaceType("pid"))
-	} else {
-		ns := specs.Namespace{Type: "pid"}
-		setNamespace(s, ns)
 	}
 	// uts
 	if c.HostConfig.UTSMode.IsHost() {
@@ -459,7 +441,7 @@ func setMounts(daemon *Daemon, s *specs.Spec, c *container.Container, mounts []c
 		userMounts[m.Destination] = struct{}{}
 	}
 
-	// Filter out mounts that are overridden by user supplied mounts
+	// Filter out mounts that are overriden by user supplied mounts
 	var defaultMounts []specs.Mount
 	_, mountDev := userMounts["/dev"]
 	for _, m := range s.Mounts {
@@ -480,18 +462,14 @@ func setMounts(daemon *Daemon, s *specs.Spec, c *container.Container, mounts []c
 		}
 
 		if m.Source == "tmpfs" {
-			data := c.HostConfig.Tmpfs[m.Destination]
-			options := []string{"noexec", "nosuid", "nodev", volume.DefaultPropagationMode}
-			if data != "" {
-				options = append(options, strings.Split(data, ",")...)
+			opt := []string{"noexec", "nosuid", "nodev", volume.DefaultPropagationMode}
+			if m.Data != "" {
+				opt = append(opt, strings.Split(m.Data, ",")...)
+			} else {
+				opt = append(opt, "size=65536k")
 			}
 
-			merged, err := mount.MergeTmpfsOptions(options)
-			if err != nil {
-				return err
-			}
-
-			s.Mounts = append(s.Mounts, specs.Mount{Destination: m.Destination, Source: m.Source, Type: "tmpfs", Options: merged})
+			s.Mounts = append(s.Mounts, specs.Mount{Destination: m.Destination, Source: m.Source, Type: "tmpfs", Options: opt})
 			continue
 		}
 
@@ -633,7 +611,6 @@ func (daemon *Daemon) createSpec(c *container.Container) (*libcontainerd.Spec, e
 		return nil, fmt.Errorf("linux runtime spec resources: %v", err)
 	}
 	s.Linux.Resources.OOMScoreAdj = &c.HostConfig.OomScoreAdj
-	s.Linux.Sysctl = c.HostConfig.Sysctls
 	if err := setDevices(&s, c); err != nil {
 		return nil, fmt.Errorf("linux runtime spec devices: %v", err)
 	}
@@ -657,14 +634,13 @@ func (daemon *Daemon) createSpec(c *container.Container) (*libcontainerd.Spec, e
 		return nil, err
 	}
 
-	ms, err := daemon.setupMounts(c)
+	mounts, err := daemon.setupMounts(c)
 	if err != nil {
 		return nil, err
 	}
-	ms = append(ms, c.IpcMounts()...)
-	ms = append(ms, c.TmpfsMounts()...)
-	sort.Sort(mounts(ms))
-	if err := setMounts(daemon, &s, c, ms); err != nil {
+	mounts = append(mounts, c.IpcMounts()...)
+	mounts = append(mounts, c.TmpfsMounts()...)
+	if err := setMounts(daemon, &s, c, mounts); err != nil {
 		return nil, fmt.Errorf("linux mounts: %v", err)
 	}
 

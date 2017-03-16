@@ -19,21 +19,9 @@ import (
 
 	"cloud.google.com/go/pubsub"
 	"golang.org/x/net/context"
-	"google.golang.org/api/iterator"
 )
 
-func ExampleClient_Subscriptions() {
-	ctx := context.Background()
-	client, err := pubsub.NewClient(ctx, "project-id")
-	if err != nil {
-		// TODO: Handle error.
-	}
-	// List all subscriptions of the project.
-	it := client.Subscriptions(ctx)
-	_ = it // TODO: iterate using Next.
-}
-
-func ExampleSubscriptionIterator_Next() {
+func ExampleSubscriptionIterator() {
 	ctx := context.Background()
 	client, err := pubsub.NewClient(ctx, "project-id")
 	if err != nil {
@@ -43,12 +31,12 @@ func ExampleSubscriptionIterator_Next() {
 	it := client.Subscriptions(ctx)
 	for {
 		sub, err := it.Next()
-		if err == iterator.Done {
+		if err == pubsub.Done {
 			break
 		}
 		if err != nil {
 			// TODO: Handle error.
 		}
-		fmt.Println(sub)
+		fmt.Println(sub.Name())
 	}
 }

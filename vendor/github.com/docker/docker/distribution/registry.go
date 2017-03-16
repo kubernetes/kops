@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/docker/distribution"
@@ -14,11 +15,25 @@ import (
 	"github.com/docker/docker/dockerversion"
 	"github.com/docker/docker/registry"
 	"github.com/docker/engine-api/types"
-	"github.com/docker/go-connections/sockets"
 	"golang.org/x/net/context"
 )
 
-// NewV2Repository returns a repository (v2 only). It creates an HTTP transport
+type dumbCredentialStore struct {
+	auth *types.AuthConfig
+}
+
+func (dcs dumbCredentialStore) Basic(*url.URL) (string, string) {
+	return dcs.auth.Username, dcs.auth.Password
+}
+
+func (dcs dumbCredentialStore) RefreshToken(*url.URL, string) string {
+	return dcs.auth.IdentityToken
+}
+
+func (dcs dumbCredentialStore) SetRefreshToken(*url.URL, string, string) {
+}
+
+// NewV2Repository returns a repository (v2 only). It creates a HTTP transport
 // providing timeout settings and authentication support, and also verifies the
 // remote API version.
 func NewV2Repository(ctx context.Context, repoInfo *registry.RepositoryInfo, endpoint registry.APIEndpoint, metaHeaders http.Header, authConfig *types.AuthConfig, actions ...string) (repo distribution.Repository, foundVersion bool, err error) {
@@ -28,31 +43,24 @@ func NewV2Repository(ctx context.Context, repoInfo *registry.RepositoryInfo, end
 		repoName = repoInfo.RemoteName()
 	}
 
-	direct := &net.Dialer{
-		Timeout:   30 * time.Second,
-		KeepAlive: 30 * time.Second,
-		DualStack: true,
-	}
-
 	// TODO(dmcgowan): Call close idle connections when complete, use keep alive
 	base := &http.Transport{
-		Proxy:               http.ProxyFromEnvironment,
-		Dial:                direct.Dial,
+		Proxy: http.ProxyFromEnvironment,
+		Dial: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+			DualStack: true,
+		}).Dial,
 		TLSHandshakeTimeout: 10 * time.Second,
 		TLSClientConfig:     endpoint.TLSConfig,
 		// TODO(dmcgowan): Call close idle connections when complete and use keep alive
 		DisableKeepAlives: true,
 	}
 
-	proxyDialer, err := sockets.DialerFromEnvironment(direct)
-	if err == nil {
-		base.Dial = proxyDialer.Dial
-	}
-
 	modifiers := registry.DockerHeaders(dockerversion.DockerUserAgent(ctx), metaHeaders)
 	authTransport := transport.NewTransport(base, modifiers...)
 
-	challengeManager, foundVersion, err := registry.PingV2Registry(endpoint.URL, authTransport)
+	challengeManager, foundVersion, err := registry.PingV2Registry(endpoint, authTransport)
 	if err != nil {
 		transportOK := false
 		if responseErr, ok := err.(registry.PingResponseError); ok {
@@ -70,7 +78,7 @@ func NewV2Repository(ctx context.Context, repoInfo *registry.RepositoryInfo, end
 		passThruTokenHandler := &existingTokenHandler{token: authConfig.RegistryToken}
 		modifiers = append(modifiers, auth.NewAuthorizer(challengeManager, passThruTokenHandler))
 	} else {
-		creds := registry.NewStaticCredentialStore(authConfig)
+		creds := dumbCredentialStore{auth: authConfig}
 		tokenHandlerOptions := auth.TokenHandlerOptions{
 			Transport:   authTransport,
 			Credentials: creds,

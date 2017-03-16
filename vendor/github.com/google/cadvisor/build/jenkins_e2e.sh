@@ -22,8 +22,20 @@ BUILDER=${BUILDER:-false} # Whether this is running a PR builder job.
 export GO_FLAGS="-race"
 export GORACE="halt_on_error=1"
 
-make
-go build -tags test github.com/google/cadvisor/integration/runner
+# Check whether assets need to be rebuilt.
+FORCE=true build/assets.sh
+if [[ ! -z "$(git diff --name-only pages)" ]]; then
+  echo "Found changes to UI assets:"
+  git diff --name-only pages
+  echo "Run: `make assets FORCE=true`"
+  exit 1
+fi
+
+# Build & test with go 1.7
+docker run --rm \
+       -w "/go/src/github.com/google/cadvisor" \
+       -v "${GOPATH}/src/github.com/google/cadvisor:/go/src/github.com/google/cadvisor" \
+       golang:1.7 make all test-runner
 
 # Nodes that are currently stable. When tests fail on a specific node, and the failure is not remedied within a week, that node will be removed from this list.
 golden_nodes=(

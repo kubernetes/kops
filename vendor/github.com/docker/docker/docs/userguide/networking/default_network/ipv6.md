@@ -35,7 +35,7 @@ specify an IPv6 subnet to pick the addresses from. Set the IPv6 subnet via the
 `--fixed-cidr-v6` parameter when starting Docker daemon:
 
 ```
-dockerd --ipv6 --fixed-cidr-v6="2001:db8:1::/64"
+docker daemon --ipv6 --fixed-cidr-v6="2001:db8:1::/64"
 ```
 
 The subnet for Docker containers should at least have a size of `/80`. This way
@@ -44,13 +44,11 @@ neighbor cache invalidation issues in the Docker layer.
 
 With the `--fixed-cidr-v6` parameter set Docker will add a new route to the
 routing table. Further IPv6 routing will be enabled (you may prevent this by
-starting dockerd with `--ip-forward=false`):
+starting Docker daemon with `--ip-forward=false`):
 
 ```
 $ ip -6 route add 2001:db8:1::/64 dev docker0
-
 $ sysctl net.ipv6.conf.default.forwarding=1
-
 $ sysctl net.ipv6.conf.all.forwarding=1
 ```
 
@@ -115,7 +113,6 @@ configure the IPv6 addresses `2001:db8::c000` to `2001:db8::c00f`:
 
 ```
 $ ip -6 addr show
-
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536
     inet6 ::1/128 scope host
        valid_lft forever preferred_lft forever
@@ -131,7 +128,7 @@ Let's split up the configurable address range into two subnets
 host itself, the latter by Docker:
 
 ```
-dockerd --ipv6 --fixed-cidr-v6 2001:db8::c008/125
+docker daemon --ipv6 --fixed-cidr-v6 2001:db8::c008/125
 ```
 
 You notice the Docker subnet is within the subnet managed by your router that is
@@ -168,7 +165,6 @@ device to the container network:
 
 ```
 $ ip -6 route show
-
 2001:db8::c008/125 dev docker0  metric 1
 2001:db8::/64 dev eth0  proto kernel  metric 256
 ```

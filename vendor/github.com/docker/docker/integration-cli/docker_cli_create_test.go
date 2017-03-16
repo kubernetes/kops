@@ -25,7 +25,7 @@ func (s *DockerSuite) TestCreateArgs(c *check.C) {
 	if daemonPlatform == "windows" {
 		c.Skip("Fails on Windows CI")
 	}
-	out, _ := dockerCmd(c, "create", "busybox", "command", "arg1", "arg2", "arg with space", "-c", "flags")
+	out, _ := dockerCmd(c, "create", "busybox", "command", "arg1", "arg2", "arg with space")
 
 	cleanedContainerID := strings.TrimSpace(out)
 
@@ -47,7 +47,7 @@ func (s *DockerSuite) TestCreateArgs(c *check.C) {
 	c.Assert(string(cont.Path), checker.Equals, "command", check.Commentf("Unexpected container path. Expected command, received: %s", cont.Path))
 
 	b := false
-	expected := []string{"arg1", "arg2", "arg with space", "-c", "flags"}
+	expected := []string{"arg1", "arg2", "arg with space"}
 	for i, arg := range expected {
 		if arg != cont.Args[i] {
 			b = true
@@ -58,27 +58,6 @@ func (s *DockerSuite) TestCreateArgs(c *check.C) {
 		c.Fatalf("Unexpected args. Expected %v, received: %v", expected, cont.Args)
 	}
 
-}
-
-// Make sure we can grow the container's rootfs at creation time.
-func (s *DockerSuite) TestCreateGrowRootfs(c *check.C) {
-	testRequires(c, Devicemapper)
-	out, _ := dockerCmd(c, "create", "--storage-opt", "size=120G", "busybox")
-
-	cleanedContainerID := strings.TrimSpace(out)
-
-	inspectOut := inspectField(c, cleanedContainerID, "HostConfig.StorageOpt")
-	c.Assert(inspectOut, checker.Equals, "map[size:120G]")
-}
-
-// Make sure we cannot shrink the container's rootfs at creation time.
-func (s *DockerSuite) TestCreateShrinkRootfs(c *check.C) {
-	testRequires(c, Devicemapper)
-
-	// Ensure this fails because of the defaultBaseFsSize is 10G
-	out, _, err := dockerCmdWithError("create", "--storage-opt", "size=5G", "busybox")
-	c.Assert(err, check.NotNil, check.Commentf(out))
-	c.Assert(out, checker.Contains, "Container size cannot be smaller than")
 }
 
 // Make sure we can set hostconfig options too
@@ -262,7 +241,8 @@ func (s *DockerSuite) TestCreateRM(c *check.C) {
 
 func (s *DockerSuite) TestCreateModeIpcContainer(c *check.C) {
 	// Uses Linux specific functionality (--ipc)
-	testRequires(c, DaemonIsLinux, SameHostDaemon)
+	testRequires(c, DaemonIsLinux)
+	testRequires(c, SameHostDaemon, NotUserNamespace)
 
 	out, _ := dockerCmd(c, "create", "busybox")
 	id := strings.TrimSpace(out)

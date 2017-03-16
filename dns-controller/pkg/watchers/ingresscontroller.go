@@ -22,23 +22,23 @@ import (
 
 	"github.com/golang/glog"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	client_extensions "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/extensions/v1beta1"
-	"k8s.io/kubernetes/pkg/watch"
 )
 
 // IngressController watches for Ingress objects with dns labels
 type IngressController struct {
 	util.Stoppable
-	kubeClient client_extensions.ExtensionsV1beta1Interface
+	kubeClient kubernetes.Interface
 	scope      dns.Scope
 }
 
 // newIngressController creates a ingressController
-func NewIngressController(kubeClient client_extensions.ExtensionsV1beta1Interface, dns dns.Context) (*IngressController, error) {
+func NewIngressController(kubeClient kubernetes.Interface, dns dns.Context) (*IngressController, error) {
 	scope, err := dns.CreateScope("ingress")
 	if err != nil {
 		return nil, fmt.Errorf("error building dns scope: %v", err)
@@ -64,12 +64,12 @@ func (c *IngressController) Run() {
 
 func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
-		var listOpts v1.ListOptions
+		var listOpts metav1.ListOptions
 		glog.Warningf("querying without label filter")
 		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")
 		//listOpts.FieldSelector = fields.Everything()
-		ingressList, err := c.kubeClient.Ingresses("").List(listOpts)
+		ingressList, err := c.kubeClient.ExtensionsV1beta1().Ingresses("").List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing ingresss: %v", err)
 		}
@@ -86,7 +86,7 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 		//listOpts.FieldSelector = fields.Everything()
 		listOpts.Watch = true
 		listOpts.ResourceVersion = ingressList.ResourceVersion
-		watcher, err := c.kubeClient.Ingresses("").Watch(listOpts)
+		watcher, err := c.kubeClient.ExtensionsV1beta1().Ingresses("").Watch(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error watching ingresss: %v", err)
 		}
