@@ -132,7 +132,13 @@ type ClusterSpec struct {
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 
+	// Use an existing custom cloud security policy for the instances.  One example is to specify the name
+	// of an AWS IAM role for the master and another for the nodes.
+	// Map is keyed by: master, node
+	CustomPolicies *map[string]string `json:"customPolicies,omitempty"`
+
 	// Additional policies to add for roles
+	// Map is keyed by: master, node
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 
 	//HairpinMode                   string `json:",omitempty"`

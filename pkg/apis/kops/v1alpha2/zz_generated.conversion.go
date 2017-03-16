@@ -335,8 +335,8 @@ func autoConvert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	out.VSpherePassword = in.VSpherePassword
 	out.VSphereServer = in.VSphereServer
 	out.VSphereDatacenter = in.VSphereDatacenter
-	out.VSphereDatastore = in.VSphereDatastore
 	out.VSphereResourcePool = in.VSphereResourcePool
+	out.VSphereDatastore = in.VSphereDatastore
 	out.VSphereCoreDNSServer = in.VSphereCoreDNSServer
 	return nil
 }
@@ -469,6 +469,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.KubernetesAPIAccess = in.KubernetesAPIAccess
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
+	out.CustomPolicies = in.CustomPolicies
 	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
@@ -650,6 +651,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	out.KubernetesAPIAccess = in.KubernetesAPIAccess
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
+	out.CustomPolicies = in.CustomPolicies
 	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
@@ -1293,8 +1295,8 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.AdmissionControl = in.AdmissionControl
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
-	out.ClientCAFile = in.ClientCAFile
 	out.BasicAuthFile = in.BasicAuthFile
+	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	out.TokenAuthFile = in.TokenAuthFile
@@ -1458,8 +1460,8 @@ func autoConvert_v1alpha2_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.Image = in.Image
 	out.CPURequest = in.CPURequest
 	out.LogLevel = in.LogLevel
-	out.Master = in.Master
 	out.ClusterCIDR = in.ClusterCIDR
+	out.Master = in.Master
 	return nil
 }
 

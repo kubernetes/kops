@@ -19,7 +19,6 @@ package awstasks
 import (
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/golang/glog"
@@ -43,7 +42,6 @@ func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, e
 		glog.V(2).Infof("Role/RoleID not set")
 		return nil, nil
 	}
-	roleID := *e.Role.ID
 
 	request := &iam.GetInstanceProfileInput{InstanceProfileName: e.InstanceProfile.Name}
 
@@ -60,9 +58,6 @@ func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, e
 
 	ip := response.InstanceProfile
 	for _, role := range ip.Roles {
-		if aws.StringValue(role.RoleId) != roleID {
-			continue
-		}
 		actual := &IAMInstanceProfileRole{}
 		actual.InstanceProfile = &IAMInstanceProfile{ID: ip.InstanceProfileId, Name: ip.InstanceProfileName}
 		actual.Role = &IAMRole{ID: role.RoleId, Name: role.RoleName}
@@ -86,6 +81,9 @@ func (s *IAMInstanceProfileRole) CheckChanges(a, e, changes *IAMInstanceProfileR
 		}
 		if e.InstanceProfile == nil {
 			return fi.RequiredField("InstanceProfile")
+		}
+		if a.Role != e.Role {
+			return fi.CannotChangeField("Role")
 		}
 	}
 	return nil

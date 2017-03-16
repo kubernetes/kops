@@ -19,7 +19,7 @@ package v1alpha1
 import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 type KubeletConfigSpec struct {
-	// not used for clusters version 1.6 and later
+	// not used for clusters version 1.6 and later - flag removed
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
 	// kubeconfigPath is the path to the kubeconfig file with authorization
@@ -28,7 +28,7 @@ type KubeletConfigSpec struct {
 	KubeconfigPath    string `json:"kubeconfigPath,omitempty" flag:"kubeconfig"`
 	RequireKubeconfig *bool  `json:"requireKubeconfig,omitempty" flag:"require-kubeconfig"`
 
-	LogLevel *int32 `json:"logLevel,omitempty" flag:"v"`
+	LogLevel *int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
@@ -156,6 +156,7 @@ type KubeletConfigSpec struct {
 	//// minimumGCAge is the minimum age for a unused image before it is
 	//// garbage collected.
 	//ImageMinimumGCAge unversioned.Duration `json:"imageMinimumGCAge"`
+
 	//// lowDiskSpaceThresholdMB is the absolute free disk space, in MB, to
 	//// maintain. When disk space falls below this threshold, new pods would
 	//// be rejected.
@@ -223,7 +224,7 @@ type KubeletConfigSpec struct {
 	MaxPods *int32 `json:"maxPods,omitempty" flag:"max-pods"`
 
 	// nvidiaGPUs is the number of NVIDIA GPU devices on this node.
-	NvidiaGPUs int32 `json:"nvidiaGPUs,omitempty" flag:"experimental-nvidia-gpus"`
+	NvidiaGPUs int32 `json:"nvidiaGPUs,omitempty" flag:"experimental-nvidia-gpus" flag-empty:"0"`
 
 	//// dockerExecHandlerName is the handler to use when executing a command
 	//// in a container. Valid values are 'native' and 'nsenter'. Defaults to
@@ -307,9 +308,9 @@ type KubeletConfigSpec struct {
 	// Comma-delimited list of grace periods for each soft eviction signal.  For example, 'memory.available=30s'.
 	EvictionSoftGracePeriod string `json:"evictionSoftGracePeriod,omitempty" flag:"eviction-soft-grace-period"`
 	// Duration for which the kubelet has to wait before transitioning out of an eviction pressure condition.
-	EvictionPressureTransitionPeriod *metav1.Duration `json:"evictionPressureTransitionPeriod,omitempty" flag:"eviction-pressure-transition-period"`
+	EvictionPressureTransitionPeriod *metav1.Duration `json:"evictionPressureTransitionPeriod,omitempty" flag:"eviction-pressure-transition-period" flag-empty:"0s"`
 	// Maximum allowed grace period (in seconds) to use when terminating pods in response to a soft eviction threshold being met.
-	EvictionMaxPodGracePeriod int32 `json:"evictionMaxPodGracePeriod,omitempty" flag:"eviction-max-pod-grace-period"`
+	EvictionMaxPodGracePeriod int32 `json:"evictionMaxPodGracePeriod,omitempty" flag:"eviction-max-pod-grace-period" flag-empty:"0"`
 	// Comma-delimited list of minimum reclaims (e.g. imagefs.available=2Gi) that describes the minimum amount of resource the kubelet will reclaim when performing a pod eviction if that resource is under pressure.
 	EvictionMinimumReclaim string `json:"evictionMinimumReclaim,omitempty" flag:"eviction-minimum-reclaim"`
 
@@ -383,28 +384,43 @@ type KubeProxyConfig struct {
 }
 
 type KubeAPIServerConfig struct {
+	// TODO: Remove PathSrvKubernetes - unused
 	PathSrvKubernetes string `json:"pathSrvKubernetes,omitempty"`
-	PathSrvSshproxy   string `json:"pathSrvSshproxy,omitempty"`
-	Image             string `json:"image,omitempty"`
+	// TODO: Remove PathSrvSshProxy - unused
+	PathSrvSshproxy string `json:"pathSrvSshproxy,omitempty"`
 
-	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
+	Image string `json:"image,omitempty"`
 
-	CloudProvider         string            `json:"cloudProvider,omitempty" flag:"cloud-provider"`
-	SecurePort            int32             `json:"securePort,omitempty" flag:"secure-port"`
-	InsecurePort          int32             `json:"insecurePort,omitempty" flag:"insecure-port"`
-	Address               string            `json:"address,omitempty" flag:"address"`
-	EtcdServers           []string          `json:"etcdServers,omitempty" flag:"etcd-servers"`
-	EtcdServersOverrides  []string          `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
-	AdmissionControl      []string          `json:"admissionControl,omitempty" flag:"admission-control"`
-	ServiceClusterIPRange string            `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
-	ClientCAFile          string            `json:"clientCAFile,omitempty" flag:"client-ca-file"`
-	BasicAuthFile         string            `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
-	TLSCertFile           string            `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
-	TLSPrivateKeyFile     string            `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
-	TokenAuthFile         string            `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
-	AllowPrivileged       *bool             `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
-	APIServerCount        *int32            `json:"apiServerCount,omitempty" flag:"apiserver-count"`
-	RuntimeConfig         map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
+	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
+
+	CloudProvider         string   `json:"cloudProvider,omitempty" flag:"cloud-provider"`
+	SecurePort            int32    `json:"securePort,omitempty" flag:"secure-port"`
+	InsecurePort          int32    `json:"insecurePort,omitempty" flag:"insecure-port"`
+	Address               string   `json:"address,omitempty" flag:"address"`
+	EtcdServers           []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
+	EtcdServersOverrides  []string `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
+	AdmissionControl      []string `json:"admissionControl,omitempty" flag:"admission-control"`
+	ServiceClusterIPRange string   `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
+
+	// TODO: Remove unused BasicAuthFile
+	BasicAuthFile string `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
+
+	// TODO: Remove unused ClientCAFile
+	ClientCAFile string `json:"clientCAFile,omitempty" flag:"client-ca-file"`
+	// TODO: Remove unused TLSCertFile
+	TLSCertFile string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
+	// TODO: Remove unused TLSPrivateKeyFile
+	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
+
+	// TODO: Remove unused TokenAuthFile
+	TokenAuthFile string `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
+
+	AllowPrivileged *bool  `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
+	APIServerCount  *int32 `json:"apiServerCount,omitempty" flag:"apiserver-count"`
+	// keys and values in RuntimeConfig are parsed into the `--runtime-config` parameter
+	// for KubeAPIServer, concatenated with commas. ex: `--runtime-config=key1=value1,key2=value2`.
+	// Use this to enable alpha resources on kube-apiserver
+	RuntimeConfig map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
 
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 
@@ -447,12 +463,14 @@ type KubeAPIServerConfig struct {
 
 type KubeControllerManagerConfig struct {
 	Master   string `json:"master,omitempty" flag:"master"`
-	LogLevel int32  `json:"logLevel,omitempty" flag:"v"`
+	LogLevel int32  `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 
+	// TODO: Remove as unused
 	ServiceAccountPrivateKeyFile string `json:"serviceAccountPrivateKeyFile,omitempty" flag:"service-account-private-key-file"`
 
 	Image string `json:"image,omitempty"`
 
+	// TODO: Remove PathSrvKubernetes - unused
 	PathSrvKubernetes string `json:"pathSrvKubernetes,omitempty"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
@@ -567,9 +585,12 @@ type KubeControllerManagerConfig struct {
 	// configureCloudRoutes enables CIDRs allocated with allocateNodeCIDRs
 	// to be configured on the cloud provider.
 	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
+
+	// TODO: Remove as unused
 	// rootCAFile is the root certificate authority will be included in service
 	// account's token secret. This must be a valid PEM-encoded CA bundle.
 	RootCAFile string `json:"rootCAFile,omitempty" flag:"root-ca-file"`
+
 	//// contentType is contentType of requests sent to apiserver.
 	//ContentType string `json:"contentType"`
 	//// kubeAPIQPS is the QPS to use while talking with kubernetes apiserver.
@@ -676,7 +697,7 @@ type CloudConfiguration struct {
 	VSpherePassword      *string `json:"vSpherePassword,omitempty"`
 	VSphereServer        *string `json:"vSphereServer,omitempty"`
 	VSphereDatacenter    *string `json:"vSphereDatacenter,omitempty"`
-	VSphereDatastore     *string `json:"vSphereDatastore,omitempty"`
 	VSphereResourcePool  *string `json:"vSphereResourcePool,omitempty"`
+	VSphereDatastore     *string `json:"vSphereDatastore,omitempty"`
 	VSphereCoreDNSServer *string `json:"vSphereCoreDNSServer,omitempty"`
 }

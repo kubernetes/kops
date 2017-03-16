@@ -2,9 +2,9 @@
 
 Two IAM roles are created for the cluster: one for the masters, and one for the nodes.
 
-> Work is being done on scoping permissions to the minimum required to setup and maintain cluster. 
+> Work is being done on scoping permissions to the minimum required to setup and maintain cluster.
 > Please note that currently all Pods running on your cluster have access to instance IAM role.
-> Consider using projects such as [kube2iam](https://github.com/jtblin/kube2iam) to prevent that. 
+> Consider using projects such as [kube2iam](https://github.com/jtblin/kube2iam) to prevent that.
 
 Master permissions:
 
@@ -136,3 +136,29 @@ You can have an additional policy for each kops role (node, master, bastion). Fo
         }
       ]
 ```
+
+## Reusing Existing Policies
+
+Sometimes you may need to reuse existing IAM roles. You can do this
+through the `customPolicies` cluster spec API field.  This setting is highly advanced
+and only enabled via CustomPoliciesSupport feature flag.  Setting the wrong role
+permissions can impact various components inside of Kubernetes, and cause
+unexpected issues.  This feature is in place to support the initial documenting and testing the creation of custom roles. Again, use the existing kops functionality, or reach out
+if you want to help!
+
+At this point, we do not have a full definition of the fine grain roles. Please refer
+[to](https://github.com/kubernetes/kops/issues/1873) for more information.
+
+Please use this feature wisely! Enable the feature flag by:
+
+```console
+$ export KOPS_FEATURE_FLAGS="+CustomPoliciesSupport"
+```
+Inside the cluster spec define one or two roles specific to the master and
+a node.
+
+```yaml
+  customPolicies:
+    node: "arn:aws:iam::123456789012:role/kops-node"
+    master: "arn:aws:iam::123456789012:role/kops-master"
+``` 
