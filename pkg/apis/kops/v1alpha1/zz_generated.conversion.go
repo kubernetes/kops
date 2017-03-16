@@ -307,6 +307,7 @@ func autoConvert_v1alpha1_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	out.VSphereServer = in.VSphereServer
 	out.VSphereDatacenter = in.VSphereDatacenter
 	out.VSphereResourcePool = in.VSphereResourcePool
+	out.VSphereCoreDNSServer = in.VSphereCoreDNSServer
 	return nil
 }
 
@@ -321,6 +322,7 @@ func autoConvert_kops_CloudConfiguration_To_v1alpha1_CloudConfiguration(in *kops
 	out.VSphereServer = in.VSphereServer
 	out.VSphereDatacenter = in.VSphereDatacenter
 	out.VSphereResourcePool = in.VSphereResourcePool
+	out.VSphereCoreDNSServer = in.VSphereCoreDNSServer
 	return nil
 }
 
