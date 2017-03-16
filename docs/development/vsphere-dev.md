@@ -8,6 +8,54 @@ We are using [#sig-onprem channel](https://kubernetes.slack.com/messages/sig-onp
 ## Process
 Here is a [list of requirements and tasks](https://docs.google.com/document/d/10L7I98GuW7o7QuX_1QTouxC0t0aEO_68uHKNc7o4fXY/edit#heading=h.6wyer21z75n9 "Kops-vSphere specification") that we are working on. Once the basic infrastructure for vSphere is ready, we will move these tasks to issues.
 
+## Setting up DNS
+Since vSphere doesn't have built-in DNS service, we use CoreDNS to support the DNS requirement in vSphere provider. This requires the users to setup a CoreDNS server before creating a kubernetes cluster. Please follow the following instructions to setup.
+Before the support of CoreDNS becomes stable, use env parameter "VSPHERE_DNS=coredns" to enable using CoreDNS. Or else AWS Route53 will be the default DNS service. To use Route53, follow instructions on: https://github.com/vmware/kops/blob/vsphere-develop/docs/aws.md
+
+For now we hardcoded DNS zone to skydns.local. So your cluster name should have suffix skydns.local, for example: "mycluster.skydns.local"
+
+### Setup CoreDNS server
+1. Login to vSphere Client.
+2. Right-Click on ESX host on which you want to deploy the DNS server.
+3. Select Deploy OVF template.
+4. Copy and paste URL for [OVA](https://storage.googleapis.com/kubernetes-anywhere-for-vsphere-cna-storage/coredns.ova).
+5. Follow next steps according to instructions mentioned in wizard.
+6. Power on the imported VM.
+7. SSH into the VM and execute ./start-dns.sh under /root. Username/Password: root/kubernetes
+
+### Check DNS server is ready
+On your local machine, execute the following command:
+```bash
+dig @[DNS server's IP] -p 53 NS skydns.local
+```
+
+Successful answer should look like the following:
+```bash
+; <<>> DiG 9.8.3-P1 <<>> @10.162.17.161 -p 53 NS skydns.local
+; (1 server found)
+;; global options: +cmd
+;; Got answer:
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 42011
+;; flags: qr aa rd ra; QUERY: 1, ANSWER: 1, AUTHORITY: 0, ADDITIONAL: 1
+
+;; QUESTION SECTION:
+;skydns.local.			IN	NS
+
+;; ANSWER SECTION:
+skydns.local.		160	IN	NS	ns1.ns.dns.skydns.local.
+
+;; ADDITIONAL SECTION:
+ns1.ns.dns.skydns.local. 160	IN	A	192.168.0.1
+
+;; Query time: 74 msec
+;; SERVER: 10.162.17.161#53(10.162.17.161)
+;; WHEN: Tue Mar 14 22:40:06 2017
+;; MSG SIZE  rcvd: 71
+```
+
+### Add DNS server information when create cluster
+Add ```--dns=private --vsphere-coredns-server=http://[DNS server's IP]:2379``` into the ```kops create cluster``` command line.
+
 ## Hacks
 
 ### Nodeup and protokube testing

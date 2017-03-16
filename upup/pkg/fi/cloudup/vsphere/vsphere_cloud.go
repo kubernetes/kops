@@ -17,6 +17,7 @@ limitations under the License.
 package vsphere
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"github.com/golang/glog"
@@ -30,22 +31,27 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	k8sroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
+	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
 	"net/url"
 	"os"
+	"strings"
 )
 
 type VSphereCloud struct {
-	Server     string
-	Datacenter string
-	Cluster    string
-	Username   string
-	Password   string
-	Client     *govmomi.Client
+	Server        string
+	Datacenter    string
+	Cluster       string
+	Username      string
+	Password      string
+	Client        *govmomi.Client
+	CoreDNSServer string
+	DNSZone       string
 }
 
 const (
 	snapshotName string = "LinkCloneSnapshotPoint"
 	snapshotDesc string = "Snapshot created by kops"
+	privateDNS   string = "coredns"
 )
 
 var _ fi.Cloud = &VSphereCloud{}
@@ -60,6 +66,8 @@ func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
 	cluster := *spec.CloudConfig.VSphereResourcePool
 	glog.V(2).Infof("Creating vSphere Cloud with server(%s), datacenter(%s), cluster(%s)", server, datacenter, cluster)
 
+	dns_server := *spec.CloudConfig.VSphereCoreDNSServer
+	dns_zone := spec.DNSZone
 	username := os.Getenv("VSPHERE_USERNAME")
 	password := os.Getenv("VSPHERE_PASSWORD")
 	if username == "" || password == "" {
@@ -81,17 +89,34 @@ func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
 	}
 	// Add retry functionality
 	c.RoundTripper = vim25.Retry(c.RoundTripper, vim25.TemporaryNetworkError(5))
-	vsphereCloud := &VSphereCloud{Server: server, Datacenter: datacenter, Cluster: cluster, Username: username, Password: password, Client: c}
+	vsphereCloud := &VSphereCloud{Server: server, Datacenter: datacenter, Cluster: cluster, Username: username, Password: password, Client: c, CoreDNSServer: dns_server, DNSZone: dns_zone}
 	glog.V(2).Infof("Created vSphere Cloud successfully: %+v", vsphereCloud)
 	return vsphereCloud, nil
 }
 
 func (c *VSphereCloud) DNS() (dnsprovider.Interface, error) {
-	glog.Warning("DNS() not implemented on VSphere")
-	provider, err := dnsprovider.GetDnsProvider(k8sroute53.ProviderName, nil)
-	if err != nil {
-		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
+	// TODO: this is a temporary flag to toggle between CoreDNS and Route53, before CoreDNS is stable
+	dns_provider := os.Getenv("VSPHERE_DNS")
+
+	var provider dnsprovider.Interface
+	var err error
+	if dns_provider == privateDNS {
+		var lines []string
+		lines = append(lines, "etcd-endpoints = "+c.CoreDNSServer)
+		lines = append(lines, "zones = "+c.DNSZone)
+		config := "[global]\n" + strings.Join(lines, "\n") + "\n"
+		file := bytes.NewReader([]byte(config))
+		provider, err = dnsprovider.GetDnsProvider(k8scoredns.ProviderName, file)
+		if err != nil {
+			return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
+		}
+	} else {
+		provider, err = dnsprovider.GetDnsProvider(k8sroute53.ProviderName, nil)
+		if err != nil {
+			return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
+		}
 	}
+
 	return provider, nil
 
 }
