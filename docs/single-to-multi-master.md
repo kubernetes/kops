@@ -25,7 +25,7 @@ $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal
 / # etcdctl backup --data-dir /var/etcd/data --backup-dir /var/etcd/backup
 / # mv /var/etcd/backup/ /var/etcd/data/
 / # exit
-$ kubectl --namespace=kube-system get pod etcd-server-ip-172-20-36-161.ec2.internal -o json | jq '.spec.volumes[] | select(.name | contains("varetcddata")) | .hostPath.path'
+$ kubectl --namespace=kube-system get pod etcd-server-ip-172-20-36-161.ec2.internal -o json | jq '.spec.volumes[] | select(.name | contains("varetcdata")) | .hostPath.path'
 "/mnt/master-vol-0ea119c15602cbb57/var/etcd/data"
 $ ssh admin@<master-node>
 admin@ip-172-20-36-161:~$ sudo -i
@@ -43,7 +43,7 @@ $ kubectl --namespace=kube-system exec etcd-server-events-ip-172-20-36-161.ec2.i
 / # etcdctl backup --data-dir /var/etcd/data-events --backup-dir /var/etcd/backup
 / # mv /var/etcd/backup/ /var/etcd/data-events/
 / # exit
-$ kubectl --namespace=kube-system get pod etcd-server-events-ip-172-20-36-161.ec2.internal -o json | jq '.spec.volumes[] | select(.name | contains("varetcddata")) | .hostPath.path'
+$ kubectl --namespace=kube-system get pod etcd-server-events-ip-172-20-36-161.ec2.internal -o json | jq '.spec.volumes[] | select(.name | contains("varetcdata")) | .hostPath.path'
 "/mnt/master-vol-0bb5ad222911c6777/var/etcd/data-events"
 $ ssh admin@<master-node>
 admin@ip-172-20-36-161:~$ sudo -i
