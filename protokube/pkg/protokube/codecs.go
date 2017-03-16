@@ -20,14 +20,18 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/pkg/api"
+	"k8s.io/client-go/pkg/api/v1"
 
-	_ "k8s.io/kubernetes/pkg/api/install"
+	_ "k8s.io/client-go/pkg/api/install"
+	_ "k8s.io/client-go/pkg/apis/settings/install"
+	_ "k8s.io/client-go/pkg/apis/storage/install"
+	_ "k8s.io/kops/pkg/apis/kops/install"
 )
 
 func encoder() runtime.Encoder {
+	// This encoder is kubernetes core, not kops encoder
 	yaml, ok := runtime.SerializerInfoForMediaType(api.Codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
 		glog.Fatalf("no YAML serializer registered")

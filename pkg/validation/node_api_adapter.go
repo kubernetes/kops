@@ -21,10 +21,10 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api/v1"
-	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/util/wait"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	k8s_clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -61,8 +61,8 @@ func NewNodeAPIAdapter(client k8s_clientset.Interface, timeout time.Duration) (*
 
 // GetAllNodes is a access to get all nodes from a cluster api
 func (nodeAA *NodeAPIAdapter) GetAllNodes() (nodes *v1.NodeList, err error) {
-	opts := v1.ListOptions{}
-	nodes, err = nodeAA.client.Core().Nodes().List(opts)
+	opts := meta_v1.ListOptions{}
+	nodes, err = nodeAA.client.CoreV1().Nodes().List(opts)
 	if err != nil {
 		glog.V(4).Infof("getting nodes failed for node %v", err)
 		return nil, err
@@ -158,7 +158,7 @@ func (nodeAA *NodeAPIAdapter) waitListSchedulableNodes() (*v1.NodeList, error) {
 	var nodeList *v1.NodeList
 	err := wait.PollImmediate(Poll, SingleCallTimeout, func() (bool, error) {
 		var err error
-		nodeList, err = nodeAA.client.Core().Nodes().List(v1.ListOptions{FieldSelector: "spec.unschedulable=false"})
+		nodeList, err = nodeAA.client.CoreV1().Nodes().List(meta_v1.ListOptions{FieldSelector: "spec.unschedulable=false"})
 		if err != nil {
 			// error logging TODO
 			return false, err

@@ -19,13 +19,14 @@ package channels
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/blang/semver"
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"strings"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 const AnnotationPrefix = "addons.k8s.io/"
@@ -157,7 +158,7 @@ func (c *Channel) SetInstalledVersion(k8sClient *clientset.Clientset, version *C
 
 	glog.V(2).Infof("sending patch: %q", string(annotationPatchJson))
 
-	_, err = k8sClient.Namespaces().Patch(c.Namespace, api.StrategicMergePatchType, annotationPatchJson)
+	_, err = k8sClient.Namespaces().Patch(c.Namespace, types.StrategicMergePatchType, annotationPatchJson)
 	if err != nil {
 		return fmt.Errorf("error applying annotation to namespace: %v", err)
 	}

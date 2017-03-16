@@ -1,0 +1,57 @@
+- name: setup resolv.conf
+  shell: /etc/rc.local
+  become: true
+
+- name: wait until master is ready
+  wait_for: host=192.168.10.90 port=8443 state=started timeout=1800
+
+- name: install templates
+  command: oc create -f /usr/share/heketi/templates
+
+- name: install deploy-heketi
+  shell: oc process deploy-heketi -v HEKETI_KUBE_INSECURE=y HEKETI_KUBE_USER=admin HEKETI_KUBE_PASSWORD=admin HEKETI_KUBE_NAMESPACE=default HEKETI_KUBE_APIHOST=https://192.168.10.90:8443 | oc create -f -
+
+- name: install glusterfs containers
+  shell: oc process glusterfs -v GLUSTERFS_NODE=192.168.10.{{ item }} | oc create -f -
+  with_items:
+    - 100
+    - 101
+    - 102
+
+- name: wait until heketi is ready
+  wait_for: host=deploy-heketi-default.cloudapps.example.com port=80 state=started timeout=1800
+
+- name: wait until glusternode 100 is ready
+  wait_for: host=192.168.10.100 port=24007 state=started timeout=1800
+
+- name: wait until glusternode 101 is ready
+  wait_for: host=192.168.10.101 port=24007 state=started timeout=1800
+
+- name: wait until glusternode 102 is ready
+  wait_for: host=192.168.10.102 port=24007 state=started timeout=1800
+
+- name: pause for 10 seconds
+  pause: seconds=10
+
+- name: install topology in deploy-heketi
+  command: heketi-cli -s http://deploy-heketi-default.cloudapps.example.com topology load --json=topology.json
+
+- name: setup openshift heketi storage
+  command: heketi-cli -s http://deploy-heketi-default.cloudapps.example.com setup-openshift-heketi-storage
+
+- name: submit heketi-storage
+  command: oc create -f heketi-storage.json
+
+- name: wait until job has copied the database
+  shell:  while true ; do if oc get pods | grep heketi-storage-copy-job | grep Completed > /dev/null 2>&1 ; then break; else sleep 1; fi; done
+
+- name: delete deploy-heketi
+  command: oc delete all,job,template,secret --selector="deploy-heketi"
+
+- name: deploy heketi
+  shell: oc process heketi -v HEKETI_KUBE_INSECURE=y HEKETI_KUBE_USER=admin HEKETI_KUBE_PASSWORD=admin HEKETI_KUBE_NAMESPACE=default HEKETI_KUBE_APIHOST=https://192.168.10.90:8443 | oc create -f -
+
+- name: wait for heketi to be ready
+  wait_for: host=heketi-default.cloudapps.example.com port=80 state=started timeout=1800
+
+

@@ -19,18 +19,21 @@ package vfsclientset
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/golang/glog"
-	kops "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
+	// FIXME how do I get rid of this??
 	"os"
 	"reflect"
 	"sort"
 	"time"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
 var StoreVersion = v1alpha2.SchemeGroupVersion
@@ -44,12 +47,12 @@ type commonVFS struct {
 }
 
 func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.GroupVersioner) {
-	yaml, ok := runtime.SerializerInfoForMediaType(api.Codecs.SupportedMediaTypes(), "application/yaml")
+	yaml, ok := runtime.SerializerInfoForMediaType(kops.Codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
 		glog.Fatalf("no YAML serializer registered")
 	}
-	c.encoder = api.Codecs.EncoderForVersion(yaml.Serializer, storeVersion)
-	c.decoder = api.Codecs.DecoderToVersion(yaml.Serializer, kops.SchemeGroupVersion)
+	c.encoder = kops.Codecs.EncoderForVersion(yaml.Serializer, storeVersion)
+	c.decoder = kops.Codecs.DecoderToVersion(yaml.Serializer, kops.SchemeGroupVersion)
 
 	c.kind = kind
 	c.basePath = basePath
@@ -66,12 +69,12 @@ func (c *commonVFS) get(name string) (runtime.Object, error) {
 	return o, nil
 }
 
-func (c *commonVFS) list(items interface{}, options api.ListOptions) (interface{}, error) {
+func (c *commonVFS) list(items interface{}, options v1.ListOptions) (interface{}, error) {
 	return c.readAll(items)
 }
 
 func (c *commonVFS) create(i runtime.Object) error {
-	objectMeta, err := api.ObjectMetaFor(i)
+	objectMeta, err := v1.ObjectMetaFor(i)
 	if err != nil {
 		return err
 	}
@@ -112,7 +115,7 @@ func (c *commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
 		if os.IsNotExist(err) {
 			return nil, err
 		}
-		return nil, fmt.Errorf("error reading %s: %v", configPath, err)
+		return nil, fmt.Errorf("error reading config %s: %v", configPath, err)
 	}
 
 	object, _, err := c.decoder.Decode(data, c.defaultReadVersion, nil)
@@ -162,7 +165,7 @@ func (c *commonVFS) writeConfig(configPath vfs.Path, o runtime.Object, writeOpti
 }
 
 func (c *commonVFS) update(i runtime.Object) error {
-	objectMeta, err := api.ObjectMetaFor(i)
+	objectMeta, err := v1.ObjectMetaFor(i)
 	if err != nil {
 		return err
 	}
@@ -184,7 +187,7 @@ func (c *commonVFS) update(i runtime.Object) error {
 	return nil
 }
 
-func (c *commonVFS) delete(name string, options *api.DeleteOptions) error {
+func (c *commonVFS) delete(name string, options *metav1.DeleteOptions) error {
 	p := c.basePath.Join(name)
 	err := p.Remove()
 	if err != nil {

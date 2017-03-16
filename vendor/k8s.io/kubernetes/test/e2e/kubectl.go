@@ -18,6 +18,7 @@ package e2e
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -41,21 +42,24 @@ import (
 	"github.com/elazarl/goproxy"
 	"github.com/ghodss/yaml"
 
+	apierrs "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	utilnet "k8s.io/apimachinery/pkg/util/net"
+	"k8s.io/apimachinery/pkg/util/uuid"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/apiserver/pkg/authentication/serviceaccount"
+	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
 	"k8s.io/kubernetes/pkg/api/annotations"
-	apierrs "k8s.io/kubernetes/pkg/api/errors"
-	"k8s.io/kubernetes/pkg/api/resource"
 	"k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	rbacv1beta1 "k8s.io/kubernetes/pkg/apis/rbac/v1beta1"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/controller"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/labels"
-	genericregistry "k8s.io/kubernetes/pkg/registry/generic/registry"
 	uexec "k8s.io/kubernetes/pkg/util/exec"
-	utilnet "k8s.io/kubernetes/pkg/util/net"
-	"k8s.io/kubernetes/pkg/util/uuid"
 	utilversion "k8s.io/kubernetes/pkg/util/version"
-	"k8s.io/kubernetes/pkg/util/wait"
 	"k8s.io/kubernetes/test/e2e/framework"
 	"k8s.io/kubernetes/test/e2e/generated"
 	testutils "k8s.io/kubernetes/test/utils"
@@ -388,6 +392,14 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 				framework.Failf("Unexpected kubectl exec output. Wanted %q, got %q", e, a)
 			}
 
+			By("executing a very long command in the container")
+			veryLongData := make([]rune, 20000)
+			for i := 0; i < len(veryLongData); i++ {
+				veryLongData[i] = 'a'
+			}
+			execOutput = framework.RunKubectlOrDie("exec", fmt.Sprintf("--namespace=%v", ns), simplePodName, "echo", string(veryLongData))
+			Expect(string(veryLongData)).To(Equal(strings.TrimSpace(execOutput)), "Unexpected kubectl exec output")
+
 			By("executing a command in the container with noninteractive stdin")
 			execOutput = framework.NewKubectlCommand("exec", fmt.Sprintf("--namespace=%v", ns), "-i", simplePodName, "cat").
 				WithStdinData("abcd1234").
@@ -566,6 +578,16 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 		})
 
 		It("should handle in-cluster config", func() {
+			By("adding rbac permissions")
+			// grant the view permission widely to allow inspection of the `invalid` namespace.
+			framework.BindClusterRole(f.ClientSet.Rbac(), "view", f.Namespace.Name,
+				rbacv1beta1.Subject{Kind: rbacv1beta1.ServiceAccountKind, Namespace: f.Namespace.Name, Name: "default"})
+
+			err := framework.WaitForAuthorizationUpdate(f.ClientSet.AuthorizationV1beta1(),
+				serviceaccount.MakeUsername(f.Namespace.Name, "default"),
+				f.Namespace.Name, "list", schema.GroupResource{Resource: "pods"}, true)
+			framework.ExpectNoError(err)
+
 			By("overriding icc with values provided by flags")
 			kubectlPath := framework.TestContext.KubectlPath
 
@@ -580,14 +602,13 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 			}
 
 			By("trying to use kubectl with invalid token")
-			_, err := framework.RunHostCmd(ns, simplePodName, "/kubectl get pods --token=invalid --v=7 2>&1")
+			_, err = framework.RunHostCmd(ns, simplePodName, "/kubectl get pods --token=invalid --v=7 2>&1")
 			framework.Logf("got err %v", err)
 			Expect(err).To(HaveOccurred())
 			Expect(err).To(ContainSubstring("Using in-cluster namespace"))
 			Expect(err).To(ContainSubstring("Using in-cluster configuration"))
 			Expect(err).To(ContainSubstring("Authorization: Bearer invalid"))
-			// TODO(kubernetes/kubernetes#39267): We should only see a 401 from an invalid bearer token.
-			Expect(err).To(Or(ContainSubstring("Response Status: 403 Forbidden"), ContainSubstring("Response Status: 401 Unauthorized")))
+			Expect(err).To(ContainSubstring("Response Status: 401 Unauthorized"))
 
 			By("trying to use kubectl with invalid server")
 			_, err = framework.RunHostCmd(ns, simplePodName, "/kubectl get pods --server=invalid --v=6 2>&1")
@@ -604,7 +625,6 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 			if matched, _ := regexp.MatchString(fmt.Sprintf("GET http[s]?://%s:%s/api/v1/namespaces/invalid/pods", inClusterHost, inClusterPort), output); !matched {
 				framework.Failf("Unexpected kubectl exec output: ", output)
 			}
-
 		})
 	})
 
@@ -698,6 +718,7 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 					{"Node:"},
 					{"Labels:", "app=redis"},
 					{"role=master"},
+					{"Annotations:"},
 					{"Status:", "Running"},
 					{"IP:"},
 					{"Controllers:", "ReplicationController/redis-master"},
@@ -717,6 +738,7 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 				{"Selector:", "app=redis,role=master"},
 				{"Labels:", "app=redis"},
 				{"role=master"},
+				{"Annotations:"},
 				{"Replicas:", "1 current", "1 desired"},
 				{"Pods Status:", "1 Running", "0 Waiting", "0 Succeeded", "0 Failed"},
 				// {"Events:"} would ordinarily go in the list
@@ -734,6 +756,7 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 				{"Namespace:", ns},
 				{"Labels:", "app=redis"},
 				{"role=master"},
+				{"Annotations:"},
 				{"Selector:", "app=redis", "role=master"},
 				{"Type:", "ClusterIP"},
 				{"IP:"},
@@ -744,13 +767,14 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 
 			// Node
 			// It should be OK to list unschedulable Nodes here.
-			nodes, err := c.Core().Nodes().List(v1.ListOptions{})
+			nodes, err := c.Core().Nodes().List(metav1.ListOptions{})
 			Expect(err).NotTo(HaveOccurred())
 			node := nodes.Items[0]
 			output = framework.RunKubectlOrDie("describe", "node", node.Name)
 			requiredStrings = [][]string{
 				{"Name:", node.Name},
 				{"Labels:"},
+				{"Annotations:"},
 				{"CreationTimestamp:"},
 				{"Conditions:"},
 				{"Type", "Status", "LastHeartbeatTime", "LastTransitionTime", "Reason", "Message"},
@@ -770,6 +794,7 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 			requiredStrings = [][]string{
 				{"Name:", ns},
 				{"Labels:"},
+				{"Annotations:"},
 				{"Status:", "Active"}}
 			checkOutput(output, requiredStrings)
 
@@ -812,7 +837,7 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 						return false, err
 					}
 
-					uidToPort := getContainerPortsByPodUID(endpoints)
+					uidToPort := framework.GetContainerPortsByPodUID(endpoints)
 					if len(uidToPort) == 0 {
 						framework.Logf("No endpoint found, retrying")
 						return false, nil
@@ -1375,7 +1400,9 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 		})
 	})
 
-	framework.KubeDescribe("Kubectl taint", func() {
+	// This test must run [Serial] because it modifies the node so it doesn't allow pods to execute on
+	// it, which will affect anything else running in parallel.
+	framework.KubeDescribe("Kubectl taint [Serial]", func() {
 		It("should update the taint on a node", func() {
 			testTaint := v1.Taint{
 				Key:    fmt.Sprintf("kubernetes.io/e2e-taint-key-001-%s", string(uuid.NewUUID())),
@@ -1444,6 +1471,24 @@ var _ = framework.KubeDescribe("Kubectl client", func() {
 				{"Name:", nodeName},
 				{"Taints:"},
 				{newTestTaint.ToString()},
+			}
+			checkOutput(output, requiredStrings)
+
+			noExecuteTaint := v1.Taint{
+				Key:    testTaint.Key,
+				Value:  "testing-taint-value-no-execute",
+				Effect: v1.TaintEffectNoExecute,
+			}
+			By("adding NoExecute taint " + noExecuteTaint.ToString() + " to the node")
+			runKubectlRetryOrDie("taint", "nodes", nodeName, noExecuteTaint.ToString())
+			defer framework.RemoveTaintOffNode(f.ClientSet, nodeName, noExecuteTaint)
+
+			By("verifying the node has the taint " + noExecuteTaint.ToString())
+			output = runKubectlRetryOrDie("describe", "node", nodeName)
+			requiredStrings = [][]string{
+				{"Name:", nodeName},
+				{"Taints:"},
+				{noExecuteTaint.ToString()},
 			}
 			checkOutput(output, requiredStrings)
 
@@ -1652,7 +1697,12 @@ func makeRequestToGuestbook(c clientset.Interface, cmd, value string, ns string)
 	if errProxy != nil {
 		return "", errProxy
 	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), framework.SingleCallTimeout)
+	defer cancel()
+
 	result, err := proxyRequest.Namespace(ns).
+		Context(ctx).
 		Name("frontend").
 		Suffix("/guestbook.php").
 		Param("cmd", cmd).
@@ -1711,7 +1761,7 @@ func forEachReplicationController(c clientset.Interface, ns, selectorKey, select
 	var err error
 	for t := time.Now(); time.Since(t) < framework.PodListTimeout; time.Sleep(framework.Poll) {
 		label := labels.SelectorFromSet(labels.Set(map[string]string{selectorKey: selectorValue}))
-		options := v1.ListOptions{LabelSelector: label.String()}
+		options := metav1.ListOptions{LabelSelector: label.String()}
 		rcs, err = c.Core().ReplicationControllers(ns).List(options)
 		Expect(err).NotTo(HaveOccurred())
 		if len(rcs.Items) > 0 {
@@ -1752,6 +1802,10 @@ func getUDData(jpgExpected string, ns string) func(clientset.Interface, string) 
 		if err != nil {
 			return err
 		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), framework.SingleCallTimeout)
+		defer cancel()
+
 		var body []byte
 		if subResourceProxyAvailable {
 			body, err = c.Core().RESTClient().Get().
@@ -1773,6 +1827,9 @@ func getUDData(jpgExpected string, ns string) func(clientset.Interface, string) 
 				Raw()
 		}
 		if err != nil {
+			if ctx.Err() != nil {
+				framework.Failf("Failed to retrieve data from container: %v", err)
+			}
 			return err
 		}
 		framework.Logf("got data: %s", body)

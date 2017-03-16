@@ -21,13 +21,13 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/record"
 	"k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/client/record"
 	kevents "k8s.io/kubernetes/pkg/kubelet/events"
-	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/mount"
 	"k8s.io/kubernetes/pkg/volume"
 )
@@ -381,6 +381,12 @@ func (og *operationGenerator) GenerateMountVolumeFunc(
 			volumeToMount.PodName,
 			volumeToMount.Pod.UID,
 			newMounterErr)
+	}
+
+	mountCheckError := checkMountOptionSupport(og, volumeToMount, volumePlugin)
+
+	if mountCheckError != nil {
+		return nil, mountCheckError
 	}
 
 	// Get attacher, if possible
@@ -865,5 +871,22 @@ func (og *operationGenerator) verifyVolumeIsSafeToDetach(
 		volumeToDetach.VolumeName,
 		volumeToDetach.VolumeSpec.Name(),
 		volumeToDetach.NodeName)
+	return nil
+}
+
+func checkMountOptionSupport(og *operationGenerator, volumeToMount VolumeToMount, plugin volume.VolumePlugin) error {
+	mountOptions := volume.MountOptionFromSpec(volumeToMount.VolumeSpec)
+
+	if len(mountOptions) > 0 && !plugin.SupportsMountOption() {
+		err := fmt.Errorf(
+			"MountVolume.checkMountOptionSupport failed for volume %q (spec.Name: %q) pod %q (UID: %q) with: %q",
+			volumeToMount.VolumeName,
+			volumeToMount.VolumeSpec.Name(),
+			volumeToMount.PodName,
+			volumeToMount.Pod.UID,
+			"Mount options are not supported for this volume type")
+		og.recorder.Eventf(volumeToMount.Pod, v1.EventTypeWarning, kevents.UnsupportedMountOption, err.Error())
+		return err
+	}
 	return nil
 }

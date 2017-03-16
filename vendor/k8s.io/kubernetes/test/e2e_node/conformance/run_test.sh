@@ -84,7 +84,7 @@ start_kubelet() {
   fi
 }
 
-# wait_kubelet retris for 10 times for kubelet to be ready by checking http://127.0.0.1:10255/healthz.
+# wait_kubelet retries for 10 times for kubelet to be ready by checking http://127.0.0.1:10255/healthz.
 wait_kubelet() {
   echo "Health checking kubelet..."
   healthCheckURL=http://127.0.0.1:10255/healthz
@@ -156,7 +156,7 @@ start_kubelet --api-servers $apiserver \
   --volume-stats-agg-period $volume_stats_agg_period \
   --allow-privileged=$allow_privileged \
   --serialize-image-pulls=$serialize_image_pulls \
-  --config $config_dir \
+  --pod-manifest-path $config_dir \
   --file-check-frequency $file_check_frequency \
   --pod-cidr=$pod_cidr \
   --runtime-cgroups=/docker-daemon \

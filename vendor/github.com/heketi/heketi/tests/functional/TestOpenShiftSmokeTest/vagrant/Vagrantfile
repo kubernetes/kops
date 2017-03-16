@@ -1,0 +1,84 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+#
+# If you want to use RHEL:
+# Download RHEL Atomic from
+# https://access.redhat.com/downloads/content/293/ver=1/rhel---7/1.0.1/x86_64/product-downloads
+# Then once downloaded type:
+# $ vagrant box add --name rhel/atomic <downloaded rhel atomic box>
+# $ vagrant box add --name rhel/7 <downloaded rhel box>
+#
+
+MINIONS = 3
+DISKS = 3
+
+# 8G needed to run
+
+Vagrant.configure("2") do |config|
+    config.ssh.insert_key = false
+    config.vm.box = "centos/atomic-host"
+
+    # Override
+    config.vm.provider :libvirt do |v,override|
+        override.vm.synced_folder '.', '/home/vagrant/sync', disabled: true
+    end
+
+    # Make RHEL client
+    config.vm.define :client do |client|
+        client.vm.box = "centos/7"
+        client.vm.network :private_network, ip: "192.168.10.80"
+        client.vm.host_name = "client"
+        client.vm.provider :libvirt do |lv|
+            lv.memory = 1024
+            lv.cpus = 2
+        end
+    end
+
+    # Make kub master
+    config.vm.define :master do |master|
+        master.vm.network :private_network, ip: "192.168.10.90"
+        master.vm.host_name = "master"
+
+        master.vm.provider :libvirt do |lv|
+            lv.memory = 1024
+            lv.cpus = 2
+        end
+
+    end
+
+    # Make the glusterfs cluster, each with DISKS number of drives
+    (0..MINIONS-1).each do |i|
+        config.vm.define "atomic#{i}" do |atomic|
+            atomic.vm.hostname = "atomic#{i}"
+            atomic.vm.network :private_network, ip: "192.168.10.10#{i}"
+            atomic.vm.provider :libvirt do |lv|
+                lv.memory = 2048
+                lv.cpus = 2
+            end
+
+            driverletters = ('b'..'z').to_a
+            (0..DISKS-1).each do |d|
+                atomic.vm.provider :libvirt do  |lv|
+                    lv.storage :file, :device => "vd#{driverletters[d]}", :path => "origin-disk-#{i}-#{d}.disk", :size => '500G'
+                end
+            end
+
+            if i == (MINIONS-1)
+                # View the documentation for the provider you're using for more
+                # information on available options.
+                cluster = (0..MINIONS-1).map {|j| "atomic#{j}"}
+                cluster[MINIONS] = "master"
+                atomic.vm.provision :ansible do |ansible|
+                    ansible.limit = "all"
+                    ansible.playbook = "site.yml"
+                    ansible.groups = {
+                        "client" => ["client"],
+                        "master" => ["master"],
+                        "cluster" => cluster, 
+                        "nodes" => (0..MINIONS-1).map {|j| "atomic#{j}"},
+                    }
+                end
+            end
+        end
+    end
+end

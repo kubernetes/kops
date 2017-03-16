@@ -255,6 +255,10 @@ utils-dist:
 # See docs/development/dependencies.md
 copydeps:
 	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
+	rm -rf vendor/k8s.io/apimachinery vendor/k8s.io/apiserver vendor/k8s.io/client-go
+	ln -s kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
+	ln -s kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
+	ln -s kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
 
 gofmt:
 	gofmt -w -s channels/
@@ -323,7 +327,7 @@ examples:
 # api machinery regenerate
 
 apimachinery:
-	./hack/make-apimachinery.sh
+	#./hack/make-apimachinery.sh
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.conversion
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.conversion
 	${GOPATH}/bin/defaulter-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.defaults

@@ -22,24 +22,25 @@ import (
 	"testing"
 	"time"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/resource"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/diff"
+	"k8s.io/apimachinery/pkg/util/wait"
+	testcore "k8s.io/client-go/testing"
 	"k8s.io/kubernetes/pkg/api/v1"
 	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/client/cache"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
-	testcore "k8s.io/kubernetes/pkg/client/testing/core"
+	informers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"
+	coreinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions/core/v1"
+	extensionsinformers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/cloudprovider"
 	fakecloud "k8s.io/kubernetes/pkg/cloudprovider/providers/fake"
 	"k8s.io/kubernetes/pkg/controller"
-	"k8s.io/kubernetes/pkg/controller/informers"
 	"k8s.io/kubernetes/pkg/controller/node/testutil"
-	"k8s.io/kubernetes/pkg/types"
-	"k8s.io/kubernetes/pkg/util/diff"
 	"k8s.io/kubernetes/pkg/util/node"
-	"k8s.io/kubernetes/pkg/util/wait"
 )
 
 const (
@@ -50,6 +51,14 @@ const (
 	testLargeClusterThreshold  = 20
 	testUnhealtyThreshold      = float32(0.55)
 )
+
+func alwaysReady() bool { return true }
+
+type nodeController struct {
+	*NodeController
+	nodeInformer      coreinformers.NodeInformer
+	daemonSetInformer extensionsinformers.DaemonSetInformer
+}
 
 func NewNodeControllerFromClient(
 	cloud cloudprovider.Interface,
@@ -65,22 +74,47 @@ func NewNodeControllerFromClient(
 	clusterCIDR *net.IPNet,
 	serviceCIDR *net.IPNet,
 	nodeCIDRMaskSize int,
-	allocateNodeCIDRs bool) (*NodeController, error) {
+	allocateNodeCIDRs bool) (*nodeController, error) {
 
-	factory := informers.NewSharedInformerFactory(kubeClient, nil, controller.NoResyncPeriodFunc())
+	factory := informers.NewSharedInformerFactory(kubeClient, controller.NoResyncPeriodFunc())
 
-	nc, err := NewNodeController(factory.Pods(), factory.Nodes(), factory.DaemonSets(), cloud, kubeClient, podEvictionTimeout, evictionLimiterQPS, secondaryEvictionLimiterQPS,
-		largeClusterThreshold, unhealthyZoneThreshold, nodeMonitorGracePeriod, nodeStartupGracePeriod, nodeMonitorPeriod, clusterCIDR,
-		serviceCIDR, nodeCIDRMaskSize, allocateNodeCIDRs)
+	nodeInformer := factory.Core().V1().Nodes()
+	daemonSetInformer := factory.Extensions().V1beta1().DaemonSets()
+
+	nc, err := NewNodeController(
+		factory.Core().V1().Pods(),
+		nodeInformer,
+		daemonSetInformer,
+		cloud,
+		kubeClient,
+		podEvictionTimeout,
+		evictionLimiterQPS,
+		secondaryEvictionLimiterQPS,
+		largeClusterThreshold,
+		unhealthyZoneThreshold,
+		nodeMonitorGracePeriod,
+		nodeStartupGracePeriod,
+		nodeMonitorPeriod,
+		clusterCIDR,
+		serviceCIDR,
+		nodeCIDRMaskSize,
+		allocateNodeCIDRs,
+		false,
+		false,
+	)
 	if err != nil {
 		return nil, err
 	}
 
-	return nc, nil
+	nc.podInformerSynced = alwaysReady
+	nc.nodeInformerSynced = alwaysReady
+	nc.daemonSetInformerSynced = alwaysReady
+
+	return &nodeController{nc, nodeInformer, daemonSetInformer}, nil
 }
 
-func syncNodeStore(nc *NodeController, fakeNodeHandler *testutil.FakeNodeHandler) error {
-	nodes, err := fakeNodeHandler.List(v1.ListOptions{})
+func syncNodeStore(nc *nodeController, fakeNodeHandler *testutil.FakeNodeHandler) error {
+	nodes, err := fakeNodeHandler.List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -88,7 +122,7 @@ func syncNodeStore(nc *NodeController, fakeNodeHandler *testutil.FakeNodeHandler
 	for i := range nodes.Items {
 		newElems = append(newElems, &nodes.Items[i])
 	}
-	return nc.nodeStore.Replace(newElems, "newRV")
+	return nc.nodeInformer.Informer().GetStore().Replace(newElems, "newRV")
 }
 
 func TestMonitorNodeStatusEvictPods(t *testing.T) {
@@ -124,7 +158,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: fakeNow,
 							Labels: map[string]string{
@@ -134,7 +168,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 						},
 					},
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node1",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -168,7 +202,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -188,7 +222,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 						},
 					},
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node1",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -232,7 +266,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -252,7 +286,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 						},
 					},
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node1",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -276,7 +310,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 					&v1.PodList{
 						Items: []v1.Pod{
 							{
-								ObjectMeta: v1.ObjectMeta{
+								ObjectMeta: metav1.ObjectMeta{
 									Name:      "pod0",
 									Namespace: "default",
 									Labels:    map[string]string{"daemon": "yes"},
@@ -291,7 +325,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 			},
 			daemonSets: []extensions.DaemonSet{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:      "ds0",
 						Namespace: "default",
 					},
@@ -323,7 +357,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -343,7 +377,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 						},
 					},
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node1",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -387,7 +421,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -407,7 +441,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 						},
 					},
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node1",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -451,7 +485,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -471,7 +505,7 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 						},
 					},
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node1",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -517,8 +551,9 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 			evictionTimeout, testRateLimiterQPS, testRateLimiterQPS, testLargeClusterThreshold, testUnhealtyThreshold, testNodeMonitorGracePeriod,
 			testNodeStartupGracePeriod, testNodeMonitorPeriod, nil, nil, 0, false)
 		nodeController.now = func() metav1.Time { return fakeNow }
+		nodeController.recorder = testutil.NewFakeRecorder()
 		for _, ds := range item.daemonSets {
-			nodeController.daemonSetStore.Add(&ds)
+			nodeController.daemonSetInformer.Informer().GetStore().Add(&ds)
 		}
 		if err := syncNodeStore(nodeController, item.fakeNodeHandler); err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -539,11 +574,15 @@ func TestMonitorNodeStatusEvictPods(t *testing.T) {
 		}
 		zones := testutil.GetZones(item.fakeNodeHandler)
 		for _, zone := range zones {
-			nodeController.zonePodEvictor[zone].Try(func(value TimedValue) (bool, time.Duration) {
-				nodeUid, _ := value.UID.(string)
-				deletePods(item.fakeNodeHandler, nodeController.recorder, value.Value, nodeUid, nodeController.daemonSetStore)
-				return true, 0
-			})
+			if _, ok := nodeController.zonePodEvictor[zone]; ok {
+				nodeController.zonePodEvictor[zone].Try(func(value TimedValue) (bool, time.Duration) {
+					nodeUid, _ := value.UID.(string)
+					deletePods(item.fakeNodeHandler, nodeController.recorder, value.Value, nodeUid, nodeController.daemonSetInformer.Lister())
+					return true, 0
+				})
+			} else {
+				t.Fatalf("Zone %v was unitialized!", zone)
+			}
 		}
 
 		podEvicted := false
@@ -594,7 +633,7 @@ func TestPodStatusChange(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -614,7 +653,7 @@ func TestPodStatusChange(t *testing.T) {
 						},
 					},
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node1",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 							Labels: map[string]string{
@@ -661,6 +700,7 @@ func TestPodStatusChange(t *testing.T) {
 			evictionTimeout, testRateLimiterQPS, testRateLimiterQPS, testLargeClusterThreshold, testUnhealtyThreshold, testNodeMonitorGracePeriod,
 			testNodeStartupGracePeriod, testNodeMonitorPeriod, nil, nil, 0, false)
 		nodeController.now = func() metav1.Time { return fakeNow }
+		nodeController.recorder = testutil.NewFakeRecorder()
 		if err := syncNodeStore(nodeController, item.fakeNodeHandler); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -749,7 +789,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 		{
 			nodeList: []*v1.Node{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node0",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -769,7 +809,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node1",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -804,7 +844,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 		{
 			nodeList: []*v1.Node{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node0",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -824,7 +864,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node1",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -866,7 +906,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 		{
 			nodeList: []*v1.Node{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node0",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -886,7 +926,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node1",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -927,7 +967,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 		{
 			nodeList: []*v1.Node{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node0",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -947,7 +987,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node-master",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -986,7 +1026,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 		{
 			nodeList: []*v1.Node{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node0",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -1006,7 +1046,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node1",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -1048,7 +1088,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 		{
 			nodeList: []*v1.Node{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node0",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -1068,7 +1108,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node1",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -1088,7 +1128,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node2",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -1108,7 +1148,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node3",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -1128,7 +1168,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 					},
 				},
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node4",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						Labels: map[string]string{
@@ -1180,6 +1220,7 @@ func TestMonitorNodeStatusEvictPodsWithDisruption(t *testing.T) {
 		nodeController.enterPartialDisruptionFunc = func(nodeNum int) float32 {
 			return testRateLimiterQPS
 		}
+		nodeController.recorder = testutil.NewFakeRecorder()
 		nodeController.enterFullDisruptionFunc = func(nodeNum int) float32 {
 			return testRateLimiterQPS
 		}
@@ -1245,7 +1286,7 @@ func TestCloudProviderNoRateLimit(t *testing.T) {
 	fnh := &testutil.FakeNodeHandler{
 		Existing: []*v1.Node{
 			{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:              "node0",
 					CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 				},
@@ -1270,6 +1311,7 @@ func TestCloudProviderNoRateLimit(t *testing.T) {
 		testNodeMonitorPeriod, nil, nil, 0, false)
 	nodeController.cloud = &fakecloud.FakeCloud{}
 	nodeController.now = func() metav1.Time { return metav1.Date(2016, 1, 1, 12, 0, 0, 0, time.UTC) }
+	nodeController.recorder = testutil.NewFakeRecorder()
 	nodeController.nodeExistsInCloudProvider = func(nodeName types.NodeName) (bool, error) {
 		return false, nil
 	}
@@ -1309,7 +1351,7 @@ func TestMonitorNodeStatusUpdateStatus(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						},
@@ -1320,7 +1362,7 @@ func TestMonitorNodeStatusUpdateStatus(t *testing.T) {
 			expectedRequestCount: 2, // List+Update
 			expectedNodes: []*v1.Node{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node0",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 					},
@@ -1342,6 +1384,22 @@ func TestMonitorNodeStatusUpdateStatus(t *testing.T) {
 								LastHeartbeatTime:  metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 								LastTransitionTime: fakeNow,
 							},
+							{
+								Type:               v1.NodeMemoryPressure,
+								Status:             v1.ConditionUnknown,
+								Reason:             "NodeStatusNeverUpdated",
+								Message:            "Kubelet never posted node status.",
+								LastHeartbeatTime:  metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
+								LastTransitionTime: fakeNow,
+							},
+							{
+								Type:               v1.NodeDiskPressure,
+								Status:             v1.ConditionUnknown,
+								Reason:             "NodeStatusNeverUpdated",
+								Message:            "Kubelet never posted node status.",
+								LastHeartbeatTime:  metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
+								LastTransitionTime: fakeNow,
+							},
 						},
 					},
 				},
@@ -1353,7 +1411,7 @@ func TestMonitorNodeStatusUpdateStatus(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: fakeNow,
 						},
@@ -1370,7 +1428,7 @@ func TestMonitorNodeStatusUpdateStatus(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						},
@@ -1429,7 +1487,7 @@ func TestMonitorNodeStatusUpdateStatus(t *testing.T) {
 			},
 			expectedNodes: []*v1.Node{
 				{
-					ObjectMeta: v1.ObjectMeta{
+					ObjectMeta: metav1.ObjectMeta{
 						Name:              "node0",
 						CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 					},
@@ -1451,6 +1509,22 @@ func TestMonitorNodeStatusUpdateStatus(t *testing.T) {
 								LastHeartbeatTime:  metav1.Date(2015, 1, 1, 12, 0, 0, 0, time.UTC),
 								LastTransitionTime: metav1.Time{Time: metav1.Date(2015, 1, 1, 12, 0, 0, 0, time.UTC).Add(time.Hour)},
 							},
+							{
+								Type:               v1.NodeMemoryPressure,
+								Status:             v1.ConditionUnknown,
+								Reason:             "NodeStatusNeverUpdated",
+								Message:            "Kubelet never posted node status.",
+								LastHeartbeatTime:  metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC), // should default to node creation time if condition was never updated
+								LastTransitionTime: metav1.Time{Time: metav1.Date(2015, 1, 1, 12, 0, 0, 0, time.UTC).Add(time.Hour)},
+							},
+							{
+								Type:               v1.NodeDiskPressure,
+								Status:             v1.ConditionUnknown,
+								Reason:             "NodeStatusNeverUpdated",
+								Message:            "Kubelet never posted node status.",
+								LastHeartbeatTime:  metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC), // should default to node creation time if condition was never updated
+								LastTransitionTime: metav1.Time{Time: metav1.Date(2015, 1, 1, 12, 0, 0, 0, time.UTC).Add(time.Hour)},
+							},
 						},
 						Capacity: v1.ResourceList{
 							v1.ResourceName(v1.ResourceCPU):    resource.MustParse("10"),
@@ -1469,7 +1543,7 @@ func TestMonitorNodeStatusUpdateStatus(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						},
@@ -1505,6 +1579,7 @@ func TestMonitorNodeStatusUpdateStatus(t *testing.T) {
 			testRateLimiterQPS, testRateLimiterQPS, testLargeClusterThreshold, testUnhealtyThreshold,
 			testNodeMonitorGracePeriod, testNodeStartupGracePeriod, testNodeMonitorPeriod, nil, nil, 0, false)
 		nodeController.now = func() metav1.Time { return fakeNow }
+		nodeController.recorder = testutil.NewFakeRecorder()
 		if err := syncNodeStore(nodeController, item.fakeNodeHandler); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -1524,10 +1599,10 @@ func TestMonitorNodeStatusUpdateStatus(t *testing.T) {
 		if item.expectedRequestCount != item.fakeNodeHandler.RequestCount {
 			t.Errorf("expected %v call, but got %v.", item.expectedRequestCount, item.fakeNodeHandler.RequestCount)
 		}
-		if len(item.fakeNodeHandler.UpdatedNodes) > 0 && !api.Semantic.DeepEqual(item.expectedNodes, item.fakeNodeHandler.UpdatedNodes) {
+		if len(item.fakeNodeHandler.UpdatedNodes) > 0 && !apiequality.Semantic.DeepEqual(item.expectedNodes, item.fakeNodeHandler.UpdatedNodes) {
 			t.Errorf("Case[%d] unexpected nodes: %s", i, diff.ObjectDiff(item.expectedNodes[0], item.fakeNodeHandler.UpdatedNodes[0]))
 		}
-		if len(item.fakeNodeHandler.UpdatedNodeStatuses) > 0 && !api.Semantic.DeepEqual(item.expectedNodes, item.fakeNodeHandler.UpdatedNodeStatuses) {
+		if len(item.fakeNodeHandler.UpdatedNodeStatuses) > 0 && !apiequality.Semantic.DeepEqual(item.expectedNodes, item.fakeNodeHandler.UpdatedNodeStatuses) {
 			t.Errorf("Case[%d] unexpected nodes: %s", i, diff.ObjectDiff(item.expectedNodes[0], item.fakeNodeHandler.UpdatedNodeStatuses[0]))
 		}
 	}
@@ -1547,7 +1622,7 @@ func TestMonitorNodeStatusMarkPodsNotReady(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: fakeNow,
 						},
@@ -1563,7 +1638,7 @@ func TestMonitorNodeStatusMarkPodsNotReady(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						},
@@ -1597,7 +1672,7 @@ func TestMonitorNodeStatusMarkPodsNotReady(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						},
@@ -1667,7 +1742,7 @@ func TestMonitorNodeStatusMarkPodsNotReady(t *testing.T) {
 			fakeNodeHandler: &testutil.FakeNodeHandler{
 				Existing: []*v1.Node{
 					{
-						ObjectMeta: v1.ObjectMeta{
+						ObjectMeta: metav1.ObjectMeta{
 							Name:              "node0",
 							CreationTimestamp: metav1.Date(2012, 1, 1, 0, 0, 0, 0, time.UTC),
 						},
@@ -1738,6 +1813,7 @@ func TestMonitorNodeStatusMarkPodsNotReady(t *testing.T) {
 			testRateLimiterQPS, testRateLimiterQPS, testLargeClusterThreshold, testUnhealtyThreshold,
 			testNodeMonitorGracePeriod, testNodeStartupGracePeriod, testNodeMonitorPeriod, nil, nil, 0, false)
 		nodeController.now = func() metav1.Time { return fakeNow }
+		nodeController.recorder = testutil.NewFakeRecorder()
 		if err := syncNodeStore(nodeController, item.fakeNodeHandler); err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
@@ -1772,7 +1848,7 @@ func TestNodeEventGeneration(t *testing.T) {
 	fakeNodeHandler := &testutil.FakeNodeHandler{
 		Existing: []*v1.Node{
 			{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:              "node0",
 					UID:               "1234567890",
 					CreationTimestamp: metav1.Date(2015, 8, 10, 0, 0, 0, 0, time.UTC),
@@ -1839,70 +1915,70 @@ func TestCheckPod(t *testing.T) {
 
 		{
 			pod: v1.Pod{
-				ObjectMeta: v1.ObjectMeta{DeletionTimestamp: nil},
+				ObjectMeta: metav1.ObjectMeta{DeletionTimestamp: nil},
 				Spec:       v1.PodSpec{NodeName: "new"},
 			},
 			prune: false,
 		},
 		{
 			pod: v1.Pod{
-				ObjectMeta: v1.ObjectMeta{DeletionTimestamp: nil},
+				ObjectMeta: metav1.ObjectMeta{DeletionTimestamp: nil},
 				Spec:       v1.PodSpec{NodeName: "old"},
 			},
 			prune: false,
 		},
 		{
 			pod: v1.Pod{
-				ObjectMeta: v1.ObjectMeta{DeletionTimestamp: nil},
+				ObjectMeta: metav1.ObjectMeta{DeletionTimestamp: nil},
 				Spec:       v1.PodSpec{NodeName: ""},
 			},
 			prune: false,
 		},
 		{
 			pod: v1.Pod{
-				ObjectMeta: v1.ObjectMeta{DeletionTimestamp: nil},
+				ObjectMeta: metav1.ObjectMeta{DeletionTimestamp: nil},
 				Spec:       v1.PodSpec{NodeName: "nonexistant"},
 			},
 			prune: false,
 		},
 		{
 			pod: v1.Pod{
-				ObjectMeta: v1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
+				ObjectMeta: metav1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
 				Spec:       v1.PodSpec{NodeName: "new"},
 			},
 			prune: false,
 		},
 		{
 			pod: v1.Pod{
-				ObjectMeta: v1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
+				ObjectMeta: metav1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
 				Spec:       v1.PodSpec{NodeName: "old"},
 			},
 			prune: true,
 		},
 		{
 			pod: v1.Pod{
-				ObjectMeta: v1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
+				ObjectMeta: metav1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
 				Spec:       v1.PodSpec{NodeName: "older"},
 			},
 			prune: true,
 		},
 		{
 			pod: v1.Pod{
-				ObjectMeta: v1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
+				ObjectMeta: metav1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
 				Spec:       v1.PodSpec{NodeName: "oldest"},
 			},
 			prune: true,
 		},
 		{
 			pod: v1.Pod{
-				ObjectMeta: v1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
+				ObjectMeta: metav1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
 				Spec:       v1.PodSpec{NodeName: ""},
 			},
 			prune: false,
 		},
 		{
 			pod: v1.Pod{
-				ObjectMeta: v1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
+				ObjectMeta: metav1.ObjectMeta{DeletionTimestamp: &metav1.Time{}},
 				Spec:       v1.PodSpec{NodeName: "nonexistant"},
 			},
 			prune: false,
@@ -1910,9 +1986,8 @@ func TestCheckPod(t *testing.T) {
 	}
 
 	nc, _ := NewNodeControllerFromClient(nil, fake.NewSimpleClientset(), 0, 0, 0, 0, 0, 0, 0, 0, nil, nil, 0, false)
-	nc.nodeStore.Store = cache.NewStore(cache.MetaNamespaceKeyFunc)
-	nc.nodeStore.Store.Add(&v1.Node{
-		ObjectMeta: v1.ObjectMeta{
+	nc.nodeInformer.Informer().GetStore().Add(&v1.Node{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "new",
 		},
 		Status: v1.NodeStatus{
@@ -1921,8 +1996,8 @@ func TestCheckPod(t *testing.T) {
 			},
 		},
 	})
-	nc.nodeStore.Store.Add(&v1.Node{
-		ObjectMeta: v1.ObjectMeta{
+	nc.nodeInformer.Informer().GetStore().Add(&v1.Node{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "old",
 		},
 		Status: v1.NodeStatus{
@@ -1931,8 +2006,8 @@ func TestCheckPod(t *testing.T) {
 			},
 		},
 	})
-	nc.nodeStore.Store.Add(&v1.Node{
-		ObjectMeta: v1.ObjectMeta{
+	nc.nodeInformer.Informer().GetStore().Add(&v1.Node{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "older",
 		},
 		Status: v1.NodeStatus{
@@ -1941,8 +2016,8 @@ func TestCheckPod(t *testing.T) {
 			},
 		},
 	})
-	nc.nodeStore.Store.Add(&v1.Node{
-		ObjectMeta: v1.ObjectMeta{
+	nc.nodeInformer.Informer().GetStore().Add(&v1.Node{
+		ObjectMeta: metav1.ObjectMeta{
 			Name: "oldest",
 		},
 		Status: v1.NodeStatus{

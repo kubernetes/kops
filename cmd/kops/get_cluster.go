@@ -23,11 +23,11 @@ import (
 
 	"github.com/spf13/cobra"
 	"io"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
-	k8sapi "k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/util/sets"
 )
 
 type GetClusterOptions struct {
@@ -77,7 +77,7 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		return err
 	}
 
-	clusterList, err := client.Clusters().List(k8sapi.ListOptions{})
+	clusterList, err := client.Clusters().List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

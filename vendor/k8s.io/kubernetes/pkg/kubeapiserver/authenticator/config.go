@@ -21,30 +21,35 @@ import (
 
 	"github.com/go-openapi/spec"
 
-	"k8s.io/kubernetes/pkg/auth/authenticator"
-	"k8s.io/kubernetes/pkg/auth/authenticator/bearertoken"
-	"k8s.io/kubernetes/pkg/auth/group"
-	"k8s.io/kubernetes/pkg/auth/user"
-	genericauthenticator "k8s.io/kubernetes/pkg/genericapiserver/authenticator"
+	"k8s.io/apiserver/pkg/authentication/authenticator"
+	"k8s.io/apiserver/pkg/authentication/authenticatorfactory"
+	"k8s.io/apiserver/pkg/authentication/group"
+	"k8s.io/apiserver/pkg/authentication/request/anonymous"
+	"k8s.io/apiserver/pkg/authentication/request/bearertoken"
+	"k8s.io/apiserver/pkg/authentication/request/headerrequest"
+	"k8s.io/apiserver/pkg/authentication/request/union"
+	"k8s.io/apiserver/pkg/authentication/request/x509"
+	"k8s.io/apiserver/pkg/authentication/token/tokenfile"
+	"k8s.io/apiserver/pkg/authentication/user"
+	"k8s.io/apiserver/plugin/pkg/authenticator/password/keystone"
+	"k8s.io/apiserver/plugin/pkg/authenticator/password/passwordfile"
+	"k8s.io/apiserver/plugin/pkg/authenticator/request/basicauth"
+	"k8s.io/apiserver/plugin/pkg/authenticator/token/anytoken"
+	"k8s.io/apiserver/plugin/pkg/authenticator/token/oidc"
+	"k8s.io/apiserver/plugin/pkg/authenticator/token/webhook"
+	certutil "k8s.io/client-go/util/cert"
 	"k8s.io/kubernetes/pkg/serviceaccount"
-	certutil "k8s.io/kubernetes/pkg/util/cert"
-	"k8s.io/kubernetes/plugin/pkg/auth/authenticator/password/keystone"
-	"k8s.io/kubernetes/plugin/pkg/auth/authenticator/password/passwordfile"
-	"k8s.io/kubernetes/plugin/pkg/auth/authenticator/request/anonymous"
-	"k8s.io/kubernetes/plugin/pkg/auth/authenticator/request/basicauth"
-	"k8s.io/kubernetes/plugin/pkg/auth/authenticator/request/headerrequest"
-	"k8s.io/kubernetes/plugin/pkg/auth/authenticator/request/union"
-	"k8s.io/kubernetes/plugin/pkg/auth/authenticator/request/x509"
-	"k8s.io/kubernetes/plugin/pkg/auth/authenticator/token/anytoken"
-	"k8s.io/kubernetes/plugin/pkg/auth/authenticator/token/oidc"
-	"k8s.io/kubernetes/plugin/pkg/auth/authenticator/token/tokenfile"
-	"k8s.io/kubernetes/plugin/pkg/auth/authenticator/token/webhook"
+
+	// Initialize all known client auth plugins.
+	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
+	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 )
 
 type AuthenticatorConfig struct {
 	Anonymous                   bool
 	AnyToken                    bool
 	BasicAuthFile               string
+	BootstrapToken              bool
 	ClientCAFile                string
 	TokenAuthFile               string
 	OIDCIssuerURL               string
@@ -59,10 +64,11 @@ type AuthenticatorConfig struct {
 	WebhookTokenAuthnConfigFile string
 	WebhookTokenAuthnCacheTTL   time.Duration
 
-	RequestHeaderConfig *genericauthenticator.RequestHeaderConfig
+	RequestHeaderConfig *authenticatorfactory.RequestHeaderConfig
 
 	// TODO, this is the only non-serializable part of the entire config.  Factor it out into a clientconfig
-	ServiceAccountTokenGetter serviceaccount.ServiceAccountTokenGetter
+	ServiceAccountTokenGetter   serviceaccount.ServiceAccountTokenGetter
+	BootstrapTokenAuthenticator authenticator.Token
 }
 
 // New returns an authenticator.Request or an error that supports the standard
@@ -131,6 +137,13 @@ func (config AuthenticatorConfig) New() (authenticator.Request, *spec.SecurityDe
 		}
 		authenticators = append(authenticators, serviceAccountAuth)
 		hasTokenAuth = true
+	}
+	if config.BootstrapToken {
+		if config.BootstrapTokenAuthenticator != nil {
+			// TODO: This can sometimes be nil because of
+			authenticators = append(authenticators, bearertoken.New(config.BootstrapTokenAuthenticator))
+			hasTokenAuth = true
+		}
 	}
 	// NOTE(ericchiang): Keep the OpenID Connect after Service Accounts.
 	//

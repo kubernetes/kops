@@ -250,3 +250,39 @@
 [submodule "_vendor/github.com/chai2010/gettext-go"]
 	path = _vendor/github.com/chai2010/gettext-go
 	url = https://github.com/chai2010/gettext-go
+[submodule "_vendor/github.com/Azure/go-autorest"]
+	path = _vendor/github.com/Azure/go-autorest
+	url = https://github.com/Azure/go-autorest
+[submodule "_vendor/github.com/gophercloud/gophercloud"]
+	path = _vendor/github.com/gophercloud/gophercloud
+	url = https://github.com/gophercloud/gophercloud
+[submodule "_vendor/github.com/heketi/heketi"]
+	path = _vendor/github.com/heketi/heketi
+	url = https://github.com/heketi/heketi
+[submodule "_vendor/vbom.ml/util"]
+	path = _vendor/vbom.ml/util
+	url = https://github.com/fvbommel/util
+[submodule "_vendor/github.com/lpabon/godbc"]
+	path = _vendor/github.com/lpabon/godbc
+	url = https://github.com/lpabon/godbc
+[submodule "_vendor/github.com/vmware/photon-controller-go-sdk"]
+	path = _vendor/github.com/vmware/photon-controller-go-sdk
+	url = https://github.com/vmware/photon-controller-go-sdk
+[submodule "_vendor/github.com/quobyte/api"]
+	path = _vendor/github.com/quobyte/api
+	url = https://github.com/quobyte/api
+[submodule "_vendor/github.com/rubiojr/go-vhd"]
+	path = _vendor/github.com/rubiojr/go-vhd
+	url = https://github.com/rubiojr/go-vhd
+[submodule "_vendor/github.com/Azure/azure-sdk-for-go"]
+	path = _vendor/github.com/Azure/azure-sdk-for-go
+	url = https://github.com/Azure/azure-sdk-for-go
+[submodule "_vendor/github.com/vmware/govmomi"]
+	path = _vendor/github.com/vmware/govmomi
+	url = https://github.com/vmware/govmomi
+[submodule "_vendor/github.com/clusterhq/flocker-go"]
+	path = _vendor/github.com/clusterhq/flocker-go
+	url = https://github.com/clusterhq/flocker-go
+[submodule "_vendor/github.com/rackspace/gophercloud"]
+	path = _vendor/github.com/rackspace/gophercloud
+	url = https://github.com/rackspace/gophercloud

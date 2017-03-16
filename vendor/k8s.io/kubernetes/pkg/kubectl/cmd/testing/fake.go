@@ -25,23 +25,23 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/client-go/discovery"
+	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/rest/fake"
 	fedclientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_internalclientset"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/meta"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	"k8s.io/kubernetes/pkg/api/validation"
-	"k8s.io/kubernetes/pkg/apimachinery/registered"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/restclient/fake"
-	"k8s.io/kubernetes/pkg/client/typed/discovery"
 	"k8s.io/kubernetes/pkg/kubectl"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
-	"k8s.io/kubernetes/pkg/runtime/serializer"
+	"k8s.io/kubernetes/pkg/printers"
 )
 
 type InternalType struct {
@@ -94,6 +94,60 @@ func NewInternalType(kind, apiversion, name string) *InternalType {
 	return &item
 }
 
+type InternalNamespacedType struct {
+	Kind       string
+	APIVersion string
+
+	Name      string
+	Namespace string
+}
+
+type ExternalNamespacedType struct {
+	Kind       string `json:"kind"`
+	APIVersion string `json:"apiVersion"`
+
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+}
+
+type ExternalNamespacedType2 struct {
+	Kind       string `json:"kind"`
+	APIVersion string `json:"apiVersion"`
+
+	Name      string `json:"name"`
+	Namespace string `json:"namespace"`
+}
+
+func (obj *InternalNamespacedType) GetObjectKind() schema.ObjectKind { return obj }
+func (obj *InternalNamespacedType) SetGroupVersionKind(gvk schema.GroupVersionKind) {
+	obj.APIVersion, obj.Kind = gvk.ToAPIVersionAndKind()
+}
+func (obj *InternalNamespacedType) GroupVersionKind() schema.GroupVersionKind {
+	return schema.FromAPIVersionAndKind(obj.APIVersion, obj.Kind)
+}
+func (obj *ExternalNamespacedType) GetObjectKind() schema.ObjectKind { return obj }
+func (obj *ExternalNamespacedType) SetGroupVersionKind(gvk schema.GroupVersionKind) {
+	obj.APIVersion, obj.Kind = gvk.ToAPIVersionAndKind()
+}
+func (obj *ExternalNamespacedType) GroupVersionKind() schema.GroupVersionKind {
+	return schema.FromAPIVersionAndKind(obj.APIVersion, obj.Kind)
+}
+func (obj *ExternalNamespacedType2) GetObjectKind() schema.ObjectKind { return obj }
+func (obj *ExternalNamespacedType2) SetGroupVersionKind(gvk schema.GroupVersionKind) {
+	obj.APIVersion, obj.Kind = gvk.ToAPIVersionAndKind()
+}
+func (obj *ExternalNamespacedType2) GroupVersionKind() schema.GroupVersionKind {
+	return schema.FromAPIVersionAndKind(obj.APIVersion, obj.Kind)
+}
+
+func NewInternalNamespacedType(kind, apiversion, name, namespace string) *InternalNamespacedType {
+	item := InternalNamespacedType{Kind: kind,
+		APIVersion: apiversion,
+		Name:       name,
+		Namespace:  namespace}
+	return &item
+}
+
 var versionErr = errors.New("not a version")
 
 func versionErrIfFalse(b bool) error {
@@ -103,17 +157,23 @@ func versionErrIfFalse(b bool) error {
 	return versionErr
 }
 
-var ValidVersion = registered.GroupOrDie(api.GroupName).GroupVersion.Version
+var ValidVersion = api.Registry.GroupOrDie(api.GroupName).GroupVersion.Version
 var InternalGV = schema.GroupVersion{Group: "apitest", Version: runtime.APIVersionInternal}
 var UnlikelyGV = schema.GroupVersion{Group: "apitest", Version: "unlikelyversion"}
 var ValidVersionGV = schema.GroupVersion{Group: "apitest", Version: ValidVersion}
 
 func newExternalScheme() (*runtime.Scheme, meta.RESTMapper, runtime.Codec) {
 	scheme := runtime.NewScheme()
+
 	scheme.AddKnownTypeWithName(InternalGV.WithKind("Type"), &InternalType{})
 	scheme.AddKnownTypeWithName(UnlikelyGV.WithKind("Type"), &ExternalType{})
 	//This tests that kubectl will not confuse the external scheme with the internal scheme, even when they accidentally have versions of the same name.
 	scheme.AddKnownTypeWithName(ValidVersionGV.WithKind("Type"), &ExternalType2{})
+
+	scheme.AddKnownTypeWithName(InternalGV.WithKind("NamespacedType"), &InternalNamespacedType{})
+	scheme.AddKnownTypeWithName(UnlikelyGV.WithKind("NamespacedType"), &ExternalNamespacedType{})
+	//This tests that kubectl will not confuse the external scheme with the internal scheme, even when they accidentally have versions of the same name.
+	scheme.AddKnownTypeWithName(ValidVersionGV.WithKind("NamespacedType"), &ExternalNamespacedType2{})
 
 	codecs := serializer.NewCodecFactory(scheme)
 	codec := codecs.LegacyCodec(UnlikelyGV)
@@ -146,16 +206,27 @@ func (d *fakeCachedDiscoveryClient) Fresh() bool {
 func (d *fakeCachedDiscoveryClient) Invalidate() {
 }
 
+func (d *fakeCachedDiscoveryClient) ServerResources() ([]*metav1.APIResourceList, error) {
+	return []*metav1.APIResourceList{}, nil
+}
+
 type TestFactory struct {
-	Mapper       meta.RESTMapper
-	Typer        runtime.ObjectTyper
-	Client       kubectl.RESTClient
-	Describer    kubectl.Describer
-	Printer      kubectl.ResourcePrinter
-	Validator    validation.Schema
-	Namespace    string
-	ClientConfig *restclient.Config
-	Err          error
+	Mapper             meta.RESTMapper
+	Typer              runtime.ObjectTyper
+	Client             kubectl.RESTClient
+	UnstructuredClient kubectl.RESTClient
+	Describer          printers.Describer
+	Printer            printers.ResourcePrinter
+	CommandPrinter     printers.ResourcePrinter
+	Validator          validation.Schema
+	Namespace          string
+	ClientConfig       *restclient.Config
+	Err                error
+	Command            string
+	GenericPrinter     bool
+
+	ClientForMappingFunc             func(mapping *meta.RESTMapping) (resource.RESTClient, error)
+	UnstructuredClientForMappingFunc func(mapping *meta.RESTMapping) (resource.RESTClient, error)
 }
 
 type FakeFactory struct {
@@ -190,16 +261,7 @@ func (f *FakeFactory) FlagSet() *pflag.FlagSet {
 }
 
 func (f *FakeFactory) Object() (meta.RESTMapper, runtime.ObjectTyper) {
-	priorityRESTMapper := meta.PriorityRESTMapper{
-		Delegate: f.tf.Mapper,
-		ResourcePriority: []schema.GroupVersionResource{
-			{Group: meta.AnyGroup, Version: "v1", Resource: meta.AnyResource},
-		},
-		KindPriority: []schema.GroupVersionKind{
-			{Group: meta.AnyGroup, Version: "v1", Kind: meta.AnyKind},
-		},
-	}
-	return priorityRESTMapper, f.tf.Typer
+	return api.Registry.RESTMapper(), f.tf.Typer
 }
 
 func (f *FakeFactory) UnstructuredObject() (meta.RESTMapper, runtime.ObjectTyper, error) {
@@ -207,7 +269,9 @@ func (f *FakeFactory) UnstructuredObject() (meta.RESTMapper, runtime.ObjectTyper
 	mapper := discovery.NewRESTMapper(groupResources, meta.InterfacesForUnstructured)
 	typer := discovery.NewUnstructuredObjectTyper(groupResources)
 
-	return cmdutil.NewShortcutExpander(mapper, nil), typer, nil
+	fakeDs := &fakeCachedDiscoveryClient{}
+	expander, err := cmdutil.NewShortcutExpander(mapper, fakeDs)
+	return expander, typer, err
 }
 
 func (f *FakeFactory) Decoder(bool) runtime.Decoder {
@@ -222,7 +286,7 @@ func (f *FakeFactory) RESTClient() (*restclient.RESTClient, error) {
 	return nil, nil
 }
 
-func (f *FakeFactory) ClientSet() (*internalclientset.Clientset, error) {
+func (f *FakeFactory) ClientSet() (internalclientset.Interface, error) {
 	return nil, nil
 }
 
@@ -234,7 +298,10 @@ func (f *FakeFactory) BareClientConfig() (*restclient.Config, error) {
 	return f.tf.ClientConfig, f.tf.Err
 }
 
-func (f *FakeFactory) ClientForMapping(*meta.RESTMapping) (resource.RESTClient, error) {
+func (f *FakeFactory) ClientForMapping(mapping *meta.RESTMapping) (resource.RESTClient, error) {
+	if f.tf.ClientForMappingFunc != nil {
+		return f.tf.ClientForMappingFunc(mapping)
+	}
 	return f.tf.Client, f.tf.Err
 }
 
@@ -244,22 +311,29 @@ func (f *FakeFactory) FederationClientSetForVersion(version *schema.GroupVersion
 func (f *FakeFactory) FederationClientForVersion(version *schema.GroupVersion) (*restclient.RESTClient, error) {
 	return nil, nil
 }
-func (f *FakeFactory) ClientSetForVersion(requiredVersion *schema.GroupVersion) (*internalclientset.Clientset, error) {
+func (f *FakeFactory) ClientSetForVersion(requiredVersion *schema.GroupVersion) (internalclientset.Interface, error) {
 	return nil, nil
 }
 func (f *FakeFactory) ClientConfigForVersion(requiredVersion *schema.GroupVersion) (*restclient.Config, error) {
 	return nil, nil
 }
 
-func (f *FakeFactory) UnstructuredClientForMapping(*meta.RESTMapping) (resource.RESTClient, error) {
-	return nil, nil
+func (f *FakeFactory) UnstructuredClientForMapping(mapping *meta.RESTMapping) (resource.RESTClient, error) {
+	if f.tf.UnstructuredClientForMappingFunc != nil {
+		return f.tf.UnstructuredClientForMappingFunc(mapping)
+	}
+	return f.tf.UnstructuredClient, f.tf.Err
 }
 
-func (f *FakeFactory) Describer(*meta.RESTMapping) (kubectl.Describer, error) {
+func (f *FakeFactory) Describer(*meta.RESTMapping) (printers.Describer, error) {
 	return f.tf.Describer, f.tf.Err
 }
 
-func (f *FakeFactory) Printer(mapping *meta.RESTMapping, options kubectl.PrintOptions) (kubectl.ResourcePrinter, error) {
+func (f *FakeFactory) PrinterForCommand(cmd *cobra.Command) (printers.ResourcePrinter, bool, error) {
+	return f.tf.CommandPrinter, f.tf.GenericPrinter, f.tf.Err
+}
+
+func (f *FakeFactory) Printer(mapping *meta.RESTMapping, options printers.PrintOptions) (printers.ResourcePrinter, error) {
 	return f.tf.Printer, f.tf.Err
 }
 
@@ -361,8 +435,8 @@ func (f *FakeFactory) EditorEnvs() []string {
 func (f *FakeFactory) PrintObjectSpecificMessage(obj runtime.Object, out io.Writer) {
 }
 
-func (f *FakeFactory) Command() string {
-	return ""
+func (f *FakeFactory) Command(*cobra.Command, bool) string {
+	return f.tf.Command
 }
 
 func (f *FakeFactory) BindFlags(flags *pflag.FlagSet) {
@@ -375,7 +449,7 @@ func (f *FakeFactory) PrintObject(cmd *cobra.Command, mapper meta.RESTMapper, ob
 	return nil
 }
 
-func (f *FakeFactory) PrinterForMapping(cmd *cobra.Command, mapping *meta.RESTMapping, withNamespace bool) (kubectl.ResourcePrinter, error) {
+func (f *FakeFactory) PrinterForMapping(cmd *cobra.Command, mapping *meta.RESTMapping, withNamespace bool) (printers.ResourcePrinter, error) {
 	return f.tf.Printer, f.tf.Err
 }
 
@@ -383,8 +457,8 @@ func (f *FakeFactory) NewBuilder() *resource.Builder {
 	return nil
 }
 
-func (f *FakeFactory) DefaultResourceFilterOptions(cmd *cobra.Command, withNamespace bool) *kubectl.PrintOptions {
-	return &kubectl.PrintOptions{}
+func (f *FakeFactory) DefaultResourceFilterOptions(cmd *cobra.Command, withNamespace bool) *printers.PrintOptions {
+	return &printers.PrintOptions{}
 }
 
 func (f *FakeFactory) DefaultResourceFilterFunc() kubectl.Filters {
@@ -421,6 +495,9 @@ func (f *fakeMixedFactory) ClientForMapping(m *meta.RESTMapping) (resource.RESTC
 	if m.ObjectConvertor == api.Scheme {
 		return f.apiClient, f.tf.Err
 	}
+	if f.tf.ClientForMappingFunc != nil {
+		return f.tf.ClientForMappingFunc(m)
+	}
 	return f.tf.Client, f.tf.Err
 }
 
@@ -446,8 +523,9 @@ func (f *fakeAPIFactory) UnstructuredObject() (meta.RESTMapper, runtime.ObjectTy
 	groupResources := testDynamicResources()
 	mapper := discovery.NewRESTMapper(groupResources, meta.InterfacesForUnstructured)
 	typer := discovery.NewUnstructuredObjectTyper(groupResources)
-
-	return cmdutil.NewShortcutExpander(mapper, nil), typer, nil
+	fakeDs := &fakeCachedDiscoveryClient{}
+	expander, err := cmdutil.NewShortcutExpander(mapper, fakeDs)
+	return expander, typer, err
 }
 
 func (f *fakeAPIFactory) Decoder(bool) runtime.Decoder {
@@ -458,7 +536,7 @@ func (f *fakeAPIFactory) JSONEncoder() runtime.Encoder {
 	return testapi.Default.Codec()
 }
 
-func (f *fakeAPIFactory) ClientSet() (*internalclientset.Clientset, error) {
+func (f *fakeAPIFactory) ClientSet() (internalclientset.Interface, error) {
 	// Swap the HTTP client out of the REST client with the fake
 	// version.
 	fakeClient := f.tf.Client.(*fake.RESTClient)
@@ -493,19 +571,29 @@ func (f *fakeAPIFactory) ClientConfig() (*restclient.Config, error) {
 	return f.tf.ClientConfig, f.tf.Err
 }
 
-func (f *fakeAPIFactory) ClientForMapping(*meta.RESTMapping) (resource.RESTClient, error) {
+func (f *fakeAPIFactory) ClientForMapping(m *meta.RESTMapping) (resource.RESTClient, error) {
+	if f.tf.ClientForMappingFunc != nil {
+		return f.tf.ClientForMappingFunc(m)
+	}
 	return f.tf.Client, f.tf.Err
 }
 
-func (f *fakeAPIFactory) UnstructuredClientForMapping(*meta.RESTMapping) (resource.RESTClient, error) {
-	return f.tf.Client, f.tf.Err
+func (f *fakeAPIFactory) UnstructuredClientForMapping(m *meta.RESTMapping) (resource.RESTClient, error) {
+	if f.tf.UnstructuredClientForMappingFunc != nil {
+		return f.tf.UnstructuredClientForMappingFunc(m)
+	}
+	return f.tf.UnstructuredClient, f.tf.Err
 }
 
-func (f *fakeAPIFactory) Describer(*meta.RESTMapping) (kubectl.Describer, error) {
+func (f *fakeAPIFactory) PrinterForCommand(cmd *cobra.Command) (printers.ResourcePrinter, bool, error) {
+	return f.tf.CommandPrinter, f.tf.GenericPrinter, f.tf.Err
+}
+
+func (f *fakeAPIFactory) Describer(*meta.RESTMapping) (printers.Describer, error) {
 	return f.tf.Describer, f.tf.Err
 }
 
-func (f *fakeAPIFactory) Printer(mapping *meta.RESTMapping, options kubectl.PrintOptions) (kubectl.ResourcePrinter, error) {
+func (f *fakeAPIFactory) Printer(mapping *meta.RESTMapping, options printers.PrintOptions) (printers.ResourcePrinter, error) {
 	return f.tf.Printer, f.tf.Err
 }
 
@@ -531,12 +619,29 @@ func (f *fakeAPIFactory) LogsForObject(object, options runtime.Object) (*restcli
 	}
 }
 
+func (f *fakeAPIFactory) AttachablePodForObject(object runtime.Object) (*api.Pod, error) {
+	switch t := object.(type) {
+	case *api.Pod:
+		return t, nil
+	default:
+		gvks, _, err := api.Scheme.ObjectKinds(object)
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("cannot attach to %v: not implemented", gvks[0])
+	}
+}
+
 func (f *fakeAPIFactory) Validator(validate bool, cacheDir string) (validation.Schema, error) {
 	return f.tf.Validator, f.tf.Err
 }
 
 func (f *fakeAPIFactory) DefaultNamespace() (string, bool, error) {
 	return f.tf.Namespace, false, f.tf.Err
+}
+
+func (f *fakeAPIFactory) Command(*cobra.Command, bool) string {
+	return f.tf.Command
 }
 
 func (f *fakeAPIFactory) Generators(cmdName string) map[string]kubectl.Generator {
@@ -561,7 +666,7 @@ func (f *fakeAPIFactory) PrintObject(cmd *cobra.Command, mapper meta.RESTMapper,
 	return printer.PrintObj(obj, out)
 }
 
-func (f *fakeAPIFactory) PrinterForMapping(cmd *cobra.Command, mapping *meta.RESTMapping, withNamespace bool) (kubectl.ResourcePrinter, error) {
+func (f *fakeAPIFactory) PrinterForMapping(cmd *cobra.Command, mapping *meta.RESTMapping, withNamespace bool) (printers.ResourcePrinter, error) {
 	return f.tf.Printer, f.tf.Err
 }
 
@@ -602,7 +707,73 @@ func testDynamicResources() []*discovery.APIGroupResources {
 					{Name: "replicationcontrollers", Namespaced: true, Kind: "ReplicationController"},
 					{Name: "componentstatuses", Namespaced: false, Kind: "ComponentStatus"},
 					{Name: "nodes", Namespaced: false, Kind: "Node"},
+					{Name: "secrets", Namespaced: true, Kind: "Secret"},
+					{Name: "configmaps", Namespaced: true, Kind: "ConfigMap"},
 					{Name: "type", Namespaced: false, Kind: "Type"},
+					{Name: "namespacedtype", Namespaced: true, Kind: "NamespacedType"},
+				},
+			},
+		},
+		{
+			Group: metav1.APIGroup{
+				Name: "extensions",
+				Versions: []metav1.GroupVersionForDiscovery{
+					{Version: "v1beta1"},
+				},
+				PreferredVersion: metav1.GroupVersionForDiscovery{Version: "v1beta1"},
+			},
+			VersionedResources: map[string][]metav1.APIResource{
+				"v1beta1": {
+					{Name: "deployments", Namespaced: true, Kind: "Deployment"},
+				},
+			},
+		},
+		{
+			Group: metav1.APIGroup{
+				Name: "storage.k8s.io",
+				Versions: []metav1.GroupVersionForDiscovery{
+					{Version: "v1beta1"},
+					{Version: "v0"},
+				},
+				PreferredVersion: metav1.GroupVersionForDiscovery{Version: "v1beta1"},
+			},
+			VersionedResources: map[string][]metav1.APIResource{
+				"v1beta1": {
+					{Name: "storageclasses", Namespaced: false, Kind: "StorageClass"},
+				},
+				// bogus version of a known group/version/resource to make sure kubectl falls back to generic object mode
+				"v0": {
+					{Name: "storageclasses", Namespaced: false, Kind: "StorageClass"},
+				},
+			},
+		},
+		{
+			Group: metav1.APIGroup{
+				Name: "company.com",
+				Versions: []metav1.GroupVersionForDiscovery{
+					{Version: "v1"},
+				},
+				PreferredVersion: metav1.GroupVersionForDiscovery{Version: "v1"},
+			},
+			VersionedResources: map[string][]metav1.APIResource{
+				"v1": {
+					{Name: "bars", Namespaced: true, Kind: "Bar"},
+				},
+			},
+		},
+		{
+			Group: metav1.APIGroup{
+				Name: "unit-test.test.com",
+				Versions: []metav1.GroupVersionForDiscovery{
+					{GroupVersion: "unit-test.test.com/v1", Version: "v1"},
+				},
+				PreferredVersion: metav1.GroupVersionForDiscovery{
+					GroupVersion: "unit-test.test.com/v1",
+					Version:      "v1"},
+			},
+			VersionedResources: map[string][]metav1.APIResource{
+				"v1": {
+					{Name: "widgets", Namespaced: true, Kind: "Widget"},
 				},
 			},
 		},

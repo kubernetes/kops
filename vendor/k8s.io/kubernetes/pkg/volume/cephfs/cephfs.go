@@ -22,9 +22,9 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kubernetes/pkg/api/v1"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/types"
 	"k8s.io/kubernetes/pkg/util/mount"
 	utilstrings "k8s.io/kubernetes/pkg/util/strings"
 	"k8s.io/kubernetes/pkg/volume"
@@ -70,6 +70,10 @@ func (plugin *cephfsPlugin) CanSupport(spec *volume.Spec) bool {
 
 func (plugin *cephfsPlugin) RequiresRemount() bool {
 	return false
+}
+
+func (plugin *cephfsPlugin) SupportsMountOption() bool {
+	return true
 }
 
 func (plugin *cephfsPlugin) GetAccessModes() []v1.PersistentVolumeAccessMode {
@@ -129,16 +133,18 @@ func (plugin *cephfsPlugin) newMounterInternal(spec *volume.Spec, podUID types.U
 
 	return &cephfsMounter{
 		cephfs: &cephfs{
-			podUID:      podUID,
-			volName:     spec.Name(),
-			mon:         cephvs.Monitors,
-			path:        path,
-			secret:      secret,
-			id:          id,
-			secret_file: secret_file,
-			readonly:    cephvs.ReadOnly,
-			mounter:     mounter,
-			plugin:      plugin},
+			podUID:       podUID,
+			volName:      spec.Name(),
+			mon:          cephvs.Monitors,
+			path:         path,
+			secret:       secret,
+			id:           id,
+			secret_file:  secret_file,
+			readonly:     cephvs.ReadOnly,
+			mounter:      mounter,
+			plugin:       plugin,
+			mountOptions: volume.MountOptionFromSpec(spec),
+		},
 	}, nil
 }
 
@@ -182,6 +188,7 @@ type cephfs struct {
 	mounter     mount.Interface
 	plugin      *cephfsPlugin
 	volume.MetricsNil
+	mountOptions []string
 }
 
 type cephfsMounter struct {
@@ -201,7 +208,7 @@ func (cephfsVolume *cephfsMounter) GetAttributes() volume.Attributes {
 // Checks prior to mount operations to verify that the required components (binaries, etc.)
 // to mount the volume are available on the underlying node.
 // If not, it returns an error
-func (caphfsMounter *cephfsMounter) CanMount() error {
+func (cephfsMounter *cephfsMounter) CanMount() error {
 	return nil
 }
 
@@ -282,7 +289,8 @@ func (cephfsVolume *cephfs) execMount(mountpoint string) error {
 	}
 	src += hosts[i] + ":" + cephfsVolume.path
 
-	if err := cephfsVolume.mounter.Mount(src, mountpoint, "ceph", opt); err != nil {
+	mountOptions := volume.JoinMountOptions(cephfsVolume.mountOptions, opt)
+	if err := cephfsVolume.mounter.Mount(src, mountpoint, "ceph", mountOptions); err != nil {
 		return fmt.Errorf("CephFS: mount failed: %v", err)
 	}
 

@@ -22,10 +22,10 @@ import (
 	"crypto/x509"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/api/errors"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/v1"
-	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"math/big"
 	"time"
@@ -79,7 +79,7 @@ func (c *KubernetesKeystore) issueCert(id string, serial *big.Int, privateKey *f
 }
 
 func (c *KubernetesKeystore) findSecret(id string) (*v1.Secret, error) {
-	secret, err := c.client.Core().Secrets(c.namespace).Get(id, meta_v1.GetOptions{})
+	secret, err := c.client.CoreV1().Secrets(c.namespace).Get(id, meta_v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
@@ -134,7 +134,7 @@ func (c *KubernetesKeystore) StoreKeypair(id string, cert *fi.Certificate, priva
 	}
 
 	secret, err := keypair.Encode()
-	createdSecret, err := c.client.Core().Secrets(c.namespace).Create(secret)
+	createdSecret, err := c.client.CoreV1().Secrets(c.namespace).Create(secret)
 	if err != nil {
 		return fmt.Errorf("error creating secret %s/%s: %v", secret.Namespace, secret.Name, err)
 	}

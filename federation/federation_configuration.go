@@ -19,15 +19,15 @@ package federation
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/api/errors"
+	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/federation/targets/kubernetes"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/kutil"
-	"k8s.io/kubernetes/pkg/api/errors"
 	"k8s.io/kubernetes/pkg/api/v1"
-	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
 	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 )
 
@@ -343,7 +343,7 @@ func (o *FederationConfiguration) ensureSecretKubeconfig(c *fi.Context, caCert *
 
 func findSecret(k8s k8s_clientset.Interface, namespace, name string) (*v1.Secret, error) {
 	glog.V(2).Infof("querying k8s for secret %s/%s", namespace, name)
-	s, err := k8s.Core().Secrets(namespace).Get(name, meta_v1.GetOptions{})
+	s, err := k8s.CoreV1().Secrets(namespace).Get(name, meta_v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
@@ -370,7 +370,7 @@ func mutateSecret(k8s k8s_clientset.Interface, namespace string, name string, fn
 
 	if createObject {
 		glog.V(2).Infof("creating k8s secret %s/%s", namespace, name)
-		created, err := k8s.Core().Secrets(namespace).Create(updated)
+		created, err := k8s.CoreV1().Secrets(namespace).Create(updated)
 		if err != nil {
 			return nil, fmt.Errorf("error creating secret %s/%s: %v", namespace, name, err)
 		}
@@ -378,7 +378,7 @@ func mutateSecret(k8s k8s_clientset.Interface, namespace string, name string, fn
 	} else {
 		// TODO: Check dirty?
 		glog.V(2).Infof("updating k8s secret %s/%s", namespace, name)
-		updated, err := k8s.Core().Secrets(namespace).Update(updated)
+		updated, err := k8s.CoreV1().Secrets(namespace).Update(updated)
 		if err != nil {
 			return nil, fmt.Errorf("error updating secret %s/%s: %v", namespace, name, err)
 		}

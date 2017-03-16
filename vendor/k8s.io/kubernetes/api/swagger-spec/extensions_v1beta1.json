@@ -226,7 +226,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch individual changes to a list of DaemonSet",
       "nickname": "watchNamespacedDaemonSetList",
@@ -292,7 +292,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -521,7 +521,15 @@
         "type": "boolean",
         "paramType": "query",
         "name": "orphanDependents",
-        "description": "Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list.",
+        "description": "Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "propagationPolicy",
+        "description": "Whether and how garbage collection will be performed. Defaults to Default. Either this field or OrphanDependents may be set, but not both.",
         "required": false,
         "allowMultiple": false
        },
@@ -565,7 +573,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch changes to an object of kind DaemonSet",
       "nickname": "watchNamespacedDaemonSet",
@@ -639,7 +647,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -739,7 +747,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch individual changes to a list of DaemonSet",
       "nickname": "watchDaemonSetListForAllNamespaces",
@@ -797,7 +805,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -1196,7 +1204,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch individual changes to a list of Deployment",
       "nickname": "watchNamespacedDeploymentList",
@@ -1262,7 +1270,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -1491,7 +1499,15 @@
         "type": "boolean",
         "paramType": "query",
         "name": "orphanDependents",
-        "description": "Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list.",
+        "description": "Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "propagationPolicy",
+        "description": "Whether and how garbage collection will be performed. Defaults to Default. Either this field or OrphanDependents may be set, but not both.",
         "required": false,
         "allowMultiple": false
        },
@@ -1535,7 +1551,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch changes to an object of kind Deployment",
       "nickname": "watchNamespacedDeployment",
@@ -1609,7 +1625,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -1709,7 +1725,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch individual changes to a list of Deployment",
       "nickname": "watchDeploymentListForAllNamespaces",
@@ -1767,7 +1783,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -2175,976 +2191,6 @@
     ]
    },
    {
-    "path": "/apis/extensions/v1beta1/namespaces/{namespace}/horizontalpodautoscalers",
-    "description": "API at /apis/extensions/v1beta1",
-    "operations": [
-     {
-      "type": "v1beta1.HorizontalPodAutoscalerList",
-      "method": "GET",
-      "summary": "list or watch objects of kind HorizontalPodAutoscaler",
-      "nickname": "listNamespacedHorizontalPodAutoscaler",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "labelSelector",
-        "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "fieldSelector",
-        "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "boolean",
-        "paramType": "query",
-        "name": "watch",
-        "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "resourceVersion",
-        "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "integer",
-        "paramType": "query",
-        "name": "timeoutSeconds",
-        "description": "Timeout for the list/watch call.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "v1beta1.HorizontalPodAutoscalerList"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf",
-       "application/json;stream=watch",
-       "application/vnd.kubernetes.protobuf;stream=watch"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     },
-     {
-      "type": "v1beta1.HorizontalPodAutoscaler",
-      "method": "POST",
-      "summary": "create a HorizontalPodAutoscaler",
-      "nickname": "createNamespacedHorizontalPodAutoscaler",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "v1beta1.HorizontalPodAutoscaler",
-        "paramType": "body",
-        "name": "body",
-        "description": "",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "v1beta1.HorizontalPodAutoscaler"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     },
-     {
-      "type": "v1.Status",
-      "method": "DELETE",
-      "summary": "delete collection of HorizontalPodAutoscaler",
-      "nickname": "deletecollectionNamespacedHorizontalPodAutoscaler",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "labelSelector",
-        "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "fieldSelector",
-        "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "boolean",
-        "paramType": "query",
-        "name": "watch",
-        "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "resourceVersion",
-        "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "integer",
-        "paramType": "query",
-        "name": "timeoutSeconds",
-        "description": "Timeout for the list/watch call.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "v1.Status"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     }
-    ]
-   },
-   {
-    "path": "/apis/extensions/v1beta1/watch/namespaces/{namespace}/horizontalpodautoscalers",
-    "description": "API at /apis/extensions/v1beta1",
-    "operations": [
-     {
-      "type": "versioned.Event",
-      "method": "GET",
-      "summary": "watch individual changes to a list of HorizontalPodAutoscaler",
-      "nickname": "watchNamespacedHorizontalPodAutoscalerList",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "labelSelector",
-        "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "fieldSelector",
-        "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "boolean",
-        "paramType": "query",
-        "name": "watch",
-        "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "resourceVersion",
-        "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "integer",
-        "paramType": "query",
-        "name": "timeoutSeconds",
-        "description": "Timeout for the list/watch call.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "versioned.Event"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf",
-       "application/json;stream=watch",
-       "application/vnd.kubernetes.protobuf;stream=watch"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     }
-    ]
-   },
-   {
-    "path": "/apis/extensions/v1beta1/namespaces/{namespace}/horizontalpodautoscalers/{name}",
-    "description": "API at /apis/extensions/v1beta1",
-    "operations": [
-     {
-      "type": "v1beta1.HorizontalPodAutoscaler",
-      "method": "GET",
-      "summary": "read the specified HorizontalPodAutoscaler",
-      "nickname": "readNamespacedHorizontalPodAutoscaler",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "boolean",
-        "paramType": "query",
-        "name": "export",
-        "description": "Should this value be exported.  Export strips fields that a user can not specify.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "boolean",
-        "paramType": "query",
-        "name": "exact",
-        "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "name",
-        "description": "name of the HorizontalPodAutoscaler",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "v1beta1.HorizontalPodAutoscaler"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     },
-     {
-      "type": "v1beta1.HorizontalPodAutoscaler",
-      "method": "PUT",
-      "summary": "replace the specified HorizontalPodAutoscaler",
-      "nickname": "replaceNamespacedHorizontalPodAutoscaler",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "v1beta1.HorizontalPodAutoscaler",
-        "paramType": "body",
-        "name": "body",
-        "description": "",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "name",
-        "description": "name of the HorizontalPodAutoscaler",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "v1beta1.HorizontalPodAutoscaler"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     },
-     {
-      "type": "v1beta1.HorizontalPodAutoscaler",
-      "method": "PATCH",
-      "summary": "partially update the specified HorizontalPodAutoscaler",
-      "nickname": "patchNamespacedHorizontalPodAutoscaler",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "v1.Patch",
-        "paramType": "body",
-        "name": "body",
-        "description": "",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "name",
-        "description": "name of the HorizontalPodAutoscaler",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "v1beta1.HorizontalPodAutoscaler"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf"
-      ],
-      "consumes": [
-       "application/json-patch+json",
-       "application/merge-patch+json",
-       "application/strategic-merge-patch+json"
-      ]
-     },
-     {
-      "type": "v1.Status",
-      "method": "DELETE",
-      "summary": "delete a HorizontalPodAutoscaler",
-      "nickname": "deleteNamespacedHorizontalPodAutoscaler",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "v1.DeleteOptions",
-        "paramType": "body",
-        "name": "body",
-        "description": "",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "integer",
-        "paramType": "query",
-        "name": "gracePeriodSeconds",
-        "description": "The duration in seconds before the object should be deleted. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period for the specified type will be used. Defaults to a per object value if not specified. zero means delete immediately.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "boolean",
-        "paramType": "query",
-        "name": "orphanDependents",
-        "description": "Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "name",
-        "description": "name of the HorizontalPodAutoscaler",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "v1.Status"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     }
-    ]
-   },
-   {
-    "path": "/apis/extensions/v1beta1/watch/namespaces/{namespace}/horizontalpodautoscalers/{name}",
-    "description": "API at /apis/extensions/v1beta1",
-    "operations": [
-     {
-      "type": "versioned.Event",
-      "method": "GET",
-      "summary": "watch changes to an object of kind HorizontalPodAutoscaler",
-      "nickname": "watchNamespacedHorizontalPodAutoscaler",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "labelSelector",
-        "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "fieldSelector",
-        "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "boolean",
-        "paramType": "query",
-        "name": "watch",
-        "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "resourceVersion",
-        "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "integer",
-        "paramType": "query",
-        "name": "timeoutSeconds",
-        "description": "Timeout for the list/watch call.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "name",
-        "description": "name of the HorizontalPodAutoscaler",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "versioned.Event"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf",
-       "application/json;stream=watch",
-       "application/vnd.kubernetes.protobuf;stream=watch"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     }
-    ]
-   },
-   {
-    "path": "/apis/extensions/v1beta1/horizontalpodautoscalers",
-    "description": "API at /apis/extensions/v1beta1",
-    "operations": [
-     {
-      "type": "v1beta1.HorizontalPodAutoscalerList",
-      "method": "GET",
-      "summary": "list or watch objects of kind HorizontalPodAutoscaler",
-      "nickname": "listHorizontalPodAutoscalerForAllNamespaces",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "labelSelector",
-        "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "fieldSelector",
-        "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "boolean",
-        "paramType": "query",
-        "name": "watch",
-        "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "resourceVersion",
-        "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "integer",
-        "paramType": "query",
-        "name": "timeoutSeconds",
-        "description": "Timeout for the list/watch call.",
-        "required": false,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "v1beta1.HorizontalPodAutoscalerList"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf",
-       "application/json;stream=watch",
-       "application/vnd.kubernetes.protobuf;stream=watch"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     }
-    ]
-   },
-   {
-    "path": "/apis/extensions/v1beta1/watch/horizontalpodautoscalers",
-    "description": "API at /apis/extensions/v1beta1",
-    "operations": [
-     {
-      "type": "versioned.Event",
-      "method": "GET",
-      "summary": "watch individual changes to a list of HorizontalPodAutoscaler",
-      "nickname": "watchHorizontalPodAutoscalerListForAllNamespaces",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "labelSelector",
-        "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "fieldSelector",
-        "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "boolean",
-        "paramType": "query",
-        "name": "watch",
-        "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "resourceVersion",
-        "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "integer",
-        "paramType": "query",
-        "name": "timeoutSeconds",
-        "description": "Timeout for the list/watch call.",
-        "required": false,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "versioned.Event"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf",
-       "application/json;stream=watch",
-       "application/vnd.kubernetes.protobuf;stream=watch"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     }
-    ]
-   },
-   {
-    "path": "/apis/extensions/v1beta1/namespaces/{namespace}/horizontalpodautoscalers/{name}/status",
-    "description": "API at /apis/extensions/v1beta1",
-    "operations": [
-     {
-      "type": "v1beta1.HorizontalPodAutoscaler",
-      "method": "GET",
-      "summary": "read status of the specified HorizontalPodAutoscaler",
-      "nickname": "readNamespacedHorizontalPodAutoscalerStatus",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "name",
-        "description": "name of the HorizontalPodAutoscaler",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "v1beta1.HorizontalPodAutoscaler"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     },
-     {
-      "type": "v1beta1.HorizontalPodAutoscaler",
-      "method": "PUT",
-      "summary": "replace status of the specified HorizontalPodAutoscaler",
-      "nickname": "replaceNamespacedHorizontalPodAutoscalerStatus",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "v1beta1.HorizontalPodAutoscaler",
-        "paramType": "body",
-        "name": "body",
-        "description": "",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "name",
-        "description": "name of the HorizontalPodAutoscaler",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "v1beta1.HorizontalPodAutoscaler"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf"
-      ],
-      "consumes": [
-       "*/*"
-      ]
-     },
-     {
-      "type": "v1beta1.HorizontalPodAutoscaler",
-      "method": "PATCH",
-      "summary": "partially update status of the specified HorizontalPodAutoscaler",
-      "nickname": "patchNamespacedHorizontalPodAutoscalerStatus",
-      "parameters": [
-       {
-        "type": "string",
-        "paramType": "query",
-        "name": "pretty",
-        "description": "If 'true', then the output is pretty printed.",
-        "required": false,
-        "allowMultiple": false
-       },
-       {
-        "type": "v1.Patch",
-        "paramType": "body",
-        "name": "body",
-        "description": "",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "namespace",
-        "description": "object name and auth scope, such as for teams and projects",
-        "required": true,
-        "allowMultiple": false
-       },
-       {
-        "type": "string",
-        "paramType": "path",
-        "name": "name",
-        "description": "name of the HorizontalPodAutoscaler",
-        "required": true,
-        "allowMultiple": false
-       }
-      ],
-      "responseMessages": [
-       {
-        "code": 200,
-        "message": "OK",
-        "responseModel": "v1beta1.HorizontalPodAutoscaler"
-       }
-      ],
-      "produces": [
-       "application/json",
-       "application/yaml",
-       "application/vnd.kubernetes.protobuf"
-      ],
-      "consumes": [
-       "application/json-patch+json",
-       "application/merge-patch+json",
-       "application/strategic-merge-patch+json"
-      ]
-     }
-    ]
-   },
-   {
     "path": "/apis/extensions/v1beta1/namespaces/{namespace}/ingresses",
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
@@ -3362,7 +2408,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch individual changes to a list of Ingress",
       "nickname": "watchNamespacedIngressList",
@@ -3428,7 +2474,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -3657,7 +2703,15 @@
         "type": "boolean",
         "paramType": "query",
         "name": "orphanDependents",
-        "description": "Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list.",
+        "description": "Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "propagationPolicy",
+        "description": "Whether and how garbage collection will be performed. Defaults to Default. Either this field or OrphanDependents may be set, but not both.",
         "required": false,
         "allowMultiple": false
        },
@@ -3701,7 +2755,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch changes to an object of kind Ingress",
       "nickname": "watchNamespacedIngress",
@@ -3775,7 +2829,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -3875,7 +2929,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch individual changes to a list of Ingress",
       "nickname": "watchIngressListForAllNamespaces",
@@ -3933,7 +2987,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -4332,7 +3386,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch individual changes to a list of NetworkPolicy",
       "nickname": "watchNamespacedNetworkPolicyList",
@@ -4398,7 +3452,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -4627,7 +3681,15 @@
         "type": "boolean",
         "paramType": "query",
         "name": "orphanDependents",
-        "description": "Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list.",
+        "description": "Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "propagationPolicy",
+        "description": "Whether and how garbage collection will be performed. Defaults to Default. Either this field or OrphanDependents may be set, but not both.",
         "required": false,
         "allowMultiple": false
        },
@@ -4671,7 +3733,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch changes to an object of kind NetworkPolicy",
       "nickname": "watchNamespacedNetworkPolicy",
@@ -4745,7 +3807,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -4845,7 +3907,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch individual changes to a list of NetworkPolicy",
       "nickname": "watchNetworkPolicyListForAllNamespaces",
@@ -4903,7 +3965,590 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
+       }
+      ],
+      "produces": [
+       "application/json",
+       "application/yaml",
+       "application/vnd.kubernetes.protobuf",
+       "application/json;stream=watch",
+       "application/vnd.kubernetes.protobuf;stream=watch"
+      ],
+      "consumes": [
+       "*/*"
+      ]
+     }
+    ]
+   },
+   {
+    "path": "/apis/extensions/v1beta1/podsecuritypolicies",
+    "description": "API at /apis/extensions/v1beta1",
+    "operations": [
+     {
+      "type": "v1beta1.PodSecurityPolicyList",
+      "method": "GET",
+      "summary": "list or watch objects of kind PodSecurityPolicy",
+      "nickname": "listPodSecurityPolicy",
+      "parameters": [
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "pretty",
+        "description": "If 'true', then the output is pretty printed.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "labelSelector",
+        "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "fieldSelector",
+        "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "boolean",
+        "paramType": "query",
+        "name": "watch",
+        "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "resourceVersion",
+        "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "integer",
+        "paramType": "query",
+        "name": "timeoutSeconds",
+        "description": "Timeout for the list/watch call.",
+        "required": false,
+        "allowMultiple": false
+       }
+      ],
+      "responseMessages": [
+       {
+        "code": 200,
+        "message": "OK",
+        "responseModel": "v1beta1.PodSecurityPolicyList"
+       }
+      ],
+      "produces": [
+       "application/json",
+       "application/yaml",
+       "application/vnd.kubernetes.protobuf",
+       "application/json;stream=watch",
+       "application/vnd.kubernetes.protobuf;stream=watch"
+      ],
+      "consumes": [
+       "*/*"
+      ]
+     },
+     {
+      "type": "v1beta1.PodSecurityPolicy",
+      "method": "POST",
+      "summary": "create a PodSecurityPolicy",
+      "nickname": "createPodSecurityPolicy",
+      "parameters": [
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "pretty",
+        "description": "If 'true', then the output is pretty printed.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "v1beta1.PodSecurityPolicy",
+        "paramType": "body",
+        "name": "body",
+        "description": "",
+        "required": true,
+        "allowMultiple": false
+       }
+      ],
+      "responseMessages": [
+       {
+        "code": 200,
+        "message": "OK",
+        "responseModel": "v1beta1.PodSecurityPolicy"
+       }
+      ],
+      "produces": [
+       "application/json",
+       "application/yaml",
+       "application/vnd.kubernetes.protobuf"
+      ],
+      "consumes": [
+       "*/*"
+      ]
+     },
+     {
+      "type": "v1.Status",
+      "method": "DELETE",
+      "summary": "delete collection of PodSecurityPolicy",
+      "nickname": "deletecollectionPodSecurityPolicy",
+      "parameters": [
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "pretty",
+        "description": "If 'true', then the output is pretty printed.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "labelSelector",
+        "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "fieldSelector",
+        "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "boolean",
+        "paramType": "query",
+        "name": "watch",
+        "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "resourceVersion",
+        "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "integer",
+        "paramType": "query",
+        "name": "timeoutSeconds",
+        "description": "Timeout for the list/watch call.",
+        "required": false,
+        "allowMultiple": false
+       }
+      ],
+      "responseMessages": [
+       {
+        "code": 200,
+        "message": "OK",
+        "responseModel": "v1.Status"
+       }
+      ],
+      "produces": [
+       "application/json",
+       "application/yaml",
+       "application/vnd.kubernetes.protobuf"
+      ],
+      "consumes": [
+       "*/*"
+      ]
+     }
+    ]
+   },
+   {
+    "path": "/apis/extensions/v1beta1/watch/podsecuritypolicies",
+    "description": "API at /apis/extensions/v1beta1",
+    "operations": [
+     {
+      "type": "v1.WatchEvent",
+      "method": "GET",
+      "summary": "watch individual changes to a list of PodSecurityPolicy",
+      "nickname": "watchPodSecurityPolicyList",
+      "parameters": [
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "pretty",
+        "description": "If 'true', then the output is pretty printed.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "labelSelector",
+        "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "fieldSelector",
+        "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "boolean",
+        "paramType": "query",
+        "name": "watch",
+        "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "resourceVersion",
+        "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "integer",
+        "paramType": "query",
+        "name": "timeoutSeconds",
+        "description": "Timeout for the list/watch call.",
+        "required": false,
+        "allowMultiple": false
+       }
+      ],
+      "responseMessages": [
+       {
+        "code": 200,
+        "message": "OK",
+        "responseModel": "v1.WatchEvent"
+       }
+      ],
+      "produces": [
+       "application/json",
+       "application/yaml",
+       "application/vnd.kubernetes.protobuf",
+       "application/json;stream=watch",
+       "application/vnd.kubernetes.protobuf;stream=watch"
+      ],
+      "consumes": [
+       "*/*"
+      ]
+     }
+    ]
+   },
+   {
+    "path": "/apis/extensions/v1beta1/podsecuritypolicies/{name}",
+    "description": "API at /apis/extensions/v1beta1",
+    "operations": [
+     {
+      "type": "v1beta1.PodSecurityPolicy",
+      "method": "GET",
+      "summary": "read the specified PodSecurityPolicy",
+      "nickname": "readPodSecurityPolicy",
+      "parameters": [
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "pretty",
+        "description": "If 'true', then the output is pretty printed.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "boolean",
+        "paramType": "query",
+        "name": "export",
+        "description": "Should this value be exported.  Export strips fields that a user can not specify.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "boolean",
+        "paramType": "query",
+        "name": "exact",
+        "description": "Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "path",
+        "name": "name",
+        "description": "name of the PodSecurityPolicy",
+        "required": true,
+        "allowMultiple": false
+       }
+      ],
+      "responseMessages": [
+       {
+        "code": 200,
+        "message": "OK",
+        "responseModel": "v1beta1.PodSecurityPolicy"
+       }
+      ],
+      "produces": [
+       "application/json",
+       "application/yaml",
+       "application/vnd.kubernetes.protobuf"
+      ],
+      "consumes": [
+       "*/*"
+      ]
+     },
+     {
+      "type": "v1beta1.PodSecurityPolicy",
+      "method": "PUT",
+      "summary": "replace the specified PodSecurityPolicy",
+      "nickname": "replacePodSecurityPolicy",
+      "parameters": [
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "pretty",
+        "description": "If 'true', then the output is pretty printed.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "v1beta1.PodSecurityPolicy",
+        "paramType": "body",
+        "name": "body",
+        "description": "",
+        "required": true,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "path",
+        "name": "name",
+        "description": "name of the PodSecurityPolicy",
+        "required": true,
+        "allowMultiple": false
+       }
+      ],
+      "responseMessages": [
+       {
+        "code": 200,
+        "message": "OK",
+        "responseModel": "v1beta1.PodSecurityPolicy"
+       }
+      ],
+      "produces": [
+       "application/json",
+       "application/yaml",
+       "application/vnd.kubernetes.protobuf"
+      ],
+      "consumes": [
+       "*/*"
+      ]
+     },
+     {
+      "type": "v1beta1.PodSecurityPolicy",
+      "method": "PATCH",
+      "summary": "partially update the specified PodSecurityPolicy",
+      "nickname": "patchPodSecurityPolicy",
+      "parameters": [
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "pretty",
+        "description": "If 'true', then the output is pretty printed.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "v1.Patch",
+        "paramType": "body",
+        "name": "body",
+        "description": "",
+        "required": true,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "path",
+        "name": "name",
+        "description": "name of the PodSecurityPolicy",
+        "required": true,
+        "allowMultiple": false
+       }
+      ],
+      "responseMessages": [
+       {
+        "code": 200,
+        "message": "OK",
+        "responseModel": "v1beta1.PodSecurityPolicy"
+       }
+      ],
+      "produces": [
+       "application/json",
+       "application/yaml",
+       "application/vnd.kubernetes.protobuf"
+      ],
+      "consumes": [
+       "application/json-patch+json",
+       "application/merge-patch+json",
+       "application/strategic-merge-patch+json"
+      ]
+     },
+     {
+      "type": "v1.Status",
+      "method": "DELETE",
+      "summary": "delete a PodSecurityPolicy",
+      "nickname": "deletePodSecurityPolicy",
+      "parameters": [
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "pretty",
+        "description": "If 'true', then the output is pretty printed.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "v1.DeleteOptions",
+        "paramType": "body",
+        "name": "body",
+        "description": "",
+        "required": true,
+        "allowMultiple": false
+       },
+       {
+        "type": "integer",
+        "paramType": "query",
+        "name": "gracePeriodSeconds",
+        "description": "The duration in seconds before the object should be deleted. Value must be non-negative integer. The value zero indicates delete immediately. If this value is nil, the default grace period for the specified type will be used. Defaults to a per object value if not specified. zero means delete immediately.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "boolean",
+        "paramType": "query",
+        "name": "orphanDependents",
+        "description": "Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "propagationPolicy",
+        "description": "Whether and how garbage collection will be performed. Defaults to Default. Either this field or OrphanDependents may be set, but not both.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "path",
+        "name": "name",
+        "description": "name of the PodSecurityPolicy",
+        "required": true,
+        "allowMultiple": false
+       }
+      ],
+      "responseMessages": [
+       {
+        "code": 200,
+        "message": "OK",
+        "responseModel": "v1.Status"
+       }
+      ],
+      "produces": [
+       "application/json",
+       "application/yaml",
+       "application/vnd.kubernetes.protobuf"
+      ],
+      "consumes": [
+       "*/*"
+      ]
+     }
+    ]
+   },
+   {
+    "path": "/apis/extensions/v1beta1/watch/podsecuritypolicies/{name}",
+    "description": "API at /apis/extensions/v1beta1",
+    "operations": [
+     {
+      "type": "v1.WatchEvent",
+      "method": "GET",
+      "summary": "watch changes to an object of kind PodSecurityPolicy",
+      "nickname": "watchPodSecurityPolicy",
+      "parameters": [
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "pretty",
+        "description": "If 'true', then the output is pretty printed.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "labelSelector",
+        "description": "A selector to restrict the list of returned objects by their labels. Defaults to everything.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "fieldSelector",
+        "description": "A selector to restrict the list of returned objects by their fields. Defaults to everything.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "boolean",
+        "paramType": "query",
+        "name": "watch",
+        "description": "Watch for changes to the described resources and return them as a stream of add, update, and remove notifications. Specify resourceVersion.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "resourceVersion",
+        "description": "When specified with a watch call, shows changes that occur after that particular version of a resource. Defaults to changes from the beginning of history. When specified for list: - if unset, then the result is returned from remote storage based on quorum-read flag; - if it's 0, then we simply return what we currently have in cache, no guarantee; - if set to non zero, then the result is at least as fresh as given rv.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "integer",
+        "paramType": "query",
+        "name": "timeoutSeconds",
+        "description": "Timeout for the list/watch call.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "path",
+        "name": "name",
+        "description": "name of the PodSecurityPolicy",
+        "required": true,
+        "allowMultiple": false
+       }
+      ],
+      "responseMessages": [
+       {
+        "code": 200,
+        "message": "OK",
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -5137,7 +4782,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch individual changes to a list of ReplicaSet",
       "nickname": "watchNamespacedReplicaSetList",
@@ -5203,7 +4848,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -5432,7 +5077,15 @@
         "type": "boolean",
         "paramType": "query",
         "name": "orphanDependents",
-        "description": "Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list.",
+        "description": "Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "propagationPolicy",
+        "description": "Whether and how garbage collection will be performed. Defaults to Default. Either this field or OrphanDependents may be set, but not both.",
         "required": false,
         "allowMultiple": false
        },
@@ -5476,7 +5129,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch changes to an object of kind ReplicaSet",
       "nickname": "watchNamespacedReplicaSet",
@@ -5550,7 +5203,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -5650,7 +5303,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch individual changes to a list of ReplicaSet",
       "nickname": "watchReplicaSetListForAllNamespaces",
@@ -5708,7 +5361,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -6413,7 +6066,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch individual changes to a list of ThirdPartyResource",
       "nickname": "watchThirdPartyResourceList",
@@ -6471,7 +6124,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -6676,7 +6329,15 @@
         "type": "boolean",
         "paramType": "query",
         "name": "orphanDependents",
-        "description": "Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list.",
+        "description": "Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both.",
+        "required": false,
+        "allowMultiple": false
+       },
+       {
+        "type": "string",
+        "paramType": "query",
+        "name": "propagationPolicy",
+        "description": "Whether and how garbage collection will be performed. Defaults to Default. Either this field or OrphanDependents may be set, but not both.",
         "required": false,
         "allowMultiple": false
        },
@@ -6712,7 +6373,7 @@
     "description": "API at /apis/extensions/v1beta1",
     "operations": [
      {
-      "type": "versioned.Event",
+      "type": "v1.WatchEvent",
       "method": "GET",
       "summary": "watch changes to an object of kind ThirdPartyResource",
       "nickname": "watchThirdPartyResource",
@@ -6778,7 +6439,7 @@
        {
         "code": 200,
         "message": "OK",
-        "responseModel": "versioned.Event"
+        "responseModel": "v1.WatchEvent"
        }
       ],
       "produces": [
@@ -6990,6 +6651,10 @@
      "controller": {
       "type": "boolean",
       "description": "If true, this reference points to the managing controller."
+     },
+     "blockOwnerDeletion": {
+      "type": "boolean",
+      "description": "If true, AND if the owner has the \"foregroundDeletion\" finalizer, then the owner cannot be deleted from the key-value store until this reference is removed. Defaults to false. To set this field, a user needs \"delete\" permission of the owner, otherwise 422 (Unprocessable Entity) will be returned."
      }
     }
    },
@@ -7007,6 +6672,20 @@
      "template": {
       "$ref": "v1.PodTemplateSpec",
       "description": "Template is the object that describes the pod that will be created. The DaemonSet will create exactly one copy of this pod on every node that matches the template's node selector (or on every node if no node selector is specified). More info: http://kubernetes.io/docs/user-guide/replication-controller#pod-template"
+     },
+     "updateStrategy": {
+      "$ref": "v1beta1.DaemonSetUpdateStrategy",
+      "description": "UpdateStrategy to replace existing DaemonSet pods with new pods."
+     },
+     "minReadySeconds": {
+      "type": "integer",
+      "format": "int32",
+      "description": "MinReadySeconds minimum number of seconds for which a newly created DaemonSet pod should be ready without any of its container crashing, for it to be considered available. Defaults to 0 (pod will be considered available as soon as it is ready)."
+     },
+     "templateGeneration": {
+      "type": "integer",
+      "format": "int64",
+      "description": "A sequence number representing a specific generation of the template. Populated by the system. It can be set only during the creation."
      }
     }
    },
@@ -7080,6 +6759,13 @@
       },
       "description": "List of volumes that can be mounted by containers belonging to the pod. More info: http://kubernetes.io/docs/user-guide/volumes"
      },
+     "initContainers": {
+      "type": "array",
+      "items": {
+       "$ref": "v1.Container"
+      },
+      "description": "List of initialization containers belonging to the pod. Init containers are executed in order prior to containers being started. If any init container fails, the pod is considered to have failed and is handled according to its restartPolicy. The name for an init container or normal container must be unique among all containers. Init containers may not have Lifecycle actions, Readiness probes, or Liveness probes. The resourceRequirements of an init container are taken into account during scheduling by finding the highest request/limit for each resource type, and then using the max of of that value or the sum of the normal containers. Limits are applied to init containers in a similar fashion. Init containers cannot currently be added or removed. Cannot be updated. More info: http://kubernetes.io/docs/user-guide/containers"
+     },
      "containers": {
       "type": "array",
       "items": {
@@ -7103,7 +6789,7 @@
      },
      "dnsPolicy": {
       "type": "string",
-      "description": "Set DNS policy for containers within the pod. One of 'ClusterFirst' or 'Default'. Defaults to \"ClusterFirst\"."
+      "description": "Set DNS policy for containers within the pod. One of 'ClusterFirstWithHostNet', 'ClusterFirst' or 'Default'. Defaults to \"ClusterFirst\". To have DNS options set along with hostNetwork, you have to specify DNS policy explicitly to 'ClusterFirstWithHostNet'."
      },
      "nodeSelector": {
       "type": "object",
@@ -7116,6 +6802,10 @@
      "serviceAccount": {
       "type": "string",
       "description": "DeprecatedServiceAccount is a depreciated alias for ServiceAccountName. Deprecated: Use serviceAccountName instead."
+     },
+     "automountServiceAccountToken": {
+      "type": "boolean",
+      "description": "AutomountServiceAccountToken indicates whether a service account token should be automatically mounted."
      },
      "nodeName": {
       "type": "string",
@@ -7155,6 +6845,17 @@
      "affinity": {
       "$ref": "v1.Affinity",
       "description": "If specified, the pod's scheduling constraints"
+     },
+     "schedulername": {
+      "type": "string",
+      "description": "If specified, the pod will be dispatched by specified scheduler. If not specified, the pod will be dispatched by default scheduler."
+     },
+     "tolerations": {
+      "type": "array",
+      "items": {
+       "$ref": "v1.Toleration"
+      },
+      "description": "If specified, the pod's tolerations."
      }
     }
    },
@@ -7260,6 +6961,14 @@
      "photonPersistentDisk": {
       "$ref": "v1.PhotonPersistentDiskVolumeSource",
       "description": "PhotonPersistentDisk represents a PhotonController persistent disk attached and mounted on kubelets host machine"
+     },
+     "projected": {
+      "$ref": "v1.ProjectedVolumeSource",
+      "description": "Items for all in one resources secrets, configmaps, and downward API"
+     },
+     "portworxVolume": {
+      "$ref": "v1.PortworxVolumeSource",
+      "description": "PortworxVolume represents a portworx volume attached and mounted on kubelets host machine"
      }
     }
    },
@@ -7372,12 +7081,16 @@
       "items": {
        "$ref": "v1.KeyToPath"
       },
-      "description": "If unspecified, each key-value pair in the Data field of the referenced Secret will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the Secret, the volume setup will error. Paths must be relative and may not contain the '..' path or start with '..'."
+      "description": "If unspecified, each key-value pair in the Data field of the referenced Secret will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the Secret, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'."
      },
      "defaultMode": {
       "type": "integer",
       "format": "int32",
       "description": "Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set."
+     },
+     "optional": {
+      "type": "boolean",
+      "description": "Specify whether the Secret or it's keys must be defined"
      }
     }
    },
@@ -7459,6 +7172,13 @@
      "readOnly": {
       "type": "boolean",
       "description": "ReadOnly here will force the ReadOnly setting in VolumeMounts. Defaults to false."
+     },
+     "portals": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "iSCSI target portal List. The portal is either an IP or ip_addr:port if the port is other than default (typically TCP ports 860 and 3260)."
      }
     }
    },
@@ -7803,12 +7523,16 @@
       "items": {
        "$ref": "v1.KeyToPath"
       },
-      "description": "If unspecified, each key-value pair in the Data field of the referenced ConfigMap will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the ConfigMap, the volume setup will error. Paths must be relative and may not contain the '..' path or start with '..'."
+      "description": "If unspecified, each key-value pair in the Data field of the referenced ConfigMap will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the ConfigMap, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'."
      },
      "defaultMode": {
       "type": "integer",
       "format": "int32",
       "description": "Optional: mode bits to use on created files by default. Must be a value between 0 and 0777. Defaults to 0644. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set."
+     },
+     "optional": {
+      "type": "boolean",
+      "description": "Specify whether the ConfigMap or it's keys must be defined"
      }
     }
    },
@@ -7910,6 +7634,121 @@
      }
     }
    },
+   "v1.ProjectedVolumeSource": {
+    "id": "v1.ProjectedVolumeSource",
+    "description": "Represents a projected volume source",
+    "required": [
+     "sources"
+    ],
+    "properties": {
+     "sources": {
+      "type": "array",
+      "items": {
+       "$ref": "v1.VolumeProjection"
+      },
+      "description": "list of volume projections"
+     },
+     "defaultMode": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Mode bits to use on created files by default. Must be a value between 0 and 0777. Directories within the path are not affected by this setting. This might be in conflict with other options that affect the file mode, like fsGroup, and the result can be other mode bits set."
+     }
+    }
+   },
+   "v1.VolumeProjection": {
+    "id": "v1.VolumeProjection",
+    "description": "Projection that may be projected along with other supported volume types",
+    "properties": {
+     "secret": {
+      "$ref": "v1.SecretProjection",
+      "description": "information about the secret data to project"
+     },
+     "downwardAPI": {
+      "$ref": "v1.DownwardAPIProjection",
+      "description": "information about the downwardAPI data to project"
+     },
+     "configMap": {
+      "$ref": "v1.ConfigMapProjection",
+      "description": "information about the configMap data to project"
+     }
+    }
+   },
+   "v1.SecretProjection": {
+    "id": "v1.SecretProjection",
+    "description": "Adapts a secret into a projected volume.\n\nThe contents of the target Secret's Data field will be presented in a projected volume as files using the keys in the Data field as the file names. Note that this is identical to a secret volume source without the default mode.",
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names"
+     },
+     "items": {
+      "type": "array",
+      "items": {
+       "$ref": "v1.KeyToPath"
+      },
+      "description": "If unspecified, each key-value pair in the Data field of the referenced Secret will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the Secret, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'."
+     },
+     "optional": {
+      "type": "boolean",
+      "description": "Specify whether the Secret or its key must be defined"
+     }
+    }
+   },
+   "v1.DownwardAPIProjection": {
+    "id": "v1.DownwardAPIProjection",
+    "description": "Represents downward API info for projecting into a projected volume. Note that this is identical to a downwardAPI volume source without the default mode.",
+    "properties": {
+     "items": {
+      "type": "array",
+      "items": {
+       "$ref": "v1.DownwardAPIVolumeFile"
+      },
+      "description": "Items is a list of DownwardAPIVolume file"
+     }
+    }
+   },
+   "v1.ConfigMapProjection": {
+    "id": "v1.ConfigMapProjection",
+    "description": "Adapts a ConfigMap into a projected volume.\n\nThe contents of the target ConfigMap's Data field will be presented in a projected volume as files using the keys in the Data field as the file names, unless the items element is populated with specific mappings of keys to paths. Note that this is identical to a configmap volume source without the default mode.",
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names"
+     },
+     "items": {
+      "type": "array",
+      "items": {
+       "$ref": "v1.KeyToPath"
+      },
+      "description": "If unspecified, each key-value pair in the Data field of the referenced ConfigMap will be projected into the volume as a file whose name is the key and content is the value. If specified, the listed keys will be projected into the specified paths, and unlisted keys will not be present. If a key is specified which is not present in the ConfigMap, the volume setup will error unless it is marked optional. Paths must be relative and may not contain the '..' path or start with '..'."
+     },
+     "optional": {
+      "type": "boolean",
+      "description": "Specify whether the ConfigMap or it's keys must be defined"
+     }
+    }
+   },
+   "v1.PortworxVolumeSource": {
+    "id": "v1.PortworxVolumeSource",
+    "description": "PortworxVolumeSource represents a Portworx volume resource.",
+    "required": [
+     "volumeID"
+    ],
+    "properties": {
+     "volumeID": {
+      "type": "string",
+      "description": "VolumeID uniquely identifies a Portworx volume"
+     },
+     "fsType": {
+      "type": "string",
+      "description": "FSType represents the filesystem type to mount Must be a filesystem type supported by the host operating system. Ex. \"ext4\", \"xfs\". Implicitly inferred to be \"ext4\" if unspecified."
+     },
+     "readOnly": {
+      "type": "boolean",
+      "description": "Defaults to false (read/write). ReadOnly here will force the ReadOnly setting in VolumeMounts."
+     }
+    }
+   },
    "v1.Container": {
     "id": "v1.Container",
     "description": "A single application container that you want to run within a pod.",
@@ -7950,6 +7789,13 @@
       },
       "description": "List of ports to expose from the container. Exposing a port here gives the system additional information about the network connections a container uses, but is primarily informational. Not specifying a port here DOES NOT prevent that port from being exposed. Any port which is listening on the default \"0.0.0.0\" address inside a container will be accessible from the network. Cannot be updated."
      },
+     "envFrom": {
+      "type": "array",
+      "items": {
+       "$ref": "v1.EnvFromSource"
+      },
+      "description": "List of sources to populate environment variables in the container. The keys defined within a source must be a C_IDENTIFIER. An invalid key will prevent the container from starting. When a key exists in multiple sources, the value associated with the last source will take precedence. Values defined by an Env with a duplicate key will take precedence. Cannot be updated."
+     },
      "env": {
       "type": "array",
       "items": {
@@ -7982,7 +7828,11 @@
      },
      "terminationMessagePath": {
       "type": "string",
-      "description": "Optional: Path at which the file to which the container's termination message will be written is mounted into the container's filesystem. Message written is intended to be brief final status, such as an assertion failure message. Defaults to /dev/termination-log. Cannot be updated."
+      "description": "Optional: Path at which the file to which the container's termination message will be written is mounted into the container's filesystem. Message written is intended to be brief final status, such as an assertion failure message. Will be truncated by the node if greater than 4096 bytes. The total message length across all containers will be limited to 12kb. Defaults to /dev/termination-log. Cannot be updated."
+     },
+     "terminationMessagePolicy": {
+      "type": "string",
+      "description": "Indicate how the termination message should be populated. File will use the contents of terminationMessagePath to populate the container status message on both success and failure. FallbackToLogsOnError will use the last chunk of container log output if the termination message file is empty and the container exited with an error. The log output is limited to 2048 bytes or 80 lines, whichever is smaller. Defaults to File. Cannot be updated."
      },
      "imagePullPolicy": {
       "type": "string",
@@ -8034,6 +7884,52 @@
      "hostIP": {
       "type": "string",
       "description": "What host IP to bind the external port to."
+     }
+    }
+   },
+   "v1.EnvFromSource": {
+    "id": "v1.EnvFromSource",
+    "description": "EnvFromSource represents the source of a set of ConfigMaps",
+    "properties": {
+     "prefix": {
+      "type": "string",
+      "description": "An optional identifer to prepend to each key in the ConfigMap. Must be a C_IDENTIFIER."
+     },
+     "configMapRef": {
+      "$ref": "v1.ConfigMapEnvSource",
+      "description": "The ConfigMap to select from"
+     },
+     "secretRef": {
+      "$ref": "v1.SecretEnvSource",
+      "description": "The Secret to select from"
+     }
+    }
+   },
+   "v1.ConfigMapEnvSource": {
+    "id": "v1.ConfigMapEnvSource",
+    "description": "ConfigMapEnvSource selects a ConfigMap to populate the environment variables with.\n\nThe contents of the target ConfigMap's Data field will represent the key-value pairs as environment variables.",
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names"
+     },
+     "optional": {
+      "type": "boolean",
+      "description": "Specify whether the ConfigMap must be defined"
+     }
+    }
+   },
+   "v1.SecretEnvSource": {
+    "id": "v1.SecretEnvSource",
+    "description": "SecretEnvSource selects a Secret to populate the environment variables with.\n\nThe contents of the target Secret's Data field will represent the key-value pairs as environment variables.",
+    "properties": {
+     "name": {
+      "type": "string",
+      "description": "Name of the referent. More info: http://kubernetes.io/docs/user-guide/identifiers#names"
+     },
+     "optional": {
+      "type": "boolean",
+      "description": "Specify whether the Secret must be defined"
      }
     }
    },
@@ -8094,6 +7990,10 @@
      "key": {
       "type": "string",
       "description": "The key to select."
+     },
+     "optional": {
+      "type": "boolean",
+      "description": "Specify whether the ConfigMap or it's key must be defined"
      }
     }
    },
@@ -8111,6 +8011,10 @@
      "key": {
       "type": "string",
       "description": "The key of the secret to select from.  Must be a valid secret key."
+     },
+     "optional": {
+      "type": "boolean",
+      "description": "Specify whether the Secret or it's key must be defined"
      }
     }
    },
@@ -8607,6 +8511,56 @@
      }
     }
    },
+   "v1.Toleration": {
+    "id": "v1.Toleration",
+    "description": "The pod this Toleration is attached to tolerates any taint that matches the triple \u003ckey,value,effect\u003e using the matching operator \u003coperator\u003e.",
+    "properties": {
+     "key": {
+      "type": "string",
+      "description": "Key is the taint key that the toleration applies to. Empty means match all taint keys. If the key is empty, operator must be Exists; this combination means to match all values and all keys."
+     },
+     "operator": {
+      "type": "string",
+      "description": "Operator represents a key's relationship to the value. Valid operators are Exists and Equal. Defaults to Equal. Exists is equivalent to wildcard for value, so that a pod can tolerate all taints of a particular category."
+     },
+     "value": {
+      "type": "string",
+      "description": "Value is the taint value the toleration matches to. If the operator is Exists, the value should be empty, otherwise just a regular string."
+     },
+     "effect": {
+      "type": "string",
+      "description": "Effect indicates the taint effect to match. Empty means match all taint effects. When specified, allowed values are NoSchedule, PreferNoSchedule and NoExecute."
+     },
+     "tolerationSeconds": {
+      "type": "integer",
+      "format": "int64",
+      "description": "TolerationSeconds represents the period of time the toleration (which must be of effect NoExecute, otherwise this field is ignored) tolerates the taint. By default, it is not set, which means tolerate the taint forever (do not evict). Zero and negative values will be treated as 0 (evict immediately) by the system."
+     }
+    }
+   },
+   "v1beta1.DaemonSetUpdateStrategy": {
+    "id": "v1beta1.DaemonSetUpdateStrategy",
+    "properties": {
+     "type": {
+      "type": "string",
+      "description": "Type of daemon set update. Can be \"RollingUpdate\" or \"OnDelete\". Default is OnDelete."
+     },
+     "rollingUpdate": {
+      "$ref": "v1beta1.RollingUpdateDaemonSet",
+      "description": "Rolling update config params. Present only if DaemonSetUpdateStrategy = RollingUpdate."
+     }
+    }
+   },
+   "v1beta1.RollingUpdateDaemonSet": {
+    "id": "v1beta1.RollingUpdateDaemonSet",
+    "description": "Spec to control the desired behavior of daemon set rolling update.",
+    "properties": {
+     "maxUnavailable": {
+      "type": "string",
+      "description": "The maximum number of DaemonSet pods that can be unavailable during the update. Value can be an absolute number (ex: 5) or a percentage of total number of DaemonSet pods at the start of the update (ex: 10%). Absolute number is calculated from percentage by rounding up. This cannot be 0. Default value is 1. Example: when this is set to 30%, 30% of the currently running DaemonSet pods can be stopped for an update at any given time. The update starts by stopping at most 30% of the currently running DaemonSet pods and then brings up new DaemonSet pods in their place. Once the new pods are ready, it then proceeds onto other DaemonSet pods, thus ensuring that at least 70% of original number of DaemonSet pods are available at all times during the update."
+     }
+    }
+   },
    "v1beta1.DaemonSetStatus": {
     "id": "v1beta1.DaemonSetStatus",
     "description": "DaemonSetStatus represents the current status of a daemon set.",
@@ -8636,6 +8590,26 @@
       "type": "integer",
       "format": "int32",
       "description": "NumberReady is the number of nodes that should be running the daemon pod and have one or more of the daemon pod running and ready."
+     },
+     "observedGeneration": {
+      "type": "integer",
+      "format": "int64",
+      "description": "ObservedGeneration is the most recent generation observed by the daemon set controller."
+     },
+     "updatedNumberScheduled": {
+      "type": "integer",
+      "format": "int32",
+      "description": "UpdatedNumberScheduled is the total number of nodes that are running updated daemon pod"
+     },
+     "numberAvailable": {
+      "type": "integer",
+      "format": "int32",
+      "description": "NumberAvailable is the number of nodes that should be running the daemon pod and have one or more of the daemon pod running and available (ready for at least minReadySeconds)"
+     },
+     "numberUnavailable": {
+      "type": "integer",
+      "format": "int32",
+      "description": "NumberUnavailable is the number of nodes that should be running the daemon pod and have none of the daemon pod running and available (ready for at least minReadySeconds)"
      }
     }
    },
@@ -8726,8 +8700,8 @@
      }
     }
    },
-   "versioned.Event": {
-    "id": "versioned.Event",
+   "v1.WatchEvent": {
+    "id": "v1.WatchEvent",
     "required": [
      "type",
      "object"
@@ -8748,7 +8722,7 @@
    },
    "v1.DeleteOptions": {
     "id": "v1.DeleteOptions",
-    "description": "DeleteOptions may be provided when deleting an API object",
+    "description": "DeleteOptions may be provided when deleting an API object.",
     "properties": {
      "kind": {
       "type": "string",
@@ -8769,7 +8743,11 @@
      },
      "orphanDependents": {
       "type": "boolean",
-      "description": "Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list."
+      "description": "Deprecated: please use the PropagationPolicy, this field will be deprecated in 1.7. Should the dependent objects be orphaned. If true/false, the \"orphan\" finalizer will be added to/removed from the object's finalizers list. Either this field or PropagationPolicy may be set, but not both."
+     },
+     "propagationPolicy": {
+      "$ref": "v1.DeletionPropagation",
+      "description": "Whether and how garbage collection will be performed. Defaults to Default. Either this field or OrphanDependents may be set, but not both."
      }
     }
    },
@@ -8785,6 +8763,10 @@
    },
    "types.UID": {
     "id": "types.UID",
+    "properties": {}
+   },
+   "v1.DeletionPropagation": {
+    "id": "v1.DeletionPropagation",
     "properties": {}
    },
    "v1beta1.DeploymentList": {
@@ -8947,6 +8929,11 @@
       "format": "int32",
       "description": "Total number of non-terminated pods targeted by this deployment that have the desired template spec."
      },
+     "readyReplicas": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Total number of ready pods targeted by this deployment."
+     },
      "availableReplicas": {
       "type": "integer",
       "format": "int32",
@@ -9086,157 +9073,6 @@
      "targetSelector": {
       "type": "string",
       "description": "label selector for pods that should match the replicas count. This is a serializated version of both map-based and more expressive set-based selectors. This is done to avoid introspection in the clients. The string will be in the same format as the query-param syntax. If the target type only supports map-based selectors, both this field and map-based selector field are populated. More info: http://kubernetes.io/docs/user-guide/labels#label-selectors"
-     }
-    }
-   },
-   "v1beta1.HorizontalPodAutoscalerList": {
-    "id": "v1beta1.HorizontalPodAutoscalerList",
-    "description": "list of horizontal pod autoscaler objects.",
-    "required": [
-     "items"
-    ],
-    "properties": {
-     "kind": {
-      "type": "string",
-      "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds"
-     },
-     "apiVersion": {
-      "type": "string",
-      "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#resources"
-     },
-     "metadata": {
-      "$ref": "v1.ListMeta",
-      "description": "Standard list metadata."
-     },
-     "items": {
-      "type": "array",
-      "items": {
-       "$ref": "v1beta1.HorizontalPodAutoscaler"
-      },
-      "description": "list of horizontal pod autoscaler objects."
-     }
-    }
-   },
-   "v1beta1.HorizontalPodAutoscaler": {
-    "id": "v1beta1.HorizontalPodAutoscaler",
-    "description": "configuration of a horizontal pod autoscaler.",
-    "properties": {
-     "kind": {
-      "type": "string",
-      "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds"
-     },
-     "apiVersion": {
-      "type": "string",
-      "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#resources"
-     },
-     "metadata": {
-      "$ref": "v1.ObjectMeta",
-      "description": "Standard object metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata"
-     },
-     "spec": {
-      "$ref": "v1beta1.HorizontalPodAutoscalerSpec",
-      "description": "behaviour of autoscaler. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#spec-and-status."
-     },
-     "status": {
-      "$ref": "v1beta1.HorizontalPodAutoscalerStatus",
-      "description": "current information about the autoscaler."
-     }
-    }
-   },
-   "v1beta1.HorizontalPodAutoscalerSpec": {
-    "id": "v1beta1.HorizontalPodAutoscalerSpec",
-    "description": "specification of a horizontal pod autoscaler.",
-    "required": [
-     "scaleRef",
-     "maxReplicas"
-    ],
-    "properties": {
-     "scaleRef": {
-      "$ref": "v1beta1.SubresourceReference",
-      "description": "reference to Scale subresource; horizontal pod autoscaler will learn the current resource consumption from its status, and will set the desired number of pods by modifying its spec."
-     },
-     "minReplicas": {
-      "type": "integer",
-      "format": "int32",
-      "description": "lower limit for the number of pods that can be set by the autoscaler, default 1."
-     },
-     "maxReplicas": {
-      "type": "integer",
-      "format": "int32",
-      "description": "upper limit for the number of pods that can be set by the autoscaler; cannot be smaller than MinReplicas."
-     },
-     "cpuUtilization": {
-      "$ref": "v1beta1.CPUTargetUtilization",
-      "description": "target average CPU utilization (represented as a percentage of requested CPU) over all the pods; if not specified it defaults to the target CPU utilization at 80% of the requested resources."
-     }
-    }
-   },
-   "v1beta1.SubresourceReference": {
-    "id": "v1beta1.SubresourceReference",
-    "description": "SubresourceReference contains enough information to let you inspect or modify the referred subresource.",
-    "properties": {
-     "kind": {
-      "type": "string",
-      "description": "Kind of the referent; More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds"
-     },
-     "name": {
-      "type": "string",
-      "description": "Name of the referent; More info: http://kubernetes.io/docs/user-guide/identifiers#names"
-     },
-     "apiVersion": {
-      "type": "string",
-      "description": "API version of the referent"
-     },
-     "subresource": {
-      "type": "string",
-      "description": "Subresource name of the referent"
-     }
-    }
-   },
-   "v1beta1.CPUTargetUtilization": {
-    "id": "v1beta1.CPUTargetUtilization",
-    "required": [
-     "targetPercentage"
-    ],
-    "properties": {
-     "targetPercentage": {
-      "type": "integer",
-      "format": "int32",
-      "description": "fraction of the requested CPU that should be utilized/used, e.g. 70 means that 70% of the requested CPU should be in use."
-     }
-    }
-   },
-   "v1beta1.HorizontalPodAutoscalerStatus": {
-    "id": "v1beta1.HorizontalPodAutoscalerStatus",
-    "description": "current status of a horizontal pod autoscaler",
-    "required": [
-     "currentReplicas",
-     "desiredReplicas"
-    ],
-    "properties": {
-     "observedGeneration": {
-      "type": "integer",
-      "format": "int64",
-      "description": "most recent generation observed by this autoscaler."
-     },
-     "lastScaleTime": {
-      "type": "string",
-      "description": "last time the HorizontalPodAutoscaler scaled the number of pods; used by the autoscaler to control how often the number of pods is changed."
-     },
-     "currentReplicas": {
-      "type": "integer",
-      "format": "int32",
-      "description": "current number of replicas of pods managed by this autoscaler."
-     },
-     "desiredReplicas": {
-      "type": "integer",
-      "format": "int32",
-      "description": "desired number of replicas of pods managed by this autoscaler."
-     },
-     "currentCPUUtilizationPercentage": {
-      "type": "integer",
-      "format": "int32",
-      "description": "current average CPU utilization over all pods, represented as a percentage of requested CPU, e.g. 70 means that an average pod is using now 70% of its requested CPU."
      }
     }
    },
@@ -9554,6 +9390,254 @@
      }
     }
    },
+   "v1beta1.PodSecurityPolicyList": {
+    "id": "v1beta1.PodSecurityPolicyList",
+    "description": "Pod Security Policy List is a list of PodSecurityPolicy objects.",
+    "required": [
+     "items"
+    ],
+    "properties": {
+     "kind": {
+      "type": "string",
+      "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds"
+     },
+     "apiVersion": {
+      "type": "string",
+      "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#resources"
+     },
+     "metadata": {
+      "$ref": "v1.ListMeta",
+      "description": "Standard list metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata"
+     },
+     "items": {
+      "type": "array",
+      "items": {
+       "$ref": "v1beta1.PodSecurityPolicy"
+      },
+      "description": "Items is a list of schema objects."
+     }
+    }
+   },
+   "v1beta1.PodSecurityPolicy": {
+    "id": "v1beta1.PodSecurityPolicy",
+    "description": "Pod Security Policy governs the ability to make requests that affect the Security Context that will be applied to a pod and container.",
+    "properties": {
+     "kind": {
+      "type": "string",
+      "description": "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#types-kinds"
+     },
+     "apiVersion": {
+      "type": "string",
+      "description": "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#resources"
+     },
+     "metadata": {
+      "$ref": "v1.ObjectMeta",
+      "description": "Standard object's metadata. More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata"
+     },
+     "spec": {
+      "$ref": "v1beta1.PodSecurityPolicySpec",
+      "description": "spec defines the policy enforced."
+     }
+    }
+   },
+   "v1beta1.PodSecurityPolicySpec": {
+    "id": "v1beta1.PodSecurityPolicySpec",
+    "description": "Pod Security Policy Spec defines the policy enforced.",
+    "required": [
+     "seLinux",
+     "runAsUser",
+     "supplementalGroups",
+     "fsGroup"
+    ],
+    "properties": {
+     "privileged": {
+      "type": "boolean",
+      "description": "privileged determines if a pod can request to be run as privileged."
+     },
+     "defaultAddCapabilities": {
+      "type": "array",
+      "items": {
+       "$ref": "v1.Capability"
+      },
+      "description": "DefaultAddCapabilities is the default set of capabilities that will be added to the container unless the pod spec specifically drops the capability.  You may not list a capabiility in both DefaultAddCapabilities and RequiredDropCapabilities."
+     },
+     "requiredDropCapabilities": {
+      "type": "array",
+      "items": {
+       "$ref": "v1.Capability"
+      },
+      "description": "RequiredDropCapabilities are the capabilities that will be dropped from the container.  These are required to be dropped and cannot be added."
+     },
+     "allowedCapabilities": {
+      "type": "array",
+      "items": {
+       "$ref": "v1.Capability"
+      },
+      "description": "AllowedCapabilities is a list of capabilities that can be requested to add to the container. Capabilities in this field may be added at the pod author's discretion. You must not list a capability in both AllowedCapabilities and RequiredDropCapabilities."
+     },
+     "volumes": {
+      "type": "array",
+      "items": {
+       "$ref": "v1beta1.FSType"
+      },
+      "description": "volumes is a white list of allowed volume plugins.  Empty indicates that all plugins may be used."
+     },
+     "hostNetwork": {
+      "type": "boolean",
+      "description": "hostNetwork determines if the policy allows the use of HostNetwork in the pod spec."
+     },
+     "hostPorts": {
+      "type": "array",
+      "items": {
+       "$ref": "v1beta1.HostPortRange"
+      },
+      "description": "hostPorts determines which host port ranges are allowed to be exposed."
+     },
+     "hostPID": {
+      "type": "boolean",
+      "description": "hostPID determines if the policy allows the use of HostPID in the pod spec."
+     },
+     "hostIPC": {
+      "type": "boolean",
+      "description": "hostIPC determines if the policy allows the use of HostIPC in the pod spec."
+     },
+     "seLinux": {
+      "$ref": "v1beta1.SELinuxStrategyOptions",
+      "description": "seLinux is the strategy that will dictate the allowable labels that may be set."
+     },
+     "runAsUser": {
+      "$ref": "v1beta1.RunAsUserStrategyOptions",
+      "description": "runAsUser is the strategy that will dictate the allowable RunAsUser values that may be set."
+     },
+     "supplementalGroups": {
+      "$ref": "v1beta1.SupplementalGroupsStrategyOptions",
+      "description": "SupplementalGroups is the strategy that will dictate what supplemental groups are used by the SecurityContext."
+     },
+     "fsGroup": {
+      "$ref": "v1beta1.FSGroupStrategyOptions",
+      "description": "FSGroup is the strategy that will dictate what fs group is used by the SecurityContext."
+     },
+     "readOnlyRootFilesystem": {
+      "type": "boolean",
+      "description": "ReadOnlyRootFilesystem when set to true will force containers to run with a read only root file system.  If the container specifically requests to run with a non-read only root file system the PSP should deny the pod. If set to false the container may run with a read only root file system if it wishes but it will not be forced to."
+     }
+    }
+   },
+   "v1beta1.FSType": {
+    "id": "v1beta1.FSType",
+    "properties": {}
+   },
+   "v1beta1.HostPortRange": {
+    "id": "v1beta1.HostPortRange",
+    "description": "Host Port Range defines a range of host ports that will be enabled by a policy for pods to use.  It requires both the start and end to be defined.",
+    "required": [
+     "min",
+     "max"
+    ],
+    "properties": {
+     "min": {
+      "type": "integer",
+      "format": "int32",
+      "description": "min is the start of the range, inclusive."
+     },
+     "max": {
+      "type": "integer",
+      "format": "int32",
+      "description": "max is the end of the range, inclusive."
+     }
+    }
+   },
+   "v1beta1.SELinuxStrategyOptions": {
+    "id": "v1beta1.SELinuxStrategyOptions",
+    "description": "SELinux  Strategy Options defines the strategy type and any options used to create the strategy.",
+    "required": [
+     "rule"
+    ],
+    "properties": {
+     "rule": {
+      "type": "string",
+      "description": "type is the strategy that will dictate the allowable labels that may be set."
+     },
+     "seLinuxOptions": {
+      "$ref": "v1.SELinuxOptions",
+      "description": "seLinuxOptions required to run as; required for MustRunAs More info: http://releases.k8s.io/HEAD/docs/design/security_context.md#security-context"
+     }
+    }
+   },
+   "v1beta1.RunAsUserStrategyOptions": {
+    "id": "v1beta1.RunAsUserStrategyOptions",
+    "description": "Run A sUser Strategy Options defines the strategy type and any options used to create the strategy.",
+    "required": [
+     "rule"
+    ],
+    "properties": {
+     "rule": {
+      "type": "string",
+      "description": "Rule is the strategy that will dictate the allowable RunAsUser values that may be set."
+     },
+     "ranges": {
+      "type": "array",
+      "items": {
+       "$ref": "v1beta1.IDRange"
+      },
+      "description": "Ranges are the allowed ranges of uids that may be used."
+     }
+    }
+   },
+   "v1beta1.IDRange": {
+    "id": "v1beta1.IDRange",
+    "description": "ID Range provides a min/max of an allowed range of IDs.",
+    "required": [
+     "min",
+     "max"
+    ],
+    "properties": {
+     "min": {
+      "type": "integer",
+      "format": "int64",
+      "description": "Min is the start of the range, inclusive."
+     },
+     "max": {
+      "type": "integer",
+      "format": "int64",
+      "description": "Max is the end of the range, inclusive."
+     }
+    }
+   },
+   "v1beta1.SupplementalGroupsStrategyOptions": {
+    "id": "v1beta1.SupplementalGroupsStrategyOptions",
+    "description": "SupplementalGroupsStrategyOptions defines the strategy type and options used to create the strategy.",
+    "properties": {
+     "rule": {
+      "type": "string",
+      "description": "Rule is the strategy that will dictate what supplemental groups is used in the SecurityContext."
+     },
+     "ranges": {
+      "type": "array",
+      "items": {
+       "$ref": "v1beta1.IDRange"
+      },
+      "description": "Ranges are the allowed ranges of supplemental groups.  If you would like to force a single supplemental group then supply a single range with the same start and end."
+     }
+    }
+   },
+   "v1beta1.FSGroupStrategyOptions": {
+    "id": "v1beta1.FSGroupStrategyOptions",
+    "description": "FSGroupStrategyOptions defines the strategy type and options used to create the strategy.",
+    "properties": {
+     "rule": {
+      "type": "string",
+      "description": "Rule is the strategy that will dictate what FSGroup is used in the SecurityContext."
+     },
+     "ranges": {
+      "type": "array",
+      "items": {
+       "$ref": "v1beta1.IDRange"
+      },
+      "description": "Ranges are the allowed ranges of fs groups.  If you would like to force a single fs group then supply a single range with the same start and end."
+     }
+    }
+   },
    "v1beta1.ReplicaSetList": {
     "id": "v1beta1.ReplicaSetList",
     "description": "ReplicaSetList is a collection of ReplicaSets.",
@@ -9827,6 +9911,13 @@
        "type": "string"
       },
       "description": "verbs is a list of supported kube verbs (this includes get, list, watch, create, update, patch, delete, deletecollection, and proxy)"
+     },
+     "shortNames": {
+      "type": "array",
+      "items": {
+       "type": "string"
+      },
+      "description": "shortNames is a list of suggested short names of the resource."
      }
     }
    }

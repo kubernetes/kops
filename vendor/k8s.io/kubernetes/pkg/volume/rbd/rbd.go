@@ -21,14 +21,14 @@ import (
 	dstrings "strings"
 
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/kubernetes/pkg/api/v1"
-	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/types"
+	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/util/exec"
 	"k8s.io/kubernetes/pkg/util/mount"
 	"k8s.io/kubernetes/pkg/util/strings"
-	"k8s.io/kubernetes/pkg/util/uuid"
 	"k8s.io/kubernetes/pkg/volume"
 	volutil "k8s.io/kubernetes/pkg/volume/util"
 )
@@ -86,6 +86,10 @@ func (plugin *rbdPlugin) RequiresRemount() bool {
 	return false
 }
 
+func (plugin *rbdPlugin) SupportsMountOption() bool {
+	return true
+}
+
 func (plugin *rbdPlugin) GetAccessModes() []v1.PersistentVolumeAccessMode {
 	return []v1.PersistentVolumeAccessMode{
 		v1.ReadWriteOnce,
@@ -136,11 +140,12 @@ func (plugin *rbdPlugin) newMounterInternal(spec *volume.Spec, podUID types.UID,
 			mounter:  &mount.SafeFormatAndMount{Interface: mounter, Runner: exec.New()},
 			plugin:   plugin,
 		},
-		Mon:     source.CephMonitors,
-		Id:      id,
-		Keyring: keyring,
-		Secret:  secret,
-		fsType:  source.FSType,
+		Mon:          source.CephMonitors,
+		Id:           id,
+		Keyring:      keyring,
+		Secret:       secret,
+		fsType:       source.FSType,
+		mountOptions: volume.MountOptionFromSpec(spec),
 	}, nil
 }
 
@@ -201,8 +206,7 @@ func (plugin *rbdPlugin) NewDeleter(spec *volume.Spec) (volume.Deleter, error) {
 
 	secret, err := parsePVSecret(adminSecretNamespace, adminSecretName, plugin.host.GetKubeClient())
 	if err != nil {
-		// log error but don't return yet
-		glog.Errorf("failed to get admin secret from [%q/%q]: %v", adminSecretNamespace, adminSecretName, err)
+		return nil, fmt.Errorf("failed to get admin secret from [%q/%q]: %v", adminSecretNamespace, adminSecretName, err)
 	}
 	return plugin.newDeleterInternal(spec, admin, secret, &RBDUtil{})
 }
@@ -282,8 +286,7 @@ func (r *rbdVolumeProvisioner) Provision() (*v1.PersistentVolume, error) {
 		return nil, fmt.Errorf("missing Ceph admin secret name")
 	}
 	if secret, err = parsePVSecret(adminSecretNamespace, adminSecretName, r.plugin.host.GetKubeClient()); err != nil {
-		// log error but don't return yet
-		glog.Errorf("failed to get admin secret from [%q/%q]", adminSecretNamespace, adminSecretName)
+		return nil, fmt.Errorf("failed to get admin secret from [%q/%q]: %v", adminSecretNamespace, adminSecretName, err)
 	}
 	r.adminSecret = secret
 	if len(r.Mon) < 1 {
@@ -308,7 +311,7 @@ func (r *rbdVolumeProvisioner) Provision() (*v1.PersistentVolume, error) {
 	rbd, sizeMB, err := r.manager.CreateImage(r)
 	if err != nil {
 		glog.Errorf("rbd: create volume failed, err: %v", err)
-		return nil, fmt.Errorf("rbd: create volume failed, err: %v", err)
+		return nil, err
 	}
 	glog.Infof("successfully created rbd image %q", image)
 	pv := new(v1.PersistentVolume)
@@ -362,13 +365,14 @@ func (rbd *rbd) GetPath() string {
 type rbdMounter struct {
 	*rbd
 	// capitalized so they can be exported in persistRBD()
-	Mon         []string
-	Id          string
-	Keyring     string
-	Secret      string
-	fsType      string
-	adminSecret string
-	adminId     string
+	Mon          []string
+	Id           string
+	Keyring      string
+	Secret       string
+	fsType       string
+	adminSecret  string
+	adminId      string
+	mountOptions []string
 }
 
 var _ volume.Mounter = &rbdMounter{}
@@ -415,6 +419,12 @@ func (c *rbdUnmounter) TearDown() error {
 }
 
 func (c *rbdUnmounter) TearDownAt(dir string) error {
+	if pathExists, pathErr := volutil.PathExists(dir); pathErr != nil {
+		return fmt.Errorf("Error checking if path exists: %v", pathErr)
+	} else if !pathExists {
+		glog.Warningf("Warning: Unmount skipped because path does not exist: %v", dir)
+		return nil
+	}
 	return diskTearDown(c.manager, *c, dir, c.mounter)
 }
 

@@ -17,22 +17,28 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"k8s.io/kubernetes/pkg/runtime"
+	"net/url"
+
+	"k8s.io/apimachinery/pkg/runtime"
 )
 
 const (
-	DefaultServiceDNSDomain          = "cluster.local"
-	DefaultServicesSubnet            = "10.96.0.0/12"
-	DefaultKubernetesVersion         = "stable"
-	DefaultKubernetesFallbackVersion = "v1.5.0"
+	DefaultServiceDNSDomain  = "cluster.local"
+	DefaultServicesSubnet    = "10.96.0.0/12"
+	DefaultKubernetesVersion = "latest"
+	// This is only for clusters without internet, were the latest stable version can't be determined
+	DefaultKubernetesFallbackVersion = "v1.6.0-alpha.1"
 	DefaultAPIBindPort               = 6443
 	DefaultDiscoveryBindPort         = 9898
+	DefaultAuthorizationMode         = "RBAC"
+	DefaultCACertPath                = "/etc/kubernetes/pki/ca.crt"
 )
 
 func addDefaultingFuncs(scheme *runtime.Scheme) error {
 	RegisterDefaults(scheme)
 	return scheme.AddDefaultingFuncs(
 		SetDefaults_MasterConfiguration,
+		SetDefaults_NodeConfiguration,
 	)
 }
 
@@ -41,8 +47,8 @@ func SetDefaults_MasterConfiguration(obj *MasterConfiguration) {
 		obj.KubernetesVersion = DefaultKubernetesVersion
 	}
 
-	if obj.API.Port == 0 {
-		obj.API.Port = DefaultAPIBindPort
+	if obj.API.BindPort == 0 {
+		obj.API.BindPort = DefaultAPIBindPort
 	}
 
 	if obj.Networking.ServiceSubnet == "" {
@@ -55,5 +61,28 @@ func SetDefaults_MasterConfiguration(obj *MasterConfiguration) {
 
 	if obj.Discovery.Token == nil && obj.Discovery.File == nil && obj.Discovery.HTTPS == nil {
 		obj.Discovery.Token = &TokenDiscovery{}
+	}
+
+	if obj.AuthorizationMode == "" {
+		obj.AuthorizationMode = DefaultAuthorizationMode
+	}
+}
+
+func SetDefaults_NodeConfiguration(obj *NodeConfiguration) {
+	if obj.CACertPath == "" {
+		obj.CACertPath = DefaultCACertPath
+	}
+	if len(obj.TLSBootstrapToken) == 0 {
+		obj.TLSBootstrapToken = obj.Token
+	}
+	if len(obj.DiscoveryToken) == 0 && len(obj.DiscoveryFile) == 0 {
+		obj.DiscoveryToken = obj.Token
+	}
+	// Make sure file URLs become paths
+	if len(obj.DiscoveryFile) != 0 {
+		u, err := url.Parse(obj.DiscoveryFile)
+		if err == nil && u.Scheme == "file" {
+			obj.DiscoveryFile = u.Path
+		}
 	}
 }

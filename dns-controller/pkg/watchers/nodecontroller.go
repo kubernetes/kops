@@ -22,11 +22,12 @@ import (
 
 	"github.com/golang/glog"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
+	client "k8s.io/client-go/kubernetes/typed/core/v1"
+	v1 "k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kubernetes/pkg/api/v1"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
-	"k8s.io/kubernetes/pkg/watch"
 )
 
 // NodeController watches for nodes
@@ -63,7 +64,7 @@ func (c *NodeController) Run() {
 
 func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
-		var listOpts v1.ListOptions
+		var listOpts metav1.ListOptions
 
 		// Note we need to watch all the nodes, to set up alias targets
 		//listOpts.LabelSelector = labels.Everything()

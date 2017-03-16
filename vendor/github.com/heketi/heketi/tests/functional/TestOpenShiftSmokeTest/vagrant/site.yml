@@ -1,0 +1,24 @@
+- hosts: all
+  become: yes
+  become_method: sudo
+  roles:
+    - common
+
+- hosts: client
+  become: yes
+  become_method: sudo
+  roles:
+    - client 
+
+- hosts: master
+  become: yes
+  become_method: sudo
+  roles:
+    - master
+
+- hosts: cluster
+  become: yes
+  become_method: sudo
+  roles:
+    - cluster
+

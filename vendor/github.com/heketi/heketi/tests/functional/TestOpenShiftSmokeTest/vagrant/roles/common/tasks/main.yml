@@ -1,0 +1,24 @@
+- name: clean disks
+  command: dd if=/dev/zero of={{ item }} count=100 bs=1024k
+  with_items:
+    - /dev/vdb
+    - /dev/vdc
+    - /dev/vdd
+
+- name: make root ssh dir
+  file: path=/root/.ssh state=directory mode=0600
+
+- name: copy private key vagrant user
+  copy: src=insecure_private_key owner=vagrant group=vagrant dest=/home/vagrant/.ssh/id_rsa force=no mode=0600
+
+- name: copy private key root user
+  copy: src=insecure_private_key owner=root group=root dest=/root/.ssh/id_rsa force=no mode=0600
+
+- name: add authorized keys to root
+  copy: src=authorized_keys owner=root group=root dest=/root/.ssh/authorized_keys force=no mode=0600
+
+- name: enable selinux
+  selinux: policy=targeted state=enforcing
+
+- name: fix issue with eth1
+  lineinfile: dest=/etc/sysconfig/network-scripts/ifcfg-eth1 regexp="^NM_CONTROLLED=" line="NM_CONTROLLED=yes"

@@ -20,9 +20,9 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/pkg/api/v1"
+	kops "k8s.io/kops/pkg/apis/kops"
 
 	_ "k8s.io/kubernetes/pkg/api/install"
 )
@@ -32,12 +32,12 @@ func encoder() runtime.Encoder {
 	//yaml := json.NewYAMLSerializer(json.DefaultMetaFactory, k8sapi.Scheme, k8sapi.Scheme)
 
 	// TODO: Cache?
-	yaml, ok := runtime.SerializerInfoForMediaType(api.Codecs.SupportedMediaTypes(), "application/yaml")
+	yaml, ok := runtime.SerializerInfoForMediaType(kops.Codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
 		glog.Fatalf("no YAML serializer registered")
 	}
 	gv := v1.SchemeGroupVersion
-	return api.Codecs.EncoderForVersion(yaml.Serializer, gv)
+	return kops.Codecs.EncoderForVersion(yaml.Serializer, gv)
 }
 
 // ToVersionedYamlWithVersion encodes the object to YAML

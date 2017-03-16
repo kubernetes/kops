@@ -17,8 +17,14 @@ limitations under the License.
 package kops
 
 import (
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
+	"os"
+
+	"k8s.io/apimachinery/pkg/apimachinery/announced"
+	"k8s.io/apimachinery/pkg/apimachinery/registered"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 )
 
 var (
@@ -26,11 +32,24 @@ var (
 	AddToScheme   = SchemeBuilder.AddToScheme
 )
 
+// GroupFactoryRegistry is the APIGroupFactoryRegistry (overlaps a bit with Registry, see comments in package for details)
+var GroupFactoryRegistry = make(announced.APIGroupFactoryRegistry)
+
+// Registry is an instance of an API registry.  This is an interim step to start removing the idea of a global
+// API registry.
+var Registry = registered.NewOrDie(os.Getenv("KOPS_API_VERSIONS"))
+
+// Scheme is the default instance of runtime.Scheme to which types in the Kops API are already registered.
+var Scheme = runtime.NewScheme()
+
 // GroupName is the group name use in this package
 const GroupName = "kops"
 
 // SchemeGroupVersion is group version used to register these objects
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: runtime.APIVersionInternal}
+
+// Codecs provides access to encoding and decoding for the scheme
+var Codecs = serializer.NewCodecFactory(Scheme)
 
 // Kind takes an unqualified kind and returns a Group qualified GroupKind
 func Kind(kind string) schema.GroupKind {
@@ -50,6 +69,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&InstanceGroupList{},
 		&Federation{},
 		&FederationList{},
+		&metav1.ListOptions{},
 	)
 	return nil
 }
