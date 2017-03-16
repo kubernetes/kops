@@ -21,8 +21,8 @@ import (
 	"fmt"
 	"strings"
 
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/types"
 )
 
 // Interface is an abstract, pluggable interface for cloud providers.
@@ -152,7 +152,10 @@ type Routes interface {
 	DeleteRoute(clusterName string, route *Route) error
 }
 
-var InstanceNotFound = errors.New("instance not found")
+var (
+	InstanceNotFound = errors.New("instance not found")
+	DiskNotFound     = errors.New("disk is not found")
+)
 
 // Zone represents the location of a particular machine.
 type Zone struct {

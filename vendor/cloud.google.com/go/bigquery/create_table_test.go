@@ -43,16 +43,15 @@ func TestCreateTableOptions(t *testing.T) {
 	table := ds.Table("t")
 	exp := time.Now()
 	q := "query"
-	if err := table.Create(context.Background(), TableExpiration(exp), ViewQuery(q), UseStandardSQL()); err != nil {
+	if err := table.Create(context.Background(), TableExpiration(exp), ViewQuery(q)); err != nil {
 		t.Fatalf("err calling Table.Create: %v", err)
 	}
 	want := createTableConf{
-		projectID:      "p",
-		datasetID:      "d",
-		tableID:        "t",
-		expiration:     exp,
-		viewQuery:      q,
-		useStandardSQL: true,
+		projectID:  "p",
+		datasetID:  "d",
+		tableID:    "t",
+		expiration: exp,
+		viewQuery:  q,
 	}
 	if !reflect.DeepEqual(*s.conf, want) {
 		t.Errorf("createTableConf: got:\n%v\nwant:\n%v", *s.conf, want)

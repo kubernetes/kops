@@ -5,11 +5,10 @@ import (
 	"testing"
 
 	"github.com/docker/docker/cliconfig"
-	"github.com/docker/docker/cliconfig/configfile"
 	"github.com/docker/engine-api/types"
 )
 
-func newConfigFile(auths map[string]types.AuthConfig) *configfile.ConfigFile {
+func newConfigFile(auths map[string]types.AuthConfig) *cliconfig.ConfigFile {
 	tmp, _ := ioutil.TempFile("", "docker-test")
 	name := tmp.Name()
 	tmp.Close()

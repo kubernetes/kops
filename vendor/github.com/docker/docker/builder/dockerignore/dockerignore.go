@@ -2,7 +2,6 @@ package dockerignore
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io"
 	"path/filepath"
@@ -19,22 +18,9 @@ func ReadAll(reader io.ReadCloser) ([]string, error) {
 	defer reader.Close()
 	scanner := bufio.NewScanner(reader)
 	var excludes []string
-	currentLine := 0
 
-	utf8bom := []byte{0xEF, 0xBB, 0xBF}
 	for scanner.Scan() {
-		scannedBytes := scanner.Bytes()
-		// We trim UTF8 BOM
-		if currentLine == 0 {
-			scannedBytes = bytes.TrimPrefix(scannedBytes, utf8bom)
-		}
-		pattern := string(scannedBytes)
-		currentLine++
-		// Lines starting with # (comments) are ignored before processing
-		if strings.HasPrefix(pattern, "#") {
-			continue
-		}
-		pattern = strings.TrimSpace(pattern)
+		pattern := strings.TrimSpace(scanner.Text())
 		if pattern == "" {
 			continue
 		}

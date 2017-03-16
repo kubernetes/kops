@@ -28,12 +28,6 @@ func NewBadRequestError(err error) error {
 	return NewErrorWithStatusCode(err, http.StatusBadRequest)
 }
 
-// NewRequestForbiddenError creates a new API error
-// that has the 403 HTTP status code associated to it.
-func NewRequestForbiddenError(err error) error {
-	return NewErrorWithStatusCode(err, http.StatusForbidden)
-}
-
 // NewRequestNotFoundError creates a new API error
 // that has the 404 HTTP status code associated to it.
 func NewRequestNotFoundError(err error) error {

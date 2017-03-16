@@ -59,7 +59,7 @@ func (u UserResource) Register(container *restful.Container) {
 		ReturnsError(409, "duplicate user-id", nil).
 		Reads(User{})) // from the request
 
-	ws.Route(ws.GET("").To(u.createUser).
+	ws.Route(ws.POST("").To(u.createUser).
 		// docs
 		Doc("create a user").
 		Operation("createUser").

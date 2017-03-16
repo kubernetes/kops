@@ -234,10 +234,9 @@ func (c *baseSubContext) addHeader(header string) {
 }
 
 func stripNamePrefix(ss []string) []string {
-	sss := make([]string, len(ss))
 	for i, s := range ss {
-		sss[i] = s[1:]
+		ss[i] = s[1:]
 	}
 
-	return sss
+	return ss
 }

@@ -2,17 +2,22 @@ package main
 
 import (
 	"github.com/Sirupsen/logrus"
-	"gopkg.in/gemnasium/logrus-airbrake-hook.v2"
+	"github.com/Sirupsen/logrus/hooks/airbrake"
+	"github.com/tobi/airbrake-go"
 )
 
 var log = logrus.New()
 
 func init() {
 	log.Formatter = new(logrus.TextFormatter) // default
-	log.Hooks.Add(airbrake.NewHook(123, "xyz", "development"))
+	log.Hooks.Add(new(logrus_airbrake.AirbrakeHook))
 }
 
 func main() {
+	airbrake.Endpoint = "https://exceptions.whatever.com/notifier_api/v2/notices.xml"
+	airbrake.ApiKey = "whatever"
+	airbrake.Environment = "production"
+
 	log.WithFields(logrus.Fields{
 		"animal": "walrus",
 		"size":   10,

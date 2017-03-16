@@ -1,20 +1,16 @@
 <!--[metadata]>
 +++
-aliases = [
-"/introduction/understanding-docker/",
-"/engine/userguide/basics/",
-"/engine/quickstart.md"
-]
-title = "Docker Overview"
+aliases = ["/introduction/understanding-docker/"]
+title = "Understand the architecture"
 description = "Docker explained in depth"
 keywords = ["docker, introduction, documentation, about, technology,  understanding"]
 [menu.main]
 parent = "engine_use"
-weight = -90
+weight = -82
 +++
 <![end-metadata]-->
 
-# Docker Overview
+# Understand the architecture
 
 Docker is an open platform for developing, shipping, and running applications.
 Docker is designed to deliver your applications faster. With Docker you can
@@ -25,8 +21,6 @@ running code.
 
 Docker does this by combining kernel containerization features with workflows
 and tooling that help you manage and deploy your applications.
-
-## What is the Docker platform?
 
 At its core, Docker provides a way to run almost any application securely
 isolated in a container. The isolation and security allow you to run many
@@ -42,24 +36,6 @@ several ways:
 and testing
 * Deploy those applications to your production environment,
  whether it is in a local data center or the Cloud
-
-## What is Docker Engine?
-
-Docker Engine is a client-server application with these major components:
-
-* A server which is a type of long-running program called a daemon process.
-
-* A REST API which specifies interfaces that programs can use to talk to the daemon and instruct it what to do.
-
-* A command line interface (CLI) client.
-
-![Docker Engine Components Flow](article-img/engine-components-flow.png)
-
-The CLI makes use of the Docker REST API to control or interact with the Docker daemon through scripting or direct CLI commands. Many other Docker applications make use of the underlying API and CLI.
-
-The daemon creates and manages Docker objects.  Docker objects include images, containers, networks, data volumes, and so forth.
-
-> **Note:** Docker is licensed under the open source Apache 2.0 license.
 
 ## What can I use Docker for?
 
@@ -93,6 +69,17 @@ to hypervisor-based virtual machines. This is especially useful in high density
 environments: for example, building your own Cloud or Platform-as-a-Service. But
 it is also useful for small and medium deployments where you want to get more
 out of the resources you have.
+
+## What are the major Docker components?
+Docker has two major components:
+
+
+* Docker Engine: the open source containerization platform.
+* [Docker Hub](https://hub.docker.com): our Software-as-a-Service
+  platform for sharing and managing Docker containers.
+
+
+> **Note:** Docker is licensed under the open source Apache 2.0 license.
 
 ## What is Docker's architecture?
 Docker uses a client-server architecture. The Docker *client* talks to the
@@ -195,7 +182,7 @@ pull them down to your Docker host to build containers from them.
 for images. Public storage is searchable and can be downloaded by anyone.
 Private storage is excluded from search results and only you and your users can
 pull images down and use them to build containers. You can [sign up for a storage plan
-here](https://www.docker.com/pricing).
+here](https://hub.docker.com/plans).
 
 ### How does a container work?
 A container consists of an operating system, user-added files, and meta-data. As
@@ -227,7 +214,8 @@ In order, Docker Engine does the following:
 - **Pulls the `ubuntu` image:** Docker Engine checks for the presence of the `ubuntu`
 image. If the image already exists, then Docker Engine uses it for the new container.
 If it doesn't exist locally on the host, then Docker Engine pulls it from
-[Docker Hub](https://hub.docker.com).
+[Docker Hub](https://hub.docker.com). If the image already exists, then Docker Engine
+uses it for the new container.
 - **Creates a new container:** Once Docker Engine has the image, it uses it to create a
 container.
 - **Allocates a filesystem and mounts a read-write _layer_:** The container is created in
@@ -252,7 +240,7 @@ isolated workspace we call the *container*.  When you run a container, Docker
 creates a set of *namespaces* for that container.
 
 This provides a layer of isolation: each aspect of a container runs in its own
-namespace and does not have access outside of it.
+namespace and does not have access outside it.
 
 Some of the namespaces that Docker Engine uses on Linux are:
 

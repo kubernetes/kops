@@ -17,12 +17,12 @@ limitations under the License.
 package protokube
 
 import (
+	"cloud.google.com/go/compute/metadata"
 	"fmt"
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
-	"google.golang.org/cloud/compute/metadata"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"net"
 	"strings"

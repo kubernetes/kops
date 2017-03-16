@@ -30,6 +30,8 @@ const (
 // 						revisions
 //							-> <manifest digest path>
 //								-> link
+//								-> signatures
+// 									<algorithm>/<digest>/link
 // 						tags/<tag>
 //							-> current/link
 // 							-> index
@@ -60,7 +62,8 @@ const (
 //
 // The third component of the repository directory is the manifests store,
 // which is made up of a revision store and tag store. Manifests are stored in
-// the blob store and linked into the revision store.
+// the blob store and linked into the revision store. Signatures are separated
+// from the manifest payload data and linked into the blob store, as well.
 // While the registry can save all revisions of a manifest, no relationship is
 // implied as to the ordering of changes to a manifest. The tag store provides
 // support for name, tag lookups of manifests, using "current/link" under a
@@ -74,6 +77,8 @@ const (
 // 	manifestRevisionsPathSpec:      <root>/v2/repositories/<name>/_manifests/revisions/
 // 	manifestRevisionPathSpec:      <root>/v2/repositories/<name>/_manifests/revisions/<algorithm>/<hex digest>/
 // 	manifestRevisionLinkPathSpec:  <root>/v2/repositories/<name>/_manifests/revisions/<algorithm>/<hex digest>/link
+// 	manifestSignaturesPathSpec:    <root>/v2/repositories/<name>/_manifests/revisions/<algorithm>/<hex digest>/signatures/
+// 	manifestSignatureLinkPathSpec: <root>/v2/repositories/<name>/_manifests/revisions/<algorithm>/<hex digest>/signatures/<algorithm>/<hex digest>/link
 //
 //	Tags:
 //
@@ -143,6 +148,33 @@ func pathFor(spec pathSpec) (string, error) {
 		}
 
 		return path.Join(root, "link"), nil
+	case manifestSignaturesPathSpec:
+		root, err := pathFor(manifestRevisionPathSpec{
+			name:     v.name,
+			revision: v.revision,
+		})
+
+		if err != nil {
+			return "", err
+		}
+
+		return path.Join(root, "signatures"), nil
+	case manifestSignatureLinkPathSpec:
+		root, err := pathFor(manifestSignaturesPathSpec{
+			name:     v.name,
+			revision: v.revision,
+		})
+
+		if err != nil {
+			return "", err
+		}
+
+		signatureComponents, err := digestPathComponents(v.signature, false)
+		if err != nil {
+			return "", err
+		}
+
+		return path.Join(root, path.Join(append(signatureComponents, "link")...)), nil
 	case manifestTagsPathSpec:
 		return path.Join(append(repoPrefix, v.name, "_manifests", "tags")...), nil
 	case manifestTagPathSpec:
@@ -292,6 +324,26 @@ type manifestRevisionLinkPathSpec struct {
 }
 
 func (manifestRevisionLinkPathSpec) pathSpec() {}
+
+// manifestSignaturesPathSpec describes the path components for the directory
+// containing all the signatures for the target blob. Entries are named with
+// the underlying key id.
+type manifestSignaturesPathSpec struct {
+	name     string
+	revision digest.Digest
+}
+
+func (manifestSignaturesPathSpec) pathSpec() {}
+
+// manifestSignatureLinkPathSpec describes the path components used to look up
+// a signature file by the hash of its blob.
+type manifestSignatureLinkPathSpec struct {
+	name      string
+	revision  digest.Digest
+	signature digest.Digest
+}
+
+func (manifestSignatureLinkPathSpec) pathSpec() {}
 
 // manifestTagsPathSpec describes the path elements required to point to the
 // manifest tags directory.

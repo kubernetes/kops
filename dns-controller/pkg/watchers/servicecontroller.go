@@ -18,28 +18,26 @@ package watchers
 
 import (
 	"fmt"
-	"time"
-
 	"github.com/golang/glog"
-
-	"strings"
-
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
-	"k8s.io/kubernetes/pkg/api/v1"
-	client "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
-	"k8s.io/kubernetes/pkg/watch"
+	"strings"
+	"time"
 )
 
 // ServiceController watches for services with dns annotations
 type ServiceController struct {
 	util.Stoppable
-	kubeClient client.CoreV1Interface
+	kubeClient kubernetes.Interface
 	scope      dns.Scope
 }
 
 // newServiceController creates a serviceController
-func NewServiceController(kubeClient client.CoreV1Interface, dns dns.Context) (*ServiceController, error) {
+func NewServiceController(kubeClient kubernetes.Interface, dns dns.Context) (*ServiceController, error) {
 	scope, err := dns.CreateScope("service")
 	if err != nil {
 		return nil, fmt.Errorf("error building dns scope: %v", err)
@@ -65,12 +63,12 @@ func (c *ServiceController) Run() {
 
 func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
-		var listOpts v1.ListOptions
+		var listOpts metav1.ListOptions
 		glog.Warningf("querying without label filter")
 		//listOpts.LabelSelector = labels.Everything()
 		glog.Warningf("querying without field filter")
 		//listOpts.FieldSelector = fields.Everything()
-		serviceList, err := c.kubeClient.Services("").List(listOpts)
+		serviceList, err := c.kubeClient.CoreV1().Services("").List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing services: %v", err)
 		}
@@ -87,7 +85,7 @@ func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 		//listOpts.FieldSelector = fields.Everything()
 		listOpts.Watch = true
 		listOpts.ResourceVersion = serviceList.ResourceVersion
-		watcher, err := c.kubeClient.Services("").Watch(listOpts)
+		watcher, err := c.kubeClient.CoreV1().Services("").Watch(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error watching services: %v", err)
 		}

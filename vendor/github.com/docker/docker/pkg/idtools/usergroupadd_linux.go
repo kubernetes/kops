@@ -8,7 +8,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 // add a user and/or group to Linux /etc/passwd, /etc/group using standard
@@ -17,7 +16,6 @@ import (
 // useradd -r -s /bin/false <username>
 
 var (
-	once        sync.Once
 	userCommand string
 
 	cmdTemplates = map[string]string{
@@ -32,6 +30,15 @@ var (
 	defaultRangeStart = 100000
 	userMod           = "usermod"
 )
+
+func init() {
+	// set up which commands are used for adding users/groups dependent on distro
+	if _, err := resolveBinary("adduser"); err == nil {
+		userCommand = "adduser"
+	} else if _, err := resolveBinary("useradd"); err == nil {
+		userCommand = "useradd"
+	}
+}
 
 func resolveBinary(binname string) (string, error) {
 	binaryPath, err := exec.LookPath(binname)
@@ -87,14 +94,7 @@ func AddNamespaceRangesUser(name string) (int, int, error) {
 }
 
 func addUser(userName string) error {
-	once.Do(func() {
-		// set up which commands are used for adding users/groups dependent on distro
-		if _, err := resolveBinary("adduser"); err == nil {
-			userCommand = "adduser"
-		} else if _, err := resolveBinary("useradd"); err == nil {
-			userCommand = "useradd"
-		}
-	})
+
 	if userCommand == "" {
 		return fmt.Errorf("Cannot add user; no useradd/adduser binary found")
 	}

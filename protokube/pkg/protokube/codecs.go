@@ -19,12 +19,13 @@ package protokube
 import (
 	"bytes"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/runtime"
 
-	_ "k8s.io/kubernetes/pkg/api/install"
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/pkg/api"
+	"k8s.io/client-go/pkg/api/v1"
+
+	_ "k8s.io/client-go/pkg/api/install"
 )
 
 func encoder() runtime.Encoder {

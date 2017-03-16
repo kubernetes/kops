@@ -21,10 +21,10 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api/v1"
-	meta_v1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	k8s_clientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	"k8s.io/kubernetes/pkg/util/wait"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 const (
@@ -42,14 +42,14 @@ const (
 // TODO: should we pool the api client connection? My initial thought is no.
 type NodeAPIAdapter struct {
 	// K8s API client this sucker talks to K8s directly - not kubectl, hard api call
-	client k8s_clientset.Interface
+	client kubernetes.Interface
 
 	//TODO: convert to arg on WaitForNodeToBe
 	// K8s timeout on method call
 	timeout time.Duration
 }
 
-func NewNodeAPIAdapter(client k8s_clientset.Interface, timeout time.Duration) (*NodeAPIAdapter, error) {
+func NewNodeAPIAdapter(client kubernetes.Interface, timeout time.Duration) (*NodeAPIAdapter, error) {
 	if client == nil {
 		return nil, fmt.Errorf("client not provided")
 	}
@@ -61,8 +61,8 @@ func NewNodeAPIAdapter(client k8s_clientset.Interface, timeout time.Duration) (*
 
 // GetAllNodes is a access to get all nodes from a cluster api
 func (nodeAA *NodeAPIAdapter) GetAllNodes() (nodes *v1.NodeList, err error) {
-	opts := v1.ListOptions{}
-	nodes, err = nodeAA.client.Core().Nodes().List(opts)
+	opts := metav1.ListOptions{}
+	nodes, err = nodeAA.client.CoreV1().Nodes().List(opts)
 	if err != nil {
 		glog.V(4).Infof("getting nodes failed for node %v", err)
 		return nil, err
@@ -111,7 +111,7 @@ func (nodeAA *NodeAPIAdapter) WaitForNodeToBe(nodeName string, conditionType v1.
 
 	var cond *v1.NodeCondition
 	err := wait.PollImmediate(Poll, nodeAA.timeout, func() (bool, error) {
-		node, err := nodeAA.client.Core().Nodes().Get(nodeName, meta_v1.GetOptions{})
+		node, err := nodeAA.client.Core().Nodes().Get(nodeName, metav1.GetOptions{})
 		// FIXME this is not erroring on 500's for instance.  We will keep looping
 		if err != nil {
 			// TODO: Check if e.g. NotFound
@@ -158,7 +158,7 @@ func (nodeAA *NodeAPIAdapter) waitListSchedulableNodes() (*v1.NodeList, error) {
 	var nodeList *v1.NodeList
 	err := wait.PollImmediate(Poll, SingleCallTimeout, func() (bool, error) {
 		var err error
-		nodeList, err = nodeAA.client.Core().Nodes().List(v1.ListOptions{FieldSelector: "spec.unschedulable=false"})
+		nodeList, err = nodeAA.client.Core().Nodes().List(metav1.ListOptions{FieldSelector: "spec.unschedulable=false"})
 		if err != nil {
 			// error logging TODO
 			return false, err

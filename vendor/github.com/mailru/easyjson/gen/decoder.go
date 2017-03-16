@@ -86,42 +86,26 @@ func (g *Generator) genTypeDecoderNoCheck(t reflect.Type, out string, tags field
 		tmpVar := g.uniqueVarName()
 		elem := t.Elem()
 
-		if elem.Kind() == reflect.Uint8 {
-			fmt.Fprintln(g.out, ws+"if in.IsNull() {")
-			fmt.Fprintln(g.out, ws+"  in.Skip()")
-			fmt.Fprintln(g.out, ws+"  "+out+" = nil")
-			fmt.Fprintln(g.out, ws+"} else {")
-			fmt.Fprintln(g.out, ws+"  "+out+" = in.Bytes()")
-			fmt.Fprintln(g.out, ws+"}")
-
-		} else {
-
-			capacity := minSliceBytes / elem.Size()
-			if capacity == 0 {
-				capacity = 1
-			}
-
-			fmt.Fprintln(g.out, ws+"if in.IsNull() {")
-			fmt.Fprintln(g.out, ws+"  in.Skip()")
-			fmt.Fprintln(g.out, ws+"  "+out+" = nil")
-			fmt.Fprintln(g.out, ws+"} else {")
-			fmt.Fprintln(g.out, ws+"  in.Delim('[')")
-			fmt.Fprintln(g.out, ws+"  if !in.IsDelim(']') {")
-			fmt.Fprintln(g.out, ws+"    "+out+" = make("+g.getType(t)+", 0, "+fmt.Sprint(capacity)+")")
-			fmt.Fprintln(g.out, ws+"  } else {")
-			fmt.Fprintln(g.out, ws+"    "+out+" = "+g.getType(t)+"{}")
-			fmt.Fprintln(g.out, ws+"  }")
-			fmt.Fprintln(g.out, ws+"  for !in.IsDelim(']') {")
-			fmt.Fprintln(g.out, ws+"    var "+tmpVar+" "+g.getType(elem))
-
-			g.genTypeDecoder(elem, tmpVar, tags, indent+2)
-
-			fmt.Fprintln(g.out, ws+"    "+out+" = append("+out+", "+tmpVar+")")
-			fmt.Fprintln(g.out, ws+"    in.WantComma()")
-			fmt.Fprintln(g.out, ws+"  }")
-			fmt.Fprintln(g.out, ws+"  in.Delim(']')")
-			fmt.Fprintln(g.out, ws+"}")
+		capacity := minSliceBytes / elem.Size()
+		if capacity == 0 {
+			capacity = 1
 		}
+
+		fmt.Fprintln(g.out, ws+"in.Delim('[')")
+		fmt.Fprintln(g.out, ws+"if !in.IsDelim(']') {")
+		fmt.Fprintln(g.out, ws+"  "+out+" = make("+g.getType(t)+", 0, "+fmt.Sprint(capacity)+")")
+		fmt.Fprintln(g.out, ws+"} else {")
+		fmt.Fprintln(g.out, ws+"  "+out+" = nil")
+		fmt.Fprintln(g.out, ws+"}")
+		fmt.Fprintln(g.out, ws+"for !in.IsDelim(']') {")
+		fmt.Fprintln(g.out, ws+"  var "+tmpVar+" "+g.getType(elem))
+
+		g.genTypeDecoder(elem, tmpVar, tags, indent+1)
+
+		fmt.Fprintln(g.out, ws+"  "+out+" = append("+out+", "+tmpVar+")")
+		fmt.Fprintln(g.out, ws+"  in.WantComma()")
+		fmt.Fprintln(g.out, ws+"}")
+		fmt.Fprintln(g.out, ws+"in.Delim(']')")
 
 	case reflect.Struct:
 		dec := g.getDecoderName(t)
@@ -134,9 +118,7 @@ func (g *Generator) genTypeDecoderNoCheck(t reflect.Type, out string, tags field
 		fmt.Fprintln(g.out, ws+"  in.Skip()")
 		fmt.Fprintln(g.out, ws+"  "+out+" = nil")
 		fmt.Fprintln(g.out, ws+"} else {")
-		fmt.Fprintln(g.out, ws+"  if "+out+" == nil {")
-		fmt.Fprintln(g.out, ws+"    "+out+" = new("+g.getType(t.Elem())+")")
-		fmt.Fprintln(g.out, ws+"  }")
+		fmt.Fprintln(g.out, ws+"  "+out+" = new("+g.getType(t.Elem())+")")
 
 		g.genTypeDecoder(t.Elem(), "*"+out, tags, indent+1)
 

@@ -49,9 +49,8 @@ func (c *CodeBuild) BatchGetBuildsRequest(input *BatchGetBuildsInput) (req *requ
 		input = &BatchGetBuildsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchGetBuildsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -115,9 +114,8 @@ func (c *CodeBuild) BatchGetProjectsRequest(input *BatchGetProjectsInput) (req *
 		input = &BatchGetProjectsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &BatchGetProjectsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -181,9 +179,8 @@ func (c *CodeBuild) CreateProjectRequest(input *CreateProjectInput) (req *reques
 		input = &CreateProjectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateProjectOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -254,9 +251,8 @@ func (c *CodeBuild) DeleteProjectRequest(input *DeleteProjectInput) (req *reques
 		input = &DeleteProjectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteProjectOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -320,9 +316,8 @@ func (c *CodeBuild) ListBuildsRequest(input *ListBuildsInput) (req *request.Requ
 		input = &ListBuildsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListBuildsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -386,9 +381,8 @@ func (c *CodeBuild) ListBuildsForProjectRequest(input *ListBuildsForProjectInput
 		input = &ListBuildsForProjectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListBuildsForProjectOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -456,9 +450,8 @@ func (c *CodeBuild) ListCuratedEnvironmentImagesRequest(input *ListCuratedEnviro
 		input = &ListCuratedEnvironmentImagesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListCuratedEnvironmentImagesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -517,9 +510,8 @@ func (c *CodeBuild) ListProjectsRequest(input *ListProjectsInput) (req *request.
 		input = &ListProjectsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListProjectsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -584,9 +576,8 @@ func (c *CodeBuild) StartBuildRequest(input *StartBuildInput) (req *request.Requ
 		input = &StartBuildInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartBuildOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -656,9 +647,8 @@ func (c *CodeBuild) StopBuildRequest(input *StopBuildInput) (req *request.Reques
 		input = &StopBuildInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StopBuildOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -727,9 +717,8 @@ func (c *CodeBuild) UpdateProjectRequest(input *UpdateProjectInput) (req *reques
 		input = &UpdateProjectInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateProjectOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 

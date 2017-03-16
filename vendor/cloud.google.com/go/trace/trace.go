@@ -130,7 +130,6 @@ import (
 	"google.golang.org/api/gensupport"
 	"google.golang.org/api/option"
 	"google.golang.org/api/transport"
-	"google.golang.org/grpc"
 )
 
 const (
@@ -193,28 +192,6 @@ func requestHook(ctx context.Context, req *http.Request) func(resp *http.Respons
 			span.Finish()
 		}
 	}
-}
-
-// EnableGRPCTracingDialOption enables tracing of requests that are sent over a
-// gRPC connection.
-// The functionality in gRPC that this relies on is currently experimental.
-var EnableGRPCTracingDialOption grpc.DialOption = grpc.WithUnaryInterceptor(grpc.UnaryClientInterceptor(grpcUnaryInterceptor))
-
-// EnableGRPCTracing enables tracing of requests for clients that use gRPC
-// connections.
-// The functionality in gRPC that this relies on is currently experimental.
-var EnableGRPCTracing option.ClientOption = option.WithGRPCDialOption(EnableGRPCTracingDialOption)
-
-func grpcUnaryInterceptor(ctx context.Context, method string, req, reply interface{}, cc *grpc.ClientConn, invoker grpc.UnaryInvoker, opts ...grpc.CallOption) error {
-	// TODO: also intercept streams.
-	span := FromContext(ctx).NewChild(method)
-	err := invoker(ctx, method, req, reply, cc, opts...)
-	if err != nil {
-		// TODO: standardize gRPC label names?
-		span.SetLabel("error", err.Error())
-	}
-	span.Finish()
-	return err
 }
 
 // nextSpanID returns a new span ID.  It will never return zero.

@@ -118,7 +118,7 @@ For example:
 > **Note** These instructions are for Docker Engine 1.11 and up. Engine 1.10 and
 > under consists of a single binary, and instructions for those versions are
 > different. To install version 1.10 or below, follow the instructions in the 
-> <a href="https://docs.docker.com/v1.10/engine/installation/binaries/" target="_blank">1.10 documentation</a>.
+> <a href="/v1.10/engine/installation/binaries/" target="_blank">1.10 documentation</a>.
 
 
 #### Install the Linux binaries
@@ -130,13 +130,11 @@ directory named `docker` in your current location.
 $ tar -xvzf docker-latest.tgz
 
 docker/
+docker/docker-containerd-ctr
 docker/docker
 docker/docker-containerd
-docker/docker-containerd-ctr
-docker/docker-containerd-shim
-docker/docker-proxy
 docker/docker-runc
-docker/dockerd
+docker/docker-containerd-shim
 ```
 
 Engine requires these binaries to be installed in your host's `$PATH`.
@@ -156,7 +154,7 @@ $ mv docker/* /usr/bin/
 You can manually start the Engine in daemon mode using:
 
 ```bash
-$ sudo dockerd &
+$ sudo docker daemon &
 ```
 
 The GitHub repository provides samples of init-scripts you can use to control
@@ -165,7 +163,7 @@ these scripts in the <a href="https://github.com/docker/docker/tree/master/contr
 contrib directory</a>.
 
 For additional information about running the Engine in daemon mode, refer to
-the [daemon command](../reference/commandline/dockerd.md) in the Engine command
+the [daemon command](../reference/commandline/daemon.md) in the Engine command
 line reference.
 
 ### Get the Mac OS X binary
@@ -217,7 +215,7 @@ For example:
 
 > **Note** These instructions are for Engine 1.11 and up. Instructions for older
 > versions are slightly different. To install version 1.10 or below, follow the
-> instructions in the <a href="https://docs.docker.com/v1.10/engine/installation/binaries/" target="_blank">1.10 documentation</a>.
+> instructions in the <a href="/v1.10/engine/installation/binaries/" target="_blank">1.10 documentation</a>.
 
 ## Giving non-root access
 
