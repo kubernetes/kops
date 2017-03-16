@@ -1052,6 +1052,8 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AuditLogMaxAge = in.AuditLogMaxAge
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
 	out.AuditLogMaxSize = in.AuditLogMaxSize
+	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
+	out.AuthenticationTokenWebhookCacheTtl = in.AuthenticationTokenWebhookCacheTtl
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	return nil
@@ -1093,6 +1095,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.AuditLogMaxAge = in.AuditLogMaxAge
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
 	out.AuditLogMaxSize = in.AuditLogMaxSize
+	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
+	out.AuthenticationTokenWebhookCacheTtl = in.AuthenticationTokenWebhookCacheTtl
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	return nil
