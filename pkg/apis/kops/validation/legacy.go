@@ -267,18 +267,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 		}
 	}
 
-	// AdminAccess
-	if strict && len(c.Spec.SSHAccess) == 0 {
-		// TODO: We may want to allow this
-		return fmt.Errorf("SSHAccess not configured")
-	}
-
-	// AdminAccess
-	if strict && len(c.Spec.KubernetesAPIAccess) == 0 {
-		// TODO: We may want to allow this (maybe)
-		return fmt.Errorf("KubernetesAPIAccess not configured")
-	}
-
 	// KubeProxy
 	if c.Spec.KubeProxy != nil {
 		kubeProxyPath := specPath.Child("KubeProxy")
