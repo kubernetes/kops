@@ -133,6 +133,9 @@ type ClusterSpec struct {
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 
+	// Use custom IAM roles for cluster roles
+	RoleCustomIamRoles map[string]string `json:"roleCustomIamRoles,omitempty"`
+
 	// Additional policies to add for roles
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 

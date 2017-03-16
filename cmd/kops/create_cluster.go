@@ -51,6 +51,8 @@ type CreateClusterOptions struct {
 	MasterSize           string
 	MasterCount          int32
 	NodeCount            int32
+	MasterIAMRole        string
+	NodeIAMRole          string
 	Project              string
 	KubernetesVersion    string
 	OutDir               string
@@ -146,6 +148,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Set instance size for nodes")
 
 	cmd.Flags().StringVar(&options.MasterSize, "master-size", options.MasterSize, "Set instance size for masters")
+
+	cmd.Flags().StringVar(&options.NodeIAMRole, "node-iam-role", options.NodeIAMRole, "Set IAM role for nodes")
+
+	cmd.Flags().StringVar(&options.MasterIAMRole, "master-iam-role", options.MasterIAMRole, "Set IAM role for masters")
 
 	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
@@ -465,6 +471,19 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			group.Spec.MachineType = c.MasterSize
 		}
 	}
+
+	var customIamRoles map[string]string
+	customIamRoles = make(map[string]string)
+
+	if c.MasterIAMRole != "" {
+		customIamRoles["Master"] = c.MasterIAMRole
+	}
+
+	if c.NodeIAMRole != "" {
+		customIamRoles["Node"] = c.NodeIAMRole
+	}
+
+	cluster.Spec.RoleCustomIamRoles = customIamRoles
 
 	if c.DNSZone != "" {
 		cluster.Spec.DNSZone = c.DNSZone
