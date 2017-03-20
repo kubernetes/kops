@@ -449,10 +449,12 @@ func (n *CloudInstanceGroup) DeleteAWSInstance(u *CloudInstanceGroupInstance, in
 		glog.Infof("Stopping instance %q, in AWS ASG %q.", instanceId, n.ASGName)
 	}
 
-	request := &ec2.TerminateInstancesInput{
-		InstanceIds: []*string{u.ASGInstance.InstanceId},
+	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+		InstanceId:                     aws.String(u.ASGInstance.InstanceId),
+		ShouldDecrementDesiredCapacity: aws.Bool(false),
 	}
-	if _, err := c.EC2().TerminateInstances(request); err != nil {
+
+	if _, err := c.Autoscaling().TerminateInstanceInAutoScalingGroup(request); err != nil {
 		if nodeName != "" {
 			return fmt.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
 		}
