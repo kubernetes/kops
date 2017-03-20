@@ -82,6 +82,10 @@ type CreateClusterOptions struct {
 
 	// Egress configuration - FOR TESTING ONLY
 	Egress string
+
+	// Specify tenancy (default or dedicated) for masters and nodes
+	MasterTenancy string
+	NodeTenancy   string
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -180,6 +184,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// Allow custom tags from the CLI
 	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all instance groups in AWS (eg \"Owner=John Doe,Team=Some Team\").")
+
+	// Master and Node Tenancy
+	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
+	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
 	return cmd
 }
@@ -445,6 +453,18 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for _, group := range nodes {
 			group.Spec.MinSize = fi.Int32(c.NodeCount)
 			group.Spec.MaxSize = fi.Int32(c.NodeCount)
+		}
+	}
+
+	if c.MasterTenancy != "" {
+		for _, group := range masters {
+			group.Spec.Tenancy = c.MasterTenancy
+		}
+	}
+
+	if c.NodeTenancy != "" {
+		for _, group := range nodes {
+			group.Spec.Tenancy = c.NodeTenancy
 		}
 	}
 
