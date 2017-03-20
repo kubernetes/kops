@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"crypto/sha1"
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -567,8 +568,42 @@ func (c *ApplyClusterCmd) Run() error {
 		return config, nil
 	}
 
+	// We compute a fingerprint, which is otherwise unused, but carries the state that is
+	// otherwise not visible to the LaunchConfiguration.  For example, if you change the etcd
+	// storage type on the apiserver, that is only visible in the full config, which is passed via
+	// S3, not via the LaunchConfiguration.
+	computeFingerprint := func(ig *api.InstanceGroup) ([]byte, error) {
+		hasher := sha1.New()
+
+		nodeupConfig, err := renderNodeUpConfig(ig)
+		if err != nil {
+			return nil, err
+		}
+
+		data, err := api.ToRawYaml(nodeupConfig)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, err := hasher.Write(data); err != nil {
+			return nil, fmt.Errorf("error computing fingerprint hash: %v", err)
+		}
+
+		clusterData, err := api.ToRawYaml(c.Cluster)
+		if err != nil {
+			return nil, err
+		}
+
+		if _, err := hasher.Write(clusterData); err != nil {
+			return nil, fmt.Errorf("error computing fingerprint hash: %v", err)
+		}
+
+		return hasher.Sum(nil), nil
+	}
+
 	bootstrapScriptBuilder := &model.BootstrapScript{
 		NodeUpConfigBuilder: renderNodeUpConfig,
+		FingerprintBuilder:  computeFingerprint,
 		NodeUpSourceHash:    "",
 		NodeUpSource:        c.NodeUpSource,
 	}
