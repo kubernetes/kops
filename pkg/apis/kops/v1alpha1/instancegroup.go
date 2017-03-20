@@ -76,4 +76,8 @@ type InstanceGroupSpec struct {
 
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
+
+	// Describes the tenancy of the instance group. Can be either default or dedicated.
+	// Currently only applies to AWS.
+	Tenancy string `json:"tenancy,omitempty"`
 }
