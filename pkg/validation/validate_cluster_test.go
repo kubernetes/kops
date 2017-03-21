@@ -214,7 +214,7 @@ func dummyPod(podMap map[string]string) v1.Pod {
 		Status: v1.PodStatus{
 			Phase: v1.PodPhase(podMap["phase"]),
 			ContainerStatuses: []v1.ContainerStatus{
-				v1.ContainerStatus{
+				{
 					Ready: podMap["ready"] == "true",
 				},
 			},
