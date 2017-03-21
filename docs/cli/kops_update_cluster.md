@@ -14,6 +14,7 @@ kops update cluster
 ### Options
 
 ```
+      --create-kube-config      Will control automatically creating the kube config file on your local filesystem (default true)
       --model string            Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --out string              Path to write any local output
       --ssh-public-key string   SSH public key to use (deprecated: use kops create secret instead)
@@ -30,7 +31,7 @@ kops update cluster
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster
-      --state string                     Location of state storage
+      --state string                     Location of state storage (default "s3://nivenly-state-store")
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
