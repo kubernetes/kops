@@ -128,6 +128,9 @@ func collectPodFailures(client kubernetes.Interface) (failures []string, err err
 	pods, err := client.CoreV1().Pods("kube-system").List(metav1.ListOptions{})
 	if err == nil {
 		for _, pod := range pods.Items {
+			if pod.Status.Phase == v1.PodSucceeded {
+				continue
+			}
 			for _, status := range pod.Status.ContainerStatuses {
 				if !status.Ready {
 					failures = append(failures, pod.Name)
