@@ -170,7 +170,7 @@ gcs-publish-ci: gcs-upload
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
 
 gen-cli-docs:
-	KOPS_STATE_STORE= kops genhelpdocs --out docs/cli
+	@kops genhelpdocs --out docs/cli
 
 # Will always push a linux-based build up to the server
 push: crossbuild-nodeup
