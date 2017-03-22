@@ -18,6 +18,7 @@ package kops
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -92,6 +93,9 @@ type InstanceGroupSpec struct {
 	// Describes the tenancy of the instance group. Can be either default or dedicated.
 	// Currently only applies to AWS.
 	Tenancy string `json:"tenancy,omitempty"`
+
+	// Kubelet overrides kubelet config from the ClusterSpec
+	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values
