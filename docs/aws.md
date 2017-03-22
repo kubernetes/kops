@@ -190,7 +190,7 @@ ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --c
 ```
 
 * You will now go to your registrars page and log in. You will need to create a
-  new **SUBDOMAIN**, and use the 4 NS records listed above for the new
+  new **SUBDOMAIN**, and use the 4 NS records received from the above command for the new
   **SUBDOMAIN**. This **MUST** be done in order to use your cluster. Do **NOT**
   change your top level NS record, or you might take your site offline.
 
