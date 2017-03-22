@@ -24,7 +24,7 @@ $ terraform remote config \
   -backend-config="region=us-east-1"
 ```
 
-Learn more [about Terraform state here](https://www.terraform.io/docs/state/remote/index.html).
+Learn more [about Terraform state here](https://www.terraform.io/docs/state/remote.html).
 
 #### Initialize/create a cluster
 
