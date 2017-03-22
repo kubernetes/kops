@@ -20,6 +20,7 @@ spec:
     - name: c
       zone: us-test-1c
     name: main
+    storage: etcd2
   - etcdMembers:
     - name: a
       zone: us-test-1a
@@ -28,6 +29,7 @@ spec:
     - name: c
       zone: us-test-1c
     name: events
+    storage: etcd2
   kubernetesVersion: v1.6.0-alpha.3
   masterPublicName: api.ha.example.com
   networkCIDR: 172.20.0.0/16

@@ -35,6 +35,10 @@ func RegisterDefaults(scheme *runtime.Scheme) error {
 
 func SetObjectDefaults_Cluster(in *Cluster) {
 	SetDefaults_ClusterSpec(&in.Spec)
+	for i := range in.Spec.EtcdClusters {
+		a := &in.Spec.EtcdClusters[i]
+		SetDefaults_EtcdClusterSpec(a)
+	}
 }
 
 func SetObjectDefaults_ClusterList(in *ClusterList) {

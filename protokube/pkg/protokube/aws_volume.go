@@ -184,10 +184,14 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 
 			skipVolume := false
 
+			tagMap := make(map[string]string)
 			for _, tag := range v.Tags {
 				k := aws.StringValue(tag.Key)
 				v := aws.StringValue(tag.Value)
+				tagMap[k] = v
+			}
 
+			for k, v := range tagMap {
 				switch k {
 				case awsup.TagClusterName, "Name":
 					{
@@ -204,7 +208,9 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 				default:
 					if strings.HasPrefix(k, awsup.TagNameEtcdClusterPrefix) {
 						etcdClusterName := strings.TrimPrefix(k, awsup.TagNameEtcdClusterPrefix)
-						spec, err := ParseEtcdClusterSpec(etcdClusterName, v)
+						options := tagMap[awsup.TagNameEtcdClusterOptionsPrefix+etcdClusterName]
+
+						spec, err := ParseEtcdClusterSpec(etcdClusterName, v, options)
 						if err != nil {
 							// Fail safe
 							glog.Warningf("error parsing etcd cluster tag %q on volume %q; skipping volume: %v", v, volumeID, err)

@@ -70,3 +70,7 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.API.LoadBalancer.Type = LoadBalancerTypePublic
 	}
 }
+
+func SetDefaults_EtcdClusterSpec(obj *EtcdClusterSpec) {
+	// We actually _don't_ set defaults, because otherwise we could not change them as etcd3 becomes the default
+}

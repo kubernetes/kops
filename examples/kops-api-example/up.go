@@ -50,7 +50,7 @@ func up() error {
 	}
 
 	for _, etcdClusterName := range cloudup.EtcdClusters {
-		etcdCluster := &api.EtcdClusterSpec{
+		etcdCluster := api.EtcdClusterSpec{
 			Name: etcdClusterName,
 		}
 		for _, masterZone := range masterZones {

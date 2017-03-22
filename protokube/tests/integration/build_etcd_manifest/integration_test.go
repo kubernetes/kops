@@ -30,8 +30,12 @@ import (
 	_ "k8s.io/client-go/pkg/api/install"
 )
 
-func TestBuildEtcdManifest(t *testing.T) {
-	runTest(t, "main")
+func TestBuildEtcdManifestV2(t *testing.T) {
+	runTest(t, "v2")
+}
+
+func TestBuildEtcdManifestV3(t *testing.T) {
+	runTest(t, "v3")
 }
 
 func runTest(t *testing.T, srcDir string) {

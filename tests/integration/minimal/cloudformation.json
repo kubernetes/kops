@@ -458,6 +458,10 @@
             "Value": "us-test-1a.etcd-events.minimal.example.com"
           },
           {
+            "Key": "k8s.io/etcd-options/events",
+            "Value": "v2.2.1"
+          },
+          {
             "Key": "k8s.io/etcd/events",
             "Value": "us-test-1a/us-test-1a"
           },
@@ -483,6 +487,10 @@
           {
             "Key": "Name",
             "Value": "us-test-1a.etcd-main.minimal.example.com"
+          },
+          {
+            "Key": "k8s.io/etcd-options/main",
+            "Value": "v2.2.1"
           },
           {
             "Key": "k8s.io/etcd/main",

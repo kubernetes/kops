@@ -63,7 +63,7 @@ func (v *VolumeInfo) String() string {
 
 // Parses a tag on a volume that encodes an etcd cluster role
 // The format is "<myname>/<allnames>", e.g. "node1/node1,node2,node3"
-func ParseEtcdClusterSpec(clusterKey, v string) (*EtcdClusterSpec, error) {
+func ParseEtcdClusterSpec(clusterKey, v string, options string) (*EtcdClusterSpec, error) {
 	v = strings.TrimSpace(v)
 
 	tokens := strings.Split(v, "/")
@@ -89,5 +89,30 @@ func ParseEtcdClusterSpec(clusterKey, v string) (*EtcdClusterSpec, error) {
 		NodeName:   nodeName,
 		NodeNames:  nodeNames,
 	}
+
+	for _, option := range strings.Split(options, ",") {
+		// We try to keep these small, to avoid limits imposed by cloud labels
+		switch option {
+		case "ssl":
+			c.UseSSL = true
+		case "localhost":
+			c.LockdownClient = true
+		case "etcd3":
+			c.StorageBackend = "etcd3"
+		case "etcd2":
+			c.StorageBackend = "etcd2"
+		case "join":
+			c.JoinExistingCluster = true
+
+		default:
+			if strings.HasPrefix(option, "v") {
+				// Do we need more validation here?
+				c.EtcdVersion = option[1:]
+			} else {
+				return nil, fmt.Errorf("unknown option: %q in %q", option, options)
+			}
+		}
+	}
+
 	return c, nil
 }

@@ -244,10 +244,7 @@ func Convert_kops_CloudConfiguration_To_v1alpha1_CloudConfiguration(in *kops.Clo
 }
 
 func autoConvert_v1alpha1_Cluster_To_kops_Cluster(in *Cluster, out *kops.Cluster, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}
@@ -259,10 +256,7 @@ func Convert_v1alpha1_Cluster_To_kops_Cluster(in *Cluster, out *kops.Cluster, s 
 }
 
 func autoConvert_kops_Cluster_To_v1alpha1_Cluster(in *kops.Cluster, out *Cluster, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}
@@ -347,10 +341,9 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
-		*out = make([]*kops.EtcdClusterSpec, len(*in))
+		*out = make([]kops.EtcdClusterSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -494,10 +487,9 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
-		*out = make([]*EtcdClusterSpec, len(*in))
+		*out = make([]EtcdClusterSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -689,6 +681,8 @@ func autoConvert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdCluste
 	} else {
 		out.Members = nil
 	}
+	out.Storage = kops.StorageType(in.Storage)
+	out.Version = in.Version
 	return nil
 }
 
@@ -710,6 +704,8 @@ func autoConvert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(in *kops.EtcdC
 	} else {
 		out.Members = nil
 	}
+	out.Storage = StorageType(in.Storage)
+	out.Version = in.Version
 	return nil
 }
 
@@ -754,10 +750,7 @@ func Convert_kops_ExternalNetworkingSpec_To_v1alpha1_ExternalNetworkingSpec(in *
 }
 
 func autoConvert_v1alpha1_Federation_To_kops_Federation(in *Federation, out *kops.Federation, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_v1alpha1_FederationSpec_To_kops_FederationSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}
@@ -769,10 +762,7 @@ func Convert_v1alpha1_Federation_To_kops_Federation(in *Federation, out *kops.Fe
 }
 
 func autoConvert_kops_Federation_To_v1alpha1_Federation(in *kops.Federation, out *Federation, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_kops_FederationSpec_To_v1alpha1_FederationSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}
@@ -862,10 +852,7 @@ func Convert_kops_FlannelNetworkingSpec_To_v1alpha1_FlannelNetworkingSpec(in *ko
 }
 
 func autoConvert_v1alpha1_InstanceGroup_To_kops_InstanceGroup(in *InstanceGroup, out *kops.InstanceGroup, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}
@@ -877,10 +864,7 @@ func Convert_v1alpha1_InstanceGroup_To_kops_InstanceGroup(in *InstanceGroup, out
 }
 
 func autoConvert_kops_InstanceGroup_To_v1alpha1_InstanceGroup(in *kops.InstanceGroup, out *InstanceGroup, s conversion.Scope) error {
-	// TODO: Inefficient conversion - can we improve it?
-	if err := s.Convert(&in.ObjectMeta, &out.ObjectMeta, 0); err != nil {
-		return err
-	}
+	out.ObjectMeta = in.ObjectMeta
 	if err := Convert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(&in.Spec, &out.Spec, s); err != nil {
 		return err
 	}
@@ -1036,8 +1020,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.AdmissionControl = in.AdmissionControl
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
-	out.ClientCAFile = in.ClientCAFile
 	out.BasicAuthFile = in.BasicAuthFile
+	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	out.TokenAuthFile = in.TokenAuthFile

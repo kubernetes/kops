@@ -32,6 +32,9 @@ const (
 	DefaultEtcdVolumeSize    = 20
 	DefaultAWSEtcdVolumeType = "gp2"
 	DefaultGCEEtcdVolumeType = "pd-ssd"
+
+	DefaultEtcdVersionV2 = "2.2.1"
+	DefaultEtcdVersionV3 = "3.0.17"
 )
 
 // MasterVolumeBuilder builds master EBS volumes
@@ -85,9 +88,13 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			switch fi.CloudProviderID(b.Cluster.Spec.CloudProvider) {
 			case fi.CloudProviderAWS:
-				b.addAWSVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+				if err := b.addAWSVolume(c, name, volumeSize, subnet, &etcd, m, allMembers); err != nil {
+					return err
+				}
 			case fi.CloudProviderGCE:
-				b.addGCEVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+				if err := b.addGCEVolume(c, name, volumeSize, subnet, &etcd, m, allMembers); err != nil {
+					return err
+				}
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.CloudProvider)
 			}
@@ -96,7 +103,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) error {
 	volumeType := fi.StringValue(m.VolumeType)
 	if volumeType == "" {
 		volumeType = DefaultAWSEtcdVolumeType
@@ -109,6 +116,12 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	tags[awsup.TagNameEtcdClusterPrefix+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
 	// This says "only mount on a master"
 	tags[awsup.TagNameRolePrefix+"master"] = "1"
+
+	options, err := encodeOptions(etcd)
+	if err != nil {
+		return fmt.Errorf("unexpected error encoding options for etcd: %v", err)
+	}
+	tags[awsup.TagNameEtcdClusterOptionsPrefix+etcd.Name] = options
 
 	encrypted := fi.BoolValue(m.EncryptedVolume)
 
@@ -123,9 +136,10 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	}
 
 	c.AddTask(t)
+	return nil
 }
 
-func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) error {
 	volumeType := fi.StringValue(m.VolumeType)
 	if volumeType == "" {
 		volumeType = DefaultGCEEtcdVolumeType
@@ -153,6 +167,12 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 	tags[gce.GceLabelNameRolePrefix+"master"] = "master" // Can't start with a number
 	tags[gce.GceLabelNameEtcdClusterPrefix+etcd.Name] = gce.EncodeGCELabel(clusterSpec)
 
+	options, err := encodeOptions(etcd)
+	if err != nil {
+		return fmt.Errorf("unexpected error encoding options for etcd: %v", err)
+	}
+	tags[gce.GceLabelNameEtcdClusterPrefix+etcd.Name] = options
+
 	name = strings.Replace(name, ".", "-", -1)
 
 	t := &gcetasks.PersistentDisk{
@@ -164,4 +184,42 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 	}
 
 	c.AddTask(t)
+
+	return nil
+}
+
+func encodeOptions(spec *kops.EtcdClusterSpec) (string, error) {
+	var options []string
+	//if spec.UseSSL {
+	//	options = append(options, "ssl")
+	//}
+
+	//if spec.LockdownClient {
+	//	options = append(options, "localhost")
+	//}
+
+	etcdVersion := spec.Version
+
+	switch spec.Storage {
+	case kops.StorageTypeETCD2:
+		// etcd2 is default storage if not specified
+		if etcdVersion == "" {
+			etcdVersion = DefaultEtcdVersionV2
+		}
+	case kops.StorageTypeETCD3:
+		options = append(options, "etcd3")
+		if etcdVersion == "" {
+			etcdVersion = DefaultEtcdVersionV3
+		}
+	default:
+		return "", fmt.Errorf("unknown storage type %v", spec.Storage)
+	}
+
+	//if spec.JoinExistingCluster {
+	//	options = append(options, "join")
+	//}
+
+	options = append(options, "v"+etcdVersion)
+
+	return strings.Join(options, ","), nil
 }
