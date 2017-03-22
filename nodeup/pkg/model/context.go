@@ -17,8 +17,11 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+	"github.com/blang/semver"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -34,6 +37,8 @@ type NodeupModelContext struct {
 	Assets      *fi.AssetStore
 	KeyStore    fi.CAStore
 	SecretStore fi.SecretStore
+
+	KubernetesVersion semver.Version
 }
 
 func (c *NodeupModelContext) SSLHostPaths() []string {
@@ -51,4 +56,87 @@ func (c *NodeupModelContext) SSLHostPaths() []string {
 	}
 
 	return paths
+}
+
+func (c *NodeupModelContext) BuildPKIKubeconfig(id string) (string, error) {
+	caCertificate, err := c.KeyStore.Cert(fi.CertificateId_CA)
+	if err != nil {
+		return "", fmt.Errorf("error fetching CA certificate from keystore: %v", err)
+	}
+
+	certificate, err := c.KeyStore.Cert(id)
+	if err != nil {
+		return "", fmt.Errorf("error fetching %q certificate from keystore: %v", id, err)
+	}
+	privateKey, err := c.KeyStore.PrivateKey(id)
+	if err != nil {
+		return "", fmt.Errorf("error fetching %q private key from keystore: %v", id, err)
+	}
+
+	user := kubeconfig.KubectlUser{}
+	user.ClientCertificateData, err = certificate.AsBytes()
+	if err != nil {
+		return "", fmt.Errorf("error encoding %q certificate: %v", id, err)
+	}
+	user.ClientKeyData, err = privateKey.AsBytes()
+	if err != nil {
+		return "", fmt.Errorf("error encoding %q private key: %v", id, err)
+	}
+	cluster := kubeconfig.KubectlCluster{}
+	cluster.CertificateAuthorityData, err = caCertificate.AsBytes()
+	if err != nil {
+		return "", fmt.Errorf("error encoding CA certificate: %v", err)
+	}
+
+	if c.IsMaster {
+		if c.IsKubernetesAtLeast(1, 6) {
+			// Use https in 1.6, even for local ports, so we can turn off the insecure port
+			cluster.Server = "https://127.0.0.1"
+		} else {
+			cluster.Server = "http://127.0.0.1:8080"
+		}
+	} else {
+		cluster.Server = "https://" + c.Cluster.Spec.MasterInternalName
+	}
+
+	config := &kubeconfig.KubectlConfig{
+		ApiVersion: "v1",
+		Kind:       "Config",
+		Users: []*kubeconfig.KubectlUserWithName{
+			{
+				Name: id,
+				User: user,
+			},
+		},
+		Clusters: []*kubeconfig.KubectlClusterWithName{
+			{
+				Name:    "local",
+				Cluster: cluster,
+			},
+		},
+		Contexts: []*kubeconfig.KubectlContextWithName{
+			{
+				Name: "service-account-context",
+				Context: kubeconfig.KubectlContext{
+					Cluster: "local",
+					User:    id,
+				},
+			},
+		},
+		CurrentContext: "service-account-context",
+	}
+
+	yaml, err := kops.ToRawYaml(config)
+	if err != nil {
+		return "", fmt.Errorf("error marshalling kubeconfig to yaml: %v", err)
+	}
+
+	return string(yaml), nil
+}
+
+func (c *NodeupModelContext) IsKubernetesAtLeast(major uint64, minor uint64) bool {
+	if c.KubernetesVersion.Major > major {
+		return true
+	}
+	return c.KubernetesVersion.Major == major && c.KubernetesVersion.Minor >= minor
 }

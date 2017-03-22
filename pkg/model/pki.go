@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"k8s.io/apiserver/pkg/authentication/user"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
@@ -34,6 +35,16 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		t := &fitasks.Keypair{
 			Name:    fi.String("kubelet"),
 			Subject: "cn=kubelet",
+			Type:    "client",
+		}
+		c.AddTask(t)
+	}
+
+	{
+		// Keypair used by the kube-scheduler
+		t := &fitasks.Keypair{
+			Name:    fi.String("kube-scheduler"),
+			Subject: "cn=" + user.KubeScheduler,
 			Type:    "client",
 		}
 		c.AddTask(t)

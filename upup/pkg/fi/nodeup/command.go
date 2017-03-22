@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/nodeup/pkg/model"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -194,6 +195,11 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error initializing: %v", err)
 	}
 
+	k8sVersion, err := util.ParseKubernetesVersion(c.cluster.Spec.KubernetesVersion)
+	if err != nil || k8sVersion == nil {
+		return fmt.Errorf("unable to parse KubernetesVersion %q", c.cluster.Spec.KubernetesVersion)
+	}
+
 	modelContext := &model.NodeupModelContext{
 		Cluster:       c.cluster,
 		Distribution:  distribution,
@@ -204,6 +210,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		Assets:        assets,
 		KeyStore:      tf.keyStore,
 		SecretStore:   tf.secretStore,
+
+		KubernetesVersion: *k8sVersion,
 	}
 
 	loader := NewLoader(c.config, c.cluster, assets, nodeTags)
@@ -216,6 +224,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.SysctlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeAPIServerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
 
 	tf.populate(loader.TemplateFunctions)
 
