@@ -277,3 +277,12 @@
 [submodule "_vendor/github.com/vmware/govmomi"]
 	path = _vendor/github.com/vmware/govmomi
 	url = https://github.com/vmware/govmomi.git
+[submodule "_vendor/github.com/coreos/go-semver"]
+	path = _vendor/github.com/coreos/go-semver
+	url = https://github.com/coreos/go-semver.git
+[submodule "_vendor/github.com/miekg/coredns"]
+	path = _vendor/github.com/miekg/coredns
+	url = https://github.com/miekg/coredns.git
+[submodule "_vendor/github.com/miekg/dns"]
+	path = _vendor/github.com/miekg/dns
+	url = https://github.com/miekg/dns.git
