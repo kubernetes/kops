@@ -18,6 +18,7 @@ package kops
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
@@ -88,6 +89,9 @@ type InstanceGroupSpec struct {
 
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
+
+	// Kubelet overrides kubelet config from the ClusterSpec
+	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values
