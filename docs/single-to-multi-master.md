@@ -11,7 +11,9 @@ Please follow all the backup steps before attempting it. Please read the
 before attempting it.
 
 During this procedure, you will experience **downtime** on the API server, but
-not on the end user services.
+not on the end user services. During this downtime, existing pods will continue
+to work, but you will not be able to create new pods and any existing pod that
+dies will not be restarted.
 
 ## 1 - Backups
 
@@ -75,7 +77,7 @@ $ kops create instancegroup master-<availability-zone2>
 reference a third one, even if we have not created it yet.*
 
 ```bash
-$ kops edit cluster myclusterdomain.com
+$ kops edit cluster example.com
 ```
  * In ``.spec.etcdClusters`` 2 new members in each cluster, one for each new
  availability zone.
@@ -85,14 +87,14 @@ $ kops edit cluster myclusterdomain.com
 **The clusters will stop to work until the new member is started**.
 
 ```bash
-$ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal -- etcdctl member add etcd-<availability-zone2> http://etcd-<availability-zone2>.internal.myclusterdomain.com:2380
-$ kubectl --namespace=kube-system exec etcd-server-events-ip-172-20-36-161.ec2.internal -- etcdctl --endpoint http://127.0.0.1:4002 member add etcd-events-<availability-zone2> http://etcd-events-<availability-zone2>.internal.myclusterdomain.com:2381
+$ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal -- etcdctl member add etcd-<availability-zone2> http://etcd-<availability-zone2>.internal.example.com:2380
+$ kubectl --namespace=kube-system exec etcd-server-events-ip-172-20-36-161.ec2.internal -- etcdctl --endpoint http://127.0.0.1:4002 member add etcd-events-<availability-zone2> http://etcd-events-<availability-zone2>.internal.example.com:2381
 ```
 
 ### d - Launch the new master
 
 ```bash
-$ kops update cluster myclusterdomain.com --yes
+$ kops update cluster example.com --yes
 # wait for the new master to boot and initialize
 $ ssh admin@<new-master>
 admin@ip-172-20-116-230:~$ sudo -i
@@ -155,14 +157,14 @@ $ kops create instancegroup master-<availability-zone3>
 ### b - Add a new member to the etcd clusters
 
  ```bash
- $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal -- etcdctl member add etcd-<availability-zone3> http://etcd-<availability-zone3>.internal.myclusterdomain.com:2380
- $ kubectl --namespace=kube-system exec etcd-server-events-ip-172-20-36-161.ec2.internal -- etcdctl --endpoint http://127.0.0.1:4002 member add etcd-events-<availability-zone3> http://etcd-events-<availability-zone3>.internal.myclusterdomain.com:2381
+ $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal -- etcdctl member add etcd-<availability-zone3> http://etcd-<availability-zone3>.internal.example.com:2380
+ $ kubectl --namespace=kube-system exec etcd-server-events-ip-172-20-36-161.ec2.internal -- etcdctl --endpoint http://127.0.0.1:4002 member add etcd-events-<availability-zone3> http://etcd-events-<availability-zone3>.internal.example.com:2381
  ```
 
 ### c - Launch the third master
 
  ```bash
- $ kops update cluster myclusterdomain.com --yes
+ $ kops update cluster example.com --yes
  # wait for the third master to boot and initialize
  $ ssh admin@<third-master>
  admin@ip-172-20-139-130:~$ sudo -i
