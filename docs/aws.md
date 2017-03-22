@@ -112,7 +112,9 @@ domain in Route53.  To do this you should:
   already done this you can also [get the values](ns.md))
 
 ```bash
-ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --caller-reference $ID | jq .DelegationSet.NameServers
+# Note: This example assumes you have jq installed locally.
+ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --caller-reference $ID | \
+    jq .DelegationSet.NameServers
 ```
 
 * Note your **PARENT** hosted zone id
