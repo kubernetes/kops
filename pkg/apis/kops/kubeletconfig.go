@@ -56,5 +56,9 @@ func BuildKubeletConfigSpec(cluster *Cluster, instanceGroup *InstanceGroup) (*Ku
 		c.NodeLabels[k] = v
 	}
 
+	if instanceGroup.Spec.Kubelet != nil {
+		utils.JsonMergeStruct(c, instanceGroup.Spec.Kubelet)
+	}
+
 	return c, nil
 }
