@@ -143,32 +143,32 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
 
-		addHostPathMapping(pod, container, name, path, true)
+		addHostPathMapping(pod, container, name, path)
 	}
 
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
-		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath, true)
+		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath)
 	}
 
 	pathSrvKubernetes := b.PathSrvKubernetes()
 	if pathSrvKubernetes != "" {
-		addHostPathMapping(pod, container, "srvkube", pathSrvKubernetes, true)
+		addHostPathMapping(pod, container, "srvkube", pathSrvKubernetes)
 	}
 
 	pathSrvSshproxy := b.PathSrvSshproxy()
 	if pathSrvSshproxy != "" {
-		addHostPathMapping(pod, container, "srvsshproxy", pathSrvSshproxy, false)
+		addHostPathMapping(pod, container, "srvsshproxy", pathSrvSshproxy)
 	}
 
-	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log", false)
+	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log").ReadOnly = false
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
 	return pod, nil
 }
 
-func addHostPathMapping(pod *v1.Pod, container *v1.Container, name string, path string, readOnly bool) {
+func addHostPathMapping(pod *v1.Pod, container *v1.Container, name string, path string) *v1.VolumeMount {
 	pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
 		Name: name,
 		VolumeSource: v1.VolumeSource{
@@ -181,8 +181,10 @@ func addHostPathMapping(pod *v1.Pod, container *v1.Container, name string, path 
 	container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
 		Name:      name,
 		MountPath: path,
-		ReadOnly:  readOnly,
+		ReadOnly:  true,
 	})
+
+	return &container.VolumeMounts[len(container.VolumeMounts)-1]
 }
 
 func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
