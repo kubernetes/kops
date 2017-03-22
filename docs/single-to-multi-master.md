@@ -213,3 +213,8 @@ To be sure that everything runs smoothly and is setup correctly, it is advised
 to terminate the masters one after the other (always keeping 2 of them up and
 running). They will be restarted with a clean config and should join the others
 without any problems.
+
+While optional, this last step allows you to be sure that your masters are
+fully configured by Kops and that there is no residual manual configuration.
+If there is any configuration problem, they will be detected during this step
+and not during a future upgrade or, worse, during a master failure.
