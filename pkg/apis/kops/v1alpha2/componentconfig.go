@@ -299,8 +299,11 @@ type CloudConfiguration struct {
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 
 	// vSphere cloud-config specs
+	VSphereUsername      *string `json:"vSphereUsername,omitempty"`
+	VSpherePassword      *string `json:"vSpherePassword,omitempty"`
 	VSphereServer        *string `json:"vSphereServer,omitempty"`
 	VSphereDatacenter    *string `json:"vSphereDatacenter,omitempty"`
+	VSphereDatastore     *string `json:"vSphereDatastore,omitempty"`
 	VSphereResourcePool  *string `json:"vSphereResourcePool,omitempty"`
 	VSphereCoreDNSServer *string `json:"vSphereCoreDNSServer,omitempty"`
 }
