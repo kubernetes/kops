@@ -155,7 +155,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 
 	name = strings.Replace(name, ".", "-", -1)
 
-	t := &gcetasks.PersistentDisk{
+	t := &gcetasks.Disk{
 		Name:       s(name),
 		Zone:       s(subnet.Zone),
 		SizeGB:     fi.Int64(int64(volumeSize)),
