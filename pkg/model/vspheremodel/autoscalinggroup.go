@@ -43,12 +43,15 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:           &name,
 			VMTemplateName: fi.String(defaultVmTemplateName),
 		}
+
 		c.AddTask(createVmTask)
 
 		attachISOTaskName := "AttachISO-" + name
 		attachISOTask := &vspheretasks.AttachISO{
-			Name: &attachISOTaskName,
-			VM:   createVmTask,
+			Name:            &attachISOTaskName,
+			VM:              createVmTask,
+			IG:              ig,
+			BootstrapScript: b.BootstrapScript,
 		}
 		c.AddTask(attachISOTask)
 
