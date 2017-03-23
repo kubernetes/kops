@@ -132,6 +132,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	clusterSpec.Kubelet.CgroupRoot = "/"
 
+	glog.V(1).Infof("Cloud Provider: %s", cloudProvider)
 	if cloudProvider == fi.CloudProviderAWS {
 		clusterSpec.Kubelet.CloudProvider = "aws"
 
@@ -158,16 +159,8 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if cloudProvider == fi.CloudProviderVSphere {
-		glog.Info("In kubenet for vsphere cloud provider")
 		clusterSpec.Kubelet.CloudProvider = "vsphere"
-		clusterSpec.Kubelet.HairpinMode = "vmw-bridge"
-
-		if clusterSpec.CloudConfig == nil {
-			clusterSpec.CloudConfig = &kops.CloudConfiguration{}
-		}
-		clusterSpec.CloudConfig.Multizone = fi.Bool(true)
-		var vsphere_node_tag = "vsphere_node_tag"
-		clusterSpec.CloudConfig.NodeTags = &vsphere_node_tag
+		clusterSpec.Kubelet.HairpinMode = "promiscuous-bridge"
 	}
 
 	usesKubenet, err := UsesKubenet(clusterSpec)
