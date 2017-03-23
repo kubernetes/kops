@@ -61,6 +61,28 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	if cloudConfig.VSphereUsername != nil {
+		lines = append(lines, "user = "+*cloudConfig.VSphereUsername)
+	}
+
+	if cloudConfig.VSpherePassword != nil {
+		lines = append(lines, "password = "+*cloudConfig.VSpherePassword)
+	}
+
+	if cloudConfig.VSphereServer != nil {
+		lines = append(lines, "server = "+*cloudConfig.VSphereServer)
+		lines = append(lines, "port = 443")
+		lines = append(lines, fmt.Sprintf("insecure-flag = %t", true))
+	}
+
+	if cloudConfig.VSphereDatacenter != nil {
+		lines = append(lines, "datacenter = "+*cloudConfig.VSphereDatacenter)
+	}
+
+	if cloudConfig.VSphereDatastore != nil {
+		lines = append(lines, "datastore = "+*cloudConfig.VSphereDatastore)
+	}
+
 	config := "[global]\n" + strings.Join(lines, "\n") + "\n"
 	t := &nodetasks.File{
 		Path:     CloudConfigFilePath,
