@@ -37,18 +37,28 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Add cloud config file if needed
 	var lines []string
 
+	cloudProvider := b.Cluster.Spec.CloudProvider
 	cloudConfig := b.Cluster.Spec.CloudConfig
+
 	if cloudConfig == nil {
 		cloudConfig = &kops.CloudConfiguration{}
 	}
-	if cloudConfig.NodeTags != nil {
-		lines = append(lines, "node-tags = "+*cloudConfig.NodeTags)
-	}
-	if cloudConfig.NodeInstancePrefix != nil {
-		lines = append(lines, "node-instance-prefix = "+*cloudConfig.NodeInstancePrefix)
-	}
-	if cloudConfig.Multizone != nil {
-		lines = append(lines, fmt.Sprintf("multizone = %t", *cloudConfig.Multizone))
+
+	switch cloudProvider {
+		case "gce":
+			if cloudConfig.NodeTags != nil {
+				lines = append(lines, "node-tags = "+*cloudConfig.NodeTags)
+			}
+			if cloudConfig.NodeInstancePrefix != nil {
+				lines = append(lines, "node-instance-prefix = "+*cloudConfig.NodeInstancePrefix)
+			}
+			if cloudConfig.Multizone != nil {
+				lines = append(lines, fmt.Sprintf("multizone = %t", *cloudConfig.Multizone))
+			}
+		case "aws":
+			if cloudConfig.DisableSecurityGroupIngress != nil {
+				lines = append(lines, fmt.Sprintf("DisableSecurityGroupIngress = %t", *cloudConfig.DisableSecurityGroupIngress))
+			}
 	}
 
 	config := "[global]\n" + strings.Join(lines, "\n") + "\n"
