@@ -94,6 +94,8 @@ func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
 	// Add retry functionality
 	c.RoundTripper = vim25.Retry(c.RoundTripper, vim25.TemporaryNetworkError(5))
 	vsphereCloud := &VSphereCloud{Server: server, Datacenter: datacenter, Cluster: cluster, Username: username, Password: password, Client: c, CoreDNSServer: dns_server, DNSZone: dns_zone}
+	spec.CloudConfig.VSphereUsername = fi.String(username)
+	spec.CloudConfig.VSpherePassword = fi.String(password)
 	glog.V(2).Infof("Created vSphere Cloud successfully: %+v", vsphereCloud)
 	return vsphereCloud, nil
 }
