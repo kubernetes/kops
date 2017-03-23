@@ -284,6 +284,7 @@ func (c *VSphereCloud) UploadAndAttachISO(vm *string, isoFile string) error {
 
 	// passing empty cd-rom name so that the first one gets returned
 	cdrom, err := devices.FindCdrom("")
+	cdrom.Connectable.StartConnected = true
 	if err != nil {
 		return err
 	}
