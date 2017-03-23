@@ -29,6 +29,7 @@ import (
 
 	"k8s.io/kops/dns-controller/pkg/util"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
 )
 
@@ -54,6 +55,9 @@ type DNSController struct {
 
 	// changeCount is a change-counter, which helps us avoid computation when nothing has changed
 	changeCount uint64
+
+	//DNS Provider ID, one of aws-route53, google-clouddns, and coredns
+	dnsProviderId string
 }
 
 // DNSController is a Context
@@ -80,16 +84,17 @@ type DNSControllerScope struct {
 var _ Scope = &DNSControllerScope{}
 
 // NewDnsController creates a DnsController
-func NewDNSController(dnsProvider dnsprovider.Interface, zoneRules *ZoneRules) (*DNSController, error) {
+func NewDNSController(dnsProvider dnsprovider.Interface, zoneRules *ZoneRules, dnsProviderId string) (*DNSController, error) {
 	dnsCache, err := newDNSCache(dnsProvider)
 	if err != nil {
 		return nil, fmt.Errorf("error initializing DNS cache: %v", err)
 	}
 
 	c := &DNSController{
-		scopes:    make(map[string]*DNSControllerScope),
-		zoneRules: zoneRules,
-		dnsCache:  dnsCache,
+		scopes:        make(map[string]*DNSControllerScope),
+		zoneRules:     zoneRules,
+		dnsCache:      dnsCache,
+		dnsProviderId: dnsProviderId,
 	}
 
 	return c, nil
@@ -273,7 +278,7 @@ func (c *DNSController) runOnce() error {
 			dedup = append(dedup, s)
 		}
 
-		err := op.updateRecords(k, dedup, int64(ttl.Seconds()))
+		err := op.updateRecords(k, newValues, int64(ttl.Seconds()), c.dnsProviderId)
 		if err != nil {
 			glog.Infof("error updating records for %s: %v", k, err)
 			errors = append(errors, err)
@@ -288,7 +293,7 @@ func (c *DNSController) runOnce() error {
 
 		newValues := newValueMap[k]
 		if newValues == nil {
-			err := op.deleteRecords(k)
+			err := op.deleteRecords(k, c.dnsProviderId)
 			if err != nil {
 				glog.Infof("error deleting records for %s: %v", k, err)
 				errors = append(errors, err)
@@ -430,7 +435,7 @@ func (o *dnsOp) listRecords(zone dnsprovider.Zone) ([]dnsprovider.ResourceRecord
 	return rrs, nil
 }
 
-func (o *dnsOp) deleteRecords(k recordKey) error {
+func (o *dnsOp) deleteRecords(k recordKey, dnsProviderId string) error {
 	glog.V(2).Infof("Deleting all records for %s", k)
 
 	fqdn := EnsureDotSuffix(k.FQDN)
@@ -441,6 +446,31 @@ func (o *dnsOp) deleteRecords(k recordKey) error {
 		return fmt.Errorf("no suitable zone found for %q", fqdn)
 	}
 
+	// TODO: work-around before ResourceRecordSets.List() is implemented for CoreDNS
+	if dnsProviderId == k8scoredns.ProviderName {
+		rrsProvider, ok := zone.ResourceRecordSets()
+		if !ok {
+			return fmt.Errorf("zone does not support resource records %q", zone.Name())
+		}
+
+		dnsRecord, err := rrsProvider.Get(fqdn)
+		if err != nil {
+			return fmt.Errorf("Failed to get DNS record %s with error: %v", fqdn, err)
+		}
+
+		if dnsRecord != nil && string(dnsRecord.Type()) == string(k.RecordType) {
+			glog.V(8).Infof("Found matching record: %s %s", k.RecordType, fqdn)
+			cs, err := o.getChangeset(zone)
+			if err != nil {
+				return err
+			}
+			cs.Remove(dnsRecord)
+		}
+
+		return nil
+	}
+
+	// when DNS provider is aws-route53 or google-clouddns
 	rrs, err := o.listRecords(zone)
 	if err != nil {
 		return fmt.Errorf("error querying resource records for zone %q: %v", zone.Name(), err)
@@ -469,7 +499,7 @@ func (o *dnsOp) deleteRecords(k recordKey) error {
 	return nil
 }
 
-func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error {
+func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64, dnsProviderId string) error {
 	fqdn := EnsureDotSuffix(k.FQDN)
 
 	zone := o.findZone(fqdn)
@@ -483,29 +513,42 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 		return fmt.Errorf("zone does not support resource records %q", zone.Name())
 	}
 
-	rrs, err := o.listRecords(zone)
-	if err != nil {
-		return fmt.Errorf("error querying resource records for zone %q: %v", zone.Name(), err)
-	}
-
 	var existing dnsprovider.ResourceRecordSet
-	for _, rr := range rrs {
-		rrName := EnsureDotSuffix(rr.Name())
-		if rrName != fqdn {
-			glog.V(8).Infof("Skipping record %q (name != %s)", rrName, fqdn)
-			continue
+	// TODO: work-around before ResourceRecordSets.List() is implemented for CoreDNS
+	if dnsProviderId == k8scoredns.ProviderName {
+		dnsRecord, err := rrsProvider.Get(fqdn)
+		if err != nil {
+			return fmt.Errorf("Failed to get DNS record %s with error: %v", fqdn, err)
 		}
-		if string(rr.Type()) != string(k.RecordType) {
-			glog.V(8).Infof("Skipping record %q (type %s != %s)", rrName, rr.Type(), k.RecordType)
-			continue
+		if dnsRecord != nil && string(dnsRecord.Type()) == string(k.RecordType) {
+			glog.V(8).Infof("Found matching record: %s %s", k.RecordType, fqdn)
+			existing = dnsRecord
+		}
+	} else {
+		// when DNS provider is aws-route53 or google-clouddns
+		rrs, err := o.listRecords(zone)
+		if err != nil {
+			return fmt.Errorf("error querying resource records for zone %q: %v", zone.Name(), err)
 		}
 
-		if existing != nil {
-			glog.Warningf("Found multiple matching records: %v and %v", existing, rr)
-		} else {
-			glog.V(8).Infof("Found matching record: %s %s", k.RecordType, rrName)
+		for _, rr := range rrs {
+			rrName := EnsureDotSuffix(rr.Name())
+			if rrName != fqdn {
+				glog.V(8).Infof("Skipping record %q (name != %s)", rrName, fqdn)
+				continue
+			}
+			if string(rr.Type()) != string(k.RecordType) {
+				glog.V(8).Infof("Skipping record %q (type %s != %s)", rrName, rr.Type(), k.RecordType)
+				continue
+			}
+
+			if existing != nil {
+				glog.Warningf("Found multiple matching records: %v and %v", existing, rr)
+			} else {
+				glog.V(8).Infof("Found matching record: %s %s", k.RecordType, rrName)
+			}
+			existing = rr
 		}
-		existing = rr
 	}
 
 	cs, err := o.getChangeset(zone)

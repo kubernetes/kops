@@ -30,6 +30,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
+	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
 )
 
@@ -47,7 +48,7 @@ func main() {
 	glog.Flush()
 
 	dnsProviderId := "aws-route53"
-	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns)")
+	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns, coredns)")
 
 	var zones []string
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
@@ -96,7 +97,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	dnsController, err := dns.NewDNSController(dnsProvider, zoneRules)
+	dnsController, err := dns.NewDNSController(dnsProvider, zoneRules, dnsProviderId)
 	if err != nil {
 		glog.Errorf("Error building DNS controller: %v", err)
 		os.Exit(1)

@@ -17,10 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/pflag"
+	"io"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/protokube/pkg/protokube"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -30,6 +32,7 @@ import (
 
 	// Load DNS plugins
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
+	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
 )
 
@@ -53,7 +56,7 @@ func main() {
 
 func run() error {
 	dnsProviderId := "aws-route53"
-	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns)")
+	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns, coredns)")
 
 	var zones []string
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
@@ -78,6 +81,9 @@ func run() error {
 
 	clusterID := ""
 	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
+
+	dnsServer := ""
+	flag.StringVar(&dnsServer, "dns-server", dnsServer, "DNS Server")
 
 	flagChannels := ""
 	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
@@ -178,7 +184,16 @@ func run() error {
 	var dnsScope dns.Scope
 	var dnsController *dns.DNSController
 	{
-		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, nil)
+		var file io.Reader
+		if dnsProviderId == k8scoredns.ProviderName {
+			var lines []string
+			lines = append(lines, "etcd-endpoints = "+dnsServer)
+			lines = append(lines, "zones = "+zones[0])
+			config := "[global]\n" + strings.Join(lines, "\n") + "\n"
+			file = bytes.NewReader([]byte(config))
+		}
+
+		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, file)
 		if err != nil {
 			return fmt.Errorf("Error initializing DNS provider %q: %v", dnsProviderId, err)
 		}
@@ -191,7 +206,7 @@ func run() error {
 			return fmt.Errorf("unexpected zone flags: %q", err)
 		}
 
-		dnsController, err = dns.NewDNSController(dnsProvider, zoneRules)
+		dnsController, err = dns.NewDNSController(dnsProvider, zoneRules, dnsProviderId)
 		if err != nil {
 			return err
 		}
