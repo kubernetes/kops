@@ -33,24 +33,53 @@ const (
 	operationPollTimeoutDuration = 30 * time.Minute
 )
 
-// TODO: Can we get the project/zone from the op self link?
-func WaitForZoneOp(client *compute.Service, op *compute.Operation, project string, zone string) error {
+func WaitForOp(client *compute.Service, op *compute.Operation) error {
+	u, err := ParseGoogleCloudURL(op.SelfLink)
+	if err != nil {
+		return fmt.Errorf("error parsing operation URL %q: %v", op.SelfLink, err)
+	}
+
+	if u.Zone != "" {
+		return waitForZoneOp(client, op)
+	}
+
+	if u.Region != "" {
+		return waitForRegionOp(client, op)
+	}
+
+	return waitForGlobalOp(client, op)
+}
+
+func waitForZoneOp(client *compute.Service, op *compute.Operation) error {
+	u, err := ParseGoogleCloudURL(op.SelfLink)
+	if err != nil {
+		return fmt.Errorf("error parsing operation URL %q: %v", op.SelfLink, err)
+	}
+
 	return waitForOp(op, func(operationName string) (*compute.Operation, error) {
-		return client.ZoneOperations.Get(project, zone, operationName).Do()
+		return client.ZoneOperations.Get(u.Project, u.Zone, operationName).Do()
 	})
 }
 
-// TODO: Can we get the project from the op self link?
-func WaitForRegionOp(client *compute.Service, op *compute.Operation, project string) error {
+func waitForRegionOp(client *compute.Service, op *compute.Operation) error {
+	u, err := ParseGoogleCloudURL(op.SelfLink)
+	if err != nil {
+		return fmt.Errorf("error parsing operation URL %q: %v", op.SelfLink, err)
+	}
+
 	return waitForOp(op, func(operationName string) (*compute.Operation, error) {
-		return client.RegionOperations.Get(project, op.Region, operationName).Do()
+		return client.RegionOperations.Get(u.Project, u.Region, operationName).Do()
 	})
 }
 
-// TODO: Can we get the project from the op self link?
-func WaitForGlobalOp(client *compute.Service, op *compute.Operation, project string) error {
+func waitForGlobalOp(client *compute.Service, op *compute.Operation) error {
+	u, err := ParseGoogleCloudURL(op.SelfLink)
+	if err != nil {
+		return fmt.Errorf("error parsing operation URL %q: %v", op.SelfLink, err)
+	}
+
 	return waitForOp(op, func(operationName string) (*compute.Operation, error) {
-		return client.GlobalOperations.Get(project, operationName).Do()
+		return client.GlobalOperations.Get(u.Project, operationName).Do()
 	})
 }
 

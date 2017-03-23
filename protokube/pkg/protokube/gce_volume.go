@@ -323,7 +323,7 @@ func (v *GCEVolumes) AttachVolume(volume *Volume) error {
 		return fmt.Errorf("error attach disk %q: %v", volumeName, err)
 	}
 
-	err = gce.WaitForZoneOp(v.compute, attachOp, v.project, v.zone)
+	err = gce.WaitForOp(v.compute, attachOp)
 	if err != nil {
 		return fmt.Errorf("error waiting for disk attach to complete %q: %v", volumeName, err)
 	}
