@@ -456,12 +456,6 @@ func (c *ApplyClusterCmd) Run() error {
 					//&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 				)
 			case fi.CloudProviderVSphere:
-				vsphereModelContext := &vspheremodel.VSphereModelContext{
-					KopsModelContext: modelContext,
-				}
-
-				l.Builders = append(l.Builders,
-					&vspheremodel.VirtualMachineModelBuilder{VSphereModelContext: vsphereModelContext})
 
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
