@@ -30,6 +30,17 @@ type VMPowerOn struct {
 }
 
 var _ fi.HasName = &VMPowerOn{}
+var _ fi.HasDependencies = &VMPowerOn{}
+
+func (o *VMPowerOn) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+	attachISOTask := tasks["AttachISO/"+*o.AttachISO.Name]
+	if attachISOTask == nil {
+		glog.Fatalf("Unable to find attachISO task %s dependency for VMPowerOn %s", *o.AttachISO.Name, *o.Name)
+	}
+	deps = append(deps, attachISOTask)
+	return deps
+}
 
 // GetName returns the Name of the object, implementing fi.HasName
 func (o *VMPowerOn) GetName() *string {
@@ -56,8 +67,8 @@ func (_ *VMPowerOn) CheckChanges(a, e, changes *VMPowerOn) error {
 	return nil
 }
 
-func (_ *VMPowerOn) RenderVC(t *vsphere.VSphereAPITarget, a, e, changes *VMPowerOn) error {
-	glog.V(2).Infof("VMPowerOn.RenderVC invoked for vm %s", *changes.AttachISO.VM.Name)
+func (_ *VMPowerOn) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *VMPowerOn) error {
+	glog.V(2).Infof("VMPowerOn.RenderVSphere invoked for vm %s", *changes.AttachISO.VM.Name)
 	err := t.Cloud.PowerOn(*changes.AttachISO.VM.Name)
 	return err
 }

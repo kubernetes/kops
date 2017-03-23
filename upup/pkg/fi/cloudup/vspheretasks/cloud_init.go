@@ -14,21 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package vspheremodel
+package vspheretasks
 
-import (
-	"fmt"
-	"k8s.io/kops/upup/pkg/fi"
-)
+// Template for user-data file in the cloud-init ISO
+const userDataTemplate = `#cloud-config
+write_files:
+  - content: |
+$SCRIPT
+    owner: root:root
+    path: /root/script.sh
+    permissions: "0644"
 
-// Do we need this model builder?
+runcmd:
+  - bash /root/script.sh 2>&1 > /var/log/script.log`
 
-// AutoscalingGroupModelBuilder configures AutoscalingGroup objects
-type VirtualMachineModelBuilder struct {
-	*VSphereModelContext
-}
-
-func (b *VirtualMachineModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	fmt.Print("In VirtualMachineModelBuilder.Build function!!")
-	return nil
-}
+// Template for meta-data file in the cloud-init ISO
+const metaDataTemplate = `instance-id: $INSTANCE_ID
+local-hostname: $LOCAL_HOST_NAME`

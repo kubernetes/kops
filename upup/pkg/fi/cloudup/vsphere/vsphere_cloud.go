@@ -25,7 +25,10 @@ import (
 	"github.com/vmware/govmomi"
 	"github.com/vmware/govmomi/find"
 	"github.com/vmware/govmomi/object"
+	"github.com/vmware/govmomi/property"
 	"github.com/vmware/govmomi/vim25"
+	"github.com/vmware/govmomi/vim25/mo"
+	"github.com/vmware/govmomi/vim25/soap"
 	"github.com/vmware/govmomi/vim25/types"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -49,9 +52,10 @@ type VSphereCloud struct {
 }
 
 const (
-	snapshotName string = "LinkCloneSnapshotPoint"
-	snapshotDesc string = "Snapshot created by kops"
-	privateDNS   string = "coredns"
+	snapshotName  string = "LinkCloneSnapshotPoint"
+	snapshotDesc  string = "Snapshot created by kops"
+	privateDNS    string = "coredns"
+	cloudInitFile string = "cloud-init.iso"
 )
 
 var _ fi.Cloud = &VSphereCloud{}
@@ -220,4 +224,73 @@ func (c *VSphereCloud) PowerOn(vm string) error {
 	}
 	task.Wait(ctx)
 	return nil
+}
+
+func (c *VSphereCloud) UploadAndAttachISO(vm *string, isoFile string) error {
+	f := find.NewFinder(c.Client.Client, true)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	dc, err := f.Datacenter(ctx, c.Datacenter)
+	if err != nil {
+		return err
+	}
+	f.SetDatacenter(dc)
+
+	vmRef, err := f.VirtualMachine(ctx, *vm)
+	if err != nil {
+		return err
+	}
+
+	var refs []types.ManagedObjectReference
+	refs = append(refs, vmRef.Reference())
+	var vmResult mo.VirtualMachine
+
+	pc := property.DefaultCollector(c.Client.Client)
+	err = pc.RetrieveOne(ctx, vmRef.Reference(), []string{"datastore"}, &vmResult)
+	if err != nil {
+		glog.Fatalf("Unable to retrieve VM summary for VM %s", *vm)
+	}
+	glog.V(4).Infof("vm property collector result :%+v\n", vmResult)
+
+	// We expect the VM to be on only 1 datastore
+	dsRef := vmResult.Datastore[0].Reference()
+	var dsResult mo.Datastore
+	err = pc.RetrieveOne(ctx, dsRef, []string{"summary"}, &dsResult)
+	if err != nil {
+		glog.Fatalf("Unable to retrieve datastore summary for datastore  %s", dsRef)
+	}
+	glog.V(4).Infof("datastore property collector result :%+v\n", dsResult)
+	dsObj, err := f.Datastore(ctx, dsResult.Summary.Name)
+	if err != nil {
+		return err
+	}
+	p := soap.DefaultUpload
+	dstIsoFile := getCloudInitFileName(*vm)
+	glog.V(2).Infof("Uploading ISO file %s to datastore %+v, destination iso is %s\n", isoFile, dsObj, dstIsoFile)
+	err = dsObj.UploadFile(ctx, isoFile, dstIsoFile, &p)
+	if err != nil {
+		return err
+	}
+	glog.V(2).Infof("Uploaded ISO file %s", isoFile)
+
+	// Find the cd-rom devide and insert the cloud init iso file into it.
+	devices, err := vmRef.Device(ctx)
+	if err != nil {
+		return err
+	}
+
+	// passing empty cd-rom name so that the first one gets returned
+	cdrom, err := devices.FindCdrom("")
+	if err != nil {
+		return err
+	}
+	iso := dsObj.Path(dstIsoFile)
+	glog.V(2).Infof("Inserting ISO file %s into cd-rom", iso)
+	return vmRef.EditDevice(ctx, devices.InsertIso(cdrom, iso))
+
+}
+
+func getCloudInitFileName(vmName string) string {
+	return vmName + "/" + cloudInitFile
 }
