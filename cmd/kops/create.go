@@ -85,7 +85,9 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
 	var clusterName = ""
-	var cSpec = false
+	//var cSpec = false
+	var sb bytes.Buffer
+	fmt.Fprintf(&sb, "\n")
 	for _, f := range c.Filenames {
 		contents, err := vfs.Context.ReadFile(f)
 		if err != nil {
@@ -112,6 +114,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					}
 					return fmt.Errorf("error creating federation: %v", err)
 				}
+				fmt.Fprintf(&sb, "Created federation/%q\n", v.ObjectMeta.Name)
 
 			case *kopsapi.Cluster:
 				// Adding a PerformAssignments() call here as the user might be trying to use
@@ -127,7 +130,8 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					}
 					return fmt.Errorf("error creating cluster: %v", err)
 				} else {
-					cSpec = true
+					fmt.Fprintf(&sb, "Created cluster/%s\n", v.ObjectMeta.Name)
+					//cSpec = true
 				}
 
 			case *kopsapi.InstanceGroup:
@@ -141,25 +145,22 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 						return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating instanceGroup: %v", err)
+				} else {
+					fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
 				}
 
 			default:
 				glog.V(2).Infof("Type of object was %T", v)
-				return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
+				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
 			}
 		}
 
 	}
 	{
-		var sb bytes.Buffer
-		fmt.Fprintf(&sb, "\n")
-		fmt.Fprintf(&sb, "Your input has been successfully parsed.\n")
-		fmt.Fprintf(&sb, "\n")
-
-		// This isn't pretty.
-		// The point is to give some sort of feedback if the input was successfully parsed.
-		// And if this was a full cluster spec, let's show how to deploy the cluster.
-		if clusterName != "" && cSpec {
+		// If there is a value in this sb, this should mean that we have something to deploy
+		// so let's advise the user how to engage the cloud provider and deploy
+		if sb.String() != "" {
+			fmt.Fprintf(&sb, "\n")
 			fmt.Fprintf(&sb, "To deploy these resources, run: kops update cluster %s --yes\n", clusterName)
 			fmt.Fprintf(&sb, "\n")
 		}
