@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"os"
 	"strings"
 	"text/template"
 )
@@ -95,6 +96,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	// TODO: Only for GCE?
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
 
+	dest["DnsControllerImage"] = tf.DnsControllerImage
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
@@ -137,6 +139,7 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 		argv = append(argv, "--dns=google-clouddns")
 	case fi.CloudProviderVSphere:
 		argv = append(argv, "--dns=coredns")
+		argv = append(argv, "--dns-server="+*tf.cluster.Spec.CloudConfig.VSphereCoreDNSServer)
 
 	default:
 		return nil, fmt.Errorf("unhandled cloudprovider %q", tf.cluster.Spec.CloudProvider)
@@ -159,4 +162,18 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	argv = append(argv, "-v=2")
 
 	return argv, nil
+}
+
+// TODO: this is a work-around before vSphere support is getting merged into upstream kops.
+// To use CoreDNS supported DNS Controller:
+// 1. DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
+// 2. export VSPHERE_DNSCONTROLLER_IMAGE=[your docker hub repo]
+// 3. make kops and create/apply cluster
+func (tf *TemplateFunctions) DnsControllerImage() (string, error) {
+	image := os.Getenv("VSPHERE_DNSCONTROLLER_IMAGE")
+	if fi.CloudProviderID(tf.cluster.Spec.CloudProvider) != fi.CloudProviderVSphere || image == "" {
+		return "kope/dns-controller", nil
+	} else {
+		return image, nil
+	}
 }
