@@ -10,7 +10,7 @@ Here is a [list of requirements and tasks](https://docs.google.com/document/d/10
 
 ## Setting up DNS
 Since vSphere doesn't have built-in DNS service, we use CoreDNS to support the DNS requirement in vSphere provider. This requires the users to setup a CoreDNS server before creating a kubernetes cluster. Please follow the following instructions to setup.
-Before the support of CoreDNS becomes stable, use env parameter "VSPHERE_DNS=coredns" to enable using CoreDNS. Or else AWS Route53 will be the default DNS service. To use Route53, follow instructions on: https://github.com/vmware/kops/blob/vsphere-develop/docs/aws.md
+**Before the support of CoreDNS becomes stable, use env parameter "VSPHERE_DNS=coredns"** to enable using CoreDNS. Or else AWS Route53 will be the default DNS service. To use Route53, follow instructions on: https://github.com/vmware/kops/blob/vsphere-develop/docs/aws.md
 
 For now we hardcoded DNS zone to skydns.local. So your cluster name should have suffix skydns.local, for example: "mycluster.skydns.local"
 
@@ -55,6 +55,17 @@ ns1.ns.dns.skydns.local. 160	IN	A	192.168.0.1
 
 ### Add DNS server information when create cluster
 Add ```--dns=private --vsphere-coredns-server=http://[DNS server's IP]:2379``` into the ```kops create cluster``` command line.
+
+### Use CoreDNS supported DNS Controller
+Information about DNS Controller can be found [here](https://github.com/kubernetes/kops/blob/master/dns-controller/README.md)
+Currently the DNS Controller is an add-on container and the image is from kope/dns-controller.
+Before the vSphere support is officially merged into upstream, we need to set up CoreDNS supported DNS controller manually.
+```bash
+DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
+export VSPHERE_DNSCONTROLLER_IMAGE=[your docker hub repo]
+make
+kops create cluster ...
+```
 
 ## Hacks
 
