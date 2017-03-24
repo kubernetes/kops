@@ -450,7 +450,7 @@ func (n *CloudInstanceGroup) DeleteAWSInstance(u *CloudInstanceGroupInstance, in
 	}
 
 	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-		InstanceId:                     aws.String(u.ASGInstance.InstanceId),
+		InstanceId:                     u.ASGInstance.InstanceId,
 		ShouldDecrementDesiredCapacity: aws.Bool(false),
 	}
 

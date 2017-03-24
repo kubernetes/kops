@@ -23,13 +23,12 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 
+	v1meta "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/fake"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/cloudmock/aws/mockautoscaling"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kubernetes/pkg/api"
-
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 )
 
 func setUpCloud(c *RollingUpdateCluster) {
@@ -91,7 +90,9 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		NodeInterval:    1 * time.Millisecond,
 		BastionInterval: 1 * time.Millisecond,
 		Force:           false,
+		K8sClient:       k8sClient,
 	}
+
 	cloud := c.Cloud.(awsup.AWSCloud)
 	setUpCloud(c)
 
@@ -101,7 +102,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[0],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -142,7 +143,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[1],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -183,7 +184,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[2],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -212,7 +213,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[3],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -237,7 +238,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		},
 	}
 
-	err := c.RollingUpdate(groups, k8sClient)
+	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
 	if err != nil {
 		t.Errorf("Error on rolling update: %v", err)
 	}
@@ -262,7 +263,9 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		NodeInterval:    1 * time.Millisecond,
 		BastionInterval: 1 * time.Millisecond,
 		Force:           false,
+		K8sClient:       k8sClient,
 	}
+
 	cloud := c.Cloud.(awsup.AWSCloud)
 	setUpCloud(c)
 
@@ -273,7 +276,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[0],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -300,7 +303,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[1],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -327,7 +330,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[2],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -348,7 +351,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[3],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -365,7 +368,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		},
 	}
 
-	err := c.RollingUpdate(groups, k8sClient)
+	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
 	if err != nil {
 		t.Errorf("Error on rolling update: %v", err)
 	}
@@ -419,6 +422,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		NodeInterval:    1 * time.Millisecond,
 		BastionInterval: 1 * time.Millisecond,
 		Force:           true,
+		K8sClient:       k8sClient,
 	}
 	cloud := c.Cloud.(awsup.AWSCloud)
 	setUpCloud(c)
@@ -430,7 +434,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[0],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -457,7 +461,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[1],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -484,7 +488,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[2],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -505,7 +509,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[3],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -522,7 +526,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		},
 	}
 
-	err := c.RollingUpdate(groups, k8sClient)
+	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
 	if err != nil {
 		t.Errorf("Error on rolling update: %v", err)
 	}
@@ -546,6 +550,7 @@ func TestRollingUpdateEmptyGroup(t *testing.T) {
 		MasterInterval:  1 * time.Millisecond,
 		NodeInterval:    1 * time.Millisecond,
 		BastionInterval: 1 * time.Millisecond,
+		K8sClient:       k8sClient,
 		Force:           false,
 	}
 	cloud := c.Cloud.(awsup.AWSCloud)
@@ -554,7 +559,7 @@ func TestRollingUpdateEmptyGroup(t *testing.T) {
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
 	groups := make(map[string]*CloudInstanceGroup)
 
-	err := c.RollingUpdate(groups, k8sClient)
+	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
 	if err != nil {
 		t.Errorf("Error on rolling update: %v", err)
 	}
@@ -608,6 +613,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		NodeInterval:    1 * time.Millisecond,
 		BastionInterval: 1 * time.Millisecond,
 		Force:           false,
+		K8sClient:       k8sClient,
 	}
 	cloud := c.Cloud.(awsup.AWSCloud)
 	setUpCloud(c)
@@ -619,7 +625,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[0],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -646,7 +652,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[1],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -673,7 +679,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[2],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -694,7 +700,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
 		asg:     asgGroups.AutoScalingGroups[3],
 		InstanceGroup: &kopsapi.InstanceGroup{
-			ObjectMeta: api.ObjectMeta{
+			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",
 			},
 			Spec: kopsapi.InstanceGroupSpec{
@@ -711,7 +717,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		},
 	}
 
-	err := c.RollingUpdate(groups, k8sClient)
+	err := c.RollingUpdate(groups, &kopsapi.InstanceGroupList{})
 	if err == nil {
 		t.Errorf("Error expected on rolling update: %v", err)
 	}
