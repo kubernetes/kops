@@ -24,8 +24,14 @@ $SCRIPT
     owner: root:root
     path: /root/script.sh
     permissions: "0644"
+  - content: |
+$DNS_SCRIPT
+    owner: root:root
+    path: /root/update_dns.sh
+    permissions: "0644"
 
 runcmd:
+  - bash /root/update_dns.sh 2>&1 > /var/log/update_dns.log
   - bash /root/script.sh 2>&1 > /var/log/script.log`
 
 // Template for meta-data file in the cloud-init ISO
