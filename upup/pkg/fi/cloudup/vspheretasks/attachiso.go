@@ -26,6 +26,8 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
+	"net"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -89,7 +91,12 @@ func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *At
 	dir, err := ioutil.TempDir("", *changes.VM.Name)
 	defer os.RemoveAll(dir)
 
-	isoFile := createISO(changes, startupStr, dir)
+	isoFile, err := createISO(changes, startupStr, dir, t.Cloud.CoreDNSServer)
+	if err != nil {
+		glog.Errorf("Failed to createISO for vspheretasks, err: %v", err)
+		return err
+	}
+
 	err = t.Cloud.UploadAndAttachISO(changes.VM.Name, isoFile)
 	if err != nil {
 		return err
@@ -98,7 +105,7 @@ func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *At
 	return nil
 }
 
-func createUserData(startupStr string, dir string) {
+func createUserData(startupStr string, dir string, dnsServer string) error {
 	// Update the startup script to add the extra spaces for
 	// indentation when copied to the user-data file.
 	strArray := strings.Split(startupStr, "\n")
@@ -108,18 +115,34 @@ func createUserData(startupStr string, dir string) {
 		}
 	}
 	startupStr = strings.Join(strArray, "\n")
-
 	data := strings.Replace(userDataTemplate, "$SCRIPT", startupStr, -1)
+
+	dnsURL, err := url.Parse(dnsServer)
+	if err != nil {
+		return err
+	}
+	dnsHost, _, err := net.SplitHostPort(dnsURL.Host)
+	if err != nil {
+		return err
+	}
+	var lines []string
+	lines = append(lines, "       echo \"nameserver "+dnsHost+"\" >> /etc/resolvconf/resolv.conf.d/head")
+	lines = append(lines, "       resolvconf -u")
+	dnsUpdateStr := strings.Join(lines, "\n")
+	data = strings.Replace(data, "$DNS_SCRIPT", dnsUpdateStr, -1)
+
 	userDataFile := filepath.Join(dir, "user-data")
 	glog.V(4).Infof("User data file content: %s", data)
 
 	if err := ioutil.WriteFile(userDataFile, []byte(data), 0644); err != nil {
-		glog.Fatalf("Unable to write user-data into file %s", userDataFile)
+		glog.Errorf("Unable to write user-data into file %s", userDataFile)
+		return err
 	}
-	return
+
+	return nil
 }
 
-func createMetaData(dir string, vmName string) {
+func createMetaData(dir string, vmName string) error {
 	data := strings.Replace(metaDataTemplate, "$INSTANCE_ID", uuid.NewUUID().String(), -1)
 	data = strings.Replace(data, "$LOCAL_HOST_NAME", vmName, -1)
 
@@ -127,14 +150,21 @@ func createMetaData(dir string, vmName string) {
 
 	metaDataFile := filepath.Join(dir, "meta-data")
 	if err := ioutil.WriteFile(metaDataFile, []byte(data), 0644); err != nil {
-		glog.Fatalf("Unable to write meta-data into file %s", metaDataFile)
+		glog.Errorf("Unable to write meta-data into file %s", metaDataFile)
+		return err
 	}
-	return
+	return nil
 }
 
-func createISO(changes *AttachISO, startupStr string, dir string) string {
-	createUserData(startupStr, dir)
-	createMetaData(dir, *changes.VM.Name)
+func createISO(changes *AttachISO, startupStr string, dir string, dnsServer string) (string, error) {
+	err := createUserData(startupStr, dir, dnsServer)
+	if err != nil {
+		return "", err
+	}
+	err = createMetaData(dir, *changes.VM.Name)
+	if err != nil {
+		return "", err
+	}
 
 	isoFile := filepath.Join(dir, *changes.VM.Name+".iso")
 	var commandName string
@@ -146,7 +176,7 @@ func createISO(changes *AttachISO, startupStr string, dir string) string {
 		commandName = "genisoimage"
 
 	default:
-		glog.Fatalf("Cannot generate ISO file %s. Unsupported operation system (%s)!!!", isoFile, os)
+		return "", fmt.Errorf("Cannot generate ISO file %s. Unsupported operation system (%s)!!!", isoFile, os)
 	}
 	cmd := exec.Command(commandName, "-o", isoFile, "-volid", "cidata", "-joliet", "-rock", dir)
 	var out bytes.Buffer
@@ -154,11 +184,12 @@ func createISO(changes *AttachISO, startupStr string, dir string) string {
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
-		glog.Fatalf("Error %s occurred while executing command %+v", err, cmd)
+		glog.Errorf("Error %s occurred while executing command %+v", err, cmd)
+		return "", err
 	}
 	glog.V(4).Infof("%s std output : %s\n", commandName, out.String())
 	glog.V(4).Infof("%s std error : %s\n", commandName, stderr.String())
-	return isoFile
+	return isoFile, nil
 }
