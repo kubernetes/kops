@@ -29,7 +29,6 @@ import (
 )
 
 func main() {
-	flag.Parse()
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	logs.InitLogs()
@@ -41,6 +40,10 @@ func main() {
 
 	cmd := server.NewCommandStartKopsServer(os.Stdout, os.Stderr)
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
+
+	// Avoid glog warnings
+	flag.CommandLine.Parse([]string{})
+
 	if err := cmd.Execute(); err != nil {
 		cmdutil.CheckErr(err)
 	}

@@ -20,14 +20,33 @@ import (
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/apiserver/pkg/server"
-	"k8s.io/kubernetes/pkg/version"
 
 	"k8s.io/kops/pkg/apis/kops"
 	_ "k8s.io/kops/pkg/apis/kops/install"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
-	"k8s.io/kops/pkg/apiserver/registry/cluster"
-	"k8s.io/kubernetes/pkg/api"
+	registrycluster "k8s.io/kops/pkg/apiserver/registry/cluster"
+	//registryinstancegroup "k8s.io/kops/pkg/apiserver/registry/instancegroup"
+	"k8s.io/kubernetes/pkg/version"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 )
+
+func init() {
+	// we need to add the options to empty v1
+	// TODO fix the server code to avoid this
+	metav1.AddToGroupVersion(kops.Scheme, schema.GroupVersion{Version: "v1"})
+
+	// TODO: keep the generic API server from wanting this
+	unversioned := schema.GroupVersion{Group: "", Version: "v1"}
+	kops.Scheme.AddUnversionedTypes(unversioned,
+		&metav1.Status{},
+		&metav1.APIVersions{},
+		&metav1.APIGroupList{},
+		&metav1.APIGroup{},
+		&metav1.APIResourceList{},
+	)
+}
 
 type Config struct {
 	GenericConfig *server.Config
@@ -71,11 +90,12 @@ func (c completedConfig) New() (*APIDiscoveryServer, error) {
 		GenericAPIServer: genericServer,
 	}
 
-	apiGroupInfo := server.NewDefaultAPIGroupInfo(kops.GroupName, api.Registry, api.Scheme, api.ParameterCodec, api.Codecs)
+	apiGroupInfo := server.NewDefaultAPIGroupInfo(kops.GroupName, kops.Registry, kops.Scheme, kops.ParameterCodec, kops.Codecs)
 
 	apiGroupInfo.GroupMeta.GroupVersion = v1alpha2.SchemeGroupVersion
 	v1alpha2storage := map[string]rest.Storage{}
-	v1alpha2storage["clusters"] = cluster.NewREST(c.RESTOptionsGetter)
+	v1alpha2storage["clusters"] = registrycluster.NewREST(c.RESTOptionsGetter)
+	//v1alpha2storage["instancegroups"] = registryinstancegroup.NewREST(c.RESTOptionsGetter)
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha2"] = v1alpha2storage
 
 	if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
