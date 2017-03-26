@@ -38,6 +38,9 @@ var Scheme = runtime.NewScheme()
 
 var Codecs = serializer.NewCodecFactory(Scheme)
 
+// ParameterCodec handles versioning of objects that are converted to query parameters.
+var ParameterCodec = runtime.NewParameterCodec(Scheme)
+
 // GroupName is the group name use in this package
 const GroupName = "kops"
 
