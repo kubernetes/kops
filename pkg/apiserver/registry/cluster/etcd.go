@@ -20,7 +20,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/registry/generic"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
-	"k8s.io/kubernetes/pkg/api"
 
 	"k8s.io/kops/pkg/apis/kops"
 )
@@ -33,7 +32,7 @@ type REST struct {
 // NewREST returns a RESTStorage object that will work against kops Clusters.
 func NewREST(optsGetter generic.RESTOptionsGetter) *REST {
 	store := &genericregistry.Store{
-		Copier: api.Scheme,
+		Copier: kops.Scheme,
 		NewFunc: func() runtime.Object {
 			return &kops.Cluster{}
 		},
@@ -41,7 +40,7 @@ func NewREST(optsGetter generic.RESTOptionsGetter) *REST {
 			return &kops.ClusterList{}
 		},
 		ObjectNameFunc: func(obj runtime.Object) (string, error) {
-			return obj.(*kops.Cluster).ObjectMeta.Name, nil
+			return obj.(*kops.Cluster).Name, nil
 		},
 		PredicateFunc:     MatchCluster,
 		QualifiedResource: kops.Resource("clusters"),

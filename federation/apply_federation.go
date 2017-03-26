@@ -21,8 +21,14 @@ import (
 	crypto_rand "crypto/rand"
 	"crypto/rsa"
 	"fmt"
+	"strings"
+	"text/template"
+
 	"github.com/golang/glog"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/federation/model"
 	"k8s.io/kops/federation/targets/kubernetestarget"
 	"k8s.io/kops/federation/tasks"
@@ -35,8 +41,6 @@ import (
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"strings"
-	"text/template"
 )
 
 type ApplyFederationOperation struct {
@@ -143,10 +147,6 @@ func (o *ApplyFederationOperation) Run() error {
 	if err != nil {
 		return err
 	}
-	k8sClient, err := kubernetes.NewForConfig(federationRestConfig)
-	if err != nil {
-		return err
-	}
 
 	for _, member := range o.Federation.Spec.Members {
 		glog.V(2).Infof("configuring member cluster %q", member)
@@ -155,7 +155,7 @@ func (o *ApplyFederationOperation) Run() error {
 			return fmt.Errorf("error reading cluster %q: %v", member, err)
 		}
 
-		clusterName := strings.Replace(cluster.ObjectMeta.Name, ".", "-", -1)
+		clusterName := strings.Replace(cluster.Name, ".", "-", -1)
 
 		a := &FederationCluster{
 			FederationNamespace: o.namespace,
@@ -163,7 +163,7 @@ func (o *ApplyFederationOperation) Run() error {
 			ControllerKubernetesClients: controllerKubernetesClients,
 			FederationClient:            federationControllerClient,
 
-			ClusterSecretName: "secret-" + cluster.ObjectMeta.Name,
+			ClusterSecretName: "secret-" + cluster.Name,
 			ClusterName:       clusterName,
 			ApiserverHostname: cluster.Spec.MasterPublicName,
 		}
@@ -175,7 +175,7 @@ func (o *ApplyFederationOperation) Run() error {
 
 	// Create default namespace
 	glog.V(2).Infof("Ensuring default namespace exists")
-	if _, err := o.ensureFederationNamespace(k8sClient, "default"); err != nil {
+	if _, err := o.ensureFederationNamespace(federationControllerClient, "default"); err != nil {
 		return err
 	}
 
@@ -209,7 +209,7 @@ func (o *ApplyFederationOperation) buildApiserverKeypair() *fitasks.Keypair {
 	keypairName := "secret-" + o.apiserverHostName
 	keypair := &fitasks.Keypair{
 		Name:    fi.String(keypairName),
-		Subject: "cn=" + o.Federation.ObjectMeta.Name,
+		Subject: "cn=" + o.Federation.Name,
 		Type:    "server",
 	}
 
