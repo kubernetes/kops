@@ -259,3 +259,9 @@
 [submodule "_vendor/github.com/pelletier/go-buffruneio"]
 	path = _vendor/github.com/pelletier/go-buffruneio
 	url = https://github.com/pelletier/go-buffruneio
+[submodule "_vendor/github.com/coreos/etcd"]
+	path = _vendor/github.com/coreos/etcd
+	url = https://github.com/coreos/etcd
+[submodule "_vendor/google.golang.org/grpc"]
+	path = _vendor/google.golang.org/grpc
+	url = https://github.com/grpc/grpc-go.git
