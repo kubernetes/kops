@@ -21,8 +21,8 @@ import (
 )
 
 type Cluster struct {
-	metav1.TypeMeta `json:",inline"`
-	ObjectMeta      metav1.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta   `json:",inline"`
+	metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	// Spec defines the behavior of a Cluster.
 	Spec ClusterSpec `json:"spec,omitempty"`
