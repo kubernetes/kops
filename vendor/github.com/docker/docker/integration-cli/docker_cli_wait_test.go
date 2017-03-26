@@ -35,12 +35,10 @@ func (s *DockerSuite) TestWaitBlockedExitZero(c *check.C) {
 
 	chWait := make(chan string)
 	go func() {
-		chWait <- ""
 		out, _, _ := runCommandWithOutput(exec.Command(dockerBinary, "wait", containerID))
 		chWait <- out
 	}()
 
-	<-chWait // make sure the goroutine is started
 	time.Sleep(100 * time.Millisecond)
 	dockerCmd(c, "stop", containerID)
 
@@ -86,7 +84,7 @@ func (s *DockerSuite) TestWaitBlockedExitRandom(c *check.C) {
 
 	select {
 	case err := <-chWait:
-		c.Assert(err, checker.IsNil, check.Commentf(waitCmdOut.String()))
+		c.Assert(err, checker.IsNil)
 		status, err := waitCmdOut.ReadString('\n')
 		c.Assert(err, checker.IsNil)
 		c.Assert(strings.TrimSpace(status), checker.Equals, "99", check.Commentf("expected exit 99, got %s", status))

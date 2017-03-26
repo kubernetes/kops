@@ -27,13 +27,13 @@ import (
 	"github.com/emicklei/go-restful/swagger"
 	"github.com/golang/glog"
 
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/version"
+	"k8s.io/client-go/discovery"
+	restclient "k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/api"
-	metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/client/restclient"
-	"k8s.io/kubernetes/pkg/client/typed/discovery"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/runtime/schema"
-	"k8s.io/kubernetes/pkg/version"
 )
 
 // CachedDiscoveryClient implements the functions that discovery server-supported API groups,
@@ -75,6 +75,11 @@ func (d *CachedDiscoveryClient) ServerResourcesForGroupVersion(groupVersion stri
 
 	liveResources, err := d.delegate.ServerResourcesForGroupVersion(groupVersion)
 	if err != nil {
+		glog.V(3).Infof("skipped caching discovery info due to %v", err)
+		return liveResources, err
+	}
+	if liveResources == nil || len(liveResources.APIResources) == 0 {
+		glog.V(3).Infof("skipped caching discovery info, no resources found")
 		return liveResources, err
 	}
 
@@ -117,6 +122,11 @@ func (d *CachedDiscoveryClient) ServerGroups() (*metav1.APIGroupList, error) {
 
 	liveGroups, err := d.delegate.ServerGroups()
 	if err != nil {
+		glog.V(3).Infof("skipped caching discovery info due to %v", err)
+		return liveGroups, err
+	}
+	if liveGroups == nil || len(liveGroups.Groups) == 0 {
+		glog.V(3).Infof("skipped caching discovery info, no groups found")
 		return liveGroups, err
 	}
 
@@ -141,6 +151,7 @@ func (d *CachedDiscoveryClient) getCachedFile(filename string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	fileInfo, err := file.Stat()
 	if err != nil {

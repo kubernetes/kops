@@ -32,17 +32,10 @@ func NewRealClock() Clock {
 }
 
 // NewFakeClock returns a FakeClock implementation which can be
-// manually advanced through time for testing. The initial time of the
-// FakeClock will be an arbitrary non-zero time.
+// manually advanced through time for testing.
 func NewFakeClock() FakeClock {
-	// use a fixture that does not fulfill Time.IsZero()
-	return NewFakeClockAt(time.Date(1984, time.April, 4, 0, 0, 0, 0, time.UTC))
-}
-
-// NewFakeClockAt returns a FakeClock initialised at the given time.Time.
-func NewFakeClockAt(t time.Time) FakeClock {
 	return &fakeClock{
-		time: t,
+		l: sync.RWMutex{},
 	}
 }
 
@@ -124,10 +117,9 @@ func (fc *fakeClock) Sleep(d time.Duration) {
 
 // Time returns the current time of the fakeClock
 func (fc *fakeClock) Now() time.Time {
-	fc.l.RLock()
-	t := fc.time
-	fc.l.RUnlock()
-	return t
+	fc.l.Lock()
+	defer fc.l.Unlock()
+	return fc.time
 }
 
 // Advance advances fakeClock to a new point in time, ensuring channels from any

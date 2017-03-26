@@ -1,10 +1,13 @@
 # Route53 Mapping Service
 
-This is a Kubernetes service that polls services (in all namespaces) that are
+This is a Kubernetes controller that polls services (in all namespaces) that are
 configured with the label `dns=route53` and adds the appropriate alias to the
 domain specified by the annotation `domainName=sub.mydomain.io`. Multiple
 domains and top level domains are also supported:
 `domainName=.mydomain.io,sub1.mydomain.io,sub2.mydomain.io`.
+
+The project is created by wearemolecule, and maintained at
+[wearemolecule/route53-kubernetes](https://github.com/wearemolecule/route53-kubernetes).
 
 ## Usage
 
@@ -13,8 +16,13 @@ domains and top level domains are also supported:
 ```
 # Version 1.2.0
 # https://github.com/wearemolecule/route53-kubernetes/tree/v1.2.0
-$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/monitoring-standalone/v1.2.0.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/route53-mapper/v1.2.0.yml
 ```
+
+**Important:**
+This addon requires [additional IAM permissions](../../docs/iam_roles.md) on the master instances.
+The required permissions are described [here](https://github.com/wearemolecule/route53-kubernetes).
+These can be configured using `kops edit cluster` or `kops create -f [...]`.
 
 ### Service Configuration
 
@@ -54,11 +62,5 @@ balancer` annotations). This assumes that a hosted zone exists in Route53 for
 `mydomain.tld`. Any record that previously existed for that dns record will be
 updated.
 
-### Caveats
-
-[Molecule Software][1] **DON'T currently sign their docker images**. So, please
-use their images at your own risk.
-
-[1]: https://github.com/wearemolecule
 
 

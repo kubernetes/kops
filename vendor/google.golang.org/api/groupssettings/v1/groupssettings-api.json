@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/WmR-pRQA43Avmy6ShfhWJLW2ne8\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/26Y5Yyn2D8WwxhPa2zJyQ3Axz8I\"",
  "discoveryVersion": "v1",
  "id": "groupssettings:v1",
  "name": "groupssettings",
@@ -11,8 +11,8 @@
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
-  "x16": "http://www.google.com/images/icons/product/search-16.gif",
-  "x32": "http://www.google.com/images/icons/product/search-32.gif"
+  "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
+  "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
  "documentationLink": "https://developers.google.com/google-apps/groups-settings/get_started",
  "protocol": "rest",

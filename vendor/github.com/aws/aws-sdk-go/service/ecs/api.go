@@ -49,9 +49,8 @@ func (c *ECS) CreateClusterRequest(input *CreateClusterInput) (req *request.Requ
 		input = &CreateClusterInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateClusterOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -126,9 +125,8 @@ func (c *ECS) CreateServiceRequest(input *CreateServiceInput) (req *request.Requ
 		input = &CreateServiceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &CreateServiceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -173,22 +171,26 @@ func (c *ECS) CreateServiceRequest(input *CreateServiceInput) (req *request.Requ
 // four older tasks (provided that the cluster resources required to do this
 // are available). The default value for maximumPercent is 200%.
 //
-// When the service scheduler launches new tasks, it attempts to balance them
-// across the Availability Zones in your cluster with the following logic:
+// When the service scheduler launches new tasks, it determines task placement
+// in your cluster with the following logic:
 //
 //    * Determine which of the container instances in your cluster can support
 //    your service's task definition (for example, they have the required CPU,
 //    memory, ports, and container instance attributes).
 //
-//    * Sort the valid container instances by the fewest number of running tasks
+//    * By default, the service scheduler attempts to balance tasks across Availability
+//    Zones in this manner (although you can choose a different placement strategy
+//    with the placementStrategy parameter):
+//
+// Sort the valid container instances by the fewest number of running tasks
 //    for this service in the same Availability Zone as the instance. For example,
 //    if zone A has one running service task and zones B and C each have zero,
 //    valid container instances in either zone B or C are considered optimal
 //    for placement.
 //
-//    * Place the new service task on a valid container instance in an optimal
-//    Availability Zone (based on the previous steps), favoring container instances
-//    with the fewest number of running tasks for this service.
+// Place the new service task on a valid container instance in an optimal Availability
+//    Zone (based on the previous steps), favoring container instances with
+//    the fewest number of running tasks for this service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -217,6 +219,81 @@ func (c *ECS) CreateServiceRequest(input *CreateServiceInput) (req *request.Requ
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/CreateService
 func (c *ECS) CreateService(input *CreateServiceInput) (*CreateServiceOutput, error) {
 	req, out := c.CreateServiceRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opDeleteAttributes = "DeleteAttributes"
+
+// DeleteAttributesRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteAttributes operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See DeleteAttributes for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the DeleteAttributes method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the DeleteAttributesRequest method.
+//    req, resp := client.DeleteAttributesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/DeleteAttributes
+func (c *ECS) DeleteAttributesRequest(input *DeleteAttributesInput) (req *request.Request, output *DeleteAttributesOutput) {
+	op := &request.Operation{
+		Name:       opDeleteAttributes,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteAttributesInput{}
+	}
+
+	output = &DeleteAttributesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteAttributes API operation for Amazon EC2 Container Service.
+//
+// Deletes one or more attributes from an Amazon ECS resource.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon EC2 Container Service's
+// API operation DeleteAttributes for usage and error information.
+//
+// Returned Error Codes:
+//   * ClusterNotFoundException
+//   The specified cluster could not be found. You can view your available clusters
+//   with ListClusters. Amazon ECS clusters are region-specific.
+//
+//   * TargetNotFoundException
+//   The specified target could not be found. You can view your available container
+//   instances with ListContainerInstances. Amazon ECS container instances are
+//   cluster-specific and region-specific.
+//
+//   * InvalidParameterException
+//   The specified parameter is invalid. Review the available parameters for the
+//   API request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/DeleteAttributes
+func (c *ECS) DeleteAttributes(input *DeleteAttributesInput) (*DeleteAttributesOutput, error) {
+	req, out := c.DeleteAttributesRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -259,9 +336,8 @@ func (c *ECS) DeleteClusterRequest(input *DeleteClusterInput) (req *request.Requ
 		input = &DeleteClusterInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteClusterOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -350,9 +426,8 @@ func (c *ECS) DeleteServiceRequest(input *DeleteServiceInput) (req *request.Requ
 		input = &DeleteServiceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeleteServiceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -446,9 +521,8 @@ func (c *ECS) DeregisterContainerInstanceRequest(input *DeregisterContainerInsta
 		input = &DeregisterContainerInstanceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeregisterContainerInstanceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -539,9 +613,8 @@ func (c *ECS) DeregisterTaskDefinitionRequest(input *DeregisterTaskDefinitionInp
 		input = &DeregisterTaskDefinitionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DeregisterTaskDefinitionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -623,9 +696,8 @@ func (c *ECS) DescribeClustersRequest(input *DescribeClustersInput) (req *reques
 		input = &DescribeClustersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeClustersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -698,9 +770,8 @@ func (c *ECS) DescribeContainerInstancesRequest(input *DescribeContainerInstance
 		input = &DescribeContainerInstancesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeContainerInstancesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -778,9 +849,8 @@ func (c *ECS) DescribeServicesRequest(input *DescribeServicesInput) (req *reques
 		input = &DescribeServicesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeServicesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -857,9 +927,8 @@ func (c *ECS) DescribeTaskDefinitionRequest(input *DescribeTaskDefinitionInput) 
 		input = &DescribeTaskDefinitionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTaskDefinitionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -937,9 +1006,8 @@ func (c *ECS) DescribeTasksRequest(input *DescribeTasksInput) (req *request.Requ
 		input = &DescribeTasksInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DescribeTasksOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1016,9 +1084,8 @@ func (c *ECS) DiscoverPollEndpointRequest(input *DiscoverPollEndpointInput) (req
 		input = &DiscoverPollEndpointInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &DiscoverPollEndpointOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1049,6 +1116,82 @@ func (c *ECS) DiscoverPollEndpointRequest(input *DiscoverPollEndpointInput) (req
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/DiscoverPollEndpoint
 func (c *ECS) DiscoverPollEndpoint(input *DiscoverPollEndpointInput) (*DiscoverPollEndpointOutput, error) {
 	req, out := c.DiscoverPollEndpointRequest(input)
+	err := req.Send()
+	return out, err
+}
+
+const opListAttributes = "ListAttributes"
+
+// ListAttributesRequest generates a "aws/request.Request" representing the
+// client's request for the ListAttributes operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See ListAttributes for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the ListAttributes method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the ListAttributesRequest method.
+//    req, resp := client.ListAttributesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/ListAttributes
+func (c *ECS) ListAttributesRequest(input *ListAttributesInput) (req *request.Request, output *ListAttributesOutput) {
+	op := &request.Operation{
+		Name:       opListAttributes,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &ListAttributesInput{}
+	}
+
+	output = &ListAttributesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// ListAttributes API operation for Amazon EC2 Container Service.
+//
+// Lists the attributes for Amazon ECS resources within a specified target type
+// and cluster. When you specify a target type and cluster, LisAttributes returns
+// a list of attribute objects, one for each attribute on each resource. You
+// can filter the list of results to a single attribute name to only return
+// results that have that name. You can also filter the results by attribute
+// name and value, for example, to see which container instances in a cluster
+// are running a Linux AMI (ecs.os-type=linux).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon EC2 Container Service's
+// API operation ListAttributes for usage and error information.
+//
+// Returned Error Codes:
+//   * ClusterNotFoundException
+//   The specified cluster could not be found. You can view your available clusters
+//   with ListClusters. Amazon ECS clusters are region-specific.
+//
+//   * InvalidParameterException
+//   The specified parameter is invalid. Review the available parameters for the
+//   API request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/ListAttributes
+func (c *ECS) ListAttributes(input *ListAttributesInput) (*ListAttributesOutput, error) {
+	req, out := c.ListAttributesRequest(input)
 	err := req.Send()
 	return out, err
 }
@@ -1097,9 +1240,8 @@ func (c *ECS) ListClustersRequest(input *ListClustersInput) (req *request.Reques
 		input = &ListClustersInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListClustersOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1203,15 +1345,18 @@ func (c *ECS) ListContainerInstancesRequest(input *ListContainerInstancesInput) 
 		input = &ListContainerInstancesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListContainerInstancesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
 // ListContainerInstances API operation for Amazon EC2 Container Service.
 //
-// Returns a list of container instances in a specified cluster.
+// Returns a list of container instances in a specified cluster. You can filter
+// the results of a ListContainerInstances operation with cluster query language
+// statements inside the filter parameter. For more information, see Cluster
+// Query Language (http://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-query-language.html)
+// in the Amazon EC2 Container Service Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -1313,9 +1458,8 @@ func (c *ECS) ListServicesRequest(input *ListServicesInput) (req *request.Reques
 		input = &ListServicesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListServicesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1423,9 +1567,8 @@ func (c *ECS) ListTaskDefinitionFamiliesRequest(input *ListTaskDefinitionFamilie
 		input = &ListTaskDefinitionFamiliesInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTaskDefinitionFamiliesOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1535,9 +1678,8 @@ func (c *ECS) ListTaskDefinitionsRequest(input *ListTaskDefinitionsInput) (req *
 		input = &ListTaskDefinitionsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTaskDefinitionsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1643,9 +1785,8 @@ func (c *ECS) ListTasksRequest(input *ListTasksInput) (req *request.Request, out
 		input = &ListTasksInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &ListTasksOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1718,6 +1859,88 @@ func (c *ECS) ListTasksPages(input *ListTasksInput, fn func(p *ListTasksOutput, 
 	})
 }
 
+const opPutAttributes = "PutAttributes"
+
+// PutAttributesRequest generates a "aws/request.Request" representing the
+// client's request for the PutAttributes operation. The "output" return
+// value can be used to capture response data after the request's "Send" method
+// is called.
+//
+// See PutAttributes for usage and error information.
+//
+// Creating a request object using this method should be used when you want to inject
+// custom logic into the request's lifecycle using a custom handler, or if you want to
+// access properties on the request object before or after sending the request. If
+// you just want the service response, call the PutAttributes method directly
+// instead.
+//
+// Note: You must call the "Send" method on the returned request object in order
+// to execute the request.
+//
+//    // Example sending a request using the PutAttributesRequest method.
+//    req, resp := client.PutAttributesRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/PutAttributes
+func (c *ECS) PutAttributesRequest(input *PutAttributesInput) (req *request.Request, output *PutAttributesOutput) {
+	op := &request.Operation{
+		Name:       opPutAttributes,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &PutAttributesInput{}
+	}
+
+	output = &PutAttributesOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// PutAttributes API operation for Amazon EC2 Container Service.
+//
+// Create or update an attribute on an Amazon ECS resource. If the attribute
+// does not already exist on the given target, it is created; if it does exist,
+// it is replaced with the new value.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for Amazon EC2 Container Service's
+// API operation PutAttributes for usage and error information.
+//
+// Returned Error Codes:
+//   * ClusterNotFoundException
+//   The specified cluster could not be found. You can view your available clusters
+//   with ListClusters. Amazon ECS clusters are region-specific.
+//
+//   * TargetNotFoundException
+//   The specified target could not be found. You can view your available container
+//   instances with ListContainerInstances. Amazon ECS container instances are
+//   cluster-specific and region-specific.
+//
+//   * AttributeLimitExceededException
+//   You can apply up to 10 custom attributes per resource. You can view the attributes
+//   of a resource with ListAttributes. You can remove existing attributes on
+//   a resource with DeleteAttributes.
+//
+//   * InvalidParameterException
+//   The specified parameter is invalid. Review the available parameters for the
+//   API request.
+//
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/PutAttributes
+func (c *ECS) PutAttributes(input *PutAttributesInput) (*PutAttributesOutput, error) {
+	req, out := c.PutAttributesRequest(input)
+	err := req.Send()
+	return out, err
+}
+
 const opRegisterContainerInstance = "RegisterContainerInstance"
 
 // RegisterContainerInstanceRequest generates a "aws/request.Request" representing the
@@ -1756,9 +1979,8 @@ func (c *ECS) RegisterContainerInstanceRequest(input *RegisterContainerInstanceI
 		input = &RegisterContainerInstanceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterContainerInstanceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1831,9 +2053,8 @@ func (c *ECS) RegisterTaskDefinitionRequest(input *RegisterTaskDefinitionInput) 
 		input = &RegisterTaskDefinitionInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RegisterTaskDefinitionOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -1922,19 +2143,22 @@ func (c *ECS) RunTaskRequest(input *RunTaskInput) (req *request.Request, output 
 		input = &RunTaskInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &RunTaskOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
 // RunTask API operation for Amazon EC2 Container Service.
 //
-// Start a task using random placement and the default Amazon ECS scheduler.
-// To use your own scheduler or place a task on a specific container instance,
-// use StartTask instead.
+// Starts a new task using the specified task definition.
 //
-// The count parameter is limited to 10 tasks per call.
+// You can allow Amazon ECS to place tasks for you, or you can customize how
+// Amazon ECS places tasks using placement constraints and placement strategies.
+// For more information, see Scheduling Tasks (http://docs.aws.amazon.com/AmazonECS/latest/developerguide/scheduling_tasks.html)
+// in the Amazon EC2 Container Service Developer Guide.
+//
+// Alternatively, you can use StartTask to use your own scheduler or place tasks
+// manually on specific container instances.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2005,19 +2229,19 @@ func (c *ECS) StartTaskRequest(input *StartTaskInput) (req *request.Request, out
 		input = &StartTaskInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StartTaskOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
 // StartTask API operation for Amazon EC2 Container Service.
 //
 // Starts a new task from the specified task definition on the specified container
-// instance or instances. To use the default Amazon ECS scheduler to place your
-// task, use RunTask instead.
+// instance or instances.
 //
-// The list of container instances to start tasks on is limited to 10.
+// Alternatively, you can use RunTask to place tasks for you. For more information,
+// see Scheduling Tasks (http://docs.aws.amazon.com/AmazonECS/latest/developerguide/scheduling_tasks.html)
+// in the Amazon EC2 Container Service Developer Guide.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2088,9 +2312,8 @@ func (c *ECS) StopTaskRequest(input *StopTaskInput) (req *request.Request, outpu
 		input = &StopTaskInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &StopTaskOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2173,9 +2396,8 @@ func (c *ECS) SubmitContainerStateChangeRequest(input *SubmitContainerStateChang
 		input = &SubmitContainerStateChangeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SubmitContainerStateChangeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2247,9 +2469,8 @@ func (c *ECS) SubmitTaskStateChangeRequest(input *SubmitTaskStateChangeInput) (r
 		input = &SubmitTaskStateChangeInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SubmitTaskStateChangeOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2321,9 +2542,8 @@ func (c *ECS) UpdateContainerAgentRequest(input *UpdateContainerAgentInput) (req
 		input = &UpdateContainerAgentInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateContainerAgentOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2428,9 +2648,8 @@ func (c *ECS) UpdateServiceRequest(input *UpdateServiceInput) (req *request.Requ
 		input = &UpdateServiceInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UpdateServiceOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -2472,22 +2691,38 @@ func (c *ECS) UpdateServiceRequest(input *UpdateServiceInput) (req *request.Requ
 // forcibly stopped. If the container handles the SIGTERM gracefully and exits
 // within 30 seconds from receiving it, no SIGKILL is sent.
 //
-// When the service scheduler launches new tasks, it attempts to balance them
-// across the Availability Zones in your cluster with the following logic:
+// When the service scheduler launches new tasks, it determines task placement
+// in your cluster with the following logic:
 //
 //    * Determine which of the container instances in your cluster can support
 //    your service's task definition (for example, they have the required CPU,
 //    memory, ports, and container instance attributes).
 //
-//    * Sort the valid container instances by the fewest number of running tasks
+//    * By default, the service scheduler attempts to balance tasks across Availability
+//    Zones in this manner (although you can choose a different placement strategy
+//    with the placementStrategy parameter):
+//
+// Sort the valid container instances by the fewest number of running tasks
 //    for this service in the same Availability Zone as the instance. For example,
 //    if zone A has one running service task and zones B and C each have zero,
 //    valid container instances in either zone B or C are considered optimal
 //    for placement.
 //
-//    * Place the new service task on a valid container instance in an optimal
-//    Availability Zone (based on the previous steps), favoring container instances
-//    with the fewest number of running tasks for this service.
+// Place the new service task on a valid container instance in an optimal Availability
+//    Zone (based on the previous steps), favoring container instances with
+//    the fewest number of running tasks for this service.
+//
+// When the service scheduler stops running tasks, it attempts to maintain balance
+// across the Availability Zones in your cluster with the following logic:
+//
+//    * Sort the container instances by the largest number of running tasks
+//    for this service in the same Availability Zone as the instance. For example,
+//    if zone A has one running service task and zones B and C each have two,
+//    container instances in either zone B or C are considered optimal for termination.
+//
+//    * Stop the task on a container instance in an optimal Availability Zone
+//    (based on the previous steps), favoring container instances with the largest
+//    number of running tasks for this service.
 //
 // Returns awserr.Error for service API and SDK errors. Use runtime type assertions
 // with awserr.Error's Code and Message methods to get detailed information about
@@ -2529,18 +2764,31 @@ func (c *ECS) UpdateService(input *UpdateServiceInput) (*UpdateServiceOutput, er
 	return out, err
 }
 
-// The attributes applicable to a container instance when it is registered.
+// Attributes are name-value pairs associated with various Amazon ECS objects.
+// Attributes allow you to extend the Amazon ECS data model by adding custom
+// metadata to your resources.
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/Attribute
 type Attribute struct {
 	_ struct{} `type:"structure"`
 
-	// The name of the container instance attribute.
+	// The name of the attribute. Up to 128 letters (uppercase and lowercase), numbers,
+	// hyphens, underscores, and periods are allowed.
 	//
 	// Name is a required field
 	Name *string `locationName:"name" type:"string" required:"true"`
 
-	// The value of the container instance attribute (at this time, the value here
-	// is Null, but this could change in future revisions for expandability).
+	// The ID of the target. You can specify the short form ID for a resource or
+	// the full Amazon Resource Name (ARN).
+	TargetId *string `locationName:"targetId" type:"string"`
+
+	// The type of the target with which to attach the attribute. This parameter
+	// is required if you use the short form ID for a resource instead of the full
+	// Amazon Resource Name (ARN).
+	TargetType *string `locationName:"targetType" type:"string" enum:"TargetType"`
+
+	// The value of the attribute. Up to 128 letters (uppercase and lowercase),
+	// numbers, hyphens, underscores, periods, at signs (@), forward slashes, colons,
+	// and spaces are allowed.
 	Value *string `locationName:"value" type:"string"`
 }
 
@@ -2570,6 +2818,18 @@ func (s *Attribute) Validate() error {
 // SetName sets the Name field's value.
 func (s *Attribute) SetName(v string) *Attribute {
 	s.Name = &v
+	return s
+}
+
+// SetTargetId sets the TargetId field's value.
+func (s *Attribute) SetTargetId(v string) *Attribute {
+	s.TargetId = &v
+	return s
+}
+
+// SetTargetType sets the TargetType field's value.
+func (s *Attribute) SetTargetType(v string) *Attribute {
+	s.TargetType = &v
 	return s
 }
 
@@ -2688,7 +2948,7 @@ type Container struct {
 	NetworkBindings []*NetworkBinding `locationName:"networkBindings" type:"list"`
 
 	// A short (255 max characters) human-readable string to provide additional
-	// detail about a running or stopped container.
+	// details about a running or stopped container.
 	Reason *string `locationName:"reason" type:"string"`
 
 	// The Amazon Resource Name (ARN) of the task.
@@ -2900,6 +3160,13 @@ type ContainerDefinition struct {
 	// section of the Docker Remote API (https://docs.docker.com/engine/reference/api/docker_remote_api_v1.23/)
 	// and the IMAGE parameter of docker run (https://docs.docker.com/engine/reference/run/).
 	//
+	// Amazon ECS task definitions currently only support tags as image identifiers
+	// within a specified repository (and not sha256 digests).
+	//
+	//    * Images in Amazon ECR repositories use the full registry and repository
+	//    URI (for example, 012345678910.dkr.ecr.<region-name>.amazonaws.com/<repository-name>).
+	//
+	//
 	//    * Images in official repositories on Docker Hub use a single name (for
 	//    example, ubuntu or mongo).
 	//
@@ -2941,9 +3208,8 @@ type ContainerDefinition struct {
 	// in the Docker documentation.
 	//
 	// Amazon ECS currently supports a subset of the logging drivers available to
-	// the Docker daemon (shown in the LogConfiguration data type). Currently unsupported
-	// log drivers may be available in future releases of the Amazon ECS container
-	// agent.
+	// the Docker daemon (shown in the LogConfiguration data type). Additional log
+	// drivers may be available in future releases of the Amazon ECS container agent.
 	//
 	// This parameter requires version 1.18 of the Docker Remote API or greater
 	// on your container instance. To check the Docker Remote API version on your
@@ -3290,8 +3556,8 @@ type ContainerInstance struct {
 	// this value is NULL.
 	AgentUpdateStatus *string `locationName:"agentUpdateStatus" type:"string" enum:"AgentUpdateStatus"`
 
-	// The attributes set for the container instance by the Amazon ECS container
-	// agent at instance registration.
+	// The attributes set for the container instance, either by the Amazon ECS container
+	// agent at instance registration or manually with the PutAttributes operation.
 	Attributes []*Attribute `locationName:"attributes" type:"list"`
 
 	// The Amazon Resource Name (ARN) of the container instance. The ARN contains
@@ -3543,9 +3809,9 @@ type CreateServiceInput struct {
 	DesiredCount *int64 `locationName:"desiredCount" type:"integer" required:"true"`
 
 	// A load balancer object representing the load balancer to use with your service.
-	// Currently, you are limited to one load balancer per service. After you create
-	// a service, the load balancer name, container name, and container port specified
-	// in the service definition are immutable.
+	// Currently, you are limited to one load balancer or target group per service.
+	// After you create a service, the load balancer name or target group ARN, container
+	// name, and container port specified in the service definition are immutable.
 	//
 	// For Elastic Load Balancing Classic load balancers, this object must contain
 	// the load balancer name, the container name (as it appears in a container
@@ -3560,6 +3826,15 @@ type CreateServiceInput struct {
 	// instance and port combination is registered as a target in the target group
 	// specified here.
 	LoadBalancers []*LoadBalancer `locationName:"loadBalancers" type:"list"`
+
+	// An array of placement constraint objects to use for tasks in your service.
+	// You can specify a maximum of 10 constraints per task (this limit includes
+	// constraints in the task definition and those specified at run time).
+	PlacementConstraints []*PlacementConstraint `locationName:"placementConstraints" type:"list"`
+
+	// The placement strategy objects to use for tasks in your service. You can
+	// specify a maximum of 5 strategy rules per service.
+	PlacementStrategy []*PlacementStrategy `locationName:"placementStrategy" type:"list"`
 
 	// The name or full Amazon Resource Name (ARN) of the IAM role that allows Amazon
 	// ECS to make calls to your load balancer on your behalf. This parameter is
@@ -3650,6 +3925,18 @@ func (s *CreateServiceInput) SetLoadBalancers(v []*LoadBalancer) *CreateServiceI
 	return s
 }
 
+// SetPlacementConstraints sets the PlacementConstraints field's value.
+func (s *CreateServiceInput) SetPlacementConstraints(v []*PlacementConstraint) *CreateServiceInput {
+	s.PlacementConstraints = v
+	return s
+}
+
+// SetPlacementStrategy sets the PlacementStrategy field's value.
+func (s *CreateServiceInput) SetPlacementStrategy(v []*PlacementStrategy) *CreateServiceInput {
+	s.PlacementStrategy = v
+	return s
+}
+
 // SetRole sets the Role field's value.
 func (s *CreateServiceInput) SetRole(v string) *CreateServiceInput {
 	s.Role = &v
@@ -3689,6 +3976,93 @@ func (s CreateServiceOutput) GoString() string {
 // SetService sets the Service field's value.
 func (s *CreateServiceOutput) SetService(v *Service) *CreateServiceOutput {
 	s.Service = v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/DeleteAttributesRequest
+type DeleteAttributesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The attributes to delete from your resource. You can specify up to 10 attributes
+	// per request. For custom attributes, specify the attribute name and target
+	// ID, but do not specify the value. If you specify the target ID using the
+	// short form, you must also specify the target type.
+	//
+	// Attributes is a required field
+	Attributes []*Attribute `locationName:"attributes" type:"list" required:"true"`
+
+	// The short name or full Amazon Resource Name (ARN) of the cluster that contains
+	// the resource to apply attributes. If you do not specify a cluster, the default
+	// cluster is assumed.
+	Cluster *string `locationName:"cluster" type:"string"`
+}
+
+// String returns the string representation
+func (s DeleteAttributesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteAttributesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteAttributesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteAttributesInput"}
+	if s.Attributes == nil {
+		invalidParams.Add(request.NewErrParamRequired("Attributes"))
+	}
+	if s.Attributes != nil {
+		for i, v := range s.Attributes {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Attributes", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *DeleteAttributesInput) SetAttributes(v []*Attribute) *DeleteAttributesInput {
+	s.Attributes = v
+	return s
+}
+
+// SetCluster sets the Cluster field's value.
+func (s *DeleteAttributesInput) SetCluster(v string) *DeleteAttributesInput {
+	s.Cluster = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/DeleteAttributesResponse
+type DeleteAttributesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of attribute objects that were successfully deleted from your resource.
+	Attributes []*Attribute `locationName:"attributes" type:"list"`
+}
+
+// String returns the string representation
+func (s DeleteAttributesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteAttributesOutput) GoString() string {
+	return s.String()
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *DeleteAttributesOutput) SetAttributes(v []*Attribute) *DeleteAttributesOutput {
+	s.Attributes = v
 	return s
 }
 
@@ -4725,6 +5099,140 @@ func (s *KeyValuePair) SetValue(v string) *KeyValuePair {
 	return s
 }
 
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/ListAttributesRequest
+type ListAttributesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the attribute with which to filter the results.
+	AttributeName *string `locationName:"attributeName" type:"string"`
+
+	// The value of the attribute with which to filter results. You must also specify
+	// an attribute name to use this parameter.
+	AttributeValue *string `locationName:"attributeValue" type:"string"`
+
+	// The short name or full Amazon Resource Name (ARN) of the cluster to list
+	// attributes. If you do not specify a cluster, the default cluster is assumed.
+	Cluster *string `locationName:"cluster" type:"string"`
+
+	// The maximum number of cluster results returned by ListAttributes in paginated
+	// output. When this parameter is used, ListAttributes only returns maxResults
+	// results in a single page along with a nextToken response element. The remaining
+	// results of the initial request can be seen by sending another ListAttributes
+	// request with the returned nextToken value. This value can be between 1 and
+	// 100. If this parameter is not used, then ListAttributes returns up to 100
+	// results and a nextToken value if applicable.
+	MaxResults *int64 `locationName:"maxResults" type:"integer"`
+
+	// The nextToken value returned from a previous paginated ListAttributes request
+	// where maxResults was used and the results exceeded the value of that parameter.
+	// Pagination continues from the end of the previous results that returned the
+	// nextToken value. This value is null when there are no more results to return.
+	//
+	// This token should be treated as an opaque identifier that is only used to
+	// retrieve the next items in a list and not for other programmatic purposes.
+	NextToken *string `locationName:"nextToken" type:"string"`
+
+	// The type of the target with which to list attributes.
+	//
+	// TargetType is a required field
+	TargetType *string `locationName:"targetType" type:"string" required:"true" enum:"TargetType"`
+}
+
+// String returns the string representation
+func (s ListAttributesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListAttributesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ListAttributesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ListAttributesInput"}
+	if s.TargetType == nil {
+		invalidParams.Add(request.NewErrParamRequired("TargetType"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttributeName sets the AttributeName field's value.
+func (s *ListAttributesInput) SetAttributeName(v string) *ListAttributesInput {
+	s.AttributeName = &v
+	return s
+}
+
+// SetAttributeValue sets the AttributeValue field's value.
+func (s *ListAttributesInput) SetAttributeValue(v string) *ListAttributesInput {
+	s.AttributeValue = &v
+	return s
+}
+
+// SetCluster sets the Cluster field's value.
+func (s *ListAttributesInput) SetCluster(v string) *ListAttributesInput {
+	s.Cluster = &v
+	return s
+}
+
+// SetMaxResults sets the MaxResults field's value.
+func (s *ListAttributesInput) SetMaxResults(v int64) *ListAttributesInput {
+	s.MaxResults = &v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAttributesInput) SetNextToken(v string) *ListAttributesInput {
+	s.NextToken = &v
+	return s
+}
+
+// SetTargetType sets the TargetType field's value.
+func (s *ListAttributesInput) SetTargetType(v string) *ListAttributesInput {
+	s.TargetType = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/ListAttributesResponse
+type ListAttributesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// A list of attribute objects that meet the criteria of the request.
+	Attributes []*Attribute `locationName:"attributes" type:"list"`
+
+	// The nextToken value to include in a future ListAttributes request. When the
+	// results of a ListAttributes request exceed maxResults, this value can be
+	// used to retrieve the next page of results. This value is null when there
+	// are no more results to return.
+	NextToken *string `locationName:"nextToken" type:"string"`
+}
+
+// String returns the string representation
+func (s ListAttributesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ListAttributesOutput) GoString() string {
+	return s.String()
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *ListAttributesOutput) SetAttributes(v []*Attribute) *ListAttributesOutput {
+	s.Attributes = v
+	return s
+}
+
+// SetNextToken sets the NextToken field's value.
+func (s *ListAttributesOutput) SetNextToken(v string) *ListAttributesOutput {
+	s.NextToken = &v
+	return s
+}
+
 // Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/ListClustersRequest
 type ListClustersInput struct {
 	_ struct{} `type:"structure"`
@@ -4816,6 +5324,12 @@ type ListContainerInstancesInput struct {
 	// cluster is assumed.
 	Cluster *string `locationName:"cluster" type:"string"`
 
+	// You can filter the results of a ListContainerInstances operation with cluster
+	// query language statements. For more information, see Cluster Query Language
+	// (http://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-query-language.html)
+	// in the Amazon EC2 Container Service Developer Guide.
+	Filter *string `locationName:"filter" type:"string"`
+
 	// The maximum number of container instance results returned by ListContainerInstances
 	// in paginated output. When this parameter is used, ListContainerInstances
 	// only returns maxResults results in a single page along with a nextToken response
@@ -4850,6 +5364,12 @@ func (s ListContainerInstancesInput) GoString() string {
 // SetCluster sets the Cluster field's value.
 func (s *ListContainerInstancesInput) SetCluster(v string) *ListContainerInstancesInput {
 	s.Cluster = &v
+	return s
+}
+
+// SetFilter sets the Filter field's value.
+func (s *ListContainerInstancesInput) SetFilter(v string) *ListContainerInstancesInput {
+	s.Filter = &v
 	return s
 }
 
@@ -5601,6 +6121,93 @@ func (s *NetworkBinding) SetProtocol(v string) *NetworkBinding {
 	return s
 }
 
+// An object representing a constraint on task placement. For more information,
+// see Task Placement Constraints (http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-constraints.html)
+// in the Amazon EC2 Container Service Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/PlacementConstraint
+type PlacementConstraint struct {
+	_ struct{} `type:"structure"`
+
+	// A cluster query language expression to apply to the constraint. Note you
+	// cannot specify an expression if the constraint type is distinctInstance.
+	// For more information, see Cluster Query Language (http://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-query-language.html)
+	// in the Amazon EC2 Container Service Developer Guide.
+	Expression *string `locationName:"expression" type:"string"`
+
+	// The type of constraint. Use distinctInstance to ensure that each task in
+	// a particular group is running on a different container instance. Use memberOf
+	// to restrict selection to a group of valid candidates.
+	Type *string `locationName:"type" type:"string" enum:"PlacementConstraintType"`
+}
+
+// String returns the string representation
+func (s PlacementConstraint) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PlacementConstraint) GoString() string {
+	return s.String()
+}
+
+// SetExpression sets the Expression field's value.
+func (s *PlacementConstraint) SetExpression(v string) *PlacementConstraint {
+	s.Expression = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *PlacementConstraint) SetType(v string) *PlacementConstraint {
+	s.Type = &v
+	return s
+}
+
+// The task placement strategy for a task or service. For more information,
+// see Task Placement Strategies (http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-strategies.html)
+// in the Amazon EC2 Container Service Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/PlacementStrategy
+type PlacementStrategy struct {
+	_ struct{} `type:"structure"`
+
+	// The field to apply the placement strategy against. For the spread placement
+	// strategy, valid values are instanceId (or host, which has the same effect),
+	// or any platform or custom attribute that is applied to a container instance,
+	// such as attribute:ecs.availability-zone. For the binpack placement strategy,
+	// valid values are CPU and MEMORY.
+	Field *string `locationName:"field" type:"string"`
+
+	// The type of placement strategy. The random placement strategy randomly places
+	// tasks on available candidates. The spread placement strategy spreads placement
+	// across available candidates evenly based on the field parameter. The binpack
+	// strategy places tasks on available candidates that have the least available
+	// amount of the resource that is specified with the field parameter. For example,
+	// if you binpack on memory, a task is placed on the instance with the least
+	// amount of remaining memory (but still enough to run the task).
+	Type *string `locationName:"type" type:"string" enum:"PlacementStrategyType"`
+}
+
+// String returns the string representation
+func (s PlacementStrategy) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PlacementStrategy) GoString() string {
+	return s.String()
+}
+
+// SetField sets the Field field's value.
+func (s *PlacementStrategy) SetField(v string) *PlacementStrategy {
+	s.Field = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *PlacementStrategy) SetType(v string) *PlacementStrategy {
+	s.Type = &v
+	return s
+}
+
 // Port mappings allow containers to access ports on the host container instance
 // to send or receive traffic. Port mappings are specified as part of the container
 // definition. After a task reaches the RUNNING status, manual and automatic
@@ -5672,6 +6279,92 @@ func (s *PortMapping) SetHostPort(v int64) *PortMapping {
 // SetProtocol sets the Protocol field's value.
 func (s *PortMapping) SetProtocol(v string) *PortMapping {
 	s.Protocol = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/PutAttributesRequest
+type PutAttributesInput struct {
+	_ struct{} `type:"structure"`
+
+	// The attributes to apply to your resource. You can specify up to 10 custom
+	// attributes per resource. You can specify up to 10 attributes in a single
+	// call.
+	//
+	// Attributes is a required field
+	Attributes []*Attribute `locationName:"attributes" type:"list" required:"true"`
+
+	// The short name or full Amazon Resource Name (ARN) of the cluster that contains
+	// the resource to apply attributes. If you do not specify a cluster, the default
+	// cluster is assumed.
+	Cluster *string `locationName:"cluster" type:"string"`
+}
+
+// String returns the string representation
+func (s PutAttributesInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PutAttributesInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutAttributesInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutAttributesInput"}
+	if s.Attributes == nil {
+		invalidParams.Add(request.NewErrParamRequired("Attributes"))
+	}
+	if s.Attributes != nil {
+		for i, v := range s.Attributes {
+			if v == nil {
+				continue
+			}
+			if err := v.Validate(); err != nil {
+				invalidParams.AddNested(fmt.Sprintf("%s[%v]", "Attributes", i), err.(request.ErrInvalidParams))
+			}
+		}
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *PutAttributesInput) SetAttributes(v []*Attribute) *PutAttributesInput {
+	s.Attributes = v
+	return s
+}
+
+// SetCluster sets the Cluster field's value.
+func (s *PutAttributesInput) SetCluster(v string) *PutAttributesInput {
+	s.Cluster = &v
+	return s
+}
+
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/PutAttributesResponse
+type PutAttributesOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The attributes applied to your resource.
+	Attributes []*Attribute `locationName:"attributes" type:"list"`
+}
+
+// String returns the string representation
+func (s PutAttributesOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PutAttributesOutput) GoString() string {
+	return s.String()
+}
+
+// SetAttributes sets the Attributes field's value.
+func (s *PutAttributesOutput) SetAttributes(v []*Attribute) *PutAttributesOutput {
+	s.Attributes = v
 	return s
 }
 
@@ -5839,6 +6532,11 @@ type RegisterTaskDefinitionInput struct {
 	// in the Docker run reference.
 	NetworkMode *string `locationName:"networkMode" type:"string" enum:"NetworkMode"`
 
+	// An array of placement constraint objects to use for the task. You can specify
+	// a maximum of 10 constraints per task (this limit includes constraints in
+	// the task definition and those specified at run time).
+	PlacementConstraints []*TaskDefinitionPlacementConstraint `locationName:"placementConstraints" type:"list"`
+
 	// The short name or full Amazon Resource Name (ARN) of the IAM role that containers
 	// in this task can assume. All containers in this task are granted the permissions
 	// that are specified in this role. For more information, see IAM Roles for
@@ -5902,6 +6600,12 @@ func (s *RegisterTaskDefinitionInput) SetFamily(v string) *RegisterTaskDefinitio
 // SetNetworkMode sets the NetworkMode field's value.
 func (s *RegisterTaskDefinitionInput) SetNetworkMode(v string) *RegisterTaskDefinitionInput {
 	s.NetworkMode = &v
+	return s
+}
+
+// SetPlacementConstraints sets the PlacementConstraints field's value.
+func (s *RegisterTaskDefinitionInput) SetPlacementConstraints(v []*TaskDefinitionPlacementConstraint) *RegisterTaskDefinitionInput {
+	s.PlacementConstraints = v
 	return s
 }
 
@@ -6024,9 +6728,12 @@ type RunTaskInput struct {
 	Cluster *string `locationName:"cluster" type:"string"`
 
 	// The number of instantiations of the specified task to place on your cluster.
-	//
-	// The count parameter is limited to 10 tasks per call.
+	// You can specify up to 10 tasks per call.
 	Count *int64 `locationName:"count" type:"integer"`
+
+	// The task group to associate with the task. By default, if you do not specify
+	// a task group, the group family:TASKDEF-FAMILY is applied.
+	Group *string `locationName:"group" type:"string"`
 
 	// A list of container overrides in JSON format that specify the name of a container
 	// in the specified task definition and the overrides it should receive. You
@@ -6039,6 +6746,15 @@ type RunTaskInput struct {
 	// A total of 8192 characters are allowed for overrides. This limit includes
 	// the JSON formatting characters of the override structure.
 	Overrides *TaskOverride `locationName:"overrides" type:"structure"`
+
+	// An array of placement constraint objects to use for the task. You can specify
+	// up to 10 constraints per task (including constraints in the task definition
+	// and those specified at run time).
+	PlacementConstraints []*PlacementConstraint `locationName:"placementConstraints" type:"list"`
+
+	// The placement strategy objects to use for the task. You can specify a maximum
+	// of 5 strategy rules per task.
+	PlacementStrategy []*PlacementStrategy `locationName:"placementStrategy" type:"list"`
 
 	// An optional tag specified when a task is started. For example if you automatically
 	// trigger a task to run a batch process job, you could apply a unique identifier
@@ -6094,9 +6810,27 @@ func (s *RunTaskInput) SetCount(v int64) *RunTaskInput {
 	return s
 }
 
+// SetGroup sets the Group field's value.
+func (s *RunTaskInput) SetGroup(v string) *RunTaskInput {
+	s.Group = &v
+	return s
+}
+
 // SetOverrides sets the Overrides field's value.
 func (s *RunTaskInput) SetOverrides(v *TaskOverride) *RunTaskInput {
 	s.Overrides = v
+	return s
+}
+
+// SetPlacementConstraints sets the PlacementConstraints field's value.
+func (s *RunTaskInput) SetPlacementConstraints(v []*PlacementConstraint) *RunTaskInput {
+	s.PlacementConstraints = v
+	return s
+}
+
+// SetPlacementStrategy sets the PlacementStrategy field's value.
+func (s *RunTaskInput) SetPlacementStrategy(v []*PlacementStrategy) *RunTaskInput {
+	s.PlacementStrategy = v
 	return s
 }
 
@@ -6180,6 +6914,12 @@ type Service struct {
 
 	// The number of tasks in the cluster that are in the PENDING state.
 	PendingCount *int64 `locationName:"pendingCount" type:"integer"`
+
+	// The placement constraints for the tasks in the service.
+	PlacementConstraints []*PlacementConstraint `locationName:"placementConstraints" type:"list"`
+
+	// The placement strategy that determines how tasks for the service are placed.
+	PlacementStrategy []*PlacementStrategy `locationName:"placementStrategy" type:"list"`
 
 	// The Amazon Resource Name (ARN) of the IAM role associated with the service
 	// that allows the Amazon ECS container agent to register container instances
@@ -6265,6 +7005,18 @@ func (s *Service) SetLoadBalancers(v []*LoadBalancer) *Service {
 // SetPendingCount sets the PendingCount field's value.
 func (s *Service) SetPendingCount(v int64) *Service {
 	s.PendingCount = &v
+	return s
+}
+
+// SetPlacementConstraints sets the PlacementConstraints field's value.
+func (s *Service) SetPlacementConstraints(v []*PlacementConstraint) *Service {
+	s.PlacementConstraints = v
+	return s
+}
+
+// SetPlacementStrategy sets the PlacementStrategy field's value.
+func (s *Service) SetPlacementStrategy(v []*PlacementStrategy) *Service {
+	s.PlacementStrategy = v
 	return s
 }
 
@@ -6357,12 +7109,15 @@ type StartTaskInput struct {
 	Cluster *string `locationName:"cluster" type:"string"`
 
 	// The container instance IDs or full Amazon Resource Name (ARN) entries for
-	// the container instances on which you would like to place your task.
-	//
-	// The list of container instances to start tasks on is limited to 10.
+	// the container instances on which you would like to place your task. You can
+	// specify up to 10 container instances.
 	//
 	// ContainerInstances is a required field
 	ContainerInstances []*string `locationName:"containerInstances" type:"list" required:"true"`
+
+	// The task group to associate with the task. By default, if you do not specify
+	// a task group, the default group is family:TASKDEF-FAMILY.
+	Group *string `locationName:"group" type:"string"`
 
 	// A list of container overrides in JSON format that specify the name of a container
 	// in the specified task definition and the overrides it should receive. You
@@ -6430,6 +7185,12 @@ func (s *StartTaskInput) SetCluster(v string) *StartTaskInput {
 // SetContainerInstances sets the ContainerInstances field's value.
 func (s *StartTaskInput) SetContainerInstances(v []*string) *StartTaskInput {
 	s.ContainerInstances = v
+	return s
+}
+
+// SetGroup sets the Group field's value.
+func (s *StartTaskInput) SetGroup(v string) *StartTaskInput {
+	s.Group = &v
 	return s
 }
 
@@ -6773,6 +7534,9 @@ type Task struct {
 	// The desired status of the task.
 	DesiredStatus *string `locationName:"desiredStatus" type:"string"`
 
+	// The task group associated with the task.
+	Group *string `locationName:"group" type:"string"`
+
 	// The last known status of the task.
 	LastStatus *string `locationName:"lastStatus" type:"string"`
 
@@ -6847,6 +7611,12 @@ func (s *Task) SetCreatedAt(v time.Time) *Task {
 // SetDesiredStatus sets the DesiredStatus field's value.
 func (s *Task) SetDesiredStatus(v string) *Task {
 	s.DesiredStatus = &v
+	return s
+}
+
+// SetGroup sets the Group field's value.
+func (s *Task) SetGroup(v string) *Task {
+	s.Group = &v
 	return s
 }
 
@@ -6930,6 +7700,9 @@ type TaskDefinition struct {
 	// in the Docker run reference.
 	NetworkMode *string `locationName:"networkMode" type:"string" enum:"NetworkMode"`
 
+	// An array of placement constraint objects to use for tasks.
+	PlacementConstraints []*TaskDefinitionPlacementConstraint `locationName:"placementConstraints" type:"list"`
+
 	// The container instance attributes required by your task.
 	RequiresAttributes []*Attribute `locationName:"requiresAttributes" type:"list"`
 
@@ -6985,6 +7758,12 @@ func (s *TaskDefinition) SetNetworkMode(v string) *TaskDefinition {
 	return s
 }
 
+// SetPlacementConstraints sets the PlacementConstraints field's value.
+func (s *TaskDefinition) SetPlacementConstraints(v []*TaskDefinitionPlacementConstraint) *TaskDefinition {
+	s.PlacementConstraints = v
+	return s
+}
+
 // SetRequiresAttributes sets the RequiresAttributes field's value.
 func (s *TaskDefinition) SetRequiresAttributes(v []*Attribute) *TaskDefinition {
 	s.RequiresAttributes = v
@@ -7018,6 +7797,46 @@ func (s *TaskDefinition) SetTaskRoleArn(v string) *TaskDefinition {
 // SetVolumes sets the Volumes field's value.
 func (s *TaskDefinition) SetVolumes(v []*Volume) *TaskDefinition {
 	s.Volumes = v
+	return s
+}
+
+// An object representing a constraint on task placement in the task definition.
+// For more information, see Task Placement Constraints (http://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-placement-constraints.html)
+// in the Amazon EC2 Container Service Developer Guide.
+// Please also see https://docs.aws.amazon.com/goto/WebAPI/ecs-2014-11-13/TaskDefinitionPlacementConstraint
+type TaskDefinitionPlacementConstraint struct {
+	_ struct{} `type:"structure"`
+
+	// A cluster query language expression to apply to the constraint. For more
+	// information, see Cluster Query Language (http://docs.aws.amazon.com/AmazonECS/latest/developerguide/cluster-query-language.html)
+	// in the Amazon EC2 Container Service Developer Guide.
+	Expression *string `locationName:"expression" type:"string"`
+
+	// The type of constraint. The DistinctInstance constraint ensures that each
+	// task in a particular group is running on a different container instance.
+	// The MemberOf constraint restricts selection to be from a group of valid candidates.
+	Type *string `locationName:"type" type:"string" enum:"TaskDefinitionPlacementConstraintType"`
+}
+
+// String returns the string representation
+func (s TaskDefinitionPlacementConstraint) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s TaskDefinitionPlacementConstraint) GoString() string {
+	return s.String()
+}
+
+// SetExpression sets the Expression field's value.
+func (s *TaskDefinitionPlacementConstraint) SetExpression(v string) *TaskDefinitionPlacementConstraint {
+	s.Expression = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *TaskDefinitionPlacementConstraint) SetType(v string) *TaskDefinitionPlacementConstraint {
+	s.Type = &v
 	return s
 }
 
@@ -7495,11 +8314,35 @@ const (
 )
 
 const (
+	// PlacementConstraintTypeDistinctInstance is a PlacementConstraintType enum value
+	PlacementConstraintTypeDistinctInstance = "distinctInstance"
+
+	// PlacementConstraintTypeMemberOf is a PlacementConstraintType enum value
+	PlacementConstraintTypeMemberOf = "memberOf"
+)
+
+const (
+	// PlacementStrategyTypeRandom is a PlacementStrategyType enum value
+	PlacementStrategyTypeRandom = "random"
+
+	// PlacementStrategyTypeSpread is a PlacementStrategyType enum value
+	PlacementStrategyTypeSpread = "spread"
+
+	// PlacementStrategyTypeBinpack is a PlacementStrategyType enum value
+	PlacementStrategyTypeBinpack = "binpack"
+)
+
+const (
 	// SortOrderAsc is a SortOrder enum value
 	SortOrderAsc = "ASC"
 
 	// SortOrderDesc is a SortOrder enum value
 	SortOrderDesc = "DESC"
+)
+
+const (
+	// TargetTypeContainerInstance is a TargetType enum value
+	TargetTypeContainerInstance = "container-instance"
 )
 
 const (
@@ -7511,6 +8354,11 @@ const (
 
 	// TaskDefinitionFamilyStatusAll is a TaskDefinitionFamilyStatus enum value
 	TaskDefinitionFamilyStatusAll = "ALL"
+)
+
+const (
+	// TaskDefinitionPlacementConstraintTypeMemberOf is a TaskDefinitionPlacementConstraintType enum value
+	TaskDefinitionPlacementConstraintTypeMemberOf = "memberOf"
 )
 
 const (

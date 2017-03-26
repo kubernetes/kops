@@ -5,7 +5,8 @@ import (
 )
 
 func TestMDStat(t *testing.T) {
-	mdStates, err := FS("fixtures").ParseMDStat()
+	fs := FS("fixtures")
+	mdStates, err := fs.ParseMDStat()
 	if err != nil {
 		t.Fatalf("parsing of reference-file failed entirely: %s", err)
 	}
@@ -20,12 +21,13 @@ func TestMDStat(t *testing.T) {
 		"md7":   MDStat{"md7", "active", 3, 4, 7813735424, 7813735424},
 	}
 
+	for _, md := range mdStates {
+		if md != refs[md.Name] {
+			t.Errorf("failed parsing md-device %s correctly: want %v, got %v", md.Name, refs[md.Name], md)
+		}
+	}
+
 	if want, have := len(refs), len(mdStates); want != have {
 		t.Errorf("want %d parsed md-devices, have %d", want, have)
-	}
-	for _, md := range mdStates {
-		if want, have := refs[md.Name], md; want != have {
-			t.Errorf("%s: want %v, have %v", md.Name, want, have)
-		}
 	}
 }

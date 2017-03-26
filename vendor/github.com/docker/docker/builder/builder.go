@@ -9,8 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/docker/docker/api/types/backend"
-	"github.com/docker/docker/image"
 	"github.com/docker/docker/reference"
 	"github.com/docker/engine-api/types"
 	"github.com/docker/engine-api/types/container"
@@ -107,27 +105,27 @@ func (fi *HashedFileInfo) SetHash(h string) {
 type Backend interface {
 	// TODO: use digest reference instead of name
 
-	// GetImageOnBuild looks up a Docker image referenced by `name`.
+	// GetImage looks up a Docker image referenced by `name`.
 	GetImageOnBuild(name string) (Image, error)
-	// TagImage tags an image with newTag
-	TagImageWithReference(image.ID, reference.Named) error
-	// PullOnBuild tells Docker to pull image referenced by `name`.
+	// Tag an image with newTag
+	TagImage(newTag reference.Named, imageName string) error
+	// Pull tells Docker to pull image referenced by `name`.
 	PullOnBuild(ctx context.Context, name string, authConfigs map[string]types.AuthConfig, output io.Writer) (Image, error)
-	// ContainerAttachRaw attaches to container.
+	// ContainerAttach attaches to container.
 	ContainerAttachRaw(cID string, stdin io.ReadCloser, stdout, stderr io.Writer, stream bool) error
 	// ContainerCreate creates a new Docker container and returns potential warnings
-	ContainerCreate(config types.ContainerCreateConfig, validateHostname bool) (types.ContainerCreateResponse, error)
+	ContainerCreate(types.ContainerCreateConfig) (types.ContainerCreateResponse, error)
 	// ContainerRm removes a container specified by `id`.
 	ContainerRm(name string, config *types.ContainerRmConfig) error
 	// Commit creates a new Docker image from an existing Docker container.
-	Commit(string, *backend.ContainerCommitConfig) (string, error)
-	// ContainerKill stops the container execution abruptly.
+	Commit(string, *types.ContainerCommitConfig) (string, error)
+	// Kill stops the container execution abruptly.
 	ContainerKill(containerID string, sig uint64) error
-	// ContainerStart starts a new container
-	ContainerStart(containerID string, hostConfig *container.HostConfig, validateHostname bool) error
+	// Start starts a new container
+	ContainerStart(containerID string, hostConfig *container.HostConfig) error
 	// ContainerWait stops processing until the given container is stopped.
 	ContainerWait(containerID string, timeout time.Duration) (int, error)
-	// ContainerUpdateCmdOnBuild updates container.Path and container.Args
+	// ContainerUpdateCmd updates container.Path and container.Args
 	ContainerUpdateCmdOnBuild(containerID string, cmd []string) error
 
 	// ContainerCopy copies/extracts a source FileInfo to a destination path inside a container

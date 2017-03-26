@@ -20,9 +20,6 @@ const (
 	// TokenSeparator is the value which separates the header, claims, and
 	// signature in the compact serialization of a JSON Web Token.
 	TokenSeparator = "."
-	// Leeway is the Duration that will be added to NBF and EXP claim
-	// checks to account for clock skew as per https://tools.ietf.org/html/rfc7519#section-4.1.5
-	Leeway = 60 * time.Second
 )
 
 // Errors used by token parsing and verification.
@@ -146,17 +143,9 @@ func (t *Token) Verify(verifyOpts VerifyOptions) error {
 	}
 
 	// Verify that the token is currently usable and not expired.
-	currentTime := time.Now()
-
-	ExpWithLeeway := time.Unix(t.Claims.Expiration, 0).Add(Leeway)
-	if currentTime.After(ExpWithLeeway) {
-		log.Errorf("token not to be used after %s - currently %s", ExpWithLeeway, currentTime)
-		return ErrInvalidToken
-	}
-
-	NotBeforeWithLeeway := time.Unix(t.Claims.NotBefore, 0).Add(-Leeway)
-	if currentTime.Before(NotBeforeWithLeeway) {
-		log.Errorf("token not to be used before %s - currently %s", NotBeforeWithLeeway, currentTime)
+	currentUnixTime := time.Now().Unix()
+	if !(t.Claims.NotBefore <= currentUnixTime && currentUnixTime <= t.Claims.Expiration) {
+		log.Errorf("token not to be used before %d or after %d - currently %d", t.Claims.NotBefore, t.Claims.Expiration, currentUnixTime)
 		return ErrInvalidToken
 	}
 

@@ -1,7 +1,7 @@
 package restful
 
 import (
-	"fmt"
+	"errors"
 	"os"
 	"sync"
 
@@ -155,7 +155,7 @@ func (w *WebService) Route(builder *RouteBuilder) *WebService {
 // RemoveRoute removes the specified route, looks for something that matches 'path' and 'method'
 func (w *WebService) RemoveRoute(path, method string) error {
 	if !w.dynamicRoutes {
-		return fmt.Errorf("dynamic routes are not enabled.")
+		return errors.New("dynamic routes are not enabled.")
 	}
 	w.routesLock.Lock()
 	defer w.routesLock.Unlock()

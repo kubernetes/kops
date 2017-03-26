@@ -19,11 +19,11 @@ package validation
 import (
 	"fmt"
 	"github.com/blang/semver"
+	"k8s.io/apimachinery/pkg/util/validation"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/pkg/util/validation"
-	"k8s.io/kubernetes/pkg/util/validation/field"
 	"net"
 	"strings"
 )
@@ -265,18 +265,6 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 		default:
 			return fmt.Errorf("unrecognized value for UpdatePolicy: %v", *c.Spec.UpdatePolicy)
 		}
-	}
-
-	// AdminAccess
-	if strict && len(c.Spec.SSHAccess) == 0 {
-		// TODO: We may want to allow this
-		return fmt.Errorf("SSHAccess not configured")
-	}
-
-	// AdminAccess
-	if strict && len(c.Spec.KubernetesAPIAccess) == 0 {
-		// TODO: We may want to allow this (maybe)
-		return fmt.Errorf("KubernetesAPIAccess not configured")
 	}
 
 	// KubeProxy

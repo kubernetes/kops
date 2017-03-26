@@ -161,3 +161,49 @@ func TestInvalidCpuStat(t *testing.T) {
 		t.Fatal("Expected failed stat parsing.")
 	}
 }
+
+func TestCpuSetRtSchedAtApply(t *testing.T) {
+	helper := NewCgroupTestUtil("cpu", t)
+	defer helper.cleanup()
+
+	const (
+		rtRuntimeBefore = 0
+		rtRuntimeAfter  = 5000
+		rtPeriodBefore  = 0
+		rtPeriodAfter   = 7000
+	)
+
+	helper.writeFileContents(map[string]string{
+		"cpu.rt_runtime_us": strconv.Itoa(rtRuntimeBefore),
+		"cpu.rt_period_us":  strconv.Itoa(rtPeriodBefore),
+	})
+
+	helper.CgroupData.config.Resources.CpuRtRuntime = rtRuntimeAfter
+	helper.CgroupData.config.Resources.CpuRtPeriod = rtPeriodAfter
+	cpu := &CpuGroup{}
+	if err := cpu.ApplyDir(helper.CgroupPath, helper.CgroupData.config, 1234); err != nil {
+		t.Fatal(err)
+	}
+
+	rtRuntime, err := getCgroupParamUint(helper.CgroupPath, "cpu.rt_runtime_us")
+	if err != nil {
+		t.Fatalf("Failed to parse cpu.rt_runtime_us - %s", err)
+	}
+	if rtRuntime != rtRuntimeAfter {
+		t.Fatal("Got the wrong value, set cpu.rt_runtime_us failed.")
+	}
+	rtPeriod, err := getCgroupParamUint(helper.CgroupPath, "cpu.rt_period_us")
+	if err != nil {
+		t.Fatalf("Failed to parse cpu.rt_period_us - %s", err)
+	}
+	if rtPeriod != rtPeriodAfter {
+		t.Fatal("Got the wrong value, set cpu.rt_period_us failed.")
+	}
+	pid, err := getCgroupParamUint(helper.CgroupPath, "cgroup.procs")
+	if err != nil {
+		t.Fatalf("Failed to parse cgroup.procs - %s", err)
+	}
+	if pid != 1234 {
+		t.Fatal("Got the wrong value, set cgroup.procs failed.")
+	}
+}

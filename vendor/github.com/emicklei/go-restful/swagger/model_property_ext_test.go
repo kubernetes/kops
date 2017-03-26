@@ -8,14 +8,16 @@ import (
 // clear && go test -v -test.run TestThatExtraTagsAreReadIntoModel ...swagger
 func TestThatExtraTagsAreReadIntoModel(t *testing.T) {
 	type fakeint int
+	type fakearray string
 	type Anything struct {
-		Name     string  `description:"name" modelDescription:"a test"`
-		Size     int     `minimum:"0" maximum:"10"`
-		Stati    string  `enum:"off|on" default:"on" modelDescription:"more description"`
-		ID       string  `unique:"true"`
-		FakeInt  fakeint `type:"integer"`
-		IP       net.IP  `type:"string"`
-		Password string
+		Name      string    `description:"name" modelDescription:"a test"`
+		Size      int       `minimum:"0" maximum:"10"`
+		Stati     string    `enum:"off|on" default:"on" modelDescription:"more description"`
+		ID        string    `unique:"true"`
+		FakeInt   fakeint   `type:"integer"`
+		FakeArray fakearray `type:"[]string"`
+		IP        net.IP    `type:"string"`
+		Password  string
 	}
 	m := modelsFromStruct(Anything{})
 	props, _ := m.At("swagger.Anything")
@@ -49,8 +51,16 @@ func TestThatExtraTagsAreReadIntoModel(t *testing.T) {
 	if got, want := *p6.Type, "integer"; got != want {
 		t.Errorf("got %v want %v", got, want)
 	}
-	p7, _ := props.Properties.At("IP")
-	if got, want := *p7.Type, "string"; got != want {
+	p7, _ := props.Properties.At("FakeArray")
+	if got, want := *p7.Type, "array"; got != want {
+		t.Errorf("got %v want %v", got, want)
+	}
+	p7p, _ := props.Properties.At("FakeArray")
+	if got, want := *p7p.Items.Type, "string"; got != want {
+		t.Errorf("got %v want %v", got, want)
+	}
+	p8, _ := props.Properties.At("IP")
+	if got, want := *p8.Type, "string"; got != want {
 		t.Errorf("got %v want %v", got, want)
 	}
 

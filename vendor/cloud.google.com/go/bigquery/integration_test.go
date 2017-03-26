@@ -24,7 +24,6 @@ import (
 	"cloud.google.com/go/internal/testutil"
 	"golang.org/x/net/context"
 	"google.golang.org/api/googleapi"
-	"google.golang.org/api/iterator"
 	"google.golang.org/api/option"
 )
 
@@ -84,23 +83,6 @@ func TestIntegration(t *testing.T) {
 	want := *table
 	if got := tables[0]; !reflect.DeepEqual(got, &want) {
 		t.Errorf("ListTables: got %v, want %v", got, &want)
-	}
-
-	// Iterate over tables in the dataset.
-	it := ds.Tables(ctx)
-	tables = nil
-	for {
-		tbl, err := it.Next()
-		if err == iterator.Done {
-			break
-		}
-		if err != nil {
-			t.Fatal(err)
-		}
-		tables = append(tables, tbl)
-	}
-	if got, want := tables, []*Table{table}; !reflect.DeepEqual(got, want) {
-		t.Errorf("Tables: got %v, want %v", got, want)
 	}
 
 	// Populate the table.

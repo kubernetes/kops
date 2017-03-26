@@ -20,6 +20,7 @@ package transport
 import (
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 
 	"golang.org/x/net/context"
@@ -29,6 +30,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/oauth"
 
+	gtransport "google.golang.org/api/googleapi/transport"
 	"google.golang.org/api/internal"
 	"google.golang.org/api/option"
 )
@@ -47,6 +49,22 @@ func NewHTTPClient(ctx context.Context, opts ...option.ClientOption) (*http.Clie
 	// TODO(djd): Set UserAgent on all outgoing requests.
 	if o.HTTPClient != nil {
 		return o.HTTPClient, o.Endpoint, nil
+	}
+	if o.APIKey != "" {
+		hc := &http.Client{
+			Transport: &gtransport.APIKey{
+				Key:       o.APIKey,
+				Transport: http.DefaultTransport,
+			},
+		}
+		return hc, o.Endpoint, nil
+	}
+	if o.ServiceAccountJSONFilename != "" {
+		ts, err := serviceAcctTokenSource(ctx, o.ServiceAccountJSONFilename, o.Scopes...)
+		if err != nil {
+			return nil, "", err
+		}
+		o.TokenSource = ts
 	}
 	if o.TokenSource == nil {
 		var err error
@@ -74,6 +92,13 @@ func DialGRPC(ctx context.Context, opts ...option.ClientOption) (*grpc.ClientCon
 	if o.GRPCConn != nil {
 		return o.GRPCConn, nil
 	}
+	if o.ServiceAccountJSONFilename != "" {
+		ts, err := serviceAcctTokenSource(ctx, o.ServiceAccountJSONFilename, o.Scopes...)
+		if err != nil {
+			return nil, err
+		}
+		o.TokenSource = ts
+	}
 	if o.TokenSource == nil {
 		var err error
 		o.TokenSource, err = google.DefaultTokenSource(ctx, o.Scopes...)
@@ -93,5 +118,17 @@ func DialGRPC(ctx context.Context, opts ...option.ClientOption) (*grpc.ClientCon
 	if o.UserAgent != "" {
 		grpcOpts = append(grpcOpts, grpc.WithUserAgent(o.UserAgent))
 	}
-	return grpc.Dial(o.Endpoint, grpcOpts...)
+	return grpc.DialContext(ctx, o.Endpoint, grpcOpts...)
+}
+
+func serviceAcctTokenSource(ctx context.Context, filename string, scope ...string) (oauth2.TokenSource, error) {
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, fmt.Errorf("cannot read service account file: %v", err)
+	}
+	cfg, err := google.JWTConfigFromJSON(data, scope...)
+	if err != nil {
+		return nil, fmt.Errorf("google.JWTConfigFromJSON: %v", err)
+	}
+	return cfg.TokenSource(ctx), nil
 }

@@ -16,7 +16,7 @@ limitations under the License.
 
 package v1alpha2
 
-import metav1 "k8s.io/kubernetes/pkg/apis/meta/v1"
+import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 type KubeletConfigSpec struct {
 	// not used for clusters version 1.6 and later
@@ -205,6 +205,11 @@ type KubeAPIServerConfig struct {
 	AuditLogMaxBackups *int32 `json:"auditLogMaxBackups,omitempty" flag:"audit-log-maxbackup"`
 	// The maximum size in megabytes of the audit log file before it gets rotated. Defaults to 100MB.
 	AuditLogMaxSize *int32 `json:"auditLogMaxSize,omitempty" flag:"audit-log-maxsize"`
+
+	// File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.
+	AuthenticationTokenWebhookConfigFile *string `json:"authenticationTokenWebhookConfigFile,omitempty" flag:"authentication-token-webhook-config-file"`
+	// The duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
+	AuthenticationTokenWebhookCacheTtl *metav1.Duration `json:"authenticationTokenWebhookCacheTtl,omitempty" flag:"authentication-token-webhook-cache-ttl"`
 
 	AuthorizationMode          *string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
 	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`

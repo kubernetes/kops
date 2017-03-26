@@ -23,7 +23,7 @@ import (
 	"golang.org/x/oauth2/google"
 	storage "google.golang.org/api/storage/v1"
 	"io/ioutil"
-	"k8s.io/kubernetes/pkg/util/wait"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"net/http"
 	"net/url"
 	"os"
@@ -204,15 +204,15 @@ func RetryWithBackoff(backoff wait.Backoff, condition func() (bool, error)) (boo
 func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {
 	u, err := url.Parse(p)
 	if err != nil {
-		return nil, fmt.Errorf("invalid s3 path: %q", err)
+		return nil, fmt.Errorf("invalid s3 path: %q", p)
 	}
 	if u.Scheme != "s3" {
-		return nil, fmt.Errorf("invalid s3 path: %q", err)
+		return nil, fmt.Errorf("invalid s3 path: %q", p)
 	}
 
 	bucket := strings.TrimSuffix(u.Host, "/")
 	if bucket == "" {
-		return nil, fmt.Errorf("invalid s3 path: %q", err)
+		return nil, fmt.Errorf("invalid s3 path: %q", p)
 	}
 
 	s3path := newS3Path(c.s3Context, bucket, u.Path)
@@ -242,11 +242,11 @@ func (c *VFSContext) ResetMemfsContext(clusterReadable bool) {
 func (c *VFSContext) buildGCSPath(p string) (*GSPath, error) {
 	u, err := url.Parse(p)
 	if err != nil {
-		return nil, fmt.Errorf("invalid google cloud storage path: %q", err)
+		return nil, fmt.Errorf("invalid google cloud storage path: %q", p)
 	}
 
 	if u.Scheme != "gs" {
-		return nil, fmt.Errorf("invalid google cloud storage path: %q", err)
+		return nil, fmt.Errorf("invalid google cloud storage path: %q", p)
 	}
 
 	bucket := strings.TrimSuffix(u.Host, "/")

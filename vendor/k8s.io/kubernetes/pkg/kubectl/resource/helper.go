@@ -19,11 +19,13 @@ package resource
 import (
 	"strconv"
 
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/meta"
-	"k8s.io/kubernetes/pkg/labels"
-	"k8s.io/kubernetes/pkg/runtime"
-	"k8s.io/kubernetes/pkg/watch"
+	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/fields"
+	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/watch"
 )
 
 // Helper provides methods for retrieving or mutating a RESTful
@@ -75,29 +77,34 @@ func (m *Helper) List(namespace, apiVersion string, selector labels.Selector, ex
 
 func (m *Helper) Watch(namespace, resourceVersion, apiVersion string, labelSelector labels.Selector) (watch.Interface, error) {
 	return m.RESTClient.Get().
-		Prefix("watch").
 		NamespaceIfScoped(namespace, m.NamespaceScoped).
 		Resource(m.Resource).
 		Param("resourceVersion", resourceVersion).
+		Param("watch", "true").
 		LabelsSelectorParam(labelSelector).
 		Watch()
 }
 
 func (m *Helper) WatchSingle(namespace, name, resourceVersion string) (watch.Interface, error) {
 	return m.RESTClient.Get().
-		Prefix("watch").
 		NamespaceIfScoped(namespace, m.NamespaceScoped).
 		Resource(m.Resource).
-		Name(name).
 		Param("resourceVersion", resourceVersion).
+		Param("watch", "true").
+		FieldsSelectorParam(fields.OneTermEqualSelector("metadata.name", name)).
 		Watch()
 }
 
 func (m *Helper) Delete(namespace, name string) error {
+	return m.DeleteWithOptions(namespace, name, nil)
+}
+
+func (m *Helper) DeleteWithOptions(namespace, name string, options *metav1.DeleteOptions) error {
 	return m.RESTClient.Delete().
 		NamespaceIfScoped(namespace, m.NamespaceScoped).
 		Resource(m.Resource).
 		Name(name).
+		Body(options).
 		Do().
 		Error()
 }
@@ -123,7 +130,7 @@ func (m *Helper) Create(namespace string, modify bool, obj runtime.Object) (runt
 func (m *Helper) createResource(c RESTClient, resource, namespace string, obj runtime.Object) (runtime.Object, error) {
 	return c.Post().NamespaceIfScoped(namespace, m.NamespaceScoped).Resource(resource).Body(obj).Do().Get()
 }
-func (m *Helper) Patch(namespace, name string, pt api.PatchType, data []byte) (runtime.Object, error) {
+func (m *Helper) Patch(namespace, name string, pt types.PatchType, data []byte) (runtime.Object, error) {
 	return m.RESTClient.Patch(pt).
 		NamespaceIfScoped(namespace, m.NamespaceScoped).
 		Resource(m.Resource).

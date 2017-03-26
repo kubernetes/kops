@@ -16,10 +16,7 @@ test_deb_install(){
 	builderDir="contrib/builder/deb/${PACKAGE_ARCH}"
 	pkgs=( $(find "${builderDir}/"*/ -type d) )
 	if [ ! -z "$DOCKER_BUILD_PKGS" ]; then
-		pkgs=()
-		for p in $DOCKER_BUILD_PKGS; do
-			pkgs+=( "$builderDir/$p" )
-		done
+		pkgs=( $(echo ${DOCKER_BUILD_PKGS[@]/#/$builderDir\/}) )
 	fi
 	for dir in "${pkgs[@]}"; do
 		[ -d "$dir" ] || { echo >&2 "skipping nonexistent $dir"; continue; }

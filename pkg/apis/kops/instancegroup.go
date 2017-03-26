@@ -18,25 +18,25 @@ package kops
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/util/validation/field"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 )
 
 const LabelClusterName = "kops.k8s.io/cluster"
 
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
-	v1.TypeMeta `json:",inline"`
-	ObjectMeta  api.ObjectMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta `json:",inline"`
+	ObjectMeta      metav1.ObjectMeta `json:"metadata,omitempty"`
 
 	Spec InstanceGroupSpec `json:"spec,omitempty"`
 }
 
 type InstanceGroupList struct {
-	v1.TypeMeta `json:",inline"`
-	v1.ListMeta `json:"metadata,omitempty"`
+	metav1.TypeMeta `json:",inline"`
+	metav1.ListMeta `json:"metadata,omitempty"`
 
 	Items []InstanceGroup `json:"items"`
 }
@@ -89,6 +89,9 @@ type InstanceGroupSpec struct {
 
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
+
+	// Kubelet overrides kubelet config from the ClusterSpec
+	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values

@@ -3,12 +3,17 @@ package procfs
 import "testing"
 
 func TestStat(t *testing.T) {
-	s, err := FS("fixtures").NewStat()
+	fs, err := NewFS("fixtures")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if want, have := int64(1418183276), s.BootTime; want != have {
-		t.Errorf("want boot time %d, have %d", want, have)
+	s, err := fs.NewStat()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if want, got := int64(1418183276), s.BootTime; want != got {
+		t.Errorf("want boot time %d, got %d", want, got)
 	}
 }

@@ -17,8 +17,8 @@ limitations under the License.
 package batch
 
 import (
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api"
-	metav1 "k8s.io/client-go/pkg/apis/meta/v1"
 )
 
 // +genclient=true
@@ -29,7 +29,7 @@ type Job struct {
 	// Standard object's metadata.
 	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata
 	// +optional
-	api.ObjectMeta
+	metav1.ObjectMeta
 
 	// Spec is a structure defining the expected behavior of a job.
 	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#spec-and-status
@@ -60,7 +60,7 @@ type JobTemplate struct {
 	// Standard object's metadata.
 	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata
 	// +optional
-	api.ObjectMeta
+	metav1.ObjectMeta
 
 	// Template defines jobs that will be created from this template
 	// http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#spec-and-status
@@ -73,7 +73,7 @@ type JobTemplateSpec struct {
 	// Standard object's metadata of the jobs created from this template.
 	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata
 	// +optional
-	api.ObjectMeta
+	metav1.ObjectMeta
 
 	// Specification of the desired behavior of the job.
 	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#spec-and-status
@@ -196,7 +196,7 @@ type CronJob struct {
 	// Standard object's metadata.
 	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#metadata
 	// +optional
-	api.ObjectMeta
+	metav1.ObjectMeta
 
 	// Spec is a structure defining the expected behavior of a job, including the schedule.
 	// More info: http://releases.k8s.io/HEAD/docs/devel/api-conventions.md#spec-and-status
@@ -244,6 +244,16 @@ type CronJobSpec struct {
 	// JobTemplate is the object that describes the job that will be created when
 	// executing a CronJob.
 	JobTemplate JobTemplateSpec
+
+	// The number of successful finished jobs to retain.
+	// This is a pointer to distinguish between explicit zero and not specified.
+	// +optional
+	SuccessfulJobsHistoryLimit *int32
+
+	// The number of failed finished jobs to retain.
+	// This is a pointer to distinguish between explicit zero and not specified.
+	// +optional
+	FailedJobsHistoryLimit *int32
 }
 
 // ConcurrencyPolicy describes how the job will be handled.

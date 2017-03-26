@@ -46,9 +46,8 @@ func (c *CloudSearchDomain) SearchRequest(input *SearchInput) (req *request.Requ
 		input = &SearchInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SearchOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -129,9 +128,8 @@ func (c *CloudSearchDomain) SuggestRequest(input *SuggestInput) (req *request.Re
 		input = &SuggestInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &SuggestOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
@@ -208,9 +206,8 @@ func (c *CloudSearchDomain) UploadDocumentsRequest(input *UploadDocumentsInput) 
 		input = &UploadDocumentsInput{}
 	}
 
-	req = c.newRequest(op, input, output)
 	output = &UploadDocumentsOutput{}
-	req.Data = output
+	req = c.newRequest(op, input, output)
 	return
 }
 
