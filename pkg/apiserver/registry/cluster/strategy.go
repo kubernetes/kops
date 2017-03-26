@@ -27,7 +27,6 @@ import (
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/apiserver/pkg/storage/names"
-	kapi "k8s.io/kubernetes/pkg/api"
 
 	"k8s.io/kops/pkg/apis/kops"
 )
@@ -37,7 +36,7 @@ type clusterStrategy struct {
 	names.NameGenerator
 }
 
-var Strategy = clusterStrategy{kapi.Scheme, names.SimpleNameGenerator}
+var Strategy = clusterStrategy{kops.Scheme, names.SimpleNameGenerator}
 
 func (clusterStrategy) NamespaceScoped() bool {
 	return false
@@ -75,7 +74,7 @@ func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
 	if !ok {
 		return nil, nil, fmt.Errorf("given object is not a Cluster.")
 	}
-	return labels.Set(cluster.ObjectMeta.Labels), ClusterToSelectableFields(cluster), nil
+	return labels.Set(cluster.Labels), ClusterToSelectableFields(cluster), nil
 }
 
 // MatchCluster is the filter used by the generic etcd backend to watch events

@@ -19,9 +19,7 @@ package server
 import (
 	"io"
 
-	"github.com/pborman/uuid"
 	"github.com/spf13/cobra"
-
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/registry/generic"
@@ -29,14 +27,12 @@ import (
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
 	"k8s.io/apiserver/pkg/storage/storagebackend"
-	"k8s.io/kubernetes/pkg/api"
-	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-
 	"k8s.io/kops/pkg/apiserver"
+	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	//"k8s.io/kops/pkg/apis/kops/v1alpha1"
-	"k8s.io/kops/pkg/apis/kops/v1alpha2"
-
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 )
 
 const defaultEtcdPathPrefix = "/registry/kops.kubernetes.io"
@@ -55,11 +51,11 @@ type KopsServerOptions struct {
 // NewCommandStartKopsServer provides a CLI handler for 'start master' command
 func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 	o := &KopsServerOptions{
-		Etcd: genericoptions.NewEtcdOptions(
-			defaultEtcdPathPrefix,
-			api.Scheme,
-			nil,
-		),
+		Etcd: genericoptions.NewEtcdOptions(&storagebackend.Config{
+			Prefix: defaultEtcdPathPrefix,
+			Copier: kops.Scheme,
+			Codec:  nil,
+		}),
 		//SecureServing:  genericoptions.NewSecureServingOptions(),
 		InsecureServing: genericoptions.NewInsecureServingOptions(),
 		Authentication:  genericoptions.NewDelegatingAuthenticationOptions(),
@@ -69,7 +65,7 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 		StdErr: err,
 	}
 	o.Etcd.StorageConfig.Type = storagebackend.StorageTypeETCD2
-	o.Etcd.StorageConfig.Codec = api.Codecs.LegacyCodec(v1alpha2.SchemeGroupVersion)
+	o.Etcd.StorageConfig.Codec = kops.Codecs.LegacyCodec(v1alpha2.SchemeGroupVersion)
 	//o.SecureServing.ServingOptions.BindPort = 443
 
 	cmd := &cobra.Command{
@@ -106,7 +102,7 @@ func (o KopsServerOptions) RunKopsServer() error {
 	//	return fmt.Errorf("error creating self-signed certificates: %v", err)
 	//}
 
-	genericAPIServerConfig := genericapiserver.NewConfig().WithSerializer(api.Codecs)
+	genericAPIServerConfig := genericapiserver.NewConfig().WithSerializer(kops.Codecs)
 
 	//if err := o.SecureServing.ApplyTo(genericAPIServerConfig); err != nil {
 	//	return err
@@ -122,11 +118,12 @@ func (o KopsServerOptions) RunKopsServer() error {
 	//	return err
 	//}
 
-	var err error
-	privilegedLoopbackToken := uuid.NewRandom().String()
-	if genericAPIServerConfig.LoopbackClientConfig, err = genericAPIServerConfig.SecureServingInfo.NewSelfClientConfig(privilegedLoopbackToken); err != nil {
-		return err
-	}
+	//var err error
+	//privilegedLoopbackToken := uuid.NewRandom().String()
+	//loopbackCert := []byte(nil)
+	//if genericAPIServerConfig.LoopbackClientConfig, err = genericAPIServerConfig.SecureServingInfo.NewLoopbackClientConfig(privilegedLoopbackToken, loopbackCert); err != nil {
+	//	return err
+	//}
 
 	config := apiserver.Config{
 		GenericConfig:     genericAPIServerConfig,
