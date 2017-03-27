@@ -203,22 +203,33 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 	{
 		var wg sync.WaitGroup
 
-		for k, nodeGroup := range nodeGroups {
-			wg.Add(1)
-			go func(k string, group *CloudInstanceGroup) {
+		// We run nodes in series, even if they are in separate instance groups
+		// typically they will not being separate instance groups. If you roll the nodes in parallel
+		// you can get into a scenario where you can evict multiple statefulset pods from the same
+		// statefulset at the same time. Further improvements needs to be made to protect from this as
+		// well.
+
+		wg.Add(1)
+
+		go func() {
+			for k := range nodeGroups {
 				resultsMutex.Lock()
 				results[k] = fmt.Errorf("function panic nodes")
 				resultsMutex.Unlock()
+			}
 
-				defer wg.Done()
+			defer wg.Done()
 
+			for k, group := range nodeGroups {
 				err := group.RollingUpdate(c, instanceGroups, false, c.NodeInterval)
 
 				resultsMutex.Lock()
 				results[k] = err
 				resultsMutex.Unlock()
-			}(k, nodeGroup)
-		}
+
+				// TODO: Bail on error?
+			}
+		}()
 
 		wg.Wait()
 	}
