@@ -556,9 +556,10 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	bootstrapScriptBuilder := &model.BootstrapScript{
-		NodeUpConfigBuilder: renderNodeUpConfig,
-		NodeUpSourceHash:    "",
-		NodeUpSource:        c.NodeUpSource,
+		NodeUpConfigBuilder:        renderNodeUpConfig,
+		NodeUpSourceHash:           "",
+		NodeUpSource:               c.NodeUpSource,
+		AddAwsEnvironmentVariables: false,
 	}
 	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
 	case fi.CloudProviderAWS:
