@@ -21,12 +21,12 @@ import (
 
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/kops/pkg/apis/kops/util"
 )
 
 const LabelClusterName = "kops.k8s.io/cluster"
-const TaintNoScheduleMaster = "dedicated=master:NoSchedule"
+
+// Deprecated - use the new labels & taints node-role.kubernetes.io/master and node-role.kubernetes.io/node
+const TaintNoScheduleMaster15 = "dedicated=master:NoSchedule"
 
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
@@ -139,81 +139,4 @@ func (g *InstanceGroup) IsMaster() bool {
 		glog.Fatalf("Role not set in group %v", g)
 		return false
 	}
-}
-
-func (g *InstanceGroup) Validate() error {
-	if g.ObjectMeta.Name == "" {
-		return field.Required(field.NewPath("Name"), "")
-	}
-
-	if g.Spec.Role == "" {
-		return field.Required(field.NewPath("Role"), "Role must be set")
-	}
-
-	switch g.Spec.Role {
-	case InstanceGroupRoleMaster:
-	case InstanceGroupRoleNode:
-	case InstanceGroupRoleBastion:
-
-	default:
-		return field.Invalid(field.NewPath("Role"), g.Spec.Role, "Unknown role")
-	}
-
-	if g.IsMaster() {
-		if len(g.Spec.Subnets) == 0 {
-			return fmt.Errorf("Master InstanceGroup %s did not specify any Subnets", g.ObjectMeta.Name)
-		}
-	}
-
-	return nil
-}
-
-// CrossValidate performs validation of the instance group, including that it is consistent with the Cluster
-// It calls Validate, so all that validation is included.
-func (g *InstanceGroup) CrossValidate(cluster *Cluster, strict bool) error {
-	err := g.Validate()
-	if err != nil {
-		return err
-	}
-
-	err = g.ValidateTaintsForKubeVersion(cluster)
-	if err != nil {
-		return err
-	}
-
-	// Check that instance groups are defined in valid zones
-	{
-		clusterSubnets := make(map[string]*ClusterSubnetSpec)
-		for i := range cluster.Spec.Subnets {
-			s := &cluster.Spec.Subnets[i]
-			if clusterSubnets[s.Name] != nil {
-				return fmt.Errorf("Subnets contained a duplicate value: %v", s.Name)
-			}
-			clusterSubnets[s.Name] = s
-		}
-
-		for _, z := range g.Spec.Subnets {
-			if clusterSubnets[z] == nil {
-				return fmt.Errorf("InstanceGroup %q is configured in %q, but this is not configured as a Subnet in the cluster", g.ObjectMeta.Name, z)
-			}
-		}
-	}
-
-	return nil
-}
-
-// Ensures that users don't try to specify custom taints on pre-1.6.0 IGs
-func (g *InstanceGroup) ValidateTaintsForKubeVersion(cluster *Cluster) error {
-	kv, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
-	if err != nil {
-		return fmt.Errorf("Unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
-	}
-
-	if kv.Major == 1 && kv.Minor <= 5 && len(g.Spec.Taints) > 0 {
-		if !(g.IsMaster() && g.Spec.Taints[0] == TaintNoScheduleMaster && len(g.Spec.Taints) == 1) {
-			return fmt.Errorf("User-specified taints are not supported before kubernetes version 1.6.0")
-		}
-	}
-
-	return nil
 }

@@ -18,7 +18,9 @@ package model
 
 import (
 	"fmt"
+	"github.com/blang/semver"
 	"github.com/golang/glog"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -27,6 +29,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // KubeletBuilder install kubelet
@@ -243,22 +246,10 @@ func (b *KubeletBuilder) buildKubeconfig() (string, error) {
 }
 
 func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
-	instanceGroup := b.InstanceGroup
-	if instanceGroup == nil {
-		// Old clusters might not have exported instance groups
-		// in that case we build a synthetic instance group with the information that BuildKubeletConfigSpec needs
-		// TODO: Remove this once we have a stable release
-		glog.Warningf("Building a synthetic instance group")
-		instanceGroup = &kops.InstanceGroup{}
-		instanceGroup.ObjectMeta.Name = "synthetic"
-		if b.IsMaster {
-			instanceGroup.Spec.Role = kops.InstanceGroupRoleMaster
-		} else {
-			instanceGroup.Spec.Role = kops.InstanceGroupRoleNode
-		}
-		//b.InstanceGroup = instanceGroup
+	if b.InstanceGroup == nil {
+		glog.Fatalf("InstanceGroup was not set")
 	}
-	kubeletConfigSpec, err := kops.BuildKubeletConfigSpec(b.Cluster, instanceGroup)
+	kubeletConfigSpec, err := b.buildKubeletConfigSpec()
 	if err != nil {
 		return nil, fmt.Errorf("error building kubelet config: %v", err)
 	}
@@ -291,4 +282,84 @@ func (b *KubeletBuilder) addStaticUtils(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
+}
+
+const RoleLabelName15 = "kubernetes.io/role"
+const RoleLabelName16 = "kubernetes.io/role"
+const RoleMasterLabelValue15 = "master"
+const RoleNodeLabelValue15 = "node"
+
+const RoleLabelMaster16 = "node-role.kubernetes.io/master"
+const RoleLabelNode16 = "node-role.kubernetes.io/node"
+
+// NodeLabels are defined in the InstanceGroup, but set flags on the kubelet config.
+// We have a conflict here: on the one hand we want an easy to use abstract specification
+// for the cluster, on the other hand we don't want two fields that do the same thing.
+// So we make the logic for combining a KubeletConfig part of our core logic.
+// NodeLabels are set on the instanceGroup.  We might allow specification of them on the kubelet
+// config as well, but for now the precedence is not fully specified.
+// (Today, NodeLabels on the InstanceGroup are merged in to NodeLabels on the KubeletConfig in the Cluster).
+// In future, we will likely deprecate KubeletConfig in the Cluster, and move it into componentconfig,
+// once that is part of core k8s.
+
+// buildKubeletConfigSpec returns the kubeletconfig for the specified instanceGroup
+func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
+	sv, err := util.ParseKubernetesVersion(b.Cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to lookup kubernetes version: %v", err)
+	}
+
+	// Merge KubeletConfig for NodeLabels
+	c := &kops.KubeletConfigSpec{}
+	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
+		utils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
+	} else {
+		utils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
+	}
+
+	if b.InstanceGroup.Spec.Kubelet != nil {
+		utils.JsonMergeStruct(c, b.InstanceGroup.Spec.Kubelet)
+	}
+
+	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
+		if c.NodeLabels == nil {
+			c.NodeLabels = make(map[string]string)
+		}
+		c.NodeLabels[RoleLabelMaster16] = ""
+		c.NodeLabels[RoleLabelName15] = RoleMasterLabelValue15
+	} else {
+		if c.NodeLabels == nil {
+			c.NodeLabels = make(map[string]string)
+		}
+		c.NodeLabels[RoleLabelNode16] = ""
+		c.NodeLabels[RoleLabelName15] = RoleNodeLabelValue15
+	}
+
+	for k, v := range b.InstanceGroup.Spec.NodeLabels {
+		if c.NodeLabels == nil {
+			c.NodeLabels = make(map[string]string)
+		}
+		c.NodeLabels[k] = v
+	}
+
+	// --register-with-taints was available in the first 1.6.0 alpha, no need to rely on semver's pre/build ordering
+	sv.Pre = nil
+	sv.Build = nil
+	if sv.GTE(semver.Version{Major: 1, Minor: 6, Patch: 0, Pre: nil, Build: nil}) {
+		for _, t := range b.InstanceGroup.Spec.Taints {
+			c.Taints = append(c.Taints, t)
+		}
+
+		if len(c.Taints) == 0 && b.IsMaster {
+			c.Taints = append(c.Taints, RoleLabelMaster16+":"+string(v1.TaintEffectNoSchedule))
+		}
+
+		// Enable scheduling since it can be controlled via taints.
+		// For pre-1.6.0 clusters, this is handled by tainter.go
+		c.RegisterSchedulable = fi.Bool(true)
+	} else {
+		// For 1.5 and earlier, protokube will taint the master
+	}
+
+	return c, nil
 }
