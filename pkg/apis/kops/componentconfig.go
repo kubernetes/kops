@@ -377,9 +377,12 @@ type KubeProxyConfig struct {
 }
 
 type KubeAPIServerConfig struct {
+	// TODO: Remove PathSrvKubernetes - unused
 	PathSrvKubernetes string `json:"pathSrvKubernetes,omitempty"`
-	PathSrvSshproxy   string `json:"pathSrvSshproxy,omitempty"`
-	Image             string `json:"image,omitempty"`
+	// TODO: Remove PathSrvSshProxy - unused
+	PathSrvSshproxy string `json:"pathSrvSshproxy,omitempty"`
+
+	Image string `json:"image,omitempty"`
 
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
 
@@ -390,13 +393,22 @@ type KubeAPIServerConfig struct {
 	EtcdServersOverrides  []string `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
 	AdmissionControl      []string `json:"admissionControl,omitempty" flag:"admission-control"`
 	ServiceClusterIPRange string   `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
-	ClientCAFile          string   `json:"clientCAFile,omitempty" flag:"client-ca-file"`
-	BasicAuthFile         string   `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
-	TLSCertFile           string   `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
-	TLSPrivateKeyFile     string   `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
-	TokenAuthFile         string   `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
-	AllowPrivileged       *bool    `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
-	APIServerCount        *int32   `json:"apiServerCount,omitempty" flag:"apiserver-count"`
+
+	// TODO: Remove unused BasicAuthFile
+	BasicAuthFile string `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
+
+	// TODO: Remove unused ClientCAFile
+	ClientCAFile string `json:"clientCAFile,omitempty" flag:"client-ca-file"`
+	// TODO: Remove unused TLSCertFile
+	TLSCertFile string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
+	// TODO: Remove unused TLSPrivateKeyFile
+	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
+
+	// TODO: Remove unused TokenAuthFile
+	TokenAuthFile string `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
+
+	AllowPrivileged *bool  `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
+	APIServerCount  *int32 `json:"apiServerCount,omitempty" flag:"apiserver-count"`
 	// keys and values in RuntimeConfig are parsed into the `--runtime-config` parameter
 	// for KubeAPIServer, concatenated with commas. ex: `--runtime-config=key1=value1,key2=value2`.
 	// Use this to enable alpha resources on kube-apiserver
@@ -445,10 +457,12 @@ type KubeControllerManagerConfig struct {
 	Master   string `json:"master,omitempty" flag:"master"`
 	LogLevel int32  `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 
+	// TODO: Remove as unused
 	ServiceAccountPrivateKeyFile string `json:"serviceAccountPrivateKeyFile,omitempty" flag:"service-account-private-key-file"`
 
 	Image string `json:"image,omitempty"`
 
+	// TODO: Remove PathSrvKubernetes - unused
 	PathSrvKubernetes string `json:"pathSrvKubernetes,omitempty"`
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
@@ -563,9 +577,12 @@ type KubeControllerManagerConfig struct {
 	// configureCloudRoutes enables CIDRs allocated with allocateNodeCIDRs
 	// to be configured on the cloud provider.
 	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
+
+	// TODO: Remove as unused
 	// rootCAFile is the root certificate authority will be included in service
 	// account's token secret. This must be a valid PEM-encoded CA bundle.
 	RootCAFile string `json:"rootCAFile,omitempty" flag:"root-ca-file"`
+
 	//// contentType is contentType of requests sent to apiserver.
 	//ContentType string `json:"contentType"`
 	//// kubeAPIQPS is the QPS to use while talking with kubernetes apiserver.

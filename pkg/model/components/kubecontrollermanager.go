@@ -108,10 +108,6 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		return fmt.Errorf("unknown cloud provider %q", clusterSpec.CloudProvider)
 	}
 
-	kcm.PathSrvKubernetes = "/srv/kubernetes"
-	kcm.RootCAFile = "/srv/kubernetes/ca.crt"
-	kcm.ServiceAccountPrivateKeyFile = "/srv/kubernetes/server.key"
-
 	kcm.Master = "127.0.0.1:8080"
 	kcm.LogLevel = 2
 

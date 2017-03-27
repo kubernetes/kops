@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
@@ -44,7 +45,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
-	"k8s.io/kops/upup/pkg/fi/nodeup"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 )

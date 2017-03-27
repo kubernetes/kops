@@ -42,7 +42,7 @@ type File struct {
 	Mode        *string `json:"mode,omitempty"`
 	IfNotExists bool    `json:"ifNotExists,omitempty"`
 
-	OnChangeExecute []string `json:"onChangeExecute,omitempty"`
+	OnChangeExecute [][]string `json:"onChangeExecute,omitempty"`
 
 	Symlink *string `json:"symlink,omitempty"`
 	Owner   *string `json:"owner,omitempty"`
@@ -93,6 +93,23 @@ func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	for _, v := range tasks {
 		if _, ok := v.(*MountDiskTask); ok {
 			deps = append(deps, v)
+		}
+	}
+
+	// Files depend on parent directories
+	for _, v := range tasks {
+		dir, ok := v.(*File)
+		if !ok {
+			continue
+		}
+		if dir.Type == FileType_Directory {
+			dirPath := dir.Path
+			if !strings.HasSuffix(dirPath, "/") {
+				dirPath += "/"
+			}
+			if strings.HasPrefix(f.Path, dirPath) {
+				deps = append(deps, v)
+			}
 		}
 	}
 
@@ -261,15 +278,16 @@ func (_ *File) RenderLocal(t *local.LocalTarget, a, e, changes *File) error {
 	}
 
 	if changed && e.OnChangeExecute != nil {
-		args := e.OnChangeExecute
-		human := strings.Join(args, " ")
+		for _, args := range e.OnChangeExecute {
+			human := strings.Join(args, " ")
 
-		glog.Infof("Changed; will execute OnChangeExecute command: %q", human)
+			glog.Infof("Changed; will execute OnChangeExecute command: %q", human)
 
-		cmd := exec.Command(args[0], args[1:]...)
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("error executing command %q: %v\nOutput: %s", human, err, output)
+			cmd := exec.Command(args[0], args[1:]...)
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				return fmt.Errorf("error executing command %q: %v\nOutput: %s", human, err, output)
+			}
 		}
 	}
 
@@ -303,7 +321,8 @@ func (_ *File) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *File
 	}
 
 	if e.OnChangeExecute != nil {
-		t.AddCommand(cloudinit.Always, e.OnChangeExecute...)
+		return fmt.Errorf("OnChangeExecute not supported with CloudInit")
+		//t.AddCommand(cloudinit.Always, e.OnChangeExecute...)
 	}
 
 	return nil
