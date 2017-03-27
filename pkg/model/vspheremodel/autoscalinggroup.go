@@ -31,8 +31,6 @@ type AutoscalingGroupModelBuilder struct {
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
-const defaultVmTemplateName = "Ubuntu_16_10"
-
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Note that we are creating a VM per instance group. Instance group represents a group of VMs.
 	// The following logic should considerably change once we add support for multiple master/worker nodes,
@@ -41,7 +39,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		name := b.AutoscalingGroupName(ig)
 		createVmTask := &vspheretasks.VirtualMachine{
 			Name:           &name,
-			VMTemplateName: fi.String(defaultVmTemplateName),
+			VMTemplateName: fi.String(ig.Spec.Image),
 		}
 
 		c.AddTask(createVmTask)
@@ -53,6 +51,8 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			IG:              ig,
 			BootstrapScript: b.BootstrapScript,
 		}
+		attachISOTask.BootstrapScript.AddAwsEnvironmentVariables = true
+
 		c.AddTask(attachISOTask)
 
 		powerOnTaskName := "PowerON-" + name
