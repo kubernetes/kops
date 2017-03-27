@@ -18,6 +18,7 @@ spec:
     - instanceGroup: master-us-test-1c
       name: c
     name: main
+    storage: etcd2
   - etcdMembers:
     - instanceGroup: master-us-test-1a
       name: a
@@ -26,6 +27,7 @@ spec:
     - instanceGroup: master-us-test-1c
       name: c
     name: events
+    storage: etcd2
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.6.0-alpha.3

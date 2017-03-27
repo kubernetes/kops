@@ -182,7 +182,11 @@ func (v *GCEVolumes) buildGCEVolume(d *compute.Disk) (*Volume, error) {
 		}
 	}
 
+	labelMap := make(map[string]string)
 	for k, v := range d.Labels {
+		labelMap[k] = v
+	}
+	for k, v := range labelMap {
 		switch k {
 		case gce.GceLabelNameKubernetesCluster:
 			{
@@ -191,13 +195,20 @@ func (v *GCEVolumes) buildGCEVolume(d *compute.Disk) (*Volume, error) {
 
 		default:
 			if strings.HasPrefix(k, gce.GceLabelNameEtcdClusterPrefix) {
-				etcdClusterName := k[len(gce.GceLabelNameEtcdClusterPrefix):]
+				etcdClusterName := strings.TrimPrefix(k, gce.GceLabelNameEtcdClusterPrefix)
 
 				value, err := gce.DecodeGCELabel(v)
 				if err != nil {
 					return nil, fmt.Errorf("Error decoding GCE label: %s=%q", k, v)
 				}
-				spec, err := ParseEtcdClusterSpec(etcdClusterName, value)
+
+				optionsLabelValue := labelMap[gce.GceLabelNameEtcdClusterOptionsPrefix+etcdClusterName]
+				options, err := gce.DecodeGCELabel(optionsLabelValue)
+				if err != nil {
+					return nil, fmt.Errorf("Error decoding GCE label: %s=%q", gce.GceLabelNameEtcdClusterOptionsPrefix+etcdClusterName, v)
+				}
+
+				spec, err := ParseEtcdClusterSpec(etcdClusterName, value, options)
 				if err != nil {
 					return nil, fmt.Errorf("error parsing etcd cluster label %q on volume %q: %v", value, volumeName, err)
 				}

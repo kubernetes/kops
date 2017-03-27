@@ -390,8 +390,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 
 		for _, etcdCluster := range cloudup.EtcdClusters {
-			etcd := &api.EtcdClusterSpec{}
+			etcd := api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
+			etcd.Storage = api.StorageTypeETCD2
 
 			var names []string
 			for _, ig := range masters {

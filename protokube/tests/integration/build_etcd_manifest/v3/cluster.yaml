@@ -1,0 +1,12 @@
+volumeMountPath: /mnt/main
+clusterName: etcd-main
+dataDirName: data-main
+podName: etcd-server-main
+cpuRequest: "200m"
+clientPort: 4001
+peerPort: 2380
+clusterToken: token-main
+logFile: /var/log/main.log
+spec:
+  etcdVersion: 3.0.17
+  storageBackend: etcd3

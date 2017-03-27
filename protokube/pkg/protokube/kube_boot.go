@@ -88,7 +88,7 @@ func (k *KubeBoot) syncOnce() error {
 				if etcdController == nil {
 					glog.Infof("Found etcd cluster spec on volume %q: %v", v.ID, etcdClusterSpec)
 
-					etcdController, err := newEtcdController(k, v, etcdClusterSpec)
+					etcdController, err := newEtcdController(k, v, *etcdClusterSpec)
 					if err != nil {
 						glog.Warningf("error building etcd controller: %v", err)
 					} else {

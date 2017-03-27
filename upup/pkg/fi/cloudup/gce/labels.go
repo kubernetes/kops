@@ -29,6 +29,10 @@ const GceLabelNameKubernetesCluster = "k8s-io-cluster-name"
 const GceLabelNameRolePrefix = "k8s-io-role-"
 const GceLabelNameEtcdClusterPrefix = "k8s-io-etcd-"
 
+// GceLabelNameEtcdClusterOptionsPrefix should not be a prefix of GceLabelNameEtcdClusterOptionsPrefix,
+// as otherwise the parsing logic would get tricky.
+const GceLabelNameEtcdClusterOptionsPrefix = "k8s-io-etcdoptions-"
+
 // EncodeGCELabel encodes a string into an RFC1035 compatible value, suitable for use as GCE label key or value
 // We use a URI inspired escaping, but with - instead of %.
 func EncodeGCELabel(s string) string {

@@ -33,6 +33,12 @@ type EtcdClusterSpec struct {
 
 	NodeName  string   `json:"nodeName,omitempty"`
 	NodeNames []string `json:"nodeNames,omitempty"`
+
+	EtcdVersion         string `json:"etcdVersion,omitempty"`
+	UseSSL              bool   `json:"useSSL,omitempty"`
+	LockdownClient      bool   `json:"lockdownClient,omitempty"`
+	StorageBackend      string `json:"storageBackend,omitempty"`
+	JoinExistingCluster bool   `json:"joinExistingCluster,omitempty"`
 }
 
 func (e *EtcdClusterSpec) String() string {
@@ -51,7 +57,7 @@ type EtcdCluster struct {
 	PodName      string
 	CPURequest   resource.Quantity
 
-	Spec *EtcdClusterSpec
+	Spec EtcdClusterSpec
 
 	VolumeMountPath string
 }
@@ -77,7 +83,7 @@ type EtcdController struct {
 	cluster    *EtcdCluster
 }
 
-func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*EtcdController, error) {
+func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec EtcdClusterSpec) (*EtcdController, error) {
 	k := &EtcdController{
 		kubeBoot: kubeBoot,
 	}

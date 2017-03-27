@@ -352,7 +352,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	}
 
 	for _, etcdClusterName := range []string{"main", "events"} {
-		etcdCluster := &api.EtcdClusterSpec{
+		etcdCluster := api.EtcdClusterSpec{
 			Name: etcdClusterName,
 		}
 

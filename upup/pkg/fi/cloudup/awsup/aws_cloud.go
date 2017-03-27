@@ -58,6 +58,7 @@ const DeleteTagsLogInterval = 10 // this is in "retry intervals"
 const TagClusterName = "KubernetesCluster"
 const TagNameRolePrefix = "k8s.io/role/"
 const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+const TagNameEtcdClusterOptionsPrefix = "k8s.io/etcd-options/"
 
 const TagRoleMaster = "master"
 

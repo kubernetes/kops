@@ -125,7 +125,7 @@ func TestDeepValidate_ExtraMasterZone(t *testing.T) {
 
 func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 	c := buildDefaultCluster(t)
-	c.Spec.EtcdClusters = []*api.EtcdClusterSpec{
+	c.Spec.EtcdClusters = []api.EtcdClusterSpec{
 		{
 			Name: "main",
 			Members: []*api.EtcdMemberSpec{

@@ -45,6 +45,8 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 
 	allErrs = append(allErrs, validateSubnets(spec.Subnets, field.NewPath("spec"))...)
 
+	allErrs = append(allErrs, validateEtcdClusters(spec.EtcdClusters, field.NewPath("etcdClusters"))...)
+
 	// SSHAccess
 	for i, cidr := range spec.SSHAccess {
 		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("sshAccess").Index(i))...)
@@ -123,6 +125,67 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 	if subnet.Name == "" {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), ""))
 	}
+
+	return allErrs
+}
+
+func validateEtcdClusters(etcdClusters []kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// cannot be empty
+	if len(etcdClusters) == 0 {
+		allErrs = append(allErrs, field.Required(fieldPath, ""))
+	}
+
+	// Each cluster must be valid
+	for i := range etcdClusters {
+		allErrs = append(allErrs, validateEtcdCluster(&etcdClusters[i], fieldPath.Index(i))...)
+	}
+
+	// cannot duplicate subnet name
+	{
+		names := sets.NewString()
+		for i := range etcdClusters {
+			name := etcdClusters[i].Name
+			if names.Has(name) {
+				allErrs = append(allErrs, field.Invalid(fieldPath, etcdClusters, fmt.Sprintf("etcdClusters with duplicate name %q found", name)))
+			}
+			names.Insert(name)
+		}
+	}
+
+	return allErrs
+}
+
+func validateEtcdCluster(etcdCluster *kops.EtcdClusterSpec, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// name is required
+	if etcdCluster.Name == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), ""))
+	}
+
+	// TODO: Validate members
+	//// EtcdMember stores the configurations for each member of the cluster (including the data volume)
+	//Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
+
+	switch etcdCluster.Storage {
+	case "":
+	// OK - means "default"
+	// allErrs = append(allErrs, field.Required(fieldPath.Child("storage"), ""))
+
+	case kops.StorageTypeETCD2:
+	// OK
+	case kops.StorageTypeETCD3:
+	// OK
+
+	default:
+		allErrs = append(allErrs, field.Invalid(fieldPath.Child("storage"), etcdCluster.Storage, "storage type not recognized: valid values are etcd2 or etcd3"))
+	}
+
+	//if etcdCluster.Version == "" {
+	//	allErrs = append(allErrs, field.Required(fieldPath.Child("version"), ""))
+	//}
 
 	return allErrs
 }

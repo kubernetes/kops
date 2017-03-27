@@ -48,7 +48,7 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 		etcdZones := zones.List()
 
 		for _, etcdCluster := range EtcdClusters {
-			etcd := &api.EtcdClusterSpec{}
+			etcd := api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
 			for _, zone := range etcdZones {
 				m := &api.EtcdMemberSpec{}

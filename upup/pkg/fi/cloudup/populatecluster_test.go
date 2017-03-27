@@ -65,7 +65,7 @@ func addEtcdClusters(c *api.Cluster) {
 	etcdZones := subnetNames.List()
 
 	for _, etcdCluster := range EtcdClusters {
-		etcd := &api.EtcdClusterSpec{}
+		etcd := api.EtcdClusterSpec{}
 		etcd.Name = etcdCluster
 		for _, zone := range etcdZones {
 			m := &api.EtcdMemberSpec{}

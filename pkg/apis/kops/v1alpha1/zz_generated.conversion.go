@@ -341,10 +341,9 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
-		*out = make([]*kops.EtcdClusterSpec, len(*in))
+		*out = make([]kops.EtcdClusterSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -488,10 +487,9 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
-		*out = make([]*EtcdClusterSpec, len(*in))
+		*out = make([]EtcdClusterSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -683,6 +681,8 @@ func autoConvert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdCluste
 	} else {
 		out.Members = nil
 	}
+	out.Storage = kops.StorageType(in.Storage)
+	out.Version = in.Version
 	return nil
 }
 
@@ -704,6 +704,8 @@ func autoConvert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(in *kops.EtcdC
 	} else {
 		out.Members = nil
 	}
+	out.Storage = StorageType(in.Storage)
+	out.Version = in.Version
 	return nil
 }
 
@@ -1038,8 +1040,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.AdmissionControl = in.AdmissionControl
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
-	out.ClientCAFile = in.ClientCAFile
 	out.BasicAuthFile = in.BasicAuthFile
+	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	out.TokenAuthFile = in.TokenAuthFile

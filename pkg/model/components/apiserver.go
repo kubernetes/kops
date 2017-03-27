@@ -38,6 +38,14 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 	}
 
+	if fi.StringValue(clusterSpec.KubeAPIServer.StorageBackend) == "" {
+		for _, etcd := range clusterSpec.EtcdClusters {
+			if etcd.Storage == kops.StorageTypeETCD3 {
+				clusterSpec.KubeAPIServer.StorageBackend = fi.String("etcd3")
+			}
+		}
+	}
+
 	if clusterSpec.KubeAPIServer.APIServerCount == nil {
 		count := b.buildAPIServerCount(clusterSpec)
 		if count == 0 {

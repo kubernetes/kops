@@ -121,10 +121,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-privatecalico-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatecalico.example.com"
-    Name                 = "us-test-1a.etcd-events.privatecalico.example.com"
-    "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster            = "privatecalico.example.com"
+    Name                         = "us-test-1a.etcd-events.privatecalico.example.com"
+    "k8s.io/etcd-options/events" = "v2.2.1"
+    "k8s.io/etcd/events"         = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"         = "1"
   }
 }
 
@@ -135,10 +136,11 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privatecalico-example-com" {
   encrypted         = false
 
   tags = {
-    KubernetesCluster    = "privatecalico.example.com"
-    Name                 = "us-test-1a.etcd-main.privatecalico.example.com"
-    "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
-    "k8s.io/role/master" = "1"
+    KubernetesCluster          = "privatecalico.example.com"
+    Name                       = "us-test-1a.etcd-main.privatecalico.example.com"
+    "k8s.io/etcd-options/main" = "v2.2.1"
+    "k8s.io/etcd/main"         = "us-test-1a/us-test-1a"
+    "k8s.io/role/master"       = "1"
   }
 }
 

@@ -127,7 +127,8 @@ func (c *populateClusterSpec) run() error {
 
 		// Check etcd configuration
 		{
-			for i, etcd := range cluster.Spec.EtcdClusters {
+			for i := range cluster.Spec.EtcdClusters {
+				etcd := &cluster.Spec.EtcdClusters[i]
 				if etcd.Name == "" {
 					return fmt.Errorf("EtcdClusters #%d did not specify a Name", i)
 				}
@@ -139,6 +140,19 @@ func (c *populateClusterSpec) run() error {
 
 					if fi.StringValue(m.InstanceGroup) == "" {
 						return fmt.Errorf("EtcdMember %s:%s did not specify a InstanceGroup", etcd.Name, m.Name)
+					}
+				}
+
+				if etcd.Storage == "" {
+					etcd.Storage = api.StorageTypeETCD2
+				}
+				if etcd.Version == "" {
+					if etcd.Storage == api.StorageTypeETCD3 {
+						etcd.Version = model.DefaultEtcdVersionV3
+					} else if etcd.Storage == api.StorageTypeETCD2 {
+						etcd.Version = model.DefaultEtcdVersionV2
+					} else {
+						return fmt.Errorf("Unknown Storage: %q", etcd.Storage)
 					}
 				}
 
