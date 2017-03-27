@@ -27,6 +27,7 @@ import (
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
+	kopsutil "k8s.io/kops/pkg/apis/kops/util"
 )
 
 // NodeController watches for nodes
@@ -215,7 +216,8 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) {
 	// node/role=<role>/external -> ExternalIP
 	// node/role=<role>/internal -> InternalIP
 	{
-		role := node.Labels["kubernetes.io/role"]
+		role := kopsutil.GetNodeRole(node)
+		// Default to node
 		if role == "" {
 			role = "node"
 		}

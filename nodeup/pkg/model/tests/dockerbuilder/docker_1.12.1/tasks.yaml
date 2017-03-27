@@ -15,4 +15,34 @@ Name: libapparmor1
 Name: libltdl7
 ---
 Name: perl
+---
+Name: docker.service
+definition: |
+  [Unit]
+  Description=Docker Application Container Engine
+  Documentation=https://docs.docker.com
+  After=network.target docker.socket
+  Requires=docker.socket
 
+  [Service]
+  Type=notify
+  EnvironmentFile=/etc/sysconfig/docker
+  ExecStart=/usr/bin/dockerd -H fd:// "$DOCKER_OPTS"
+  ExecReload=/bin/kill -s HUP $MAINPID
+  KillMode=process
+  TimeoutStartSec=0
+  LimitNOFILE=1048576
+  LimitNPROC=1048576
+  LimitCORE=infinity
+  Restart=always
+  RestartSec=2s
+  StartLimitInterval=0
+  Delegate=yes
+  ExecStartPre=/opt/kubernetes/helpers/docker-prestart
+
+  [Install]
+  WantedBy=multi-user.target
+enabled: true
+manageState: true
+running: true
+smartRestart: true
