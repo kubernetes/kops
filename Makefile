@@ -158,6 +158,27 @@ version-dist: nodeup-dist kops-dist protokube-export utils-dist
 	cp .build/dist/linux/amd64/utils.tar.gz .build/upload/kops/${VERSION}/linux/amd64/utils.tar.gz
 	cp .build/dist/linux/amd64/utils.tar.gz.sha1 .build/upload/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
 
+vsphere-setup:
+	hack/vsphere/vsphere_env.sh --set
+
+vsphere-version-dist: vsphere-setup nodeup-dist protokube-export
+	rm -rf .build/upload
+	mkdir -p .build/upload/kops/${VERSION}/linux/amd64/
+	mkdir -p .build/upload/kops/${VERSION}/darwin/amd64/
+	mkdir -p .build/upload/kops/${VERSION}/images/
+	mkdir -p .build/upload/utils/${VERSION}/linux/amd64/
+	cp .build/dist/nodeup .build/upload/kops/${VERSION}/linux/amd64/nodeup
+	cp .build/dist/nodeup.sha1 .build/upload/kops/${VERSION}/linux/amd64/nodeup.sha1
+	cp .build/dist/images/protokube.tar.gz .build/upload/kops/${VERSION}/images/protokube.tar.gz
+	cp .build/dist/images/protokube.tar.gz.sha1 .build/upload/kops/${VERSION}/images/protokube.tar.gz.sha1
+	scp -r .build/dist/nodeup* ${TARGET}:${TARGET_PATH}/nodeup
+	scp -r .build/dist/images/protokube.tar.gz* ${TARGET}:${TARGET_PATH}/protokube/
+	make kops-dist
+	cp .build/dist/linux/amd64/kops .build/upload/kops/${VERSION}/linux/amd64/kops
+	cp .build/dist/linux/amd64/kops.sha1 .build/upload/kops/${VERSION}/linux/amd64/kops.sha1
+	cp .build/dist/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
+	cp .build/dist/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
+
 upload: kops version-dist
 	aws s3 sync --acl public-read .build/upload/ ${S3_BUCKET}
 
