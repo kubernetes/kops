@@ -21,6 +21,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/systemd"
@@ -58,6 +59,10 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
+
+		if featureflag.ExperimentalCriticalPodAnnotation.Enabled() {
+			sysconfig = sysconfig + "Environment=\"ExperimentalCriticalPodAnnotation=true\"\n"
+		}
 
 		t := &nodetasks.File{
 			Path:     "/etc/sysconfig/kubelet",

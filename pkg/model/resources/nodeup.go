@@ -122,7 +122,7 @@ function download-release() {
 
   echo "Running nodeup"
   # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
-  ( cd ${INSTALL_DIR}; ./nodeup --install-systemd-unit --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8  )
+  ( cd ${INSTALL_DIR}; {{ FeatureFlags }} ./nodeup --install-systemd-unit --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8  )
 }
 
 ####################################################################################
