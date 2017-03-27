@@ -24,6 +24,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -101,15 +102,6 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 
 }
 
-func getRoleNode(node *v1.Node) string {
-	role := kops.RoleNodeLabelValue
-	if val, ok := node.ObjectMeta.Labels[kops.RoleLabelName]; ok {
-		role = val
-	}
-
-	return role
-}
-
 func collectComponentFailures(client kubernetes.Interface) (failures []string, err error) {
 	componentList, err := client.CoreV1().ComponentStatuses().List(metav1.ListOptions{})
 	if err == nil {
@@ -148,7 +140,7 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 	for i := range nodes.Items {
 		node := &nodes.Items[i]
 
-		role := getRoleNode(node)
+		role := util.GetNodeRole(node)
 
 		n := &ValidationNode{
 			Zone:     node.ObjectMeta.Labels["failure-domain.beta.kubernetes.io/zone"],
@@ -160,13 +152,13 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 		ready := IsNodeOrMasterReady(node)
 
 		// TODO: Use instance group role instead...
-		if n.Role == kops.RoleMasterLabelValue {
+		if n.Role == "master" {
 			if ready {
 				validationCluster.MastersReadyArray = append(validationCluster.MastersReadyArray, n)
 			} else {
 				validationCluster.MastersNotReadyArray = append(validationCluster.MastersNotReadyArray, n)
 			}
-		} else if n.Role == kops.RoleNodeLabelValue {
+		} else if n.Role == "node" {
 			if ready {
 				validationCluster.NodesReadyArray = append(validationCluster.NodesReadyArray, n)
 			} else {
