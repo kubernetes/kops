@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -64,6 +65,15 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
+	kubeAPIServer := b.Cluster.Spec.KubeAPIServer
+
+	kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
+	kubeAPIServer.TLSCertFile = filepath.Join(b.PathSrvKubernetes(), "server.cert")
+	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
+
+	kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
+	kubeAPIServer.TokenAuthFile = filepath.Join(b.PathSrvKubernetes(), "known_tokens.csv")
+
 	flags, err := flagbuilder.BuildFlags(b.Cluster.Spec.KubeAPIServer)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-apiserver flags: %v", err)
@@ -141,12 +151,14 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath, true)
 	}
 
-	if b.Cluster.Spec.KubeAPIServer.PathSrvKubernetes != "" {
-		addHostPathMapping(pod, container, "srvkube", b.Cluster.Spec.KubeAPIServer.PathSrvKubernetes, true)
+	pathSrvKubernetes := b.PathSrvKubernetes()
+	if pathSrvKubernetes != "" {
+		addHostPathMapping(pod, container, "srvkube", pathSrvKubernetes, true)
 	}
 
-	if b.Cluster.Spec.KubeAPIServer.PathSrvSshproxy != "" {
-		addHostPathMapping(pod, container, "srvsshproxy", b.Cluster.Spec.KubeAPIServer.PathSrvSshproxy, false)
+	pathSrvSshproxy := b.PathSrvSshproxy()
+	if pathSrvSshproxy != "" {
+		addHostPathMapping(pod, container, "srvsshproxy", pathSrvSshproxy, false)
 	}
 
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log", false)

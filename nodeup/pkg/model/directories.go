@@ -17,42 +17,34 @@ limitations under the License.
 package model
 
 import (
-	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-// EtcdBuilder installs etcd
-type EtcdBuilder struct {
+// DirectoryBuilder creates required directories
+type DirectoryBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &LogrotateBuilder{}
+var _ fi.ModelBuilder = &DirectoryBuilder{}
 
-func (b *EtcdBuilder) Build(c *fi.ModelBuilderContext) error {
-	if !b.IsMaster {
-		return nil
+func (b *DirectoryBuilder) Build(c *fi.ModelBuilderContext) error {
+	if b.Distribution == distros.DistributionContainerOS {
+		dir := "/home/kubernetes/bin"
+
+		t := &nodetasks.File{
+			Path: dir,
+			Type: nodetasks.FileType_Directory,
+			Mode: s("0755"),
+
+			OnChangeExecute: [][]string{
+				{"/bin/mount", "--bind", "/home/kubernetes/bin", "/home/kubernetes/bin"},
+				{"/bin/mount", "-o", "remount,exec", "/home/kubernetes/bin"},
+			},
+		}
+		c.AddTask(t)
 	}
-
-	switch b.Distribution {
-	case distros.DistributionCoreOS:
-		glog.Infof("Detected CoreOS; skipping etcd user installation")
-		return nil
-
-	case distros.DistributionContainerOS:
-		glog.Infof("Detected ContainerOS; skipping etcd user installation")
-		return nil
-	}
-
-	// TODO: Do we actually use the user anywhere?
-
-	c.AddTask(&nodetasks.UserTask{
-		// TODO: Should we set a consistent UID in case we remount?
-		Name:  "user",
-		Shell: "/sbin/nologin",
-		Home:  "/var/etcd",
-	})
 
 	return nil
 }
