@@ -42,11 +42,11 @@ kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addon
 Please note that kops installs a Route53 DNS controller automatically (it is required for cluster discovery).
 The functionality of the route53-mapper overlaps with the dns-controller, but some users will prefer to
 use one or the other.
-[README for the included dns-controller](https://github.com/kubernetes/kops/blob/master/dns-controller/README.md)
+[Official README for Addon](https://github.com/wearemolecule/route53-kubernetes/blob/master/README.md)
 
 route53-mapper automates creation and updating of entries on Route53 with `A` records pointing
 to ELB-backed `LoadBalancer` services created by Kubernetes. Install using:
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/route53-mapper/v1.2.0.yml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/route53-mapper/v1.3.0.yml
 ```
