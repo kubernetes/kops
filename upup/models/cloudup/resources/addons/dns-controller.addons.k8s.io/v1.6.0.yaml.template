@@ -22,10 +22,10 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       tolerations:
-      - key: dedicated
-        value: master
+      - key: "node-role.kubernetes.io/master"
+        effect: NoSchedule
       nodeSelector:
-        kubernetes.io/role: master
+        node-role.kubernetes.io/master: ""
       dnsPolicy: Default  # Don't use cluster DNS (we are likely running before kube-dns)
       hostNetwork: true
       containers:

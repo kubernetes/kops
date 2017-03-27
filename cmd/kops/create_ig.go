@@ -23,6 +23,7 @@ import (
 	"io"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"os"
@@ -148,7 +149,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return fmt.Errorf("unexpected object type: %T", obj)
 	}
 
-	err = group.Validate()
+	err = validation.ValidateInstanceGroup(group)
 	if err != nil {
 		return err
 	}
