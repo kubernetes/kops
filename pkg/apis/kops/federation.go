@@ -41,7 +41,3 @@ type FederationList struct {
 
 	Items []Federation `json:"items"`
 }
-
-func (f *Federation) Validate() error {
-	return nil
-}
