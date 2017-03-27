@@ -42,6 +42,8 @@ const (
 	defaultMasterMachineTypeGCE     = "n1-standard-1"
 	defaultMasterMachineTypeAWS     = "m3.medium"
 	defaultMasterMachineTypeVSphere = "vsphere_master"
+
+	defaultVSphereNodeImage = "ubuntu_16_04"
 )
 
 var masterMachineTypeExceptions = map[string]string{
@@ -249,8 +251,9 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel) string {
 				return image.Name
 			}
 		}
+	} else if fi.CloudProviderID(cluster.Spec.CloudProvider) == fi.CloudProviderVSphere {
+		return defaultVSphereNodeImage
 	}
-
 	glog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
 	return ""
 }

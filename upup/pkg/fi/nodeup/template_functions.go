@@ -22,6 +22,7 @@ import (
 	"runtime"
 	"text/template"
 
+	"bytes"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -30,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
+	"os"
 )
 
 const TagMaster = "_kubernetes_master"

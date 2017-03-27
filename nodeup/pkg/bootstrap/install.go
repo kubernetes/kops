@@ -17,6 +17,7 @@ limitations under the License.
 package bootstrap
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -26,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
+	"os"
 	"strings"
 	"time"
 )
@@ -107,6 +109,22 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Run kops bootstrap (nodeup)")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
+
+	// TODO temporary code, till vsphere cloud provider gets its own VFS implementation.
+	if os.Getenv("AWS_REGION") != "" || os.Getenv("AWS_ACCESS_KEY_ID") != "" || os.Getenv("AWS_SECRET_ACCESS_KEY") != "" {
+		var buffer bytes.Buffer
+		buffer.WriteString("\"AWS_REGION=")
+		buffer.WriteString(os.Getenv("AWS_REGION"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"AWS_ACCESS_KEY_ID=")
+		buffer.WriteString(os.Getenv("AWS_ACCESS_KEY_ID"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"AWS_SECRET_ACCESS_KEY=")
+		buffer.WriteString(os.Getenv("AWS_SECRET_ACCESS_KEY"))
+		buffer.WriteString("\" ")
+
+		manifest.Set("Service", "Environment", buffer.String())
+	}
 
 	manifest.Set("Service", "ExecStart", command)
 	manifest.Set("Service", "Type", "oneshot")

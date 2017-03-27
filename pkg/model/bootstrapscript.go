@@ -21,13 +21,17 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
+	"os"
 	"text/template"
 )
 
 // BootstrapScript creates the bootstrap script
 type BootstrapScript struct {
-	NodeUpSource        string
-	NodeUpSourceHash    string
+	NodeUpSource     string
+	NodeUpSourceHash string
+	// TODO temporary field to enable workflow for vSphere cloud provider.
+	AddAwsEnvironmentVariables bool
+
 	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
 }
 
@@ -57,9 +61,33 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHo
 
 			return string(data), nil
 		},
+		// TODO temporary code, till vsphere cloud provider gets its own VFS implementation.
+		"Env1": func() string {
+			if b.AddAwsEnvironmentVariables && os.Getenv("AWS_REGION") != "" {
+				return "export AWS_REGION=" + os.Getenv("AWS_REGION")
+			}
+			return ""
+		},
+		"Env2": func() string {
+			if b.AddAwsEnvironmentVariables && os.Getenv("AWS_ACCESS_KEY_ID") != "" {
+				return "export AWS_ACCESS_KEY_ID=" + os.Getenv("AWS_ACCESS_KEY_ID")
+			}
+			return ""
+		},
+		"Env3": func() string {
+			if b.AddAwsEnvironmentVariables && os.Getenv("AWS_SECRET_ACCESS_KEY") != "" {
+				return "export AWS_SECRET_ACCESS_KEY=" + os.Getenv("AWS_SECRET_ACCESS_KEY")
+			}
+			return ""
+		},
 	}
 
-	templateResource, err := NewTemplateResource("nodeup", resources.AWSNodeUpTemplate, functions, nil)
+	nodeupTemplate := resources.AWSNodeUpTemplate
+	if b.AddAwsEnvironmentVariables {
+		nodeupTemplate = resources.VsphereNodeUpTemplate
+	}
+
+	templateResource, err := NewTemplateResource("nodeup", nodeupTemplate, functions, nil)
 	if err != nil {
 		return nil, err
 	}

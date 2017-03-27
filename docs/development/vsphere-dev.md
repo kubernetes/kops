@@ -67,79 +67,38 @@ make
 kops create cluster ...
 ```
 
-## Hacks
+## Kops with vSphere
+vSphere cloud provider support in kops is a work in progress. To try out deploying kubernetes cluster on vSphere using kops, some extra steps are required.
 
-### Nodeup and protokube testing
-This Section talks about testing nodeup and protokube changes on a standalone VM, running on standalone esx or vSphere.
+### Pre-requisites
++ vSphere with at least one ESX, having sufficient free disk space on attached datastore. ESX VM's should have internet connectivity.
++ Setup DNS following steps given in relevant Section above.
++ Create the VM using this template (TBD).
++ Currently vSphere code is using AWS S3 for storing all configurations, specs, addon yamls, etc. You need valid AWS credentials to try out kops on vSphere. s3://your-objectstore/cluster1.skydns.local folder will have all necessary configuration, spec, addons, etc., required to configure kubernetes cluster. (If you don't know how to setup aws, then read more on kops and how to deploy a cluster using kops on aws)
++ Update ```[kops_dir]/hack/vsphere/vsphere_env.sh``` setting up necessary environment variables.
 
-#### Pre-requisites
-Following manual steps are pre-requisites for this testing, until vSphere support for kops starts to create this infrastructure.
+### Building
+Execute following command(s) to build all necessary components required to run kops for vSphere-
 
-+ Setup password free ssh to the VM
 ```bash
-cat ~/.ssh/id_rsa.pub | ssh <username>@<vm_ip> 'cat >> .ssh/authorized_keys'
+make vsphere-version-dist
 ```
-+ Nodeup configuration file needs to be present on the VM. It can be copied from an existing AWS created master (or worker, whichever you are testing), from this location /var/cache/kubernetes-install/kube_env.yaml on your existing cluster node. Sample nodeup cofiguation file-
- ```yaml
-Assets:
-- 5e486d4a2700a3a61c4edfd97fb088984a7f734f@https://storage.googleapis.com/kubernetes-release/release/v1.5.2/bin/linux/amd64/kubelet
-- 10e675883b167140f78ddf7ed92f936dca291647@https://storage.googleapis.com/kubernetes-release/release/v1.5.2/bin/linux/amd64/kubectl
-- 19d49f7b2b99cd2493d5ae0ace896c64e289ccbb@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz
-ClusterName: cluster3.mangoreviews.com
-ConfigBase: s3://your-objectstore/cluster1.yourdomain.com
-InstanceGroupName: master-us-west-2a
-Tags:
-- _automatic_upgrades
-- _aws
-- _cni_bridge
-- _cni_host_local
-- _cni_loopback
-- _cni_ptp
-- _kubernetes_master
-- _kubernetes_pool
-- _protokube
-channels:
-- s3://your-objectstore/cluster1.yourdomain.com/addons/bootstrap-channel.yaml
-protokubeImage:
-  hash: 6805cba0ea13805b2fa439914679a083be7ac959
-  name: protokube:1.5.1
-  source: https://kubeupv2.s3.amazonaws.com/kops/1.5.1/images/protokube.tar.gz
 
- ```
-+ Currently vSphere code is using AWS S3 for storing all configurations, spec, etc. You need valid AWS credentials.
-+ s3://your-objectstore/cluster1.yourdomain.com folder should have all necessary configuration, spec, addons, etc. (If you don't know how to get this, then read more on kops and how to deploy a cluster using kops)
+Currently vSphere support is not part of any of the kops releases. Hence, all modified component- kops, nodeup, protokube, need building at least once. ```make vsphere-version-dist``` will do that and copy protokube image and nodeup binary at the target location specified by you in ```vsphere-env.sh```. Dns-controller has also been modified to support vSphere. You can continue to use ```export VSPHERE_DNSCONTROLLER_IMAGE=luomiao/dns-controller```, unless you are making some changes to dns-controller and would like to use your custom image.
 
-#### Testing your changes
-Once you are done making your changes in nodeup and protokube code, you would want to test them on a VM. In order to do so you will need to build nodeup binary and copy it on the desired VM. You would also want to modify nodeup code so that it accesses protokube container image that contains your changes. All this can be done by setting few environment variables, minor code updates and running 'make push-vsphere'.
+### Creating cluster
+Execute following command(s) to create a kubernetes cluster on vSphere using kops-
 
- + Create or use existing docker hub registry to create 'protokube' repo for your custom image. Update the registry details in Makefile, by modifying DOCKER_REGISTRY variable. Don't forget to do 'docker login' with your registry credentials once.
- + Export TARGET environment variable, setting its value to username@vm_ip of your test VM.
- + Update $KOPS_DIR/upup/models/nodeup/_protokube/services/protokube.service.template-
- ```
- ExecStart=/usr/bin/docker run -v /:/rootfs/ -v /var/run/dbus:/var/run/dbus -v /run/systemd:/run/systemd --net=host --privileged -e AWS_ACCESS_KEY_ID='something' -e AWS_SECRET_ACCESS_KEY='something'  <your-registry>/protokube:<image-tag> /usr/bin/protokube "$DAEMON_ARGS"
- ```
-+ Run 'make push-vsphere'. This will build nodeup binary, scp it to your test VM, build protokube image and upload it to your registry.
-+ SSH to your test VM and set following environment variables-
-  ```bash
-  export AWS_REGION=us-west-2
-  export AWS_ACCESS_KEY_ID=something
-  export AWS_SECRET_ACCESS_KEY=something
-  ```
-+ Run './nodeup --conf kube_env.yaml' to test your custom build nodeup and protokube.
+```bash
+.build/dist/darwin/amd64/kops create cluster --cloud=vsphere --name=yourcluster.skydns.local --zones=us-west-2a --vsphere-server=<vsphere-server-ip> --vsphere-datacenter=<datacenter-name> --vsphere-resource-pool=<cluster-name> --vsphere-datastore=<datastore-name> --dns=private --vsphere-coredns-server=http://<dns-server-ip>:2379  --dns-zone=skydns.local --image=<template-vm-name> --yes
+```
 
-**Tip:** Consider adding following code to $KOPS_DIR/upup/pkg/fi/nodeup/nodetasks/load_image.go to avoid downloading protokube image. Your custom image will be downloaded directly when systemd will run protokube.service (because of the changes we made in protokube.service.template).
- ```go
- 	// Add this after url variable has been populated.
- 	if strings.Contains(url, "protokube") {
- 		fmt.Println("Skipping protokube image download and loading.")
- 		return nil
- 	}
- ```
+User .build/dist/linux/amd64/kops if working on a linux machine, instead of mac.
 
+### Deleting cluster
+Cluster deletion hasn't been fully implemented yet. So you will have to delete vSphere VM's manually for now.
 
- **Note:** Same testing can also be done using alternate steps (these steps are _not working_ currently due to hash match failure):
-  + Run 'make protokube-export' and 'make nodeup' to build and export protokube image as tar.gz, and to build nodeup binary. Both located in $KOPS_DIR/.build/dist/images/protokube.tar.gz and $KOPS_DIR/.build/dist/nodeup, respectively.
-  + Copy nodeup binary to the test VM.
-  + Upload $KOPS_DIR/.build/dist/images/protokube.tar.gz and $KOPS_DIR/.build/dist/images/protokube.tar.gz.sha1, with appropriate permissions, to a location from where it can be accessed from the test VM. Eg: your development machine's public_html, if working on linux based machine.
-  + Update hash value to protokube.tar.gz.sha1's value and source to the uploaded location, in kube_env.yaml (see pre-requisite steps).
-  + SSH to your test VM, set necessary environment variables and run './nodeup --conf kube_env.yaml'.
+Configuration and spec data can be removed from S3 using following command-
+```bash
+.build/dist/darwin/amd64/kops delete cluster yourcluster.skydns.local --yes
+```

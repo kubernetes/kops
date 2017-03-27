@@ -82,6 +82,7 @@ func (b *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		"--net=host",
 		"--privileged",
 		"--env", "KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
+		b.ProtokubeEnvironmentVariables(),
 		b.ProtokubeImageName(),
 		"/usr/bin/protokube",
 	}
@@ -225,4 +226,24 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	}
 
 	return f
+}
+
+func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
+	// TODO temporary code, till vsphere cloud provider gets its own VFS implementation.
+	if fi.CloudProviderID(t.cluster.Spec.CloudProvider) == fi.CloudProviderVSphere && (os.Getenv("AWS_ACCESS_KEY_ID") != "" || os.Getenv("AWS_SECRET_ACCESS_KEY") != "") {
+		var buffer bytes.Buffer
+		buffer.WriteString(" ")
+		buffer.WriteString("-e AWS_ACCESS_KEY_ID=")
+		buffer.WriteString("'")
+		buffer.WriteString(os.Getenv("AWS_ACCESS_KEY_ID"))
+		buffer.WriteString("'")
+		buffer.WriteString(" -e AWS_SECRET_ACCESS_KEY=")
+		buffer.WriteString("'")
+		buffer.WriteString(os.Getenv("AWS_SECRET_ACCESS_KEY"))
+		buffer.WriteString("'")
+		buffer.WriteString(" ")
+
+		return buffer.String()
+	}
+	return ""
 }
