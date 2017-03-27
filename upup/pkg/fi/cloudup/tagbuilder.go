@@ -33,6 +33,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 )
 
+var propagatedTags = []string{
+	"_gce", "_aws",
+	"_k8s_1_6", "_k8s_1_5", "_k8s_1_4", "_k8s_1_3",
+}
+
 func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	tags := sets.NewString()
 
@@ -78,7 +83,10 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 			return nil, fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
 		}
 
-		if sv.Major == 1 && sv.Minor >= 5 {
+		// Note: If you add a version here, add it to propagatedTags as well.
+		if sv.Major == 1 && sv.Minor >= 6 {
+			versionTag = "_k8s_1_6"
+		} else if sv.Major == 1 && sv.Minor >= 5 {
 			versionTag = "_k8s_1_5"
 		} else if sv.Major == 1 && sv.Minor == 4 {
 			versionTag = "_k8s_1_4"
@@ -140,11 +148,10 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 		glog.Warningf("Unrecognized value for UpdatePolicy: %v", fi.StringValue(cluster.Spec.UpdatePolicy))
 	}
 
-	if clusterTags.Has("_gce") {
-		tags.Insert("_gce")
-	}
-	if clusterTags.Has("_aws") {
-		tags.Insert("_aws")
+	for _, tag := range propagatedTags {
+		if clusterTags.Has(tag) {
+			tags.Insert(tag)
+		}
 	}
 
 	return tags, nil

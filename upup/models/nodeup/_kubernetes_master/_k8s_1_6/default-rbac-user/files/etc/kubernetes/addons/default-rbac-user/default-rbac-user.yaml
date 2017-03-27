@@ -1,0 +1,18 @@
+# TODO(kubernetes/kubernetes#39259): Fix after RBAC no longer requires
+# RBAC. (e2e testing depends on this, but this is a safe policy while
+# kops is AlwaysAllow.)
+
+apiVersion: rbac.authorization.k8s.io/v1alpha1
+kind: ClusterRoleBinding
+metadata:
+  name: authenticated-user-is-admin
+  labels:
+    kubernetes.io/cluster-service: "true"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- apiVersion: rbac/v1alpha1
+  kind: Group
+  name: system:authenticated
