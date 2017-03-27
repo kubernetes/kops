@@ -227,8 +227,13 @@ func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro 
 }
 
 func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Distribution == distros.DistributionCoreOS {
+	switch b.Distribution {
+	case distros.DistributionCoreOS:
 		glog.Infof("Detected CoreOS; won't install Docker")
+		return nil
+
+	case distros.DistributionContainerOS:
+		glog.Infof("Detected ContainerOS; won't install Docker")
 		return nil
 	}
 

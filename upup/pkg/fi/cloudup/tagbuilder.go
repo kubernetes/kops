@@ -116,9 +116,6 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 	case api.InstanceGroupRoleNode:
 		tags.Insert("_kubernetes_pool")
 
-		// TODO: Should we run _protokube on the nodes?
-		tags.Insert("_protokube")
-
 	case api.InstanceGroupRoleMaster:
 		tags.Insert("_kubernetes_master")
 
@@ -127,19 +124,11 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 			tags.Insert("_kubernetes_pool")
 		}
 
-		tags.Insert("_protokube")
-
 	case api.InstanceGroupRoleBastion:
 		// No tags
 
 	default:
 		return nil, fmt.Errorf("Unrecognized role: %v", role)
-	}
-
-	// TODO: Replace with list of CNI plugins ?
-	if usesCNI(cluster) {
-		tags.Insert("_cni_bridge", "_cni_host_local", "_cni_loopback", "_cni_ptp", "_cni_flannel")
-		//tags.Insert("_cni_tuning")
 	}
 
 	switch fi.StringValue(cluster.Spec.UpdatePolicy) {

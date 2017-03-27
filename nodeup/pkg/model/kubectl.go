@@ -66,5 +66,8 @@ func (b *KubectlBuilder) kubectlPath() string {
 	if b.Distribution == distros.DistributionCoreOS {
 		kubeletCommand = "/opt/bin/kubectl"
 	}
+	if b.Distribution == distros.DistributionContainerOS {
+		kubeletCommand = "/home/kubernetes/bin/kubectl"
+	}
 	return kubeletCommand
 }

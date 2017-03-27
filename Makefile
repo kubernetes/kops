@@ -183,7 +183,8 @@ push-aws-dry: push
 	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --dryrun --v=8
 
 push-gce-run: push
-	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=metadata://gce/config --v=8
+	ssh ${TARGET} sudo cp /tmp/nodeup /home/kubernetes/bin/nodeup
+	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /home/kubernetes/bin/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
 # -t is for CentOS http://unix.stackexchange.com/questions/122616/why-do-i-need-a-tty-to-run-sudo-if-i-can-sudo-without-a-password
 push-aws-run: push
