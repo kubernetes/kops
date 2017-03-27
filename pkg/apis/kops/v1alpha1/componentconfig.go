@@ -313,6 +313,9 @@ type KubeletConfigSpec struct {
 
 	// The full path of the directory in which to search for additional third party volume plugins
 	VolumePluginDirectory string `json:"volumePluginDirectory,omitempty" flag:"volume-plugin-dir"`
+
+	// Taints to add when registering a node in the cluster
+	Taints []string `json:"taints,omitempty" flag:"register-with-taints"`
 }
 
 type KubeProxyConfig struct {
