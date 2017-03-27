@@ -136,7 +136,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		// Kopeio is based on kubenet / external
 		kcm.ConfigureCloudRoutes = fi.Bool(true)
 	} else {
-		return fmt.Errorf("No networking mode set")
+		return fmt.Errorf("no networking mode set")
 	}
 
 	return nil
