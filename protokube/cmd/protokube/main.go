@@ -61,6 +61,9 @@ func run() error {
 	master := false
 	flag.BoolVar(&master, "master", master, "Act as master")
 
+	applyTaints := false
+	flag.BoolVar(&applyTaints, "apply-taints", applyTaints, "Apply taints to nodes based on the role")
+
 	containerized := false
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
 
@@ -203,6 +206,7 @@ func run() error {
 
 	k := &protokube.KubeBoot{
 		Master:            master,
+		ApplyTaints:       applyTaints,
 		InternalDNSSuffix: dnsInternalSuffix,
 		InternalIP:        internalIP,
 		//MasterID          : fromVolume

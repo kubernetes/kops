@@ -74,8 +74,6 @@ spec:
   maxSize: 1
   minSize: 1
   role: Master
-  taints:
-  - dedicated=master:NoSchedule
   zones:
   - us-test-1a
 

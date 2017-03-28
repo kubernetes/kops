@@ -76,8 +76,6 @@ spec:
   role: Master
   subnets:
   - us-test-1a
-  taints:
-  - dedicated=master:NoSchedule
 
 ---
 
@@ -96,8 +94,6 @@ spec:
   role: Master
   subnets:
   - us-test-1a
-  taints:
-  - dedicated=master:NoSchedule
 
 ---
 
@@ -116,8 +112,6 @@ spec:
   role: Master
   subnets:
   - us-test-1a
-  taints:
-  - dedicated=master:NoSchedule
 
 ---
 
@@ -136,8 +130,6 @@ spec:
   role: Master
   subnets:
   - us-test-1b
-  taints:
-  - dedicated=master:NoSchedule
 
 ---
 
@@ -156,8 +148,6 @@ spec:
   role: Master
   subnets:
   - us-test-1b
-  taints:
-  - dedicated=master:NoSchedule
 
 ---
 

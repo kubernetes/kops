@@ -19,8 +19,11 @@ package vfsclientset
 import (
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/kops/pkg/apis/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple"
 )
 
@@ -43,6 +46,9 @@ func newInstanceGroupVFS(c *VFSClientset, clusterName string) *InstanceGroupVFS 
 	r.init(kind, c.basePath.Join(clusterName, "instancegroup"), StoreVersion)
 	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind(kind)
 	r.defaultReadVersion = &defaultReadVersion
+	r.validate = func(o runtime.Object) error {
+		return validation.ValidateInstanceGroup(o.(*kops.InstanceGroup))
+	}
 	return r
 }
 
