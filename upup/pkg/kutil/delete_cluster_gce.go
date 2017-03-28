@@ -18,11 +18,14 @@ package kutil
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"strings"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
 type gceListFn func() ([]*ResourceTracker, error)
@@ -48,7 +51,6 @@ func (c *AwsCluster) listResourcesGCE() (map[string]*ResourceTracker, error) {
 
 	{
 		// TODO: Only zones in api.Cluster object, if we have one?
-
 		gceZones, err := d.gceCloud.Compute.Zones.List(d.gceCloud.Project).Do()
 		if err != nil {
 			return nil, fmt.Errorf("error listing zones: %v", err)
@@ -73,7 +75,7 @@ func (c *AwsCluster) listResourcesGCE() (map[string]*ResourceTracker, error) {
 		d.listGCEInstanceTemplates,
 		d.listGCEDisks,
 		d.listGCEInstanceGroupManagers,
-
+		d.listGCEDNSZone,
 		// TODO: Find routes via instances (via instance groups)
 	}
 	for _, fn := range listFunctions {
@@ -346,4 +348,92 @@ func deleteGCEDisk(cloud fi.Cloud, r *ResourceTracker) error {
 	}
 
 	return c.WaitForZoneOp(op, u.Zone)
+}
+
+func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*ResourceTracker, error) {
+	zone, err := d.findDNSZone()
+	if err != nil {
+		return nil, err
+	}
+
+	return []*ResourceTracker{
+		{
+			Name:    zone.Name(),
+			ID:      zone.Name(),
+			Type:    "DNS Zone",
+			deleter: d.deleteDNSZone,
+			obj:     zone,
+		},
+	}, nil
+}
+
+func (d *clusterDiscoveryGCE) findDNSZone() (dnsprovider.Zone, error) {
+	dnsProvider, err := d.cloud.DNS()
+	if err != nil {
+		return nil, fmt.Errorf("Error getting dnsprovider: %v", err)
+	}
+
+	zonesLister, supported := dnsProvider.Zones()
+	if !supported {
+		return nil, fmt.Errorf("DNS provier does not support listing zones: %v", err)
+	}
+
+	allZones, err := zonesLister.List()
+	if err != nil {
+		return nil, fmt.Errorf("Error listing dns zones: %v", err)
+	}
+
+	for _, zone := range allZones {
+		if strings.Contains(d.clusterName, strings.TrimSuffix(zone.Name(), ".")) {
+			return zone, nil
+		}
+	}
+
+	return nil, fmt.Errorf("DNS Zone for cluster %s could not be found", d.clusterName)
+}
+
+func (d *clusterDiscoveryGCE) deleteDNSZone(cloud fi.Cloud, r *ResourceTracker) error {
+	clusterZone := r.obj.(dnsprovider.Zone)
+
+	rrs, supported := clusterZone.ResourceRecordSets()
+	if !supported {
+		return fmt.Errorf("ResourceRecordSets not supported with clouddns")
+	}
+	records, err := rrs.List()
+	if err != nil {
+		return fmt.Errorf("Failed to list resource records")
+	}
+
+	changeset := rrs.StartChangeset()
+
+	for _, record := range records {
+		if record.Type() != "A" {
+			continue
+		}
+
+		name := record.Name()
+		name = "." + strings.TrimSuffix(name, ".")
+		prefix := strings.TrimSuffix(name, "."+d.clusterName)
+
+		remove := false
+		// TODO: Compute the actual set of names?
+		if prefix == ".api" || prefix == ".api.internal" {
+			remove = true
+		} else if strings.HasPrefix(prefix, ".etcd-") {
+			remove = true
+		}
+
+		if !remove {
+			continue
+		}
+
+		changeset.Remove(record)
+	}
+
+	err = changeset.Apply()
+	if err != nil {
+		return fmt.Errorf("Error deleting cloud dns records: %v", err)
+	}
+
+	return nil
 }
