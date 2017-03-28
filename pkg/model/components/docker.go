@@ -32,6 +32,12 @@ var _ loader.OptionsBuilder = &DockerOptionsBuilder{}
 
 func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
+
+	sv, err := KubernetesVersion(clusterSpec)
+	if err != nil {
+		return fmt.Errorf("unable to determine kubernetes version from %q", clusterSpec.KubernetesVersion)
+	}
+
 	if clusterSpec.Docker == nil {
 		clusterSpec.Docker = &kops.DockerConfig{}
 	}
@@ -39,11 +45,6 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 	if fi.StringValue(clusterSpec.Docker.Version) == "" {
 		if clusterSpec.KubernetesVersion == "" {
 			return fmt.Errorf("KubernetesVersion is required")
-		}
-
-		sv, err := KubernetesVersion(clusterSpec)
-		if err != nil {
-			return fmt.Errorf("unable to determine kubernetes version from %q", clusterSpec.KubernetesVersion)
 		}
 
 		dockerVersion := ""
@@ -58,6 +59,15 @@ func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 
 		clusterSpec.Docker.Version = &dockerVersion
+	}
+
+	if sv.Major == 1 && sv.Minor >= 6 {
+		if len(clusterSpec.Docker.LogOpt) == 0 && clusterSpec.Docker.LogDriver == "" {
+			// Use built-in docker logging, if not configured otherwise (by the user)
+			clusterSpec.Docker.LogDriver = "json-file"
+			clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-size=10m")
+			clusterSpec.Docker.LogOpt = append(clusterSpec.Docker.LogOpt, "max-file=5")
+		}
 	}
 
 	return nil
