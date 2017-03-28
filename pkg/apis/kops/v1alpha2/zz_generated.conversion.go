@@ -1323,6 +1323,7 @@ func autoConvert_v1alpha2_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.CPURequest = in.CPURequest
 	out.LogLevel = in.LogLevel
 	out.Master = in.Master
+	out.ClusterCIDR = in.ClusterCIDR
 	return nil
 }
 
@@ -1334,6 +1335,7 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeP
 	out.Image = in.Image
 	out.CPURequest = in.CPURequest
 	out.LogLevel = in.LogLevel
+	out.ClusterCIDR = in.ClusterCIDR
 	out.Master = in.Master
 	return nil
 }
