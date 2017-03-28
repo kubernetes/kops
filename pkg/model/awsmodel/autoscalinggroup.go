@@ -69,6 +69,10 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				RootVolumeType: s(volumeType),
 			}
 
+			if ig.Spec.Tenancy != "" {
+				t.Tenancy = s(ig.Spec.Tenancy)
+			}
+
 			for _, id := range ig.Spec.AdditionalSecurityGroups {
 				sgTask := &awstasks.SecurityGroup{
 					Name:   fi.String(id),

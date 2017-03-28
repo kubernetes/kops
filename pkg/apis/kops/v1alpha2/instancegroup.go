@@ -84,7 +84,11 @@ type InstanceGroupSpec struct {
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
 
-	// Kubelet overrides kubelet config from the ClusterSpec
+  // Describes the tenancy of the instance group. Can be either default or dedicated.
+	// Currently only applies to AWS.
+	Tenancy string `json:"tenancy,omitempty"`
+
+  // Kubelet overrides kubelet config from the ClusterSpec
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
 
 	// Taints indicates the kubernetes taints for nodes in this group
