@@ -60,7 +60,7 @@ func NewCmdCompletion(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "completion",
-		Short:   "Output shell completion code for the given shell (bash)",
+		Short:   "Output shell completion code for the given shell (bash).",
 		Long:    longDescription,
 		Example: example,
 		Run: func(cmd *cobra.Command, args []string) {
