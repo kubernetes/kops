@@ -64,6 +64,9 @@ func run() error {
 	applyTaints := false
 	flag.BoolVar(&applyTaints, "apply-taints", applyTaints, "Apply taints to nodes based on the role")
 
+	initializeRBAC := false
+	flag.BoolVar(&initializeRBAC, "initialize-rbac", initializeRBAC, "Set if we should initialize RBAC")
+
 	containerized := false
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
 
@@ -211,6 +214,8 @@ func run() error {
 		InternalIP:        internalIP,
 		//MasterID          : fromVolume
 		//EtcdClusters   : fromVolume
+
+		InitializeRBAC: initializeRBAC,
 
 		ModelDir: modelDir,
 		DNSScope: dnsScope,
