@@ -47,6 +47,15 @@ var masterMachineTypeExceptions = map[string]string{
 	"eu-west-2":    "c4.large",
 }
 
+var awsDedicatedInstanceExceptions = map[string]bool{
+	"t2.nano":   true,
+	"t2.micro":  true,
+	"t2.small":  true,
+	"t2.medium": true,
+	"t2.large":  true,
+	"t2.xlarge": true,
+}
+
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
 func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, channel *api.Channel) (*api.InstanceGroup, error) {
@@ -93,6 +102,17 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 
 	if ig.Spec.Image == "" {
 		ig.Spec.Image = defaultImage(cluster, channel)
+	}
+
+	if ig.Spec.Tenancy != "" && ig.Spec.Tenancy != "default" {
+		switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
+		case fi.CloudProviderAWS:
+			if _, ok := awsDedicatedInstanceExceptions[ig.Spec.MachineType]; ok {
+				return nil, fmt.Errorf("Invalid dedicated instance type: %s", ig.Spec.MachineType)
+			}
+		default:
+			glog.Warning("Trying to set tenancy on non-AWS environment")
+		}
 	}
 
 	if ig.IsMaster() {
