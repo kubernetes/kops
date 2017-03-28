@@ -1,18 +1,22 @@
 # Kops HTTP API Server
 
-### Building
+# Building the kops API server
 
-To build the API container run the following
-
-Note: This is a MAJOR clockwork, and a lot of assumptions and hardcoding exist here for now.
+Set your docker registry
 
 ```bash
-make uas-build
+export DOCKER_REGISTRY=$registry
 ```
 
-### Deploy to a cluster
+Build the kops API server container, and push the image up to your registry.
 
-From the kops directory run the following `helm` command
+```bash
+kops-server-push
+```
+
+# Deploy the kops API server to a cluster
+
+From the kops directory run the following `helm` command. More information on `helm` can be found [here](https://github.com/kubernetes/helm)
 
 ```bash
 helm install charts/kops --namespace kops
