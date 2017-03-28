@@ -33,9 +33,20 @@ import (
 // OptionsContext is the context object for options builders
 type OptionsContext struct {
 	ClusterName string
+
+	KubernetesVersion semver.Version
+}
+
+func (c *OptionsContext) IsKubernetesGTE(version string) bool {
+	return util.IsKubernetesGTE(version, c.KubernetesVersion)
+}
+
+func (c *OptionsContext) IsKubernetesLT(version string) bool {
+	return !c.IsKubernetesGTE(version)
 }
 
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
+// Deprecated: prefer using OptionsContext.KubernetesVersion
 func KubernetesVersion(clusterSpec *kops.ClusterSpec) (*semver.Version, error) {
 	kubernetesVersion := clusterSpec.KubernetesVersion
 
