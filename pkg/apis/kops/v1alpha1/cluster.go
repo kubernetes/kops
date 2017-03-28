@@ -214,8 +214,6 @@ type ClusterSpec struct {
 	//KubeProxyTestArgs             string `json:",omitempty"`
 	//KubeProxyTestLogLevel         string `json:",omitempty"`
 
-	//NodeUp                        *NodeUpConfig `json:",omitempty"`
-
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 

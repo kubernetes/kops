@@ -18,7 +18,6 @@ package cloudup
 
 import (
 	"fmt"
-	"log"
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
@@ -35,7 +34,11 @@ type BootstrapChannelBuilder struct {
 var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
 
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
-	addons, manifests := b.buildManifest()
+	addons, manifests, err := b.buildManifest()
+	if err != nil {
+		return err
+	}
+
 	addonsYAML, err := utils.YamlMarshal(addons)
 	if err != nil {
 		return fmt.Errorf("error serializing addons yaml: %v", err)
@@ -63,12 +66,17 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[string]string) {
+func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[string]string, error) {
 	manifests := make(map[string]string)
 
 	addons := &channelsapi.Addons{}
 	addons.Kind = "Addons"
 	addons.ObjectMeta.Name = "bootstrap"
+
+	kv, err := util.ParseKubernetesVersion(b.cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return nil, nil, fmt.Errorf("unable to determine kubernetes version from %q", b.cluster.Spec.KubernetesVersion)
+	}
 
 	{
 		key := "core.addons.k8s.io"
@@ -87,12 +95,6 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "kube-dns.addons.k8s.io"
-
-		kv, err := util.ParseKubernetesVersion(b.cluster.Spec.KubernetesVersion)
-		if err != nil {
-			log.Fatalf("unable to determine kubernetes version from %q",
-				b.cluster.Spec.KubernetesVersion)
-		}
 
 		var version string
 		switch {
@@ -130,7 +132,14 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "dns-controller.addons.k8s.io"
-		version := "1.5.2"
+
+		var version string
+		switch {
+		case kv.Major == 1 && kv.Minor <= 5:
+			version = "1.5.2"
+		default:
+			version = "1.6.0"
+		}
 
 		location := key + "/v" + version + ".yaml"
 
@@ -256,5 +265,5 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		manifests[key] = "addons/" + location
 	}
 
-	return addons, manifests
+	return addons, manifests, nil
 }

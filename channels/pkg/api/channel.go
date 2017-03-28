@@ -45,6 +45,6 @@ type AddonSpec struct {
 	// Version is a semver version
 	Version *string `json:"version,omitempty"`
 
-	// Manifest is a strings containing the URL to the manifest that should be applied
+	// Manifest is the URL to the manifest that should be applied
 	Manifest *string `json:"manifest,omitempty"`
 }

@@ -35,12 +35,15 @@ import (
 
 var StoreVersion = v1alpha2.SchemeGroupVersion
 
+type ValidationFunction func(o runtime.Object) error
+
 type commonVFS struct {
 	kind               string
 	basePath           vfs.Path
 	decoder            runtime.Decoder
 	encoder            runtime.Encoder
 	defaultReadVersion *schema.GroupVersionKind
+	validate           ValidationFunction
 }
 
 func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.GroupVersioner) {
@@ -76,9 +79,11 @@ func (c *commonVFS) create(i runtime.Object) error {
 		return err
 	}
 
-	err = i.(kops.ApiType).Validate()
-	if err != nil {
-		return err
+	if c.validate != nil {
+		err = c.validate(i)
+		if err != nil {
+			return err
+		}
 	}
 
 	if objectMeta.CreationTimestamp.IsZero() {
@@ -167,9 +172,11 @@ func (c *commonVFS) update(i runtime.Object) error {
 		return err
 	}
 
-	err = i.(kops.ApiType).Validate()
-	if err != nil {
-		return err
+	if c.validate != nil {
+		err = c.validate(i)
+		if err != nil {
+			return err
+		}
 	}
 
 	if objectMeta.CreationTimestamp.IsZero() {
