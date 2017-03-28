@@ -19,8 +19,8 @@ package main
 import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/kutil"
 )
 
 type ExportKubecfgCommand struct {
@@ -67,19 +67,10 @@ func (c *ExportKubecfgCommand) Run(args []string) error {
 		return err
 	}
 
-	clusterName := cluster.ObjectMeta.Name
-
-	master := cluster.Spec.MasterPublicName
-	if master == "" {
-		master = "api." + clusterName
+	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore)
+	if err != nil {
+		return err
 	}
 
-	x := &kutil.CreateKubecfg{
-		ContextName:  clusterName,
-		KeyStore:     keyStore,
-		SecretStore:  secretStore,
-		KubeMasterIP: master,
-	}
-
-	return x.WriteKubecfg()
+	return conf.WriteKubecfg()
 }
