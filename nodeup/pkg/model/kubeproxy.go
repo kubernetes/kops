@@ -123,6 +123,8 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	// TODO: tee or similar so we get logs in kubectl logs
 	cmd += " 1>>/var/log/kube-proxy.log 2>&1"
 
+	glog.V(2).Infof("built kube-proxy command: %s", cmd)
+
 	command := []string{
 		"/bin/sh", "-c",
 		cmd,
