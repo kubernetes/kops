@@ -54,12 +54,12 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Contents: fi.WrapResource(fi.NewBytesResource(addonsYAML)),
 	}
 
-	for key, resource := range manifests {
+	for key, manifest := range manifests {
 		name := b.cluster.ObjectMeta.Name + "-addons-" + key
 		tasks[name] = &fitasks.ManagedFile{
 			Name:     fi.String(name),
-			Location: fi.String(resource),
-			Contents: &fi.ResourceHolder{Name: resource},
+			Location: fi.String(manifest),
+			Contents: &fi.ResourceHolder{Name: manifest},
 		}
 	}
 
