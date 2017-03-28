@@ -81,7 +81,7 @@ type InstanceGroupSpec struct {
 	// Currently only applies to AWS.
 	Tenancy string `json:"tenancy,omitempty"`
 
-  // Kubelet overrides kubelet config from the ClusterSpec
+	// Kubelet overrides kubelet config from the ClusterSpec
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
 
 	// Taints indicates the kubernetes taints for nodes in this group
