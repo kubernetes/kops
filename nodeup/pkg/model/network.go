@@ -51,7 +51,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Kopeio is based on kubenet / external
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
 	} else {
-		return fmt.Errorf("No networking mode set")
+		return fmt.Errorf("no networking mode set")
 	}
 
 	for _, assetName := range assetNames {
