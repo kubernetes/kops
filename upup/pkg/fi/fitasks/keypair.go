@@ -153,6 +153,8 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	} else if changes != nil {
 		if changes.AlternateNames != nil {
 			createCertificate = true
+		} else if changes.Subject != "" {
+			createCertificate = true
 		} else {
 			glog.Warningf("Ignoring changes in key: %v", fi.DebugAsJsonString(changes))
 		}

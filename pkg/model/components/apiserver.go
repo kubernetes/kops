@@ -38,6 +38,8 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 	}
 
+	// TODO: Set insecure-port=0 to turn it off
+
 	if clusterSpec.KubeAPIServer.APIServerCount == nil {
 		count := b.buildAPIServerCount(clusterSpec)
 		if count == 0 {

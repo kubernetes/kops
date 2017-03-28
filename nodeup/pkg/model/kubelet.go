@@ -96,7 +96,9 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Add kubeconfig
 	{
-		kubeconfig, err := b.BuildPKIKubeconfig("kubelet")
+		// TODO: Change kubeconfig to be https
+
+		kubeconfig, err := b.buildPKIKubeconfig("kubelet")
 		if err != nil {
 			return err
 		}
