@@ -36,6 +36,11 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
+	if b.Distribution == distros.DistributionContainerOS {
+		glog.Infof("Detected ContainerOS; won't install logrotate")
+		return nil
+	}
+
 	c.AddTask(&nodetasks.Package{Name: "logrotate"})
 
 	return nil

@@ -67,7 +67,7 @@ func UsesKubenet(clusterSpec *kops.ClusterSpec) (bool, error) {
 		// Kopeio is based on kubenet / external
 		return true, nil
 	} else {
-		return false, fmt.Errorf("No networking mode set")
+		return false, fmt.Errorf("no networking mode set")
 	}
 }
 
