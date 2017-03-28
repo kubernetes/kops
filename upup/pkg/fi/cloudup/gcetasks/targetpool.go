@@ -91,7 +91,7 @@ func (_ *TargetPool) RenderGCE(t *gce.GCEAPITarget, a, e, changes *TargetPool) e
 			return fmt.Errorf("error creating TargetPool: %v", err)
 		}
 	} else {
-		return fmt.Errorf("Cannot apply changes to TargetPool: %v", changes)
+		return fmt.Errorf("cannot apply changes to TargetPool: %v", changes)
 	}
 
 	return nil
