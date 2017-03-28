@@ -82,9 +82,11 @@ func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	if f.Owner != nil {
 		ownerTask := tasks["user/"+*f.Owner]
 		if ownerTask == nil {
-			glog.Fatalf("Unable to find task %q", "user/"+*f.Owner)
+			// The user might be a pre-existing user (e.g. admin)
+			glog.Warningf("Unable to find task %q", "user/"+*f.Owner)
+		} else {
+			deps = append(deps, ownerTask)
 		}
-		deps = append(deps, ownerTask)
 	}
 
 	// Depend on disk mounts
