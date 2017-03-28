@@ -52,9 +52,6 @@
 [submodule "_vendor/github.com/google/gofuzz"]
 	path = _vendor/github.com/google/gofuzz
 	url = https://github.com/google/gofuzz
-[submodule "_vendor/github.com/golang/protobuf"]
-	path = _vendor/github.com/golang/protobuf
-	url = https://github.com/golang/protobuf
 [submodule "_vendor/github.com/gogo/protobuf"]
 	path = _vendor/github.com/gogo/protobuf
 	url = https://github.com/gogo/protobuf
@@ -259,3 +256,21 @@
 [submodule "_vendor/github.com/pelletier/go-buffruneio"]
 	path = _vendor/github.com/pelletier/go-buffruneio
 	url = https://github.com/pelletier/go-buffruneio
+[submodule "_vendor/github.com/coreos/etcd"]
+	path = _vendor/github.com/coreos/etcd
+	url = https://github.com/coreos/etcd
+[submodule "_vendor/google.golang.org/grpc"]
+	path = _vendor/google.golang.org/grpc
+	url = https://github.com/grpc/grpc-go.git
+[submodule "_vendor/github.com/elazarl/go-bindata-assetfs"]
+	path = _vendor/github.com/elazarl/go-bindata-assetfs
+	url = https://github.com/elazarl/go-bindata-assetfs
+[submodule "_vendor/github.com/grpc-ecosystem"]
+	path = _vendor/github.com/grpc-ecosystem
+	url = https://github.com/grpc-ecosystem/grpc-gateway
+[submodule "_vendor/gopkg.in/natefinch/lumberjack.v2"]
+	path = _vendor/gopkg.in/natefinch/lumberjack.v2
+	url = https://gopkg.in/natefinch/lumberjack.v2
+[submodule "_vendor/github.com/golang/protobuf"]
+	path = _vendor/github.com/golang/protobuf
+	url = https://github.com/golang/protobuf
