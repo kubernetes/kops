@@ -388,10 +388,11 @@ type KubeAPIServerConfig struct {
 
 	Image string `json:"image,omitempty"`
 
-	LogLevel int32 `json:"logLevel,omitempty" flag:"v"`
+	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
 
 	CloudProvider         string   `json:"cloudProvider,omitempty" flag:"cloud-provider"`
 	SecurePort            int32    `json:"securePort,omitempty" flag:"secure-port"`
+	InsecurePort          int32    `json:"insecurePort,omitempty" flag:"insecure-port"`
 	Address               string   `json:"address,omitempty" flag:"address"`
 	EtcdServers           []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
 	EtcdServersOverrides  []string `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
