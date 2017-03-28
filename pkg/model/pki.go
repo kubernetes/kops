@@ -94,6 +94,9 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			alternateNames = append(alternateNames, ip.String())
 		}
 
+		// We also want to be able to reference it locally via https://127.0.0.1
+		alternateNames = append(alternateNames, "127.0.0.1")
+
 		t := &fitasks.Keypair{
 			Name:           fi.String("master"),
 			Subject:        "cn=kubernetes-master",
