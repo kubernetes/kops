@@ -18,8 +18,8 @@ package model
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
-	"testing"
 	"k8s.io/kops/pkg/flagbuilder"
+	"testing"
 )
 
 func Test_KubeAPIServer_BuildFlags(t *testing.T) {
@@ -40,7 +40,7 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 		{
 			kops.KubeAPIServerConfig{
 				InsecurePort: 8080,
-				SecurePort: 443,
+				SecurePort:   443,
 			},
 			"--insecure-port=8080 --secure-port=443",
 		},
