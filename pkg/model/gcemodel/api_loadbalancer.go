@@ -47,7 +47,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// OK
 
 	case kops.LoadBalancerTypeInternal:
-		return fmt.Errorf("Internal LoadBalancers are not yet supported by kops on GCE")
+		return fmt.Errorf("internal LoadBalancers are not yet supported by kops on GCE")
 
 	default:
 		return fmt.Errorf("unhandled LoadBalancer type %q", lbSpec.Type)
@@ -78,7 +78,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		// TODO: I don't love this technique for finding the task by name & modifying it
 		masterKeypairTask, found := c.Tasks["Keypair/master"]
 		if !found {
-			return fmt.Errorf("Keypair/master task not found")
+			return fmt.Errorf("keypair/master task not found")
 		}
 		masterKeypair := masterKeypairTask.(*fitasks.Keypair)
 		masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, ipAddress)

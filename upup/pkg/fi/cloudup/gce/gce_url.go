@@ -44,7 +44,7 @@ func (u *GoogleCloudURL) BuildURL() string {
 		url += "global/"
 	}
 	if u.Region != "" {
-		url += "regoins/" + u.Region + "/"
+		url += "regions/" + u.Region + "/"
 	}
 	if u.Zone != "" {
 		url += "zones/" + u.Zone + "/"
