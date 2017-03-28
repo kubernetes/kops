@@ -333,10 +333,12 @@ type KubeProxyConfig struct {
 	//// bindAddress is the IP address for the proxy server to serve on (set to 0.0.0.0
 	//// for all interfaces)
 	//BindAddress string `json:"bindAddress"`
-	//// clusterCIDR is the CIDR range of the pods in the cluster. It is used to
-	//// bridge traffic coming from outside of the cluster. If not provided,
-	//// no off-cluster bridging will be performed.
-	//ClusterCIDR string `json:"clusterCIDR"`
+
+	// clusterCIDR is the CIDR range of the pods in the cluster. It is used to
+	// bridge traffic coming from outside of the cluster. If not provided,
+	// no off-cluster bridging will be performed.
+	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
+
 	//// healthzBindAddress is the IP address for the health check server to serve on,
 	//// defaulting to 127.0.0.1 (set to 0.0.0.0 for all interfaces)
 	//HealthzBindAddress string `json:"healthzBindAddress"`

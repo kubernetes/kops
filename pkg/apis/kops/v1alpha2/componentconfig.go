@@ -153,6 +153,11 @@ type KubeProxyConfig struct {
 
 	// master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
+
+	// clusterCIDR is the CIDR range of the pods in the cluster. It is used to
+	// bridge traffic coming from outside of the cluster. If not provided,
+	// no off-cluster bridging will be performed.
+	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
 }
 
 type KubeAPIServerConfig struct {
