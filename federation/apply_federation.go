@@ -21,9 +21,12 @@ import (
 	crypto_rand "crypto/rand"
 	"crypto/rsa"
 	"fmt"
+	"strings"
+	"text/template"
+
 	"github.com/golang/glog"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/federation/model"
@@ -36,10 +39,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/k8sapi"
 	"k8s.io/kops/upup/pkg/kutil"
-	federation_clientset "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
+	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
-	"strings"
-	"text/template"
 )
 
 type ApplyFederationOperation struct {
@@ -146,10 +147,6 @@ func (o *ApplyFederationOperation) Run() error {
 	if err != nil {
 		return err
 	}
-	//k8sControllerClient, err := release_1_5.NewForConfig(federationRestConfig)
-	//if err != nil {
-	//	return err
-	//}
 
 	for _, member := range o.Federation.Spec.Members {
 		glog.V(2).Infof("configuring member cluster %q", member)
@@ -158,7 +155,7 @@ func (o *ApplyFederationOperation) Run() error {
 			return fmt.Errorf("error reading cluster %q: %v", member, err)
 		}
 
-		clusterName := strings.Replace(cluster.ObjectMeta.Name, ".", "-", -1)
+		clusterName := strings.Replace(cluster.Name, ".", "-", -1)
 
 		a := &FederationCluster{
 			FederationNamespace: o.namespace,
@@ -166,7 +163,7 @@ func (o *ApplyFederationOperation) Run() error {
 			ControllerKubernetesClients: controllerKubernetesClients,
 			FederationClient:            federationControllerClient,
 
-			ClusterSecretName: "secret-" + cluster.ObjectMeta.Name,
+			ClusterSecretName: "secret-" + cluster.Name,
 			ClusterName:       clusterName,
 			ApiserverHostname: cluster.Spec.MasterPublicName,
 		}
@@ -212,7 +209,7 @@ func (o *ApplyFederationOperation) buildApiserverKeypair() *fitasks.Keypair {
 	keypairName := "secret-" + o.apiserverHostName
 	keypair := &fitasks.Keypair{
 		Name:    fi.String(keypairName),
-		Subject: "cn=" + o.Federation.ObjectMeta.Name,
+		Subject: "cn=" + o.Federation.Name,
 		Type:    "server",
 	}
 
@@ -362,7 +359,7 @@ func (o *ApplyFederationOperation) executeTemplate(key string, templateDefinitio
 func (o *ApplyFederationOperation) EnsureNamespace(c *fi.Context) error {
 	k8s := c.Target.(*kubernetestarget.KubernetesTarget).KubernetesClient
 
-	ns, err := k8s.Core().Namespaces().Get(o.namespace, meta_v1.GetOptions{})
+	ns, err := k8s.CoreV1().Namespaces().Get(o.namespace, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			ns = nil

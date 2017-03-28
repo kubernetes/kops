@@ -20,7 +20,7 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
-	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
@@ -80,8 +80,8 @@ func (b *KubeconfigBuilder) DeleteKubeConfig() error {
 }
 
 // Create new Rest Client
-func (c *KubeconfigBuilder) BuildRestConfig() (*restclient.Config, error) {
-	restConfig := &restclient.Config{
+func (c *KubeconfigBuilder) BuildRestConfig() (*rest.Config, error) {
+	restConfig := &rest.Config{
 		Host: "https://" + c.KubeMasterIP,
 	}
 	restConfig.CAData = c.CACert
