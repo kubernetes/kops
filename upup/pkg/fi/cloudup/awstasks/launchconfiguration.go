@@ -54,6 +54,9 @@ type LaunchConfiguration struct {
 	SpotPrice string
 
 	ID *string
+
+	// Tenancy. Can be either default or dedicated.
+	Tenancy *string
 }
 
 var _ fi.CompareWithID = &LaunchConfiguration{}
@@ -242,6 +245,10 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 
 	if e.SSHKey != nil {
 		request.KeyName = e.SSHKey.Name
+	}
+
+	if e.Tenancy != nil {
+		request.PlacementTenancy = e.Tenancy
 	}
 
 	securityGroupIDs := []*string{}

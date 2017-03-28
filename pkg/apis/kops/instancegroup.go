@@ -92,6 +92,10 @@ type InstanceGroupSpec struct {
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
 
+	// Describes the tenancy of the instance group. Can be either default or dedicated.
+	// Currently only applies to AWS.
+	Tenancy string `json:"tenancy,omitempty"`
+
 	// Kubelet overrides kubelet config from the ClusterSpec
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
 
@@ -148,6 +152,12 @@ func (g *InstanceGroup) Validate() error {
 
 	if g.Spec.Role == "" {
 		return field.Required(field.NewPath("Role"), "Role must be set")
+	}
+
+	if g.Spec.Tenancy != "" {
+		if g.Spec.Tenancy != "default" && g.Spec.Tenancy != "dedicated" && g.Spec.Tenancy != "host" {
+			return field.Invalid(field.NewPath("Tenancy"), g.Spec.Tenancy, "Unknown tenancy. Must be Default, Dedicated or Host.")
+		}
 	}
 
 	switch g.Spec.Role {
