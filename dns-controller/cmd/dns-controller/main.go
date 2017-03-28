@@ -43,6 +43,9 @@ var (
 func main() {
 	fmt.Printf("dns-controller version %s\n", BuildVersion)
 
+	// Be sure to get the glog flags
+	glog.Flush()
+
 	dnsProviderId := "aws-route53"
 	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns)")
 
@@ -56,6 +59,8 @@ func main() {
 	flag.CommandLine.Parse([]string{})
 
 	flag.Set("logtostderr", "true")
+
+	flags.AddGoFlagSet(flag.CommandLine)
 
 	flags.Parse(os.Args)
 
