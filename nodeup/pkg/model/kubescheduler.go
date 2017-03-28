@@ -60,7 +60,7 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Add kubeconfig
 	{
-		kubeconfig, err := b.BuildPKIKubeconfig("kube-scheduler")
+		kubeconfig, err := b.buildPKIKubeconfig("kube-scheduler")
 		if err != nil {
 			return err
 		}
