@@ -37,6 +37,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 	return scheme.AddGeneratedConversionFuncs(
 		Convert_v1alpha2_AccessSpec_To_kops_AccessSpec,
 		Convert_kops_AccessSpec_To_v1alpha2_AccessSpec,
+		Convert_v1alpha2_AuthorizationSpec_To_kops_AuthorizationSpec,
+		Convert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec,
 		Convert_v1alpha2_BastionSpec_To_kops_BastionSpec,
 		Convert_kops_BastionSpec_To_v1alpha2_BastionSpec,
 		Convert_v1alpha2_CNINetworkingSpec_To_kops_CNINetworkingSpec,
@@ -105,6 +107,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_LoadBalancerAccessSpec_To_v1alpha2_LoadBalancerAccessSpec,
 		Convert_v1alpha2_NetworkingSpec_To_kops_NetworkingSpec,
 		Convert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec,
+		Convert_v1alpha2_RBACAuthorizationSpec_To_kops_RBACAuthorizationSpec,
+		Convert_kops_RBACAuthorizationSpec_To_v1alpha2_RBACAuthorizationSpec,
 		Convert_v1alpha2_TopologySpec_To_kops_TopologySpec,
 		Convert_kops_TopologySpec_To_v1alpha2_TopologySpec,
 		Convert_v1alpha2_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec,
@@ -162,6 +166,40 @@ func autoConvert_kops_AccessSpec_To_v1alpha2_AccessSpec(in *kops.AccessSpec, out
 
 func Convert_kops_AccessSpec_To_v1alpha2_AccessSpec(in *kops.AccessSpec, out *AccessSpec, s conversion.Scope) error {
 	return autoConvert_kops_AccessSpec_To_v1alpha2_AccessSpec(in, out, s)
+}
+
+func autoConvert_v1alpha2_AuthorizationSpec_To_kops_AuthorizationSpec(in *AuthorizationSpec, out *kops.AuthorizationSpec, s conversion.Scope) error {
+	if in.RBAC != nil {
+		in, out := &in.RBAC, &out.RBAC
+		*out = new(kops.RBACAuthorizationSpec)
+		if err := Convert_v1alpha2_RBACAuthorizationSpec_To_kops_RBACAuthorizationSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.RBAC = nil
+	}
+	return nil
+}
+
+func Convert_v1alpha2_AuthorizationSpec_To_kops_AuthorizationSpec(in *AuthorizationSpec, out *kops.AuthorizationSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_AuthorizationSpec_To_kops_AuthorizationSpec(in, out, s)
+}
+
+func autoConvert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec(in *kops.AuthorizationSpec, out *AuthorizationSpec, s conversion.Scope) error {
+	if in.RBAC != nil {
+		in, out := &in.RBAC, &out.RBAC
+		*out = new(RBACAuthorizationSpec)
+		if err := Convert_kops_RBACAuthorizationSpec_To_v1alpha2_RBACAuthorizationSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.RBAC = nil
+	}
+	return nil
+}
+
+func Convert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec(in *kops.AuthorizationSpec, out *AuthorizationSpec, s conversion.Scope) error {
+	return autoConvert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec(in, out, s)
 }
 
 func autoConvert_v1alpha2_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops.BastionSpec, s conversion.Scope) error {
@@ -487,6 +525,15 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.API = nil
 	}
+	if in.Authorization != nil {
+		in, out := &in.Authorization, &out.Authorization
+		*out = new(kops.AuthorizationSpec)
+		if err := Convert_v1alpha2_AuthorizationSpec_To_kops_AuthorizationSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Authorization = nil
+	}
 	out.CloudLabels = in.CloudLabels
 	return nil
 }
@@ -647,6 +694,15 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 		}
 	} else {
 		out.API = nil
+	}
+	if in.Authorization != nil {
+		in, out := &in.Authorization, &out.Authorization
+		*out = new(AuthorizationSpec)
+		if err := Convert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Authorization = nil
 	}
 	out.CloudLabels = in.CloudLabels
 	return nil
@@ -1648,6 +1704,22 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec(in *kops.Network
 
 func Convert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec(in *kops.NetworkingSpec, out *NetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec(in, out, s)
+}
+
+func autoConvert_v1alpha2_RBACAuthorizationSpec_To_kops_RBACAuthorizationSpec(in *RBACAuthorizationSpec, out *kops.RBACAuthorizationSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_v1alpha2_RBACAuthorizationSpec_To_kops_RBACAuthorizationSpec(in *RBACAuthorizationSpec, out *kops.RBACAuthorizationSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_RBACAuthorizationSpec_To_kops_RBACAuthorizationSpec(in, out, s)
+}
+
+func autoConvert_kops_RBACAuthorizationSpec_To_v1alpha2_RBACAuthorizationSpec(in *kops.RBACAuthorizationSpec, out *RBACAuthorizationSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_kops_RBACAuthorizationSpec_To_v1alpha2_RBACAuthorizationSpec(in *kops.RBACAuthorizationSpec, out *RBACAuthorizationSpec, s conversion.Scope) error {
+	return autoConvert_kops_RBACAuthorizationSpec_To_v1alpha2_RBACAuthorizationSpec(in, out, s)
 }
 
 func autoConvert_v1alpha2_TopologySpec_To_kops_TopologySpec(in *TopologySpec, out *kops.TopologySpec, s conversion.Scope) error {
