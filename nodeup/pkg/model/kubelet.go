@@ -25,7 +25,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/flagbuilder"
-	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -97,7 +96,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Add kubeconfig
 	{
-		kubeconfig, err := b.buildKubeconfig()
+		kubeconfig, err := b.BuildPKIKubeconfig("kubelet")
 		if err != nil {
 			return err
 		}
@@ -172,77 +171,6 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	service.InitDefaults()
 
 	return service
-}
-
-func (b *KubeletBuilder) buildKubeconfig() (string, error) {
-	caCertificate, err := b.KeyStore.Cert(fi.CertificateId_CA)
-	if err != nil {
-		return "", fmt.Errorf("error fetching CA certificate from keystore: %v", err)
-	}
-
-	kubeletCertificate, err := b.KeyStore.Cert("kubelet")
-	if err != nil {
-		return "", fmt.Errorf("error fetching kubelet certificate from keystore: %v", err)
-	}
-	kubeletPrivateKey, err := b.KeyStore.PrivateKey("kubelet")
-	if err != nil {
-		return "", fmt.Errorf("error fetching kubelet private key from keystore: %v", err)
-	}
-
-	user := kubeconfig.KubectlUser{}
-	user.ClientCertificateData, err = kubeletCertificate.AsBytes()
-	if err != nil {
-		return "", fmt.Errorf("error encoding kubelet certificate: %v", err)
-	}
-	user.ClientKeyData, err = kubeletPrivateKey.AsBytes()
-	if err != nil {
-		return "", fmt.Errorf("error encoding kubelet private key: %v", err)
-	}
-	cluster := kubeconfig.KubectlCluster{}
-	cluster.CertificateAuthorityData, err = caCertificate.AsBytes()
-	if err != nil {
-		return "", fmt.Errorf("error encoding CA certificate: %v", err)
-	}
-
-	if b.IsMaster {
-		cluster.Server = "http://127.0.0.1:8080"
-	} else {
-		cluster.Server = "https://" + b.Cluster.Spec.MasterInternalName
-	}
-
-	config := &kubeconfig.KubectlConfig{
-		ApiVersion: "v1",
-		Kind:       "Config",
-		Users: []*kubeconfig.KubectlUserWithName{
-			{
-				Name: "kubelet",
-				User: user,
-			},
-		},
-		Clusters: []*kubeconfig.KubectlClusterWithName{
-			{
-				Name:    "local",
-				Cluster: cluster,
-			},
-		},
-		Contexts: []*kubeconfig.KubectlContextWithName{
-			{
-				Name: "service-account-context",
-				Context: kubeconfig.KubectlContext{
-					Cluster: "local",
-					User:    "kubelet",
-				},
-			},
-		},
-		CurrentContext: "service-account-context",
-	}
-
-	yaml, err := kops.ToRawYaml(config)
-	if err != nil {
-		return "", fmt.Errorf("error marshalling kubeconfig to yaml: %v", err)
-	}
-
-	return string(yaml), nil
 }
 
 func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
