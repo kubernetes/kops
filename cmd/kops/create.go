@@ -21,6 +21,7 @@ import (
 	"io"
 
 	"bytes"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -43,7 +44,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "create -f FILENAME",
-		Short: "Create a resource by filename or stdin",
+		Short: "Create a resource by filename or stdin.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameEmpty(options.Filenames) {
 				cmd.Help()
