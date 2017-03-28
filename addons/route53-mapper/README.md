@@ -16,8 +16,13 @@ The project is created by wearemolecule, and maintained at
 ```
 # Version 1.2.0
 # https://github.com/wearemolecule/route53-kubernetes/tree/v1.2.0
-$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/monitoring-standalone/v1.2.0.yaml
+$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/route53-mapper/v1.2.0.yml
 ```
+
+**Important:**
+This addon requires [additional IAM permissions](../../docs/iam_roles.md) on the master instances.
+The required permissions are described [here](https://github.com/wearemolecule/route53-kubernetes).
+These can be configured using `kops edit cluster` or `kops create -f [...]`.
 
 ### Service Configuration
 
