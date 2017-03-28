@@ -279,7 +279,8 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		}
 
 		if len(c.Taints) == 0 && b.IsMaster {
-			c.Taints = append(c.Taints, RoleLabelMaster16+":"+string(v1.TaintEffectNoSchedule))
+			// (Even though the value is empty, we still expect <Key>=<Value>:<Effect>)
+			c.Taints = append(c.Taints, RoleLabelMaster16+"=:"+string(v1.TaintEffectNoSchedule))
 		}
 
 		// Enable scheduling since it can be controlled via taints.
