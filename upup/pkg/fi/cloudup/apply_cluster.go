@@ -96,11 +96,6 @@ type ApplyClusterCmd struct {
 }
 
 func (c *ApplyClusterCmd) Run() error {
-
-	fmt.Println("We got here!")
-	fmt.Println(c.Cluster.Spec)
-	os.Exit(1)
-
 	if c.MaxTaskDuration == 0 {
 		c.MaxTaskDuration = DefaultMaxTaskDuration
 	}
