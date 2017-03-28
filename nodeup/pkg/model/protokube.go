@@ -132,6 +132,8 @@ type ProtokubeFlags struct {
 
 	DNSInternalSuffix *string `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
 	Cloud             *string `json:"cloud,omitempty" flag:"cloud"`
+
+	ApplyTaints *bool `json:"applyTaints,omitempty" flag:"apply-taints"`
 }
 
 // ProtokubeFlags returns the flags object for protokube
@@ -177,6 +179,10 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	}
 
 	f.DNSInternalSuffix = fi.String(".internal." + t.Cluster.ObjectMeta.Name)
+
+	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
+		f.ApplyTaints = fi.Bool(true)
+	}
 
 	return f
 }
