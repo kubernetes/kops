@@ -20,15 +20,20 @@ import (
 	"flag"
 	"os"
 	"runtime"
+	"math/rand"
+	"time"
+	"fmt"
+
 
 	"k8s.io/kops/pkg/apiserver/cmd/server"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/util/logs"
-	"math/rand"
-	"time"
 )
 
 func main() {
+
+	fmt.Println("Main is running.")
+
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	logs.InitLogs()
