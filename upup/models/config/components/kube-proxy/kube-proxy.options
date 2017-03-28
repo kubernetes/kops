@@ -1,9 +1,0 @@
-KubeProxy:
-  LogLevel: 2
-  # Any change here should be accompanied by a proportional change in CPU
-  # requests of other per-node add-ons (e.g. fluentd).
-  CPURequest: 100m
-
-  Image: {{ Image "kube-proxy" }}
-
-  Master: https://{{ .MasterInternalName }}
