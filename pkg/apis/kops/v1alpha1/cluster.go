@@ -234,8 +234,22 @@ type ClusterSpec struct {
 	// API field controls how the API is exposed outside the cluster
 	API *AccessSpec `json:"api,omitempty"`
 
+	// Authorization field controls how the cluster is configured for authorization
+	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
+
 	// Tags for AWS instance groups
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
+}
+
+type AuthorizationSpec struct {
+	RBAC *RBACAuthorizationSpec `json:"rbac,omitempty"`
+}
+
+func (s *AuthorizationSpec) IsEmpty() bool {
+	return s.RBAC == nil
+}
+
+type RBACAuthorizationSpec struct {
 }
 
 type AccessSpec struct {
