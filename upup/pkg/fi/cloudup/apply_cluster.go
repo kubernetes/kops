@@ -290,13 +290,13 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 
 			l.AddTypes(map[string]interface{}{
-				"persistentDisk":       &gcetasks.PersistentDisk{},
-				"instance":             &gcetasks.Instance{},
-				"instanceTemplate":     &gcetasks.InstanceTemplate{},
-				"network":              &gcetasks.Network{},
-				"managedInstanceGroup": &gcetasks.ManagedInstanceGroup{},
-				"firewallRule":         &gcetasks.FirewallRule{},
-				"ipAddress":            &gcetasks.IPAddress{},
+				"Disk":                 &gcetasks.Disk{},
+				"Instance":             &gcetasks.Instance{},
+				"InstanceTemplate":     &gcetasks.InstanceTemplate{},
+				"Network":              &gcetasks.Network{},
+				"InstanceGroupManager": &gcetasks.InstanceGroupManager{},
+				"FirewallRule":         &gcetasks.FirewallRule{},
+				"Address":              &gcetasks.Address{},
 			})
 		}
 
@@ -405,15 +405,20 @@ func (c *ApplyClusterCmd) Run() error {
 
 			switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
 			case fi.CloudProviderAWS:
+				awsModelContext := &awsmodel.AWSModelContext{
+					KopsModelContext: modelContext,
+				}
+
 				l.Builders = append(l.Builders,
-					&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
+					&model.PKIModelBuilder{KopsModelContext: modelContext},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+
+					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext},
 					&model.BastionModelBuilder{KopsModelContext: modelContext},
 					&model.DNSModelBuilder{KopsModelContext: modelContext},
 					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
 					&model.FirewallModelBuilder{KopsModelContext: modelContext},
 					&model.IAMModelBuilder{KopsModelContext: modelContext},
-					&model.PKIModelBuilder{KopsModelContext: modelContext},
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
 					&model.NetworkModelBuilder{KopsModelContext: modelContext},
 					&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 				)
@@ -424,14 +429,15 @@ func (c *ApplyClusterCmd) Run() error {
 				}
 
 				l.Builders = append(l.Builders,
-					//&model.APILoadBalancerBuilder{KopsModelContext: modelContext},
+					&model.PKIModelBuilder{KopsModelContext: modelContext},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+
+					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext},
 					//&model.BastionModelBuilder{KopsModelContext: modelContext},
 					//&model.DNSModelBuilder{KopsModelContext: modelContext},
 					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext},
 					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext},
 					//&model.IAMModelBuilder{KopsModelContext: modelContext},
-					&model.PKIModelBuilder{KopsModelContext: modelContext},
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext},
 					//&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 				)
