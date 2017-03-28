@@ -75,6 +75,12 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	if clusterSpec.Authorization != nil {
+		if clusterSpec.Authorization.RBAC != nil {
+			clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("RBAC")
+		}
+	}
+
 	return nil
 }
 
