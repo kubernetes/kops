@@ -61,6 +61,35 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	// Add kubeconfig
+	{
+		// TODO: Change kubeconfig to be https
+
+		kubeconfig, err := b.buildPKIKubeconfig("kube-controller-manager")
+		if err != nil {
+			return err
+		}
+		t := &nodetasks.File{
+			Path:     "/var/lib/kube-controller-manager/kubeconfig",
+			Contents: fi.NewStringResource(kubeconfig),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0400"),
+		}
+		c.AddTask(t)
+	}
+
+	// Touch log file, so that docker doesn't create a directory instead
+	{
+		t := &nodetasks.File{
+			Path:        "/var/log/kube-controller-manager.log",
+			Contents:    fi.NewStringResource(""),
+			Type:        nodetasks.FileType_File,
+			Mode:        s("0400"),
+			IfNotExists: true,
+		}
+		c.AddTask(t)
+	}
+
 	return nil
 }
 
@@ -79,6 +108,11 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	if b.Cluster.Spec.CloudConfig != nil {
 		flags += " --cloud-config=" + CloudConfigFilePath
 	}
+
+	// Add kubeconfig flag
+	flags += " --kubeconfig=" + "/var/lib/kube-controller-manager/kubeconfig"
+
+	// TODO: Set --use-service-account-credentials=true - unclear if we can/should set this without RBAC
 
 	redirectCommand := []string{
 		"/bin/sh", "-c", "/usr/local/bin/kube-controller-manager " + flags + " 1>>/var/log/kube-controller-manager.log 2>&1",
@@ -140,6 +174,7 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log").ReadOnly = false
+	addHostPathMapping(pod, container, "varlibkcm", "/var/lib/kube-controller-manager")
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 

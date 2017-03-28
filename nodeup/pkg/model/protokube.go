@@ -124,6 +124,8 @@ type ProtokubeFlags struct {
 	Containerized *bool  `json:"containerized,omitempty" flag:"containerized"`
 	LogLevel      *int32 `json:"logLevel,omitempty" flag:"v"`
 
+	InitializeRBAC *bool `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
+
 	DNSProvider *string `json:"dnsProvider,omitempty" flag:"dns"`
 
 	Zone []string `json:"zone,omitempty" flag:"zone"`
@@ -145,6 +147,12 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	f.Master = fi.Bool(master)
 	if master {
 		f.Channels = t.NodeupConfig.Channels
+	}
+
+	if k8sVersion.Major == 1 && k8sVersion.Minor >= 6 {
+		if master {
+			f.InitializeRBAC = fi.Bool(true)
+		}
 	}
 
 	f.LogLevel = fi.Int32(4)
