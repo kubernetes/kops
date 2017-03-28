@@ -14,11 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package fi
+package gcetasks
 
-// HasAddress is implemented by elastic/floating IP addresses, to expose the address
-// For example, this is used so that the master SSL certificate can be configured with the dynamically allocated IP
-type HasAddress interface {
-	// FindIPAddress returns the address associated with the implementor.  If there is no address, returns (nil, nil)
-	FindIPAddress(context *Context) (*string, error)
+import "k8s.io/kops/upup/pkg/fi/cloudup/gce"
+
+func lastComponent(url string) string {
+	return gce.LastComponent(url)
 }

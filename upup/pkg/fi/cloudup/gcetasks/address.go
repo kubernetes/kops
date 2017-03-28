@@ -25,23 +25,44 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
-//go:generate fitask -type=IPAddress
-type IPAddress struct {
-	Name    *string
-	Address *string
+//go:generate fitask -type=Address
+type Address struct {
+	Name      *string
+	IPAddress *string
 }
 
-func (e *IPAddress) Find(c *fi.Context) (*IPAddress, error) {
+func (e *Address) Find(c *fi.Context) (*Address, error) {
 	actual, err := e.find(c.Cloud.(*gce.GCECloud))
 	if actual != nil && err == nil {
-		if e.Address == nil {
-			e.Address = actual.Address
+		if e.IPAddress == nil {
+			e.IPAddress = actual.IPAddress
 		}
 	}
 	return actual, err
 }
 
-func (e *IPAddress) find(cloud *gce.GCECloud) (*IPAddress, error) {
+func findAddressByIP(cloud *gce.GCECloud, ip string) (*Address, error) {
+	// Technically this is a regex, but it doesn't matter...
+	r, err := cloud.Compute.Addresses.List(cloud.Project, cloud.Region).Filter("address eq " + ip).Do()
+	if err != nil {
+		return nil, fmt.Errorf("error listing IPAddresss: %v", err)
+	}
+
+	if len(r.Items) == 0 {
+		return nil, nil
+	}
+	if len(r.Items) > 1 {
+		return nil, fmt.Errorf("found multiple Addresses matching %q", ip)
+	}
+
+	actual := &Address{}
+	actual.IPAddress = &r.Items[0].Address
+	actual.Name = &r.Items[0].Name
+
+	return actual, nil
+}
+
+func (e *Address) find(cloud *gce.GCECloud) (*Address, error) {
 	r, err := cloud.Compute.Addresses.Get(cloud.Project, cloud.Region, *e.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
@@ -51,16 +72,16 @@ func (e *IPAddress) find(cloud *gce.GCECloud) (*IPAddress, error) {
 		return nil, fmt.Errorf("error listing IPAddresss: %v", err)
 	}
 
-	actual := &IPAddress{}
-	actual.Address = &r.Address
+	actual := &Address{}
+	actual.IPAddress = &r.Address
 	actual.Name = &r.Name
 
 	return actual, nil
 }
 
-var _ fi.HasAddress = &IPAddress{}
+var _ fi.HasAddress = &Address{}
 
-func (e *IPAddress) FindAddress(context *fi.Context) (*string, error) {
+func (e *Address) FindIPAddress(context *fi.Context) (*string, error) {
 	actual, err := e.find(context.Cloud.(*gce.GCECloud))
 	if err != nil {
 		return nil, fmt.Errorf("error querying for IPAddress: %v", err)
@@ -68,38 +89,42 @@ func (e *IPAddress) FindAddress(context *fi.Context) (*string, error) {
 	if actual == nil {
 		return nil, nil
 	}
-	return actual.Address, nil
+	return actual.IPAddress, nil
 }
 
-func (e *IPAddress) Run(c *fi.Context) error {
+func (e *Address) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (_ *IPAddress) CheckChanges(a, e, changes *IPAddress) error {
+func (_ *Address) CheckChanges(a, e, changes *Address) error {
 	if a != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
 		}
-		if changes.Address != nil {
+		if changes.IPAddress != nil {
 			return fi.CannotChangeField("Address")
 		}
 	}
 	return nil
 }
 
-func (_ *IPAddress) RenderGCE(t *gce.GCEAPITarget, a, e, changes *IPAddress) error {
+func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 	addr := &compute.Address{
 		Name:    *e.Name,
-		Address: fi.StringValue(e.Address),
+		Address: fi.StringValue(e.IPAddress),
 		Region:  t.Cloud.Region,
 	}
 
 	if a == nil {
 		glog.Infof("GCE creating address: %q", addr.Name)
 
-		_, err := t.Cloud.Compute.Addresses.Insert(t.Cloud.Project, t.Cloud.Region, addr).Do()
+		op, err := t.Cloud.Compute.Addresses.Insert(t.Cloud.Project, t.Cloud.Region, addr).Do()
 		if err != nil {
 			return fmt.Errorf("error creating IPAddress: %v", err)
+		}
+
+		if err := t.Cloud.WaitForOp(op); err != nil {
+			return fmt.Errorf("error waiting for IPAddress: %v", err)
 		}
 	} else {
 		return fmt.Errorf("Cannot apply changes to IPAddress: %v", changes)
@@ -109,12 +134,18 @@ func (_ *IPAddress) RenderGCE(t *gce.GCEAPITarget, a, e, changes *IPAddress) err
 }
 
 type terraformAddress struct {
-	Name *string `json:"name"`
+	Name *string `json:"name,omitempty"`
 }
 
-func (_ *IPAddress) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IPAddress) error {
+func (_ *Address) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Address) error {
 	tf := &terraformAddress{
 		Name: e.Name,
 	}
 	return t.RenderResource("google_compute_address", *e.Name, tf)
+}
+
+func (e *Address) TerraformAddress() *terraform.Literal {
+	name := fi.StringValue(e.Name)
+
+	return terraform.LiteralProperty("google_compute_address", name, "address")
 }

@@ -105,7 +105,7 @@ func (e *Keypair) normalize(c *fi.Context) error {
 
 	for _, task := range e.AlternateNameTasks {
 		if hasAddress, ok := task.(fi.HasAddress); ok {
-			address, err := hasAddress.FindAddress(c)
+			address, err := hasAddress.FindIPAddress(c)
 			if err != nil {
 				return fmt.Errorf("error finding address for %v: %v", task, err)
 			}
