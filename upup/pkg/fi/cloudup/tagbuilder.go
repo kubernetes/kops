@@ -53,7 +53,7 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		// TODO combine with External
 		tags.Insert("_networking_kubenet", "_networking_external")
 	} else {
-		return nil, fmt.Errorf("No networking mode set")
+		return nil, fmt.Errorf("no networking mode set")
 	}
 
 	switch cluster.Spec.CloudProvider {
