@@ -51,6 +51,16 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
+		// Keypair used by the kube-proxy
+		t := &fitasks.Keypair{
+			Name:    fi.String("kube-proxy"),
+			Subject: "cn=" + user.KubeProxy,
+			Type:    "client",
+		}
+		c.AddTask(t)
+	}
+
+	{
 		// Keypair used for admin kubecfg
 		t := &fitasks.Keypair{
 			Name:    fi.String("kubecfg"),
