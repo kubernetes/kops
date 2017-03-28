@@ -30,6 +30,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	apiutil "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
 )
@@ -151,9 +152,9 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	nodeTable.AddColumn("ROLE", func(n v1.Node) string {
 		// TODO: Maybe print the instance group role instead?
 		// TODO: Maybe include the instance group name?
-		role := "node"
-		if val, ok := n.ObjectMeta.Labels[api.RoleLabelName]; ok {
-			role = val
+		if role == "" {
+			role := apiutil.GetNodeRole(&n)
+			role = "node"
 		}
 		return role
 	})

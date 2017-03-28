@@ -48,14 +48,14 @@ const (
 
 type Service struct {
 	Name       string
-	Definition *string
-	Running    *bool `json:"running"`
+	Definition *string `json:"definition,omitEmpty"`
+	Running    *bool   `json:"running"`
 
 	// Enabled configures the service to start at boot (or not start at boot)
-	Enabled *bool
+	Enabled *bool `json:"enabled,omitEmpty"`
 
-	ManageState  *bool `json:"manageState"`
-	SmartRestart *bool `json:"smartRestart"`
+	ManageState  *bool `json:"manageState,omitEmpty"`
+	SmartRestart *bool `json:"smartRestart,omitEmpty"`
 }
 
 var _ fi.HasDependencies = &Service{}
