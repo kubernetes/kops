@@ -107,6 +107,11 @@ func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 			if !strings.HasSuffix(dirPath, "/") {
 				dirPath += "/"
 			}
+
+			if f.Path == dirPath {
+				continue
+			}
+
 			if strings.HasPrefix(f.Path, dirPath) {
 				deps = append(deps, v)
 			}
