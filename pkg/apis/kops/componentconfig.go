@@ -291,7 +291,7 @@ type KubeletConfigSpec struct {
 	// networkPluginMTU is the MTU to be passed to the network plugin,
 	// and overrides the default MTU for cases where it cannot be automatically
 	// computed (such as IPSEC).
-	NetworkPluginMTU *int32 `json:"networkPluginMTU,omitEmpty" flag:"network-plugin-mtu"`
+	NetworkPluginMTU *int32 `json:"networkPluginMTU,omitempty" flag:"network-plugin-mtu"`
 
 	// imageGCHighThresholdPercent is the percent of disk usage after which
 	// image garbage collection is always run.
