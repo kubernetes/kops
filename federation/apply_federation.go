@@ -35,10 +35,10 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/k8sapi"
-	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
@@ -57,7 +57,7 @@ type ApplyFederationOperation struct {
 	apiserverSecretName     string
 }
 
-func (o *ApplyFederationOperation) FindKubecfg() (*kutil.KubeconfigBuilder, error) {
+func (o *ApplyFederationOperation) FindKubecfg() (*kubeconfig.KubeconfigBuilder, error) {
 	// TODO: Only if not yet set?
 	//	hasKubecfg, err := hasKubecfg(f.Name)
 	//	if err != nil {

@@ -14,40 +14,30 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kutil
+package kubeconfig
 
 import (
 	"fmt"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-type CreateKubecfg struct {
-	ContextName  string
-	KeyStore     fi.Keystore
-	SecretStore  fi.SecretStore
-	KubeMasterIP string
-}
+func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore) (*KubeconfigBuilder, error) {
+	clusterName := cluster.ObjectMeta.Name
 
-func (c *CreateKubecfg) WriteKubecfg() error {
-	b, err := c.ExtractKubeconfig()
-	if err != nil {
-		return err
+	master := cluster.Spec.MasterPublicName
+	if master == "" {
+		master = "api." + clusterName
 	}
 
-	if err := b.WriteKubecfg(); err != nil {
-		return err
-	}
+	server := "https://" + master
 
-	return nil
-}
-
-func (c *CreateKubecfg) ExtractKubeconfig() (*KubeconfigBuilder, error) {
 	b := NewKubeconfigBuilder()
 
-	b.Context = c.ContextName
+	b.Context = clusterName
 
 	{
-		cert, _, err := c.KeyStore.FindKeypair(fi.CertificateId_CA)
+		cert, _, err := keyStore.FindKeypair(fi.CertificateId_CA)
 		if err != nil {
 			return nil, fmt.Errorf("error fetching CA keypair: %v", err)
 		}
@@ -62,7 +52,7 @@ func (c *CreateKubecfg) ExtractKubeconfig() (*KubeconfigBuilder, error) {
 	}
 
 	{
-		cert, key, err := c.KeyStore.FindKeypair("kubecfg")
+		cert, key, err := keyStore.FindKeypair("kubecfg")
 		if err != nil {
 			return nil, fmt.Errorf("error fetching kubecfg keypair: %v", err)
 		}
@@ -84,10 +74,10 @@ func (c *CreateKubecfg) ExtractKubeconfig() (*KubeconfigBuilder, error) {
 		}
 	}
 
-	b.KubeMasterIP = c.KubeMasterIP
+	b.Server = server
 
-	if c.SecretStore != nil {
-		secret, err := c.SecretStore.FindSecret("kube")
+	if secretStore != nil {
+		secret, err := secretStore.FindSecret("kube")
 		if err != nil {
 			return nil, err
 		}

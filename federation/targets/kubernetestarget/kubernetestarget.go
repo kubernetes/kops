@@ -21,26 +21,19 @@ import (
 	"k8s.io/client-go/kubernetes"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/kutil"
 )
 
 type KubernetesTarget struct {
-	//kubectlContext string
-	//keystore *k8sapi.KubernetesKeystore
 	KubernetesClient kubernetes.Interface
 	cluster          *kopsapi.Cluster
 }
 
-func NewKubernetesTarget(clientset simple.Clientset, keystore fi.Keystore, cluster *kopsapi.Cluster) (*KubernetesTarget, error) {
-	b := &kutil.CreateKubecfg{
-		ContextName:  cluster.ObjectMeta.Name,
-		KeyStore:     keystore,
-		SecretStore:  nil,
-		KubeMasterIP: cluster.Spec.MasterPublicName,
-	}
-
-	kubeconfig, err := b.ExtractKubeconfig()
+func NewKubernetesTarget(clientset simple.Clientset, keyStore fi.Keystore, cluster *kopsapi.Cluster) (*KubernetesTarget, error) {
+	var secretStore fi.SecretStore
+	kubeconfig, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore)
 	if err != nil {
 		return nil, fmt.Errorf("error building credentials for cluster %q: %v", cluster.ObjectMeta.Name, err)
 	}

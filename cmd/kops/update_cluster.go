@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -206,14 +207,11 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 		if kubecfgCert != nil {
 			glog.Infof("Exporting kubecfg for cluster")
-			x := &kutil.CreateKubecfg{
-				ContextName:  cluster.ObjectMeta.Name,
-				KeyStore:     keyStore,
-				SecretStore:  secretStore,
-				KubeMasterIP: cluster.Spec.MasterPublicName,
+			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore)
+			if err != nil {
+				return err
 			}
-
-			err = x.WriteKubecfg()
+			err = conf.WriteKubecfg()
 			if err != nil {
 				return err
 			}
