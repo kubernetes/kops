@@ -19,10 +19,13 @@ package model
 import (
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
 type NodeupModelContext struct {
+	NodeupConfig *nodeup.NodeUpConfig
+
 	Cluster       *kops.Cluster
 	InstanceGroup *kops.InstanceGroup
 	Architecture  Architecture
@@ -46,9 +49,39 @@ func (c *NodeupModelContext) SSLHostPaths() []string {
 
 		paths = append(paths, "/usr/share/ca-certificates")
 
+	case distros.DistributionContainerOS:
+		paths = append(paths, "/usr/share/ca-certificates")
+
 	default:
 		paths = append(paths, "/usr/share/ssl", "/usr/ssl", "/usr/lib/ssl", "/usr/local/openssl", "/var/ssl", "/etc/openssl")
 	}
 
 	return paths
+}
+
+func (c *NodeupModelContext) PathSrvKubernetes() string {
+	switch c.Distribution {
+	case distros.DistributionContainerOS:
+		return "/etc/srv/kubernetes"
+	default:
+		return "/srv/kubernetes"
+	}
+}
+
+func (c *NodeupModelContext) PathSrvSshproxy() string {
+	switch c.Distribution {
+	case distros.DistributionContainerOS:
+		return "/etc/srv/sshproxy"
+	default:
+		return "/srv/sshproxy"
+	}
+}
+
+func (c *NodeupModelContext) NetworkPluginDir() string {
+	switch c.Distribution {
+	case distros.DistributionContainerOS:
+		return "/home/kubernetes/bin/"
+	default:
+		return "/opt/cni/bin/"
+	}
 }

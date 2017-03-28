@@ -40,6 +40,10 @@ NODEUP_HASH={{ NodeUpSourceHash }}
 
 function ensure-install-dir() {
   INSTALL_DIR="/var/cache/kubernetes-install"
+  # On ContainerOS, we install to /var/lib/toolbox install (because of noexec)
+  if [[ -d /var/lib/toolbox ]]; then
+    INSTALL_DIR="/var/lib/toolbox/kubernetes-install"
+  fi
   mkdir -p ${INSTALL_DIR}
   cd ${INSTALL_DIR}
 }
@@ -122,7 +126,7 @@ function download-release() {
 
   echo "Running nodeup"
   # We can't run in the foreground because of https://github.com/docker/docker/issues/23793
-  ( cd ${INSTALL_DIR}; ./nodeup --install-systemd-unit --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8  )
+  ( cd ${INSTALL_DIR}; ./nodeup --install-systemd-unit --conf=${INSTALL_DIR}/kube_env.yaml --v=8  )
 }
 
 ####################################################################################

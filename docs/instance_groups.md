@@ -131,6 +131,27 @@ So the procedure is:
 * Rolling-update, only if you want to apply changes immediately: `kops rolling-update cluster`
 
 
+## Adding Taints to an Instance Group
+
+If you're running Kubernetes 1.6.0 or later, you can also control taints in the InstanceGroup.
+The taints property takes a list of strings. The following example would add two taints to an IG,
+using the same `edit` -> `update` -> `rolling-update` process as above.
+
+```
+metadata:
+  creationTimestamp: "2016-07-10T15:47:14Z"
+  name: nodes
+spec:
+  machineType: m3.medium
+  maxSize: 3
+  minSize: 3
+  role: Node
+  taints:
+  - dedicated=gpu:NoSchedule
+  - team=search:PreferNoSchedule
+```
+
+
 ## Resizing the master
 
 (This procedure should be pretty familiar by now!)

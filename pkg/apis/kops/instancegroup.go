@@ -22,9 +22,11 @@ import (
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/kops/pkg/apis/kops/util"
 )
 
 const LabelClusterName = "kops.k8s.io/cluster"
+const TaintNoScheduleMaster = "dedicated=master:NoSchedule"
 
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
@@ -96,6 +98,9 @@ type InstanceGroupSpec struct {
 
 	// Kubelet overrides kubelet config from the ClusterSpec
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
+
+	// Taints indicates the kubernetes taints for nodes in this group
+	Taints []string `json:"taints,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values
@@ -181,6 +186,11 @@ func (g *InstanceGroup) CrossValidate(cluster *Cluster, strict bool) error {
 		return err
 	}
 
+	err = g.ValidateTaintsForKubeVersion(cluster)
+	if err != nil {
+		return err
+	}
+
 	// Check that instance groups are defined in valid zones
 	{
 		clusterSubnets := make(map[string]*ClusterSubnetSpec)
@@ -196,6 +206,22 @@ func (g *InstanceGroup) CrossValidate(cluster *Cluster, strict bool) error {
 			if clusterSubnets[z] == nil {
 				return fmt.Errorf("InstanceGroup %q is configured in %q, but this is not configured as a Subnet in the cluster", g.ObjectMeta.Name, z)
 			}
+		}
+	}
+
+	return nil
+}
+
+// Ensures that users don't try to specify custom taints on pre-1.6.0 IGs
+func (g *InstanceGroup) ValidateTaintsForKubeVersion(cluster *Cluster) error {
+	kv, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return fmt.Errorf("Unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
+	}
+
+	if kv.Major == 1 && kv.Minor <= 5 && len(g.Spec.Taints) > 0 {
+		if !(g.IsMaster() && g.Spec.Taints[0] == TaintNoScheduleMaster && len(g.Spec.Taints) == 1) {
+			return fmt.Errorf("User-specified taints are not supported before kubernetes version 1.6.0")
 		}
 	}
 
