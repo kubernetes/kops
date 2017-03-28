@@ -16,7 +16,7 @@ all: kops
 
 .PHONY: channels examples
 
-DOCKER_REGISTRY?=krisnova/kops
+DOCKER_REGISTRY?=gcr.io/must-override
 S3_BUCKET?=s3://must-override/
 GCS_LOCATION?=gs://must-override
 GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
@@ -349,7 +349,6 @@ apimachinery:
 
 # -----------------------------------------------------
 # kops-server
-uas: kops-server-docker-compile kops-server-build kops-server-push
 
 kops-server-docker-compile:
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops-server -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops-server.Version=${VERSION} -X k8s.io/kops-server.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops-server
