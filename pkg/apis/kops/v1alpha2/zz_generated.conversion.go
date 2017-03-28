@@ -1138,8 +1138,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.AdmissionControl = in.AdmissionControl
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
-	out.ClientCAFile = in.ClientCAFile
 	out.BasicAuthFile = in.BasicAuthFile
+	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	out.TokenAuthFile = in.TokenAuthFile
