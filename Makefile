@@ -105,6 +105,7 @@ codegen: kops-gobindata
 
 test:
 	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
+	go test k8s.io/kops/nodeup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/nodeup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/protokube/... -args -v=1 -logtostderr
