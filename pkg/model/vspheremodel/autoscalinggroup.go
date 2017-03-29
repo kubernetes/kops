@@ -17,9 +17,11 @@ limitations under the License.
 package vspheremodel
 
 import (
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
+	"strconv"
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
@@ -36,31 +38,37 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// The following logic should considerably change once we add support for multiple master/worker nodes,
 	// cloud-init etc.
 	for _, ig := range b.InstanceGroups {
-		name := b.AutoscalingGroupName(ig)
-		createVmTask := &vspheretasks.VirtualMachine{
-			Name:           &name,
-			VMTemplateName: fi.String(ig.Spec.Image),
+		instanceCount := int(fi.Int32Value(ig.Spec.MinSize))
+		if ig.Spec.Role == kops.InstanceGroupRoleMaster {
+			instanceCount = 1
 		}
+		for i := 1; i <= instanceCount; i++ {
+			name := b.InstanceName(ig, strconv.Itoa(i))
+			createVmTask := &vspheretasks.VirtualMachine{
+				Name:           &name,
+				VMTemplateName: fi.String(ig.Spec.Image),
+			}
 
-		c.AddTask(createVmTask)
+			c.AddTask(createVmTask)
 
-		attachISOTaskName := "AttachISO-" + name
-		attachISOTask := &vspheretasks.AttachISO{
-			Name:            &attachISOTaskName,
-			VM:              createVmTask,
-			IG:              ig,
-			BootstrapScript: b.BootstrapScript,
+			attachISOTaskName := "AttachISO-" + name
+			attachISOTask := &vspheretasks.AttachISO{
+				Name:            &attachISOTaskName,
+				VM:              createVmTask,
+				IG:              ig,
+				BootstrapScript: b.BootstrapScript,
+			}
+			attachISOTask.BootstrapScript.AddAwsEnvironmentVariables = true
+
+			c.AddTask(attachISOTask)
+
+			powerOnTaskName := "PowerON-" + name
+			powerOnTask := &vspheretasks.VMPowerOn{
+				Name:      &powerOnTaskName,
+				AttachISO: attachISOTask,
+			}
+			c.AddTask(powerOnTask)
 		}
-		attachISOTask.BootstrapScript.AddAwsEnvironmentVariables = true
-
-		c.AddTask(attachISOTask)
-
-		powerOnTaskName := "PowerON-" + name
-		powerOnTask := &vspheretasks.VMPowerOn{
-			Name:      &powerOnTaskName,
-			AttachISO: attachISOTask,
-		}
-		c.AddTask(powerOnTask)
 	}
 	return nil
 }
