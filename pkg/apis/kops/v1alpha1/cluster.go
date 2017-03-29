@@ -242,14 +242,18 @@ type ClusterSpec struct {
 }
 
 type AuthorizationSpec struct {
-	RBAC *RBACAuthorizationSpec `json:"rbac,omitempty"`
+	AlwaysAllow *AlwaysAllowAuthorizationSpec `json:"alwaysAllow,omitempty"`
+	RBAC        *RBACAuthorizationSpec        `json:"rbac,omitempty"`
 }
 
 func (s *AuthorizationSpec) IsEmpty() bool {
-	return s.RBAC == nil
+	return s.RBAC == nil && s.AlwaysAllow == nil
 }
 
 type RBACAuthorizationSpec struct {
+}
+
+type AlwaysAllowAuthorizationSpec struct {
 }
 
 type AccessSpec struct {
