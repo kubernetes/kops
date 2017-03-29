@@ -108,7 +108,13 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		return fmt.Errorf("unknown cloud provider %q", clusterSpec.CloudProvider)
 	}
 
-	kcm.Master = "127.0.0.1:8080"
+	if kcm.Master == "" {
+		if b.Context.IsKubernetesLT("1.6") {
+			// As of 1.6, we find the master using kubeconfig
+			kcm.Master = "127.0.0.1:8080"
+		}
+	}
+
 	kcm.LogLevel = 2
 
 	image, err := Image("kube-controller-manager", clusterSpec)
