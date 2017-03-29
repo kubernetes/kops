@@ -101,7 +101,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		if token == nil {
 			return fmt.Errorf("token not found: %q", key)
 		}
-		csv := string(token.Data) + ",admin,admin"
+		csv := string(token.Data) + ",admin,admin,system:masters"
 
 		t := &nodetasks.File{
 			Path:     filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv"),
@@ -123,6 +123,15 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 			lines = append(lines, token+","+id+","+id)
 		}
 		csv := strings.Join(lines, "\n")
+
+		// TODO: If we want to use tokens with RBAC, we need to add the roles
+		// cluster/gce/gci/configure-helper.sh has this:
+		//replace_prefixed_line "${known_tokens_csv}" "${KUBE_BEARER_TOKEN},"             "admin,admin,system:masters"
+		//replace_prefixed_line "${known_tokens_csv}" "${KUBE_CONTROLLER_MANAGER_TOKEN}," "system:kube-controller-manager,uid:system:kube-controller-manager"
+		//replace_prefixed_line "${known_tokens_csv}" "${KUBE_SCHEDULER_TOKEN},"          "system:kube-scheduler,uid:system:kube-scheduler"
+		//replace_prefixed_line "${known_tokens_csv}" "${KUBELET_TOKEN},"                 "kubelet,uid:kubelet,system:nodes"
+		//replace_prefixed_line "${known_tokens_csv}" "${KUBE_PROXY_TOKEN},"              "system:kube-proxy,uid:kube_proxy"
+		//replace_prefixed_line "${known_tokens_csv}" "${NODE_PROBLEM_DETECTOR_TOKEN},"   "system:node-problem-detector,uid:node-problem-detector"
 
 		t := &nodetasks.File{
 			Path:     filepath.Join(b.PathSrvKubernetes(), "known_tokens.csv"),
