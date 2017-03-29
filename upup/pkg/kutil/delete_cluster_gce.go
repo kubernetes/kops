@@ -787,7 +787,6 @@ func (d *clusterDiscoveryGCE) deleteDNSZone(cloud fi.Cloud, r *ResourceTracker) 
 	}
 
 	changeset := rrs.StartChangeset()
-
 	for _, record := range records {
 		if record.Type() != "A" {
 			continue
@@ -810,6 +809,10 @@ func (d *clusterDiscoveryGCE) deleteDNSZone(cloud fi.Cloud, r *ResourceTracker) 
 		}
 
 		changeset.Remove(record)
+	}
+
+	if changeset.IsEmpty() {
+		return nil
 	}
 
 	err = changeset.Apply()
