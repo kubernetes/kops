@@ -92,7 +92,7 @@ func (c *NodeupModelContext) NetworkPluginDir() string {
 	}
 }
 
-func (c *NodeupModelContext) BuildPKIKubeconfig(id string) (string, error) {
+func (c *NodeupModelContext) buildPKIKubeconfig(id string) (string, error) {
 	caCertificate, err := c.KeyStore.Cert(fi.CertificateId_CA)
 	if err != nil {
 		return "", fmt.Errorf("error fetching CA certificate from keystore: %v", err)
