@@ -18,7 +18,7 @@ package server
 
 import (
 	"io"
-
+	"fmt"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -33,6 +33,9 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"os"
+	"strconv"
+	"net"
 )
 
 const defaultEtcdPathPrefix = "/registry/kops.kubernetes.io"
@@ -49,12 +52,13 @@ type KopsServerOptions struct {
 }
 
 // NewCommandStartKopsServer provides a CLI handler for 'start master' command
-func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
+func NewCommandStartKopsServer(out, err io.Writer) (*cobra.Command, error) {
 	o := &KopsServerOptions{
 		Etcd: genericoptions.NewEtcdOptions(&storagebackend.Config{
 			Prefix: defaultEtcdPathPrefix,
 			Copier: kops.Scheme,
 			Codec:  nil,
+
 		}),
 		//SecureServing:  genericoptions.NewSecureServingOptions(),
 		InsecureServing: genericoptions.NewInsecureServingOptions(),
@@ -67,6 +71,40 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 	o.Etcd.StorageConfig.Type = storagebackend.StorageTypeETCD2
 	o.Etcd.StorageConfig.Codec = kops.Codecs.LegacyCodec(v1alpha2.SchemeGroupVersion)
 	//o.SecureServing.ServingOptions.BindPort = 443
+
+	// --------------------------------------------------------------------------------------------------------
+	// Todo
+	// Kris experimenting with service discovery.. will obvi make this cleaner once I get it working
+	// Also I had to add an error return type to this function, so we probs want to get that out of here
+
+	// Bind address
+	bind := os.Getenv("KOPS_SERVER_ETCD_SERVICE_HOST")
+	if bind == "" {
+		return nil, fmt.Errorf("unable to detect kops server etcd host")
+	}
+	bindAddress := net.IP{}
+	bindAddress = []byte(bind)
+
+	// Bind Port
+	port := os.Getenv("KOPS_SERVER_ETCD_PORT")
+	if port == "" {
+		return nil, fmt.Errorf("unable to detect kops server etcd port")
+	}
+
+	{
+		bindPort, err := strconv.Atoi(port)
+		if err != nil {
+			return nil, fmt.Errorf("unable to cast bind port to %s int: %v", port, err)
+		}
+		o.InsecureServing.BindAddress = bindAddress
+		o.InsecureServing.BindPort = bindPort
+	}
+
+
+
+	// --------------------------------------------------------------------------------------------------------
+
+
 
 	cmd := &cobra.Command{
 		Short: "Launch a kops API server",
@@ -85,8 +123,9 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 	o.Authentication.AddFlags(flags)
 	o.Authorization.AddFlags(flags)
 
-	return cmd
+	return cmd, nil
 }
+
 
 func (o KopsServerOptions) Validate(args []string) error {
 	return nil
