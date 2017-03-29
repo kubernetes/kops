@@ -75,16 +75,25 @@ vSphere cloud provider support in kops is a work in progress. To try out deployi
 + Setup DNS following steps given in relevant Section above.
 + Create the VM using this template (TBD).
 + Currently vSphere code is using AWS S3 for storing all configurations, specs, addon yamls, etc. You need valid AWS credentials to try out kops on vSphere. s3://your-objectstore/cluster1.skydns.local folder will have all necessary configuration, spec, addons, etc., required to configure kubernetes cluster. (If you don't know how to setup aws, then read more on kops and how to deploy a cluster using kops on aws)
-+ Update ```[kops_dir]/hack/vsphere/vsphere_env.sh``` setting up necessary environment variables.
++ Update ```[kops_dir]/hack/vsphere/set_env``` setting up necessary environment variables.
 
 ### Building
 Execute following command(s) to build all necessary components required to run kops for vSphere-
 
 ```bash
+source [kops_dir]/hack/vsphere/set_env
 make vsphere-version-dist
 ```
 
 Currently vSphere support is not part of any of the kops releases. Hence, all modified component- kops, nodeup, protokube, need building at least once. ```make vsphere-version-dist``` will do that and copy protokube image and nodeup binary at the target location specified by you in ```vsphere-env.sh```. Dns-controller has also been modified to support vSphere. You can continue to use ```export VSPHERE_DNSCONTROLLER_IMAGE=luomiao/dns-controller```, unless you are making some changes to dns-controller and would like to use your custom image.
+
+#### Cleaning up environment
+Run following command to cleanup all set environment variables and regenerate all images and binaries without any of the vSphere specific steps.
+
+```bash
+source [kops_dir]/hack/vsphere/cleanup_env
+make version-dist
+```
 
 ### Creating cluster
 Execute following command(s) to create a kubernetes cluster on vSphere using kops-
