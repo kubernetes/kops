@@ -120,8 +120,9 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	image := c.Image
 	cmd := "echo -998 > /proc/$$$/oom_score_adj && kube-proxy --kubeconfig=/var/lib/kube-proxy/kubeconfig --resource-container = \"\" "
 	cmd += flags
-	// TODO: tee or similar so we get logs in kubectl logs
-	cmd += " 1>>/var/log/kube-proxy.log 2>&1"
+
+	// cmd += " 1>>/var/log/kube-proxy.log 2>&1"
+	cmd += " 2>&1 | /usr/bin/tee /var/log/kube-proxy.log"
 
 	glog.V(2).Infof("built kube-proxy command: %s", cmd)
 
