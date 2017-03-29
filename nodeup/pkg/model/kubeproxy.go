@@ -65,7 +65,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Add kubeconfig
 	{
-		kubeconfig, err := b.BuildPKIKubeconfig("kube-proxy")
+		kubeconfig, err := b.buildPKIKubeconfig("kube-proxy")
 		if err != nil {
 			return err
 		}
@@ -101,7 +101,14 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 
 	if c.Master == "" {
 		if b.IsMaster {
-			c.Master = "https://127.0.0.1"
+			// As a special case, if this is the master, we point kube-proxy to the local IP
+			// This prevents a circular dependency where kube-proxy can't come up until DNS comes up,
+			// which would mean that DNS can't rely on API to come up
+			if b.IsKubernetesGTE("1.6") {
+				c.Master = "https://127.0.0.1"
+			} else {
+				c.Master = "http://127.0.0.1:8080"
+			}
 		} else {
 			c.Master = "https://" + b.Cluster.Spec.MasterInternalName
 		}
@@ -118,7 +125,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	image := c.Image
-	cmd := "echo -998 > /proc/$$$/oom_score_adj && kube-proxy --kubeconfig=/var/lib/kube-proxy/kubeconfig --resource-container = \"\" "
+	cmd := "echo -998 > /proc/$$$/oom_score_adj && kube-proxy --kubeconfig=/var/lib/kube-proxy/kubeconfig --resource-container=\"\" "
 	cmd += flags
 	// TODO: tee or similar so we get logs in kubectl logs
 	cmd += " 1>>/var/log/kube-proxy.log 2>&1"

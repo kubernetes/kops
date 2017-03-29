@@ -30,6 +30,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
+      serviceAccountName: kube-dns-autoscaler
       containers:
       - name: autoscaler
         image: gcr.io/google_containers/cluster-proportional-autoscaler-{{Arch}}:1.1.1
@@ -81,7 +82,7 @@ spec:
         scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
       dnsPolicy: Default  # Don't use cluster DNS.
-
+      serviceAccountName: kube-dns
       volumes:
       - name: kube-dns-config
         configMap:
@@ -228,3 +229,61 @@ spec:
   - name: dns-tcp
     port: 53
     protocol: TCP
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kube-dns-autoscaler
+  namespace: kube-system
+  labels:
+    k8s-addon: kube-dns.addons.k8s.io
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  labels:
+    k8s-addon: kube-dns.addons.k8s.io
+  name: kube-dns-autoscaler
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - list
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - create
+  - update
+- apiGroups:
+  - "extensions"
+  resources:
+  - deployments/scale
+  verbs:
+  - get
+  - update
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  labels:
+    k8s-addon: kube-dns.addons.k8s.io
+  name: kube-dns-autoscaler
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kube-dns-autoscaler
+subjects:
+- apiGroup: rbac.authorization.k8s.io
+  kind: User
+  name: system:serviceaccount:kube-system:kube-dns-autoscaler

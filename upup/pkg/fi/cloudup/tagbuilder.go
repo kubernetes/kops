@@ -78,7 +78,9 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 			return nil, fmt.Errorf("unable to determine kubernetes version from %q", cluster.Spec.KubernetesVersion)
 		}
 
-		if sv.Major == 1 && sv.Minor >= 5 {
+		if sv.Major == 1 && sv.Minor >= 6 {
+			versionTag = "_k8s_1_6"
+		} else if sv.Major == 1 && sv.Minor == 5 {
 			versionTag = "_k8s_1_5"
 		} else if sv.Major == 1 && sv.Minor == 4 {
 			versionTag = "_k8s_1_4"
@@ -114,15 +116,10 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 
 	switch role {
 	case api.InstanceGroupRoleNode:
-		tags.Insert("_kubernetes_pool")
+		// No tags
 
 	case api.InstanceGroupRoleMaster:
 		tags.Insert("_kubernetes_master")
-
-		if !fi.BoolValue(cluster.Spec.IsolateMasters) {
-			// Run this master as a pool node also (start kube-proxy etc)
-			tags.Insert("_kubernetes_pool")
-		}
 
 	case api.InstanceGroupRoleBastion:
 		// No tags
