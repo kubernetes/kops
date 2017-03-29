@@ -1155,6 +1155,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.LogLevel = in.LogLevel
 	out.CloudProvider = in.CloudProvider
 	out.SecurePort = in.SecurePort
+	out.InsecurePort = in.InsecurePort
 	out.Address = in.Address
 	out.EtcdServers = in.EtcdServers
 	out.EtcdServersOverrides = in.EtcdServersOverrides
@@ -1198,6 +1199,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.LogLevel = in.LogLevel
 	out.CloudProvider = in.CloudProvider
 	out.SecurePort = in.SecurePort
+	out.InsecurePort = in.InsecurePort
 	out.Address = in.Address
 	out.EtcdServers = in.EtcdServers
 	out.EtcdServersOverrides = in.EtcdServersOverrides
