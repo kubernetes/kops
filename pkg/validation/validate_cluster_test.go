@@ -125,6 +125,53 @@ func Test_ValidateClusterMastersNotEnough(t *testing.T) {
 	}
 }
 
+func Test_ValidateNoPodFailures(t *testing.T) {
+	failures, err := collectPodFailures(dummyPodClient(
+		[]map[string]string{
+			{
+				"name":  "pod1",
+				"ready": "true",
+				"phase": string(v1.PodRunning),
+			},
+			{
+				"name":  "job1",
+				"ready": "false",
+				"phase": string(v1.PodSucceeded),
+			},
+		},
+	))
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(failures) != 0 {
+		fmt.Printf("failures: %+v\n", failures)
+		t.Fatal("no failures expected")
+	}
+}
+
+func Test_ValidatePodFailure(t *testing.T) {
+	failures, err := collectPodFailures(dummyPodClient(
+		[]map[string]string{
+			{
+				"name":  "pod1",
+				"ready": "false",
+				"phase": string(v1.PodRunning),
+			},
+		},
+	))
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	if len(failures) != 1 || failures[0] != "pod1" {
+		fmt.Printf("failures: %+v\n", failures)
+		t.Fatal("pod1 failure expected")
+	}
+}
+
 func printDebug(validationCluster *ValidationCluster) {
 	fmt.Printf("cluster - masters ready: %v, nodes ready: %v\n", validationCluster.MastersReady, validationCluster.NodesReady)
 	fmt.Printf("mastersNotReady %v\n", len(validationCluster.MastersNotReadyArray))
@@ -151,6 +198,37 @@ func dummyClient(masterReady string, nodeReady string) kubernetes.Interface {
 			},
 		},
 	))
+}
+
+func dummyPodClient(pods []map[string]string) kubernetes.Interface {
+	return fake.NewSimpleClientset(makePodList(pods))
+}
+
+func dummyPod(podMap map[string]string) v1.Pod {
+	return v1.Pod{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      podMap["name"],
+			Namespace: "kube-system",
+		},
+		Spec: v1.PodSpec{},
+		Status: v1.PodStatus{
+			Phase: v1.PodPhase(podMap["phase"]),
+			ContainerStatuses: []v1.ContainerStatus{
+				{
+					Ready: podMap["ready"] == "true",
+				},
+			},
+		},
+	}
+}
+
+// MakePodList constructs api.PodList from a list of pod attributes
+func makePodList(pods []map[string]string) *v1.PodList {
+	var list v1.PodList
+	for _, pod := range pods {
+		list.Items = append(list.Items, dummyPod(pod))
+	}
+	return &list
 }
 
 func dummyNode(nodeMap map[string]string) v1.Node {
