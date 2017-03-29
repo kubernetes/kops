@@ -37,6 +37,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 	return scheme.AddGeneratedConversionFuncs(
 		Convert_v1alpha2_AccessSpec_To_kops_AccessSpec,
 		Convert_kops_AccessSpec_To_v1alpha2_AccessSpec,
+		Convert_v1alpha2_AlwaysAllowAuthorizationSpec_To_kops_AlwaysAllowAuthorizationSpec,
+		Convert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha2_AlwaysAllowAuthorizationSpec,
 		Convert_v1alpha2_AuthorizationSpec_To_kops_AuthorizationSpec,
 		Convert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec,
 		Convert_v1alpha2_BastionSpec_To_kops_BastionSpec,
@@ -168,7 +170,32 @@ func Convert_kops_AccessSpec_To_v1alpha2_AccessSpec(in *kops.AccessSpec, out *Ac
 	return autoConvert_kops_AccessSpec_To_v1alpha2_AccessSpec(in, out, s)
 }
 
+func autoConvert_v1alpha2_AlwaysAllowAuthorizationSpec_To_kops_AlwaysAllowAuthorizationSpec(in *AlwaysAllowAuthorizationSpec, out *kops.AlwaysAllowAuthorizationSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_v1alpha2_AlwaysAllowAuthorizationSpec_To_kops_AlwaysAllowAuthorizationSpec(in *AlwaysAllowAuthorizationSpec, out *kops.AlwaysAllowAuthorizationSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_AlwaysAllowAuthorizationSpec_To_kops_AlwaysAllowAuthorizationSpec(in, out, s)
+}
+
+func autoConvert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha2_AlwaysAllowAuthorizationSpec(in *kops.AlwaysAllowAuthorizationSpec, out *AlwaysAllowAuthorizationSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha2_AlwaysAllowAuthorizationSpec(in *kops.AlwaysAllowAuthorizationSpec, out *AlwaysAllowAuthorizationSpec, s conversion.Scope) error {
+	return autoConvert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha2_AlwaysAllowAuthorizationSpec(in, out, s)
+}
+
 func autoConvert_v1alpha2_AuthorizationSpec_To_kops_AuthorizationSpec(in *AuthorizationSpec, out *kops.AuthorizationSpec, s conversion.Scope) error {
+	if in.AlwaysAllow != nil {
+		in, out := &in.AlwaysAllow, &out.AlwaysAllow
+		*out = new(kops.AlwaysAllowAuthorizationSpec)
+		if err := Convert_v1alpha2_AlwaysAllowAuthorizationSpec_To_kops_AlwaysAllowAuthorizationSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.AlwaysAllow = nil
+	}
 	if in.RBAC != nil {
 		in, out := &in.RBAC, &out.RBAC
 		*out = new(kops.RBACAuthorizationSpec)
@@ -186,6 +213,15 @@ func Convert_v1alpha2_AuthorizationSpec_To_kops_AuthorizationSpec(in *Authorizat
 }
 
 func autoConvert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec(in *kops.AuthorizationSpec, out *AuthorizationSpec, s conversion.Scope) error {
+	if in.AlwaysAllow != nil {
+		in, out := &in.AlwaysAllow, &out.AlwaysAllow
+		*out = new(AlwaysAllowAuthorizationSpec)
+		if err := Convert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha2_AlwaysAllowAuthorizationSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.AlwaysAllow = nil
+	}
 	if in.RBAC != nil {
 		in, out := &in.RBAC, &out.RBAC
 		*out = new(RBACAuthorizationSpec)
