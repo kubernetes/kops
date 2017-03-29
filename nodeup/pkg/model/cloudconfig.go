@@ -84,6 +84,13 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	config := "[global]\n" + strings.Join(lines, "\n") + "\n"
+
+	// We need this to support Kubernetes vSphere CloudProvider < v1.5.3
+	if fi.CloudProviderID(b.Cluster.Spec.CloudProvider) == fi.CloudProviderVSphere {
+		config += "[disk]\n" + "scsicontrollertype = pvscsi" + "\n"
+	}
+
+
 	t := &nodetasks.File{
 		Path:     CloudConfigFilePath,
 		Contents: fi.NewStringResource(config),
