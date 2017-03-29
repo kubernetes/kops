@@ -87,6 +87,22 @@ make vsphere-version-dist
 
 Currently vSphere support is not part of any of the kops releases. Hence, all modified component- kops, nodeup, protokube, need building at least once. ```make vsphere-version-dist``` will do that and copy protokube image and nodeup binary at the target location specified by you in ```vsphere-env.sh```. Dns-controller has also been modified to support vSphere. You can continue to use ```export VSPHERE_DNSCONTROLLER_IMAGE=luomiao/dns-controller```, unless you are making some changes to dns-controller and would like to use your custom image.
 
+
+### Launching Cluster
+Execute following command to launch cluster.
+
+```bash
+kops create cluster kubernetes.skydns.local  --cloud=vsphere --zones=us-east-a --dns-zone=skydns.local --networking=flannel
+ --vsphere-server=10.160.97.44 --vsphere-datacenter=VSAN-DC --vsphere-resource-pool=VSAN-Cluster --vsphere-datastore=vsanDatastore --dns private --vsphere-coredns-server=http://10.192.217.24:2379 --image="ubuntu_16_04" 
+```
+**Notes**
+1. clustername should end with **skydns.local**. Example: ```kubernetes.cluster.skydns.local```.
+2. zones should end with ```a```. Example: ```us-west-a```.
+3. Make sure following parameters have these values,
+    * ```--dns-zone=skydns.local```
+    * ```--networking=flannel```
+    * ```--dns=private```
+
 #### Cleaning up environment
 Run following command to cleanup all set environment variables and regenerate all images and binaries without any of the vSphere specific steps.
 
