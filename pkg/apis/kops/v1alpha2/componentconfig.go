@@ -262,6 +262,9 @@ type KubeControllerManagerConfig struct {
 	// before the terminated pod garbage collector starts deleting terminated pods.
 	// If <= 0, the terminated pod garbage collector is disabled.
 	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
+
+	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.
+	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
 }
 
 type KubeSchedulerConfig struct {
