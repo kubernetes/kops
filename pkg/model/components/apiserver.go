@@ -18,7 +18,7 @@ package components
 
 import (
 	"fmt"
-	"github.com/blang/semver"
+	"github.com/golang/glog"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -27,7 +27,7 @@ import (
 
 // KubeAPIServerOptionsBuilder adds options for the apiserver to the model
 type KubeAPIServerOptionsBuilder struct {
-	Context *OptionsContext
+	*OptionsContext
 }
 
 var _ loader.OptionsBuilder = &KubeAPIServerOptionsBuilder{}
@@ -38,27 +38,23 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 	}
 
-	// TODO: Set insecure-port=0 to turn it off
+	c := clusterSpec.KubeAPIServer
 
-	if clusterSpec.KubeAPIServer.APIServerCount == nil {
+	if c.APIServerCount == nil {
 		count := b.buildAPIServerCount(clusterSpec)
 		if count == 0 {
 			return fmt.Errorf("no instance groups found")
 		}
-		clusterSpec.KubeAPIServer.APIServerCount = fi.Int32(int32(count))
+		c.APIServerCount = fi.Int32(int32(count))
 	}
 
-	if clusterSpec.KubeAPIServer.StorageBackend == nil {
+	if c.StorageBackend == nil {
 		// For the moment, we continue to use etcd2
-		clusterSpec.KubeAPIServer.StorageBackend = fi.String("etcd2")
+		c.StorageBackend = fi.String("etcd2")
 	}
 
-	k8sVersion, err := KubernetesVersion(clusterSpec)
-	if err != nil {
-		return err
-	}
-	if clusterSpec.KubeAPIServer.KubeletPreferredAddressTypes == nil {
-		if k8sVersion.GTE(semver.MustParse("1.5.0")) {
+	if c.KubeletPreferredAddressTypes == nil {
+		if b.IsKubernetesGTE("1.5") {
 			// Default precedence
 			//options.KubeAPIServer.KubeletPreferredAddressTypes = []string {
 			//	string(api.NodeHostName),
@@ -68,7 +64,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 			//}
 
 			// We prioritize the internal IP above the hostname
-			clusterSpec.KubeAPIServer.KubeletPreferredAddressTypes = []string{
+			c.KubeletPreferredAddressTypes = []string{
 				string(v1.NodeInternalIP),
 				string(v1.NodeHostName),
 				string(v1.NodeExternalIP),
@@ -81,6 +77,17 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		if clusterSpec.Authorization.RBAC != nil {
 			clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("RBAC")
 		}
+	}
+
+	c.SecurePort = 443
+
+	// We disable the insecure port from 1.6 onwards
+	if b.IsKubernetesGTE("1.6") {
+		c.InsecurePort = 0
+		glog.Warning("Enabling apiserver insecure port, for healthchecks (issue #43784)")
+		c.InsecurePort = 8080
+	} else {
+		c.InsecurePort = 8080
 	}
 
 	return nil

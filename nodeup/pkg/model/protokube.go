@@ -37,6 +37,20 @@ type ProtokubeBuilder struct {
 var _ fi.ModelBuilder = &ProtokubeBuilder{}
 
 func (b *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
+	if b.IsMaster {
+		kubeconfig, err := b.buildPKIKubeconfig("kops")
+		if err != nil {
+			return err
+		}
+
+		c.AddTask(&nodetasks.File{
+			Path:     "/var/lib/kops/kubeconfig",
+			Contents: fi.NewStringResource(kubeconfig),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0400"),
+		})
+	}
+
 	// TODO: Should we run _protokube on the nodes?
 	service, err := b.buildSystemdService()
 	if err != nil {
@@ -59,9 +73,19 @@ func (b *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		return nil, err
 	}
 
-	protokubeCommand := "/usr/bin/docker run -v /:/rootfs/ -v /var/run/dbus:/var/run/dbus -v /run/systemd:/run/systemd --net=host --privileged "
-	protokubeCommand += b.ProtokubeImageName() + "  /usr/bin/protokube "
-	protokubeCommand += protokubeFlagsArgs
+	dockerArgs := []string{
+		"/usr/bin/docker",
+		"run",
+		"-v", "/:/rootfs/",
+		"-v", "/var/run/dbus:/var/run/dbus",
+		"-v", "/run/systemd:/run/systemd",
+		"--net=host",
+		"--privileged",
+		"--env", "KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
+		b.ProtokubeImageName(),
+		"/usr/bin/protokube",
+	}
+	protokubeCommand := strings.Join(dockerArgs, " ") + " " + protokubeFlagsArgs
 
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Kubernetes Protokube Service")
