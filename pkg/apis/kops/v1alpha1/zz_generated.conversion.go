@@ -1161,6 +1161,7 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	}
 	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
+	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	return nil
 }
 
@@ -1191,6 +1192,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	}
 	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
+	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	return nil
 }
 

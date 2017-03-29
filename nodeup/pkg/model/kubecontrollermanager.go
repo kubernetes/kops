@@ -112,8 +112,6 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	// Add kubeconfig flag
 	flags += " --kubeconfig=" + "/var/lib/kube-controller-manager/kubeconfig"
 
-	// TODO: Set --use-service-account-credentials=true - unclear if we can/should set this without RBAC
-
 	redirectCommand := []string{
 		"/bin/sh", "-c", "/usr/local/bin/kube-controller-manager " + flags + " 1>>/var/log/kube-controller-manager.log 2>&1",
 	}
