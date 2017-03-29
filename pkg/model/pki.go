@@ -81,6 +81,16 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
+		// Keypair used by kops / protokube
+		t := &fitasks.Keypair{
+			Name:    fi.String("kops"),
+			Subject: "o=" + user.SystemPrivilegedGroup + ",cn=kops",
+			Type:    "client",
+		}
+		c.AddTask(t)
+	}
+
+	{
 		// TLS certificate used for apiserver
 
 		// A few names used from inside the cluster, which all resolve the same based on our default suffixes
