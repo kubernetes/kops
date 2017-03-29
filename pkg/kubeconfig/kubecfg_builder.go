@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kutil
+package kubeconfig
 
 import (
 	"fmt"
@@ -28,7 +28,7 @@ import (
 // KubeconfigBuilder builds a kubecfg file
 // This logic previously lives in the bash scripts (create-kubeconfig in cluster/common.sh)
 type KubeconfigBuilder struct {
-	KubeMasterIP string
+	Server string
 
 	Context   string
 	Namespace string
@@ -82,7 +82,7 @@ func (b *KubeconfigBuilder) DeleteKubeConfig() error {
 // Create new Rest Client
 func (c *KubeconfigBuilder) BuildRestConfig() (*rest.Config, error) {
 	restConfig := &rest.Config{
-		Host: "https://" + c.KubeMasterIP,
+		Host: c.Server,
 	}
 	restConfig.CAData = c.CACert
 	restConfig.CertData = c.ClientCert
@@ -115,10 +115,11 @@ func (b *KubeconfigBuilder) WriteKubecfg() error {
 		if cluster == nil {
 			cluster = clientcmdapi.NewCluster()
 		}
-		cluster.Server = "https://" + b.KubeMasterIP
+		cluster.Server = b.Server
 
 		if b.CACert == nil {
-			cluster.InsecureSkipTLSVerify = true
+			// For now, we assume that the cluster has a "real" cert issued by a CA
+			cluster.InsecureSkipTLSVerify = false
 			cluster.CertificateAuthority = ""
 			cluster.CertificateAuthorityData = nil
 		} else {
