@@ -69,4 +69,12 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 	if obj.API.LoadBalancer != nil && obj.API.LoadBalancer.Type == "" {
 		obj.API.LoadBalancer.Type = LoadBalancerTypePublic
 	}
+
+	if obj.Authorization == nil {
+		obj.Authorization = &AuthorizationSpec{}
+	}
+	if obj.Authorization.IsEmpty() {
+		// Before the Authorization field was introduced, the behaviour was alwaysAllow
+		obj.Authorization.AlwaysAllow = &AlwaysAllowAuthorizationSpec{}
+	}
 }

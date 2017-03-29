@@ -39,6 +39,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
+const (
+	AuthorizationFlagAlwaysAllow = "AlwaysAllow"
+	AuthorizationFlagRBAC        = "RBAC"
+)
+
 type CreateClusterOptions struct {
 	ClusterName          string
 	Yes                  bool
@@ -71,6 +76,9 @@ type CreateClusterOptions struct {
 	// The network topology to use
 	Topology string
 
+	// The authorization approach to use (RBAC, AlwaysAllow)
+	Authorization string
+
 	// The DNS type to use (public/private)
 	DNSType string
 
@@ -101,6 +109,8 @@ func (o *CreateClusterOptions) InitDefaults() {
 
 	// Default to open API & SSH access
 	o.AdminAccess = []string{"0.0.0.0/0"}
+
+	o.Authorization = AuthorizationFlagAlwaysAllow
 }
 
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -175,6 +185,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// Network topology
 	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster. public|private. Default is 'public'.")
+
+	// Authorization
+	cmd.Flags().StringVar(&options.Authorization, "authorization", options.Authorization, "Authorization mode to use: "+AuthorizationFlagAlwaysAllow+" or "+AuthorizationFlagRBAC)
 
 	// DNS
 	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS hosted zone to use: public|private. Default is 'public'.")
@@ -285,6 +298,16 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
+
+	// In future we could change the default if the flag is not specified, e.g. in 1.7 maybe the default is RBAC?
+	cluster.Spec.Authorization = &api.AuthorizationSpec{}
+	if strings.EqualFold(c.Authorization, AuthorizationFlagAlwaysAllow) {
+		cluster.Spec.Authorization.AlwaysAllow = &api.AlwaysAllowAuthorizationSpec{}
+	} else if strings.EqualFold(c.Authorization, AuthorizationFlagRBAC) {
+		cluster.Spec.Authorization.RBAC = &api.RBACAuthorizationSpec{}
+	} else {
+		return fmt.Errorf("unknown authorization mode %q", c.Authorization)
+	}
 
 	if len(c.Zones) != 0 {
 		existingSubnets := make(map[string]*api.ClusterSubnetSpec)

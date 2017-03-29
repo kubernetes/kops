@@ -73,10 +73,13 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	if clusterSpec.Authorization != nil {
-		if clusterSpec.Authorization.RBAC != nil {
-			clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("RBAC")
-		}
+	if clusterSpec.Authorization == nil || clusterSpec.Authorization.IsEmpty() {
+		// Do nothing - use the default as defined by the apiserver
+		// (this won't happen anyway because of our default logic)
+	} else if clusterSpec.Authorization.AlwaysAllow != nil {
+		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("AlwaysAllow")
+	} else if clusterSpec.Authorization.RBAC != nil {
+		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("RBAC")
 	}
 
 	c.SecurePort = 443
