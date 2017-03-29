@@ -106,6 +106,18 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		},
 	}
 
+	probeAction := &v1.HTTPGetAction{
+		Host: "127.0.0.1",
+		Path: "/healthz",
+		Port: intstr.FromInt(8080),
+	}
+	if kubeAPIServer.InsecurePort != 0 {
+		probeAction.Port = intstr.FromInt(int(kubeAPIServer.InsecurePort))
+	} else if kubeAPIServer.SecurePort != 0 {
+		probeAction.Port = intstr.FromInt(int(kubeAPIServer.SecurePort))
+		probeAction.Scheme = v1.URISchemeHTTPS
+	}
+
 	container := &v1.Container{
 		Name:  "kube-apiserver",
 		Image: b.Cluster.Spec.KubeAPIServer.Image,
@@ -117,11 +129,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		Command: redirectCommand,
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
-				HTTPGet: &v1.HTTPGetAction{
-					Host: "127.0.0.1",
-					Path: "/healthz",
-					Port: intstr.FromInt(8080),
-				},
+				HTTPGet: probeAction,
 			},
 			InitialDelaySeconds: 15,
 			TimeoutSeconds:      15,
