@@ -145,5 +145,11 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		return fmt.Errorf("no networking mode set")
 	}
 
+	if kcm.UseServiceAccountCredentials == nil {
+		if b.Context.IsKubernetesGTE("1.6") {
+			kcm.UseServiceAccountCredentials = fi.Bool(true)
+		}
+	}
+
 	return nil
 }
