@@ -60,7 +60,6 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-
 	{
 		// Keypair used by the kube-controller-manager
 		t := &fitasks.Keypair{
