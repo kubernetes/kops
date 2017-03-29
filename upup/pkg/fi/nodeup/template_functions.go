@@ -115,7 +115,6 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["KubeControllerManager"] = func() *api.KubeControllerManagerConfig {
 		return t.cluster.Spec.KubeControllerManager
 	}
-	dest["KubeProxy"] = t.KubeProxyConfig
 
 	dest["ClusterName"] = func() string {
 		return t.cluster.ObjectMeta.Name
@@ -158,20 +157,4 @@ func (t *templateFunctions) isMaster() bool {
 func (t *templateFunctions) hasTag(tag string) bool {
 	_, found := t.tags[tag]
 	return found
-}
-
-// KubeProxyConfig builds the KubeProxyConfig configuration object
-func (t *templateFunctions) KubeProxyConfig() *api.KubeProxyConfig {
-	config := &api.KubeProxyConfig{}
-	*config = *t.cluster.Spec.KubeProxy
-
-	// As a special case, if this is the master, we point kube-proxy to the local IP
-	// This prevents a circular dependency where kube-proxy can't come up until DNS comes up,
-	// which would mean that DNS can't rely on API to come up
-	if t.isMaster() {
-		glog.Infof("kube-proxy running on the master; setting API endpoint to localhost")
-		config.Master = "http://127.0.0.1:8080"
-	}
-
-	return config
 }
