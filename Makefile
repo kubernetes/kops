@@ -29,10 +29,10 @@ GOVERSION=1.7.4
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.5.2
+DNS_CONTROLLER_TAG=1.6.0
 
-KOPS_RELEASE_VERSION=1.5.3
-KOPS_CI_VERSION=1.6.0-alpha.0
+KOPS_RELEASE_VERSION=1.6.0-alpha.1
+KOPS_CI_VERSION=1.6.0-alpha.2
 
 GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
 
@@ -325,6 +325,15 @@ channels: channels-gocode
 
 channels-gocode:
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
+
+# --------------------------------------------------
+# release tasks
+
+release-tag:
+	git tag ${KOPS_RELEASE_VERSION}
+
+release-github:
+	shipbot -tag ${KOPS_RELEASE_VERSION}
 
 # --------------------------------------------------
 # API / embedding examples
