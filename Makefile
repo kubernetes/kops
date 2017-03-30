@@ -333,7 +333,7 @@ release-tag:
 	git tag ${KOPS_RELEASE_VERSION}
 
 release-github:
-	shipbot -tag ${KOPS_RELEASE_VERSION}
+	shipbot -tag ${KOPS_RELEASE_VERSION} -config .shipbot.yaml
 
 # --------------------------------------------------
 # API / embedding examples
