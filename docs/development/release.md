@@ -76,7 +76,7 @@ versions to that.
 
 ## Upload to github
 
-Manually create a release on github & upload, but soon we'll publish shipbot which automates this...
+Use [shipbot](https://github.com/kopeio/shipbot) to upload the release:
 
 ```
 make release-github
