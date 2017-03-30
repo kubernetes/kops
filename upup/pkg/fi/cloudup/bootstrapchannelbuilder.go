@@ -19,12 +19,19 @@ package cloudup
 import (
 	"fmt"
 
+	"io/ioutil"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	kube_api "k8s.io/kubernetes/pkg/api"
+	kube_api_ext "k8s.io/kubernetes/pkg/apis/extensions"
 )
 
 type BootstrapChannelBuilder struct {
@@ -40,6 +47,8 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	addonsYAML, err := utils.YamlMarshal(addons)
+
+	log.Printf("addonsYAML: %v", string(addonsYAML))
 	if err != nil {
 		return fmt.Errorf("error serializing addons yaml: %v", err)
 	}
@@ -55,11 +64,26 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	for key, manifest := range manifests {
+		data := func(addons *channelsapi.Addons, key string) string {
+			for _, addon := range addons.Spec.Addons {
+				if *addon.Name == key {
+					if addon.Yamldata != nil {
+						return *addon.Yamldata
+					}
+				}
+			}
+			return ""
+		}
+
+		d := data(addons, key)
 		name := b.cluster.ObjectMeta.Name + "-addons-" + key
 		tasks[name] = &fitasks.ManagedFile{
 			Name:     fi.String(name),
 			Location: fi.String(manifest),
-			Contents: &fi.ResourceHolder{Name: manifest},
+			Contents: &fi.ResourceHolder{
+				Name:     manifest,
+				Resource: fi.NewStringResource(d),
+			},
 		}
 	}
 
@@ -206,16 +230,102 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		version := "1.9.3"
 
 		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
+
 		location := key + "/v" + version + ".yaml"
 
-		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-			Name:     fi.String(key),
-			Version:  fi.String(version),
-			Selector: map[string]string{"role.kubernetes.io/networking": "1"},
-			Manifest: fi.String(location),
-		})
+		if b.cluster.Spec.Networking.Weave.Encrypt {
+			// kubectl secret make my-secret --from-literal=key1=value1
+			// read secret
+			secret, err := fi.CreateSecret()
+			secData := make(map[string][]byte)
+			secData["weave-pass"] = []byte(secret.Data)
+			seConfig := kube_api.Secret{
+				Data: secData,
+				Type: kube_api.SecretTypeOpaque,
+				TypeMeta: metav1.TypeMeta{
+					Kind:       "Secret",
+					APIVersion: "v1"},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "weave-pass",
+					Namespace: "weave-pass"}}
+			gv := v1.SchemeGroupVersion
+			info, _ := runtime.SerializerInfoForMediaType(kube_api.Codecs.SupportedMediaTypes(), "application/yaml")
+			encoder := kube_api.Codecs.EncoderForVersion(info.Serializer, gv)
+			secretData, err := runtime.Encode(encoder, &seConfig)
+			if err != nil {
+				fmt.Errorf("error marshaling secret yaml: %s", err)
+				panic(err)
+			}
 
-		manifests[key] = "addons/" + location
+			// FIXME: Remove dump for debuug
+			fmt.Printf("--- t dump:\n%s\n\n", string(secretData))
+			prefix := "addons/"
+			weaveLoc := prefix + key + "/secret.yaml"
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:     fi.String(key + "secret"),
+				Version:  fi.String("0.0.1"),
+				Selector: map[string]string{"role.kubernetes.io/networking": "1"},
+				Manifest: fi.String(weaveLoc),
+				Yamldata: fi.String(string(secretData)),
+			})
+
+			manifests[key+"secret"] = weaveLoc
+
+			// read weave yaml
+			weave_file := "upup/models/cloudup/resources/addons/" + location
+			weavesource, err := ioutil.ReadFile(weave_file)
+			if err != nil {
+				panic(err)
+			}
+			gv = v1beta1.SchemeGroupVersion
+			encoder = kube_api.Codecs.EncoderForVersion(info.Serializer, gv)
+			weaveconfigObj, err := runtime.Decode(kube_api.Codecs.UniversalDecoder(), weavesource)
+			weaveconfig := weaveconfigObj.(*kube_api_ext.DaemonSet)
+			if err != nil {
+				panic(err)
+			}
+			// edit weave yaml
+			newenv := []kube_api.EnvVar{kube_api.EnvVar{
+				Name: "WEAVE_PASSWORD",
+				ValueFrom: &kube_api.EnvVarSource{
+					SecretKeyRef: &kube_api.SecretKeySelector{
+						LocalObjectReference: kube_api.LocalObjectReference{
+							Name: "weave-pass"},
+						Key: "weave-pass"}}}}
+
+			// assign to all container new env variable
+			containers := make([]kube_api.Container, len(weaveconfig.Spec.Template.Spec.Containers))
+			for i, cont := range weaveconfig.Spec.Template.Spec.Containers {
+				cont.Env = newenv
+				containers[i] = cont
+			}
+			weaveconfig.Spec.Template.Spec.Containers = containers
+			weaveData, err := runtime.Encode(encoder, weaveconfig)
+			if err != nil {
+				panic(err)
+			}
+			fmt.Printf("--- t dump:\n%s\n\n", string(weaveData))
+			newLocation := prefix + key + "/weave.yaml"
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Version:  fi.String(version),
+				Selector: map[string]string{"role.kubernetes.io/networking": "1"},
+				Manifest: fi.String(newLocation),
+				Yamldata: fi.String(string(weaveData)),
+			})
+
+			manifests[key] = newLocation
+		} else {
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Version:  fi.String(version),
+				Selector: map[string]string{"role.kubernetes.io/networking": "1"},
+				Manifest: fi.String(location),
+			})
+
+			manifests[key] = "addons/" + location
+		}
 	}
 
 	if b.cluster.Spec.Networking.Flannel != nil {

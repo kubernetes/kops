@@ -77,12 +77,17 @@ func (_ *ManagedFile) Render(c *fi.Context, a, e, changes *ManagedFile) error {
 		return fi.RequiredField("Location")
 	}
 
-	data, err := e.Contents.AsBytes()
-	if err != nil {
-		return fmt.Errorf("error reading contents of ManagedFile: %v", err)
+	f := func(location string) []byte {
+		data, err := e.Contents.AsBytes()
+		if err != nil {
+			fmt.Errorf("error reading contents of ManagedFile: %v", err)
+			panic(err)
+		}
+		return data
 	}
+	var data []byte = f(location)
 
-	err = c.ClusterConfigBase.Join(location).WriteFile(data)
+	err := c.ClusterConfigBase.Join(location).WriteFile(data)
 	if err != nil {
 		return fmt.Errorf("error creating ManagedFile %q: %v", location, err)
 	}

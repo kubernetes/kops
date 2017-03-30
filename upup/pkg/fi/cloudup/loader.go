@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io"
+	"io/ioutil"
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -237,6 +238,7 @@ func (l *Loader) processDeferrals() error {
 							match := tokens[0]
 							args := tokens[1:]
 
+							// check : is file resource or on localfilesystem
 							match = strings.TrimPrefix(match, "resources/")
 							resource := l.Resources[match]
 
@@ -245,12 +247,44 @@ func (l *Loader) processDeferrals() error {
 								for k := range l.Resources {
 									glog.Infof("  %s", k)
 								}
-								return fmt.Errorf("Unable to find resource %q, referenced from %s:%s", rh.Name, taskKey, path)
-							}
 
-							err := l.populateResource(rh, resource, args)
-							if err != nil {
-								return fmt.Errorf("error setting resource value: %v", err)
+								glog.Infof("DEBUG rh; %v", rh)
+								glog.Infof("DEBUG task; %v", task)
+								glog.Infof("DEBUG taskKey; %v", taskKey)
+								glog.Infof("DEBUG taskValue; %v", taskValue)
+								glog.Infof("DEBUG taskValue type; %v", reflect.TypeOf(taskValue))
+								glog.Infof("DEBUG taskValue kind; %v", taskValue.Kind())
+								glog.Infof("DEBUG v; %v", v)
+
+								panic(rh)
+								glog.Infof("Attempt to find localfile")
+								if strings.HasPrefix(match, "/tmp") {
+									if _, err := os.Stat(match); err == nil {
+										glog.Infof("Find instead of resource: %s", match)
+									} else {
+										return fmt.Errorf("Unable to find localfile in /tmp %q, referenced from %s:%s", rh.Name, taskKey, path)
+									}
+									data, err := ioutil.ReadFile(match)
+									if err != nil {
+										return fmt.Errorf("error read local file to resource: %v", err)
+									}
+									a := fi.NewBytesResource(data)
+									err = l.populateResource(rh, a, args)
+									rh.Name = strings.TrimPrefix(rh.Name, "/tmp")
+									glog.Infof("Test value rh.Name: %v", rh.Name)
+									glog.Infof("Test value a: %v", a)
+									glog.Infof("Test value args: %v", args)
+									if err != nil {
+										return fmt.Errorf("error setting resource value: %v", err)
+									}
+								} else {
+									return fmt.Errorf("Unable to find resource %q, referenced from %s:%s", rh.Name, taskKey, path)
+								}
+							} else {
+								err := l.populateResource(rh, resource, args)
+								if err != nil {
+									return fmt.Errorf("error setting resource value: %v", err)
+								}
 							}
 						}
 						return utils.SkipReflection

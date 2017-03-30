@@ -47,4 +47,7 @@ type AddonSpec struct {
 
 	// Manifest is the URL to the manifest that should be applied
 	Manifest *string `json:"manifest,omitempty"`
+
+	// Instead of Manifest define Yamldata
+	Yamldata *string `json:"yamldata,omitempty"`
 }

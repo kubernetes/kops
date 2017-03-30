@@ -31,6 +31,7 @@ kops create cluster
       --model string                         Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --network-cidr string                  Set to override the default network CIDR
       --networking string                    Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan, weave, flannel, calico, canal. (default "kubenet")
+      --network-encrypt                      Weave network support encryption between nodes. Password stored in etcd as k8s secret weave-pass.
       --node-count int32                     Set the number of nodes
       --node-security-groups stringSlice     Add precreated additional security groups to nodes.
       --node-size string                     Set instance size for nodes

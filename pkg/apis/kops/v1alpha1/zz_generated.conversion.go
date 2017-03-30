@@ -1667,6 +1667,7 @@ func Convert_kops_RBACAuthorizationSpec_To_v1alpha1_RBACAuthorizationSpec(in *ko
 }
 
 func autoConvert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveNetworkingSpec, out *kops.WeaveNetworkingSpec, s conversion.Scope) error {
+	out.Encrypt = in.Encrypt
 	return nil
 }
 
@@ -1675,6 +1676,7 @@ func Convert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveN
 }
 
 func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(in *kops.WeaveNetworkingSpec, out *WeaveNetworkingSpec, s conversion.Scope) error {
+	out.Encrypt = in.Encrypt
 	return nil
 }
 
