@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/blang/semver"
 	"github.com/golang/glog"
@@ -26,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"os"
 	"strings"
 )
 
@@ -230,7 +232,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 
 func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 	// TODO temporary code, till vsphere cloud provider gets its own VFS implementation.
-	if fi.CloudProviderID(t.cluster.Spec.CloudProvider) == fi.CloudProviderVSphere && (os.Getenv("AWS_ACCESS_KEY_ID") != "" || os.Getenv("AWS_SECRET_ACCESS_KEY") != "") {
+	if fi.CloudProviderID(t.Cluster.Spec.CloudProvider) == fi.CloudProviderVSphere && (os.Getenv("AWS_ACCESS_KEY_ID") != "" || os.Getenv("AWS_SECRET_ACCESS_KEY") != "") {
 		var buffer bytes.Buffer
 		buffer.WriteString(" ")
 		buffer.WriteString("-e AWS_ACCESS_KEY_ID=")
