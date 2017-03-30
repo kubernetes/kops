@@ -35,15 +35,16 @@ import (
 
 type DeleteOptions struct {
 	resource.FilenameOptions
+	Yes bool
 }
 
 func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DeleteOptions{}
 
 	cmd := &cobra.Command{
-		Use:        "delete -f FILENAME",
-		Short:      "Delete clusters and other resources.",
-		Long:       `Delete clusters`,
+		Use:        "delete -f FILENAME [--yes]",
+		Short:      "Delete clusters and instancegroups",
+		Long:       `Delete clusters and instancegroups`,
 		SuggestFor: []string{"rm"},
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameEmpty(options.Filenames) {
@@ -55,6 +56,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "Filename to use to delete the resource")
+	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to delete the resource")
 	cmd.MarkFlagRequired("filename")
 
 	// create subcommands
@@ -65,7 +67,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunDelete(factory *util.Factory, out io.Writer, c *DeleteOptions) error {
+func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 	// Codecs provides access to encoding and decoding for the scheme
 	codecs := kopsapi.Codecs //serializer.NewCodecFactory(scheme)
 
@@ -73,7 +75,7 @@ func RunDelete(factory *util.Factory, out io.Writer, c *DeleteOptions) error {
 
 	var sb bytes.Buffer
 	fmt.Fprintf(&sb, "\n")
-	for _, f := range c.Filenames {
+	for _, f := range d.Filenames {
 		contents, err := vfs.Context.ReadFile(f)
 		if err != nil {
 			return fmt.Errorf("error reading file %q: %v", f, err)
@@ -94,20 +96,26 @@ func RunDelete(factory *util.Factory, out io.Writer, c *DeleteOptions) error {
 			case *kopsapi.Cluster:
 				options := &DeleteClusterOptions{}
 				options.ClusterName = v.ObjectMeta.Name
+				options.Yes = d.Yes
 				err = RunDeleteCluster(factory, out, options)
 				if err != nil {
 					exitWithError(err)
 				}
-				fmt.Fprintf(&sb, "Deleted cluster/%s\n", v.ObjectMeta.Name)
+				if d.Yes {
+					fmt.Fprintf(&sb, "Deleted cluster/%s\n", v.ObjectMeta.Name)
+				}
 			case *kopsapi.InstanceGroup:
 				options := &DeleteInstanceGroupOptions{}
 				options.GroupName = v.ObjectMeta.Name
 				options.ClusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
+				options.Yes = d.Yes
 				err := RunDeleteInstanceGroup(factory, out, options)
 				if err != nil {
 					exitWithError(err)
 				}
-				fmt.Fprintf(&sb, "Deleted instancegroup/%s\n", v.ObjectMeta.Name)
+				if d.Yes {
+					fmt.Fprintf(&sb, "Deleted instancegroup/%s\n", v.ObjectMeta.Name)
+				}
 			default:
 				glog.V(2).Infof("Type of object was %T", v)
 				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
