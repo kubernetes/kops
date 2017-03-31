@@ -339,6 +339,7 @@ type terraformLaunchConfiguration struct {
 	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty"`
 	Lifecycle                *terraform.Lifecycle    `json:"lifecycle,omitempty"`
 	SpotPrice                *string                 `json:"spot_price,omitempty"`
+	PlacementTenancy         *string                 `json:"placement_tenancy,omitempty"`
 }
 
 type terraformBlockDevice struct {
@@ -371,6 +372,10 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 
 	if e.SpotPrice != "" {
 		tf.SpotPrice = aws.String(e.SpotPrice)
+	}
+
+	if e.Tenancy != nil {
+		tf.PlacementTenancy = e.Tenancy
 	}
 
 	if e.SSHKey != nil {
