@@ -111,6 +111,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		AssociatePublicIP:  lc.AssociatePublicIpAddress,
 		IAMInstanceProfile: &IAMInstanceProfile{Name: lc.IamInstanceProfile},
 		SpotPrice:          aws.StringValue(lc.SpotPrice),
+		Tenancy:            lc.PlacementTenancy,
 	}
 
 	securityGroups := []*SecurityGroup{}
@@ -339,6 +340,7 @@ type terraformLaunchConfiguration struct {
 	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty"`
 	Lifecycle                *terraform.Lifecycle    `json:"lifecycle,omitempty"`
 	SpotPrice                *string                 `json:"spot_price,omitempty"`
+	PlacementTenancy         *string                 `json:"placement_tenancy,omitempty"`
 }
 
 type terraformBlockDevice struct {
@@ -375,6 +377,10 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 
 	if e.SSHKey != nil {
 		tf.KeyName = e.SSHKey.TerraformLink()
+	}
+
+	if e.Tenancy != nil {
+		tf.PlacementTenancy = e.Tenancy
 	}
 
 	for _, sg := range e.SecurityGroups {
@@ -450,6 +456,7 @@ type cloudformationLaunchConfiguration struct {
 	SecurityGroups           []*cloudformation.Literal    `json:"SecurityGroups,omitempty"`
 	SpotPrice                *string                      `json:"SpotPrice,omitempty"`
 	UserData                 *string                      `json:"UserData,omitempty"`
+	PlacementTenancy         *string                      `json:"PlacementTenancy,omitempty"`
 
 	//NamePrefix               *string                 `json:"name_prefix,omitempty"`
 	//Lifecycle                *cloudformation.Lifecycle    `json:"lifecycle,omitempty"`
@@ -496,6 +503,10 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 			return fmt.Errorf("SSHKey Name not set")
 		}
 		cf.KeyName = e.SSHKey.Name
+	}
+
+	if e.Tenancy != nil {
+		cf.PlacementTenancy = e.Tenancy
 	}
 
 	for _, sg := range e.SecurityGroups {
