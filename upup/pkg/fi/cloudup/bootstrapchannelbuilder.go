@@ -48,7 +48,6 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	addonsYAML, err := utils.YamlMarshal(addons)
 
-	log.Printf("addonsYAML: %v", string(addonsYAML))
 	if err != nil {
 		return fmt.Errorf("error serializing addons yaml: %v", err)
 	}
@@ -247,7 +246,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 					APIVersion: "v1"},
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "weave-pass",
-					Namespace: "weave-pass"}}
+					Namespace: "kube-system"}}
 			gv := v1.SchemeGroupVersion
 			info, _ := runtime.SerializerInfoForMediaType(kube_api.Codecs.SupportedMediaTypes(), "application/yaml")
 			encoder := kube_api.Codecs.EncoderForVersion(info.Serializer, gv)
@@ -265,7 +264,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				Name:     fi.String(key + "secret"),
 				Version:  fi.String("0.0.1"),
 				Selector: map[string]string{"role.kubernetes.io/networking": "1"},
-				Manifest: fi.String(weaveLoc),
+				Manifest: fi.String(key + "/secret.yaml"),
 				Yamldata: fi.String(string(secretData)),
 			})
 
@@ -297,6 +296,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			containers := make([]kube_api.Container, len(weaveconfig.Spec.Template.Spec.Containers))
 			for i, cont := range weaveconfig.Spec.Template.Spec.Containers {
 				cont.Env = newenv
+				cont.TerminationMessagePolicy = ""
+				cont.TerminationMessagePath = ""
 				containers[i] = cont
 			}
 			weaveconfig.Spec.Template.Spec.Containers = containers
@@ -310,7 +311,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				Name:     fi.String(key),
 				Version:  fi.String(version),
 				Selector: map[string]string{"role.kubernetes.io/networking": "1"},
-				Manifest: fi.String(newLocation),
+				Manifest: fi.String(key + "/weave.yaml"),
 				Yamldata: fi.String(string(weaveData)),
 			})
 
