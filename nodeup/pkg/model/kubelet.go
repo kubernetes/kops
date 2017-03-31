@@ -44,39 +44,14 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("error building kubelet config: %v", err)
 	}
 
-	// Add sysconfig file
-	{
-		// TODO: Dump this - just complexity!
-		flags, err := flagbuilder.BuildFlags(kubeletConfig)
-		if err != nil {
-			return fmt.Errorf("error building kubelet flags: %v", err)
-		}
-
-		// Add cloud config file if needed
-		// We build this flag differently because it depends on CloudConfig, and to expose it directly
-		// would be a degree of freedom we don't have (we'd have to write the config to different files)
-		// We can always add this later if it is needed.
-		if b.Cluster.Spec.CloudConfig != nil {
-			flags += " --cloud-config=" + CloudConfigFilePath
-		}
-
-		flags += " --network-plugin-dir=" + b.NetworkPluginDir()
-
-		sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
-
-		t := &nodetasks.File{
-			Path:     "/etc/sysconfig/kubelet",
-			Contents: fi.NewStringResource(sysconfig),
-			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
-	}
+	b.buildSysConfig(c, kubeletConfig)
 
 	// Add kubelet file itself (as an asset)
 	{
 		// TODO: Extract to common function?
 		assetName := "kubelet"
 		assetPath := ""
+		// TODO make Find call to an interface, we cannot mock out this function because it finds a file on disk
 		asset, err := b.Assets.Find(assetName, assetPath)
 		if err != nil {
 			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
@@ -125,6 +100,36 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	c.AddTask(b.buildSystemdService())
 
+	return nil
+}
+
+// buildSysConfig adds a task to create a sysconfig file for kubelet
+func (b *KubeletBuilder) buildSysConfig(c *fi.ModelBuilderContext, kubeletConfig *kops.KubeletConfigSpec) error {
+
+	// TODO: Dump this - just complexity!
+	flags, err := flagbuilder.BuildFlags(kubeletConfig)
+	if err != nil {
+		return fmt.Errorf("error building kubelet flags: %v", err)
+	}
+
+	// Add cloud config file if needed
+	// We build this flag differently because it depends on CloudConfig, and to expose it directly
+	// would be a degree of freedom we don't have (we'd have to write the config to different files)
+	// We can always add this later if it is needed.
+	if b.Cluster.Spec.CloudConfig != nil {
+		flags += " --cloud-config=" + CloudConfigFilePath
+	}
+
+	flags += " --network-plugin-dir=" + b.NetworkPluginDir()
+
+	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
+
+	t := &nodetasks.File{
+		Path:     "/etc/sysconfig/kubelet",
+		Contents: fi.NewStringResource(sysconfig),
+		Type:     nodetasks.FileType_File,
+	}
+	c.AddTask(t)
 	return nil
 }
 
