@@ -17,8 +17,6 @@ limitations under the License.
 package k8sapi
 
 import (
-	crypto_rand "crypto/rand"
-	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
 	"github.com/golang/glog"
@@ -107,22 +105,16 @@ func (c *KubernetesKeystore) FindKeypair(id string) (*fi.Certificate, *fi.Privat
 	return keypair.Certificate, keypair.PrivateKey, nil
 }
 
-func (c *KubernetesKeystore) CreateKeypair(id string, template *x509.Certificate) (*fi.Certificate, *fi.PrivateKey, error) {
+func (c *KubernetesKeystore) CreateKeypair(id string, template *x509.Certificate, privateKey *fi.PrivateKey) (*fi.Certificate, error) {
 	t := time.Now().UnixNano()
 	serial := fi.BuildPKISerial(t)
 
-	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
-	if err != nil {
-		return nil, nil, fmt.Errorf("error generating RSA private key: %v", err)
-	}
-
-	privateKey := &fi.PrivateKey{Key: rsaKey}
 	cert, err := c.issueCert(id, serial, privateKey, template)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return cert, privateKey, nil
+	return cert, nil
 }
 
 func (c *KubernetesKeystore) StoreKeypair(id string, cert *fi.Certificate, privateKey *fi.PrivateKey) error {
