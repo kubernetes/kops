@@ -55,6 +55,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("kubernetesAPIAccess").Index(i))...)
 	}
 
+	for i := range spec.Hooks {
+		allErrs = append(allErrs, validateHook(&spec.Hooks[i], fieldPath.Child("hooks").Index(i))...)
+	}
+
 	return allErrs
 }
 
@@ -122,6 +126,29 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 	// name is required
 	if subnet.Name == "" {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), ""))
+	}
+
+	return allErrs
+}
+
+func validateHook(v *kops.HookSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if v.ExecContainer == nil {
+		allErrs = append(allErrs, field.Required(fldPath, "An action is required"))
+	}
+
+	if v.ExecContainer != nil {
+		allErrs = append(allErrs, validateExecContainerAction(v.ExecContainer, fldPath.Child("ExecContainer"))...)
+	}
+	return allErrs
+}
+
+func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if v.Image == "" {
+		allErrs = append(allErrs, field.Required(fldPath.Child("Image"), "Image must be specified"))
 	}
 
 	return allErrs
