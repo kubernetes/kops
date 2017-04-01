@@ -234,6 +234,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeProxyBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.HookBuilder{NodeupModelContext: modelContext})
 
 	tf.populate(loader.TemplateFunctions)
 
