@@ -232,9 +232,11 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 		location := key + "/v" + version + ".yaml"
 
+		fmt.Printf("DEBUG location %v\n\n", location)
+		fmt.Printf("DEBUG key %v\n\n", key)
+
 		if b.cluster.Spec.Networking.Weave.Encrypt {
-			// kubectl secret make my-secret --from-literal=key1=value1
-			// read secret
+			fmt.Printf("DEBUG encrypted %v\n\n", b.cluster.Spec.Networking.Weave.Encrypt)
 			secret, err := fi.CreateSecret()
 			secData := make(map[string][]byte)
 			secData["weave-pass"] = []byte(secret.Data)
@@ -249,6 +251,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 					Namespace: "kube-system"}}
 			gv := v1.SchemeGroupVersion
 			info, _ := runtime.SerializerInfoForMediaType(kube_api.Codecs.SupportedMediaTypes(), "application/yaml")
+
+			// FIXME require split objects in yaml
 			encoder := kube_api.Codecs.EncoderForVersion(info.Serializer, gv)
 			secretData, err := runtime.Encode(encoder, &seConfig)
 			if err != nil {
@@ -296,8 +300,6 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			containers := make([]kube_api.Container, len(weaveconfig.Spec.Template.Spec.Containers))
 			for i, cont := range weaveconfig.Spec.Template.Spec.Containers {
 				cont.Env = newenv
-				cont.TerminationMessagePolicy = ""
-				cont.TerminationMessagePath = ""
 				containers[i] = cont
 			}
 			weaveconfig.Spec.Template.Spec.Containers = containers
@@ -318,6 +320,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			manifests[key] = newLocation
 		} else {
 
+			fmt.Printf("DEBUG NOT!!! encrypted %v\n\n", b.cluster.Spec.Networking.Weave.Encrypt)
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:     fi.String(key),
 				Version:  fi.String(version),
