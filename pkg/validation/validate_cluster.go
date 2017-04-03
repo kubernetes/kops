@@ -144,6 +144,9 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 		node := &nodes.Items[i]
 
 		role := util.GetNodeRole(node)
+		if role == "" {
+			role = "node"
+		}
 
 		n := &ValidationNode{
 			Zone:     node.ObjectMeta.Labels["failure-domain.beta.kubernetes.io/zone"],
