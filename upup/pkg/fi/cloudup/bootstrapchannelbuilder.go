@@ -242,23 +242,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 		location := key + "/v" + version + ".yaml"
 
-		fmt.Printf("DEBUG location %v\n\n", location)
-		fmt.Printf("DEBUG key %v\n\n", key)
-
+		seConfig, _ := BuildSecret()
 		if b.cluster.Spec.Networking.Weave.Encrypt {
-			fmt.Printf("DEBUG encrypted %v\n\n", b.cluster.Spec.Networking.Weave.Encrypt)
-			secret, err := fi.CreateSecret()
-			secData := make(map[string][]byte)
-			secData["weave-pass"] = []byte(secret.Data)
-			seConfig := kube_api.Secret{
-				Data: secData,
-				Type: kube_api.SecretTypeOpaque,
-				TypeMeta: metav1.TypeMeta{
-					Kind:       "Secret",
-					APIVersion: "v1"},
-				ObjectMeta: metav1.ObjectMeta{
-					Name:      "weave-pass",
-					Namespace: "kube-system"}}
 			info, _ := runtime.SerializerInfoForMediaType(kube_api.Codecs.SupportedMediaTypes(), "application/yaml")
 
 			encoder := kube_api.Codecs.EncoderForVersion(info.Serializer, v1.SchemeGroupVersion)
@@ -268,8 +253,6 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				panic(err)
 			}
 
-			// FIXME: Remove dump for debuug
-			fmt.Printf("--- t dump:\n%s\n\n", string(secretData))
 			prefix := "addons/"
 			weaveLoc := prefix + key + "/secret.yaml"
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
@@ -300,28 +283,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				}
 				switch v := obj.(type) {
 				case *kube_api_ext.DaemonSet:
-
-					weaveconfig := obj.(*kube_api_ext.DaemonSet)
-					if err != nil {
-						panic(err)
-					}
-					// edit weave yaml
-					newenv := []kube_api.EnvVar{kube_api.EnvVar{
-						Name: "WEAVE_PASSWORD",
-						ValueFrom: &kube_api.EnvVarSource{
-							SecretKeyRef: &kube_api.SecretKeySelector{
-								LocalObjectReference: kube_api.LocalObjectReference{
-									Name: "weave-pass"},
-								Key: "weave-pass"}}}}
-
-					// assign to all container new env variable
-					containers := make([]kube_api.Container, len(weaveconfig.Spec.Template.Spec.Containers))
-					for i, cont := range weaveconfig.Spec.Template.Spec.Containers {
-						cont.Env = newenv
-						containers[i] = cont
-					}
-					weaveconfig.Spec.Template.Spec.Containers = containers
-					weaveData, err := runtime.Encode(encoder, weaveconfig)
+					weaveconfig := BuildWeaveDaemonSet(obj)
+					weaveData, err := runtime.Encode(encoder, &weaveconfig)
 					if err != nil {
 						fmt.Errorf("error encode file %s obj %s: %v", weavesource, weaveconfig, err)
 					}
@@ -333,7 +296,6 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				newSections = append(newSections[:], delimiter[:]...)
 			}
 
-			fmt.Printf("--- t dump:\n%s\n\n", string(newSections))
 			newLocation := prefix + key + "/weave.yaml"
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:     fi.String(key),
@@ -410,4 +372,48 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	}
 
 	return addons, manifests, nil
+}
+
+func BuildSecret() (kube_api.Secret, error) {
+	secret, err := fi.CreateSecret()
+	if err != nil {
+		fmt.Errorf("error create secret: %s", err)
+	}
+	secData := make(map[string][]byte)
+	secData["weave-pass"] = []byte(secret.Data)
+	seConfig := kube_api.Secret{
+		Data: secData,
+		Type: kube_api.SecretTypeOpaque,
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Secret",
+			APIVersion: "v1"},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "weave-pass",
+			Namespace: "kube-system"}}
+	return seConfig, err
+}
+
+func BuildNewEnv() []kube_api.EnvVar {
+	newenv := []kube_api.EnvVar{kube_api.EnvVar{
+		Name: "WEAVE_PASSWORD",
+		ValueFrom: &kube_api.EnvVarSource{
+			SecretKeyRef: &kube_api.SecretKeySelector{
+				LocalObjectReference: kube_api.LocalObjectReference{
+					Name: "weave-pass"},
+				Key: "weave-pass"}}}}
+	return newenv
+}
+
+// edit weave yaml
+func BuildWeaveDaemonSet(obj runtime.Object) kube_api_ext.DaemonSet {
+	// assign to all container new env variable
+	weaveConfig := obj.(*kube_api_ext.DaemonSet)
+	containers := make([]kube_api.Container, len(weaveConfig.Spec.Template.Spec.Containers))
+	newenv := BuildNewEnv()
+	for i, cont := range weaveConfig.Spec.Template.Spec.Containers {
+		cont.Env = newenv
+		containers[i] = cont
+	}
+	weaveConfig.Spec.Template.Spec.Containers = containers
+	return *weaveConfig
 }
