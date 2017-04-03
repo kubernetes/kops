@@ -203,7 +203,13 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
-		version := "1.9.3"
+		var version string
+		switch {
+		case kv.Major == 1 && kv.Minor <= 5:
+			version = "1.9.3"
+		default:
+			version = "1.9.4"
+		}
 
 		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 		location := key + "/v" + version + ".yaml"
