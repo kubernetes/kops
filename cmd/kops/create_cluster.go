@@ -438,7 +438,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 			for i, ig := range masters {
 				m := &api.EtcdMemberSpec{}
-				m.EncryptedVolume = &c.EncryptVolume
+				if c.EncryptVolume {
+					m.EncryptedVolume = &c.EncryptVolume
+				}
 				m.Name = names[i]
 
 				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
