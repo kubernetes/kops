@@ -14,6 +14,7 @@ kops update cluster
 ### Options
 
 ```
+      --create-kube-config      Will control automatically creating the kube config file on your local filesystem (default true)
       --model string            Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --out string              Path to write any local output
       --ssh-public-key string   SSH public key to use (deprecated: use kops create secret instead)
