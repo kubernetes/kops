@@ -2,6 +2,8 @@ kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: weave-net
+  labels:
+    role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - ""
@@ -27,11 +29,15 @@ kind: ServiceAccount
 metadata:
   name: weave-net
   namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
   name: weave-net
+  labels:
+    role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -46,6 +52,8 @@ kind: DaemonSet
 metadata:
   name: weave-net
   namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
 spec:
   template:
     metadata:
