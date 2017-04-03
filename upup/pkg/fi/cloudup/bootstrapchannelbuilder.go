@@ -17,6 +17,7 @@ limitations under the License.
 package cloudup
 
 import (
+	"bytes"
 	"fmt"
 
 	"io/ioutil"
@@ -258,11 +259,9 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "weave-pass",
 					Namespace: "kube-system"}}
-			gv := v1.SchemeGroupVersion
 			info, _ := runtime.SerializerInfoForMediaType(kube_api.Codecs.SupportedMediaTypes(), "application/yaml")
 
-			// FIXME require split objects in yaml
-			encoder := kube_api.Codecs.EncoderForVersion(info.Serializer, gv)
+			encoder := kube_api.Codecs.EncoderForVersion(info.Serializer, v1.SchemeGroupVersion)
 			secretData, err := runtime.Encode(encoder, &seConfig)
 			if err != nil {
 				fmt.Errorf("error marshaling secret yaml: %s", err)
@@ -289,41 +288,59 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			if err != nil {
 				panic(err)
 			}
-			gv = v1beta1.SchemeGroupVersion
-			encoder = kube_api.Codecs.EncoderForVersion(info.Serializer, gv)
-			weaveconfigObj, err := runtime.Decode(kube_api.Codecs.UniversalDecoder(), weavesource)
-			weaveconfig := weaveconfigObj.(*kube_api_ext.DaemonSet)
-			if err != nil {
-				panic(err)
-			}
-			// edit weave yaml
-			newenv := []kube_api.EnvVar{kube_api.EnvVar{
-				Name: "WEAVE_PASSWORD",
-				ValueFrom: &kube_api.EnvVarSource{
-					SecretKeyRef: &kube_api.SecretKeySelector{
-						LocalObjectReference: kube_api.LocalObjectReference{
-							Name: "weave-pass"},
-						Key: "weave-pass"}}}}
+			encoder = kube_api.Codecs.EncoderForVersion(info.Serializer, v1beta1.SchemeGroupVersion)
+			// FIXME require split to objects in yaml
+			delimiter := []byte("\n---\n")
+			sections := bytes.Split(weavesource, delimiter)
+			var newSections []byte
+			for _, section := range sections {
+				obj, err := runtime.Decode(kube_api.Codecs.UniversalDecoder(), section)
+				if err != nil {
+					fmt.Errorf("error parsing file %s obj %s: %v", weavesource, string(section), err)
+				}
+				switch v := obj.(type) {
+				case *kube_api_ext.DaemonSet:
 
-			// assign to all container new env variable
-			containers := make([]kube_api.Container, len(weaveconfig.Spec.Template.Spec.Containers))
-			for i, cont := range weaveconfig.Spec.Template.Spec.Containers {
-				cont.Env = newenv
-				containers[i] = cont
+					weaveconfig := obj.(*kube_api_ext.DaemonSet)
+					if err != nil {
+						panic(err)
+					}
+					// edit weave yaml
+					newenv := []kube_api.EnvVar{kube_api.EnvVar{
+						Name: "WEAVE_PASSWORD",
+						ValueFrom: &kube_api.EnvVarSource{
+							SecretKeyRef: &kube_api.SecretKeySelector{
+								LocalObjectReference: kube_api.LocalObjectReference{
+									Name: "weave-pass"},
+								Key: "weave-pass"}}}}
+
+					// assign to all container new env variable
+					containers := make([]kube_api.Container, len(weaveconfig.Spec.Template.Spec.Containers))
+					for i, cont := range weaveconfig.Spec.Template.Spec.Containers {
+						cont.Env = newenv
+						containers[i] = cont
+					}
+					weaveconfig.Spec.Template.Spec.Containers = containers
+					weaveData, err := runtime.Encode(encoder, weaveconfig)
+					if err != nil {
+						fmt.Errorf("error encode file %s obj %s: %v", weavesource, weaveconfig, err)
+					}
+					newSections = append(newSections[:], weaveData[:]...)
+				default:
+					fmt.Printf("not changed %s,\n%v", v, string(section))
+					newSections = append(newSections[:], section[:]...)
+				}
+				newSections = append(newSections[:], delimiter[:]...)
 			}
-			weaveconfig.Spec.Template.Spec.Containers = containers
-			weaveData, err := runtime.Encode(encoder, weaveconfig)
-			if err != nil {
-				panic(err)
-			}
-			fmt.Printf("--- t dump:\n%s\n\n", string(weaveData))
+
+			fmt.Printf("--- t dump:\n%s\n\n", string(newSections))
 			newLocation := prefix + key + "/weave.yaml"
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:     fi.String(key),
 				Version:  fi.String(version),
 				Selector: map[string]string{"role.kubernetes.io/networking": "1"},
 				Manifest: fi.String(key + "/weave.yaml"),
-				Yamldata: fi.String(string(weaveData)),
+				Yamldata: fi.String(string(newSections)),
 			})
 
 			manifests[key] = newLocation
