@@ -33,9 +33,9 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
-	"os"
+	//"os"
 	"strconv"
-	"net"
+	//"net"
 )
 
 const defaultEtcdPathPrefix = "/registry/kops.kubernetes.io"
@@ -78,23 +78,23 @@ func NewCommandStartKopsServer(out, err io.Writer) (*cobra.Command, error) {
 	// Also I had to add an error return type to this function, so we probs want to get that out of here
 
 	// Bind address
-	bind := os.Getenv("KOPS_SERVER_ETCD_SERVICE_HOST")
-	if bind == "" {
-		return nil, fmt.Errorf("unable to detect kops server etcd host")
-	}
-	bindAddress := net.IP{}
-	bindAddress = []byte(bind)
+	//bind := os.Getenv("KOPS_SERVER_ETCD_SERVICE_HOST")
+	//if bind == "" {
+	//	return nil, fmt.Errorf("unable to detect kops server etcd host")
+	//}
+	//bindAddress := net.IP{}
+	bindAddress := []byte("localhost")
 
 	// Bind Port
-	port := os.Getenv("KOPS_SERVER_ETCD_PORT")
-	if port == "" {
-		return nil, fmt.Errorf("unable to detect kops server etcd port")
-	}
+	//port := os.Getenv("KOPS_SERVER_ETCD_PORT")
+	//if port == "" {
+	//	return nil, fmt.Errorf("unable to detect kops server etcd port")
+	//}
 
 	{
-		bindPort, err := strconv.Atoi(port)
+		bindPort, err := strconv.Atoi("2379")
 		if err != nil {
-			return nil, fmt.Errorf("unable to cast bind port to %s int: %v", port, err)
+			return nil, fmt.Errorf("unable to cast bind port to int: %v", err)
 		}
 		o.InsecureServing.BindAddress = bindAddress
 		o.InsecureServing.BindPort = bindPort
