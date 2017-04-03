@@ -15,7 +15,7 @@ By default, a cluster has:
 ## Listing instance groups
 
 `kops get instancegroups`
-> ```
+```
 NAME                    ROLE    MACHINETYPE     MIN     MAX     ZONES
 master-us-east-1c       Master                  1       1       us-east-1c
 nodes                   Node    t2.medium       2       2
