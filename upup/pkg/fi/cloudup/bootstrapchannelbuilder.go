@@ -76,14 +76,17 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		d := data(addons, key)
 		name := b.cluster.ObjectMeta.Name + "-addons-" + key
-		tasks[name] = &fitasks.ManagedFile{
+		managedfile := &fitasks.ManagedFile{
 			Name:     fi.String(name),
 			Location: fi.String(manifest),
 			Contents: &fi.ResourceHolder{
-				Name:     manifest,
-				Resource: fi.NewStringResource(d),
+				Name: manifest,
 			},
 		}
+		if d != "" {
+			managedfile.Contents.Resource = fi.NewStringResource(d)
+		}
+		tasks[name] = managedfile
 	}
 
 	return nil
