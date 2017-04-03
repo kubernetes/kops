@@ -32,7 +32,7 @@ have not yet been applied (this may change soon though!).
 To preview the change:
 
 `kops update cluster <clustername>`
-> ```
+```
 ...
 Will modify resources:
   *awstasks.LaunchConfiguration launchConfiguration/mycluster.mydomain.com
