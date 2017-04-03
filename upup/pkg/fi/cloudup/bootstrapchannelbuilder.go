@@ -272,7 +272,6 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				panic(err)
 			}
 			encoder = kube_api.Codecs.EncoderForVersion(info.Serializer, v1beta1.SchemeGroupVersion)
-			// FIXME require split to objects in yaml
 			delimiter := []byte("\n---\n")
 			sections := bytes.Split(weavesource, delimiter)
 			var newSections []byte
@@ -307,8 +306,6 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 			manifests[key] = newLocation
 		} else {
-
-			fmt.Printf("DEBUG NOT!!! encrypted %v\n\n", b.cluster.Spec.Networking.Weave.Encrypt)
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:     fi.String(key),
 				Version:  fi.String(version),
