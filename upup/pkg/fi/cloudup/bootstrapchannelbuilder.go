@@ -20,7 +20,6 @@ import (
 	"bytes"
 	"fmt"
 
-	"io/ioutil"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/pkg/api/v1"
@@ -28,6 +27,7 @@ import (
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -265,8 +265,9 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			manifests[key+"secret"] = weaveLoc
 
 			// read weave yaml
-			weave_file := "upup/models/cloudup/resources/addons/" + location
-			weavesource, err := ioutil.ReadFile(weave_file)
+			weave_file := "cloudup/resources/addons/" + location
+			vpath := models.NewAssetPath(weave_file)
+			weavesource, err := vpath.ReadFile()
 			if err != nil {
 				panic(err)
 			}
