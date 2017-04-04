@@ -249,8 +249,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			encoder := kube_api.Codecs.EncoderForVersion(info.Serializer, v1.SchemeGroupVersion)
 			secretData, err := runtime.Encode(encoder, &seConfig)
 			if err != nil {
-				fmt.Errorf("error marshaling secret yaml: %s", err)
-				panic(err)
+				return nil, nil, fmt.Errorf("error marshaling secret yaml: %s", err)
 			}
 
 			prefix := "addons/"
@@ -278,14 +277,14 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			for _, section := range sections {
 				obj, err := runtime.Decode(kube_api.Codecs.UniversalDecoder(), section)
 				if err != nil {
-					fmt.Errorf("error parsing file %s obj %s: %v", weavesource, string(section), err)
+					return nil, nil, fmt.Errorf("error parsing file %s obj %s: %v", weavesource, string(section), err)
 				}
 				switch v := obj.(type) {
 				case *kube_api_ext.DaemonSet:
 					weaveconfig := BuildWeaveDaemonSet(obj)
 					weaveData, err := runtime.Encode(encoder, &weaveconfig)
 					if err != nil {
-						fmt.Errorf("error encode file %s obj %s: %v", weavesource, weaveconfig, err)
+						return nil, nil, fmt.Errorf("error encode file %s obj %v: %v", weavesource, weaveconfig, err)
 					}
 					newSections = append(newSections[:], weaveData[:]...)
 				default:
@@ -374,7 +373,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 func BuildSecret() (kube_api.Secret, error) {
 	secret, err := fi.CreateSecret()
 	if err != nil {
-		fmt.Errorf("error create secret: %s", err)
+		return kube_api.Secret{}, fmt.Errorf("error create secret: %s", err)
 	}
 	secData := make(map[string][]byte)
 	secData["weave-pass"] = []byte(secret.Data)
@@ -391,7 +390,7 @@ func BuildSecret() (kube_api.Secret, error) {
 }
 
 func BuildNewEnv() []kube_api.EnvVar {
-	newenv := []kube_api.EnvVar{kube_api.EnvVar{
+	newenv := []kube_api.EnvVar{{
 		Name: "WEAVE_PASSWORD",
 		ValueFrom: &kube_api.EnvVarSource{
 			SecretKeyRef: &kube_api.SecretKeySelector{
