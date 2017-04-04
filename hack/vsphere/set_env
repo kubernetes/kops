@@ -14,6 +14,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# Enabling vSphere cloud provider feature flag in kops.
+export KOPS_FEATURE_FLAGS=+VSphereCloudProvider
+
 # If set, coredns will be used for vsphere cloud provider.
 export VSPHERE_DNS=coredns
 
@@ -34,13 +37,15 @@ export VSPHERE_USERNAME=administrator@vsphere.local
 export VSPHERE_PASSWORD=Admin!23
 
 # Set TARGET and TARGET_PATH to values where you want nodeup and protokube binaries to get copied.
-# This should be same location as set for NODEUP_URL and PROTOKUBE_IMAGE.
+# Urls corresponding to this location are set for NODEUP_URL and PROTOKUBE_IMAGE.
 export TARGET=jdoe@pa-dbc1131.eng.vmware.com
 export TARGET_PATH=/dbc/pa-dbc1131/jdoe/misc/kops/
 
+# Set urls to access nodeup binary and protokube image tar in NODEUP_URL and PROTOKUBE_IMAGE, respectively.
 export NODEUP_URL=http://pa-dbc1131.eng.vmware.com/jdoe/misc/kops/nodeup/nodeup
 export PROTOKUBE_IMAGE=http://pa-dbc1131.eng.vmware.com/jdoe/misc/kops/protokube/protokube.tar.gz
 
+echo "KOPS_FEATURE_FLAGS=${KOPS_FEATURE_FLAGS}"
 echo "VSPHERE_DNS=${VSPHERE_DNS}"
 echo "VSPHERE_DNSCONTROLLER_IMAGE=${VSPHERE_DNSCONTROLLER_IMAGE}"
 echo "KOPS_STATE_STORE=${KOPS_STATE_STORE}"
