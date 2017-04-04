@@ -1,16 +1,82 @@
-#apiVersion: extensions/v1beta1
-#kind: Deployment
-#metadata:
-#  name: kops-api-server
-#spec:
-#  replicas: 1
-#  template:
-#    metadata:
-#      labels:
-#        app: kops
-#    spec:
-#      containers:
-#      - name: kops
-#        image: krisnova/kops:latest
-#        ports:
-#        - containerPort: 80
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kops-api-server
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: api-server
+    spec:
+      containers:
+
+      - name: kops
+        image: krisnova/kops:latest
+        resources:
+          requests:
+            cpu: 100m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 30Mi
+        command:
+        - /kops-server
+        - --insecure-bind-address
+        - 0.0.0.0
+        - --insecure-port
+        - "8080"
+        - --storage-type
+        - etcd
+        - --etcd-servers
+        - http://localhost:2379
+        - -v
+        - "10"
+        ports:
+        - containerPort: 8080
+
+      - name: etcd
+        image: quay.io/coreos/etcd:latest
+        imagePullPolicy: Always
+        resources:
+          requests:
+            cpu: 100m
+            memory: 20Mi
+          limits:
+            cpu: 100m
+            memory: 30Mi
+        env:
+        - name: ETCD_DATA_DIR
+          value: /etcd-data-dir
+        command:
+        - /usr/local/bin/etcd
+        - --listen-client-urls
+        - http://0.0.0.0:2379
+        - --advertise-client-urls
+        - http://localhost:2379
+        ports:
+        - containerPort: 2379
+        volumeMounts:
+        - name: etcd-data-dir
+          mountPath: /etcd-data-dir
+        readinessProbe:
+          httpGet:
+            port: 2379
+            path: /health
+          failureThreshold: 1
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        livenessProbe:
+          httpGet:
+            port: 2379
+            path: /health
+          failureThreshold: 3
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+      volumes:
+      - name: etcd-data-dir
+        emptyDir: {}

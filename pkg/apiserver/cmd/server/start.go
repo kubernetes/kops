@@ -18,7 +18,6 @@ package server
 
 import (
 	"io"
-	"fmt"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -34,7 +33,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	//"os"
-	"strconv"
 	//"net"
 )
 
@@ -71,40 +69,6 @@ func NewCommandStartKopsServer(out, err io.Writer) (*cobra.Command, error) {
 	o.Etcd.StorageConfig.Type = storagebackend.StorageTypeETCD2
 	o.Etcd.StorageConfig.Codec = kops.Codecs.LegacyCodec(v1alpha2.SchemeGroupVersion)
 	//o.SecureServing.ServingOptions.BindPort = 443
-
-	// --------------------------------------------------------------------------------------------------------
-	// Todo
-	// Kris experimenting with service discovery.. will obvi make this cleaner once I get it working
-	// Also I had to add an error return type to this function, so we probs want to get that out of here
-
-	// Bind address
-	//bind := os.Getenv("KOPS_SERVER_ETCD_SERVICE_HOST")
-	//if bind == "" {
-	//	return nil, fmt.Errorf("unable to detect kops server etcd host")
-	//}
-	//bindAddress := net.IP{}
-	bindAddress := []byte("localhost")
-
-	// Bind Port
-	//port := os.Getenv("KOPS_SERVER_ETCD_PORT")
-	//if port == "" {
-	//	return nil, fmt.Errorf("unable to detect kops server etcd port")
-	//}
-
-	{
-		bindPort, err := strconv.Atoi("2379")
-		if err != nil {
-			return nil, fmt.Errorf("unable to cast bind port to int: %v", err)
-		}
-		o.InsecureServing.BindAddress = bindAddress
-		o.InsecureServing.BindPort = bindPort
-	}
-
-
-
-	// --------------------------------------------------------------------------------------------------------
-
-
 
 	cmd := &cobra.Command{
 		Short: "Launch a kops API server",
