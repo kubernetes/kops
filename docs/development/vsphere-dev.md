@@ -85,40 +85,36 @@ source [kops_dir]/hack/vsphere/set_env
 make vsphere-version-dist
 ```
 
-Currently vSphere support is not part of any of the kops releases. Hence, all modified component- kops, nodeup, protokube, need building at least once. ```make vsphere-version-dist``` will do that and copy protokube image and nodeup binary at the target location specified by you in ```vsphere-env.sh```. Dns-controller has also been modified to support vSphere. You can continue to use ```export VSPHERE_DNSCONTROLLER_IMAGE=luomiao/dns-controller```, unless you are making some changes to dns-controller and would like to use your custom image.
+Currently vSphere support is not part of any of the kops releases. Hence, all modified component- kops, nodeup, protokube, need building at least once. ```make vsphere-version-dist``` will do that and copy protokube image and nodeup binary at the target location specified by you in ```[kops_dir]/hack/vsphere/set_env```.
 
+Please note that dns-controller has also been modified to support vSphere. You can continue to use ```export VSPHERE_DNSCONTROLLER_IMAGE=luomiao/dns-controller```. If you have made any local changes to dns-controller and would like to use your custom image you need to build the dns-controller image using ```DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push``` and set ```VSPHERE_DNSCONTROLLER_IMAGE``` accordingly. Please see the relevant Section above, on setting up DNS.
 
 ### Launching Cluster
 Execute following command to launch cluster.
 
 ```bash
-kops create cluster kubernetes.skydns.local  --cloud=vsphere --zones=us-east-a --dns-zone=skydns.local --networking=flannel
+.build/dist/darwin/amd64/kops create cluster kubernetes.skydns.local  --cloud=vsphere --zones=${AWS_REGION}a --dns-zone=skydns.local --networking=flannel
  --vsphere-server=10.160.97.44 --vsphere-datacenter=VSAN-DC --vsphere-resource-pool=VSAN-Cluster --vsphere-datastore=vsanDatastore --dns private --vsphere-coredns-server=http://10.192.217.24:2379 --image="ubuntu_16_04" 
 ```
+
+Use .build/dist/linux/amd64/kops if working on a linux machine, instead of mac.
+
 **Notes**
-1. clustername should end with **skydns.local**. Example: ```kubernetes.cluster.skydns.local```.
-2. zones should end with ```a```. Example: ```us-west-a```.
+
+1. ```clustername``` should end with **skydns.local**. Example: ```kubernetes.cluster.skydns.local```.
+2. ```zones``` should end with ```a```. Example: ```us-west-2a``` or as the above command sets ```--zones=${AWS_REGION}a```.
 3. Make sure following parameters have these values,
     * ```--dns-zone=skydns.local```
     * ```--networking=flannel```
     * ```--dns=private```
 
-#### Cleaning up environment
+### Cleaning up environment
 Run following command to cleanup all set environment variables and regenerate all images and binaries without any of the vSphere specific steps.
 
 ```bash
 source [kops_dir]/hack/vsphere/cleanup_env
 make version-dist
 ```
-
-### Creating cluster
-Execute following command(s) to create a kubernetes cluster on vSphere using kops-
-
-```bash
-.build/dist/darwin/amd64/kops create cluster --cloud=vsphere --name=yourcluster.skydns.local --zones=us-west-2a --vsphere-server=<vsphere-server-ip> --vsphere-datacenter=<datacenter-name> --vsphere-resource-pool=<cluster-name> --vsphere-datastore=<datastore-name> --dns=private --vsphere-coredns-server=http://<dns-server-ip>:2379  --dns-zone=skydns.local --image=<template-vm-name> --yes
-```
-
-User .build/dist/linux/amd64/kops if working on a linux machine, instead of mac.
 
 ### Deleting cluster
 Cluster deletion hasn't been fully implemented yet. So you will have to delete vSphere VM's manually for now.
