@@ -55,7 +55,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	for _, assetName := range assetNames {
-		if err := b.addAsset(c, assetName); err != nil {
+		if err := b.addCNIBinAsset(c, assetName); err != nil {
 			return err
 		}
 	}
@@ -63,7 +63,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *NetworkBuilder) addAsset(c *fi.ModelBuilderContext, assetName string) error {
+func (b *NetworkBuilder) addCNIBinAsset(c *fi.ModelBuilderContext, assetName string) error {
 	assetPath := ""
 	asset, err := b.Assets.Find(assetName, assetPath)
 	if err != nil {
@@ -74,7 +74,7 @@ func (b *NetworkBuilder) addAsset(c *fi.ModelBuilderContext, assetName string) e
 	}
 
 	t := &nodetasks.File{
-		Path:     filepath.Join(b.NetworkPluginDir(), assetName),
+		Path:     filepath.Join(b.CNIBinDir(), assetName),
 		Contents: asset,
 		Type:     nodetasks.FileType_File,
 		Mode:     s("0755"),
