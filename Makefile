@@ -362,4 +362,4 @@ kops-server-build:
 	docker build -t ${DOCKER_REGISTRY}/kops-server:latest -f images/kops-server/Dockerfile .
 
 kops-server-push: kops-server-build
-	docker push ${DOCKER_REGISTRY}/kops-server:latest
+	docker push ${DOCKER_REGISTRY}/kops:latest

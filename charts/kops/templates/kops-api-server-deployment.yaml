@@ -19,22 +19,21 @@ spec:
             memory: 20Mi
           limits:
             cpu: 100m
-            memory: 30Mi
+            memory: 30Mitw
         command:
         - /kops-server
         - --insecure-bind-address
         - 0.0.0.0
         - --insecure-port
         - "8080"
-        - --storage-type
-        - etcd
         - --etcd-servers
         - http://localhost:2379
+        - --storage-backend
+        - etcd3
         - -v
         - "10"
         ports:
         - containerPort: 8080
-
       - name: etcd
         image: quay.io/coreos/etcd:latest
         imagePullPolicy: Always
@@ -51,7 +50,7 @@ spec:
         command:
         - /usr/local/bin/etcd
         - --listen-client-urls
-        - http://0.0.0.0:2379
+        - http://localhost:2379
         - --advertise-client-urls
         - http://localhost:2379
         ports:
