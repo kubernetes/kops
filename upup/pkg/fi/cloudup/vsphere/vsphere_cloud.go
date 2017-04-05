@@ -180,7 +180,11 @@ func (c *VSphereCloud) CreateLinkClonedVm(vmName, vmImage *string) (string, erro
 	snapshotRef := snapshot.Reference()
 
 	cloneSpec := &types.VirtualMachineCloneSpec{
-		Config: &types.VirtualMachineConfigSpec{},
+		Config: &types.VirtualMachineConfigSpec{
+			Flags: &types.VirtualMachineFlagInfo{
+				DiskUuidEnabled: fi.Bool(true),
+			},
+		},
 		Location: types.VirtualMachineRelocateSpec{
 			Pool:         &resPoolRef,
 			DiskMoveType: "createNewChildDiskBacking",
