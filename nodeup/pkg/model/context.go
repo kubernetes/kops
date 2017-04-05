@@ -37,7 +37,7 @@ type NodeupModelContext struct {
 
 	IsMaster bool
 
-	Assets      *fi.AssetStore
+	Assets      fi.AssetStore
 	KeyStore    fi.CAStore
 	SecretStore fi.SecretStore
 

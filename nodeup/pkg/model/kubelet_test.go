@@ -225,6 +225,7 @@ func LoadModel(basedir string) (*NodeupModelContext, error) {
 		Architecture:  "amd64",
 		Distribution:  distros.DistributionXenial,
 		InstanceGroup: instanceGroup,
+		Assets:        &mockAssetStore{},
 	}
 
 	return nodeUpModelContext, nil

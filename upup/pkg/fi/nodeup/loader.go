@@ -39,14 +39,14 @@ type Loader struct {
 	config    *nodeup.NodeUpConfig
 	cluster   *api.Cluster
 
-	assets *fi.AssetStore
+	assets fi.AssetStore
 	tasks  map[string]fi.Task
 
 	tags              sets.String
 	TemplateFunctions template.FuncMap
 }
 
-func NewLoader(config *nodeup.NodeUpConfig, cluster *api.Cluster, assets *fi.AssetStore, tags sets.String) *Loader {
+func NewLoader(config *nodeup.NodeUpConfig, cluster *api.Cluster, assets fi.AssetStore, tags sets.String) *Loader {
 	l := &Loader{}
 	l.assets = assets
 	l.tasks = make(map[string]fi.Task)

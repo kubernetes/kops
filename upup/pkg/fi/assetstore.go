@@ -84,18 +84,25 @@ func (r *assetResource) GetSource() *Source {
 	return r.asset.source
 }
 
-type AssetStore struct {
+type AssetStore interface {
+	Find(key string, assetPath string) (Resource, error)
+}
+
+type FilesystemAssetStore struct {
 	cacheDir string
 	assets   []*asset
 }
 
-func NewAssetStore(cacheDir string) *AssetStore {
-	a := &AssetStore{
+var _ AssetStore = &FilesystemAssetStore{}
+
+func NewFilesystemAssetStore(cacheDir string) *FilesystemAssetStore {
+	a := &FilesystemAssetStore{
 		cacheDir: cacheDir,
 	}
 	return a
 }
-func (a *AssetStore) Find(key string, assetPath string) (Resource, error) {
+
+func (a *FilesystemAssetStore) Find(key string, assetPath string) (Resource, error) {
 	var matches []*asset
 	for _, asset := range a.assets {
 		if asset.Key != key {
@@ -149,7 +156,7 @@ func hashFromHttpHeader(url string) (*hashing.Hash, error) {
 }
 
 // Add an asset into the store, in one of the recognized formats (see Assets in types package)
-func (a *AssetStore) Add(id string) error {
+func (a *FilesystemAssetStore) Add(id string) error {
 	if strings.HasPrefix(id, "http://") || strings.HasPrefix(id, "https://") {
 		return a.addURL(id, nil)
 	}
@@ -169,7 +176,7 @@ func (a *AssetStore) Add(id string) error {
 	return fmt.Errorf("unknown asset format: %q", id)
 }
 
-func (a *AssetStore) addURL(url string, hash *hashing.Hash) error {
+func (a *FilesystemAssetStore) addURL(url string, hash *hashing.Hash) error {
 	var err error
 
 	if hash == nil {
@@ -252,7 +259,7 @@ func (a *AssetStore) addURL(url string, hash *hashing.Hash) error {
 //	return nil
 //}
 
-func (a *AssetStore) addArchive(archiveSource *Source, archiveFile string) error {
+func (a *FilesystemAssetStore) addArchive(archiveSource *Source, archiveFile string) error {
 	extracted := path.Join(a.cacheDir, "extracted/"+path.Base(archiveFile))
 
 	// TODO: Use a temp file so this is atomic
