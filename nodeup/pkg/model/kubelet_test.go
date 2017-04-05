@@ -17,9 +17,19 @@ limitations under the License.
 package model
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
+	"bytes"
+	"io/ioutil"
+	"path"
+	"sort"
+	"strings"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/kops/nodeup/pkg/distros"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func Test_InstanceGroupKubeletMerge(t *testing.T) {
@@ -141,4 +151,108 @@ func stringSlicesEqual(exp, other []string) bool {
 	}
 
 	return true
+}
+
+func Test_RunKubeletBuilder(t *testing.T) {
+	runKubeletBuilderTest(t, "featuregates")
+}
+
+func runKubeletBuilderTest(t *testing.T, key string) {
+	basedir := path.Join("tests/kubelet/", key)
+
+	clusterYamlPath := path.Join(basedir, "cluster.yaml")
+	clusterYaml, err := ioutil.ReadFile(clusterYamlPath)
+	if err != nil {
+		t.Fatalf("error reading cluster yaml file %q: %v", clusterYamlPath, err)
+	}
+
+	var cluster *kops.Cluster
+	var instanceGroup *kops.InstanceGroup
+
+	// Codecs provides access to encoding and decoding for the scheme
+	codecs := kops.Codecs
+
+	codec := codecs.UniversalDecoder(kops.SchemeGroupVersion)
+
+	sections := bytes.Split(clusterYaml, []byte("\n---\n"))
+	for _, section := range sections {
+		defaults := &schema.GroupVersionKind{
+			Group:   v1alpha2.SchemeGroupVersion.Group,
+			Version: v1alpha2.SchemeGroupVersion.Version,
+		}
+		o, gvk, err := codec.Decode(section, defaults, nil)
+		if err != nil {
+			t.Errorf("error parsing file %v", err)
+		}
+
+		switch v := o.(type) {
+		case *kops.Cluster:
+			cluster = v
+		case *kops.InstanceGroup:
+			instanceGroup = v
+		default:
+			t.Errorf("Unhandled kind %q", gvk)
+		}
+	}
+
+	context := &fi.ModelBuilderContext{
+		Tasks: make(map[string]fi.Task),
+	}
+	nodeUpModelContext := &NodeupModelContext{
+		Cluster:       cluster,
+		Architecture:  "amd64",
+		Distribution:  distros.DistributionXenial,
+		InstanceGroup: instanceGroup,
+	}
+
+	builder := KubeletBuilder{NodeupModelContext: nodeUpModelContext}
+
+	kubeletConfig, err := builder.buildKubeletConfig()
+	if err != nil {
+		t.Errorf("error building kubelet config: %v", err)
+	}
+
+	// because of the diff we cannot test maps that include multiple values
+	// as maps are not sorted and will change
+	kubeletConfig.NodeLabels = make(map[string]string)
+	kubeletConfig.NodeLabels["kubernetes.io/role"] = "node"
+
+	err = builder.buildSysConfig(context, kubeletConfig)
+	if err != nil {
+		t.Fatalf("error from KubeletBuilder Build: %v", err)
+	}
+
+	var keys []string
+	for key := range context.Tasks {
+		keys = append(keys, key)
+	}
+	sort.Strings(keys)
+
+	var yamls []string
+	for _, key := range keys {
+		task := context.Tasks[key]
+		yaml, err := kops.ToRawYaml(task)
+		if err != nil {
+			t.Fatalf("error serializing task: %v", err)
+		}
+		yamls = append(yamls, strings.TrimSpace(string(yaml)))
+	}
+
+	actualTasksYaml := strings.Join(yamls, "\n---\n")
+
+	tasksYamlPath := path.Join(basedir, "tasks.yaml")
+	expectedTasksYamlBytes, err := ioutil.ReadFile(tasksYamlPath)
+	if err != nil {
+		t.Fatalf("error reading file %q: %v", tasksYamlPath, err)
+	}
+
+	actualTasksYaml = strings.TrimSpace(actualTasksYaml)
+	expectedTasksYaml := strings.TrimSpace(string(expectedTasksYamlBytes))
+
+	if expectedTasksYaml != actualTasksYaml {
+		diffString := diff.FormatDiff(expectedTasksYaml, actualTasksYaml)
+		t.Logf("diff:\n%s\n", diffString)
+
+		t.Fatalf("tasks differed from expected for test %q", key)
+	}
 }
