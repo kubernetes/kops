@@ -24,6 +24,7 @@ import (
 	"strings"
 	"testing"
 
+	"fmt"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
@@ -154,16 +155,40 @@ func stringSlicesEqual(exp, other []string) bool {
 }
 
 func Test_RunKubeletBuilder(t *testing.T) {
-	runKubeletBuilderTest(t, "featuregates")
+	basedir := "tests/kubelet/featuregates"
+
+	context := &fi.ModelBuilderContext{
+		Tasks: make(map[string]fi.Task),
+	}
+	nodeUpModelContext, err := LoadModel(basedir)
+	if err != nil {
+		t.Fatalf("error loading model %q: %v", basedir, err)
+		return
+	}
+
+	builder := KubeletBuilder{NodeupModelContext: nodeUpModelContext}
+
+	kubeletConfig, err := builder.buildKubeletConfig()
+	if err != nil {
+		t.Fatalf("error from KubeletBuilder buildKubeletConfig: %v", err)
+		return
+	}
+
+	fileTask, err := builder.buildSystemdEnvironmentFile(kubeletConfig)
+	if err != nil {
+		t.Fatalf("error from KubeletBuilder buildSystemdEnvironmentFile: %v", err)
+		return
+	}
+	context.AddTask(fileTask)
+
+	ValidateTasks(t, basedir, context)
 }
 
-func runKubeletBuilderTest(t *testing.T, key string) {
-	basedir := path.Join("tests/kubelet/", key)
-
+func LoadModel(basedir string) (*NodeupModelContext, error) {
 	clusterYamlPath := path.Join(basedir, "cluster.yaml")
 	clusterYaml, err := ioutil.ReadFile(clusterYamlPath)
 	if err != nil {
-		t.Fatalf("error reading cluster yaml file %q: %v", clusterYamlPath, err)
+		return nil, fmt.Errorf("error reading cluster yaml file %q: %v", clusterYamlPath, err)
 	}
 
 	var cluster *kops.Cluster
@@ -182,7 +207,7 @@ func runKubeletBuilderTest(t *testing.T, key string) {
 		}
 		o, gvk, err := codec.Decode(section, defaults, nil)
 		if err != nil {
-			t.Errorf("error parsing file %v", err)
+			return nil, fmt.Errorf("error parsing file %v", err)
 		}
 
 		switch v := o.(type) {
@@ -191,13 +216,10 @@ func runKubeletBuilderTest(t *testing.T, key string) {
 		case *kops.InstanceGroup:
 			instanceGroup = v
 		default:
-			t.Errorf("Unhandled kind %q", gvk)
+			return nil, fmt.Errorf("Unhandled kind %q", gvk)
 		}
 	}
 
-	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
-	}
 	nodeUpModelContext := &NodeupModelContext{
 		Cluster:       cluster,
 		Architecture:  "amd64",
@@ -205,23 +227,10 @@ func runKubeletBuilderTest(t *testing.T, key string) {
 		InstanceGroup: instanceGroup,
 	}
 
-	builder := KubeletBuilder{NodeupModelContext: nodeUpModelContext}
+	return nodeUpModelContext, nil
+}
 
-	kubeletConfig, err := builder.buildKubeletConfig()
-	if err != nil {
-		t.Errorf("error building kubelet config: %v", err)
-	}
-
-	// because of the diff we cannot test maps that include multiple values
-	// as maps are not sorted and will change
-	kubeletConfig.NodeLabels = make(map[string]string)
-	kubeletConfig.NodeLabels["kubernetes.io/role"] = "node"
-
-	err = builder.buildSysConfig(context, kubeletConfig)
-	if err != nil {
-		t.Fatalf("error from KubeletBuilder Build: %v", err)
-	}
-
+func ValidateTasks(t *testing.T, basedir string, context *fi.ModelBuilderContext) {
 	var keys []string
 	for key := range context.Tasks {
 		keys = append(keys, key)
@@ -253,6 +262,6 @@ func runKubeletBuilderTest(t *testing.T, key string) {
 		diffString := diff.FormatDiff(expectedTasksYaml, actualTasksYaml)
 		t.Logf("diff:\n%s\n", diffString)
 
-		t.Fatalf("tasks differed from expected for test %q", key)
+		t.Fatalf("tasks differed from expected for test %q", basedir)
 	}
 }
