@@ -89,6 +89,7 @@ func BuildFlags(options interface{}) (string, error) {
 					arg := fmt.Sprintf("%s=%s", k, v)
 					args = append(args, arg)
 				}
+				sort.Strings(args)
 				if len(args) != 0 {
 					flag := fmt.Sprintf("--%s=%s", flagName, strings.Join(args, ","))
 					flags = append(flags, flag)

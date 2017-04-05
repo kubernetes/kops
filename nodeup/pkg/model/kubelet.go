@@ -44,7 +44,13 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("error building kubelet config: %v", err)
 	}
 
-	b.buildSysConfig(c, kubeletConfig)
+	{
+		t, err := b.buildSystemdEnvironmentFile(kubeletConfig)
+		if err != nil {
+			return err
+		}
+		c.AddTask(t)
+	}
 
 	// Add kubelet file itself (as an asset)
 	{
@@ -103,13 +109,22 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-// buildSysConfig adds a task to create a sysconfig file for kubelet
-func (b *KubeletBuilder) buildSysConfig(c *fi.ModelBuilderContext, kubeletConfig *kops.KubeletConfigSpec) error {
+func (b *KubeletBuilder) kubeletPath() string {
+	kubeletCommand := "/usr/local/bin/kubelet"
+	if b.Distribution == distros.DistributionCoreOS {
+		kubeletCommand = "/opt/kubernetes/bin/kubelet"
+	}
+	if b.Distribution == distros.DistributionContainerOS {
+		kubeletCommand = "/home/kubernetes/bin/kubelet"
+	}
+	return kubeletCommand
+}
 
-	// TODO: Dump this - just complexity!
+func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
+	// TODO: Dump the separate file for flags - just complexity!
 	flags, err := flagbuilder.BuildFlags(kubeletConfig)
 	if err != nil {
-		return fmt.Errorf("error building kubelet flags: %v", err)
+		return nil, fmt.Errorf("error building kubelet flags: %v", err)
 	}
 
 	// Add cloud config file if needed
@@ -129,19 +144,7 @@ func (b *KubeletBuilder) buildSysConfig(c *fi.ModelBuilderContext, kubeletConfig
 		Contents: fi.NewStringResource(sysconfig),
 		Type:     nodetasks.FileType_File,
 	}
-	c.AddTask(t)
-	return nil
-}
-
-func (b *KubeletBuilder) kubeletPath() string {
-	kubeletCommand := "/usr/local/bin/kubelet"
-	if b.Distribution == distros.DistributionCoreOS {
-		kubeletCommand = "/opt/kubernetes/bin/kubelet"
-	}
-	if b.Distribution == distros.DistributionContainerOS {
-		kubeletCommand = "/home/kubernetes/bin/kubelet"
-	}
-	return kubeletCommand
+	return t, nil
 }
 
 func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
