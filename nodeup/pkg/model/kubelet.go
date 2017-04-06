@@ -94,7 +94,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.UsesCNI {
 		t := &nodetasks.File{
-			Path: "/etc/cni/net.d/",
+			Path: b.CNIConfDir(),
 			Type: nodetasks.FileType_Directory,
 		}
 		c.AddTask(t)
@@ -135,7 +135,10 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --cloud-config=" + CloudConfigFilePath
 	}
 
-	flags += " --network-plugin-dir=" + b.NetworkPluginDir()
+	if b.UsesCNI {
+		flags += " --cni-bin-dir=" + b.CNIBinDir()
+		flags += " --cni-conf-dir=" + b.CNIConfDir()
+	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
 
