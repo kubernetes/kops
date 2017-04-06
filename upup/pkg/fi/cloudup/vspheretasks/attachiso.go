@@ -91,7 +91,13 @@ func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *At
 	dir, err := ioutil.TempDir("", *changes.VM.Name)
 	defer os.RemoveAll(dir)
 
-	isoFile, err := createISO(changes, startupStr, dir, t.Cloud.CoreDNSServer)
+	// Need this in cloud config file for vSphere CloudProvider
+	vmUUID, err := t.Cloud.FindVMUUID(changes.VM.Name)
+	if err != nil {
+		return err
+	}
+
+	isoFile, err := createISO(changes, startupStr, dir, t.Cloud.CoreDNSServer, vmUUID)
 	if err != nil {
 		glog.Errorf("Failed to createISO for vspheretasks, err: %v", err)
 		return err
@@ -105,7 +111,7 @@ func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *At
 	return nil
 }
 
-func createUserData(startupStr string, dir string, dnsServer string) error {
+func createUserData(startupStr string, dir string, dnsServer string, vmUUID string) error {
 	// Update the startup script to add the extra spaces for
 	// indentation when copied to the user-data file.
 	strArray := strings.Split(startupStr, "\n")
@@ -130,6 +136,9 @@ func createUserData(startupStr string, dir string, dnsServer string) error {
 	lines = append(lines, "       resolvconf -u")
 	dnsUpdateStr := strings.Join(lines, "\n")
 	data = strings.Replace(data, "$DNS_SCRIPT", dnsUpdateStr, -1)
+
+	vmUUIDStr := "       " + vmUUID + "\n"
+	data = strings.Replace(data, "$VM_UUID", vmUUIDStr, -1)
 
 	userDataFile := filepath.Join(dir, "user-data")
 	glog.V(4).Infof("User data file content: %s", data)
@@ -156,8 +165,8 @@ func createMetaData(dir string, vmName string) error {
 	return nil
 }
 
-func createISO(changes *AttachISO, startupStr string, dir string, dnsServer string) (string, error) {
-	err := createUserData(startupStr, dir, dnsServer)
+func createISO(changes *AttachISO, startupStr string, dir string, dnsServer string, vmUUID string) (string, error) {
+	err := createUserData(startupStr, dir, dnsServer, vmUUID)
 	if err != nil {
 		return "", err
 	}

@@ -298,6 +298,37 @@ func (c *VSphereCloud) UploadAndAttachISO(vm *string, isoFile string) error {
 
 }
 
+// Returns VM's instance uuid
+func (c *VSphereCloud) FindVMUUID(vm *string) (string, error) {
+	f := find.NewFinder(c.Client.Client, true)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	dc, err := f.Datacenter(ctx, c.Datacenter)
+	if err != nil {
+		return "", err
+	}
+	f.SetDatacenter(dc)
+
+	vmRef, err := f.VirtualMachine(ctx, *vm)
+	if err != nil {
+		return "", err
+	}
+
+	var refs []types.ManagedObjectReference
+	refs = append(refs, vmRef.Reference())
+	var vmResult mo.VirtualMachine
+
+	pc := property.DefaultCollector(c.Client.Client)
+	err = pc.RetrieveOne(ctx, vmRef.Reference(), []string{"config.uuid"}, &vmResult)
+	if err != nil {
+		return "", err
+	}
+	glog.V(4).Infof("vm property collector result :%+v\n", vmResult)
+	glog.V(3).Infof("retrieved vm uuid as %q for vm %q", vmResult.Config.Uuid, *vm)
+	return vmResult.Config.Uuid, nil
+}
+
 func getCloudInitFileName(vmName string) string {
 	return vmName + "/" + cloudInitFile
 }
