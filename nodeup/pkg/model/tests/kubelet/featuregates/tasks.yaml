@@ -1,4 +1,4 @@
 contents: |
-  DAEMON_ARGS="--feature-gates=AllowExtTrafficLocalEndpoints=false,ExperimentalCriticalPodAnnotation=true --node-labels=kubernetes.io/role=node,node-role.kubernetes.io/node= --network-plugin-dir=/opt/cni/bin/"
+  DAEMON_ARGS="--feature-gates=AllowExtTrafficLocalEndpoints=false,ExperimentalCriticalPodAnnotation=true --node-labels=kubernetes.io/role=node,node-role.kubernetes.io/node="
 path: /etc/sysconfig/kubelet
 type: file
