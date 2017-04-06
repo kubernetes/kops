@@ -76,6 +76,7 @@ NODE_ZONES=${NODE_ZONES:-"us-west-2a,us-west-2b,us-west-2c"}
 NODE_SIZE=${NODE_SIZE:-m4.xlarge}
 MASTER_ZONES=${MASTER_ZONES:-"us-west-2a,us-west-2b,us-west-2c"}
 MASTER_SIZE=${MASTER_SIZE:-m4.large}
+KOPS_CREATE=${KOPS_CREATE:-yes}
 
 
 # NETWORK
@@ -90,14 +91,17 @@ cd $KOPS_DIRECTORY/..
 GIT_VER=git-$(git describe --always)
 [ -z "$GIT_VER" ] && echo "we do not have GIT_VER something is very wrong" && exit 1;
 
-
 echo ==========
 echo "Starting build"
 
-make ci && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
+export CI=1
+make && make test && S3_BUCKET=s3://${NODEUP_BUCKET} make upload
 
-KOPS_CHANNEL=$(kops version | awk '{ print $2 }')
+KOPS_CHANNEL=$(kops version | awk '{ print $2 }' |sed 's/\+/%2B/')
 KOPS_BASE_URL="http://${NODEUP_BUCKET}.s3.amazonaws.com/kops/${KOPS_CHANNEL}/"
+
+echo "KOPS_BASE_URL=${KOPS_BASE_URL}"
+echo "NODEUP_URL=${KOPS_BASE_URL}linux/amd64/nodeup"
 
 echo ==========
 echo "Deleting cluster ${CLUSTER_NAME}. Elle est finie."
@@ -111,25 +115,21 @@ kops delete cluster \
 echo ==========
 echo "Creating cluster ${CLUSTER_NAME}"
 
-NODEUP_URL=${KOPS_BASE_URL}linux/amd64/nodeup \
-KOPS_BASE_URL=${KOPS_BASE_URL} \
-kops create cluster \
-  --name $CLUSTER_NAME \
-  --state $KOPS_STATE_STORE \
-  --node-count $NODE_COUNT \
-  --zones $NODE_ZONES \
-  --master-zones $MASTER_ZONES \
-  --cloud aws \
-  --node-size $NODE_SIZE \
-  --master-size $MASTER_SIZE \
-  -v $VERBOSITY \
-  --image $IMAGE \
-  --kubernetes-version "1.5.2" \
-  --topology $TOPOLOGY \
-  --networking $NETWORKING \
-  --bastion="true" \
-  --yes
+kops_command="NODEUP_URL=${KOPS_BASE_URL}linux/amd64/nodeup KOPS_BASE_URL=${KOPS_BASE_URL} kops create cluster --name $CLUSTER_NAME --state $KOPS_STATE_STORE --node-count $NODE_COUNT --zones $NODE_ZONES --master-zones $MASTER_ZONES --node-size $NODE_SIZE --master-size $MASTER_SIZE -v $VERBOSITY --image $IMAGE --channel alpha --topology $TOPOLOGY --networking $NETWORKING"
 
+if [[ $TOPOLOGY == "private" ]]; then
+  kops_command+=" --bastion='true'"
+fi
+
+if [ -n "${KOPS_FEATURE_FLAGS+x}" ]; then 
+  kops_command=KOPS_FEATURE_FLAGS="${KOPS_FEATURE_FLAGS}" $kops_command
+fi
+
+if [[ $KOPS_CREATE == "yes" ]]; then 
+  kops_command="$kops_command --yes"
+fi
+
+eval $kops_command
 
 echo ==========
 echo "Your k8s cluster ${CLUSTER_NAME}, awaits your bidding."
