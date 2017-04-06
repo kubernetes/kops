@@ -14,18 +14,22 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"io"
 )
 
-// applyCmd represents the apply command
-var applyCmd = &cobra.Command{
-	Use:   "apply",
-	Short: "apply resources from a channel",
-}
+func NewCmdGet(f Factory, out io.Writer) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:        "get",
+		SuggestFor: []string{"list"},
+		Short:      "list or get objects",
+	}
 
-func init() {
-	rootCommand.AddCommand(applyCmd)
+	// create subcommands
+	cmd.AddCommand(NewCmdGetAddons(f, out))
+
+	return cmd
 }

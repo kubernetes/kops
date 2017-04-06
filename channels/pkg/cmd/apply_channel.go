@@ -14,11 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package cmd
 
 import (
 	"fmt"
+	"github.com/blang/semver"
 	"github.com/spf13/cobra"
+	"io"
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/util/pkg/tables"
 	"net/url"
@@ -26,38 +28,54 @@ import (
 	"strings"
 )
 
-type ApplyChannelCmd struct {
+type ApplyChannelOptions struct {
 	Yes   bool
 	Files []string
 }
 
-var applyChannel ApplyChannelCmd
+func NewCmdApplyChannel(f Factory, out io.Writer) *cobra.Command {
+	var options ApplyChannelOptions
 
-func init() {
 	cmd := &cobra.Command{
 		Use:   "channel",
 		Short: "Apply channel",
-		Run: func(cmd *cobra.Command, args []string) {
-			err := applyChannel.Run(args)
-			if err != nil {
-				exitWithError(err)
-			}
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return RunApplyChannel(f, out, &options, args)
 		},
 	}
 
-	cmd.Flags().BoolVar(&applyChannel.Yes, "yes", false, "Apply update")
-	cmd.Flags().StringSliceVar(&applyChannel.Files, "f", []string{}, "Apply from a local file")
+	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Apply update")
+	cmd.Flags().StringSliceVar(&options.Files, "f", []string{}, "Apply from a local file")
 
-	applyCmd.AddCommand(cmd)
+	return cmd
 }
 
-func (c *ApplyChannelCmd) Run(args []string) error {
-	k8sClient, err := rootCommand.KubernetesClient()
+func RunApplyChannel(f Factory, out io.Writer, options *ApplyChannelOptions, args []string) error {
+	k8sClient, err := f.KubernetesClient()
 	if err != nil {
 		return err
 	}
 
-	var addons []*channels.Addon
+	kubernetesVersionInfo, err := k8sClient.Discovery().ServerVersion()
+	if err != nil {
+		return fmt.Errorf("error querying kubernetes version: %v", err)
+	}
+
+	//kubernetesVersion, err := semver.Parse(kubernetesVersionInfo.Major + "." + kubernetesVersionInfo.Minor + ".0")
+	//if err != nil {
+	//	return fmt.Errorf("cannot parse kubernetes version %q", kubernetesVersionInfo.Major+"."+kubernetesVersionInfo.Minor + ".0")
+	//}
+
+	kubernetesVersion, err := semver.ParseTolerant(kubernetesVersionInfo.GitVersion)
+	if err != nil {
+		return fmt.Errorf("cannot parse kubernetes version %q", kubernetesVersionInfo.GitVersion)
+	}
+
+	// Remove Pre and Patch, as they make semver comparisons impractical
+	kubernetesVersion.Pre = nil
+
+	menu := channels.NewAddonMenu()
+
 	for _, name := range args {
 		location, err := url.Parse(name)
 		if err != nil {
@@ -80,14 +98,14 @@ func (c *ApplyChannelCmd) Run(args []string) error {
 			return fmt.Errorf("error loading channel %q: %v", location, err)
 		}
 
-		current, err := o.GetCurrent()
+		current, err := o.GetCurrent(kubernetesVersion)
 		if err != nil {
 			return fmt.Errorf("error processing latest versions in %q: %v", location, err)
 		}
-		addons = append(addons, current...)
+		menu.Merge(current)
 	}
 
-	for _, f := range c.Files {
+	for _, f := range options.Files {
 		location, err := url.Parse(f)
 		if err != nil {
 			return fmt.Errorf("unable to parse argument %q as url", f)
@@ -108,16 +126,16 @@ func (c *ApplyChannelCmd) Run(args []string) error {
 			return fmt.Errorf("error loading file %q: %v", f, err)
 		}
 
-		current, err := o.GetCurrent()
+		current, err := o.GetCurrent(kubernetesVersion)
 		if err != nil {
 			return fmt.Errorf("error processing latest versions in %q: %v", f, err)
 		}
-		addons = append(addons, current...)
+		menu.Merge(current)
 	}
 
 	var updates []*channels.AddonUpdate
 	var needUpdates []*channels.Addon
-	for _, addon := range addons {
+	for _, addon := range menu.Addons {
 		// TODO: Cache lookups to prevent repeated lookups?
 		update, err := addon.GetRequiredUpdates(k8sClient)
 		if err != nil {
@@ -165,7 +183,7 @@ func (c *ApplyChannelCmd) Run(args []string) error {
 		}
 	}
 
-	if !c.Yes {
+	if !options.Yes {
 		fmt.Printf("\nMust specify --yes to update\n")
 		return nil
 	}
@@ -178,7 +196,7 @@ func (c *ApplyChannelCmd) Run(args []string) error {
 		// Could have been a concurrent request
 		if update != nil {
 			if update.NewVersion.Version != nil {
-				fmt.Printf("Updated %q to %v\n", update.Name, *update.NewVersion.Version)
+				fmt.Printf("Updated %q to %s\n", update.Name, *update.NewVersion.Version)
 			} else {
 				fmt.Printf("Updated %q\n", update.Name)
 			}
