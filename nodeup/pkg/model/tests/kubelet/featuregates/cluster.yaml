@@ -19,24 +19,9 @@ spec:
       name: master-us-test-1a
     name: events
   kubelet:
-    allowPrivileged: true
-    apiServers: https://api.internal.minimal.example.com
-    babysitDaemons: true
-    cgroupRoot: docker
-    cloudProvider: aws
-    clusterDNS: 100.64.0.10
-    clusterDomain: cluster.local
-    enableDebuggingHandlers: true
-    evictionHard: memory.available<100Mi,nodefs.available<10%,nodefs.inodesFree<5%,imagefs.available<10%,imagefs.inodesFree<5%
-    hostnameOverride: '@aws'
-    logLevel: 2
-    networkPluginName: cni
-    nonMasqueradeCIDR: 100.64.0.0/10
-    podManifestPath: /etc/kubernetes/manifests
     featureGates:
       ExperimentalCriticalPodAnnotation: "true"
-# You cannot test two since in the output the order is not guaranteed
-#     AllowExtTrafficLocalEndpoints: "false"
+      AllowExtTrafficLocalEndpoints: "false"
   kubernetesVersion: v1.5.0
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
@@ -54,6 +39,7 @@ spec:
     name: us-test-1a
     type: Public
     zone: us-test-1a
+
 ---
 
 apiVersion: kops/v1alpha2
