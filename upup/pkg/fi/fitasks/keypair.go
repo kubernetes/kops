@@ -163,7 +163,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	if createCertificate {
 		glog.V(2).Infof("Creating PKI keypair %q", name)
 
-		cert, privateKey, err := c.Keystore.FindKeypair(name)
+		_, privateKey, err := c.Keystore.FindKeypair(name)
 		if err != nil {
 			return err
 		}
@@ -178,7 +178,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			}
 		}
 
-		cert, err = c.Keystore.CreateKeypair(name, template, privateKey)
+		cert, err := c.Keystore.CreateKeypair(name, template, privateKey)
 		if err != nil {
 			return err
 		}
