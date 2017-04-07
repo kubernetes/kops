@@ -23,7 +23,9 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"io"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
@@ -44,12 +46,15 @@ var (
 	get_instancegroups_short = i18n.T(`Get one or many instancegroups`)
 )
 
-type GetInstanceGroupsCmd struct {
+type GetInstanceGroupsOptions struct {
+	*GetOptions
 }
 
-var getInstanceGroupsCmd GetInstanceGroupsCmd
+func NewCmdGetInstanceGroups(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
+	options := GetInstanceGroupsOptions{
+		GetOptions: getOptions,
+	}
 
-func init() {
 	cmd := &cobra.Command{
 		Use:     "instancegroups",
 		Aliases: []string{"instancegroup", "ig"},
@@ -57,17 +62,17 @@ func init() {
 		Long:    get_instancegroups_long,
 		Example: get_instancegroups_example,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := getInstanceGroupsCmd.Run(args)
+			err := RunGetInstanceGroups(&options, args)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	getCmd.cobraCommand.AddCommand(cmd)
+	return cmd
 }
 
-func (c *GetInstanceGroupsCmd) Run(args []string) error {
+func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) error {
 	out := os.Stdout
 
 	clusterName := rootCommand.ClusterName()
@@ -113,7 +118,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 		return nil
 	}
 
-	switch getCmd.output {
+	switch options.output {
 
 	case OutputTable:
 		t := &tables.Table{}
@@ -156,7 +161,7 @@ func (c *GetInstanceGroupsCmd) Run(args []string) error {
 			}
 		}
 	default:
-		return fmt.Errorf("Unknown output format: %q", getCmd.output)
+		return fmt.Errorf("Unknown output format: %q", options.output)
 	}
 	return nil
 }

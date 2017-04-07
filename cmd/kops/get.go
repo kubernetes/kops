@@ -23,6 +23,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/util/i18n"
@@ -54,21 +55,8 @@ var (
 	get_short = i18n.T(`Get one or many resources.`)
 )
 
-// GetCmd represents the get command
-type GetCmd struct {
+type GetOptions struct {
 	output string
-
-	cobraCommand *cobra.Command
-}
-
-var getCmd = GetCmd{
-	cobraCommand: &cobra.Command{
-		Use:        "get",
-		SuggestFor: []string{"list"},
-		Short:      get_short,
-		Long:       get_long,
-		Example:    get_example,
-	},
 }
 
 const (
@@ -77,12 +65,26 @@ const (
 	OutputJSON  = "json"
 )
 
-func init() {
-	cmd := getCmd.cobraCommand
+func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &GetOptions{}
 
-	rootCommand.AddCommand(cmd)
+	cmd := &cobra.Command{
+		Use:        "get",
+		SuggestFor: []string{"list"},
+		Short:      get_short,
+		Long:       get_long,
+		Example:    get_example,
+	}
 
-	cmd.PersistentFlags().StringVarP(&getCmd.output, "output", "o", OutputTable, "output format.  One of: table, yaml, json")
+	cmd.PersistentFlags().StringVarP(&options.output, "output", "o", OutputTable, "output format.  One of: table, yaml, json")
+
+	// create subcommands
+	cmd.AddCommand(NewCmdGetCluster(f, out, options))
+	cmd.AddCommand(NewCmdGetFederations(f, out, options))
+	cmd.AddCommand(NewCmdGetInstanceGroups(f, out, options))
+	cmd.AddCommand(NewCmdGetSecrets(f, out, options))
+
+	return cmd
 }
 
 type marshalFunc func(obj runtime.Object) ([]byte, error)
