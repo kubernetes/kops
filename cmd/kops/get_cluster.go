@@ -26,6 +26,7 @@ import (
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
@@ -48,6 +49,8 @@ var (
 )
 
 type GetClusterOptions struct {
+	*GetOptions
+
 	// FullSpec determines if we should output the completed (fully populated) spec
 	FullSpec bool
 
@@ -55,8 +58,10 @@ type GetClusterOptions struct {
 	ClusterNames []string
 }
 
-func init() {
-	var options GetClusterOptions
+func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
+	options := GetClusterOptions{
+		GetOptions: getOptions,
+	}
 
 	cmd := &cobra.Command{
 		Use:     "clusters",
@@ -86,7 +91,7 @@ func init() {
 
 	cmd.Flags().BoolVar(&options.FullSpec, "full", options.FullSpec, "Show fully populated configuration")
 
-	getCmd.cobraCommand.AddCommand(cmd)
+	return cmd
 }
 
 func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) error {
@@ -135,7 +140,7 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		}
 	}
 
-	switch getCmd.output {
+	switch options.output {
 	case OutputTable:
 
 		t := &tables.Table{}
@@ -176,7 +181,7 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		return nil
 
 	default:
-		return fmt.Errorf("Unknown output format: %q", getCmd.output)
+		return fmt.Errorf("Unknown output format: %q", options.output)
 	}
 }
 
