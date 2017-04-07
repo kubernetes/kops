@@ -144,3 +144,15 @@ func (m *MockEC2) DescribeVpcAttribute(request *ec2.DescribeVpcAttributeInput) (
 
 	return response, nil
 }
+
+func (m *MockEC2) DescribeInternetGatewaysRequest(*ec2.DescribeInternetGatewaysInput) (*request.Request, *ec2.DescribeInternetGatewaysOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeInternetGateways(*ec2.DescribeInternetGatewaysInput) (*ec2.DescribeInternetGatewaysOutput, error) {
+	return &ec2.DescribeInternetGatewaysOutput{
+		InternetGateways: []*ec2.InternetGateway{{
+			InternetGatewayId: aws.String("fake-ig"),
+		}},
+	}, nil
+}
