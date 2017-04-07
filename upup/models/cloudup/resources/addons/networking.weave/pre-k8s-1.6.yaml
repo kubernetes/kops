@@ -10,7 +10,6 @@ spec:
     metadata:
       labels:
         name: weave-net
-        role.kubernetes.io/networking: "1"
       annotations:
         scheduler.alpha.kubernetes.io/tolerations: |
           [
@@ -26,7 +25,7 @@ spec:
       hostPID: true
       containers:
         - name: weave
-          image: weaveworks/weave-kube:1.9.2
+          image: weaveworks/weave-kube:1.9.4
           command:
             - /home/weave/launch.sh
           livenessProbe:
@@ -58,7 +57,7 @@ spec:
               cpu: 100m
               memory: 200Mi
         - name: weave-npc
-          image: weaveworks/weave-npc:1.9.2
+          image: weaveworks/weave-npc:1.9.4
           resources:
             requests:
               cpu: 100m

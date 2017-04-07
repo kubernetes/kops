@@ -21,7 +21,6 @@ import (
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -72,11 +71,6 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	addons := &channelsapi.Addons{}
 	addons.Kind = "Addons"
 	addons.ObjectMeta.Name = "bootstrap"
-
-	kv, err := util.ParseKubernetesVersion(b.cluster.Spec.KubernetesVersion)
-	if err != nil {
-		return nil, nil, fmt.Errorf("unable to determine kubernetes version from %q", b.cluster.Spec.KubernetesVersion)
-	}
 
 	{
 		key := "core.addons.k8s.io"
@@ -206,11 +200,14 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	// TODO: Create "empty" configurations for others, so we can delete e.g. the kopeio configuration
 	// if we switch to kubenet?
 
+	// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
+
+	networkingSelector := map[string]string{"role.kubernetes.io/networking": "1"}
+
 	if b.cluster.Spec.Networking.Kopeio != nil {
 		key := "networking.kope.io"
 		version := "1.0.20161116"
 
-		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 		location := key + "/v" + version + ".yaml"
 
 		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
@@ -225,32 +222,43 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
-		var version string
-		switch {
-		case kv.Major == 1 && kv.Minor <= 5:
-			version = "1.9.3"
-		default:
-			version = "1.9.4"
+		version := "1.9.4"
+
+		{
+			location := key + "/pre-k8s-1.6.yaml"
+			id := "pre-k8s-1.6"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          networkingSelector,
+				Manifest:          fi.String(location),
+				KubernetesVersion: "<1.6.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
 		}
 
-		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
-		location := key + "/v" + version + ".yaml"
+		{
+			location := key + "/k8s-1.6.yaml"
+			id := "k8s-1.6"
 
-		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-			Name:     fi.String(key),
-			Version:  fi.String(version),
-			Selector: map[string]string{"role.kubernetes.io/networking": "1"},
-			Manifest: fi.String(location),
-		})
-
-		manifests[key] = "addons/" + location
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          networkingSelector,
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.6.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
 	}
 
 	if b.cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
 		version := "0.7.0"
 
-		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 		location := key + "/v" + version + ".yaml"
 
 		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
@@ -267,7 +275,6 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		key := "networking.projectcalico.org"
 		version := "2.0.2"
 
-		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 		location := key + "/v" + version + ".yaml"
 
 		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
@@ -284,7 +291,6 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		key := "networking.projectcalico.org.canal"
 		version := "1.0"
 
-		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 		location := key + "/v" + version + ".yaml"
 
 		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
