@@ -102,6 +102,16 @@ func TestPrivateKopeio(t *testing.T) {
 	runTest(t, "privatekopeio.example.com", "../../tests/integration/privatekopeio", "v1alpha2", true, 1)
 }
 
+// TestPrivateDns runs the test on a configuration with private topology, private dns
+func TestPrivateDns1(t *testing.T) {
+	runTest(t, "privatedns1.example.com", "../../tests/integration/privatedns1", "v1alpha2", true, 1)
+}
+
+// TestPrivateDns runs the test on a configuration with private topology, private dns, extant vpc
+func TestPrivateDns2(t *testing.T) {
+	runTest(t, "privatedns2.example.com", "../../tests/integration/privatedns2", "v1alpha2", true, 1)
+}
+
 func runTest(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int) {
 	var stdout bytes.Buffer
 
@@ -369,7 +379,28 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 	mockRoute53.MockCreateZone(&route53.HostedZone{
 		Id:   aws.String("/hostedzone/Z1AFAKE1ZON3YO"),
 		Name: aws.String("example.com."),
-	})
+		Config: &route53.HostedZoneConfig{
+			PrivateZone: aws.Bool(false),
+		},
+	}, nil)
+	mockRoute53.MockCreateZone(&route53.HostedZone{
+		Id:   aws.String("/hostedzone/Z2AFAKE1ZON3NO"),
+		Name: aws.String("internal.example.com."),
+		Config: &route53.HostedZoneConfig{
+			PrivateZone: aws.Bool(true),
+		},
+	}, []*route53.VPC{{
+		VPCId: aws.String("vpc-234"),
+	}})
+	mockRoute53.MockCreateZone(&route53.HostedZone{
+		Id:   aws.String("/hostedzone/Z3AFAKE1ZOMORE"),
+		Name: aws.String("private.example.com."),
+		Config: &route53.HostedZoneConfig{
+			PrivateZone: aws.Bool(true),
+		},
+	}, []*route53.VPC{{
+		VPCId: aws.String("vpc-123"),
+	}})
 
 	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
 		ImageId:        aws.String("ami-12345678"),
