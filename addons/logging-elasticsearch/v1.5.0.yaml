@@ -7,7 +7,7 @@ metadata:
     k8s-addon: logging-elasticsearch.addons.k8s.io
     k8s-app: fluentd-es
     kubernetes.io/cluster-service: "true"
-    version: v1.20
+    version: v1.22
 spec:
   template:
     metadata:
@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
       - name: fluentd-es
-        image: gcr.io/google_containers/fluentd-elasticsearch:1.20
+        image: gcr.io/google_containers/fluentd-elasticsearch:1.22
         command:
           - '/bin/sh'
           - '-c'
@@ -89,7 +89,7 @@ spec:
         kubernetes.io/cluster-service: "true"
     spec:
       containers:
-      - image: gcr.io/google_containers/elasticsearch:v2.4.1
+      - image: gcr.io/google_containers/elasticsearch:v2.4.1-2
         name: elasticsearch-logging
         resources:
           # need more cpu upon initialization, therefore burstable class
@@ -146,7 +146,7 @@ spec:
     spec:
       containers:
       - name: kibana-logging
-        image: gcr.io/google_containers/kibana:v4.6.1
+        image: gcr.io/google_containers/kibana:v4.6.1-1
         resources:
           # keep request = limit to keep this container in guaranteed class
           limits:
