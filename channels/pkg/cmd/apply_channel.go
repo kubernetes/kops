@@ -45,7 +45,7 @@ func NewCmdApplyChannel(f Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&options.Yes, "yes", false, "Apply update")
-	cmd.Flags().StringSliceVar(&options.Files, "f", []string{}, "Apply from a local file")
+	cmd.Flags().StringSliceVarP(&options.Files, "filename", "f", []string{}, "Apply from a local file")
 
 	return cmd
 }
