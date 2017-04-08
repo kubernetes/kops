@@ -686,7 +686,9 @@ type LeaderElectionConfiguration struct {
 
 type CloudConfiguration struct {
 	// GCE cloud-config options
-	Multizone          *bool   `json:"multizone,omitempty"`
-	NodeTags           *string `json:"nodeTags,omitempty"`
-	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
+	Multizone                   *bool   `json:"multizone,omitempty"`
+	NodeTags                    *string `json:"nodeTags,omitempty"`
+	NodeInstancePrefix          *string `json:"nodeInstancePrefix,omitempty"`
+	// AWS cloud-config options
+	DisableSecurityGroupIngress *bool   `json:"disableSecurityGroupIngress,omitempty"`
 }
