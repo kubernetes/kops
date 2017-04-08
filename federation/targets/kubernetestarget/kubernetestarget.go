@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"k8s.io/client-go/kubernetes"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/status"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
@@ -33,7 +34,8 @@ type KubernetesTarget struct {
 
 func NewKubernetesTarget(clientset simple.Clientset, keyStore fi.Keystore, cluster *kopsapi.Cluster) (*KubernetesTarget, error) {
 	var secretStore fi.SecretStore
-	kubeconfig, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore)
+	status := &status.NoopStore{}
+	kubeconfig, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, status)
 	if err != nil {
 		return nil, fmt.Errorf("error building credentials for cluster %q: %v", cluster.ObjectMeta.Name, err)
 	}
