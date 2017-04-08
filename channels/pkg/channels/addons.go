@@ -18,6 +18,7 @@ package channels
 
 import (
 	"fmt"
+	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -58,28 +59,29 @@ func ParseAddons(name string, location *url.URL, data []byte) (*Addons, error) {
 	return &Addons{ChannelName: name, ChannelLocation: *location, APIObject: apiObject}, nil
 }
 
-func (a *Addons) GetCurrent() ([]*Addon, error) {
-	all, err := a.All()
+func (a *Addons) GetCurrent(kubernetesVersion semver.Version) (*AddonMenu, error) {
+	all, err := a.wrapInAddons()
 	if err != nil {
 		return nil, err
 	}
-	specs := make(map[string]*Addon)
+
+	menu := NewAddonMenu()
 	for _, addon := range all {
+		if !addon.matches(kubernetesVersion) {
+			continue
+		}
 		name := addon.Name
-		existing := specs[name]
-		if existing == nil || addon.ChannelVersion().Replaces(existing.ChannelVersion()) {
-			specs[name] = addon
+
+		existing := menu.Addons[name]
+		if existing == nil || addon.ChannelVersion().replaces(existing.ChannelVersion()) {
+			menu.Addons[name] = addon
 		}
 	}
 
-	var addons []*Addon
-	for _, addon := range specs {
-		addons = append(addons, addon)
-	}
-	return addons, nil
+	return menu, nil
 }
 
-func (a *Addons) All() ([]*Addon, error) {
+func (a *Addons) wrapInAddons() ([]*Addon, error) {
 	var addons []*Addon
 	for _, s := range a.APIObject.Spec.Addons {
 		name := a.APIObject.ObjectMeta.Name
@@ -97,4 +99,20 @@ func (a *Addons) All() ([]*Addon, error) {
 		addons = append(addons, addon)
 	}
 	return addons, nil
+}
+
+func (s *Addon) matches(kubernetesVersion semver.Version) bool {
+	if s.Spec.KubernetesVersion != "" {
+		versionRange, err := semver.ParseRange(s.Spec.KubernetesVersion)
+		if err != nil {
+			glog.Warningf("unable to parse KubernetesVersion %q; skipping", s.Spec.KubernetesVersion)
+			return false
+		}
+		if !versionRange(kubernetesVersion) {
+			glog.V(4).Infof("Skipping version range %q that does not match current version %s", s.Spec.KubernetesVersion, kubernetesVersion)
+			return false
+		}
+	}
+
+	return true
 }
