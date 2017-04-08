@@ -14,28 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package dns
 
-import (
-	"github.com/spf13/cobra"
-	"io"
-	"k8s.io/kops/cmd/kops/util"
-)
+import "strings"
 
-type ExportOptions struct {
-}
-
-func NewCmdExport(f *util.Factory, out io.Writer) *cobra.Command {
-	//options := &ExportOptions{}
-
-	cmd := &cobra.Command{
-		Use:   "export",
-		Short: "Exports a kubecfg for target cluster.",
-		Long:  `export clusters/kubecfg`,
+// TODO: Are .local names necessarily invalid for "real DNS"? Do we need more qualification here?
+func IsGossipHostname(name string) bool {
+	normalized := "." + strings.TrimSuffix(name, ".")
+	if strings.HasSuffix(normalized, ".k8s.local") {
+		return true
 	}
-
-	// create subcommands
-	cmd.AddCommand(NewCmdExportKubecfg(f, out))
-
-	return cmd
+	return false
 }
