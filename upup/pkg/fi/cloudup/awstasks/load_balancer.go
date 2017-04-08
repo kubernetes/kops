@@ -168,7 +168,7 @@ func findLoadBalancerByAlias(cloud awsup.AWSCloud, alias *route53.AliasTarget) (
 	return found[0], nil
 }
 
-func findLoadBalancerByNameTag(cloud awsup.AWSCloud, findNameTag string) (*elb.LoadBalancerDescription, error) {
+func FindLoadBalancerByNameTag(cloud awsup.AWSCloud, findNameTag string) (*elb.LoadBalancerDescription, error) {
 	// TODO: Any way around this?
 	glog.V(2).Infof("Listing all ELBs for findLoadBalancerByNameTag")
 
@@ -271,7 +271,7 @@ func describeLoadBalancerTags(cloud awsup.AWSCloud, loadBalancerNames []string) 
 func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
-	lb, err := findLoadBalancerByNameTag(cloud, fi.StringValue(e.Name))
+	lb, err := FindLoadBalancerByNameTag(cloud, fi.StringValue(e.Name))
 	if err != nil {
 		return nil, err
 	}
