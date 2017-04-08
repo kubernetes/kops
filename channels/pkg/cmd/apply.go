@@ -14,36 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"io"
 )
 
-// GetCmd represents the get command
-type GetCmd struct {
-	output string
+func NewCmdApply(f Factory, out io.Writer) *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "apply",
+		Short: "apply resources from a channel",
+	}
 
-	cobraCommand *cobra.Command
-}
+	// create subcommands
+	cmd.AddCommand(NewCmdApplyChannel(f, out))
 
-var getCmd = GetCmd{
-	cobraCommand: &cobra.Command{
-		Use:        "get",
-		SuggestFor: []string{"list"},
-		Short:      "list or get objects",
-	},
-}
-
-const (
-	OutputYaml  = "yaml"
-	OutputTable = "table"
-)
-
-func init() {
-	cmd := getCmd.cobraCommand
-
-	rootCommand.AddCommand(cmd)
-
-	cmd.PersistentFlags().StringVarP(&getCmd.output, "output", "o", OutputTable, "output format.  One of: table, yaml")
+	return cmd
 }
