@@ -102,7 +102,7 @@ func RunApplyChannel(f Factory, out io.Writer, options *ApplyChannelOptions, arg
 		if err != nil {
 			return fmt.Errorf("error processing latest versions in %q: %v", location, err)
 		}
-		menu.Merge(current)
+		menu.MergeAddons(current)
 	}
 
 	for _, f := range options.Files {
@@ -130,7 +130,7 @@ func RunApplyChannel(f Factory, out io.Writer, options *ApplyChannelOptions, arg
 		if err != nil {
 			return fmt.Errorf("error processing latest versions in %q: %v", f, err)
 		}
-		menu.Merge(current)
+		menu.MergeAddons(current)
 	}
 
 	var updates []*channels.AddonUpdate
