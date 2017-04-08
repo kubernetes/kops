@@ -366,11 +366,6 @@ resource "aws_route53_record" "api-privatedns1-example-com" {
 resource "aws_route53_zone_association" "internal-example-com" {
   zone_id = "/hostedzone/Z2AFAKE1ZON3NO"
   vpc_id  = "${aws_vpc.privatedns1-example-com.id}"
-
-  tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "internal.example.com"
-  }
 }
 
 resource "aws_route_table" "private-us-test-1a-privatedns1-example-com" {

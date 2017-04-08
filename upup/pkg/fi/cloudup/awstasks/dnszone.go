@@ -222,7 +222,6 @@ func (_ *DNSZone) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DNSZone) error
 type terraformRoute53ZoneAssociation struct {
 	ZoneID    *terraform.Literal   `json:"zone_id"`
 	VPCID     *terraform.Literal   `json:"vpc_id"`
-	Tags      map[string]string    `json:"tags,omitempty"`
 	Lifecycle *terraform.Lifecycle `json:"lifecycle,omitempty"`
 }
 
@@ -268,7 +267,6 @@ func (_ *DNSZone) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *D
 				tf := &terraformRoute53ZoneAssociation{
 					ZoneID: terraform.LiteralFromStringValue(*e.ZoneID),
 					VPCID:  e.PrivateVPC.TerraformLink(),
-					Tags:   cloud.BuildTags(e.Name),
 				}
 				return t.RenderResource("aws_route53_zone_association", *e.Name, tf)
 			}
