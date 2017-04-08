@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -200,8 +201,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		//argv = append(argv, "--zone=*/*")
 	}
 
-	// TODO: Are .local names necessarily invalid for "real DNS"? Do we need more qualificiation here?
-	if strings.HasSuffix(t.Cluster.Spec.MasterInternalName, ".local") {
+	if dns.IsGossipHostname(t.Cluster.Spec.MasterInternalName) {
 		glog.Warningf("MasterInternalName %q implies gossip DNS", t.Cluster.Spec.MasterInternalName)
 		f.DNSProvider = fi.String("gossip")
 
