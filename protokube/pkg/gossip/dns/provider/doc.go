@@ -14,28 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
-
-import (
-	"github.com/spf13/cobra"
-	"io"
-	"k8s.io/kops/cmd/kops/util"
-)
-
-type ExportOptions struct {
-}
-
-func NewCmdExport(f *util.Factory, out io.Writer) *cobra.Command {
-	//options := &ExportOptions{}
-
-	cmd := &cobra.Command{
-		Use:   "export",
-		Short: "Exports a kubecfg for target cluster.",
-		Long:  `export clusters/kubecfg`,
-	}
-
-	// create subcommands
-	cmd.AddCommand(NewCmdExportKubecfg(f, out))
-
-	return cmd
-}
+// Package provider implements a dnsprovider backed by the gossip store.
+package provider

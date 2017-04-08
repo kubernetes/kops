@@ -21,6 +21,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	api "k8s.io/kops/pkg/apis/kops"
+	kopsdns "k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
@@ -120,14 +121,6 @@ func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	return nil
 }
 
-func isGossipDns(name string) bool {
-	normalized := "." + strings.TrimSuffix(name, ".")
-	if strings.HasSuffix(normalized, ".local") {
-		return true
-	}
-	return false
-}
-
 func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	// TODO: Move to update
 	if !featureflag.DNSPreCreate.Enabled() {
@@ -144,7 +137,7 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	{
 		var filtered []string
 		for _, name := range dnsHostnames {
-			if !isGossipDns(name) {
+			if !kopsdns.IsGossipHostname(name) {
 				filtered = append(filtered, name)
 			}
 		}
