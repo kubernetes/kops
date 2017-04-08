@@ -51,7 +51,7 @@ func NewAddonMenu() *AddonMenu {
 	}
 }
 
-func (m *AddonMenu) Merge(o *AddonMenu) {
+func (m *AddonMenu) MergeAddons(o *AddonMenu) {
 	for k, v := range o.Addons {
 		existing := m.Addons[k]
 		if existing == nil {
