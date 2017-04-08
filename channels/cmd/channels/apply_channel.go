@@ -178,7 +178,7 @@ func (c *ApplyChannelCmd) Run(args []string) error {
 		// Could have been a concurrent request
 		if update != nil {
 			if update.NewVersion.Version != nil {
-				fmt.Printf("Updated %q to %d\n", update.Name, *update.NewVersion)
+				fmt.Printf("Updated %q to %v\n", update.Name, *update.NewVersion.Version)
 			} else {
 				fmt.Printf("Updated %q\n", update.Name)
 			}
