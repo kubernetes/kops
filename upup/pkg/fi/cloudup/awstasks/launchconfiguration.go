@@ -83,6 +83,9 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		}
 		return true
 	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing AutoscalingLaunchConfigurations: %v", err)
+	}
 
 	if len(configurations) == 0 {
 		return nil, nil
