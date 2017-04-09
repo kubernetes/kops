@@ -16,8 +16,18 @@ limitations under the License.
 
 package kops
 
-import "k8s.io/kops/upup/pkg/fi/utils"
+import (
+	"k8s.io/kops/upup/pkg/fi/utils"
+)
 
+const RoleLabelName15 = "kubernetes.io/role"
+const RoleMasterLabelValue15 = "master"
+const RoleNodeLabelValue15 = "node"
+
+const RoleLabelMaster16 = "node-role.kubernetes.io/master"
+const RoleLabelNode16 = "node-role.kubernetes.io/node"
+
+// Legacy <= 1.5 names
 const RoleLabelName = "kubernetes.io/role"
 const RoleMasterLabelValue = "master"
 const RoleNodeLabelValue = "node"
@@ -46,7 +56,14 @@ func BuildKubeletConfigSpec(cluster *Cluster, instanceGroup *InstanceGroup) (*Ku
 		if c.NodeLabels == nil {
 			c.NodeLabels = make(map[string]string)
 		}
-		c.NodeLabels[RoleLabelName] = RoleMasterLabelValue
+		c.NodeLabels[RoleLabelMaster16] = ""
+		c.NodeLabels[RoleLabelName15] = RoleMasterLabelValue15
+	} else {
+		if c.NodeLabels == nil {
+			c.NodeLabels = make(map[string]string)
+		}
+		c.NodeLabels[RoleLabelNode16] = ""
+		c.NodeLabels[RoleLabelName15] = RoleNodeLabelValue15
 	}
 
 	for k, v := range instanceGroup.Spec.NodeLabels {
