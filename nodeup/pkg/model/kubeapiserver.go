@@ -61,6 +61,18 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	// Touch log file, so that docker doesn't create a directory instead
+	{
+		t := &nodetasks.File{
+			Path:        "/var/log/kube-apiserver.log",
+			Contents:    fi.NewStringResource(""),
+			Type:        nodetasks.FileType_File,
+			Mode:        s("0400"),
+			IfNotExists: true,
+		}
+		c.AddTask(t)
+	}
+
 	return nil
 }
 
