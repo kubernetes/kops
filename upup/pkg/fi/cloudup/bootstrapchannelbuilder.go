@@ -248,8 +248,13 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
-		version := "0.7.0"
-
+		var version string
+		switch {
+		case kv.Major == 1 && kv.Minor <= 5:
+			version = "0.7.0"
+		default:
+			version = "0.7.0_1.6"
+		}
 		// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 		location := key + "/v" + version + ".yaml"
 
