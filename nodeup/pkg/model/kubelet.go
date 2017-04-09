@@ -140,6 +140,11 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --cni-conf-dir=" + b.CNIConfDir()
 	}
 
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
+		// Kubenet is neither CNI nor not-CNI, so we need to pass it `--network-plugin-dir` also
+		flags += " --network-plugin-dir=" + b.CNIBinDir()
+	}
+
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
 
 	t := &nodetasks.File{
