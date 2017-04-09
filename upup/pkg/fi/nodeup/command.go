@@ -37,7 +37,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -208,7 +207,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		Architecture:  model.ArchitectureAmd64,
 		InstanceGroup: c.instanceGroup,
 		IsMaster:      nodeTags.Has(TagMaster),
-		UsesCNI:       nodeTags.Has(tags.TagCNI),
 		Assets:        assets,
 		KeyStore:      tf.keyStore,
 		SecretStore:   tf.secretStore,
