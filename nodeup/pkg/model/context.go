@@ -36,7 +36,6 @@ type NodeupModelContext struct {
 	Distribution  distros.Distribution
 
 	IsMaster bool
-	UsesCNI  bool
 
 	Assets      *fi.AssetStore
 	KeyStore    fi.CAStore
@@ -174,4 +173,12 @@ func (c *NodeupModelContext) buildPKIKubeconfig(id string) (string, error) {
 
 func (c *NodeupModelContext) IsKubernetesGTE(version string) bool {
 	return util.IsKubernetesGTE(version, c.KubernetesVersion)
+}
+
+func (c *NodeupModelContext) UsesCNI() bool {
+	networking := c.Cluster.Spec.Networking
+	if networking == nil || networking.Classic != nil {
+		return false
+	}
+	return true
 }
