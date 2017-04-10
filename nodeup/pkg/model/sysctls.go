@@ -95,10 +95,6 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"# Increase size of file handles and inode cache",
 			"fs.file-max = 2097152",
 			"",
-
-			"# Increase size of conntrack table size to avoid poor iptables performance",
-			"net.netfilter.nf_conntrack_max = 1000000",
-			"",
 		)
 	}
 

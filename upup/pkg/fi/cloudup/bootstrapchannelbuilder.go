@@ -122,25 +122,37 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "kube-dns.addons.k8s.io"
+		version := "1.6.1-alpha.2"
 
-		var version string
-		var location string
-		switch {
-		case kv.Major == 1 && kv.Minor <= 5:
-			version = "1.5.1"
-			location = key + "/k8s-1.5.yaml"
-		default:
-			version = "1.6.0"
-			location = key + "/k8s-1.6.yaml"
+		{
+			location := key + "/pre-k8s-1.6.yaml"
+			id := "pre-k8s-1.6"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: "<1.6.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
 		}
 
-		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-			Name:     fi.String(key),
-			Version:  fi.String(version),
-			Selector: map[string]string{"k8s-addon": key},
-			Manifest: fi.String(location),
-		})
-		manifests[key] = "addons/" + location
+		{
+			location := key + "/k8s-1.6.yaml"
+			id := "k8s-1.6"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.6.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
 	}
 
 	{
@@ -160,27 +172,37 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "dns-controller.addons.k8s.io"
+		version := "1.6.1-alpha.2"
 
-		var version string
-		var location string
-		switch {
-		case kv.Major == 1 && kv.Minor <= 5:
-			// This is awkward... we would like to do version 1.6.0,
-			// but if we do then we won't get the new manifest when we upgrade to 1.6.0
-			version = "1.5.3"
-			location = key + "/k8s-1.5.yaml"
-		default:
-			version = "1.6.0"
-			location = key + "/k8s-1.6.yaml"
+		{
+			location := key + "/pre-k8s-1.6.yaml"
+			id := "pre-k8s-1.6"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: "<1.6.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
 		}
 
-		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-			Name:     fi.String(key),
-			Version:  fi.String(version),
-			Selector: map[string]string{"k8s-addon": key},
-			Manifest: fi.String(location),
-		})
-		manifests[key] = "addons/" + location
+		{
+			location := key + "/k8s-1.6.yaml"
+			id := "k8s-1.6"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          map[string]string{"k8s-addon": key},
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.6.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
 	}
 
 	{

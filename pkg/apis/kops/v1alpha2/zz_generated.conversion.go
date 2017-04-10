@@ -1463,6 +1463,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.EvictionMinimumReclaim = in.EvictionMinimumReclaim
 	out.VolumePluginDirectory = in.VolumePluginDirectory
 	out.Taints = in.Taints
+	out.FeatureGates = in.FeatureGates
 	return nil
 }
 
@@ -1509,6 +1510,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.EvictionMinimumReclaim = in.EvictionMinimumReclaim
 	out.VolumePluginDirectory = in.VolumePluginDirectory
 	out.Taints = in.Taints
+	out.FeatureGates = in.FeatureGates
 	return nil
 }
 

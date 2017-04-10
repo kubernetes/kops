@@ -44,30 +44,10 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		return fmt.Errorf("error building kubelet config: %v", err)
 	}
 
-	// Add sysconfig file
 	{
-		// TODO: Dump this - just complexity!
-		flags, err := flagbuilder.BuildFlags(kubeletConfig)
+		t, err := b.buildSystemdEnvironmentFile(kubeletConfig)
 		if err != nil {
-			return fmt.Errorf("error building kubelet flags: %v", err)
-		}
-
-		// Add cloud config file if needed
-		// We build this flag differently because it depends on CloudConfig, and to expose it directly
-		// would be a degree of freedom we don't have (we'd have to write the config to different files)
-		// We can always add this later if it is needed.
-		if b.Cluster.Spec.CloudConfig != nil {
-			flags += " --cloud-config=" + CloudConfigFilePath
-		}
-
-		flags += " --network-plugin-dir=" + b.NetworkPluginDir()
-
-		sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
-
-		t := &nodetasks.File{
-			Path:     "/etc/sysconfig/kubelet",
-			Contents: fi.NewStringResource(sysconfig),
-			Type:     nodetasks.FileType_File,
+			return err
 		}
 		c.AddTask(t)
 	}
@@ -77,6 +57,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		// TODO: Extract to common function?
 		assetName := "kubelet"
 		assetPath := ""
+		// TODO make Find call to an interface, we cannot mock out this function because it finds a file on disk
 		asset, err := b.Assets.Find(assetName, assetPath)
 		if err != nil {
 			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
@@ -113,7 +94,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.UsesCNI {
 		t := &nodetasks.File{
-			Path: "/etc/cni/net.d/",
+			Path: b.CNIConfDir(),
 			Type: nodetasks.FileType_Directory,
 		}
 		c.AddTask(t)
@@ -137,6 +118,36 @@ func (b *KubeletBuilder) kubeletPath() string {
 		kubeletCommand = "/home/kubernetes/bin/kubelet"
 	}
 	return kubeletCommand
+}
+
+func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
+	// TODO: Dump the separate file for flags - just complexity!
+	flags, err := flagbuilder.BuildFlags(kubeletConfig)
+	if err != nil {
+		return nil, fmt.Errorf("error building kubelet flags: %v", err)
+	}
+
+	// Add cloud config file if needed
+	// We build this flag differently because it depends on CloudConfig, and to expose it directly
+	// would be a degree of freedom we don't have (we'd have to write the config to different files)
+	// We can always add this later if it is needed.
+	if b.Cluster.Spec.CloudConfig != nil {
+		flags += " --cloud-config=" + CloudConfigFilePath
+	}
+
+	if b.UsesCNI {
+		flags += " --cni-bin-dir=" + b.CNIBinDir()
+		flags += " --cni-conf-dir=" + b.CNIConfDir()
+	}
+
+	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
+
+	t := &nodetasks.File{
+		Path:     "/etc/sysconfig/kubelet",
+		Contents: fi.NewStringResource(sysconfig),
+		Type:     nodetasks.FileType_File,
+	}
+	return t, nil
 }
 
 func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
