@@ -77,7 +77,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v1.0.2
+          image: calico/node:v1.1.1
           resources:
             requests:
               cpu: 10m
@@ -116,7 +116,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v1.5.6
+          image: calico/cni:v1.6.1
           resources:
             requests:
               cpu: 10m
@@ -189,7 +189,7 @@ spec:
       hostNetwork: true
       containers:
         - name: calico-policy-controller
-          image: calico/kube-policy-controller:v0.5.2
+          image: calico/kube-policy-controller:v0.5.4
           resources:
             requests:
               cpu: 10m
@@ -237,7 +237,7 @@ spec:
       containers:
         # Writes basic configuration to datastore.
         - name: configure-calico
-          image: calico/ctl:v1.0.2
+          image: calico/ctl:v1.1.1
           args:
           - apply
           - -f
