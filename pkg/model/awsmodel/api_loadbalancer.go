@@ -24,8 +24,10 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
 
 const LoadBalancerDefaultIdleTimeout = 5 * time.Minute
@@ -183,6 +185,18 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Protocol:      s("tcp"),
 		}
 		c.AddTask(t)
+	}
+
+	if dns.IsGossipHostname(b.Cluster.Name) {
+		// Ensure the ELB hostname is included in the TLS certificate,
+		// if we're not going to use an alias for it
+		// TODO: I don't love this technique for finding the task by name & modifying it
+		masterKeypairTask, found := c.Tasks["Keypair/master"]
+		if !found {
+			return fmt.Errorf("keypair/master task not found")
+		}
+		masterKeypair := masterKeypairTask.(*fitasks.Keypair)
+		masterKeypair.AlternateNameTasks = append(masterKeypair.AlternateNameTasks, elb)
 	}
 
 	for _, ig := range b.MasterInstanceGroups() {

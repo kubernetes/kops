@@ -388,6 +388,26 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	return actual, nil
 }
 
+var _ fi.HasAddress = &LoadBalancer{}
+
+func (e *LoadBalancer) FindIPAddress(context *fi.Context) (*string, error) {
+	cloud := context.Cloud.(awsup.AWSCloud)
+
+	lb, err := FindLoadBalancerByNameTag(cloud, fi.StringValue(e.Name))
+	if err != nil {
+		return nil, err
+	}
+	if lb == nil {
+		return nil, nil
+	}
+
+	lbDnsName := fi.StringValue(lb.DNSName)
+	if lbDnsName == "" {
+		return nil, nil
+	}
+	return &lbDnsName, nil
+}
+
 func (e *LoadBalancer) Run(c *fi.Context) error {
 	// TODO: Make Normalize a standard method
 	e.Normalize()
