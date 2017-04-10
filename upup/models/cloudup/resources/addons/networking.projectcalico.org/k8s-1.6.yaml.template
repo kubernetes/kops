@@ -72,6 +72,7 @@ spec:
         role.kubernetes.io/networking: "1"
     spec:
       hostNetwork: true
+      serviceAccountName: calico
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -189,6 +190,7 @@ spec:
       # The policy controller must run in the host network namespace so that
       # it isn't governed by policy that would prevent it from working.
       hostNetwork: true
+      serviceAccountName: calico
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -237,6 +239,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       hostNetwork: true
+      serviceAccountName: calico
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -268,3 +271,57 @@ spec:
            items:
             - key: ippool.yaml
               path: calico/ippool.yaml
+
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: calico
+  labels:
+    role.kubernetes.io/networking: "1"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - namespaces
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - networkpolicies
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: calico
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: calico
+  labels:
+    role.kubernetes.io/networking: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: calico
+subjects:
+- kind: ServiceAccount
+  name: calico
+  namespace: kube-system
