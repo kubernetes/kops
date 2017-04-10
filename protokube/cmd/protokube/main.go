@@ -204,16 +204,16 @@ func run() error {
 
 	var dnsProvider protokube.DNSProvider
 	if dnsProviderId == "gossip" {
-		//dnsTarget := &gossipdns.HostsFile{
-		//	Path: path.Join(rootfs, "etc/hosts"),
-		//}
-
-		dnsTarget := &gossipdns.DockerHostsFile{
-			HostsFile: gossipdns.HostsFile{
-				Path: path.Join(rootfs, "etc/hosts"),
-			},
-			ContainersPath: path.Join("rootfs", "/var/lib/docker/containers"),
+		dnsTarget := &gossipdns.HostsFile{
+			Path: path.Join(rootfs, "etc/hosts"),
 		}
+
+		//dnsTarget := &gossipdns.DockerHostsFile{
+		//	HostsFile: gossipdns.HostsFile{
+		//		Path: path.Join(rootfs, "etc/hosts"),
+		//	},
+		//	ContainersPath: path.Join("rootfs", "/var/lib/docker/containers"),
+		//}
 
 		var gossipSeeds gossip.SeedProvider
 		var err error
