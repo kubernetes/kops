@@ -18,9 +18,7 @@ package model
 
 import (
 	"k8s.io/apiserver/pkg/authentication/user"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
 
