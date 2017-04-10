@@ -92,7 +92,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	if b.UsesCNI {
+	if b.UsesCNI() {
 		t := &nodetasks.File{
 			Path: b.CNIConfDir(),
 			Type: nodetasks.FileType_Directory,
@@ -135,7 +135,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --cloud-config=" + CloudConfigFilePath
 	}
 
-	if b.UsesCNI {
+	if b.UsesCNI() {
 		flags += " --cni-bin-dir=" + b.CNIBinDir()
 		flags += " --cni-conf-dir=" + b.CNIConfDir()
 	}
