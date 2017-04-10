@@ -61,6 +61,7 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: canal
+    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
