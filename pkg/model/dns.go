@@ -33,6 +33,10 @@ type DNSModelBuilder struct {
 var _ fi.ModelBuilder = &DNSModelBuilder{}
 
 func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
+	if dns.IsGossipHostname(b.Cluster.Name) {
+		return nil
+	}
+
 	// Configuration for a DNS zone
 	dnsZone := &awstasks.DNSZone{
 		Name: s(b.NameForDNSZone()),
@@ -88,17 +92,19 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// This will point our DNS to the load balancer, and put the pieces
 		// together for kubectl to be work
 
-		if err := b.ensureDNSZone(c); err != nil {
-			return err
-		}
+		if !dns.IsGossipHostname(b.Cluster.Name) {
+			if err := b.ensureDNSZone(c); err != nil {
+				return err
+			}
 
-		apiDnsName := &awstasks.DNSName{
-			Name:               s(b.Cluster.Spec.MasterPublicName),
-			Zone:               b.LinkToDNSZone(),
-			ResourceType:       s("A"),
-			TargetLoadBalancer: b.LinkToELB("api"),
+			apiDnsName := &awstasks.DNSName{
+				Name:               s(b.Cluster.Spec.MasterPublicName),
+				Zone:               b.LinkToDNSZone(),
+				ResourceType:       s("A"),
+				TargetLoadBalancer: b.LinkToELB("api"),
+			}
+			c.AddTask(apiDnsName)
 		}
-		c.AddTask(apiDnsName)
 	}
 
 	if b.UsesBastionDns() {
