@@ -72,6 +72,11 @@ spec:
         role.kubernetes.io/networking: "1"
     spec:
       hostNetwork: true
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: CriticalAddonsOnly
+        operator: Exists
       containers:
         # Runs calico/node container on each Kubernetes node.  This
         # container programs network policy and routes on each
