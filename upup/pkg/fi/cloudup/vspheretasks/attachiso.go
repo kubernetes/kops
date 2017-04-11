@@ -42,6 +42,7 @@ type AttachISO struct {
 	VM              *VirtualMachine
 	IG              *kops.InstanceGroup
 	BootstrapScript *model.BootstrapScript
+	EtcdClusters    []*kops.EtcdClusterSpec
 }
 
 var _ fi.HasName = &AttachISO{}
@@ -111,7 +112,7 @@ func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *At
 	return nil
 }
 
-func createUserData(startupStr string, dir string, dnsServer string, vmUUID string) error {
+func createUserData(changes *AttachISO, startupStr string, dir string, dnsServer string, vmUUID string) error {
 	// Update the startup script to add the extra spaces for
 	// indentation when copied to the user-data file.
 	strArray := strings.Split(startupStr, "\n")
@@ -140,15 +141,74 @@ func createUserData(startupStr string, dir string, dnsServer string, vmUUID stri
 	vmUUIDStr := "       " + vmUUID + "\n"
 	data = strings.Replace(data, "$VM_UUID", vmUUIDStr, -1)
 
+	data, err = createVolumeScript(changes, data)
+	if err != nil {
+		return err
+	}
+
 	userDataFile := filepath.Join(dir, "user-data")
 	glog.V(4).Infof("User data file content: %s", data)
 
-	if err := ioutil.WriteFile(userDataFile, []byte(data), 0644); err != nil {
+	if err = ioutil.WriteFile(userDataFile, []byte(data), 0644); err != nil {
 		glog.Errorf("Unable to write user-data into file %s", userDataFile)
 		return err
 	}
 
 	return nil
+}
+
+func createVolumeScript(changes *AttachISO, data string) (string, error) {
+	if changes.IG.Spec.Role != kops.InstanceGroupRoleMaster {
+		return strings.Replace(data, "$VOLUME_SCRIPT", "       No volume metadata needed for "+string(changes.IG.Spec.Role)+".", -1), nil
+	}
+
+	volsString, err := getVolMetadata(changes)
+
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Replace(data, "$VOLUME_SCRIPT", "       "+volsString, -1), nil
+}
+
+func getVolMetadata(changes *AttachISO) (string, error) {
+	var volsMetadata []vsphere.VolumeMetadata
+
+	// Creating vsphere.VolumeMetadata using clusters EtcdClusterSpec
+	for i, etcd := range changes.EtcdClusters {
+		volMetadata := vsphere.VolumeMetadata{}
+		volMetadata.EtcdClusterName = etcd.Name
+		volMetadata.VolumeId = vsphere.GetVolumeId(i + 1)
+
+		var members []vsphere.EtcdMemberSpec
+		var thisNode string
+		for _, member := range etcd.Members {
+			if *member.InstanceGroup == changes.IG.Name {
+				thisNode = member.Name
+			}
+			etcdMember := vsphere.EtcdMemberSpec{
+				Name:          member.Name,
+				InstanceGroup: *member.InstanceGroup,
+			}
+			members = append(members, etcdMember)
+		}
+
+		if thisNode == "" {
+			return "", fmt.Errorf("Failed to construct volume metadata for %v InstanceGroup.", changes.IG.Name)
+		}
+
+		volMetadata.EtcdNodeName = thisNode
+		volMetadata.Members = members
+		volsMetadata = append(volsMetadata, volMetadata)
+	}
+
+	glog.V(4).Infof("Marshaling master vol metadata : %v", volsMetadata)
+	volsString, err := vsphere.MarshalVolumeMetadata(volsMetadata)
+	glog.V(4).Infof("Marshaled master vol metadata: %v", volsString)
+	if err != nil {
+		return "", err
+	}
+	return volsString, nil
 }
 
 func createMetaData(dir string, vmName string) error {
@@ -165,8 +225,9 @@ func createMetaData(dir string, vmName string) error {
 	return nil
 }
 
-func createISO(changes *AttachISO, startupStr string, dir string, dnsServer string, vmUUID string) (string, error) {
-	err := createUserData(startupStr, dir, dnsServer, vmUUID)
+func createISO(changes *AttachISO, startupStr string, dir string, dnsServer, vmUUID string) (string, error) {
+	err := createUserData(changes, startupStr, dir, dnsServer, vmUUID)
+
 	if err != nil {
 		return "", err
 	}
