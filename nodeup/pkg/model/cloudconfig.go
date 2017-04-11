@@ -90,7 +90,6 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		config += "[disk]\n" + "scsicontrollertype = pvscsi" + "\n"
 	}
 
-
 	t := &nodetasks.File{
 		Path:     CloudConfigFilePath,
 		Contents: fi.NewStringResource(config),
