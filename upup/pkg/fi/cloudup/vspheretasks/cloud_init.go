@@ -29,6 +29,11 @@ $DNS_SCRIPT
     owner: root:root
     path: /root/update_dns.sh
     permissions: "0644"
+  - content: |
+$VM_UUID
+    owner: root:root
+    path: /root/vm_uuid
+    permissions: "0644"
 
 runcmd:
   - bash /root/update_dns.sh 2>&1 > /var/log/update_dns.log
