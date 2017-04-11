@@ -93,7 +93,7 @@ Please note that dns-controller has also been modified to support vSphere. You c
 Execute following command to launch cluster.
 
 ```bash
-.build/dist/darwin/amd64/kops create cluster kubernetes.skydns.local  --cloud=vsphere --zones=${AWS_REGION}a --dns-zone=skydns.local --networking=flannel
+.build/dist/darwin/amd64/kops create cluster kubernetes.skydns.local  --cloud=vsphere --zones=vmware-zone --dns-zone=skydns.local --networking=flannel
  --vsphere-server=10.160.97.44 --vsphere-datacenter=VSAN-DC --vsphere-resource-pool=VSAN-Cluster --vsphere-datastore=vsanDatastore --dns private --vsphere-coredns-server=http://10.192.217.24:2379 --image="ubuntu_16_04" 
 ```
 
@@ -102,7 +102,7 @@ Use .build/dist/linux/amd64/kops if working on a linux machine, instead of mac.
 **Notes**
 
 1. ```clustername``` should end with **skydns.local**. Example: ```kubernetes.cluster.skydns.local```.
-2. ```zones``` should end with ```a```. Example: ```us-west-2a``` or as the above command sets ```--zones=${AWS_REGION}a```.
+2. For ```zones``` any string will do, for now. It's only getting used for the construction of names of various entities. But it's a mandatory argument.
 3. Make sure following parameters have these values,
     * ```--dns-zone=skydns.local```
     * ```--networking=flannel```
