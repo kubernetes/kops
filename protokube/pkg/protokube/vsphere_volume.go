@@ -18,37 +18,26 @@ package protokube
 
 import (
 	"errors"
+	"fmt"
 	"github.com/golang/glog"
+	"io/ioutil"
+	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"net"
+	"os/exec"
+	"runtime"
+	"strings"
 )
 
-const EtcdDataKey = "01"
-const EtcdDataVolPath = "/mnt/master-" + EtcdDataKey
-const EtcdEventKey = "02"
-const EtcdEventVolPath = "/mnt/master-" + EtcdEventKey
-
-// TODO Use lsblk or counterpart command to find the actual device details.
-const LocalDeviceForDataVol = "/dev/sdb1"
-const LocalDeviceForEventsVol = "/dev/sdc1"
+const VolumeMetaDataFile = "/vol-metadata/metadata.json"
 const VolStatusValue = "attached"
-const EtcdNodeName = "a"
-const EtcdClusterName = "main"
-const EtcdEventsClusterName = "events"
 
-type VSphereVolumes struct {
-	// Dummy property. Not getting used any where for now.
-	paths map[string]string
-}
+type VSphereVolumes struct{}
 
 var _ Volumes = &VSphereVolumes{}
 var machineIp net.IP
 
 func NewVSphereVolumes() (*VSphereVolumes, error) {
-	vsphereVolumes := &VSphereVolumes{
-		paths: make(map[string]string),
-	}
-	vsphereVolumes.paths[EtcdDataKey] = EtcdDataVolPath
-	vsphereVolumes.paths[EtcdEventKey] = EtcdEventVolPath
+	vsphereVolumes := &VSphereVolumes{}
 	return vsphereVolumes, nil
 }
 
@@ -60,49 +49,80 @@ func (v *VSphereVolumes) FindVolumes() ([]*Volume, error) {
 		attachedTo = ip.String()
 	}
 
-	// etcd data volume and etcd cluster spec.
-	{
-		vol := &Volume{
-			ID:          EtcdDataKey,
-			LocalDevice: LocalDeviceForDataVol,
-			AttachedTo:  attachedTo,
-			Mountpoint:  EtcdDataVolPath,
-			Status:      VolStatusValue,
-			Info: VolumeInfo{
-				Description: EtcdClusterName,
-			},
-		}
-		etcdSpec := &EtcdClusterSpec{
-			ClusterKey: EtcdClusterName,
-			NodeName:   EtcdNodeName,
-			NodeNames:  []string{EtcdNodeName},
-		}
-		vol.Info.EtcdClusters = []*EtcdClusterSpec{etcdSpec}
-		volumes = append(volumes, vol)
+	etcdClusters, err := getVolMetadata()
+
+	if err != nil {
+		return nil, err
 	}
 
-	// etcd events volume and etcd events cluster spec.
-	{
+	for _, etcd := range etcdClusters {
+		mountPoint := vsphere.GetMountPoint(etcd.VolumeId)
+		localDevice, err := getDevice(mountPoint)
+		if err != nil {
+			return nil, err
+		}
 		vol := &Volume{
-			ID:          EtcdEventKey,
-			LocalDevice: LocalDeviceForEventsVol,
+			ID:          etcd.VolumeId,
+			LocalDevice: localDevice,
 			AttachedTo:  attachedTo,
-			Mountpoint:  EtcdEventVolPath,
+			Mountpoint:  mountPoint,
 			Status:      VolStatusValue,
 			Info: VolumeInfo{
-				Description: EtcdEventsClusterName,
+				Description: etcd.EtcdClusterName,
 			},
 		}
+
 		etcdSpec := &EtcdClusterSpec{
-			ClusterKey: EtcdEventsClusterName,
-			NodeName:   EtcdNodeName,
-			NodeNames:  []string{EtcdNodeName},
+			ClusterKey: etcd.EtcdClusterName,
+			NodeName:   etcd.EtcdNodeName,
 		}
+
+		var nodeNames []string
+		for _, member := range etcd.Members {
+			nodeNames = append(nodeNames, member.Name)
+		}
+		etcdSpec.NodeNames = nodeNames
 		vol.Info.EtcdClusters = []*EtcdClusterSpec{etcdSpec}
 		volumes = append(volumes, vol)
 	}
-	glog.Infof("Found volumes: %v", volumes)
+	glog.V(4).Infof("Found volumes: %v", volumes)
 	return volumes, nil
+}
+
+func getDevice(mountPoint string) (string, error) {
+	if runtime.GOOS == "linux" {
+		cmd := "lsblk"
+		arg := "-l"
+		out, err := exec.Command(cmd, arg).Output()
+		if err != nil {
+			return "", err
+		}
+
+		if Containerized {
+			mountPoint = PathFor(mountPoint)
+		}
+		lines := strings.Split(string(out), "\n")
+		for _, line := range lines {
+			if strings.Contains(line, mountPoint) {
+				lsblkOutput := strings.Split(line, " ")
+				glog.V(4).Infof("Found device: %v ", lsblkOutput[0])
+				return "/dev/" + lsblkOutput[0], nil
+			}
+		}
+	} else {
+		return "", fmt.Errorf("Failed to find device. OS %v is not supported for vSphere.", runtime.GOOS)
+	}
+	return "", fmt.Errorf("No device has been mounted on mountPoint %v.", mountPoint)
+}
+
+func getVolMetadata() ([]vsphere.VolumeMetadata, error) {
+	rawData, err := ioutil.ReadFile(PathFor(VolumeMetaDataFile))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return vsphere.UnmarshalVolumeMetadata(string(rawData))
 }
 
 func (v *VSphereVolumes) AttachVolume(volume *Volume) error {
