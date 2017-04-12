@@ -231,17 +231,25 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 }
 
 func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
-	// TODO temporary code, till vsphere cloud provider gets its own VFS implementation.
-	if fi.CloudProviderID(t.Cluster.Spec.CloudProvider) == fi.CloudProviderVSphere && (os.Getenv("AWS_ACCESS_KEY_ID") != "" || os.Getenv("AWS_SECRET_ACCESS_KEY") != "") {
+	// Pass in required credentials when using user-defined s3 endpoint
+	if os.Getenv("S3_ENDPOINT") != "" {
 		var buffer bytes.Buffer
 		buffer.WriteString(" ")
-		buffer.WriteString("-e AWS_ACCESS_KEY_ID=")
+		buffer.WriteString("-e S3_ENDPOINT=")
 		buffer.WriteString("'")
-		buffer.WriteString(os.Getenv("AWS_ACCESS_KEY_ID"))
+		buffer.WriteString(os.Getenv("S3_ENDPOINT"))
 		buffer.WriteString("'")
-		buffer.WriteString(" -e AWS_SECRET_ACCESS_KEY=")
+		buffer.WriteString(" -e S3_REGION=")
 		buffer.WriteString("'")
-		buffer.WriteString(os.Getenv("AWS_SECRET_ACCESS_KEY"))
+		buffer.WriteString(os.Getenv("S3_REGION"))
+		buffer.WriteString("'")
+		buffer.WriteString(" -e S3_ACCESS_KEY_ID=")
+		buffer.WriteString("'")
+		buffer.WriteString(os.Getenv("S3_ACCESS_KEY_ID"))
+		buffer.WriteString("'")
+		buffer.WriteString(" -e S3_SECRET_ACCESS_KEY=")
+		buffer.WriteString("'")
+		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
 		buffer.WriteString("'")
 		buffer.WriteString(" ")
 
