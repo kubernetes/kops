@@ -30,8 +30,6 @@ import (
 type BootstrapScript struct {
 	NodeUpSource     string
 	NodeUpSourceHash string
-	// TODO temporary field to enable workflow for vSphere cloud provider.
-	AddAwsEnvironmentVariables bool
 
 	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
 }
