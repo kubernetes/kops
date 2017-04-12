@@ -43,9 +43,10 @@ const (
 
 var masterMachineTypeExceptions = map[string]string{
 	// Some regions do not (currently) support the m3 family; the c4 large is the cheapest non-burstable instance
-	"us-east-2":    "c4.large",
-	"ca-central-1": "c4.large",
-	"eu-west-2":    "c4.large",
+	"us-east-2":      "c4.large",
+	"ca-central-1":   "c4.large",
+	"eu-west-2":      "c4.large",
+	"ap-northeast-2": "c4.large",
 }
 
 var awsDedicatedInstanceExceptions = map[string]bool{
