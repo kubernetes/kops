@@ -62,7 +62,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				BootstrapScript: b.BootstrapScript,
 				EtcdClusters:    b.Cluster.Spec.EtcdClusters,
 			}
-			attachISOTask.BootstrapScript.AddAwsEnvironmentVariables = true
 
 			c.AddTask(attachISOTask)
 
