@@ -52,12 +52,13 @@ You can create the kops IAM user from the command line using the following:
 ```bash
 aws iam create-group --group-name kops
 
-export arns="
+arns=(
 arn:aws:iam::aws:policy/AmazonEC2FullAccess
 arn:aws:iam::aws:policy/AmazonRoute53FullAccess
 arn:aws:iam::aws:policy/AmazonS3FullAccess
 arn:aws:iam::aws:policy/IAMFullAccess
-arn:aws:iam::aws:policy/AmazonVPCFullAccess"
+arn:aws:iam::aws:policy/AmazonVPCFullAccess
+)
 
 for arn in $arns; do aws iam attach-group-policy --policy-arn "$arn" --group-name kops; done
 
