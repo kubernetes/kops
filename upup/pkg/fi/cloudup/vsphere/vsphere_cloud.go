@@ -33,7 +33,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	k8sroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
 	"net/url"
 	"os"
@@ -54,7 +53,6 @@ type VSphereCloud struct {
 const (
 	snapshotName  string = "LinkCloneSnapshotPoint"
 	snapshotDesc  string = "Snapshot created by kops"
-	privateDNS    string = "coredns"
 	cloudInitFile string = "cloud-init.iso"
 )
 
@@ -101,26 +99,16 @@ func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
 }
 
 func (c *VSphereCloud) DNS() (dnsprovider.Interface, error) {
-	// TODO: this is a temporary flag to toggle between CoreDNS and Route53, before CoreDNS is stable
-	dns_provider := os.Getenv("VSPHERE_DNS")
-
 	var provider dnsprovider.Interface
 	var err error
-	if dns_provider == privateDNS {
-		var lines []string
-		lines = append(lines, "etcd-endpoints = "+c.CoreDNSServer)
-		lines = append(lines, "zones = "+c.DNSZone)
-		config := "[global]\n" + strings.Join(lines, "\n") + "\n"
-		file := bytes.NewReader([]byte(config))
-		provider, err = dnsprovider.GetDnsProvider(k8scoredns.ProviderName, file)
-		if err != nil {
-			return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
-		}
-	} else {
-		provider, err = dnsprovider.GetDnsProvider(k8sroute53.ProviderName, nil)
-		if err != nil {
-			return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
-		}
+	var lines []string
+	lines = append(lines, "etcd-endpoints = "+c.CoreDNSServer)
+	lines = append(lines, "zones = "+c.DNSZone)
+	config := "[global]\n" + strings.Join(lines, "\n") + "\n"
+	file := bytes.NewReader([]byte(config))
+	provider, err = dnsprovider.GetDnsProvider(k8scoredns.ProviderName, file)
+	if err != nil {
+		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
 	}
 
 	return provider, nil
