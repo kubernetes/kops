@@ -164,14 +164,13 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	return argv, nil
 }
 
-// TODO: this is a work-around before vSphere support is getting merged into upstream kops.
-// To use CoreDNS supported DNS Controller:
+// To use user-defined DNS Controller:
 // 1. DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
-// 2. export VSPHERE_DNSCONTROLLER_IMAGE=[your docker hub repo]
+// 2. export DNSCONTROLLER_IMAGE=[your docker hub repo]
 // 3. make kops and create/apply cluster
 func (tf *TemplateFunctions) DnsControllerImage() (string, error) {
-	image := os.Getenv("VSPHERE_DNSCONTROLLER_IMAGE")
-	if fi.CloudProviderID(tf.cluster.Spec.CloudProvider) != fi.CloudProviderVSphere || image == "" {
+	image := os.Getenv("DNSCONTROLLER_IMAGE")
+	if image == "" {
 		return "kope/dns-controller", nil
 	} else {
 		return image, nil
