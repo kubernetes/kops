@@ -26,10 +26,6 @@ type Cluster struct {
 
 	// Spec defines the behavior of a Cluster.
 	Spec ClusterSpec `json:"spec,omitempty"`
-
-	// Status represents the current information about a Cluster. This data may not be up
-	// to date.
-	//Status ClusterStatus `json:"status,omitempty"`
 }
 
 type ClusterList struct {

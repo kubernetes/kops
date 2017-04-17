@@ -18,11 +18,15 @@ package kubeconfig
 
 import (
 	"fmt"
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/status"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
+	"sort"
 )
 
-func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore) (*KubeconfigBuilder, error) {
+func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status status.Store) (*KubeconfigBuilder, error) {
 	clusterName := cluster.ObjectMeta.Name
 
 	master := cluster.Spec.MasterPublicName
@@ -31,6 +35,32 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	}
 
 	server := "https://" + master
+	if dns.IsGossipHostname(master) {
+		ingresses, err := status.GetApiIngressStatus(cluster)
+		if err != nil {
+			return nil, fmt.Errorf("error getting ingress status: %v", err)
+		}
+
+		var targets []string
+		for _, ingress := range ingresses {
+			if ingress.Hostname != "" {
+				targets = append(targets, ingress.Hostname)
+			}
+			if ingress.IP != "" {
+				targets = append(targets, ingress.IP)
+			}
+		}
+
+		sort.Strings(targets)
+		if len(targets) == 0 {
+			glog.Warningf("Did not find API endpoint for gossip hostname; may not be able to reach cluster")
+		} else {
+			if len(targets) != 1 {
+				glog.Warningf("Found multiple API endpoints (%v), choosing arbitrarily", targets)
+			}
+			server = "https://" + targets[0]
+		}
+	}
 
 	b := NewKubeconfigBuilder()
 

@@ -274,3 +274,6 @@
 [submodule "_vendor/github.com/golang/protobuf"]
 	path = _vendor/github.com/golang/protobuf
 	url = https://github.com/golang/protobuf
+[submodule "_vendor/github.com/weaveworks/mesh"]
+	path = _vendor/github.com/weaveworks/mesh
+	url = https://github.com/weaveworks/mesh

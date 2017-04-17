@@ -32,6 +32,7 @@ import (
 	"fmt"
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
@@ -138,6 +139,10 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 
 	default:
 		return nil, fmt.Errorf("unhandled cloudprovider %q", tf.cluster.Spec.CloudProvider)
+	}
+
+	if dns.IsGossipHostname(tf.cluster.Spec.MasterInternalName) {
+		argv = append(argv, "--gossip-seed=127.0.0.1:3999")
 	}
 
 	zone := tf.cluster.Spec.DNSZone

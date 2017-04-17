@@ -21,6 +21,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	api "k8s.io/kops/pkg/apis/kops"
+	kopsdns "k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
@@ -132,6 +133,16 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	// If we get the names wrong here, it doesn't really matter (extra DNS name, slower boot)
 
 	dnsHostnames := buildPrecreateDNSHostnames(cluster)
+
+	{
+		var filtered []string
+		for _, name := range dnsHostnames {
+			if !kopsdns.IsGossipHostname(name) {
+				filtered = append(filtered, name)
+			}
+		}
+		dnsHostnames = filtered
+	}
 
 	if len(dnsHostnames) == 0 {
 		glog.Infof("No DNS records to pre-create")
