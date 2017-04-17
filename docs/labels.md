@@ -7,8 +7,7 @@ There are two main types of labels that kops can create:
 
 Both are specified at the InstanceGroup level.
 
-A nice use for CloudLabels is to specify [AWS cost allocation tags](http://docs.aws.amazon
-.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html).
+A nice use for CloudLabels is to specify [AWS cost allocation tags](http://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html).
 
 A good use for nodeLables is to implement [nodeSelector labels](https://kubernetes
 .io/docs/concepts/configuration/assign-pod-node/#step-two-add-a-nodeselector-field-to-your-pod-configuration) that 
