@@ -1,6 +1,6 @@
 ## Building Kubernetes clusters with Terraform
 
-Kops can generate Terraform configurations, and then you can then apply them using the `terraform plan` and `terraform apply` tools. This is very handy if you are already using Terraform, or if you want to check in the Terraform output into version control.
+Kops can generate Terraform configurations, and then you can apply them using the `terraform plan` and `terraform apply` tools. This is very handy if you are already using Terraform, or if you want to check in the Terraform output into version control.
 
 The gist of it is that, instead of letting kops apply the changes, you tell kops what you want, and then kops spits out what it wants done into a `.tf` file. **_You_** are then responsible for turning those plans into reality.
 
