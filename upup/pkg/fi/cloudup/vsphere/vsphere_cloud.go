@@ -327,6 +327,98 @@ func (c *VSphereCloud) FindVMUUID(vm *string) (string, error) {
 	return vmResult.Config.Uuid, nil
 }
 
+// GetVirtualMachines returns the VMs where the VM name matches the strings in the argument
+func (c *VSphereCloud) GetVirtualMachines(args []string) ([]*object.VirtualMachine, error) {
+	var out []*object.VirtualMachine
+
+	// List virtual machines
+	if len(args) == 0 {
+		return nil, errors.New("no argument")
+	}
+
+	f := find.NewFinder(c.Client.Client, true)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	dc, err := f.Datacenter(ctx, c.Datacenter)
+	if err != nil {
+		return nil, err
+	}
+	f.SetDatacenter(dc)
+
+	var nfe error
+
+	// List virtual machines for every argument
+	for _, arg := range args {
+		vms, err := f.VirtualMachineList(context.TODO(), arg)
+		if err != nil {
+			if _, ok := err.(*find.NotFoundError); ok {
+				// Let caller decide how to handle NotFoundError
+				nfe = err
+				continue
+			}
+			return nil, err
+		}
+
+		out = append(out, vms...)
+	}
+
+	return out, nfe
+}
+
+func (c *VSphereCloud) DeleteCloudInitISO(vm *string) error {
+	f := find.NewFinder(c.Client.Client, true)
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	dc, err := f.Datacenter(ctx, c.Datacenter)
+	if err != nil {
+		return err
+	}
+	f.SetDatacenter(dc)
+
+	vmRef, err := f.VirtualMachine(ctx, *vm)
+	if err != nil {
+		return err
+	}
+
+	var refs []types.ManagedObjectReference
+	refs = append(refs, vmRef.Reference())
+	var vmResult mo.VirtualMachine
+
+	pc := property.DefaultCollector(c.Client.Client)
+	err = pc.RetrieveOne(ctx, vmRef.Reference(), []string{"datastore"}, &vmResult)
+	if err != nil {
+		glog.Fatalf("Unable to retrieve VM summary for VM %s", *vm)
+	}
+	glog.V(4).Infof("vm property collector result :%+v\n", vmResult)
+
+	// We expect the VM to be on only 1 datastore
+	dsRef := vmResult.Datastore[0].Reference()
+	var dsResult mo.Datastore
+	err = pc.RetrieveOne(ctx, dsRef, []string{"summary"}, &dsResult)
+	if err != nil {
+		glog.Fatalf("Unable to retrieve datastore summary for datastore  %s", dsRef)
+	}
+	glog.V(4).Infof("datastore property collector result :%+v\n", dsResult)
+	dsObj, err := f.Datastore(ctx, dsResult.Summary.Name)
+	if err != nil {
+		return err
+	}
+	isoFileName := getCloudInitFileName(*vm)
+	fileManager := dsObj.NewFileManager(dc, false)
+	err = fileManager.DeleteFile(ctx, isoFileName)
+	if err != nil {
+		if types.IsFileNotFound(err) {
+			glog.Warningf("ISO file not found: %q", isoFileName)
+			return nil
+		}
+		return err
+	}
+	glog.V(2).Infof("Deleted ISO file %q", isoFileName)
+	return nil
+}
+
 func getCloudInitFileName(vmName string) string {
 	return vmName + "/" + cloudInitFile
 }
