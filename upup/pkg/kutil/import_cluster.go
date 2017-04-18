@@ -753,7 +753,7 @@ func ParseUserDataConfiguration(raw []byte) (*UserDataConfiguration, error) {
 	}
 	settings := make(map[string]string)
 
-	version := ""
+	var version string
 	if strings.Contains(userData, "install-salt master") || strings.Contains(userData, "dpkg -s salt-minion") {
 		version = "1.1"
 	} else {

@@ -856,7 +856,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 	if ngws.Len() != 0 {
 
 		rtRequest := &ec2.DescribeRouteTablesInput{}
-		rtResponse, err := c.EC2().DescribeRouteTables(rtRequest)
+		rtResponse, _ := c.EC2().DescribeRouteTables(rtRequest)
 
 		// sharedNgwIds is the set of IDs for shared NGWs, that we should not delete
 		sharedNgwIds := sets.NewString()
@@ -1406,7 +1406,7 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 		if err != nil {
 			return nil, fmt.Errorf("error from DescribeRouteTables: %v", err)
 		}
-		shared := false
+		var shared bool
 		for _, rt := range response.RouteTables {
 			shared = false
 			for _, t := range rt.Tags {

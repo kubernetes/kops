@@ -88,7 +88,7 @@ func main() {
 						glog.Fatalf("file %v does not exists", procSelfExe)
 					}
 
-					fi, err := os.Lstat(procSelfExe)
+					fi, _ := os.Lstat(procSelfExe)
 					if fi.Mode()&os.ModeSymlink != os.ModeSymlink {
 						glog.Fatalf("file %v is not a symlink", procSelfExe)
 					}

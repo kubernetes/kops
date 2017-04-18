@@ -172,7 +172,7 @@ func (o *FederationConfiguration) EnsureConfiguration(c *fi.Context) error {
 	adminPassword := ""
 	//adminToken := ""
 
-	_, err = mutateSecret(k8s, o.Namespace, o.ApiserverSecretName, func(s *v1.Secret) (*v1.Secret, error) {
+	mutateSecret(k8s, o.Namespace, o.ApiserverSecretName, func(s *v1.Secret) (*v1.Secret, error) {
 		basicAuthData, err := o.findBasicAuth(s)
 		if err != nil {
 			return nil, err

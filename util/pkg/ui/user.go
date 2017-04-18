@@ -48,7 +48,7 @@ func GetConfirm(c *ConfirmArgs) (bool, error) {
 
 	for {
 		answerTemplate := " (%s/%s)"
-		message := c.Message
+		var message string
 		switch c.Default {
 		case "yes", "y":
 			message = c.Message + fmt.Sprintf(answerTemplate, "Y", "n")

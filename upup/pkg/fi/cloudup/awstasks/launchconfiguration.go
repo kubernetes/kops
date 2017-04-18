@@ -73,7 +73,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	prefix := *e.Name + "-"
 
 	configurations := map[string]*autoscaling.LaunchConfiguration{}
-	err := cloud.Autoscaling().DescribeLaunchConfigurationsPages(request, func(page *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
+	cloud.Autoscaling().DescribeLaunchConfigurationsPages(request, func(page *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
 		for _, l := range page.LaunchConfigurations {
 			name := aws.StringValue(l.LaunchConfigurationName)
 			if strings.HasPrefix(name, prefix) {

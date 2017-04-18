@@ -32,7 +32,8 @@ type DeleteInstanceGroup struct {
 }
 
 func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
-	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
+	var err error
+	groups, _ := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
 	cig := groups[group.ObjectMeta.Name]
 	if cig == nil {
 		glog.Warningf("AutoScalingGroup %q not found in cloud - skipping delete", group.ObjectMeta.Name)

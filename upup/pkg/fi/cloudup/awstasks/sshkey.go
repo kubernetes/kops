@@ -107,7 +107,7 @@ func parseSSHPublicKey(publicKey string) (ssh.PublicKey, error) {
 		return nil, fmt.Errorf("error parsing SSH public key: %q", publicKey)
 	}
 
-	sshPublicKeyBytes, err := base64.StdEncoding.DecodeString(tokens[1])
+	sshPublicKeyBytes, _ := base64.StdEncoding.DecodeString(tokens[1])
 	if len(tokens) < 2 {
 		return nil, fmt.Errorf("error decoding SSH public key: %q", publicKey)
 	}
