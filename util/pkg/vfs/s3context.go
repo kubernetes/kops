@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -34,6 +35,8 @@ type S3Context struct {
 	mutex           sync.Mutex
 	clients         map[string]*s3.S3
 	bucketLocations map[string]string
+
+	getClient func(region string) (*s3.S3, error)
 }
 
 func NewS3Context() *S3Context {
@@ -43,7 +46,7 @@ func NewS3Context() *S3Context {
 	}
 }
 
-func (s *S3Context) getClient(region string) (*s3.S3, error) {
+func (s *S3Context) getDefaultClient(region string) (*s3.S3, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -59,6 +62,50 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 	s.clients[region] = s3Client
 
 	return s3Client, nil
+}
+
+func (s *S3Context) getEndpointClient(region string) (*s3.S3, error) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	s3Client := s.clients[region]
+	if s3Client == nil {
+		Endpoint := os.Getenv("S3_ENDPOINT")
+		if Endpoint == "" {
+			return nil, fmt.Errorf("S3_ENDPOINT is required")
+		}
+		AccessKeyID := os.Getenv("S3_ACCESS_KEY_ID")
+		if AccessKeyID == "" {
+			return nil, fmt.Errorf("S3_ACCESS_KEY_ID cannot be empty when S3_ENDPOINT is not empty")
+		}
+		SecretAccessKey := os.Getenv("S3_SECRET_ACCESS_KEY")
+		if SecretAccessKey == "" {
+			return nil, fmt.Errorf("S3_SECRET_ACCESS_KEY cannot be empty when S3_ENDPOINT is not empty")
+		}
+
+		s3Config := &aws.Config{
+			Credentials:      credentials.NewStaticCredentials(AccessKeyID, SecretAccessKey, ""),
+			Endpoint:         aws.String(Endpoint),
+			Region:           aws.String(region),
+			DisableSSL:       aws.Bool(true),
+			S3ForcePathStyle: aws.Bool(true),
+		}
+
+		session := session.New()
+		s3Client = s3.New(session, s3Config)
+		s.clients[region] = s3Client
+	}
+
+	return s3Client, nil
+}
+
+func (s *S3Context) setClientFunc() {
+	Endpoint := os.Getenv("S3_ENDPOINT")
+	if Endpoint == "" {
+		s.getClient = s.getDefaultClient
+	} else {
+		s.getClient = s.getEndpointClient
+	}
 }
 
 func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
