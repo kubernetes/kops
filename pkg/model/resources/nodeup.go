@@ -38,6 +38,8 @@ set -o pipefail
 NODEUP_URL={{ NodeUpSource }}
 NODEUP_HASH={{ NodeUpSourceHash }}
 
+{{ S3Env }}
+
 function ensure-install-dir() {
   INSTALL_DIR="/var/cache/kubernetes-install"
   # On ContainerOS, we install to /var/lib/toolbox install (because of noexec)

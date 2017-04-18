@@ -17,6 +17,7 @@ limitations under the License.
 package bootstrap
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -26,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
+	"os"
 	"strings"
 	"time"
 )
@@ -107,6 +109,25 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Run kops bootstrap (nodeup)")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
+
+	// Pass in required credentials when using user-defined s3 endpoint
+	if os.Getenv("S3_ENDPOINT") != "" {
+		var buffer bytes.Buffer
+		buffer.WriteString("\"S3_ENDPOINT=")
+		buffer.WriteString(os.Getenv("S3_ENDPOINT"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"S3_REGION=")
+		buffer.WriteString(os.Getenv("S3_REGION"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"S3_ACCESS_KEY_ID=")
+		buffer.WriteString(os.Getenv("S3_ACCESS_KEY_ID"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"S3_SECRET_ACCESS_KEY=")
+		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
+		buffer.WriteString("\" ")
+
+		manifest.Set("Service", "Environment", buffer.String())
+	}
 
 	manifest.Set("Service", "ExecStart", command)
 	manifest.Set("Service", "Type", "oneshot")
