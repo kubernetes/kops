@@ -125,7 +125,7 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	image := c.Image
-	cmd := "echo -998 > /proc/$$$/oom_score_adj && kube-proxy --kubeconfig=/var/lib/kube-proxy/kubeconfig --resource-container=\"\" "
+	cmd := "echo -998 > /proc/$$$/oom_score_adj && kube-proxy --kubeconfig=/var/lib/kube-proxy/kubeconfig --conntrack-max-per-core=131072 --resource-container=\"\" "
 	cmd += flags
 
 	// cmd += " 1>>/var/log/kube-proxy.log 2>&1"
