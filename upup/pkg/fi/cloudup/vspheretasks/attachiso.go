@@ -16,6 +16,8 @@ limitations under the License.
 
 package vspheretasks
 
+// attachiso houses the task that creates cloud-init ISO file, uploads and attaches it to a VM on vSphere cloud.
+
 import (
 	"bytes"
 	"fmt"
@@ -35,7 +37,7 @@ import (
 	"strings"
 )
 
-// AttachISO represents the cloud-init ISO file attached to a VMware VM
+// AttachISO represents the cloud-init ISO file attached to a VM on vSphere cloud.
 //go:generate fitask -type=AttachISO
 type AttachISO struct {
 	Name            *string
@@ -48,6 +50,7 @@ type AttachISO struct {
 var _ fi.HasName = &AttachISO{}
 var _ fi.HasDependencies = &AttachISO{}
 
+// GetDependencies returns map of tasks on which this task depends.
 func (o *AttachISO) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
 	vmCreateTask := tasks["VirtualMachine/"+*o.VM.Name]
@@ -68,21 +71,25 @@ func (o *AttachISO) SetName(name string) {
 	o.Name = &name
 }
 
+// Run invokes DefaultDeltaRunMethod for this task.
 func (e *AttachISO) Run(c *fi.Context) error {
 	glog.Info("AttachISO.Run invoked!")
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
+// Find is a no-op for this task.
 func (e *AttachISO) Find(c *fi.Context) (*AttachISO, error) {
 	glog.Info("AttachISO.Find invoked!")
 	return nil, nil
 }
 
+// CheckChanges is a no-op for this task.
 func (_ *AttachISO) CheckChanges(a, e, changes *AttachISO) error {
 	glog.Info("AttachISO.CheckChanges invoked!")
 	return nil
 }
 
+// RenderVSphere executes the actual task logic, for vSphere cloud.
 func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *AttachISO) error {
 	startupScript, err := changes.BootstrapScript.ResourceNodeUp(changes.IG)
 	startupStr, err := startupScript.AsString()
@@ -113,6 +120,9 @@ func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *At
 }
 
 func createUserData(changes *AttachISO, startupStr string, dir string, dnsServer string, vmUUID string) error {
+
+	// Populate nodeup initialization script.
+
 	// Update the startup script to add the extra spaces for
 	// indentation when copied to the user-data file.
 	strArray := strings.Split(startupStr, "\n")
@@ -124,6 +134,7 @@ func createUserData(changes *AttachISO, startupStr string, dir string, dnsServer
 	startupStr = strings.Join(strArray, "\n")
 	data := strings.Replace(userDataTemplate, "$SCRIPT", startupStr, -1)
 
+	// Populate script to update nameserver for the VM.
 	dnsURL, err := url.Parse(dnsServer)
 	if err != nil {
 		return err
@@ -138,9 +149,11 @@ func createUserData(changes *AttachISO, startupStr string, dir string, dnsServer
 	dnsUpdateStr := strings.Join(lines, "\n")
 	data = strings.Replace(data, "$DNS_SCRIPT", dnsUpdateStr, -1)
 
+	// Populate VM UUID information.
 	vmUUIDStr := "       " + vmUUID + "\n"
 	data = strings.Replace(data, "$VM_UUID", vmUUIDStr, -1)
 
+	// Populate volume metadata.
 	data, err = createVolumeScript(changes, data)
 	if err != nil {
 		return err

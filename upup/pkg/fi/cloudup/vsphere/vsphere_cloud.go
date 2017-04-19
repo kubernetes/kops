@@ -16,6 +16,8 @@ limitations under the License.
 
 package vsphere
 
+// vsphere_cloud is the entry point to vSphere. All operations that need access to vSphere should be housed here.
+
 import (
 	"bytes"
 	"context"
@@ -39,6 +41,7 @@ import (
 	"strings"
 )
 
+// VSphereCloud represents a vSphere cloud instance.
 type VSphereCloud struct {
 	Server        string
 	Datacenter    string
@@ -58,10 +61,12 @@ const (
 
 var _ fi.Cloud = &VSphereCloud{}
 
+// ProviderID returns ID for vSphere type cloud provider.
 func (c *VSphereCloud) ProviderID() fi.CloudProviderID {
 	return fi.CloudProviderVSphere
 }
 
+// NewVSphereCloud returns VSphereCloud instance for given ClusterSpec.
 func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
 	server := *spec.CloudConfig.VSphereServer
 	datacenter := *spec.CloudConfig.VSphereDatacenter
@@ -98,6 +103,7 @@ func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
 	return vsphereCloud, nil
 }
 
+// DNS returns dnsprovider interface for this vSphere cloud.
 func (c *VSphereCloud) DNS() (dnsprovider.Interface, error) {
 	var provider dnsprovider.Interface
 	var err error
@@ -115,11 +121,13 @@ func (c *VSphereCloud) DNS() (dnsprovider.Interface, error) {
 
 }
 
+// FindVPCInfo doesn't perform any operation for now. No VPC is present for vSphere.
 func (c *VSphereCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	glog.Warning("FindVPCInfo not (yet) implemented on VSphere")
 	return nil, nil
 }
 
+// CreateLinkClonedVm creates linked clone of given VM image. This method will perform all necessary steps, like creating snapshot if it's not already present.
 func (c *VSphereCloud) CreateLinkClonedVm(vmName, vmImage *string) (string, error) {
 	f := find.NewFinder(c.Client.Client, true)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -197,6 +205,7 @@ func (c *VSphereCloud) CreateLinkClonedVm(vmName, vmImage *string) (string, erro
 	return clonedVm.Reference().Value, nil
 }
 
+// PowerOn powers on given VM.
 func (c *VSphereCloud) PowerOn(vm string) error {
 	f := find.NewFinder(c.Client.Client, true)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -220,6 +229,7 @@ func (c *VSphereCloud) PowerOn(vm string) error {
 	return nil
 }
 
+// UploadAndAttachISO uploads the ISO to datastore and attaches it to the given VM.
 func (c *VSphereCloud) UploadAndAttachISO(vm *string, isoFile string) error {
 	f := find.NewFinder(c.Client.Client, true)
 	ctx, cancel := context.WithCancel(context.Background())
