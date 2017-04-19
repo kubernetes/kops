@@ -18,7 +18,7 @@ For now we hardcoded DNS zone to skydns.local. So your cluster name should have 
 1. Login to vSphere Client.
 2. Right-Click on ESX host on which you want to deploy the DNS server.
 3. Select Deploy OVF template.
-4. Copy and paste URL for [OVA](https://storage.googleapis.com/kubernetes-anywhere-for-vsphere-cna-storage/coredns.ova).
+4. Copy and paste URL for [OVA](https://storage.googleapis.com/kops-vsphere/DNSStorage.ova) (uploaded 04/18/2017).
 5. Follow next steps according to instructions mentioned in wizard.
 6. Power on the imported VM.
 7. SSH into the VM and execute ./start-dns.sh under /root. Username/Password: root/kubernetes
@@ -73,31 +73,54 @@ vSphere cloud provider support in kops is a work in progress. To try out deployi
 ### Pre-requisites
 + vSphere with at least one ESX, having sufficient free disk space on attached datastore. ESX VM's should have internet connectivity.
 + Setup DNS following steps given in relevant Section above.
-+ Create the VM using this template (TBD).
++ Upload VM template. Steps:
+1. Login to vSphere Client.
+2. Right-Click on ESX host on which you want to deploy the template.
+3. Select Deploy OVF template.
+4. Copy and paste URL for [OVA](https://storage.googleapis.com/kops-vsphere/kops_ubuntu_16_04.ova) (uploaded 04/18/2017).
+5. Follow next steps according to instructions mentioned in wizard.
+**NOTE: DO NOT POWER ON THE IMPORTED TEMPLATE VM.**
 + Currently vSphere code is using AWS S3 for storing all configurations, specs, addon yamls, etc. You need valid AWS credentials to try out kops on vSphere. s3://your-objectstore/cluster1.skydns.local folder will have all necessary configuration, spec, addons, etc., required to configure kubernetes cluster. (If you don't know how to setup aws, then read more on kops and how to deploy a cluster using kops on aws)
 + Update ```[kops_dir]/hack/vsphere/set_env``` setting up necessary environment variables.
 
-### Building
-Execute following command(s) to build all necessary components required to run kops for vSphere-
+### Installing
+Currently vSphere support is not part of upstream kops releases. Please use the following instructions to use binaries/images with vSphere support.
+
+#### Linux
+Download kops binary from [here](https://storage.googleapis.com/kops-vsphere/kops-linux-amd64), then:
+```bash
+chmod +x kops-linux-amd64                 # Add execution permissions
+mv kops-linux-amd64 /usr/local/bin/kops   # Move the kops to /usr/local/bin
+```
+
+#### Darwin
+Download kops binary from [here](https://storage.googleapis.com/kops-vsphere/kops-darwin-amd64), then:
+```bash
+chmod +x kops-darwin-amd64                 # Add execution permissions
+mv kops-darwin-amd64 /usr/local/bin/kops   # Move the kops to /usr/local/bin
+```
+
+### Building from source
+Execute following command(s) to build all necessary components required to run kops for vSphere:
 
 ```bash
 source [kops_dir]/hack/vsphere/set_env
 make vsphere-version-dist
 ```
 
-Currently vSphere support is not part of any of the kops releases. Hence, all modified component- kops, nodeup, protokube, need building at least once. ```make vsphere-version-dist``` will do that and copy protokube image and nodeup binary at the target location specified by you in ```[kops_dir]/hack/vsphere/set_env```.
+```make vsphere-version-dist``` will build and upload protokube image and nodeup binary at the target location specified by you in ```[kops_dir]/hack/vsphere/set_env```.
 
-Please note that dns-controller has also been modified to support vSphere. You can continue to use ```export VSPHERE_DNSCONTROLLER_IMAGE=luomiao/dns-controller```. If you have made any local changes to dns-controller and would like to use your custom image you need to build the dns-controller image using ```DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push``` and set ```VSPHERE_DNSCONTROLLER_IMAGE``` accordingly. Please see the relevant Section above, on setting up DNS.
+Please note that dns-controller has also been modified to support vSphere. You can continue to use ```export DNSCONTROLLER_IMAGE=cnastorage/dns-controller```. If you have made any local changes to dns-controller and would like to use your custom image you need to build the dns-controller image using ```DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push``` and set ```DNSCONTROLLER_IMAGE``` accordingly. Please see the relevant Section above, on setting up DNS.
 
 ### Launching Cluster
 Execute following command to launch cluster.
 
 ```bash
-.build/dist/darwin/amd64/kops create cluster kubernetes.skydns.local  --cloud=vsphere --zones=vmware-zone --dns-zone=skydns.local --networking=flannel
- --vsphere-server=10.160.97.44 --vsphere-datacenter=VSAN-DC --vsphere-resource-pool=VSAN-Cluster --vsphere-datastore=vsanDatastore --dns private --vsphere-coredns-server=http://10.192.217.24:2379 --image="ubuntu_16_04" 
+kops create cluster kubernetes.skydns.local  --cloud=vsphere --zones=vmware-zone --dns-zone=skydns.local --networking=flannel
+ --vsphere-server=10.160.97.44 --vsphere-datacenter=VSAN-DC --vsphere-resource-pool=VSAN-Cluster --vsphere-datastore=vsanDatastore --dns private --vsphere-coredns-server=http://10.192.217.24:2379 --image="kops_ubuntu_16_04.ova"
 ```
 
-Use .build/dist/linux/amd64/kops if working on a linux machine, instead of mac.
+If kops doesn't exist in default path, locate it inside .build/dist/linux/amd64/kops for linux machine or .build/dist/darwin/amd64/kops for mac under kops source directory.
 
 **Notes**
 
@@ -121,5 +144,5 @@ Cluster deletion hasn't been fully implemented yet. So you will have to delete v
 
 Configuration and spec data can be removed from S3 using following command-
 ```bash
-.build/dist/darwin/amd64/kops delete cluster yourcluster.skydns.local --yes
+kops delete cluster yourcluster.skydns.local --yes
 ```

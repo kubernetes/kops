@@ -459,11 +459,12 @@ func (o *dnsOp) deleteRecords(k recordKey, dnsProviderId string) error {
 		}
 
 		if dnsRecord != nil && string(dnsRecord.Type()) == string(k.RecordType) {
-			glog.V(8).Infof("Found matching record: %s %s", k.RecordType, fqdn)
 			cs, err := o.getChangeset(zone)
 			if err != nil {
 				return err
 			}
+
+			glog.V(2).Infof("Deleting resource record %s %s", fqdn, k.RecordType)
 			cs.Remove(dnsRecord)
 		}
 
