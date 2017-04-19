@@ -125,6 +125,22 @@ func Test_ValidateClusterMastersNotEnough(t *testing.T) {
 	}
 }
 
+func Test_ValidateNodesNotEnough(t *testing.T) {
+	nodeList, err := dummyClient("true", "true").Core().Nodes().List(metav1.ListOptions{})
+
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	validationCluster := &ValidationCluster{NodeList: nodeList, NodesCount: 3, MastersCount: 1}
+	validationCluster, err = validateTheNodes("foo", validationCluster)
+
+	if err == nil {
+		printDebug(validationCluster)
+		t.Fatal("Too few nodes not caught")
+	}
+}
+
 func Test_ValidateNoPodFailures(t *testing.T) {
 	failures, err := collectPodFailures(dummyPodClient(
 		[]map[string]string{
