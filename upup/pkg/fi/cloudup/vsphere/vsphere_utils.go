@@ -16,6 +16,8 @@ limitations under the License.
 
 package vsphere
 
+// vsphere_utils houses various utility methods related to vSphere cloud.
+
 import (
 	"context"
 	"github.com/golang/glog"

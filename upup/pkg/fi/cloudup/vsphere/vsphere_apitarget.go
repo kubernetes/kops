@@ -16,24 +16,30 @@ limitations under the License.
 
 package vsphere
 
+// vsphere_target represents API execution target for vSphere.
+
 import "k8s.io/kops/upup/pkg/fi"
 
+// VSphereAPITarget represents target for vSphere, where cluster deployment with take place.
 type VSphereAPITarget struct {
 	Cloud *VSphereCloud
 }
 
 var _ fi.Target = &VSphereAPITarget{}
 
+// NewVSphereAPITarget returns VSphereAPITarget instance for vSphere cloud provider.
 func NewVSphereAPITarget(cloud *VSphereCloud) *VSphereAPITarget {
 	return &VSphereAPITarget{
 		Cloud: cloud,
 	}
 }
 
+// Finish is no-op for vSphere cloud.
 func (t *VSphereAPITarget) Finish(taskMap map[string]fi.Task) error {
 	return nil
 }
 
+// ProcessDeletions is no-op for vSphere cloud.
 func (t *VSphereAPITarget) ProcessDeletions() bool {
 	return true
 }

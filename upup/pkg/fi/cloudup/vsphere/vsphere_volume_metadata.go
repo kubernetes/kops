@@ -16,11 +16,14 @@ limitations under the License.
 
 package vsphere
 
+// vsphere_volume_metadata houses the volume metadata and related methods for vSphere cloud.
+
 import (
 	"encoding/json"
 	"strconv"
 )
 
+// VolumeMetadata represents metadata for vSphere volumes. Unlike aws and gce clouds, vSphere doesn't support tags for volumes/vmdks yet. This metadata is used to pass the information that aws and gce clouds associate with volumes using tags.
 type VolumeMetadata struct {
 	// EtcdClusterName is the name of the etcd cluster (main, events etc)
 	EtcdClusterName string `json:"etcdClusterName,omitempty"`
@@ -32,12 +35,14 @@ type VolumeMetadata struct {
 	VolumeId string `json:"volumeId,omitempty"`
 }
 
+// EtcdMemberSpec is the specification of members of etcd cluser, to be associated with this volume.
 type EtcdMemberSpec struct {
 	// Name is the name of the member within the etcd cluster
 	Name          string `json:"name,omitempty"`
 	InstanceGroup string `json:"instanceGroup,omitempty"`
 }
 
+// MarshalVolumeMetadata marshals given VolumeMetadata to json string.
 func MarshalVolumeMetadata(v []VolumeMetadata) (string, error) {
 	metadata, err := json.Marshal(v)
 	if err != nil {
@@ -47,12 +52,14 @@ func MarshalVolumeMetadata(v []VolumeMetadata) (string, error) {
 	return string(metadata), nil
 }
 
+// UnmarshalVolumeMetadata unmarshals given json string into VolumeMetadata.
 func UnmarshalVolumeMetadata(text string) ([]VolumeMetadata, error) {
 	var v []VolumeMetadata
 	err := json.Unmarshal([]byte(text), &v)
 	return v, err
 }
 
+// GetVolumeId returns given integer value to VolumeId format, eg: for i=2, volume id="02".
 func GetVolumeId(i int) string {
 	return "0" + strconv.Itoa(i)
 }
