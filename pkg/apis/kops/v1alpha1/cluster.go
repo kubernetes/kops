@@ -239,6 +239,20 @@ type ClusterSpec struct {
 
 	// Tags for AWS instance groups
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
+
+	// Hooks for custom actions e.g. on first installation
+	Hooks []HookSpec `json:"hooks,omitempty"`
+}
+
+type HookSpec struct {
+	ExecContainer *ExecContainerAction `json:"execContainer,omitempty"`
+}
+
+type ExecContainerAction struct {
+	// Docker image name.
+	Image string `json:"image,omitempty" `
+
+	Command []string `json:"command,omitempty"`
 }
 
 type AuthorizationSpec struct {
