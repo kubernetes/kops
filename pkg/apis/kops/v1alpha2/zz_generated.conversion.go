@@ -71,6 +71,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec,
 		Convert_v1alpha2_EtcdMemberSpec_To_kops_EtcdMemberSpec,
 		Convert_kops_EtcdMemberSpec_To_v1alpha2_EtcdMemberSpec,
+		Convert_v1alpha2_ExecContainerAction_To_kops_ExecContainerAction,
+		Convert_kops_ExecContainerAction_To_v1alpha2_ExecContainerAction,
 		Convert_v1alpha2_ExternalNetworkingSpec_To_kops_ExternalNetworkingSpec,
 		Convert_kops_ExternalNetworkingSpec_To_v1alpha2_ExternalNetworkingSpec,
 		Convert_v1alpha2_Federation_To_kops_Federation,
@@ -81,6 +83,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_FederationSpec_To_v1alpha2_FederationSpec,
 		Convert_v1alpha2_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec,
 		Convert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec,
+		Convert_v1alpha2_HookSpec_To_kops_HookSpec,
+		Convert_kops_HookSpec_To_v1alpha2_HookSpec,
 		Convert_v1alpha2_InstanceGroup_To_kops_InstanceGroup,
 		Convert_kops_InstanceGroup_To_v1alpha2_InstanceGroup,
 		Convert_v1alpha2_InstanceGroupList_To_kops_InstanceGroupList,
@@ -571,6 +575,17 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 		out.Authorization = nil
 	}
 	out.CloudLabels = in.CloudLabels
+	if in.Hooks != nil {
+		in, out := &in.Hooks, &out.Hooks
+		*out = make([]kops.HookSpec, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha2_HookSpec_To_kops_HookSpec(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Hooks = nil
+	}
 	return nil
 }
 
@@ -741,6 +756,17 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 		out.Authorization = nil
 	}
 	out.CloudLabels = in.CloudLabels
+	if in.Hooks != nil {
+		in, out := &in.Hooks, &out.Hooks
+		*out = make([]HookSpec, len(*in))
+		for i := range *in {
+			if err := Convert_kops_HookSpec_To_v1alpha2_HookSpec(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Hooks = nil
+	}
 	return nil
 }
 
@@ -922,6 +948,26 @@ func Convert_kops_EtcdMemberSpec_To_v1alpha2_EtcdMemberSpec(in *kops.EtcdMemberS
 	return autoConvert_kops_EtcdMemberSpec_To_v1alpha2_EtcdMemberSpec(in, out, s)
 }
 
+func autoConvert_v1alpha2_ExecContainerAction_To_kops_ExecContainerAction(in *ExecContainerAction, out *kops.ExecContainerAction, s conversion.Scope) error {
+	out.Image = in.Image
+	out.Command = in.Command
+	return nil
+}
+
+func Convert_v1alpha2_ExecContainerAction_To_kops_ExecContainerAction(in *ExecContainerAction, out *kops.ExecContainerAction, s conversion.Scope) error {
+	return autoConvert_v1alpha2_ExecContainerAction_To_kops_ExecContainerAction(in, out, s)
+}
+
+func autoConvert_kops_ExecContainerAction_To_v1alpha2_ExecContainerAction(in *kops.ExecContainerAction, out *ExecContainerAction, s conversion.Scope) error {
+	out.Image = in.Image
+	out.Command = in.Command
+	return nil
+}
+
+func Convert_kops_ExecContainerAction_To_v1alpha2_ExecContainerAction(in *kops.ExecContainerAction, out *ExecContainerAction, s conversion.Scope) error {
+	return autoConvert_kops_ExecContainerAction_To_v1alpha2_ExecContainerAction(in, out, s)
+}
+
 func autoConvert_v1alpha2_ExternalNetworkingSpec_To_kops_ExternalNetworkingSpec(in *ExternalNetworkingSpec, out *kops.ExternalNetworkingSpec, s conversion.Scope) error {
 	return nil
 }
@@ -1038,6 +1084,40 @@ func autoConvert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in
 
 func Convert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in *kops.FlannelNetworkingSpec, out *FlannelNetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in, out, s)
+}
+
+func autoConvert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec, s conversion.Scope) error {
+	if in.ExecContainer != nil {
+		in, out := &in.ExecContainer, &out.ExecContainer
+		*out = new(kops.ExecContainerAction)
+		if err := Convert_v1alpha2_ExecContainerAction_To_kops_ExecContainerAction(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.ExecContainer = nil
+	}
+	return nil
+}
+
+func Convert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_HookSpec_To_kops_HookSpec(in, out, s)
+}
+
+func autoConvert_kops_HookSpec_To_v1alpha2_HookSpec(in *kops.HookSpec, out *HookSpec, s conversion.Scope) error {
+	if in.ExecContainer != nil {
+		in, out := &in.ExecContainer, &out.ExecContainer
+		*out = new(ExecContainerAction)
+		if err := Convert_kops_ExecContainerAction_To_v1alpha2_ExecContainerAction(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.ExecContainer = nil
+	}
+	return nil
+}
+
+func Convert_kops_HookSpec_To_v1alpha2_HookSpec(in *kops.HookSpec, out *HookSpec, s conversion.Scope) error {
+	return autoConvert_kops_HookSpec_To_v1alpha2_HookSpec(in, out, s)
 }
 
 func autoConvert_v1alpha2_InstanceGroup_To_kops_InstanceGroup(in *InstanceGroup, out *kops.InstanceGroup, s conversion.Scope) error {
