@@ -16,6 +16,8 @@ limitations under the License.
 
 package vspheremodel
 
+// autoscalinggroup is a model for vSphere cloud. It's responsible for building tasks, necessary for kubernetes cluster deployment.
+
 import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
@@ -33,6 +35,7 @@ type AutoscalingGroupModelBuilder struct {
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
+// Build creates tasks related to cluster deployment and adds them to ModelBuilderContext.
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Note that we are creating a VM per instance group. Instance group represents a group of VMs.
 	// The following logic should considerably change once we add support for multiple master/worker nodes,

@@ -16,6 +16,8 @@ limitations under the License.
 
 package protokube
 
+// vspehre_volume houses vSphere volume and implements relevant interfaces.
+
 import (
 	"errors"
 	"fmt"
@@ -31,16 +33,20 @@ import (
 const VolumeMetaDataFile = "/vol-metadata/metadata.json"
 const VolStatusValue = "attached"
 
+// VSphereVolumes represents vSphere volume and implements Volumes interface.
 type VSphereVolumes struct{}
 
 var _ Volumes = &VSphereVolumes{}
 var machineIp net.IP
 
+// NewVSphereVolumes returns instance of VSphereVolumes type.
 func NewVSphereVolumes() (*VSphereVolumes, error) {
 	vsphereVolumes := &VSphereVolumes{}
 	return vsphereVolumes, nil
 }
 
+// FindVolumes returns Volume instances associated with this VSphereVolumes.
+// EtcdClusterSpec is populated using vSphere volume metadata.
 func (v *VSphereVolumes) FindVolumes() ([]*Volume, error) {
 	var volumes []*Volume
 	ip := v.InternalIp()
@@ -125,12 +131,14 @@ func getVolMetadata() ([]vsphere.VolumeMetadata, error) {
 	return vsphere.UnmarshalVolumeMetadata(string(rawData))
 }
 
+// AttachVolume attaches given volume. In case of vSphere, volumes are statically mounted, so no operation is performed.
 func (v *VSphereVolumes) AttachVolume(volume *Volume) error {
 	// Currently this is a no-op for vSphere. The virtual disks should already be mounted on this VM.
 	glog.Infof("All volumes should already be attached. No operation done.")
 	return nil
 }
 
+// InternalIp returns IP of machine associated with this volume.
 func (v *VSphereVolumes) InternalIp() net.IP {
 	if machineIp == nil {
 		ip, err := getMachineIp()
