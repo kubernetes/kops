@@ -31,8 +31,8 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.6.0
 
-KOPS_RELEASE_VERSION=1.6.0-alpha.1
-KOPS_CI_VERSION=1.6.0-alpha.2
+KOPS_RELEASE_VERSION=1.6.0-alpha.2
+KOPS_CI_VERSION=1.6.0-alpha.3
 
 GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
 
@@ -111,7 +111,8 @@ test:
 	go test k8s.io/kops/protokube/... -args -v=1 -logtostderr
 	go test k8s.io/kops/dns-controller/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/cmd/... -args -v=1 -logtostderr
-	go test k8s.io/kops/tests/... -args -v=1 -logtostderr
+	go test k8s.io/kops/cmd/... -args -v=1 -logtostderr
+	go test k8s.io/kops/channels/... -args -v=1 -logtostderr
 	go test k8s.io/kops/util/... -args -v=1 -logtostderr
 
 crossbuild-nodeup:
@@ -174,7 +175,7 @@ gcs-publish-ci: gcs-upload
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
 
 gen-cli-docs:
-	KOPS_STATE_STORE= kops genhelpdocs --out docs/cli
+	@kops genhelpdocs --out docs/cli
 
 # Will always push a linux-based build up to the server
 push: crossbuild-nodeup

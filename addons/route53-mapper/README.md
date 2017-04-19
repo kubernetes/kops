@@ -14,9 +14,7 @@ The project is created by wearemolecule, and maintained at
 ### Deploy To Cluster
 
 ```
-# Version 1.2.0
-# https://github.com/wearemolecule/route53-kubernetes/tree/v1.2.0
-$ kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/route53-mapper/v1.2.0.yml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/route53-mapper/v1.3.0.yml
 ```
 
 **Important:**

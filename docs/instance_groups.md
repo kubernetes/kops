@@ -15,7 +15,7 @@ By default, a cluster has:
 ## Listing instance groups
 
 `kops get instancegroups`
-> ```
+```
 NAME                    ROLE    MACHINETYPE     MIN     MAX     ZONES
 master-us-east-1c       Master                  1       1       us-east-1c
 nodes                   Node    t2.medium       2       2
@@ -32,7 +32,7 @@ have not yet been applied (this may change soon though!).
 To preview the change:
 
 `kops update cluster <clustername>`
-> ```
+```
 ...
 Will modify resources:
   *awstasks.LaunchConfiguration launchConfiguration/mycluster.mydomain.com

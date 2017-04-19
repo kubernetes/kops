@@ -27,6 +27,7 @@ type zoneInfo struct {
 	ID         string
 	hostedZone *route53.HostedZone
 	records    []*route53.ResourceRecordSet
+	vpcs       []*route53.VPC
 }
 
 type MockRoute53 struct {
@@ -48,10 +49,11 @@ func (m *MockRoute53) findZone(hostedZoneId string) *zoneInfo {
 	return nil
 }
 
-func (m *MockRoute53) MockCreateZone(z *route53.HostedZone) {
+func (m *MockRoute53) MockCreateZone(z *route53.HostedZone, vpcs []*route53.VPC) {
 	zi := &zoneInfo{
 		ID:         aws.StringValue(z.Id),
 		hostedZone: z,
+		vpcs:       vpcs,
 	}
 	m.Zones = append(m.Zones, zi)
 }
