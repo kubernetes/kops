@@ -9,4 +9,4 @@ MasterZones:
 - us-test-1c
 Cloud: aws
 KubernetesVersion: v1.6.0-alpha.3
-EncryptVolume: true
+EncryptEtcdStorage: true
