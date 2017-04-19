@@ -196,6 +196,11 @@ func dummyClient(masterReady string, nodeReady string) kubernetes.Interface {
 				"kubernetes.io/role": "node",
 				NODE_READY:           nodeReady,
 			},
+			{
+				"name":               "node2",
+				"kubernetes.io/role": "node",
+				NODE_READY:           "true",
+			},
 		},
 	))
 }
