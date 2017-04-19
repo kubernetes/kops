@@ -180,7 +180,7 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 	}
 
 	validationCluster.NodesReady = true
-	if len(validationCluster.NodesNotReadyArray) != 0 || validationCluster.NodesCount != len(validationCluster.NodesReadyArray) {
+	if len(validationCluster.NodesNotReadyArray) != 0 || validationCluster.NodesCount > len(validationCluster.NodesReadyArray) {
 		validationCluster.NodesReady = false
 	}
 
