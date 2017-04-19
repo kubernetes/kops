@@ -299,7 +299,7 @@ func (c *DNSController) runOnce() error {
 	for key, changeset := range op.changesets {
 		glog.V(2).Infof("applying DNS changeset for zone %s", key)
 		if err := changeset.Apply(); err != nil {
-			glog.Warningf("error applying DNS changset for zone %s: %v", key, err)
+			glog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
 			errors = append(errors, fmt.Errorf("error applying DNS changeset for zone %s: %v", key, err))
 		}
 	}

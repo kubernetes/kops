@@ -319,6 +319,9 @@ type KubeletConfigSpec struct {
 
 	// Taints to add when registering a node in the cluster
 	Taints []string `json:"taints,omitempty" flag:"register-with-taints"`
+
+	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
+	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
 
 type KubeProxyConfig struct {
@@ -686,4 +689,6 @@ type CloudConfiguration struct {
 	Multizone          *bool   `json:"multizone,omitempty"`
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
+	// AWS cloud-config options
+	DisableSecurityGroupIngress *bool `json:"disableSecurityGroupIngress,omitempty"`
 }

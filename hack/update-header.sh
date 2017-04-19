@@ -16,7 +16,7 @@
 
 . $(dirname "${BASH_SOURCE}")/common.sh
 
-BAD_HEADERS=$(${KUBE_ROOT}/hack/verify-boilerplate.sh | awk '{ print $6}')
+BAD_HEADERS=$((${KUBE_ROOT}/hack/verify-boilerplate.sh || true) | awk '{ print $6}')
 FORMATS="sh go Makefile Dockerfile"
 
 for i in ${FORMATS}
