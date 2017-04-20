@@ -27,6 +27,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 )
@@ -131,7 +132,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return fmt.Errorf("object was not of expected type: %T", newObj)
 	}
 
-	err = newGroup.Validate()
+	err = validation.ValidateInstanceGroup(newGroup)
 	if err != nil {
 		return err
 	}
@@ -153,7 +154,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return err
 	}
 
-	err = fullGroup.CrossValidate(fullCluster, true)
+	err = validation.CrossValidateInstanceGroup(fullGroup, fullCluster, true)
 	if err != nil {
 		return err
 	}

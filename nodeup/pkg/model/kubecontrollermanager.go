@@ -18,6 +18,9 @@ package model
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
@@ -25,7 +28,6 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"strings"
 )
 
 // KubeControllerManagerBuilder install kube-controller-manager (just the manifest at the moment)
@@ -38,6 +40,27 @@ var _ fi.ModelBuilder = &KubeControllerManagerBuilder{}
 func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
+	}
+
+	// If we're using the CertificateSigner, include the CA Key
+	// TODO: use a per-machine key?  use KMS?
+	if b.useCertificateSigner() {
+		ca, err := b.KeyStore.PrivateKey(fi.CertificateId_CA)
+		if err != nil {
+			return err
+		}
+
+		serialized, err := ca.AsString()
+		if err != nil {
+			return err
+		}
+
+		t := &nodetasks.File{
+			Path:     filepath.Join(b.PathSrvKubernetes(), "ca.key"),
+			Contents: fi.NewStringResource(serialized),
+			Type:     nodetasks.FileType_File,
+		}
+		c.AddTask(t)
 	}
 
 	{
@@ -59,11 +82,51 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	// Add kubeconfig
+	{
+		// TODO: Change kubeconfig to be https
+
+		kubeconfig, err := b.buildPKIKubeconfig("kube-controller-manager")
+		if err != nil {
+			return err
+		}
+		t := &nodetasks.File{
+			Path:     "/var/lib/kube-controller-manager/kubeconfig",
+			Contents: fi.NewStringResource(kubeconfig),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0400"),
+		}
+		c.AddTask(t)
+	}
+
+	// Touch log file, so that docker doesn't create a directory instead
+	{
+		t := &nodetasks.File{
+			Path:        "/var/log/kube-controller-manager.log",
+			Contents:    fi.NewStringResource(""),
+			Type:        nodetasks.FileType_File,
+			Mode:        s("0400"),
+			IfNotExists: true,
+		}
+		c.AddTask(t)
+	}
+
 	return nil
 }
 
+func (b *KubeControllerManagerBuilder) useCertificateSigner() bool {
+	// For now, we enable this on 1.6 and later
+	return b.IsKubernetesGTE("1.6")
+}
+
 func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
-	flags, err := flagbuilder.BuildFlags(b.Cluster.Spec.KubeControllerManager)
+	kcm := b.Cluster.Spec.KubeControllerManager
+
+	kcm.RootCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
+
+	kcm.ServiceAccountPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
+
+	flags, err := flagbuilder.BuildFlags(kcm)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-controller-manager flags: %v", err)
 	}
@@ -71,6 +134,15 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
 		flags += " --cloud-config=" + CloudConfigFilePath
+	}
+
+	// Add kubeconfig flag
+	flags += " --kubeconfig=" + "/var/lib/kube-controller-manager/kubeconfig"
+
+	// Configure CA certificate to be used to sign keys, if we are using CSRs
+	if b.useCertificateSigner() {
+		flags += " --cluster-signing-cert-file=" + filepath.Join(b.PathSrvKubernetes(), "ca.crt")
+		flags += " --cluster-signing-key-file=" + filepath.Join(b.PathSrvKubernetes(), "ca.key")
 	}
 
 	redirectCommand := []string{
@@ -119,19 +191,21 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
 
-		addHostPathMapping(pod, container, name, path, true)
+		addHostPathMapping(pod, container, name, path)
 	}
 
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
-		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath, true)
+		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath)
 	}
 
-	if b.Cluster.Spec.KubeControllerManager.PathSrvKubernetes != "" {
-		addHostPathMapping(pod, container, "srvkube", b.Cluster.Spec.KubeControllerManager.PathSrvKubernetes, true)
+	pathSrvKubernetes := b.PathSrvKubernetes()
+	if pathSrvKubernetes != "" {
+		addHostPathMapping(pod, container, "srvkube", pathSrvKubernetes)
 	}
 
-	addHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log", false)
+	addHostPathMapping(pod, container, "logfile", "/var/log/kube-controller-manager.log").ReadOnly = false
+	addHostPathMapping(pod, container, "varlibkcm", "/var/lib/kube-controller-manager")
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 

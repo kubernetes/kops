@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -42,15 +43,25 @@ const (
 
 var masterMachineTypeExceptions = map[string]string{
 	// Some regions do not (currently) support the m3 family; the c4 large is the cheapest non-burstable instance
-	"us-east-2":    "c4.large",
-	"ca-central-1": "c4.large",
-	"eu-west-2":    "c4.large",
+	"us-east-2":      "c4.large",
+	"ca-central-1":   "c4.large",
+	"eu-west-2":      "c4.large",
+	"ap-northeast-2": "c4.large",
+}
+
+var awsDedicatedInstanceExceptions = map[string]bool{
+	"t2.nano":   true,
+	"t2.micro":  true,
+	"t2.small":  true,
+	"t2.medium": true,
+	"t2.large":  true,
+	"t2.xlarge": true,
 }
 
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
 func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, channel *api.Channel) (*api.InstanceGroup, error) {
-	err := input.Validate()
+	err := validation.ValidateInstanceGroup(input)
 	if err != nil {
 		return nil, err
 	}
@@ -93,6 +104,17 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 
 	if ig.Spec.Image == "" {
 		ig.Spec.Image = defaultImage(cluster, channel)
+	}
+
+	if ig.Spec.Tenancy != "" && ig.Spec.Tenancy != "default" {
+		switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
+		case fi.CloudProviderAWS:
+			if _, ok := awsDedicatedInstanceExceptions[ig.Spec.MachineType]; ok {
+				return nil, fmt.Errorf("Invalid dedicated instance type: %s", ig.Spec.MachineType)
+			}
+		default:
+			glog.Warning("Trying to set tenancy on non-AWS environment")
+		}
 	}
 
 	if ig.IsMaster() {

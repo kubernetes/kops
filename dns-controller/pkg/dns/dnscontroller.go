@@ -256,7 +256,24 @@ func (c *DNSController) runOnce() error {
 
 		glog.V(4).Infof("updating records for %s: %v -> %v", k, oldValues, newValues)
 
-		err := op.updateRecords(k, newValues, int64(ttl.Seconds()))
+		// Duplicate records are a hard-error on e.g. Route53
+		var dedup []string
+		for _, s := range newValues {
+			alreadyExists := false
+			for _, e := range dedup {
+				if e == s {
+					alreadyExists = true
+					break
+				}
+			}
+			if alreadyExists {
+				glog.V(2).Infof("skipping duplicate record %s", s)
+				continue
+			}
+			dedup = append(dedup, s)
+		}
+
+		err := op.updateRecords(k, dedup, int64(ttl.Seconds()))
 		if err != nil {
 			glog.Infof("error updating records for %s: %v", k, err)
 			errors = append(errors, err)
@@ -282,7 +299,7 @@ func (c *DNSController) runOnce() error {
 	for key, changeset := range op.changesets {
 		glog.V(2).Infof("applying DNS changeset for zone %s", key)
 		if err := changeset.Apply(); err != nil {
-			glog.Warningf("error applying DNS changset for zone %s: %v", key, err)
+			glog.Warningf("error applying DNS changeset for zone %s: %v", key, err)
 			errors = append(errors, fmt.Errorf("error applying DNS changeset for zone %s: %v", key, err))
 		}
 	}

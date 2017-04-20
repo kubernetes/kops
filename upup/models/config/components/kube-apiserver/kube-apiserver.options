@@ -1,18 +1,11 @@
 KubeAPIServer:
   SecurePort: 443
-  PathSrvKubernetes: /srv/kubernetes
-  PathSrvSshproxy: /srv/sshproxy
   Address: 127.0.0.1
   EtcdServers:
   - http://127.0.0.1:4001
   EtcdServersOverrides:
   - /events#http://127.0.0.1:4002
   ServiceClusterIPRange: {{ .ServiceClusterIPRange }}
-  ClientCAFile: /srv/kubernetes/ca.crt
-  BasicAuthFile: /srv/kubernetes/basic_auth.csv
-  TLSCertFile: /srv/kubernetes/server.cert
-  TLSPrivateKeyFile: /srv/kubernetes/server.key
-  TokenAuthFile: /srv/kubernetes/known_tokens.csv
   LogLevel: 2
   AllowPrivileged: true
   Image: {{ Image "kube-apiserver" }}

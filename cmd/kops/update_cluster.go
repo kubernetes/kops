@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -85,7 +86,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
-
+	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
 	return cmd
 }
 
@@ -206,14 +207,11 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 		if kubecfgCert != nil {
 			glog.Infof("Exporting kubecfg for cluster")
-			x := &kutil.CreateKubecfg{
-				ContextName:  cluster.ObjectMeta.Name,
-				KeyStore:     keyStore,
-				SecretStore:  secretStore,
-				KubeMasterIP: cluster.Spec.MasterPublicName,
+			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore)
+			if err != nil {
+				return err
 			}
-
-			err = x.WriteKubecfg()
+			err = conf.WriteKubecfg()
 			if err != nil {
 				return err
 			}

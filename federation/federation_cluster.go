@@ -26,7 +26,6 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/kubeconfig"
-	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/federation/apis/federation/v1beta1"
 	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
 	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
@@ -54,14 +53,7 @@ func (o *FederationCluster) Run(cluster *kopsapi.Cluster) error {
 		return err
 	}
 
-	k := kutil.CreateKubecfg{
-		ContextName:  cluster.ObjectMeta.Name,
-		KeyStore:     keyStore,
-		SecretStore:  secretStore,
-		KubeMasterIP: cluster.Spec.MasterPublicName,
-	}
-
-	conf, err := k.ExtractKubeconfig()
+	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore)
 	if err != nil {
 		return fmt.Errorf("error building connection information for cluster %q: %v", cluster.ObjectMeta.Name, err)
 	}

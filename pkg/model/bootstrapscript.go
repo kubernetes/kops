@@ -17,18 +17,19 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup"
+	"os"
 	"text/template"
 )
 
 // BootstrapScript creates the bootstrap script
 type BootstrapScript struct {
-	NodeUpSource     string
-	NodeUpSourceHash string
-
+	NodeUpSource        string
+	NodeUpSourceHash    string
 	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
 }
 
@@ -57,6 +58,18 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHo
 			}
 
 			return string(data), nil
+		},
+
+		// Pass in extra environment variables for user-defined S3 service
+		"S3Env": func() string {
+			if os.Getenv("S3_ENDPOINT") != "" {
+				return fmt.Sprintf("export S3_ENDPOINT= %s\nexport S3_REGION=%s\nexport S3_ACCESS_KEY_ID=%s\nexport S3_SECRET_ACCESS_KEY=%s\n",
+					os.Getenv("S3_ENDPOINT"),
+					os.Getenv("S3_REGION"),
+					os.Getenv("S3_ACCESS_KEY_ID"),
+					os.Getenv("S3_SECRET_ACCESS_KEY"))
+			}
+			return ""
 		},
 	}
 
