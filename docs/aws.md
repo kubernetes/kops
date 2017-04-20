@@ -121,7 +121,7 @@ ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --c
 
 ```bash
 # Note: This example assumes you have jq installed locally.
-aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="subdomain.example.com.") | .Id'
+aws route53 list-hosted-zones | jq '.HostedZones[] | select(.Name=="example.com.") | .Id'
 ```
 
 * Create a new JSON file with your values (`subdomain.json`)

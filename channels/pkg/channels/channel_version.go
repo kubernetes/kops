@@ -38,6 +38,7 @@ type Channel struct {
 type ChannelVersion struct {
 	Version *string `json:"version,omitempty"`
 	Channel *string `json:"channel,omitempty"`
+	Id      string  `json:"id,omitempty"`
 }
 
 func stringValue(s *string) string {
@@ -48,7 +49,11 @@ func stringValue(s *string) string {
 }
 
 func (c *ChannelVersion) String() string {
-	return "Version=" + stringValue(c.Version) + " Channel=" + stringValue(c.Channel)
+	s := "Version=" + stringValue(c.Version) + " Channel=" + stringValue(c.Channel)
+	if c.Id != "" {
+		s += " Id=" + c.Id
+	}
+	return s
 }
 
 func ParseChannelVersion(s string) (*ChannelVersion, error) {
@@ -91,7 +96,7 @@ func (c *Channel) AnnotationName() string {
 	return AnnotationPrefix + c.Name
 }
 
-func (c *ChannelVersion) Replaces(existing *ChannelVersion) bool {
+func (c *ChannelVersion) replaces(existing *ChannelVersion) bool {
 	if existing.Version != nil {
 		if c.Version == nil {
 			return false
@@ -106,13 +111,25 @@ func (c *ChannelVersion) Replaces(existing *ChannelVersion) bool {
 			glog.Warningf("error parsing existing version %q", *existing.Version)
 			return true
 		}
-		return cVersion.GT(existingVersion)
+		if cVersion.LT(existingVersion) {
+			return false
+		} else if cVersion.GT(existingVersion) {
+			return true
+		} else {
+			// Same version; check ids
+			if c.Id == existing.Id {
+				return false
+			} else {
+				glog.V(4).Infof("Channels had same version %q but different ids (%q vs %q); will replace", *c.Version, c.Id, existing.Id)
+			}
+		}
 	}
 
 	glog.Warningf("ChannelVersion did not have a version; can't perform real version check")
 	if c.Version == nil {
 		return false
 	}
+
 	return true
 }
 

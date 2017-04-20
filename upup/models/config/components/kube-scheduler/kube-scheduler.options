@@ -1,7 +1,0 @@
-KubeScheduler:
-  Master: 127.0.0.1:8080
-  LogLevel: 2
-  Image: {{ Image "kube-scheduler" }}
-  # Doesn't seem to be any real downside to always doing a leader election
-  LeaderElection:
-    LeaderElect: true

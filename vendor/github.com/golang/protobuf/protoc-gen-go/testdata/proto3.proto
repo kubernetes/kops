@@ -44,6 +44,7 @@ message Request {
   repeated int64 key = 2;
   Flavour taste = 3;
   Book book = 4;
+  repeated int64 unpacked = 5 [packed=false];
 }
 
 message Book {

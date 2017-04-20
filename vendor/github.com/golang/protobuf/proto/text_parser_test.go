@@ -380,6 +380,95 @@ var unMarshalTextTests = []UnmarshalTextTest{
 		},
 	},
 
+	// Boolean false
+	{
+		in: `count:42 inner { host: "example.com" connected: false }`,
+		out: &MyMessage{
+			Count: Int32(42),
+			Inner: &InnerMessage{
+				Host:      String("example.com"),
+				Connected: Bool(false),
+			},
+		},
+	},
+	// Boolean true
+	{
+		in: `count:42 inner { host: "example.com" connected: true }`,
+		out: &MyMessage{
+			Count: Int32(42),
+			Inner: &InnerMessage{
+				Host:      String("example.com"),
+				Connected: Bool(true),
+			},
+		},
+	},
+	// Boolean 0
+	{
+		in: `count:42 inner { host: "example.com" connected: 0 }`,
+		out: &MyMessage{
+			Count: Int32(42),
+			Inner: &InnerMessage{
+				Host:      String("example.com"),
+				Connected: Bool(false),
+			},
+		},
+	},
+	// Boolean 1
+	{
+		in: `count:42 inner { host: "example.com" connected: 1 }`,
+		out: &MyMessage{
+			Count: Int32(42),
+			Inner: &InnerMessage{
+				Host:      String("example.com"),
+				Connected: Bool(true),
+			},
+		},
+	},
+	// Boolean f
+	{
+		in: `count:42 inner { host: "example.com" connected: f }`,
+		out: &MyMessage{
+			Count: Int32(42),
+			Inner: &InnerMessage{
+				Host:      String("example.com"),
+				Connected: Bool(false),
+			},
+		},
+	},
+	// Boolean t
+	{
+		in: `count:42 inner { host: "example.com" connected: t }`,
+		out: &MyMessage{
+			Count: Int32(42),
+			Inner: &InnerMessage{
+				Host:      String("example.com"),
+				Connected: Bool(true),
+			},
+		},
+	},
+	// Boolean False
+	{
+		in: `count:42 inner { host: "example.com" connected: False }`,
+		out: &MyMessage{
+			Count: Int32(42),
+			Inner: &InnerMessage{
+				Host:      String("example.com"),
+				Connected: Bool(false),
+			},
+		},
+	},
+	// Boolean True
+	{
+		in: `count:42 inner { host: "example.com" connected: True }`,
+		out: &MyMessage{
+			Count: Int32(42),
+			Inner: &InnerMessage{
+				Host:      String("example.com"),
+				Connected: Bool(true),
+			},
+		},
+	},
+
 	// Extension
 	buildExtStructTest(`count: 42 [testdata.Ext.more]:<data:"Hello, world!" >`),
 	buildExtStructTest(`count: 42 [testdata.Ext.more] {data:"Hello, world!"}`),
@@ -546,6 +635,17 @@ func TestOneofParsing(t *testing.T) {
 	if !Equal(m, want) {
 		t.Errorf("\n got %v\nwant %v", m, want)
 	}
+
+	const inOverwrite = `name:"Shrek" number:42`
+	m = new(Communique)
+	testErr := "line 1.13: field 'number' would overwrite already parsed oneof 'Union'"
+	if err := UnmarshalText(inOverwrite, m); err == nil {
+		t.Errorf("TestOneofParsing: Didn't get expected error: %v", testErr)
+	} else if err.Error() != testErr {
+		t.Errorf("TestOneofParsing: Incorrect error.\nHave: %v\nWant: %v",
+			err.Error(), testErr)
+	}
+
 }
 
 var benchInput string
