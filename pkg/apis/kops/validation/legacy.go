@@ -272,9 +272,11 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 		kubeProxyPath := specPath.Child("KubeProxy")
 
 		master := c.Spec.KubeProxy.Master
-		if strict && master == "" {
-			return field.Required(kubeProxyPath.Child("Master"), "")
-		}
+		// We no longer require the master to be set; nodeup can infer it automatically
+		//if strict && master == "" {
+		//      return field.Required(kubeProxyPath.Child("Master"), "")
+		//}
+
 		if master != "" && !isValidAPIServersURL(master) {
 			return field.Invalid(kubeProxyPath.Child("Master"), master, "Not a valid APIServer URL")
 		}
@@ -434,7 +436,7 @@ func DeepValidate(c *kops.Cluster, groups []*kops.InstanceGroup, strict bool) er
 	}
 
 	for _, g := range groups {
-		err := g.CrossValidate(c, strict)
+		err := CrossValidateInstanceGroup(g, c, strict)
 		if err != nil {
 			return err
 		}

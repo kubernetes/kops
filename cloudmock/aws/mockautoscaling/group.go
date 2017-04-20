@@ -17,13 +17,15 @@ limitations under the License.
 package mockautoscaling
 
 import (
+	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 )
 
 func (m *MockAutoscaling) AttachInstances(input *autoscaling.AttachInstancesInput) (*autoscaling.AttachInstancesOutput, error) {
 	for _, group := range m.Groups {
-		if group.AutoScalingGroupName == input.AutoScalingGroupName {
+		if aws.StringValue(group.AutoScalingGroupName) == aws.StringValue(input.AutoScalingGroupName) {
 			for _, instanceID := range input.InstanceIds {
 				group.Instances = append(group.Instances, &autoscaling.Instance{InstanceId: instanceID})
 			}
@@ -44,13 +46,36 @@ func (m *MockAutoscaling) CreateAutoScalingGroup(input *autoscaling.CreateAutoSc
 	return nil, nil
 }
 
+func (m *MockAutoscaling) DescribeAutoScalingGroups(input *autoscaling.DescribeAutoScalingGroupsInput) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
+	if len(input.AutoScalingGroupNames) == 0 {
+		return &autoscaling.DescribeAutoScalingGroupsOutput{
+			AutoScalingGroups: m.Groups,
+		}, nil
+	}
+
+	groups := []*autoscaling.Group{}
+	for _, group := range m.Groups {
+		for _, inputGroupName := range input.AutoScalingGroupNames {
+			if aws.StringValue(group.AutoScalingGroupName) == aws.StringValue(inputGroupName) {
+				groups = append(groups, group)
+			}
+		}
+	}
+
+	return &autoscaling.DescribeAutoScalingGroupsOutput{
+		AutoScalingGroups: groups,
+	}, nil
+}
+
 func (m *MockAutoscaling) TerminateInstanceInAutoScalingGroup(input *autoscaling.TerminateInstanceInAutoScalingGroupInput) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error) {
 	for _, group := range m.Groups {
 		for i := range group.Instances {
 			if aws.StringValue(group.Instances[i].InstanceId) == aws.StringValue(input.InstanceId) {
 				group.Instances = append(group.Instances[:i], group.Instances[i+1:]...)
+				return nil, nil
 			}
 		}
 	}
-	return nil, nil
+
+	return nil, fmt.Errorf("Instance not found")
 }

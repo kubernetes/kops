@@ -169,6 +169,13 @@ message GoTest {
   };
 }
 
+// For testing a group containing a required field.
+message GoTestRequiredGroupField {
+  required group Group = 1 {
+    required int32 Field = 2;
+  };
+}
+
 // For testing skipping of unrecognized fields.
 // Numbers are all big, larger than tag numbers in GoTestField,
 // the message used in the corresponding test.
@@ -488,6 +495,7 @@ message GroupNew {
 
 message FloatingPoint {
   required double f = 1;
+  optional bool exact = 2;
 }
 
 message MessageWithMap {

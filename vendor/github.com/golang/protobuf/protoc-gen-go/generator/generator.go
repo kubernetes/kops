@@ -626,7 +626,6 @@ func (g *Generator) CommandLineParameters(parameter string) {
 			}
 		}
 	}
-
 	if pluginList != "" {
 		// Amend the set of plugins.
 		enabled := make(map[string]bool)
@@ -1181,7 +1180,6 @@ func (g *Generator) generate(file *FileDescriptor) {
 		g.P("const _ = ", g.Pkg["proto"], ".ProtoPackageIsVersion", generatedCodeVersion, " // please upgrade the proto package")
 		g.P()
 	}
-
 	for _, td := range g.file.imp {
 		g.generateImported(td)
 	}
@@ -1551,7 +1549,11 @@ func (g *Generator) goTag(message *Descriptor, field *descriptor.FieldDescriptor
 		enum += CamelCaseSlice(obj.TypeName())
 	}
 	packed := ""
-	if field.Options != nil && field.Options.GetPacked() {
+	if (field.Options != nil && field.Options.GetPacked()) ||
+		// Per https://developers.google.com/protocol-buffers/docs/proto3#simple:
+		// "In proto3, repeated fields of scalar numeric types use packed encoding by default."
+		(message.proto3() && (field.Options == nil || field.Options.Packed == nil) &&
+			isRepeated(field) && isScalar(field)) {
 		packed = ",packed"
 	}
 	fieldName := field.GetName()
@@ -2074,11 +2076,6 @@ func (g *Generator) generateMessage(message *Descriptor) {
 			star = "*"
 		}
 
-		// In proto3, only generate getters for message fields and oneof fields.
-		if message.proto3() && *field.Type != descriptor.FieldDescriptorProto_TYPE_MESSAGE && !oneof {
-			continue
-		}
-
 		// Only export getter symbols for basic types,
 		// and for messages and enums in the same package.
 		// Groups are not exported.
@@ -2137,7 +2134,11 @@ func (g *Generator) generateMessage(message *Descriptor) {
 			continue
 		}
 		if !oneof {
-			g.P("if m != nil && m." + fname + " != nil {")
+			if message.proto3() {
+				g.P("if m != nil {")
+			} else {
+				g.P("if m != nil && m." + fname + " != nil {")
+			}
 			g.In()
 			g.P("return " + star + "m." + fname)
 			g.Out()
@@ -2555,6 +2556,7 @@ func (g *Generator) generateExtension(ext *ExtensionDescriptor) {
 	g.P("Field: ", field.Number, ",")
 	g.P(`Name: "`, extName, `",`)
 	g.P("Tag: ", tag, ",")
+	g.P(`Filename: "`, g.file.GetName(), `",`)
 
 	g.Out()
 	g.P("}")
@@ -2730,6 +2732,32 @@ func isRequired(field *descriptor.FieldDescriptorProto) bool {
 // Is this field repeated?
 func isRepeated(field *descriptor.FieldDescriptorProto) bool {
 	return field.Label != nil && *field.Label == descriptor.FieldDescriptorProto_LABEL_REPEATED
+}
+
+// Is this field a scalar numeric type?
+func isScalar(field *descriptor.FieldDescriptorProto) bool {
+	if field.Type == nil {
+		return false
+	}
+	switch *field.Type {
+	case descriptor.FieldDescriptorProto_TYPE_DOUBLE,
+		descriptor.FieldDescriptorProto_TYPE_FLOAT,
+		descriptor.FieldDescriptorProto_TYPE_INT64,
+		descriptor.FieldDescriptorProto_TYPE_UINT64,
+		descriptor.FieldDescriptorProto_TYPE_INT32,
+		descriptor.FieldDescriptorProto_TYPE_FIXED64,
+		descriptor.FieldDescriptorProto_TYPE_FIXED32,
+		descriptor.FieldDescriptorProto_TYPE_BOOL,
+		descriptor.FieldDescriptorProto_TYPE_UINT32,
+		descriptor.FieldDescriptorProto_TYPE_ENUM,
+		descriptor.FieldDescriptorProto_TYPE_SFIXED32,
+		descriptor.FieldDescriptorProto_TYPE_SFIXED64,
+		descriptor.FieldDescriptorProto_TYPE_SINT32,
+		descriptor.FieldDescriptorProto_TYPE_SINT64:
+		return true
+	default:
+		return false
+	}
 }
 
 // badToUnderscore is the mapping function used to generate Go names from package names,

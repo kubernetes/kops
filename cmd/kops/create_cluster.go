@@ -39,6 +39,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
+const (
+	AuthorizationFlagAlwaysAllow = "AlwaysAllow"
+	AuthorizationFlagRBAC        = "RBAC"
+)
+
 type CreateClusterOptions struct {
 	ClusterName          string
 	Yes                  bool
@@ -51,6 +56,7 @@ type CreateClusterOptions struct {
 	MasterSize           string
 	MasterCount          int32
 	NodeCount            int32
+	EncryptEtcdStorage   bool
 	Project              string
 	KubernetesVersion    string
 	OutDir               string
@@ -71,6 +77,9 @@ type CreateClusterOptions struct {
 	// The network topology to use
 	Topology string
 
+	// The authorization approach to use (RBAC, AlwaysAllow)
+	Authorization string
+
 	// The DNS type to use (public/private)
 	DNSType string
 
@@ -82,6 +91,10 @@ type CreateClusterOptions struct {
 
 	// Egress configuration - FOR TESTING ONLY
 	Egress string
+
+	// Specify tenancy (default or dedicated) for masters and nodes
+	MasterTenancy string
+	NodeTenancy   string
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -97,6 +110,8 @@ func (o *CreateClusterOptions) InitDefaults() {
 
 	// Default to open API & SSH access
 	o.AdminAccess = []string{"0.0.0.0/0"}
+
+	o.Authorization = AuthorizationFlagAlwaysAllow
 }
 
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -152,6 +167,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set the number of masters.  Defaults to one master per master-zone")
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
+	cmd.Flags().BoolVar(&options.EncryptEtcdStorage, "encrypt-etcd-storage", options.EncryptEtcdStorage, "Generate key in aws kms and use it for encrypt etcd volumes")
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use")
 
@@ -172,6 +188,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	// Network topology
 	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster. public|private. Default is 'public'.")
 
+	// Authorization
+	cmd.Flags().StringVar(&options.Authorization, "authorization", options.Authorization, "Authorization mode to use: "+AuthorizationFlagAlwaysAllow+" or "+AuthorizationFlagRBAC)
+
 	// DNS
 	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS hosted zone to use: public|private. Default is 'public'.")
 
@@ -180,6 +199,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// Allow custom tags from the CLI
 	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all instance groups in AWS (eg \"Owner=John Doe,Team=Some Team\").")
+
+	// Master and Node Tenancy
+	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
+	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
 	return cmd
 }
@@ -277,6 +300,16 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
+
+	// In future we could change the default if the flag is not specified, e.g. in 1.7 maybe the default is RBAC?
+	cluster.Spec.Authorization = &api.AuthorizationSpec{}
+	if strings.EqualFold(c.Authorization, AuthorizationFlagAlwaysAllow) {
+		cluster.Spec.Authorization.AlwaysAllow = &api.AlwaysAllowAuthorizationSpec{}
+	} else if strings.EqualFold(c.Authorization, AuthorizationFlagRBAC) {
+		cluster.Spec.Authorization.RBAC = &api.RBACAuthorizationSpec{}
+	} else {
+		return fmt.Errorf("unknown authorization mode %q", c.Authorization)
+	}
 
 	if len(c.Zones) != 0 {
 		existingSubnets := make(map[string]*api.ClusterSubnetSpec)
@@ -405,6 +438,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 			for i, ig := range masters {
 				m := &api.EtcdMemberSpec{}
+				if c.EncryptEtcdStorage {
+					m.EncryptedVolume = &c.EncryptEtcdStorage
+				}
 				m.Name = names[i]
 
 				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
@@ -445,6 +481,18 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for _, group := range nodes {
 			group.Spec.MinSize = fi.Int32(c.NodeCount)
 			group.Spec.MaxSize = fi.Int32(c.NodeCount)
+		}
+	}
+
+	if c.MasterTenancy != "" {
+		for _, group := range masters {
+			group.Spec.Tenancy = c.MasterTenancy
+		}
+	}
+
+	if c.NodeTenancy != "" {
+		for _, group := range nodes {
+			group.Spec.Tenancy = c.NodeTenancy
 		}
 	}
 

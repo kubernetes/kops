@@ -690,14 +690,6 @@ func (m *MockEC2) DescribeInstancesPages(*ec2.DescribeInstancesInput, func(*ec2.
 	panic("Not implemented")
 	return nil
 }
-func (m *MockEC2) DescribeInternetGatewaysRequest(*ec2.DescribeInternetGatewaysInput) (*request.Request, *ec2.DescribeInternetGatewaysOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) DescribeInternetGateways(*ec2.DescribeInternetGatewaysInput) (*ec2.DescribeInternetGatewaysOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
 func (m *MockEC2) DescribeMovingAddressesRequest(*ec2.DescribeMovingAddressesInput) (*request.Request, *ec2.DescribeMovingAddressesOutput) {
 	panic("Not implemented")
 	return nil, nil

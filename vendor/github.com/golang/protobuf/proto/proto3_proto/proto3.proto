@@ -53,6 +53,7 @@ message Message {
   float score = 9;
 
   repeated uint64 key = 5;
+  repeated int32 short_key = 19;
   Nested nested = 6;
   repeated Humour r_funny = 16;
 
@@ -62,12 +63,25 @@ message Message {
 
   google.protobuf.Any anything = 14;
   repeated google.protobuf.Any many_things = 15;
+
+  Message submessage = 17;
+  repeated Message children = 18;
 }
 
 message Nested {
   string bunny = 1;
+  bool cute = 2;
 }
 
 message MessageWithMap {
   map<bool, bytes> byte_mapping = 1;
+}
+
+
+message IntMap {
+  map<int32, int32> rtt = 1;
+}
+
+message IntMaps {
+  repeated IntMap maps = 1;
 }

@@ -42,6 +42,8 @@ func TestCreateClusterMinimal(t *testing.T) {
 func TestCreateClusterHA(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha2")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_encrypt", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_encrypt", "v1alpha2")
 }
 
 // TestCreateClusterHASharedZones tests kops create cluster when the master count is bigger than the numebr of zones

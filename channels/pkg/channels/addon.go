@@ -25,6 +25,7 @@ import (
 	"net/url"
 )
 
+// Addon is a wrapper around a single version of an addon
 type Addon struct {
 	Name            string
 	ChannelName     string
@@ -32,16 +33,42 @@ type Addon struct {
 	Spec            *api.AddonSpec
 }
 
+// AddonUpdate holds data about a proposed update to an addon
 type AddonUpdate struct {
 	Name            string
 	ExistingVersion *ChannelVersion
 	NewVersion      *ChannelVersion
 }
 
+// AddonMenu is a collection of addons, with helpers for computing the latest versions
+type AddonMenu struct {
+	Addons map[string]*Addon
+}
+
+func NewAddonMenu() *AddonMenu {
+	return &AddonMenu{
+		Addons: make(map[string]*Addon),
+	}
+}
+
+func (m *AddonMenu) MergeAddons(o *AddonMenu) {
+	for k, v := range o.Addons {
+		existing := m.Addons[k]
+		if existing == nil {
+			m.Addons[k] = v
+		} else {
+			if existing.ChannelVersion().replaces(v.ChannelVersion()) {
+				m.Addons[k] = v
+			}
+		}
+	}
+}
+
 func (a *Addon) ChannelVersion() *ChannelVersion {
 	return &ChannelVersion{
 		Channel: &a.ChannelName,
 		Version: a.Spec.Version,
+		Id:      a.Spec.Id,
 	}
 }
 
@@ -67,7 +94,7 @@ func (a *Addon) GetRequiredUpdates(k8sClient kubernetes.Interface) (*AddonUpdate
 		return nil, err
 	}
 
-	if existingVersion != nil && !newVersion.Replaces(existingVersion) {
+	if existingVersion != nil && !newVersion.replaces(existingVersion) {
 		return nil, nil
 	}
 

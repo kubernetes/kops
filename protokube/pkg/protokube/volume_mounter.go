@@ -58,6 +58,17 @@ func (k *VolumeMountController) mountMasterVolumes() ([]*Volume, error) {
 		glog.V(2).Infof("Master volume %q is attached at %q", v.ID, v.LocalDevice)
 
 		mountpoint := "/mnt/master-" + v.ID
+
+		// On ContainerOS, we mount to /mnt/disks instead (/mnt is readonly)
+		_, err := os.Stat(PathFor("/mnt/disks"))
+		if err != nil {
+			if !os.IsNotExist(err) {
+				return nil, fmt.Errorf("error checking for /mnt/disks: %v", err)
+			}
+		} else {
+			mountpoint = "/mnt/disks/master-" + v.ID
+		}
+
 		glog.Infof("Doing safe-format-and-mount of %s to %s", v.LocalDevice, mountpoint)
 		fstype := ""
 		err = k.safeFormatAndMount(v.LocalDevice, mountpoint, fstype)

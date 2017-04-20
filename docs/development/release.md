@@ -48,7 +48,7 @@ make ci
 ## Push new dns-controller image if needed
 
 ```
-make dns-controller-push DNS_CONTROLLER_TAG=1.5.1 DOCKER_REGISTRY=kope
+make dns-controller-push DOCKER_REGISTRY=kope
 ```
 
 ## Upload new version
@@ -63,8 +63,7 @@ make upload S3_BUCKET=s3://kubeupv2
 Make sure you are on the release branch `git checkout release-1.X`
 
 ```
-export TAG=1.5.0-alpha4
-git tag ${TAG}
+make release-tag
 git push --tags
 ```
 
@@ -77,10 +76,10 @@ versions to that.
 
 ## Upload to github
 
-Manually create a release on github & upload, but soon we'll publish shipbot which automates this...
+Use [shipbot](https://github.com/kopeio/shipbot) to upload the release:
 
 ```
-bazel run //cmd/shipbot -- -tag ${TAG}
+make release-github
 ```
 
 

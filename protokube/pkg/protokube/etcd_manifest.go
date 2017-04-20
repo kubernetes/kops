@@ -73,7 +73,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 		container.Env = append(container.Env, v1.EnvVar{Name: "ETCD_INITIAL_CLUSTER", Value: strings.Join(initialCluster, ",")})
 
 		container.LivenessProbe = &v1.Probe{
-			InitialDelaySeconds: 600,
+			InitialDelaySeconds: 15,
 			TimeoutSeconds:      15,
 		}
 		container.LivenessProbe.HTTPGet = &v1.HTTPGetAction{
