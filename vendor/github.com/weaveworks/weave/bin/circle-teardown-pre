@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+
+source "$STATE"
+
+if [ -n "$TEST_AND_PUBLISH" ] ; then
+    if [ "$CIRCLE_NODE_INDEX" = "0" ] ; then
+        go get github.com/mattn/goveralls
+        goveralls -repotoken $COVERALLS_REPO_TOKEN -coverprofile=$SRCDIR/test/profile.cov -service=circleci
+        cd $SRCDIR/test; cp coverage.* $CIRCLE_ARTIFACTS
+    fi
+fi

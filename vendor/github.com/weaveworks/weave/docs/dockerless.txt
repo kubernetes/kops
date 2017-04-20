@@ -1,0 +1,161 @@
+http://baturin.org/docs/iproute2/ is a very useful cheat-sheet for the
+"ip" command generally (especially the bit on namespaces).
+
+The following assumes you have two VMs set up on your computer and
+they are both on the same bridge.
+
+From the host, the bridge (virbr0) has IP 192.168.122.1
+VM1 has eth0 at 192.168.122.2
+VM2 has eth0 at 192.168.122.3
+
+All 3 can ping each other and generally contact each other. You do not
+need to worry about forwarding on the host as all traffic will stay on
+this bridge and not leave it.
+
+The following work for me, but there seem to be a variety of bugs and
+weirdnesses in the networking stack so the following is a bit odd...
+
+Setting up VM1:
+
+VM1> brctl addbr br0  # create bridge
+VM1> ip netns add ns1  # create ns1
+VM1> ip netns add ns2  # create ns2
+VM1> ip link add name veth1 type veth peer name veth2  # create veth pair veth1/veth2
+VM1> ip link add name veth3 type veth peer name veth4  # create veth pair veth3/veth4
+VM1> ip link add name veth5 type veth peer name veth6  # create veth pair veth5/veth6
+VM1> ip link set dev veth2 netns ns1  # move veth2 into ns1
+VM1> ip link set dev veth4 netns ns2  # move veth4 into ns2
+VM1> ip netns exec ns1 ip link set dev veth2 up  # switch on veth2
+VM1> ip netns exec ns2 ip link set dev veth4 up  # switch on veth4
+VM1> ip link set dev veth6 up  # switch on veth6
+VM1> ifconfig br0 10.0.0.1/24 up  # configure and enable br0
+VM1> ip netns exec ns1 ip address add 10.0.0.2/24 dev veth2  # configure veth2
+VM1> ip netns exec ns2 ip address add 10.0.0.3/24 dev veth4  # configure veth4
+VM1> ip address add 10.0.0.4/24 dev veth6
+VM1> ip link set dev veth1 up  # switch on veth1
+VM1> ip link set dev veth3 up  # switch on veth3
+VM1> ip link set dev veth5 up  # switch on veth5
+VM1> brctl addif br0 veth1  # add veth1 to br0
+VM1> brctl addif br0 veth3  # add veth3 to br0
+VM1> brctl addif br0 veth5  # add veth5 to br0
+
+Now we need to turn off checksum offloading on sending interfaces:
+
+VM1> ip netns exec ns1 ethtool -K veth2 tx off
+VM1> ip netns exec ns2 ethtool -K veth4 tx off
+
+We've created 3 veth pairs, but only put an end of two of them inside
+name spaces. We're not going to run weave inside a namespace. We're
+instead going to run it on veth6. To avoid confusing the kernel
+routing tables, we need to remove an entry it will have added:
+
+VM1> route del -net 10.0.0.0/24 dev veth6
+
+The kernel should (and will) use br0 as the entry point to our
+10.0.0.0/24 network, not veth6.
+
+At this point, you should be able to successfully ping 10.0.0.1,
+10.0.0.2, 10.0.0.3 and 10.0.0.4 from VM1. But you can also try pinging
+from inside the two namespaces (ns1 and ns2).
+
+VM1> ping -c1 10.0.0.1
+VM1> ping -c1 10.0.0.2
+VM1> ping -c1 10.0.0.3
+VM1> ping -c1 10.0.0.4
+VM1> ip netns exec ns1 ping -c1 10.0.0.1
+VM1> ip netns exec ns1 ping -c1 10.0.0.2
+VM1> ip netns exec ns1 ping -c1 10.0.0.3
+VM1> ip netns exec ns1 ping -c1 10.0.0.4
+etc
+
+In these VMs, we need the kernel to forward traffic between interfaces
+(outside of bridges) so we need forwarding on:
+
+VM1> echo 1 > /proc/sys/net/ipv4/ip_forward
+
+Setting up VM2:
+
+Pretty much the same as VM1, but we use 10.0.0.11, 10.0.0.12,
+10.0.0.13 and 10.0.0.14 instead:
+
+VM2> brctl addbr br0
+VM2> ip netns add ns1
+VM2> ip netns add ns2
+VM2> ip link add name veth1 type veth peer name veth2
+VM2> ip link add name veth3 type veth peer name veth4
+VM2> ip link add name veth5 type veth peer name veth6
+VM2> ip link set dev veth2 netns ns1
+VM2> ip link set dev veth4 netns ns2
+VM2> ip netns exec ns1 ip link set dev veth2 up
+VM2> ip netns exec ns2 ip link set dev veth4 up
+VM2> ip link set dev veth6 up
+VM2> ifconfig br0 10.0.0.11/24 up
+VM2> ip netns exec ns1 ip address add 10.0.0.12/24 dev veth2
+VM2> ip netns exec ns2 ip address add 10.0.0.13/24 dev veth4
+VM2> ip address add 10.0.0.14/24 dev veth6
+VM2> ip link set dev veth1 up
+VM2> ip link set dev veth3 up
+VM2> ip link set dev veth5 up
+VM2> brctl addif br0 veth1
+VM2> brctl addif br0 veth3
+VM2> brctl addif br0 veth5
+VM2> echo 1 > /proc/sys/net/ipv4/ip_forward
+VM2> ip netns exec ns1 ethtool --offload veth2 tx off
+VM2> ip netns exec ns2 ethtool --offload veth4 tx off
+
+Some final checks:
+
+- check VM2 can't ping anything on VM1
+VM2> ping 10.0.0.1 # should fail
+VM2> ip netns exec ns1 ping 10.0.0.1 # should fail
+...etc...
+- and vice versa
+
+We're going to have weave on VM2 connect to weave on VM1. Because
+weave is not in any namespace, we don't need any iptables rules.
+
+You should now find you can initiate a connection from VM2 to VM1 on
+port 6783:
+
+VM1> nc -l -p 6783
+VM2> nc 192.168.122.2 6783
+...type...
+...type...
+
+If all is well, you should now be able to launch weave on VM1
+then on VM2:
+
+VM1> weaver --iface veth6 --name vm1
+VM2> weaver --iface veth6 --name vm2 192.168.122.2
+
+Once the connection is up and running, you should be able to connect
+from VM1/ns2 to VM2/ns2 and vice versa:
+
+VM1> ip netns exec ns2 nc -l -p 10000
+VM2> ip netns exec ns2 nc 10.0.0.3 10000
+...type more...
+...type more...
+
+VM2> ip netns exec ns2 nc -l -p 10000
+VM1> ip netns exec ns2 nc 10.0.0.6 10000
+...type even more...
+...type even more...
+
+
+MTU considerations:
+
+MTU is the payload size of an ethernet frame. The ethernet headers are
+not included in this and add a further 14 bytes (an ethernet header is
+really at least 22 bytes. However only 14 bytes actually carry data -
+the two mac fields and a type/length field. The other parts of the
+header are there for signalling at the electrical layer and thus don't
+get captured by pcap, nor need forwarding). We are then passing this
+over UDP which adds a further 8 bytes, and over IP, which adds at
+least another 20 bytes of headers (IP can have variable header
+length. Yay). We also include the namehash as a 32 byte prefix.
+
+Therefore, we have 20(ip) + 8(udp) + 32(namehash) + 2(length prefix) +
+14(ethernet) = 76 bytes of overhead. Thus we should make sure the
+internal MTU is 76 bytes lower than the external MTU. So on a normal
+1500 byte ethernet MTU, we should ensure the other containers use
+nothing greater than 1424.

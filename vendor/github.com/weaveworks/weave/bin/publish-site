@@ -1,0 +1,46 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+PRODUCT=net
+
+fatal() {
+    echo "$@" >&2
+    exit 1
+}
+
+if [ ! -d .git ] ; then
+    fatal "Current directory is not a git clone"
+fi
+
+if ! BRANCH=$(git symbolic-ref --short HEAD) || [ -z "$BRANCH" ] ; then
+    fatal "Could not determine branch"
+fi
+
+case "$BRANCH" in
+    issues/*)
+        VERSION="${BRANCH#issues/}"
+        TAGS="$VERSION"
+        ;;
+    *)
+        if echo "$BRANCH" | grep -qE '^[0-9]+\.[0-9]+' ; then
+            DESCRIBE=$(git describe --match 'v*')
+            if ! VERSION=$(echo "$DESCRIBE" | grep -oP '(?<=^v)[0-9]+\.[0-9]+\.[0-9]+') ; then
+                fatal "Could not infer latest $BRANCH version from $DESCRIBE"
+            fi
+            TAGS="latest"
+        else
+            VERSION="$BRANCH"
+            TAGS="$VERSION"
+        fi
+        ;;
+esac
+
+for TAG in $TAGS ; do
+    echo ">>> Publishing $PRODUCT $VERSION to $1/docs/$PRODUCT/$TAG"
+    wordepress \
+        --url "$1" --user "$2" --password "$3" \
+        --product "$PRODUCT" --version "$VERSION" --tag "$TAG" \
+        publish site
+done

@@ -1,0 +1,27 @@
+# IMPORTANT: Please only use GLOBs to ignore files and directories.
+
+# Do not lint the below bash scripts in Weave Net, in order to 
+# avoid breaking the build on make lint:
+bin/circle-deploy-issues
+bin/circle-deploy-master
+bin/circle-teardown-pre
+bin/circle-test-teardown
+bin/circle-test-unit
+bin/install-wordepress
+bin/multiweave
+bin/publish-site
+bin/release
+build/build.sh
+prog/weave-kube/launch.sh
+prog/weaveexec/symlink
+test/*_test.sh
+test/600_proxy_docker_py.sh
+test/assert.sh
+test/config.sh
+test/gce.sh
+test/gen_coverage_reports.sh
+test/run_all.sh
+test/sanity_check.sh
+test/setup.sh
+vendor/*.sh
+weave

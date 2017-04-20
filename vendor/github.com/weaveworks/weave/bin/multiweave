@@ -1,0 +1,68 @@
+#!/bin/bash
+set -e
+
+# You may need to adjust
+#    echo 4096 >/proc/sys/net/ipv4/neigh/default/gc_thresh3
+# where the number is greater than NUM_WEAVES*(NUM_WEAVES-1) plus some
+# fudge.
+#
+# Without that, some connections between the weaves may fail to get
+# established, and networking on the host in general becomes
+# broken. There will also be some "net_ratelimit: nnn callbacks
+# suppressed" messages in the syslog.
+
+START=${FIRST_WEAVE:-1}
+COUNT=${NUM_WEAVES:-28}
+FINISH=$((START+COUNT-1))
+
+SUBNET=192.168.7
+
+weavedir=$(dirname $0)/..
+
+# Generate a random MAC value - copied from 'weave' script
+random_mac() {
+    # In the first byte of the MAC, the 'multicast' bit should be
+    # clear and 'locally administered' bit should be set.  All other
+    # bits should be random.
+    od -txC -An -N6 /dev/urandom | ( read a b c d e f && printf "%02x:$b:$c:$d:$e:$f" $((0x$a & ~1 | 2)) )
+}
+
+weave() {
+    i=$1
+    shift
+    WEAVE_CONTAINER_NAME=weave$i WEAVE_HTTP_ADDR=$SUBNET.$i:6784 $weavedir/weave "$@"
+}
+
+case "$1" in
+    launch)
+        shift 1
+        echo $(date -R) launching
+        ip link show multiweave >/dev/null 2>&1 || sudo ip link add name multiweave type bridge
+        for i in $(seq $START $FINISH); do
+            IP=$SUBNET.$i
+            sudo ip addr add $IP/24 dev multiweave
+            weave $i launch-router --datapath '' --iface '' --no-dns --host $IP \
+                --name $(random_mac) --nickname weave$i "$@"
+        done
+        echo $(date -R) connecting
+        [ $START -gt 1 ] || START=2
+        for i in $(seq $START $FINISH); do
+            TO=$SUBNET.$((i-1))
+            echo connecting weave$i to $TO
+            weave $i connect $TO
+        done
+        echo $(date -R) done
+        ;;
+    stop)
+        for i in $(seq $FINISH -1 $START); do
+            IP=$SUBNET.$i
+            echo Stopping weave$i
+            weave $i stop-router
+            sudo ip addr del $IP/24 dev multiweave || true
+        done
+        [ -z "$(ip -4 -o addr show multiweave)" ] && sudo ip link del multiweave
+        ;;
+    *)
+            weave "$@"
+        ;;
+esac

@@ -1,0 +1,75 @@
+{
+  "description": "Weave Net plugin for Docker",
+  "documentation": "https://weave.works",
+  "entrypoint": [
+    "/home/weave/launch.sh"
+  ],
+  "interface": {
+    "socket": "weave.sock",
+    "types": [
+      "docker.networkdriver/1.0"
+    ]
+  },
+  "linux": {
+    "capabilities": [
+      "CAP_SYS_ADMIN",
+      "CAP_NET_ADMIN"
+    ]
+  },
+  "mounts": [
+    {
+      "destination": "/host/proc/",
+      "type": "bind",
+      "source": "/proc/",
+      "options": ["rbind", "rw"]
+    },
+    {
+      "destination": "/var/run/docker.sock",
+      "source": "/var/run/docker.sock",
+      "type": "bind",
+      "options": ["rbind"]
+    },
+    {
+      "destination": "/host/var/lib/",
+      "source": "/var/lib/",
+      "type": "bind",
+      "options": ["rbind"]
+    },
+    {
+      "destination": "/host/etc/",
+      "source": "/etc/",
+      "type": "bind",
+      "options": ["rbind"]
+    }
+  ],
+  "env": [
+    {
+      "description": "Extra args to `weaver` and `plugin`",
+      "name": "EXTRA_ARGS",
+      "settable": [
+          "value"
+      ],
+      "value": ""
+    },
+    {
+      "description": "Encryption password",
+      "name": "WEAVE_PASSWORD",
+      "settable": [
+          "value"
+      ],
+      "value": ""
+    },
+    {
+      "description": "MTU",
+      "name": "WEAVE_MTU",
+      "settable": [
+          "value"
+      ],
+      "value": ""
+    }
+  ],
+  "network": {
+    "type": "host"
+  },
+  "workdir": ""
+}

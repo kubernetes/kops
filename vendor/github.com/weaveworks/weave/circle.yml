@@ -1,0 +1,76 @@
+general:
+  branches:
+    ignore:
+      - gh\-pages
+
+machine:
+  pre:
+    - curl -sSL https://s3.amazonaws.com/circle-downloads/install-circleci-docker.sh | bash -s -- 1.10.0
+  services:
+    - docker
+  environment:
+    GOPATH: /home/ubuntu:$GOPATH
+    SRCDIR: /home/ubuntu/src/github.com/weaveworks/weave
+    PATH: $PATH:$HOME/.local/bin:/opt/google-cloud-sdk/bin
+    CLOUDSDK_CORE_DISABLE_PROMPTS: 1
+    STATE: /home/ubuntu/state.env
+    # Base name of VMs for integration tests:
+    NAME: test-$CIRCLE_BUILD_NUM-$CIRCLE_NODE_INDEX
+    TEST_VMS_SETUP_OUTPUT_FILE: $CIRCLE_ARTIFACTS/test_vms_setup_output.txt
+    TEST_VMS_PROV_AND_CONF_LOCK_FILE: $CIRCLE_ARTIFACTS/test_vms_provisioned_and_configured.txt
+    TEST_VMS_READY_LOCK_FILE: $CIRCLE_ARTIFACTS/test_vms_ready.txt
+    # Google Cloud Platorm images for integration tests:
+    USE_IMAGE: 1
+    DISK_NAME_PREFIX: test-$CIRCLE_BUILD_NUM-0
+
+dependencies:
+  cache_directories:
+    - "~/docker"
+  post:
+    - bin/circle-dependencies-post-sources
+    # Provision & configure testing VMs:
+    - "while [ ! -d $SRCDIR ]; do sleep 1; done; $SRCDIR/bin/provision_test_vms.sh":
+        parallel: true
+        background: true
+    - bin/circle-dependencies-post
+
+test:
+  pre:
+    - "$SRCDIR/bin/circle-test-pre":
+        parallel: true
+        background: true
+  override:
+    - "$SRCDIR/bin/circle-test-unit":
+        parallel: true
+    - "$SRCDIR/bin/circle-test-smoke":
+        parallel: true
+        timeout: 300
+  post:
+    - "$SRCDIR/bin/circle-test-teardown":
+        parallel: true
+
+teardown:
+  pre:
+    # Destroy testing VMs:
+    - "cd $SRCDIR/test && ./run-integration-tests.sh destroy":
+        parallel: true
+        background: true
+    - "$SRCDIR/bin/circle-teardown-pre":
+        parallel: true
+
+deployment:
+  release:
+    branch: /[0-9]+\.[0-9]+/
+    owner: weaveworks
+    commands:
+      - "$SRCDIR/bin/circle-deploy-release"
+  master:
+    branch: master
+    owner: weaveworks
+    commands:
+      - "$SRCDIR/bin/circle-deploy-master"
+  issues:
+    branch: /.*/
+    owner: weaveworks
+    commands:
+      - "$SRCDIR/bin/circle-deploy-issues"
