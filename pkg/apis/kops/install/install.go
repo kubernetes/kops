@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/apimachinery/announced"
 	"k8s.io/apimachinery/pkg/apimachinery/registered"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
@@ -42,8 +43,8 @@ func Install(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *r
 				v1alpha2.SchemeGroupVersion.Version,
 				v1alpha1.SchemeGroupVersion.Version,
 			},
-			ImportPrefix: "k8s.io/kops/pkg/apis/kops",
-			// ?? RootScopedKinds:            sets.NewString("NodeMetrics"),
+			RootScopedKinds:            sets.NewString("Cluster"),
+			ImportPrefix:               "k8s.io/kops/pkg/apis/kops",
 			AddInternalObjectsToScheme: kops.AddToScheme,
 		},
 		announced.VersionToSchemeFunc{

@@ -28,7 +28,6 @@ import (
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
-	"k8s.io/kops/upup/pkg/kutil"
 )
 
 const UserAdmin = "admin"
@@ -43,12 +42,12 @@ type FederationConfiguration struct {
 	KubeconfigSecretName string
 }
 
-func (o *FederationConfiguration) extractKubecfg(c *fi.Context, f *kopsapi.Federation) (*kutil.KubeconfigBuilder, error) {
+func (o *FederationConfiguration) extractKubecfg(c *fi.Context, f *kopsapi.Federation) (*kubeconfig.KubeconfigBuilder, error) {
 	// TODO: move this
 	masterName := "api." + f.Spec.DNSName
 
-	k := kutil.NewKubeconfigBuilder()
-	k.KubeMasterIP = masterName
+	k := kubeconfig.NewKubeconfigBuilder()
+	k.Server = "https://" + masterName
 	k.Context = "federation-" + f.ObjectMeta.Name
 
 	// CA Cert

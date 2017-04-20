@@ -7,6 +7,8 @@ spec:
   api:
     loadBalancer:
       type: Public
+  authorization:
+    alwaysAllow: {}
   channel: stable
   cloudProvider: aws
   configBase: memfs://tests/private.example.com

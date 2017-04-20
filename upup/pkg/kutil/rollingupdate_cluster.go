@@ -23,7 +23,6 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/kubernetes"
@@ -116,9 +115,8 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 	return groups, nil
 }
 
-// RollingUpdateDrainValidate performs a rolling update on a K8s Cluster.
+// RollingUpdate performs a rolling update on a K8s Cluster.
 func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
-
 	if len(groups) == 0 {
 		glog.Infof("Cloud Instance Group length is zero. Not doing a rolling-update.")
 		return nil
@@ -203,22 +201,33 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 	{
 		var wg sync.WaitGroup
 
-		for k, nodeGroup := range nodeGroups {
-			wg.Add(1)
-			go func(k string, group *CloudInstanceGroup) {
+		// We run nodes in series, even if they are in separate instance groups
+		// typically they will not being separate instance groups. If you roll the nodes in parallel
+		// you can get into a scenario where you can evict multiple statefulset pods from the same
+		// statefulset at the same time. Further improvements needs to be made to protect from this as
+		// well.
+
+		wg.Add(1)
+
+		go func() {
+			for k := range nodeGroups {
 				resultsMutex.Lock()
 				results[k] = fmt.Errorf("function panic nodes")
 				resultsMutex.Unlock()
+			}
 
-				defer wg.Done()
+			defer wg.Done()
 
+			for k, group := range nodeGroups {
 				err := group.RollingUpdate(c, instanceGroups, false, c.NodeInterval)
 
 				resultsMutex.Lock()
 				results[k] = err
 				resultsMutex.Unlock()
-			}(k, nodeGroup)
-		}
+
+				// TODO: Bail on error?
+			}
+		}()
 
 		wg.Wait()
 	}
@@ -451,10 +460,12 @@ func (n *CloudInstanceGroup) DeleteAWSInstance(u *CloudInstanceGroupInstance, in
 		glog.Infof("Stopping instance %q, in AWS ASG %q.", instanceId, n.ASGName)
 	}
 
-	request := &ec2.TerminateInstancesInput{
-		InstanceIds: []*string{u.ASGInstance.InstanceId},
+	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+		InstanceId:                     u.ASGInstance.InstanceId,
+		ShouldDecrementDesiredCapacity: aws.Bool(false),
 	}
-	if _, err := c.EC2().TerminateInstances(request); err != nil {
+
+	if _, err := c.Autoscaling().TerminateInstanceInAutoScalingGroup(request); err != nil {
 		if nodeName != "" {
 			return fmt.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
 		}
