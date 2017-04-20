@@ -42,18 +42,20 @@ const (
 	centosSystemdSystemPath = "/usr/lib/systemd/system"
 
 	coreosSystemdSystemPath = "/etc/systemd/system"
+
+	containerosSystemdSystemPath = "/etc/systemd/system"
 )
 
 type Service struct {
 	Name       string
-	Definition *string
-	Running    *bool `json:"running"`
+	Definition *string `json:"definition,omitempty"`
+	Running    *bool   `json:"running,omitempty"`
 
 	// Enabled configures the service to start at boot (or not start at boot)
-	Enabled *bool
+	Enabled *bool `json:"enabled,omitempty"`
 
-	ManageState  *bool `json:"manageState"`
-	SmartRestart *bool `json:"smartRestart"`
+	ManageState  *bool `json:"manageState,omitempty"`
+	SmartRestart *bool `json:"smartRestart,omitempty"`
 }
 
 var _ fi.HasDependencies = &Service{}
@@ -146,6 +148,8 @@ func (e *Service) systemdSystemPath(target tags.HasTags) (string, error) {
 		return centosSystemdSystemPath, nil
 	} else if target.HasTag("_coreos") {
 		return coreosSystemdSystemPath, nil
+	} else if target.HasTag("_containeros") {
+		return containerosSystemdSystemPath, nil
 	} else {
 		return "", fmt.Errorf("unsupported systemd system")
 	}

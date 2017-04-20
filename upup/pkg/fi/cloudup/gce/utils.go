@@ -51,3 +51,21 @@ func SafeClusterName(clusterName string) string {
 	safeClusterName := strings.Replace(clusterName, ".", "-", -1)
 	return safeClusterName
 }
+
+// SafeObjectName returns the object name and cluster name escaped for GCE
+func SafeObjectName(name string, clusterName string) string {
+	gceName := name + "-" + clusterName
+
+	// TODO: If the cluster name > some max size (32?) we should curtail it
+	return SafeClusterName(gceName)
+}
+
+// Returns the last component of a URL, i.e. anything after the last slash
+// If there is no slash, returns the whole string
+func LastComponent(s string) string {
+	lastSlash := strings.LastIndex(s, "/")
+	if lastSlash != -1 {
+		s = s[lastSlash+1:]
+	}
+	return s
+}

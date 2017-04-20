@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -60,10 +61,31 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	// Touch log file, so that docker doesn't create a directory instead
+	{
+		t := &nodetasks.File{
+			Path:        "/var/log/kube-apiserver.log",
+			Contents:    fi.NewStringResource(""),
+			Type:        nodetasks.FileType_File,
+			Mode:        s("0400"),
+			IfNotExists: true,
+		}
+		c.AddTask(t)
+	}
+
 	return nil
 }
 
 func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
+	kubeAPIServer := b.Cluster.Spec.KubeAPIServer
+
+	kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
+	kubeAPIServer.TLSCertFile = filepath.Join(b.PathSrvKubernetes(), "server.cert")
+	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
+
+	kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
+	kubeAPIServer.TokenAuthFile = filepath.Join(b.PathSrvKubernetes(), "known_tokens.csv")
+
 	flags, err := flagbuilder.BuildFlags(b.Cluster.Spec.KubeAPIServer)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-apiserver flags: %v", err)
@@ -96,6 +118,18 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		},
 	}
 
+	probeAction := &v1.HTTPGetAction{
+		Host: "127.0.0.1",
+		Path: "/healthz",
+		Port: intstr.FromInt(8080),
+	}
+	if kubeAPIServer.InsecurePort != 0 {
+		probeAction.Port = intstr.FromInt(int(kubeAPIServer.InsecurePort))
+	} else if kubeAPIServer.SecurePort != 0 {
+		probeAction.Port = intstr.FromInt(int(kubeAPIServer.SecurePort))
+		probeAction.Scheme = v1.URISchemeHTTPS
+	}
+
 	container := &v1.Container{
 		Name:  "kube-apiserver",
 		Image: b.Cluster.Spec.KubeAPIServer.Image,
@@ -107,11 +141,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		Command: redirectCommand,
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
-				HTTPGet: &v1.HTTPGetAction{
-					Host: "127.0.0.1",
-					Path: "/healthz",
-					Port: intstr.FromInt(8080),
-				},
+				HTTPGet: probeAction,
 			},
 			InitialDelaySeconds: 15,
 			TimeoutSeconds:      15,
@@ -133,30 +163,32 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
 
-		addHostPathMapping(pod, container, name, path, true)
+		addHostPathMapping(pod, container, name, path)
 	}
 
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
-		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath, true)
+		addHostPathMapping(pod, container, "cloudconfig", CloudConfigFilePath)
 	}
 
-	if b.Cluster.Spec.KubeAPIServer.PathSrvKubernetes != "" {
-		addHostPathMapping(pod, container, "srvkube", b.Cluster.Spec.KubeAPIServer.PathSrvKubernetes, true)
+	pathSrvKubernetes := b.PathSrvKubernetes()
+	if pathSrvKubernetes != "" {
+		addHostPathMapping(pod, container, "srvkube", pathSrvKubernetes)
 	}
 
-	if b.Cluster.Spec.KubeAPIServer.PathSrvSshproxy != "" {
-		addHostPathMapping(pod, container, "srvsshproxy", b.Cluster.Spec.KubeAPIServer.PathSrvSshproxy, false)
+	pathSrvSshproxy := b.PathSrvSshproxy()
+	if pathSrvSshproxy != "" {
+		addHostPathMapping(pod, container, "srvsshproxy", pathSrvSshproxy)
 	}
 
-	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log", false)
+	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log").ReadOnly = false
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
 	return pod, nil
 }
 
-func addHostPathMapping(pod *v1.Pod, container *v1.Container, name string, path string, readOnly bool) {
+func addHostPathMapping(pod *v1.Pod, container *v1.Container, name string, path string) *v1.VolumeMount {
 	pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
 		Name: name,
 		VolumeSource: v1.VolumeSource{
@@ -169,8 +201,10 @@ func addHostPathMapping(pod *v1.Pod, container *v1.Container, name string, path 
 	container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
 		Name:      name,
 		MountPath: path,
-		ReadOnly:  readOnly,
+		ReadOnly:  true,
 	})
+
+	return &container.VolumeMounts[len(container.VolumeMounts)-1]
 }
 
 func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {

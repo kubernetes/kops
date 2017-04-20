@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/util/pkg/vfs"
 
+	"bytes"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
@@ -39,7 +40,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "replace -f FILENAME",
-		Short: "Replace a resource by filename or stdin",
+		Short: "Replace a resource by filename or stdin.",
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameEmpty(options.Filenames) {
 				cmd.Help()
@@ -72,40 +73,44 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ReplaceOp
 		if err != nil {
 			return fmt.Errorf("error reading file %q: %v", f, err)
 		}
+		sections := bytes.Split(contents, []byte("\n---\n"))
 
-		o, gvk, err := codec.Decode(contents, nil, nil)
-		if err != nil {
-			return fmt.Errorf("error parsing file %q: %v", f, err)
+		for _, section := range sections {
+
+			o, gvk, err := codec.Decode(section, nil, nil)
+			if err != nil {
+				return fmt.Errorf("error parsing file %q: %v", f, err)
+			}
+
+			switch v := o.(type) {
+			case *kopsapi.Federation:
+				_, err = clientset.Federations().Update(v)
+				if err != nil {
+					return fmt.Errorf("error replacing federation: %v", err)
+				}
+
+			case *kopsapi.Cluster:
+				_, err = clientset.Clusters().Update(v)
+				if err != nil {
+					return fmt.Errorf("error replacing cluster: %v", err)
+				}
+
+			case *kopsapi.InstanceGroup:
+				clusterName := v.ObjectMeta.Labels[kopsapi.LabelClusterName]
+				if clusterName == "" {
+					return fmt.Errorf("must specify %q label with cluster name to replace instanceGroup", kopsapi.LabelClusterName)
+				}
+				_, err = clientset.InstanceGroups(clusterName).Update(v)
+				if err != nil {
+					return fmt.Errorf("error replacing instanceGroup: %v", err)
+				}
+
+			default:
+				glog.V(2).Infof("Type of object was %T", v)
+				return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
+			}
+
 		}
-
-		switch v := o.(type) {
-		case *kopsapi.Federation:
-			_, err = clientset.Federations().Update(v)
-			if err != nil {
-				return fmt.Errorf("error replacing federation: %v", err)
-			}
-
-		case *kopsapi.Cluster:
-			_, err = clientset.Clusters().Update(v)
-			if err != nil {
-				return fmt.Errorf("error replacing cluster: %v", err)
-			}
-
-		case *kopsapi.InstanceGroup:
-			clusterName := v.ObjectMeta.Labels[kopsapi.LabelClusterName]
-			if clusterName == "" {
-				return fmt.Errorf("must specify %q label with cluster name to replace instanceGroup", kopsapi.LabelClusterName)
-			}
-			_, err = clientset.InstanceGroups(clusterName).Update(v)
-			if err != nil {
-				return fmt.Errorf("error replacing instanceGroup: %v", err)
-			}
-
-		default:
-			glog.V(2).Infof("Type of object was %T", v)
-			return fmt.Errorf("Unhandled kind %q in %q", gvk, f)
-		}
-
 	}
 
 	return nil

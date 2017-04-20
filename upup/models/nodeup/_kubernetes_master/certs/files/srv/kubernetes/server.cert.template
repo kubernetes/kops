@@ -1,1 +1,0 @@
-{{ (Certificate "master").AsString }}

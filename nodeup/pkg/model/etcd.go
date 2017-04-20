@@ -35,8 +35,13 @@ func (b *EtcdBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	if b.Distribution == distros.DistributionCoreOS {
+	switch b.Distribution {
+	case distros.DistributionCoreOS:
 		glog.Infof("Detected CoreOS; skipping etcd user installation")
+		return nil
+
+	case distros.DistributionContainerOS:
+		glog.Infof("Detected ContainerOS; skipping etcd user installation")
 		return nil
 	}
 

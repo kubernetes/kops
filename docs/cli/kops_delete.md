@@ -1,11 +1,21 @@
 ## kops delete
 
-delete clusters
+Deletes a resource by filename or stdin
 
 ### Synopsis
 
+Delete clusters or instancegroups by filename or stdin
 
-Delete clusters
+```
+kops delete -f FILENAME [--yes]
+```
+
+### Options
+
+```
+  -f, --filename stringSlice   Filename to use to delete the resource
+  -y, --yes                    Specify --yes to delete the resource
+```
 
 ### Options inherited from parent commands
 
@@ -27,4 +37,3 @@ Delete clusters
 * [kops delete cluster](kops_delete_cluster.md)	 - Delete cluster
 * [kops delete instancegroup](kops_delete_instancegroup.md)	 - Delete instancegroup
 * [kops delete secret](kops_delete_secret.md)	 - Delete secret
-

@@ -18,16 +18,14 @@ package main
 
 import (
 	"fmt"
+	"k8s.io/kops/channels/pkg/cmd"
 	"os"
 )
 
 func main() {
-	Execute()
-}
-
-// exitWithError will terminate execution with an error result
-// It prints the error to stderr and exits with a non-zero exit code
-func exitWithError(err error) {
-	fmt.Fprintf(os.Stderr, "\n%v\n", err)
-	os.Exit(1)
+	f := &cmd.DefaultFactory{}
+	if err := cmd.Execute(f, os.Stdout); err != nil {
+		fmt.Fprintf(os.Stderr, "\n%v\n", err)
+		os.Exit(1)
+	}
 }
