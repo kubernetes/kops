@@ -94,7 +94,7 @@ export KOPS_STATE_STORE=s3://[s3_bucket]
 export S3_ACCESS_KEY_ID=[s3_access_key]
 export S3_SECRET_ACCESS_KEY=[s3_secret_key]
 export S3_REGION=[s3_region]
-export S3_ENDPOINT=http://[s3_server_ip]:[s3_service_port]
+export S3_ENDPOINT=http://[s3_server_ip]:9000
 ```
 
 Users can also choose their own S3-compatible storage applications by setting environment varibales similiarly.
