@@ -49,11 +49,7 @@ func PerformAssignments(c *kops.Cluster) error {
 		if vpcInfo == nil {
 			return fmt.Errorf("unable to find VPC ID %q", c.Spec.NetworkID)
 		}
-		if len(vpcInfo.Subnets) > 0 {
-			c.Spec.NetworkCIDR = vpcInfo.FindBiggestFreeSubnet()
-		} else {
-			c.Spec.NetworkCIDR = vpcInfo.CIDR
-		}
+		c.Spec.NetworkCIDR = vpcInfo.CIDR
 		if c.Spec.NetworkCIDR == "" {
 			return fmt.Errorf("Unable to infer NetworkCIDR from VPC ID, please specify --network-cidr")
 		}

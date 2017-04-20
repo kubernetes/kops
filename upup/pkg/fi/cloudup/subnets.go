@@ -49,13 +49,15 @@ func assignCIDRsToSubnets(c *kops.Cluster) error {
 		return nil
 	}
 
+	var vpcInfo *fi.VPCInfo
+	var err error
 	if c.Spec.NetworkID != "" {
 		cloud, err := BuildCloud(c)
 		if err != nil {
 			return err
 		}
 
-		vpcInfo, err := cloud.FindVPCInfo(c.Spec.NetworkID)
+		vpcInfo, err = cloud.FindVPCInfo(c.Spec.NetworkID)
 		if err != nil {
 			return err
 		}
@@ -96,7 +98,14 @@ func assignCIDRsToSubnets(c *kops.Cluster) error {
 		return nil
 	}
 
-	_, cidr, err := net.ParseCIDR(c.Spec.NetworkCIDR)
+	var bignet string
+	var cidr *net.IPNet
+	if len(vpcInfo.Subnets) > 0 {
+		bignet = vpcInfo.FindBiggestFreeSubnet()
+		_, cidr, err = net.ParseCIDR(bignet)
+	} else {
+		_, cidr, err = net.ParseCIDR(c.Spec.NetworkCIDR)
+	}
 	if err != nil {
 		return fmt.Errorf("Invalid NetworkCIDR: %q", c.Spec.NetworkCIDR)
 	}
