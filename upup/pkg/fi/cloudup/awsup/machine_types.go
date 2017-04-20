@@ -204,7 +204,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            188,
 		Cores:          64,
 		EphemeralDisks: nil,
-	},	
+	},
 
 	// c3 family
 	{
