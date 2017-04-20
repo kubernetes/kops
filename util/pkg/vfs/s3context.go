@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/endpoints"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -49,16 +50,47 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 
 	s3Client := s.clients[region]
 	if s3Client == nil {
-		config := aws.NewConfig().WithRegion(region)
-		config = config.WithCredentialsChainVerboseErrors(true)
+		var config *aws.Config
+		var err error
+		endpoint := os.Getenv("S3_ENDPOINT")
+		if endpoint == "" {
+			config = aws.NewConfig().WithRegion(region)
+			config = config.WithCredentialsChainVerboseErrors(true)
+		} else {
+			// Use customized S3 storage
+			glog.Infof("Found S3_ENDPOINT=%q, using as non-AWS S3 backend", endpoint)
+			config, err = getCustomS3Config(endpoint, region)
+			if err != nil {
+				return nil, err
+			}
+		}
 
 		session := session.New()
 		s3Client = s3.New(session, config)
+		s.clients[region] = s3Client
 	}
 
-	s.clients[region] = s3Client
-
 	return s3Client, nil
+}
+
+func getCustomS3Config(endpoint string, region string) (*aws.Config, error) {
+	accessKeyID := os.Getenv("S3_ACCESS_KEY_ID")
+	if accessKeyID == "" {
+		return nil, fmt.Errorf("S3_ACCESS_KEY_ID cannot be empty when S3_ENDPOINT is not empty")
+	}
+	secretAccessKey := os.Getenv("S3_SECRET_ACCESS_KEY")
+	if secretAccessKey == "" {
+		return nil, fmt.Errorf("S3_SECRET_ACCESS_KEY cannot be empty when S3_ENDPOINT is not empty")
+	}
+
+	s3Config := &aws.Config{
+		Credentials:      credentials.NewStaticCredentials(accessKeyID, secretAccessKey, ""),
+		Endpoint:         aws.String(endpoint),
+		Region:           aws.String(region),
+		S3ForcePathStyle: aws.Bool(true),
+	}
+
+	return s3Config, nil
 }
 
 func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
@@ -73,6 +105,16 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	}
 
 	// Probe to find correct region for bucket
+	endpoint := os.Getenv("S3_ENDPOINT")
+	if endpoint != "" {
+		// If customized S3 storage is set, return user-defined region
+		region = os.Getenv("S3_REGION")
+		if region == "" {
+			region = "us-east-1"
+		}
+		return region, nil
+	}
+
 	awsRegion := os.Getenv("AWS_REGION")
 	if awsRegion == "" {
 		awsRegion = "us-east-1"

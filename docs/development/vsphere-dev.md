@@ -10,7 +10,6 @@ Here is a [list of requirements and tasks](https://docs.google.com/document/d/10
 
 ## Setting up DNS
 Since vSphere doesn't have built-in DNS service, we use CoreDNS to support the DNS requirement in vSphere provider. This requires the users to setup a CoreDNS server before creating a kubernetes cluster. Please follow the following instructions to setup.
-**Before the support of CoreDNS becomes stable, use env parameter "VSPHERE_DNS=coredns"** to enable using CoreDNS. Or else AWS Route53 will be the default DNS service. To use Route53, follow instructions on: https://github.com/vmware/kops/blob/vsphere-develop/docs/aws.md
 
 For now we hardcoded DNS zone to skydns.local. So your cluster name should have suffix skydns.local, for example: "mycluster.skydns.local"
 
@@ -57,22 +56,55 @@ ns1.ns.dns.skydns.local. 160	IN	A	192.168.0.1
 Add ```--dns=private --vsphere-coredns-server=http://[DNS server's IP]:2379``` into the ```kops create cluster``` command line.
 
 ### Use CoreDNS supported DNS Controller
-Information about DNS Controller can be found [here](https://github.com/kubernetes/kops/blob/master/dns-controller/README.md)
+Information about DNS Controller can be found [here](https://github.com/kubernetes/kops/blob/master/dns-controller/README.md).
 Currently the DNS Controller is an add-on container and the image is from kope/dns-controller.
-Before the vSphere support is officially merged into upstream, we need to set up CoreDNS supported DNS controller manually.
+Before the vSphere support is officially merged into upstream, please use the following CoreDNS supported DNS controller.
 ```bash
-DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
-export VSPHERE_DNSCONTROLLER_IMAGE=[your docker hub repo]
-make
-kops create cluster ...
+export DNSCONTROLLER_IMAGE=cnastorage/dns-controller
 ```
+(The above environment variable is already set in [kops_dir]/hack/vsphere/set_env)
+
+## Setting up cluster state storage
+Kops requires the state of clusters to be stored inside certain storage service. AWS S3 is the default option.
+More about using AWS S3 for cluster state store can be found at "Cluster State storage" on this [page](https://github.com/kubernetes/kops/blob/master/docs/aws.md).
+
+Users can also setup their own S3 server and use the following instructions to use user-defined S3-compatible applications for cluster state storage.
+This is recommended if you don't have AWS account or you don't want to store the status of your clusters on public cloud storage.
+
+Minio is a S3-compatible object storage application. We have included Minio components inside the same OVA template for CoreDNS service.
+If you haven't setup CoreDNS according to section "Setup CoreDNS server" of this document, please follow the instructions in section "Setup CoreDNS server" Step 1 to Step 6.
+
+Then SSH into the VM for CoreDNS/Minio service and execute:
+```bash
+/root/start-minio.sh [bucket_name]
+```
+
+Output of the script should look like:
+```bash
+Please set the following environment variables into hack/vsphere/set_env accordingly, before using kops create cluster:
+KOPS_STATE_STORE=s3://[s3_bucket]
+S3_ACCESS_KEY_ID=[s3_access_key]
+S3_SECRET_ACCESS_KEY=[s3_secret_key]
+S3_REGION=[s3_region]
+```
+
+Update [kops_dir]hack/vsphere/set_env according to the output of the script and the IP address/service port of the Minio server:
+```bash
+export KOPS_STATE_STORE=s3://[s3_bucket]
+export S3_ACCESS_KEY_ID=[s3_access_key]
+export S3_SECRET_ACCESS_KEY=[s3_secret_key]
+export S3_REGION=[s3_region]
+export S3_ENDPOINT=http://[s3_server_ip]:[s3_service_port]
+```
+
+Users can also choose their own S3-compatible storage applications by setting environment varibales similiarly.
 
 ## Kops with vSphere
 vSphere cloud provider support in kops is a work in progress. To try out deploying kubernetes cluster on vSphere using kops, some extra steps are required.
 
 ### Pre-requisites
 + vSphere with at least one ESX, having sufficient free disk space on attached datastore. ESX VM's should have internet connectivity.
-+ Setup DNS following steps given in relevant Section above.
++ Setup DNS and S3 storage service following steps given in relevant Section above.
 + Upload VM template. Steps:
 1. Login to vSphere Client.
 2. Right-Click on ESX host on which you want to deploy the template.
@@ -80,8 +112,8 @@ vSphere cloud provider support in kops is a work in progress. To try out deployi
 4. Copy and paste URL for [OVA](https://storage.googleapis.com/kops-vsphere/kops_ubuntu_16_04.ova) (uploaded 04/18/2017).
 5. Follow next steps according to instructions mentioned in wizard.
 **NOTE: DO NOT POWER ON THE IMPORTED TEMPLATE VM.**
-+ Currently vSphere code is using AWS S3 for storing all configurations, specs, addon yamls, etc. You need valid AWS credentials to try out kops on vSphere. s3://your-objectstore/cluster1.skydns.local folder will have all necessary configuration, spec, addons, etc., required to configure kubernetes cluster. (If you don't know how to setup aws, then read more on kops and how to deploy a cluster using kops on aws)
 + Update ```[kops_dir]/hack/vsphere/set_env``` setting up necessary environment variables.
++ ```source [kops_dir]/hack/vsphere/set_env```
 
 ### Installing
 Currently vSphere support is not part of upstream kops releases. Please use the following instructions to use binaries/images with vSphere support.

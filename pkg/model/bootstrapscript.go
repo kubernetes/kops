@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model/resources"
@@ -29,8 +30,6 @@ import (
 type BootstrapScript struct {
 	NodeUpSource     string
 	NodeUpSourceHash string
-	// TODO temporary field to enable workflow for vSphere cloud provider.
-	AddAwsEnvironmentVariables bool
 
 	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
 }
@@ -61,33 +60,18 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHo
 
 			return string(data), nil
 		},
-		// TODO temporary code, till vsphere cloud provider gets its own VFS implementation.
-		"Env1": func() string {
-			if b.AddAwsEnvironmentVariables && os.Getenv("AWS_REGION") != "" {
-				return "export AWS_REGION=" + os.Getenv("AWS_REGION")
-			}
-			return ""
-		},
-		"Env2": func() string {
-			if b.AddAwsEnvironmentVariables && os.Getenv("AWS_ACCESS_KEY_ID") != "" {
-				return "export AWS_ACCESS_KEY_ID=" + os.Getenv("AWS_ACCESS_KEY_ID")
-			}
-			return ""
-		},
-		"Env3": func() string {
-			if b.AddAwsEnvironmentVariables && os.Getenv("AWS_SECRET_ACCESS_KEY") != "" {
-				return "export AWS_SECRET_ACCESS_KEY=" + os.Getenv("AWS_SECRET_ACCESS_KEY")
+
+		// Pass in extra environment variables for user-defined S3 service
+		"S3Env": func() string {
+			if os.Getenv("S3_ENDPOINT") != "" {
+				return fmt.Sprintf("export S3_ENDPOINT=%s\nexport S3_REGION=%s\nexport S3_ACCESS_KEY_ID=%s\nexport S3_SECRET_ACCESS_KEY=%s\n",
+					os.Getenv("S3_ENDPOINT"), os.Getenv("S3_REGION"), os.Getenv("S3_ACCESS_KEY_ID"), os.Getenv("S3_SECRET_ACCESS_KEY"))
 			}
 			return ""
 		},
 	}
 
-	nodeupTemplate := resources.AWSNodeUpTemplate
-	if b.AddAwsEnvironmentVariables {
-		nodeupTemplate = resources.VsphereNodeUpTemplate
-	}
-
-	templateResource, err := NewTemplateResource("nodeup", nodeupTemplate, functions, nil)
+	templateResource, err := NewTemplateResource("nodeup", resources.AWSNodeUpTemplate, functions, nil)
 	if err != nil {
 		return nil, err
 	}

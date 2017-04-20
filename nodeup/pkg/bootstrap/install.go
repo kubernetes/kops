@@ -110,17 +110,20 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 	manifest.Set("Unit", "Description", "Run kops bootstrap (nodeup)")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
 
-	// TODO temporary code, till vsphere cloud provider gets its own VFS implementation.
-	if os.Getenv("AWS_REGION") != "" || os.Getenv("AWS_ACCESS_KEY_ID") != "" || os.Getenv("AWS_SECRET_ACCESS_KEY") != "" {
+	// Pass in required credentials when using user-defined s3 endpoint
+	if os.Getenv("S3_ENDPOINT") != "" {
 		var buffer bytes.Buffer
-		buffer.WriteString("\"AWS_REGION=")
-		buffer.WriteString(os.Getenv("AWS_REGION"))
+		buffer.WriteString("\"S3_ENDPOINT=")
+		buffer.WriteString(os.Getenv("S3_ENDPOINT"))
 		buffer.WriteString("\" ")
-		buffer.WriteString("\"AWS_ACCESS_KEY_ID=")
-		buffer.WriteString(os.Getenv("AWS_ACCESS_KEY_ID"))
+		buffer.WriteString("\"S3_REGION=")
+		buffer.WriteString(os.Getenv("S3_REGION"))
 		buffer.WriteString("\" ")
-		buffer.WriteString("\"AWS_SECRET_ACCESS_KEY=")
-		buffer.WriteString(os.Getenv("AWS_SECRET_ACCESS_KEY"))
+		buffer.WriteString("\"S3_ACCESS_KEY_ID=")
+		buffer.WriteString(os.Getenv("S3_ACCESS_KEY_ID"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"S3_SECRET_ACCESS_KEY=")
+		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
 		buffer.WriteString("\" ")
 
 		manifest.Set("Service", "Environment", buffer.String())
