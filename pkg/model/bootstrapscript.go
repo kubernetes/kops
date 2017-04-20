@@ -28,9 +28,8 @@ import (
 
 // BootstrapScript creates the bootstrap script
 type BootstrapScript struct {
-	NodeUpSource     string
-	NodeUpSourceHash string
-
+	NodeUpSource        string
+	NodeUpSourceHash    string
 	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
 }
 
