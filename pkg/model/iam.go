@@ -19,13 +19,14 @@ package model
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
+	"strings"
+	"text/template"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model/iam"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"reflect"
-	"strings"
-	"text/template"
 )
 
 // IAMModelBuilder configures IAM objects
@@ -64,33 +65,52 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Generate IAM objects etc for each role
 	for _, role := range roles {
 		name := b.IAMName(role)
+		roleAsString := reflect.ValueOf(role).String()
 
 		var iamRole *awstasks.IAMRole
-		{
-			rolePolicy, err := b.buildAWSIAMRolePolicy()
+
+		customIamRoles := b.Cluster.Spec.RoleCustomIamRoles
+
+		// If we've specified an IAMRoleArn for this cluster role,
+		// do not create a new one
+		if customIamRoles[roleAsString] != "" {
+			arn := customIamRoles[roleAsString]
+			rs := strings.Split(arn, "/")
+			roleName := rs[len(rs)-1]
+			iamRole = &awstasks.IAMRole{
+				Name: &roleName,
+				ID:   &arn,
+
+				// We set Policy Document to nil as this role will be managed externaly
+				RolePolicyDocument: nil,
+			}
+			c.AddTask(iamRole)
+		} else {
+			{
+				rolePolicy, err := b.buildAWSIAMRolePolicy()
+				if err != nil {
+					return err
+				}
+
+				iamRole = &awstasks.IAMRole{
+					Name:               s(name),
+					RolePolicyDocument: fi.WrapResource(rolePolicy),
+				}
+				c.AddTask(iamRole)
+			}
+
+			policy, err := b.buildAWSIAMPolicy(role)
 			if err != nil {
 				return err
 			}
-
-			iamRole = &awstasks.IAMRole{
-				Name:               s(name),
-				RolePolicyDocument: fi.WrapResource(rolePolicy),
+			{
+				t := &awstasks.IAMRolePolicy{
+					Name:           s(name),
+					Role:           iamRole,
+					PolicyDocument: fi.WrapResource(fi.NewStringResource(policy)),
+				}
+				c.AddTask(t)
 			}
-			c.AddTask(iamRole)
-
-		}
-
-		policy, err := b.buildAWSIAMPolicy(role)
-		if err != nil {
-			return err
-		}
-		{
-			t := &awstasks.IAMRolePolicy{
-				Name:           s(name),
-				Role:           iamRole,
-				PolicyDocument: fi.WrapResource(fi.NewStringResource(policy)),
-			}
-			c.AddTask(t)
 		}
 
 		var iamInstanceProfile *awstasks.IAMInstanceProfile

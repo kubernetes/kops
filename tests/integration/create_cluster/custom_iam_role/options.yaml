@@ -1,0 +1,7 @@
+ClusterName: custom-iam-role.example.com
+Zones:
+- us-test-1a
+Cloud: aws
+KubernetesVersion: v1.4.8
+MasterIAMRole: foo
+NodeIAMRole: bar
