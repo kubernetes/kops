@@ -35,8 +35,6 @@ type S3Context struct {
 	mutex           sync.Mutex
 	clients         map[string]*s3.S3
 	bucketLocations map[string]string
-
-	getClient func(region string) (*s3.S3, error)
 }
 
 func NewS3Context() *S3Context {
@@ -46,66 +44,53 @@ func NewS3Context() *S3Context {
 	}
 }
 
-func (s *S3Context) getDefaultClient(region string) (*s3.S3, error) {
+func (s *S3Context) getClient(region string) (*s3.S3, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	s3Client := s.clients[region]
 	if s3Client == nil {
-		config := aws.NewConfig().WithRegion(region)
-		config = config.WithCredentialsChainVerboseErrors(true)
+		var config *aws.Config
+		var err error
+		endpoint := os.Getenv("S3_ENDPOINT")
+		if endpoint == "" {
+			config = aws.NewConfig().WithRegion(region)
+			config = config.WithCredentialsChainVerboseErrors(true)
+		} else {
+			// Use customized S3 storage
+			glog.Infof("Found S3_ENDPOINT=%q, using as non-AWS S3 backend", endpoint)
+			config, err = getCustomS3Config(endpoint, region)
+			if err != nil {
+				return nil, err
+			}
+		}
 
 		session := session.New()
 		s3Client = s3.New(session, config)
-	}
-
-	s.clients[region] = s3Client
-
-	return s3Client, nil
-}
-
-func (s *S3Context) getEndpointClient(region string) (*s3.S3, error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	s3Client := s.clients[region]
-	if s3Client == nil {
-		Endpoint := os.Getenv("S3_ENDPOINT")
-		if Endpoint == "" {
-			return nil, fmt.Errorf("S3_ENDPOINT is required")
-		}
-		AccessKeyID := os.Getenv("S3_ACCESS_KEY_ID")
-		if AccessKeyID == "" {
-			return nil, fmt.Errorf("S3_ACCESS_KEY_ID cannot be empty when S3_ENDPOINT is not empty")
-		}
-		SecretAccessKey := os.Getenv("S3_SECRET_ACCESS_KEY")
-		if SecretAccessKey == "" {
-			return nil, fmt.Errorf("S3_SECRET_ACCESS_KEY cannot be empty when S3_ENDPOINT is not empty")
-		}
-
-		s3Config := &aws.Config{
-			Credentials:      credentials.NewStaticCredentials(AccessKeyID, SecretAccessKey, ""),
-			Endpoint:         aws.String(Endpoint),
-			Region:           aws.String(region),
-			DisableSSL:       aws.Bool(true),
-			S3ForcePathStyle: aws.Bool(true),
-		}
-
-		session := session.New()
-		s3Client = s3.New(session, s3Config)
 		s.clients[region] = s3Client
 	}
 
 	return s3Client, nil
 }
 
-func (s *S3Context) setClientFunc() {
-	Endpoint := os.Getenv("S3_ENDPOINT")
-	if Endpoint == "" {
-		s.getClient = s.getDefaultClient
-	} else {
-		s.getClient = s.getEndpointClient
+func getCustomS3Config(endpoint string, region string) (*aws.Config, error) {
+	accessKeyID := os.Getenv("S3_ACCESS_KEY_ID")
+	if accessKeyID == "" {
+		return nil, fmt.Errorf("S3_ACCESS_KEY_ID cannot be empty when S3_ENDPOINT is not empty")
 	}
+	secretAccessKey := os.Getenv("S3_SECRET_ACCESS_KEY")
+	if secretAccessKey == "" {
+		return nil, fmt.Errorf("S3_SECRET_ACCESS_KEY cannot be empty when S3_ENDPOINT is not empty")
+	}
+
+	s3Config := &aws.Config{
+		Credentials:      credentials.NewStaticCredentials(accessKeyID, secretAccessKey, ""),
+		Endpoint:         aws.String(endpoint),
+		Region:           aws.String(region),
+		S3ForcePathStyle: aws.Bool(true),
+	}
+
+	return s3Config, nil
 }
 
 func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
@@ -120,6 +105,16 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	}
 
 	// Probe to find correct region for bucket
+	endpoint := os.Getenv("S3_ENDPOINT")
+	if endpoint != "" {
+		// If customized S3 storage is set, return user-defined region
+		region = os.Getenv("S3_REGION")
+		if region == "" {
+			region = "us-east-1"
+		}
+		return region, nil
+	}
+
 	awsRegion := os.Getenv("AWS_REGION")
 	if awsRegion == "" {
 		awsRegion = "us-east-1"
