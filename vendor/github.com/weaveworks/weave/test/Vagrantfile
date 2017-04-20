@@ -1,0 +1,68 @@
+# Necessary because the switch disabling unwanted insecure key
+# replacement in Vagrant 1.7+ is not accepted by earlier versions
+Vagrant.require_version ">= 1.7.0"
+
+# these ought to match what is in config.sh
+N_MACHINES = 3
+IP_PREFIX = '192.168.48'
+IP_SUFFIX_BASE = 10
+
+require File.expand_path(File.join(File.dirname(__FILE__), '..', 'vagrant-common.rb'))
+
+def ip_address(i)
+  "#{IP_PREFIX}.#{IP_SUFFIX_BASE + i}"
+end
+
+def hostname(i)
+  "host#{i}"
+end
+
+ETC_HOSTS_ENTRIES = (1..N_MACHINES).map { |i| "#{ip_address(i)} #{hostname(i)}\n"}.join('')
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  (1..N_MACHINES).each do |i|
+    hostname = hostname(i)
+    config.vm.define hostname do |host|
+      host.vm.provider :virtualbox do |vb|
+        vb.name = hostname
+        vb.memory = 384
+        configure_nat_dns(vb)
+      end
+
+      # Disable Vagrant 1.7 per host insecure key replacement
+      host.ssh.insert_key = false
+
+      host.vm.box = VAGRANT_IMAGE
+      host.vm.network "private_network", ip: ip_address(i)
+      host.vm.hostname = hostname
+
+      host.vm.provision :shell, :inline => <<END
+# Tests rely on hostnames, so we remove potentially incorrect entries (e.g. localhost), and add mappings of IP addresses to hostnames:
+sed -i '/#{hostname}/d' /etc/hosts
+echo "#{ETC_HOSTS_ENTRIES}" >> /etc/hosts
+
+# Fix the resolution errors by using 8.8.8.8
+echo 'nameserver 8.8.8.8' > /etc/resolv.conf
+END
+
+      # Disable default Vagrant shared folder, which we don't need:
+      host.vm.synced_folder ".", "/vagrant", disabled: true
+
+      cleanup host.vm
+
+      # Only execute once the Ansible provisioner, when all the machines are up and ready:
+      if i == N_MACHINES
+        host.vm.provision 'ansible' do |ansible|
+          ansible.limit = 'all'  # Disable default limit to connect to all the machines
+          ansible.playbook = '../tools/config_management/setup_weave-net_test.yml'
+          ansible.extra_vars = ansibleize(get_dependencies_version_from_file_and_env())
+        end
+      end
+    end
+  end
+end
+
+begin
+  load 'Vagrantfile.local'
+rescue LoadError
+end

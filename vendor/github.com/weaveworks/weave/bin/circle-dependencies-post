@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+source "$STATE"
+
+if [ -n "$TEST_AND_PUBLISH" ]; then
+    cd "$SRCDIR"
+    git submodule update --init
+    cd "$SRCDIR/build"
+    ../tools/rebuild-image weaveworks/weavebuild . Dockerfile build.sh
+    touch "$SRCDIR/.build.uptodate"
+    sudo chown -R ubuntu /usr/local/go
+    cd "$SRCDIR"
+    make testrunner
+    make COVERAGE=true RM= exes all
+fi

@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# this borrows from https://github.com/jpetazzo/pipework
+
+set -e
+
+GUESTNAME=$1
+shift 1
+
+[ "$GUESTNAME" ] || {
+    echo "Syntax:"
+    echo "docker-ns <guest> <command> <arg> ..."
+    exit 1
+}
+
+DOCKERPID=$(docker inspect --format='{{ .State.Pid }}' $GUESTNAME)
+[ "$DOCKERPID" = 0 ] && {
+    echo "Docker inspect returned invalid PID 0"
+    exit 1
+}
+[ "$DOCKERPID" = "<no value>" ] && {
+    echo "Container $GUESTNAME unknown to Docker."
+    exit 1
+}
+
+NSPID=$DOCKERPID
+
+[ ! -d /var/run/netns ] && mkdir -p /var/run/netns
+[ -f /var/run/netns/$NSPID ] && rm -f /var/run/netns/$NSPID
+ln -s /proc/$NSPID/ns/net /var/run/netns/$NSPID
+
+ip netns exec $NSPID "$@"
+
+[ -f /var/run/netns/$NSPID ] && rm -f /var/run/netns/$NSPID
+
+exit 0

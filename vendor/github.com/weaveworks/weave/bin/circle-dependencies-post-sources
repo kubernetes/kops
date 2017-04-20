@@ -1,0 +1,36 @@
+#!/bin/bash
+
+set -e
+
+echo "TEST_AND_PUBLISH=1" >"$STATE"
+
+# Avoid doing a full build if we can.  Note if the PR doesn't exist
+# when the build is kicked off, we can't run this check so we do a
+# full build.  Subsequent pushes to the same branch will have the desired behaviour
+if [ -n "$CI_PULL_REQUEST" -a "$CI_PULL_REQUEST" = "$CI_PULL_REQUESTS" ]; then
+    if PR=$(echo "$CI_PULL_REQUEST" | grep -oP '(?<=^https://github.com/weaveworks/weave/pull/)[0-9]+$'); then
+        echo "GH_PR=$PR" >>"$STATE"
+        if FILES=$(curl -s "https://api.github.com/repos/weaveworks/weave/pulls/$PR/files" | jq -r '.[]|.filename'); then
+            echo "PR touches [$FILES]"
+            if ! echo "$FILES" | grep -v ^site/; then
+                echo "PR contains site changes only - skipping tests"
+                echo "TEST_AND_PUBLISH=" >>"$STATE"
+            else
+                echo "PR contains non-site changes - running tests"
+            fi
+        else
+            echo "Unable to get files for PR $PR" >&2
+        fi
+    else
+        echo "Unable to extract PR number from $CI_PULL_REQUEST" >&2
+    fi
+fi
+
+source "$STATE"
+
+mkdir -p "$(dirname "$SRCDIR")" && cp -r "$(pwd)/" "$SRCDIR"
+
+if [ -n "$TEST_AND_PUBLISH" ]; then
+    cd "$SRCDIR"
+    git submodule update --init
+fi

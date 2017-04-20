@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -e
+
+cd $SRCDIR
+bin/install-wordepress v1.0.0
+bin/publish-site "$WP_LIVE_URL" "$WP_LIVE_USER" "$WP_LIVE_PASSWORD"

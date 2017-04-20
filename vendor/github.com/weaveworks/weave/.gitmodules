@@ -1,0 +1,135 @@
+[submodule "tools"]
+	path = tools
+	url = https://github.com/weaveworks/build-tools
+[submodule "vendor/github.com/vishvananda/netlink"]
+	path = vendor/github.com/vishvananda/netlink
+	url = https://github.com/vishvananda/netlink.git
+[submodule "vendor/github.com/gorilla/mux"]
+	path = vendor/github.com/gorilla/mux
+	url = https://github.com/gorilla/mux.git
+[submodule "vendor/github.com/gorilla/context"]
+	path = vendor/github.com/gorilla/context
+	url = https://github.com/gorilla/context.git
+[submodule "vendor/github.com/google/gopacket"]
+	path = vendor/github.com/google/gopacket
+	url = https://github.com/google/gopacket.git
+[submodule "vendor/github.com/weaveworks/go-odp"]
+	path = vendor/github.com/weaveworks/go-odp
+	url = https://github.com/weaveworks/go-odp.git
+[submodule "vendor/github.com/opencontainers/runc"]
+	path = vendor/github.com/opencontainers/runc
+	url = https://github.com/opencontainers/runc.git
+[submodule "vendor/github.com/fsouza/go-dockerclient"]
+	path = vendor/github.com/fsouza/go-dockerclient
+	url = https://github.com/fsouza/go-dockerclient.git
+[submodule "vendor/github.com/docker/libnetwork"]
+	path = vendor/github.com/docker/libnetwork
+	url = https://github.com/docker/libnetwork.git
+[submodule "vendor/github.com/docker/docker"]
+	path = vendor/github.com/docker/docker
+	url = https://github.com/docker/docker.git
+[submodule "vendor/github.com/Sirupsen/logrus"]
+	path = vendor/github.com/Sirupsen/logrus
+	url = https://github.com/Sirupsen/logrus.git
+[submodule "vendor/github.com/andybalholm/go-bit"]
+	path = vendor/github.com/andybalholm/go-bit
+	url = https://github.com/andybalholm/go-bit.git
+[submodule "vendor/github.com/miekg/dns"]
+	path = vendor/github.com/miekg/dns
+	url = https://github.com/miekg/dns.git
+[submodule "vendor/github.com/stretchr/testify"]
+	path = vendor/github.com/stretchr/testify
+	url = https://github.com/stretchr/testify.git
+[submodule "vendor/golang.org/x/crypto"]
+	path = vendor/golang.org/x/crypto
+	url = https://github.com/golang/crypto.git
+[submodule "vendor/github.com/docker/machine"]
+	path = vendor/github.com/docker/machine
+	url = https://github.com/docker/machine.git
+[submodule "vendor/github.com/weaveworks/mesh"]
+	path = vendor/github.com/weaveworks/mesh
+	url = https://github.com/weaveworks/mesh
+[submodule "vendor/github.com/vishvananda/netns"]
+	path = vendor/github.com/vishvananda/netns
+	url = https://github.com/vishvananda/netns.git
+[submodule "vendor/github.com/boltdb/bolt"]
+	path = vendor/github.com/boltdb/bolt
+	url = https://github.com/boltdb/bolt
+[submodule "vendor/github.com/weaveworks/go-checkpoint"]
+	path = vendor/github.com/weaveworks/go-checkpoint
+	url = https://github.com/weaveworks/go-checkpoint
+[submodule "vendor/github.com/hashicorp/go-cleanhttp"]
+	path = vendor/github.com/hashicorp/go-cleanhttp
+	url = http://github.com/hashicorp/go-cleanhttp
+[submodule "vendor/github.com/coreos/go-iptables"]
+	path = vendor/github.com/coreos/go-iptables
+	url = https://github.com/coreos/go-iptables
+[submodule "vendor/github.com/pkg/profile"]
+	path = vendor/github.com/pkg/profile
+	url = https://github.com/pkg/profile
+[submodule "vendor/github.com/j-keck/arping"]
+	path = vendor/github.com/j-keck/arping
+	url = https://github.com/j-keck/arping
+[submodule "vendor/github.com/aws/aws-sdk-go"]
+	path = vendor/github.com/aws/aws-sdk-go
+	url = https://github.com/aws/aws-sdk-go
+[submodule "vendor/golang.org/x/sys"]
+	path = vendor/golang.org/x/sys
+	url = https://go.googlesource.com/sys
+[submodule "vendor/github.com/beorn7/perks"]
+	path = vendor/github.com/beorn7/perks
+	url = https://github.com/beorn7/perks
+[submodule "vendor/github.com/prometheus/procfs"]
+	path = vendor/github.com/prometheus/procfs
+	url = https://github.com/prometheus/procfs
+[submodule "vendor/github.com/prometheus/client_golang"]
+	path = vendor/github.com/prometheus/client_golang
+	url = https://github.com/prometheus/client_golang
+[submodule "vendor/github.com/prometheus/client_model"]
+	path = vendor/github.com/prometheus/client_model
+	url = https://github.com/prometheus/client_model
+[submodule "vendor/github.com/prometheus/common"]
+	path = vendor/github.com/prometheus/common
+	url = https://github.com/prometheus/common
+[submodule "vendor/github.com/golang/protobuf"]
+	path = vendor/github.com/golang/protobuf
+	url = https://github.com/golang/protobuf
+[submodule "vendor/github.com/matttproud/golang_protobuf_extensions"]
+	path = vendor/github.com/matttproud/golang_protobuf_extensions
+	url = https://github.com/matttproud/golang_protobuf_extensions
+[submodule "vendor/k8s.io/client-go"]
+	path = vendor/k8s.io/client-go
+	url = https://github.com/kubernetes/client-go
+[submodule "vendor/github.com/pkg/errors"]
+	path = vendor/github.com/pkg/errors
+	url = https://github.com/pkg/errors
+[submodule "vendor/github.com/spf13/cobra"]
+	path = vendor/github.com/spf13/cobra
+	url = https://github.com/spf13/cobra
+[submodule "vendor/github.com/spf13/plag"]
+	path = vendor/github.com/spf13/plag
+	url = https://github.com/spf13/pflag
+[submodule "vendor/github.com/spf13/pflag"]
+	path = vendor/github.com/spf13/pflag
+	url = https://github.com/spf13/pflag
+[submodule "vendor/github.com/mgutz/ansi"]
+	path = vendor/github.com/mgutz/ansi
+	url = https://github.com/mgutz/ansi
+[submodule "vendor/github.com/estesp/manifest-tool"]
+	path = vendor/github.com/estesp/manifest-tool
+	url = https://github.com/estesp/manifest-tool
+[submodule "vendor/github.com/weaveworks/common"]
+	path = vendor/github.com/weaveworks/common
+	url = https://github.com/weaveworks/common
+[submodule "vendor/github.com/containernetworking/cni"]
+	path = vendor/github.com/containernetworking/cni
+	url = https://github.com/containernetworking/cni
+[submodule "vendor/google.golang.org/grpc"]
+	path = vendor/google.golang.org/grpc
+	url = https://github.com/grpc/grpc-go
+[submodule "vendor/github.com/docker/go-units"]
+	path = vendor/github.com/docker/go-units
+	url = https://github.com/docker/go-units
+[submodule "vendor/golang.org/x/net"]
+	path = vendor/golang.org/x/net
+	url = https://github.com/golang/net

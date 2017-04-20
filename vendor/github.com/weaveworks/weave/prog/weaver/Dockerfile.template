@@ -1,0 +1,5 @@
+FROM DOCKERHUB_USER/weaveexecARCH_EXT
+ADD ./weaver /home/weave/
+ADD weavedata.db /weavedb/
+COPY ca-certificates.crt /etc/ssl/certs/
+ENTRYPOINT ["/home/weave/weaver"]

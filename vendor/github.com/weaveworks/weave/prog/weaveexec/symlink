@@ -1,0 +1,18 @@
+#!/bin/sh
+# This lets us force-symlink a bunch of stuff all at once, so we can minimize
+# running containers.
+
+set -e
+
+[ -z "$WEAVE_DEBUG" ] || set -x
+
+target="$1"
+user="$(stat -c '%u:%g' "$target")"
+mode="$(stat -c '%a' "$target")"
+shift 1
+
+for link in "$@" ; do
+  ln -sfT "$target" "$link"
+done
+chown -h "$user" "$@"
+chmod "$mode" "$@"
