@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/blang/semver"
 	"github.com/golang/glog"
@@ -26,6 +27,7 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"os"
 	"strings"
 )
 
@@ -82,6 +84,7 @@ func (b *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		"--net=host",
 		"--privileged",
 		"--env", "KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
+		b.ProtokubeEnvironmentVariables(),
 		b.ProtokubeImageName(),
 		"/usr/bin/protokube",
 	}
@@ -217,4 +220,33 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	}
 
 	return f
+}
+
+func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
+	// Pass in required credentials when using user-defined s3 endpoint
+	if os.Getenv("S3_ENDPOINT") != "" {
+		var buffer bytes.Buffer
+		buffer.WriteString(" ")
+		buffer.WriteString("-e S3_ENDPOINT=")
+		buffer.WriteString("'")
+		buffer.WriteString(os.Getenv("S3_ENDPOINT"))
+		buffer.WriteString("'")
+		buffer.WriteString(" -e S3_REGION=")
+		buffer.WriteString("'")
+		buffer.WriteString(os.Getenv("S3_REGION"))
+		buffer.WriteString("'")
+		buffer.WriteString(" -e S3_ACCESS_KEY_ID=")
+		buffer.WriteString("'")
+		buffer.WriteString(os.Getenv("S3_ACCESS_KEY_ID"))
+		buffer.WriteString("'")
+		buffer.WriteString(" -e S3_SECRET_ACCESS_KEY=")
+		buffer.WriteString("'")
+		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
+		buffer.WriteString("'")
+		buffer.WriteString(" ")
+
+		return buffer.String()
+	}
+
+	return ""
 }
