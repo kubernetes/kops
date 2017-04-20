@@ -18,8 +18,10 @@ package vfsclientset
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple"
 )
 
@@ -34,6 +36,9 @@ func newFederationVFS(c *VFSClientset) *FederationVFS {
 	r.init(kind, c.basePath.Join("_federation"), StoreVersion)
 	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind(kind)
 	r.defaultReadVersion = &defaultReadVersion
+	r.validate = func(o runtime.Object) error {
+		return validation.ValidateFederation(o.(*api.Federation))
+	}
 	return r
 }
 

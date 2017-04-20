@@ -26,10 +26,11 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -121,32 +122,32 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		}
 
 		// Todo lets make this smart enough to detect the cloud and switch on the ClusterResources interface
-		d := &kutil.AwsCluster{}
+		d := &resources.AwsCluster{}
 		d.ClusterName = clusterName
 		d.Cloud = cloud
 
-		resources, err := d.ListResources()
+		clusterResources, err := d.ListResources()
 		if err != nil {
 			return err
 		}
 
-		if len(resources) == 0 {
+		if len(clusterResources) == 0 {
 			fmt.Fprintf(out, "No cloud resources to delete\n")
 		} else {
 			wouldDeleteCloudResources = true
 
 			t := &tables.Table{}
-			t.AddColumn("TYPE", func(r *kutil.ResourceTracker) string {
+			t.AddColumn("TYPE", func(r *resources.ResourceTracker) string {
 				return r.Type
 			})
-			t.AddColumn("ID", func(r *kutil.ResourceTracker) string {
+			t.AddColumn("ID", func(r *resources.ResourceTracker) string {
 				return r.ID
 			})
-			t.AddColumn("NAME", func(r *kutil.ResourceTracker) string {
+			t.AddColumn("NAME", func(r *resources.ResourceTracker) string {
 				return r.Name
 			})
-			var l []*kutil.ResourceTracker
-			for _, v := range resources {
+			var l []*resources.ResourceTracker
+			for _, v := range clusterResources {
 				l = append(l, v)
 			}
 
@@ -161,7 +162,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 
 			fmt.Fprintf(out, "\n")
 
-			err = d.DeleteResources(resources)
+			err = d.DeleteResources(clusterResources)
 			if err != nil {
 				return err
 			}
@@ -183,7 +184,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		}
 	}
 
-	b := kutil.NewKubeconfigBuilder()
+	b := kubeconfig.NewKubeconfigBuilder()
 	b.Context = clusterName
 	err = b.DeleteKubeConfig()
 	if err != nil {

@@ -95,10 +95,6 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"# Increase size of file handles and inode cache",
 			"fs.file-max = 2097152",
 			"",
-
-			"# Increase size of conntrack table size to avoid poor iptables performance",
-			"net.netfilter.nf_conntrack_max = 1000000",
-			"",
 		)
 	}
 
@@ -123,7 +119,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 		Path:            "/etc/sysctl.d/99-k8s-general.conf",
 		Contents:        fi.NewStringResource(strings.Join(sysctls, "\n")),
 		Type:            nodetasks.FileType_File,
-		OnChangeExecute: []string{"sysctl", "--system"},
+		OnChangeExecute: [][]string{{"sysctl", "--system"}},
 	}
 	c.AddTask(t)
 

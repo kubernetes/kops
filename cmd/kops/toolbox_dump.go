@@ -24,8 +24,8 @@ import (
 	"io"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/kutil"
 )
 
 type ToolboxDumpOptions struct {
@@ -91,7 +91,7 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 	}
 
 	// Todo lets make this smart enough to detect the cloud and switch on the ClusterResources interface
-	d := &kutil.AwsCluster{}
+	d := &resources.AwsCluster{}
 	d.ClusterName = options.ClusterName
 	d.Cloud = cloud
 
