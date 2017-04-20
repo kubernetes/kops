@@ -63,7 +63,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHo
 		// Pass in extra environment variables for user-defined S3 service
 		"S3Env": func() string {
 			if os.Getenv("S3_ENDPOINT") != "" {
-				return fmt.Sprintf("export S3_ENDPOINT= %s\nexport S3_REGION=%s\nexport S3_ACCESS_KEY_ID=%s\nexport S3_SECRET_ACCESS_KEY=%s\n",
+				return fmt.Sprintf("export S3_ENDPOINT=%s\nexport S3_REGION=%s\nexport S3_ACCESS_KEY_ID=%s\nexport S3_SECRET_ACCESS_KEY=%s\n",
 					os.Getenv("S3_ENDPOINT"),
 					os.Getenv("S3_REGION"),
 					os.Getenv("S3_ACCESS_KEY_ID"),
