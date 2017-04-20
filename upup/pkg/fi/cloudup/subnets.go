@@ -100,7 +100,7 @@ func assignCIDRsToSubnets(c *kops.Cluster) error {
 
 	var bignet string
 	var cidr *net.IPNet
-	if len(vpcInfo.Subnets) > 0 {
+	if vpcInfo != nil && len(vpcInfo.Subnets) > 0 {
 		bignet = vpcInfo.FindBiggestFreeSubnet()
 		_, cidr, err = net.ParseCIDR(bignet)
 	} else {
