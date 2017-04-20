@@ -3,7 +3,8 @@ KOPS operates off of a config spec file that is generated during the create phas
 
 If you download the config spec file on a running cluster that is configured the way you like it, you can just pass that config spec file in to the create command and have kops create the cluster for you , `kops create -f spec_file` in a completely unattended manor.
 
-## How to download the config spec file.
+## How to download the config spec file. ( 2 possible ways )
+
 Let's say you create your cluster with the following configuration options:
 
 ```
@@ -33,9 +34,18 @@ Next you call the kops command to create the cluster in your terminal:
     --ssh-public-key=/Users/foo/.ssh/lab_no_password.pub
 ```
 
+### Method One - Kops command
+
+You can simply use the kops command `kops get cluster -o yaml > a_fun_name_you_will_remember.yml`
+
+Note: for the above command to work the cluster NAME and the KOPS_STATE_STORE will have to be exported in your environment.
+
+### Method Two - Manual method directly from s3
+
 Your spec file will be located in your s3 bucket, in the location `s3://k8s-us-west/$NAME/config`.  Using the above as an example the config file is located at `s3://k8s-us-west/westtest.c.foo.com/config`
 
 To download this file via the aws cli you can use the aws s3 copy command.  Using the above cluster as an example the command would be
 
-`aws s3 cp $KOPS_STATE_STORE/$NAME/config ~/a_fun_name_you_will_remember.yml`  
+`aws s3 cp $KOPS_STATE_STORE/$NAME/config ~/a_fun_name_you_will_remember.yml`
+
 
