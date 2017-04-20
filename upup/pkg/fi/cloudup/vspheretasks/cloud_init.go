@@ -32,7 +32,7 @@ $DNS_SCRIPT
   - content: |
 $VM_UUID
     owner: root:root
-    path: /root/vm_uuid
+    path: /etc/vmware/vm_uuid
     permissions: "0644"
   - content: |
 $VOLUME_SCRIPT

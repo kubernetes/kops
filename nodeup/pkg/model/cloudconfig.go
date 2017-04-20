@@ -31,7 +31,9 @@ const CloudConfigFilePath = "/etc/kubernetes/cloud.config"
 
 // Required for vSphere CloudProvider
 const MinimumVersionForVMUUID = "1.5.3"
-const VM_UUID_FILE_PATH = "/root/vm_uuid"
+
+// VM UUID is set by cloud-init
+const VM_UUID_FILE_PATH = "/etc/vmware/vm_uuid"
 
 // CloudConfigBuilder creates the cloud configuration file
 type CloudConfigBuilder struct {
