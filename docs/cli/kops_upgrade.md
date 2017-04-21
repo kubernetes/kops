@@ -5,7 +5,14 @@ Automates checking for and applying Kubernetes updates.
 ### Synopsis
 
 
-upgrade clusters
+Upgrades a k8s cluster.
+
+### Examples
+
+```
+  # After cluster has been created, configure it with:
+  kops upgrade cluster k8s.cluster.site --yes --state=s3://kops-state-1234
+```
 
 ### Options inherited from parent commands
 

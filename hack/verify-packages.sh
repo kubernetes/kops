@@ -16,6 +16,8 @@
 
 . $(dirname "${BASH_SOURCE}")/common.sh
 
+set -x
+
 # Check that the .packages file contains all packages
 packages_file="${KUBE_ROOT}/hack/.packages"
 if ! diff -u "${packages_file}" <(go list k8s.io/kops/... | grep -v vendor); then

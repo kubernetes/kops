@@ -14,7 +14,7 @@ kops replace -f FILENAME
 ### Options
 
 ```
-  -f, --filename stringSlice   Filename to use to replace the resource
+  -f, --filename stringSlice   A list of one or more files serperated by a comma.
 ```
 
 ### Options inherited from parent commands

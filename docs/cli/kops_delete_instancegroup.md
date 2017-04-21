@@ -33,5 +33,5 @@ kops delete instancegroup
 ```
 
 ### SEE ALSO
-* [kops delete](kops_delete.md)	 - Delete clusters and instancegroups
+* [kops delete](kops_delete.md)	 - Delete clusters and instancegroups.
 
