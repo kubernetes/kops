@@ -1,10 +1,11 @@
 ## kops delete
 
-Deletes a resource by filename or stdin
+Delete clusters and instancegroups
 
 ### Synopsis
 
-Delete clusters or instancegroups by filename or stdin
+
+Delete clusters and instancegroups
 
 ```
 kops delete -f FILENAME [--yes]
@@ -26,7 +27,7 @@ kops delete -f FILENAME [--yes]
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster
-      --state string                     Location of state storage
+      --state string                     Location of state storage (default "s3://oscar-ai-k8s-dev")
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
@@ -37,3 +38,4 @@ kops delete -f FILENAME [--yes]
 * [kops delete cluster](kops_delete_cluster.md)	 - Delete cluster
 * [kops delete instancegroup](kops_delete_instancegroup.md)	 - Delete instancegroup
 * [kops delete secret](kops_delete_secret.md)	 - Delete secret
+

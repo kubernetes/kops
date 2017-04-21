@@ -1,11 +1,11 @@
 ## kops replace
 
-Replace a resource by filename or stdin
+Replace a resource by filename or stdin.
 
 ### Synopsis
 
 
-Replace a resource by filename or stdin
+Replace a resource by filename or stdin.
 
 ```
 kops replace -f FILENAME
@@ -26,7 +26,7 @@ kops replace -f FILENAME
       --log_dir string                   If non-empty, write log files in this directory
       --logtostderr                      log to standard error instead of files (default false)
       --name string                      Name of cluster
-      --state string                     Location of state storage
+      --state string                     Location of state storage (default "s3://oscar-ai-k8s-dev")
       --stderrthreshold severity         logs at or above this threshold go to stderr (default 2)
   -v, --v Level                          log level for V logs
       --vmodule moduleSpec               comma-separated list of pattern=N settings for file-filtered logging
