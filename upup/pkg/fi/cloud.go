@@ -174,29 +174,27 @@ func GuessCloudForZone(zone string) (CloudProviderID, bool) {
 	return c, found
 }
 
-// for sorting ip addresses
+// AddrSlice for sorting ip addresses
 type AddrSlice []address.Address
 
 func (s AddrSlice) Len() int           { return len(s) }
 func (s AddrSlice) Less(i, j int) bool { return s[i] < s[j] }
 func (s AddrSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 
-// input vpc info, output biggest free subnet(not aws subnet, bu ipv4) in vpc
+// FindBiggestFreeSubnet - input vpc info, output biggest free subnet(not aws subnet, bu ipv4) in vpc
 func (vpcInfo *VPCInfo) FindBiggestFreeSubnet() string {
 	var arr AddrSlice
 	// add min and max for vpc
 	net, _ := address.ParseCIDR(vpcInfo.CIDR)
-	arr = append(arr, net.Start())
-	arr = append(arr, net.End()-1)
+	arr = append(arr, net.Start(), net.End()-1)
 	// add min and max for subnets
 	for _, subnet := range vpcInfo.Subnets {
 		net, _ := address.ParseCIDR(subnet.CIDR)
-		arr = append(arr, net.Start())
-		arr = append(arr, net.End()-1)
+		arr = append(arr, net.Start(), net.End()-1)
 	}
 	// sort for group by pair [vpcStart, subnetStart, subnetEnd, vpcEnd]
 	sort.Sort(AddrSlice(arr))
-	// so freesubnets are [vpcStart, subnetStart], [subnetEnd, subnetXStart], [subnetYEnd, vpcEnd]
+	// freeSubNet are [vpcStart, subnetStart], [subnetEnd, subnetXStart], [subnetYEnd, vpcEnd]
 	var freeSubNet address.CIDR
 	for i := 0; i < len(arr)/2; i++ {
 		netrange := address.Range{
