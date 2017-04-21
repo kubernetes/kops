@@ -1,6 +1,6 @@
 ## kops export
 
-export clusters/kubecfg
+Exports a kubecfg for target cluster.
 
 ### Synopsis
 

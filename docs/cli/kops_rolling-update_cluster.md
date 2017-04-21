@@ -47,5 +47,5 @@ kops rolling-update cluster
 ```
 
 ### SEE ALSO
-* [kops rolling-update](kops_rolling-update.md)	 - rolling update clusters
+* [kops rolling-update](kops_rolling-update.md)	 - Initiate rolling updates on clusters.
 
