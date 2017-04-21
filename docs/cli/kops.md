@@ -5,7 +5,8 @@ kops is kubernetes ops
 ### Synopsis
 
 
-kops is kubernetes ops.
+kops is kubernetes ops. 
+
 It allows you to create, destroy, upgrade and maintain clusters.
 
 ### Options
@@ -26,7 +27,7 @@ It allows you to create, destroy, upgrade and maintain clusters.
 ### SEE ALSO
 * [kops completion](kops_completion.md)	 - Output shell completion code for the given shell (bash or zsh).
 * [kops create](kops_create.md)	 - Create a resource by filename or stdin.
-* [kops delete](kops_delete.md)	 - Delete clusters and instancegroups
+* [kops delete](kops_delete.md)	 - Delete clusters and instancegroups.
 * [kops describe](kops_describe.md)	 - Get additional information about cloud resources.
 * [kops edit](kops_edit.md)	 - Edit clusters and other resrouces.
 * [kops export](kops_export.md)	 - Exports a kubecfg for target cluster.

@@ -11,6 +11,13 @@ Deletes a k8s cluster.
 kops delete cluster CLUSTERNAME [--yes]
 ```
 
+### Examples
+
+```
+  # Delete a cluster in AWS.
+  kops delete cluster --name=k8s.cluster.site --yes
+```
+
 ### Options
 
 ```
@@ -36,5 +43,5 @@ kops delete cluster CLUSTERNAME [--yes]
 ```
 
 ### SEE ALSO
-* [kops delete](kops_delete.md)	 - Delete clusters and instancegroups
+* [kops delete](kops_delete.md)	 - Delete clusters and instancegroups.
 
