@@ -1,11 +1,11 @@
 ## kops toolbox
 
-Misc infrequently used commands
+Misc infrequently used commands.
 
 ### Synopsis
 
 
-Misc infrequently used commands
+Misc infrequently used commands.
 
 ### Options inherited from parent commands
 

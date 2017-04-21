@@ -1,11 +1,11 @@
 ## kops version
 
-Print the client version information
+Print the client version information.
 
 ### Synopsis
 
 
-Print the client version information
+Print the client version information.
 
 ```
 kops version

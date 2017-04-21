@@ -1,11 +1,11 @@
 ## kops replace
 
-Replace a resource by filename or stdin
+Replace a resource by filename or stdin.
 
 ### Synopsis
 
 
-Replace a resource by filename or stdin
+Replace a resource by filename or stdin.
 
 ```
 kops replace -f FILENAME

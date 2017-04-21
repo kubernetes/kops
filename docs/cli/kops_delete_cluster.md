@@ -36,5 +36,5 @@ kops delete cluster CLUSTERNAME [--yes]
 ```
 
 ### SEE ALSO
-* [kops delete](kops_delete.md)	 - delete clusters
+* [kops delete](kops_delete.md)	 - Delete clusters and instancegroups
 

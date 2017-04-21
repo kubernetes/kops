@@ -27,5 +27,5 @@ kops secrets get
 ```
 
 ### SEE ALSO
-* [kops secrets](kops_secrets.md)	 - Manage secrets & keys
+* [kops secrets](kops_secrets.md)	 - Manage secrets & keys.
 

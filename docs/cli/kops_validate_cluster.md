@@ -27,5 +27,5 @@ kops validate cluster
 ```
 
 ### SEE ALSO
-* [kops validate](kops_validate.md)	 - Validate Cluster
+* [kops validate](kops_validate.md)	 - Run validation check on Kubernetes cluster.
 
