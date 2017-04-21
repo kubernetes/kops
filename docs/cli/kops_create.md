@@ -11,6 +11,19 @@ Create a resource by filename or stdin.
 kops create -f FILENAME
 ```
 
+### Examples
+
+```
+  # Create a cluster using a file
+  kops create -f my-cluster.yaml
+  
+  # Create a cluster in AWS
+  kops create cluster --name=example.com \
+  --state=s3://kops-state-1234 --zones=eu-west-1a \
+  --node-count=2 --node-size=t2.micro --master-size=t2.micro \
+  --dns-zone=example.com
+```
+
 ### Options
 
 ```

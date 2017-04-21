@@ -305,10 +305,10 @@ gofmt:
 	gofmt -w -s dns-controller/pkg
 
 goimports:
-	sh -c hack/update-goimports
+	hack/update-goimports
 
 verify-goimports:
-	sh -c hack/verify-goimports
+	hack/verify-goimports
 
 govet:
 	go vet \
@@ -328,7 +328,7 @@ govet:
 # Continuous integration targets
 
 verify-boilerplate:
-	sh -c hack/verify-boilerplate.sh
+	hack/verify-boilerplate.sh
 
 .PHONY: verify-gofmt
 verify-gofmt:
@@ -338,7 +338,14 @@ verify-gofmt:
 verify-packages:
 	hack/verify-packages.sh
 
-ci: govet verify-gofmt kops nodeup-gocode examples test verify-boilerplate verify-packages
+.PHONY: verify-gendocs
+verify-gendocs: kops
+	hack/verify-gendocs.sh
+
+# verify-gendocs will call kops target
+# verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
+# it bombs in travis. verify-gendoc generates the bindata file.
+ci: govet verify-gofmt verify-boilerplate verify-gendocs verify-packages nodeup-gocode examples test 
 	echo "Done!"
 
 # --------------------------------------------------
@@ -368,7 +375,7 @@ examples:
 # api machinery regenerate
 
 apimachinery:
-	./hack/make-apimachinery.sh
+	sh -c hack/make-apimachinery.sh
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.conversion
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.conversion
 	${GOPATH}/bin/defaulter-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.defaults

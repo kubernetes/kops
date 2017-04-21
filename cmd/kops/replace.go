@@ -51,7 +51,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "Filename to use to replace the resource")
+	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "A list of one or more files separated by a comma.")
 	cmd.MarkFlagRequired("filename")
 
 	return cmd
