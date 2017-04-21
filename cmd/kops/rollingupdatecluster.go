@@ -200,6 +200,8 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		instanceGroups = append(instanceGroups, &list.Items[i])
 	}
 
+	warnUnmatched := true
+
 	if len(options.InstanceGroups) != 0 {
 		var filtered []*api.InstanceGroup
 
@@ -219,6 +221,9 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		}
 
 		instanceGroups = filtered
+
+		// Don't warn if we find more ASGs than IGs
+		warnUnmatched = false
 	}
 
 	cloud, err := cloudup.BuildCloud(cluster)
@@ -226,7 +231,6 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return err
 	}
 
-	warnUnmatched := true
 	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instanceGroups, warnUnmatched, nodes)
 	if err != nil {
 		return err
