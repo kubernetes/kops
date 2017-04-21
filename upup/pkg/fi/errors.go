@@ -18,6 +18,9 @@ package fi
 
 import (
 	"fmt"
+	"k8s.io/apimachinery/pkg/api/validation"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 func RequiredField(key string) error {
@@ -26,4 +29,9 @@ func RequiredField(key string) error {
 
 func CannotChangeField(key string) error {
 	return fmt.Errorf("Field cannot be changed: %s", key)
+}
+
+func FieldIsImmutable(newVal, oldVal interface{}, fldPath *field.Path) *field.Error {
+	details := fmt.Sprintf("%s: old=%v new=%v", validation.FieldImmutableErrorMsg, utils.FormatValue(oldVal), utils.FormatValue(newVal))
+	return field.Invalid(fldPath, newVal, details)
 }
