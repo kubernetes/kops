@@ -6,9 +6,6 @@ domain specified by the annotation `domainName=sub.mydomain.io`. Multiple
 domains and top level domains are also supported:
 `domainName=.mydomain.io,sub1.mydomain.io,sub2.mydomain.io`.
 
-The project is created by wearemolecule, and maintained at
-[wearemolecule/route53-kubernetes](https://github.com/wearemolecule/route53-kubernetes).
-
 ## Usage
 
 ### Deploy To Cluster
