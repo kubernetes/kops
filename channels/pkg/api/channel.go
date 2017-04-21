@@ -58,4 +58,7 @@ type AddonSpec struct {
 	// version of the software we are packaging.  But we always want to reinstall when we
 	// switch kubernetes versions.
 	Id string `json:"id,omitempty"`
+
+	// Instead of Manifest define Yamldata
+	Yamldata *string `json:"yamldata,omitempty"`
 }

@@ -10,7 +10,7 @@ Kubernetes Operations (kops) currently supports 4 networking modes:
 ### kops Default Networking
 
 Kubernetes Operations (kops) uses `kubenet` networking by default. This sets up networking on AWS using VPC
-networking, where the  master allocates a /24 CIDR to each Node, drawing from the Node network.  
+networking, where the  master allocates a /24 CIDR to each Node, drawing from the Node network.
 Using `kubenet` mode routes for  each node are then configured in the AWS VPC routing tables.
 
 One important limitation when using `kubenet` networking is that an AWS routing table cannot have more than
@@ -85,6 +85,8 @@ $ kops create cluster \
   --yes \
   --name myclustername.mydns.io
 ```
+
+option `--network-encrypt` will create secret with password and use this password for encrypt weave network between nodes.
 
 Once the cluster is stable, which you can check with a `kubectl cluster-info` command, the next
 step is to install CNI networking. Most of the CNI network providers are

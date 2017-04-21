@@ -54,6 +54,7 @@ type KopeioNetworkingSpec struct {
 
 // Weave declares that we want Weave networking
 type WeaveNetworkingSpec struct {
+	Encrypt bool `json:"encrypted,omitempty"`
 }
 
 // Flannel declares that we want Flannel networking
