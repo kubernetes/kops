@@ -1,14 +1,24 @@
 ## kops delete
 
-Delete clusters and instancegroups
+Delete clusters and instancegroups.
 
 ### Synopsis
 
 
-Delete clusters and instancegroups
+Delete clusters and instancegroups.
 
 ```
 kops delete -f FILENAME [--yes]
+```
+
+### Examples
+
+```
+  # Create a cluster using a file
+  kops delete -f my-cluster.yaml
+  
+  # Delete a cluster in AWS.
+  kops delete cluster --name=k8s.cluster.site --state=s3://kops-state-1234
 ```
 
 ### Options
