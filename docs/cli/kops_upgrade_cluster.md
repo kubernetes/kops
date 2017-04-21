@@ -11,6 +11,13 @@ Upgrades a k8s cluster.
 kops upgrade cluster
 ```
 
+### Examples
+
+```
+  # After cluster has been created, configure it with:
+  kops upgrade cluster k8s.cluster.site --yes --state=s3://kops-state-1234
+```
+
 ### Options
 
 ```

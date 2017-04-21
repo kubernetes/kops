@@ -64,8 +64,12 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "cluster",
-		Short: "Update cluster",
-		Long:  `Updates a k8s cluster.`,
+		Short: "Create or update cloud or cluster resources to match current cluster state.",
+		Long: `Create or update cloud or cluster resources to match current cluster state.  If the cluster or cloud resources already
+		exist this command may modify those resources.
+
+		If nodes need updating such as during a Kubernetes upgrade, a rolling-update may
+		be required as well.`,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := rootCommand.ProcessArgs(args)
 			if err != nil {
