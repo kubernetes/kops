@@ -278,7 +278,7 @@ func (c *DNSController) runOnce() error {
 			dedup = append(dedup, s)
 		}
 
-		err := op.updateRecords(k, newValues, int64(ttl.Seconds()), c.dnsProviderId)
+		err := op.updateRecords(k, dedup, int64(ttl.Seconds()), c.dnsProviderId)
 		if err != nil {
 			glog.Infof("error updating records for %s: %v", k, err)
 			errors = append(errors, err)
