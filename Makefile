@@ -174,7 +174,7 @@ gcs-publish-ci: gcs-upload
 	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
 
-gen-cli-docs:
+gen-cli-docs: kops
 	@kops genhelpdocs --out docs/cli
 
 # Will always push a linux-based build up to the server
@@ -310,13 +310,18 @@ verify-boilerplate:
 
 .PHONY: verify-gofmt
 verify-gofmt:
-	hack/verify-gofmt.sh
+	sh -c hack/verify-gofmt.sh
 
 .PHONY: verify-packages
 verify-packages:
-	hack/verify-packages.sh
+	sh -c hack/verify-packages.sh
 
-ci: govet verify-gofmt kops nodeup-gocode examples test verify-boilerplate verify-packages
+.PHONY: verify-gendocs
+verify-gendocs: kops
+	sh -c hack/verify-gendocs.sh
+
+# verify-gendocs will call kops target
+ci: govet verify-gofmt verify-boilerplate verify-packages verify-gendocs nodeup-gocode examples test
 	echo "Done!"
 
 # --------------------------------------------------
@@ -346,7 +351,7 @@ examples:
 # api machinery regenerate
 
 apimachinery:
-	./hack/make-apimachinery.sh
+	sh -c hack/make-apimachinery.sh
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.conversion
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.conversion
 	${GOPATH}/bin/defaulter-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.defaults

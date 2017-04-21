@@ -26,7 +26,7 @@ import (
 func NewCmdEdit(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "edit",
-		Short: "Edit clusters and other resrouces.",
+		Short: "Edit clusters and other resources.",
 		Long: `Edit a resource configuration.
 
 This command changes the cloud specification in the registry.

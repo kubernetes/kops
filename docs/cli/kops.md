@@ -28,7 +28,7 @@ It allows you to create, destroy, upgrade and maintain clusters.
 * [kops create](kops_create.md)	 - Create a resource by filename or stdin.
 * [kops delete](kops_delete.md)	 - Delete clusters and instancegroups
 * [kops describe](kops_describe.md)	 - Get additional information about cloud resources.
-* [kops edit](kops_edit.md)	 - Edit clusters and other resrouces.
+* [kops edit](kops_edit.md)	 - Edit clusters and other resources.
 * [kops export](kops_export.md)	 - Exports a kubecfg for target cluster.
 * [kops get](kops_get.md)	 - List all instances of a resource.
 * [kops import](kops_import.md)	 - Import existing resources into the state store.

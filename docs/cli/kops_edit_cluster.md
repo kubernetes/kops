@@ -31,5 +31,5 @@ kops edit cluster
 ```
 
 ### SEE ALSO
-* [kops edit](kops_edit.md)	 - Edit clusters and other resrouces.
+* [kops edit](kops_edit.md)	 - Edit clusters and other resources.
 
