@@ -46,7 +46,6 @@ var _ HasHash = &S3Path{}
 func newS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
 	bucket = strings.TrimSuffix(bucket, "/")
 	key = strings.TrimPrefix(key, "/")
-	s3Context.setClientFunc()
 
 	return &S3Path{
 		s3Context: s3Context,

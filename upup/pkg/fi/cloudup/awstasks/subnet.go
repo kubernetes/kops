@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -109,31 +110,37 @@ func (e *Subnet) Run(c *fi.Context) error {
 }
 
 func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
+	var errors field.ErrorList
+	fieldPath := field.NewPath("Subnet")
+
 	if a == nil {
 		if e.VPC == nil {
-			return fi.RequiredField("VPC")
+			errors = append(errors, field.Required(fieldPath.Child("VPC"), "must specify a VPC"))
 		}
 
 		if e.CIDR == nil {
 			// TODO: Auto-assign CIDR?
-			return fi.RequiredField("CIDR")
+			errors = append(errors, field.Required(fieldPath.Child("CIDR"), "must specify a CIDR"))
 		}
 	}
 
 	if a != nil {
+		// TODO: Do we want to destroy & recreate the subnet when theses immutable fields change?
 		if changes.VPC != nil {
-			// TODO: Do we want to destroy & recreate the subnet?
-			return fi.CannotChangeField("VPC")
+			errors = append(errors, fi.FieldIsImmutable(a.VPC, e.VPC, fieldPath.Child("VPC")))
 		}
 		if changes.AvailabilityZone != nil {
-			// TODO: Do we want to destroy & recreate the subnet?
-			return fi.CannotChangeField("AvailabilityZone")
+			errors = append(errors, fi.FieldIsImmutable(a.AvailabilityZone, e.AvailabilityZone, fieldPath.Child("AvailabilityZone")))
 		}
 		if changes.CIDR != nil {
-			// TODO: Do we want to destroy & recreate the subnet?
-			return fi.CannotChangeField("CIDR")
+			errors = append(errors, fi.FieldIsImmutable(a.CIDR, e.CIDR, fieldPath.Child("CIDR")))
 		}
 	}
+
+	if len(errors) != 0 {
+		return errors[0]
+	}
+
 	return nil
 }
 

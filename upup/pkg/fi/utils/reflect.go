@@ -84,7 +84,7 @@ func BuildTypeName(t reflect.Type) string {
 		return "[]" + BuildTypeName(t.Elem())
 	case reflect.Struct, reflect.Interface:
 		return t.Name()
-	case reflect.String, reflect.Bool, reflect.Int64:
+	case reflect.String, reflect.Bool, reflect.Int64, reflect.Uint8:
 		return t.Name()
 	case reflect.Map:
 		return "map[" + BuildTypeName(t.Key()) + "]" + BuildTypeName(t.Elem())
@@ -209,5 +209,36 @@ func IsPrimitiveValue(v reflect.Value) bool {
 	default:
 		glog.Fatalf("Unhandled kind: %v", v.Kind())
 		return false
+	}
+}
+
+// FormatValue returns a string representing the value
+func FormatValue(value interface{}) string {
+	// Based on code in k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/validation/field/errors.go
+	valueType := reflect.TypeOf(value)
+	if value == nil || valueType == nil {
+		value = "null"
+	} else if valueType.Kind() == reflect.Ptr {
+		if reflectValue := reflect.ValueOf(value); reflectValue.IsNil() {
+			value = "null"
+		} else {
+			value = reflectValue.Elem().Interface()
+		}
+	}
+	switch t := value.(type) {
+	case int64, int32, float64, float32, bool:
+		// use simple printer for simple types
+		return fmt.Sprintf("%v", value)
+	case string:
+		return fmt.Sprintf("%q", t)
+	case fmt.Stringer:
+		// anything that defines String() is better than raw struct
+		return fmt.Sprintf("%s", t.String())
+	default:
+		// fallback to raw struct
+		// TODO: internal types have panic guards against json.Marshalling to prevent
+		// accidental use of internal types in external serialized form.  For now, use
+		// %#v, although it would be better to show a more expressive output in the future
+		return fmt.Sprintf("%#v", value)
 	}
 }

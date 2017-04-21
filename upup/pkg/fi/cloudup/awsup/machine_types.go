@@ -198,6 +198,13 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          40,
 		EphemeralDisks: nil,
 	},
+	{
+		Name:           "m4.16xlarge",
+		MemoryGB:       256,
+		ECU:            188,
+		Cores:          64,
+		EphemeralDisks: nil,
+	},
 
 	// c3 family
 	{
