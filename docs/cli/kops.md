@@ -24,20 +24,20 @@ It allows you to create, destroy, upgrade and maintain clusters.
 ```
 
 ### SEE ALSO
-* [kops completion](kops_completion.md)	 - Output shell completion code for the given shell (bash)
-* [kops create](kops_create.md)	 - Create a resource by filename or stdin
-* [kops delete](kops_delete.md)	 - delete clusters
-* [kops describe](kops_describe.md)	 - describe objects
-* [kops edit](kops_edit.md)	 - Edit resource
-* [kops export](kops_export.md)	 - export clusters/kubecfg
-* [kops get](kops_get.md)	 - list or get objects
-* [kops import](kops_import.md)	 - import clusters
-* [kops replace](kops_replace.md)	 - Replace a resource by filename or stdin
-* [kops rolling-update](kops_rolling-update.md)	 - rolling update clusters
-* [kops secrets](kops_secrets.md)	 - Manage secrets & keys
-* [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands
-* [kops update](kops_update.md)	 - update clusters
-* [kops upgrade](kops_upgrade.md)	 - upgrade clusters
-* [kops validate](kops_validate.md)	 - Validate Cluster
-* [kops version](kops_version.md)	 - Print the client version information
+* [kops completion](kops_completion.md)	 - Output shell completion code for the given shell (bash or zsh).
+* [kops create](kops_create.md)	 - Create a resource by filename or stdin.
+* [kops delete](kops_delete.md)	 - Delete clusters and instancegroups
+* [kops describe](kops_describe.md)	 - Get additional information about cloud resources.
+* [kops edit](kops_edit.md)	 - Edit clusters and other resrouces.
+* [kops export](kops_export.md)	 - Exports a kubecfg for target cluster.
+* [kops get](kops_get.md)	 - List all instances of a resource.
+* [kops import](kops_import.md)	 - Import existing resources into the state store.
+* [kops replace](kops_replace.md)	 - Replace a resource by filename or stdin.
+* [kops rolling-update](kops_rolling-update.md)	 - Initiate rolling updates on clusters.
+* [kops secrets](kops_secrets.md)	 - Manage secrets & keys.
+* [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
+* [kops update](kops_update.md)	 - Creates or updates cloud resources to match cluster spec.
+* [kops upgrade](kops_upgrade.md)	 - Automates checking for and applying Kubernetes updates.
+* [kops validate](kops_validate.md)	 - Run validation check on Kubernetes cluster.
+* [kops version](kops_version.md)	 - Print the client version information.
 

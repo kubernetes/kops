@@ -33,5 +33,5 @@ kops describe secrets
 ```
 
 ### SEE ALSO
-* [kops describe](kops_describe.md)	 - describe objects
+* [kops describe](kops_describe.md)	 - Get additional information about cloud resources.
 

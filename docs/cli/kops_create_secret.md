@@ -23,6 +23,6 @@ Create secrets.
 ```
 
 ### SEE ALSO
-* [kops create](kops_create.md)	 - Create a resource by filename or stdin
+* [kops create](kops_create.md)	 - Create a resource by filename or stdin.
 * [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create SSH publickey
 

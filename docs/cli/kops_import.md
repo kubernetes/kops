@@ -1,6 +1,6 @@
 ## kops import
 
-import clusters
+Import existing resources into the state store.
 
 ### Synopsis
 

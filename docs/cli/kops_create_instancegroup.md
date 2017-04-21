@@ -14,7 +14,8 @@ kops create instancegroup
 ### Options
 
 ```
-      --role string   Type of instance group to create (Node,Master,Bastion) (default "Node")
+      --role string          Type of instance group to create (Node,Master,Bastion) (default "Node")
+      --subnet stringSlice   Subnets in which to create instance group
 ```
 
 ### Options inherited from parent commands
@@ -33,5 +34,5 @@ kops create instancegroup
 ```
 
 ### SEE ALSO
-* [kops create](kops_create.md)	 - Create a resource by filename or stdin
+* [kops create](kops_create.md)	 - Create a resource by filename or stdin.
 
