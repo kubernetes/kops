@@ -1,17 +1,33 @@
-## kops toolbox
+## kops toolbox inventory
 
-Misc infrequently used commands.
+Output a list of IoTk - inventory of all things kops. 
 
 ### Synopsis
 
 
-Misc infrequently used commands.
+Output a list of IoTk - inventory of all things kops.  Bill of materials (BOM) for a kops installation; containers, binaries, etc.
+
+```
+kops toolbox inventory
+```
 
 ### Examples
 
 ```
-  # Dump cluster information
-  kops toolbox dump --name k8s-cluster.example.com
+  # Get a inventory list from a yaml file
+  kops toolbox inventory -f k8s.example.com.yaml --state s3://k8s.example.com
+  
+  # Get a inventory list from a cluster
+  kops toolbox inventory k8s.example.com --state s3://k8s.example.com
+```
+
+### Options
+
+```
+      --channel string              Channel for default versions and configuration to use (default "stable")
+  -f, --filename stringArray        Filename to use to create the resource
+      --kubernetes-version string   Version of kubernetes to run (defaults to version in channel)
+  -o, --output string               output format.  One of: yaml, json (default "table")
 ```
 
 ### Options inherited from parent commands
@@ -30,8 +46,5 @@ Misc infrequently used commands.
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is Kubernetes ops.
-* [kops toolbox convert-imported](kops_toolbox_convert-imported.md)	 - Convert an imported cluster into a kops cluster.
-* [kops toolbox dump](kops_toolbox_dump.md)	 - Dump cluster information
-* [kops toolbox inventory](kops_toolbox_inventory.md)	 - Output a list of IoTk - inventory of all things kops. 
+* [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
 
