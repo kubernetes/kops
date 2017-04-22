@@ -16,6 +16,6 @@ After this, you can just use `$KOPS` where you would generally use `kops`, e.g. 
 
 To build the lighter version:
 ```shell
-$ docker built -t kops:light -f Dockerfile-light .
+$ docker build -t kops:light -f Dockerfile-light .
 $ KOPS="docker run -v $HOME/.aws:/root/.aws:ro -v $HOME/.ssh:/root/.ssh:ro -v $HOME/.kube:/root/.kube -it kops:light --state=$KOPS_STATE_STORE"
   ```
