@@ -31,7 +31,11 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	}()
 
 	cluster := &api.Cluster{}
-	cniAsset, cniAssetHashString := findCNIAssets(cluster)
+	cniAsset, cniAssetHashString, err := findCNIAssets(cluster)
+
+	if err != nil {
+		t.Errorf("Unable to parse k8s version %s", err)
+	}
 
 	if cniAsset != desiredCNIVersion {
 		t.Errorf("Expected CNI version from Environment variable %q, but got %q instead", desiredCNIVersion, cniAsset)
@@ -42,17 +46,42 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 	}
 }
 
-func Test_FindCNIAssetDefaultValue(t *testing.T) {
+func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 
-	cluster := &api.Cluster{}
-	cniAsset, cniAssetHashString := findCNIAssets(cluster)
+	cluster := &api.Cluster{Spec: api.ClusterSpec{}}
+	cluster.Spec.KubernetesVersion = "v1.6.2"
+	cniAsset, cniAssetHashString, err := findCNIAssets(cluster)
 
-	if cniAsset != defaultCNIAsset {
-		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAsset, cniAsset)
+	if err != nil {
+		t.Errorf("Unable to parse k8s version %s", err)
 	}
 
-	if cniAssetHashString != defaultCNIAssetHashString {
-		t.Errorf("Expected default CNI Version Hash String %q and got %q", defaultCNIAssetHashString, cniAssetHashString)
+	if cniAsset != defaultCNIAssetK8s1_6 {
+		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAssetK8s1_5, cniAsset)
+	}
+
+	if cniAssetHashString != defaultCNIAssetHashStringK8s1_6 {
+		t.Errorf("Expected default CNI Version Hash String %q and got %q", defaultCNIAssetHashStringK8s1_5, cniAssetHashString)
+	}
+
+}
+
+func Test_FindCNIAssetDefaultValue1_5(t *testing.T) {
+
+	cluster := &api.Cluster{Spec: api.ClusterSpec{}}
+	cluster.Spec.KubernetesVersion = "v1.5.12"
+	cniAsset, cniAssetHashString, err := findCNIAssets(cluster)
+
+	if err != nil {
+		t.Errorf("Unable to parse k8s version %s", err)
+	}
+
+	if cniAsset != defaultCNIAssetK8s1_5 {
+		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAssetK8s1_5, cniAsset)
+	}
+
+	if cniAssetHashString != defaultCNIAssetHashStringK8s1_5 {
+		t.Errorf("Expected default CNI Version Hash String %q and got %q", defaultCNIAssetHashStringK8s1_5, cniAssetHashString)
 	}
 
 }
