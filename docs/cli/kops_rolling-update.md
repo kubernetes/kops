@@ -1,6 +1,6 @@
 ## kops rolling-update
 
-rolling update clusters
+Initiate rolling updates on clusters.
 
 ### Synopsis
 

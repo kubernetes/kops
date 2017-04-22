@@ -1,6 +1,6 @@
 ## kops validate
 
-Validate Cluster
+Run validation check on Kubernetes cluster.
 
 ### Synopsis
 

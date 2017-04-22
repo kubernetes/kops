@@ -34,5 +34,5 @@ kops get clusters
 ```
 
 ### SEE ALSO
-* [kops get](kops_get.md)	 - list or get objects
+* [kops get](kops_get.md)	 - List all instances of a resource.
 

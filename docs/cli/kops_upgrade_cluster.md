@@ -34,5 +34,5 @@ kops upgrade cluster
 ```
 
 ### SEE ALSO
-* [kops upgrade](kops_upgrade.md)	 - upgrade clusters
+* [kops upgrade](kops_upgrade.md)	 - Automates checking for and applying Kubernetes updates.
 

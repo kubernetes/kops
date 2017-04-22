@@ -27,5 +27,5 @@ kops update federation
 ```
 
 ### SEE ALSO
-* [kops update](kops_update.md)	 - update clusters
+* [kops update](kops_update.md)	 - Creates or updates cloud resources to match cluster spec.
 

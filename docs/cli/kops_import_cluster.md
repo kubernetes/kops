@@ -33,5 +33,5 @@ kops import cluster
 ```
 
 ### SEE ALSO
-* [kops import](kops_import.md)	 - import clusters
+* [kops import](kops_import.md)	 - Import existing resources into the state store.
 

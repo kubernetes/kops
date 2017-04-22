@@ -1,6 +1,6 @@
 ## kops update
 
-update clusters
+Creates or updates cloud resources to match cluster spec.
 
 ### Synopsis
 
