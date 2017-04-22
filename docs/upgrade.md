@@ -35,7 +35,7 @@ We have implemented a new feature that does drain and validate nodes.  This feat
 
 * `kops edit cluster $NAME`
 * set the KubernetesVersion to the target version (e.g. `v1.3.5`)
-* `kops update cluster $NAME --target=terraform` to preview, then `kops update cluster $NAME --yes`
+* `kops update cluster $NAME --target=terraform`
 * `terraform plan`
 * `terraform apply`
 * `kops rolling-update cluster $NAME` to preview, then `kops rolling-update cluster $NAME --yes`
