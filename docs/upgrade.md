@@ -31,3 +31,14 @@ NOTE: rolling-update does not yet perform a real rolling update - it just shuts 
  there will be downtime [Issue #37](https://github.com/kubernetes/kops/issues/37)
 We have implemented a new feature that does drain and validate nodes.  This feature is experimental, and you can use the new feature by setting `export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"`.
 
+### Terraform Users
+
+* `kops edit cluster $NAME`
+* set the KubernetesVersion to the target version (e.g. `v1.3.5`)
+* `kops update cluster $NAME` to preview, then `kops update cluster $NAME --yes`
+* `terraform plan`
+* `terraform apply`
+* `kops rolling-update cluster $NAME` to preview, then `kops rolling-update cluster $NAME --yes`
+
+
+
