@@ -222,7 +222,12 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		if usesCNI(cluster) {
-			cniAsset, cniAssetHashString := findCNIAssets(cluster)
+			cniAsset, cniAssetHashString, err := findCNIAssets(cluster)
+
+			if err != nil {
+				return err
+			}
+
 			c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset)
 		}
 
