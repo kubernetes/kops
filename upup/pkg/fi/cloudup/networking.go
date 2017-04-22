@@ -82,6 +82,8 @@ func usesCNI(c *api.Cluster) bool {
 // https://github.com/kubernetes/kops/issues/724
 // https://github.com/kubernetes/kops/issues/626
 // https://github.com/kubernetes/kubernetes/issues/30338
+// 1.6.x k8s uses release 0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff
+// 1.5.x k8s uses release 07a8a28637e97b22eb8dfe710eeae1344f69d16e
 
 const (
 	// 1.5.x k8s uses release 07a8a28637e97b22eb8dfe710eeae1344f69d16e
@@ -96,6 +98,7 @@ const (
 	ENV_VAR_CNI_VERSION_URL = "CNI_VERSION_URL"
 )
 
+// findCNIAssets returns the url and sha for the CNI Assests.
 func findCNIAssets(c *api.Cluster) (string, string, error) {
 
 	if cniVersionURL := os.Getenv(ENV_VAR_CNI_VERSION_URL); cniVersionURL != "" {

@@ -21,8 +21,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"k8s.io/kops/util/pkg/vfs"
 	"os"
+
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Resource interface {
@@ -81,6 +82,9 @@ func ResourcesMatch(a, b Resource) (bool, error) {
 }
 
 func CopyResource(dest io.Writer, r Resource) (int64, error) {
+	if r == nil {
+		return 0, fmt.Errorf("resource cannot be nil")
+	}
 	in, err := r.Open()
 	if err != nil {
 		if os.IsNotExist(err) {

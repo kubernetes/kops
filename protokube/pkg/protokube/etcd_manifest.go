@@ -23,6 +23,9 @@ import (
 	"strings"
 )
 
+// TODO: how do I get this out of here or dynamic?
+const ETCD_IMAGE = "gcr.io/google_containers/etcd:2.2.1"
+
 // BuildEtcdManifest creates the pod spec, based on the etcd cluster
 func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 	pod := &v1.Pod{}
@@ -40,7 +43,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 	{
 		container := v1.Container{
 			Name:  "etcd-container",
-			Image: "gcr.io/google_containers/etcd:2.2.1",
+			Image: ETCD_IMAGE,
 			Resources: v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU: c.CPURequest,
