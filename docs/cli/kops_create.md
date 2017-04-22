@@ -1,11 +1,11 @@
 ## kops create
 
-Create a resource by filename or stdin
+Create a resource by filename or stdin.
 
 ### Synopsis
 
 
-Create a resource by filename or stdin
+Create a resource by filename or stdin.
 
 ```
 kops create -f FILENAME

@@ -1,6 +1,6 @@
 ## kops get
 
-list or get objects
+List all instances of a resource.
 
 ### Synopsis
 

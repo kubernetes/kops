@@ -1,11 +1,11 @@
 ## kops describe
 
-describe objects
+Get additional information about cloud resources.
 
 ### Synopsis
 
 
-describe objects
+Get additional information about cloud resources.
 
 ### Options inherited from parent commands
 

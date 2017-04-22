@@ -1,6 +1,6 @@
 ## kops secrets
 
-Manage secrets & keys
+Manage secrets & keys.
 
 ### Synopsis
 
