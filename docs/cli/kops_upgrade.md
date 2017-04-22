@@ -1,6 +1,6 @@
 ## kops upgrade
 
-upgrade clusters
+Automates checking for and applying Kubernetes updates.
 
 ### Synopsis
 

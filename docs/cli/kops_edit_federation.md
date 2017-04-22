@@ -27,5 +27,5 @@ kops edit federation
 ```
 
 ### SEE ALSO
-* [kops edit](kops_edit.md)	 - Edit resource
+* [kops edit](kops_edit.md)	 - Edit clusters and other resrouces.
 
