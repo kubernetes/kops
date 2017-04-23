@@ -31,20 +31,36 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 type CreateOptions struct {
 	resource.FilenameOptions
 }
 
+var (
+	create_long = templates.LongDesc(i18n.T(`
+		Create a resource by filename or stdin.`))
+
+	create_example = templates.Examples(i18n.T(`
+		# Create a cluster in AWS
+		kops create cluster --name=k8s.cluster.site \
+		     --state=s3://kops-state-1234 --zones=eu-west-1a \
+			 --node-count=2 --node-size=t2.micro --dns-zone=k8s.cluster.site
+		`))
+)
+
 func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "create -f FILENAME",
-		Short: "Create a resource by filename or stdin.",
+		Use:     "create -f FILENAME",
+		Short:   i18n.T("Create a resource by filename or stdin."),
+		Long:    create_long,
+		Example: create_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameEmpty(options.Filenames) {
 				cmd.Help()
