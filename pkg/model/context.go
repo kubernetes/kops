@@ -224,7 +224,6 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 		} else {
 			tags["kubernetes.io/cluster/"+m.Cluster.ObjectMeta.Name] = "owned"
 		}
-
 	}
 	return tags
 }

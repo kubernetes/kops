@@ -83,6 +83,7 @@ type AWSCloud interface {
 	Route53() route53iface.Route53API
 
 	// TODO: Document and rationalize these tags/filters methods
+	// AddTags adds the default tags to the set of tags
 	AddTags(name *string, tags map[string]string)
 	BuildFilters(name *string) []*ec2.Filter
 	BuildTags(name *string) map[string]string
@@ -487,6 +488,7 @@ func buildTags(commonTags map[string]string, name *string) map[string]string {
 	return tags
 }
 
+// AddTags adds the default tags to the set of tags
 func (c *awsCloudImplementation) AddTags(name *string, tags map[string]string) {
 	if name != nil {
 		tags["Name"] = *name
