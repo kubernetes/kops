@@ -61,10 +61,9 @@ var rootCommand = RootCmd{
 	cobraCommand: &cobra.Command{
 		Use:   "kops",
 		Short: i18n.T("kops is kubernetes ops"),
-		Long: templates.LongDesc(`
-kops is kubernetes ops.
-
-It allows you to create, destroy, upgrade and maintain clusters.`),
+		Long: templates.LongDesc(i18n.T(`
+kops is kubernetes ops. 
+It allows you to create, destroy, upgrade and maintain clusters.`)),
 	},
 }
 
