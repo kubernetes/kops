@@ -31,6 +31,8 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
 
 	// Register our APIs
 	_ "k8s.io/kops/pkg/apis/kops/install"
@@ -58,9 +60,11 @@ var _ Factory = &RootCmd{}
 var rootCommand = RootCmd{
 	cobraCommand: &cobra.Command{
 		Use:   "kops",
-		Short: "kops is kubernetes ops",
-		Long: `kops is kubernetes ops.
-It allows you to create, destroy, upgrade and maintain clusters.`,
+		Short: i18n.T("kops is kubernetes ops"),
+		Long: templates.LongDesc(`
+kops is kubernetes ops.
+
+It allows you to create, destroy, upgrade and maintain clusters.`),
 	},
 }
 
