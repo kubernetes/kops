@@ -36,6 +36,8 @@ type Subnet struct {
 	AvailabilityZone *string
 	CIDR             *string
 	Shared           *bool
+
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &Subnet{}
@@ -70,6 +72,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		CIDR:             subnet.CidrBlock,
 		Name:             findNameTag(subnet.Tags),
 		Shared:           e.Shared,
+		Tags:             mapEC2TagsToMap(subnet.Tags),
 	}
 
 	glog.V(2).Infof("found matching subnet %q", *actual.ID)

@@ -134,12 +134,16 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
 		sharedSubnet := subnetSpec.ProviderID != ""
 
+		name := subnetSpec.Name + "." + b.ClusterName()
+		tags := b.CloudTags(name, sharedSubnet)
+
 		subnet := &awstasks.Subnet{
-			Name:             s(subnetSpec.Name + "." + b.ClusterName()),
+			Name:             s(name),
 			VPC:              b.LinkToVPC(),
 			AvailabilityZone: s(subnetSpec.Zone),
 			CIDR:             s(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
+			Tags:             tags,
 		}
 
 		if subnetSpec.ProviderID != "" {
