@@ -49,7 +49,8 @@ var (
 		# Create a cluster in AWS
 		kops create cluster --name=k8s.cluster.site \
 		     --state=s3://kops-state-1234 --zones=eu-west-1a \
-			 --node-count=2 --node-size=t2.micro --dns-zone=k8s.cluster.site
+			 --node-count=2 --node-size=t2.micro --master-size=t2.micro \
+			 --dns-zone=k8s.cluster.site
 		`))
 )
 
