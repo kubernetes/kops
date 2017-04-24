@@ -206,17 +206,17 @@ resource "aws_elb" "bastion-privatecanal-example-com" {
 
 resource "aws_iam_instance_profile" "bastions-privatecanal-example-com" {
   name  = "bastions.privatecanal.example.com"
-  roles = ["${aws_iam_role.bastions-privatecanal-example-com.name}"]
+  role  = "${aws_iam_role.bastions-privatecanal-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privatecanal-example-com" {
   name  = "masters.privatecanal.example.com"
-  roles = ["${aws_iam_role.masters-privatecanal-example-com.name}"]
+  role  = "${aws_iam_role.masters-privatecanal-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privatecanal-example-com" {
   name  = "nodes.privatecanal.example.com"
-  roles = ["${aws_iam_role.nodes-privatecanal-example-com.name}"]
+  role  = "${aws_iam_role.nodes-privatecanal-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privatecanal-example-com" {
