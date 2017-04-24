@@ -37,6 +37,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 const (
@@ -114,6 +116,19 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.Authorization = AuthorizationFlagAlwaysAllow
 }
 
+var (
+	create_cluster_long = templates.LongDesc(i18n.T(`
+		Creates a k8s cluster.`))
+
+	create_cluster_example = templates.Examples(i18n.T(`
+		# Create a cluster in AWS
+		kops create cluster --name=k8s.cluster.site \
+		     --state=s3://kops-state-1234 --zones=eu-west-1a \
+			 --node-count=2 --node-size=t2.micro --master-size=t2.micro \
+			 --dns-zone=k8s.cluster.site
+		`))
+)
+
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterOptions{}
 	options.InitDefaults()
@@ -121,9 +136,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	associatePublicIP := false
 
 	cmd := &cobra.Command{
-		Use:   "cluster",
-		Short: "Create cluster",
-		Long:  `Creates a k8s cluster.`,
+		Use:     "cluster",
+		Short:   i18n.T("Create cluster"),
+		Long:    create_cluster_long,
+		Example: create_cluster_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmd.Flag("associate-public-ip").Changed {
 				options.AssociatePublicIP = &associatePublicIP

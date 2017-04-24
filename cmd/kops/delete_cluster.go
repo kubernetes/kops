@@ -33,6 +33,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 type DeleteClusterOptions struct {
@@ -43,13 +45,25 @@ type DeleteClusterOptions struct {
 	ClusterName string
 }
 
+var (
+	delete_cluster_long = templates.LongDesc(i18n.T(`
+	Deletes a k8s cluster.
+	`))
+
+	delete_cluster_example = templates.Examples(i18n.T(`
+		# Delete a cluster in AWS.
+		kops delete cluster --name=k8s.cluster.site --yes
+	`))
+)
+
 func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DeleteClusterOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "cluster CLUSTERNAME [--yes]",
-		Short: "Delete cluster",
-		Long:  `Deletes a k8s cluster.`,
+		Use:     "cluster CLUSTERNAME [--yes]",
+		Short:   "Delete cluster",
+		Long:    delete_cluster_long,
+		Example: delete_cluster_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := rootCommand.ProcessArgs(args)
 			if err != nil {

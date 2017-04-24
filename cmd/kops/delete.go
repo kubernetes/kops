@@ -46,6 +46,9 @@ var (
 	`))
 
 	delete_example = templates.Examples(i18n.T(`
+		# Create a cluster using a file
+		kops delete -f my-cluster.yaml
+
 		# Delete a cluster in AWS.
 		kops delete cluster --name=k8s.cluster.site --state=s3://kops-state-1234 
 	`))
