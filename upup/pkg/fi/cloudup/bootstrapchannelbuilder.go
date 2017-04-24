@@ -272,90 +272,14 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		version := "1.9.4"
 
 		if b.cluster.Spec.Networking.Weave.Encrypt {
-			var location string
-			var id string
-			var kubernetesVersion string
-			kv, err := util.ParseKubernetesVersion(b.cluster.Spec.KubernetesVersion)
-			if err != nil {
-				return nil, nil, fmt.Errorf("unable to determine kubernetes version from %q", b.cluster.Spec.KubernetesVersion)
-			}
-			switch {
-			case kv.Major == 1 && kv.Minor <= 5:
-				location = key + "/pre-k8s-1.6.yaml"
-				id = "pre-k8s-1.6"
-				kubernetesVersion = "<1.6.0"
-			default:
-				location = key + "/k8s-1.6.yaml"
-				id = "k8s-1.6"
-				kubernetesVersion = ">=1.6.0"
-			}
-
-			seConfig, _ := BuildSecret()
-			info, _ := runtime.SerializerInfoForMediaType(kube_api.Codecs.SupportedMediaTypes(), "application/yaml")
-
-			encoder := kube_api.Codecs.EncoderForVersion(info.Serializer, v1.SchemeGroupVersion)
-			secretData, err := runtime.Encode(encoder, &seConfig)
-			if err != nil {
-				return nil, nil, fmt.Errorf("error marshaling secret yaml: %s", err)
-			}
-
-			prefix := "addons/"
-			weaveLoc := prefix + key + "/secret.yaml"
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key + "secret"),
-				Version:           fi.String("0.0.1"),
-				Selector:          map[string]string{"role.kubernetes.io/networking": "1"},
-				Manifest:          fi.String(key + "/secret.yaml"),
-				Yamldata:          fi.String(string(secretData)),
-				KubernetesVersion: kubernetesVersion,
-				Id:                id,
-			})
-
-			manifests[key+"-secret-"+id] = weaveLoc
+			name, weaveLoc, addon := createSecret(key, b)
+			addons.Spec.Addons = append(addons.Spec.Addons, addon)
+			manifests[name] = weaveLoc
 
 			// read weave yaml
-			weave_file := "cloudup/resources/addons/" + location
-			vpath := models.NewAssetPath(weave_file)
-			weavesource, err := vpath.ReadFile()
-			if err != nil {
-				panic(err)
-			}
-			encoder = kube_api.Codecs.EncoderForVersion(info.Serializer, v1beta1.SchemeGroupVersion)
-			delimiter := []byte("\n---\n")
-			sections := bytes.Split(weavesource, delimiter)
-			var newSections []byte
-			for _, section := range sections {
-				obj, err := runtime.Decode(kube_api.Codecs.UniversalDecoder(), section)
-				if err != nil {
-					return nil, nil, fmt.Errorf("error parsing file %s obj %s: %v", weavesource, string(section), err)
-				}
-				switch v := obj.(type) {
-				case *kube_api_ext.DaemonSet:
-					weaveconfig := BuildWeaveDaemonSet(obj)
-					weaveData, err := runtime.Encode(encoder, &weaveconfig)
-					if err != nil {
-						return nil, nil, fmt.Errorf("error encode file %s obj %v: %v", weavesource, weaveconfig, err)
-					}
-					newSections = append(newSections[:], weaveData[:]...)
-				default:
-					fmt.Printf("not changed %s,\n%v", v, string(section))
-					newSections = append(newSections[:], section[:]...)
-				}
-				newSections = append(newSections[:], delimiter[:]...)
-			}
-
-			newLocation := prefix + key + "/weave.yaml"
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          map[string]string{"role.kubernetes.io/networking": "1"},
-				Manifest:          fi.String(key + "/weave.yaml"),
-				Yamldata:          fi.String(string(newSections)),
-				KubernetesVersion: kubernetesVersion,
-				Id:                id,
-			})
-
-			manifests[key+"-"+id] = newLocation
+			name, newLocation, addon := modifyWeaveYaml(key, version, b)
+			addons.Spec.Addons = append(addons.Spec.Addons, addon)
+			manifests[name] = newLocation
 		} else {
 			{
 				location := key + "/pre-k8s-1.6.yaml"
@@ -497,7 +421,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	return addons, manifests, nil
 }
 
-func BuildSecret() (kube_api.Secret, error) {
+func buildSecret() (kube_api.Secret, error) {
 	secret, err := fi.CreateSecret()
 	if err != nil {
 		return kube_api.Secret{}, fmt.Errorf("error create secret: %s", err)
@@ -516,7 +440,7 @@ func BuildSecret() (kube_api.Secret, error) {
 	return seConfig, err
 }
 
-func BuildNewEnv() []kube_api.EnvVar {
+func buildNewEnv() []kube_api.EnvVar {
 	newenv := []kube_api.EnvVar{{
 		Name: "WEAVE_PASSWORD",
 		ValueFrom: &kube_api.EnvVarSource{
@@ -532,11 +456,105 @@ func BuildWeaveDaemonSet(obj runtime.Object) kube_api_ext.DaemonSet {
 	// assign to all container new env variable
 	weaveConfig := obj.(*kube_api_ext.DaemonSet)
 	containers := make([]kube_api.Container, len(weaveConfig.Spec.Template.Spec.Containers))
-	newenv := BuildNewEnv()
+	newenv := buildNewEnv()
 	for i, cont := range weaveConfig.Spec.Template.Spec.Containers {
 		cont.Env = newenv
 		containers[i] = cont
 	}
 	weaveConfig.Spec.Template.Spec.Containers = containers
 	return *weaveConfig
+}
+
+func createSecret(key string, b *BootstrapChannelBuilder) (string, string, *channelsapi.AddonSpec) {
+	_, id, kubernetesVersion := parseK8sVersion(b, key)
+
+	seConfig, _ := buildSecret()
+	info, _ := runtime.SerializerInfoForMediaType(kube_api.Codecs.SupportedMediaTypes(), "application/yaml")
+
+	encoder := kube_api.Codecs.EncoderForVersion(info.Serializer, v1.SchemeGroupVersion)
+	secretData, err := runtime.Encode(encoder, &seConfig)
+	if err != nil {
+		panic(fmt.Errorf("error marshaling secret yaml: %s", err))
+	}
+
+	weaveLoc := "addons/" + key + "/secret.yaml"
+	name := key + "-secret-" + id
+	addon := &channelsapi.AddonSpec{
+		Name:              fi.String(name),
+		Version:           fi.String("0.0.1"),
+		Selector:          map[string]string{"role.kubernetes.io/networking": "1"},
+		Manifest:          fi.String(key + "/secret.yaml"),
+		Yamldata:          fi.String(string(secretData)),
+		KubernetesVersion: kubernetesVersion,
+		Id:                id,
+	}
+	return name, weaveLoc, addon
+
+}
+
+func modifyWeaveYaml(key string, version string, b *BootstrapChannelBuilder) (string, string, *channelsapi.AddonSpec) {
+	location, id, kubernetesVersion := parseK8sVersion(b, key)
+	weave_file := "cloudup/resources/addons/" + location
+	vpath := models.NewAssetPath(weave_file)
+	weavesource, err := vpath.ReadFile()
+	if err != nil {
+		panic(err)
+	}
+	info, _ := runtime.SerializerInfoForMediaType(kube_api.Codecs.SupportedMediaTypes(), "application/yaml")
+	encoder := kube_api.Codecs.EncoderForVersion(info.Serializer, v1beta1.SchemeGroupVersion)
+	delimiter := []byte("\n---\n")
+	sections := bytes.Split(weavesource, delimiter)
+	var newSections []byte
+	for _, section := range sections {
+		obj, err := runtime.Decode(kube_api.Codecs.UniversalDecoder(), section)
+		if err != nil {
+			panic(fmt.Errorf("error parsing file %s obj %s: %v", weavesource, string(section), err))
+		}
+		switch v := obj.(type) {
+		case *kube_api_ext.DaemonSet:
+			weaveconfig := BuildWeaveDaemonSet(obj)
+			weaveData, err := runtime.Encode(encoder, &weaveconfig)
+			if err != nil {
+				panic(fmt.Errorf("error encode file %s obj %v: %v", weavesource, weaveconfig, err))
+			}
+			newSections = append(newSections[:], weaveData[:]...)
+		default:
+			fmt.Printf("not changed %s,\n%v", v, string(section))
+			newSections = append(newSections[:], section[:]...)
+		}
+		newSections = append(newSections[:], delimiter[:]...)
+	}
+
+	newLocation := "addons/" + key + "/k8s-1.6.yaml"
+	addon := &channelsapi.AddonSpec{
+		Name:              fi.String(key),
+		Version:           fi.String(version),
+		Selector:          map[string]string{"role.kubernetes.io/networking": "1"},
+		Manifest:          fi.String(key + "/k8s-1.6.yaml"),
+		Yamldata:          fi.String(string(newSections)),
+		KubernetesVersion: kubernetesVersion,
+		Id:                id,
+	}
+
+	name := key + "-" + id
+	return name, newLocation, addon
+}
+
+func parseK8sVersion(b *BootstrapChannelBuilder, key string) (string, string, string) {
+	var location, id, kubernetesVersion string
+	kv, err := util.ParseKubernetesVersion(b.cluster.Spec.KubernetesVersion)
+	if err != nil {
+		panic(fmt.Errorf("unable to determine kubernetes version from %q", b.cluster.Spec.KubernetesVersion))
+	}
+	switch {
+	case kv.Major == 1 && kv.Minor <= 5:
+		location = key + "/pre-k8s-1.6.yaml"
+		id = "pre-k8s-1.6"
+		kubernetesVersion = "<1.6.0"
+	default:
+		location = key + "/k8s-1.6.yaml"
+		id = "k8s-1.6"
+		kubernetesVersion = ">=1.6.0"
+	}
+	return location, id, kubernetesVersion
 }
