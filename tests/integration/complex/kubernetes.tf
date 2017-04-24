@@ -104,12 +104,12 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
 
 resource "aws_iam_instance_profile" "masters-complex-example-com" {
   name  = "masters.complex.example.com"
-  roles = ["${aws_iam_role.masters-complex-example-com.name}"]
+  role  = "${aws_iam_role.masters-complex-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-complex-example-com" {
   name  = "nodes.complex.example.com"
-  roles = ["${aws_iam_role.nodes-complex-example-com.name}"]
+  role  = "${aws_iam_role.nodes-complex-example-com.name}"
 }
 
 resource "aws_iam_role" "masters-complex-example-com" {
