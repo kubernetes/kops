@@ -212,12 +212,12 @@ resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
 
 resource "aws_iam_instance_profile" "masters-ha-example-com" {
   name  = "masters.ha.example.com"
-  roles = ["${aws_iam_role.masters-ha-example-com.name}"]
+  role  = "${aws_iam_role.masters-ha-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-ha-example-com" {
   name  = "nodes.ha.example.com"
-  roles = ["${aws_iam_role.nodes-ha-example-com.name}"]
+  role  = "${aws_iam_role.nodes-ha-example-com.name}"
 }
 
 resource "aws_iam_role" "masters-ha-example-com" {
