@@ -27,5 +27,5 @@ kops export kubecfg CLUSTERNAME
 ```
 
 ### SEE ALSO
-* [kops export](kops_export.md)	 - export clusters/kubecfg
+* [kops export](kops_export.md)	 - Exports a kubecfg for target cluster.
 
