@@ -206,17 +206,17 @@ resource "aws_elb" "bastion-privatedns1-example-com" {
 
 resource "aws_iam_instance_profile" "bastions-privatedns1-example-com" {
   name  = "bastions.privatedns1.example.com"
-  roles = ["${aws_iam_role.bastions-privatedns1-example-com.name}"]
+  role  = "${aws_iam_role.bastions-privatedns1-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privatedns1-example-com" {
   name  = "masters.privatedns1.example.com"
-  roles = ["${aws_iam_role.masters-privatedns1-example-com.name}"]
+  role  = "${aws_iam_role.masters-privatedns1-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privatedns1-example-com" {
   name  = "nodes.privatedns1.example.com"
-  roles = ["${aws_iam_role.nodes-privatedns1-example-com.name}"]
+  role  = "${aws_iam_role.nodes-privatedns1-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privatedns1-example-com" {
