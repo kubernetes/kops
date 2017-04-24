@@ -109,14 +109,14 @@ func (_ *IAMInstanceProfileRole) RenderAWS(t *awsup.AWSAPITarget, a, e, changes 
 }
 
 type terraformIAMInstanceProfile struct {
-	Name  *string              `json:"name"`
-	Role  *terraform.Literal   `json:"role"`
+	Name *string            `json:"name"`
+	Role *terraform.Literal `json:"role"`
 }
 
 func (_ *IAMInstanceProfileRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *IAMInstanceProfileRole) error {
 	tf := &terraformIAMInstanceProfile{
-		Name:  e.InstanceProfile.Name,
-		Role:  e.Role.TerraformLink(),
+		Name: e.InstanceProfile.Name,
+		Role: e.Role.TerraformLink(),
 	}
 
 	return t.RenderResource("aws_iam_instance_profile", *e.InstanceProfile.Name, tf)
