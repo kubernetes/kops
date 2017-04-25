@@ -526,8 +526,9 @@ func modifyWeaveYaml(key string, version string, b *BootstrapChannelBuilder) (st
 	}
 
 	newLocation := "addons/" + key + "/k8s-1.6.yaml"
+	name := key + "-" + id
 	addon := &channelsapi.AddonSpec{
-		Name:              fi.String(key),
+		Name:              fi.String(name),
 		Version:           fi.String(version),
 		Selector:          map[string]string{"role.kubernetes.io/networking": "1"},
 		Manifest:          fi.String(key + "/k8s-1.6.yaml"),
@@ -536,7 +537,6 @@ func modifyWeaveYaml(key string, version string, b *BootstrapChannelBuilder) (st
 		Id:                id,
 	}
 
-	name := key + "-" + id
 	return name, newLocation, addon
 }
 
