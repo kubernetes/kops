@@ -18,15 +18,24 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 )
 
-// exportCmd represents the export command
-var exportCmd = &cobra.Command{
-	Use:   "export",
-	Short: "Exports a kubecfg for target cluster.",
-	Long:  `export clusters/kubecfg`,
+type ExportOptions struct {
 }
 
-func init() {
-	rootCommand.AddCommand(exportCmd)
+func NewCmdExport(f *util.Factory, out io.Writer) *cobra.Command {
+	//options := &ExportOptions{}
+
+	cmd := &cobra.Command{
+		Use:   "export",
+		Short: "Exports a kubecfg for target cluster.",
+		Long:  `export clusters/kubecfg`,
+	}
+
+	// create subcommands
+	cmd.AddCommand(NewCmdExportKubecfg(f, out))
+
+	return cmd
 }
