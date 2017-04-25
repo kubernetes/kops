@@ -1,0 +1,33 @@
+FROM ALPINE_BASEIMAGE
+
+# If we're building for another architecture than amd64, the CROSS_BUILD_ placeholder is removed so e.g. CROSS_BUILD_COPY turns into COPY
+# If we're building normally, for amd64, CROSS_BUILD lines are removed
+CROSS_BUILD_COPY qemu-QEMUARCH-static /usr/bin/
+
+LABEL maintainer "Weaveworks Inc <help@weave.works>"
+LABEL works.weave.role=system \
+      org.label-schema.name="Weave Net" \
+      org.label-schema.description="Weave Net creates a virtual network that connects Docker containers across multiple hosts and enables their automatic discovery" \
+      org.label-schema.url="https://weave.works" \
+      org.label-schema.vcs-url="https://github.com/weaveworks/weave" \
+      org.label-schema.vendor="Weaveworks"
+
+ENTRYPOINT ["/home/weave/sigproxy", "/home/weave/weave"]
+
+RUN apk add --update \
+    curl \
+    ethtool \
+    iptables \
+    ipset \
+    iproute2 \
+    util-linux \
+    conntrack-tools \
+    bind-tools \
+  && rm -rf /var/cache/apk/*
+
+ADD ./weave ./sigproxy ./weaveproxy ./symlink /home/weave/
+ADD ./weaveutil ./docker /usr/bin/
+ADD ./weavewait /w/w
+ADD ./weavewait_noop /w-noop/w
+ADD ./weavewait_nomcast /w-nomcast/w
+WORKDIR /home/weave

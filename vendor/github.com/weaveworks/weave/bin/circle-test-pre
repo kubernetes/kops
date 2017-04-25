@@ -1,0 +1,30 @@
+#!/bin/bash
+
+set -e
+
+# Signal failures in lock file, in order to fail fast:
+function signal_failure() {
+    echo "KO" >"$TEST_VMS_READY_LOCK_FILE"
+    exit 1
+}
+trap signal_failure ERR
+
+source "$STATE"
+source "$(dirname "$0")/wait_for.sh"
+
+if [ -n "$TEST_AND_PUBLISH" ]; then
+    [ -n "$SECRET_KEY" ] || {
+        echo "Cannot run smoke tests: no secret key"
+        exit 1
+    }
+
+    # Provisioning from image typically take 90 seconds, 
+    # but if we are creating a GCP image, it can take more than 10 minutes:
+    wait_for 900 "$TEST_VMS_PROV_AND_CONF_LOCK_FILE"
+
+    # Upload built binaries to testing VMs:
+    cd "$SRCDIR/test" # Ensures we generate Terraform state files in the right folder, for later use by integration tests.
+    ./run-integration-tests.sh setup >>"$TEST_VMS_SETUP_OUTPUT_FILE" 2>&1
+    echo "OK" >"$TEST_VMS_READY_LOCK_FILE"
+    echo "Test VMs now ready. $(date)." >>"$TEST_VMS_SETUP_OUTPUT_FILE"
+fi

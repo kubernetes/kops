@@ -1,0 +1,12 @@
+#!/bin/bash
+
+if [ $# -ne 1 ] ; then
+    echo USAGE: install-wordepress [COMMIT-ISH] >&2
+    exit 1
+fi
+
+go get github.com/weaveworks/wordepress
+cd /home/ubuntu/src/github.com/weaveworks/wordepress
+git checkout $1
+cd cmd/wordepress
+go get

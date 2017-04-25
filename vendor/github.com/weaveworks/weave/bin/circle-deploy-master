@@ -1,0 +1,17 @@
+#!/bin/bash
+
+set -e
+
+source "$STATE"
+
+if [ -n "$TEST_AND_PUBLISH" ] ; then
+    docker login -e $DOCKER_EMAIL -u $DOCKER_USER -p $DOCKER_PASS
+    cd $SRCDIR
+    make clean-bin
+    # CircleCI doesn't let us install the qemu module to do ARM docker builds
+    make publish ALL_ARCHITECTURES=amd64 UPDATE_LATEST=latest-only
+fi
+
+cd $SRCDIR
+bin/install-wordepress v1.0.0
+bin/publish-site "$WP_DEV_URL" "$WP_DEV_USER" "$WP_DEV_PASSWORD"

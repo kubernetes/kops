@@ -1,0 +1,23 @@
+#!/bin/bash
+
+set -e
+
+source "$STATE"
+source "$(dirname "$0")/wait_for.sh"
+
+if [ -n "$TEST_AND_PUBLISH" ]; then
+    [ -n "$SECRET_KEY" ] || {
+        echo "Cannot run smoke tests: no secret key"
+        exit 1
+    }
+
+    # Provisioning from image typically take 90 seconds, 
+    # but if we are creating a GCP image, it can take more than 10 minutes:
+    wait_for 900 "$TEST_VMS_READY_LOCK_FILE"
+
+    # Run integration tests:
+    export COVERAGE=true
+    export WEAVE_NET_SANITY_CHECKS_FILES="$CIRCLE_ARTIFACTS/weave_net_sanity_check_*.log"
+    cd "$SRCDIR/test" # Ensures we generate code coverage files in the right folder, and use the Terraform state of previously provisionned VMs.
+    ./run-integration-tests.sh test
+fi

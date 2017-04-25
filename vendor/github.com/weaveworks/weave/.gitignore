@@ -1,0 +1,73 @@
+# Compiled Object files, Static and Dynamic libs (Shared Objects)
+*.o
+*.a
+*.so
+
+# Folders
+_obj
+_test
+.vagrant
+
+# Architecture specific extensions/prefixes
+*.[568vq]
+[568vq].out
+
+*.cgo1.go
+*.cgo2.c
+_cgo_defun.c
+_cgo_gotypes.go
+_cgo_export.*
+
+_testmain.go
+
+*.exe
+*.test
+*.prof
+profile.cov
+coverage.html
+.pkg
+
+# Emacs backup files
+*~
+
+# Vim backup files
+*.swp
+
+# Project specific
+prog/weaver/weaver
+prog/weavedns/weavedns
+prog/weavehosts/weavehosts
+prog/weaveproxy/weaveproxy
+prog/sigproxy/sigproxy
+prog/weavewait/weavewait
+prog/weavewait/weavewait_noop
+prog/weavewait/weavewait_nomcast
+prog/weaveutil/weaveutil
+prog/*/Dockerfile.weaveworks
+prog/kube-peers/kube-peers
+prog/weave-kube/kube-peers
+prog/weave-npc/weave-npc
+prog/plugin/plugin
+testing/cover/cover
+testing/runner/runner
+releases
+.*.uptodate
+weave*.tar.gz
+prog/weaveexec/weave
+prog/weaveexec/weavehosts
+prog/weaveexec/weaveproxy
+prog/weaveexec/weavewait
+prog/weaveexec/weavewait_noop
+prog/weaveexec/weavewait_nomcast
+prog/weaveexec/sigproxy
+prog/weaveexec/weaveutil
+prog/weaveexec/docker*
+Vagrantfile.local
+test/tls/tls
+test/tls/*.pem
+test/coverage
+test/coverage.*
+*qemu-*-static
+terraform.tfstate
+terraform.tfstate.backup
+prog/net-plugin/rootfs/
