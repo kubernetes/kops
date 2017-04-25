@@ -178,7 +178,7 @@ Here are some steps items that will confirm a good CNI install:
 
 - `kubelet` is running with the with `--network-plugin=cni` option.
 - The CNS provider started without errors.
-- `kube-dns` daesonset starts.
+- `kube-dns` daemonset starts.
 - Logging on a node will display messages on pod create and delete.
 
 The sig-networking and sig-cluster-lifecycle channels on K8s slack are always good starting places
