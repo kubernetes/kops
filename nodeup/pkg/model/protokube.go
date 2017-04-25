@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -204,24 +205,38 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		//argv = append(argv, "--zone=*/*")
 	}
 
+	if dns.IsGossipHostname(t.Cluster.Spec.MasterInternalName) {
+		glog.Warningf("MasterInternalName %q implies gossip DNS", t.Cluster.Spec.MasterInternalName)
+		f.DNSProvider = fi.String("gossip")
+
+		/// TODO: This is hacky, but we want it so that we can have a different internal & external name
+		internalSuffix := t.Cluster.Spec.MasterInternalName
+		internalSuffix = strings.TrimPrefix(internalSuffix, "api.")
+		f.DNSInternalSuffix = fi.String(internalSuffix)
+	}
+
 	if t.Cluster.Spec.CloudProvider != "" {
 		f.Cloud = fi.String(t.Cluster.Spec.CloudProvider)
 
-		switch fi.CloudProviderID(t.Cluster.Spec.CloudProvider) {
-		case fi.CloudProviderAWS:
-			f.DNSProvider = fi.String("aws-route53")
-		case fi.CloudProviderGCE:
-			f.DNSProvider = fi.String("google-clouddns")
-		case fi.CloudProviderVSphere:
-			f.DNSProvider = fi.String("coredns")
-			f.ClusterId = fi.String(t.Cluster.ObjectMeta.Name)
-			f.DNSServer = fi.String(*t.Cluster.Spec.CloudConfig.VSphereCoreDNSServer)
-		default:
-			glog.Warningf("Unknown cloudprovider %q; won't set DNS provider")
+		if f.DNSProvider == nil {
+			switch fi.CloudProviderID(t.Cluster.Spec.CloudProvider) {
+			case fi.CloudProviderAWS:
+				f.DNSProvider = fi.String("aws-route53")
+			case fi.CloudProviderGCE:
+				f.DNSProvider = fi.String("google-clouddns")
+			case fi.CloudProviderVSphere:
+				f.DNSProvider = fi.String("coredns")
+				f.ClusterId = fi.String(t.Cluster.ObjectMeta.Name)
+				f.DNSServer = fi.String(*t.Cluster.Spec.CloudConfig.VSphereCoreDNSServer)
+			default:
+				glog.Warningf("Unknown cloudprovider %q; won't set DNS provider", t.Cluster.Spec.CloudProvider)
+			}
 		}
 	}
 
-	f.DNSInternalSuffix = fi.String(".internal." + t.Cluster.ObjectMeta.Name)
+	if f.DNSInternalSuffix == nil {
+		f.DNSInternalSuffix = fi.String(".internal." + t.Cluster.ObjectMeta.Name)
+	}
 
 	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
 		f.ApplyTaints = fi.Bool(true)

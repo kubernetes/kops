@@ -37,6 +37,7 @@ k8s.io/kops/pkg/apiserver/registry/cluster
 k8s.io/kops/pkg/client/simple
 k8s.io/kops/pkg/client/simple/vfsclientset
 k8s.io/kops/pkg/diff
+k8s.io/kops/pkg/dns
 k8s.io/kops/pkg/edit
 k8s.io/kops/pkg/featureflag
 k8s.io/kops/pkg/flagbuilder
@@ -53,6 +54,11 @@ k8s.io/kops/pkg/systemd
 k8s.io/kops/pkg/util/stringorslice
 k8s.io/kops/pkg/validation
 k8s.io/kops/protokube/cmd/protokube
+k8s.io/kops/protokube/pkg/gossip
+k8s.io/kops/protokube/pkg/gossip/dns
+k8s.io/kops/protokube/pkg/gossip/dns/provider
+k8s.io/kops/protokube/pkg/gossip/gce
+k8s.io/kops/protokube/pkg/gossip/mesh
 k8s.io/kops/protokube/pkg/protokube
 k8s.io/kops/protokube/tests/integration/build_etcd_manifest
 k8s.io/kops/tests/codecs
