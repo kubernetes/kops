@@ -205,17 +205,17 @@ resource "aws_elb" "bastion-privatecalico-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privatecalico-example-com" {
-  name  = "bastions.privatecalico.example.com"
+  name = "bastions.privatecalico.example.com"
   role = "${aws_iam_role.bastions-privatecalico-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privatecalico-example-com" {
-  name  = "masters.privatecalico.example.com"
+  name = "masters.privatecalico.example.com"
   role = "${aws_iam_role.masters-privatecalico-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privatecalico-example-com" {
-  name  = "nodes.privatecalico.example.com"
+  name = "nodes.privatecalico.example.com"
   role = "${aws_iam_role.nodes-privatecalico-example-com.name}"
 }
 
@@ -303,7 +303,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatecalico-exa
   }
 
   ephemeral_block_device = {
-    device_name  = "/dev/sdc"
+    device_name = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
