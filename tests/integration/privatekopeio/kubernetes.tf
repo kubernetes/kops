@@ -201,17 +201,17 @@ resource "aws_elb" "bastion-privatekopeio-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privatekopeio-example-com" {
-  name  = "bastions.privatekopeio.example.com"
+  name = "bastions.privatekopeio.example.com"
   role = "${aws_iam_role.bastions-privatekopeio-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privatekopeio-example-com" {
-  name  = "masters.privatekopeio.example.com"
+  name = "masters.privatekopeio.example.com"
   role = "${aws_iam_role.masters-privatekopeio-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privatekopeio-example-com" {
-  name  = "nodes.privatekopeio.example.com"
+  name = "nodes.privatekopeio.example.com"
   role = "${aws_iam_role.nodes-privatekopeio-example-com.name}"
 }
 
@@ -299,7 +299,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatekopeio-exa
   }
 
   ephemeral_block_device = {
-    device_name  = "/dev/sdc"
+    device_name = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 

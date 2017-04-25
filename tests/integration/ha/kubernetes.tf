@@ -211,12 +211,12 @@ resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
 }
 
 resource "aws_iam_instance_profile" "masters-ha-example-com" {
-  name  = "masters.ha.example.com"
+  name = "masters.ha.example.com"
   role = "${aws_iam_role.masters-ha-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-ha-example-com" {
-  name  = "nodes.ha.example.com"
+  name = "nodes.ha.example.com"
   role = "${aws_iam_role.nodes-ha-example-com.name}"
 }
 
@@ -273,7 +273,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-ha-example-com" {
   }
 
   ephemeral_block_device = {
-    device_name  = "/dev/sdc"
+    device_name = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
@@ -299,7 +299,7 @@ resource "aws_launch_configuration" "master-us-test-1b-masters-ha-example-com" {
   }
 
   ephemeral_block_device = {
-    device_name  = "/dev/sdc"
+    device_name = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
@@ -325,7 +325,7 @@ resource "aws_launch_configuration" "master-us-test-1c-masters-ha-example-com" {
   }
 
   ephemeral_block_device = {
-    device_name  = "/dev/sdc"
+    device_name = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 

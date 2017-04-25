@@ -103,12 +103,12 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-example-com" {
 }
 
 resource "aws_iam_instance_profile" "masters-minimal-example-com" {
-  name  = "masters.minimal.example.com"
+  name = "masters.minimal.example.com"
   role = "${aws_iam_role.masters-minimal-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-minimal-example-com" {
-  name  = "nodes.minimal.example.com"
+  name = "nodes.minimal.example.com"
   role = "${aws_iam_role.nodes-minimal-example-com.name}"
 }
 
@@ -165,7 +165,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-minimal-example-c
   }
 
   ephemeral_block_device = {
-    device_name  = "/dev/sdc"
+    device_name = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
