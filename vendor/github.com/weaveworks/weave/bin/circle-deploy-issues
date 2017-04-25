@@ -1,0 +1,43 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+source "$STATE"
+
+site_changes() {
+    curl -s https://api.github.com/repos/weaveworks/weave/pulls/$1/files |
+        jq -r '.[]|.status + " " + .filename' |
+        grep -oP '^(added|modified|removed) site/.*(?=\.md$)'
+}
+
+format_comment() {
+    if [ ! -d .git ] || ! BRANCH=$(git symbolic-ref --short HEAD) || [ -z "$BRANCH" ] ; then
+        echo "Could not determine branch" >&2
+        return 1
+    fi
+
+    echo "#### Documentation changes:"
+    while read ACTION PAGE; do
+        echo "$ACTION [${PAGE#site/}]($WP_DEV_URL/docs/net/${BRANCH#issues/}/${PAGE#site/}/)"
+    done | sort
+}
+
+post_comment() {
+    jq -s -R '. | tostring | { body: . }' |
+        curl -s -d @- \
+            -H "Authorization: Bearer $WP_GH_COMMENT_TOKEN" \
+            -H 'Content-Type: application/json' \
+            https://api.github.com/repos/weaveworks/weave/issues/$GH_PR/comments > /dev/null
+}
+
+cd $SRCDIR
+bin/install-wordepress v1.0.0
+bin/publish-site "$WP_DEV_URL" "$WP_DEV_USER" "$WP_DEV_PASSWORD"
+
+if [ -n "$WP_GH_COMMENT_TOKEN" -a -n "$GH_PR" ] ; then
+    echo ">>> Adding doc changelog to GitHub PR $GH_PR"
+    if CHANGES=$(site_changes $GH_PR) && [ -n "$CHANGES" ] ; then
+        echo "$CHANGES" | format_comment | post_comment
+    fi
+fi

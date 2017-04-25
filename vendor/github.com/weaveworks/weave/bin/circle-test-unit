@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+source "$STATE"
+
+if [ -n "$TEST_AND_PUBLISH" ] ; then
+    cd $SRCDIR
+    make DEBUG=1 lint
+    COVERDIR=test/coverage make RM= tests
+fi

@@ -16,7 +16,11 @@ limitations under the License.
 
 package fi
 
-import "k8s.io/kubernetes/federation/pkg/dnsprovider"
+import (
+	"github.com/weaveworks/weave/net/address"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"sort"
+)
 
 type CloudProviderID string
 
@@ -169,4 +173,40 @@ var zonesToCloud = map[string]CloudProviderID{
 func GuessCloudForZone(zone string) (CloudProviderID, bool) {
 	c, found := zonesToCloud[zone]
 	return c, found
+}
+
+// AddrSlice for sorting ip addresses
+type AddrSlice []address.Address
+
+func (s AddrSlice) Len() int           { return len(s) }
+func (s AddrSlice) Less(i, j int) bool { return s[i] < s[j] }
+func (s AddrSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
+// FindBiggestFreeSubnet - input vpc info, output biggest free subnet(not aws subnet, bu ipv4) in vpc
+func (vpcInfo *VPCInfo) FindBiggestFreeSubnet() string {
+	var arr AddrSlice
+	// add min and max for vpc
+	net, _ := address.ParseCIDR(vpcInfo.CIDR)
+	arr = append(arr, net.Start(), net.End()-1)
+	// add min and max for subnets
+	for _, subnet := range vpcInfo.Subnets {
+		net, _ := address.ParseCIDR(subnet.CIDR)
+		arr = append(arr, net.Start(), net.End()-1)
+	}
+	// sort for group by pair [vpcStart, subnetStart, subnetEnd, vpcEnd]
+	sort.Sort(AddrSlice(arr))
+	// freeSubNet are [vpcStart, subnetStart], [subnetEnd, subnetXStart], [subnetYEnd, vpcEnd]
+	var freeSubNet address.CIDR
+	for i := 0; i < len(arr)/2; i++ {
+		netrange := address.Range{
+			Start: arr[i*2],
+			End:   arr[i*2+1],
+		}
+		for _, cidr := range netrange.CIDRs() {
+			if cidr.Size() > freeSubNet.Size() {
+				freeSubNet = cidr
+			}
+		}
+	}
+	return freeSubNet.String()
 }
