@@ -205,17 +205,17 @@ resource "aws_elb" "bastion-privatedns1-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privatedns1-example-com" {
-  name  = "bastions.privatedns1.example.com"
+  name = "bastions.privatedns1.example.com"
   role = "${aws_iam_role.bastions-privatedns1-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privatedns1-example-com" {
-  name  = "masters.privatedns1.example.com"
+  name = "masters.privatedns1.example.com"
   role = "${aws_iam_role.masters-privatedns1-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privatedns1-example-com" {
-  name  = "nodes.privatedns1.example.com"
+  name = "nodes.privatedns1.example.com"
   role = "${aws_iam_role.nodes-privatedns1-example-com.name}"
 }
 
@@ -303,7 +303,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatedns1-examp
   }
 
   ephemeral_block_device = {
-    device_name  = "/dev/sdc"
+    device_name = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
