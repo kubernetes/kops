@@ -192,7 +192,7 @@ gcs-publish-ci: gcs-upload
 	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
 
-gen-cli-docs:
+gen-cli-docs: kops
 	@kops genhelpdocs --out docs/cli
 
 # Will always push a linux-based build up to the server
