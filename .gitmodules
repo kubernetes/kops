@@ -286,3 +286,6 @@
 [submodule "_vendor/github.com/miekg/dns"]
 	path = _vendor/github.com/miekg/dns
 	url = https://github.com/miekg/dns.git
+[submodule "_vendor/github.com/weaveworks/mesh"]
+	path = _vendor/github.com/weaveworks/mesh
+	url = https://github.com/weaveworks/mesh

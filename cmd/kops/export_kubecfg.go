@@ -18,35 +18,37 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-type ExportKubecfgCommand struct {
+type ExportKubecfgOptions struct {
 	tmpdir   string
 	keyStore fi.CAStore
 }
 
-var exportKubecfgCommand ExportKubecfgCommand
+func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &ExportKubecfgOptions{}
 
-func init() {
 	cmd := &cobra.Command{
 		Use:   "kubecfg CLUSTERNAME",
 		Short: "Generate a kubecfg file for a cluster",
 		Long:  `Creates a kubecfg file for a cluster, based on the state`,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := exportKubecfgCommand.Run(args)
+			err := RunExportKubecfg(f, out, options, args)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	exportCmd.AddCommand(cmd)
+	return cmd
 }
 
-func (c *ExportKubecfgCommand) Run(args []string) error {
+func RunExportKubecfg(f *util.Factory, out io.Writer, options *ExportKubecfgOptions, args []string) error {
 	err := rootCommand.ProcessArgs(args)
 	if err != nil {
 		return err
@@ -67,7 +69,7 @@ func (c *ExportKubecfgCommand) Run(args []string) error {
 		return err
 	}
 
-	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore)
+	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &cloudDiscoveryStatusStore{})
 	if err != nil {
 		return err
 	}

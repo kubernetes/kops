@@ -25,6 +25,7 @@ import (
 	compute "google.golang.org/api/compute/v0.beta"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -733,6 +734,10 @@ func (d *clusterDiscoveryGCE) matchesClusterName(name string) bool {
 }
 
 func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*ResourceTracker, error) {
+	if dns.IsGossipHostname(d.clusterName) {
+		return nil, nil
+	}
+
 	zone, err := d.findDNSZone()
 	if err != nil {
 		return nil, err
