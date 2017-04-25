@@ -133,7 +133,7 @@ func main() {
 
 		id := os.Getenv("HOSTNAME")
 		if id == "" {
-			glog.Warningf("Unable to fetch HOSTNAME for use as node identifier")
+			glog.Fatalf("Unable to fetch HOSTNAME for use as node identifier")
 		}
 		gossipName := "dns-controller." + id
 
