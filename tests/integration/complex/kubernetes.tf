@@ -165,7 +165,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-complex-example-c
   }
 
   ephemeral_block_device = {
-    device_name = "/dev/sdc"
+    device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
