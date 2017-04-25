@@ -79,6 +79,7 @@ type dnsViewSnapshotZone struct {
 	Records map[string]DNSRecord
 }
 
+// RecordsForZone returns records matching the specified zone
 func (s *DNSViewSnapshot) RecordsForZone(zoneInfo DNSZoneInfo) []DNSRecord {
 	var records []DNSRecord
 
@@ -92,6 +93,7 @@ func (s *DNSViewSnapshot) RecordsForZone(zoneInfo DNSZoneInfo) []DNSRecord {
 	return records
 }
 
+// RecordsForZoneAndName returns records matching the specified zone and name
 func (s *DNSViewSnapshot) RecordsForZoneAndName(zoneInfo DNSZoneInfo, name string) []DNSRecord {
 	var records []DNSRecord
 
@@ -109,6 +111,7 @@ func (s *DNSViewSnapshot) RecordsForZoneAndName(zoneInfo DNSZoneInfo, name strin
 	return records
 }
 
+// ListZones returns all zones
 func (s *DNSViewSnapshot) ListZones() []DNSZoneInfo {
 	var zones []DNSZoneInfo
 	for _, z := range s.zoneMap {
@@ -119,14 +122,17 @@ func (s *DNSViewSnapshot) ListZones() []DNSZoneInfo {
 	return zones
 }
 
+// RemoveZone removes the specified zone, though this is currently not supported and returns an error.
 func (v *DNSView) RemoveZone(info DNSZoneInfo) error {
 	return fmt.Errorf("zone deletion is implicit")
 }
 
+// AddZone adds the specified zone, though this is currently not supported and returns an error.
 func (v *DNSView) AddZone(info DNSZoneInfo) (*DNSZoneInfo, error) {
 	return nil, fmt.Errorf("zone creation is implicit")
 }
 
+// ApplyChangeset applies a DNS changeset to the records.
 func (v *DNSView) ApplyChangeset(zone DNSZoneInfo, removeRecords []*DNSRecord, createRecords []*DNSRecord) error {
 	var removeTags []string
 	for _, record := range removeRecords {
