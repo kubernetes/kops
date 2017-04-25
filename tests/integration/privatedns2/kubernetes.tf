@@ -294,7 +294,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatedns2-examp
   }
 
   ephemeral_block_device = {
-    device_name = "/dev/sdc"
+    device_name  = "/dev/sdc"
     virtual_name = "ephemeral0"
   }
 
