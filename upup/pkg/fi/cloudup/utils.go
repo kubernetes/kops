@@ -23,6 +23,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"strings"
 )
@@ -95,6 +96,14 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 				return nil, err
 			}
 			cloud = awsCloud
+		}
+	case "vsphere":
+		{
+			vsphereCloud, err := vsphere.NewVSphereCloud(&cluster.Spec)
+			if err != nil {
+				return nil, err
+			}
+			cloud = vsphereCloud
 		}
 
 	default:

@@ -31,14 +31,19 @@ import (
 
 // Default Machine types for various types of instance group machine
 const (
-	defaultNodeMachineTypeAWS = "t2.medium"
-	defaultNodeMachineTypeGCE = "n1-standard-2"
+	defaultNodeMachineTypeAWS     = "t2.medium"
+	defaultNodeMachineTypeGCE     = "n1-standard-2"
+	defaultNodeMachineTypeVSphere = "vsphere_node"
 
-	defaultBastionMachineTypeAWS = "t2.micro"
-	defaultBastionMachineTypeGCE = "f1-micro"
+	defaultBastionMachineTypeAWS     = "t2.micro"
+	defaultBastionMachineTypeGCE     = "f1-micro"
+	defaultBastionMachineTypeVSphere = "vsphere_bastion"
 
-	defaultMasterMachineTypeGCE = "n1-standard-1"
-	defaultMasterMachineTypeAWS = "m3.medium"
+	defaultMasterMachineTypeGCE     = "n1-standard-1"
+	defaultMasterMachineTypeAWS     = "m3.medium"
+	defaultMasterMachineTypeVSphere = "vsphere_master"
+
+	defaultVSphereNodeImage = "kops_ubuntu_16_04.ova"
 )
 
 var masterMachineTypeExceptions = map[string]string{
@@ -153,6 +158,8 @@ func defaultNodeMachineType(cluster *api.Cluster) string {
 		return defaultNodeMachineTypeAWS
 	case fi.CloudProviderGCE:
 		return defaultNodeMachineTypeGCE
+	case fi.CloudProviderVSphere:
+		return defaultNodeMachineTypeVSphere
 	default:
 		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
 		return ""
@@ -205,6 +212,8 @@ func defaultMasterMachineType(cluster *api.Cluster) string {
 		return defaultMasterMachineTypeAWS
 	case fi.CloudProviderGCE:
 		return defaultMasterMachineTypeGCE
+	case fi.CloudProviderVSphere:
+		return defaultMasterMachineTypeVSphere
 	default:
 		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
 		return ""
@@ -218,6 +227,8 @@ func defaultBastionMachineType(cluster *api.Cluster) string {
 		return defaultBastionMachineTypeAWS
 	case fi.CloudProviderGCE:
 		return defaultBastionMachineTypeGCE
+	case fi.CloudProviderVSphere:
+		return defaultBastionMachineTypeVSphere
 	default:
 		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
 		return ""
@@ -241,8 +252,9 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel) string {
 				return image.Name
 			}
 		}
+	} else if fi.CloudProviderID(cluster.Spec.CloudProvider) == fi.CloudProviderVSphere {
+		return defaultVSphereNodeImage
 	}
-
 	glog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
 	return ""
 }

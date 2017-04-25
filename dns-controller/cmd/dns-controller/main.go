@@ -17,9 +17,12 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"os"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/spf13/pflag"
@@ -30,6 +33,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
+	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
 )
 
@@ -47,13 +51,16 @@ func main() {
 	glog.Flush()
 
 	dnsProviderId := "aws-route53"
-	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns)")
+	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns, coredns)")
 
 	var zones []string
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
 
 	watchIngress := true
 	flags.BoolVar(&watchIngress, "watch-ingress", watchIngress, "Configure hostnames found in ingress resources")
+
+	dnsServer := ""
+	flag.StringVar(&dnsServer, "dns-server", dnsServer, "DNS Server")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
@@ -86,7 +93,15 @@ func main() {
 	//	glog.Fatalf("error building extensions REST client: %v", err)
 	//}
 
-	dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, nil)
+	var file io.Reader
+	if dnsProviderId == k8scoredns.ProviderName {
+		var lines []string
+		lines = append(lines, "etcd-endpoints = "+dnsServer)
+		lines = append(lines, "zones = "+zones[0])
+		config := "[global]\n" + strings.Join(lines, "\n") + "\n"
+		file = bytes.NewReader([]byte(config))
+	}
+	dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, file)
 	if err != nil {
 		glog.Errorf("Error initializing DNS provider %q: %v", dnsProviderId, err)
 		os.Exit(1)
@@ -96,7 +111,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	dnsController, err := dns.NewDNSController(dnsProvider, zoneRules)
+	dnsController, err := dns.NewDNSController(dnsProvider, zoneRules, dnsProviderId)
 	if err != nil {
 		glog.Errorf("Error building DNS controller: %v", err)
 		os.Exit(1)
