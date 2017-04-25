@@ -7,13 +7,15 @@ spec:
     - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-01-09
       providerID: aws
       kubernetesVersion: ">=1.5.0"
+    - providerID: gce
+      name: "cos-cloud/cos-stable-56-9000-84-2"
   cluster:
     kubernetesVersion: v1.4.8
     networking:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.5.0"
-    recommendedVersion: 1.5.2
+    recommendedVersion: 1.5.4
     requiredVersion: 1.5.1
   - range: "<1.5.0"
     recommendedVersion: 1.4.8
