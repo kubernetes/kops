@@ -353,6 +353,7 @@ func findBastionPublicName(c *kops.Cluster) string {
 }
 
 func hasKubecfg(contextName string) (bool, error) {
+	// TODO: Remove last uses of kubectl
 	kubectl := &kutil.Kubectl{}
 
 	config, err := kubectl.GetConfig(false)
