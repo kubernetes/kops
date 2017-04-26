@@ -668,6 +668,8 @@ type CloudConfiguration struct {
 	Multizone          *bool   `json:"multizone,omitempty"`
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
+	// AWS cloud-config options
+	DisableSecurityGroupIngress *bool `json:"disableSecurityGroupIngress,omitempty"`
 
 	// vSphere cloud-config specs
 	VSphereUsername      *string `json:"vSphereUsername,omitempty"`
