@@ -49,13 +49,6 @@ launching a Kubernetes cluster hosted on AWS.
 ```console
 $ brew update && brew install kops
 ```
-
-### OSX From Homebrew (HEAD of master)
-
-```console
-$ brew update && brew install --HEAD kops
-```
-
 ### Linux
 
 Download the [latest release](https://github.com/kubernetes/kops/releases/latest), then:
@@ -65,9 +58,11 @@ $ chmod +x kops-linux-amd64                 # Add execution permissions
 $ mv kops-linux-amd64 /usr/local/bin/kops   # Move the kops to /usr/local/bin
 ```
 
-### From Source
+### Developer From Source
 
-Go 1.7+ and make are required.
+Go 1.7+ and make are required. You may need to do a full build including
+pushing protokube, nodeup, and kops to s3.
+See the [install notes](/docs/install.md) for more information.
 
 ```console
 $ go get -d k8s.io/kops
@@ -75,8 +70,6 @@ $ cd ${GOPATH}/src/k8s.io/kops/
 $ git checkout release
 $ make
 ```
-
-See the [install notes](/docs/install.md) for more information.
 
 At this time, Windows is not a supported platform.
 
@@ -87,11 +80,11 @@ information on changes between releases.
 
 ## Getting involved and contributing!
 
-Are you interested in contributing to kops? We the maintainers and community would love your suggestions, contributions, and help! We have a quickstart guide on [adding a feature](/docs/development/adding_a_feature.md) and the maintainers can be contacted at any time to learn more about how to get involved. 
+Are you interested in contributing to kops? We the maintainers and community would love your suggestions, contributions, and help! We have a quickstart guide on [adding a feature](/docs/development/adding_a_feature.md) and the maintainers can be contacted at any time to learn more about how to get involved.
 
 ### Maintainers
 
-* [@justinsb](https://github.com/justinsb)     
+* [@justinsb](https://github.com/justinsb)
 * [@chrislovecnm](https://github.com/chrislovecnm)
 * [@kris-nova](https://github.com/kris-nova)
 * [@geojaz](https://github.com/geojaz)
@@ -113,7 +106,7 @@ You can check your week number using:
 date +%V
 ```
 
-The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community#slack-chat) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you! 
+The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community#slack-chat) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you!
 
 ## Other Resources
 
