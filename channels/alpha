@@ -8,7 +8,7 @@ spec:
       providerID: aws
       kubernetesVersion: ">=1.5.0"
     - providerID: gce
-      name: "cos-cloud/cos-stable-56-9000-84-2"
+      name: "cos-cloud/cos-stable-57-9202-64-0"
   cluster:
     kubernetesVersion: v1.5.6
     networking:
@@ -18,13 +18,13 @@ spec:
     recommendedVersion: 1.5.6
     requiredVersion: 1.5.1
   - range: "<1.5.0"
-    recommendedVersion: 1.4.9
+    recommendedVersion: 1.4.12
     requiredVersion: 1.4.2
   kopsVersions:
   - range: ">=1.6.0-alpha.1"
     #recommendedVersion: 1.6.0
     #requiredVersion: 1.6.0
-    kubernetesVersion: 1.6.0
+    kubernetesVersion: 1.6.2
   - range: ">=1.5.0-alpha1"
     recommendedVersion: 1.5.1
     #requiredVersion: 1.5.1
