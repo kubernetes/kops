@@ -1,12 +1,14 @@
 ## kops update cluster
 
-Execute the creation or modification of a cloud or cluster resources.
+Create or update cloud or cluster resources to match current cluster state.
 
 ### Synopsis
 
 
-Execute the creation cloud resources to match the current cluster specification. If the cluster or cloud resources already
-		exist this command may modify those resources.  If nodes need updating such as during a Kubernetes upgrade, a rolling-update may
+Create or update cloud or cluster resources to match current cluster state.  If the cluster or cloud resources already
+		exist this command may modify those resources.
+
+		If nodes need updating such as during a Kubernetes upgrade, a rolling-update may
 		be required as well.
 
 ```
