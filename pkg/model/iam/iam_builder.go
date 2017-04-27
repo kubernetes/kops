@@ -17,14 +17,18 @@ limitations under the License.
 package iam
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/util/stringorslice"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -175,25 +179,9 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 		}
 	}
 
-	p.Statement = append(p.Statement, &IAMStatement{
-		Effect: IAMStatementEffectAllow,
-		Action: stringorslice.Of("route53:ChangeResourceRecordSets",
-			"route53:ListResourceRecordSets",
-			"route53:GetHostedZone"),
-		Resource: stringorslice.Slice([]string{"arn:aws:route53:::hostedzone/" + b.HostedZoneID}),
-	})
-
-	p.Statement = append(p.Statement, &IAMStatement{
-		Effect:   IAMStatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:GetChange"}),
-		Resource: stringorslice.Slice([]string{"arn:aws:route53:::change/*"}),
-	})
-
-	p.Statement = append(p.Statement, &IAMStatement{
-		Effect:   IAMStatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
-		Resource: wildcard,
-	})
+	if b.HostedZoneID != "" {
+		addRoute53Permissions(p, b.HostedZoneID)
+	}
 
 	// For S3 IAM permissions, we grant permissions to subtrees.  So find the parents;
 	// we don't need to grant mypath and mypath/child.
@@ -273,6 +261,33 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 	return p, nil
 }
 
+func addRoute53Permissions(p *IAMPolicy, hostedZoneID string) {
+	// Remove /hostedzone/ prefix (if present)
+	hostedZoneID = strings.TrimPrefix(hostedZoneID, "/")
+	hostedZoneID = strings.TrimPrefix(hostedZoneID, "hostedzone/")
+
+	p.Statement = append(p.Statement, &IAMStatement{
+		Effect: IAMStatementEffectAllow,
+		Action: stringorslice.Of("route53:ChangeResourceRecordSets",
+			"route53:ListResourceRecordSets",
+			"route53:GetHostedZone"),
+		Resource: stringorslice.Slice([]string{"arn:aws:route53:::hostedzone/" + hostedZoneID}),
+	})
+
+	p.Statement = append(p.Statement, &IAMStatement{
+		Effect:   IAMStatementEffectAllow,
+		Action:   stringorslice.Slice([]string{"route53:GetChange"}),
+		Resource: stringorslice.Slice([]string{"arn:aws:route53:::change/*"}),
+	})
+
+	wildcard := stringorslice.Slice([]string{"*"})
+	p.Statement = append(p.Statement, &IAMStatement{
+		Effect:   IAMStatementEffectAllow,
+		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
+		Resource: wildcard,
+	})
+}
+
 // IAMPrefix returns the prefix for AWS ARNs in the current region, for use with IAM
 // it is arn:aws everywhere but in cn-north, where it is arn:aws-cn
 func (b *IAMPolicyBuilder) IAMPrefix() string {
@@ -282,4 +297,41 @@ func (b *IAMPolicyBuilder) IAMPrefix() string {
 	default:
 		return "arn:aws"
 	}
+}
+
+type IAMPolicyResource struct {
+	Builder *IAMPolicyBuilder
+	DNSZone *awstasks.DNSZone
+}
+
+var _ fi.Resource = &IAMPolicyResource{}
+var _ fi.HasDependencies = &IAMPolicyResource{}
+
+func (b *IAMPolicyResource) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	return []fi.Task{b.DNSZone}
+}
+
+// Open produces the AWS IAM policy for the given role
+func (b *IAMPolicyResource) Open() (io.Reader, error) {
+	// Defensive copy before mutation
+	pb := *b.Builder
+
+	if b.DNSZone != nil {
+		hostedZoneID := fi.StringValue(b.DNSZone.ZoneID)
+		if hostedZoneID == "" {
+			// Dependency analysis failure?
+			return nil, fmt.Errorf("DNS ZoneID not set")
+		}
+		pb.HostedZoneID = hostedZoneID
+	}
+
+	policy, err := pb.BuildAWSIAMPolicy()
+	if err != nil {
+		return nil, fmt.Errorf("error building IAM policy: %v", err)
+	}
+	json, err := policy.AsJSON()
+	if err != nil {
+		return nil, fmt.Errorf("error building IAM policy: %v", err)
+	}
+	return bytes.NewReader([]byte(json)), nil
 }
