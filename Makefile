@@ -305,10 +305,12 @@ gofmt:
 	gofmt -w -s dns-controller/pkg
 
 goimports:
-	sh -c hack/update-goimports
+	#bash -c hack/update-goimports
+	hack/update-goimports
 
 verify-goimports:
-	sh -c hack/verify-goimports
+	#bash -c hack/verify-goimports
+	hack/verify-goimports
 
 govet:
 	go vet \
@@ -328,19 +330,23 @@ govet:
 # Continuous integration targets
 
 verify-boilerplate:
-	sh -c hack/verify-boilerplate.sh
+	#bash -c hack/verify-boilerplate.sh
+	hack/verify-boilerplate.sh
 
 .PHONY: verify-gofmt
 verify-gofmt:
-	sh -c hack/verify-gofmt.sh
+	#bash -c hack/verify-gofmt.sh
+	hack/verify-gofmt.sh
 
 .PHONY: verify-packages
 verify-packages:
-	sh -c hack/verify-packages.sh
+	#bash -c hack/verify-packages.sh
+	hack/verify-packages.sh
 
 .PHONY: verify-gendocs
 verify-gendocs: kops
-	sh -c hack/verify-gendocs.sh
+	#bash -c hack/verify-gendocs.sh
+	hack/verify-gendocs.sh
 
 # verify-gendocs will call kops target
 ci: govet verify-gofmt verify-boilerplate verify-packages verify-gendocs nodeup-gocode examples test
