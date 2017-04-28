@@ -12,9 +12,7 @@ The easiest way to get a production grade Kubernetes cluster up and running.
 
 We like to think of it as `kubectl` for clusters.
 
-`kops` lets you deploy production-grade, highly available, Kubernetes clusters
-from the command line.  Deployment is currently supported on Amazon Web
-Services (AWS), with more platforms planned.
+`kops` helps you create, destroy, upgrade and maintain production-grade, highly available, Kubernetes clusters from the command line.  AWS (Amazon Web Services) is currently officially supported, with GCE and VMware vSphere in alpha and other platforms planned.
 
 ## Can I see it in action?
 
@@ -31,12 +29,12 @@ launching a Kubernetes cluster hosted on AWS.
 
 ## Features
 
-* Automate the provisioning of Kubernetes clusters in ([AWS](/docs/aws.md))
-* Deploy Highly Available (HA) Kubernetes Masters
+* Automates the provisioning of Kubernetes clusters in ([AWS](/docs/aws.md))
+* Deploys Highly Available (HA) Kubernetes Masters
 * Supports upgrading from [kube-up](/docs/upgrade_from_kubeup.md)
 * Built on a state-sync model for **dry-runs** and automatic **idempotency**
-* Ability to generate [Terraform configuration](/docs/terraform.md)
-* Supports custom [add-ons](/docs/addons.md) for `kubectl`
+* Ability to output to Terraform [Terraform configuration](/docs/terraform.md)
+* Supports custom Kubernetes [add-ons](/docs/addons.md)
 * Command line [autocompletion](/docs/cli/kops_completion.md)
 * Community supported!
 
@@ -60,8 +58,8 @@ $ mv kops-linux-amd64 /usr/local/bin/kops   # Move the kops to /usr/local/bin
 
 ### Developer From Source
 
-Go 1.7+ and make are required. You may need to do a full build including
-pushing protokube, nodeup, and kops to s3.
+Go 1.7+ and make are required. You may need to do a full build including pushing protokube, nodeup, and kops to s3.
+
 See the [install notes](/docs/install.md) for more information.
 
 ```console
@@ -80,7 +78,24 @@ information on changes between releases.
 
 ## Getting involved and contributing!
 
-Are you interested in contributing to kops? We the maintainers and community would love your suggestions, contributions, and help! We have a quickstart guide on [adding a feature](/docs/development/adding_a_feature.md) and the maintainers can be contacted at any time to learn more about how to get involved.
+Are you interested in contributing to kops? We the maintainers and community would love your suggestions, contributions, and help! We have a quick-start guide on [adding a feature](/docs/development/adding_a_feature.md) and the maintainers can be contacted at any time to learn more about how to get involved.
+
+In the interest of getting more new folks involved with kops, we are starting to tag issues with `good-starter-issue`. These are typically issues that have smaller scope but are good ways to start to get acquainted with the codebase.
+
+We also encourage ALL active community participants to act as if they are maintainers, even if you don't have the full permissions. This is still a small enough community that if you get involved and show an active interest and want to be a maintainer-- we would most likely love to have you. So show us what you can do!
+
+What this means:
+
+__Issues__
+* Help read and triage issues, assist when possible.
+* Tag issues that are duplicates, out of date, etc.
+  - Even if you don't have tagging permissions, make a note and tag maintainers. (`/close`,`/dupe #127`)
+
+__Pull Requests__
+* Read and review the code. Leave comments, questions, and critiques (`/lgtm` )
+* Download, compile, and run the code and make sure it does what the PR says and doesn't break something else
+  - If you're ready to run someone else's code that interacts with your cloud provider account, you should probably actually understand what it does, first!
+
 
 ### Maintainers
 
@@ -92,13 +107,11 @@ Are you interested in contributing to kops? We the maintainers and community wou
 
 ## Office Hours
 
-Kops maintainers also have time (1 hour) set aside every other week to offer help and guidance to the
-community. This is the maintainer's **office hours**. During this time we might work with newcomers, help with PRs, and discuss new features. Anything goes.
+Kops maintainers have 1 hour set aside every other week to discuss the current state of the kops project, to strategize about how to move forward, to discuss open and upcoming PRs, to demo, and to offer help and guidance to the community. This help tends to focus on developer needs, although we will never turn a courteous participant away. This hour is the maintainers' **office hours**.
 
-We encourage you to reach out **beforehand** if you plan on attending. We have an [agenda](https://docs.google.com/document/d/12QkyL0FkNbWPcLFxxRGSPt_tNPBHbmni3YLY-lHny7E/edit) where we track notes from office hours.
+We encourage you to reach out **beforehand** if you plan on attending. Reaching out can be as simple as adding an item or your name to the [agenda](https://docs.google.com/document/d/12QkyL0FkNbWPcLFxxRGSPt_tNPBHbmni3YLY-lHny7E/edit) where we track notes from office hours.
 
-Office hours, on [Zoom](https://zoom.us/my/k8ssigaws) video
-conference are on Fridays at [5pm UTC/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other week, on odd week numbers.
+Office hours, on [Zoom](https://zoom.us/my/k8ssigaws) video conference are on Fridays at [5pm UTC/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12) every other week, on odd week numbers.
 
 You can check your week number using:
 
