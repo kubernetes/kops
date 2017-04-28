@@ -60,7 +60,7 @@ $ mv kops-linux-amd64 /usr/local/bin/kops   # Move the kops to /usr/local/bin
 
 ### Developer From Source
 
-Go 1.7+ and make are required. You may need to do a full build including
+Go 1.8+ and make are required. You may need to do a full build including
 pushing protokube, nodeup, and kops to s3.
 See the [install notes](/docs/install.md) for more information.
 
