@@ -43,3 +43,27 @@ than `kubenet`.  Currently the supported options are:
 - cni
 
 More information about [networking options](networking.md) can be found in our documentation.
+
+## Changing Topology of the API server
+To change the ELB that fronts the API server from Internet facing to Internal only there are a few steps to accomplish
+
+The AWS ELB does not support changing from internet facing to Internal.  However what we can do is have kops recreate the ELB for us.
+
+### Steps to change the ELB from Internet-Facing to Internal
+- edit the cluster `kops edit cluster $NAME`
+- change the api loadbalanver type from: Public to Internal... should look like this when done:
+```
+ spec:
+ 11   api:
+ 12   | loadBalancer:
+ 13   | | type: Internal
+```
+ - quit the edit
+ - run the update commmand to check the config `kops update cluster $NAME`
+ - BEFORE DOING the same command with the `yes` option go into aws and DELETE the api ELB!!!!!!
+ - now run `kops update cluster $NAME --yes`
+ - Finally you will need to do a rolling update so that the instances register wiht the new internal ELB  run 'kops rolling update --cloudonly --force'
+ we have to do cloudonly because we deleted the api ELB so there is no way to talk to the cluster.  The force option is there because kops / terraform doesn't know that we need to update the intances with the ELB so we have to force it.
+
+ and now when you are done you have an internal only ELB that has the masters registered with it.
+
