@@ -258,9 +258,14 @@ aws s3api put-bucket-versioning --bucket prefix-example-com-state-store  --versi
 
 ### Sharing an S3 bucket across multiple accounts
 
-If you configure a single S3 bucket to maintain kops state for clusters across
-multiple accounts, you may want to override the object ACLs which kops places
-on the state files.
+It is possible to use a single S3 bucket for storing kops state for clusters
+located in different accounts, by using [cross-account bucket policies](http://docs.aws.amazon.com/AmazonS3/latest/dev/example-walkthroughs-managing-access-example2.html#access-policies-walkthrough-cross-account-permissions-acctA-tasks).
+
+Kops will be able to use buckets configured with cross-account policies by default.
+
+In this case you may want to override the object ACLs which kops places on the
+state files, as default AWS ACLs will make it possible for an account that has
+delegated access to write files that the bucket owner can not read.
 
 To do this you should set the environment variable `KOPS_STATE_S3_ACL` to the
 preferred object ACL, for example `bucket-owner-full-control`.
