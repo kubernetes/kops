@@ -32,8 +32,10 @@ import (
 
 //go:generate fitask -type=IAMInstanceProfile
 type IAMInstanceProfile struct {
-	Name *string
-	ID   *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
+	ID *string
 }
 
 var _ fi.CompareWithID = &IAMInstanceProfile{}

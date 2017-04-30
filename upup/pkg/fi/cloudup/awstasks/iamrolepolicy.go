@@ -34,7 +34,9 @@ import (
 
 //go:generate fitask -type=IAMRolePolicy
 type IAMRolePolicy struct {
-	ID   *string
+	ID        *string
+	Lifecycle *fi.Lifecycle
+
 	Name *string
 	Role *IAMRole
 

@@ -45,6 +45,13 @@ func (o *Subnet) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &Subnet{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *Subnet) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &Subnet{}
 
 // GetName returns the Name of the object, implementing fi.HasName

@@ -29,7 +29,8 @@ import (
 
 //go:generate fitask -type=VPCDHCPOptionsAssociation
 type VPCDHCPOptionsAssociation struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	VPC         *VPC
 	DHCPOptions *DHCPOptions
