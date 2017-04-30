@@ -60,6 +60,9 @@ const starline = "**************************************************************
 // AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
 var AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
 
+// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
+var AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
+
 var CloudupModels = []string{"config", "proto", "cloudup"}
 
 type ApplyClusterCmd struct {
@@ -370,6 +373,10 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case fi.CloudProviderVSphere:
 		{
+			if !AlphaAllowVsphere.Enabled() {
+				return fmt.Errorf("Vsphere support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowVsphere")
+			}
+
 			vsphereCloud := cloud.(*vsphere.VSphereCloud)
 			// TODO: map region with vCenter cluster, or datacenter, or datastore?
 			region = vsphereCloud.Cluster
