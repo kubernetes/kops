@@ -34,7 +34,8 @@ import (
 
 //go:generate fitask -type=LaunchConfiguration
 type LaunchConfiguration struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	UserData *fi.ResourceHolder
 

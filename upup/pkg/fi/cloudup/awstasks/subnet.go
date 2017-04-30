@@ -31,7 +31,9 @@ import (
 
 //go:generate fitask -type=Subnet
 type Subnet struct {
-	Name             *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID               *string
 	VPC              *VPC
 	AvailabilityZone *string

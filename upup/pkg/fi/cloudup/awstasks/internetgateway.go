@@ -29,7 +29,9 @@ import (
 
 //go:generate fitask -type=InternetGateway
 type InternetGateway struct {
-	Name   *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID     *string
 	VPC    *VPC
 	Shared *bool
