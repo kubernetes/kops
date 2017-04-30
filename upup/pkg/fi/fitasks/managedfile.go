@@ -25,7 +25,9 @@ import (
 
 //go:generate fitask -type=ManagedFile
 type ManagedFile struct {
-	Name     *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	Location *string
 	Contents *fi.ResourceHolder
 }

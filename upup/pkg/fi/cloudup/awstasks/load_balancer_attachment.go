@@ -31,7 +31,9 @@ import (
 
 //go:generate fitask -type=LoadBalancerAttachment
 type LoadBalancerAttachment struct {
-	Name         *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	LoadBalancer *LoadBalancer
 
 	// LoadBalancerAttachments now support ASGs or direct instances

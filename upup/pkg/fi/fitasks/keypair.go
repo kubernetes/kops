@@ -33,7 +33,9 @@ var wellKnownCertificateTypes = map[string]string{
 
 //go:generate fitask -type=Keypair
 type Keypair struct {
-	Name               *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	Subject            string    `json:"subject"`
 	Type               string    `json:"type"`
 	AlternateNames     []string  `json:"alternateNames"`

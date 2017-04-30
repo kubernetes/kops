@@ -45,6 +45,13 @@ func (o *DNSName) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &DNSName{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *DNSName) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &DNSName{}
 
 // GetName returns the Name of the object, implementing fi.HasName

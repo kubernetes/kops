@@ -28,7 +28,9 @@ import (
 // ForwardingRule represents a GCE ForwardingRule
 //go:generate fitask -type=ForwardingRule
 type ForwardingRule struct {
-	Name       *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	PortRange  string
 	TargetPool *TargetPool
 	IPAddress  *Address

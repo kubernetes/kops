@@ -30,7 +30,8 @@ import (
 
 //go:generate fitask -type=Route
 type Route struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	RouteTable *RouteTable
 	Instance   *Instance

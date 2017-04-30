@@ -45,6 +45,13 @@ func (o *ForwardingRule) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &ForwardingRule{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *ForwardingRule) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &ForwardingRule{}
 
 // GetName returns the Name of the object, implementing fi.HasName

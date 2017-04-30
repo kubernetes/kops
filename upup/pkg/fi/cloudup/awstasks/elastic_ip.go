@@ -35,7 +35,9 @@ import (
 // Elastic IP
 // Representation the EIP AWS task
 type ElasticIP struct {
-	Name     *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID       *string
 	PublicIP *string
 

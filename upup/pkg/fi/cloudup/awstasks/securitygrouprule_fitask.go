@@ -45,6 +45,13 @@ func (o *SecurityGroupRule) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &SecurityGroupRule{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *SecurityGroupRule) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &SecurityGroupRule{}
 
 // GetName returns the Name of the object, implementing fi.HasName

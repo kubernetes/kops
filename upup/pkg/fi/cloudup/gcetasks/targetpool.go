@@ -28,7 +28,8 @@ import (
 // TargetPool represents a GCE TargetPool
 //go:generate fitask -type=TargetPool
 type TargetPool struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.CompareWithID = &TargetPool{}

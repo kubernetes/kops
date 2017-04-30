@@ -29,7 +29,9 @@ import (
 // Disk represents a GCE PD
 //go:generate fitask -type=Disk
 type Disk struct {
-	Name       *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	VolumeType *string
 	SizeGB     *int64
 	Zone       *string

@@ -28,6 +28,8 @@ import (
 //go:generate fitask -type=Address
 type Address struct {
 	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	IPAddress *string
 }
 

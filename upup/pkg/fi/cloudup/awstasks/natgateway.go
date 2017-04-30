@@ -31,6 +31,8 @@ import (
 //go:generate fitask -type=NatGateway
 type NatGateway struct {
 	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ElasticIP *ElasticIP
 	Subnet    *Subnet
 	ID        *string

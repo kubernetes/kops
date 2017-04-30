@@ -45,6 +45,13 @@ func (o *Keypair) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &Keypair{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *Keypair) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &Keypair{}
 
 // GetName returns the Name of the object, implementing fi.HasName

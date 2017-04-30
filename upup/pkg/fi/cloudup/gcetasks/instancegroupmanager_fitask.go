@@ -45,6 +45,13 @@ func (o *InstanceGroupManager) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &InstanceGroupManager{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *InstanceGroupManager) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &InstanceGroupManager{}
 
 // GetName returns the Name of the object, implementing fi.HasName

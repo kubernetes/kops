@@ -30,7 +30,9 @@ import (
 
 //go:generate fitask -type=RouteTableAssociation
 type RouteTableAssociation struct {
-	Name       *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID         *string
 	RouteTable *RouteTable
 	Subnet     *Subnet

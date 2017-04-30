@@ -45,6 +45,13 @@ func (o *VPC) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &VPC{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *VPC) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &VPC{}
 
 // GetName returns the Name of the object, implementing fi.HasName

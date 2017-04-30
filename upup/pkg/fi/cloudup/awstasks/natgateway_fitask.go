@@ -45,6 +45,13 @@ func (o *NatGateway) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &NatGateway{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *NatGateway) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &NatGateway{}
 
 // GetName returns the Name of the object, implementing fi.HasName

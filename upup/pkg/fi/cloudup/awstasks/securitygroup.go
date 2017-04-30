@@ -32,7 +32,8 @@ import (
 
 //go:generate fitask -type=SecurityGroup
 type SecurityGroup struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	ID          *string
 	Description *string

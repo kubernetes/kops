@@ -27,7 +27,8 @@ import (
 
 //go:generate fitask -type=InstanceGroupManager
 type InstanceGroupManager struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	Zone             *string
 	BaseInstanceName *string

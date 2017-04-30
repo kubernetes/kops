@@ -32,7 +32,9 @@ import (
 
 //go:generate fitask -type=DNSName
 type DNSName struct {
-	Name         *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID           *string
 	Zone         *DNSZone
 	ResourceType *string

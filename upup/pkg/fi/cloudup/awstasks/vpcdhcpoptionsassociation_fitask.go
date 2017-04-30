@@ -45,6 +45,13 @@ func (o *VPCDHCPOptionsAssociation) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &VPCDHCPOptionsAssociation{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *VPCDHCPOptionsAssociation) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &VPCDHCPOptionsAssociation{}
 
 // GetName returns the Name of the object, implementing fi.HasName

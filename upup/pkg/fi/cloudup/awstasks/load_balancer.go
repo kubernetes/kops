@@ -41,7 +41,8 @@ import (
 type LoadBalancer struct {
 	// We use the Name tag to find the existing ELB, because we are (more or less) unrestricted when
 	// it comes to tag values, but the LoadBalancerName is length limited
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	// LoadBalancerName is the name in ELB, possibly different from our name
 	// (ELB is restricted as to names, so we have limited choices!)

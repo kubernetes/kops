@@ -27,7 +27,9 @@ import (
 
 //go:generate fitask -type=Network
 type Network struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	CIDR *string
 }
 

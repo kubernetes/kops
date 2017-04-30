@@ -36,7 +36,8 @@ const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
 
 //go:generate fitask -type=AutoscalingGroup
 type AutoscalingGroup struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	MinSize *int64
 	MaxSize *int64

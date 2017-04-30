@@ -36,7 +36,9 @@ import (
 //go:generate fitask -type=InstanceTemplate
 type InstanceTemplate struct {
 	// Name will be used for as the name prefix
-	Name    *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	Network *Network
 	Tags    []string
 	//Labels      map[string]string

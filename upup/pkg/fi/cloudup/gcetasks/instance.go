@@ -31,7 +31,9 @@ var scopeAliases map[string]string
 
 //go:generate fitask -type=Instance
 type Instance struct {
-	Name        *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	Network     *Network
 	Tags        []string
 	Preemptible *bool

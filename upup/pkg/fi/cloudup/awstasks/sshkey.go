@@ -40,7 +40,8 @@ import (
 
 //go:generate fitask -type=SSHKey
 type SSHKey struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	PublicKey *fi.ResourceHolder
 
