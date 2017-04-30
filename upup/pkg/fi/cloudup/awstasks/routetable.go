@@ -29,9 +29,11 @@ import (
 
 //go:generate fitask -type=RouteTable
 type RouteTable struct {
-	Name *string
-	ID   *string
-	VPC  *VPC
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
+	ID  *string
+	VPC *VPC
 }
 
 var _ fi.CompareWithID = &RouteTable{}

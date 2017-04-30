@@ -35,7 +35,9 @@ import (
 // DNSZone is a zone object in a dns provider
 //go:generate fitask -type=DNSZone
 type DNSZone struct {
-	Name    *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	DNSName *string
 	ZoneID  *string
 

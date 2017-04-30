@@ -29,7 +29,9 @@ import (
 
 //go:generate fitask -type=EBSVolume
 type EBSVolume struct {
-	Name             *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID               *string
 	AvailabilityZone *string
 	VolumeType       *string
