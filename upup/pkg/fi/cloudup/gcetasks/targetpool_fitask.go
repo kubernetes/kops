@@ -45,6 +45,13 @@ func (o *TargetPool) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &TargetPool{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *TargetPool) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &TargetPool{}
 
 // GetName returns the Name of the object, implementing fi.HasName

@@ -31,7 +31,9 @@ import (
 
 //go:generate fitask -type=VPC
 type VPC struct {
-	Name               *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID                 *string
 	CIDR               *string
 	EnableDNSHostnames *bool

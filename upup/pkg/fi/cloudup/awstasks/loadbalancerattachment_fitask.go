@@ -45,6 +45,13 @@ func (o *LoadBalancerAttachment) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &LoadBalancerAttachment{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *LoadBalancerAttachment) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &LoadBalancerAttachment{}
 
 // GetName returns the Name of the object, implementing fi.HasName

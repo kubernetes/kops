@@ -45,6 +45,13 @@ func (o *EBSVolume) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &EBSVolume{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *EBSVolume) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &EBSVolume{}
 
 // GetName returns the Name of the object, implementing fi.HasName
