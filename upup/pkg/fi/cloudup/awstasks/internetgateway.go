@@ -99,6 +99,7 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 
 	// Prevent spurious comparison failures
 	actual.Shared = e.Shared
+	actual.Lifecycle = e.Lifecycle
 	if e.ID == nil {
 		e.ID = actual.ID
 	}

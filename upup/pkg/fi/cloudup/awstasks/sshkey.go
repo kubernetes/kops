@@ -97,6 +97,7 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 	} else {
 		glog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(e.KeyFingerprint), fi.StringValue(actual.KeyFingerprint))
 	}
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

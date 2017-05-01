@@ -114,6 +114,10 @@ func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
 		if e.SourceGroup != nil {
 			actual.SourceGroup = &SecurityGroup{ID: e.SourceGroup.ID}
 		}
+
+		// Avoid spurious changes
+		actual.Lifecycle = e.Lifecycle
+
 		return actual, nil
 	}
 

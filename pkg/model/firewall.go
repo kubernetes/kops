@@ -35,6 +35,7 @@ const (
 // FirewallModelBuilder configures firewall network objects
 type FirewallModelBuilder struct {
 	*KopsModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &FirewallModelBuilder{}
@@ -55,6 +56,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroup{
 			Name:             s(name),
+			Lifecycle:        b.Lifecycle,
 			VPC:              b.LinkToVPC(),
 			Description:      s("Security group for nodes"),
 			RemoveExtraRules: []string{"port=22"},
@@ -66,6 +68,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:          s("node-egress"),
+			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			Egress:        fi.Bool(true),
 			CIDR:          s("0.0.0.0/0"),
@@ -77,6 +80,7 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:          s("all-node-to-node"),
+			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 		}
@@ -141,6 +145,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 	for _, udpPort := range udpPorts {
 		c.AddTask(&awstasks.SecurityGroupRule{
 			Name:          s(fmt.Sprintf("node-to-master-udp-%d", udpPort)),
+			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			FromPort:      i64(udpPort),
@@ -151,6 +156,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 	for _, tcpPort := range tcpPorts {
 		c.AddTask(&awstasks.SecurityGroupRule{
 			Name:          s(fmt.Sprintf("node-to-master-tcp-%d", tcpPort)),
+			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			FromPort:      i64(tcpPort),
@@ -170,6 +176,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 
 		c.AddTask(&awstasks.SecurityGroupRule{
 			Name:          s("node-to-master-protocol-" + name),
+			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			Protocol:      s(awsName),
@@ -200,6 +207,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 	for _, r := range udpRanges {
 		c.AddTask(&awstasks.SecurityGroupRule{
 			Name:          s(fmt.Sprintf("node-to-master-udp-%d-%d", r.From, r.To)),
+			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			FromPort:      i64(int64(r.From)),
@@ -210,6 +218,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 	for _, r := range tcpRanges {
 		c.AddTask(&awstasks.SecurityGroupRule{
 			Name:          s(fmt.Sprintf("node-to-master-tcp-%d-%d", r.From, r.To)),
+			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			FromPort:      i64(int64(r.From)),
@@ -229,6 +238,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 
 		c.AddTask(&awstasks.SecurityGroupRule{
 			Name:          s("node-to-master-protocol-" + name),
+			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			Protocol:      s(awsName),
@@ -242,6 +252,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext) error
 	{
 		t := &awstasks.SecurityGroup{
 			Name:        s(name),
+			Lifecycle:   b.Lifecycle,
 			VPC:         b.LinkToVPC(),
 			Description: s("Security group for masters"),
 			RemoveExtraRules: []string{
@@ -262,6 +273,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext) error
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:          s("master-egress"),
+			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			Egress:        fi.Bool(true),
 			CIDR:          s("0.0.0.0/0"),
@@ -273,6 +285,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext) error
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:          s("all-master-to-master"),
+			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 		}
@@ -283,6 +296,7 @@ func (b *FirewallModelBuilder) buildMasterRules(c *fi.ModelBuilderContext) error
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:          s("all-master-to-node"),
+			Lifecycle:     b.Lifecycle,
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 		}
