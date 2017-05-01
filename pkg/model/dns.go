@@ -28,6 +28,7 @@ import (
 // DNSModelBuilder builds DNS related model objects
 type DNSModelBuilder struct {
 	*KopsModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &DNSModelBuilder{}
@@ -35,7 +36,8 @@ var _ fi.ModelBuilder = &DNSModelBuilder{}
 func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 	// Configuration for a DNS zone
 	dnsZone := &awstasks.DNSZone{
-		Name: s(b.NameForDNSZone()),
+		Name:      s(b.NameForDNSZone()),
+		Lifecycle: b.Lifecycle,
 	}
 
 	topology := b.Cluster.Spec.Topology
@@ -94,6 +96,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		apiDnsName := &awstasks.DNSName{
 			Name:               s(b.Cluster.Spec.MasterPublicName),
+			Lifecycle:          b.Lifecycle,
 			Zone:               b.LinkToDNSZone(),
 			ResourceType:       s("A"),
 			TargetLoadBalancer: b.LinkToELB("api"),

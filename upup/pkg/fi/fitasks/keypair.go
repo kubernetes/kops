@@ -83,6 +83,9 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		Type:           buildTypeDescription(cert.Certificate),
 	}
 
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 

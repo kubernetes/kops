@@ -94,6 +94,9 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 		e.DNSName = actual.DNSName
 	}
 
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 

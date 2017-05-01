@@ -35,6 +35,7 @@ type AutoscalingGroupModelBuilder struct {
 	*GCEModelContext
 
 	BootstrapScript *model.BootstrapScript
+	Lifecycle       *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
@@ -62,6 +63,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			t := &gcetasks.InstanceTemplate{
 				Name:           s(name),
+				Lifecycle:      b.Lifecycle,
 				Network:        b.LinkToNetwork(),
 				MachineType:    s(ig.Spec.MachineType),
 				BootDiskType:   s(volumeType),
@@ -160,6 +162,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			t := &gcetasks.InstanceGroupManager{
 				Name:             s(name),
+				Lifecycle:        b.Lifecycle,
 				Zone:             s(zone),
 				TargetSize:       fi.Int64(int64(targetSize)),
 				BaseInstanceName: s(ig.ObjectMeta.Name),

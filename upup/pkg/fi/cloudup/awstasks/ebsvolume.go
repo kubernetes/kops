@@ -104,6 +104,9 @@ func (e *EBSVolume) find(cloud awsup.AWSCloud) (*EBSVolume, error) {
 
 	actual.Tags = mapEC2TagsToMap(v.Tags)
 
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 

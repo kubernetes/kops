@@ -26,6 +26,7 @@ import (
 // FirewallModelBuilder configures firewall network objects
 type FirewallModelBuilder struct {
 	*GCEModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &FirewallModelBuilder{}
@@ -49,6 +50,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &gcetasks.FirewallRule{
 			Name:       s(b.SafeObjectName("node-to-node")),
+			Lifecycle:  b.Lifecycle,
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
@@ -64,6 +66,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("cidr-to-node")),
+			Lifecycle:    b.Lifecycle,
 			Network:      b.LinkToNetwork(),
 			SourceRanges: []string{b.Cluster.Spec.NonMasqueradeCIDR},
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
@@ -76,6 +79,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &gcetasks.FirewallRule{
 			Name:       s(b.SafeObjectName("master-to-master")),
+			Lifecycle:  b.Lifecycle,
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
@@ -88,6 +92,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &gcetasks.FirewallRule{
 			Name:       s(b.SafeObjectName("master-to-node")),
+			Lifecycle:  b.Lifecycle,
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
@@ -100,6 +105,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &gcetasks.FirewallRule{
 			Name:       s(b.SafeObjectName("node-to-master")),
+			Lifecycle:  b.Lifecycle,
 			Network:    b.LinkToNetwork(),
 			SourceTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
@@ -113,6 +119,7 @@ func (b *FirewallModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("cidr-to-master")),
+			Lifecycle:    b.Lifecycle,
 			Network:      b.LinkToNetwork(),
 			SourceRanges: []string{b.Cluster.Spec.NonMasqueradeCIDR},
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},

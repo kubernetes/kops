@@ -111,6 +111,7 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 
 	// Avoid spurious changes
 	actual.ExportWithID = e.ExportWithID
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

@@ -83,6 +83,9 @@ func (e *IAMInstanceProfile) Find(c *fi.Context) (*IAMInstanceProfile, error) {
 	e.ID = actual.ID
 	e.Name = actual.Name
 
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 

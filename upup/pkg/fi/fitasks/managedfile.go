@@ -54,6 +54,9 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 		Contents: fi.WrapResource(fi.NewBytesResource(existingData)),
 	}
 
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 

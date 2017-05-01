@@ -57,6 +57,7 @@ func (e *VPCDHCPOptionsAssociation) Find(c *fi.Context) (*VPCDHCPOptionsAssociat
 
 	// Prevent spurious changes
 	actual.Name = e.Name
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

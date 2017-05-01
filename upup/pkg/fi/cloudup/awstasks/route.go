@@ -96,6 +96,9 @@ func (e *Route) Find(c *fi.Context) (*Route, error) {
 				actual.InternetGateway = nil
 			}
 
+			// Prevent spurious changes
+			actual.Lifecycle = e.Lifecycle
+
 			glog.V(2).Infof("found route matching cidr %s", *e.CIDR)
 			return actual, nil
 		}

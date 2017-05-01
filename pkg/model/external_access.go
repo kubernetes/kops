@@ -27,6 +27,7 @@ import (
 // (SSHAccess, KubernetesAPIAccess)
 type ExternalAccessModelBuilder struct {
 	*KopsModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}
@@ -50,6 +51,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:          s("ssh-external-to-master-" + sshAccess),
+				Lifecycle:     b.Lifecycle,
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 				Protocol:      s("tcp"),
 				FromPort:      i64(22),
@@ -59,6 +61,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			c.AddTask(&awstasks.SecurityGroupRule{
 				Name:          s("ssh-external-to-node-" + sshAccess),
+				Lifecycle:     b.Lifecycle,
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 				Protocol:      s("tcp"),
 				FromPort:      i64(22),
@@ -77,6 +80,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		for _, apiAccess := range b.Cluster.Spec.KubernetesAPIAccess {
 			t := &awstasks.SecurityGroupRule{
 				Name:          s("https-external-to-master-" + apiAccess),
+				Lifecycle:     b.Lifecycle,
 				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 				Protocol:      s("tcp"),
 				FromPort:      i64(443),

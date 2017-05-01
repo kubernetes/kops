@@ -155,6 +155,9 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		}
 	}
 
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
+
 	if e.ID == nil {
 		e.ID = actual.ID
 	}

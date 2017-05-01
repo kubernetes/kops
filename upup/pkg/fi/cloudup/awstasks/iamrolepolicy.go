@@ -78,9 +78,13 @@ func (e *IAMRolePolicy) Find(c *fi.Context) (*IAMRolePolicy, error) {
 		}
 		actual.PolicyDocument = fi.WrapResource(fi.NewStringResource(policy))
 	}
+
 	actual.Name = p.PolicyName
 
 	e.ID = actual.ID
+
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

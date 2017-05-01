@@ -27,6 +27,7 @@ import (
 // (SSHAccess, KubernetesAPIAccess)
 type ExternalAccessModelBuilder struct {
 	*GCEModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &ExternalAccessModelBuilder{}
@@ -50,6 +51,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	} else {
 		c.AddTask(&gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("ssh-external-to-master")),
+			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:22"},
 			SourceRanges: b.Cluster.Spec.SSHAccess,
@@ -58,6 +60,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		c.AddTask(&gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("ssh-external-to-node")),
+			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
 			Allowed:      []string{"tcp:22"},
 			SourceRanges: b.Cluster.Spec.SSHAccess,
@@ -73,6 +76,7 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// HTTPS to the master is allowed (for API access)
 		c.AddTask(&gcetasks.FirewallRule{
 			Name:         s(b.SafeObjectName("kubernetes-master-https")),
+			Lifecycle:    b.Lifecycle,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
 			Allowed:      []string{"tcp:443"},
 			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
