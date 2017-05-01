@@ -46,11 +46,6 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 		if err != nil {
 			return err
 		}
-
-		if a != nil {
-			invokeFindTags(a, c)
-
-		}
 	}
 
 	if a == nil {
@@ -118,22 +113,6 @@ func invokeCheckChanges(a, e, changes Task) error {
 // invokeFind calls the find method by reflection
 func invokeFind(e Task, c *Context) (Task, error) {
 	rv, err := utils.InvokeMethod(e, "Find", c)
-	if err != nil {
-		return nil, err
-	}
-	var task Task
-	if !rv[0].IsNil() {
-		task = rv[0].Interface().(Task)
-	}
-	if !rv[1].IsNil() {
-		err = rv[1].Interface().(error)
-	}
-	return task, err
-}
-
-// invokeFindTags calls the FindTags method by reflection
-func invokeFindTags(e Task, c *Context) (Task, error) {
-	rv, err := utils.InvokeMethod(e, "FindTags", c)
 	if err != nil {
 		return nil, err
 	}
