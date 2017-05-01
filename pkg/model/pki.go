@@ -108,6 +108,16 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
+		// Secret used by the kube-proxy
+		// TODO: Can this be removed... at least from 1.6 on?
+		t := &fitasks.Secret{
+			Name:      fi.String("kube-proxy"),
+			Lifecycle: b.Lifecycle,
+		}
+		c.AddTask(t)
+	}
+
+	{
 		// Keypair used by the kube-controller-manager
 		t := &fitasks.Keypair{
 			Name:      fi.String("kube-controller-manager"),

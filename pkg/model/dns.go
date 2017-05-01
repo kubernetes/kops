@@ -102,6 +102,7 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			apiDnsName := &awstasks.DNSName{
 				Name:               s(b.Cluster.Spec.MasterPublicName),
 				Lifecycle:          b.Lifecycle,
+
 				Zone:               b.LinkToDNSZone(),
 				ResourceType:       s("A"),
 				TargetLoadBalancer: b.LinkToELB("api"),
