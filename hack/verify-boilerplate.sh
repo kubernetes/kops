@@ -23,12 +23,7 @@ boiler="${KUBE_ROOT}/hack/boilerplate/boilerplate.py $@"
 files_need_boilerplate=( `${boiler}` )
 echo files_need_boilerplate=$files_need_boilerplate
 
-#if [[ -z "$files_need_boilerplate" ]]; then
-#    echo "Boilerplate headers validated"
-#    exit
-#fi
-
-if [[ ! ${files_need_boilerplate[@]:+${files_need_boilerplate[@]}} ]]; then
+if [[ -z ${files_need_boilerplate+x} ]]; then
     echo "Boilerplate headers validated"
     exit
 fi
