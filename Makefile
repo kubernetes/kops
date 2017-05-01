@@ -330,7 +330,6 @@ govet:
 # Continuous integration targets
 
 verify-boilerplate:
-	#bash -c hack/verify-boilerplate.sh
 	hack/verify-boilerplate.sh
 
 .PHONY: verify-gofmt
@@ -340,8 +339,7 @@ verify-gofmt:
 
 .PHONY: verify-packages
 verify-packages:
-	#bash -c hack/verify-packages.sh
-	hack/verify-packages.sh
+	bash -c hack/verify-packages.sh
 
 .PHONY: verify-gendocs
 verify-gendocs: kops
