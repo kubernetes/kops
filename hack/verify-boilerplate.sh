@@ -22,8 +22,20 @@ boiler="${KUBE_ROOT}/hack/boilerplate/boilerplate.py $@"
 
 files_need_boilerplate=( `${boiler}` )
 echo files_need_boilerplate=$files_need_boilerplate
+
+#if [[ -z "$files_need_boilerplate" ]]; then
+#    echo "Boilerplate headers validated"
+#    exit
+#fi
+
+if [[ ! ${files_need_boilerplate[@]:+${files_need_boilerplate[@]}} ]]; then
+    echo "Boilerplate headers validated"
+    exit
+fi
+
 TO_REMOVE=(${PWD}/federation/model/bindata.go ${PWD}/upup/models/bindata.go)
 TEMP_ARRAY=()
+
 for pkg in "${files_need_boilerplate[@]}"; do
     for remove in "${TO_REMOVE[@]}"; do
         KEEP=true
