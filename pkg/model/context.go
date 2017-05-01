@@ -38,7 +38,6 @@ type KopsModelContext struct {
 	Cluster *kops.Cluster
 
 	Region         string
-	HostedZoneID   string // used to set up route53 IAM policy
 	InstanceGroups []*kops.InstanceGroup
 
 	SSHPublicKeys [][]byte
