@@ -85,6 +85,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 	// create subcommands
 	cmd.AddCommand(NewCmdDeleteCluster(f, out))
 	cmd.AddCommand(NewCmdDeleteInstanceGroup(f, out))
+	cmd.AddCommand(NewCmdDeleteNetwork(f, out))
 	cmd.AddCommand(NewCmdDeleteSecret(f, out))
 
 	return cmd
