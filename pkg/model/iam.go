@@ -32,6 +32,8 @@ import (
 // IAMModelBuilder configures IAM objects
 type IAMModelBuilder struct {
 	*KopsModelContext
+
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &IAMModelBuilder{}
@@ -74,7 +76,9 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			iamRole = &awstasks.IAMRole{
-				Name:               s(name),
+				Name:      s(name),
+				Lifecycle: b.Lifecycle,
+
 				RolePolicyDocument: fi.WrapResource(rolePolicy),
 				ExportWithID:       s(strings.ToLower(string(role)) + "s"),
 			}
@@ -103,7 +107,9 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			t := &awstasks.IAMRolePolicy{
-				Name:           s(name),
+				Name:      s(name),
+				Lifecycle: b.Lifecycle,
+
 				Role:           iamRole,
 				PolicyDocument: iamPolicy,
 			}
@@ -113,14 +119,16 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		var iamInstanceProfile *awstasks.IAMInstanceProfile
 		{
 			iamInstanceProfile = &awstasks.IAMInstanceProfile{
-				Name: s(name),
+				Name:      s(name),
+				Lifecycle: b.Lifecycle,
 			}
 			c.AddTask(iamInstanceProfile)
 		}
 
 		{
 			iamInstanceProfileRole := &awstasks.IAMInstanceProfileRole{
-				Name: s(name),
+				Name:      s(name),
+				Lifecycle: b.Lifecycle,
 
 				InstanceProfile: iamInstanceProfile,
 				Role:            iamRole,
@@ -141,7 +149,9 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			additionalPolicyName := "additional." + name
 
 			t := &awstasks.IAMRolePolicy{
-				Name: s(additionalPolicyName),
+				Name:      s(additionalPolicyName),
+				Lifecycle: b.Lifecycle,
+
 				Role: iamRole,
 			}
 

@@ -31,6 +31,7 @@ type AutoscalingGroupModelBuilder struct {
 	*VSphereModelContext
 
 	BootstrapScript *model.BootstrapScript
+	Lifecycle       *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
