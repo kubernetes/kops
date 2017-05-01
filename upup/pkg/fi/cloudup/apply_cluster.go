@@ -399,11 +399,6 @@ func (c *ApplyClusterCmd) Run() error {
 		if err != nil {
 			return err
 		}
-		dnszone, err := findZone(cluster, cloud)
-		if err != nil {
-			return err
-		}
-		modelContext.HostedZoneID = dnszone.ID()
 	}
 
 	clusterTags, err := buildCloudupTags(cluster)

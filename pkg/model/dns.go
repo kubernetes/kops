@@ -19,6 +19,7 @@ package model
 import (
 	"fmt"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"strings"
@@ -71,6 +72,15 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		if err := b.ensureDNSZone(c); err != nil {
 			return err
+		}
+	} else {
+		// We now create the DNS Zone for AWS even in the case of public zones;
+		// it has to exist for the IAM record anyway.
+		// TODO: We can now rationalize the code paths
+		if !dns.IsGossipHostname(b.Cluster.Name) {
+			if err := b.ensureDNSZone(c); err != nil {
+				return err
+			}
 		}
 	}
 
