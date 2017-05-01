@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -x
-
 . $(dirname "${BASH_SOURCE}")/common.sh
 
 boiler="${KUBE_ROOT}/hack/boilerplate/boilerplate.py $@"
