@@ -18,12 +18,9 @@ set -x
 
 . $(dirname "${BASH_SOURCE}")/common.sh
 
-boiler="${KUBE_ROOT}/hack/boilerplate/boilerplate.py"
-echo $boiler
-b=$(${boiler} "$@")
-echo $b
+boiler="${KUBE_ROOT}/hack/boilerplate/boilerplate.py $@"
 
-files_need_boilerplate=($(${boiler} "$@"))
+files_need_boilerplate=( `${boiler}` )
 echo files_need_boilerplate=$files_need_boilerplate
 TO_REMOVE=(${PWD}/federation/model/bindata.go ${PWD}/upup/models/bindata.go)
 TEMP_ARRAY=()
