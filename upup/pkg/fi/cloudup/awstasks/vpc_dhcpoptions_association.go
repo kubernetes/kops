@@ -83,17 +83,83 @@ func (s *VPCDHCPOptionsAssociation) CheckChanges(a, e, changes *VPCDHCPOptionsAs
 }
 
 func (_ *VPCDHCPOptionsAssociation) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPCDHCPOptionsAssociation) error {
-	if changes.DHCPOptions != nil {
-		glog.V(2).Infof("calling EC2 AssociateDhcpOptions")
-		request := &ec2.AssociateDhcpOptionsInput{
-			VpcId:         e.VPC.ID,
-			DhcpOptionsId: e.DHCPOptions.ID,
-		}
+	if changes.DHCPOptions == nil {
+		return nil
+	}
+	glog.V(2).Infof("calling EC2 AssociateDhcpOptions")
+	request := &ec2.AssociateDhcpOptionsInput{
+		VpcId:         e.VPC.ID,
+		DhcpOptionsId: e.DHCPOptions.ID,
+	}
 
-		_, err := t.Cloud.EC2().AssociateDhcpOptions(request)
-		if err != nil {
-			return fmt.Errorf("error creating VPCDHCPOptionsAssociation: %v", err)
+	_, err := t.Cloud.EC2().AssociateDhcpOptions(request)
+	if err != nil {
+		return fmt.Errorf("error creating VPCDHCPOptionsAssociation: %v", err)
+	}
+
+	// This part is a little annoying. If you're running in a region
+	// with where there is no default-looking DHCP option set, when
+	// you create any VPC, AWS will create a default-looking DHCP
+	// option set for you. If you then re-associate (as below) or
+	// delete the VPC, the option set will hang around. However, if
+	// you have a default-looking DHCP option set (for example, an
+	// unmodified default VPC) and create a VPC, AWS will associate
+	// the VPC with the DHCP option set of the default VPC. There's no
+	// signal as to whether the option set returned is the default or
+	// was created along with the VPC.
+	//
+	// Solution: When we reassociate the DHCP option set, try a
+	// courtesy delete on it. If that gets a DependencyViolation,
+	// it's still in use and we move on.
+	if *a.DHCPOptions.ID == "default" {
+		return nil
+	}
+	resp, err := t.Cloud.EC2().DescribeDhcpOptions(&ec2.DescribeDhcpOptionsInput{
+		DhcpOptionsIds: []*string{a.DHCPOptions.ID}})
+	if err != nil {
+		glog.V(2).Infof("ignoring error describing old DHCP option set %q: %v", *a.DHCPOptions.ID, err)
+		return nil
+	}
+	if len(resp.DhcpOptions) != 1 {
+		glog.V(2).Infof("old DHCP option set %q not found", *a.DHCPOptions.ID)
+		return nil
+	}
+	opt := resp.DhcpOptions[0]
+	if len(opt.Tags) != 0 {
+		glog.V(2).Infof("old DHCP option set %q was tagged, not deleting", *a.DHCPOptions.ID)
+		return nil
+	}
+	for _, conf := range opt.DhcpConfigurations {
+		if *conf.Key == "domain-name" {
+			var domain string
+			if t.Cloud.Region() == "us-east-1" {
+				domain = "ec2.internal"
+			} else {
+				domain = t.Cloud.Region() + ".compute.internal"
+			}
+			if len(conf.Values) != 1 || *conf.Values[0].Value != domain {
+				glog.V(2).Infof("old DHCP option set %q has mismatched domain name, not deleting", *a.DHCPOptions.ID)
+				return nil
+			}
+		} else if *conf.Key == "domain-name-servers" {
+			if len(conf.Values) != 1 || *conf.Values[0].Value != "AmazonProvidedDNS" {
+				glog.V(2).Infof("old DHCP option set %q has mismatched domain name servers, not deleting", *a.DHCPOptions.ID)
+				return nil
+			}
+		} else {
+			glog.V(2).Infof("old DHCP option set %q has unknown config key %q, not deleting", *a.DHCPOptions.ID, conf.Key)
+			return nil
 		}
+	}
+	glog.V(2).Infof("attempting to delete replaced default DHCP option set %q", *a.DHCPOptions.ID)
+	if _, err := t.Cloud.EC2().DeleteDhcpOptions(&ec2.DeleteDhcpOptionsInput{
+		DhcpOptionsId: a.DHCPOptions.ID,
+	}); err != nil {
+		if awsup.AWSErrorCode(err) != "DependencyViolation" {
+			return fmt.Errorf("deleting disassociated DHCP option set %q failed: %v",
+				*a.DHCPOptions.ID, err)
+		}
+		glog.V(2).Infof("ignoring DependencyViolation deleting disassociated DHCP option set %q", *a.DHCPOptions.ID)
 	}
 
 	return nil // no tags

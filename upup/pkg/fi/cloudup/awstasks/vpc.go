@@ -91,7 +91,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 		request := &ec2.DescribeVpcAttributeInput{VpcId: actual.ID, Attribute: aws.String(ec2.VpcAttributeNameEnableDnsHostnames)}
 		response, err := cloud.EC2().DescribeVpcAttribute(request)
 		if err != nil {
-			return nil, fmt.Errorf("error querying for dns support: %v", err)
+			return nil, fmt.Errorf("error querying for dns hostnames: %v", err)
 		}
 		actual.EnableDNSHostnames = response.EnableDnsHostnames.Value
 	}
