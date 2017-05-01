@@ -262,6 +262,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 	serviceName := e.Name
 
 	action := ""
+	dependenciesChanged := false
 
 	if changes.Running != nil && fi.BoolValue(e.ManageState) {
 		if fi.BoolValue(e.Running) {
@@ -284,10 +285,16 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 		if err != nil {
 			return fmt.Errorf("error doing systemd daemon-reload: %v\nOutput: %s", err, output)
 		}
+
+		dependenciesChanged = true
 	}
 
 	// "SmartRestart" - look at the obvious dependencies in the systemd service, restart if start time older
-	if fi.BoolValue(e.ManageState) && fi.BoolValue(e.SmartRestart) {
+	if !fi.BoolValue(e.ManageState) {
+		glog.V(2).Infof("Service %q has ManageState=false, won't restart", serviceName)
+	} else if !fi.BoolValue(e.SmartRestart) {
+		glog.V(2).Infof("Service %q has SmartRestart=false, won't smart-restart", serviceName)
+	} else {
 		definition := fi.StringValue(e.Definition)
 		if definition == "" && a != nil {
 			definition = fi.StringValue(a.Definition)
@@ -331,7 +338,7 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 					}
 					if startedAtTime.Before(newest) {
 						glog.V(2).Infof("will restart service %q because dependency changed after service start", serviceName)
-						action = "restart"
+						dependenciesChanged = true
 					} else {
 						glog.V(2).Infof("will not restart service %q - started after dependencies", serviceName)
 					}
@@ -340,12 +347,19 @@ func (_ *Service) RenderLocal(t *local.LocalTarget, a, e, changes *Service) erro
 		}
 	}
 
-	if action != "" && fi.BoolValue(e.ManageState) {
-		glog.Infof("Restarting service %q", serviceName)
-		cmd := exec.Command("systemctl", action, serviceName)
-		output, err := cmd.CombinedOutput()
-		if err != nil {
-			return fmt.Errorf("error doing systemd %s %s: %v\nOutput: %s", action, serviceName, err, output)
+	if fi.BoolValue(e.ManageState) {
+		if dependenciesChanged && action == "" {
+			glog.Infof("Found dependency change for service %q; will restart", serviceName)
+			action = "restart"
+		}
+
+		if action != "" {
+			glog.Infof("Restarting service %q", serviceName)
+			cmd := exec.Command("systemctl", action, serviceName)
+			output, err := cmd.CombinedOutput()
+			if err != nil {
+				return fmt.Errorf("error doing systemd %s %s: %v\nOutput: %s", action, serviceName, err, output)
+			}
 		}
 	}
 
