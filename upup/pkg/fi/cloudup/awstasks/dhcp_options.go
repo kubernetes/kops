@@ -95,6 +95,9 @@ func (e *DHCPOptions) Find(c *fi.Context) (*DHCPOptions, error) {
 
 	e.ID = actual.ID
 
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 

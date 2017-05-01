@@ -71,6 +71,7 @@ func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, e
 
 		// Prevent spurious changes
 		actual.Name = e.Name
+		actual.Lifecycle = e.Lifecycle
 
 		return actual, nil
 	}

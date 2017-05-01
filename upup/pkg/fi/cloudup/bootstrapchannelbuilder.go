@@ -31,6 +31,7 @@ import (
 
 type BootstrapChannelBuilder struct {
 	cluster      *kops.Cluster
+	Lifecycle    *fi.Lifecycle
 	templates    *templates.Templates
 	assetBuilder *assets.AssetBuilder
 }
@@ -53,7 +54,9 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 	tasks := c.Tasks
 
 	tasks[name] = &fitasks.ManagedFile{
-		Name:     fi.String(name),
+		Name:      fi.String(name),
+		Lifecycle: b.Lifecycle,
+
 		Location: fi.String("addons/bootstrap-channel.yaml"),
 		Contents: fi.WrapResource(fi.NewBytesResource(addonsYAML)),
 	}
@@ -77,7 +80,9 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		tasks[name] = &fitasks.ManagedFile{
-			Name:     fi.String(name),
+			Name:      fi.String(name),
+			Lifecycle: b.Lifecycle,
+
 			Location: fi.String(manifest),
 			Contents: fi.WrapResource(fi.NewBytesResource(manifestBytes)),
 		}
