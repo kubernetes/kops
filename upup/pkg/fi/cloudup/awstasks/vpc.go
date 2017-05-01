@@ -39,8 +39,10 @@ type VPC struct {
 	EnableDNSHostnames *bool
 	EnableDNSSupport   *bool
 
-	// Shared is set if this is a shared VPC
-	Shared *bool
+	// SharedID is set to the ID if this is shared, matching by ID
+	SharedID *string
+	// SharedNetworkKey is set to the ID if this is shared, matching by network key
+	SharedNetworkKey *string
 
 	Tags map[string]string
 }
@@ -51,6 +53,32 @@ func (e *VPC) CompareWithID() *string {
 	return e.ID
 }
 
+func buildEc2FiltersForSharedNetworkKey(name *string, sharedNetworkKey string) []*ec2.Filter {
+	filters := []*ec2.Filter{
+		awsup.NewEC2Filter("tag:"+awsup.TagNameSharedNetworkKey, sharedNetworkKey),
+	}
+	if fi.StringValue(name) != "" {
+		filters = append(filters, awsup.NewEC2Filter("tag:Name", *name))
+	}
+	return filters
+}
+
+func intersectTags(tags []*ec2.Tag, desired map[string]string) map[string]string {
+	if tags == nil {
+		return nil
+	}
+	actual := make(map[string]string)
+	for _, t := range tags {
+		k := aws.StringValue(t.Key)
+		v := aws.StringValue(t.Value)
+
+		if _, found := desired[k]; found {
+			actual[k] = v
+		}
+	}
+	return actual
+}
+
 func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
@@ -58,6 +86,8 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 
 	if fi.StringValue(e.ID) != "" {
 		request.VpcIds = []*string{e.ID}
+	} else if fi.StringValue(e.SharedNetworkKey) != "" {
+		request.Filters = buildEc2FiltersForSharedNetworkKey(e.Name, *e.SharedNetworkKey)
 	} else {
 		request.Filters = cloud.BuildFilters(e.Name)
 	}
@@ -102,7 +132,8 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 	}
 
 	// Prevent spurious comparison failures
-	actual.Shared = e.Shared
+	actual.SharedID = e.SharedID
+	actual.SharedNetworkKey = e.SharedNetworkKey
 	if e.ID == nil {
 		e.ID = actual.ID
 	}
@@ -131,10 +162,17 @@ func (e *VPC) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
+func (e *VPC) isShared() bool {
+	return fi.StringValue(e.SharedNetworkKey) != "" || e.isSharedByID()
+}
+
+func (e *VPC) isSharedByID() bool {
+	return fi.StringValue(e.SharedID) != ""
+}
+
 func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
-		// Verify the VPC was found and matches our required settings
+	if e.isSharedByID() {
+		// If we're sharing by ID, verify the VPC was found and matches our required settings
 		if a == nil {
 			return fmt.Errorf("VPC with id %q not found", fi.StringValue(e.ID))
 		}
@@ -190,7 +228,7 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 	}
 
 	tags := e.Tags
-	if shared {
+	if e.isSharedByID() {
 		// Don't tag shared resources
 		tags = nil
 	}
@@ -209,8 +247,7 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 		return err
 	}
 
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.isShared() {
 		// Not terraform owned / managed
 		return nil
 	}
@@ -226,8 +263,7 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 }
 
 func (e *VPC) TerraformLink() *terraform.Literal {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.isShared() {
 		if e.ID == nil {
 			glog.Fatalf("ID must be set, if VPC is shared: %s", e)
 		}
@@ -247,8 +283,7 @@ type cloudformationVPC struct {
 }
 
 func (_ *VPC) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *VPC) error {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.isShared() {
 		// Not cloudformation owned / managed
 		return nil
 	}
@@ -264,8 +299,7 @@ func (_ *VPC) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e,
 }
 
 func (e *VPC) CloudformationLink() *cloudformation.Literal {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.isShared() {
 		if e.ID == nil {
 			glog.Fatalf("ID must be set, if VPC is shared: %s", e)
 		}

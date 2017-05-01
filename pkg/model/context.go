@@ -47,6 +47,8 @@ type KopsModelContext struct {
 	InstanceGroups []*kops.InstanceGroup
 
 	SSHPublicKeys [][]byte
+
+	SharedNetworkKey string
 }
 
 // Will attempt to calculate a meaningful name for an ELB given a prefix
@@ -223,6 +225,28 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 			tags["kubernetes.io/cluster/"+m.Cluster.ObjectMeta.Name] = "shared"
 		} else {
 			tags["kubernetes.io/cluster/"+m.Cluster.ObjectMeta.Name] = "owned"
+		}
+
+	}
+	return tags
+}
+
+// CloudTags computes the tags to apply to a network cloud resource with the specified name and an optional SharedNetworkKey
+func (m *KopsModelContext) NetworkCloudTags(name string, sharedByID bool, sharedNetworkKey string) map[string]string {
+	var tags map[string]string
+
+	switch fi.CloudProviderID(m.Cluster.Spec.CloudProvider) {
+	case fi.CloudProviderAWS:
+		shared := sharedByID || sharedNetworkKey != ""
+
+		tags = m.CloudTags(name, shared)
+
+		// Don't use a KubernetesCluster tag when we have a sharedNetworkKey
+		if sharedNetworkKey != "" {
+			// TODO: Only for 1.6 or above (where we actually support shared subnets)?
+			delete(tags, awsup.TagClusterName)
+
+			tags[awsup.TagNameSharedNetworkKey] = sharedNetworkKey
 		}
 	}
 	return tags

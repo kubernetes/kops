@@ -38,7 +38,8 @@ type Subnet struct {
 	VPC              *VPC
 	AvailabilityZone *string
 	CIDR             *string
-	Shared           *bool
+	SharedID         *string
+	SharedNetworkKey *string
 
 	Tags map[string]string
 }
@@ -76,7 +77,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		VPC:              &VPC{ID: subnet.VpcId},
 		CIDR:             subnet.CidrBlock,
 		Name:             findNameTag(subnet.Tags),
-		Shared:           e.Shared,
+		SharedNetworkKey: e.SharedNetworkKey,
 		Tags:             cloud.VisibleTags(subnet.Tags, e.Tags),
 	}
 
@@ -95,6 +96,8 @@ func (e *Subnet) findEc2Subnet(c *fi.Context) (*ec2.Subnet, error) {
 	request := &ec2.DescribeSubnetsInput{}
 	if e.ID != nil {
 		request.SubnetIds = []*string{e.ID}
+	} else if fi.StringValue(e.SharedNetworkKey) != "" {
+		request.Filters = buildEc2FiltersForSharedNetworkKey(e.Name, *e.SharedNetworkKey)
 	} else {
 		request.Filters = cloud.BuildFilters(e.Name)
 	}
@@ -154,12 +157,19 @@ func (s *Subnet) CheckChanges(a, e, changes *Subnet) error {
 	return nil
 }
 
+func (e *Subnet) isShared() bool {
+	return fi.StringValue(e.SharedNetworkKey) != "" || e.isSharedByID()
+}
+
+func (e *Subnet) isSharedByID() bool {
+	return fi.StringValue(e.SharedID) != ""
+}
+
 func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
-		// Verify the subnet was found
+	if e.isSharedByID() {
+		// If we're sharing by ID, verify the subnet was found
 		if a == nil {
-			return fmt.Errorf("Subnet with id %q not found", fi.StringValue(e.ID))
+			return fmt.Errorf("Shared subnet with id %q not found", fi.StringValue(e.ID))
 		}
 
 		return nil
@@ -182,7 +192,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		e.ID = response.Subnet.SubnetId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.DesiredTags(e.Name, e.Tags))
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
@@ -209,8 +219,7 @@ type terraformSubnet struct {
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.isShared() {
 		// Not terraform owned / managed
 		return t.AddOutputVariableArray("subnet_ids", terraform.LiteralFromStringValue(*e.ID))
 	}
@@ -219,15 +228,14 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		VPCID:            e.VPC.TerraformLink(),
 		CIDR:             e.CIDR,
 		AvailabilityZone: e.AvailabilityZone,
-		Tags:             cloud.DesiredTags(e.Name, e.Tags),
+		Tags:             e.Tags,
 	}
 
 	return t.RenderResource("aws_subnet", *e.Name, tf)
 }
 
 func (e *Subnet) TerraformLink() *terraform.Literal {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.isShared() {
 		if e.ID == nil {
 			glog.Fatalf("ID must be set, if subnet is shared: %s", e)
 		}
@@ -247,8 +255,7 @@ type cloudformationSubnet struct {
 }
 
 func (_ *Subnet) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *Subnet) error {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.isShared() {
 		// Not cloudformation owned / managed
 		return nil
 	}
@@ -257,15 +264,14 @@ func (_ *Subnet) RenderCloudformation(t *cloudformation.CloudformationTarget, a,
 		VPCID:            e.VPC.CloudformationLink(),
 		CIDR:             e.CIDR,
 		AvailabilityZone: e.AvailabilityZone,
-		Tags:             buildCloudformationTags(cloud.DesiredTags(e.Name, e.Tags)),
+		Tags:             buildCloudformationTags(e.Tags),
 	}
 
 	return t.RenderResource("AWS::EC2::Subnet", *e.Name, cf)
 }
 
 func (e *Subnet) CloudformationLink() *cloudformation.Literal {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.isShared() {
 		if e.ID == nil {
 			glog.Fatalf("ID must be set, if subnet is shared: %s", e)
 		}

@@ -34,6 +34,10 @@ type RouteTable struct {
 
 	ID  *string
 	VPC *VPC
+
+	SharedNetworkKey *string
+
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &RouteTable{}
@@ -57,6 +61,7 @@ func (e *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
 		ID:   rt.RouteTableId,
 		VPC:  &VPC{ID: rt.VpcId},
 		Name: e.Name,
+		Tags: cloud.VisibleTags(rt.Tags, e.Tags),
 	}
 	glog.V(2).Infof("found matching RouteTable %q", *actual.ID)
 	e.ID = actual.ID
@@ -71,6 +76,8 @@ func (e *RouteTable) findEc2RouteTable(cloud awsup.AWSCloud) (*ec2.RouteTable, e
 	request := &ec2.DescribeRouteTablesInput{}
 	if e.ID != nil {
 		request.RouteTableIds = []*string{e.ID}
+	} else if fi.StringValue(e.SharedNetworkKey) != "" {
+		request.Filters = buildEc2FiltersForSharedNetworkKey(e.Name, *e.SharedNetworkKey)
 	} else {
 		request.Filters = cloud.BuildFilters(e.Name)
 	}
@@ -131,7 +138,7 @@ func (_ *RouteTable) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *RouteTable)
 		e.ID = rt.RouteTableId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 type terraformRouteTable struct {
@@ -140,11 +147,9 @@ type terraformRouteTable struct {
 }
 
 func (_ *RouteTable) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *RouteTable) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	tf := &terraformRouteTable{
 		VPCID: e.VPC.TerraformLink(),
-		Tags:  cloud.BuildTags(e.Name),
+		Tags:  e.Tags,
 	}
 
 	return t.RenderResource("aws_route_table", *e.Name, tf)
@@ -160,11 +165,9 @@ type cloudformationRouteTable struct {
 }
 
 func (_ *RouteTable) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *RouteTable) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	cf := &cloudformationRouteTable{
 		VPCID: e.VPC.CloudformationLink(),
-		Tags:  buildCloudformationTags(cloud.BuildTags(e.Name)),
+		Tags:  buildCloudformationTags(e.Tags),
 	}
 
 	return t.RenderResource("AWS::EC2::RouteTable", *e.Name, cf)

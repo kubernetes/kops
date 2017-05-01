@@ -305,6 +305,8 @@ func (c *ApplyClusterCmd) Run() error {
 		InstanceGroups: c.InstanceGroups,
 	}
 
+	modelContext.SharedNetworkKey = os.Getenv("KOPS_EXPERIMENT_SHARED_NETWORK_KEY")
+
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderGCE:
 		{
@@ -511,7 +513,10 @@ func (c *ApplyClusterCmd) Run() error {
 				)
 
 				l.Builders = append(l.Builders,
-					&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
+					&model.NetworkModelBuilder{
+						KopsModelContext: modelContext,
+						Lifecycle:        networkLifecycle,
+					},
 				)
 
 				l.Builders = append(l.Builders,

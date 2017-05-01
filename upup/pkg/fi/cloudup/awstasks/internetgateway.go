@@ -32,9 +32,10 @@ type InternetGateway struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
-	ID     *string
-	VPC    *VPC
-	Shared *bool
+	ID  *string
+	VPC *VPC
+
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &InternetGateway{}
@@ -64,13 +65,14 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 
 	request := &ec2.DescribeInternetGatewaysInput{}
 
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.VPC.SharedID != nil {
 		if fi.StringValue(e.VPC.ID) == "" {
-			return nil, fmt.Errorf("VPC ID is required when InternetGateway is shared")
+			return nil, fmt.Errorf("VPC ID is required when InternetGateway is shared by id")
 		}
 
 		request.Filters = []*ec2.Filter{awsup.NewEC2Filter("attachment.vpc-id", *e.VPC.ID)}
+	} else if e.VPC.SharedNetworkKey != nil {
+		request.Filters = []*ec2.Filter{awsup.NewEC2Filter("tag:"+awsup.TagNameSharedNetworkKey, *e.VPC.SharedNetworkKey)}
 	} else {
 		if e.ID != nil {
 			request.InternetGatewayIds = []*string{e.ID}
@@ -89,6 +91,7 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 	actual := &InternetGateway{
 		ID:   igw.InternetGatewayId,
 		Name: findNameTag(igw.Tags),
+		Tags: cloud.VisibleTags(igw.Tags, e.Tags),
 	}
 
 	glog.V(2).Infof("found matching InternetGateway %q", *actual.ID)
@@ -98,7 +101,7 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 	}
 
 	// Prevent spurious comparison failures
-	actual.Shared = e.Shared
+	//actual.Shared = e.Shared
 	actual.Lifecycle = e.Lifecycle
 	if e.ID == nil {
 		e.ID = actual.ID
@@ -123,9 +126,8 @@ func (s *InternetGateway) CheckChanges(a, e, changes *InternetGateway) error {
 }
 
 func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *InternetGateway) error {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
-		// Verify the InternetGateway was found and matches our required settings
+	if e.VPC.SharedID != nil {
+		// Verify the InternetGateway was found
 		if a == nil {
 			return fmt.Errorf("InternetGateway for shared VPC was not found")
 		}
@@ -160,8 +162,8 @@ func (_ *InternetGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Intern
 		}
 	}
 
-	tags := t.Cloud.BuildTags(e.Name)
-	if shared {
+	tags := e.Tags
+	if e.VPC.SharedID != nil {
 		// Don't tag shared resources
 		tags = nil
 	}
@@ -174,8 +176,7 @@ type terraformInternetGateway struct {
 }
 
 func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *InternetGateway) error {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.VPC.SharedID != nil {
 		// Not terraform owned / managed
 
 		// But ... attempt to discover the ID so TerraformLink works
@@ -200,19 +201,16 @@ func (_ *InternetGateway) RenderTerraform(t *terraform.TerraformTarget, a, e, ch
 		return nil
 	}
 
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	tf := &terraformInternetGateway{
 		VPCID: e.VPC.TerraformLink(),
-		Tags:  cloud.BuildTags(e.Name),
+		Tags:  e.Tags,
 	}
 
 	return t.RenderResource("aws_internet_gateway", *e.Name, tf)
 }
 
 func (e *InternetGateway) TerraformLink() *terraform.Literal {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.VPC.SharedID != nil {
 		if e.ID == nil {
 			glog.Fatalf("ID must be set, if InternetGateway is shared: %s", e)
 		}
@@ -234,8 +232,7 @@ type cloudformationVpcGatewayAttachment struct {
 }
 
 func (_ *InternetGateway) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *InternetGateway) error {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.VPC.SharedID != nil {
 		// Not cloudformation owned / managed
 
 		// But ... attempt to discover the ID so CloudformationLink works
@@ -260,11 +257,9 @@ func (_ *InternetGateway) RenderCloudformation(t *cloudformation.CloudformationT
 		return nil
 	}
 
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	{
 		cf := &cloudformationInternetGateway{
-			Tags: buildCloudformationTags(cloud.BuildTags(e.Name)),
+			Tags: buildCloudformationTags(e.Tags),
 		}
 
 		err := t.RenderResource("AWS::EC2::InternetGateway", *e.Name, cf)
@@ -289,8 +284,7 @@ func (_ *InternetGateway) RenderCloudformation(t *cloudformation.CloudformationT
 }
 
 func (e *InternetGateway) CloudformationLink() *cloudformation.Literal {
-	shared := fi.BoolValue(e.Shared)
-	if shared {
+	if e.VPC.SharedID != nil {
 		if e.ID == nil {
 			glog.Fatalf("ID must be set, if InternetGateway is shared: %s", e)
 		}

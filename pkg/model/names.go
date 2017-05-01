@@ -82,8 +82,23 @@ func (b *KopsModelContext) LinkToELB(prefix string) *awstasks.LoadBalancer {
 }
 
 func (b *KopsModelContext) LinkToVPC() *awstasks.VPC {
-	name := b.ClusterName()
+	name := b.NameForVPC()
 	return &awstasks.VPC{Name: &name}
+}
+
+func (b *KopsModelContext) NameForVPC() string {
+	sharedNetworkKey := b.SharedNetworkKey
+	sharedByID := b.Cluster.Spec.NetworkID != ""
+
+	name := b.ClusterName()
+	if sharedByID {
+		// shared-by-id takes priority
+		sharedNetworkKey = ""
+	} else if sharedNetworkKey != "" {
+		name = sharedNetworkKey
+	}
+
+	return name
 }
 
 func (b *KopsModelContext) LinkToDNSZone() *awstasks.DNSZone {
@@ -137,9 +152,23 @@ func (b *KopsModelContext) LinkToSSHKey() (*awstasks.SSHKey, error) {
 }
 
 func (b *KopsModelContext) LinkToSubnet(z *kops.ClusterSubnetSpec) *awstasks.Subnet {
-	name := z.Name + "." + b.ClusterName()
-
+	name := b.NameForSubnet(z)
 	return &awstasks.Subnet{Name: &name}
+}
+
+func (b *KopsModelContext) NameForSubnet(z *kops.ClusterSubnetSpec) string {
+	sharedNetworkKey := b.SharedNetworkKey
+	sharedByID := z.ProviderID != ""
+
+	subnetName := z.Name + "." + b.ClusterName()
+	if sharedByID {
+		// shared-by-id takes priority
+		sharedNetworkKey = ""
+	} else if sharedNetworkKey != "" {
+		subnetName = z.Name + "." + sharedNetworkKey
+	}
+
+	return subnetName
 }
 
 func (b *KopsModelContext) LinkToPublicSubnetInZone(zoneName string) (*awstasks.Subnet, error) {

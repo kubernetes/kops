@@ -37,6 +37,9 @@ type DHCPOptions struct {
 	ID                *string
 	DomainName        *string
 	DomainNameServers *string
+
+	SharedNetworkKey *string
+	Tags             map[string]string
 }
 
 var _ fi.CompareWithID = &DHCPOptions{}
@@ -51,6 +54,8 @@ func (e *DHCPOptions) Find(c *fi.Context) (*DHCPOptions, error) {
 	request := &ec2.DescribeDhcpOptionsInput{}
 	if e.ID != nil {
 		request.DhcpOptionsIds = []*string{e.ID}
+	} else if fi.StringValue(e.SharedNetworkKey) != "" {
+		request.Filters = buildEc2FiltersForSharedNetworkKey(e.Name, *e.SharedNetworkKey)
 	} else {
 		request.Filters = cloud.BuildFilters(e.Name)
 	}
@@ -72,6 +77,7 @@ func (e *DHCPOptions) Find(c *fi.Context) (*DHCPOptions, error) {
 	actual := &DHCPOptions{
 		ID:   o.DhcpOptionsId,
 		Name: findNameTag(o.Tags),
+		Tags: cloud.VisibleTags(o.Tags, e.Tags),
 	}
 
 	for _, s := range o.DhcpConfigurations {
@@ -97,6 +103,7 @@ func (e *DHCPOptions) Find(c *fi.Context) (*DHCPOptions, error) {
 
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
+	actual.SharedNetworkKey = e.SharedNetworkKey
 
 	return actual, nil
 }
@@ -156,7 +163,7 @@ func (_ *DHCPOptions) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *DHCPOption
 		e.ID = response.DhcpOptions.DhcpOptionsId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 type terraformDHCPOptions struct {
@@ -166,11 +173,9 @@ type terraformDHCPOptions struct {
 }
 
 func (_ *DHCPOptions) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *DHCPOptions) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	tf := &terraformDHCPOptions{
 		DomainName: e.DomainName,
-		Tags:       cloud.BuildTags(e.Name),
+		Tags:       e.Tags,
 	}
 
 	if e.DomainNameServers != nil {
@@ -191,11 +196,9 @@ type cloudformationDHCPOptions struct {
 }
 
 func (_ *DHCPOptions) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *DHCPOptions) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	cf := &cloudformationDHCPOptions{
 		DomainName: e.DomainName,
-		Tags:       buildCloudformationTags(cloud.BuildTags(e.Name)),
+		Tags:       buildCloudformationTags(e.Tags),
 	}
 
 	if e.DomainNameServers != nil {

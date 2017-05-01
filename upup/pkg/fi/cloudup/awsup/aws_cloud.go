@@ -64,6 +64,9 @@ const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
 
 const TagRoleMaster = "master"
 
+// AWS resources using a shared network are tagged with this key, and value = the shared network key
+const TagNameSharedNetworkKey = "kubernetes.io/network"
+
 const (
 	WellKnownAccountKopeio = "383156758163"
 	WellKnownAccountRedhat = "309956199498"
@@ -107,7 +110,7 @@ type AWSCloud interface {
 	// CreateTags will add tags to the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	CreateTags(resourceId string, tags map[string]string) error
 
-	// AddAWSTags ensures that the specified tags are present
+	// AddAWSTags ensures that the specified tags are present.  It will not remove extra tags.
 	// TODO: Rename to AddEC2Tags
 	AddAWSTags(id string, expected map[string]string) error
 

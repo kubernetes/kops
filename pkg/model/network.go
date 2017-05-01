@@ -44,18 +44,36 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	vpcName := b.ClusterName()
 
 	// VPC that holds everything for the cluster
+
+	vpcSharedByID := b.Cluster.Spec.NetworkID != ""
+	vpcSharedNetworkKey := b.SharedNetworkKey
+
+	vpcName := b.ClusterName()
+	if vpcSharedByID {
+		// shared-by-id takes priority
+		vpcSharedNetworkKey = ""
+	} else if vpcSharedNetworkKey != "" {
+		vpcName = vpcSharedNetworkKey
+	}
+
 	{
-		tags := b.CloudTags(vpcName, sharedVPC)
+		tags := b.NetworkCloudTags(vpcName, vpcSharedByID, vpcSharedNetworkKey)
 
 		t := &awstasks.VPC{
 			Name:             s(vpcName),
 			Lifecycle:        b.Lifecycle,
-			Shared:           fi.Bool(sharedVPC),
 			EnableDNSSupport: fi.Bool(true),
 			Tags:             tags,
 		}
 
-		if sharedVPC && VersionGTE(kubernetesVersion, 1, 5) {
+		if vpcSharedByID {
+			t.ID = s(b.Cluster.Spec.NetworkID)
+			t.SharedID = t.ID
+		} else if vpcSharedNetworkKey != "" {
+			t.SharedNetworkKey = s(vpcSharedNetworkKey)
+		}
+
+		if (vpcSharedByID || vpcSharedNetworkKey != "") && VersionGTE(kubernetesVersion, 1, 5) {
 			// If we're running k8s 1.5, and we have e.g.  --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP,LegacyHostIP
 			// then we don't need EnableDNSHostnames any more
 			glog.V(4).Infof("Kubernetes version %q; skipping EnableDNSHostnames requirement on VPC", kubernetesVersion)
@@ -66,36 +84,39 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			t.EnableDNSHostnames = fi.Bool(true)
 		}
 
-		if b.Cluster.Spec.NetworkID != "" {
-			t.ID = s(b.Cluster.Spec.NetworkID)
-		}
 		if b.Cluster.Spec.NetworkCIDR != "" {
 			t.CIDR = s(b.Cluster.Spec.NetworkCIDR)
 		}
 		c.AddTask(t)
 	}
 
-	if !sharedVPC {
+	if !vpcSharedByID {
+		tags := b.NetworkCloudTags(vpcName, vpcSharedByID, vpcSharedNetworkKey)
+
 		dhcp := &awstasks.DHCPOptions{
-			Name:              s(b.ClusterName()),
+			Name:              s(vpcName),
 			Lifecycle:         b.Lifecycle,
 			DomainNameServers: s("AmazonProvidedDNS"),
+			Tags:              tags,
 		}
 		if b.Region == "us-east-1" {
 			dhcp.DomainName = s("ec2.internal")
 		} else {
 			dhcp.DomainName = s(b.Region + ".compute.internal")
 		}
+		if vpcSharedNetworkKey != "" {
+			dhcp.SharedNetworkKey = s(vpcSharedNetworkKey)
+		}
 		c.AddTask(dhcp)
 
 		c.AddTask(&awstasks.VPCDHCPOptionsAssociation{
-			Name:        s(b.ClusterName()),
+			Name:        s(vpcName),
 			Lifecycle:   b.Lifecycle,
 			VPC:         b.LinkToVPC(),
 			DHCPOptions: dhcp,
 		})
 	} else {
-		// TODO: would be good to create these as shared, to verify them
+		// TODO: would be good to create these as shared in the ID sharing case also, to verify them
 	}
 
 	allSubnetsShared := true
@@ -111,20 +132,27 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	var publicRouteTable *awstasks.RouteTable
 	{
 		// The internet gateway is the main entry point to the cluster.
+		tags := b.NetworkCloudTags(vpcName, vpcSharedByID, vpcSharedNetworkKey)
 		igw := &awstasks.InternetGateway{
-			Name:      s(b.ClusterName()),
+			Name:      s(vpcName),
 			Lifecycle: b.Lifecycle,
 			VPC:       b.LinkToVPC(),
-			Shared:    fi.Bool(sharedVPC),
+			//Shared:    fi.Bool(vpcSharedNetworkKey != "" || vpcSharedByID),
+			Tags: tags,
 		}
 		c.AddTask(igw)
 
 		if !allSubnetsShared {
 			publicRouteTable = &awstasks.RouteTable{
-				Name:      s(b.ClusterName()),
+				Name:      s(vpcName),
 				Lifecycle: b.Lifecycle,
 
 				VPC: b.LinkToVPC(),
+
+				Tags: tags,
+			}
+			if vpcSharedNetworkKey != "" {
+				publicRouteTable.SharedNetworkKey = s(vpcSharedNetworkKey)
 			}
 			c.AddTask(publicRouteTable)
 
@@ -143,9 +171,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
-		sharedSubnet := subnetSpec.ProviderID != ""
-		subnetName := subnetSpec.Name + "." + b.ClusterName()
-		tags := b.CloudTags(subnetName, sharedSubnet)
+		sharedNetworkKey := b.SharedNetworkKey
+		sharedByID := subnetSpec.ProviderID != ""
+
+		subnetName := b.NameForSubnet(subnetSpec)
+		if sharedByID {
+			// shared-by-id takes priority
+			sharedNetworkKey = ""
+		}
+		tags := b.NetworkCloudTags(subnetName, sharedByID, sharedNetworkKey)
 
 		subnet := &awstasks.Subnet{
 			Name:             s(subnetName),
@@ -153,20 +187,23 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			VPC:              b.LinkToVPC(),
 			AvailabilityZone: s(subnetSpec.Zone),
 			CIDR:             s(subnetSpec.CIDR),
-			Shared:           fi.Bool(sharedSubnet),
 			Tags:             tags,
 		}
 
 		if subnetSpec.ProviderID != "" {
 			subnet.ID = s(subnetSpec.ProviderID)
+			subnet.SharedID = s(subnetSpec.ProviderID)
+		} else if sharedNetworkKey != "" {
+			subnet.SharedNetworkKey = s(sharedNetworkKey)
 		}
+
 		c.AddTask(subnet)
 
 		switch subnetSpec.Type {
 		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
-			if !sharedSubnet {
+			if !sharedByID {
 				c.AddTask(&awstasks.RouteTableAssociation{
-					Name:       s(subnetSpec.Name + "." + b.ClusterName()),
+					Name:       s(subnetName),
 					Lifecycle:  b.Lifecycle,
 					RouteTable: publicRouteTable,
 					Subnet:     subnet,
@@ -176,12 +213,12 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		case kops.SubnetTypePrivate:
 			// Private subnets get a Network Gateway, and their own route table to associate them with the network gateway
 
-			if !sharedSubnet {
+			if !sharedByID {
 				// Private Subnet Route Table Associations
 				//
 				// Map the Private subnet to the Private route table
 				c.AddTask(&awstasks.RouteTableAssociation{
-					Name:       s("private-" + subnetSpec.Name + "." + b.ClusterName()),
+					Name:       s("private-" + subnetName),
 					Lifecycle:  b.Lifecycle,
 					RouteTable: b.LinkToPrivateRouteTableInZone(subnetSpec.Zone),
 					Subnet:     subnet,
