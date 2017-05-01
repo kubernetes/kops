@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Copyright 2016 The Kubernetes Authors.
 #
@@ -20,23 +20,7 @@ TMP_DOCS="${KUBE_ROOT}/.build/docs"
 rm -rf $TMP_DOCS
 mkdir -p $TMP_DOCS
 
-command -v uname >/dev/null 2>&1 || { echo >&2 "uname must be installed. Aborting."; exit 1; }
-OS=$(uname -s)
-
-platform=""
-if [[ $OS == "Darwin" ]]; then
-	platform="darwin/amd64/"
-else
-	platform="linux/amd64/"
-fi
-
 BIN="${GOPATH}/bin/kops"
-#locations=(
-#  "${GOPATH}/bin/kops"
-#  "${KUBE_ROOT}/.build/dist/${platform}/kops"
-#)
-# List most recently-updated location.
-#BIN=$( (ls -t "${locations[@]}" 2>/dev/null || true) | head -1 )
 
 command -v $BIN >/dev/null 2>&1 || { echo >&2 "kops must be installed. Please run make.  Aborting."; exit 1; }
 

@@ -345,7 +345,9 @@ verify-gendocs: kops
 	hack/verify-gendocs.sh
 
 # verify-gendocs will call kops target
-ci: govet verify-gofmt verify-boilerplate verify-gendocs nodeup-gocode examples test verify-packages
+# verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
+# it bombs in travis. verify-gendoc generates the bindata file.
+ci: govet verify-gofmt verify-boilerplate verify-gendocs verify-packages nodeup-gocode examples test 
 	echo "Done!"
 
 # --------------------------------------------------
