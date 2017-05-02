@@ -36,6 +36,7 @@ func TestVPCCreate(t *testing.T) {
 		vpc1 := &VPC{
 			Name: s("vpc1"),
 			CIDR: s("172.21.0.0/16"),
+			Tags: map[string]string{"Name": "vpc1"},
 		}
 		return map[string]fi.Task{
 			"vpc1": vpc1,
