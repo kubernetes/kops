@@ -614,8 +614,9 @@ resource "aws_subnet" "us-test-1a-privatecalico-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "us-test-1a.privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "us-test-1a.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 
@@ -625,8 +626,9 @@ resource "aws_subnet" "utility-us-test-1a-privatecalico-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "utility-us-test-1a.privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "utility-us-test-1a.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 
@@ -636,8 +638,9 @@ resource "aws_vpc" "privatecalico-example-com" {
   enable_dns_support   = true
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 

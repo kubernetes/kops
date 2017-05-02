@@ -605,8 +605,9 @@ resource "aws_subnet" "us-test-1a-privatecanal-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "us-test-1a.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "us-test-1a.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -616,8 +617,9 @@ resource "aws_subnet" "utility-us-test-1a-privatecanal-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "utility-us-test-1a.privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "utility-us-test-1a.privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
@@ -627,8 +629,9 @@ resource "aws_vpc" "privatecanal-example-com" {
   enable_dns_support   = true
 
   tags = {
-    KubernetesCluster = "privatecanal.example.com"
-    Name              = "privatecanal.example.com"
+    KubernetesCluster                                = "privatecanal.example.com"
+    Name                                             = "privatecanal.example.com"
+    "kubernetes.io/cluster/privatecanal.example.com" = "owned"
   }
 }
 
