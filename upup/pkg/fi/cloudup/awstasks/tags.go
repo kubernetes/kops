@@ -40,3 +40,21 @@ func findNameTag(tags []*ec2.Tag) *string {
 	}
 	return nil
 }
+
+// intersectTags returns the tags of interest from a specified list of AWS tags;
+// because we only add tags, this set of tags of interest is the tags that occur in the desired seet.
+func intersectTags(tags []*ec2.Tag, desired map[string]string) map[string]string {
+	if tags == nil {
+		return nil
+	}
+	actual := make(map[string]string)
+	for _, t := range tags {
+		k := aws.StringValue(t.Key)
+		v := aws.StringValue(t.Value)
+
+		if _, found := desired[k]; found {
+			actual[k] = v
+		}
+	}
+	return actual
+}

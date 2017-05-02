@@ -37,6 +37,8 @@ type Subnet struct {
 	AvailabilityZone *string
 	CIDR             *string
 	Shared           *bool
+
+	Tags map[string]string
 }
 
 var _ fi.CompareWithID = &Subnet{}
@@ -71,6 +73,7 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 		CIDR:             subnet.CidrBlock,
 		Name:             findNameTag(subnet.Tags),
 		Shared:           e.Shared,
+		Tags:             intersectTags(subnet.Tags, e.Tags),
 	}
 
 	glog.V(2).Infof("found matching subnet %q", *actual.ID)
@@ -172,7 +175,7 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		e.ID = response.Subnet.SubnetId
 	}
 
-	return t.AddAWSTags(*e.ID, t.Cloud.BuildTags(e.Name))
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 func subnetSlicesEqualIgnoreOrder(l, r []*Subnet) bool {
@@ -199,8 +202,6 @@ type terraformSubnet struct {
 }
 
 func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Subnet) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
@@ -211,7 +212,7 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 		VPCID:            e.VPC.TerraformLink(),
 		CIDR:             e.CIDR,
 		AvailabilityZone: e.AvailabilityZone,
-		Tags:             cloud.BuildTags(e.Name),
+		Tags:             e.Tags,
 	}
 
 	return t.RenderResource("aws_subnet", *e.Name, tf)
@@ -239,8 +240,6 @@ type cloudformationSubnet struct {
 }
 
 func (_ *Subnet) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *Subnet) error {
-	cloud := t.Cloud.(awsup.AWSCloud)
-
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not cloudformation owned / managed
@@ -251,7 +250,7 @@ func (_ *Subnet) RenderCloudformation(t *cloudformation.CloudformationTarget, a,
 		VPCID:            e.VPC.CloudformationLink(),
 		CIDR:             e.CIDR,
 		AvailabilityZone: e.AvailabilityZone,
-		Tags:             buildCloudformationTags(cloud.BuildTags(e.Name)),
+		Tags:             buildCloudformationTags(e.Tags),
 	}
 
 	return t.RenderResource("AWS::EC2::Subnet", *e.Name, cf)

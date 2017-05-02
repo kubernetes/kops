@@ -610,8 +610,9 @@ resource "aws_subnet" "us-test-1a-privatedns1-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "us-test-1a.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "us-test-1a.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -621,8 +622,9 @@ resource "aws_subnet" "utility-us-test-1a-privatedns1-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "utility-us-test-1a.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "utility-us-test-1a.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -632,8 +634,9 @@ resource "aws_vpc" "privatedns1-example-com" {
   enable_dns_support   = true
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 

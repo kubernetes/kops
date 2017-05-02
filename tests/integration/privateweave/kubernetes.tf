@@ -605,8 +605,9 @@ resource "aws_subnet" "us-test-1a-privateweave-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "us-test-1a.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "us-test-1a.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -616,8 +617,9 @@ resource "aws_subnet" "utility-us-test-1a-privateweave-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "utility-us-test-1a.privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "utility-us-test-1a.privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
@@ -627,8 +629,9 @@ resource "aws_vpc" "privateweave-example-com" {
   enable_dns_support   = true
 
   tags = {
-    KubernetesCluster = "privateweave.example.com"
-    Name              = "privateweave.example.com"
+    KubernetesCluster                                = "privateweave.example.com"
+    Name                                             = "privateweave.example.com"
+    "kubernetes.io/cluster/privateweave.example.com" = "owned"
   }
 }
 
