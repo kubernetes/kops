@@ -342,8 +342,9 @@ resource "aws_subnet" "us-test-1a-complex-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "us-test-1a.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "us-test-1a.complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -353,8 +354,9 @@ resource "aws_vpc" "complex-example-com" {
   enable_dns_support   = true
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
