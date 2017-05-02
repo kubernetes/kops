@@ -342,8 +342,9 @@ resource "aws_subnet" "us-test-1a-minimal-141-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "minimal-141.example.com"
-    Name              = "us-test-1a.minimal-141.example.com"
+    KubernetesCluster                               = "minimal-141.example.com"
+    Name                                            = "us-test-1a.minimal-141.example.com"
+    "kubernetes.io/cluster/minimal-141.example.com" = "owned"
   }
 }
 
@@ -353,8 +354,9 @@ resource "aws_vpc" "minimal-141-example-com" {
   enable_dns_support   = true
 
   tags = {
-    KubernetesCluster = "minimal-141.example.com"
-    Name              = "minimal-141.example.com"
+    KubernetesCluster                               = "minimal-141.example.com"
+    Name                                            = "minimal-141.example.com"
+    "kubernetes.io/cluster/minimal-141.example.com" = "owned"
   }
 }
 

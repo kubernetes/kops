@@ -102,6 +102,7 @@ func TestSecurityGroupCreate(t *testing.T) {
 		vpc1 := &VPC{
 			Name: s("vpc1"),
 			CIDR: s("172.20.0.0/16"),
+			Tags: map[string]string{"Name": "vpc1"},
 		}
 		sg1 := &SecurityGroup{
 			Name:        s("sg1"),

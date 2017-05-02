@@ -40,13 +40,17 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	sharedVPC := b.Cluster.SharedVPC()
+	vpcName := b.ClusterName()
 
 	// VPC that holds everything for the cluster
 	{
+		tags := b.CloudTags(vpcName, sharedVPC)
+
 		t := &awstasks.VPC{
-			Name:             s(b.ClusterName()),
+			Name:             s(vpcName),
 			Shared:           fi.Bool(sharedVPC),
 			EnableDNSSupport: fi.Bool(true),
+			Tags:             tags,
 		}
 
 		if sharedVPC && VersionGTE(kubernetesVersion, 1, 5) {
@@ -133,13 +137,16 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for i := range b.Cluster.Spec.Subnets {
 		subnetSpec := &b.Cluster.Spec.Subnets[i]
 		sharedSubnet := subnetSpec.ProviderID != ""
+		subnetName := subnetSpec.Name + "." + b.ClusterName()
+		tags := b.CloudTags(subnetName, sharedSubnet)
 
 		subnet := &awstasks.Subnet{
-			Name:             s(subnetSpec.Name + "." + b.ClusterName()),
+			Name:             s(subnetName),
 			VPC:              b.LinkToVPC(),
 			AvailabilityZone: s(subnetSpec.Zone),
 			CIDR:             s(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
+			Tags:             tags,
 		}
 
 		if subnetSpec.ProviderID != "" {
