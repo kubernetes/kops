@@ -512,8 +512,9 @@ resource "aws_subnet" "us-test-1a-ha-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "ha.example.com"
-    Name              = "us-test-1a.ha.example.com"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "us-test-1a.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -523,8 +524,9 @@ resource "aws_subnet" "us-test-1b-ha-example-com" {
   availability_zone = "us-test-1b"
 
   tags = {
-    KubernetesCluster = "ha.example.com"
-    Name              = "us-test-1b.ha.example.com"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "us-test-1b.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -534,8 +536,9 @@ resource "aws_subnet" "us-test-1c-ha-example-com" {
   availability_zone = "us-test-1c"
 
   tags = {
-    KubernetesCluster = "ha.example.com"
-    Name              = "us-test-1c.ha.example.com"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "us-test-1c.ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
@@ -545,8 +548,9 @@ resource "aws_vpc" "ha-example-com" {
   enable_dns_support   = true
 
   tags = {
-    KubernetesCluster = "ha.example.com"
-    Name              = "ha.example.com"
+    KubernetesCluster                      = "ha.example.com"
+    Name                                   = "ha.example.com"
+    "kubernetes.io/cluster/ha.example.com" = "owned"
   }
 }
 
