@@ -106,7 +106,7 @@ func (z *zone) applyChangeset(c *resourceRecordChangeset) error {
 		}
 
 		k := keyForDNSRecord(&rrs.data)
-		// TOOD: Check existing?  Probably not...
+		// TODO: Check existing?  Probably not...
 		add[k] = rrs
 	}
 
