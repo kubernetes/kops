@@ -91,11 +91,6 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdCreateInstanceGroup(f, out))
 	cmd.AddCommand(NewCmdCreateSecret(f, out))
 
-	// Cloud implementations
-	cmd.AddCommand(NewCmdCreateClusterAws(f, out))
-	cmd.AddCommand(NewCmdCreateClusterGce(f, out))
-	cmd.AddCommand(NewCmdCreateClusterVsphere(f, out))
-
 	return cmd
 }
 
