@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"io"
 	"github.com/spf13/cobra"
+	"io"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubernetes/pkg/util/i18n"
 )

@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"io"
 	"github.com/spf13/cobra"
+	"io"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubernetes/pkg/util/i18n"
 )
@@ -56,6 +56,6 @@ func NewCmdCreateClusterGce(f *util.Factory, out io.Writer) *cobra.Command {
 func RunCreateClusterGce(f *util.Factory, out io.Writer, c *CreateClusterGceOptions) error {
 
 	// All kinds of wonderful logic that only happens for GCE clusters only
-	
+
 	return c.RunCreateCluster(f, out)
 }

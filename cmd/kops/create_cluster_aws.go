@@ -17,8 +17,8 @@ limitations under the License.
 package main
 
 import (
-	"io"
 	"github.com/spf13/cobra"
+	"io"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubernetes/pkg/util/i18n"
 )
@@ -56,6 +56,6 @@ func NewCmdCreateClusterAws(f *util.Factory, out io.Writer) *cobra.Command {
 func RunCreateClusterAws(f *util.Factory, out io.Writer, c *CreateClusterAwsOptions) error {
 
 	// All kinds of wonderful logic that only happens for aws clusters only
-	
+
 	return c.RunCreateCluster(f, out)
 }
