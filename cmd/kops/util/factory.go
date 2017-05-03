@@ -29,6 +29,7 @@ import (
 
 type FactoryOptions struct {
 	RegistryPath string
+	cloud        string
 }
 
 type Factory struct {
@@ -44,12 +45,16 @@ func NewFactory(options *FactoryOptions) *Factory {
 
 const (
 	STATE_ERROR = `Please set the --state flag or export KOPS_STATE_STORE.
-A valid value follows the format s3://<bucket>.
-A s3 bucket is required to store cluster state information.`
+A valid value follows the formats:
+s3://<bucket>
+https://<container>.blob.core.windows.net
+A storage provider is required to store cluster state information.`
 
-	INVALID_STATE_ERROR = `Unable to read state store s3 bucket.
-Please use a valid s3 bucket uri when setting --state or KOPS_STATE_STORE evn var.
-A valid value follows the format s3://<bucket>.`
+	INVALID_STATE_ERROR = `Unable to read state store storage.
+Please use a valid storage uri when setting --state or KOPS_STATE_STORE evn var.
+A valid value follows the formats:
+s3://<bucket>
+https://<container>.blob.core.windows.net`
 )
 
 func (f *Factory) Clientset() (simple.Clientset, error) {
@@ -58,6 +63,7 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 		if registryPath == "" {
 			return nil, field.Required(field.NewPath("State Store"), STATE_ERROR)
 		}
+
 		basePath, err := vfs.Context.BuildVfsPath(registryPath)
 		if err != nil {
 			return nil, fmt.Errorf("error building path for %q: %v", registryPath, err)
@@ -72,3 +78,4 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 
 	return f.clientset, nil
 }
+

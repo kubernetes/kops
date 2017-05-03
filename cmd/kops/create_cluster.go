@@ -172,6 +172,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdCreateClusterAws(f, out))
 	cmd.AddCommand(NewCmdCreateClusterGce(f, out))
 	cmd.AddCommand(NewCmdCreateClusterVsphere(f, out))
+	cmd.AddCommand(NewCmdCreateClusterAzure(f, out))
 
 	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Specify --yes to immediately create the cluster")
 	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
