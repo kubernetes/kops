@@ -31,6 +31,7 @@ type CreateClusterVsphereOptions struct {
 func NewCmdCreateClusterVsphere(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterVsphereOptions{}
 	options.InitDefaults()
+	options.Cloud = "vsphere"
 
 	cmd := &cobra.Command{
 		Use:     "vsphere",

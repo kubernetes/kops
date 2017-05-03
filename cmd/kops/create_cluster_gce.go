@@ -31,6 +31,7 @@ type CreateClusterGceOptions struct {
 func NewCmdCreateClusterGce(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterGceOptions{}
 	options.InitDefaults()
+	options.Cloud = "gce"
 
 	cmd := &cobra.Command{
 		Use:     "gce",

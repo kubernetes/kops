@@ -31,6 +31,7 @@ type CreateClusterAwsOptions struct {
 func NewCmdCreateClusterAws(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterAwsOptions{}
 	options.InitDefaults()
+	options.Cloud = "aws"
 
 	cmd := &cobra.Command{
 		Use:     "aws",
