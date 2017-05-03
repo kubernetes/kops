@@ -23,18 +23,18 @@ import (
 	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
-type CreateClusterAzureOptions struct {
+type CreateClusterVsphereOptions struct {
 	// Inheritance in Go
 	CreateClusterOptions
 }
 
-func NewCmdCreateClusterAzure(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &CreateClusterAzureOptions{}
+func NewCmdCreateClusterVsphere(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &CreateClusterVsphereOptions{}
 	options.InitDefaults()
 
 	cmd := &cobra.Command{
-		Use:     "azure",
-		Short:   i18n.T("Create a Kubernetes cluster in Azure"),
+		Use:     "vsphere",
+		Short:   i18n.T("Create a Kubernetes cluster in Vsphere"),
 		Long:    create_cluster_long,
 		Example: create_cluster_example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -44,7 +44,7 @@ func NewCmdCreateClusterAzure(f *util.Factory, out io.Writer) *cobra.Command {
 				return
 			}
 			options.ClusterName = rootCommand.clusterName
-			err = RunCreateClusterAzure(f, out, options)
+			err = RunCreateClusterVsphere(f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -53,9 +53,9 @@ func NewCmdCreateClusterAzure(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunCreateClusterAzure(f *util.Factory, out io.Writer, c *CreateClusterAzureOptions) error {
+func RunCreateClusterVsphere(f *util.Factory, out io.Writer, c *CreateClusterVsphereOptions) error {
 
-	// All kinds of wonderful logic that only happens for azure clusters only
-
+	// All kinds of wonderful logic that only happens for Vsphere clusters only
+	
 	return c.RunCreateCluster(f, out)
 }
