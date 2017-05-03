@@ -129,15 +129,12 @@ func (o *CreateClusterOptions) InitDefaults() {
 
 var (
 	create_cluster_long = templates.LongDesc(i18n.T(`
-		Creates a k8s cluster.`))
+		Creates a Kubernetes cluster.`))
 
 	create_cluster_example = templates.Examples(i18n.T(`
-		# Create a cluster in AWS
-		kops create cluster --name=example.com\
-		     --state=s3://kops-state-1234 --zones=eu-west-1a \
-			 --node-count=2 --node-size=t2.micro --master-size=t2.micro \
-			 --dns-zone=example.com
-		`))
+		This command will create a Kubernetes cluster spec.
+		Once the cluster spec has been created, the resulting
+		change can be applied to a cloud, thus creating a cluster.`))
 )
 
 func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -164,7 +161,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 			options.ClusterName = rootCommand.clusterName
 
-			err = RunCreateCluster(f, out, options)
+			err = options.RunCreateCluster(f, out)
 			if err != nil {
 				exitWithError(err)
 			}
@@ -175,7 +172,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
 	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
 
-	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere")
+	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere, azure")
 
 	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
 	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
@@ -242,7 +239,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) error {
+func (c *CreateClusterOptions) RunCreateCluster(f *util.Factory, out io.Writer) error {
 	isDryrun := false
 	// direct requires --yes (others do not, because they don't make changes)
 	targetName := c.Target
