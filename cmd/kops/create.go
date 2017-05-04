@@ -90,14 +90,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "Filename to use to create the resource")
-	//usage := "to use to create the resource"
-	//cmdutil.AddFilenameOptionFlags(cmd, options, usage)
 	cmd.MarkFlagRequired("filename")
-	//cmdutil.AddValidateFlags(cmd)
-	//cmdutil.AddOutputFlagsForMutation(cmd)
-	//cmdutil.AddApplyAnnotationFlags(cmd)
-	//cmdutil.AddRecordFlag(cmd)
-	//cmdutil.AddInclude3rdPartyFlags(cmd)
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCreateCluster(f, out))
