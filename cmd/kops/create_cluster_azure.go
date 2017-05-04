@@ -27,13 +27,16 @@ import (
 	//"k8s.io/kops/pkg/client/simple/vfsclientset"
 	//"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops"
+	//"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/fi"
 	"strings"
 	"strconv"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
-	"os"
+	"k8s.io/kops/pkg/apis/kops/validation"
+	"io/ioutil"
 )
 
 type CreateClusterAzureOptions struct {
@@ -66,6 +69,9 @@ func NewCmdCreateClusterAzure(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// Cloud specific
 	options.Cloud = "azure"
+	cmd.Flags().StringSliceVar(&options.Zones, "node-fault-domains", options.Zones, "Fault domains to use for the nodes (alias for zones)")
+	cmd.Flags().StringSliceVar(&options.MasterZones, "master-fault-domains", options.Zones, "Fault domains to use for the masters (alias for master-zones)")
+
 
 	// Global Flags
 	options.createClusterGlobalFlags(cmd)
@@ -108,9 +114,6 @@ func RunCreateClusterAzure(f *util.Factory, out io.Writer, c *CreateClusterAzure
 	if err != nil {
 		return err
 	}
-
-
-
 
 	if cluster != nil {
 		return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", clusterName)
@@ -163,7 +166,6 @@ func RunCreateClusterAzure(f *util.Factory, out io.Writer, c *CreateClusterAzure
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
 
-
 	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
 
 	//// In future we could change the default if the flag is not specified, e.g. in 1.7 maybe the default is RBAC?
@@ -208,7 +210,6 @@ func RunCreateClusterAzure(f *util.Factory, out io.Writer, c *CreateClusterAzure
 		return fmt.Errorf("error parsing global cloud labels: %v", err)
 	}
 	cluster.Spec.CloudLabels = cloudLabels
-
 
 	// Build the master subnets
 	// The master zones is the default set of zones unless explicitly set
@@ -385,198 +386,201 @@ func RunCreateClusterAzure(f *util.Factory, out io.Writer, c *CreateClusterAzure
 		cluster.Spec.DNSZone = c.DNSZone
 	}
 
-	fmt.Println(isDryrun)
-	fmt.Println(targetName)
-
 	if c.Cloud != "" {
 		cluster.Spec.CloudProvider = c.Cloud
 	}
 
+	if c.Project != "" {
+		cluster.Spec.Project = c.Project
+	}
 
-	fmt.Println("KRIS LEFT OFF HERE THIS ISN'T REAL CODE SHE IS JUST TINKERING")
-	os.Exit(-999)
+	if clusterName != "" {
+		cluster.ObjectMeta.Name = clusterName
+	}
 
-	//
-	//if c.Project != "" {
-	//	cluster.Spec.Project = c.Project
-	//}
-	//
-	//if clusterName != "" {
-	//	cluster.ObjectMeta.Name = clusterName
-	//}
-	//
-	//if c.KubernetesVersion != "" {
-	//	cluster.Spec.KubernetesVersion = c.KubernetesVersion
-	//}
-	//
-	//if cluster.Spec.CloudProvider == "" {
-	//	for _, subnet := range cluster.Spec.Subnets {
-	//		cloud, known := fi.GuessCloudForZone(subnet.Zone)
-	//		if known {
-	//			glog.Infof("Inferred --cloud=%s from zone %q", cloud, subnet.Zone)
-	//			cluster.Spec.CloudProvider = string(cloud)
-	//			break
-	//		}
-	//	}
-	//	if cluster.Spec.CloudProvider == "" {
-	//		return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
-	//	}
-	//}
-	//
-	//if c.VPCID != "" {
-	//	cluster.Spec.NetworkID = c.VPCID
-	//}
-	//
-	//if c.NetworkCIDR != "" {
-	//	cluster.Spec.NetworkCIDR = c.NetworkCIDR
-	//}
-	//
-	//// Network Topology
-	//if c.Topology == "" {
-	//	// The flag default should have set this, but we might be being called as a library
-	//	glog.Infof("Empty topology. Defaulting to public topology")
-	//	c.Topology = api.TopologyPublic
-	//}
-	//
-	//switch c.Topology {
-	//case api.TopologyPublic:
-	//	cluster.Spec.Topology = &api.TopologySpec{
-	//		Masters: api.TopologyPublic,
-	//		Nodes:   api.TopologyPublic,
-	//		//Bastion: &api.BastionSpec{Enable: c.Bastion},
-	//	}
-	//
-	//	if c.Bastion {
-	//		return fmt.Errorf("Bastion supports --topology='private' only.")
-	//	}
-	//
-	//	for i := range cluster.Spec.Subnets {
-	//		cluster.Spec.Subnets[i].Type = api.SubnetTypePublic
-	//	}
-	//
-	//case api.TopologyPrivate:
-	//	if !supportsPrivateTopology(cluster.Spec.Networking) {
-	//		return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan', '--networking weave', '--networking flannel', '--networking calico', '--networking canal' are supported for private topologies", c.Networking)
-	//	}
-	//	cluster.Spec.Topology = &api.TopologySpec{
-	//		Masters: api.TopologyPrivate,
-	//		Nodes:   api.TopologyPrivate,
-	//	}
-	//
-	//	for i := range cluster.Spec.Subnets {
-	//		cluster.Spec.Subnets[i].Type = api.SubnetTypePrivate
-	//	}
-	//
-	//	var utilitySubnets []api.ClusterSubnetSpec
-	//	for _, s := range cluster.Spec.Subnets {
-	//		if s.Type == api.SubnetTypeUtility {
-	//			continue
-	//		}
-	//		subnet := api.ClusterSubnetSpec{
-	//			Name: "utility-" + s.Name,
-	//			Zone: s.Zone,
-	//			Type: api.SubnetTypeUtility,
-	//		}
-	//		utilitySubnets = append(utilitySubnets, subnet)
-	//	}
-	//	cluster.Spec.Subnets = append(cluster.Spec.Subnets, utilitySubnets...)
-	//
-	//	if c.Bastion {
-	//		bastionGroup := &api.InstanceGroup{}
-	//		bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
-	//		bastionGroup.ObjectMeta.Name = "bastions"
-	//		bastionGroup.Spec.Image = c.Image
-	//		instanceGroups = append(instanceGroups, bastionGroup)
-	//
-	//		cluster.Spec.Topology.Bastion = &api.BastionSpec{
-	//			BastionPublicName: "bastion." + clusterName,
-	//		}
-	//
-	//	}
-	//
-	//default:
-	//	return fmt.Errorf("Invalid topology %s.", c.Topology)
-	//}
-	//
-	//// DNS
-	//if c.DNSType == "" {
-	//	// The flag default should have set this, but we might be being called as a library
-	//	glog.Infof("Empty DNS. Defaulting to public DNS")
-	//	c.DNSType = string(api.DNSTypePublic)
-	//}
-	//
-	//if cluster.Spec.Topology == nil {
-	//	cluster.Spec.Topology = &api.TopologySpec{}
-	//}
-	//if cluster.Spec.Topology.DNS == nil {
-	//	cluster.Spec.Topology.DNS = &api.DNSSpec{}
-	//}
-	//switch strings.ToLower(c.DNSType) {
-	//case "public":
-	//	cluster.Spec.Topology.DNS.Type = api.DNSTypePublic
-	//case "private":
-	//	cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
-	//default:
-	//	return fmt.Errorf("unknown DNSType: %q", c.DNSType)
-	//}
-	//
-	//// Populate the API access, so that it can be discoverable
-	//// TODO: This is the same code as in defaults - try to dedup?
-	//if cluster.Spec.API == nil {
-	//	cluster.Spec.API = &api.AccessSpec{}
-	//}
-	//if cluster.Spec.API.IsEmpty() {
-	//	switch cluster.Spec.Topology.Masters {
-	//	case api.TopologyPublic:
-	//		cluster.Spec.API.DNS = &api.DNSAccessSpec{}
-	//
-	//	case api.TopologyPrivate:
-	//		cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
-	//
-	//	default:
-	//		return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.Masters)
-	//	}
-	//}
-	//if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
-	//	cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
-	//}
-	//
-	//sshPublicKeys := make(map[string][]byte)
-	//if c.SSHPublicKey != "" {
-	//	c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
-	//	authorized, err := ioutil.ReadFile(c.SSHPublicKey)
-	//	if err != nil {
-	//		return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
-	//	}
-	//	sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
-	//
-	//	glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
-	//}
-	//
-	//if len(c.AdminAccess) != 0 {
-	//	cluster.Spec.SSHAccess = c.AdminAccess
-	//	cluster.Spec.KubernetesAPIAccess = c.AdminAccess
-	//}
-	//
-	//err = cloudup.PerformAssignments(cluster)
-	//if err != nil {
-	//	return fmt.Errorf("error populating configuration: %v", err)
-	//}
-	//err = api.PerformAssignmentsInstanceGroups(instanceGroups)
-	//if err != nil {
-	//	return fmt.Errorf("error populating configuration: %v", err)
-	//}
-	//
-	//strict := false
-	//err = validation.DeepValidate(cluster, instanceGroups, strict)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//fullCluster, err := cloudup.PopulateClusterSpec(cluster)
-	//if err != nil {
-	//	return err
-	//}
+	if c.KubernetesVersion != "" {
+		cluster.Spec.KubernetesVersion = c.KubernetesVersion
+	}
+
+	if cluster.Spec.CloudProvider == "" {
+		for _, subnet := range cluster.Spec.Subnets {
+			cloud, known := fi.GuessCloudForZone(subnet.Zone)
+			if known {
+				glog.Infof("Inferred --cloud=%s from zone %q", cloud, subnet.Zone)
+				cluster.Spec.CloudProvider = string(cloud)
+				break
+			}
+		}
+		if cluster.Spec.CloudProvider == "" {
+			return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
+		}
+	}
+
+	if c.VPCID != "" {
+		cluster.Spec.NetworkID = c.VPCID
+	}
+
+	if c.NetworkCIDR != "" {
+		cluster.Spec.NetworkCIDR = c.NetworkCIDR
+	}
+
+	// Network Topology
+	if c.Topology == "" {
+		// The flag default should have set this, but we might be being called as a library
+		glog.Infof("Empty topology. Defaulting to public topology")
+		c.Topology = api.TopologyPublic
+	}
+
+	switch c.Topology {
+	case api.TopologyPublic:
+		cluster.Spec.Topology = &api.TopologySpec{
+			Masters: api.TopologyPublic,
+			Nodes:   api.TopologyPublic,
+			//Bastion: &api.BastionSpec{Enable: c.Bastion},
+		}
+
+		if c.Bastion {
+			return fmt.Errorf("Bastion supports --topology='private' only.")
+		}
+
+		for i := range cluster.Spec.Subnets {
+			cluster.Spec.Subnets[i].Type = api.SubnetTypePublic
+		}
+
+	case api.TopologyPrivate:
+		if !supportsPrivateTopology(cluster.Spec.Networking) {
+			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan', '--networking weave', '--networking flannel', '--networking calico', '--networking canal' are supported for private topologies", c.Networking)
+		}
+		cluster.Spec.Topology = &api.TopologySpec{
+			Masters: api.TopologyPrivate,
+			Nodes:   api.TopologyPrivate,
+		}
+
+		for i := range cluster.Spec.Subnets {
+			cluster.Spec.Subnets[i].Type = api.SubnetTypePrivate
+		}
+
+		var utilitySubnets []api.ClusterSubnetSpec
+		for _, s := range cluster.Spec.Subnets {
+			if s.Type == api.SubnetTypeUtility {
+				continue
+			}
+			subnet := api.ClusterSubnetSpec{
+				Name: "utility-" + s.Name,
+				Zone: s.Zone,
+				Type: api.SubnetTypeUtility,
+			}
+			utilitySubnets = append(utilitySubnets, subnet)
+		}
+		cluster.Spec.Subnets = append(cluster.Spec.Subnets, utilitySubnets...)
+
+		if c.Bastion {
+			bastionGroup := &api.InstanceGroup{}
+			bastionGroup.Spec.Role = api.InstanceGroupRoleBastion
+			bastionGroup.ObjectMeta.Name = "bastions"
+			bastionGroup.Spec.Image = c.Image
+			instanceGroups = append(instanceGroups, bastionGroup)
+
+			cluster.Spec.Topology.Bastion = &api.BastionSpec{
+				BastionPublicName: "bastion." + clusterName,
+			}
+
+		}
+
+	default:
+		return fmt.Errorf("Invalid topology %s.", c.Topology)
+	}
+
+	// DNS
+	if c.DNSType == "" {
+		// The flag default should have set this, but we might be being called as a library
+		glog.Infof("Empty DNS. Defaulting to public DNS")
+		c.DNSType = string(api.DNSTypePublic)
+	}
+
+	if cluster.Spec.Topology == nil {
+		cluster.Spec.Topology = &api.TopologySpec{}
+	}
+	if cluster.Spec.Topology.DNS == nil {
+		cluster.Spec.Topology.DNS = &api.DNSSpec{}
+	}
+	switch strings.ToLower(c.DNSType) {
+	case "public":
+		cluster.Spec.Topology.DNS.Type = api.DNSTypePublic
+	case "private":
+		cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
+	default:
+		return fmt.Errorf("unknown DNSType: %q", c.DNSType)
+	}
+
+
+
+
+
+	// Populate the API access, so that it can be discoverable
+	// TODO: This is the same code as in defaults - try to dedup?
+	if cluster.Spec.API == nil {
+		cluster.Spec.API = &api.AccessSpec{}
+	}
+	if cluster.Spec.API.IsEmpty() {
+		switch cluster.Spec.Topology.Masters {
+		case api.TopologyPublic:
+			cluster.Spec.API.DNS = &api.DNSAccessSpec{}
+
+		case api.TopologyPrivate:
+			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+
+		default:
+			return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.Masters)
+		}
+	}
+	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
+		cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+	}
+
+	sshPublicKeys := make(map[string][]byte)
+	if c.SSHPublicKey != "" {
+		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
+		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
+		if err != nil {
+			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
+		}
+		sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
+
+		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
+	}
+
+	if len(c.AdminAccess) != 0 {
+		cluster.Spec.SSHAccess = c.AdminAccess
+		cluster.Spec.KubernetesAPIAccess = c.AdminAccess
+	}
+
+
+	err = cloudup.PerformAssignments(cluster)
+	if err != nil {
+		return fmt.Errorf("error populating configuration: %v", err)
+	}
+	err = api.PerformAssignmentsInstanceGroups(instanceGroups)
+	if err != nil {
+		return fmt.Errorf("error populating configuration: %v", err)
+	}
+
+	strict := false
+	err = validation.DeepValidate(cluster, instanceGroups, strict)
+	if err != nil {
+		return err
+	}
+
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(isDryrun)
+	fmt.Println(targetName)
+	fmt.Println(fullCluster)
+	fmt.Println("-------------------------------")
+
 	//
 	//var fullInstanceGroups []*api.InstanceGroup
 	//for _, group := range instanceGroups {
