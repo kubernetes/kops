@@ -536,21 +536,50 @@
           "Statement": [
             {
               "Action": [
-                "ec2:Describe*"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
                 "ec2:*"
               ],
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
+              ],
+              "Sid": "kopsK8sEC2MasterPermsFullAccess"
+            },
+            {
+              "Action": [
+                "autoscaling:DescribeAutoScalingGroups",
+                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:DescribeLaunchConfigurations",
+                "autoscaling:GetAsgForInstance",
+                "autoscaling:SetDesiredCapacity",
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "autoscaling:UpdateAutoScalingGroup"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ],
+              "Sid": "kopsK8sASMasterPerms"
+            },
+            {
+              "Action": [
+                "elasticloadbalancing:*"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ],
+              "Sid": "kopsK8sELBMasterPermsFullAccess"
+            },
+            {
+              "Action": [
+                "iam:ListServerCertificates",
+                "iam:GetServerCertificate"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ],
+              "Sid": "kopsMasterCertIAMPerms"
             },
             {
               "Action": [
@@ -565,29 +594,8 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
-            },
-            {
-              "Action": [
-                "elasticloadbalancing:*"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
-            },
-            {
-              "Action": [
-                "autoscaling:DescribeAutoScalingGroups",
-                "autoscaling:DescribeAutoScalingInstances",
-                "autoscaling:DescribeLaunchConfigurations",
-                "autoscaling:SetDesiredCapacity",
-                "autoscaling:TerminateInstanceInAutoScalingGroup"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Sid": "kopsK8sECR"
             },
             {
               "Action": [
@@ -598,7 +606,8 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
-              ]
+              ],
+              "Sid": "kopsK8sRoute53Change"
             },
             {
               "Action": [
@@ -607,7 +616,8 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::change/*"
-              ]
+              ],
+              "Sid": "kopsK8sRoute53GetChanges"
             },
             {
               "Action": [
@@ -616,7 +626,18 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
+              ],
+              "Sid": "kopsK8sRoute53ListZones"
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ],
+              "Sid": ""
             }
           ],
           "Version": "2012-10-17"
@@ -636,12 +657,13 @@
           "Statement": [
             {
               "Action": [
-                "ec2:Describe*"
+                "ec2:DescribeInstances"
               ],
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
+              ],
+              "Sid": "kopsK8sEC2NodePerms"
             },
             {
               "Action": [
@@ -656,7 +678,8 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
+              ],
+              "Sid": "kopsK8sECR"
             },
             {
               "Action": [
@@ -667,7 +690,8 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
-              ]
+              ],
+              "Sid": "kopsK8sRoute53Change"
             },
             {
               "Action": [
@@ -676,7 +700,8 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::change/*"
-              ]
+              ],
+              "Sid": "kopsK8sRoute53GetChanges"
             },
             {
               "Action": [
@@ -685,7 +710,18 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
+              ],
+              "Sid": "kopsK8sRoute53ListZones"
+            },
+            {
+              "Action": [
+                "route53:ListHostedZones"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ],
+              "Sid": ""
             }
           ],
           "Version": "2012-10-17"
