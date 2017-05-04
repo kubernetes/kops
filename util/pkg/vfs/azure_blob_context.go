@@ -1,16 +1,16 @@
 package vfs
 
 import (
-	"github.com/Azure/azure-sdk-for-go/storage"
-	"os"
-	"github.com/pkg/errors"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/storage"
+	"github.com/pkg/errors"
+	"os"
 	"sync"
 )
 
 type AzureBlobContext struct {
 	mutex  sync.Mutex
-	client storage.Client
+	client *storage.Client
 }
 
 func NewAzureBlobContext() *AzureBlobContext {
@@ -19,17 +19,17 @@ func NewAzureBlobContext() *AzureBlobContext {
 
 // getClient holds the primary connection logic for connecting to the Azure
 // API via the Azure Go SDK
-func (a *AzureBlobContext) getClient() (storage.Client, error) {
+func (a *AzureBlobContext) getClient() (*storage.Client, error) {
 	a.mutex.Lock()
 	defer a.mutex.Unlock()
 
 	if a.client == nil {
 		// Now we assume that they are defined as environmental variables
-		name := os.Getenv("AZURE_STORAGE_ACCOUNT_NAME")
+		name := os.Getenv("AZURE_STORAGE_ACCOUNT")
 		if name == "" {
 			return nil, errors.New("invalid or empty value for $AZURE_STORAGE_ACCOUNT_NAME")
 		}
-		key := os.Getenv("AZURE_STORAGE_ACCOUNT_KEY")
+		key := os.Getenv("AZURE_STORAGE_ACCESS_KEY")
 		if key == "" {
 			return nil, errors.New("invalid or empty value for $AZURE_STORAGE_ACCOUNT_KEY")
 		}
@@ -38,7 +38,7 @@ func (a *AzureBlobContext) getClient() (storage.Client, error) {
 		if err != nil {
 			return nil, fmt.Errorf("unable to create Azure connection: %v", err)
 		}
-		a.client = client
+		a.client = &client
 	}
 	return a.client, nil
 }

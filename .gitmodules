@@ -292,3 +292,6 @@
 [submodule "_vendor/github.com/Azure/azure-sdk-for-go"]
 	path = _vendor/github.com/Azure/azure-sdk-for-go
 	url = git@github.com:Azure/azure-sdk-for-go.git
+[submodule "_vendor/github.com/Azure/go-autorest"]
+	path = _vendor/github.com/Azure/go-autorest
+	url = git@github.com:Azure/go-autorest.git

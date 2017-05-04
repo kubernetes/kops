@@ -78,4 +78,3 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 
 	return f.clientset, nil
 }
-
