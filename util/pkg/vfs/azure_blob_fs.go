@@ -6,6 +6,8 @@ import (
 	"encoding/base64"
 	"github.com/Azure/azure-sdk-for-go/storage"
 	"io/ioutil"
+	"strings"
+	"os"
 )
 
 // https://kopsdevel.blob.core.windows.net
@@ -24,6 +26,7 @@ func newAzureBlobPath(azureBlobCtx *AzureBlobContext, container string, key stri
 }
 
 func (a *AzureBlobPath) Join(relativePath ...string) Path {
+	fmt.Printf("JOIN : %s %s\n", a.container, a.key)
 	args := []string{a.key}
 	args = append(args, relativePath...)
 	joined := path.Join(args...)
@@ -35,6 +38,7 @@ func (a *AzureBlobPath) Join(relativePath ...string) Path {
 }
 
 func (a *AzureBlobPath) ReadFile() ([]byte, error) {
+	fmt.Printf("READ FILE : %s %s\n", a.container, a.key)
 	client, err := a.azureBlobContext.getClient()
 	var retBytes []byte
 	if err != nil {
@@ -44,11 +48,11 @@ func (a *AzureBlobPath) ReadFile() ([]byte, error) {
 
 	readCloser, err := blobClient.GetBlob(a.container, a.key)
 	if err != nil {
-		fmt.Println("----------")
-		fmt.Println(a.container)
-		fmt.Println(a.key)
-		fmt.Println("----------")
-		return retBytes, fmt.Errorf("unable to get blob: %v", err)
+		if strings.Contains(err.Error(), "ErrorMessage=The specified blob does not exist") {
+			return retBytes, os.ErrNotExist
+		} else {
+			return retBytes, fmt.Errorf("unable to get blob: %v", err)
+		}
 	}
 	retBytes, err = ioutil.ReadAll(readCloser)
 	defer readCloser.Close()
@@ -59,6 +63,7 @@ func (a *AzureBlobPath) ReadFile() ([]byte, error) {
 }
 
 func (a *AzureBlobPath) WriteFile(data []byte) error {
+	fmt.Printf("WRITE FILE : %s %s\n", a.container, a.key)
 	client, err := a.azureBlobContext.getClient()
 	if err != nil {
 		return fmt.Errorf("unable to get azure storage blob client: %v", err)
@@ -88,6 +93,7 @@ func (a *AzureBlobPath) WriteFile(data []byte) error {
 }
 
 func (a *AzureBlobPath) CreateFile(data []byte) error {
+	fmt.Printf("CREATE FILE : %s %s\n", a.container, a.key)
 	client, err := a.azureBlobContext.getClient()
 	if err != nil {
 		return fmt.Errorf("unable to get azure storage blob client: %v", err)
@@ -101,13 +107,16 @@ func (a *AzureBlobPath) CreateFile(data []byte) error {
 }
 
 func (a *AzureBlobPath) Base() string {
+	fmt.Printf("BASE : %s %s\n", a.container, a.key)
 	return path.Base(a.key)
 }
 func (a *AzureBlobPath) Path() string {
+	fmt.Printf("PATH : %s %s\n", a.container, a.key)
 	return "https://" + a.container + ".blob.core.windows.net/" + a.container + "/" + a.key
 }
 
 func (a *AzureBlobPath) Remove() error {
+	fmt.Printf("REMOVE FILE : %s %s\n", a.container, a.key)
 	client, err := a.azureBlobContext.getClient()
 	if err != nil {
 		return fmt.Errorf("unable to get azure storage blob client: %v", err)
@@ -120,6 +129,7 @@ func (a *AzureBlobPath) Remove() error {
 }
 
 func (a *AzureBlobPath) ReadDir() ([]Path, error) {
+	fmt.Printf("READ DIR : %s %s\n", a.container, a.key)
 	var paths []Path
 	client, err := a.azureBlobContext.getClient()
 	if err != nil {
@@ -133,13 +143,14 @@ func (a *AzureBlobPath) ReadDir() ([]Path, error) {
 	for _, l := range list.CommittedBlocks {
 		p := &AzureBlobPath{
 			container: a.container,
-			key: l.Name,
+			key:       l.Name,
 		}
 		paths = append(paths, p)
 	}
 	return paths, nil
 }
 func (a *AzureBlobPath) ReadTree() ([]Path, error) {
+	fmt.Printf("READ TREE : %s %s\n", a.container, a.key)
 	var paths []Path
 	//paths = append(paths, AzureBlobPath{})
 	return paths, nil

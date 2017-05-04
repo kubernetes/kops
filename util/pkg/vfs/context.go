@@ -212,13 +212,23 @@ func RetryWithBackoff(backoff wait.Backoff, condition func() (bool, error)) (boo
 }
 
 func (c *VFSContext) buildAzureBlobPath(p string) (*AzureBlobPath, error) {
-	// TODO (kris-nova)
-	// Here is where we flesh out all the things we need to blob storage
-	container := p
-	key := p
+
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid azure blob storage path: %q", p)
+	}
+	if u.Scheme != "https" {
+		return nil, fmt.Errorf("invalid azure blob storage path: %q, p")
+	}
+
+	container := strings.TrimSuffix(u.Host, "/")
+	container = strings.Replace(u.Host, ".blob.core.windows.net", "", -1)
+	if container == "" {
+		return nil, fmt.Errorf("invalid azure blob storage path: %q", p)
+	}
 
 	azBlobCtx := NewAzureBlobContext()
-	blobPath := newAzureBlobPath(azBlobCtx, container, key)
+	blobPath := newAzureBlobPath(azBlobCtx, container, u.Path)
 	return blobPath, nil
 }
 

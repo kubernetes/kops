@@ -23,8 +23,17 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/util/i18n"
+	api "k8s.io/kops/pkg/apis/kops"
 	//"k8s.io/kops/pkg/client/simple/vfsclientset"
 	//"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/upup/pkg/fi"
+	"strings"
+	"strconv"
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"os"
 )
 
 type CreateClusterAzureOptions struct {
@@ -35,9 +44,6 @@ type CreateClusterAzureOptions struct {
 func NewCmdCreateClusterAzure(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterAzureOptions{}
 	options.InitDefaults()
-
-	// Cloud specific overrides
-	options.Cloud = "azure"
 
 	cmd := &cobra.Command{
 		Use:     "azure",
@@ -57,6 +63,13 @@ func NewCmdCreateClusterAzure(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 		},
 	}
+
+	// Cloud specific
+	options.Cloud = "azure"
+
+	// Global Flags
+	options.createClusterGlobalFlags(cmd)
+
 	return cmd
 }
 
@@ -96,66 +109,66 @@ func RunCreateClusterAzure(f *util.Factory, out io.Writer, c *CreateClusterAzure
 		return err
 	}
 
-	fmt.Println(isDryrun)
-	fmt.Println(targetName)
-	fmt.Println(cluster)
 
-	//
-	//if cluster != nil {
-	//	return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", clusterName)
-	//}
-	//
-	//cluster = &api.Cluster{}
-	//
-	//channel, err := api.LoadChannel(c.Channel)
-	//if err != nil {
-	//	return err
-	//}
-	//
-	//if channel.Spec.Cluster != nil {
-	//	cluster.Spec = *channel.Spec.Cluster
-	//
-	//	kubernetesVersion := api.RecommendedKubernetesVersion(channel, kops.Version)
-	//	if kubernetesVersion != nil {
-	//		cluster.Spec.KubernetesVersion = kubernetesVersion.String()
-	//	}
-	//}
-	//cluster.Spec.Channel = c.Channel
-	//
-	//configBase, err := clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(clusterName)
-	//if err != nil {
-	//	return fmt.Errorf("error building ConfigBase for cluster: %v", err)
-	//}
-	//cluster.Spec.ConfigBase = configBase.Path()
-	//
-	//cluster.Spec.Networking = &api.NetworkingSpec{}
-	//switch c.Networking {
-	//case "classic":
-	//	cluster.Spec.Networking.Classic = &api.ClassicNetworkingSpec{}
-	//case "kubenet":
-	//	cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
-	//case "external":
-	//	cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
-	//case "cni":
-	//	cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
-	//case "kopeio-vxlan":
-	//	cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
-	//case "weave":
-	//	cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
-	//case "flannel":
-	//	cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{}
-	//case "calico":
-	//	cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{}
-	//case "canal":
-	//	cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
-	//default:
-	//	return fmt.Errorf("unknown networking mode %q", c.Networking)
-	//}
-	//
-	//glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
-	//
+
+
+	if cluster != nil {
+		return fmt.Errorf("cluster %q already exists; use 'kops update cluster' to apply changes", clusterName)
+	}
+
+	cluster = &api.Cluster{}
+
+	channel, err := api.LoadChannel(c.Channel)
+	if err != nil {
+		return err
+	}
+
+	if channel.Spec.Cluster != nil {
+		cluster.Spec = *channel.Spec.Cluster
+
+		kubernetesVersion := api.RecommendedKubernetesVersion(channel, kops.Version)
+		if kubernetesVersion != nil {
+			cluster.Spec.KubernetesVersion = kubernetesVersion.String()
+		}
+	}
+	cluster.Spec.Channel = c.Channel
+
+	configBase, err := clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(clusterName)
+	if err != nil {
+		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
+	}
+	cluster.Spec.ConfigBase = configBase.Path()
+
+	cluster.Spec.Networking = &api.NetworkingSpec{}
+	switch c.Networking {
+	case "classic":
+		cluster.Spec.Networking.Classic = &api.ClassicNetworkingSpec{}
+	case "kubenet":
+		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
+	case "external":
+		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
+	case "cni":
+		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
+	case "kopeio-vxlan":
+		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
+	case "weave":
+		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
+	case "flannel":
+		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{}
+	case "calico":
+		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{}
+	case "canal":
+		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
+	default:
+		return fmt.Errorf("unknown networking mode %q", c.Networking)
+	}
+
+
+	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
+
 	//// In future we could change the default if the flag is not specified, e.g. in 1.7 maybe the default is RBAC?
 	//cluster.Spec.Authorization = &api.AuthorizationSpec{}
+
 	//if strings.EqualFold(c.Authorization, AuthorizationFlagAlwaysAllow) {
 	//	cluster.Spec.Authorization.AlwaysAllow = &api.AlwaysAllowAuthorizationSpec{}
 	//} else if strings.EqualFold(c.Authorization, AuthorizationFlagRBAC) {
@@ -163,252 +176,226 @@ func RunCreateClusterAzure(f *util.Factory, out io.Writer, c *CreateClusterAzure
 	//} else {
 	//	return fmt.Errorf("unknown authorization mode %q", c.Authorization)
 	//}
-	//
-	//if len(c.Zones) != 0 {
-	//	existingSubnets := make(map[string]*api.ClusterSubnetSpec)
-	//	for i := range cluster.Spec.Subnets {
-	//		subnet := &cluster.Spec.Subnets[i]
-	//		existingSubnets[subnet.Name] = subnet
-	//	}
-	//	for _, zoneName := range c.Zones {
-	//		// We create default subnets named the same as the zones
-	//		subnetName := zoneName
-	//		if existingSubnets[subnetName] == nil {
-	//			cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
-	//				Name:   subnetName,
-	//				Zone:   subnetName,
-	//				Egress: c.Egress,
-	//			})
-	//		}
-	//	}
-	//}
-	//
-	//if len(cluster.Spec.Subnets) == 0 {
-	//	return fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
-	//}
-	//
-	//var masters []*api.InstanceGroup
-	//var nodes []*api.InstanceGroup
-	//var instanceGroups []*api.InstanceGroup
-	//cloudLabels, err := parseCloudLabels(c.CloudLabels)
-	//if err != nil {
-	//	return fmt.Errorf("error parsing global cloud labels: %v", err)
-	//}
-	//cluster.Spec.CloudLabels = cloudLabels
-	//
-	//// Build the master subnets
-	//// The master zones is the default set of zones unless explicitly set
-	//// The master count is the number of master zones unless explicitly set
-	//// We then round-robin around the zones
-	//if len(masters) == 0 {
-	//	var masterSubnets []*api.ClusterSubnetSpec
-	//	if len(c.MasterZones) != 0 {
-	//		for _, subnetName := range c.MasterZones {
-	//			subnet := findSubnet(cluster, subnetName)
-	//			if subnet == nil {
-	//				// Should have been caught already
-	//				return fmt.Errorf("master-zone %q not included in zones", subnetName)
-	//			}
-	//			masterSubnets = append(masterSubnets, subnet)
-	//		}
-	//
-	//		if c.MasterCount != 0 && c.MasterCount < int32(len(masterSubnets)) {
-	//			return fmt.Errorf("specified %d master zones, but also requested %d masters.  If specifying both, the count should match.", len(masterSubnets), c.MasterCount)
-	//		}
-	//	} else {
-	//		for i := range cluster.Spec.Subnets {
-	//			masterSubnets = append(masterSubnets, &cluster.Spec.Subnets[i])
-	//		}
-	//	}
-	//
-	//	if len(masterSubnets) == 0 {
-	//		// Should be unreachable
-	//		return fmt.Errorf("cannot determine master subnets")
-	//	}
-	//
-	//	masterCount := c.MasterCount
-	//	if masterCount == 0 {
-	//		masterCount = int32(len(masterSubnets))
-	//	}
-	//
-	//	for i := 0; i < int(masterCount); i++ {
-	//		subnet := masterSubnets[i%len(masterSubnets)]
-	//		name := subnet.Name
-	//		if int(masterCount) > len(masterSubnets) {
-	//			name += "-" + strconv.Itoa(1+(i/len(masterSubnets)))
-	//		}
-	//
-	//		g := &api.InstanceGroup{}
-	//		g.Spec.Role = api.InstanceGroupRoleMaster
-	//		g.Spec.Subnets = []string{subnet.Name}
-	//		g.Spec.MinSize = fi.Int32(1)
-	//		g.Spec.MaxSize = fi.Int32(1)
-	//		g.ObjectMeta.Name = "master-" + name
-	//		instanceGroups = append(instanceGroups, g)
-	//		masters = append(masters, g)
-	//	}
-	//}
-	//
-	//if len(cluster.Spec.EtcdClusters) == 0 {
-	//	masterAZs := sets.NewString()
-	//	duplicateAZs := false
-	//	for _, ig := range masters {
-	//		if len(ig.Spec.Subnets) != 1 {
-	//			return fmt.Errorf("unexpected subnets for master instance group %q (expected exactly only, found %d)", ig.ObjectMeta.Name, len(ig.Spec.Subnets))
-	//		}
-	//		for _, subnetName := range ig.Spec.Subnets {
-	//			subnet := findSubnet(cluster, subnetName)
-	//			if subnet == nil {
-	//				return fmt.Errorf("cannot find subnet %q (declared in instance group %q, not found in cluster)", subnetName, ig.ObjectMeta.Name)
-	//			}
-	//
-	//			if masterAZs.Has(subnet.Zone) {
-	//				duplicateAZs = true
-	//			}
-	//
-	//			masterAZs.Insert(subnet.Zone)
-	//		}
-	//	}
-	//
-	//	if duplicateAZs {
-	//		glog.Warningf("Running with masters in the same AZs; redundancy will be reduced")
-	//	}
-	//
-	//	for _, etcdCluster := range cloudup.EtcdClusters {
-	//		etcd := &api.EtcdClusterSpec{}
-	//		etcd.Name = etcdCluster
-	//
-	//		var names []string
-	//		for _, ig := range masters {
-	//			name := ig.ObjectMeta.Name
-	//			// We expect the IG to have a `master-` prefix, but this is both superfluous
-	//			// and not how we named things previously
-	//			name = strings.TrimPrefix(name, "master-")
-	//			names = append(names, name)
-	//		}
-	//
-	//		names = trimCommonPrefix(names)
-	//
-	//		for i, ig := range masters {
-	//			m := &api.EtcdMemberSpec{}
-	//			if c.EncryptEtcdStorage {
-	//				m.EncryptedVolume = &c.EncryptEtcdStorage
-	//			}
-	//			m.Name = names[i]
-	//
-	//			m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
-	//			etcd.Members = append(etcd.Members, m)
-	//		}
-	//		cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
-	//	}
-	//}
-	//
-	//if len(nodes) == 0 {
-	//	g := &api.InstanceGroup{}
-	//	g.Spec.Role = api.InstanceGroupRoleNode
-	//
-	//	g.ObjectMeta.Name = "nodes"
-	//	instanceGroups = append(instanceGroups, g)
-	//	nodes = append(nodes, g)
-	//}
-	//
-	//if c.NodeSize != "" {
-	//	for _, group := range nodes {
-	//		group.Spec.MachineType = c.NodeSize
-	//	}
-	//}
-	//
-	//if c.Image != "" {
-	//	for _, group := range instanceGroups {
-	//		group.Spec.Image = c.Image
-	//	}
-	//}
-	//
-	//if c.AssociatePublicIP != nil {
-	//	for _, group := range instanceGroups {
-	//		group.Spec.AssociatePublicIP = c.AssociatePublicIP
-	//	}
-	//}
-	//
-	//if c.NodeCount != 0 {
-	//	for _, group := range nodes {
-	//		group.Spec.MinSize = fi.Int32(c.NodeCount)
-	//		group.Spec.MaxSize = fi.Int32(c.NodeCount)
-	//	}
-	//}
-	//
-	//if c.MasterTenancy != "" {
-	//	for _, group := range masters {
-	//		group.Spec.Tenancy = c.MasterTenancy
-	//	}
-	//}
-	//
-	//if c.NodeTenancy != "" {
-	//	for _, group := range nodes {
-	//		group.Spec.Tenancy = c.NodeTenancy
-	//	}
-	//}
-	//
-	//if len(c.NodeSecurityGroups) > 0 {
-	//	for _, group := range nodes {
-	//		group.Spec.AdditionalSecurityGroups = c.NodeSecurityGroups
-	//	}
-	//}
-	//
-	//if len(c.MasterSecurityGroups) > 0 {
-	//	for _, group := range masters {
-	//		group.Spec.AdditionalSecurityGroups = c.MasterSecurityGroups
-	//	}
-	//}
-	//
-	//if c.MasterSize != "" {
-	//	for _, group := range masters {
-	//		group.Spec.MachineType = c.MasterSize
-	//	}
-	//}
-	//
-	//if c.DNSZone != "" {
-	//	cluster.Spec.DNSZone = c.DNSZone
-	//}
-	//
-	//if c.Cloud != "" {
-	//	cluster.Spec.CloudProvider = c.Cloud
-	//
-	//	if c.Cloud == "vsphere" {
-	//		if !featureflag.VSphereCloudProvider.Enabled() {
-	//			return fmt.Errorf("Feature flag VSphereCloudProvider is not set. Cloud vSphere will not be supported.")
-	//		}
-	//
-	//		if cluster.Spec.CloudConfig == nil {
-	//			cluster.Spec.CloudConfig = &api.CloudConfiguration{}
-	//		}
-	//
-	//		if c.VSphereServer == "" {
-	//			return fmt.Errorf("vsphere-server is required for vSphere. Set vCenter URL Ex: 10.192.10.30 or myvcenter.io (without https://)")
-	//		}
-	//		cluster.Spec.CloudConfig.VSphereServer = fi.String(c.VSphereServer)
-	//
-	//		if c.VSphereDatacenter == "" {
-	//			return fmt.Errorf("vsphere-datacenter is required for vSphere. Set the name of the datacenter in which to deploy Kubernetes VMs.")
-	//		}
-	//		cluster.Spec.CloudConfig.VSphereDatacenter = fi.String(c.VSphereDatacenter)
-	//
-	//		if c.VSphereResourcePool == "" {
-	//			return fmt.Errorf("vsphere-resource-pool is required for vSphere. Set a valid Cluster, Host or Resource Pool in which to deploy Kubernetes VMs.")
-	//		}
-	//		cluster.Spec.CloudConfig.VSphereResourcePool = fi.String(c.VSphereResourcePool)
-	//
-	//		if c.VSphereCoreDNSServer == "" {
-	//			return fmt.Errorf("A coredns server is required for vSphere.")
-	//		}
-	//		cluster.Spec.CloudConfig.VSphereCoreDNSServer = fi.String(c.VSphereCoreDNSServer)
-	//
-	//		if c.VSphereDatastore == "" {
-	//			return fmt.Errorf("vsphere-datastore is required for vSphere. Set a valid datastore in which to store dynamic provision volumes.")
-	//		}
-	//		cluster.Spec.CloudConfig.VSphereDatastore = fi.String(c.VSphereDatastore)
-	//	}
-	//}
+
+	if len(c.Zones) != 0 {
+		existingSubnets := make(map[string]*api.ClusterSubnetSpec)
+		for i := range cluster.Spec.Subnets {
+			subnet := &cluster.Spec.Subnets[i]
+			existingSubnets[subnet.Name] = subnet
+		}
+		for _, zoneName := range c.Zones {
+			// We create default subnets named the same as the zones
+			subnetName := zoneName
+			if existingSubnets[subnetName] == nil {
+				cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
+					Name:   subnetName,
+					Zone:   subnetName,
+					Egress: c.Egress,
+				})
+			}
+		}
+	}
+
+	if len(cluster.Spec.Subnets) == 0 {
+		return fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
+	}
+
+	var masters []*api.InstanceGroup
+	var nodes []*api.InstanceGroup
+	var instanceGroups []*api.InstanceGroup
+	cloudLabels, err := parseCloudLabels(c.CloudLabels)
+	if err != nil {
+		return fmt.Errorf("error parsing global cloud labels: %v", err)
+	}
+	cluster.Spec.CloudLabels = cloudLabels
+
+
+	// Build the master subnets
+	// The master zones is the default set of zones unless explicitly set
+	// The master count is the number of master zones unless explicitly set
+	// We then round-robin around the zones
+	if len(masters) == 0 {
+		var masterSubnets []*api.ClusterSubnetSpec
+		if len(c.MasterZones) != 0 {
+			for _, subnetName := range c.MasterZones {
+				subnet := findSubnet(cluster, subnetName)
+				if subnet == nil {
+					// Should have been caught already
+					return fmt.Errorf("master-zone %q not included in zones", subnetName)
+				}
+				masterSubnets = append(masterSubnets, subnet)
+			}
+
+			if c.MasterCount != 0 && c.MasterCount < int32(len(masterSubnets)) {
+				return fmt.Errorf("specified %d master zones, but also requested %d masters.  If specifying both, the count should match.", len(masterSubnets), c.MasterCount)
+			}
+		} else {
+			for i := range cluster.Spec.Subnets {
+				masterSubnets = append(masterSubnets, &cluster.Spec.Subnets[i])
+			}
+		}
+
+		if len(masterSubnets) == 0 {
+			// Should be unreachable
+			return fmt.Errorf("cannot determine master subnets")
+		}
+
+		masterCount := c.MasterCount
+		if masterCount == 0 {
+			masterCount = int32(len(masterSubnets))
+		}
+
+		for i := 0; i < int(masterCount); i++ {
+			subnet := masterSubnets[i%len(masterSubnets)]
+			name := subnet.Name
+			if int(masterCount) > len(masterSubnets) {
+				name += "-" + strconv.Itoa(1+(i/len(masterSubnets)))
+			}
+
+			g := &api.InstanceGroup{}
+			g.Spec.Role = api.InstanceGroupRoleMaster
+			g.Spec.Subnets = []string{subnet.Name}
+			g.Spec.MinSize = fi.Int32(1)
+			g.Spec.MaxSize = fi.Int32(1)
+			g.ObjectMeta.Name = "master-" + name
+			instanceGroups = append(instanceGroups, g)
+			masters = append(masters, g)
+		}
+	}
+
+	if len(cluster.Spec.EtcdClusters) == 0 {
+		masterAZs := sets.NewString()
+		duplicateAZs := false
+		for _, ig := range masters {
+			if len(ig.Spec.Subnets) != 1 {
+				return fmt.Errorf("unexpected subnets for master instance group %q (expected exactly only, found %d)", ig.ObjectMeta.Name, len(ig.Spec.Subnets))
+			}
+			for _, subnetName := range ig.Spec.Subnets {
+				subnet := findSubnet(cluster, subnetName)
+				if subnet == nil {
+					return fmt.Errorf("cannot find subnet %q (declared in instance group %q, not found in cluster)", subnetName, ig.ObjectMeta.Name)
+				}
+
+				if masterAZs.Has(subnet.Zone) {
+					duplicateAZs = true
+				}
+
+				masterAZs.Insert(subnet.Zone)
+			}
+		}
+
+		if duplicateAZs {
+			glog.Warningf("Running with masters in the same AZs; redundancy will be reduced")
+		}
+
+		for _, etcdCluster := range cloudup.EtcdClusters {
+			etcd := &api.EtcdClusterSpec{}
+			etcd.Name = etcdCluster
+
+			var names []string
+			for _, ig := range masters {
+				name := ig.ObjectMeta.Name
+				// We expect the IG to have a `master-` prefix, but this is both superfluous
+				// and not how we named things previously
+				name = strings.TrimPrefix(name, "master-")
+				names = append(names, name)
+			}
+
+			names = trimCommonPrefix(names)
+
+			for i, ig := range masters {
+				m := &api.EtcdMemberSpec{}
+				if c.EncryptEtcdStorage {
+					m.EncryptedVolume = &c.EncryptEtcdStorage
+				}
+				m.Name = names[i]
+
+				m.InstanceGroup = fi.String(ig.ObjectMeta.Name)
+				etcd.Members = append(etcd.Members, m)
+			}
+			cluster.Spec.EtcdClusters = append(cluster.Spec.EtcdClusters, etcd)
+		}
+	}
+
+	if len(nodes) == 0 {
+		g := &api.InstanceGroup{}
+		g.Spec.Role = api.InstanceGroupRoleNode
+
+		g.ObjectMeta.Name = "nodes"
+		instanceGroups = append(instanceGroups, g)
+		nodes = append(nodes, g)
+	}
+
+	if c.NodeSize != "" {
+		for _, group := range nodes {
+			group.Spec.MachineType = c.NodeSize
+		}
+	}
+
+	if c.Image != "" {
+		for _, group := range instanceGroups {
+			group.Spec.Image = c.Image
+		}
+	}
+
+	if c.AssociatePublicIP != nil {
+		for _, group := range instanceGroups {
+			group.Spec.AssociatePublicIP = c.AssociatePublicIP
+		}
+	}
+
+	if c.NodeCount != 0 {
+		for _, group := range nodes {
+			group.Spec.MinSize = fi.Int32(c.NodeCount)
+			group.Spec.MaxSize = fi.Int32(c.NodeCount)
+		}
+	}
+
+	if c.MasterTenancy != "" {
+		for _, group := range masters {
+			group.Spec.Tenancy = c.MasterTenancy
+		}
+	}
+
+	if c.NodeTenancy != "" {
+		for _, group := range nodes {
+			group.Spec.Tenancy = c.NodeTenancy
+		}
+	}
+
+	if len(c.NodeSecurityGroups) > 0 {
+		for _, group := range nodes {
+			group.Spec.AdditionalSecurityGroups = c.NodeSecurityGroups
+		}
+	}
+
+	if len(c.MasterSecurityGroups) > 0 {
+		for _, group := range masters {
+			group.Spec.AdditionalSecurityGroups = c.MasterSecurityGroups
+		}
+	}
+
+	if c.MasterSize != "" {
+		for _, group := range masters {
+			group.Spec.MachineType = c.MasterSize
+		}
+	}
+
+	if c.DNSZone != "" {
+		cluster.Spec.DNSZone = c.DNSZone
+	}
+
+	fmt.Println(isDryrun)
+	fmt.Println(targetName)
+
+	if c.Cloud != "" {
+		cluster.Spec.CloudProvider = c.Cloud
+	}
+
+
+	fmt.Println("KRIS LEFT OFF HERE THIS ISN'T REAL CODE SHE IS JUST TINKERING")
+	os.Exit(-999)
+
 	//
 	//if c.Project != "" {
 	//	cluster.Spec.Project = c.Project

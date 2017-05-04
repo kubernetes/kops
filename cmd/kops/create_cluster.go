@@ -24,7 +24,6 @@ import (
 	"io/ioutil"
 	"strconv"
 	"strings"
-
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -48,58 +47,49 @@ const (
 )
 
 type CreateClusterOptions struct {
-	ClusterName          string
-	Yes                  bool
-	Target               string
-	Models               string
-	Cloud                string
-	Zones                []string
-	MasterZones          []string
-	NodeSize             string
-	MasterSize           string
-	MasterCount          int32
-	NodeCount            int32
-	EncryptEtcdStorage   bool
-	Project              string
-	KubernetesVersion    string
-	OutDir               string
-	Image                string
-	SSHPublicKey         string
-	VPCID                string
-	NetworkCIDR          string
-	DNSZone              string
-	AdminAccess          []string
-	Networking           string
-	NodeSecurityGroups   []string
-	MasterSecurityGroups []string
-	AssociatePublicIP    *bool
+	// -----------------------------------------------------------------------------------
+	// Global Optional Flags
+	//
+	Yes                bool     // Ensure the user intends to take action
+	Target             string   // Output target type (terraform)
+	Cloud              string   // Which cloud to use (aws, gce, azure, vsphere)
+	KubernetesVersion  string   // Version of Kubernetes to use
+	SSHPublicKey       string   // Path to a public RSA key to authorize on the cluster
+	NodeSize           string   // Instance size for nodes
+	MasterSize         string   // Instance size for masters
+	NetworkCIDR        string   // CIDR block to pull addresses from
+	MasterCount        int32    // Number of masters in the cluster
+	NodeCount          int32    // Number of nodes in the cluster
+	EncryptEtcdStorage bool     // Enable/Disable etcd encryption
+	Image              string   // Image to use for deployments
+	Networking         string   // Networking provider to use
+	OutDir             string   // Directory to output logs on the local filesystem
+	AdminAccess        []string // List of CIDRs to give backend (ssh) access to
+	Channel            string   // The location of the api.Channel to use for our defaults
+	Topology           string   // The network topology to use (public, private)
+	Authorization      string   // The authorization approach to use (RBAC, AlwaysAllow)
+	Bastion            bool     // Enable/Disable Bastion Host complete setup
+	CloudLabels        string   // Specify custom key/value tags for cloud resources
+	Zones              []string // Node availability zones (or fault domains)
+	MasterZones        []string // Master availability zones (or fault domains)
+	AssociatePublicIP  *bool    // Enable/Disable public IP for instances
+	ClusterName        string   // Unique identifier of the cluster
+	Models             string   // Legacy flag for older YAML models
 
-	// Channel is the location of the api.Channel to use for our defaults
-	Channel string
+	// -----------------------------------------------------------------------------------
+	// AWS Flags
+	//
+	VPCID                string   // VPC ID
+	DNSZone              string   // DNS hosted zone
+	NodeSecurityGroups   []string // List of security group IDs for nodes
+	MasterSecurityGroups []string // List of security group IDs for masters
+	DNSType              string   // The DNS type to use (public/private)
+	MasterTenancy        string   // Specify tenancy (default or dedicated)
+	NodeTenancy          string   // Specify tenancy (default or dedicated)
 
-	// The network topology to use
-	Topology string
-
-	// The authorization approach to use (RBAC, AlwaysAllow)
-	Authorization string
-
-	// The DNS type to use (public/private)
-	DNSType string
-
-	// Enable/Disable Bastion Host complete setup
-	Bastion bool
-
-	// Specify tags for AWS instance groups
-	CloudLabels string
-
-	// Egress configuration - FOR TESTING ONLY
-	Egress string
-
-	// Specify tenancy (default or dedicated) for masters and nodes
-	MasterTenancy string
-	NodeTenancy   string
-
-	// vSphere options
+	// -----------------------------------------------------------------------------------
+	// vSphere Flags
+	//
 	VSphereServer        string
 	VSphereDatacenter    string
 	VSphereResourcePool  string
@@ -108,23 +98,136 @@ type CreateClusterOptions struct {
 	// We need VSphereDatastore to support Kubernetes vSphere Cloud Provider (v1.5.3)
 	// We can remove this once we support higher versions.
 	VSphereDatastore string
+
+	// -----------------------------------------------------------------------------------
+	// GCE Flags
+	//
+	Project string // Project for GCE clusters
+
+	// -----------------------------------------------------------------------------------
+	// Testing Flags
+	//
+	Egress string // Egress configuration
 }
 
-func (o *CreateClusterOptions) InitDefaults() {
-	o.Yes = false
-	o.Target = cloudup.TargetDirect
-	o.Models = strings.Join(cloudup.CloudupModels, ",")
-	o.SSHPublicKey = "~/.ssh/id_rsa.pub"
-	o.Networking = "kubenet"
-	o.Channel = api.DefaultChannel
-	o.Topology = api.TopologyPublic
-	o.DNSType = string(api.DNSTypePublic)
-	o.Bastion = false
+// NewCmdCreateCluster will create a new cobra command. Here we also define
+// any sub commands as well as flags for the command
+func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &CreateClusterOptions{}
+	options.InitDefaults()
 
-	// Default to open API & SSH access
-	o.AdminAccess = []string{"0.0.0.0/0"}
+	cmd := &cobra.Command{
+		Use:     "cluster",
+		Short:   i18n.T("Create cluster"),
+		Long:    create_cluster_long,
+		Example: create_cluster_example,
+		Run: func(cmd *cobra.Command, args []string) {
+			err := rootCommand.ProcessArgs(args)
+			if err != nil {
+				exitWithError(err)
+				return
+			}
+			err = options.RunCreateCluster(f, out)
+			if err != nil {
+				exitWithError(err)
+			}
+		},
+	}
 
-	o.Authorization = AuthorizationFlagAlwaysAllow
+	// Cloud sub commands
+	cmd.AddCommand(NewCmdCreateClusterAzure(f, out))
+	cmd.AddCommand(NewCmdCreateClusterAws(f, out))
+	cmd.AddCommand(NewCmdCreateClusterGce(f, out))
+	cmd.AddCommand(NewCmdCreateClusterVsphere(f, out))
+
+	// -----------------------------------------------------------------------------------
+	// AWS Flags
+	//
+	// Todo I think these are AWS level flags. They are already defined in create_cluster_aws.go but we leave them here for backwards compatibility
+	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
+	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
+	cmd.Flags().StringSliceVar(&options.NodeSecurityGroups, "node-security-groups", options.NodeSecurityGroups, "Add precreated additional security groups to nodes.")
+	cmd.Flags().StringSliceVar(&options.MasterSecurityGroups, "master-security-groups", options.MasterSecurityGroups, "Add precreated additional security groups to masters.")
+	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS hosted zone to use: public|private. Default is 'public'.")
+	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
+	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
+
+	// -----------------------------------------------------------------------------------
+	// GCE Flags
+	//
+	// Todo I think these are GCE level flags. They are already defined in create_cluster_gce.go but we leave them here for backwards compatibility
+	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
+
+	// -----------------------------------------------------------------------------------
+	// vSphere Flags
+	//
+	// Todo I think these are vSphere level flags. Should we remove these in favor or the create_cluster_vsphere.go?
+	if featureflag.VSphereCloudProvider.Enabled() {
+		// vSphere flags
+		cmd.Flags().StringVar(&options.VSphereServer, "vsphere-server", options.VSphereServer, "vsphere-server is required for vSphere. Set vCenter URL Ex: 10.192.10.30 or myvcenter.io (without https://)")
+		cmd.Flags().StringVar(&options.VSphereDatacenter, "vsphere-datacenter", options.VSphereDatacenter, "vsphere-datacenter is required for vSphere. Set the name of the datacenter in which to deploy Kubernetes VMs.")
+		cmd.Flags().StringVar(&options.VSphereResourcePool, "vsphere-resource-pool", options.VSphereDatacenter, "vsphere-resource-pool is required for vSphere. Set a valid Cluster, Host or Resource Pool in which to deploy Kubernetes VMs.")
+		cmd.Flags().StringVar(&options.VSphereCoreDNSServer, "vsphere-coredns-server", options.VSphereCoreDNSServer, "vsphere-coredns-server is required for vSphere.")
+		cmd.Flags().StringVar(&options.VSphereDatastore, "vsphere-datastore", options.VSphereDatastore, "vsphere-datastore is required for vSphere.  Set a valid datastore in which to store dynamic provision volumes.")
+	}
+
+	// Call global commands here
+	options.createClusterGlobalFlags(cmd)
+	return cmd
+}
+
+// createClusterGlobalFlags serves as the place holder for global, or persistent flags
+// for all of the create cluster commands. By creating a separate function for these
+// flags we can easily call this from other create cluster commands, and we have a
+// good reference of which flags are in fact "global".
+func (options *CreateClusterOptions) createClusterGlobalFlags(cmd *cobra.Command) {
+	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Specify --yes to immediately create the cluster")
+	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
+	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere, azure")
+	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
+	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use")
+	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Set instance size for nodes")
+	cmd.Flags().StringVar(&options.MasterSize, "master-size", options.MasterSize, "Set instance size for masters")
+	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
+	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set the number of masters.  Defaults to one master per master-zone")
+	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
+	cmd.Flags().BoolVar(&options.EncryptEtcdStorage, "encrypt-etcd-storage", options.EncryptEtcdStorage, "Generate key in aws kms and use it for encrypt etcd volumes")
+	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use")
+	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan, weave, flannel, calico, canal.")
+	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
+	cmd.Flags().StringSliceVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
+	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
+	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster. public|private. Default is 'public'.")
+	cmd.Flags().StringVar(&options.Authorization, "authorization", options.Authorization, "Authorization mode to use: "+AuthorizationFlagAlwaysAllow+" or "+AuthorizationFlagRBAC)
+	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.")
+	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all instance groups in AWS (eg \"Owner=John Doe,Team=Some Team\").")
+	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
+	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
+	associatePublicIP := false
+	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
+	if cmd.Flag("associate-public-ip").Changed {
+		options.AssociatePublicIP = &associatePublicIP
+	}
+	// Todo (kris-nova) I think this is leftover from the model YAML days in the long long ago
+	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
+}
+
+// InitDefaults will populate default values for options values
+// Most of these are assumptions about what most users would want
+// that can always be overridden.
+func (options *CreateClusterOptions) InitDefaults() {
+	options.Yes = false
+	options.Target = cloudup.TargetDirect
+	options.Models = strings.Join(cloudup.CloudupModels, ",")
+	options.SSHPublicKey = "~/.ssh/id_rsa.pub"
+	options.Networking = "kubenet"
+	options.Channel = api.DefaultChannel
+	options.Topology = api.TopologyPublic
+	options.DNSType = string(api.DNSTypePublic)
+	options.Bastion = false
+	options.AdminAccess = []string{"0.0.0.0/0"}
+	options.Authorization = AuthorizationFlagAlwaysAllow
+	options.ClusterName = rootCommand.clusterName
 }
 
 var (
@@ -137,114 +240,8 @@ var (
 		change can be applied to a cloud, thus creating a cluster.`))
 )
 
-func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &CreateClusterOptions{}
-	options.InitDefaults()
-
-	associatePublicIP := false
-
-	cmd := &cobra.Command{
-		Use:     "cluster",
-		Short:   i18n.T("Create cluster"),
-		Long:    create_cluster_long,
-		Example: create_cluster_example,
-		Run: func(cmd *cobra.Command, args []string) {
-			if cmd.Flag("associate-public-ip").Changed {
-				options.AssociatePublicIP = &associatePublicIP
-			}
-
-			err := rootCommand.ProcessArgs(args)
-			if err != nil {
-				exitWithError(err)
-				return
-			}
-
-			options.ClusterName = rootCommand.clusterName
-
-			err = options.RunCreateCluster(f, out)
-			if err != nil {
-				exitWithError(err)
-			}
-		},
-	}
-
-	// Cloud implementations
-	cmd.AddCommand(NewCmdCreateClusterAws(f, out))
-	cmd.AddCommand(NewCmdCreateClusterGce(f, out))
-	cmd.AddCommand(NewCmdCreateClusterVsphere(f, out))
-	cmd.AddCommand(NewCmdCreateClusterAzure(f, out))
-
-	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Specify --yes to immediately create the cluster")
-	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
-	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
-
-	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere, azure")
-
-	cmd.Flags().StringSliceVar(&options.Zones, "zones", options.Zones, "Zones in which to run the cluster")
-	cmd.Flags().StringSliceVar(&options.MasterZones, "master-zones", options.MasterZones, "Zones in which to run masters (must be an odd number)")
-
-	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
-	cmd.Flags().StringVar(&options.KubernetesVersion, "kubernetes-version", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
-
-	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use")
-
-	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Set instance size for nodes")
-
-	cmd.Flags().StringVar(&options.MasterSize, "master-size", options.MasterSize, "Set instance size for masters")
-
-	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
-	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
-
-	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set the number of masters.  Defaults to one master per master-zone")
-	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
-	cmd.Flags().BoolVar(&options.EncryptEtcdStorage, "encrypt-etcd-storage", options.EncryptEtcdStorage, "Generate key in aws kms and use it for encrypt etcd volumes")
-
-	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use")
-
-	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan, weave, flannel, calico, canal.")
-
-	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
-	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
-	cmd.Flags().StringSliceVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
-
-	// TODO: Can we deprecate this flag - it is awkward?
-	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
-
-	cmd.Flags().StringSliceVar(&options.NodeSecurityGroups, "node-security-groups", options.NodeSecurityGroups, "Add precreated additional security groups to nodes.")
-	cmd.Flags().StringSliceVar(&options.MasterSecurityGroups, "master-security-groups", options.MasterSecurityGroups, "Add precreated additional security groups to masters.")
-
-	cmd.Flags().StringVar(&options.Channel, "channel", options.Channel, "Channel for default versions and configuration to use")
-
-	// Network topology
-	cmd.Flags().StringVarP(&options.Topology, "topology", "t", options.Topology, "Controls network topology for the cluster. public|private. Default is 'public'.")
-
-	// Authorization
-	cmd.Flags().StringVar(&options.Authorization, "authorization", options.Authorization, "Authorization mode to use: "+AuthorizationFlagAlwaysAllow+" or "+AuthorizationFlagRBAC)
-
-	// DNS
-	cmd.Flags().StringVar(&options.DNSType, "dns", options.DNSType, "DNS hosted zone to use: public|private. Default is 'public'.")
-
-	// Bastion
-	cmd.Flags().BoolVar(&options.Bastion, "bastion", options.Bastion, "Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.")
-
-	// Allow custom tags from the CLI
-	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all instance groups in AWS (eg \"Owner=John Doe,Team=Some Team\").")
-
-	// Master and Node Tenancy
-	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
-	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
-
-	if featureflag.VSphereCloudProvider.Enabled() {
-		// vSphere flags
-		cmd.Flags().StringVar(&options.VSphereServer, "vsphere-server", options.VSphereServer, "vsphere-server is required for vSphere. Set vCenter URL Ex: 10.192.10.30 or myvcenter.io (without https://)")
-		cmd.Flags().StringVar(&options.VSphereDatacenter, "vsphere-datacenter", options.VSphereDatacenter, "vsphere-datacenter is required for vSphere. Set the name of the datacenter in which to deploy Kubernetes VMs.")
-		cmd.Flags().StringVar(&options.VSphereResourcePool, "vsphere-resource-pool", options.VSphereDatacenter, "vsphere-resource-pool is required for vSphere. Set a valid Cluster, Host or Resource Pool in which to deploy Kubernetes VMs.")
-		cmd.Flags().StringVar(&options.VSphereCoreDNSServer, "vsphere-coredns-server", options.VSphereCoreDNSServer, "vsphere-coredns-server is required for vSphere.")
-		cmd.Flags().StringVar(&options.VSphereDatastore, "vsphere-datastore", options.VSphereDatastore, "vsphere-datastore is required for vSphere.  Set a valid datastore in which to store dynamic provision volumes.")
-	}
-	return cmd
-}
-
+// RunCreateCluster is the original logic for creating a new cluster in kops. In theory
+// this function should be able to be ran from any of the cloud implementations.
 func (c *CreateClusterOptions) RunCreateCluster(f *util.Factory, out io.Writer) error {
 	isDryrun := false
 	// direct requires --yes (others do not, because they don't make changes)

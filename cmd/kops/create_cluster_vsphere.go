@@ -21,21 +21,28 @@ import (
 	"io"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubernetes/pkg/util/i18n"
+	//"k8s.io/kops/pkg/client/simple/vfsclientset"
+	//"k8s.io/kops/upup/pkg/fi"
 )
 
 type CreateClusterVsphereOptions struct {
-	// Inheritance in Go
-	CreateClusterOptions
+	CreateClusterOptions // Global flags
+	VSphereServer        string
+	VSphereDatacenter    string
+	VSphereResourcePool  string
+	VSphereCoreDNSServer string
+	// Note: We need open-vm-tools to be installed for vSphere Cloud Provider to work
+	// We need VSphereDatastore to support Kubernetes vSphere Cloud Provider (v1.5.3)
+	// We can remove this once we support higher versions.
+	VSphereDatastore string
 }
 
 func NewCmdCreateClusterVsphere(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterVsphereOptions{}
 	options.InitDefaults()
-	options.Cloud = "vsphere"
-
 	cmd := &cobra.Command{
 		Use:     "vsphere",
-		Short:   i18n.T("Create a Kubernetes cluster in Vsphere"),
+		Short:   i18n.T("Create a Kubernetes cluster in vSphere"),
 		Long:    create_cluster_long,
 		Example: create_cluster_example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -51,12 +58,23 @@ func NewCmdCreateClusterVsphere(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 		},
 	}
+
+	// Cloud specific overrides
+	options.Cloud = "vsphere"
+	cmd.Flags().StringVar(&options.VSphereServer, "vsphere-server", options.VSphereServer, "vsphere-server is required for vSphere. Set vCenter URL Ex: 10.192.10.30 or myvcenter.io (without https://)")
+	cmd.Flags().StringVar(&options.VSphereDatacenter, "vsphere-datacenter", options.VSphereDatacenter, "vsphere-datacenter is required for vSphere. Set the name of the datacenter in which to deploy Kubernetes VMs.")
+	cmd.Flags().StringVar(&options.VSphereResourcePool, "vsphere-resource-pool", options.VSphereDatacenter, "vsphere-resource-pool is required for vSphere. Set a valid Cluster, Host or Resource Pool in which to deploy Kubernetes VMs.")
+	cmd.Flags().StringVar(&options.VSphereCoreDNSServer, "vsphere-coredns-server", options.VSphereCoreDNSServer, "vsphere-coredns-server is required for vSphere.")
+	cmd.Flags().StringVar(&options.VSphereDatastore, "vsphere-datastore", options.VSphereDatastore, "vsphere-datastore is required for vSphere.  Set a valid datastore in which to store dynamic provision volumes.")
+
+	// Global Flags
+	options.createClusterGlobalFlags(cmd)
 	return cmd
 }
 
 func RunCreateClusterVsphere(f *util.Factory, out io.Writer, c *CreateClusterVsphereOptions) error {
 
-	// All kinds of wonderful logic that only happens for Vsphere clusters only
+	// vSphere Logic to go here
 
 	return c.RunCreateCluster(f, out)
 }

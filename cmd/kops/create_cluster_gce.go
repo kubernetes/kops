@@ -21,18 +21,18 @@ import (
 	"io"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubernetes/pkg/util/i18n"
+	//"k8s.io/kops/pkg/client/simple/vfsclientset"
+	//"k8s.io/kops/upup/pkg/fi"
 )
 
 type CreateClusterGceOptions struct {
-	// Inheritance in Go
-	CreateClusterOptions
+	CreateClusterOptions // Global flags
+	Project string       // Project for GCE clusters
 }
 
 func NewCmdCreateClusterGce(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateClusterGceOptions{}
 	options.InitDefaults()
-	options.Cloud = "gce"
-
 	cmd := &cobra.Command{
 		Use:     "gce",
 		Short:   i18n.T("Create a Kubernetes cluster in GCE"),
@@ -51,12 +51,19 @@ func NewCmdCreateClusterGce(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 		},
 	}
+
+	// Cloud specific overrides
+	options.Cloud = "gce"
+	cmd.Flags().StringVar(&options.Project, "project", options.Project, "Project to use (must be set on GCE)")
+
+	// Global Flags
+	options.createClusterGlobalFlags(cmd)
 	return cmd
 }
 
 func RunCreateClusterGce(f *util.Factory, out io.Writer, c *CreateClusterGceOptions) error {
 
-	// All kinds of wonderful logic that only happens for GCE clusters only
+	// GCE Logic to go here
 
 	return c.RunCreateCluster(f, out)
 }
