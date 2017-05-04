@@ -148,6 +148,7 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 		c := &awsCloudImplementation{region: region}
 
 		config := aws.NewConfig().WithRegion(region)
+		//config := aws.NewConfig().WithRegion(region).WithLogLevel(aws.LogDebugWithHTTPBody)
 
 		// Add some logging of retries
 		config.Retryer = newLoggingRetryer(ClientMaxRetries)
