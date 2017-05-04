@@ -1,6 +1,6 @@
 # Monitoring Standalone Addon
 
-Heapster provides basic cluster monitoring and is used running `HorizontalPodAutoscalers` and integrating metrics in kubernetes dashboard.
+Heapster provides basic cluster monitoring and is used for running HorizontalPodAutoscalers and integrating metrics into the kubernetes dashboard.
 
 ## Usage
 
