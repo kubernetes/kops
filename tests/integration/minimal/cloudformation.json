@@ -547,37 +547,83 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
+              ],
+              "Sid": "kopsK8sECR"
             },
             {
               "Action": [
-                "ec2:*"
+                "ec2:AttachVolume",
+                "ec2:AuthorizeSecurityGroupIngress",
+                "ec2:CreateTags",
+                "ec2:CreateVolume",
+                "ec2:CreateRoute",
+                "ec2:CreateSecurityGroup",
+                "ec2:DeleteSecurityGroup",
+                "ec2:DeleteRoute",
+                "ec2:DeleteVolume",
+                "ec2:DescribeInstances",
+                "ec2:DescribeRouteTables",
+                "ec2:DescribeSubnets",
+                "ec2:DescribeSecurityGroups",
+                "ec2:DescribeVolumes",
+                "ec2:DetachVolume",
+                "ec2:ModifyInstanceAttribute",
+                "ec2:RevokeSecurityGroupIngress"
               ],
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
+              ],
+              "Sid": "kopsK8sMasterEC2Perms"
             },
             {
               "Action": [
-                "elasticloadbalancing:*"
+                "elasticloadbalancing:AttachLoadBalancerToSubnets",
+                "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
+                "elasticloadbalancing:CreateLoadBalancer",
+                "elasticloadbalancing:CreateLoadBalancerPolicy",
+                "elasticloadbalancing:CreateLoadBalancerListeners",
+                "elasticloadbalancing:ConfigureHealthCheck",
+                "elasticloadbalancing:DeleteLoadBalancer",
+                "elasticloadbalancing:DeleteLoadBalancerListeners",
+                "elasticloadbalancing:DescribeLoadBalancers",
+                "elasticloadbalancing:DescribeLoadBalancerAttributes",
+                "elasticloadbalancing:DetachLoadBalancerFromSubnets",
+                "elasticloadbalancing:DeregisterInstancesFromLoadBalancer",
+                "elasticloadbalancing:ModifyLoadBalancerAttributes",
+                "elasticloadbalancing:RegisterInstancesWithLoadBalancer",
+                "elasticloadbalancing:SetLoadBalancerPoliciesForBackendServer"
               ],
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
+              ],
+              "Sid": "kopsElbPerms"
             },
             {
               "Action": [
                 "autoscaling:DescribeAutoScalingGroups",
-                "autoscaling:DescribeAutoScalingInstances",
+                "autoscaling:GetAsgForInstance",
                 "autoscaling:SetDesiredCapacity",
-                "autoscaling:TerminateInstanceInAutoScalingGroup"
+                "autoscaling:TerminateInstanceInAutoScalingGroup",
+                "autoscaling:UpdateAutoScalingGroup"
               ],
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
+              ],
+              "Sid": "kopsMasterASPerms"
+            },
+            {
+              "Action": [
+                "iam:ListServerCertificates",
+                "iam:GetServerCertificate"
+              ],
+              "Effect": "Allow",
+              "Resource": [
+                "*"
+              ],
+              "Sid": "kopsMasterCertIAMPerms"
             },
             {
               "Action": [
@@ -588,7 +634,8 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
-              ]
+              ],
+              "Sid": "kopsK8sRoute53Change"
             },
             {
               "Action": [
@@ -597,7 +644,8 @@
               "Effect": "Allow",
               "Resource": [
                 "arn:aws:route53:::change/*"
-              ]
+              ],
+              "Sid": "kopsK8sRoute53GetChanges"
             },
             {
               "Action": [
@@ -606,7 +654,8 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
+              ],
+              "Sid": "kopsK8sRoute53ListZones"
             }
           ],
           "Version": "2012-10-17"
@@ -626,12 +675,13 @@
           "Statement": [
             {
               "Action": [
-                "ec2:Describe*"
+                "ec2:DescribeInstances"
               ],
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
+              ],
+              "Sid": "kopsK8sNodeEC2Perms"
             },
             {
               "Action": [
@@ -646,36 +696,8 @@
               "Effect": "Allow",
               "Resource": [
                 "*"
-              ]
-            },
-            {
-              "Action": [
-                "route53:ChangeResourceRecordSets",
-                "route53:ListResourceRecordSets",
-                "route53:GetHostedZone"
               ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws:route53:::hostedzone/Z1AFAKE1ZON3YO"
-              ]
-            },
-            {
-              "Action": [
-                "route53:GetChange"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "arn:aws:route53:::change/*"
-              ]
-            },
-            {
-              "Action": [
-                "route53:ListHostedZones"
-              ],
-              "Effect": "Allow",
-              "Resource": [
-                "*"
-              ]
+              "Sid": "kopsK8sECR"
             }
           ],
           "Version": "2012-10-17"
