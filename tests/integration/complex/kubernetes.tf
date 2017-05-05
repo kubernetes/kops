@@ -6,12 +6,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-complex-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-complex-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-complex-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-complex-example-com.id}", "sg-exampleid3", "sg-exampleid4"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-complex-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-complex-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-complex-example-com.name}"
 }
 
 output "region" {

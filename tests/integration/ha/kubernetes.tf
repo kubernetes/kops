@@ -6,12 +6,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-ha-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-ha-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-ha-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-ha-example-com.id}"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-ha-example-com.id}", "${aws_subnet.us-test-1b-ha-example-com.id}", "${aws_subnet.us-test-1c-ha-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-ha-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-ha-example-com.name}"
 }
 
 output "region" {
