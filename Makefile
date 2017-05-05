@@ -338,7 +338,11 @@ verify-gofmt:
 verify-packages:
 	hack/verify-packages.sh
 
-ci: govet verify-gofmt kops nodeup-gocode examples test verify-boilerplate verify-packages
+.PHONY: verify-gendocs
+verify-gendocs: kops
+	hack/verify-gendocs.sh
+
+ci: govet verify-gofmt verify-boilerplate verify-packages kops verify-gendocs nodeup-gocode examples test
 	echo "Done!"
 
 # --------------------------------------------------
