@@ -5,14 +5,21 @@ Edit cluster
 ### Synopsis
 
 
-Edit a cluster configuration.
+Edit a cluster configuration. 
 
-This command changes the cloud specification in the registry.
+This command changes the cloud specification in the registry. 
 
 It does not update the cloud resources, to apply the changes use "kops update cluster".
 
 ```
 kops edit cluster
+```
+
+### Examples
+
+```
+  # Edit a cluster configuration in AWS.
+  kops edit cluster k8s.cluster.site --state=s3://kops-state-1234
 ```
 
 ### Options inherited from parent commands
