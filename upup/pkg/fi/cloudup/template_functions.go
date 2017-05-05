@@ -30,6 +30,7 @@ package cloudup
 import (
 	"encoding/base64"
 	"fmt"
+	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
@@ -131,9 +132,15 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 
 	argv = append(argv, "/usr/bin/dns-controller")
 
-	// Default dns-controller behavior --watch-ingress=true
-	// Turning on as per: https://github.com/kubernetes/kops/issues/551#issuecomment-275981949
-	// argv = append(argv, "--watch-ingress=false")
+	if tf.cluster.Spec.DNSController != nil {
+		watchIngress := fi.BoolValue(tf.cluster.Spec.DNSController.WatchIngress)
+		if watchIngress {
+			glog.Warningln("--watch-ingress=true set on DNSController. ")
+			glog.Warningln("This may cause problems with previously defined services: https://github.com/kubernetes/kops/issues/2496")
+		}
+	} else {
+		argv = append(argv, "--watch-ingress=false")
+	}
 
 	switch fi.CloudProviderID(tf.cluster.Spec.CloudProvider) {
 	case fi.CloudProviderAWS:
