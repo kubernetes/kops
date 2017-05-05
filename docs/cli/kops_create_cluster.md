@@ -11,6 +11,16 @@ Creates a k8s cluster.
 kops create cluster
 ```
 
+### Examples
+
+```
+  # Create a cluster in AWS
+  kops create cluster --name=example.com\
+  --state=s3://kops-state-1234 --zones=eu-west-1a \
+  --node-count=2 --node-size=t2.micro --master-size=t2.micro \
+  --dns-zone=example.com
+```
+
 ### Options
 
 ```
@@ -19,7 +29,7 @@ kops create cluster
       --authorization string                 Authorization mode to use: AlwaysAllow or RBAC (default "AlwaysAllow")
       --bastion                              Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.
       --channel string                       Channel for default versions and configuration to use (default "stable")
-      --cloud string                         Cloud provider to use - gce, aws
+      --cloud string                         Cloud provider to use - gce, aws, vsphere
       --cloud-labels string                  A list of KV pairs used to tag all instance groups in AWS (eg "Owner=John Doe,Team=Some Team").
       --dns string                           DNS hosted zone to use: public|private. Default is 'public'. (default "Public")
       --dns-zone string                      DNS hosted zone to use (defaults to longest matching zone)

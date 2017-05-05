@@ -27,7 +27,6 @@ import (
 
 var (
 	edit_long = templates.LongDesc(i18n.T(`Edit a resource configuration.
-
     This command changes the cloud specification in the registry.
 
     It does not update the cloud resources, to apply the changes use "kops update cluster".`))

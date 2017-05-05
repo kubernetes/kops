@@ -14,15 +14,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
 . $(dirname "${BASH_SOURCE}")/common.sh
 
-boiler="${KUBE_ROOT}/hack/boilerplate/boilerplate.py"
+boiler="${KUBE_ROOT}/hack/boilerplate/boilerplate.py $@"
 
-files_need_boilerplate=($(${boiler} "$@"))
+files_need_boilerplate=( `${boiler}` )
+
+if [[ -z ${files_need_boilerplate+x} ]]; then
+    exit
+fi
 
 TO_REMOVE=(${PWD}/federation/model/bindata.go ${PWD}/upup/models/bindata.go)
 TEMP_ARRAY=()
+
 for pkg in "${files_need_boilerplate[@]}"; do
     for remove in "${TO_REMOVE[@]}"; do
         KEEP=true
@@ -43,5 +47,3 @@ if [[ ${#TEMP_ARRAY[@]} -gt 0 ]]; then
   echo "Execute hack/update-header.sh to update headers"
   exit 1
 fi
-
-echo "Boilerplate headers validated"
