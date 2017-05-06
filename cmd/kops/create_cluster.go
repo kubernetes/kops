@@ -423,6 +423,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	// We then round-robin around the zones
 	if len(masters) == 0 {
 		var masterSubnets []*api.ClusterSubnetSpec
+		masterCount := c.MasterCount
 		if len(c.MasterZones) != 0 {
 			for _, subnetName := range c.MasterZones {
 				subnet := findSubnet(cluster, subnetName)
@@ -436,20 +437,25 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			if c.MasterCount != 0 && c.MasterCount < int32(len(masterSubnets)) {
 				return fmt.Errorf("specified %d master zones, but also requested %d masters.  If specifying both, the count should match.", len(masterSubnets), c.MasterCount)
 			}
+
+			if masterCount == 0 {
+				// If master count is not specified, default to the number of master zones
+				masterCount = int32(len(c.MasterZones))
+			}
 		} else {
 			for i := range cluster.Spec.Subnets {
 				masterSubnets = append(masterSubnets, &cluster.Spec.Subnets[i])
+			}
+
+			if masterCount == 0 {
+				// If master count is not specified, default to 1
+				masterCount = 1
 			}
 		}
 
 		if len(masterSubnets) == 0 {
 			// Should be unreachable
 			return fmt.Errorf("cannot determine master subnets")
-		}
-
-		masterCount := c.MasterCount
-		if masterCount == 0 {
-			masterCount = int32(len(masterSubnets))
 		}
 
 		for i := 0; i < int(masterCount); i++ {
