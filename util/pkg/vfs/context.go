@@ -41,10 +41,14 @@ type VFSContext struct {
 	mutex sync.Mutex
 	// The google cloud storage client, if initialized
 	gcsClient *storage.Service
+	// Azure context
+	azureBlobContext *AzureBlobContext
 }
 
+// TODO (kris-nova) We are building both contexts here, we probably want logic for each of our clouds
 var Context = VFSContext{
-	s3Context: NewS3Context(),
+	s3Context:        NewS3Context(),
+	azureBlobContext: NewAzureBlobContext(),
 }
 
 // ReadLocation reads a file from a vfs URL
@@ -94,8 +98,14 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 		return NewFSPath(p), nil
 	}
 
+	// Amazon S3
 	if strings.HasPrefix(p, "s3://") {
 		return c.buildS3Path(p)
+	}
+
+	// Azure Blob Storage
+	if strings.HasPrefix(p, "https://") && strings.Contains(p, "blob.core.windows.net") {
+		return c.buildAzureBlobPath(p)
 	}
 
 	if strings.HasPrefix(p, "memfs://") {
@@ -199,6 +209,27 @@ func RetryWithBackoff(backoff wait.Backoff, condition func() (bool, error)) (boo
 			return done, err
 		}
 	}
+}
+
+func (c *VFSContext) buildAzureBlobPath(p string) (*AzureBlobPath, error) {
+
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid azure blob storage path: %q", p)
+	}
+	if u.Scheme != "https" {
+		return nil, fmt.Errorf("invalid azure blob storage path: %q, p")
+	}
+
+	container := strings.TrimSuffix(u.Host, "/")
+	container = strings.Replace(u.Host, ".blob.core.windows.net", "", -1)
+	if container == "" {
+		return nil, fmt.Errorf("invalid azure blob storage path: %q", p)
+	}
+
+	azBlobCtx := NewAzureBlobContext()
+	blobPath := newAzureBlobPath(azBlobCtx, container, u.Path)
+	return blobPath, nil
 }
 
 func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {

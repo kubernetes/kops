@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"strings"
+	"k8s.io/kops/pkg/cloudup/azure"
 )
 
 func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
@@ -105,7 +106,14 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 			}
 			cloud = vsphereCloud
 		}
-
+	case "azure":
+		{
+			azureCloud, err := azure.NewAzureCloud(cluster)
+			if err != nil {
+				return nil, err
+			}
+			cloud = azureCloud
+		}
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
