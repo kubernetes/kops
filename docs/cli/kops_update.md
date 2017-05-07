@@ -1,11 +1,11 @@
 ## kops update
 
-Creates or updates cloud resources to match cluster spec.
+Update a cluster.
 
 ### Synopsis
 
 
-Update clusters.
+Creates or updates cloud resources to match cluster spec.
 
 ### Examples
 
@@ -30,7 +30,7 @@ Update clusters.
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
-* [kops update cluster](kops_update_cluster.md)	 - Create or update cloud or cluster resources to match current cluster state.
-* [kops update federation](kops_update_federation.md)	 - Update federation
+* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops update cluster](kops_update_cluster.md)	 - Update a cluster.
+* [kops update federation](kops_update_federation.md)	 - Update federation cluster resources.
 

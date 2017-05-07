@@ -42,7 +42,7 @@ type DeleteOptions struct {
 
 var (
 	delete_long = templates.LongDesc(i18n.T(`
-	Delete clusters and instancegroups.
+	Delete clusters, instancegroups, or secrets.
 	`))
 
 	delete_example = templates.Examples(i18n.T(`
@@ -50,7 +50,7 @@ var (
 		kops delete -f my-cluster.yaml
 
 		# Delete a cluster in AWS.
-		kops delete cluster --name=k8s.cluster.site --state=s3://kops-state-1234 
+		kops delete cluster --name=k8s.example.com --state=s3://kops-state-1234
 	`))
 )
 
@@ -59,7 +59,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:        "delete -f FILENAME [--yes]",
-		Short:      i18n.T("Delete clusters and instancegroups."),
+		Short:      i18n.T("Delete clusters,instancegroups, or secrets."),
 		Long:       delete_long,
 		Example:    delete_example,
 		SuggestFor: []string{"rm"},

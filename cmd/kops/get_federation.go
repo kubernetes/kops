@@ -26,6 +26,19 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	get_federation_long = templates.LongDesc(i18n.T(`
+	Display one or many federation resources.`))
+
+	get_federation_example = templates.Examples(i18n.T(`
+	# Get a cluster
+	kops get federation --name k8s-cluster.example.com`))
+
+	get_federation_short = i18n.T(`Get federation.`)
 )
 
 type GetFederationOptions struct {
@@ -37,8 +50,9 @@ func init() {
 	cmd := &cobra.Command{
 		Use:     "federations",
 		Aliases: []string{"federation"},
-		Short:   "get federations",
-		Long:    `List or get federations.`,
+		Short:   get_federation_short,
+		Long:    get_federation_long,
+		Example: get_federation_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunGetFederations(&rootCommand, os.Stdout, &options)
 			if err != nil {

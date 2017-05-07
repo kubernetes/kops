@@ -31,8 +31,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
-	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 type UpgradeClusterCmd struct {
@@ -43,23 +41,12 @@ type UpgradeClusterCmd struct {
 
 var upgradeCluster UpgradeClusterCmd
 
-var (
-	upgrade_cluster_long = templates.LongDesc(i18n.T(`
-	Upgrades a k8s cluster.
-	`))
-
-	upgrade_cluster_example = templates.Examples(i18n.T(`
-		# After cluster has been created, configure it with:
-		kops upgrade cluster k8s.cluster.site --yes --state=s3://kops-state-1234
-	`))
-)
-
 func init() {
 	cmd := &cobra.Command{
 		Use:     "cluster",
-		Short:   "Upgrade cluster",
-		Long:    upgrade_cluster_long,
-		Example: upgrade_cluster_example,
+		Short:   upgrade_short,
+		Long:    upgrade_long,
+		Example: upgrade_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := upgradeCluster.Run(args)
 			if err != nil {

@@ -7,6 +7,13 @@ Misc infrequently used commands.
 
 Misc infrequently used commands.
 
+### Examples
+
+```
+  # Dump cluster information
+  kops toolbox dump --name k8s-cluster.example.com
+```
+
 ### Options inherited from parent commands
 
 ```
@@ -23,7 +30,7 @@ Misc infrequently used commands.
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
-* [kops toolbox convert-imported](kops_toolbox_convert-imported.md)	 - Convert an imported cluster into a kops cluster
-* [kops toolbox dump](kops_toolbox_dump.md)	 - Dump cloud information about a cluster
+* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops toolbox convert-imported](kops_toolbox_convert-imported.md)	 - Convert an imported cluster into a kops cluster.
+* [kops toolbox dump](kops_toolbox_dump.md)	 - Dump cluster information
 

@@ -1,14 +1,24 @@
 ## kops get instancegroups
 
-get instancegroups
+Get one or many instancegroups
 
 ### Synopsis
 
 
-List or get InstanceGroups.
+Display one or many instancegroup resources.
 
 ```
 kops get instancegroups
+```
+
+### Examples
+
+```
+  # Get all instancegroups in a state store
+  kops get ig
+  
+  # Get a cluster
+  kops get ig --name k8s-cluster.example.com nodes
 ```
 
 ### Options inherited from parent commands
@@ -28,5 +38,5 @@ kops get instancegroups
 ```
 
 ### SEE ALSO
-* [kops get](kops_get.md)	 - List all instances of a resource.
+* [kops get](kops_get.md)	 - Get one or many resources.
 
