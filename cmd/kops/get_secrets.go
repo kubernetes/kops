@@ -26,6 +26,22 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	get_secret_long = templates.LongDesc(i18n.T(`
+	Display one or many secrets.`))
+
+	get_secret_example = templates.Examples(i18n.T(`
+	# Get a secret
+	kops get secrets kube -oplaintext
+
+	# Get the admin password for a cluster
+	kops get secrets admin -oplaintext`))
+
+	get_secret_short = i18n.T(`Get one or many secrets.`)
 )
 
 type GetSecretsCommand struct {
@@ -38,8 +54,9 @@ func init() {
 	cmd := &cobra.Command{
 		Use:     "secrets",
 		Aliases: []string{"secret"},
-		Short:   "get secrets",
-		Long:    `List or get secrets.`,
+		Short:   get_secret_short,
+		Long:    get_secret_long,
+		Example: get_secret_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := getSecretsCommand.Run(args)
 			if err != nil {

@@ -1,14 +1,24 @@
 ## kops get secrets
 
-get secrets
+Get one or many secrets.
 
 ### Synopsis
 
 
-List or get secrets.
+Display one or many secrets.
 
 ```
 kops get secrets
+```
+
+### Examples
+
+```
+  # Get a secret
+  kops get secrets kube -oplaintext
+  
+  # Get the admin password for a cluster
+  kops get secrets admin -oplaintext
 ```
 
 ### Options
@@ -34,5 +44,5 @@ kops get secrets
 ```
 
 ### SEE ALSO
-* [kops get](kops_get.md)	 - List all instances of a resource.
+* [kops get](kops_get.md)	 - Get one or many resources.
 
