@@ -108,7 +108,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 		// Use the public key we produced
 		options.SSHPublicKey = publicKeyPath
 
-		err = RunCreateCluster(factory, &stdout, options)
+		err = options.RunCreateCluster(factory, &stdout)
 		if err != nil {
 			t.Fatalf("error running create cluster: %v", err)
 		}
