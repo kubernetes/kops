@@ -1,14 +1,22 @@
 ## kops create secret sshpublickey
 
-Create SSH publickey
+Create a ssh public key.
 
 ### Synopsis
 
 
-Create SSH publickey.
+Create a new ssh public key, and store the key in the state store.  The key is not updated by this command.
 
 ```
 kops create secret sshpublickey
+```
+
+### Examples
+
+```
+  # Create an new ssh public key called admin.
+  kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
+  --name k8s-cluster.example.com --state s3://example.com
 ```
 
 ### Options
@@ -33,5 +41,5 @@ kops create secret sshpublickey
 ```
 
 ### SEE ALSO
-* [kops create secret](kops_create_secret.md)	 - Create secrets
+* [kops create secret](kops_create_secret.md)	 - Create a secret.
 

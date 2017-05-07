@@ -23,7 +23,7 @@ Manage secrets & keys
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
+* [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops secrets create](kops_secrets_create.md)	 - Create secrets
 * [kops secrets describe](kops_secrets_describe.md)	 - Describe secrets
 * [kops secrets expose](kops_secrets_expose.md)	 - Expose secrets
