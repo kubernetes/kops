@@ -18,13 +18,33 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	toolbox_convert_imported_long = templates.LongDesc(i18n.T(`
+	Convert an imported cluster into a kops cluster.`))
+
+	toolbox_convert_imported_example = templates.Examples(i18n.T(`
+
+	# Import and convert a cluster
+	kops import cluster --name k8s-cluster.example.com --region us-east-1 \
+	  --state=s3://k8s-cluster.example.com
+
+	kops toolbox convert-imported k8s-cluster.example.com  \
+	  --newname k8s-cluster.example.com
+	`))
+
+	toolbox_convert_imported_short = i18n.T(`Convert an imported cluster into a kops cluster.`)
 )
 
 type ToolboxConvertImportedOptions struct {
@@ -45,8 +65,10 @@ func NewCmdToolboxConvertImported(f *util.Factory, out io.Writer) *cobra.Command
 	options.InitDefaults()
 
 	cmd := &cobra.Command{
-		Use:   "convert-imported",
-		Short: "Convert an imported cluster into a kops cluster",
+		Use:     "convert-imported",
+		Short:   toolbox_convert_imported_short,
+		Long:    toolbox_convert_imported_long,
+		Example: toolbox_convert_imported_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := rootCommand.ProcessArgs(args); err != nil {
 				exitWithError(err)

@@ -19,11 +19,25 @@ package main
 import (
 	"fmt"
 
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	delete_secret_long = templates.LongDesc(i18n.T(`
+		Delete a secret.`))
+
+	delete_secret_example = templates.Examples(i18n.T(`
+
+		`))
+
+	delete_secret_short = i18n.T(`Delete a secret`)
 )
 
 type DeleteSecretOptions struct {
@@ -37,9 +51,10 @@ func NewCmdDeleteSecret(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DeleteSecretOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "secret",
-		Short: "Delete secret",
-		Long:  `Delete a secret.`,
+		Use:     "secret",
+		Short:   delete_secret_short,
+		Long:    delete_secret_long,
+		Example: delete_secret_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) != 2 && len(args) != 3 {
 				exitWithError(fmt.Errorf("Syntax: <type> <name> [<id>]"))
