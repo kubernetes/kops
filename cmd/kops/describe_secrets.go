@@ -21,13 +21,28 @@ import (
 
 	"bytes"
 	"crypto/rsa"
-	"github.com/spf13/cobra"
-	"k8s.io/kops/pkg/apis/kops/registry"
-	"k8s.io/kops/upup/pkg/fi"
 	"os"
 	"sort"
 	"strings"
 	"text/tabwriter"
+
+	"github.com/spf13/cobra"
+	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	describe_secret_long = templates.LongDesc(i18n.T(`
+	Get additional information about cluster secrets.
+	`))
+
+	// TODO: what is an example??
+	describe_secret_example = templates.Examples(i18n.T(`
+	
+	`))
+	describe_secret_short = i18n.T(`Describe a cluster secret`)
 )
 
 type DescribeSecretsCommand struct {
@@ -40,8 +55,9 @@ func init() {
 	cmd := &cobra.Command{
 		Use:     "secrets",
 		Aliases: []string{"secret"},
-		Short:   "Describe secrets",
-		Long:    `Describe secrets.`,
+		Short:   describe_secret_short,
+		Long:    describe_secret_long,
+		Example: describe_secret_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := describeSecretsCommand.Run(args)
 			if err != nil {

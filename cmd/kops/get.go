@@ -24,6 +24,34 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	get_long = templates.LongDesc(i18n.T(`
+	Display one or many resources.` + validResources))
+
+	get_example = templates.Examples(i18n.T(`
+	# Get all clusters in a state store
+	kops get clusters
+
+	# Get a cluster
+	kops get cluster k8s-cluster.example.com
+
+	# Get a cluster YAML cluster spec
+	kops get cluster k8s-cluster.example.com -o yaml
+
+	# Get an instancegroup
+	kops get ig --name k8s-cluster.example.com nodes
+
+	# Get a secret
+	kops get secrets kube -oplaintext
+
+	# Get the admin password for a cluster
+	kops get secrets admin -oplaintext`))
+
+	get_short = i18n.T(`Get one or many resources.`)
 )
 
 // GetCmd represents the get command
@@ -37,8 +65,9 @@ var getCmd = GetCmd{
 	cobraCommand: &cobra.Command{
 		Use:        "get",
 		SuggestFor: []string{"list"},
-		Short:      "List all instances of a resource.",
-		Long:       `list or get objects`,
+		Short:      get_short,
+		Long:       get_long,
+		Example:    get_example,
 	},
 }
 

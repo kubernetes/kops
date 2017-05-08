@@ -21,13 +21,30 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	get_cluster_long = templates.LongDesc(i18n.T(`
+	Display one or many cluster resources.`))
+
+	get_cluster_example = templates.Examples(i18n.T(`
+	# Get all clusters in a state store
+	kops get clusters
+
+	# Get a cluster
+	kops get cluster k8s-cluster.example.com`))
+
+	get_cluster_short = i18n.T(`Get one or many clusters.`)
 )
 
 type GetClusterOptions struct {
@@ -44,8 +61,9 @@ func init() {
 	cmd := &cobra.Command{
 		Use:     "clusters",
 		Aliases: []string{"cluster"},
-		Short:   "get clusters",
-		Long:    `List or get clusters.`,
+		Short:   get_cluster_short,
+		Long:    get_cluster_long,
+		Example: get_cluster_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) != 0 {
 				options.ClusterNames = append(options.ClusterNames, args...)

@@ -1,14 +1,24 @@
 ## kops get clusters
 
-get clusters
+Get one or many clusters.
 
 ### Synopsis
 
 
-List or get clusters.
+Display one or many cluster resources.
 
 ```
 kops get clusters
+```
+
+### Examples
+
+```
+  # Get all clusters in a state store
+  kops get clusters
+  
+  # Get a cluster
+  kops get cluster k8s-cluster.example.com
 ```
 
 ### Options
@@ -34,5 +44,5 @@ kops get clusters
 ```
 
 ### SEE ALSO
-* [kops get](kops_get.md)	 - List all instances of a resource.
+* [kops get](kops_get.md)	 - Get one or many resources.
 

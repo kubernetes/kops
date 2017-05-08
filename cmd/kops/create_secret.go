@@ -17,16 +17,33 @@ limitations under the License.
 package main
 
 import (
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	create_secret_long = templates.LongDesc(i18n.T(`
+	Create a secret`))
+
+	create_secret_example = templates.Examples(i18n.T(`
+	# Create an new ssh public key called admin.
+	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
+		--name k8s-cluster.example.com --state s3://example.com
+	`))
+
+	create_secret_short = i18n.T(`Create a secret.`)
 )
 
 func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "secret",
-		Short: "Create secrets",
-		Long:  `Create secrets.`,
+		Use:     "secret",
+		Short:   create_secret_short,
+		Long:    create_secret_long,
+		Example: create_secret_example,
 	}
 
 	// create subcommands

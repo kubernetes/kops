@@ -27,13 +27,24 @@ import (
 
 var (
 	edit_long = templates.LongDesc(i18n.T(`Edit a resource configuration.
-    This command changes the cloud specification in the registry.
+	This command changes the cloud specification in the registry.
 
-    It does not update the cloud resources, to apply the changes use "kops update cluster".`))
+    	To set your preferred editor, you can define the EDITOR environment variable.
+    	When you have done this, kops will use the editor that you have set.
+
+    	kops edit does not update the cloud resources, to apply the changes use "kops update cluster".
+    	`))
 
 	edit_example = templates.Examples(i18n.T(`
-		# Edit a cluster configuration in AWS.
-		kops edit cluster k8s.cluster.site --state=s3://kops-state-1234
+	# Edit a cluster configuration.
+	kops edit cluster k8s-cluster.example.com --state=s3://kops-state-1234
+
+	# Edit a instance group configuration.
+	kops edit ig --name k8s-cluster.example.com \
+	  --state=s3://kops-state-1234 nodes
+
+	# Edit a cluster dederation configuration.
+	kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
 	`))
 )
 

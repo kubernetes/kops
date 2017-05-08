@@ -39,6 +39,32 @@ import (
 	"k8s.io/kops/pkg/kubeconfig"
 )
 
+const (
+	validResources = `
+
+	* cluster
+	* instancegroup
+	* secret
+	* federation
+
+	`
+)
+
+var (
+	root_long = templates.LongDesc(i18n.T(`
+	kops is Kubernetes ops.
+
+	kops is the easiest way to get a production grade Kubernetes cluster up and running.
+	We like to think of it as kubectl for clusters.
+
+	kops helps you create, destroy, upgrade and maintain production-grade, highly available,
+	Kubernetes clusters from the command line.  AWS (Amazon Web Services) is currently
+	officially supported, with GCE and VMware vSphere in alpha support.
+	`))
+
+	root_short = i18n.T(`kops is Kubernetes ops.`)
+)
+
 type Factory interface {
 	Clientset() (simple.Clientset, error)
 }
@@ -60,11 +86,8 @@ var _ Factory = &RootCmd{}
 var rootCommand = RootCmd{
 	cobraCommand: &cobra.Command{
 		Use:   "kops",
-		Short: i18n.T("kops is kubernetes ops"),
-		Long: templates.LongDesc(`
-kops is kubernetes ops.
-
-It allows you to create, destroy, upgrade and maintain clusters.`),
+		Short: root_short,
+		Long:  root_long,
 	},
 }
 
@@ -86,7 +109,6 @@ func init() {
 }
 
 func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
-	//options := &RootOptions{}
 
 	cmd := rootCommand.cobraCommand
 
