@@ -58,8 +58,12 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec.Kubelet.LogLevel = fi.Int32(2)
 	clusterSpec.Kubelet.ClusterDNS = ip.String()
 	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
-	clusterSpec.Kubelet.BabysitDaemons = fi.Bool(true)
 	clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
+
+	if b.Context.IsKubernetesLT("1.7") {
+		// babysit-daemons removed in 1.7
+		clusterSpec.Kubelet.BabysitDaemons = fi.Bool(true)
+	}
 
 	clusterSpec.MasterKubelet.RegisterSchedulable = fi.Bool(false)
 	// Replace the CIDR with a CIDR allocated by KCM (the default, but included for clarity)
