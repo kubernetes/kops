@@ -58,6 +58,18 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
   }
 
   tag = {
+    key                 = "Owner"
+    value               = "John Doe"
+    propagate_at_launch = true
+  }
+
+  tag = {
+    key                 = "foo/bar"
+    value               = "fib+baz"
+    propagate_at_launch = true
+  }
+
+  tag = {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -84,6 +96,18 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
   }
 
   tag = {
+    key                 = "Owner"
+    value               = "John Doe"
+    propagate_at_launch = true
+  }
+
+  tag = {
+    key                 = "foo/bar"
+    value               = "fib+baz"
+    propagate_at_launch = true
+  }
+
+  tag = {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -99,6 +123,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-complex-example-com" {
   tags = {
     KubernetesCluster    = "complex.example.com"
     Name                 = "us-test-1a.etcd-events.complex.example.com"
+    Owner                = "John Doe"
+    "foo/bar"            = "fib+baz"
     "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
     "k8s.io/role/master" = "1"
   }
@@ -113,6 +139,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
   tags = {
     KubernetesCluster    = "complex.example.com"
     Name                 = "us-test-1a.etcd-main.complex.example.com"
+    Owner                = "John Doe"
+    "foo/bar"            = "fib+baz"
     "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
     "k8s.io/role/master" = "1"
   }
