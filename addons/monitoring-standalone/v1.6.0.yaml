@@ -92,15 +92,15 @@ spec:
     k8s-app: heapster
 ---
 apiVersion: v1
-  kind: ServiceAccount
-  metadata:
-    name: heapster
-    namespace: kube-system
-    labels:
-      k8s-addon: monitoring-standalone.addons.k8s.io
+kind: ServiceAccount
+metadata:
+  name: heapster
+  namespace: kube-system
+  labels:
+    k8s-addon: monitoring-standalone.addons.k8s.io
 ---
-kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
 metadata:
   name: heapster
   labels:
