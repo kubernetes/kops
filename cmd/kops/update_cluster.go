@@ -282,11 +282,11 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			fmt.Fprintf(sb, " * validate cluster: kops validate cluster\n")
 			fmt.Fprintf(sb, " * list nodes: kubectl get nodes --show-labels\n")
 			if !usesBastion(instanceGroups) {
-				fmt.Fprintf(sb, " * ssh to the master: ssh -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
+				fmt.Fprintf(sb, " * ssh to the master: ssh -A -i ~/.ssh/id_rsa admin@%s\n", cluster.Spec.MasterPublicName)
 			} else {
 				bastionPublicName := findBastionPublicName(cluster)
 				if bastionPublicName != "" {
-					fmt.Fprintf(sb, " * ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@%s\n", bastionPublicName)
+					fmt.Fprintf(sb, " * ssh to the bastion: ssh -A -i ~/.ssh/id_rsa admin@%s\n", bastionPublicName)
 				} else {
 					fmt.Fprintf(sb, " * to ssh to the bastion, you probably want to configure a bastionPublicName")
 				}
