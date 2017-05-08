@@ -22,7 +22,7 @@ type NetworkingSpec struct {
 	Kubenet  *KubenetNetworkingSpec  `json:"kubenet,omitempty"`
 	External *ExternalNetworkingSpec `json:"external,omitempty"`
 	CNI      *CNINetworkingSpec      `json:"cni,omitempty"`
-	Kopeio   *KopeioNetworkingSpec   `json:"kopeio,omitempty"`
+	Kopeio   *KopeioNetworkingSpec   `json:"kopeio-vxlan,omitempty"`
 	Weave    *WeaveNetworkingSpec    `json:"weave,omitempty"`
 	Flannel  *FlannelNetworkingSpec  `json:"flannel,omitempty"`
 	Calico   *CalicoNetworkingSpec   `json:"calico,omitempty"`
