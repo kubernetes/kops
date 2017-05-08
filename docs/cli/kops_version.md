@@ -1,11 +1,11 @@
 ## kops version
 
-Print the kops version information
+Print the kops version information.
 
 ### Synopsis
 
 
-Print the kops version information.
+Print the kops version and git SHA.
 
 ```
 kops version

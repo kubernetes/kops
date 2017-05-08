@@ -20,12 +20,10 @@ kops completion
 ```
 For OSX users install bash completion using homebrew 
 brew install bash-completion source $(brew --prefix)/etc/bash _completion 
-
-printf " 
 Bash completion support 
-source $(brew --prefix)/etc/bash completion " >> $HOME/.bash profile source $HOME/.bash profile # Load the kops completion code for bash into the current shell source <(kops completion bash) # Write bash completion code to a file and source if from .bash profile kops completion bash > ~/.kops/completion.bash.inc printf " 
+printf " source $(brew --prefix)/etc/bash completion " >> $HOME/.bash profile source $HOME/.bash _profile source <(kops completion bash) kops completion bash > ~/.kops/completion.bash.inc printf " 
 kops shell completion 
-'$HOME/.kops/completion.bash.inc' " >> $HOME/.bash _profile 
+$HOME/.kops/completion.bash.inc' " >> $HOME/.bash _profile 
 
 source $HOME/.bash _profile 
 Load the kops completion code for zsh [1] into the current shell 

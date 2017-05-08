@@ -139,8 +139,8 @@ var (
 	create_cluster_example = templates.Examples(i18n.T(`
 	# Create a cluster in AWS
 	kops create cluster --name=kubernetes-cluster.example.com \
-	  --state=s3://kops-state-1234 --zones=eu-west-1a \
-	  --node-count=2
+	&nbsp;&nbsp;--state=s3://kops-state-1234 --zones=eu-west-1a \
+	&nbsp;&nbsp;--node-count=2
 
 	# Create a cluster in AWS that has HA masters.  This cluster
 	# will be setup with an internal networking in a private VPC.

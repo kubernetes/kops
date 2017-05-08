@@ -40,5 +40,5 @@ kops helps you create, destroy, upgrade and maintain production-grade, highly av
 * [kops update](kops_update.md)	 - Update a cluster.
 * [kops upgrade](kops_upgrade.md)	 - Upgrade a kubernetes cluster.
 * [kops validate](kops_validate.md)	 - Validate a kops cluster.
-* [kops version](kops_version.md)	 - Print the kops version information
+* [kops version](kops_version.md)	 - Print the kops version information.
 

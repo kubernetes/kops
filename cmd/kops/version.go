@@ -27,12 +27,12 @@ import (
 
 var (
 	version_long = templates.LongDesc(i18n.T(`
-	Print the kops version information.`))
+	Print the kops version and git SHA.`))
 
 	version_example = templates.Examples(i18n.T(`
 	kops version`))
 
-	version_short = i18n.T(`Print the kops version information`)
+	version_short = i18n.T(`Print the kops version information.`)
 )
 
 type VersionCmd struct {

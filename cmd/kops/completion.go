@@ -69,25 +69,22 @@ var (
 
 	Note for zsh users: zsh completions are only supported in versions of zsh >= 5.2`))
 
-	completion_example = templates.LongDesc(i18n.T(`
-
+	completion_example = templates.Examples(i18n.T(`
 	# For OSX users install bash completion using homebrew
 	brew install bash-completion
 	source $(brew --prefix)/etc/bash_completion
 
-	printf "
 	# Bash completion support
-	source $(brew --prefix)/etc/bash_completion
-	" >> $HOME/.bash_profile
-		source $HOME/.bash_profile
-		# Load the kops completion code for bash into the current shell
-		source <(kops completion bash)
-		# Write bash completion code to a file and source if from .bash_profile
-		kops completion bash > ~/.kops/completion.bash.inc
+	printf "
+	  source $(brew --prefix)/etc/bash_completion
+	   " >> $HOME/.bash_profile
+	  source $HOME/.bash_profile
+	  source <(kops completion bash)
+	  kops completion bash > ~/.kops/completion.bash.inc
 	printf "
 
 	# kops shell completion
-	'$HOME/.kops/completion.bash.inc'
+	$HOME/.kops/completion.bash.inc'
 	" >> $HOME/.bash_profile
 
 	source $HOME/.bash_profile
