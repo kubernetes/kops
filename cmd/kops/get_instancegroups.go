@@ -26,6 +26,22 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	get_instancegroups_long = templates.LongDesc(i18n.T(`
+	Display one or many instancegroup resources.`))
+
+	get_instancegroups_example = templates.Examples(i18n.T(`
+	# Get all instancegroups in a state store
+	kops get ig
+
+	# Get a cluster
+	kops get ig --name k8s-cluster.example.com nodes`))
+
+	get_instancegroups_short = i18n.T(`Get one or many instancegroups`)
 )
 
 type GetInstanceGroupsCmd struct {
@@ -37,8 +53,9 @@ func init() {
 	cmd := &cobra.Command{
 		Use:     "instancegroups",
 		Aliases: []string{"instancegroup", "ig"},
-		Short:   "get instancegroups",
-		Long:    `List or get InstanceGroups.`,
+		Short:   get_instancegroups_short,
+		Long:    get_instancegroups_long,
+		Example: get_instancegroups_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := getInstanceGroupsCmd.Run(args)
 			if err != nil {

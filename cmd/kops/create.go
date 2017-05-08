@@ -43,18 +43,33 @@ type CreateOptions struct {
 
 var (
 	create_long = templates.LongDesc(i18n.T(`
-		Create a resource by filename or stdin.`))
+		Create a resource:` + validResources +
+		`
+	Create a cluster, instancegroup or secret using command line flags or
+	YAML cluster spec. Clusters and instancegroups can be created using the YAML
+	cluster spec.
+	`))
 
 	create_example = templates.Examples(i18n.T(`
-		# Create a cluster using a file
-		kops create -f my-cluster.yaml
-		
-		# Create a cluster in AWS
-		kops create cluster --name=example.com \
-		     --state=s3://kops-state-1234 --zones=eu-west-1a \
-			 --node-count=2 --node-size=t2.micro --master-size=t2.micro \
-			 --dns-zone=example.com
-		`))
+
+	# Create a cluster using a cluser spec file
+	kops create -f my-cluster.yaml
+
+	# Create a cluster in AWS
+	kops create cluster --name=kubernetes-cluster.example.com \
+		--state=s3://kops-state-1234 --zones=eu-west-1a \
+		--node-count=2 --node-size=t2.micro --master-size=t2.micro \
+		--dns-zone=example.com
+
+	# Create an instancegroup for the k8s-cluster.example.com cluster.
+	kops create ig --name=k8s-cluster.example.com node-example \
+		--role node --subnet 172.16.32.1/24
+
+	# Create an new ssh public key called admin.
+	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
+		--name k8s-cluster.example.com --state s3://example.com
+	`))
+	create_short = i18n.T("Create a resource by command line, filename or stdin.")
 )
 
 func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
@@ -62,7 +77,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "create -f FILENAME",
-		Short:   i18n.T("Create a resource by filename or stdin."),
+		Short:   create_short,
 		Long:    create_long,
 		Example: create_example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -70,8 +85,6 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 				cmd.Help()
 				return
 			}
-			//cmdutil.CheckErr(ValidateArgs(cmd, args))
-			//cmdutil.CheckErr(cmdutil.ValidateOutputArgs(cmd))
 			cmdutil.CheckErr(RunCreate(f, out, options))
 		},
 	}

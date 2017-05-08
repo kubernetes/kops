@@ -36,6 +36,25 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	update_cluster_long = templates.LongDesc(i18n.T(`
+	Create or update cloud or cluster resources to match current cluster state.  If the cluster or cloud resources already
+	exist this command may modify those resources.
+
+	If nodes need updating such as during a Kubernetes upgrade, a rolling-update may
+	be required as well.
+	`))
+
+	update_cluster_example = templates.Examples(i18n.T(`
+	# After cluster has been editted or upgraded, configure it with:
+	kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
+	`))
+
+	update_cluster_short = i18n.T("Update a cluster.")
 )
 
 type UpdateClusterOptions struct {
@@ -63,13 +82,10 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options.InitDefaults()
 
 	cmd := &cobra.Command{
-		Use:   "cluster",
-		Short: "Create or update cloud or cluster resources to match current cluster state.",
-		Long: `Create or update cloud or cluster resources to match current cluster state.  If the cluster or cloud resources already
-		exist this command may modify those resources.
-
-		If nodes need updating such as during a Kubernetes upgrade, a rolling-update may
-		be required as well.`,
+		Use:     "cluster",
+		Short:   update_cluster_short,
+		Long:    update_cluster_long,
+		Example: update_cluster_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := rootCommand.ProcessArgs(args)
 			if err != nil {
