@@ -1,14 +1,20 @@
 ## kops version
 
-Print the client version information.
+Print the kops version information.
 
 ### Synopsis
 
 
-Print the client version information.
+Print the kops version and git SHA.
 
 ```
 kops version
+```
+
+### Examples
+
+```
+  kops version
 ```
 
 ### Options inherited from parent commands
@@ -27,5 +33,5 @@ kops version
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
+* [kops](kops.md)	 - kops is Kubernetes ops.
 

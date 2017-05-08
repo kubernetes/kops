@@ -1,11 +1,18 @@
 ## kops export
 
-Exports a kubecfg for target cluster.
+Export configuration.
 
 ### Synopsis
 
 
-export clusters/kubecfg
+Export configurations from a cluster.
+
+### Examples
+
+```
+  # export a kubecfg file
+  kops export kubecfg kubernetes-cluster.example.com
+```
 
 ### Options inherited from parent commands
 
@@ -23,6 +30,6 @@ export clusters/kubecfg
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
-* [kops export kubecfg](kops_export_kubecfg.md)	 - Generate a kubecfg file for a cluster
+* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops export kubecfg](kops_export_kubecfg.md)	 - Export kubecfg.
 
