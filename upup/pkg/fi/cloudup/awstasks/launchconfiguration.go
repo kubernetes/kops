@@ -378,6 +378,10 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 		tf.SpotPrice = aws.String(e.SpotPrice)
 	}
 
+	if e.Tenancy != nil {
+		tf.PlacementTenancy = e.Tenancy
+	}
+
 	if e.SSHKey != nil {
 		tf.KeyName = e.SSHKey.TerraformLink()
 	}
