@@ -27,7 +27,7 @@ kops update cluster
       --model string            Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --out string              Path to write any local output
       --ssh-public-key string   SSH public key to use (deprecated: use kops create secret instead)
-      --target string           Target - direct, terraform (default "direct")
+      --target string           Target - direct, terraform, cloudformation (default "direct")
       --yes                     Actually create cloud resources
 ```
 
