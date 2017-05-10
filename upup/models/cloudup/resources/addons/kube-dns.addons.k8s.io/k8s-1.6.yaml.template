@@ -162,6 +162,7 @@ spec:
         - -restartDnsmasq=true
         - --
         - -k
+        - -o
         - --cache-size=1000
         - --log-facility=-
         - --server=/{{ KubeDNS.Domain }}/127.0.0.1#10053
