@@ -34,7 +34,7 @@ Kubernetes has a number of authentication mechanisms:
 
 The API bearer token is a secret named 'admin'.
 
-`kops get secrets admin -oplaintext` will show it
+`kops get secrets --type secret admin -oplaintext` will show it
 
 ### Admin Access
 
