@@ -12,6 +12,8 @@ spec:
       labels:
         name: kopeio-networking-agent
         role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       hostPID: true
       hostIPC: true
