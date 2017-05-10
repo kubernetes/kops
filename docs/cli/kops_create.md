@@ -12,7 +12,8 @@ Create a resource:
   * secret  
   * federation  
 
-Create a cluster, instancegroup or secret using command line flags or YAML cluster spec. Clusters and instancegroups can be created using the YAML cluster spec.
+Create a cluster, instancegroup or secret using command line parameters or YAML config files.
+(Note: secrets cannot be created from YAML config files yet).
 
 ```
 kops create -f FILENAME
@@ -21,7 +22,7 @@ kops create -f FILENAME
 ### Examples
 
 ```
-  # Create a cluster using a cluser spec file
+  # Create a cluster from the configuration in a YAML file
   kops create -f my-cluster.yaml
   
   # Create a cluster in AWS
@@ -65,4 +66,4 @@ kops create -f FILENAME
 * [kops create cluster](kops_create_cluster.md)	 - Create a Kubernetes cluster.
 * [kops create instancegroup](kops_create_instancegroup.md)	 - Create an instancegroup.
 * [kops create secret](kops_create_secret.md)	 - Create a secret.
-
+* [kops get](kops_get.md) - Get a cluster or instancegroup YAML config files
