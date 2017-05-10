@@ -5,7 +5,7 @@ Replace cluster resources.
 ### Synopsis
 
 
-Replace a resource specification by filename or stdin.
+Replace a resource configuration by filename or stdin.
 
 ```
 kops replace -f FILENAME
@@ -14,7 +14,7 @@ kops replace -f FILENAME
 ### Examples
 
 ```
-  # Replace a cluster specification using a file
+  # Replace a cluster configuration using a file
   kops replace -f my-cluster.yaml
 ```
 

@@ -28,9 +28,12 @@ kops get
   # Get a cluster
   kops get cluster k8s-cluster.example.com
   
-  # Get a cluster YAML cluster spec
+  # Get a cluster YAML configuration
   kops get cluster k8s-cluster.example.com -o yaml
   
+  # Save a cluster configuration to YAML file
+  kops get cluster k8s-cluster.example.com -o yaml > cluster-config.yaml
+
   # Get an instancegroup
   kops get ig --name k8s-cluster.example.com nodes
   

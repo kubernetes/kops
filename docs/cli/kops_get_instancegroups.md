@@ -17,8 +17,12 @@ kops get instancegroups
   # Get all instancegroups in a state store
   kops get ig
   
-  # Get a cluster
+  # Get a cluster's instancegroup 
   kops get ig --name k8s-cluster.example.com nodes
+
+  # Save a cluster's instancegroups configuration to YAML file
+  kops get ig --name k8s-cluster.example.com -o yaml > instancegroups-config.yaml
+
 ```
 
 ### Options inherited from parent commands

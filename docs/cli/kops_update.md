@@ -5,7 +5,7 @@ Update a cluster.
 ### Synopsis
 
 
-Creates or updates cloud resources to match cluster spec.
+Creates or updates cloud resources to match cluster config.
 
 ### Examples
 
