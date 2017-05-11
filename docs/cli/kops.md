@@ -31,7 +31,7 @@ kops helps you create, destroy, upgrade and maintain production-grade, highly av
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 * [kops delete](kops_delete.md)	 - Delete clusters,instancegroups, or secrets.
 * [kops describe](kops_describe.md)	 - Describe a resource.
-* [kops edit](kops_edit.md)	 - Edit clusters and other resrouces.
+* [kops edit](kops_edit.md)	 - Edit clusters and other resources.
 * [kops export](kops_export.md)	 - Export configuration.
 * [kops get](kops_get.md)	 - Get one or many resources.
 * [kops import](kops_import.md)	 - Import a cluster.
