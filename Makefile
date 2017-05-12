@@ -33,6 +33,7 @@ DNS_CONTROLLER_TAG=1.6.1
 
 KOPS_RELEASE_VERSION=1.6.0-beta.1
 KOPS_CI_VERSION=1.6.0-beta.2
+KOPS=${GOPATH_1ST}/bin/kops
 
 GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
 
@@ -76,7 +77,34 @@ ifndef SHASUMCMD
   $(error "Neither sha1sum nor shasum command is available")
 endif
 
-kops: kops-gobindata
+.PHONY: help
+help: # Show this help
+	@{ \
+	echo 'Targets:'; \
+	echo ''; \
+	grep '^[a-z/.-]*: .*# .*' Makefile \
+	| sort \
+	| sed 's/: \(.*\) # \(.*\)/ - \2 (deps: \1)/' `: fmt targets w/ deps` \
+	| sed 's/:.*#/ -/'                            `: fmt targets w/o deps` \
+	| sed 's/^/    /'                             `: indent`; \
+	echo ''; \
+	echo 'CLI options:'; \
+	echo ''; \
+	grep '^[^\s]*?=' Makefile \
+	| sed 's/\?=\(.*\)/ (default: "\1")/' `: fmt default values`\
+	| sed 's/^/    /'; \
+	echo ''; \
+	echo 'Undocumented targets:'; \
+	echo ''; \
+	grep '^[a-z/.-]*:\( [^#=]*\)*$$' Makefile \
+	| sort \
+	| sed 's/: \(.*\)/ (deps: \1)/' `: fmt targets w/ deps` \
+	| sed 's/:$$//'                 `: fmt targets w/o deps` \
+	| sed 's/^/    /'               `: indent`; \
+	echo ''; \
+	} 1>&2; \
+
+kops: kops-gobindata # Install kops
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
 gobindata-tool:
@@ -108,7 +136,7 @@ protobuf: protokube/pkg/gossip/mesh/mesh.pb.go
 protokube/pkg/gossip/mesh/mesh.pb.go: protokube/pkg/gossip/mesh/mesh.proto
 	cd ${GOPATH_1ST}/src; protoc --gofast_out=. k8s.io/kops/protokube/pkg/gossip/mesh/mesh.proto
 
-test:
+test: # Run tests locally
 	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/nodeup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
@@ -133,8 +161,6 @@ crossbuild:
 	mkdir -p .build/dist/
 	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
-
-
 
 crossbuild-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
@@ -181,10 +207,10 @@ vsphere-version-dist: nodeup-dist protokube-export
 	cp .build/dist/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
 	cp .build/dist/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
 
-upload: kops version-dist
+upload: kops version-dist # Upload kops to S3
 	aws s3 sync --acl public-read .build/upload/ ${S3_BUCKET}
 
-gcs-upload: version-dist
+gcs-upload: version-dist # Upload kops to GCS
 	@echo "== Uploading kops =="
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r .build/upload/kops/* ${GCS_LOCATION}
 
@@ -197,8 +223,9 @@ gcs-publish-ci: gcs-upload
 	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
 
-gen-cli-docs: kops
-	KOPS_STATE_STORE= kops genhelpdocs --out docs/cli
+gen-cli-docs: kops # Regenerate CLI docs
+	KOPS_STATE_STORE= \
+	${KOPS} genhelpdocs --out docs/cli
 
 # Will always push a linux-based build up to the server
 push: crossbuild-nodeup
@@ -368,7 +395,7 @@ release-github:
 # --------------------------------------------------
 # API / embedding examples
 
-examples:
+examples: # Install kops API example
 	go install k8s.io/kops/examples/kops-api-example/...
 
 # -----------------------------------------------------
