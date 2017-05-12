@@ -99,6 +99,9 @@ type CreateClusterOptions struct {
 	MasterTenancy string
 	NodeTenancy   string
 
+	// Specify API loadbalancer as public or internal
+	APILoadbalancer string
+
 	// vSphere options
 	VSphereServer        string
 	VSphereDatacenter    string
@@ -269,6 +272,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	// Master and Node Tenancy
 	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
+
+	cmd.Flags().StringVar(&options.APILoadbalancer, "api-loadbalancer", options.APILoadbalancer, "Sets the API loadbalancer to either 'public' or 'internal'")
 
 	if featureflag.VSphereCloudProvider.Enabled() {
 		// vSphere flags
@@ -760,19 +765,34 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.API = &api.AccessSpec{}
 	}
 	if cluster.Spec.API.IsEmpty() {
-		switch cluster.Spec.Topology.Masters {
-		case api.TopologyPublic:
-			cluster.Spec.API.DNS = &api.DNSAccessSpec{}
-
-		case api.TopologyPrivate:
+		if c.APILoadbalancer != "" {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+		} else {
+			switch cluster.Spec.Topology.Masters {
+			case api.TopologyPublic:
+				cluster.Spec.API.DNS = &api.DNSAccessSpec{}
 
-		default:
-			return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.Masters)
+			case api.TopologyPrivate:
+				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+
+			default:
+				return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.Masters)
+			}
 		}
 	}
 	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
-		cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+		if c.APILoadbalancer == "" {
+			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+		} else {
+			switch c.APILoadbalancer {
+			case "public":
+				cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+			case "internal":
+				cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypeInternal
+			default:
+				return fmt.Errorf("unkown api-loadbalancer type: %q", c.APILoadbalancer)
+			}
+		}
 	}
 
 	sshPublicKeys := make(map[string][]byte)
