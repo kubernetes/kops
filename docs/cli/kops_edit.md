@@ -1,6 +1,6 @@
 ## kops edit
 
-Edit clusters and other resrouces.
+Edit clusters and other resources.
 
 ### Synopsis
 
