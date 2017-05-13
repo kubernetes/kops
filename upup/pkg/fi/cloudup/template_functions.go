@@ -131,9 +131,7 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 
 	argv = append(argv, "/usr/bin/dns-controller")
 
-	// Default dns-controller behavior --watch-ingress=true
-	// Turning on as per: https://github.com/kubernetes/kops/issues/551#issuecomment-275981949
-	// argv = append(argv, "--watch-ingress=false")
+	argv = append(argv, "--watch-ingress=false")
 
 	switch fi.CloudProviderID(tf.cluster.Spec.CloudProvider) {
 	case fi.CloudProviderAWS:
