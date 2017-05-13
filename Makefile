@@ -31,6 +31,7 @@ DNS_CONTROLLER_TAG=1.6.1
 
 KOPS_RELEASE_VERSION=1.6.0-beta.1
 KOPS_CI_VERSION=1.6.0-beta.2
+KOPS=${GOPATH_1ST}/bin/kops
 
 GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
 
@@ -74,8 +75,34 @@ ifndef SHASUMCMD
   $(error "Neither sha1sum nor shasum command is available")
 endif
 
-.PHONY: kops
-kops: kops-gobindata
+.PHONY: help
+help: # Show this help
+	@{ \
+	echo 'Targets:'; \
+	echo ''; \
+	grep '^[a-z/.-]*: .*# .*' Makefile \
+	| sort \
+	| sed 's/: \(.*\) # \(.*\)/ - \2 (deps: \1)/' `: fmt targets w/ deps` \
+	| sed 's/:.*#/ -/'                            `: fmt targets w/o deps` \
+	| sed 's/^/    /'                             `: indent`; \
+	echo ''; \
+	echo 'CLI options:'; \
+	echo ''; \
+	grep '^[^\s]*?=' Makefile \
+	| sed 's/\?=\(.*\)/ (default: "\1")/' `: fmt default values`\
+	| sed 's/^/    /'; \
+	echo ''; \
+	echo 'Undocumented targets:'; \
+	echo ''; \
+	grep '^[a-z/.-]*:\( [^#=]*\)*$$' Makefile \
+	| sort \
+	| sed 's/: \(.*\)/ (deps: \1)/' `: fmt targets w/ deps` \
+	| sed 's/:$$//'                 `: fmt targets w/o deps` \
+	| sed 's/^/    /'               `: indent`; \
+	echo ''; \
+	} 1>&2; \
+
+kops: kops-gobindata # Install kops
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
 .PHONY: gobindata-tools
@@ -115,7 +142,7 @@ protokube/pkg/gossip/mesh/mesh.pb.go: protokube/pkg/gossip/mesh/mesh.proto
 	cd ${GOPATH_1ST}/src; protoc --gofast_out=. k8s.io/kops/protokube/pkg/gossip/mesh/mesh.proto
 
 .PHONY: test
-test:
+test: # Run tests locally
 	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/nodeup/pkg/... -args -v=1 -logtostderr
 	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
@@ -194,11 +221,11 @@ vsphere-version-dist: nodeup-dist protokube-export
 	cp .build/dist/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
 
 .PHONY: upload
-upload: kops version-dist
+upload: kops version-dist # Upload kops to S3
 	aws s3 sync --acl public-read .build/upload/ ${S3_BUCKET}
 
 .PHONY: gcs-upload
-gcs-upload: version-dist
+gcs-upload: version-dist # Upload kops to GCS
 	@echo "== Uploading kops =="
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r .build/upload/kops/* ${GCS_LOCATION}
 
@@ -213,8 +240,9 @@ gcs-publish-ci: gcs-upload
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
 
 .PHONY: gen-cli-docs
-gen-cli-docs: kops
-	KOPS_STATE_STORE= kops genhelpdocs --out docs/cli
+gen-cli-docs: kops # Regenerate CLI docs
+	KOPS_STATE_STORE= \
+	${KOPS} genhelpdocs --out docs/cli
 
 .PHONY: push
 # Will always push a linux-based build up to the server
@@ -416,7 +444,7 @@ release-github:
 # API / embedding examples
 
 .PHONY: examples
-examples:
+examples: # Install kops API example
 	go install k8s.io/kops/examples/kops-api-example/...
 
 # -----------------------------------------------------
