@@ -11,6 +11,8 @@ the private key corresponding to the public key in `kops get secrets --type sshp
 creating a new cluster, the SSH public key can be specified with the `--ssh-public-key` option, and it
 defaults to `~/.ssh/id_rsa.pub`.
 
+> Note: In CoreOS, SSH username will be `core`.
+
 To change the SSH public key on an existing cluster:
 
 * `kops delete secret --name <clustername> sshpublickey admin`
@@ -34,7 +36,7 @@ Kubernetes has a number of authentication mechanisms:
 
 The API bearer token is a secret named 'admin'.
 
-`kops get secrets admin -oplaintext` will show it
+`kops get secrets --type secret admin -oplaintext` will show it
 
 ### Admin Access
 
