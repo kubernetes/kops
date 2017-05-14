@@ -37,7 +37,6 @@ kops helps you create, destroy, upgrade and maintain production-grade, highly av
 * [kops import](kops_import.md)	 - Import a cluster.
 * [kops replace](kops_replace.md)	 - Replace cluster resources.
 * [kops rolling-update](kops_rolling-update.md)	 - Rolling update a cluster.
-* [kops secrets](kops_secrets.md)	 - Manage secrets & keys.
 * [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
 * [kops update](kops_update.md)	 - Update a cluster.
 * [kops upgrade](kops_upgrade.md)	 - Upgrade a kubernetes cluster.
