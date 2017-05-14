@@ -238,7 +238,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
 	cmd.Flags().BoolVar(&options.EncryptEtcdStorage, "encrypt-etcd-storage", options.EncryptEtcdStorage, "Generate key in aws kms and use it for encrypt etcd volumes")
 
-	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use")
+	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
 	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel, calico, canal.")
 
