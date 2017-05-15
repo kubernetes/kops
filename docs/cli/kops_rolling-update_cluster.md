@@ -11,7 +11,7 @@ To perform rolling update, you need to update the cloud resources first with "ko
 
 Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply" prior to running "kops rolling-update cluster" 
 
-Use KOPS FEATURE FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes and validates the cluster.  New flags for Drain and Validation operations will be shown when the environment variable is set.
+Use export KOPS FEATURE FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes and validates the cluster.  New flags for Drain and Validation operations will be shown when the environment variable is set.
 
 ```
 kops rolling-update cluster
@@ -21,12 +21,12 @@ kops rolling-update cluster
 
 ```
   # Roll the currently selected kops cluster
-  kops rollingupdate cluster --yes
+  kops rolling-update cluster --yes
   
   # Roll the k8s-cluster.example.com kops cluster
   # use the new drain an validate functionality
-  KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
-  kops rollingupdate cluster k8s-cluster.example.com --yes \
+  export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+  kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false" \
   --master-interval=8m \
   --node-interval=8m
@@ -35,8 +35,8 @@ kops rolling-update cluster
   # Roll the k8s-cluster.example.com kops cluster
   # only roll the node instancegroup
   # use the new drain an validate functionality
-  KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
-  kops rollingupdate cluster k8s-cluster.example.com --yes \
+  export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+  kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false" \
   --node-interval 8m \
   --instance-group nodes
