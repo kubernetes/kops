@@ -246,8 +246,6 @@ func (c *VSphereCloud) UploadAndAttachISO(vm *string, isoFile string) error {
 		return err
 	}
 
-	var refs []types.ManagedObjectReference
-	refs = append(refs, vmRef.Reference())
 	var vmResult mo.VirtualMachine
 
 	pc := property.DefaultCollector(c.Client.Client)
@@ -313,8 +311,6 @@ func (c *VSphereCloud) FindVMUUID(vm *string) (string, error) {
 		return "", err
 	}
 
-	var refs []types.ManagedObjectReference
-	refs = append(refs, vmRef.Reference())
 	var vmResult mo.VirtualMachine
 
 	pc := property.DefaultCollector(c.Client.Client)
@@ -382,8 +378,6 @@ func (c *VSphereCloud) DeleteCloudInitISO(vm *string) error {
 		return err
 	}
 
-	var refs []types.ManagedObjectReference
-	refs = append(refs, vmRef.Reference())
 	var vmResult mo.VirtualMachine
 
 	pc := property.DefaultCollector(c.Client.Client)
