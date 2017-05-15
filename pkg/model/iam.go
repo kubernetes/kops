@@ -75,6 +75,7 @@ func (b *IAMModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			iamRole = &awstasks.IAMRole{
 				Name:               s(name),
+				RoleType:           s(b.InstanceGroupTypeName(role)),
 				RolePolicyDocument: fi.WrapResource(rolePolicy),
 			}
 			c.AddTask(iamRole)

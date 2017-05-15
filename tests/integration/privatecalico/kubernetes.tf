@@ -2,6 +2,14 @@ output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privatecalico-example-com.id}"]
 }
 
+output "bastions_role_arn" {
+  value = "${aws_iam_role.bastions-privatecalico-example-com.arn}"
+}
+
+output "bastions_role_name" {
+  value = "${aws_iam_role.bastions-privatecalico-example-com.name}"
+}
+
 output "cluster_name" {
   value = "privatecalico.example.com"
 }
@@ -10,12 +18,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privatecalico-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-privatecalico-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-privatecalico-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-privatecalico-example-com.id}"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-privatecalico-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-privatecalico-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-privatecalico-example-com.name}"
 }
 
 output "region" {
