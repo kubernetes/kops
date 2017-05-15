@@ -673,3 +673,7 @@ resource "aws_vpc_dhcp_options_association" "privateflannel-example-com" {
   vpc_id          = "${aws_vpc.privateflannel-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.privateflannel-example-com.id}"
 }
+
+terraform = {
+  required_version = ">= 0.9.3"
+}

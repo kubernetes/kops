@@ -682,3 +682,7 @@ resource "aws_vpc_dhcp_options_association" "privatecalico-example-com" {
   vpc_id          = "${aws_vpc.privatecalico-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.privatecalico-example-com.id}"
 }
+
+terraform = {
+  required_version = ">= 0.9.3"
+}
