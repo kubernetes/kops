@@ -637,3 +637,7 @@ resource "aws_subnet" "utility-us-test-1a-privatedns2-example-com" {
     "kubernetes.io/cluster/privatedns2.example.com" = "owned"
   }
 }
+
+terraform = {
+  required_version = ">= 0.9.3"
+}
