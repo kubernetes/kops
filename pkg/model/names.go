@@ -97,17 +97,13 @@ func (b *KopsModelContext) NameForDNSZone() string {
 }
 
 func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
-	return b.InstanceGroupTypeName(role) + "s." + b.ClusterName()
-}
-
-func (b *KopsModelContext) InstanceGroupTypeName(role kops.InstanceGroupRole) string {
 	switch role {
 	case kops.InstanceGroupRoleMaster:
-		return "master"
+		return "masters." + b.ClusterName()
 	case kops.InstanceGroupRoleBastion:
-		return "bastion"
+		return "bastions." + b.ClusterName()
 	case kops.InstanceGroupRoleNode:
-		return "node"
+		return "nodes." + b.ClusterName()
 
 	default:
 		glog.Fatalf("unknown InstanceGroup Role: %q", role)
