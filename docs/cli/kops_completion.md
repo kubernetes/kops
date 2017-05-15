@@ -23,18 +23,14 @@ kops completion
   source $(brew --prefix)/etc/bash_completion
   
   # Bash completion support
-  printf "
-  source $(brew --prefix)/etc/bash_completion
-  " >> $HOME/.bash_profile
+  printf "source $(brew --prefix)/etc/bash_completion\n" >> $HOME/.bash_profile
   source $HOME/.bash_profile
   source <(kops completion bash)
   kops completion bash > ~/.kops/completion.bash.inc
-  printf "
+  chmod +x $HOME/.kops/completion.bash.inc
   
   # kops shell completion
-  $HOME/.kops/completion.bash.inc'
-  " >> $HOME/.bash_profile
-  
+  printf "$HOME/.kops/completion.bash.inc\n" >> $HOME/.bash_profile
   source $HOME/.bash_profile
   
   # Load the kops completion code for zsh[1] into the current shell
