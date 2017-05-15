@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"encoding/json"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/service/iam"
@@ -37,6 +38,7 @@ import (
 type IAMRole struct {
 	ID                 *string
 	Name               *string
+	RoleType           *string
 	RolePolicyDocument *fi.ResourceHolder // "inline" IAM policy
 }
 
@@ -193,6 +195,9 @@ func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *I
 		Name:             e.Name,
 		AssumeRolePolicy: policy,
 	}
+
+	t.AddOutputVariable(*e.RoleType+"s_role_arn", terraform.LiteralProperty("aws_iam_role", *e.Name, "arn"))
+	t.AddOutputVariable(*e.RoleType+"s_role_name", e.TerraformLink())
 
 	return t.RenderResource("aws_iam_role", *e.Name, tf)
 }
