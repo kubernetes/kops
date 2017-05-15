@@ -17,12 +17,12 @@ Use KOPS FEATURE FLAGS="+DrainAndValidateRollingUpdate" to use beta code that dr
 
 ```
   # Roll the currently selected kops cluster
-  kops rollingupdate cluster --yes
+  kops rolling-update cluster --yes
   
   # Roll the k8s-cluster.example.com kops cluster
   # use the new drain an validate functionality
   KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
-  kops rollingupdate cluster k8s-cluster.example.com --yes \
+  kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false" \
   --master-interval=8m \
   --node-interval=8m
@@ -32,7 +32,7 @@ Use KOPS FEATURE FLAGS="+DrainAndValidateRollingUpdate" to use beta code that dr
   # only roll the node instancegroup
   # use the new drain an validate functionality
   KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
-  kops rollingupdate cluster k8s-cluster.example.com --yes \
+  kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false" \
   --node-interval 8m \
   --instance-group nodes
