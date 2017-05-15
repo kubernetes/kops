@@ -796,7 +796,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			case "internal":
 				cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypeInternal
 			default:
-				return fmt.Errorf("unkown api-loadbalancer type: %q", c.APILoadbalancer)
+				return fmt.Errorf("unknown api-loadbalancer type: %q", c.APILoadbalancer)
 			}
 		}
 	}
