@@ -107,6 +107,9 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 	glog.V(2).Infof("found matching IAMRole %q", *actual.ID)
 	e.ID = actual.ID
 
+	// Avoid spurious changes
+	actual.ExportWithID = e.ExportWithID
+
 	return actual, nil
 }
 
