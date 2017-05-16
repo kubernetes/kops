@@ -225,18 +225,18 @@ resource "aws_elb" "bastion-privatekopeio-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privatekopeio-example-com" {
-  name  = "bastions.privatekopeio.example.com"
-  roles = ["${aws_iam_role.bastions-privatekopeio-example-com.name}"]
+  name = "bastions.privatekopeio.example.com"
+  role = "${aws_iam_role.bastions-privatekopeio-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privatekopeio-example-com" {
-  name  = "masters.privatekopeio.example.com"
-  roles = ["${aws_iam_role.masters-privatekopeio-example-com.name}"]
+  name = "masters.privatekopeio.example.com"
+  role = "${aws_iam_role.masters-privatekopeio-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privatekopeio-example-com" {
-  name  = "nodes.privatekopeio.example.com"
-  roles = ["${aws_iam_role.nodes-privatekopeio-example-com.name}"]
+  name = "nodes.privatekopeio.example.com"
+  role = "${aws_iam_role.nodes-privatekopeio-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privatekopeio-example-com" {
