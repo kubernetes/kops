@@ -100,7 +100,7 @@ type CreateClusterOptions struct {
 	NodeTenancy   string
 
 	// Specify API loadbalancer as public or internal
-	APILoadbalancer string
+	APILoadBalancerType string
 
 	// vSphere options
 	VSphereServer        string
@@ -273,7 +273,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
-	cmd.Flags().StringVar(&options.APILoadbalancer, "api-loadbalancer", options.APILoadbalancer, "Sets the API loadbalancer to either 'public' or 'internal'")
+	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
 
 	if featureflag.VSphereCloudProvider.Enabled() {
 		// vSphere flags
@@ -771,7 +771,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.API = &api.AccessSpec{}
 	}
 	if cluster.Spec.API.IsEmpty() {
-		if c.APILoadbalancer != "" {
+		if c.APILoadBalancerType != "" {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
 		} else {
 			switch cluster.Spec.Topology.Masters {
@@ -787,17 +787,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
-		if c.APILoadbalancer == "" {
+		switch c.APILoadBalancerType {
+		case "", "public":
 			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
-		} else {
-			switch c.APILoadbalancer {
-			case "public":
-				cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
-			case "internal":
-				cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypeInternal
-			default:
-				return fmt.Errorf("unknown api-loadbalancer type: %q", c.APILoadbalancer)
-			}
+		case "internal":
+			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypeInternal
+		default:
+			return fmt.Errorf("unknown api-loadbalancer-type: %q", c.APILoadBalancerType)
 		}
 	}
 

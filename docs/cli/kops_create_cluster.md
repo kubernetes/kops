@@ -5,7 +5,7 @@ Create a Kubernetes cluster.
 ### Synopsis
 
 
-Create a kubernetes cluster using command line flags. This command creates cloud based resources such as networks and virtual machine. Once the infrastructure is in place Kubernetes is installed on the virtual machines. 
+Create a kubernetes cluster using command line flags. This command creates cloud based resources such as networks and virtual machine. Once the infrastructure is in place Kubernetes is installed on the virtual machines.
 
 These operations are done in parrellel and rely on eventual consitency.
 
@@ -20,11 +20,11 @@ kops create cluster
   kops create cluster --name=kubernetes-cluster.example.com \
   --state=s3://kops-state-1234 --zones=eu-west-1a \
   --node-count=2
-  
+
   # Create a cluster in AWS that has HA masters.  This cluster
   # will be setup with an internal networking in a private VPC.
   # A bastion instance will be setup to provide instance access.
-  
+
   export NODE_SIZE=${NODE_SIZE:-m4.large}
   export MASTER_SIZE=${MASTER_SIZE:-m4.large}
   export ZONES=${ZONES:-"us-east-1d,us-east-1b,us-east-1c"}
@@ -39,13 +39,13 @@ kops create cluster
   --topology private \
   --bastion="true" \
   --yes
-  
+
   # Create cluster in GCE.
   # This is an alpha feature.
   export KOPS_STATE_STORE="gs://mybucket-kops"
   export ZONES=${MASTER_ZONES:-"us-east1-b,us-east1-c,us-east1-d"}
   export KOPS_FEATURE_FLAGS=AlphaAllowGCE
-  
+
   kops create cluster kubernetes-k8s-gce.example.com
   --zones $ZONES \
   --master-zones $ZONES \
@@ -59,7 +59,7 @@ kops create cluster
 
 ```
       --admin-access stringSlice             Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])
-      --api-loadbalancer string              Sets the API loadbalancer to either 'public' or 'internal'
+      --api-loadbalancer-type string         Sets the API loadbalancer to either 'public' or 'internal'
       --associate-public-ip                  Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.
       --authorization string                 Authorization mode to use: AlwaysAllow or RBAC (default "AlwaysAllow")
       --bastion                              Pass the --bastion flag to enable a bastion instance group. Only applies to private topology.
@@ -110,4 +110,3 @@ kops create cluster
 
 ### SEE ALSO
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
-
