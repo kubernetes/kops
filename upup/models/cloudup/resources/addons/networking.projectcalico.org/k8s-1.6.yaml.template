@@ -127,7 +127,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v1.2.1
+          image: {{ GetImage "calico/node:v1.2.1" }}
           resources:
             requests:
               cpu: 10m
@@ -167,7 +167,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v1.8.3
+          image: {{ GetImage "calico/cni:v1.8.3" }}
           resources:
             requests:
               cpu: 10m
@@ -243,7 +243,7 @@ spec:
         operator: Exists
       containers:
         - name: calico-policy-controller
-          image: calico/kube-policy-controller:v0.6.0
+          image: {{ GetImage "calico/kube-policy-controller:v0.6.0" }}
           resources:
             requests:
               cpu: 10m

@@ -735,6 +735,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.Hooks = nil
 	}
+	// WARNING: in.Assets requires manual conversion: does not exist in peer-type
 	return nil
 }
 

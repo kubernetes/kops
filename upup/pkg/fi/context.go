@@ -102,6 +102,9 @@ func (c *Context) Render(a, e, changes Task) error {
 	if _, ok := c.Target.(*DryRunTarget); ok {
 		return c.Target.(*DryRunTarget).Render(a, e, changes)
 	}
+	if _, ok := c.Target.(*InventoryTarget); ok {
+		return c.Target.(*InventoryTarget).Render(a, e, changes)
+	}
 
 	v := reflect.ValueOf(e)
 	vType := v.Type()

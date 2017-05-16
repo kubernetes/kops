@@ -72,9 +72,16 @@ func (_ *LoadImageTask) CheckChanges(a, e, changes *LoadImageTask) error {
 }
 
 func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadImageTask) error {
+
+	// If the hash is empty or set to zero the hash is not being set for the container
+	// Do not download the container. Containers that live in a clusters asset container registry.
+	if e.Hash == "" || e.Hash == "0" {
+		glog.Infof("not pulling image from url %q", e.Source)
+	}
+
 	hash, err := hashing.FromString(e.Hash)
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to get hash image %+v, %v", e, err)
 	}
 
 	url := e.Source
@@ -82,7 +89,7 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	localFile := path.Join(t.CacheDir, hash.String()+"_"+utils.SanitizeString(url))
 	_, err = fi.DownloadURL(url, localFile, hash)
 	if err != nil {
-		return err
+		return fmt.Errorf("download of container %q failed: %v", url, err)
 	}
 
 	// Load the image into docker
@@ -93,7 +100,7 @@ func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadIma
 	cmd := exec.Command(args[0], args[1:]...)
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		return fmt.Errorf("error loading docker image with '%s': %v: %s", human, err, string(output))
+		return fmt.Errorf("error loading container with '%s': %v: %s", human, err, string(output))
 	}
 
 	return nil
