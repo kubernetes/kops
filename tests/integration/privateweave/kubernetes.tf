@@ -229,18 +229,18 @@ resource "aws_elb" "bastion-privateweave-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privateweave-example-com" {
-  name  = "bastions.privateweave.example.com"
-  roles = ["${aws_iam_role.bastions-privateweave-example-com.name}"]
+  name = "bastions.privateweave.example.com"
+  role = "${aws_iam_role.bastions-privateweave-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privateweave-example-com" {
-  name  = "masters.privateweave.example.com"
-  roles = ["${aws_iam_role.masters-privateweave-example-com.name}"]
+  name = "masters.privateweave.example.com"
+  role = "${aws_iam_role.masters-privateweave-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privateweave-example-com" {
-  name  = "nodes.privateweave.example.com"
-  roles = ["${aws_iam_role.nodes-privateweave-example-com.name}"]
+  name = "nodes.privateweave.example.com"
+  role = "${aws_iam_role.nodes-privateweave-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privateweave-example-com" {

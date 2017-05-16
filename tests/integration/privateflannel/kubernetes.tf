@@ -229,18 +229,18 @@ resource "aws_elb" "bastion-privateflannel-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privateflannel-example-com" {
-  name  = "bastions.privateflannel.example.com"
-  roles = ["${aws_iam_role.bastions-privateflannel-example-com.name}"]
+  name = "bastions.privateflannel.example.com"
+  role = "${aws_iam_role.bastions-privateflannel-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privateflannel-example-com" {
-  name  = "masters.privateflannel.example.com"
-  roles = ["${aws_iam_role.masters-privateflannel-example-com.name}"]
+  name = "masters.privateflannel.example.com"
+  role = "${aws_iam_role.masters-privateflannel-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privateflannel-example-com" {
-  name  = "nodes.privateflannel.example.com"
-  roles = ["${aws_iam_role.nodes-privateflannel-example-com.name}"]
+  name = "nodes.privateflannel.example.com"
+  role = "${aws_iam_role.nodes-privateflannel-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privateflannel-example-com" {
