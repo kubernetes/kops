@@ -141,6 +141,10 @@ protobuf: protokube/pkg/gossip/mesh/mesh.pb.go
 protokube/pkg/gossip/mesh/mesh.pb.go: protokube/pkg/gossip/mesh/mesh.proto
 	cd ${GOPATH_1ST}/src; protoc --gofast_out=. k8s.io/kops/protokube/pkg/gossip/mesh/mesh.proto
 
+.PHONY: hooks
+hooks: # Install Git hooks
+	cp hack/pre-commit.sh .git/hooks/pre-commit
+
 .PHONY: test
 test: # Run tests locally
 	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
