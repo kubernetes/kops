@@ -390,3 +390,7 @@ resource "aws_vpc_dhcp_options_association" "minimal-example-com" {
   vpc_id          = "${aws_vpc.minimal-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.minimal-example-com.id}"
 }
+
+terraform = {
+  required_version = ">= 0.9.3"
+}

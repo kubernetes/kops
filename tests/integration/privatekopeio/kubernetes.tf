@@ -664,3 +664,7 @@ resource "aws_vpc_dhcp_options_association" "privatekopeio-example-com" {
   vpc_id          = "${aws_vpc.privatekopeio-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.privatekopeio-example-com.id}"
 }
+
+terraform = {
+  required_version = ">= 0.9.3"
+}
