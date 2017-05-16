@@ -584,3 +584,7 @@ resource "aws_vpc_dhcp_options_association" "ha-example-com" {
   vpc_id          = "${aws_vpc.ha-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.ha-example-com.id}"
 }
+
+terraform = {
+  required_version = ">= 0.9.3"
+}
