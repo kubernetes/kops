@@ -38,8 +38,10 @@ import (
 type IAMRole struct {
 	ID                 *string
 	Name               *string
-	RoleType           *string
 	RolePolicyDocument *fi.ResourceHolder // "inline" IAM policy
+
+	// ExportWithId will expose the name & ARN for reuse as part of a larger system.  Only supported by terraform currently.
+	ExportWithID *string
 }
 
 var _ fi.CompareWithID = &IAMRole{}
@@ -104,6 +106,9 @@ func (e *IAMRole) Find(c *fi.Context) (*IAMRole, error) {
 
 	glog.V(2).Infof("found matching IAMRole %q", *actual.ID)
 	e.ID = actual.ID
+
+	// Avoid spurious changes
+	actual.ExportWithID = e.ExportWithID
 
 	return actual, nil
 }
@@ -196,8 +201,10 @@ func (_ *IAMRole) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *I
 		AssumeRolePolicy: policy,
 	}
 
-	t.AddOutputVariable(*e.RoleType+"s_role_arn", terraform.LiteralProperty("aws_iam_role", *e.Name, "arn"))
-	t.AddOutputVariable(*e.RoleType+"s_role_name", e.TerraformLink())
+	if fi.StringValue(e.ExportWithID) != "" {
+		t.AddOutputVariable(*e.ExportWithID+"_role_arn", terraform.LiteralProperty("aws_iam_role", *e.Name, "arn"))
+		t.AddOutputVariable(*e.ExportWithID+"_role_name", e.TerraformLink())
+	}
 
 	return t.RenderResource("aws_iam_role", *e.Name, tf)
 }
