@@ -238,6 +238,14 @@ type ClusterSpec struct {
 
 	// Hooks for custom actions e.g. on first installation
 	Hooks []HookSpec `json:"hooks,omitempty"`
+
+	// Alternative locations for files and containers
+	Assets *Assets `json:"assets,omitempty"`
+}
+
+type Assets struct {
+	ContainerRepository *string `json:"containerRepository,omitempty"`
+	FileRepository      *string `json:"fileRepository,omitempty"`
 }
 
 type HookSpec struct {

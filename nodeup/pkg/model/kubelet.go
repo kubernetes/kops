@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -143,6 +144,17 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
 		// Kubenet is neither CNI nor not-CNI, so we need to pass it `--network-plugin-dir` also
 		flags += " --network-plugin-dir=" + b.CNIBinDir()
+	}
+
+	// TODO how do we not hard code version??
+
+	if b.Cluster.Spec.Assets != nil && b.Cluster.Spec.Assets.ContainerRepository != nil {
+		pause, err := components.GetGoogleImageRepositoryContainer(&b.Cluster.Spec, "pause-amd64:3.0")
+
+		if err != nil {
+			return nil, err
+		}
+		flags += " --pod-infra-container-image=" + pause
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"

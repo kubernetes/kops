@@ -49,6 +49,8 @@ type KubeBoot struct {
 	Channels []string
 
 	Kubernetes *KubernetesContext
+
+	EtcdImageSource string
 }
 
 func (k *KubeBoot) Init(volumesProvider Volumes) {

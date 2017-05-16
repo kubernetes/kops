@@ -23,12 +23,22 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"net"
+	"net/url"
 	"strings"
 )
+
+const (
+	GCR_IO      = "gcr.io/google_containers"
+	GCR_STORAGE = "https://storage.googleapis.com/kubernetes-release"
+)
+
+// TODO - We are going to need a function that validates a docker container repo, and a file system path
+// TODO - I think we are already ok on the file system stuff, but not the container repo stuff
 
 // OptionsContext is the context object for options builders
 type OptionsContext struct {
@@ -120,13 +130,32 @@ func IsBaseURL(kubernetesVersion string) bool {
 
 // Image returns the docker image name for the specified component
 func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
+
+	// TODO figure out if we can add a parameter for version as well
+	// TODO https://github.com/kubernetes/kops/pull/2573#discussion_r117329255
+
 	if component == "kube-dns" {
 		// TODO: Once we are shipping different versions, start to use them
-		return "gcr.io/google_containers/kubedns-amd64:1.3", nil
+		i, err := GetGoogleImageRepositoryContainer(clusterSpec, "kubedns-amd64:1.3")
+
+		if err != nil {
+			return "", err
+		}
+
+		return i, nil
+
 	}
 
 	if !IsBaseURL(clusterSpec.KubernetesVersion) {
-		return "gcr.io/google_containers/" + component + ":" + "v" + clusterSpec.KubernetesVersion, nil
+		c := component + ":" + "v" + clusterSpec.KubernetesVersion
+		i, err := GetGoogleImageRepositoryContainer(clusterSpec, c)
+
+		if err != nil {
+			return "", err
+		}
+
+		return i, nil
+
 	}
 
 	baseURL := clusterSpec.KubernetesVersion
@@ -142,7 +171,95 @@ func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
 	tag := strings.TrimSpace(string(b))
 	glog.V(2).Infof("Found tag %q for %q", tag, component)
 
-	return "gcr.io/google_containers/" + component + ":" + tag, nil
+	c := component + ":" + tag
+
+	i, err := GetGoogleImageRepositoryContainer(clusterSpec, c)
+
+	if err != nil {
+		return "", err
+	}
+
+	return i, nil
+}
+
+func GetContainer(clusterSpec *kops.ClusterSpec, imageName string) (string, error) {
+
+	imageName, err := validation.GetContainerAndRepoAsString(clusterSpec, imageName)
+
+	if err != nil {
+		glog.Errorf("Unable to get container: %q: %v", imageName, err)
+		return "", fmt.Errorf("unable to parse container %q", imageName)
+	}
+
+	return imageName, nil
+}
+
+var googleRepository *string
+
+func GetGoogleImageRepositoryContainer(clusterSpec *kops.ClusterSpec, c string) (string, error) {
+
+	c, err := validation.GetContainerAsString(c)
+
+	if err != nil {
+		return "", fmt.Errorf("Unable to get google image based container, container does not validate: %v", err)
+	}
+
+	if googleRepository != nil {
+		return *googleRepository + c, nil
+	}
+
+	repo, err := validation.GetRepositoryAsString(clusterSpec)
+
+	if err != nil {
+		return "", fmt.Errorf("Unable to get google image based container: %v", err)
+	}
+
+	if repo != "" {
+		repo = repo + "/"
+	} else {
+		repo = GCR_IO + "/"
+	}
+
+	googleRepository = &repo
+
+	return repo + c, nil
+}
+
+func GetGoogleFileRepositoryURL(clusterSpec *kops.ClusterSpec, u string) (string, error) {
+	u = strings.TrimPrefix(u, "/")
+
+	googleUrl := ""
+
+	if clusterSpec.Assets != nil && clusterSpec.Assets.FileRepository != nil {
+		googleUrl = removeSlash(*clusterSpec.Assets.FileRepository) + "/kubernetes-release/" + u
+	}
+
+	if googleUrl == "" {
+		googleUrl = GCR_STORAGE + "/" + u
+	}
+
+	err := validateURL(googleUrl)
+
+	if err != nil {
+		return "", err
+	}
+
+	return googleUrl, err
+
+}
+
+func removeSlash(s string) string {
+	return strings.TrimSuffix(s, "/")
+}
+
+func validateURL(u string) error {
+	_, err := url.ParseRequestURI(u)
+
+	if err != nil {
+		return fmt.Errorf("url is invalid %q", u)
+	}
+
+	return nil
 }
 
 func GCETagForRole(clusterName string, role kops.InstanceGroupRole) string {

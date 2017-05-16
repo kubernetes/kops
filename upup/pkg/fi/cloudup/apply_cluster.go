@@ -100,6 +100,10 @@ type ApplyClusterCmd struct {
 
 	// The channel we are using
 	channel *api.Channel
+
+	// inventory of files and containers needed in order
+	// to upload assets to new location
+	Inventory *api.Inventory
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -202,7 +206,10 @@ func (c *ApplyClusterCmd) Run() error {
 		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
 			baseURL = cluster.Spec.KubernetesVersion
 		} else {
-			baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + cluster.Spec.KubernetesVersion
+			baseURL, err = components.GetGoogleFileRepositoryURL(&c.Cluster.Spec, "/release/v"+cluster.Spec.KubernetesVersion)
+			if err != nil {
+				return err
+			}
 		}
 		baseURL = strings.TrimSuffix(baseURL, "/")
 
@@ -239,7 +246,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		if needsStaticUtils(cluster, c.InstanceGroups) {
-			utilsLocation := BaseUrl() + "linux/amd64/utils.tar.gz"
+			utilsLocation := BaseUrl(&cluster.Spec) + "linux/amd64/utils.tar.gz"
 			glog.V(4).Infof("Using default utils.tar.gz location: %q", utilsLocation)
 
 			hash, err := findHash(utilsLocation)
@@ -251,7 +258,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if c.NodeUpSource == "" {
-		c.NodeUpSource = NodeUpLocation()
+		c.NodeUpSource = NodeUpLocation(&cluster.Spec)
 	}
 
 	checkExisting := true
@@ -546,20 +553,11 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 		}
 
-		{
-			location := ProtokubeImageSource()
-
-			hash, err := findHash(location)
-			if err != nil {
-				return nil, err
-			}
-
-			config.ProtokubeImage = &nodeup.Image{
-				Name:   kops.DefaultProtokubeImageName(),
-				Source: location,
-				Hash:   hash.Hex(),
-			}
+		proto, err := ProtokubeImageSource(&c.Cluster.Spec)
+		if err != nil {
+			return nil, err
 		}
+		config.ProtokubeImage = proto
 
 		config.Images = images
 		config.Channels = channels
@@ -610,28 +608,40 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
 
-	//// TotalNodeCount computes the total count of nodes
-	//l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
-	//	count := 0
-	//	for _, group := range c.InstanceGroups {
-	//		if group.IsMaster() {
-	//			continue
-	//		}
-	//		if group.Spec.MaxSize != nil {
-	//			count += *group.Spec.MaxSize
-	//		} else if group.Spec.MinSize != nil {
-	//			count += *group.Spec.MinSize
-	//		} else {
-	//			// Guestimate
-	//			count += 5
-	//		}
-	//	}
-	//	return count, nil
-	//}
+	var target fi.Target
+
 	l.TemplateFunctions["Region"] = func() string {
 		return region
 	}
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
+
+	l.TemplateFunctions["GetGoogleImageRepositoryContainer"] = func(imageName string) (string, error) {
+		glog.V(8).Infof("GetGoogleImageRepositoryContainer: %s", imageName)
+		s, err := components.GetGoogleImageRepositoryContainer(&tf.cluster.Spec, imageName)
+
+		if err != nil {
+			return "", fmt.Errorf("unable to parse template func GetGoogleImageRepositoryContainer(%q): %v", imageName, err)
+		}
+
+		recordContainerAsset(s, target)
+		glog.V(8).Infof("Container: %s", s)
+
+		return s, nil
+	}
+
+	l.TemplateFunctions["GetImage"] = func(imageName string) (string, error) {
+		glog.V(8).Infof("GetImage: %s", imageName)
+
+		s, err := components.GetContainer(&tf.cluster.Spec, imageName)
+
+		if err != nil {
+			return "", fmt.Errorf("unable to parse template func GetImage(%q): %v", imageName, err)
+		}
+
+		recordContainerAsset(s, target)
+		glog.V(8).Infof("Container: %s", imageName)
+		return s, nil
+	}
 
 	tf.AddTo(l.TemplateFunctions)
 
@@ -640,8 +650,8 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
 
-	var target fi.Target
 	dryRun := false
+	inventoryTarget := false
 	shouldPrecreateDNS := true
 
 	switch c.TargetName {
@@ -696,6 +706,13 @@ func (c *ApplyClusterCmd) Run() error {
 
 		// Avoid making changes on a dry-run
 		shouldPrecreateDNS = false
+	case TargetInventory:
+		target = fi.NewInventoryTarget()
+		inventoryTarget = true
+		dryRun = true
+
+		// Avoid making changes on a dry-run
+		shouldPrecreateDNS = false
 
 	default:
 		return fmt.Errorf("unsupported target type %q", c.TargetName)
@@ -742,7 +759,35 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("error closing target: %v", err)
 	}
 
+	if inventoryTarget {
+		t := target.(*fi.InventoryTarget)
+		t.ResetContainerAssets()
+		inv := &ApplyInventory{
+			Cluster:             cluster,
+			InstanceGroups:      c.InstanceGroups,
+			BootstrapContainers: t.ContainerAssets,
+			NodeUpConfigBuilder: renderNodeUpConfig,
+			TaskMap:             context.AllTasks(),
+		}
+
+		c.Inventory, err = inv.BuildInventoryAssets()
+
+		if err != nil {
+			return fmt.Errorf("error building inventory: %v", err)
+		}
+	}
+
 	return nil
+}
+
+func recordContainerAsset(imageName string, target fi.Target) {
+
+	t, ok := target.(*fi.InventoryTarget)
+
+	if ok {
+		t.RecordContainerAsset(imageName)
+	}
+
 }
 
 func findHash(url string) (*hashing.Hash, error) {

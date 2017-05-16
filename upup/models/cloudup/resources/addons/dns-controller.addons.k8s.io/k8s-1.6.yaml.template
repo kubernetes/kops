@@ -33,7 +33,7 @@ spec:
       serviceAccount: dns-controller
       containers:
       - name: dns-controller
-        image: kope/dns-controller:1.6.1
+        image: {{ GetImage "kope/dns-controller:1.6.1"  }}
         command:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"

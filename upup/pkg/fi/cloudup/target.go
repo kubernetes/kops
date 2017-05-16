@@ -18,5 +18,6 @@ package cloudup
 
 const TargetDirect = "direct"
 const TargetDryRun = "dryrun"
+const TargetInventory = "inventory"
 const TargetTerraform = "terraform"
 const TargetCloudformation = "cloudformation"

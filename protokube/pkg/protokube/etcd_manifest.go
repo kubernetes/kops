@@ -25,6 +25,16 @@ import (
 
 // BuildEtcdManifest creates the pod spec, based on the etcd cluster
 func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
+
+	// TODO I do not like the version of etcd here
+	image := "/etcd:2.2.1"
+	imageRepository := "gcr.io/google_containers"
+	if c.ImageSource == "" {
+		image = imageRepository + image
+	} else {
+		image = strings.TrimSuffix(c.ImageSource, "/") + image
+	}
+
 	pod := &v1.Pod{}
 	pod.APIVersion = "v1"
 	pod.Kind = "Pod"
@@ -40,7 +50,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 	{
 		container := v1.Container{
 			Name:  "etcd-container",
-			Image: "gcr.io/google_containers/etcd:2.2.1",
+			Image: image,
 			Resources: v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU: c.CPURequest,

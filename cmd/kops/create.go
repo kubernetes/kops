@@ -103,6 +103,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdCreateCluster(f, out))
 	cmd.AddCommand(NewCmdCreateInstanceGroup(f, out))
 	cmd.AddCommand(NewCmdCreateSecret(f, out))
+	cmd.AddCommand(NewCmdCreateInventory(f, out))
 	return cmd
 }
 

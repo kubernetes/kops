@@ -101,6 +101,7 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
 
 	dest["DnsControllerImage"] = tf.DnsControllerImage
+
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer

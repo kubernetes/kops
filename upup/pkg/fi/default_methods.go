@@ -75,8 +75,8 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 		for _, deletion := range deletions {
 			if _, ok := c.Target.(*DryRunTarget); ok {
 				err = c.Target.(*DryRunTarget).Delete(deletion)
-			} else if _, ok := c.Target.(*DryRunTarget); ok {
-				err = c.Target.(*DryRunTarget).Delete(deletion)
+			} else if _, ok := c.Target.(*InventoryTarget); ok {
+				err = c.Target.(*InventoryTarget).Delete(deletion)
 			} else {
 				err = deletion.Delete(c.Target)
 			}

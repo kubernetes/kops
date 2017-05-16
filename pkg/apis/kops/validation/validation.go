@@ -62,6 +62,17 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 	return allErrs
 }
 
+// FIXME TODO
+/*
+func validateFileRepository(f string, fieldPath *field.Path) field.ErrorList {
+
+}
+func validateContainerRepository(f string, fieldPath *field.Path) field.ErrorList {
+
+}
+
+*/
+
 func validateCIDR(cidr string, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
