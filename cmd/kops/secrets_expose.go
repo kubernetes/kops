@@ -28,7 +28,7 @@ func init() {
 		Short: "Expose secrets",
 		Long:  `Expose secrets.`,
 		Run: func(cmd *cobra.Command, args []string) {
-			exitWithError(fmt.Errorf("The 'secrets export' command has been replaced by 'get secrets -oplaintext'"))
+			exitWithError(fmt.Errorf("The 'secrets expose' command has been replaced by 'get secrets -oplaintext'"))
 		},
 	}
 
