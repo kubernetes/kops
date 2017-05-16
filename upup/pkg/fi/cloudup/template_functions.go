@@ -98,6 +98,11 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
 
 	dest["DnsControllerImage"] = tf.DnsControllerImage
+
+	dest["GetImage"] = tf.GetImage
+
+	dest["GetGoogleImageRepositoryContainer"] = tf.GetGoogleImageRepositoryContainer
+
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
@@ -180,4 +185,27 @@ func (tf *TemplateFunctions) DnsControllerImage() (string, error) {
 	} else {
 		return image, nil
 	}
+}
+
+func (tf *TemplateFunctions) GetImage(imageName string) (string, error) {
+
+	if tf.cluster.Spec.AssetSpec != nil && tf.cluster.Spec.AssetSpec.DockerRepository != nil {
+
+		dockerRepository := strings.TrimSuffix(*tf.cluster.Spec.AssetSpec.DockerRepository, "/")
+		parts := strings.Split(imageName, "/")
+		if len(parts) == 3 {
+			return dockerRepository + "/" + parts[2], nil
+		} else if len(parts) == 2 {
+			return dockerRepository + "/" + parts[1], nil
+		} else {
+			return "", fmt.Errorf("odd thing happened, unable to parse container")
+		}
+	}
+
+	return imageName, nil
+
+}
+
+func (tf *TemplateFunctions) GetGoogleImageRepositoryContainer(s string) string {
+	return components.GetGoogleImageRepositoryContainer(&tf.cluster.Spec, s)
 }

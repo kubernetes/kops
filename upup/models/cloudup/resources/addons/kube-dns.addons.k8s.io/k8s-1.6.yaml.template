@@ -34,7 +34,7 @@ spec:
       serviceAccountName: kube-dns-autoscaler
       containers:
       - name: autoscaler
-        image: gcr.io/google_containers/cluster-proportional-autoscaler-{{Arch}}:1.1.1
+        image: {{GetGoogleImageRepositoryContainer "/cluster-proportional-autoscaler"}}-{{Arch}}:1.1.1
         resources:
             requests:
                 cpu: "20m"
@@ -93,7 +93,7 @@ spec:
 
       containers:
       - name: kubedns
-        image: gcr.io/google_containers/k8s-dns-kube-dns-{{Arch}}:1.14.1
+        image: {{GetGoogleImageRepositoryContainer "/k8s-dns-kube-dns"}}-{{Arch}}:1.14.1
         resources:
           # TODO: Set memory limits when we've profiled the container for large
           # clusters, then set request = limit to keep this container in
@@ -145,7 +145,7 @@ spec:
           mountPath: /kube-dns-config
 
       - name: dnsmasq
-        image: gcr.io/google_containers/k8s-dns-dnsmasq-nanny-{{Arch}}:1.14.1
+        image:  {{GetGoogleImageRepositoryContainer "/k8s-dns-dnsmasq-nanny"}}-{{Arch}}:1.14.1
         livenessProbe:
           httpGet:
             path: /healthcheck/dnsmasq
@@ -184,7 +184,7 @@ spec:
           mountPath: /etc/k8s/dns/dnsmasq-nanny
 
       - name: sidecar
-        image: gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.1
+        image: {{GetGoogleImageRepositoryContainer "/k8s-dns-sidecar"}}-{{Arch}}:1.14.1
         livenessProbe:
           httpGet:
             path: /metrics

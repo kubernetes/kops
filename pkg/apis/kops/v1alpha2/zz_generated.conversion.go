@@ -39,6 +39,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_AccessSpec_To_v1alpha2_AccessSpec,
 		Convert_v1alpha2_AlwaysAllowAuthorizationSpec_To_kops_AlwaysAllowAuthorizationSpec,
 		Convert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha2_AlwaysAllowAuthorizationSpec,
+		Convert_v1alpha2_AssetSpec_To_kops_AssetSpec,
+		Convert_kops_AssetSpec_To_v1alpha2_AssetSpec,
 		Convert_v1alpha2_AuthorizationSpec_To_kops_AuthorizationSpec,
 		Convert_kops_AuthorizationSpec_To_v1alpha2_AuthorizationSpec,
 		Convert_v1alpha2_BastionSpec_To_kops_BastionSpec,
@@ -188,6 +190,26 @@ func autoConvert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha2_AlwaysAllowAuthor
 
 func Convert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha2_AlwaysAllowAuthorizationSpec(in *kops.AlwaysAllowAuthorizationSpec, out *AlwaysAllowAuthorizationSpec, s conversion.Scope) error {
 	return autoConvert_kops_AlwaysAllowAuthorizationSpec_To_v1alpha2_AlwaysAllowAuthorizationSpec(in, out, s)
+}
+
+func autoConvert_v1alpha2_AssetSpec_To_kops_AssetSpec(in *AssetSpec, out *kops.AssetSpec, s conversion.Scope) error {
+	out.DockerRepository = in.DockerRepository
+	out.FileRepository = in.FileRepository
+	return nil
+}
+
+func Convert_v1alpha2_AssetSpec_To_kops_AssetSpec(in *AssetSpec, out *kops.AssetSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_AssetSpec_To_kops_AssetSpec(in, out, s)
+}
+
+func autoConvert_kops_AssetSpec_To_v1alpha2_AssetSpec(in *kops.AssetSpec, out *AssetSpec, s conversion.Scope) error {
+	out.DockerRepository = in.DockerRepository
+	out.FileRepository = in.FileRepository
+	return nil
+}
+
+func Convert_kops_AssetSpec_To_v1alpha2_AssetSpec(in *kops.AssetSpec, out *AssetSpec, s conversion.Scope) error {
+	return autoConvert_kops_AssetSpec_To_v1alpha2_AssetSpec(in, out, s)
 }
 
 func autoConvert_v1alpha2_AuthorizationSpec_To_kops_AuthorizationSpec(in *AuthorizationSpec, out *kops.AuthorizationSpec, s conversion.Scope) error {
@@ -602,6 +624,15 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.Hooks = nil
 	}
+	if in.AssetSpec != nil {
+		in, out := &in.AssetSpec, &out.AssetSpec
+		*out = new(kops.AssetSpec)
+		if err := Convert_v1alpha2_AssetSpec_To_kops_AssetSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.AssetSpec = nil
+	}
 	return nil
 }
 
@@ -782,6 +813,15 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 		}
 	} else {
 		out.Hooks = nil
+	}
+	if in.AssetSpec != nil {
+		in, out := &in.AssetSpec, &out.AssetSpec
+		*out = new(AssetSpec)
+		if err := Convert_kops_AssetSpec_To_v1alpha2_AssetSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.AssetSpec = nil
 	}
 	return nil
 }

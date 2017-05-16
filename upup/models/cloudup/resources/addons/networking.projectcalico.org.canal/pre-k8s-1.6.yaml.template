@@ -82,7 +82,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v1.0.2
+          image: {{ GetImage "calico/node:v1.0.2" }}
           resources:
             requests:
               cpu: 10m
@@ -119,7 +119,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v1.5.6
+          image: {{ GetImage "calico/cni:v1.5.6" }}
           command: ["/install-cni.sh"]
           resources:
             requests:
@@ -144,7 +144,7 @@ spec:
         # This container runs flannel using the kube-subnet-mgr backend
         # for allocating subnets.
         - name: kube-flannel
-          image: quay.io/coreos/flannel:v0.7.1
+          image: {{ GetImage "quay.io/coreos/flannel:v0.7.1" }}
           command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
           securityContext:
             privileged: true

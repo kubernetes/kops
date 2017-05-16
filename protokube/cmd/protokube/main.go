@@ -98,6 +98,9 @@ func run() error {
 	var gossipSecret string
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 
+	var etcdImageRepository string
+	flags.StringVar(&etcdImageRepository, "etcd-image-repository", etcdImageRepository, "Etd Container url")
+
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
 
@@ -322,7 +325,8 @@ func run() error {
 
 		Channels: channels,
 
-		Kubernetes: protokube.NewKubernetesContext(),
+		Kubernetes:          protokube.NewKubernetesContext(),
+		EtcdImageRepository: etcdImageRepository,
 	}
 	k.Init(volumes)
 

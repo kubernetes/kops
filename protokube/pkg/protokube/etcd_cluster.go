@@ -54,6 +54,8 @@ type EtcdCluster struct {
 	Spec *EtcdClusterSpec
 
 	VolumeMountPath string
+
+	ImageRepository string
 }
 
 func (e *EtcdCluster) String() string {
@@ -92,6 +94,7 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*E
 	cluster.CPURequest = resource.MustParse("100m")
 	cluster.ClientPort = 4001
 	cluster.PeerPort = 2380
+	cluster.ImageRepository = kubeBoot.EtcdImageRepository
 
 	// We used to build this through text files ... it turns out to just be more complicated than code!
 	switch spec.ClusterKey {

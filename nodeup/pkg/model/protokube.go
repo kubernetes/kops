@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -168,6 +169,8 @@ type ProtokubeFlags struct {
 	// ClusterId flag is required only for vSphere cloud type, to pass cluster id information to protokube. AWS and GCE workflows ignore this flag.
 	ClusterId *string `json:"cluster-id,omitempty" flag:"cluster-id"`
 	DNSServer *string `json:"dns-server,omitempty" flag:"dns-server"`
+
+	EtcdImageRepository *string `json:"etcd-image,omitempty" flag:"etcd-image-repository"`
 }
 
 // ProtokubeFlags returns the flags object for protokube
@@ -240,6 +243,11 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 
 	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
 		f.ApplyTaints = fi.Bool(true)
+	}
+
+	if t.Cluster.Spec.AssetSpec != nil && t.Cluster.Spec.AssetSpec.DockerRepository != nil {
+		gcrIO := components.GetGoogleImageRepositoryContainer(&t.Cluster.Spec, "")
+		f.EtcdImageRepository = fi.String(gcrIO)
 	}
 
 	return f

@@ -202,7 +202,10 @@ func (c *ApplyClusterCmd) Run() error {
 		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
 			baseURL = cluster.Spec.KubernetesVersion
 		} else {
-			baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + cluster.Spec.KubernetesVersion
+			baseURL, err = components.GetGoogleFileRepositoryURL(&c.Cluster.Spec, "/release/v"+cluster.Spec.KubernetesVersion)
+			if err != nil {
+				return err
+			}
 		}
 		baseURL = strings.TrimSuffix(baseURL, "/")
 
@@ -239,7 +242,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		if needsStaticUtils(cluster, c.InstanceGroups) {
-			utilsLocation := BaseUrl() + "linux/amd64/utils.tar.gz"
+			utilsLocation := BaseUrl(&cluster.Spec) + "linux/amd64/utils.tar.gz"
 			glog.V(4).Infof("Using default utils.tar.gz location: %q", utilsLocation)
 
 			hash, err := findHash(utilsLocation)
@@ -251,7 +254,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if c.NodeUpSource == "" {
-		c.NodeUpSource = NodeUpLocation()
+		c.NodeUpSource = NodeUpLocation(&cluster.Spec)
 	}
 
 	checkExisting := true
@@ -547,7 +550,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		{
-			location := ProtokubeImageSource()
+			location := ProtokubeImageSource(&c.Cluster.Spec)
 
 			hash, err := findHash(location)
 			if err != nil {

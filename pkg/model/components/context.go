@@ -27,8 +27,17 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"net"
+	"net/url"
 	"strings"
 )
+
+const (
+	GCR_IO      = "gcr.io/google_containers"
+	GCR_STORAGE = "https://storage.googleapis.com/kubernetes-release"
+)
+
+// TODO - We are going to need a function that validates a docker container repo, and a file system path
+// TODO - I think we are already ok on the file system stuff, but not the container repo stuff
 
 // OptionsContext is the context object for options builders
 type OptionsContext struct {
@@ -120,13 +129,15 @@ func IsBaseURL(kubernetesVersion string) bool {
 
 // Image returns the docker image name for the specified component
 func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
+
 	if component == "kube-dns" {
 		// TODO: Once we are shipping different versions, start to use them
-		return "gcr.io/google_containers/kubedns-amd64:1.3", nil
+		return GetGoogleImageRepositoryContainer(clusterSpec, "/kubedns-amd64:1.3"), nil
 	}
 
 	if !IsBaseURL(clusterSpec.KubernetesVersion) {
-		return "gcr.io/google_containers/" + component + ":" + "v" + clusterSpec.KubernetesVersion, nil
+		c := component + ":" + "v" + clusterSpec.KubernetesVersion
+		return GetGoogleImageRepositoryContainer(clusterSpec, c), nil
 	}
 
 	baseURL := clusterSpec.KubernetesVersion
@@ -142,7 +153,59 @@ func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
 	tag := strings.TrimSpace(string(b))
 	glog.V(2).Infof("Found tag %q for %q", tag, component)
 
-	return "gcr.io/google_containers/" + component + ":" + tag, nil
+	c := component + ":" + tag
+	return GetGoogleImageRepositoryContainer(clusterSpec, c), nil
+}
+
+func GetGoogleImageRepositoryContainer(clusterSpec *kops.ClusterSpec, c string) string {
+
+	// TODO validate container url
+
+	c = strings.TrimPrefix(c, "/")
+
+	if clusterSpec.AssetSpec != nil && clusterSpec.AssetSpec.DockerRepository == nil {
+		repo := *clusterSpec.AssetSpec.DockerRepository
+		return removeSlash(repo) + "/" + c
+	}
+
+	return GCR_IO + "/" + c
+}
+
+func GetGoogleFileRepositoryURL(clusterSpec *kops.ClusterSpec, u string) (string, error) {
+	u = strings.TrimPrefix(u, "/")
+
+	googleUrl := ""
+
+	if clusterSpec.AssetSpec != nil && clusterSpec.AssetSpec.FileRepository == nil {
+		googleUrl = removeSlash(*clusterSpec.AssetSpec.FileRepository) + "/" + u
+	}
+
+	if googleUrl == "" {
+		googleUrl = GCR_STORAGE + "/" + u
+	}
+
+	err := validateURL(googleUrl)
+
+	if err != nil {
+		return "", err
+	}
+
+	return googleUrl, err
+
+}
+
+func removeSlash(s string) string {
+	return strings.TrimSuffix(s, "/")
+}
+
+func validateURL(u string) error {
+	_, err := url.ParseRequestURI(u)
+
+	if err != nil {
+		glog.Warning("url is invalid %q", u)
+	}
+
+	return err
 }
 
 func GCETagForRole(clusterName string, role kops.InstanceGroupRole) string {
