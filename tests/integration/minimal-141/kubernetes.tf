@@ -119,13 +119,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-141-example-com" {
 }
 
 resource "aws_iam_instance_profile" "masters-minimal-141-example-com" {
-  name  = "masters.minimal-141.example.com"
-  roles = ["${aws_iam_role.masters-minimal-141-example-com.name}"]
+  name = "masters.minimal-141.example.com"
+  role = "${aws_iam_role.masters-minimal-141-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-minimal-141-example-com" {
-  name  = "nodes.minimal-141.example.com"
-  roles = ["${aws_iam_role.nodes-minimal-141-example-com.name}"]
+  name = "nodes.minimal-141.example.com"
+  role = "${aws_iam_role.nodes-minimal-141-example-com.name}"
 }
 
 resource "aws_iam_role" "masters-minimal-141-example-com" {
