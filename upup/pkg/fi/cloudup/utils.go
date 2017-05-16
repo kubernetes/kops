@@ -55,7 +55,7 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 
 			project = cluster.Spec.Project
 			if project == "" {
-				return nil, fmt.Errorf("project is required for GCE")
+				return nil, fmt.Errorf("project is required for GCE - try gcloud config get-value project")
 			}
 
 			labels := map[string]string{gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(cluster.ObjectMeta.Name)}
