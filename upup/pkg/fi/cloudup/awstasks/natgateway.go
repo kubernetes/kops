@@ -326,6 +326,9 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 		}
 		glog.V(2).Infof("tagging route table %s to track shared NGW", fi.StringValue(e.AssociatedRouteTable.ID))
 		err = t.AddAWSTags(fi.StringValue(e.AssociatedRouteTable.ID), tags)
+		if err != nil {
+			return fmt.Errorf("unable to tag route table %v", err)
+		}
 	}
 
 	return nil
