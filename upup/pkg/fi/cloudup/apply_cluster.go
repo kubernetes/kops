@@ -197,6 +197,13 @@ func (c *ApplyClusterCmd) Run() error {
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
 
+	// Fail on 1.5
+	// TODO Kris - we need to un-patch this after we start supporting 1.5
+	if strings.Contains(cluster.Spec.KubernetesVersion, "1.5"){
+		glog.V(2).Infof("Kubernetes versions 1.5* not supported, using 1.4.7")
+		cluster.Spec.KubernetesVersion = "1.4.7"
+	}
+
 	if len(c.Assets) == 0 {
 		var baseURL string
 		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
