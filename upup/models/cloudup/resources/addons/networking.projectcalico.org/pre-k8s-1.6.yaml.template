@@ -36,18 +36,6 @@ data:
         }
     }
 
-  # The default IP Pool to be created for the cluster.
-  # Pod IP addresses will be assigned from this pool.
-  ippool.yaml: |
-      apiVersion: v1
-      kind: ipPool
-      metadata:
-        cidr: {{ .NonMasqueradeCIDR }}
-      spec:
-        ipip:
-          enabled: true
-        nat-outgoing: true
-
 ---
 
 # This manifest installs the calico/node container, as well
@@ -97,10 +85,11 @@ spec:
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
-            # Don't configure a default pool.  This is done by the Job
-            # below.
-            - name: NO_DEFAULT_POOLS
-              value: "true"
+            # Configure the IP Pool from which Pod IPs will be chosen.
+            - name: CALICO_IPV4POOL_CIDR
+              value: "{{ .NonMasqueradeCIDR }}"
+            - name: CALICO_IPV4POOL_IPIP
+              value: "always"
             # Auto-detect the BGP IP address.
             - name: IP
               value: ""
@@ -210,52 +199,3 @@ spec:
             - name: CONFIGURE_ETC_HOSTS
               value: "true"
 
----
-
-## This manifest deploys a Job which performs one time
-# configuration of Calico
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: configure-calico
-  namespace: kube-system
-  labels:
-    k8s-app: calico
-    role.kubernetes.io/networking: "1"
-spec:
-  template:
-    metadata:
-      name: configure-calico
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
-        scheduler.alpha.kubernetes.io/tolerations: |
-          [{"key": "dedicated", "value": "master", "effect": "NoSchedule" },
-           {"key":"CriticalAddonsOnly", "operator":"Exists"}]
-    spec:
-      hostNetwork: true
-      restartPolicy: OnFailure
-      containers:
-        # Writes basic configuration to datastore.
-        - name: configure-calico
-          image: calico/ctl:v1.1.3
-          args:
-          - apply
-          - -f
-          - /etc/config/calico/ippool.yaml
-          volumeMounts:
-            - name: config-volume
-              mountPath: /etc/config
-          env:
-            # The location of the etcd cluster.
-            - name: ETCD_ENDPOINTS
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: etcd_endpoints
-      volumes:
-       - name: config-volume
-         configMap:
-           name: calico-config
-           items:
-            - key: ippool.yaml
-              path: calico/ippool.yaml
