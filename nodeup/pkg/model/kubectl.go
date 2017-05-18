@@ -79,7 +79,7 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 			c.AddTask(&nodetasks.File{
 				Path:  "/home/admin/.kube/",
 				Type:  nodetasks.FileType_Directory,
-				Mode:  s("0400"),
+				Mode:  s("0700"),
 				Owner: s("admin"),
 				Group: s("admin"),
 			})
