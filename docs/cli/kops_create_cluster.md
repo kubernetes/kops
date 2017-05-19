@@ -69,7 +69,7 @@ kops create cluster
       --dns string                           DNS hosted zone to use: public|private. Default is 'public'. (default "Public")
       --dns-zone string                      DNS hosted zone to use (defaults to longest matching zone)
       --encrypt-etcd-storage                 Generate key in aws kms and use it for encrypt etcd volumes
-      --image string                         Image to use
+      --image string                         Image to use for all instances.
       --kubernetes-version string            Version of kubernetes to run (defaults to version in channel)
       --master-count int32                   Set the number of masters.  Defaults to one master per master-zone
       --master-security-groups stringSlice   Add precreated additional security groups to masters.
