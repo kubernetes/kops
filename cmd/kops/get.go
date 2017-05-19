@@ -56,7 +56,8 @@ var (
 )
 
 type GetOptions struct {
-	output string
+	output      string
+	clusterName string
 }
 
 const (
