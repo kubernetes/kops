@@ -62,14 +62,8 @@ var (
 )
 
 type GetOptions struct {
-<<<<<<< HEAD
 	output      string
 	clusterName string
-=======
-	output       string
-	cobraCommand *cobra.Command
-	clusterName  string
->>>>>>> ead7cb285... get now gets a cluster
 }
 
 const (
