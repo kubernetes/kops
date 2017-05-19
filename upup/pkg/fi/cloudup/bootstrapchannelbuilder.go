@@ -276,7 +276,9 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
-		version := "0.7.1"
+
+		// 0.7.2-kops.1 = 0.7.1 + hairpinMode fix
+		version := "0.7.2-kops.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
