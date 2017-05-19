@@ -24,6 +24,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -257,4 +258,18 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel) string {
 	}
 	glog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
 	return ""
+}
+
+// CreateInstanceGroup validates and creates a new instance group.
+func CreateInstanceGroup(ig *api.InstanceGroup, clusterName string, clientset simple.Clientset) error {
+
+	if err := validation.ValidateInstanceGroup(ig); err != nil {
+		return fmt.Errorf("error validating InstanceGroup: %v", err)
+	}
+
+	if _, err := clientset.InstanceGroups(clusterName).Create(ig); err != nil {
+		return fmt.Errorf("error storing InstanceGroup: %v", err)
+	}
+
+	return nil
 }

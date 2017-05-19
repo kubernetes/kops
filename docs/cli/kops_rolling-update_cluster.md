@@ -5,13 +5,21 @@ Rolling update a cluster.
 ### Synopsis
 
 
-This command updates a kubernetes cluster to match the cloud, and kops specifications. 
+This command updates a Kubernetes cluster to match the cloud, and kops specifications. 
 
-To perform rolling update, you need to update the cloud resources first with "kops update cluster" 
+The Examples below include a series of command for Terraform users.  The workflow includes using Terraform. 
 
-Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply" prior to running "kops rolling-update cluster" 
+Use export KOPS FEATURE FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes and validates the cluster.  New flags for Drain and Validation operations will be shown when the environment variable is set. 
 
-Use export KOPS FEATURE FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes and validates the cluster.  New flags for Drain and Validation operations will be shown when the environment variable is set.
+Node Replacement Algorithm Alpa Feature 
+
+We are now including three new algorithms that influence node replacement. All masters and bastions are rolled sequentially before the nodes, and this flag does not influence their replacement.  These algorithms utilize the feature flag mentioned above. 
+
+  1. "asg" - A node is drained then deleted.  The cloud then replaces the node automatically. (default)  
+  2. "pre-create" - All node instance groups are duplicated first; then all old nodes are cordoned.  
+  3. "create" - As each node instance group rolls, the instance group is duplicated, then all old nodes are cordoned.  
+
+The second and third options create new instance groups; next, the old nodes are cardoned. The old nodes are drained, and then the instance group(s) is deleted.
 
 ```
 kops rolling-update cluster
@@ -23,23 +31,30 @@ kops rolling-update cluster
   # Roll the currently selected kops cluster
   kops rolling-update cluster --yes
   
-  # Roll the k8s-cluster.example.com kops cluster
-  # use the new drain an validate functionality
+  # Update instructions for Terraform users
+  kops update cluster --target=terraform
+  terraform plan
+  terraform apply
+  kops rolling-update cluster --yes
+  
+  # Roll the k8s-cluster.example.com kops cluster and use the new drain an validate functionality
   export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
   kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false" \
   --master-interval=8m \
   --node-interval=8m
   
-  
-  # Roll the k8s-cluster.example.com kops cluster
-  # only roll the node instancegroup
-  # use the new drain an validate functionality
+  # Use the pre-create node algorithm. First all new nodes are created
+  # The old nodes are cordon, drained and deleted.
   export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+  kops rolling-update cluster k8s-cluster.example.com --yes \
+  --algorithm pre-create
+  
+  # Roll the k8s-cluster.example.com kops cluster, and only roll the instancegroup named "foo".
   kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false" \
   --node-interval 8m \
-  --instance-group nodes
+  --instance-group foo
 ```
 
 ### Options
@@ -47,11 +62,11 @@ kops rolling-update cluster
 ```
       --bastion-interval duration    Time to wait between restarting bastions (default 5m0s)
       --cloudonly                    Perform rolling update without confirming progress with k8s
-      --force                        Force rolling update, even if no changes
+  -f, --force                        Force rolling update, even if no changes
       --instance-group stringSlice   List of instance groups to update (defaults to all if not specified)
       --master-interval duration     Time to wait between restarting masters (default 5m0s)
       --node-interval duration       Time to wait between restarting nodes (default 2m0s)
-      --yes                          perform rolling update without confirmation
+  -y, --yes                          perform rolling update without confirmation
 ```
 
 ### Options inherited from parent commands
