@@ -20,6 +20,8 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -27,8 +29,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
@@ -38,6 +44,11 @@ import (
 
 type CreateOptions struct {
 	resource.FilenameOptions
+	Yes          bool
+	SSHPublicKey string
+	Target       string
+	OutDir       string
+	Models       string
 }
 
 var (
@@ -51,8 +62,16 @@ var (
 
 	create_example = templates.Examples(i18n.T(`
 
-	# Create a cluster using a cluser spec file
+	# Create a cluster using a cluster spec file.
+	# The cluster will not be fully created until "kops update" is executed.
 	kops create -f my-cluster.yaml
+
+	# Immediately create a cluster using a cluster spec file.
+	kops create -y -f my-cluster.yaml
+
+	# Create a cluster using a cluster spec file .
+	# Create terraform files for cluster and use a specific ssh key
+	kops create -y -f my-cluster.yaml -i ~/.ssh/mykey.pub -o myfolder -t terraform
 
 	# Create a cluster in AWS
 	kops create cluster --name=kubernetes-cluster.example.com \
@@ -71,8 +90,16 @@ var (
 	create_short = i18n.T("Create a resource by command line, filename or stdin.")
 )
 
+func (o *CreateOptions) InitDefaults() {
+	o.Yes = false
+	o.SSHPublicKey = "~/.ssh/id_rsa.pub"
+	o.Target = cloudup.TargetDirect
+	o.Models = strings.Join(cloudup.CloudupModels, ",")
+}
+
 func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateOptions{}
+	options.InitDefaults()
 
 	cmd := &cobra.Command{
 		Use:     "create -f FILENAME",
@@ -89,14 +116,13 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "Filename to use to create the resource")
-	//usage := "to use to create the resource"
-	//cmdutil.AddFilenameOptionFlags(cmd, options, usage)
+	cmd.Flags().StringVarP(&options.SSHPublicKey, "ssh-public-key", "i", options.SSHPublicKey, "SSH public key to use")
+	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately create the cluster")
+	cmd.Flags().StringVarP(&options.OutDir, "out", "o", options.OutDir, "Path to write any local output")
+	cmd.Flags().StringVarP(&options.Target, "target", "t", options.Target, "Target - direct, terraform, cloudformation")
+	cmd.Flags().StringVarP(&options.Models, "model", "m", options.Models, "Models to apply (separate multiple models with commas)")
+
 	cmd.MarkFlagRequired("filename")
-	//cmdutil.AddValidateFlags(cmd)
-	//cmdutil.AddOutputFlagsForMutation(cmd)
-	//cmdutil.AddApplyAnnotationFlags(cmd)
-	//cmdutil.AddRecordFlag(cmd)
-	//cmdutil.AddInclude3rdPartyFlags(cmd)
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCreateCluster(f, out))
@@ -106,6 +132,8 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
+	isDryrun, targetName := setDryRun(c.Target, c.Yes)
+
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -120,6 +148,8 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	//var cSpec = false
 	var sb bytes.Buffer
 	fmt.Fprintf(&sb, "\n")
+	var cluster *kopsapi.Cluster
+	var instanceGroups []*kopsapi.InstanceGroup
 	for _, f := range c.Filenames {
 		contents, err := vfs.Context.ReadFile(f)
 		if err != nil {
@@ -139,8 +169,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 
 			switch v := o.(type) {
 			case *kopsapi.Federation:
-				_, err = clientset.FederationsFor(v).Create(v)
-				if err != nil {
+				if _, err := clientset.FederationsFor(v).Create(v); err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("federation %q already exists", v.ObjectMeta.Name)
 					}
@@ -151,11 +180,11 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 			case *kopsapi.Cluster:
 				// Adding a PerformAssignments() call here as the user might be trying to use
 				// the new `-f` feature, with an old cluster definition.
-				err = cloudup.PerformAssignments(v)
-				if err != nil {
+				if err := cloudup.PerformAssignments(v); err != nil {
 					return fmt.Errorf("error populating configuration: %v", err)
 				}
-				_, err = clientset.ClustersFor(v).Create(v)
+
+				cluster, err = clientset.ClustersFor(v).Create(v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
@@ -171,20 +200,24 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
 				}
+
 				cluster, err := clientset.GetCluster(clusterName)
 				if err != nil {
 					return fmt.Errorf("error querying cluster %q: %v", clusterName, err)
 				}
 
-				_, err = clientset.InstanceGroupsFor(cluster).Create(v)
+				ig, err := clientset.InstanceGroupsFor(cluster).Create(v)
+
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating instanceGroup: %v", err)
-				} else {
-					fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
 				}
+
+				fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
+
+				instanceGroups = append(instanceGroups, ig)
 
 			default:
 				glog.V(2).Infof("Type of object was %T", v)
@@ -193,18 +226,113 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		}
 
 	}
-	{
-		// If there is a value in this sb, this should mean that we have something to deploy
-		// so let's advise the user how to engage the cloud provider and deploy
-		if sb.String() != "" {
-			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "To deploy these resources, run: kops update cluster %s --yes\n", clusterName)
-			fmt.Fprintf(&sb, "\n")
+
+	if err := createSSHKey(&c.SSHPublicKey, cluster); err != nil {
+		return err
+	}
+
+	if err := validation.DeepValidate(cluster, instanceGroups, false); err != nil {
+		return err
+	}
+
+	if targetName != "" {
+		if isDryrun {
+			fmt.Fprintf(out, "Previewing changes that will be made:\n\n")
 		}
-		_, err := out.Write(sb.Bytes())
-		if err != nil {
-			return fmt.Errorf("error writing to output: %v", err)
+
+		// TODO: Maybe just embed UpdateClusterOptions in CreateClusterOptions?
+		updateClusterOptions := &UpdateClusterOptions{}
+		updateClusterOptions.InitDefaults()
+
+		updateClusterOptions.Yes = c.Yes
+		updateClusterOptions.Target = c.Target
+		updateClusterOptions.Models = c.Models
+		updateClusterOptions.OutDir = setOutDir(c.OutDir, c.Target)
+		updateClusterOptions.SSHPublicKey = ""
+
+		if err := RunUpdateCluster(f, clusterName, out, updateClusterOptions); err != nil {
+			return err
+		}
+
+		if isDryrun {
+			return createOutputDryRun(sb, out, clusterName)
 		}
 	}
 	return nil
+}
+
+func createOutputDryRun(sb bytes.Buffer, out io.Writer, clusterName string) error {
+	// If there is a value in this sb, this should mean that we have something to deploy
+	// so let's advise the user how to engage the cloud provider and deploy
+	if sb.String() != "" {
+		fmt.Fprintf(&sb, "\n")
+		fmt.Fprintf(&sb, "To deploy these resources, run: kops update cluster %s --yes\n", clusterName)
+		fmt.Fprintf(&sb, "\n")
+	}
+	if _, err := out.Write(sb.Bytes()); err != nil {
+		return fmt.Errorf("error writing to output: %v", err)
+	}
+	return nil
+}
+
+func createSSHKey(sshPublicKey *string, cluster *kopsapi.Cluster) error {
+	sshPublicKeys := make(map[string][]byte)
+	s := *sshPublicKey
+	if s != "" {
+		s = utils.ExpandPath(s)
+		authorized, err := ioutil.ReadFile(s)
+		if err != nil {
+			return fmt.Errorf("error reading SSH key file %q: %v", *sshPublicKey, err)
+		}
+		sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
+
+		glog.Infof("Using SSH public key: %v\n", *sshPublicKey)
+	}
+
+	keyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	for k, data := range sshPublicKeys {
+		err = keyStore.AddSSHPublicKey(k, data)
+		if err != nil {
+			return fmt.Errorf("error addding SSH public key: %v", err)
+		}
+	}
+
+	sshPublicKey = &s
+	return nil
+}
+
+func setOutDir(outDir string, target string) string {
+	if outDir == "" {
+		if target == cloudup.TargetTerraform {
+			return "out/terraform"
+		} else if target == cloudup.TargetCloudformation {
+			return "out/cloudformation"
+		} else {
+			return "out"
+		}
+	}
+
+	return outDir
+}
+
+func setDryRun(target string, yes bool) (bool, string) {
+	isDryrun := false
+	// direct requires --yes (others do not, because they don't make changes)
+	targetName := target
+	if target == cloudup.TargetDirect {
+		if !yes {
+			isDryrun = true
+			targetName = cloudup.TargetDryRun
+		}
+	}
+	if target == cloudup.TargetDryRun {
+		isDryrun = true
+		targetName = cloudup.TargetDryRun
+	}
+
+	return isDryrun, targetName
 }

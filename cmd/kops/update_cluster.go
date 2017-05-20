@@ -101,11 +101,11 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Actually create cloud resources")
-	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
-	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
-	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
-	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
+	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Actually create cloud resources")
+	cmd.Flags().StringVarP(&options.Target, "target", "t", options.Target, "Target - direct, terraform, cloudformation")
+	cmd.Flags().StringVarP(&options.Models, "model", "m", options.Models, "Models to apply (separate multiple models with commas)")
+	cmd.Flags().StringVarP(&options.SSHPublicKey, "ssh-public-key", "i", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
+	cmd.Flags().StringVarP(&options.OutDir, "out", "o", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
 	return cmd
 }
@@ -126,15 +126,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		targetName = cloudup.TargetDryRun
 	}
 
-	if c.OutDir == "" {
-		if c.Target == cloudup.TargetTerraform {
-			c.OutDir = "out/terraform"
-		} else if c.Target == cloudup.TargetCloudformation {
-			c.OutDir = "out/cloudformation"
-		} else {
-			c.OutDir = "out"
-		}
-	}
+	c.OutDir = setOutDir(c.OutDir, c.Target)
 
 	cluster, err := GetCluster(f, clusterName)
 	if err != nil {

@@ -17,13 +17,13 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"encoding/csv"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"strconv"
 	"strings"
+
+	"bytes"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -38,7 +38,6 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/util/i18n"
 )
@@ -293,34 +292,12 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) error {
-	isDryrun := false
-	// direct requires --yes (others do not, because they don't make changes)
-	targetName := c.Target
-	if c.Target == cloudup.TargetDirect {
-		if !c.Yes {
-			isDryrun = true
-			targetName = cloudup.TargetDryRun
-		}
-	}
-	if c.Target == cloudup.TargetDryRun {
-		isDryrun = true
-		targetName = cloudup.TargetDryRun
-	}
+
+	isDryrun, targetName := setDryRun(c.Target, c.Yes)
+
 	clusterName := c.ClusterName
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")
-	}
-
-	// TODO: Reuse rootCommand stateStore logic?
-
-	if c.OutDir == "" {
-		if c.Target == cloudup.TargetTerraform {
-			c.OutDir = "out/terraform"
-		} else if c.Target == cloudup.TargetCloudformation {
-			c.OutDir = "out/cloudformation"
-		} else {
-			c.OutDir = "out"
-		}
 	}
 
 	clientset, err := f.Clientset()
@@ -830,16 +807,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
-	sshPublicKeys := make(map[string][]byte)
-	if c.SSHPublicKey != "" {
-		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
-		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
-		if err != nil {
-			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
-		}
-		sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
-
-		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
+	if err := createSSHKey(&c.SSHPublicKey, cluster); err != nil {
+		return err
 	}
 
 	if len(c.AdminAccess) != 0 {
@@ -887,21 +856,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
-	if err != nil {
-		return err
-	}
-
 	err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
-	}
-
-	for k, data := range sshPublicKeys {
-		err = keyStore.AddSSHPublicKey(k, data)
-		if err != nil {
-			return fmt.Errorf("error addding SSH public key: %v", err)
-		}
 	}
 
 	if targetName != "" {
@@ -916,7 +873,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		updateClusterOptions.Yes = c.Yes
 		updateClusterOptions.Target = c.Target
 		updateClusterOptions.Models = c.Models
-		updateClusterOptions.OutDir = c.OutDir
+		updateClusterOptions.OutDir = setOutDir(c.OutDir, c.Target)
 
 		// SSHPublicKey has already been mapped
 		updateClusterOptions.SSHPublicKey = ""
@@ -932,26 +889,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 		if isDryrun {
 			var sb bytes.Buffer
-			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "Cluster configuration has been created.\n")
-			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "Suggestions:\n")
-			fmt.Fprintf(&sb, " * list clusters with: kops get cluster\n")
-			fmt.Fprintf(&sb, " * edit this cluster with: kops edit cluster %s\n", clusterName)
-			if len(nodes) > 0 {
-				fmt.Fprintf(&sb, " * edit your node instance group: kops edit ig --name=%s %s\n", clusterName, nodes[0].ObjectMeta.Name)
-			}
-			if len(masters) > 0 {
-				fmt.Fprintf(&sb, " * edit your master instance group: kops edit ig --name=%s %s\n", clusterName, masters[0].ObjectMeta.Name)
-			}
-			fmt.Fprintf(&sb, "\n")
-			fmt.Fprintf(&sb, "Finally configure your cluster with: kops update cluster %s --yes\n", clusterName)
-			fmt.Fprintf(&sb, "\n")
-
-			_, err := out.Write(sb.Bytes())
-			if err != nil {
-				return fmt.Errorf("error writing to output: %v", err)
-			}
+			createOutputDryRun(sb, out, clusterName)
 		}
 	}
 

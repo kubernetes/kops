@@ -21,8 +21,16 @@ kops create -f FILENAME
 ### Examples
 
 ```
-  # Create a cluster using a cluser spec file
+  # Create a cluster using a cluster spec file.
+  # The cluster will not be fully created until "kops update" is executed.
   kops create -f my-cluster.yaml
+  
+  # Immediately create a cluster using a cluster spec file.
+  kops create -y -f my-cluster.yaml
+  
+  # Create a cluster using a cluster spec file .
+  # Create terraform files for cluster and use a specific ssh key
+  kops create -y -f my-cluster.yaml -i ~/.ssh/mykey.pub -o myfolder -t terraform
   
   # Create a cluster in AWS
   kops create cluster --name=kubernetes-cluster.example.com \
@@ -42,7 +50,12 @@ kops create -f FILENAME
 ### Options
 
 ```
-  -f, --filename stringSlice   Filename to use to create the resource
+  -f, --filename stringSlice    Filename to use to create the resource
+  -m, --model string            Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
+  -o, --out string              Path to write any local output
+  -i, --ssh-public-key string   SSH public key to use (default "~/.ssh/id_rsa.pub")
+  -t, --target string           Target - direct, terraform, cloudformation (default "direct")
+  -y, --yes                     Specify --yes to immediately create the cluster
 ```
 
 ### Options inherited from parent commands
