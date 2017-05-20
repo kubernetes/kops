@@ -29,8 +29,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -39,7 +40,6 @@ import (
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/util/i18n"
-	"k8s.io/kops/pkg/apis/kops/registry"
 )
 
 type CreateOptions struct {
@@ -194,7 +194,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 
 				fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
 
-				instanceGroups = append(instanceGroups,ig)
+				instanceGroups = append(instanceGroups, ig)
 
 			default:
 				glog.V(2).Infof("Type of object was %T", v)
@@ -253,7 +253,6 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	if err != nil {
 		return err
 	}
-
 
 	{
 		// If there is a value in this sb, this should mean that we have something to deploy
