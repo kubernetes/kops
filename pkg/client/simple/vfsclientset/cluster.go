@@ -26,11 +26,10 @@ import (
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/api/errors"
 	"os"
 	"strings"
 	"time"
-	"github.com/golang/glog"
-	"k8s.io/kubernetes/pkg/api/errors"
 )
 
 type ClusterVFS struct {

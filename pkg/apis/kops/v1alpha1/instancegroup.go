@@ -91,11 +91,10 @@ type InstanceGroupSpec struct {
 }
 
 type MachineSpec struct {
-	Name string `json:"name,omitempty"`
+	Name      string                `json:"name,omitempty"`
 	Addresses []*MachineAddressSpec `json:"addresses,omitempty"`
 }
 
 type MachineAddressSpec struct {
 	Address string `json:"address,omitempty"`
 }
-

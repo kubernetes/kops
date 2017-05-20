@@ -106,14 +106,13 @@ type InstanceGroupSpec struct {
 }
 
 type MachineSpec struct {
-	Name string `json:"name,omitempty"`
+	Name      string                `json:"name,omitempty"`
 	Addresses []*MachineAddressSpec `json:"addresses,omitempty"`
 }
 
 type MachineAddressSpec struct {
 	Address string `json:"address,omitempty"`
 }
-
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values
 func PerformAssignmentsInstanceGroups(groups []*InstanceGroup) error {
@@ -212,4 +211,3 @@ func (g *InstanceGroup) CrossValidate(cluster *Cluster, strict bool) error {
 
 	return nil
 }
->>>>>>> WIP on baremetal
