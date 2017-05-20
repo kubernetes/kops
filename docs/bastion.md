@@ -15,6 +15,11 @@ To enable a bastion instance group, a user will need to set the `--bastion` flag
 kops create cluster --topology private --networking $provider --bastion $NAME
 ```
 
+To add a bastion instance group to a pre-existing cluster, create a new instance group with the `--role Bastion` flag and one or more subnets (e.g. `utility-us-east-2a,utility-us-east-2b`). 
+```yaml
+kops create instancegroup --role Bastion --subnet $SUBNET
+```
+
 ### Configure the bastion instance group
 
 You can edit the bastion instance group to make changes. By default the name of the bastion instance group will be `bastions` and you can specify the name of the cluster with `--name` as in:
