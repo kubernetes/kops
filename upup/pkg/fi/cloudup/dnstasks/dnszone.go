@@ -20,8 +20,8 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/forks/pkg/dnsprovider"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"strings"
 )
 

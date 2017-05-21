@@ -21,9 +21,9 @@ import (
 	"os"
 	"runtime"
 
+	"k8s.io/apiserver/pkg/util/logs"
 	"k8s.io/kops/pkg/apiserver/cmd/server"
-	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/util/logs"
+	"k8s.io/kops/pkg/cmdutil"
 	"math/rand"
 	"time"
 )

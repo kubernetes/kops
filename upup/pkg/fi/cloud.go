@@ -16,7 +16,7 @@ limitations under the License.
 
 package fi
 
-import "k8s.io/kubernetes/federation/pkg/dnsprovider"
+import "k8s.io/kops/forks/pkg/dnsprovider"
 
 type CloudProviderID string
 

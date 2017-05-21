@@ -18,6 +18,7 @@ package simple
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
 )
 

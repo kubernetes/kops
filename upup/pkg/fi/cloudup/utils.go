@@ -19,12 +19,13 @@ package cloudup
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/forks/pkg/dnsprovider"
+	k8sroute53 "k8s.io/kops/forks/pkg/dnsprovider/providers/aws/route53"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"strings"
 )
 

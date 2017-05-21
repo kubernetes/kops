@@ -28,10 +28,10 @@ import (
 	"github.com/spf13/pflag"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/watchers"
+	"k8s.io/kops/forks/pkg/dnsprovider"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	gossipdnsprovider "k8s.io/kops/protokube/pkg/gossip/dns/provider"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"

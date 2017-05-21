@@ -43,7 +43,8 @@ func Install(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *r
 				v1alpha2.SchemeGroupVersion.Version,
 				v1alpha1.SchemeGroupVersion.Version,
 			},
-			RootScopedKinds:            sets.NewString("Cluster"),
+			// RootScopedKinds are resources that are not namespaced.
+			RootScopedKinds:            sets.NewString(),
 			ImportPrefix:               "k8s.io/kops/pkg/apis/kops",
 			AddInternalObjectsToScheme: kops.AddToScheme,
 		},

@@ -23,10 +23,10 @@ import (
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/storage/v1"
+	"k8s.io/kops/forks/pkg/dnsprovider"
+	"k8s.io/kops/forks/pkg/dnsprovider/providers/google/clouddns"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
 )
 
 type GCECloud struct {

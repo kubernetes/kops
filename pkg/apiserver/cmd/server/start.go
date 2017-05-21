@@ -28,21 +28,23 @@ import (
 	genericoptions "k8s.io/apiserver/pkg/server/options"
 	"k8s.io/apiserver/pkg/storage/storagebackend"
 	"k8s.io/kops/pkg/apiserver"
-	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	//"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/cmdutil"
+	"net"
 )
 
 const defaultEtcdPathPrefix = "/registry/kops.kubernetes.io"
 
 type KopsServerOptions struct {
-	Etcd *genericoptions.EtcdOptions
-	//SecureServing  *genericoptions.SecureServingOptions
-	InsecureServing *genericoptions.ServingOptions
-	Authentication  *genericoptions.DelegatingAuthenticationOptions
-	Authorization   *genericoptions.DelegatingAuthorizationOptions
+	Etcd          *genericoptions.EtcdOptions
+	SecureServing *genericoptions.SecureServingOptions
+	//InsecureServing *genericoptions.ServingOptions
+	Authentication *genericoptions.DelegatingAuthenticationOptions
+	Authorization  *genericoptions.DelegatingAuthorizationOptions
 
 	StdOut io.Writer
 	StdErr io.Writer
@@ -56,10 +58,10 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 			Copier: kops.Scheme,
 			Codec:  nil,
 		}),
-		//SecureServing:  genericoptions.NewSecureServingOptions(),
-		InsecureServing: genericoptions.NewInsecureServingOptions(),
-		Authentication:  genericoptions.NewDelegatingAuthenticationOptions(),
-		Authorization:   genericoptions.NewDelegatingAuthorizationOptions(),
+		SecureServing: genericoptions.NewSecureServingOptions(),
+		//InsecureServing: genericoptions.NewInsecureServingOptions(),
+		Authentication: genericoptions.NewDelegatingAuthenticationOptions(),
+		Authorization:  genericoptions.NewDelegatingAuthorizationOptions(),
 
 		StdOut: out,
 		StdErr: err,
@@ -80,8 +82,8 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 
 	flags := cmd.Flags()
 	o.Etcd.AddFlags(flags)
-	//o.SecureServing.AddFlags(flags)
-	o.InsecureServing.AddFlags(flags)
+	o.SecureServing.AddFlags(flags)
+	//o.InsecureServing.AddFlags(flags)
 	o.Authentication.AddFlags(flags)
 	o.Authorization.AddFlags(flags)
 
@@ -98,18 +100,29 @@ func (o *KopsServerOptions) Complete() error {
 
 func (o KopsServerOptions) RunKopsServer() error {
 	// TODO have a "real" external address
-	//if err := o.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost"); err != nil {
-	//	return fmt.Errorf("error creating self-signed certificates: %v", err)
+	if err := o.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost", nil, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
+		return fmt.Errorf("error creating self-signed certificates: %v", err)
+	}
+
+	serverConfig := genericapiserver.NewConfig(kops.Codecs)
+	// 1.6: serverConfig := genericapiserver.NewConfig().WithSerializer(kops.Codecs)
+	//if err := o.RecommendedOptions.ApplyTo(serverConfig); err != nil {
+	//	return nil, err
 	//}
 
-	genericAPIServerConfig := genericapiserver.NewConfig().WithSerializer(kops.Codecs)
+	serverConfig.CorsAllowedOriginList = []string{".*"}
 
-	//if err := o.SecureServing.ApplyTo(genericAPIServerConfig); err != nil {
-	//	return err
-	//}
-	if err := o.InsecureServing.ApplyTo(genericAPIServerConfig); err != nil {
+	if err := o.Etcd.ApplyTo(serverConfig); err != nil {
 		return err
 	}
+
+	if err := o.SecureServing.ApplyTo(serverConfig); err != nil {
+		return err
+	}
+	//if err := o.InsecureServing.ApplyTo(serverConfig); err != nil {
+	//	return err
+	//}
+
 	glog.Warningf("Authentication/Authorization disabled")
 	//if _, err := genericAPIServerConfig.ApplyDelegatingAuthenticationOptions(o.Authentication); err != nil {
 	//	return err
@@ -126,7 +139,7 @@ func (o KopsServerOptions) RunKopsServer() error {
 	//}
 
 	config := apiserver.Config{
-		GenericConfig:     genericAPIServerConfig,
+		GenericConfig:     serverConfig,
 		RESTOptionsGetter: &restOptionsFactory{storageConfig: &o.Etcd.StorageConfig},
 	}
 
@@ -134,9 +147,7 @@ func (o KopsServerOptions) RunKopsServer() error {
 	if err != nil {
 		return err
 	}
-	server.GenericAPIServer.PrepareRun().Run(wait.NeverStop)
-
-	return nil
+	return server.GenericAPIServer.PrepareRun().Run(wait.NeverStop)
 }
 
 type restOptionsFactory struct {

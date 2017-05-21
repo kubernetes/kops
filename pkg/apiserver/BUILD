@@ -9,6 +9,7 @@ go_library(
         "//pkg/apis/kops/install:go_default_library",
         "//pkg/apis/kops/v1alpha2:go_default_library",
         "//pkg/apiserver/registry/cluster:go_default_library",
+        "//pkg/apiserver/registry/instancegroup:go_default_library",
         "//pkg/cmdutil:go_default_library",
         "@io_k8s_apimachinery//pkg/apis/meta/v1:go_default_library",
         "@io_k8s_apimachinery//pkg/runtime/schema:go_default_library",

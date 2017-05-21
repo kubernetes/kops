@@ -35,9 +35,11 @@ import (
 	"strings"
 
 	// Load DNS plugins
+	"fmt"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
+	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 )
 
 var (
@@ -153,7 +155,18 @@ func run() error {
 		if internalIP == nil {
 			internalIP = vsphereVolumes.InternalIp()
 		}
+<<<<<<< HEAD
 
+=======
+	} else if cloud == "baremetal" {
+		basedir := "/volumes"
+		baremetalVolumes, err := baremetal.NewVolumes(basedir)
+		if err != nil {
+			glog.Errorf("Error initializing AWS: %q", err)
+			os.Exit(1)
+		}
+		volumes = baremetalVolumes
+>>>>>>> 28d84fcba... Server Code
 	} else {
 		glog.Errorf("Unknown cloud %q", cloud)
 		os.Exit(1)

@@ -31,9 +31,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
+	"k8s.io/kops/forks/pkg/dnsprovider"
+	k8sroute53 "k8s.io/kops/forks/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	k8sroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	"strings"
 	"time"
 )
