@@ -35,37 +35,36 @@ import (
 )
 
 var (
-	replace_long = templates.LongDesc(i18n.T(`
-		Replace a resource specification by filename or stdin.
-		DEPRECATED in favor of kops apply.`))
+	apply_long = templates.LongDesc(i18n.T(`
+		Apply a resource specification by filename or stdin.`))
 
-	replace_example = templates.Examples(i18n.T(`
-		# Replace a cluster specification using a file
-		kops replace -f my-cluster.yaml
+	apply_example = templates.Examples(i18n.T(`
+		# Apply a cluster specification using a file
+		kops apply -f my-cluster.yaml
 		`))
 
-	replace_short = i18n.T(`Replace cluster resources.`)
+	apply_short = i18n.T(`Apply cluster resources.`)
 )
 
-type ReplaceOptions struct {
+type ApplyOptions struct {
 	resource.FilenameOptions
 }
 
-func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &ReplaceOptions{}
+func NewCmdApply(f *util.Factory, out io.Writer) *cobra.Command {
+	options := &ApplyOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "replace -f FILENAME (DEPRECATED in favor of apply)",
-		Short:   replace_short,
-		Long:    replace_long,
-		Example: replace_example,
+		Use:     "apply -f FILENAME",
+		Short:   apply_short,
+		Long:    apply_long,
+		Example: apply_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameEmpty(options.Filenames) {
 				cmd.Help()
 				return
 			}
 
-			cmdutil.CheckErr(RunReplace(f, cmd, out, options))
+			cmdutil.CheckErr(RunApply(f, cmd, out, options))
 		},
 	}
 
@@ -75,7 +74,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ReplaceOptions) error {
+func RunApply(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ApplyOptions) error {
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
@@ -104,19 +103,19 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ReplaceOp
 			case *kopsapi.Federation:
 				_, err = clientset.Federations().Update(v)
 				if err != nil {
-					return fmt.Errorf("error replacing federation: %v", err)
+					return fmt.Errorf("error applying federation speficiation: %v", err)
 				}
 
 			case *kopsapi.Cluster:
 				_, err = clientset.Clusters().Update(v)
 				if err != nil {
-					return fmt.Errorf("error replacing cluster: %v", err)
+					return fmt.Errorf("error applying cluster specification: %v", err)
 				}
 
 			case *kopsapi.InstanceGroup:
 				clusterName := v.ObjectMeta.Labels[kopsapi.LabelClusterName]
 				if clusterName == "" {
-					return fmt.Errorf("must specify %q label with cluster name to replace instanceGroup", kopsapi.LabelClusterName)
+					return fmt.Errorf("must specify %q label with cluster name as part of instanceGroup specification", kopsapi.LabelClusterName)
 				}
 				_, err = clientset.InstanceGroups(clusterName).Update(v)
 				if err != nil {

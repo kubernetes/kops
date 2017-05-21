@@ -126,6 +126,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", "", "Name of cluster")
 
 	// create subcommands
+	cmd.AddCommand(NewCmdApply(f, out))
 	cmd.AddCommand(NewCmdCompletion(f, out))
 	cmd.AddCommand(NewCmdCreate(f, out))
 	cmd.AddCommand(NewCmdDelete(f, out))

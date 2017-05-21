@@ -1,21 +1,21 @@
-## kops replace
+## kops apply
 
-Replace cluster resources.
+Apply cluster resources.
 
 ### Synopsis
 
 
-Replace a resource specification by filename or stdin. DEPRECATED in favor of kops apply.
+Apply a resource specification by filename or stdin.
 
 ```
-kops replace -f FILENAME (DEPRECATED in favor of apply)
+kops apply -f FILENAME
 ```
 
 ### Examples
 
 ```
-  # Replace a cluster specification using a file
-  kops replace -f my-cluster.yaml
+  # Apply a cluster specification using a file
+  kops apply -f my-cluster.yaml
 ```
 
 ### Options

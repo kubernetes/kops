@@ -27,6 +27,7 @@ kops helps you create, destroy, upgrade and maintain production-grade, highly av
 ```
 
 ### SEE ALSO
+* [kops apply](kops_apply.md)	 - Apply cluster resources.
 * [kops completion](kops_completion.md)	 - Output shell completion code for the given shell (bash or zsh).
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 * [kops delete](kops_delete.md)	 - Delete clusters,instancegroups, or secrets.
