@@ -501,3 +501,11 @@ kops-server-build:
 .PHONY: kops-server-push
 kops-server-push: kops-server-build
 	docker push ${DOCKER_REGISTRY}/kops-server:latest
+
+
+kops-server-apimachinery: apimachinery
+	#${GOPATH}/bin/deepcopy-gen --input-dirs kope.io/auth/pkg/apis/auth/v1alpha1 --v=0  --output-file-base=zz_generated.deepcopy
+	#${GOPATH}/bin/deepcopy-gen --input-dirs kope.io/auth/pkg/apis/componentconfig/v1alpha1 --v=0  --output-file-base=zz_generated.deepcopy
+	${GOPATH}/bin/client-gen  --input-base k8s.io/kops/pkg/apis/ --input="kops/,kops/v1alpha1,kops/v1alpha2" --clientset-path k8s.io/kops/pkg/client/clientset_generated/
+	${GOPATH}/bin/client-gen  --clientset-name="clientset" --input-base k8s.io/kops/pkg/apis/ --input="kops/,kops/v1alpha1,kops/v1alpha2" --clientset-path k8s.io/kops/pkg/client/clientset_generated/
+
