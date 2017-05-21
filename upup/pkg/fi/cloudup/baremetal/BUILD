@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "cloud.go",
+        "target.go",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//upup/pkg/fi:go_default_library",
+        "@io_k8s_kubernetes//federation/pkg/dnsprovider:go_default_library",
+    ],
+)

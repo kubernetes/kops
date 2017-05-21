@@ -1,17 +1,4 @@
-package(default_visibility = ["//visibility:public"])
-
-licenses(["notice"])
-
-load(
-    "@io_bazel_rules_go//go:def.bzl",
-    "go_binary",
-    "go_library",
-)
-
-go_binary(
-    name = "dns-controller",
-    library = ":go_default_library",
-)
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -19,18 +6,22 @@ go_library(
     visibility = ["//visibility:private"],
     deps = [
         "//dns-controller/pkg/dns:go_default_library",
-        "//dns-controller/pkg/watchers:go_default_library",
         "//protokube/pkg/gossip:go_default_library",
         "//protokube/pkg/gossip/dns:go_default_library",
-        "//protokube/pkg/gossip/dns/provider:go_default_library",
         "//protokube/pkg/gossip/mesh:go_default_library",
+        "//protokube/pkg/protokube:go_default_library",
+        "//protokube/pkg/protokube/baremetal:go_default_library",
         "@com_github_golang_glog//:go_default_library",
         "@com_github_spf13_pflag//:go_default_library",
-        "@io_k8s_client_go//kubernetes:go_default_library",
-        "@io_k8s_client_go//rest:go_default_library",
         "@io_k8s_kubernetes//federation/pkg/dnsprovider:go_default_library",
         "@io_k8s_kubernetes//federation/pkg/dnsprovider/providers/aws/route53:go_default_library",
         "@io_k8s_kubernetes//federation/pkg/dnsprovider/providers/coredns:go_default_library",
         "@io_k8s_kubernetes//federation/pkg/dnsprovider/providers/google/clouddns:go_default_library",
     ],
+)
+
+go_binary(
+    name = "protokube",
+    library = ":go_default_library",
+    visibility = ["//visibility:public"],
 )
