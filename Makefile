@@ -27,11 +27,15 @@ GOVERSION=1.8.1
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.6.1
+DNS_CONTROLLER_TAG   = 1.6.1
 
-KOPS_RELEASE_VERSION=1.6.0
-KOPS_CI_VERSION=1.6.1-beta.1
-KOPS=${GOPATH_1ST}/bin/kops
+KOPS_RELEASE_VERSION = 1.6.0
+KOPS_CI_VERSION      = 1.6.1-beta.1
+
+# kops install location
+KOPS                 = ${GOPATH_1ST}/bin/kops
+# kops source root directory (without trailing /)
+KOPS_ROOT           ?= $(patsubst %/,%,$(abspath $(dir $(firstword $(MAKEFILE_LIST)))))
 
 GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
 
@@ -68,6 +72,9 @@ ifdef STATIC_BUILD
   EXTRA_BUILDFLAGS=-installsuffix cgo
   EXTRA_LDFLAGS=-s
 endif
+
+# Conservative shell options
+.SHELLFLAGS = -euCc
 
 SHASUMCMD := $(shell command -v sha1sum || command -v shasum; 2> /dev/null)
 
@@ -414,13 +421,28 @@ verify-packages:
 
 .PHONY: verify-gendocs
 verify-gendocs: kops
-	KOPS_STATE_STORE= hack/verify-gendocs.sh
+	@: FIXME: why unset this?; \
+	export KOPS_STATE_STORE=; \
+	\
+	TMP_DOCS="$$(mktemp -d)"; \
+	\
+	if ! command -v '$(KOPS)' 1>/dev/null 2>&1; then \
+	    echo "kops must be installed. Please run make. Aborting." 1>&2; \
+	    exit 1; \
+	fi; \
+	\
+	'$(KOPS)' genhelpdocs --out "$$TMP_DOCS"; \
+	\
+	if ! diff -r "$$TMP_DOCS" '$(KOPS_ROOT)/docs/cli'; then \
+	     echo "Please run make gen-cli-docs." 1>&2; \
+	     exit 1; \
+	fi
 
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-boilerplate verify-gendocs verify-packages nodeup-gocode examples test 
+ci: govet verify-gofmt verify-boilerplate nodeup-gocode examples test | verify-gendocs verify-packages 
 	echo "Done!"
 
 # --------------------------------------------------
