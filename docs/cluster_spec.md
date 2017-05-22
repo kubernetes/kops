@@ -102,6 +102,19 @@ spec:
     oidcCAFile: /etc/kubernetes/ssl/kc-ca.pem
 ```
 
+#### audit logging
+
+Read more about this here: https://kubernetes.io/docs/admin/audit
+
+```yaml
+spec:
+  kubeAPIServer:
+    auditLogPath: /var/log/kube-apiserver-audit.log
+    auditLogMaxAge: 10
+    auditLogMaxBackups: 1
+    auditLogMaxSize: 100
+```
+
 #### runtimeConfig
 
 Keys and values here are translated into `--runtime-config` values for `kube-apiserver`, separated by commas.
