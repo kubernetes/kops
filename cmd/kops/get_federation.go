@@ -73,7 +73,7 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 		return err
 	}
 
-	list, err := client.Federations().List(metav1.ListOptions{})
+	list, err := client.ListFederations(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

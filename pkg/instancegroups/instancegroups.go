@@ -119,7 +119,7 @@ func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) erro
 		}
 	}
 
-	err = c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).Delete(group.ObjectMeta.Name, nil)
+	err = c.Clientset.InstanceGroupsFor(c.Cluster).Delete(group.ObjectMeta.Name, nil)
 	if err != nil {
 		return err
 	}
