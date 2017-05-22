@@ -354,30 +354,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 	cluster.Spec.ConfigBase = configBase.Path()
 
-	cluster.Spec.Networking = &api.NetworkingSpec{}
-	switch c.Networking {
-	case "classic":
-		cluster.Spec.Networking.Classic = &api.ClassicNetworkingSpec{}
-	case "kubenet":
-		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
-	case "external":
-		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
-	case "cni":
-		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
-	case "kopeio-vxlan", "kopeio":
-		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
-	case "weave":
-		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
-	case "flannel":
-		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{}
-	case "calico":
-		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{}
-	case "canal":
-		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
-	default:
-		return fmt.Errorf("unknown networking mode %q", c.Networking)
-	}
-
 	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
 
 	// In future we could change the default if the flag is not specified, e.g. in 1.7 maybe the default is RBAC?
@@ -666,6 +642,37 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		if cluster.Spec.CloudProvider == "" {
 			return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
 		}
+	}
+
+	cluster.Spec.Networking = &api.NetworkingSpec{}
+	switch c.Networking {
+	case "classic":
+		cluster.Spec.Networking.Classic = &api.ClassicNetworkingSpec{}
+	case "kubenet":
+		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
+	case "external":
+		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
+	case "cni":
+		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
+	case "kopeio-vxlan", "kopeio":
+		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
+	case "weave":
+		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
+
+		if cluster.Spec.CloudProvider == "aws" {
+			// AWS supports "jumbo frames" of 9001 bytes and weave adds up to 87 bytes overhead
+			// sets the default to the largest number that leaves enough overhead and is divisible by 4
+			jumboFrameMTUSize := int32(8912)
+			cluster.Spec.Networking.Weave.MTU = &jumboFrameMTUSize
+		}
+	case "flannel":
+		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{}
+	case "calico":
+		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{}
+	case "canal":
+		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
+	default:
+		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
 
 	if c.VPCID != "" {

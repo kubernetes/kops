@@ -3,9 +3,15 @@
 Kubernetes Operations (kops) currently supports 4 networking modes:
 
 * `kubenet` kubernetes native networking via a CNI plugin.  This is the default.
-* `cni` Container Network Interface(CNI) style networking, often installed via a Daemonset.
+* `cni` Container Network Interface(CNI) style networking, often installed via a Daemonset. Kops can configure
+ several CNI networking providers out of the box, detailed below.
 * `classic` kubernetes native networking, done in-process.
 * `external` networking is done via a Daemonset. This is used in some custom implementations.
+
+You are able to specify your networking type via command line switch or in your yaml file.
+The `--networking` option accepts one of the four values above, or one of the supported CNI options given below.
+
+If `--networking` is left undefined `kubenet` is installed.
 
 ### kops Default Networking
 
@@ -62,17 +68,11 @@ CNI networking providers are not part of the Kubernetes project, we do not maint
 their installation processes.  With that in mind, we do not support problems with
 different CNI providers but support configuring Kubernetes to run CNI providers.
 
-## Specifying network option for cluster creation
-
-You are able to specify your networking type via command line switch or in your yaml file.
-The `--networking` option accepts the three different values defined above: `kubenet`, `cni`,
-`classic`, and `external`. If `--networking` is left undefined `kubenet` is installed.
-
 ### Weave Example for CNI
 
-#### Installation Weave on a new Cluster
+#### Installing Weave on a new Cluster
 
-The following command sets up a cluster, in HA mode, that is ready for a CNI installation.
+The following command sets up a cluster, in HA mode, with Weave as the CNI and networking policy provider:
 
 ```console
 $ export $ZONE=mylistofzones
@@ -81,25 +81,38 @@ $ kops create cluster \
   --master-zones $ZONES \
   --master-size m4.large \
   --node-size m4.large \
-  --networking cni \
+  --networking weave \
   --yes \
   --name myclustername.mydns.io
 ```
 
-Once the cluster is stable, which you can check with a `kubectl cluster-info` command, the next
-step is to install CNI networking. Most of the CNI network providers are
-moving to installing their components plugins via a Daemonset.  For instance weave will
-install with the following command:
+The above DaemonSet installation requires K8s 1.4.x or above.
 
-Daemonset installation for K8s 1.6.x or above.
+Alternately, if you prefer to manually install the Weave DaemonSet you can use the
+`--networking cni` option instead.
+
+Manual Daemonset installation for K8s 1.6.x or above:
 ```console
 $ kubectl create -f https://git.io/weave-kube-1.6
 ```
 
-Daemonset installation for K8s 1.4.x or 1.5.x.
+Manual Daemonset installation for K8s 1.4.x or 1.5.x.
 ```console
 $ kubectl create -f https://git.io/weave-kube
 ```
+
+#### Configuring Weave MTU
+
+The Weave MTU is configurable by editing the cluster and setting `mtu` option in the weave configuration.
+AWS VPCs support jumbo frames, so on cluster creation kops sets the weave MTU to 8912 bytes (9001 minus overhead).
+
+```
+spec:
+  networking:
+    weave:
+      mtu: 8912
+```
+
 
 ### Calico Example for CNI and Network Policy
 
