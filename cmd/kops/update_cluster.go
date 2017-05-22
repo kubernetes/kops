@@ -174,7 +174,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 	var instanceGroups []*kops.InstanceGroup
 	{
-		list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(metav1.ListOptions{})
+		list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 		if err != nil {
 			return err
 		}

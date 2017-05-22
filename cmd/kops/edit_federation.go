@@ -93,7 +93,7 @@ func RunEditFederation(f *util.Factory, cmd *cobra.Command, args []string, out i
 		return fmt.Errorf("name is required")
 	}
 
-	old, err := clientset.Federations().Get(name)
+	old, err := clientset.GetFederation(name)
 	if err != nil {
 		return fmt.Errorf("error reading Federation %q: %v", name, err)
 	}
@@ -144,7 +144,7 @@ func RunEditFederation(f *util.Factory, cmd *cobra.Command, args []string, out i
 	}
 
 	// Note we perform as much validation as we can, before writing a bad config
-	_, err = clientset.Federations().Update(newFed)
+	_, err = clientset.FederationsFor(newFed).Update(newFed)
 	if err != nil {
 		return err
 	}

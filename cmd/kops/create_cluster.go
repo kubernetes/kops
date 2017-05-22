@@ -27,13 +27,13 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
-	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
@@ -328,9 +328,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
-	cluster, err := clientset.Clusters().Get(clusterName)
+	cluster, err := clientset.GetCluster(clusterName)
 	if err != nil {
-		return err
+		if apierrors.IsNotFound(err) {
+			cluster = nil
+		} else {
+			return err
+		}
 	}
 
 	if cluster != nil {
@@ -338,6 +342,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	cluster = &api.Cluster{}
+	cluster.ObjectMeta.Name = clusterName
 
 	channel, err := api.LoadChannel(c.Channel)
 	if err != nil {
@@ -354,7 +359,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 	cluster.Spec.Channel = c.Channel
 
-	configBase, err := clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(clusterName)
+	configBase, err := clientset.ConfigBaseFor(cluster)
 	if err != nil {
 		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
 	}
@@ -638,10 +643,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if c.Project != "" {
 		cluster.Spec.Project = c.Project
-	}
-
-	if clusterName != "" {
-		cluster.ObjectMeta.Name = clusterName
 	}
 
 	if c.KubernetesVersion != "" {
