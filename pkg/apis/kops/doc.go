@@ -14,4 +14,5 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// +groupName=kops
 package kops // import "k8s.io/kops/pkg/apis/kops"

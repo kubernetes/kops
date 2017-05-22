@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 
@@ -24,8 +25,6 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/util/pkg/vfs"
-
-	"bytes"
 
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
@@ -101,13 +100,13 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ReplaceOp
 
 			switch v := o.(type) {
 			case *kopsapi.Federation:
-				_, err = clientset.Federations().Update(v)
+				_, err = clientset.FederationsFor(v).Update(v)
 				if err != nil {
 					return fmt.Errorf("error replacing federation: %v", err)
 				}
 
 			case *kopsapi.Cluster:
-				_, err = clientset.Clusters().Update(v)
+				_, err = clientset.ClustersFor(v).Update(v)
 				if err != nil {
 					return fmt.Errorf("error replacing cluster: %v", err)
 				}
@@ -117,7 +116,11 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ReplaceOp
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to replace instanceGroup", kopsapi.LabelClusterName)
 				}
-				_, err = clientset.InstanceGroups(clusterName).Update(v)
+				cluster, err := clientset.GetCluster(clusterName)
+				if err != nil {
+					return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
+				}
+				_, err = clientset.InstanceGroupsFor(cluster).Update(v)
 				if err != nil {
 					return fmt.Errorf("error replacing instanceGroup: %v", err)
 				}

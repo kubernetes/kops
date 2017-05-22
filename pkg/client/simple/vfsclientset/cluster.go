@@ -20,11 +20,13 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/validation"
-	"k8s.io/kops/pkg/client/simple"
+	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/util/pkg/vfs"
 	"os"
 	"strings"
@@ -43,14 +45,17 @@ func newClusterVFS(basePath vfs.Path) *ClusterVFS {
 	return c
 }
 
-var _ simple.ClusterInterface = &ClusterVFS{}
+var _ kopsinternalversion.ClusterInterface = &ClusterVFS{}
 
-func (c *ClusterVFS) Get(name string) (*api.Cluster, error) {
+func (c *ClusterVFS) Get(name string, options metav1.GetOptions) (*api.Cluster, error) {
+	if options.ResourceVersion != "" {
+		return nil, fmt.Errorf("ResourceVersion not supported in ClusterVFS::Get")
+	}
 	return c.find(name)
 }
 
 // Deprecated, but we need this for now..
-func (c *ClusterVFS) ConfigBase(clusterName string) (vfs.Path, error) {
+func (c *ClusterVFS) configBase(clusterName string) (vfs.Path, error) {
 	if clusterName == "" {
 		return nil, fmt.Errorf("clusterName is required")
 	}
@@ -180,7 +185,7 @@ func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
 
 	// TODO: Split this out into real version updates / schema changes
 	if c.Spec.ConfigBase == "" {
-		configBase, err := r.ConfigBase(clusterName)
+		configBase, err := r.configBase(clusterName)
 		if err != nil {
 			return nil, fmt.Errorf("error building ConfigBase for cluster: %v", err)
 		}
@@ -188,4 +193,20 @@ func (r *ClusterVFS) find(clusterName string) (*api.Cluster, error) {
 	}
 
 	return c, nil
+}
+
+func (r *ClusterVFS) Delete(name string, options *metav1.DeleteOptions) error {
+	return fmt.Errorf("cluster Delete not implemented for vfs store")
+}
+
+func (r *ClusterVFS) DeleteCollection(options *metav1.DeleteOptions, listOptions metav1.ListOptions) error {
+	return fmt.Errorf("cluster DeleteCollection not implemented for vfs store")
+}
+
+func (r *ClusterVFS) Watch(opts metav1.ListOptions) (watch.Interface, error) {
+	return nil, fmt.Errorf("cluster Watch not implemented for vfs store")
+}
+
+func (r *ClusterVFS) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.Cluster, err error) {
+	return nil, fmt.Errorf("cluster Patch not implemented for vfs store")
 }

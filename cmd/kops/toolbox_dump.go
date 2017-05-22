@@ -93,7 +93,7 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 		return fmt.Errorf("ClusterName is required")
 	}
 
-	cluster, err := clientset.Clusters().Get(options.ClusterName)
+	cluster, err := clientset.GetCluster(options.ClusterName)
 	if err != nil {
 		return err
 	}

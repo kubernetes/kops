@@ -77,7 +77,7 @@ func RunUpdateFederation(factory *util.Factory, cmd *cobra.Command, args []strin
 		return err
 	}
 
-	f, err := clientset.Federations().Get(name)
+	f, err := clientset.GetFederation(name)
 	if err != nil {
 		return fmt.Errorf("error reading federation %q: %v", name, err)
 	}

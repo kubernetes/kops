@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -111,7 +112,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return err
 	}
 
-	existing, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Get(groupName)
+	existing, err := clientset.InstanceGroupsFor(cluster).Get(groupName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -175,7 +176,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return err
 	}
 
-	_, err = clientset.InstanceGroups(cluster.ObjectMeta.Name).Create(group)
+	_, err = clientset.InstanceGroupsFor(cluster).Create(group)
 	if err != nil {
 		return fmt.Errorf("error storing InstanceGroup: %v", err)
 	}
