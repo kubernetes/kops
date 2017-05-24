@@ -72,20 +72,25 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - endpoints
+  - events
   verbs:
-  - update
-  - get
   - create
 - apiGroups:
   - ""
   resources:
-  - configmaps
+  - endpoints
+  resourceNames:
+  - cluster-autoscaler
   verbs:
-  - update
-  - get
-  - create
-  - delete
+  - "*"
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  resourceNames:
+  - cluster-autoscaler-status
+  verbs:
+  - "*"
 - apiGroups:
   - ""
   resources:
