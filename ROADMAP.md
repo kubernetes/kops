@@ -16,6 +16,7 @@
 * more cloud providers
 * promote GCE to stable
 * RBAC policies for all components
+* bringing rolling-update out of alpha
 
 # HISTORICAL
 
@@ -23,8 +24,8 @@
 
 ### Must-have features
 
-* Support for k8s 1.6
-* RBAC enabled by default _we made RBAC optional_
+* Support for k8s 1.6 _done_
+* RBAC enabled by default _yes, but we kept RBAC optional_
 
 ## Other features we are working on in the 1.6 timeframe
 
