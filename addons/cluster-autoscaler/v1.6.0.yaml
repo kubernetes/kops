@@ -73,6 +73,7 @@ rules:
   - ""
   resources:
   - endpoints
+  - configmaps
   verbs:
   - update
   - get
