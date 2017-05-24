@@ -91,11 +91,15 @@ step is to install CNI networking. Most of the CNI network providers are
 moving to installing their components plugins via a Daemonset.  For instance weave will
 install with the following command:
 
+Daemonset installation for K8s 1.6.x or above.
+```console
+$ kubectl create -f https://git.io/weave-kube-1.6
+```
+
+Daemonset installation for K8s 1.4.x or 1.5.x.
 ```console
 $ kubectl create -f https://git.io/weave-kube
 ```
-
-The above daemonset installation requires K8s 1.4.x or above.
 
 ### Calico Example for CNI and Network Policy
 
