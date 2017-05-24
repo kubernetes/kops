@@ -73,13 +73,23 @@ rules:
   - ""
   resources:
   - endpoints
+  verbs:
+  - update
+  - get
+  - create
+- apiGroups:
+  - ""
+  resources:
   - configmaps
   verbs:
   - update
   - get
+  - create
+  - delete
 - apiGroups:
   - ""
   resources:
+  - nodes
   - pods
   - services
   - replicationcontrollers
@@ -88,24 +98,22 @@ rules:
   - nodes
   verbs:
   - watch
+  - list
 - apiGroups:
   - extensions
   resources:
   - replicasets
-  verbs:
-  - watch
-- apiGroups:
-  - extensions
-  resources:
   - daemonsets
   verbs:
-  - get
+  - watch
+  - list
 - apiGroups:
   - policy
   resources:
   - poddisruptionbudgets
   verbs:
   - watch
+  - list
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
