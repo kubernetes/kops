@@ -62,6 +62,7 @@ type FlannelNetworkingSpec struct {
 
 // Calico declares that we want Calico networking
 type CalicoNetworkingSpec struct {
+	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
 }
 
 // Canal declares that we want Canal networking
