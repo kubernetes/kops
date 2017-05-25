@@ -21,7 +21,10 @@ import (
 	"fmt"
 	"io"
 
+	"os"
+
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -34,6 +37,9 @@ var (
 	Display one or many resources.` + validResources))
 
 	get_example = templates.Examples(i18n.T(`
+	# Get all resource in a single cluster as yaml
+	kops get --name k8s-cluster.example.com -o yaml
+
 	# Get all clusters in a state store
 	kops get clusters
 
@@ -67,7 +73,9 @@ const (
 )
 
 func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &GetOptions{}
+	options := &GetOptions{
+		output: OutputTable,
+	}
 
 	cmd := &cobra.Command{
 		Use:        "get",
@@ -75,9 +83,27 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 		Short:      get_short,
 		Long:       get_long,
 		Example:    get_example,
+		Run: func(cmd *cobra.Command, args []string) {
+			if len(args) != 0 {
+				options.clusterName = args[0]
+			}
+
+			if rootCommand.clusterName != "" {
+				if len(args) != 0 {
+					exitWithError(fmt.Errorf("cannot mix --name for cluster with positional arguments"))
+				}
+
+				options.clusterName = rootCommand.clusterName
+			}
+
+			err := RunGet(&rootCommand, os.Stdout, options)
+			if err != nil {
+				exitWithError(err)
+			}
+		},
 	}
 
-	cmd.PersistentFlags().StringVarP(&options.output, "output", "o", OutputTable, "output format.  One of: table, yaml, json")
+	cmd.PersistentFlags().StringVarP(&options.output, "output", "o", options.output, "output format.  One of: table, yaml, json")
 
 	// create subcommands
 	cmd.AddCommand(NewCmdGetCluster(f, out, options))
@@ -86,6 +112,102 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdGetSecrets(f, out, options))
 
 	return cmd
+}
+
+func RunGet(context Factory, out io.Writer, options *GetOptions) error {
+
+	client, err := context.Clientset()
+	if err != nil {
+		return err
+	}
+
+	cluster, err := client.Clusters().Get(options.clusterName)
+	if err != nil {
+		return err
+	}
+
+	if cluster == nil {
+		fmt.Fprintf(os.Stderr, "No cluster found\n")
+		return nil
+	}
+
+	clusterList := &api.ClusterList{}
+	clusterList.Items = make([]api.Cluster, 1)
+	clusterList.Items[0] = *cluster
+
+	args := make([]string, 0)
+
+	clusters, err := buildClusters(args, clusterList)
+
+	ig, err := client.InstanceGroups(options.clusterName).List(metav1.ListOptions{})
+	if err != nil {
+		return err
+	}
+
+	if ig == nil || ig.Items == nil || len(ig.Items) == 0 {
+		fmt.Fprintf(os.Stderr, "No instance groups found\n")
+	}
+
+	instancegroups, err := buildInstanceGroups(args, ig)
+	if err != nil {
+		return err
+	}
+
+	switch options.output {
+	case OutputYaml:
+
+		err = clusterOutputYAML(clusters, out)
+		if err != nil {
+			return err
+		}
+
+		if err := writeYAMLSep(out); err != nil {
+			return err
+		}
+
+		err = igOutputYAML(instancegroups, out)
+		if err != nil {
+			return err
+		}
+
+	case OutputJSON:
+		return fmt.Errorf("not implemented")
+		// TODO this is not outputing valid json.  Not sure what cluster and instance groups should look like
+		/*
+			err = clusterOutputJson(clusters,out)
+			if err != nil {
+				return err
+			}
+			err = igOutputJson(instancegroups,out)
+			if err != nil {
+				return err
+			}*/
+
+	case OutputTable:
+		fmt.Fprintf(os.Stdout, "Cluster\n")
+		err = clusterOutputTable(clusters, out)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(os.Stdout, "\nInstance Groups\n")
+		err = igOutputTable(instancegroups, out)
+		if err != nil {
+			return err
+		}
+
+	default:
+		return fmt.Errorf("Unknown output format: %q", options.output)
+	}
+
+	return nil
+}
+
+func writeYAMLSep(out io.Writer) error {
+	_, err := out.Write([]byte("\n---\n\n"))
+	if err != nil {
+		return fmt.Errorf("error writing to stdout: %v", err)
+	}
+	return nil
 }
 
 type marshalFunc func(obj runtime.Object) ([]byte, error)
