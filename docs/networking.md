@@ -121,6 +121,41 @@ $ kops create cluster \
 
 The above will deploy a daemonset installation which requires K8s 1.4.x or above.
 
+##### Enable Cross-Subnet mode in Calico
+Calico [since 2.1] supports a new option for IP-in-IP mode where traffic is only encapsulated
+when it’s destined to subnets with intermediate infrastructure lacking Calico route awareness
+– for example, across heterogeneous public clouds or on AWS where traffic is crossing availability zones/ regions.
+
+With this mode, IP-in-IP encapsulation is only performed selectively. This provides better performance in AWS
+multi-AZ deployments, and in general when deploying on networks where pools of nodes with L2 connectivity
+are connected via a router.
+
+Reference: [Calico 2.1 Release Notes](https://www.projectcalico.org/project-calico-2-1-released/)
+
+To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous `kops create ...` command.
+
+`kops edit cluster`  will show you a block like this:
+
+```
+  networking:
+    calico: {}
+```
+
+You will need to change that block, and add an additional field, to look like this:
+
+```
+  networking:
+    calico:
+      crossSubnet: true
+```
+
+###### AWS
+In order for cross-subnet mode to work in AWS, the source/destination address checks need to be disable globally on all EC2 instances on the cluster. Otherwise,
+all non-encapsulated inter-node traffic would be dropped by AWS.
+
+When you enable cross-subnet mode in kops, an addon ([k8s-ec2-srcdst](https://github.com/ottoyiu/k8s-ec2-srcdst)) will be deployed to facilitate the disabling of said source/destination address checks.
+
+
 #### More information about Calico
 
 For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/).

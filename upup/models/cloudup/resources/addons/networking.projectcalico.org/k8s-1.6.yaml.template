@@ -92,7 +92,7 @@ spec:
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ .NonMasqueradeCIDR }}"
             - name: CALICO_IPV4POOL_IPIP
-              value: "always"
+              value: "{{- if .Networking.Calico.CrossSubnet -}}cross-subnet{{- else -}}always{{- end -}}"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
@@ -261,3 +261,104 @@ subjects:
 - kind: ServiceAccount
   name: calico
   namespace: kube-system
+
+{{ if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}
+# This manifest installs the k8s-ec2-srcdst container, which disables
+# src/dst ip checks to allow BGP to function for calico for hosts within subnets
+# This only applies for AWS environments.
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: k8s-ec2-srcdst
+  labels:
+    role.kubernetes.io/networking: "1"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+  - update
+  - patch
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: k8s-ec2-srcdst
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: k8s-ec2-srcdst
+  labels:
+    role.kubernetes.io/networking: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: k8s-ec2-srcdst
+subjects:
+- kind: ServiceAccount
+  name: k8s-ec2-srcdst
+  namespace: kube-system
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: k8s-ec2-srcdst
+  namespace: kube-system
+  labels:
+    k8s-app: k8s-ec2-srcdst
+    role.kubernetes.io/networking: "1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: k8s-ec2-srcdst
+  template:
+    metadata:
+      labels:
+        k8s-app: k8s-ec2-srcdst
+        role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: CriticalAddonsOnly
+        operator: Exists
+      serviceAccountName: k8s-ec2-srcdst
+      containers:
+        - image: ottoyiu/k8s-ec2-srcdst:v0.0.3
+          name: k8s-ec2-srcdst
+          resources:
+            requests:
+              cpu: 10m
+          command:
+            - ./k8s-ec2-srcdst
+          env:
+            - name: AWS_REGION
+              value: {{ AWSRegion }}
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: "/etc/ssl/certs/ca-certificates.crt"
+              readOnly: true
+          imagePullPolicy: "Always"
+      volumes:
+        - name: ssl-certs
+          hostPath:
+            path: "/etc/ssl/certs/ca-certificates.crt"
+{{- end -}}
