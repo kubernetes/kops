@@ -108,7 +108,7 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 	}
 
 	// Todo lets make this smart enough to detect the cloud and switch on the ClusterResources interface
-	d := &resources.AwsCluster{}
+	d := &resources.ClusterResources{}
 	d.ClusterName = options.ClusterName
 	d.Cloud = cloud
 
