@@ -60,12 +60,17 @@ kops rolling-update cluster
 ### Options
 
 ```
+  -a, --algorithm string             When new nodes are created. Supported: asg, create, pre-create. (default "asg")
       --bastion-interval duration    Time to wait between restarting bastions (default 5m0s)
       --cloudonly                    Perform rolling update without confirming progress with k8s
+      --drain-interval duration      The duration that a rolling-update will wait after the node is drained. (default 1m30s)
+      --fail-on-drain-error          The rolling-update will fail if draining a node fails. (default true)
+      --fail-on-validate-error       The rolling-update will fail if the cluster fails to validate. (default true)
   -f, --force                        Force rolling update, even if no changes
       --instance-group stringSlice   List of instance groups to update (defaults to all if not specified)
       --master-interval duration     Time to wait between restarting masters (default 5m0s)
       --node-interval duration       Time to wait between restarting nodes (default 2m0s)
+      --validate-retries int         The number of times that a node will be validated.  Validation will sleep the master-interval/2 or node-interval/2 duration. (default 8)
   -y, --yes                          perform rolling update without confirmation
 ```
 
