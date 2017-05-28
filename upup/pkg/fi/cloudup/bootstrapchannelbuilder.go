@@ -21,6 +21,7 @@ import (
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -185,6 +186,22 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			Manifest: fi.String(location),
 		})
 		manifests[key] = "addons/" + location
+	}
+
+	if featureflag.EnableExternalDNS.Enabled() {
+		{
+			key := "external-dns.addons.k8s.io"
+			version := "0.3.0"
+			location := key + "/v" + version + ".yaml"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:     fi.String(key),
+				Version:  fi.String(version),
+				Selector: map[string]string{"k8s-addon": key},
+				Manifest: fi.String(location),
+			})
+			manifests[key] = "addons/" + location
+		}
 	}
 
 	// The role.kubernetes.io/networking is used to label anything related to a networking addin,
