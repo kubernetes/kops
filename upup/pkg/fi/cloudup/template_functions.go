@@ -30,6 +30,10 @@ package cloudup
 import (
 	"encoding/base64"
 	"fmt"
+	"os"
+	"strings"
+	"text/template"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
@@ -37,9 +41,6 @@ import (
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"os"
-	"strings"
-	"text/template"
 )
 
 type TemplateFunctions struct {
@@ -93,6 +94,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	}
 
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
+
+	dest["ExternalDnsArgv"] = tf.ExternalDnsArgv
 
 	// TODO: Only for GCE?
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
@@ -180,4 +183,25 @@ func (tf *TemplateFunctions) DnsControllerImage() (string, error) {
 	} else {
 		return image, nil
 	}
+}
+
+func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
+	var argv []string
+
+	cloudProvider := tf.cluster.Spec.CloudProvider
+
+	switch fi.CloudProviderID(cloudProvider) {
+	case fi.CloudProviderAWS:
+		argv = append(argv, "--provider=aws")
+	case fi.CloudProviderGCE:
+		project := tf.cluster.Spec.Project
+		argv = append(argv, "--provider=google")
+		argv = append(argv, "--google-project="+project)
+	default:
+		return nil, fmt.Errorf("unhandled cloudprovider %q", tf.cluster.Spec.CloudProvider)
+	}
+
+	argv = append(argv, "--source=ingress")
+
+	return argv, nil
 }
