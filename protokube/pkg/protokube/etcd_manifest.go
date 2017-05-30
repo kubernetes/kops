@@ -26,11 +26,14 @@ import (
 // BuildEtcdManifest creates the pod spec, based on the etcd cluster
 func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 
-	// TODO I do not like the version of etcd here
+	// TODO another hardcoded version
 	image := "/etcd:2.2.1"
-	imageRepository := "gcr.io/google_containers"
+	imageRegistry := "gcr.io/google_containers"
+
+	// Test to determine if the container registry has been passed in as a flag.
+	// If so use the provider registry location.
 	if c.ImageSource == "" {
-		image = imageRepository + image
+		image = imageRegistry + image
 	} else {
 		image = strings.TrimSuffix(c.ImageSource, "/") + image
 	}

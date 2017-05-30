@@ -43,8 +43,7 @@ import (
 
 type GetInventoryOptions struct {
 	KubernetesVersion string
-	// Channel is the location of the api.Channel to use for our defaults
-	Channel string
+	Channel           string
 	*GetOptions
 	resource.FilenameOptions
 	SSHPublicKey string
@@ -68,12 +67,16 @@ var (
 		# Get a inventory list from a cluster
 		kops get inventory k8s.example.com --state s3://k8s.example.com
 
+		# Get a inventory list from a cluster as YAML
+		kops get inventory k8s.example.com --state s3://k8s.example.com -o YAML
+
 		`))
 
 	get_inventory_short = i18n.T(`Output a list of IoTk - inventory of all things kops. `)
 	get_inventory_use   = i18n.T("inventory")
 )
 
+// NewCmdGetInventory sets up a new corbra command.
 func NewCmdGetInventory(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
 	options := &GetInventoryOptions{
 		GetOptions: getOptions,
@@ -324,6 +327,7 @@ func extractAssets(f *util.Factory, options *GetInventoryOptions) (*api.Inventor
 
 	// TODO check if the cluster has a key?
 	// TODO how do we get this out of here??
+	// TODO - Reference: https://github.com/kubernetes/kops/issues/2659
 	sshPublicKeys := make(map[string][]byte)
 	if options.SSHPublicKey != "" {
 		options.SSHPublicKey = utils.ExpandPath(options.SSHPublicKey)

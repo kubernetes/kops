@@ -146,10 +146,10 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 		flags += " --network-plugin-dir=" + b.CNIBinDir()
 	}
 
-	// TODO how do we not hard code version??
-
-	if b.Cluster.Spec.Assets != nil && b.Cluster.Spec.Assets.ContainerRepository != nil {
-		pause, err := components.GetGoogleImageRepositoryContainer(&b.Cluster.Spec, "pause-amd64:3.0")
+	// If a cluster has a container registry set, flag kubelet to use the pause container from that registry.
+	if b.Cluster.Spec.Assets != nil && b.Cluster.Spec.Assets.ContainerRegistry != nil {
+		// TODO another hardcoded version
+		pause, err := components.GetGoogleImageRegistryContainer(&b.Cluster.Spec, "pause-amd64:3.0")
 
 		if err != nil {
 			return nil, err

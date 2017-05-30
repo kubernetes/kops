@@ -37,9 +37,6 @@ const (
 	GCR_STORAGE = "https://storage.googleapis.com/kubernetes-release"
 )
 
-// TODO - We are going to need a function that validates a docker container repo, and a file system path
-// TODO - I think we are already ok on the file system stuff, but not the container repo stuff
-
 // OptionsContext is the context object for options builders
 type OptionsContext struct {
 	ClusterName string
@@ -136,7 +133,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
 
 	if component == "kube-dns" {
 		// TODO: Once we are shipping different versions, start to use them
-		i, err := GetGoogleImageRepositoryContainer(clusterSpec, "kubedns-amd64:1.3")
+		i, err := GetGoogleImageRegistryContainer(clusterSpec, "kubedns-amd64:1.3")
 
 		if err != nil {
 			return "", err
@@ -148,7 +145,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
 
 	if !IsBaseURL(clusterSpec.KubernetesVersion) {
 		c := component + ":" + "v" + clusterSpec.KubernetesVersion
-		i, err := GetGoogleImageRepositoryContainer(clusterSpec, c)
+		i, err := GetGoogleImageRegistryContainer(clusterSpec, c)
 
 		if err != nil {
 			return "", err
@@ -173,7 +170,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
 
 	c := component + ":" + tag
 
-	i, err := GetGoogleImageRepositoryContainer(clusterSpec, c)
+	i, err := GetGoogleImageRegistryContainer(clusterSpec, c)
 
 	if err != nil {
 		return "", err
@@ -182,9 +179,11 @@ func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
 	return i, nil
 }
 
+// GetContainer provides a imageName normalized to use a cluster asset container registry if
+// the cluster has a registry.
 func GetContainer(clusterSpec *kops.ClusterSpec, imageName string) (string, error) {
 
-	imageName, err := validation.GetContainerAndRepoAsString(clusterSpec, imageName)
+	imageName, err := validation.GetContainerAndRegistryAsString(clusterSpec, imageName)
 
 	if err != nil {
 		glog.Errorf("Unable to get container: %q: %v", imageName, err)
@@ -194,9 +193,12 @@ func GetContainer(clusterSpec *kops.ClusterSpec, imageName string) (string, erro
 	return imageName, nil
 }
 
+// Cached string for the google container registry.  Usually set to `GCR_IO`.
 var googleRepository *string
 
-func GetGoogleImageRepositoryContainer(clusterSpec *kops.ClusterSpec, c string) (string, error) {
+// GetGoogleImageRegistryContainer returns a container string, it is used for container that are
+// typically hosted in the google registry.
+func GetGoogleImageRegistryContainer(clusterSpec *kops.ClusterSpec, c string) (string, error) {
 
 	c, err := validation.GetContainerAsString(c)
 
@@ -208,7 +210,7 @@ func GetGoogleImageRepositoryContainer(clusterSpec *kops.ClusterSpec, c string) 
 		return *googleRepository + c, nil
 	}
 
-	repo, err := validation.GetRepositoryAsString(clusterSpec)
+	repo, err := validation.GetRegistryAsString(clusterSpec)
 
 	if err != nil {
 		return "", fmt.Errorf("Unable to get google image based container: %v", err)
@@ -225,6 +227,8 @@ func GetGoogleImageRepositoryContainer(clusterSpec *kops.ClusterSpec, c string) 
 	return repo + c, nil
 }
 
+// GetGoogleFileRepositoryURL returns the google file url for binaries typically housed on `GCR_STORAGE`.
+// This function will return the cluster asset file registry normalized url if a file registry is setup.
 func GetGoogleFileRepositoryURL(clusterSpec *kops.ClusterSpec, u string) (string, error) {
 	u = strings.TrimPrefix(u, "/")
 

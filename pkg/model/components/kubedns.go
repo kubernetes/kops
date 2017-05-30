@@ -42,7 +42,11 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 	clusterSpec.KubeDNS.ServerIP = ip.String()
 	clusterSpec.KubeDNS.Domain = clusterSpec.ClusterDNSDomain
-	container, err := GetGoogleImageRepositoryContainer(clusterSpec, "kubedns-amd64:1.3")
+
+	// TODO another hard coded version
+
+	// Get the container string normalized with assets container registry.
+	container, err := GetGoogleImageRegistryContainer(clusterSpec, "kubedns-amd64:1.3")
 
 	if err != nil {
 		return err

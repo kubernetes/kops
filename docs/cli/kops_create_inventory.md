@@ -1,16 +1,16 @@
 ## kops create inventory
 
-Update inventory files to the specified destinations(Repository/FileDestination).
+Update inventory files to the specified destinations(Registry/File Destination).
 
 ### Synopsis
 
 
-Upload inventory files to specified destinations(Repository/FileDestination). 
+Upload inventory files to specified destinations(Registry/FileDestination). 
 
 Note: 
 
   1. This command assumes Docker is installed and the user has the privileges to load and push images.  
-  2. User is authenticated to the provided Docker repository.
+  2. User is authenticated to the provided Docker registry.
 
 ```
 kops create inventory
@@ -20,17 +20,17 @@ kops create inventory
 
 ```
   # Stage inventory files from a yaml file
-  kops create inventory --repository quay.io/vorstella --fileDestination s3://mybucket -f mycluster.yaml
+  kops create inventory --registry quay.io/vorstella --fileDestination s3://mybucket -f mycluster.yaml
 ```
 
 ### Options
 
 ```
   -c, --channel string              Channel for default versions and configuration to use (default "stable")
-  -d, --file-destination string     FileDestination location used to stage inventory files
+  -p, --file-repository string      File repository location used to stage inventory files
   -f, --filename stringArray        Filename to use to create the resource
   -k, --kubernetes-version string   Version of kubernetes to run (defaults to version in channel)
-  -r, --repository string           Repository location used to stage inventory containers
+  -r, --registry string             Registry location used to stage inventory containers
       --stage-containers            Stage containers (default true)
       --stage-files                 Stage files (default true)
 ```

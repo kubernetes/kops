@@ -16,6 +16,9 @@ limitations under the License.
 
 package validation
 
+// This validation code is utilizing the docker reference funcs which parse and validate docker container
+// syntax.  For instance gci.io/foo/mycontainer:42 passes, while gci.io//foo/mycontainer:42 fails.
+
 import (
 	"bytes"
 	"fmt"
@@ -25,9 +28,8 @@ import (
 	"strings"
 )
 
-// Parse parses s and returns a syntactically valid Reference.
+// ParseContainer parses s and returns a syntactically valid Reference.
 // If an error was encountered it is returned, along with a nil Reference.
-// NOTE: Parse will not handle short digests.
 func ParseContainer(s string) (*kops.ContainerAsset, error) {
 	ref, err := reference.Parse(s)
 
@@ -61,19 +63,20 @@ func ParseContainer(s string) (*kops.ContainerAsset, error) {
 
 }
 
-func GetRepositoryAsString(clusterSpec *kops.ClusterSpec) (string, error) {
-	asset, err := GetContainerRepository(clusterSpec)
+// GetRegistryAsString get the asset container registry as a string if a cluster has an registry.
+func GetRegistryAsString(clusterSpec *kops.ClusterSpec) (string, error) {
+	asset, err := GetContainerRegistry(clusterSpec)
 
 	if err != nil {
-		return "", fmt.Errorf("unable to get container repository, asset: %v", err)
+		return "", fmt.Errorf("unable to get container registry, asset: %v", err)
 	}
 
-	// repository is not set
+	// registry is not set
 	if asset == nil {
 		return "", nil
 	}
 
-	return getRepo(asset), nil
+	return getRegistry(asset), nil
 
 }
 
@@ -94,7 +97,7 @@ func GetAssetContainer(asset *kops.ContainerAsset) (string, error) {
 	return asset.String, nil
 }*/
 
-func getRepo(asset *kops.ContainerAsset) string {
+func getRegistry(asset *kops.ContainerAsset) string {
 
 	if asset == nil {
 		return ""
@@ -114,15 +117,15 @@ func getRepo(asset *kops.ContainerAsset) string {
 	return buf.String()
 }
 
-func getRepoContainer(repo string, asset *kops.ContainerAsset) (string, error) {
+func getRepoContainer(registry string, asset *kops.ContainerAsset) (string, error) {
 
 	if asset == nil {
 		return "", fmt.Errorf("asset cannot be nil")
 	}
 	buf := new(bytes.Buffer)
 
-	if repo != "" {
-		buf.WriteString(repo)
+	if registry != "" {
+		buf.WriteString(registry)
 		buf.WriteString("/")
 	} else if asset.Domain != "" {
 		buf.WriteString(asset.Domain)
@@ -146,14 +149,15 @@ func getRepoContainer(repo string, asset *kops.ContainerAsset) (string, error) {
 	return buf.String(), nil
 }
 
-func GetContainerRepository(clusterSpec *kops.ClusterSpec) (*kops.ContainerAsset, error) {
+// GetContainerRegistry returns a ContainerAsset get the asset container registry if a cluster has an registry.
+func GetContainerRegistry(clusterSpec *kops.ClusterSpec) (*kops.ContainerAsset, error) {
 
-	if clusterSpec.Assets != nil && clusterSpec.Assets.ContainerRepository != nil {
-		repo := strings.TrimSuffix(*clusterSpec.Assets.ContainerRepository, "/")
-		asset, err := ParseContainer(repo)
+	if clusterSpec.Assets != nil && clusterSpec.Assets.ContainerRegistry != nil {
+		registry := strings.TrimSuffix(*clusterSpec.Assets.ContainerRegistry, "/")
+		asset, err := ParseContainer(registry)
 
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse assets container repository api value: %v", repo)
+			return nil, fmt.Errorf("unable to parse assets container registry api value: %v", registry)
 		}
 
 		return asset, nil
@@ -162,14 +166,15 @@ func GetContainerRepository(clusterSpec *kops.ClusterSpec) (*kops.ContainerAsset
 	return nil, nil
 }
 
-func GetContainerAndRepoAsString(clusterSpec *kops.ClusterSpec, container string) (string, error) {
-	repo, err := GetContainerRepository(clusterSpec)
+// GetContainerAndRegistryAsString returns a full container string if a cluster has an asset container registry.
+func GetContainerAndRegistryAsString(clusterSpec *kops.ClusterSpec, container string) (string, error) {
+	registry, err := GetContainerRegistry(clusterSpec)
 
 	if err != nil {
 		return "", err
 	}
 
-	r := getRepo(repo)
+	r := getRegistry(registry)
 
 	asset, err := ParseContainer(container)
 
@@ -186,6 +191,7 @@ func GetContainerAndRepoAsString(clusterSpec *kops.ClusterSpec, container string
 	return container, nil
 }
 
+// GetContainerAsString returns a full parsed container string.
 func GetContainerAsString(container string) (string, error) {
 	asset, err := ParseContainer(container)
 

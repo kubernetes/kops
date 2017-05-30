@@ -73,6 +73,8 @@ func (_ *LoadImageTask) CheckChanges(a, e, changes *LoadImageTask) error {
 
 func (_ *LoadImageTask) RenderLocal(t *local.LocalTarget, a, e, changes *LoadImageTask) error {
 
+	// If the hash is empty or set to zero the hash is not being set for the container
+	// Do not download the container. Containers that live in a clusters asset container registry.
 	if e.Hash == "" || e.Hash == "0" {
 		glog.Infof("not pulling image from url %q", e.Source)
 	}

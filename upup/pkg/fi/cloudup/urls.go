@@ -20,6 +20,7 @@ import (
 	"os"
 	"strings"
 
+	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -38,19 +39,20 @@ func BaseUrl(spec *api.ClusterSpec) string {
 	}
 
 	baseUrl = os.Getenv("KOPS_BASE_URL")
-	if baseUrl == "" {
+	if baseUrl != "" {
+		glog.Warningf("Using base url from KOPS_BASE_URL env var: %q", baseUrl)
+	} else {
 		version := strings.Replace(kops.Version, "+", "%2B", -1)
 		kopsUrl := "/kops/" + version + "/"
 
 		if spec.Assets != nil && spec.Assets.FileRepository != nil {
 			repo := strings.TrimSuffix(*spec.Assets.FileRepository, "/")
 			baseUrl = repo + kopsUrl
+			glog.Warning("Using custom base url: %q", baseUrl)
 		} else {
 			baseUrl = "https://kubeupv2.s3.amazonaws.com" + kopsUrl
+			glog.V(4).Infof("Using default url: %q", baseUrl)
 		}
-		glog.V(4).Infof("Using custom base url: %q", baseUrl)
-	} else {
-		glog.Warningf("Using base url from KOPS_BASE_URL env var: %q", baseUrl)
 	}
 
 	if !strings.HasSuffix(baseUrl, "/") {
@@ -72,7 +74,7 @@ func NodeUpLocation(spec *api.ClusterSpec) string {
 	nodeUpLocation = os.Getenv("NODEUP_URL")
 	if nodeUpLocation == "" {
 		nodeUpLocation = BaseUrl(spec) + "linux/amd64/nodeup"
-		glog.V(4).Infof("Using default nodeup location: %q", nodeUpLocation)
+		glog.V(4).Infof("Using default nodeup location set via kops base url: %q", nodeUpLocation)
 	} else {
 		glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", nodeUpLocation)
 	}
@@ -94,25 +96,20 @@ func ProtokubeImageSource(spec *api.ClusterSpec) (*nodeup.Image, error) {
 		return protokubeImageSource, nil
 	}
 
-	proto, err := validation.GetContainerAndRepoAsString(spec, kops.DefaultProtokubeImageName())
-	if err != nil {
-		return nil, err
+	var proto string
+	var err error
+
+	// only do this test it the env variable is not set
+	if protokubeImageSourceEnv == "" {
+		// A cluster asset container registry value can the default protokube name.
+		// Use the container registry value.
+		proto, err = validation.GetContainerAndRegistryAsString(spec, kops.DefaultProtokubeImageName())
+		if err != nil {
+			return nil, fmt.Errorf("unable to get protokube container name: %v", err)
+		}
 	}
 
-	if proto != kops.DefaultProtokubeImageName() {
-
-		// Assets.ContainerRepository is set
-		if err != nil {
-			return nil, err
-		}
-
-		protokubeImageSource = &nodeup.Image{
-			Name:   proto,
-			Source: proto,
-		}
-		glog.Infof("Using protokube location from assets container repository %q", *spec.Assets.ContainerRepository)
-
-	} else if protokubeImageSourceEnv != "" {
+	if protokubeImageSourceEnv != "" {
 
 		// use env variable
 		hash, err := findHash(protokubeImageSourceEnv)
@@ -127,6 +124,18 @@ func ProtokubeImageSource(spec *api.ClusterSpec) (*nodeup.Image, error) {
 		}
 		glog.Warningf("Using protokube location from PROTOKUBE_IMAGE env var: %q", protokubeImageSource)
 
+	} else if proto != kops.DefaultProtokubeImageName() {
+
+		// Assets.ContainerRegistry is set
+		if err != nil {
+			return nil, err
+		}
+
+		protokubeImageSource = &nodeup.Image{
+			Name:   proto,
+			Source: proto,
+		}
+		glog.Infof("Using protokube location from assets container registry %q", proto)
 	} else {
 
 		//use default from url
@@ -141,7 +150,7 @@ func ProtokubeImageSource(spec *api.ClusterSpec) (*nodeup.Image, error) {
 			Source: source,
 			Hash:   hash.Hex(),
 		}
-		glog.V(4).Infof("Using default protokube location: %v", protokubeImageSource)
+		glog.V(4).Infof("Using default protokube location set via kops base url: %v", protokubeImageSource)
 
 	}
 

@@ -72,7 +72,7 @@ func Test_ProtokubeUrl(t *testing.T) {
 
 	repo := "quay.io/foo"
 	c.Spec.Assets = &api.Assets{
-		ContainerRepository: &repo,
+		ContainerRegistry: &repo,
 	}
 
 	protokubeImageSource = nil

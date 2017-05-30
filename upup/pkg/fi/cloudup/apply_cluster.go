@@ -615,32 +615,40 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
-	l.TemplateFunctions["GetGoogleImageRepositoryContainer"] = func(imageName string) (string, error) {
-		glog.V(8).Infof("GetGoogleImageRepositoryContainer: %s", imageName)
-		s, err := components.GetGoogleImageRepositoryContainer(&tf.cluster.Spec, imageName)
+	// The following template functions have two purposes:
+	// 1. They set the location of the container registry if a cluster assets container registry is set.
+	// 2. During an TargetInventory Run() all container images are tracked in order to build an Inventory.
+	{
 
-		if err != nil {
-			return "", fmt.Errorf("unable to parse template func GetGoogleImageRepositoryContainer(%q): %v", imageName, err)
+		// Template function that renders the registry for a google / kuberentes container.
+		l.TemplateFunctions["GetGoogleImageRegistryContainer"] = func(imageName string) (string, error) {
+			glog.V(8).Infof("GetGoogleImageRegistryContainer: %s", imageName)
+			s, err := components.GetGoogleImageRegistryContainer(&tf.cluster.Spec, imageName)
+
+			if err != nil {
+				return "", fmt.Errorf("unable to parse template func GetGoogleImageRegistryContainer(%q): %v", imageName, err)
+			}
+
+			recordContainerAsset(s, target)
+			glog.V(8).Infof("Container: %s", s)
+
+			return s, nil
 		}
 
-		recordContainerAsset(s, target)
-		glog.V(8).Infof("Container: %s", s)
+		// Template function that renders the registry for a container.
+		l.TemplateFunctions["GetImage"] = func(imageName string) (string, error) {
+			glog.V(8).Infof("GetImage: %s", imageName)
 
-		return s, nil
-	}
+			s, err := components.GetContainer(&tf.cluster.Spec, imageName)
 
-	l.TemplateFunctions["GetImage"] = func(imageName string) (string, error) {
-		glog.V(8).Infof("GetImage: %s", imageName)
+			if err != nil {
+				return "", fmt.Errorf("unable to parse template func GetImage(%q): %v", imageName, err)
+			}
 
-		s, err := components.GetContainer(&tf.cluster.Spec, imageName)
-
-		if err != nil {
-			return "", fmt.Errorf("unable to parse template func GetImage(%q): %v", imageName, err)
+			recordContainerAsset(s, target)
+			glog.V(8).Infof("Container: %s", imageName)
+			return s, nil
 		}
-
-		recordContainerAsset(s, target)
-		glog.V(8).Infof("Container: %s", imageName)
-		return s, nil
 	}
 
 	tf.AddTo(l.TemplateFunctions)
@@ -707,6 +715,9 @@ func (c *ApplyClusterCmd) Run() error {
 		// Avoid making changes on a dry-run
 		shouldPrecreateDNS = false
 	case TargetInventory:
+		// Utilized to build an api.Inventory
+		// This target was created because TargetDryRun outputs to STDOUT.  This complicated the rendering of
+		// api.Inventory in YAML and JSON.
 		target = fi.NewInventoryTarget()
 		inventoryTarget = true
 		dryRun = true
@@ -759,21 +770,24 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("error closing target: %v", err)
 	}
 
-	if inventoryTarget {
-		t := target.(*fi.InventoryTarget)
-		t.ResetContainerAssets()
-		inv := &ApplyInventory{
-			Cluster:             cluster,
-			InstanceGroups:      c.InstanceGroups,
-			BootstrapContainers: t.ContainerAssets,
-			NodeUpConfigBuilder: renderNodeUpConfig,
-			TaskMap:             context.AllTasks(),
-		}
+	// TargetInventory is Run, only used for creating and getting inventory for a kops kubernetes cluster.
+	{
+		if inventoryTarget {
+			t := target.(*fi.InventoryTarget)
+			t.ResetContainerAssets()
+			inv := &ApplyInventory{
+				Cluster:             cluster,
+				InstanceGroups:      c.InstanceGroups,
+				BootstrapContainers: t.ContainerAssets,
+				NodeUpConfigBuilder: renderNodeUpConfig,
+				TaskMap:             context.AllTasks(),
+			}
 
-		c.Inventory, err = inv.BuildInventoryAssets()
+			c.Inventory, err = inv.BuildInventoryAssets()
 
-		if err != nil {
-			return fmt.Errorf("error building inventory: %v", err)
+			if err != nil {
+				return fmt.Errorf("error building inventory: %v", err)
+			}
 		}
 	}
 

@@ -21,6 +21,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Inventory provides a data model for assets that compose a kops installation.
+// This API is a top level API that is only used for Inventory CRUD. Create and
+// read are implemented at this point.
 type Inventory struct {
 	v1.TypeMeta `json:",inline"`
 	ObjectMeta  metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -29,14 +32,31 @@ type Inventory struct {
 }
 
 type InventorySpec struct {
-	Cluster              *ClusterSpec           `json:"cluster,omitempty"`
-	ChannelAsset         *ChannelAsset          `json:"channel,omitempty"`
-	KopsVersion          *string                `json:"kopsVersion,omitempty"`
-	KubernetesVersion    *string                `json:"kubernetesVersion,omitempty"`
-	ExecutableFileAsset  []*ExecutableFileAsset `json:"executableFileAssets,omitempty"`
+
+	// full cluster
+	Cluster *ClusterSpec `json:"cluster,omitempty"`
+
+	// The file that contains the kops channel
+	// see: https://raw.githubusercontent.com/kubernetes/kops/master/channels/stable
+	ChannelAsset *ChannelAsset `json:"channel,omitempty"`
+
+	// kops version of kops that generated the inventory.  There is an open issue
+	// to track the kops version of a cluster.
+	KopsVersion *string `json:"kopsVersion,omitempty"`
+
+	KubernetesVersion *string `json:"kubernetesVersion,omitempty"`
+
+	// List of executables including such things as nodeup, and all k8s binaries.
+	ExecutableFileAsset []*ExecutableFileAsset `json:"executableFileAssets,omitempty"`
+
+	// Compressed tar balls, for instance, cni package.
 	CompressedFileAssets []*CompressedFileAsset `json:"compressedFileAssets,omitempty"`
-	ContainerAssets      []*ContainerAsset      `json:"containerAssets,omitempty"`
-	HostAssets           []*HostAsset           `json:"hostAsset,omitempty"`
+
+	// Containers
+	ContainerAssets []*ContainerAsset `json:"containerAssets,omitempty"`
+
+	// All the contains all of the images from the various instance groups.
+	HostAssets []*HostAsset `json:"hostAsset,omitempty"`
 }
 
 type ChannelAsset struct {

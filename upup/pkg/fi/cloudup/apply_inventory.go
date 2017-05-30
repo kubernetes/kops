@@ -43,7 +43,8 @@ type ApplyInventory struct {
 	NodeupLocation      string
 }
 
-// buildInventoryAssets builds a map of all unique inventory assets.
+// BuildInventoryAssets populates the Inventory of a kops Kubernetes cluster.  This func is only
+// accessible when running an ApplyClusterCmd.Run() with a target of TargetInventory.
 func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 
 	if i.Cluster == nil {
@@ -80,13 +81,13 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 
 	// Build Kubernetes Base Containers
 	{
-		etcd, err := components.GetGoogleImageRepositoryContainer(&spec, "etcd:2.2.1")
+		etcd, err := components.GetGoogleImageRegistryContainer(&spec, "etcd:2.2.1")
 
 		if err != nil {
 			return nil, err
 		}
 
-		pause, err := components.GetGoogleImageRepositoryContainer(&spec, "pause-amd64:3.0")
+		pause, err := components.GetGoogleImageRegistryContainer(&spec, "pause-amd64:3.0")
 
 		if err != nil {
 			return nil, err
@@ -112,116 +113,134 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 
 	}
 
-	channelLocation, err := api.ParseChannelLocation(i.Cluster.Spec.Channel)
+	// Build Inventory channel
+	{
+		channelLocation, err := api.ParseChannelLocation(i.Cluster.Spec.Channel)
 
-	if err != nil {
-		return nil, fmt.Errorf("unable to get channel location: %v", err)
-	}
-
-	inv.Spec.ChannelAsset = &api.ChannelAsset{
-		Location: channelLocation,
-	}
-
-	if strings.HasSuffix(channelLocation, "alpha") {
-		inv.Spec.ChannelAsset.Name = "alpha"
-	} else {
-		inv.Spec.ChannelAsset.Name = "stable"
-	}
-
-	for _, ig := range i.InstanceGroups {
-		n, err := i.NodeUpConfigBuilder(ig)
 		if err != nil {
-			return nil, fmt.Errorf("unable to render node config: %v", err)
+			return nil, fmt.Errorf("unable to get channel location: %v", err)
 		}
 
-		host := &api.HostAsset{
-			Name:          ig.Spec.Image,
-			Cloud:         i.Cluster.Spec.CloudProvider,
-			Role:          string(ig.Spec.Role),
-			InstanceGroup: ig.ObjectMeta.Name,
+		inv.Spec.ChannelAsset = &api.ChannelAsset{
+			Location: channelLocation,
 		}
 
-		inv.Spec.HostAssets = append(inv.Spec.HostAssets, host)
+		if strings.HasSuffix(channelLocation, "alpha") {
+			inv.Spec.ChannelAsset.Name = "alpha"
+		} else {
+			inv.Spec.ChannelAsset.Name = "stable"
+		}
+	}
 
-		// binary asset
-		for _, a := range n.Assets {
+	// Build host information and assets created by nodeup.  I choose to parse
+	// the assets to allow dynamic creation and deletion of assets.  Kubernetes assets
+	// are very stable, but these assets are growing in kops.
+	{
+		for _, ig := range i.InstanceGroups {
+			n, err := i.NodeUpConfigBuilder(ig)
+			if err != nil {
+				return nil, fmt.Errorf("unable to render node config: %v", err)
+			}
 
-			asset := strings.Split(a, "@")
-			url := asset[1]
-			name := strings.Split(url, "/")
-			fileName := name[len(name)-1]
+			host := &api.HostAsset{
+				Name:          ig.Spec.Image,
+				Cloud:         i.Cluster.Spec.CloudProvider,
+				Role:          string(ig.Spec.Role),
+				InstanceGroup: ig.ObjectMeta.Name,
+			}
 
-			if strings.HasSuffix(fileName, "gz") {
-				inventoryCompressedMap[asset[0]] = &api.CompressedFileAsset{
-					Location: url,
-					Name:     fileName,
-				}
+			inv.Spec.HostAssets = append(inv.Spec.HostAssets, host)
 
-			} else {
+			// binary asset
+			for _, a := range n.Assets {
 
-				inventoryBinaryMap[asset[0]] = &api.ExecutableFileAsset{
-					Location: url,
-					Name:     fileName,
-					SHA:      url + ".sha",
+				asset := strings.Split(a, "@")
+				url := asset[1]
+				name := strings.Split(url, "/")
+				fileName := name[len(name)-1]
+
+				if strings.HasSuffix(fileName, "gz") {
+					inventoryCompressedMap[asset[0]] = &api.CompressedFileAsset{
+						Location: url,
+						Name:     fileName,
+					}
+
+				} else {
+
+					inventoryBinaryMap[asset[0]] = &api.ExecutableFileAsset{
+						Location: url,
+						Name:     fileName,
+						SHA:      url + ".sha",
+					}
 				}
 			}
 		}
 	}
 
-	c := &api.ContainerAsset{
-		Name: protokubeImageSource.Name,
-		Tag:  strings.Replace(kops.Version, "+", "-", -1),
-	}
-
-	if protokubeImageSource.Hash != "" {
-		c.Location = protokubeImageSource.Source
-		c.Hash = protokubeImageSource.Hash
-		c.SHA = protokubeImageSource.Source + ".sha"
-	}
-
-	inv.Spec.ContainerAssets = append(inv.Spec.ContainerAssets, c)
-	// if the ManagedFile tasks have not runs
-	sv, err := api_util.ParseKubernetesVersion(spec.KubernetesVersion)
-	if err != nil {
-		return nil, fmt.Errorf("unable to determine kubernetes version from %q", spec.KubernetesVersion)
-	}
-
-	optionsContext := &components.OptionsContext{
-		KubernetesVersion: *sv,
-	}
-
-	isVersionGTE1_6 := optionsContext.IsKubernetesGTE("1.6")
-	isVersionLT1_6 := optionsContext.IsKubernetesLT("1.6")
-
-	v := sv.String()
-	inv.Spec.KubernetesVersion = &v
-
-	for _, task := range i.TaskMap {
-		switch m := task.(type) {
-		case *fitasks.ManagedFile:
-
-			pre16 := strings.Contains(*m.Location, "pre-k8s-1.6")
-
-			if pre16 && isVersionGTE1_6 {
-				continue
-			} else if !pre16 && isVersionLT1_6 {
-				continue
-			}
-
-			m.Contents.AsBytes()
-		default:
-
+	// protokube
+	{
+		c := &api.ContainerAsset{
+			Name: protokubeImageSource.Name,
+			Tag:  strings.Replace(kops.Version, "+", "-", -1),
 		}
 
-	}
-
-	for _, b := range i.BootstrapContainers.List() {
-		c, err := validation.ParseContainer(b)
-		if err != nil {
-			return nil, fmt.Errorf("Unable to parse container: %v", err)
+		if protokubeImageSource.Hash != "" {
+			c.Location = protokubeImageSource.Source
+			c.Hash = protokubeImageSource.Hash
+			c.SHA = protokubeImageSource.Source + ".sha"
 		}
 		inv.Spec.ContainerAssets = append(inv.Spec.ContainerAssets, c)
 	}
+
+	// build addons such as CNI providers and dnscontroller
+	{
+
+		sv, err := api_util.ParseKubernetesVersion(spec.KubernetesVersion)
+		if err != nil {
+			return nil, fmt.Errorf("unable to determine kubernetes version from %q", spec.KubernetesVersion)
+		}
+
+		optionsContext := &components.OptionsContext{
+			KubernetesVersion: *sv,
+		}
+
+		isVersionGTE1_6 := optionsContext.IsKubernetesGTE("1.6")
+		isVersionLT1_6 := optionsContext.IsKubernetesLT("1.6")
+
+		v := sv.String()
+		inv.Spec.KubernetesVersion = &v
+
+		// Execute the addons managed file tasks since they do not run until a cluster is updated `kops update cluster --yes`.
+		// Filter the addons by kubernetes version.
+		for _, task := range i.TaskMap {
+			switch m := task.(type) {
+			case *fitasks.ManagedFile:
+
+				pre16 := strings.Contains(*m.Location, "pre-k8s-1.6")
+
+				if pre16 && isVersionGTE1_6 {
+					continue
+				} else if !pre16 && isVersionLT1_6 {
+					continue
+				}
+
+				m.Contents.AsBytes()
+			default:
+
+			}
+
+		}
+
+		for _, b := range i.BootstrapContainers.List() {
+			c, err := validation.ParseContainer(b)
+			if err != nil {
+				return nil, fmt.Errorf("Unable to parse container: %v", err)
+			}
+			inv.Spec.ContainerAssets = append(inv.Spec.ContainerAssets, c)
+		}
+	}
+
+	// Normalize the data.
 
 	// reduce map to a slice
 	for _, value := range inventoryBinaryMap {

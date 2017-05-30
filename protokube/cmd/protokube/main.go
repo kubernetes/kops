@@ -98,8 +98,9 @@ func run() error {
 	var gossipSecret string
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 
+	// optional flag to override the location of etcd.  Utilized with cluster asset container registry.
 	var etcdImageSource string
-	flags.StringVar(&etcdImageSource, "etcd-image-source", etcdImageSource, "Etd Source URL")
+	flags.StringVar(&etcdImageSource, "etcd-image-source", etcdImageSource, "Etcd Source Container Registry")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})

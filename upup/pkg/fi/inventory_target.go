@@ -17,7 +17,6 @@ limitations under the License.
 package fi
 
 import (
-	"io"
 	"reflect"
 	"sync"
 
@@ -25,21 +24,18 @@ import (
 )
 
 // InventoryTarget is a special Target that does not execute anything, but instead tracks all changes.
-// By running against a InventoryTarget, a list of changes that would be made can be easily collected,
-// without any special support from the Tasks.
+// By running an InventoryTarget, api.Inventory can be built without any special support from the Tasks.
 type InventoryTarget struct {
 	mutex sync.Mutex
 
 	changes         []*render
 	deletions       []Deletion
 	ContainerAssets *sets.String
-
-	// The destination to which the final report will be printed on Finish()
-	out io.Writer
 }
 
 var _ Target = &InventoryTarget{}
 
+// NewInventoryTarget creates a new target.
 func NewInventoryTarget() *InventoryTarget {
 	t := &InventoryTarget{
 		ContainerAssets: &sets.String{},
@@ -47,11 +43,12 @@ func NewInventoryTarget() *InventoryTarget {
 	return t
 }
 
+// ProcessDeletions dummy method to process deletes.
 func (t *InventoryTarget) ProcessDeletions() bool {
-	// We display deletions
 	return true
 }
 
+// Render tracks task changes.
 func (t *InventoryTarget) Render(a, e, changes Task) error {
 	valA := reflect.ValueOf(a)
 	aIsNil := valA.IsNil()
@@ -68,6 +65,7 @@ func (t *InventoryTarget) Render(a, e, changes Task) error {
 	return nil
 }
 
+// Render tracks removes tasks.
 func (t *InventoryTarget) Delete(deletion Deletion) error {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
@@ -77,6 +75,7 @@ func (t *InventoryTarget) Delete(deletion Deletion) error {
 	return nil
 }
 
+// RecordContainerAsset is used to record managed file tasks that have a container.
 func (t *InventoryTarget) RecordContainerAsset(container string) error {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
@@ -84,6 +83,8 @@ func (t *InventoryTarget) RecordContainerAsset(container string) error {
 	return nil
 }
 
+// ResetContainerAssets allows for the reset of the ContainerAssets.  The tasks
+// are not rendered by Inventory Target because we do not have access to the file names and kubernetes version.
 func (t *InventoryTarget) ResetContainerAssets() error {
 	t.mutex.Lock()
 	defer t.mutex.Unlock()
@@ -91,11 +92,12 @@ func (t *InventoryTarget) ResetContainerAssets() error {
 	return nil
 }
 
+// Finish returns nil.
 func (t *InventoryTarget) Finish(taskMap map[string]Task) error {
 	return nil
 }
 
-// HasChanges returns true iff any changes would have been made
+// HasChanges returns true iff any changes would have been made.
 func (t *InventoryTarget) HasChanges() bool {
 	return len(t.changes)+len(t.deletions) != 0
 }

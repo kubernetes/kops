@@ -19,6 +19,9 @@ kops get inventory
   
   # Get a inventory list from a cluster
   kops get inventory k8s.example.com --state s3://k8s.example.com
+  
+  # Get a inventory list from a cluster as YAML
+  kops get inventory k8s.example.com --state s3://k8s.example.com -o YAML
 ```
 
 ### Options

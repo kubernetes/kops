@@ -114,6 +114,8 @@ func findCNIAssets(c *api.Cluster) (string, string, error) {
 
 	if sv.GTE(semver.Version{Major: 1, Minor: 6, Patch: 0, Pre: nil, Build: nil}) {
 		glog.V(2).Infof("Adding default CNI asset: %s", defaultCNIAssetK8s1_6)
+
+		// Get the file location.  This value can be overridden by using a cluster asset file repository.
 		url, err := components.GetGoogleFileRepositoryURL(&c.Spec, defaultCNIAssetK8s1_6)
 		if err != nil {
 			return "", "", fmt.Errorf("unable to create valid url from %q, %v", defaultCNIAssetK8s1_6, err)
@@ -123,6 +125,7 @@ func findCNIAssets(c *api.Cluster) (string, string, error) {
 
 	glog.V(2).Infof("Adding default CNI asset: %s", defaultCNIAssetK8s1_5)
 
+	// Get the file location.  This value can be overridden by using a cluster asset file repository.
 	url, err := components.GetGoogleFileRepositoryURL(&c.Spec, defaultCNIAssetK8s1_5)
 	if err != nil {
 		return "", "", fmt.Errorf("unable to create valid url from %q, %v", defaultCNIAssetK8s1_5, err)

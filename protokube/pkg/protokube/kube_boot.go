@@ -50,6 +50,7 @@ type KubeBoot struct {
 
 	Kubernetes *KubernetesContext
 
+	// Etcd container registry location.
 	EtcdImageSource string
 }
 

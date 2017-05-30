@@ -24,11 +24,10 @@ import (
 	"strings"
 	"sync"
 
-	"sort"
-
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"sort"
 )
 
 // DryRunTarget is a special Target that does not execute anything, but instead tracks all changes.
@@ -106,6 +105,7 @@ func (t *DryRunTarget) Delete(deletion Deletion) error {
 
 	return nil
 }
+
 func idForTask(taskMap map[string]Task, t Task) string {
 	for k, v := range taskMap {
 		if v == t {

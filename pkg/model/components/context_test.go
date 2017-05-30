@@ -28,7 +28,7 @@ func Test_Build_Google_Containers(t *testing.T) {
 
 	url := "kubedns-amd64:1.3"
 
-	s, err := GetGoogleImageRepositoryContainer(cs, url)
+	s, err := GetGoogleImageRegistryContainer(cs, url)
 
 	if err != nil {
 		t.Fatalf("incorrect container repo expect: %v", err)
@@ -43,19 +43,19 @@ func Test_Build_Google_Containers(t *testing.T) {
 	repo := "quay.io/chrislovecnm"
 	cs = &kops.ClusterSpec{
 		Assets: &kops.Assets{
-			ContainerRepository: &repo,
+			ContainerRegistry: &repo,
 		},
 	}
 
 	googleRepository = nil
 
-	s, err = GetGoogleImageRepositoryContainer(cs, url)
+	s, err = GetGoogleImageRegistryContainer(cs, url)
 
 	if err != nil {
 		t.Fatalf("incorrect container repo expect: %v", err)
 	}
 
-	base = *cs.Assets.ContainerRepository + "/" + url
+	base = *cs.Assets.ContainerRegistry + "/" + url
 
 	if s != base {
 		t.Fatalf("incorrect container repo expect: %q, got %q", base, s)
@@ -66,19 +66,19 @@ func Test_Build_Google_Containers(t *testing.T) {
 	repo = "chrislovecnm"
 	cs = &kops.ClusterSpec{
 		Assets: &kops.Assets{
-			ContainerRepository: &repo,
+			ContainerRegistry: &repo,
 		},
 	}
 
 	googleRepository = nil
 
-	s, err = GetGoogleImageRepositoryContainer(cs, url)
+	s, err = GetGoogleImageRegistryContainer(cs, url)
 
 	if err != nil {
 		t.Fatalf("incorrect container repo expect: %v", err)
 	}
 
-	base = *cs.Assets.ContainerRepository + "/" + url
+	base = *cs.Assets.ContainerRegistry + "/" + url
 
 	if s != base {
 		t.Fatalf("incorrect container repo expect: %q, got %q", base, s)
@@ -89,13 +89,13 @@ func Test_Build_Google_Containers(t *testing.T) {
 	repo = "https://aa/asdf$$^/aa"
 	cs = &kops.ClusterSpec{
 		Assets: &kops.Assets{
-			ContainerRepository: &repo,
+			ContainerRegistry: &repo,
 		},
 	}
 
 	googleRepository = nil
 
-	s, err = GetGoogleImageRepositoryContainer(cs, url)
+	s, err = GetGoogleImageRegistryContainer(cs, url)
 
 	if err == nil {
 		t.Fatalf("incorrect container failure expected: %v", err)

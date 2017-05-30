@@ -170,8 +170,8 @@ type ClusterSpec struct {
 }
 
 type Assets struct {
-	ContainerRepository *string `json:"containerRepository,omitempty"`
-	FileRepository      *string `json:"fileRepository,omitempty"`
+	ContainerRegistry *string `json:"containerRegistry,omitempty"`
+	FileRepository    *string `json:"fileRepository,omitempty"`
 }
 
 type HookSpec struct {

@@ -32,7 +32,7 @@ import (
 type CreateInventoryOptions struct {
 	// Maybe we may this a sub command then?
 	*GetInventoryOptions
-	Repository      string
+	Registry        string
 	FileDestination string
 	StageFiles      bool
 	StageContainers bool
@@ -47,20 +47,20 @@ func (o *CreateInventoryOptions) InitDefaults() {
 
 var (
 	create_inventory_long = templates.LongDesc(i18n.T(`
-		Upload inventory files to specified destinations(Repository/FileDestination).
+		Upload inventory files to specified destinations(Registry/FileDestination).
 		
 		Note: 
 		
 		1. This command assumes Docker is installed and the user has the privileges to load and push images.
-		2. User is authenticated to the provided Docker repository.`))
+		2. User is authenticated to the provided Docker registry.`))
 
 	create_inventory_example = templates.Examples(i18n.T(`
 		# Stage inventory files from a yaml file
-		kops create inventory --repository quay.io/vorstella --fileDestination s3://mybucket -f mycluster.yaml
+		kops create inventory --registry quay.io/vorstella --fileDestination s3://mybucket -f mycluster.yaml
 
 		`))
 
-	create_inventory_short = i18n.T(`Update inventory files to the specified destinations(Repository/FileDestination).`)
+	create_inventory_short = i18n.T(`Update inventory files to the specified destinations(Registry/File Destination).`)
 	create_inventory_use   = i18n.T("inventory")
 )
 
@@ -108,8 +108,8 @@ func NewCmdCreateInventory(f *util.Factory, out io.Writer) *cobra.Command {
 				return
 			}
 
-			if options.Repository == "" && options.StageContainers {
-				exitWithError(fmt.Errorf("Please provide repository location via --repository flag."))
+			if options.Registry == "" && options.StageContainers {
+				exitWithError(fmt.Errorf("Please provide registry location via --repository flag."))
 				return
 			}
 
@@ -130,12 +130,12 @@ func NewCmdCreateInventory(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVarP(&options.Channel, "channel", "c", options.Channel, "Channel for default versions and configuration to use")
 	cmd.Flags().StringVarP(&options.KubernetesVersion, "kubernetes-version", "k", options.KubernetesVersion, "Version of kubernetes to run (defaults to version in channel)")
 	cmd.Flags().StringArrayVarP(&options.Filenames, "filename", "f", options.Filenames, "Filename to use to create the resource")
-	cmd.Flags().StringVarP(&options.Repository, "repository", "r", options.Repository, "Repository location used to stage inventory containers")
-	cmd.Flags().StringVarP(&options.FileDestination, "file-destination", "d", options.FileDestination, "FileDestination location used to stage inventory files")
+	cmd.Flags().StringVarP(&options.Registry, "registry", "r", options.Registry, "Registry location used to stage inventory containers")
+	cmd.Flags().StringVarP(&options.FileDestination, "file-repository", "p", options.FileDestination, "File repository location used to stage inventory files")
 	cmd.Flags().BoolVar(&options.StageContainers, "stage-containers", options.StageContainers, "Stage containers")
 	cmd.Flags().BoolVar(&options.StageFiles, "stage-files", options.StageFiles, "Stage files")
 	cmd.MarkFlagRequired("file-destination")
-	cmd.MarkFlagRequired("repository")
+	cmd.MarkFlagRequired("registry")
 
 	return cmd
 }
@@ -151,7 +151,7 @@ func RunCreateInventory(f *util.Factory, out io.Writer, options *CreateInventory
 	options.FileDestination = strings.TrimSuffix(options.FileDestination, "/")
 
 	// FIXME refactor too many parameters now :(
-	stageInventory := cloudup.NewStageInventory(options.FileDestination, options.StageFiles, options.Repository, options.StageContainers, assets)
+	stageInventory := cloudup.NewStageInventory(options.FileDestination, options.StageFiles, options.Registry, options.StageContainers, assets)
 	err = stageInventory.Run()
 	if err != nil {
 		return fmt.Errorf("Error processing assets file(s) %q, %v", options.Filenames, err)

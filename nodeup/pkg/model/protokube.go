@@ -170,6 +170,8 @@ type ProtokubeFlags struct {
 	ClusterId *string `json:"cluster-id,omitempty" flag:"cluster-id"`
 	DNSServer *string `json:"dns-server,omitempty" flag:"dns-server"`
 
+	// This is used when the assets container registry is set. The registry where etcd container is staged at.
+	// Allows for overriding the default location of etcd.
 	EtcdImageSource *string `json:"etcd-image-source,omitempty" flag:"etcd-image-source"`
 }
 
@@ -245,9 +247,11 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		f.ApplyTaints = fi.Bool(true)
 	}
 
-	if t.Cluster.Spec.Assets != nil && t.Cluster.Spec.Assets.ContainerRepository != nil {
-		c, _ := components.GetGoogleImageRepositoryContainer(&t.Cluster.Spec, "etcd:2.2.1")
+	// set EtcdImageSource if we have ContainerRegistry setup.
+	if t.Cluster.Spec.Assets != nil && t.Cluster.Spec.Assets.ContainerRegistry != nil {
 
+		c, _ := components.GetGoogleImageRegistryContainer(&t.Cluster.Spec, "etcd:2.2.1")
+		// TODO - should we just pass in the etcd version here, so we take the hardcoded version out of protokube
 		etcd := strings.TrimSuffix(c, "/etcd:2.2.1")
 		f.EtcdImageSource = fi.String(etcd)
 	}
