@@ -101,6 +101,19 @@ Daemonset installation for K8s 1.4.x or 1.5.x.
 $ kubectl create -f https://git.io/weave-kube
 ```
 
+### Configuring Weave MTU
+
+The Weave MTU is configurable by editing the cluster and setting `mtu` option in the weave configuration.
+AWS VPCs support jumbo frames, so on cluster creation kops sets the weave MTU to 8912 bytes (9001 minus overhead).
+
+```
+spec:
+  networking:
+    weave:
+      mtu: 8912
+```
+
+
 ### Calico Example for CNI and Network Policy
 
 #### Installing Calico on a new Cluster

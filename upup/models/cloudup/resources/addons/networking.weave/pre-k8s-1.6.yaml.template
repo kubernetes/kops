@@ -58,6 +58,11 @@ spec:
             limits:
               cpu: 100m
               memory: 200Mi
+          {{if .Networking.Weave.MTU }}
+          env:
+            - name: WEAVE_MTU
+              value: "{{ .Networking.Weave.MTU }}"
+          {{end}}
         - name: weave-npc
           image: weaveworks/weave-npc:1.9.4
           resources:
