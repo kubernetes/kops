@@ -400,7 +400,7 @@ func (d *clusterDiscoveryGCE) listGCEDisks() ([]*ResourceTracker, error) {
 		}
 
 		for _, u := range t.Users {
-			tracker.blocked = append(tracker.blocked, typeInstance+":"+t.Zone+"/"+gce.LastComponent(u))
+			tracker.blocked = append(tracker.blocked, typeInstance+":"+gce.LastComponent(t.Zone)+"/"+gce.LastComponent(u))
 		}
 
 		glog.V(4).Infof("Found resource: %s", t.SelfLink)
