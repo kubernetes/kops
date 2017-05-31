@@ -44,7 +44,7 @@ const (
 	typeRoute                = "Route"
 )
 
-func (c *AwsCluster) listResourcesGCE() (map[string]*ResourceTracker, error) {
+func (c *ClusterResources) listResourcesGCE() (map[string]*ResourceTracker, error) {
 	gceCloud := c.Cloud.(*gce.GCECloud)
 	if c.Region == "" {
 		c.Region = gceCloud.Region
