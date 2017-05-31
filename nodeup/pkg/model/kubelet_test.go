@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/pkg/flagbuilder"
 )
 
 func Test_InstanceGroupKubeletMerge(t *testing.T) {
@@ -128,6 +129,44 @@ func TestTaintsAppliedAfter160(t *testing.T) {
 
 		if !stringSlicesEqual(g.expectTaints, c.Taints) {
 			t.Fatalf("Expected taints %v, got %v", g.expectTaints, c.Taints)
+		}
+	}
+}
+
+func TestResolvConfFlags(t *testing.T) {
+	testString := "test"
+	emptyString := ""
+
+	tests := []struct {
+		resolverConfig *string
+		expectedFlags string
+	}{
+		{
+			resolverConfig: &testString,
+			expectedFlags: "--resolv-conf=test",
+		},
+		{
+			resolverConfig: &emptyString,
+			expectedFlags: "--resolv-conf=",
+		},
+		{
+			resolverConfig: nil,
+			expectedFlags: "",
+		},
+	}
+
+	for _, test := range tests {
+		k := kops.KubeletConfigSpec{
+			ResolverConfig: test.resolverConfig,
+		}
+
+		flags, err := flagbuilder.BuildFlags(k)
+		if err != nil {
+			t.Fatal("failed to build flags with empty ResolverConfig")
+		}
+
+		if flags != test.expectedFlags {
+			t.Fatalf("Expected argument `%v`, got `%v`", test.expectedFlags, flags)
 		}
 	}
 }

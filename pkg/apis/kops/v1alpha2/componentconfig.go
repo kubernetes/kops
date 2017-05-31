@@ -102,6 +102,10 @@ type KubeletConfigSpec struct {
 	// schedulable. No-op if register-node is false.
 	RegisterSchedulable *bool `json:"registerSchedulable,omitempty" flag:"register-schedulable"`
 
+	// ResolverConfig is the resolver configuration file used as the basis
+	// for the container DNS resolution configuration."), []
+	ResolverConfig *string `json:"resolvConf" flag:"resolv-conf"`
+
 	// nodeLabels to add when registering the node in the cluster.
 	NodeLabels map[string]string `json:"nodeLabels,omitempty" flag:"node-labels"`
 
