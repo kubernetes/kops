@@ -135,6 +135,15 @@ Will result in the flag `--runtime-config=batch/v2alpha1=true,apps/v1alpha1=true
 
 This block contains configurations for `kubelet`.  See https://kubernetes.io/docs/admin/kubelet/
 
+NOTE: Arguments can be set to empty if the field is included in the spec, and an empty string is passed to it.
+ ```yaml
+ spec:
+   kubelet:
+     resolvConf: ""
+```
+
+Will result in the flag `--resolv-conf=` being built.
+
 ####  Feature Gates
 
 ```yaml
