@@ -30,8 +30,8 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/diff"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func Test_InstanceGroupKubeletMerge(t *testing.T) {
@@ -139,19 +139,19 @@ func TestResolvConfFlags(t *testing.T) {
 
 	tests := []struct {
 		resolverConfig *string
-		expectedFlags string
+		expectedFlags  string
 	}{
 		{
 			resolverConfig: &testString,
-			expectedFlags: "--resolv-conf=test",
+			expectedFlags:  "--resolv-conf=test",
 		},
 		{
 			resolverConfig: &emptyString,
-			expectedFlags: "--resolv-conf=",
+			expectedFlags:  "--resolv-conf=",
 		},
 		{
 			resolverConfig: nil,
-			expectedFlags: "",
+			expectedFlags:  "",
 		},
 	}
 
