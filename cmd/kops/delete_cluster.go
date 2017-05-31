@@ -155,6 +155,9 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		if len(clusterResources) == 0 {
 			fmt.Fprintf(out, "No cloud resources to delete\n")
 		} else {
+
+			filterUserProvidedSubnets(clusterResources, cluster)
+
 			wouldDeleteCloudResources = true
 
 			t := &tables.Table{}
@@ -214,4 +217,17 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 
 	fmt.Fprintf(out, "\nCluster deleted\n")
 	return nil
+}
+
+func filterUserProvidedSubnets(resourceTrackers map[string]*resources.ResourceTracker, cluster *api.Cluster) {
+	for resourceTrackerKey, resourceTrackerValue := range resourceTrackers {
+		if resourceTrackerValue.Type == resources.TypeSubnet {
+			for _, clusterSubnet := range cluster.Spec.Subnets {
+				if resourceTrackerValue.ID == clusterSubnet.ProviderID {
+					glog.V(4).Infof("Filtering User Provided Subnet[%s] from Delete List.\n", resourceTrackerValue.ID)
+					delete(resourceTrackers, resourceTrackerKey)
+				}
+			}
+		}
+	}
 }

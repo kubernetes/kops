@@ -21,6 +21,11 @@ import (
 	"bytes"
 	"compress/gzip"
 	"fmt"
+	"io"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -29,13 +34,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
-	"io"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"strings"
-	"sync"
-	"time"
 )
 
 const (
@@ -43,6 +44,7 @@ const (
 	TypeNatGateway              = "nat-gateway"
 	TypeElasticIp               = "elastic-ip"
 	TypeLoadBalancer            = "load-balancer"
+	TypeSubnet                  = "subnet"
 )
 
 type ResourceTracker struct {
@@ -798,14 +800,19 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 	elasticIPs := sets.NewString()
 	ngws := sets.NewString()
 	for _, subnet := range subnets {
-		tracker := &ResourceTracker{
-			Name:    FindName(subnet.Tags),
-			ID:      aws.StringValue(subnet.SubnetId),
-			Type:    "subnet",
-			deleter: DeleteSubnet,
+		subnetTagName := FindName(subnet.Tags)
+		if subnetTagName != "" && strings.HasSuffix(subnetTagName, clusterName) {
+			tracker := &ResourceTracker{
+				Name:    subnetTagName,
+				ID:      aws.StringValue(subnet.SubnetId),
+				Type:    TypeSubnet,
+				deleter: DeleteSubnet,
+			}
+			tracker.blocks = append(tracker.blocks, "vpc:"+aws.StringValue(subnet.VpcId))
+			trackers = append(trackers, tracker)
+		} else {
+			glog.V(4).Infof("Filtering Subnet[%s] from Delete List.\n", aws.StringValue(subnet.SubnetId))
 		}
-		tracker.blocks = append(tracker.blocks, "vpc:"+aws.StringValue(subnet.VpcId))
-		trackers = append(trackers, tracker)
 
 		// Get tags and append with EIPs/NGWs as needed
 		for _, tag := range subnet.Tags {
