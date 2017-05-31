@@ -70,7 +70,7 @@ func BuildFlags(options interface{}) (string, error) {
 
 		// We do have to do this, even though the recursive walk will do it for us
 		// because when we descend we won't have `field` set
-		if val.Kind() == reflect.Ptr {
+		if val.Kind() == reflect.Ptr && reflect.TypeOf(val.Interface()).String() != "*string" {
 			if val.IsNil() {
 				return nil
 			}
@@ -128,6 +128,12 @@ func BuildFlags(options interface{}) (string, error) {
 		case string:
 			vString := fmt.Sprintf("%v", v)
 			if vString != "" && vString != flagEmpty {
+				flag = fmt.Sprintf("--%s=%s", flagName, vString)
+			}
+
+		case *string:
+			if v != nil {
+				vString := fmt.Sprintf("%v", *v)
 				flag = fmt.Sprintf("--%s=%s", flagName, vString)
 			}
 
