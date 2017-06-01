@@ -7,3 +7,7 @@ spec:
     selector:
       k8s-addon: cluster-autoscaler.addons.k8s.io
     manifest: v1.4.0.yaml
+  - version: 1.6.0
+    selector:
+      k8s-addon: cluster-autoscaler.addons.k8s.io
+    manifest: v1.6.0.yaml
