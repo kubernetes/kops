@@ -28,6 +28,10 @@ func stringPointer(s string) *string {
 	return &s
 }
 
+func int34Pointer(i32 int32) *int32 {
+	return &i32
+}
+
 func TestBuildKCMFlags(t *testing.T) {
 	grid := []struct {
 		Config   interface{}
@@ -103,6 +107,18 @@ func TestKubeletConfigSpec(t *testing.T) {
 				ResolverConfig: nil,
 			},
 			Expected: "",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				LogLevel: new(int32),
+			},
+			Expected: "",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				LogLevel: int34Pointer(2),
+			},
+			Expected: "--v=2",
 		},
 	}
 
