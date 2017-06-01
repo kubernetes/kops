@@ -133,44 +133,6 @@ func TestTaintsAppliedAfter160(t *testing.T) {
 	}
 }
 
-func TestResolvConfFlags(t *testing.T) {
-	testString := "test"
-	emptyString := ""
-
-	tests := []struct {
-		resolverConfig *string
-		expectedFlags  string
-	}{
-		{
-			resolverConfig: &testString,
-			expectedFlags:  "--resolv-conf=test",
-		},
-		{
-			resolverConfig: &emptyString,
-			expectedFlags:  "--resolv-conf=",
-		},
-		{
-			resolverConfig: nil,
-			expectedFlags:  "",
-		},
-	}
-
-	for _, test := range tests {
-		k := kops.KubeletConfigSpec{
-			ResolverConfig: test.resolverConfig,
-		}
-
-		flags, err := flagbuilder.BuildFlags(k)
-		if err != nil {
-			t.Fatal("failed to build flags with empty ResolverConfig")
-		}
-
-		if flags != test.expectedFlags {
-			t.Fatalf("Expected argument `%v`, got `%v`", test.expectedFlags, flags)
-		}
-	}
-}
-
 func stringSlicesEqual(exp, other []string) bool {
 	if exp == nil && other != nil {
 		return false

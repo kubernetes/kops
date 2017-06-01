@@ -24,6 +24,10 @@ import (
 	"time"
 )
 
+func stringPointer(s string) *string {
+	return &s
+}
+
 func TestBuildKCMFlags(t *testing.T) {
 	grid := []struct {
 		Config   interface{}
@@ -80,6 +84,24 @@ func TestKubeletConfigSpec(t *testing.T) {
 		},
 		{
 			Config:   &kops.KubeletConfigSpec{},
+			Expected: "",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				ResolverConfig: stringPointer("test"),
+			},
+			Expected: "--resolv-conf=test",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				ResolverConfig: stringPointer(""),
+			},
+			Expected: "--resolv-conf=",
+		},
+		{
+			Config: &kops.KubeletConfigSpec{
+				ResolverConfig: nil,
+			},
 			Expected: "",
 		},
 	}
