@@ -44,9 +44,9 @@ func NewCmdToolbox(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    toolbox_long,
 		Example: toolbox_example,
 	}
-
 	cmd.AddCommand(NewCmdToolboxConvertImported(f, out))
 	cmd.AddCommand(NewCmdToolboxDump(f, out))
+	cmd.AddCommand(NewCmdToolboxInventory(f, out))
 
 	return cmd
 }

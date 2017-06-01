@@ -102,11 +102,7 @@ type ApplyClusterCmd struct {
 	channel *api.Channel
 }
 
-func (c *ApplyClusterCmd) Run() error {
-	if c.MaxTaskDuration == 0 {
-		c.MaxTaskDuration = DefaultMaxTaskDuration
-	}
-
+func (c *ApplyClusterCmd) Build() error {
 	if c.InstanceGroups == nil {
 		list, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).List(metav1.ListOptions{})
 		if err != nil {
@@ -121,11 +117,6 @@ func (c *ApplyClusterCmd) Run() error {
 
 	if c.Models == nil {
 		c.Models = CloudupModels
-	}
-
-	modelStore, err := findModelStore()
-	if err != nil {
-		return err
 	}
 
 	channel, err := ChannelForCluster(c.Cluster)
@@ -156,35 +147,11 @@ func (c *ApplyClusterCmd) Run() error {
 
 	cluster := c.Cluster
 
-	if cluster.Spec.KubernetesVersion == "" {
+	if c.Cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion not set")
 	}
 	if cluster.Spec.DNSZone == "" && !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
 		return fmt.Errorf("DNSZone not set")
-	}
-
-	l := &Loader{}
-	l.Init()
-	l.Cluster = c.Cluster
-
-	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
-	if err != nil {
-		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
-	}
-
-	keyStore, err := registry.KeyStore(cluster)
-	if err != nil {
-		return err
-	}
-	keyStore.(*fi.VFSCAStore).DryRun = c.DryRun
-
-	secretStore, err := registry.SecretStore(cluster)
-	if err != nil {
-		return err
-	}
-
-	channels := []string{
-		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
 	}
 
 	// Normalize k8s version
@@ -253,16 +220,142 @@ func (c *ApplyClusterCmd) Run() error {
 	if c.NodeUpSource == "" {
 		c.NodeUpSource = NodeUpLocation()
 	}
+	return nil
+}
+
+func (c *ApplyClusterCmd) RenderNodeConfig(ig *api.InstanceGroup, tf *TemplateFunctions, channels []string, configBase vfs.Path) (*nodeup.NodeUpConfig, error) {
+	if ig == nil {
+		return nil, fmt.Errorf("instanceGroup cannot be nil")
+	}
+
+	role := ig.Spec.Role
+	if role == "" {
+		return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
+	}
+
+	nodeUpTags, err := buildNodeupTags(role, tf.cluster, tf.tags)
+	if err != nil {
+		return nil, err
+	}
+
+	config := &nodeup.NodeUpConfig{}
+	for _, tag := range nodeUpTags.List() {
+		config.Tags = append(config.Tags, tag)
+	}
+
+	config.Assets = c.Assets
+
+	config.ClusterName = c.Cluster.ObjectMeta.Name
+
+	config.ConfigBase = fi.String(configBase.Path())
+
+	config.InstanceGroupName = ig.ObjectMeta.Name
+
+	var images []*nodeup.Image
+
+	if components.IsBaseURL(c.Cluster.Spec.KubernetesVersion) {
+		baseURL := c.Cluster.Spec.KubernetesVersion
+		baseURL = strings.TrimSuffix(baseURL, "/")
+
+		// TODO: pull kube-dns image
+		// When using a custom version, we want to preload the images over http
+		components := []string{"kube-proxy"}
+		if role == api.InstanceGroupRoleMaster {
+			components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
+		}
+		for _, component := range components {
+			imagePath := baseURL + "/bin/linux/amd64/" + component + ".tar"
+			glog.Infof("Adding docker image: %s", imagePath)
+
+			hash, err := findHash(imagePath)
+			if err != nil {
+				return nil, err
+			}
+			image := &nodeup.Image{
+				Source: imagePath,
+				Hash:   hash.Hex(),
+			}
+			images = append(images, image)
+		}
+	}
+
+	{
+		location := ProtokubeImageSource()
+
+		hash, err := findHash(location)
+		if err != nil {
+			return nil, err
+		}
+
+		config.ProtokubeImage = &nodeup.Image{
+			Name:   kops.DefaultProtokubeImageName(),
+			Source: location,
+			Hash:   hash.Hex(),
+		}
+	}
+
+	config.Images = images
+	config.Channels = channels
+
+	return config, nil
+}
+
+func (c *ApplyClusterCmd) GetConfigBase() (vfs.Path, error) {
+	return vfs.Context.BuildVfsPath(c.Cluster.Spec.ConfigBase)
+}
+
+func (c *ApplyClusterCmd) GetChannels(configBase vfs.Path) []string {
+	return []string{
+		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
+	}
+}
+
+func (c *ApplyClusterCmd) Run() error {
+	if c.MaxTaskDuration == 0 {
+		c.MaxTaskDuration = DefaultMaxTaskDuration
+	}
+
+	err := c.Build()
+
+	if err != nil {
+		return err
+	}
+
+	cluster := c.Cluster
+
+	configBase, err := c.GetConfigBase()
+	if err != nil {
+		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
+	}
+
+	channels := c.GetChannels(configBase)
+
+	modelStore, err := findModelStore()
+	if err != nil {
+		return err
+	}
+
+	keyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+	keyStore.(*fi.VFSCAStore).DryRun = c.DryRun
+
+	secretStore, err := registry.SecretStore(cluster)
+	if err != nil {
+		return err
+	}
 
 	checkExisting := true
+
+	l := &Loader{}
+	l.Init()
+	l.Cluster = c.Cluster
 
 	l.AddTypes(map[string]interface{}{
 		"keypair":     &fitasks.Keypair{},
 		"secret":      &fitasks.Secret{},
 		"managedFile": &fitasks.ManagedFile{},
-
-		// DNS
-		//"dnsZone": &dnstasks.DNSZone{},
 	})
 
 	cloud, err := BuildCloud(cluster)
@@ -459,13 +552,9 @@ func (c *ApplyClusterCmd) Run() error {
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
 
 					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext},
-					//&model.BastionModelBuilder{KopsModelContext: modelContext},
-					//&model.DNSModelBuilder{KopsModelContext: modelContext},
 					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext},
 					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext},
-					//&model.IAMModelBuilder{KopsModelContext: modelContext},
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext},
-					//&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 				)
 			case fi.CloudProviderVSphere:
 				l.Builders = append(l.Builders,
@@ -491,80 +580,84 @@ func (c *ApplyClusterCmd) Run() error {
 
 	// RenderNodeUpConfig returns the NodeUp config, in YAML format
 	renderNodeUpConfig := func(ig *api.InstanceGroup) (*nodeup.NodeUpConfig, error) {
-		if ig == nil {
-			return nil, fmt.Errorf("instanceGroup cannot be nil")
-		}
-
-		role := ig.Spec.Role
-		if role == "" {
-			return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
-		}
-
-		nodeUpTags, err := buildNodeupTags(role, tf.cluster, tf.tags)
-		if err != nil {
-			return nil, err
-		}
-
-		config := &nodeup.NodeUpConfig{}
-		for _, tag := range nodeUpTags.List() {
-			config.Tags = append(config.Tags, tag)
-		}
-
-		config.Assets = c.Assets
-
-		config.ClusterName = cluster.ObjectMeta.Name
-
-		config.ConfigBase = fi.String(configBase.Path())
-
-		config.InstanceGroupName = ig.ObjectMeta.Name
-
-		var images []*nodeup.Image
-
-		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
-			baseURL := cluster.Spec.KubernetesVersion
-			baseURL = strings.TrimSuffix(baseURL, "/")
-
-			// TODO: pull kube-dns image
-			// When using a custom version, we want to preload the images over http
-			components := []string{"kube-proxy"}
-			if role == api.InstanceGroupRoleMaster {
-				components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
+		return c.RenderNodeConfig(ig, tf, channels, configBase)
+		// TODO CJL - is this refactor working?
+		/*
+			if ig == nil {
+				return nil, fmt.Errorf("instanceGroup cannot be nil")
 			}
-			for _, component := range components {
-				imagePath := baseURL + "/bin/linux/amd64/" + component + ".tar"
-				glog.Infof("Adding docker image: %s", imagePath)
 
-				hash, err := findHash(imagePath)
-				if err != nil {
-					return nil, err
-				}
-				image := &nodeup.Image{
-					Source: imagePath,
-					Hash:   hash.Hex(),
-				}
-				images = append(images, image)
+			role := ig.Spec.Role
+			if role == "" {
+				return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
 			}
-		}
 
-		{
-			location := ProtokubeImageSource()
-
-			hash, err := findHash(location)
+			nodeUpTags, err := buildNodeupTags(role, tf.cluster, tf.tags)
 			if err != nil {
 				return nil, err
 			}
 
-			config.ProtokubeImage = &nodeup.Image{
-				Name:   kops.DefaultProtokubeImageName(),
-				Source: location,
-				Hash:   hash.Hex(),
+			config := &nodeup.NodeUpConfig{}
+			for _, tag := range nodeUpTags.List() {
+				config.Tags = append(config.Tags, tag)
 			}
-		}
 
-		config.Images = images
-		config.Channels = channels
+			config.Assets = c.Assets
 
-		return config, nil
+			config.ClusterName = cluster.ObjectMeta.Name
+
+			config.ConfigBase = fi.String(configBase.Path())
+
+			config.InstanceGroupName = ig.ObjectMeta.Name
+
+			var images []*nodeup.Image
+
+			if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
+				baseURL := cluster.Spec.KubernetesVersion
+				baseURL = strings.TrimSuffix(baseURL, "/")
+
+				// TODO: pull kube-dns image
+				// When using a custom version, we want to preload the images over http
+				components := []string{"kube-proxy"}
+				if role == api.InstanceGroupRoleMaster {
+					components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
+				}
+				for _, component := range components {
+					imagePath := baseURL + "/bin/linux/amd64/" + component + ".tar"
+					glog.Infof("Adding docker image: %s", imagePath)
+
+					hash, err := findHash(imagePath)
+					if err != nil {
+						return nil, err
+					}
+					image := &nodeup.Image{
+						Source: imagePath,
+						Hash:   hash.Hex(),
+					}
+					images = append(images, image)
+				}
+			}
+
+			{
+				location := ProtokubeImageSource()
+
+				hash, err := findHash(location)
+				if err != nil {
+					return nil, err
+				}
+
+				config.ProtokubeImage = &nodeup.Image{
+					Name:   kops.DefaultProtokubeImageName(),
+					Source: location,
+					Hash:   hash.Hex(),
+				}
+			}
+
+			config.Images = images
+			config.Channels = channels
+
+			return config, nil
+		*/
 	}
 
 	bootstrapScriptBuilder := &model.BootstrapScript{
@@ -610,24 +703,6 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
 
-	//// TotalNodeCount computes the total count of nodes
-	//l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
-	//	count := 0
-	//	for _, group := range c.InstanceGroups {
-	//		if group.IsMaster() {
-	//			continue
-	//		}
-	//		if group.Spec.MaxSize != nil {
-	//			count += *group.Spec.MaxSize
-	//		} else if group.Spec.MinSize != nil {
-	//			count += *group.Spec.MinSize
-	//		} else {
-	//			// Guestimate
-	//			count += 5
-	//		}
-	//	}
-	//	return count, nil
-	//}
 	l.TemplateFunctions["Region"] = func() string {
 		return region
 	}
