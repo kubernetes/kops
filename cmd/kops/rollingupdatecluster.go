@@ -23,6 +23,8 @@ import (
 	"strconv"
 	"time"
 
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,7 +39,6 @@ import (
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/util/i18n"
-	"strings"
 )
 
 var (
@@ -218,6 +219,10 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return err
 	}
 
+	if cluster == nil {
+		return fmt.Errorf("Cluster is not set")
+	}
+
 	contextName := cluster.ObjectMeta.Name
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		clientcmd.NewDefaultClientConfigLoadingRules(),
@@ -389,6 +394,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		DrainInterval:    options.DrainInterval,
 		Clientset:        clientset,
 		Algorithm:        options.Algorithm,
+		Cluster:          cluster,
 	}
 	return d.RollingUpdate(groups, list)
 }

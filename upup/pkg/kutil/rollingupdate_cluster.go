@@ -42,6 +42,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"strings"
 )
 
 const (
@@ -327,6 +328,17 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 }
 
 func (c *RollingUpdateCluster) updateCluster() error {
+
+	if c.Clientset == nil {
+		return fmt.Errorf("client must be set, it is nil")
+	}
+	if c.Cluster == nil {
+		return fmt.Errorf("cluster must be set, it is nil")
+	}
+
+	glog.Infof("cluster: %+v", c.Cluster)
+	glog.Infof("client set: %+v", c.Clientset)
+
 	applyCmd := &cloudup.ApplyClusterCmd{
 		Cluster:         c.Cluster,
 		Models:          nil,
@@ -345,7 +357,7 @@ func (c *RollingUpdateCluster) updateCluster() error {
 	return nil
 }
 
-// RollingUpdateNodesPreCreate iterates throw each instance group.  First a new instance groups is created
+// RollingUpdateNodesCreate iterates throw each instance group.  First a new instance groups is created
 // and the old nodes are cardoned.  Next the old nodes are drained and the old instance groups is deleted.
 func (c *RollingUpdateCluster) RollingUpdateNodesCreate(group *CloudInstanceGroup) error {
 
@@ -367,6 +379,7 @@ func (c *RollingUpdateCluster) RollingUpdateNodesCreate(group *CloudInstanceGrou
 		return fmt.Errorf("unable to update cluster: %v", err)
 	}
 
+	glog.Info("Waiting for new Instance Group(s) to start")
 	time.Sleep(c.NodeInterval)
 
 	// get the new list of ig and validate cluster
@@ -626,7 +639,10 @@ func (c *RollingUpdateCluster) deleteInstanceGroups(group *CloudInstanceGroup) e
 
 func getSuffix() string {
 	t := time.Now()
-	return " rolling-update " + t.Format("2006-01-02-15:04:05")
+	r := " rolling-update " + t.Format("2006-01-02-15:04:05")
+
+	// Launch configs cannot have : in them
+	return strings.Replace(r, ":", "-", -1)
 }
 
 func (c *RollingUpdateCluster) createInstanceGroup(orig *api.InstanceGroup, suffix string) (*api.InstanceGroup, error) {
