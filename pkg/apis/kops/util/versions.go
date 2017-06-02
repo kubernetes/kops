@@ -48,6 +48,10 @@ func ParseKubernetesVersion(version string) (*semver.Version, error) {
 			sv = semver.Version{Major: 1, Minor: 6}
 		} else if strings.Contains(v, "/v1.7.") {
 			sv = semver.Version{Major: 1, Minor: 7}
+		} else if strings.Contains(v, "/v1.8.") {
+			sv = semver.Version{Major: 1, Minor: 8}
+		} else if strings.Contains(v, "/v1.9.") {
+			sv = semver.Version{Major: 1, Minor: 9}
 		} else {
 			glog.Errorf("unable to parse Kubernetes version %q", version)
 			return nil, fmt.Errorf("unable to parse kubernetes version %q", version)
