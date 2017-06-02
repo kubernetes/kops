@@ -230,7 +230,7 @@ spec:
     spec:
       hostNetwork: true
       containers:
-        - image: ottoyiu/k8s-ec2-srcdst:v0.0.3
+        - image: ottoyiu/k8s-ec2-srcdst:v0.1.0
           name: k8s-ec2-srcdst
           resources:
             requests:
