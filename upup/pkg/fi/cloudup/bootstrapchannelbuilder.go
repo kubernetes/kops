@@ -421,5 +421,27 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 	}
 
+	if b.cluster.Spec.Networking.Kuberouter != nil {
+		key := "networking.kuberouter"
+
+		// 0.7.2-kops.1 = 0.7.1 + hairpinMode fix
+		version := "0.1.0"
+
+		{
+			location := key + "/k8s-1.6.yaml"
+			id := "k8s-1.6"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          networkingSelector,
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.6.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
 	return addons, manifests, nil
 }
