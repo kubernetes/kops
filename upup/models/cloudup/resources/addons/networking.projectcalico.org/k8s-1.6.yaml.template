@@ -112,6 +112,8 @@ spec:
       labels:
         k8s-app: calico-node
         role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       hostNetwork: true
       serviceAccountName: calico
