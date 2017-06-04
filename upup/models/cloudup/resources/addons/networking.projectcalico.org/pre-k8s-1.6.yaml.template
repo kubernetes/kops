@@ -89,7 +89,7 @@ spec:
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ .NonMasqueradeCIDR }}"
             - name: CALICO_IPV4POOL_IPIP
-              value: "always"
+              value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}cross-subnet{{- else -}}always{{- end -}}"
             # Auto-detect the BGP IP address.
             - name: IP
               value: ""
@@ -199,3 +199,55 @@ spec:
             - name: CONFIGURE_ETC_HOSTS
               value: "true"
 
+{{ if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}
+---
+# This manifest installs the k8s-ec2-srcdst container, which disables
+# src/dst ip checks to allow BGP to function for calico for hosts within subnets
+# This only applies for AWS environments.
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: k8s-ec2-srcdst
+  namespace: kube-system
+  labels:
+    k8s-app: k8s-ec2-srcdst
+    role.kubernetes.io/networking: "1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: k8s-ec2-srcdst
+  template:
+    metadata:
+      labels:
+        k8s-app: k8s-ec2-srcdst
+        role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+        scheduler.alpha.kubernetes.io/tolerations: |
+          [{"key": "dedicated", "value": "master", "effect": "NoSchedule" },
+           {"key":"CriticalAddonsOnly", "operator":"Exists"}]
+    spec:
+      hostNetwork: true
+      containers:
+        - image: ottoyiu/k8s-ec2-srcdst:v0.1.0
+          name: k8s-ec2-srcdst
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+          env:
+            - name: AWS_REGION
+              value: {{ Region }}
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: "/etc/ssl/certs/ca-certificates.crt"
+              readOnly: true
+          imagePullPolicy: "Always"
+      volumes:
+        - name: ssl-certs
+          hostPath:
+            path: "/etc/ssl/certs/ca-certificates.crt"
+      nodeSelector:
+        kubernetes.io/role: master
+{{- end -}}
