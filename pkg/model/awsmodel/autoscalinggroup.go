@@ -26,7 +26,7 @@ import (
 )
 
 const (
-	DefaultVolumeSize = 20
+	DefaultVolumeSize = 100
 	DefaultVolumeType = "gp2"
 )
 

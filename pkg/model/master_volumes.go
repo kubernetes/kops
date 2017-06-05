@@ -29,7 +29,7 @@ import (
 )
 
 const (
-	DefaultEtcdVolumeSize    = 20
+	DefaultEtcdVolumeSize    = 40
 	DefaultAWSEtcdVolumeType = "gp2"
 	DefaultGCEEtcdVolumeType = "pd-ssd"
 )
