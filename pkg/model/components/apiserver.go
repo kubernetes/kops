@@ -87,7 +87,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	// We disable the insecure port from 1.6 onwards
 	if b.IsKubernetesGTE("1.6") {
 		c.InsecurePort = 0
-		glog.Warning("Enabling apiserver insecure port, for healthchecks (issue #43784)")
+		glog.V(4).Infof("Enabling apiserver insecure port, for healthchecks (issue #43784)")
 		c.InsecurePort = 8080
 	} else {
 		c.InsecurePort = 8080

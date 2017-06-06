@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 
 	"bytes"
 
@@ -28,8 +29,12 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
@@ -39,6 +44,8 @@ import (
 
 type CreateOptions struct {
 	resource.FilenameOptions
+	Yes          bool
+	SSHPublicKey string
 }
 
 var (
@@ -72,8 +79,14 @@ var (
 	create_short = i18n.T("Create a resource by command line, filename or stdin.")
 )
 
+func (o *CreateOptions) InitDefaults() {
+	o.Yes = false
+	o.SSHPublicKey = "~/.ssh/id_rsa.pub"
+}
+
 func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateOptions{}
+	options.InitDefaults()
 
 	cmd := &cobra.Command{
 		Use:     "create -f FILENAME",
@@ -90,14 +103,11 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "Filename to use to create the resource")
-	//usage := "to use to create the resource"
-	//cmdutil.AddFilenameOptionFlags(cmd, options, usage)
+	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use")
+	// pull --yes up to here
+	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Specify --yes to immediately create the cluster")
+
 	cmd.MarkFlagRequired("filename")
-	//cmdutil.AddValidateFlags(cmd)
-	//cmdutil.AddOutputFlagsForMutation(cmd)
-	//cmdutil.AddApplyAnnotationFlags(cmd)
-	//cmdutil.AddRecordFlag(cmd)
-	//cmdutil.AddInclude3rdPartyFlags(cmd)
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCreateCluster(f, out))
@@ -121,6 +131,8 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	//var cSpec = false
 	var sb bytes.Buffer
 	fmt.Fprintf(&sb, "\n")
+	var cluster *kopsapi.Cluster
+	var instanceGroups []*kopsapi.InstanceGroup
 	for _, f := range c.Filenames {
 		contents, err := vfs.Context.ReadFile(f)
 		if err != nil {
@@ -156,7 +168,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				if err != nil {
 					return fmt.Errorf("error populating configuration: %v", err)
 				}
-				_, err = clientset.Clusters().Create(v)
+				cluster, err = clientset.Clusters().Create(v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
@@ -172,15 +184,17 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
 				}
-				_, err = clientset.InstanceGroups(clusterName).Create(v)
+				ig, err := clientset.InstanceGroups(clusterName).Create(v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)
 					}
 					return fmt.Errorf("error creating instanceGroup: %v", err)
-				} else {
-					fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
 				}
+
+				fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
+
+				instanceGroups = append(instanceGroups, ig)
 
 			default:
 				glog.V(2).Infof("Type of object was %T", v)
@@ -189,6 +203,57 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 		}
 
 	}
+
+	sshPublicKeys := make(map[string][]byte)
+	if c.SSHPublicKey != "" {
+		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
+		authorized, err := ioutil.ReadFile(c.SSHPublicKey)
+		if err != nil {
+			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
+		}
+		sshPublicKeys[fi.SecretNameSSHPrimary] = authorized
+
+		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
+	}
+
+	keyStore, err := registry.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	for k, data := range sshPublicKeys {
+		err = keyStore.AddSSHPublicKey(k, data)
+		if err != nil {
+			return fmt.Errorf("error addding SSH public key: %v", err)
+		}
+	}
+
+	err = validation.DeepValidate(cluster, instanceGroups, false)
+	if err != nil {
+		return err
+	}
+
+	// TODO: Maybe just embed UpdateClusterOptions in CreateClusterOptions?
+	updateClusterOptions := &UpdateClusterOptions{}
+	updateClusterOptions.InitDefaults()
+
+	updateClusterOptions.Yes = c.Yes
+	updateClusterOptions.Target = c.Target
+	updateClusterOptions.Models = c.Models
+	updateClusterOptions.OutDir = c.OutDir
+
+	// SSHPublicKey has already been mapped
+	updateClusterOptions.SSHPublicKey = ""
+
+	// No equivalent options:
+	//  updateClusterOptions.MaxTaskDuration = c.MaxTaskDuration
+	//  updateClusterOptions.CreateKubecfg = c.CreateKubecfg
+
+	err = RunUpdateCluster(f, clusterName, out, updateClusterOptions)
+	if err != nil {
+		return err
+	}
+
 	{
 		// If there is a value in this sb, this should mean that we have something to deploy
 		// so let's advise the user how to engage the cloud provider and deploy

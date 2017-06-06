@@ -888,8 +888,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		updateClusterOptions.InitDefaults()
 
 		updateClusterOptions.Yes = c.Yes
-		updateClusterOptions.Target = c.Target
-		updateClusterOptions.Models = c.Models
+		updateClusterOptions.Target = "direct"
+		updateClusterOptions.Models = strings.Join(cloudup.CloudupModels, ",")
 		updateClusterOptions.OutDir = c.OutDir
 
 		// SSHPublicKey has already been mapped
