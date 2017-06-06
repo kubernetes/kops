@@ -1,3 +1,14 @@
+# Command line options
+
+The `dns-controller` executable takes the following command line options:
+
+* `--dns` - DNS provider we should use. Valid options are: `aws-route53`, `google-clouddns` or `coredns`.
+* `--gossip-listen` - The address on which to listen if gossip is enabled.
+* `--gossip-seed` - If set, will enable gossip zones and seed using the provided address.
+* `--gossip-secret` - Secret to use to secure the gossip protocol.
+* `--zone` - Configure permitted zones and their mappings. See further notes below.
+* `--watch-ingress` - Watch for DNS records in `ingress` resources in addition to `service` resources.
+
 ## zone
 
 Pass a list of zones to determine which names can be updated.  Zones not permitted will be ignored
