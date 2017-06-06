@@ -73,21 +73,6 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	auditLogPath := b.Cluster.Spec.KubeAPIServer.AuditLogPath
-	if auditLogPath != nil {
-		// Touch log file, so that docker doesn't create a directory instead
-		{
-			t := &nodetasks.File{
-				Path:        *auditLogPath,
-				Contents:    fi.NewStringResource(""),
-				Type:        nodetasks.FileType_File,
-				Mode:        s("0400"),
-				IfNotExists: true,
-			}
-			c.AddTask(t)
-		}
-	}
-
 	return nil
 }
 
@@ -200,7 +185,11 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 
 	auditLogPath := b.Cluster.Spec.KubeAPIServer.AuditLogPath
 	if auditLogPath != nil {
-		addHostPathMapping(pod, container, "auditlogfile", *auditLogPath).ReadOnly = false
+		// Mount the directory of the path instead, as kube-apiserver rotates the log by renaming the file.
+		// Renaming is not possible when the file is mounted as the host path, and will return a
+		// 'Device or resource busy' error
+		auditLogPathDir := filepath.Dir(*auditLogPath)
+		addHostPathMapping(pod, container, "auditlogpathdir", auditLogPathDir).ReadOnly = false
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
