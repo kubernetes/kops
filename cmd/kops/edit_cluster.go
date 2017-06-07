@@ -245,6 +245,8 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			return preservedFile(fmt.Errorf("error writing completed cluster spec: %v", err), file, out)
 		}
 
+		fmt.Println("Edit successful, please verify the changes with `kops get cluster -o yaml`")
+
 		return nil
 	}
 }
@@ -336,4 +338,5 @@ func preservedFile(err error, path string, out io.Writer) error {
 		}
 	}
 	return err
+
 }
