@@ -119,8 +119,8 @@ Once your cluster is setup and you need to SSH into the bastion you can access a
 ```bash
 # Verify you have an SSH agent running. This should match whatever you built your cluster with.
 ssh-add -l
-# If you need to add an agent
-ssh-add path/to/public/key
+# If you need to add the key to your agent:
+ssh-add path/to/private/key
 
 # Now you can SSH into the bastion
 ssh -A admin@<bastion-ELB-address>
