@@ -60,6 +60,16 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	if b.KopsModelContext.Cluster.Spec.Networking.Kuberouter != nil {
+		// Keypair used by the kube-router
+		t := &fitasks.Keypair{
+			Name:    fi.String("kube-router"),
+			Subject: "cn=" + "system:kube-router",
+			Type:    "client",
+		}
+		c.AddTask(t)
+	}
+
 	{
 		// Keypair used by the kube-controller-manager
 		t := &fitasks.Keypair{
