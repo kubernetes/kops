@@ -75,6 +75,7 @@ kops create cluster
       --master-security-groups stringSlice   Add precreated additional security groups to masters.
       --master-size string                   Set instance size for masters
       --master-tenancy string                The tenancy of the master group on AWS. Can either be default or dedicated.
+      --master-volume-size int32             Set instance volume size (in GB) for masters
       --master-zones stringSlice             Zones in which to run masters (must be an odd number)
       --model string                         Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --network-cidr string                  Set to override the default network CIDR
@@ -83,6 +84,7 @@ kops create cluster
       --node-security-groups stringSlice     Add precreated additional security groups to nodes.
       --node-size string                     Set instance size for nodes
       --node-tenancy string                  The tenancy of the node group on AWS. Can be either default or dedicated.
+      --node-volume-size int32               Set instance volume size (in GB) for nodes
       --out string                           Path to write any local output
       --project string                       Project to use (must be set on GCE)
       --ssh-public-key string                SSH public key to use (default "~/.ssh/id_rsa.pub")
