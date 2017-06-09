@@ -59,6 +59,8 @@ type CreateClusterOptions struct {
 	MasterSize           string
 	MasterCount          int32
 	NodeCount            int32
+	MasterVolumeSize     int32
+	NodeVolumeSize       int32
 	EncryptEtcdStorage   bool
 	Project              string
 	KubernetesVersion    string
@@ -230,6 +232,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NodeSize, "node-size", options.NodeSize, "Set instance size for nodes")
 
 	cmd.Flags().StringVar(&options.MasterSize, "master-size", options.MasterSize, "Set instance size for masters")
+
+	cmd.Flags().Int32Var(&options.MasterVolumeSize, "master-volume-size", options.MasterVolumeSize, "Set instance volume size (in GB) for masters")
+	cmd.Flags().Int32Var(&options.NodeVolumeSize, "node-volume-size", options.NodeVolumeSize, "Set instance volume size (in GB) for nodes")
 
 	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
@@ -572,6 +577,18 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if c.MasterSize != "" {
 		for _, group := range masters {
 			group.Spec.MachineType = c.MasterSize
+		}
+	}
+
+	if c.MasterVolumeSize != 0 {
+		for _, group := range masters {
+			group.Spec.RootVolumeSize = fi.Int32(c.MasterVolumeSize)
+		}
+	}
+
+	if c.NodeVolumeSize != 0 {
+		for _, group := range nodes {
+			group.Spec.RootVolumeSize = fi.Int32(c.NodeVolumeSize)
 		}
 	}
 
