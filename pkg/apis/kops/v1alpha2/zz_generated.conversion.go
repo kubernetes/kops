@@ -107,6 +107,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec,
 		Convert_v1alpha2_KubenetNetworkingSpec_To_kops_KubenetNetworkingSpec,
 		Convert_kops_KubenetNetworkingSpec_To_v1alpha2_KubenetNetworkingSpec,
+		Convert_v1alpha2_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec,
+		Convert_kops_KuberouterNetworkingSpec_To_v1alpha2_KuberouterNetworkingSpec,
 		Convert_v1alpha2_LeaderElectionConfiguration_To_kops_LeaderElectionConfiguration,
 		Convert_kops_LeaderElectionConfiguration_To_v1alpha2_LeaderElectionConfiguration,
 		Convert_v1alpha2_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec,
@@ -1474,6 +1476,7 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeP
 	out.CPURequest = in.CPURequest
 	out.LogLevel = in.LogLevel
 	out.ClusterCIDR = in.ClusterCIDR
+	// WARNING: in.HostnameOverride requires manual conversion: does not exist in peer-type
 	out.Master = in.Master
 	return nil
 }
@@ -1632,6 +1635,22 @@ func Convert_kops_KubenetNetworkingSpec_To_v1alpha2_KubenetNetworkingSpec(in *ko
 	return autoConvert_kops_KubenetNetworkingSpec_To_v1alpha2_KubenetNetworkingSpec(in, out, s)
 }
 
+func autoConvert_v1alpha2_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec(in *KuberouterNetworkingSpec, out *kops.KuberouterNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_v1alpha2_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec(in *KuberouterNetworkingSpec, out *kops.KuberouterNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec(in, out, s)
+}
+
+func autoConvert_kops_KuberouterNetworkingSpec_To_v1alpha2_KuberouterNetworkingSpec(in *kops.KuberouterNetworkingSpec, out *KuberouterNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_kops_KuberouterNetworkingSpec_To_v1alpha2_KuberouterNetworkingSpec(in *kops.KuberouterNetworkingSpec, out *KuberouterNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_kops_KuberouterNetworkingSpec_To_v1alpha2_KuberouterNetworkingSpec(in, out, s)
+}
+
 func autoConvert_v1alpha2_LeaderElectionConfiguration_To_kops_LeaderElectionConfiguration(in *LeaderElectionConfiguration, out *kops.LeaderElectionConfiguration, s conversion.Scope) error {
 	out.LeaderElect = in.LeaderElect
 	return nil
@@ -1752,6 +1771,15 @@ func autoConvert_v1alpha2_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSp
 	} else {
 		out.Canal = nil
 	}
+	if in.Kuberouter != nil {
+		in, out := &in.Kuberouter, &out.Kuberouter
+		*out = new(kops.KuberouterNetworkingSpec)
+		if err := Convert_v1alpha2_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Kuberouter = nil
+	}
 	return nil
 }
 
@@ -1840,6 +1868,15 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha2_NetworkingSpec(in *kops.Network
 		}
 	} else {
 		out.Canal = nil
+	}
+	if in.Kuberouter != nil {
+		in, out := &in.Kuberouter, &out.Kuberouter
+		*out = new(KuberouterNetworkingSpec)
+		if err := Convert_kops_KuberouterNetworkingSpec_To_v1alpha2_KuberouterNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Kuberouter = nil
 	}
 	return nil
 }
