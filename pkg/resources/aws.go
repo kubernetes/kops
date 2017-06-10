@@ -19,9 +19,7 @@ package resources
 import (
 	"bufio"
 	"bytes"
-	"compress/gzip"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -171,22 +169,7 @@ func (c *ClusterResources) listResourcesAWS() (map[string]*ResourceTracker, erro
 	return resources, nil
 }
 
-func gunzipBytes(d []byte) ([]byte, error) {
-	var out bytes.Buffer
-	in := bytes.NewReader(d)
-	r, err := gzip.NewReader(in)
-	if err != nil {
-		return nil, fmt.Errorf("error building gunzip reader: %v", err)
-	}
-	defer r.Close()
-	_, err = io.Copy(&out, r)
-	if err != nil {
-		return nil, fmt.Errorf("error decompressing data: %v", err)
-	}
-	return out.Bytes(), nil
-}
-
-func buildEC2Filters(cloud fi.Cloud) []*ec2.Filter {
+func BuildEC2Filters(cloud fi.Cloud) []*ec2.Filter {
 	awsCloud := cloud.(awsup.AWSCloud)
 	tags := awsCloud.Tags()
 
@@ -245,7 +228,100 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 	return nil
 }
 
-func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
+// FindAutoscalingGroups finds autoscaling groups matching the specified tags
+// This isn't entirely trivial because autoscaling doesn't let us filter with as much precision as we would like
+func FindAutoscalingGroups(cloud awsup.AWSCloud, tags map[string]string) ([]*autoscaling.Group, error) {
+	var asgs []*autoscaling.Group
+
+	glog.V(2).Infof("Listing all Autoscaling groups matching cluster tags")
+	var asgNames []*string
+	{
+		var asFilters []*autoscaling.Filter
+		for _, v := range tags {
+			// Not an exact match, but likely the best we can do
+			asFilters = append(asFilters, &autoscaling.Filter{
+				Name:   aws.String("value"),
+				Values: []*string{aws.String(v)},
+			})
+		}
+		request := &autoscaling.DescribeTagsInput{
+			Filters: asFilters,
+		}
+
+		err := cloud.Autoscaling().DescribeTagsPages(request, func(p *autoscaling.DescribeTagsOutput, lastPage bool) bool {
+			for _, t := range p.Tags {
+				switch *t.ResourceType {
+				case "auto-scaling-group":
+					asgNames = append(asgNames, t.ResourceId)
+				default:
+					glog.Warningf("Unknown resource type: %v", *t.ResourceType)
+
+				}
+			}
+			return true
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error listing autoscaling cluster tags: %v", err)
+		}
+	}
+
+	if len(asgNames) != 0 {
+		request := &autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: asgNames,
+		}
+		err := cloud.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
+			for _, asg := range p.AutoScalingGroups {
+				if !MatchesAsgTags(tags, asg.Tags) {
+					// We used an inexact filter above
+					continue
+				}
+				// Check for "Delete in progress" (the only use of .Status)
+				if asg.Status != nil {
+					glog.Warningf("Skipping ASG %v (which matches tags): %v", *asg.AutoScalingGroupARN, *asg.Status)
+					continue
+				}
+				asgs = append(asgs, asg)
+			}
+			return true
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
+		}
+
+	}
+
+	return asgs, nil
+}
+
+// FindAutoscalingLaunchConfiguration finds an AWS launch configuration given its name
+func FindAutoscalingLaunchConfiguration(cloud awsup.AWSCloud, name string) (*autoscaling.LaunchConfiguration, error) {
+	glog.V(2).Infof("Retrieving Autoscaling LaunchConfigurations %q", name)
+
+	var results []*autoscaling.LaunchConfiguration
+
+	request := &autoscaling.DescribeLaunchConfigurationsInput{
+		LaunchConfigurationNames: []*string{&name},
+	}
+	err := cloud.Autoscaling().DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
+		for _, t := range p.LaunchConfigurations {
+			results = append(results, t)
+		}
+		return true
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing autoscaling LaunchConfigurations: %v", err)
+	}
+
+	if len(results) == 0 {
+		return nil, nil
+	}
+	if len(results) != 1 {
+		return nil, fmt.Errorf("Found multiple LaunchConfigurations with name %q", name)
+	}
+	return results[0], nil
+}
+
+func MatchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
@@ -358,7 +434,7 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 
 	glog.V(2).Infof("Querying EC2 instances")
 	request := &ec2.DescribeInstancesInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 
 	var trackers []*ResourceTracker
@@ -527,7 +603,7 @@ func DescribeSecurityGroups(cloud fi.Cloud) ([]*ec2.SecurityGroup, error) {
 
 	glog.V(2).Infof("Listing EC2 SecurityGroups")
 	request := &ec2.DescribeSecurityGroupsInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeSecurityGroups(request)
 	if err != nil {
@@ -637,7 +713,7 @@ func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
 
 	glog.V(2).Infof("Listing EC2 Volumes")
 	request := &ec2.DescribeVolumesInput{
-		Filters: buildEC2Filters(c),
+		Filters: BuildEC2Filters(c),
 	}
 
 	err := c.EC2().DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) bool {
@@ -875,7 +951,7 @@ func DescribeSubnets(cloud fi.Cloud) ([]*ec2.Subnet, error) {
 
 	glog.V(2).Infof("Listing EC2 subnets")
 	request := &ec2.DescribeSubnetsInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeSubnets(request)
 	if err != nil {
@@ -929,7 +1005,7 @@ func DescribeRouteTables(cloud fi.Cloud) ([]*ec2.RouteTable, error) {
 
 	glog.V(2).Infof("Listing EC2 RouteTables")
 	request := &ec2.DescribeRouteTablesInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeRouteTables(request)
 	if err != nil {
@@ -1028,7 +1104,7 @@ func DescribeDhcpOptions(cloud fi.Cloud) ([]*ec2.DhcpOptions, error) {
 
 	glog.V(2).Infof("Listing EC2 DhcpOptions")
 	request := &ec2.DescribeDhcpOptionsInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeDhcpOptions(request)
 	if err != nil {
@@ -1137,7 +1213,7 @@ func DescribeInternetGateways(cloud fi.Cloud) ([]*ec2.InternetGateway, error) {
 
 	glog.V(2).Infof("Listing EC2 InternetGateways")
 	request := &ec2.DescribeInternetGatewaysInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeInternetGateways(request)
 	if err != nil {
@@ -1206,7 +1282,7 @@ func DescribeVPCs(cloud fi.Cloud) ([]*ec2.Vpc, error) {
 
 	glog.V(2).Infof("Listing EC2 VPC")
 	request := &ec2.DescribeVpcsInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeVpcs(request)
 	if err != nil {
@@ -1269,7 +1345,7 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTrack
 
 	tags := c.Tags()
 
-	asgs, err := findAutoscalingGroups(c, tags)
+	asgs, err := FindAutoscalingGroups(c, tags)
 	if err != nil {
 		return nil, err
 	}
