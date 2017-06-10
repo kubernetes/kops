@@ -24,8 +24,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/ui"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/util/i18n"
@@ -147,7 +147,7 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 		return err
 	}
 
-	d := &kutil.DeleteInstanceGroup{}
+	d := &instancegroups.DeleteInstanceGroup{}
 	d.Cluster = cluster
 	d.Cloud = cloud
 	d.Clientset = clientset
