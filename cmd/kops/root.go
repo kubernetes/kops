@@ -116,13 +116,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
 
 	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.kops.yaml)")
-
-	defaultStateStore := os.Getenv("KOPS_STATE_STORE")
-	if strings.HasSuffix(defaultStateStore, "/") {
-		strings.TrimSuffix(defaultStateStore, "/")
-	}
-	cmd.PersistentFlags().StringVarP(&rootCommand.RegistryPath, "state", "", defaultStateStore, "Location of state storage")
-
+	cmd.PersistentFlags().StringVarP(&rootCommand.RegistryPath, "state", "", "", "Location of state storage")
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", "", "Name of cluster")
 
 	// create subcommands

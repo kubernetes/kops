@@ -90,6 +90,10 @@ func (c *VFSContext) ReadFile(location string) ([]byte, error) {
 }
 
 func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
+	if strings.HasSuffix(p, "/") {
+		p = strings.TrimSuffix(p, "/")
+	}
+
 	if !strings.Contains(p, "://") {
 		return NewFSPath(p), nil
 	}
