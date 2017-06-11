@@ -22,20 +22,17 @@ kops get
 ### Examples
 
 ```
-  # Get all resource in a single cluster as yaml
-  kops get --name k8s-cluster.example.com -o yaml
-  
   # Get all clusters in a state store
   kops get clusters
   
-  # Get a cluster
-  kops get cluster k8s-cluster.example.com
+  # Get a cluster and its instancegroups
+  kops get k8s-cluster.example.com
   
-  # Get a cluster YAML cluster spec
-  kops get cluster k8s-cluster.example.com -o yaml
+  # Get a cluster and its instancegroups' YAML desired configuration
+  kops get k8s-cluster.example.com -o yaml
   
-  # Get an instancegroup
-  kops get ig --name k8s-cluster.example.com nodes
+  # Save a cluster and its instancegroups' desired configuration to YAML file
+  kops get k8s-cluster.example.com -o yaml > cluster-desired-config.yaml
   
   # Get a secret
   kops get secrets kube -oplaintext
