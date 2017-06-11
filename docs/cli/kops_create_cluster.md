@@ -5,7 +5,7 @@ Create a Kubernetes cluster.
 ### Synopsis
 
 
-Create a kubernetes cluster using command line flags. This command creates cloud based resources such as networks and virtual machine. Once the infrastructure is in place Kubernetes is installed on the virtual machines.
+Create a kubernetes cluster using command line flags. This command creates cloud based resources such as networks and virtual machine. Once the infrastructure is in place Kubernetes is installed on the virtual machines. 
 
 These operations are done in parrellel and rely on eventual consitency.
 
@@ -20,11 +20,11 @@ kops create cluster
   kops create cluster --name=kubernetes-cluster.example.com \
   --state=s3://kops-state-1234 --zones=eu-west-1a \
   --node-count=2
-
+  
   # Create a cluster in AWS that has HA masters.  This cluster
   # will be setup with an internal networking in a private VPC.
   # A bastion instance will be setup to provide instance access.
-
+  
   export NODE_SIZE=${NODE_SIZE:-m4.large}
   export MASTER_SIZE=${MASTER_SIZE:-m4.large}
   export ZONES=${ZONES:-"us-east-1d,us-east-1b,us-east-1c"}
@@ -39,13 +39,13 @@ kops create cluster
   --topology private \
   --bastion="true" \
   --yes
-
+  
   # Create cluster in GCE.
   # This is an alpha feature.
   export KOPS_STATE_STORE="gs://mybucket-kops"
   export ZONES=${MASTER_ZONES:-"us-east1-b,us-east1-c,us-east1-d"}
   export KOPS_FEATURE_FLAGS=AlphaAllowGCE
-
+  
   kops create cluster kubernetes-k8s-gce.example.com
   --zones $ZONES \
   --master-zones $ZONES \
@@ -79,8 +79,8 @@ kops create cluster
       --master-zones stringSlice             Zones in which to run masters (must be an odd number)
       --model string                         Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --network-cidr string                  Set to override the default network CIDR
-      --networking string                    Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel, calico, canal. (default "kubenet")
       --network-encrypt                      Weave network support encryption between nodes. Password stored in etcd as k8s secret weave-pass.
+      --networking string                    Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel, calico, canal. (default "kubenet")
       --node-count int32                     Set the number of nodes
       --node-security-groups stringSlice     Add precreated additional security groups to nodes.
       --node-size string                     Set instance size for nodes
