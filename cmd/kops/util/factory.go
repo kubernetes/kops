@@ -25,6 +25,7 @@ import (
 
 	// Register our APIs
 	_ "k8s.io/kops/pkg/apis/kops/install"
+	"github.com/spf13/viper"
 )
 
 type FactoryOptions struct {
@@ -55,7 +56,7 @@ Trailing slash will be trimmed.`
 
 func (f *Factory) Clientset() (simple.Clientset, error) {
 	if f.clientset == nil {
-		registryPath := f.options.RegistryPath
+		registryPath := viper.GetString("state")
 		if registryPath == "" {
 			return nil, field.Required(field.NewPath("State Store"), STATE_ERROR)
 		}

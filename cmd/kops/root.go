@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -38,6 +37,7 @@ import (
 	// Register our APIs
 	_ "k8s.io/kops/pkg/apis/kops/install"
 	"k8s.io/kops/pkg/kubeconfig"
+	"strings"
 )
 
 const (
@@ -110,27 +110,31 @@ func init() {
 }
 
 func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
-
 	cmd := rootCommand.cobraCommand
 
-	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
+	defaultStateStore := os.Getenv("KOPS_STATE_STORE")
 
-	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.kops.yaml)")
-	cmd.PersistentFlags().StringVarP(&rootCommand.RegistryPath, "state", "", "", "Location of state storage")
+	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
+	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.kops.{json,yaml,toml,.properties})")
+	cmd.PersistentFlags().StringVarP(&rootCommand.RegistryPath, "state", "", defaultStateStore, "Location of state storage")
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", "", "Name of cluster")
 
 	// create subcommands
-	cmd.AddCommand(NewCmdCompletion(f, out))
-	cmd.AddCommand(NewCmdCreate(f, out))
-	cmd.AddCommand(NewCmdDelete(f, out))
-	cmd.AddCommand(NewCmdEdit(f, out))
-	cmd.AddCommand(NewCmdExport(f, out))
-	cmd.AddCommand(NewCmdGet(f, out))
-	cmd.AddCommand(NewCmdUpdate(f, out))
-	cmd.AddCommand(NewCmdReplace(f, out))
-	cmd.AddCommand(NewCmdRollingUpdate(f, out))
-	cmd.AddCommand(NewCmdToolbox(f, out))
-	cmd.AddCommand(NewCmdValidate(f, out))
+	cmd.AddCommand(
+		NewCmdCompletion(f, out),
+		NewCmdCreate(f, out),
+		NewCmdDelete(f, out),
+		NewCmdEdit(f, out),
+		NewCmdExport(f, out),
+		NewCmdGet(f, out),
+		NewCmdUpdate(f, out),
+		NewCmdReplace(f, out),
+		NewCmdRollingUpdate(f, out),
+		NewCmdToolbox(f, out),
+		NewCmdValidate(f, out),
+	)
+
+	viper.BindPFlags(cmd.PersistentFlags())
 
 	return cmd
 }
@@ -142,9 +146,13 @@ func initConfig() {
 		viper.SetConfigFile(rootCommand.configFile)
 	}
 
+	viper.SetEnvPrefix("KOPS")
+	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_"))
 	viper.SetConfigName(".kops") // name of config file (without extension)
-	viper.AddConfigPath("$HOME") // adding home directory as first search path
-	viper.AutomaticEnv()         // read in environment variables that match
+	viper.AddConfigPath(".")     // use current directory first
+	viper.AddConfigPath("$HOME")
+	viper.AddConfigPath("$HOME/.config/kops") // standard linux config dir
+	viper.AutomaticEnv()             // otherwise it would look for lowercase env vars
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
