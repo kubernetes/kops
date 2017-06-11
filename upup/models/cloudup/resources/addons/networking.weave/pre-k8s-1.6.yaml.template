@@ -72,6 +72,12 @@ spec:
             limits:
               cpu: 100m
               memory: 200Mi
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
           securityContext:
             privileged: true
       restartPolicy: Always
