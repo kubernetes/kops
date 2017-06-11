@@ -29,8 +29,8 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.6.1
 
-KOPS_RELEASE_VERSION=1.6.0
-KOPS_CI_VERSION=1.6.1-beta.1
+KOPS_RELEASE_VERSION=1.6.1
+KOPS_CI_VERSION=1.6.2-beta.1
 KOPS=${GOPATH_1ST}/bin/kops
 
 GITSHA := $(shell cd ${GOPATH_1ST}/src/k8s.io/kops; git describe --always)
