@@ -32,7 +32,7 @@ There are a few steps to upgrade a kubernetes cluster from 1.2 to 1.3:
 
 The `import cluster` command reverse engineers an existing cluster, and creates a cluster configuration.
 
-Make sure you have set `export KOPS_STATE_STORE=s3://<mybucket>`
+Make sure you have set `export KOPS_STATE_STORE=s3://<mybucket>` or created a [config file](config_file.md)
 
 Then import the cluster; setting `--name` and `--region` to match the old cluster. If you're not sure of the old cluster name, you can find it by looking at the `KubernetesCluster` tag on your AWS resources.
 
