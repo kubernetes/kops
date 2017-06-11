@@ -72,6 +72,7 @@ type CreateClusterOptions struct {
 	DNSZone              string
 	AdminAccess          []string
 	Networking           string
+	NetworkEncrypt       bool
 	NodeSecurityGroups   []string
 	MasterSecurityGroups []string
 	AssociatePublicIP    *bool
@@ -121,6 +122,7 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.Models = strings.Join(cloudup.CloudupModels, ",")
 	o.SSHPublicKey = "~/.ssh/id_rsa.pub"
 	o.Networking = "kubenet"
+	o.NetworkEncrypt = false
 	o.Channel = api.DefaultChannel
 	o.Topology = api.TopologyPublic
 	o.DNSType = string(api.DNSTypePublic)
@@ -246,6 +248,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
 	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel, calico, canal.")
+	cmd.Flags().BoolVar(&options.NetworkEncrypt, "network-encrypt", options.NetworkEncrypt, "Weave network support encryption between nodes. Password stored in etcd as k8s secret weave-pass.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -681,6 +684,11 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			// sets the default to the largest number that leaves enough overhead and is divisible by 4
 			jumboFrameMTUSize := int32(8912)
 			cluster.Spec.Networking.Weave.MTU = &jumboFrameMTUSize
+		}
+		if c.NetworkEncrypt {
+			cluster.Spec.Networking.Weave.Encrypt = true
+		} else {
+			cluster.Spec.Networking.Weave.Encrypt = false
 		}
 	case "flannel":
 		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{}

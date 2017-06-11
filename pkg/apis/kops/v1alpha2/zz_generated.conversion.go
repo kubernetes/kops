@@ -1921,6 +1921,7 @@ func Convert_kops_TopologySpec_To_v1alpha2_TopologySpec(in *kops.TopologySpec, o
 }
 
 func autoConvert_v1alpha2_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveNetworkingSpec, out *kops.WeaveNetworkingSpec, s conversion.Scope) error {
+	out.Encrypt = in.Encrypt
 	out.MTU = in.MTU
 	return nil
 }
@@ -1930,6 +1931,7 @@ func Convert_v1alpha2_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveN
 }
 
 func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha2_WeaveNetworkingSpec(in *kops.WeaveNetworkingSpec, out *WeaveNetworkingSpec, s conversion.Scope) error {
+	out.Encrypt = in.Encrypt
 	out.MTU = in.MTU
 	return nil
 }
