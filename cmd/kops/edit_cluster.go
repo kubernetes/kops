@@ -20,8 +20,12 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -29,26 +33,38 @@ import (
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/edit"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	util_editor "k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
-	"os"
-	"path/filepath"
-	"strings"
+	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 type EditClusterOptions struct {
 }
 
+var (
+	edit_cluster_long = templates.LongDesc(i18n.T(`Edit a cluster configuration.
+
+	This command changes the cluster cloud specification in the registry.
+
+    	To set your preferred editor, you can define the EDITOR environment variable.
+    	When you have done this, kops will use the editor that you have set.
+
+	kops edit does not update the cloud resources, to apply the changes use "kops update cluster".`))
+
+	edit_cluster_example = templates.Examples(i18n.T(`
+		# Edit a cluster configuration in AWS.
+		kops edit cluster k8s.cluster.site --state=s3://kops-state-1234
+	`))
+)
+
 func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &EditClusterOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "cluster",
-		Short: "Edit cluster",
-		Long: `Edit a cluster configuration.
-
-This command changes the cloud specification in the registry.
-
-It does not update the cloud resources, to apply the changes use "kops update cluster".`,
+		Use:     "cluster",
+		Short:   i18n.T("Edit cluster."),
+		Long:    edit_cluster_long,
+		Example: edit_cluster_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunEditCluster(f, cmd, args, out, options)
 			if err != nil {

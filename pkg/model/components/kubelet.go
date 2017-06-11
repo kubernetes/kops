@@ -17,6 +17,7 @@ limitations under the License.
 package components
 
 import (
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -57,8 +58,12 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec.Kubelet.LogLevel = fi.Int32(2)
 	clusterSpec.Kubelet.ClusterDNS = ip.String()
 	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
-	clusterSpec.Kubelet.BabysitDaemons = fi.Bool(true)
 	clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
+
+	if b.Context.IsKubernetesLT("1.7") {
+		// babysit-daemons removed in 1.7
+		clusterSpec.Kubelet.BabysitDaemons = fi.Bool(true)
+	}
 
 	clusterSpec.MasterKubelet.RegisterSchedulable = fi.Bool(false)
 	// Replace the CIDR with a CIDR allocated by KCM (the default, but included for clarity)
@@ -131,6 +136,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 
 	clusterSpec.Kubelet.CgroupRoot = "/"
 
+	glog.V(1).Infof("Cloud Provider: %s", cloudProvider)
 	if cloudProvider == fi.CloudProviderAWS {
 		clusterSpec.Kubelet.CloudProvider = "aws"
 
@@ -154,6 +160,11 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 		clusterSpec.CloudConfig.Multizone = fi.Bool(true)
 		clusterSpec.CloudConfig.NodeTags = fi.String(GCETagForRole(b.Context.ClusterName, kops.InstanceGroupRoleNode))
+	}
+
+	if cloudProvider == fi.CloudProviderVSphere {
+		clusterSpec.Kubelet.CloudProvider = "vsphere"
+		clusterSpec.Kubelet.HairpinMode = "promiscuous-bridge"
 	}
 
 	usesKubenet, err := UsesKubenet(clusterSpec)

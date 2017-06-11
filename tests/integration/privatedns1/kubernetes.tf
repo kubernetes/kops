@@ -2,6 +2,14 @@ output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privatedns1-example-com.id}"]
 }
 
+output "bastions_role_arn" {
+  value = "${aws_iam_role.bastions-privatedns1-example-com.arn}"
+}
+
+output "bastions_role_name" {
+  value = "${aws_iam_role.bastions-privatedns1-example-com.name}"
+}
+
 output "cluster_name" {
   value = "privatedns1.example.com"
 }
@@ -10,12 +18,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privatedns1-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-privatedns1-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-privatedns1-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-privatedns1-example-com.id}"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-privatedns1-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-privatedns1-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-privatedns1-example-com.name}"
 }
 
 output "region" {
@@ -205,18 +229,18 @@ resource "aws_elb" "bastion-privatedns1-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privatedns1-example-com" {
-  name  = "bastions.privatedns1.example.com"
-  roles = ["${aws_iam_role.bastions-privatedns1-example-com.name}"]
+  name = "bastions.privatedns1.example.com"
+  role = "${aws_iam_role.bastions-privatedns1-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privatedns1-example-com" {
-  name  = "masters.privatedns1.example.com"
-  roles = ["${aws_iam_role.masters-privatedns1-example-com.name}"]
+  name = "masters.privatedns1.example.com"
+  role = "${aws_iam_role.masters-privatedns1-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privatedns1-example-com" {
-  name  = "nodes.privatedns1.example.com"
-  roles = ["${aws_iam_role.nodes-privatedns1-example-com.name}"]
+  name = "nodes.privatedns1.example.com"
+  role = "${aws_iam_role.nodes-privatedns1-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privatedns1-example-com" {
@@ -610,8 +634,9 @@ resource "aws_subnet" "us-test-1a-privatedns1-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "us-test-1a.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "us-test-1a.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -621,8 +646,9 @@ resource "aws_subnet" "utility-us-test-1a-privatedns1-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "utility-us-test-1a.privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "utility-us-test-1a.privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -632,8 +658,9 @@ resource "aws_vpc" "privatedns1-example-com" {
   enable_dns_support   = true
 
   tags = {
-    KubernetesCluster = "privatedns1.example.com"
-    Name              = "privatedns1.example.com"
+    KubernetesCluster                               = "privatedns1.example.com"
+    Name                                            = "privatedns1.example.com"
+    "kubernetes.io/cluster/privatedns1.example.com" = "owned"
   }
 }
 
@@ -650,4 +677,8 @@ resource "aws_vpc_dhcp_options" "privatedns1-example-com" {
 resource "aws_vpc_dhcp_options_association" "privatedns1-example-com" {
   vpc_id          = "${aws_vpc.privatedns1-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.privatedns1-example-com.id}"
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
 }

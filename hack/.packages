@@ -37,6 +37,7 @@ k8s.io/kops/pkg/apiserver/registry/cluster
 k8s.io/kops/pkg/client/simple
 k8s.io/kops/pkg/client/simple/vfsclientset
 k8s.io/kops/pkg/diff
+k8s.io/kops/pkg/dns
 k8s.io/kops/pkg/edit
 k8s.io/kops/pkg/featureflag
 k8s.io/kops/pkg/flagbuilder
@@ -47,11 +48,17 @@ k8s.io/kops/pkg/model/components
 k8s.io/kops/pkg/model/gcemodel
 k8s.io/kops/pkg/model/iam
 k8s.io/kops/pkg/model/resources
+k8s.io/kops/pkg/model/vspheremodel
 k8s.io/kops/pkg/resources
 k8s.io/kops/pkg/systemd
 k8s.io/kops/pkg/util/stringorslice
 k8s.io/kops/pkg/validation
 k8s.io/kops/protokube/cmd/protokube
+k8s.io/kops/protokube/pkg/gossip
+k8s.io/kops/protokube/pkg/gossip/dns
+k8s.io/kops/protokube/pkg/gossip/dns/provider
+k8s.io/kops/protokube/pkg/gossip/gce
+k8s.io/kops/protokube/pkg/gossip/mesh
 k8s.io/kops/protokube/pkg/protokube
 k8s.io/kops/protokube/tests/integration/build_etcd_manifest
 k8s.io/kops/tests/codecs
@@ -67,6 +74,8 @@ k8s.io/kops/upup/pkg/fi/cloudup/dnstasks
 k8s.io/kops/upup/pkg/fi/cloudup/gce
 k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
 k8s.io/kops/upup/pkg/fi/cloudup/terraform
+k8s.io/kops/upup/pkg/fi/cloudup/vsphere
+k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks
 k8s.io/kops/upup/pkg/fi/fitasks
 k8s.io/kops/upup/pkg/fi/k8sapi
 k8s.io/kops/upup/pkg/fi/loader

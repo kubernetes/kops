@@ -18,13 +18,31 @@ package main
 
 import (
 	"github.com/spf13/cobra"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	upgrade_long = templates.LongDesc(i18n.T(`
+	Automates checking for and applying Kubernetes updates. This upgrades a cluster to the latest recommended
+	production ready k8s version. After this command is run usekops update cluder, and kops rolling-update cluster
+	to finish a cluster upgrade.
+	`))
+
+	upgrade_example = templates.Examples(i18n.T(`
+	# Upgrade a cluster's Kubernetes version.
+	kops upgrade cluster kubernetes-cluster.example.com --yes --state=s3://kops-state-1234
+	`))
+
+	upgrade_short = i18n.T("Upgrade a kubernetes cluster.")
 )
 
 // upgradeCmd represents the upgrade command
 var upgradeCmd = &cobra.Command{
-	Use:   "upgrade",
-	Short: "Automates checking for and applying Kubernetes updates.",
-	Long:  `upgrade clusters`,
+	Use:     "upgrade",
+	Short:   upgrade_short,
+	Long:    upgrade_long,
+	Example: upgrade_example,
 }
 
 func init() {

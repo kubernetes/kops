@@ -25,10 +25,11 @@ limitations under the License.
 package featureflag
 
 import (
-	"github.com/golang/glog"
 	"os"
 	"strings"
 	"sync"
+
+	"github.com/golang/glog"
 )
 
 func Bool(b bool) *bool {
@@ -46,6 +47,10 @@ var VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
 
 // SkipTerraformFormat if set will mean that we will not `tf fmt` the generated terraform.
 var SkipTerraformFormat = New("SkipTerraformFormat", Bool(false))
+
+var VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
+
+var EnableExternalDNS = New("EnableExternalDNS", Bool(false))
 
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex

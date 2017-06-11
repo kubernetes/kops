@@ -27,6 +27,7 @@ import (
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -167,7 +168,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "dns-controller.addons.k8s.io"
-		version := "1.6.1-alpha.2"
+		version := "1.6.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -197,6 +198,43 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				Id:                id,
 			})
 			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
+	if featureflag.EnableExternalDNS.Enabled() {
+		{
+			key := "external-dns.addons.k8s.io"
+			version := "0.3.0"
+
+			{
+				location := key + "/pre-k8s-1.6.yaml"
+				id := "pre-k8s-1.6"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: "<1.6.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
+
+			{
+				location := key + "/k8s-1.6.yaml"
+				id := "k8s-1.6"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.6.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
 		}
 	}
 
@@ -269,7 +307,9 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
-		version := "1.9.4"
+
+		// 1.9.5-kops.1 = 1.9.4 with WEAVE_MTU configured
+		version := "1.9.5-kops.1"
 
 		if b.cluster.Spec.Networking.Weave.Encrypt {
 			name, weaveLoc, addon := createSecret(key, b)
@@ -315,7 +355,9 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
-		version := "0.7.0"
+
+		// 0.7.2-kops.1 = 0.7.1 + hairpinMode fix
+		version := "0.7.2-kops.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"

@@ -1,11 +1,19 @@
 ## kops import
 
-Import existing resources into the state store.
+Import a cluster.
 
 ### Synopsis
 
 
-import clusters
+Imports a kubernetes cluster created by kube-up.sh into a state store.  This command only support AWS clusters at this time.
+
+### Examples
+
+```
+  # Import a cluser
+  kops import cluster --name k8s-cluster.example.com --region us-east-1 \
+  --state=s3://k8s-cluster.example.com
+```
 
 ### Options inherited from parent commands
 
@@ -23,6 +31,6 @@ import clusters
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
-* [kops import cluster](kops_import_cluster.md)	 - Import existing cluster into the state store
+* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops import cluster](kops_import_cluster.md)	 - Import a cluster.
 

@@ -23,34 +23,54 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"io"
+	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
-type GetSecretsCommand struct {
+var (
+	get_secret_long = templates.LongDesc(i18n.T(`
+	Display one or many secrets.`))
+
+	get_secret_example = templates.Examples(i18n.T(`
+	# Get a secret
+	kops get secrets kube -oplaintext
+
+	# Get the admin password for a cluster
+	kops get secrets admin -oplaintext`))
+
+	get_secret_short = i18n.T(`Get one or many secrets.`)
+)
+
+type GetSecretsOptions struct {
+	*GetOptions
 	Type string
 }
 
-var getSecretsCommand GetSecretsCommand
-
-func init() {
+func NewCmdGetSecrets(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
+	options := GetSecretsOptions{
+		GetOptions: getOptions,
+	}
 	cmd := &cobra.Command{
 		Use:     "secrets",
 		Aliases: []string{"secret"},
-		Short:   "get secrets",
-		Long:    `List or get secrets.`,
+		Short:   get_secret_short,
+		Long:    get_secret_long,
+		Example: get_secret_example,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := getSecretsCommand.Run(args)
+			err := RunGetSecrets(&options, args)
 			if err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	getCmd.cobraCommand.AddCommand(cmd)
-
-	cmd.Flags().StringVarP(&getSecretsCommand.Type, "type", "", "", "Filter by secret type")
+	cmd.Flags().StringVarP(&options.Type, "type", "", "", "Filter by secret type")
+	return cmd
 }
 
 func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, secretType string, names []string) ([]*fi.KeystoreItem, error) {
@@ -122,7 +142,7 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, secretType str
 	return items, nil
 }
 
-func (c *GetSecretsCommand) Run(args []string) error {
+func RunGetSecrets(options *GetSecretsOptions, args []string) error {
 	cluster, err := rootCommand.Cluster()
 	if err != nil {
 		return err
@@ -138,7 +158,7 @@ func (c *GetSecretsCommand) Run(args []string) error {
 		return err
 	}
 
-	items, err := listSecrets(keyStore, secretStore, c.Type, args)
+	items, err := listSecrets(keyStore, secretStore, options.Type, args)
 	if err != nil {
 		return err
 	}
@@ -148,7 +168,7 @@ func (c *GetSecretsCommand) Run(args []string) error {
 
 		return nil
 	}
-	switch getCmd.output {
+	switch options.output {
 
 	case OutputTable:
 
@@ -194,6 +214,6 @@ func (c *GetSecretsCommand) Run(args []string) error {
 		return nil
 
 	default:
-		return fmt.Errorf("Unknown output format: %q", getCmd.output)
+		return fmt.Errorf("Unknown output format: %q", options.output)
 	}
 }

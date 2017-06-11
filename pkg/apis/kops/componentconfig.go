@@ -217,7 +217,9 @@ type KubeletConfigSpec struct {
 	// one must set --hairpin-mode=veth-flag, because bridge assumes the
 	// existence of a container bridge named cbr0.
 	HairpinMode string `json:"hairpinMode,omitempty" flag:"hairpin-mode"`
+
 	// The node has babysitter process monitoring docker and kubelet.
+	// Removed as of 1.7
 	BabysitDaemons *bool `json:"babysitDaemons,omitempty" flag:"babysit-daemons"`
 
 	// maxPods is the number of pods that can run on this Kubelet.
@@ -691,4 +693,13 @@ type CloudConfiguration struct {
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// AWS cloud-config options
 	DisableSecurityGroupIngress *bool `json:"disableSecurityGroupIngress,omitempty"`
+
+	// vSphere cloud-config specs
+	VSphereUsername      *string `json:"vSphereUsername,omitempty"`
+	VSpherePassword      *string `json:"vSpherePassword,omitempty"`
+	VSphereServer        *string `json:"vSphereServer,omitempty"`
+	VSphereDatacenter    *string `json:"vSphereDatacenter,omitempty"`
+	VSphereResourcePool  *string `json:"vSphereResourcePool,omitempty"`
+	VSphereDatastore     *string `json:"vSphereDatastore,omitempty"`
+	VSphereCoreDNSServer *string `json:"vSphereCoreDNSServer,omitempty"`
 }

@@ -35,6 +35,47 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	rollingupdate_long = templates.LongDesc(i18n.T(`
+	This command updates a kubernetes cluster to match the cloud, and kops specifications.
+
+	To perform rolling update, you need to update the cloud resources first with "kops update cluster"
+
+	Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply"
+	prior to running "kops rolling-update cluster"
+
+	Use export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
+	and validates the cluster.  New flags for Drain and Validation operations will be shown when
+	the environment variable is set.`))
+
+	rollingupdate_example = templates.Examples(i18n.T(`
+		# Roll the currently selected kops cluster
+		kops rolling-update cluster --yes
+
+		# Roll the k8s-cluster.example.com kops cluster
+		# use the new drain an validate functionality
+		export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+		kops rolling-update cluster k8s-cluster.example.com --yes \
+		  --fail-on-validate-error="false" \
+		  --master-interval=8m \
+		  --node-interval=8m
+
+
+		# Roll the k8s-cluster.example.com kops cluster
+		# only roll the node instancegroup
+		# use the new drain an validate functionality
+		export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+		kops rolling-update cluster k8s-cluster.example.com --yes \
+		  --fail-on-validate-error="false" \
+		  --node-interval 8m \
+		  --instance-group nodes
+		`))
+
+	rollingupdate_short = i18n.T(`Rolling update a cluster.`)
 )
 
 // Command Object for a Rolling Update.
@@ -91,20 +132,10 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options.InitDefaults()
 
 	cmd := &cobra.Command{
-		Use:   "cluster",
-		Short: "Rolling update a cluster",
-		Long: `Rolling update a cluster instance groups.
-
-This command updates a kubernetes cluster to match the cloud, and kops specifications.
-
-To perform rolling update, you need to update the cloud resources first with "kops update cluster"
-
-Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply"
-prior to running "kops rolling-update cluster"
-
-Use KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
-and validates the cluster.  New flags for Drain and Validation operations will be shown when
-the environment variable is set.`,
+		Use:     "cluster",
+		Short:   rollingupdate_short,
+		Long:    rollingupdate_long,
+		Example: rollingupdate_example,
 	}
 
 	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "perform rolling update without confirmation")

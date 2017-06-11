@@ -54,7 +54,8 @@ type KopeioNetworkingSpec struct {
 
 // Weave declares that we want Weave networking
 type WeaveNetworkingSpec struct {
-	Encrypt bool `json:"encrypted,omitempty"`
+	Encrypt bool   `json:"encrypted,omitempty"`
+	MTU     *int32 `json:"mtu,omitempty"`
 }
 
 // Flannel declares that we want Flannel networking
@@ -63,6 +64,7 @@ type FlannelNetworkingSpec struct {
 
 // Calico declares that we want Calico networking
 type CalicoNetworkingSpec struct {
+	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
 }
 
 // Canal declares that we want Canal networking

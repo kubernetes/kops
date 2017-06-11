@@ -32,11 +32,13 @@ import (
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/gcemodel"
+	"k8s.io/kops/pkg/model/vspheremodel"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -44,6 +46,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
+	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
@@ -55,6 +59,9 @@ const starline = "**************************************************************
 
 // AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
 var AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
+
+// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
+var AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
 
 var CloudupModels = []string{"config", "proto", "cloudup"}
 
@@ -152,7 +159,7 @@ func (c *ApplyClusterCmd) Run() error {
 	if cluster.Spec.KubernetesVersion == "" {
 		return fmt.Errorf("KubernetesVersion not set")
 	}
-	if cluster.Spec.DNSZone == "" {
+	if cluster.Spec.DNSZone == "" && !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
 		return fmt.Errorf("DNSZone not set")
 	}
 
@@ -364,21 +371,35 @@ func (c *ApplyClusterCmd) Run() error {
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
 		}
 
+	case fi.CloudProviderVSphere:
+		{
+			if !AlphaAllowVsphere.Enabled() {
+				return fmt.Errorf("Vsphere support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowVsphere")
+			}
+
+			vsphereCloud := cloud.(*vsphere.VSphereCloud)
+			// TODO: map region with vCenter cluster, or datacenter, or datastore?
+			region = vsphereCloud.Cluster
+
+			l.AddTypes(map[string]interface{}{
+				"instance": &vspheretasks.VirtualMachine{},
+			})
+		}
+
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
 
 	modelContext.Region = region
 
-	err = validateDNS(cluster, cloud)
-	if err != nil {
-		return err
+	if dns.IsGossipHostname(cluster.ObjectMeta.Name) {
+		glog.Infof("Gossip DNS: skipping DNS validation")
+	} else {
+		err = validateDNS(cluster, cloud)
+		if err != nil {
+			return err
+		}
 	}
-	dnszone, err := findZone(cluster, cloud)
-	if err != nil {
-		return err
-	}
-	modelContext.HostedZoneID = dnszone.ID()
 
 	clusterTags, err := buildCloudupTags(cluster)
 	if err != nil {
@@ -446,6 +467,9 @@ func (c *ApplyClusterCmd) Run() error {
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext},
 					//&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 				)
+			case fi.CloudProviderVSphere:
+				l.Builders = append(l.Builders,
+					&model.PKIModelBuilder{KopsModelContext: modelContext})
 
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
@@ -570,6 +594,17 @@ func (c *ApplyClusterCmd) Run() error {
 				BootstrapScript: bootstrapScriptBuilder,
 			})
 		}
+	case fi.CloudProviderVSphere:
+		{
+			vsphereModelContext := &vspheremodel.VSphereModelContext{
+				KopsModelContext: modelContext,
+			}
+
+			l.Builders = append(l.Builders, &vspheremodel.AutoscalingGroupModelBuilder{
+				VSphereModelContext: vsphereModelContext,
+				BootstrapScript:     bootstrapScriptBuilder,
+			})
+		}
 
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
@@ -616,6 +651,8 @@ func (c *ApplyClusterCmd) Run() error {
 			target = gce.NewGCEAPITarget(cloud.(*gce.GCECloud))
 		case "aws":
 			target = awsup.NewAWSAPITarget(cloud.(awsup.AWSCloud))
+		case "vsphere":
+			target = vsphere.NewVSphereAPITarget(cloud.(*vsphere.VSphereCloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}
@@ -688,6 +725,10 @@ func (c *ApplyClusterCmd) Run() error {
 	err = context.RunTasks(c.MaxTaskDuration)
 	if err != nil {
 		return fmt.Errorf("error running tasks: %v", err)
+	}
+
+	if dns.IsGossipHostname(cluster.Name) {
+		shouldPrecreateDNS = false
 	}
 
 	if shouldPrecreateDNS {

@@ -29,7 +29,9 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 var UseLegacyELBName = featureflag.New("UseLegacyELBName", featureflag.Bool(false))
@@ -38,7 +40,6 @@ type KopsModelContext struct {
 	Cluster *kops.Cluster
 
 	Region         string
-	HostedZoneID   string // used to set up route53 IAM policy
 	InstanceGroups []*kops.InstanceGroup
 
 	SSHPublicKeys [][]byte
@@ -188,6 +189,27 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	}
 
 	return labels, nil
+}
+
+// CloudTags computes the tags to apply to a normal cloud resource with the specified name
+func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string {
+	tags := make(map[string]string)
+
+	switch fi.CloudProviderID(m.Cluster.Spec.CloudProvider) {
+	case fi.CloudProviderAWS:
+		tags[awsup.TagClusterName] = m.Cluster.ObjectMeta.Name
+		if name != "" {
+			tags["Name"] = name
+		}
+
+		if shared {
+			tags["kubernetes.io/cluster/"+m.Cluster.ObjectMeta.Name] = "shared"
+		} else {
+			tags["kubernetes.io/cluster/"+m.Cluster.ObjectMeta.Name] = "owned"
+		}
+
+	}
+	return tags
 }
 
 func (m *KopsModelContext) UsesBastionDns() bool {

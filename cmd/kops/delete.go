@@ -29,8 +29,10 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 type DeleteOptions struct {
@@ -38,13 +40,28 @@ type DeleteOptions struct {
 	Yes bool
 }
 
+var (
+	delete_long = templates.LongDesc(i18n.T(`
+	Delete clusters, instancegroups, or secrets.
+	`))
+
+	delete_example = templates.Examples(i18n.T(`
+		# Create a cluster using a file
+		kops delete -f my-cluster.yaml
+
+		# Delete a cluster in AWS.
+		kops delete cluster --name=k8s.example.com --state=s3://kops-state-1234
+	`))
+)
+
 func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DeleteOptions{}
 
 	cmd := &cobra.Command{
 		Use:        "delete -f FILENAME [--yes]",
-		Short:      "Delete clusters and instancegroups",
-		Long:       `Delete clusters and instancegroups`,
+		Short:      i18n.T("Delete clusters,instancegroups, or secrets."),
+		Long:       delete_long,
+		Example:    delete_example,
 		SuggestFor: []string{"rm"},
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameEmpty(options.Filenames) {

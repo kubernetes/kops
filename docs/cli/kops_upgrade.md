@@ -1,11 +1,18 @@
 ## kops upgrade
 
-Automates checking for and applying Kubernetes updates.
+Upgrade a kubernetes cluster.
 
 ### Synopsis
 
 
-upgrade clusters
+Automates checking for and applying Kubernetes updates. This upgrades a cluster to the latest recommended production ready k8s version. After this command is run usekops update cluder, and kops rolling-update cluster to finish a cluster upgrade.
+
+### Examples
+
+```
+  # Upgrade a cluster's Kubernetes version.
+  kops upgrade cluster kubernetes-cluster.example.com --yes --state=s3://kops-state-1234
+```
 
 ### Options inherited from parent commands
 
@@ -23,6 +30,6 @@ upgrade clusters
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
-* [kops upgrade cluster](kops_upgrade_cluster.md)	 - Upgrade cluster
+* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops upgrade cluster](kops_upgrade_cluster.md)	 - Upgrade a kubernetes cluster.
 

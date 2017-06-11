@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-
 	"io"
 
 	"github.com/golang/glog"
@@ -33,6 +32,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 type DeleteClusterOptions struct {
@@ -43,13 +44,32 @@ type DeleteClusterOptions struct {
 	ClusterName string
 }
 
+var (
+	delete_cluster_long = templates.LongDesc(i18n.T(`
+	Deletes a Kubneretes cluster and all associated resources.  Resources include instancegroups, and
+	the state store.  There is no "UNDO" for this command.
+	`))
+
+	delete_cluster_example = templates.Examples(i18n.T(`
+	# Delete a cluster.
+	kops delete cluster --name=k8s.cluster.site --yes
+
+	# Delete an instancegroup for the k8s-cluster.example.com cluster.
+	# The --yes option runs the command immediately.
+	kops delete ig --name=k8s-cluster.example.com node-example --yes
+	`))
+
+	delete_cluster_short = i18n.T("Delete a cluster.")
+)
+
 func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &DeleteClusterOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "cluster CLUSTERNAME [--yes]",
-		Short: "Delete cluster",
-		Long:  `Deletes a k8s cluster.`,
+		Use:     "cluster CLUSTERNAME [--yes]",
+		Short:   delete_cluster_short,
+		Long:    delete_cluster_long,
+		Example: delete_cluster_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := rootCommand.ProcessArgs(args)
 			if err != nil {
@@ -121,8 +141,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 			}
 		}
 
-		// Todo lets make this smart enough to detect the cloud and switch on the ClusterResources interface
-		d := &resources.AwsCluster{}
+		d := &resources.ClusterResources{}
 		d.ClusterName = clusterName
 		d.Cloud = cloud
 

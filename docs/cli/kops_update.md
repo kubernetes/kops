@@ -1,11 +1,18 @@
 ## kops update
 
-Creates or updates cloud resources to match cluster spec.
+Update a cluster.
 
 ### Synopsis
 
 
-Update clusters
+Creates or updates cloud resources to match cluster spec.
+
+### Examples
+
+```
+  # After cluster has been created, configure it with:
+  kops update cluster k8s.cluster.site --yes --state=s3://kops-state-1234
+```
 
 ### Options inherited from parent commands
 
@@ -23,7 +30,7 @@ Update clusters
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
-* [kops update cluster](kops_update_cluster.md)	 - Update cluster
-* [kops update federation](kops_update_federation.md)	 - Update federation
+* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops update cluster](kops_update_cluster.md)	 - Update a cluster.
+* [kops update federation](kops_update_federation.md)	 - Update federation cluster resources.
 

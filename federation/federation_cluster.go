@@ -53,7 +53,8 @@ func (o *FederationCluster) Run(cluster *kopsapi.Cluster) error {
 		return err
 	}
 
-	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore)
+	status := &kopsapi.NoopStatusStore{}
+	conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, status)
 	if err != nil {
 		return fmt.Errorf("error building connection information for cluster %q: %v", cluster.ObjectMeta.Name, err)
 	}

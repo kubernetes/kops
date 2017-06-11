@@ -93,11 +93,28 @@ step is to install CNI networking. Most of the CNI network providers are
 moving to installing their components plugins via a Daemonset.  For instance weave will
 install with the following command:
 
+Daemonset installation for K8s 1.6.x or above.
+```console
+$ kubectl create -f https://git.io/weave-kube-1.6
+```
+
+Daemonset installation for K8s 1.4.x or 1.5.x.
 ```console
 $ kubectl create -f https://git.io/weave-kube
 ```
 
-The above daemonset installation requires K8s 1.4.x or above.
+### Configuring Weave MTU
+
+The Weave MTU is configurable by editing the cluster and setting `mtu` option in the weave configuration.
+AWS VPCs support jumbo frames, so on cluster creation kops sets the weave MTU to 8912 bytes (9001 minus overhead).
+
+```
+spec:
+  networking:
+    weave:
+      mtu: 8912
+```
+
 
 ### Calico Example for CNI and Network Policy
 
@@ -118,6 +135,52 @@ $ kops create cluster \
 ```
 
 The above will deploy a daemonset installation which requires K8s 1.4.x or above.
+
+##### Enable Cross-Subnet mode in Calico (AWS only)
+Calico [since 2.1] supports a new option for IP-in-IP mode where traffic is only encapsulated
+when it’s destined to subnets with intermediate infrastructure lacking Calico route awareness
+– for example, across heterogeneous public clouds or on AWS where traffic is crossing availability zones/ regions.
+
+With this mode, IP-in-IP encapsulation is only performed selectively. This provides better performance in AWS
+multi-AZ deployments, and in general when deploying on networks where pools of nodes with L2 connectivity
+are connected via a router. 
+
+Reference: [Calico 2.1 Release Notes](https://www.projectcalico.org/project-calico-2-1-released/)
+
+Note that Calico by default, routes between nodes within a subnet are distributed using a full node-to-node BGP mesh.
+Each node automatically sets up a BGP peering with every other node within the same L2 network.
+This full node-to-node mesh per L2 network has its scaling challenges for larger scale deployments.
+BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster.
+The setup of BGP route reflectors is currently out of the scope of kops.
+
+Read more here: [BGP route reflectors](http://docs.projectcalico.org/v2.2/usage/routereflector/calico-routereflector)
+
+
+To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous `kops create ...` command.
+
+`kops edit cluster`  will show you a block like this:
+
+```
+  networking:
+    calico: {}
+```
+
+You will need to change that block, and add an additional field, to look like this:
+
+```
+  networking:
+    calico:
+      crossSubnet: true
+```
+
+This `crossSubnet` field can also be defined within a cluster specification file, and the entire cluster can be create by running:
+`kops create -f k8s-cluster.example.com.yaml`
+
+In the case of AWS, EC2 instances have source/destination checks enabled by default.
+When you enable cross-subnet mode in kops, an addon controller ([k8s-ec2-srcdst](https://github.com/ottoyiu/k8s-ec2-srcdst))
+will be deployed as a Pod (which will be scheduled on one of the masters) to facilitate the disabling of said source/destination address checks.
+Only the masters have the IAM policy (`ec2:*`) to allow k8s-ec2-srcdst to execute `ec2:ModifyInstanceAttribute`.
+
 
 #### More information about Calico
 
@@ -180,7 +243,7 @@ Here are some steps items that will confirm a good CNI install:
 
 - `kubelet` is running with the with `--network-plugin=cni` option.
 - The CNS provider started without errors.
-- `kube-dns` daesonset starts.
+- `kube-dns` daemonset starts.
 - Logging on a node will display messages on pod create and delete.
 
 The sig-networking and sig-cluster-lifecycle channels on K8s slack are always good starting places

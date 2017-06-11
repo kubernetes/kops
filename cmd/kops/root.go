@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -31,10 +32,38 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/kutil"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
 
 	// Register our APIs
 	_ "k8s.io/kops/pkg/apis/kops/install"
 	"k8s.io/kops/pkg/kubeconfig"
+)
+
+const (
+	validResources = `
+
+	* cluster
+	* instancegroup
+	* secret
+	* federation
+
+	`
+)
+
+var (
+	root_long = templates.LongDesc(i18n.T(`
+	kops is Kubernetes ops.
+
+	kops is the easiest way to get a production grade Kubernetes cluster up and running.
+	We like to think of it as kubectl for clusters.
+
+	kops helps you create, destroy, upgrade and maintain production-grade, highly available,
+	Kubernetes clusters from the command line.  AWS (Amazon Web Services) is currently
+	officially supported, with GCE and VMware vSphere in alpha support.
+	`))
+
+	root_short = i18n.T(`kops is Kubernetes ops.`)
 )
 
 type Factory interface {
@@ -58,9 +87,8 @@ var _ Factory = &RootCmd{}
 var rootCommand = RootCmd{
 	cobraCommand: &cobra.Command{
 		Use:   "kops",
-		Short: "kops is kubernetes ops",
-		Long: `kops is kubernetes ops.
-It allows you to create, destroy, upgrade and maintain clusters.`,
+		Short: root_short,
+		Long:  root_long,
 	},
 }
 
@@ -82,7 +110,6 @@ func init() {
 }
 
 func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
-	//options := &RootOptions{}
 
 	cmd := rootCommand.cobraCommand
 
@@ -91,6 +118,9 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.kops.yaml)")
 
 	defaultStateStore := os.Getenv("KOPS_STATE_STORE")
+	if strings.HasSuffix(defaultStateStore, "/") {
+		strings.TrimSuffix(defaultStateStore, "/")
+	}
 	cmd.PersistentFlags().StringVarP(&rootCommand.RegistryPath, "state", "", defaultStateStore, "Location of state storage")
 
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", "", "Name of cluster")
@@ -100,6 +130,8 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdCreate(f, out))
 	cmd.AddCommand(NewCmdDelete(f, out))
 	cmd.AddCommand(NewCmdEdit(f, out))
+	cmd.AddCommand(NewCmdExport(f, out))
+	cmd.AddCommand(NewCmdGet(f, out))
 	cmd.AddCommand(NewCmdUpdate(f, out))
 	cmd.AddCommand(NewCmdReplace(f, out))
 	cmd.AddCommand(NewCmdRollingUpdate(f, out))

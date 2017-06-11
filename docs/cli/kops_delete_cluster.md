@@ -1,14 +1,25 @@
 ## kops delete cluster
 
-Delete cluster
+Delete a cluster.
 
 ### Synopsis
 
 
-Deletes a k8s cluster.
+Deletes a Kubneretes cluster and all associated resources.  Resources include instancegroups, and the state store.  There is no "UNDO" for this command.
 
 ```
 kops delete cluster CLUSTERNAME [--yes]
+```
+
+### Examples
+
+```
+  # Delete a cluster.
+  kops delete cluster --name=k8s.cluster.site --yes
+  
+  # Delete an instancegroup for the k8s-cluster.example.com cluster.
+  # The --yes option runs the command immediately.
+  kops delete ig --name=k8s-cluster.example.com node-example --yes
 ```
 
 ### Options
@@ -36,5 +47,5 @@ kops delete cluster CLUSTERNAME [--yes]
 ```
 
 ### SEE ALSO
-* [kops delete](kops_delete.md)	 - Delete clusters and instancegroups
+* [kops delete](kops_delete.md)	 - Delete clusters,instancegroups, or secrets.
 

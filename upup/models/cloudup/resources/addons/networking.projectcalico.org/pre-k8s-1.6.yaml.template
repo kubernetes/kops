@@ -36,18 +36,6 @@ data:
         }
     }
 
-  # The default IP Pool to be created for the cluster.
-  # Pod IP addresses will be assigned from this pool.
-  ippool.yaml: |
-      apiVersion: v1
-      kind: ipPool
-      metadata:
-        cidr: {{ .NonMasqueradeCIDR }}
-      spec:
-        ipip:
-          enabled: true
-        nat-outgoing: true
-
 ---
 
 # This manifest installs the calico/node container, as well
@@ -70,6 +58,11 @@ spec:
       labels:
         k8s-app: calico-node
         role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+        scheduler.alpha.kubernetes.io/tolerations: |
+          [{"key": "dedicated", "value": "master", "effect": "NoSchedule" },
+           {"key":"CriticalAddonsOnly", "operator":"Exists"}]
     spec:
       hostNetwork: true
       containers:
@@ -77,7 +70,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v1.1.1
+          image: calico/node:v1.1.3
           resources:
             requests:
               cpu: 10m
@@ -97,10 +90,11 @@ spec:
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
-            # Don't configure a default pool.  This is done by the Job
-            # below.
-            - name: NO_DEFAULT_POOLS
-              value: "true"
+            # Configure the IP Pool from which Pod IPs will be chosen.
+            - name: CALICO_IPV4POOL_CIDR
+              value: "{{ .NonMasqueradeCIDR }}"
+            - name: CALICO_IPV4POOL_IPIP
+              value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}cross-subnet{{- else -}}always{{- end -}}"
             # Auto-detect the BGP IP address.
             - name: IP
               value: ""
@@ -116,7 +110,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v1.6.1
+          image: calico/cni:v1.8.0
           resources:
             requests:
               cpu: 10m
@@ -210,22 +204,29 @@ spec:
             - name: CONFIGURE_ETC_HOSTS
               value: "true"
 
+{{ if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}
 ---
-
-## This manifest deploys a Job which performs one time
-# configuration of Calico
-apiVersion: batch/v1
-kind: Job
+# This manifest installs the k8s-ec2-srcdst container, which disables
+# src/dst ip checks to allow BGP to function for calico for hosts within subnets
+# This only applies for AWS environments.
+apiVersion: extensions/v1beta1
+kind: Deployment
 metadata:
-  name: configure-calico
+  name: k8s-ec2-srcdst
   namespace: kube-system
   labels:
-    k8s-app: calico
+    k8s-app: k8s-ec2-srcdst
     role.kubernetes.io/networking: "1"
 spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: k8s-ec2-srcdst
   template:
     metadata:
-      name: configure-calico
+      labels:
+        k8s-app: k8s-ec2-srcdst
+        role.kubernetes.io/networking: "1"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: |
@@ -233,29 +234,25 @@ spec:
            {"key":"CriticalAddonsOnly", "operator":"Exists"}]
     spec:
       hostNetwork: true
-      restartPolicy: OnFailure
       containers:
-        # Writes basic configuration to datastore.
-        - name: configure-calico
-          image: calico/ctl:v1.1.1
-          args:
-          - apply
-          - -f
-          - /etc/config/calico/ippool.yaml
-          volumeMounts:
-            - name: config-volume
-              mountPath: /etc/config
+        - image: ottoyiu/k8s-ec2-srcdst:v0.1.0
+          name: k8s-ec2-srcdst
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
           env:
-            # The location of the etcd cluster.
-            - name: ETCD_ENDPOINTS
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: etcd_endpoints
+            - name: AWS_REGION
+              value: {{ Region }}
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: "/etc/ssl/certs/ca-certificates.crt"
+              readOnly: true
+          imagePullPolicy: "Always"
       volumes:
-       - name: config-volume
-         configMap:
-           name: calico-config
-           items:
-            - key: ippool.yaml
-              path: calico/ippool.yaml
+        - name: ssl-certs
+          hostPath:
+            path: "/etc/ssl/certs/ca-certificates.crt"
+      nodeSelector:
+        kubernetes.io/role: master
+{{- end -}}

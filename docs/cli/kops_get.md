@@ -1,11 +1,45 @@
 ## kops get
 
-List all instances of a resource.
+Get one or many resources.
 
 ### Synopsis
 
 
-list or get objects
+Display one or many resources. 
+
+  * cluster  
+  * instancegroup  
+  * secret  
+  * federation
+
+```
+kops get
+```
+
+### Examples
+
+```
+  # Get all resource in a single cluster as yaml
+  kops get --name k8s-cluster.example.com -o yaml
+  
+  # Get all clusters in a state store
+  kops get clusters
+  
+  # Get a cluster
+  kops get cluster k8s-cluster.example.com
+  
+  # Get a cluster YAML cluster spec
+  kops get cluster k8s-cluster.example.com -o yaml
+  
+  # Get an instancegroup
+  kops get ig --name k8s-cluster.example.com nodes
+  
+  # Get a secret
+  kops get secrets kube -oplaintext
+  
+  # Get the admin password for a cluster
+  kops get secrets admin -oplaintext
+```
 
 ### Options
 
@@ -29,9 +63,9 @@ list or get objects
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
-* [kops get clusters](kops_get_clusters.md)	 - get clusters
-* [kops get federations](kops_get_federations.md)	 - get federations
-* [kops get instancegroups](kops_get_instancegroups.md)	 - get instancegroups
-* [kops get secrets](kops_get_secrets.md)	 - get secrets
+* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops get clusters](kops_get_clusters.md)	 - Get one or many clusters.
+* [kops get federations](kops_get_federations.md)	 - Get federation.
+* [kops get instancegroups](kops_get_instancegroups.md)	 - Get one or many instancegroups
+* [kops get secrets](kops_get_secrets.md)	 - Get one or many secrets.
 

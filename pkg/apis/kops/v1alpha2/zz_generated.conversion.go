@@ -279,6 +279,7 @@ func Convert_kops_CNINetworkingSpec_To_v1alpha2_CNINetworkingSpec(in *kops.CNINe
 }
 
 func autoConvert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
+	out.CrossSubnet = in.CrossSubnet
 	return nil
 }
 
@@ -287,6 +288,7 @@ func Convert_v1alpha2_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *Cali
 }
 
 func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha2_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
+	out.CrossSubnet = in.CrossSubnet
 	return nil
 }
 
@@ -330,6 +332,14 @@ func autoConvert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	out.Multizone = in.Multizone
 	out.NodeTags = in.NodeTags
 	out.NodeInstancePrefix = in.NodeInstancePrefix
+	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
+	out.VSphereUsername = in.VSphereUsername
+	out.VSpherePassword = in.VSpherePassword
+	out.VSphereServer = in.VSphereServer
+	out.VSphereDatacenter = in.VSphereDatacenter
+	out.VSphereDatastore = in.VSphereDatastore
+	out.VSphereResourcePool = in.VSphereResourcePool
+	out.VSphereCoreDNSServer = in.VSphereCoreDNSServer
 	return nil
 }
 
@@ -341,6 +351,14 @@ func autoConvert_kops_CloudConfiguration_To_v1alpha2_CloudConfiguration(in *kops
 	out.Multizone = in.Multizone
 	out.NodeTags = in.NodeTags
 	out.NodeInstancePrefix = in.NodeInstancePrefix
+	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
+	out.VSphereUsername = in.VSphereUsername
+	out.VSpherePassword = in.VSpherePassword
+	out.VSphereServer = in.VSphereServer
+	out.VSphereDatacenter = in.VSphereDatacenter
+	out.VSphereResourcePool = in.VSphereResourcePool
+	out.VSphereDatastore = in.VSphereDatastore
+	out.VSphereCoreDNSServer = in.VSphereCoreDNSServer
 	return nil
 }
 
@@ -1904,6 +1922,7 @@ func Convert_kops_TopologySpec_To_v1alpha2_TopologySpec(in *kops.TopologySpec, o
 
 func autoConvert_v1alpha2_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveNetworkingSpec, out *kops.WeaveNetworkingSpec, s conversion.Scope) error {
 	out.Encrypt = in.Encrypt
+	out.MTU = in.MTU
 	return nil
 }
 
@@ -1913,6 +1932,7 @@ func Convert_v1alpha2_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveN
 
 func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha2_WeaveNetworkingSpec(in *kops.WeaveNetworkingSpec, out *WeaveNetworkingSpec, s conversion.Scope) error {
 	out.Encrypt = in.Encrypt
+	out.MTU = in.MTU
 	return nil
 }
 

@@ -40,11 +40,13 @@ func TestElasticIPCreate(t *testing.T) {
 		vpc1 := &VPC{
 			Name: s("vpc1"),
 			CIDR: s("172.20.0.0/16"),
+			Tags: map[string]string{"Name": "vpc1"},
 		}
 		subnet1 := &Subnet{
 			Name: s("subnet1"),
 			VPC:  vpc1,
 			CIDR: s("172.20.1.0/24"),
+			Tags: map[string]string{"Name": "subnet1"},
 		}
 		eip1 := &ElasticIP{
 			Name:        s("eip1"),

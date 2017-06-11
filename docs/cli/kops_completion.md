@@ -5,24 +5,11 @@ Output shell completion code for the given shell (bash or zsh).
 ### Synopsis
 
 
+Output shell completion code for the specified shell (bash or zsh). The shell code must be evalutated to provide interactive completion of kops commands.  This can be done by sourcing it from the .bash _profile. 
 
+Note: this requires the bash-completion framework, which is not installed by default on Mac. Once installed, bash completion must be evaluated.  This can be done by adding the following line to the .bash profile 
 
-Output shell completion code for the specified shell (bash or zsh).
-The shell code must be evalutated to provide interactive
-completion of kops commands.  This can be done by sourcing it from
-the .bash_profile.
-
-Note: this requires the bash-completion framework, which is not installed
-by default on Mac.  This can be installed by using homebrew:
-
-	$ brew install bash-completion
-
-Once installed, bash_completion must be evaluated.  This can be done by adding the
-following line to the .bash_profile
-
-	$ source $(brew --prefix)/etc/bash_completion
-
-Note for zsh users: [1] zsh completions are only supported in versions of zsh >= 5.2
+Note for zsh users: zsh completions are only supported in versions of zsh >= 5.2
 
 ```
 kops completion
@@ -31,31 +18,23 @@ kops completion
 ### Examples
 
 ```
-
-
-# Install bash completion on a Mac using homebrew
-
-$ brew install bash-completion
-
-$ printf "
-# Bash completion support
-source $(brew --prefix)/etc/bash_completion
-" >> $HOME/.bash_profile
-	source $HOME/.bash_profile
-	# Load the kops completion code for bash into the current shell
-	source <(kops completion bash)
-	# Write bash completion code to a file and source if from .bash_profile
-	kops completion bash > ~/.kops/completion.bash.inc
-	printf "
-
-# kops shell completion
-'$HOME/.kops/completion.bash.inc'
-" >> $HOME/.bash_profile
-
-$ source $HOME/.bash_profile
-
-# Load the kops completion code for zsh[1] into the current shell
-source <(kops completion zsh)
+  # For OSX users install bash completion using homebrew
+  brew install bash-completion
+  source $(brew --prefix)/etc/bash_completion
+  
+  # Bash completion support
+  printf "source $(brew --prefix)/etc/bash_completion\n" >> $HOME/.bash_profile
+  source $HOME/.bash_profile
+  source <(kops completion bash)
+  kops completion bash > ~/.kops/completion.bash.inc
+  chmod +x $HOME/.kops/completion.bash.inc
+  
+  # kops shell completion
+  printf "$HOME/.kops/completion.bash.inc\n" >> $HOME/.bash_profile
+  source $HOME/.bash_profile
+  
+  # Load the kops completion code for zsh[1] into the current shell
+  source <(kops completion zsh)
 ```
 
 ### Options
@@ -80,5 +59,5 @@ source <(kops completion zsh)
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
+* [kops](kops.md)	 - kops is Kubernetes ops.
 

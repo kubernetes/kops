@@ -1,20 +1,27 @@
 ## kops replace
 
-Replace a resource by filename or stdin.
+Replace cluster resources.
 
 ### Synopsis
 
 
-Replace a resource by filename or stdin.
+Replace a resource specification by filename or stdin.
 
 ```
 kops replace -f FILENAME
 ```
 
+### Examples
+
+```
+  # Replace a cluster specification using a file
+  kops replace -f my-cluster.yaml
+```
+
 ### Options
 
 ```
-  -f, --filename stringSlice   Filename to use to replace the resource
+  -f, --filename stringSlice   A list of one or more files separated by a comma.
 ```
 
 ### Options inherited from parent commands
@@ -33,5 +40,5 @@ kops replace -f FILENAME
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
+* [kops](kops.md)	 - kops is Kubernetes ops.
 

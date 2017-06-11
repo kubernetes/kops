@@ -17,14 +17,23 @@ limitations under the License.
 package model
 
 import (
+	"bufio"
 	"fmt"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"os"
 	"strings"
 )
 
 const CloudConfigFilePath = "/etc/kubernetes/cloud.config"
+
+// Required for vSphere CloudProvider
+const MinimumVersionForVMUUID = "1.5.3"
+
+// VM UUID is set by cloud-init
+const VM_UUID_FILE_PATH = "/etc/vmware/vm_uuid"
 
 // CloudConfigBuilder creates the cloud configuration file
 type CloudConfigBuilder struct {
@@ -59,9 +68,41 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		if cloudConfig.DisableSecurityGroupIngress != nil {
 			lines = append(lines, fmt.Sprintf("DisableSecurityGroupIngress = %t", *cloudConfig.DisableSecurityGroupIngress))
 		}
+	case "vsphere":
+		vm_uuid, err := getVMUUID(b.Cluster.Spec.KubernetesVersion)
+		if err != nil {
+			return err
+		}
+		// Note: Segregate configuration for different sections as below
+		// Global Config for vSphere CloudProvider
+		if cloudConfig.VSphereUsername != nil {
+			lines = append(lines, "user = "+*cloudConfig.VSphereUsername)
+		}
+		if cloudConfig.VSpherePassword != nil {
+			lines = append(lines, "password = "+*cloudConfig.VSpherePassword)
+		}
+		if cloudConfig.VSphereServer != nil {
+			lines = append(lines, "server = "+*cloudConfig.VSphereServer)
+			lines = append(lines, "port = 443")
+			lines = append(lines, fmt.Sprintf("insecure-flag = %t", true))
+		}
+		if cloudConfig.VSphereDatacenter != nil {
+			lines = append(lines, "datacenter = "+*cloudConfig.VSphereDatacenter)
+		}
+		if cloudConfig.VSphereDatastore != nil {
+			lines = append(lines, "datastore = "+*cloudConfig.VSphereDatastore)
+		}
+		if vm_uuid != "" {
+			lines = append(lines, "vm-uuid = "+strings.Trim(vm_uuid, "\n"))
+		}
+		// Disk Config for vSphere CloudProvider
+		// We need this to support Kubernetes vSphere CloudProvider < v1.5.3
+		lines = append(lines, "[disk]")
+		lines = append(lines, "scsicontrollertype = pvscsi")
 	}
 
 	config := "[global]\n" + strings.Join(lines, "\n") + "\n"
+
 	t := &nodetasks.File{
 		Path:     CloudConfigFilePath,
 		Contents: fi.NewStringResource(config),
@@ -70,4 +111,34 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 	c.AddTask(t)
 
 	return nil
+}
+
+// We need this for vSphere CloudProvider
+// getVMUUID gets instance uuid of the VM from the file written by cloud-init
+func getVMUUID(kubernetesVersion string) (string, error) {
+
+	actualKubernetesVersion, err := util.ParseKubernetesVersion(kubernetesVersion)
+	if err != nil {
+		return "", err
+	}
+	minimumVersionForUUID, err := util.ParseKubernetesVersion(MinimumVersionForVMUUID)
+	if err != nil {
+		return "", err
+	}
+
+	// VM UUID is required only for Kubernetes version greater than 1.5.3
+	if actualKubernetesVersion.GTE(*minimumVersionForUUID) {
+		file, err := os.Open(VM_UUID_FILE_PATH)
+		defer file.Close()
+		if err != nil {
+			return "", err
+		}
+		vm_uuid, err := bufio.NewReader(file).ReadString('\n')
+		if err != nil {
+			return "", err
+		}
+		return vm_uuid, err
+	}
+
+	return "", err
 }

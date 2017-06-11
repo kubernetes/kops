@@ -6,12 +6,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-complex-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-complex-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-complex-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-complex-example-com.id}", "sg-exampleid3", "sg-exampleid4"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-complex-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-complex-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-complex-example-com.name}"
 }
 
 output "region" {
@@ -103,13 +119,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
 }
 
 resource "aws_iam_instance_profile" "masters-complex-example-com" {
-  name  = "masters.complex.example.com"
-  roles = ["${aws_iam_role.masters-complex-example-com.name}"]
+  name = "masters.complex.example.com"
+  role = "${aws_iam_role.masters-complex-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-complex-example-com" {
-  name  = "nodes.complex.example.com"
-  roles = ["${aws_iam_role.nodes-complex-example-com.name}"]
+  name = "nodes.complex.example.com"
+  role = "${aws_iam_role.nodes-complex-example-com.name}"
 }
 
 resource "aws_iam_role" "masters-complex-example-com" {
@@ -342,8 +358,9 @@ resource "aws_subnet" "us-test-1a-complex-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "us-test-1a.complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "us-test-1a.complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -353,8 +370,9 @@ resource "aws_vpc" "complex-example-com" {
   enable_dns_support   = true
 
   tags = {
-    KubernetesCluster = "complex.example.com"
-    Name              = "complex.example.com"
+    KubernetesCluster                           = "complex.example.com"
+    Name                                        = "complex.example.com"
+    "kubernetes.io/cluster/complex.example.com" = "owned"
   }
 }
 
@@ -371,4 +389,8 @@ resource "aws_vpc_dhcp_options" "complex-example-com" {
 resource "aws_vpc_dhcp_options_association" "complex-example-com" {
   vpc_id          = "${aws_vpc.complex-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.complex-example-com.id}"
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
 }

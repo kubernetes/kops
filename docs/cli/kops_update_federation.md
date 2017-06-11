@@ -1,14 +1,21 @@
 ## kops update federation
 
-Update federation
+Update federation cluster resources.
 
 ### Synopsis
 
 
-Updates a k8s federation.
+Update federation cluster resources.
 
 ```
 kops update federation
+```
+
+### Examples
+
+```
+  # After cluster has been editted or upgraded, configure it with:
+  kops update federation k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
 ```
 
 ### Options inherited from parent commands
@@ -27,5 +34,5 @@ kops update federation
 ```
 
 ### SEE ALSO
-* [kops update](kops_update.md)	 - Creates or updates cloud resources to match cluster spec.
+* [kops update](kops_update.md)	 - Update a cluster.
 

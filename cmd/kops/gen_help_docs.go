@@ -50,7 +50,10 @@ func init() {
 
 func (c *GenHelpDocsCmd) Run() error {
 	rootCommand.cobraCommand.DisableAutoGenTag = true
-	err := doc.GenMarkdownTree(rootCommand.cobraCommand, c.OutDir)
 
-	return err
+	// unset KOPS_STATE_STORE from default value
+	for _, c := range rootCommand.cobraCommand.Commands() {
+		c.Flag("state").DefValue = ""
+	}
+	return doc.GenMarkdownTree(rootCommand.cobraCommand, c.OutDir)
 }

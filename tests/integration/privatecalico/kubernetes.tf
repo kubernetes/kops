@@ -2,6 +2,14 @@ output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privatecalico-example-com.id}"]
 }
 
+output "bastions_role_arn" {
+  value = "${aws_iam_role.bastions-privatecalico-example-com.arn}"
+}
+
+output "bastions_role_name" {
+  value = "${aws_iam_role.bastions-privatecalico-example-com.name}"
+}
+
 output "cluster_name" {
   value = "privatecalico.example.com"
 }
@@ -10,12 +18,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privatecalico-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-privatecalico-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-privatecalico-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-privatecalico-example-com.id}"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-privatecalico-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-privatecalico-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-privatecalico-example-com.name}"
 }
 
 output "region" {
@@ -205,18 +229,18 @@ resource "aws_elb" "bastion-privatecalico-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privatecalico-example-com" {
-  name  = "bastions.privatecalico.example.com"
-  roles = ["${aws_iam_role.bastions-privatecalico-example-com.name}"]
+  name = "bastions.privatecalico.example.com"
+  role = "${aws_iam_role.bastions-privatecalico-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privatecalico-example-com" {
-  name  = "masters.privatecalico.example.com"
-  roles = ["${aws_iam_role.masters-privatecalico-example-com.name}"]
+  name = "masters.privatecalico.example.com"
+  role = "${aws_iam_role.masters-privatecalico-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privatecalico-example-com" {
-  name  = "nodes.privatecalico.example.com"
-  roles = ["${aws_iam_role.nodes-privatecalico-example-com.name}"]
+  name = "nodes.privatecalico.example.com"
+  role = "${aws_iam_role.nodes-privatecalico-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privatecalico-example-com" {
@@ -614,8 +638,9 @@ resource "aws_subnet" "us-test-1a-privatecalico-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "us-test-1a.privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "us-test-1a.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 
@@ -625,8 +650,9 @@ resource "aws_subnet" "utility-us-test-1a-privatecalico-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "utility-us-test-1a.privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "utility-us-test-1a.privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 
@@ -636,8 +662,9 @@ resource "aws_vpc" "privatecalico-example-com" {
   enable_dns_support   = true
 
   tags = {
-    KubernetesCluster = "privatecalico.example.com"
-    Name              = "privatecalico.example.com"
+    KubernetesCluster                                 = "privatecalico.example.com"
+    Name                                              = "privatecalico.example.com"
+    "kubernetes.io/cluster/privatecalico.example.com" = "owned"
   }
 }
 
@@ -654,4 +681,8 @@ resource "aws_vpc_dhcp_options" "privatecalico-example-com" {
 resource "aws_vpc_dhcp_options_association" "privatecalico-example-com" {
   vpc_id          = "${aws_vpc.privatecalico-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.privatecalico-example-com.id}"
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
 }

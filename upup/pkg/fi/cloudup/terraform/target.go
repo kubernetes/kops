@@ -185,6 +185,10 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		providerAWS := make(map[string]interface{})
 		providerAWS["region"] = t.Region
 		providersByName["aws"] = providerAWS
+	} else if t.Cloud.ProviderID() == fi.CloudProviderVSphere {
+		providerVSphere := make(map[string]interface{})
+		providerVSphere["region"] = t.Region
+		providersByName["vsphere"] = providerVSphere
 	}
 
 	outputVariables := make(map[string]interface{})
@@ -209,7 +213,12 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		outputVariables[tfName] = tfVar
 	}
 
+	// See https://github.com/kubernetes/kops/pull/2424 for why we require 0.9.3
+	terraformConfiguration := make(map[string]interface{})
+	terraformConfiguration["required_version"] = ">= 0.9.3"
+
 	data := make(map[string]interface{})
+	data["terraform"] = terraformConfiguration
 	data["resource"] = resourcesByType
 	if len(providersByName) != 0 {
 		data["provider"] = providersByName

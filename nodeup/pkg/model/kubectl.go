@@ -77,6 +77,14 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 		switch b.Distribution {
 		case distros.DistributionJessie:
 			c.AddTask(&nodetasks.File{
+				Path:  "/home/admin/.kube/",
+				Type:  nodetasks.FileType_Directory,
+				Mode:  s("0700"),
+				Owner: s("admin"),
+				Group: s("admin"),
+			})
+
+			c.AddTask(&nodetasks.File{
 				Path:     "/home/admin/.kube/config",
 				Contents: fi.NewStringResource(kubeconfig),
 				Type:     nodetasks.FileType_File,

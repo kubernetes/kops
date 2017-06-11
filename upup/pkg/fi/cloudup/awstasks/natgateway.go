@@ -190,7 +190,7 @@ func findNatGatewayById(cloud awsup.AWSCloud, id *string) (*ec2.NatGateway, erro
 func findNatGatewayFromRouteTable(cloud awsup.AWSCloud, routeTable *RouteTable) (*ec2.NatGateway, error) {
 	// Find via route on private route table
 	if routeTable.ID != nil {
-		glog.V(2).Infof("trying to match NatGateway via RouteTable %s", routeTable.ID)
+		glog.V(2).Infof("trying to match NatGateway via RouteTable %s", *routeTable.ID)
 		rt, err := routeTable.findEc2RouteTable(cloud)
 		if err != nil {
 			return nil, fmt.Errorf("error finding associated RouteTable to NatGateway: %v", err)
@@ -326,6 +326,9 @@ func (_ *NatGateway) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *NatGateway)
 		}
 		glog.V(2).Infof("tagging route table %s to track shared NGW", fi.StringValue(e.AssociatedRouteTable.ID))
 		err = t.AddAWSTags(fi.StringValue(e.AssociatedRouteTable.ID), tags)
+		if err != nil {
+			return fmt.Errorf("unable to tag route table %v", err)
+		}
 	}
 
 	return nil

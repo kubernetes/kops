@@ -6,12 +6,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-minimal-141-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-minimal-141-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-minimal-141-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-minimal-141-example-com.id}"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-minimal-141-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-minimal-141-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-minimal-141-example-com.name}"
 }
 
 output "region" {
@@ -103,13 +119,13 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-minimal-141-example-com" {
 }
 
 resource "aws_iam_instance_profile" "masters-minimal-141-example-com" {
-  name  = "masters.minimal-141.example.com"
-  roles = ["${aws_iam_role.masters-minimal-141-example-com.name}"]
+  name = "masters.minimal-141.example.com"
+  role = "${aws_iam_role.masters-minimal-141-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-minimal-141-example-com" {
-  name  = "nodes.minimal-141.example.com"
-  roles = ["${aws_iam_role.nodes-minimal-141-example-com.name}"]
+  name = "nodes.minimal-141.example.com"
+  role = "${aws_iam_role.nodes-minimal-141-example-com.name}"
 }
 
 resource "aws_iam_role" "masters-minimal-141-example-com" {
@@ -342,8 +358,9 @@ resource "aws_subnet" "us-test-1a-minimal-141-example-com" {
   availability_zone = "us-test-1a"
 
   tags = {
-    KubernetesCluster = "minimal-141.example.com"
-    Name              = "us-test-1a.minimal-141.example.com"
+    KubernetesCluster                               = "minimal-141.example.com"
+    Name                                            = "us-test-1a.minimal-141.example.com"
+    "kubernetes.io/cluster/minimal-141.example.com" = "owned"
   }
 }
 
@@ -353,8 +370,9 @@ resource "aws_vpc" "minimal-141-example-com" {
   enable_dns_support   = true
 
   tags = {
-    KubernetesCluster = "minimal-141.example.com"
-    Name              = "minimal-141.example.com"
+    KubernetesCluster                               = "minimal-141.example.com"
+    Name                                            = "minimal-141.example.com"
+    "kubernetes.io/cluster/minimal-141.example.com" = "owned"
   }
 }
 
@@ -371,4 +389,8 @@ resource "aws_vpc_dhcp_options" "minimal-141-example-com" {
 resource "aws_vpc_dhcp_options_association" "minimal-141-example-com" {
   vpc_id          = "${aws_vpc.minimal-141-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.minimal-141-example-com.id}"
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
 }

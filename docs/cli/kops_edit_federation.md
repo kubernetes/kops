@@ -1,14 +1,28 @@
 ## kops edit federation
 
-Edit federation
+Edit federation.
 
 ### Synopsis
 
 
-Edit a federation configuration.
+Edit a cluster configuration. 
+
+This command changes the federation cloud specification in the registry. 
+
+  To set your preferred editor, you can define the EDITOR environment variable.
+  When you have done this, kops will use the editor that you have set.
+  
+kops edit does not update the cloud resources, to apply the changes use "kops update cluster".
 
 ```
 kops edit federation
+```
+
+### Examples
+
+```
+  # Edit a cluster dederation configuration.
+  kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
 ```
 
 ### Options inherited from parent commands
@@ -27,5 +41,5 @@ kops edit federation
 ```
 
 ### SEE ALSO
-* [kops edit](kops_edit.md)	 - Edit clusters and other resrouces.
+* [kops edit](kops_edit.md)	 - Edit clusters and other resources.
 
