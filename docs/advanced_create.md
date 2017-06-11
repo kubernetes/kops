@@ -12,7 +12,6 @@ kops create cluster \
     --master-size t2.medium \
     --node-security-groups sg-12345678 \
     --master-security-groups sg-12345678,i-abcd1234 \
-    --additional-sans example.com,extra.example.com \
     --topology private \
     --networking weave \
     --cloud-labels "Team=Dev,Owner=John Doe" \
