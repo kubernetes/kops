@@ -43,7 +43,14 @@ var (
 	kops get clusters
 
 	# Get a cluster
-	kops get cluster k8s-cluster.example.com`))
+	kops get cluster k8s-cluster.example.com
+
+	# Get a cluster YAML desired configuration
+	kops get cluster k8s-cluster.example.com -o yaml
+
+	# Save a cluster desired configuration to YAML file
+	kops get cluster k8s-cluster.example.com -o yaml > cluster-desired-config.yaml
+	`))
 
 	get_cluster_short = i18n.T(`Get one or many clusters.`)
 
