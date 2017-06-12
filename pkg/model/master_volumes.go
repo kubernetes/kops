@@ -106,6 +106,12 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 
 	// The tags are how protokube knows to mount the volume and use it for etcd
 	tags := make(map[string]string)
+
+	// Apply all user defined labels on the volumes
+	for k, v := range b.Cluster.Spec.CloudLabels {
+		tags[k] = v
+	}
+
 	//tags[awsup.TagClusterName] = b.C.cluster.Name
 	// This is the configuration of the etcd cluster
 	tags[awsup.TagNameEtcdClusterPrefix+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
