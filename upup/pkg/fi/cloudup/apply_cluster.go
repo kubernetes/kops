@@ -103,11 +103,18 @@ type ApplyClusterCmd struct {
 }
 
 func (c *ApplyClusterCmd) Run() error {
+	if c.Cluster == nil {
+		return fmt.Errorf("cluster cannot be nil")
+	}
+
 	if c.MaxTaskDuration == 0 {
 		c.MaxTaskDuration = DefaultMaxTaskDuration
 	}
 
 	if c.InstanceGroups == nil {
+		if c.Cluster.ObjectMeta.Name == "" {
+			return fmt.Errorf("cluster name must be set")
+		}
 		list, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).List(metav1.ListOptions{})
 		if err != nil {
 			return err

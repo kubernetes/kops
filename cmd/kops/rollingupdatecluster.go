@@ -23,6 +23,8 @@ import (
 	"strconv"
 	"time"
 
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -41,38 +43,59 @@ import (
 
 var (
 	rollingupdate_long = templates.LongDesc(i18n.T(`
-	This command updates a kubernetes cluster to match the cloud, and kops specifications.
+	This command updates a Kubernetes cluster to match the cloud, and kops specifications.
 
-	To perform rolling update, you need to update the cloud resources first with "kops update cluster"
-
-	Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply"
-	prior to running "kops rolling-update cluster"
+	The Examples below include a series of command for Terraform users.  The workflow includes
+	using Terraform.
 
 	Use export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
 	and validates the cluster.  New flags for Drain and Validation operations will be shown when
-	the environment variable is set.`))
+	the environment variable is set.
+
+	Node Replacement Algorithm Alpa Feature
+
+	We are now including three new algorithms that influence node replacement. All masters and bastions
+	are rolled sequentially before the nodes, and this flag does not influence their replacement.  These
+	algorithms utilize the feature flag mentioned above.
+
+	1. "asg" - A node is drained then deleted.  The cloud then replaces the node automatically. (default)
+	2. "pre-create" - All node instance groups are duplicated first; then all old nodes are cordoned.
+	3. "create" - As each node instance group rolls, the instance group is duplicated, then all
+	old nodes are cordoned.
+
+	The second and third options create new instance groups; next, the old nodes are cardoned.
+	The old nodes are drained, and then the instance group(s) is deleted.
+	`))
 
 	rollingupdate_example = templates.Examples(i18n.T(`
+
 		# Roll the currently selected kops cluster
 		kops rolling-update cluster --yes
 
-		# Roll the k8s-cluster.example.com kops cluster
-		# use the new drain an validate functionality
+	        # Update instructions for Terraform users
+	 	kops update cluster --target=terraform
+	 	terraform plan
+	 	terraform apply
+		kops rolling-update cluster --yes
+
+		# Roll the k8s-cluster.example.com kops cluster and use the new drain an validate functionality
 		export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
 		kops rolling-update cluster k8s-cluster.example.com --yes \
 		  --fail-on-validate-error="false" \
 		  --master-interval=8m \
 		  --node-interval=8m
 
-
-		# Roll the k8s-cluster.example.com kops cluster
-		# only roll the node instancegroup
-		# use the new drain an validate functionality
+		# Use the pre-create node algorithm. First all new nodes are created
+		# The old nodes are cordon, drained and deleted.
 		export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+		kops rolling-update cluster k8s-cluster.example.com --yes \
+		  --algorithm pre-create
+
+		# Roll the k8s-cluster.example.com kops cluster, and only roll the instancegroup named "foo".
 		kops rolling-update cluster k8s-cluster.example.com --yes \
 		  --fail-on-validate-error="false" \
 		  --node-interval 8m \
-		  --instance-group nodes
+		  --instance-group foo
 		`))
 
 	rollingupdate_short = i18n.T(`Rolling update a cluster.`)
@@ -107,6 +130,8 @@ type RollingUpdateOptions struct {
 	// InstanceGroups is the list of instance groups to rolling-update;
 	// if not specified all instance groups will be updated
 	InstanceGroups []string
+
+	Algorithm string
 }
 
 func (o *RollingUpdateOptions) InitDefaults() {
@@ -123,6 +148,7 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.ValidateRetries = 8
 
 	o.DrainInterval = 90 * time.Second
+	o.Algorithm = kutil.ASG_CREATE
 
 }
 
@@ -138,8 +164,8 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Example: rollingupdate_example,
 	}
 
-	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "perform rolling update without confirmation")
-	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")
+	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "perform rolling update without confirmation")
+	cmd.Flags().BoolVarP(&options.Force, "force", "f", options.Force, "Force rolling update, even if no changes")
 	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with k8s")
 
 	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
@@ -150,8 +176,9 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
 		cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
-		cmd.Flags().IntVar(&options.ValidateRetries, "validate-retries", options.ValidateRetries, "The number of times that a node will be validated.  Between validation kops sleeps the master-interval/2 or node-interval/2 duration.")
+		cmd.Flags().IntVar(&options.ValidateRetries, "validate-retries", options.ValidateRetries, "The number of times that a node will be validated.  Validation will sleep the master-interval/2 or node-interval/2 duration.")
 		cmd.Flags().DurationVar(&options.DrainInterval, "drain-interval", options.DrainInterval, "The duration that a rolling-update will wait after the node is drained.")
+		cmd.Flags().StringVarP(&options.Algorithm, "algorithm", "a", options.Algorithm, "When new nodes are created. Supported: "+strings.Join(kutil.AlgorithmTypes.List(), ", ")+".")
 	}
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
@@ -192,6 +219,10 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return err
 	}
 
+	if cluster == nil {
+		return fmt.Errorf("Cluster is not set")
+	}
+
 	contextName := cluster.ObjectMeta.Name
 	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
 		clientcmd.NewDefaultClientConfigLoadingRules(),
@@ -202,6 +233,13 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 
 	if options.ValidateRetries <= 0 {
 		return fmt.Errorf("validate-retries flag cannot be 0 or smaller")
+	}
+
+	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+		if !kutil.AlgorithmTypes.Has(options.Algorithm) {
+			return fmt.Errorf("Algorithm: %q not known, please use one of: %q", options.Algorithm,
+				strings.Join(kutil.AlgorithmTypes.List(), ", "))
+		}
 	}
 
 	var nodes []v1.Node
@@ -337,8 +375,10 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	}
 
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-		glog.V(2).Infof("New rolling update with drain and validate enabled.")
+		glog.V(2).Infof("Executing new rolling update with drain and validate enabled.")
+		glog.V(2).Infof("Using %s algorithm to create new nodes.", options.Algorithm)
 	}
+
 	d := &kutil.RollingUpdateCluster{
 		MasterInterval:   options.MasterInterval,
 		NodeInterval:     options.NodeInterval,
@@ -352,6 +392,9 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		ClusterName:      options.ClusterName,
 		ValidateRetries:  options.ValidateRetries,
 		DrainInterval:    options.DrainInterval,
+		Clientset:        clientset,
+		Algorithm:        options.Algorithm,
+		Cluster:          cluster,
 	}
 	return d.RollingUpdate(groups, list)
 }

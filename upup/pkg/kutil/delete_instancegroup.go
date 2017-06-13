@@ -32,6 +32,8 @@ type DeleteInstanceGroup struct {
 }
 
 func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
+
+	// TODO we should thing about draining :)
 	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
 	cig := groups[group.ObjectMeta.Name]
 	if cig == nil {
