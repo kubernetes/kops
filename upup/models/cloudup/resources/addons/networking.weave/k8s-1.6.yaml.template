@@ -97,11 +97,13 @@ spec:
             limits:
               cpu: 100m
               memory: 200Mi
-          {{if .Networking.Weave.MTU }}
           env:
+            - name: IPALLOC_RANGE
+              value: {{ .KubeControllerManager.ClusterCIDR }}
+            {{- if .Networking.Weave.MTU }}
             - name: WEAVE_MTU
               value: "{{ .Networking.Weave.MTU }}"
-          {{end}}
+            {{- end }}
         - name: weave-npc
           image: weaveworks/weave-npc:1.9.7
           resources:
