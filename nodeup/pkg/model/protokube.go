@@ -95,7 +95,7 @@ func (b *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 	manifest.Set("Unit", "Description", "Kubernetes Protokube Service")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
 
-	//manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/protokube")
+	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 	manifest.Set("Service", "ExecStartPre", b.ProtokubeImagePullCommand())
 	manifest.Set("Service", "ExecStart", protokubeCommand)
 	manifest.Set("Service", "Restart", "always")
@@ -246,9 +246,9 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 }
 
 func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
+	var buffer bytes.Buffer
 	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("S3_ENDPOINT") != "" {
-		var buffer bytes.Buffer
 		buffer.WriteString(" ")
 		buffer.WriteString("-e S3_ENDPOINT=")
 		buffer.WriteString("'")
@@ -267,9 +267,9 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
 		buffer.WriteString("'")
 		buffer.WriteString(" ")
-
-		return buffer.String()
 	}
 
-	return ""
+	buffer.WriteString(" --env-file=/etc/environment ")
+
+	return buffer.String()
 }

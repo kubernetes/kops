@@ -110,21 +110,33 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 	manifest.Set("Unit", "Description", "Run kops bootstrap (nodeup)")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
 
+	environment := make(map[string]string)
+
 	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("S3_ENDPOINT") != "" {
+		environment["S3_ENDPOINT"] = os.Getenv("S3_ENDPOINT")
+		environment["S3_REGION"] = os.Getenv("S3_REGION")
+		environment["S3_ACCESS_KEY_ID"] = os.Getenv("S3_ACCESS_KEY_ID")
+		environment["S3_SECRET_ACCESS_KEY"] = os.Getenv("S3_SECRET_ACCESS_KEY")
+	}
+
+	// Pass in proxy settings
+	if os.Getenv("HTTP_PROXY") != "" || os.Getenv("HTTPS_PROXY") != "" {
+		environment["HTTP_PROXY"] = os.Getenv("HTTP_PROXY")
+		environment["HTTPS_PROXY"] = os.Getenv("HTTPS_PROXY")
+		environment["NO_PROXY"] = os.Getenv("NO_PROXY")
+	}
+
+	if len(environment) != 0 {
 		var buffer bytes.Buffer
-		buffer.WriteString("\"S3_ENDPOINT=")
-		buffer.WriteString(os.Getenv("S3_ENDPOINT"))
-		buffer.WriteString("\" ")
-		buffer.WriteString("\"S3_REGION=")
-		buffer.WriteString(os.Getenv("S3_REGION"))
-		buffer.WriteString("\" ")
-		buffer.WriteString("\"S3_ACCESS_KEY_ID=")
-		buffer.WriteString(os.Getenv("S3_ACCESS_KEY_ID"))
-		buffer.WriteString("\" ")
-		buffer.WriteString("\"S3_SECRET_ACCESS_KEY=")
-		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
-		buffer.WriteString("\" ")
+
+		for name, value := range environment {
+			buffer.WriteString("\"")
+			buffer.WriteString(name)
+			buffer.WriteString("=")
+			buffer.WriteString(value)
+			buffer.WriteString("\" ")
+		}
 
 		manifest.Set("Service", "Environment", buffer.String())
 	}

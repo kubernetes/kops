@@ -34,6 +34,13 @@ spec:
       containers:
       - name: dns-controller
         image: kope/dns-controller:1.6.1
+{{ if ProxyEnv }}
+        env:
+{{ end }}
+{{ range $name, $value := ProxyEnv }}
+        - name: {{ $name }}
+          value: "{{ $value }}"
+{{ end }}
         command:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
