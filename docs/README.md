@@ -1,9 +1,6 @@
 Documentation Index
 ===================
 
-This page serves as a categorized index for all `kops` documentation.
-
-
 Quick start
 -----------
 * [Getting started on AWS](aws.md)
@@ -13,8 +10,8 @@ Quick start
 Overview
 --------
 
-* [CLI](#cli)
-* [Introspection](#introspection)
+* [Command-line interface](#commandline-interface)
+* [Inspection](#inspection)
 * [`kops` design documents](#kops-design-documents)
 * [Networking](#networking)
 * [Operations](#operations)
@@ -23,7 +20,7 @@ Overview
 
 
 
-### CLI ###
+### Command-line interface ###
 
 * [CLI argument explanations](arguments.md)
 * [CLI reference](cli/kops.md)
@@ -35,7 +32,7 @@ Overview
     * how to point kubectl to your `kops` cluster
 
 
-### Introspection ###
+### Inspection ###
 
 * [Download `kops` configuration](download_config.md)
     * methods to download the current generated `kops` configuration
@@ -64,21 +61,20 @@ Overview
 * [Cluster addon manager](addon_manager.md)
 * [Cluster addons](addons.md)
 * [Cluster configuration management](changing_configuration.md)
-* [Cluster with HA creation example](advanced_create.md)
 * [Cluster upgrades and migrations](cluster_upgrades_and_migrations.md)
 * [`etcd` volume encryption setup](etcd_volume_encryption.md)
 * [`etcd` backup setup](etcd_backup.md)
 * [GPU setup](gpu.md)
 * [High Availability](high_availability.md)
 * [InstanceGroup images](images.md)
-    * how to modify IG images and information on available/tested images
-* [Label management](labels.md)
-    * for AWS instance tags and `k8s` node labels
-* [`kube-up` to `kops` migration](upgrade_from_kubeup.md)
-* [Secret management](secrets.md)
-* [Single-master to multi-master migration](single-to-multi-master.md)
-* [`k8s` updating](upgrade.md)
+    * how to use other image for cluster nodes, and information on available/tested images
+* [`k8s` upgrading](upgrade.md)
 * [`kops` updating](update_kops.md)
+* [`kube-up` to `kops` upgrade](upgrade_from_kubeup.md)
+* [Label management](labels.md)
+    * for cluster nodes
+* [Secret management](secrets.md)
+* [Single-master to multi-master update](single-to-multi-master.md)
 
 
 ### Security ###

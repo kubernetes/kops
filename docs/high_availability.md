@@ -1,6 +1,8 @@
-# High Availability (HA)
+High Availability (HA)
+======================
 
-## Introduction
+Introduction
+-------------
 
 Kubernetes has two strategies for high availability:
 
@@ -27,7 +29,9 @@ In short:
 * A multi-node kops cluster can tolerate the outage of a single AZ
 * Federation will allow you to create "uber-clusters" that can tolerate a regional outage
 
-## Using Kops HA
+
+Using Kops HA
+-------------
 
 We can create HA clusters using kops, but only it's important to note that migrating from a single-master
 cluster to a multi-master cluster is a complicated operation (described [here](./single-to-multi-master.md)).
@@ -58,3 +62,27 @@ As a result there are a few considerations that need to be taken into account wh
   If we create 2 (or more) masters in the same AZ, then failure of the AZ will likely cause etcd to lose quorum
   and stop operating (with 3 nodes).  Running in the same AZ therefore increases the risk of cluster disruption,
   though it can be a valid scenario, particularly if combined with [federation](https://kubernetes.io/docs/user-guide/federation/).
+
+
+Advanced Example
+----------------
+
+Another example `create cluster` invocation for HA with [a private network topology](topology.md):
+
+```
+kops create cluster \
+    --node-count 3 \
+    --zones us-west-2a,us-west-2b,us-west-2c \
+    --master-zones us-west-2a,us-west-2b,us-west-2c \
+    --dns-zone example.com \
+    --node-size t2.medium \
+    --master-size t2.medium \
+    --node-security-groups sg-12345678 \
+    --master-security-groups sg-12345678,i-abcd1234 \
+    --topology private \
+    --networking weave \
+    --cloud-labels "Team=Dev,Owner=John Doe" \
+    --image 293135079892/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-11-16 \
+    ${NAME}
+```
+

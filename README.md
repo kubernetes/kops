@@ -68,20 +68,6 @@ $ mv kops-linux-amd64 /usr/local/bin/kops   # Move the kops to /usr/local/bin
 ```
 
 
-### Developer From Source
-
-Go 1.8+ and make are required. You may need to do a full build including pushing protokube, nodeup, and kops to s3.
-
-See the [install notes](/docs/install.md) for more information.
-
-```console
-$ go get -d k8s.io/kops
-$ cd ${GOPATH}/src/k8s.io/kops/
-$ git checkout release
-$ make
-```
-
-At this time, Windows is not a supported platform.
 
 
 ## History
@@ -151,20 +137,10 @@ date +%V
 
 The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community#slack-chat) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you!
 
-## Other Resources
-
- - Create [kubecfg settings for kubectl](/docs/tips.md#create-kubecfg-settings-for-kubectl)
- - Set up [add-ons](/docs/addons.md), to add important functionality to Kubernetes
- - Learn about [InstanceGroups](/docs/instance_groups.md); change
- instance types, number of nodes, and other options
- - Read about [networking options](/docs/networking.md)
- - Look at our [other interesting modes](/docs/commands.md#other-interesting-modes)
- - Full command line interface [documentation](/docs/cli/kops.md)
-
 
 ## GitHub Issues
 
-#### Bugs
+### Bugs
 
 If you think you have found a bug please follow the instructions below.
 
@@ -176,7 +152,7 @@ If you think you have found a bug please follow the instructions below.
 - Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community#slack-chat)
 
 
-#### Features
+### Features
 
 We also use the issue tracker to track features. If you have an idea for a feature, or think you can help kops become even more awesome follow the steps below.
 
