@@ -17,8 +17,14 @@ limitations under the License.
 package kutil
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/base64"
 	"fmt"
+	"io"
+	"strconv"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
@@ -26,11 +32,10 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"strconv"
-	"strings"
 )
 
 // ImportCluster tries to reverse engineer an existing k8s cluster, adding it to the cluster registry
@@ -145,7 +150,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	masterInstanceGroups := []*api.InstanceGroup{masterGroup}
 	instanceGroups = append(instanceGroups, masterGroup)
 
-	awsSubnets, err := DescribeSubnets(x.Cloud)
+	awsSubnets, err := resources.DescribeSubnets(x.Cloud)
 	if err != nil {
 		return fmt.Errorf("error finding subnets: %v", err)
 	}
@@ -286,7 +291,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	//}
 
 	{
-		groups, err := findAutoscalingGroups(awsCloud, awsCloud.Tags())
+		groups, err := resources.FindAutoscalingGroups(awsCloud, awsCloud.Tags())
 		if err != nil {
 			return fmt.Errorf("error listing autoscaling groups: %v", err)
 		}
@@ -313,7 +318,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		// Determine the machine type
 		for _, group := range groups {
 			name := aws.StringValue(group.LaunchConfigurationName)
-			launchConfiguration, err := findAutoscalingLaunchConfiguration(awsCloud, name)
+			launchConfiguration, err := resources.FindAutoscalingLaunchConfiguration(awsCloud, name)
 			if err != nil {
 				return fmt.Errorf("error finding autoscaling LaunchConfiguration %q: %v", name, err)
 			}
@@ -618,7 +623,7 @@ func parseInt(s string) (int, error) {
 //}
 
 func findInstances(c awsup.AWSCloud) ([]*ec2.Instance, error) {
-	filters := buildEC2Filters(c)
+	filters := resources.BuildEC2Filters(c)
 
 	request := &ec2.DescribeInstancesInput{
 		Filters: filters,
@@ -824,4 +829,19 @@ func UserDataToString(userData []byte) (string, error) {
 		}
 	}
 	return string(userData), nil
+}
+
+func gunzipBytes(d []byte) ([]byte, error) {
+	var out bytes.Buffer
+	in := bytes.NewReader(d)
+	r, err := gzip.NewReader(in)
+	if err != nil {
+		return nil, fmt.Errorf("error building gunzip reader: %v", err)
+	}
+	defer r.Close()
+	_, err = io.Copy(&out, r)
+	if err != nil {
+		return nil, fmt.Errorf("error decompressing data: %v", err)
+	}
+	return out.Bytes(), nil
 }
