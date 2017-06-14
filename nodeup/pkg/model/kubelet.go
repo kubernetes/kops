@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"os"
 )
 
 // KubeletBuilder install kubelet
@@ -146,6 +147,12 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
+
+	if os.Getenv("HTTP_PROXY") != "" || os.Getenv("HTTPS_PROXY") != "" {
+		sysconfig += "HTTP_PROXY=" + os.Getenv("HTTP_PROXY") + "\n"
+		sysconfig += "HTTPS_PROXY=" + os.Getenv("HTTPS_PROXY") + "\n"
+		sysconfig += "NO_PROXY=" + os.Getenv("NO_PROXY") + "\n"
+	}
 
 	t := &nodetasks.File{
 		Path:     "/etc/sysconfig/kubelet",

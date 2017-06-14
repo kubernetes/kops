@@ -129,6 +129,22 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 		manifest.Set("Service", "Environment", buffer.String())
 	}
 
+	// Pass in proxy settings
+	if os.Getenv("HTTP_PROXY") != "" || os.Getenv("HTTPS_PROXY") != "" {
+		var buffer bytes.Buffer
+		buffer.WriteString("\"HTTP_PROXY=")
+		buffer.WriteString(os.Getenv("HTTP_PROXY"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"HTTPS_PROXY=")
+		buffer.WriteString(os.Getenv("HTTPS_PROXY"))
+		buffer.WriteString("\" ")
+		buffer.WriteString("\"NO_PROXY=")
+		buffer.WriteString(os.Getenv("NO_PROXY"))
+		buffer.WriteString("\" ")
+
+		manifest.Set("Service", "Environment", buffer.String())
+	}
+
 	manifest.Set("Service", "ExecStart", command)
 	manifest.Set("Service", "Type", "oneshot")
 

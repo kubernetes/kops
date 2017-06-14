@@ -71,6 +71,17 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHo
 			}
 			return ""
 		},
+
+		// Pass in configuration for the cluster proxy
+		"ProxyEnv": func() string {
+			if os.Getenv("CLUSTER_HTTP_PROXY") != "" || os.Getenv("CLUSTER_HTTPS_PROXY") != "" {
+				return fmt.Sprintf("export HTTP_PROXY=%s\nexport HTTPS_PROXY=%s\nexport NO_PROXY=%s\n",
+					os.Getenv("CLUSTER_HTTP_PROXY"),
+					os.Getenv("CLUSTER_HTTPS_PROXY"),
+					os.Getenv("CLUSTER_NO_PROXY"))
+			}
+			return ""
+		},
 	}
 
 	templateResource, err := NewTemplateResource("nodeup", resources.AWSNodeUpTemplate, functions, nil)
