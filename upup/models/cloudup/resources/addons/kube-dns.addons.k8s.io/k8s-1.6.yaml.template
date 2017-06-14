@@ -86,25 +86,18 @@ spec:
         scheduler.alpha.kubernetes.io/affinity: >
           {
             "podAntiAffinity": {
-              "preferredDuringSchedulingIgnoredDuringExecution": [
+              "requiredDuringSchedulingIgnoredDuringExecution": [
                 {
-                  "weight": 100,
-                  "podAffinityTerm": {
-                    "labelSelector": {
-                      "matchExpressions": [
-                        {
-                          "key": "k8s-addon",
-                          "operator": "In",
-                          "values": ["dns-controller.addons.k8s.io"]
-                        },
-                        {
-                          "key": "k8s-app",
-                          "operator": "In",
-                          "values": ["dns-controller"]
-                        }
-                      ]
-                    }
-                  }
+                  "labelSelector": {
+                    "matchExpressions": [
+                      {
+                        "key": "k8s-app",
+                        "operator": "In",
+                        "values": ["kube-dns"]
+                      }
+                    ]
+                  },
+                  "topologyKey": "kubernetes.io/hostname"
                 }
               ]
             }
@@ -112,17 +105,13 @@ spec:
     spec:
       affinity:
         podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: k8s-addon
-                      operator: In
-                      values: ["dns-controller.addons.k8s.io"]
-                    - key: k8s-app
-                      operator: In
-                      values: ["dns-controller"]
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: k8s-app
+                    operator: In
+                    values: ["kube-dns"]
+              topologyKey: kubernetes.io/hostname
       dnsPolicy: Default  # Don't use cluster DNS.
       serviceAccountName: kube-dns
       volumes:
