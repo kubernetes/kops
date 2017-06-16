@@ -32,6 +32,9 @@ const PathCluster = "config"
 // Path for completed cluster spec in the state store
 const PathClusterCompleted = "cluster.spec"
 
+// Path for nodeup config for instance group in the state store
+const PathNodeUpConfig = "nodeup.config"
+
 func DeleteAllClusterState(basePath vfs.Path) error {
 	paths, err := basePath.ReadTree()
 	if err != nil {

@@ -19,6 +19,7 @@ package protokube
 import (
 	"fmt"
 	"net"
+	"os"
 	"os/exec"
 	"time"
 
@@ -33,6 +34,10 @@ type KubeBoot struct {
 
 	InternalDNSSuffix string
 	InternalIP        net.IP
+
+	// PopulateExternalIP controls whether we set the external IP on this node
+	PopulateExternalIP bool
+
 	//MasterID          int
 	//EtcdClusters      []*EtcdClusterSpec
 
@@ -139,6 +144,19 @@ func (k *KubeBoot) syncOnce() error {
 	// etcd/apiserver retry too many times and go into backoff.
 	if err := enableKubelet(); err != nil {
 		glog.Warningf("error ensuring kubelet started: %v", err)
+	}
+
+	if k.PopulateExternalIP {
+		nodeName := os.Getenv("K8S_NODE_NAME")
+		//machineIDBytes, err := ioutil.ReadFile(PathFor("/etc/machine-id"))
+		if nodeName == "" {
+			glog.Warningf("K8S_NODE_NAME not set; cannot populate external IP")
+		} else {
+			err := PopulateExternalIP(k.Kubernetes, nodeName)
+			if err != nil {
+				glog.Warningf("error populating external IP: %v", err)
+			}
+		}
 	}
 
 	for _, channel := range k.Channels {

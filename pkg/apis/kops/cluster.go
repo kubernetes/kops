@@ -317,6 +317,8 @@ type EtcdClusterSpec struct {
 type EtcdMemberSpec struct {
 	// Name is the name of the member within the etcd cluster
 	Name          string  `json:"name,omitempty"`
+
+	// InstanceGroup is the name of the instance group to use to host this member
 	InstanceGroup *string `json:"instanceGroup,omitempty"`
 
 	VolumeType      *string `json:"volumeType,omitempty"`

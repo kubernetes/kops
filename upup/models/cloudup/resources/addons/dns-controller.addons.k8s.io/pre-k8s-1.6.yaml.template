@@ -37,3 +37,14 @@ spec:
           requests:
             cpu: 50m
             memory: 50Mi
+        volumeMounts:
+        - name: secrets
+          readOnly: true
+          mountPath: /secrets
+        env:
+        - name: AWS_SHARED_CREDENTIALS_FILE
+          value: /secrets/credentials
+      volumes:
+      - name: secrets
+        secret:
+          secretName: dns-controller
