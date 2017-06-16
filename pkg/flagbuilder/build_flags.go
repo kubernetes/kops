@@ -25,6 +25,7 @@ import (
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"strconv"
 )
 
 // BuildFlags builds flag arguments based on "flag" tags on the structure
@@ -68,9 +69,11 @@ func BuildFlags(options interface{}) (string, error) {
 		// If the "unset" value is not empty string, by setting this tag we avoid passing spurious flag values
 		flagEmpty := field.Tag.Get("flag-empty")
 
+		flagIncludeEmpty, _ := strconv.ParseBool(field.Tag.Get("flag-include-empty"))
+
 		// We do have to do this, even though the recursive walk will do it for us
 		// because when we descend we won't have `field` set
-		if val.Kind() == reflect.Ptr {
+		if val.Kind() == reflect.Ptr && reflect.TypeOf(val.Interface()).String() != "*string" {
 			if val.IsNil() {
 				return nil
 			}
@@ -129,6 +132,21 @@ func BuildFlags(options interface{}) (string, error) {
 			vString := fmt.Sprintf("%v", v)
 			if vString != "" && vString != flagEmpty {
 				flag = fmt.Sprintf("--%s=%s", flagName, vString)
+			}
+
+		case *string:
+			if v != nil {
+				// If flagIncludeEmpty is specified, include anything, including empty strings. Otherwise, behave
+				// just like the string case above.
+				if flagIncludeEmpty {
+					vString := fmt.Sprintf("%v", *v)
+					flag = fmt.Sprintf("--%s=%s", flagName, vString)
+				} else {
+					vString := fmt.Sprintf("%v", *v)
+					if vString != "" && vString != flagEmpty {
+						flag = fmt.Sprintf("--%s=%s", flagName, vString)
+					}
+				}
 			}
 
 		case bool, int, int32, int64, float32, float64:
