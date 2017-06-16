@@ -98,9 +98,13 @@ CoreOS support is highly experimental.  Please report any issues.
 
 The following steps are known:
 
-* CoreOS AMIs can be found using `aws ec2 describe-images --region=us-east-1 --owner=595879546273 --filters \
-"Name=virtualization-type,Values=hvm" "Name=name,Values=CoreOS-stable*" \
- --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}'`
-* You can specify the name using the `coreos.com` owner alias, for example `coreos.com/CoreOS-stable-1235.9.0-hvm`
+* The latest stable CoreOS AMI can be found using:
+```
+aws ec2 describe-images --region=us-east-1 --owner=595879546273 \
+    --filters "Name=virtualization-type,Values=hvm" "Name=name,Values=CoreOS-stable*" \
+    --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}'
+```
+
+* You can specify the name using the `coreos.com` owner alias, for example `coreos.com/CoreOS-stable-1353.8.0-hvm`
 
 > Note: SSH username will be `core`
