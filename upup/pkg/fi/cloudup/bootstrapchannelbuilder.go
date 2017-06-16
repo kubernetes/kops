@@ -280,8 +280,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
 
-		// 1.9.8-kops.1 = 1.9.7 plus IPALLOC_RANGE and WEAVE_MTU
-		version := "1.9.8-kops.1"
+		// 1.9.8-kops.2 = 1.9.8 plus IPALLOC_RANGE and WEAVE_MTU
+		version := "1.9.8-kops.2"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
