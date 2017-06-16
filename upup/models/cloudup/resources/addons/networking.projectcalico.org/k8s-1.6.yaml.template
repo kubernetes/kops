@@ -146,7 +146,7 @@ spec:
                   key: enable_bgp
             # Configure the IP Pool from which Pod IPs will be chosen.
             - name: CALICO_IPV4POOL_CIDR
-              value: "{{ .NonMasqueradeCIDR }}"
+              value: "{{ .KubeControllerManager.ClusterCIDR }}"
             - name: CALICO_IPV4POOL_IPIP
               value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}cross-subnet{{- else -}}always{{- end -}}"
             # Disable file logging so `kubectl logs` works.
