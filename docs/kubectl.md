@@ -1,4 +1,4 @@
-# Tips and Tricks
+# kubectl
 
 ## Create kubecfg settings for kubectl
 
