@@ -157,6 +157,7 @@ func enableKubelet() error {
 	glog.V(2).Infof("ensuring that kubelet systemd service is running")
 	cmd := exec.Command("systemctl", "status", "--no-block", "kubelet")
 	output, err := cmd.CombinedOutput()
+	glog.V(2).Infof("'systemctl status kubelet' output:\n%s", string(output))
 	if err == nil {
 		glog.V(2).Infof("kubelet systemd service already running")
 		return nil
@@ -167,5 +168,6 @@ func enableKubelet() error {
 	if err != nil {
 		return fmt.Errorf("error starting kubelet: %v\nOutput: %s", err, output)
 	}
+	glog.V(2).Infof("'systemctl start kubelet' output:\n%s", string(output))
 	return nil
 }
