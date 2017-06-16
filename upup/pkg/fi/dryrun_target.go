@@ -295,8 +295,10 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 					}
 				}
 				fmt.Fprintf(b, "\n")
+
 			}
 		}
+
 	}
 
 	if len(t.deletions) != 0 {

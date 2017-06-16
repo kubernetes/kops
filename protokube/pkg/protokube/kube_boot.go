@@ -50,6 +50,9 @@ type KubeBoot struct {
 	Channels []string
 
 	Kubernetes *KubernetesContext
+
+	// Etcd container registry location.
+	EtcdImageSource string
 }
 
 func (k *KubeBoot) Init(volumesProvider Volumes) {

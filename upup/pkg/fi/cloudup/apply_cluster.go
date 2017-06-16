@@ -100,6 +100,10 @@ type ApplyClusterCmd struct {
 
 	// The channel we are using
 	channel *api.Channel
+
+	// inventory of files and containers needed in order
+	// to upload assets to new location
+	Inventory *api.Inventory
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -202,7 +206,10 @@ func (c *ApplyClusterCmd) Run() error {
 		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
 			baseURL = cluster.Spec.KubernetesVersion
 		} else {
-			baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + cluster.Spec.KubernetesVersion
+			baseURL, err = components.GetGoogleFileRepositoryURL(&c.Cluster.Spec, "/release/v"+cluster.Spec.KubernetesVersion)
+			if err != nil {
+				return err
+			}
 		}
 		baseURL = strings.TrimSuffix(baseURL, "/")
 
@@ -239,7 +246,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		if needsStaticUtils(cluster, c.InstanceGroups) {
-			utilsLocation := BaseUrl() + "linux/amd64/utils.tar.gz"
+			utilsLocation := BaseUrl(&cluster.Spec) + "linux/amd64/utils.tar.gz"
 			glog.V(4).Infof("Using default utils.tar.gz location: %q", utilsLocation)
 
 			hash, err := findHash(utilsLocation)
@@ -251,7 +258,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if c.NodeUpSource == "" {
-		c.NodeUpSource = NodeUpLocation()
+		c.NodeUpSource = NodeUpLocation(&cluster.Spec)
 	}
 
 	checkExisting := true
@@ -546,20 +553,11 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 		}
 
-		{
-			location := ProtokubeImageSource()
-
-			hash, err := findHash(location)
-			if err != nil {
-				return nil, err
-			}
-
-			config.ProtokubeImage = &nodeup.Image{
-				Name:   kops.DefaultProtokubeImageName(),
-				Source: location,
-				Hash:   hash.Hex(),
-			}
+		proto, err := ProtokubeImageSource(&c.Cluster.Spec)
+		if err != nil {
+			return nil, err
 		}
+		config.ProtokubeImage = proto
 
 		config.Images = images
 		config.Channels = channels
@@ -610,28 +608,70 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
 
-	//// TotalNodeCount computes the total count of nodes
-	//l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
-	//	count := 0
-	//	for _, group := range c.InstanceGroups {
-	//		if group.IsMaster() {
-	//			continue
-	//		}
-	//		if group.Spec.MaxSize != nil {
-	//			count += *group.Spec.MaxSize
-	//		} else if group.Spec.MinSize != nil {
-	//			count += *group.Spec.MinSize
-	//		} else {
-	//			// Guestimate
-	//			count += 5
-	//		}
-	//	}
-	//	return count, nil
-	//}
+	var target fi.Target
+
 	l.TemplateFunctions["Region"] = func() string {
 		return region
 	}
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
+
+	// The following template functions have two purposes:
+	// 1. They set the location of the container registry if a cluster assets container registry is set.
+	// 2. During an TargetInventory Run() all container images are tracked in order to build an Inventory.
+	{
+
+		// Template function that renders the registry for a google / kuberentes container.
+		l.TemplateFunctions["GetGoogleImageRegistryContainer"] = func(imageName string) (string, error) {
+			glog.V(8).Infof("GetGoogleImageRegistryContainer: %s", imageName)
+			s, err := components.GetGoogleImageRegistryContainer(&tf.cluster.Spec, imageName)
+
+			if err != nil {
+				return "", fmt.Errorf("unable to parse template func GetGoogleImageRegistryContainer(%q): %v", imageName, err)
+			}
+
+			recordContainerAsset(s, target)
+			glog.V(8).Infof("Container: %s", s)
+
+			return s, nil
+		}
+
+		// Template function that renders the registry for a container.
+		l.TemplateFunctions["GetImage"] = func(imageName string) (string, error) {
+			glog.V(8).Infof("GetImage: %s", imageName)
+
+			s, err := components.GetContainer(&tf.cluster.Spec, imageName)
+
+			if err != nil {
+				return "", fmt.Errorf("unable to parse template func GetImage(%q): %v", imageName, err)
+			}
+
+			recordContainerAsset(s, target)
+			glog.V(8).Infof("Container: %s", imageName)
+			return s, nil
+		}
+
+		// To use user-defined DNS Controller:
+		// 1. DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
+		// 2. export DNSCONTROLLER_IMAGE=[your docker hub repo]
+		// 3. make kops and create/apply cluster
+		l.TemplateFunctions["DnsControllerImage"] = func() (string, error) {
+			imageName := os.Getenv("DNSCONTROLLER_IMAGE")
+			if imageName == "" {
+				// TODO another hardcoded version
+				imageName = "kope/dns-controller:1.6.1"
+				imageName, err := components.GetContainer(&tf.cluster.Spec, imageName)
+
+				if err != nil {
+					return "", fmt.Errorf("unable to parse template func DnsControllerImage %q: %v", imageName, err)
+				}
+			}
+
+			recordContainerAsset(imageName, target)
+			glog.V(8).Infof("Container: %s", imageName)
+
+			return imageName, nil
+		}
+	}
 
 	tf.AddTo(l.TemplateFunctions)
 
@@ -640,8 +680,8 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
 
-	var target fi.Target
 	dryRun := false
+	inventoryTarget := false
 	shouldPrecreateDNS := true
 
 	switch c.TargetName {
@@ -696,6 +736,16 @@ func (c *ApplyClusterCmd) Run() error {
 
 		// Avoid making changes on a dry-run
 		shouldPrecreateDNS = false
+	case TargetInventory:
+		// Utilized to build an api.Inventory
+		// This target was created because TargetDryRun outputs to STDOUT.  This complicated the rendering of
+		// api.Inventory in YAML and JSON.
+		target = fi.NewInventoryTarget()
+		inventoryTarget = true
+		dryRun = true
+
+		// Avoid making changes on a dry-run
+		shouldPrecreateDNS = false
 
 	default:
 		return fmt.Errorf("unsupported target type %q", c.TargetName)
@@ -742,7 +792,38 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("error closing target: %v", err)
 	}
 
+	// TargetInventory is Run, only used for creating and getting inventory for a kops kubernetes cluster.
+	{
+		if inventoryTarget {
+			t := target.(*fi.InventoryTarget)
+			t.ResetContainerAssets()
+			inv := &ApplyInventory{
+				Cluster:             cluster,
+				InstanceGroups:      c.InstanceGroups,
+				BootstrapContainers: t.ContainerAssets,
+				NodeUpConfigBuilder: renderNodeUpConfig,
+				TaskMap:             context.AllTasks(),
+			}
+
+			c.Inventory, err = inv.BuildInventoryAssets()
+
+			if err != nil {
+				return fmt.Errorf("error building inventory: %v", err)
+			}
+		}
+	}
+
 	return nil
+}
+
+func recordContainerAsset(imageName string, target fi.Target) {
+
+	t, ok := target.(*fi.InventoryTarget)
+
+	if ok {
+		t.RecordContainerAsset(imageName)
+	}
+
 }
 
 func findHash(url string) (*hashing.Hash, error) {

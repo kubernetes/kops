@@ -25,6 +25,14 @@ var Version = "1.5.0"
 var GitVersion = ""
 
 // DefaultProtokubeImageName is the name of the protokube image, as we would pass to "docker run"
+func DefaultDnsControllerImageName() string {
+	// + is valid in semver, but not in docker tags.
+	// Note that this mirrors the logic in the makefile for PROTOKUBE_TAG.
+	dockerTag := strings.Replace(Version, "+", "-", -1)
+	return "kope/dns-controller:" + dockerTag
+}
+
+// DefaultProtokubeImageName is the name of the protokube image, as we would pass to "docker run"
 func DefaultProtokubeImageName() string {
 	// + is valid in semver, but not in docker tags.
 	// Note that this mirrors the logic in the makefile for PROTOKUBE_TAG.
