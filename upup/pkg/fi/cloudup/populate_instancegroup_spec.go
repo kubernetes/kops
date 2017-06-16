@@ -237,6 +237,11 @@ func defaultBastionMachineType(cluster *api.Cluster) string {
 
 // defaultImage returns the default Image, based on the cloudprovider
 func defaultImage(cluster *api.Cluster, channel *api.Channel) string {
+	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
+	case fi.CloudProviderBareMetal:
+		return ""
+	}
+
 	if channel != nil {
 		var kubernetesVersion *semver.Version
 		if cluster.Spec.KubernetesVersion != "" {

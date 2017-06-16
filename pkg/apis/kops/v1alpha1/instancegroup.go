@@ -62,6 +62,8 @@ type InstanceGroupSpec struct {
 
 	Zones []string `json:"zones,omitempty"`
 
+	Machines []*MachineSpec `json:"machines,omitempty"`
+
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
 	MaxPrice *string `json:"maxPrice,omitempty"`
 
@@ -86,4 +88,13 @@ type InstanceGroupSpec struct {
 
 	// Taints indicates the kubernetes taints for nodes in this group
 	Taints []string `json:"taints,omitempty"`
+}
+
+type MachineSpec struct {
+	Name      string                `json:"name,omitempty"`
+	Addresses []*MachineAddressSpec `json:"addresses,omitempty"`
+}
+
+type MachineAddressSpec struct {
+	Address string `json:"address,omitempty"`
 }

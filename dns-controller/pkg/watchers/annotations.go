@@ -23,3 +23,7 @@ const AnnotationNameDnsExternal = "dns.alpha.kubernetes.io/external"
 // AnnotationNameDnsInternal is used to set up a DNS name for accessing the resource from inside the cluster
 // This is only supported on Pods currently, and maps to the Internal address
 const AnnotationNameDnsInternal = "dns.alpha.kubernetes.io/internal"
+
+// AnnotationNameExternalIP is used to set the IP to expose
+// This is useful when the node does not have an ExternalIP configured
+const AnnotationNameExternalIP = "dns.alpha.kubernetes.io/external-ip"

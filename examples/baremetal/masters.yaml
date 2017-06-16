@@ -1,0 +1,12 @@
+kind: InstanceGroup
+apiVersion: kops/v1alpha1
+metadata:
+  name: masters
+  labels:
+    kops.k8s.io/cluster: baremetal.awsdata.com
+spec:
+  role: Master
+  machines:
+  - name: ws1
+    addresses:
+    - address: 1.2.3.4

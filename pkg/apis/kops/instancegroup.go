@@ -77,6 +77,8 @@ type InstanceGroupSpec struct {
 
 	Subnets []string `json:"subnets,omitempty"`
 
+	Machines []*MachineSpec `json:"machines,omitempty"`
+
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
 	MaxPrice *string `json:"maxPrice,omitempty"`
 
@@ -101,6 +103,15 @@ type InstanceGroupSpec struct {
 
 	// Taints indicates the kubernetes taints for nodes in this group
 	Taints []string `json:"taints,omitempty"`
+}
+
+type MachineSpec struct {
+	Name      string                `json:"name,omitempty"`
+	Addresses []*MachineAddressSpec `json:"addresses,omitempty"`
+}
+
+type MachineAddressSpec struct {
+	Address string `json:"address,omitempty"`
 }
 
 // PerformAssignmentsInstanceGroups populates InstanceGroups with default values
@@ -143,4 +154,60 @@ func (g *InstanceGroup) IsMaster() bool {
 		glog.Fatalf("Role not set in group %v", g)
 		return false
 	}
+}
+
+func (g *InstanceGroup) Validate() error {
+	if g.Name == "" {
+		return field.Required(field.NewPath("Name"), "")
+	}
+
+	if g.Spec.Role == "" {
+		return field.Required(field.NewPath("Role"), "Role must be set")
+	}
+
+	switch g.Spec.Role {
+	case InstanceGroupRoleMaster:
+	case InstanceGroupRoleNode:
+
+	default:
+		return field.Invalid(field.NewPath("Role"), g.Spec.Role, "Unknown role")
+	}
+
+	if g.IsMaster() {
+		// TODO: Validate zones with AWS, machines with bare metal
+		// TODO: Switch to subnets?
+		if len(g.Spec.Zones) == 0 && len(g.Spec.Machines) == 0 {
+			return fmt.Errorf("Master InstanceGroup %s did not specify any Zones", g.Name)
+		}
+	}
+
+	return nil
+}
+
+// CrossValidate performs validation of the instance group, including that it is consistent with the Cluster
+// It calls Validate, so all that validation is included.
+func (g *InstanceGroup) CrossValidate(cluster *Cluster, strict bool) error {
+	err := g.Validate()
+	if err != nil {
+		return err
+	}
+
+	// Check that instance groups are defined in valid zones
+	{
+		clusterZones := make(map[string]*ClusterZoneSpec)
+		for _, z := range cluster.Spec.Zones {
+			if clusterZones[z.Name] != nil {
+				return fmt.Errorf("Zones contained a duplicate value: %v", z.Name)
+			}
+			clusterZones[z.Name] = z
+		}
+
+		for _, z := range g.Spec.Zones {
+			if clusterZones[z] == nil {
+				return fmt.Errorf("InstanceGroup %q is configured in %q, but this is not configured as a Zone in the cluster", g.Name, z)
+			}
+		}
+	}
+
+	return nil
 }

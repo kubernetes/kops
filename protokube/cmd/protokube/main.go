@@ -19,7 +19,6 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"github.com/golang/glog"
 	"github.com/spf13/pflag"
 	"io"
@@ -28,6 +27,7 @@ import (
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	"k8s.io/kops/protokube/pkg/gossip/mesh"
 	"k8s.io/kops/protokube/pkg/protokube"
+	"k8s.io/kops/protokube/pkg/protokube/baremetal"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"net"
 	"os"
@@ -74,11 +74,17 @@ func run() error {
 	initializeRBAC := false
 	flag.BoolVar(&initializeRBAC, "initialize-rbac", initializeRBAC, "Set if we should initialize RBAC")
 
+	populateExternalIP := false
+	flag.BoolVar(&populateExternalIP, "populate-external-ip", populateExternalIP, "If set, will populate the external IP when starting up")
+
+	cloud := ""
+	flag.StringVar(&cloud, "cloud", cloud, "Cloud provider to use - gce, aws, baremetal")
+
 	containerized := false
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
 
 	cloud := "aws"
-	flag.StringVar(&cloud, "cloud", cloud, "CloudProvider we are using (aws,gce)")
+	flag.StringVar(&cloud, "cloud", cloud, "CloudProvider we are using (aws,gce,vsphere,baremetal)")
 
 	dnsInternalSuffix := ""
 	flag.StringVar(&dnsInternalSuffix, "dns-internal-suffix", dnsInternalSuffix, "DNS suffix for internal domain names")
@@ -153,7 +159,13 @@ func run() error {
 		if internalIP == nil {
 			internalIP = vsphereVolumes.InternalIp()
 		}
-
+	} else if cloud == "baremetal" {
+		basedir := "/volumes"
+		volumes, err = baremetal.NewVolumes(basedir)
+		if err != nil {
+			glog.Errorf("Error initializing AWS: %q", err)
+			os.Exit(1)
+		}
 	} else {
 		glog.Errorf("Unknown cloud %q", cloud)
 		os.Exit(1)
@@ -315,7 +327,8 @@ func run() error {
 		//MasterID          : fromVolume
 		//EtcdClusters   : fromVolume
 
-		InitializeRBAC: initializeRBAC,
+		InitializeRBAC:     initializeRBAC,
+		PopulateExternalIP: populateExternalIP,
 
 		ModelDir: modelDir,
 		DNS:      dnsProvider,
@@ -333,67 +346,4 @@ func run() error {
 	k.RunSyncLoop()
 
 	return fmt.Errorf("Unexpected exit")
-}
-
-// TODO: run with --net=host ??
-func findInternalIP() (net.IP, error) {
-	var ips []net.IP
-
-	networkInterfaces, err := net.Interfaces()
-	if err != nil {
-		return nil, fmt.Errorf("error querying interfaces to determine internal ip: %v", err)
-	}
-
-	for i := range networkInterfaces {
-		networkInterface := &networkInterfaces[i]
-		flags := networkInterface.Flags
-		name := networkInterface.Name
-
-		if (flags & net.FlagLoopback) != 0 {
-			glog.V(2).Infof("Ignoring interface %s - loopback", name)
-			continue
-		}
-
-		// Not a lot else to go on...
-		if !strings.HasPrefix(name, "eth") {
-			glog.V(2).Infof("Ignoring interface %s - name does not look like ethernet device", name)
-			continue
-		}
-
-		addrs, err := networkInterface.Addrs()
-		if err != nil {
-			return nil, fmt.Errorf("error querying network interface %s for IP adddresses: %v", name, err)
-		}
-
-		for _, addr := range addrs {
-			ip, _, err := net.ParseCIDR(addr.String())
-			if err != nil {
-				return nil, fmt.Errorf("error parsing address %s on network interface %s: %v", addr.String(), name, err)
-			}
-
-			if ip.IsLoopback() {
-				glog.V(2).Infof("Ignoring address %s (loopback)", ip)
-				continue
-			}
-
-			if ip.IsLinkLocalMulticast() || ip.IsLinkLocalUnicast() {
-				glog.V(2).Infof("Ignoring address %s (link-local)", ip)
-				continue
-			}
-
-			ips = append(ips, ip)
-		}
-	}
-
-	if len(ips) == 0 {
-		return nil, fmt.Errorf("unable to determine internal ip (no adddresses found)")
-	}
-
-	if len(ips) != 1 {
-		glog.Warningf("Found multiple internal IPs; making arbitrary choice")
-		for _, ip := range ips {
-			glog.Warningf("\tip: %s", ip.String())
-		}
-	}
-	return ips[0], nil
 }
