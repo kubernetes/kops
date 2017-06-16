@@ -64,11 +64,10 @@ Create 1 kops instance group for the first one of your new masters, in
 a different AZ from the existing one.
 
 ```bash
-$ kops create instancegroup master-<availability-zone2>
+$ kops create instancegroup master-<availability-zone2> --subnet <availability-zone2> --role Master
 ```
 
  * ``maxSize`` and ``minSize`` should be 1,
- * ``role`` should be ``Master``,
  * only one zone should be listed.
 
 ### b - Reference the new masters in your cluster configuration
@@ -147,11 +146,10 @@ Create 1 kops instance group for the third master, in
 a different AZ from the existing ones.
 
 ```bash
-$ kops create instancegroup master-<availability-zone3>
+$ kops create instancegroup master-<availability-zone3> --subnet <availability-zone3> --role Master
 ```
 
  * ``maxSize`` and ``minSize`` should be 1,
- * ``role`` should be ``Master``,
  * only one zone should be listed.
 
 ### b - Add a new member to the etcd clusters
