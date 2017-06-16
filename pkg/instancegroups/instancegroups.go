@@ -468,3 +468,60 @@ func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
 
 	return nil
 }
+
+// ScaleInstanceGroup scale the cloud resources for an InstanceGroup
+type ScaleInstanceGroup struct {
+	Cluster         *api.Cluster
+	Cloud           fi.Cloud
+	DesiredReplicas *int64
+
+	Clientset simple.Clientset
+}
+
+func (c *ScaleInstanceGroup) ScaleInstanceGroup(group *api.InstanceGroup) error {
+	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
+	cig := groups[group.ObjectMeta.Name]
+
+	if cig == nil {
+		glog.Warningf("AutoScalingGroup %q not found in cloud - skipping scaling", group.ObjectMeta.Name)
+	} else {
+		if len(groups) != 1 {
+			return fmt.Errorf("Multiple InstanceGroup resources found in cloud")
+		}
+
+		glog.Infof("Scaling autoscaling group %q from %v to %#v", group.ObjectMeta.Name, cig.asg.MaxSize, c.DesiredReplicas)
+
+		cig.asg.MaxSize = c.DesiredReplicas
+		cig.asg.DesiredCapacity = c.DesiredReplicas
+
+		err = cig.Scale(c.Cloud)
+		if err != nil {
+			return fmt.Errorf("error scaling InstanceGroup: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (g *CloudInstanceGroup) Scale(cloud fi.Cloud) error {
+
+	c := cloud.(awsup.AWSCloud)
+	// TODO add warning about cluster autoscaling and replicas
+	{
+		asgName := aws.StringValue(g.asg.AutoScalingGroupName)
+		request := &autoscaling.UpdateAutoScalingGroupInput{
+			AutoScalingGroupName: g.asg.AutoScalingGroupName,
+			DesiredCapacity:      g.asg.DesiredCapacity,
+			MaxSize:              g.asg.MaxSize,
+		}
+		_, err := c.Autoscaling().UpdateAutoScalingGroup(request)
+
+		if err != nil {
+			return fmt.Errorf("error scaling autoscaling group %q: %v", asgName, err)
+		}
+
+		// TODO it's important to wait to this command apply or just print a message to the user is enough?
+	}
+
+	return nil
+}
