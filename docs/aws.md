@@ -283,7 +283,8 @@ export KOPS_STATE_STORE=s3://prefix-example-com-state-store
 ```
 
 Note: You don’t have to use environmental variables here. You can always define
-the values using the –name and –state flags later.
+the values using the –name and –state flags later. Alternately, you may define 
+[config file](config_file.md)
 
 ## Create cluster configuration
 

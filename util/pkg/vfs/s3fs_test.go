@@ -31,12 +31,22 @@ func Test_S3Path_Parse(t *testing.T) {
 			ExpectedPath:   "",
 		},
 		{
+			Input:          "s3://bucket/",
+			ExpectedBucket: "bucket",
+			ExpectedPath:   "",
+		},
+		{
 			Input:          "s3://bucket/path",
 			ExpectedBucket: "bucket",
 			ExpectedPath:   "path",
 		},
 		{
 			Input:          "s3://bucket2/path/subpath",
+			ExpectedBucket: "bucket2",
+			ExpectedPath:   "path/subpath",
+		},
+		{
+			Input:          "s3://bucket2/path/subpath/",
 			ExpectedBucket: "bucket2",
 			ExpectedPath:   "path/subpath",
 		},
