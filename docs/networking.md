@@ -30,12 +30,12 @@ and NAT gateways are single AZ, multiple route tables are needed to use each NAT
 
 Several different providers are currently built into kops:
 
-1. kopeio-vxlan
-2. [weave](https://github.com/weaveworks/weave-kube)
-3. [flannel](https://github.com/coreos/flannel)
-4. [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
-5. [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
-6. [kube-router](https://github.com/cloudnativelabs/kube-router)
+* [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
+* [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
+* [flannel](https://github.com/coreos/flannel)
+* [kopeio-vxlan](https://github.com/kopeio/networking)
+* [kube-router](https://github.com/cloudnativelabs/kube-router)
+* [weave](https://github.com/weaveworks/weave-kube)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
