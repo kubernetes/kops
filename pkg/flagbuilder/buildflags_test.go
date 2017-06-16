@@ -28,7 +28,7 @@ func stringPointer(s string) *string {
 	return &s
 }
 
-func int34Pointer(i32 int32) *int32 {
+func int32Pointer(i32 int32) *int32 {
 	return &i32
 }
 
@@ -94,7 +94,7 @@ func TestKubeletConfigSpec(t *testing.T) {
 		},
 		{
 			Config: &kops.KubeletConfigSpec{
-				LogLevel: int34Pointer(2),
+				LogLevel: int32Pointer(2),
 			},
 			Expected: "--v=2",
 		},
