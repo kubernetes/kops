@@ -35,6 +35,7 @@ Several different providers are currently built into kops:
 3. [flannel](https://github.com/coreos/flannel)
 4. [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
 5. [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
+6. [kube-router](https://github.com/cloudnativelabs/kube-router)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
@@ -231,6 +232,33 @@ For support with Calico Policies you can reach out on Slack or Github:
 For support with Flannel you can submit an issue on Github:
 
 - [Flannel](https://github.com/coreos/flannel/issues)
+
+### Kube-router example for CNI, IPVS based service proxy and Network Policy enforcer
+
+[Kube-router](https://github.com/cloudnativelabs/kube-router) is project that provides one cohesive soltion that provides CNI networking for pods, an IPVS based network service proxy and iptables based network policy enforcement.
+
+#### Installing kube-router on a new Cluster
+
+The following command sets up a cluster with Kube-router as the CNI, service proxy and networking policy provider
+
+```
+$ kops create cluster \
+  --node-count 2 \
+  --zones us-west-2a \
+  --master-zones us-west-2a \
+  --dns-zone aws.cloudnativelabs.net \
+  --node-size t2.medium \
+  --master-size t2.medium \
+  --networking kube-router \
+  --yes \
+  --name myclustername.mydns.io
+```
+
+Currently kube-router supports 1.6 and above. Please note that kube-router will also provide service proxy, so kube-proxy will not be deployed in to the cluster. Kube-router used node routing stack for cross node pod-to-pod connectivity with out any encapsulation. In the case of AWS, EC2 instances have source/destination checks enabled by default. So please ensure to turn off source-destination checks on the AWS EC2 instances by running below command.
+
+```
+aws ec2 modify-instance-attribute --instance-id <ec2 instance id> --no-source-dest-check
+```
 
 ### Validating CNI Installation
 
