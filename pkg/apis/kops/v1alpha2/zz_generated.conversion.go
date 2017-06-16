@@ -1547,6 +1547,7 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.PodCIDR = in.PodCIDR
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
+	out.ResolverConfig = in.ResolverConfig
 	out.NodeLabels = in.NodeLabels
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.EnableCustomMetrics = in.EnableCustomMetrics
@@ -1592,6 +1593,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.MaxPods = in.MaxPods
 	out.NvidiaGPUs = in.NvidiaGPUs
 	out.PodCIDR = in.PodCIDR
+	out.ResolverConfig = in.ResolverConfig
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
 	out.NodeLabels = in.NodeLabels
