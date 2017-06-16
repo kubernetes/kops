@@ -135,7 +135,7 @@ Will result in the flag `--runtime-config=batch/v2alpha1=true,apps/v1alpha1=true
 
 This block contains configurations for `kubelet`.  See https://kubernetes.io/docs/admin/kubelet/
 
-NOTE: Arguments can be set to empty if the field is included in the spec, and an empty string is passed to it.
+NOTE: Where the corresponding configuration value can be empty, fields can be set to empty in the spec, and an empty string will be passed as the configuration value.
  ```yaml
  spec:
    kubelet:
