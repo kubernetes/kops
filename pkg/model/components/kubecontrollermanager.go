@@ -96,15 +96,15 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	}
 
 	kcm.ClusterName = b.Context.ClusterName
-	switch fi.CloudProviderID(clusterSpec.CloudProvider) {
-	case fi.CloudProviderAWS:
+	switch kops.CloudProviderID(clusterSpec.CloudProvider) {
+	case kops.CloudProviderAWS:
 		kcm.CloudProvider = "aws"
 
-	case fi.CloudProviderGCE:
+	case kops.CloudProviderGCE:
 		kcm.CloudProvider = "gce"
 		kcm.ClusterName = gce.SafeClusterName(b.Context.ClusterName)
 
-	case fi.CloudProviderVSphere:
+	case kops.CloudProviderVSphere:
 		kcm.CloudProvider = "vsphere"
 
 	default:

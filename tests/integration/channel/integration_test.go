@@ -239,7 +239,7 @@ func TestFindImage(t *testing.T) {
 	for _, g := range grid {
 		kubernetesVersion := semver.MustParse(g.KubernetesVersion)
 
-		image := channel.FindImage(fi.CloudProviderAWS, kubernetesVersion)
+		image := channel.FindImage(kops.CloudProviderAWS, kubernetesVersion)
 		name := ""
 		if image != nil {
 			name = image.Name
