@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 type MockAWSCloud struct {

@@ -28,6 +28,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 type TerraformTarget struct {

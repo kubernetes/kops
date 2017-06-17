@@ -535,7 +535,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 		var images []*nodeup.Image
 
-		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
+		if assets.IsBaseURL(cluster.Spec.KubernetesVersion) {
 			baseURL := cluster.Spec.KubernetesVersion
 			baseURL = strings.TrimSuffix(baseURL, "/")
 

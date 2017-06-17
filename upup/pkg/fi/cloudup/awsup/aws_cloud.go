@@ -37,6 +37,7 @@ import (
 	k8sroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	"strings"
 	"time"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 // By default, aws-sdk-go only retries 3 times, which doesn't give

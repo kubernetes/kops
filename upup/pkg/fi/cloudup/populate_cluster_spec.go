@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/pkg/assets"
 )
 
 var EtcdClusters = []string{"main", "events"}

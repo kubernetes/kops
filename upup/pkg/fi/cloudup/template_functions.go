@@ -39,10 +39,12 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/pkg/assets"
 )
 
 type TemplateFunctions struct {
 	cluster        *kops.Cluster
+	assetBuilder *assets.AssetBuilder
 	instanceGroups []*kops.InstanceGroup
 
 	tags   sets.String
@@ -106,7 +108,7 @@ func (tf *TemplateFunctions) SharedVPC() bool {
 
 // Image returns the docker image name for the specified component
 func (tf *TemplateFunctions) Image(component string) (string, error) {
-	return components.Image(component, &tf.cluster.Spec)
+	return tf.assetBuilder.ComponentImage(component)
 }
 
 // HasTag returns true if the specified tag is set
