@@ -202,16 +202,8 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if len(c.Assets) == 0 {
-		var baseURL string
-		if assets.IsBaseURL(cluster.Spec.KubernetesVersion) {
-			baseURL = cluster.Spec.KubernetesVersion
-		} else {
-			baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + cluster.Spec.KubernetesVersion
-		}
-		baseURL = strings.TrimSuffix(baseURL, "/")
-
 		{
-			defaultKubeletAsset := baseURL + "/bin/linux/amd64/kubelet"
+			defaultKubeletAsset := assetBuilder.KubernetesAsset("kubelet")
 			glog.V(2).Infof("Adding default kubelet release asset: %s", defaultKubeletAsset)
 
 			hash, err := findHash(defaultKubeletAsset)
@@ -222,7 +214,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		{
-			defaultKubectlAsset := baseURL + "/bin/linux/amd64/kubectl"
+			defaultKubectlAsset := assetBuilder.KubernetesAsset("kubectl")
 			glog.V(2).Infof("Adding default kubectl release asset: %s", defaultKubectlAsset)
 
 			hash, err := findHash(defaultKubectlAsset)
@@ -233,7 +225,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		if usesCNI(cluster) {
-			cniAsset, cniAssetHashString, err := findCNIAssets(cluster)
+			cniAsset, cniAssetHashString, err := assetBuilder.FindCNIAssets()
 
 			if err != nil {
 				return err
@@ -243,7 +235,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		if needsStaticUtils(cluster, c.InstanceGroups) {
-			utilsLocation := BaseUrl() + "linux/amd64/utils.tar.gz"
+			utilsLocation := assetBuilder.StaticUtils()
 			glog.V(4).Infof("Using default utils.tar.gz location: %q", utilsLocation)
 
 			hash, err := findHash(utilsLocation)
@@ -255,7 +247,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if c.NodeUpSource == "" {
-		c.NodeUpSource = NodeUpLocation()
+		c.NodeUpSource = assetBuilder.NodeUpLocation()
 	}
 
 	checkExisting := true
@@ -562,7 +554,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		{
-			location := ProtokubeImageSource()
+			location := assetBuilder.ProtokubeImageSource()
 
 			hash, err := findHash(location)
 			if err != nil {

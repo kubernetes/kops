@@ -12,19 +12,24 @@ import (
 
 // AssetBuilder discovers and remaps assets
 type AssetBuilder struct {
+	kopsDistroURL string
+
 	Cluster *kops.Cluster
 	Assets  []*Asset
 }
 
 type Asset struct {
 	Name   string
+	Hash   string
 	Origin string
 	Mirror string
 }
 
 func NewAssetBuilder(cluster *kops.Cluster) *AssetBuilder {
+	kopsDistroURL := findBaseUrl()
 	return &AssetBuilder{
-		Cluster: cluster,
+		kopsDistroURL: kopsDistroURL,
+		Cluster:       cluster,
 	}
 }
 
@@ -68,7 +73,7 @@ func (a *AssetBuilder) remapImage(image string) (string, error) {
 
 	asset.Mirror = image
 
-	a.Assets = append(a.Assets, asset)
+	a.addAsset(asset)
 
 	return image, nil
 }
@@ -108,6 +113,38 @@ func (a *AssetBuilder) ComponentImage(component string) (string, error) {
 		Name:   imageName,
 		Origin: baseURL + "/bin/linux/amd64/" + component,
 	}
-	a.Assets = append(a.Assets, asset)
+	a.addAsset(asset)
 	return imageName, nil
+}
+
+func (a *AssetBuilder) KubernetesAsset(key string) string {
+	cluster := a.Cluster
+
+	var baseURL string
+	if IsBaseURL(cluster.Spec.KubernetesVersion) {
+		baseURL = cluster.Spec.KubernetesVersion
+	} else {
+		baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + cluster.Spec.KubernetesVersion
+	}
+	baseURL = strings.TrimSuffix(baseURL, "/")
+	url := baseURL + "/bin/linux/amd64/" + key
+	a.addURLAsset(url)
+	return url
+}
+
+func (a *AssetBuilder) StaticUtils() string {
+	url := a.kopsDistroURL + "linux/amd64/utils.tar.gz"
+	a.addURLAsset(url)
+	return url
+}
+
+func (a *AssetBuilder) addURLAsset(url string) {
+	asset := &Asset{
+		Origin: url,
+	}
+	a.addAsset(asset)
+}
+
+func (a *AssetBuilder) addAsset(asset *Asset) {
+	a.Assets = append(a.Assets, asset)
 }

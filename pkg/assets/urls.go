@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cloudup
+package assets
 
 import (
 	"os"
@@ -28,7 +28,7 @@ import (
 var baseUrl string
 
 // BaseUrl returns the base url for the distribution of kops - in particular for nodeup & docker images
-func BaseUrl() string {
+func findBaseUrl() string {
 	if baseUrl != "" {
 		// Avoid repeated logging
 		return baseUrl
@@ -53,18 +53,24 @@ func BaseUrl() string {
 var nodeUpLocation string
 
 // NodeUpLocation returns the URL where nodeup should be downloaded
-func NodeUpLocation() string {
+func (a *AssetBuilder) NodeUpLocation() string {
 	if nodeUpLocation != "" {
 		// Avoid repeated logging
 		return nodeUpLocation
 	}
 	nodeUpLocation = os.Getenv("NODEUP_URL")
 	if nodeUpLocation == "" {
-		nodeUpLocation = BaseUrl() + "linux/amd64/nodeup"
+		nodeUpLocation = a.kopsDistroURL + "linux/amd64/nodeup"
 		glog.V(4).Infof("Using default nodeup location: %q", nodeUpLocation)
 	} else {
 		glog.Warningf("Using nodeup location from NODEUP_URL env var: %q", nodeUpLocation)
 	}
+
+	asset := &Asset{
+		Origin: nodeUpLocation,
+	}
+	a.Assets = append(a.Assets, asset)
+
 	return nodeUpLocation
 }
 
@@ -74,17 +80,22 @@ var protokubeImageSource string
 // ProtokubeImageSource returns the source for the docker image for protokube.
 // Either a docker name (e.g. gcr.io/protokube:1.4), or a URL (https://...) in which case we download
 // the contents of the url and docker load it
-func ProtokubeImageSource() string {
+func (a *AssetBuilder) ProtokubeImageSource() string {
 	if protokubeImageSource != "" {
 		// Avoid repeated logging
 		return protokubeImageSource
 	}
 	protokubeImageSource = os.Getenv("PROTOKUBE_IMAGE")
 	if protokubeImageSource == "" {
-		protokubeImageSource = BaseUrl() + "images/protokube.tar.gz"
+		protokubeImageSource = a.kopsDistroURL + "images/protokube.tar.gz"
 		glog.V(4).Infof("Using default protokube location: %q", protokubeImageSource)
 	} else {
 		glog.Warningf("Using protokube location from PROTOKUBE_IMAGE env var: %q", protokubeImageSource)
 	}
+
+	asset := &Asset{
+		Origin: protokubeImageSource,
+	}
+	a.Assets = append(a.Assets, asset)
 	return protokubeImageSource
 }
