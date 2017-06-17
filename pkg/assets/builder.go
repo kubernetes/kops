@@ -10,6 +10,12 @@ import (
 
 // AssetBuilder discovers and remaps assets
 type AssetBuilder struct {
+	Assets []*Asset
+}
+
+type Asset struct {
+	Origin string
+	Mirror string
 }
 
 func NewAssetBuilder() *AssetBuilder {
@@ -39,6 +45,10 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 }
 
 func (a *AssetBuilder) remapImage(image string) (string, error) {
+	asset := &Asset{}
+
+	asset.Origin = image
+
 	if strings.HasPrefix(image, "kope/dns-controller:") {
 		// To use user-defined DNS Controller:
 		// 1. DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
@@ -46,9 +56,13 @@ func (a *AssetBuilder) remapImage(image string) (string, error) {
 		// 3. make kops and create/apply cluster
 		override := os.Getenv("DNSCONTROLLER_IMAGE")
 		if override != "" {
-			return override, nil
+			image = override
 		}
 	}
+
+	asset.Mirror = image
+
+	a.Assets = append(a.Assets, asset)
 
 	return image, nil
 }
