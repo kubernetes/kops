@@ -21,6 +21,7 @@ import (
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -28,7 +29,9 @@ import (
 )
 
 type BootstrapChannelBuilder struct {
-	cluster *kops.Cluster
+	cluster      *kops.Cluster
+	templates    *assets.Templates
+	assetBuilder *assets.AssetBuilder
 }
 
 var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
@@ -56,10 +59,26 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	for key, manifest := range manifests {
 		name := b.cluster.ObjectMeta.Name + "-addons-" + key
+
+		manifestResource := b.templates.Find(manifest)
+		if manifestResource == nil {
+			return fmt.Errorf("unable to find manifest %s", manifest)
+		}
+
+		manifestBytes, err := fi.ResourceAsBytes(manifestResource)
+		if err != nil {
+			return fmt.Errorf("error reading manifest %s: %v", manifest, err)
+		}
+
+		manifestBytes, err = b.assetBuilder.RemapManifest(manifestBytes)
+		if err != nil {
+			return fmt.Errorf("error remapping manifest %s: %v", manifest, err)
+		}
+
 		tasks[name] = &fitasks.ManagedFile{
 			Name:     fi.String(name),
 			Location: fi.String(manifest),
-			Contents: &fi.ResourceHolder{Name: manifest},
+			Contents: fi.WrapResource(fi.NewBytesResource(manifestBytes)),
 		}
 	}
 

@@ -30,7 +30,6 @@ package cloudup
 import (
 	"encoding/base64"
 	"fmt"
-	"os"
 	"strings"
 	"text/template"
 
@@ -98,8 +97,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	// TODO: Only for GCE?
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
-
-	dest["DnsControllerImage"] = tf.DnsControllerImage
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
@@ -169,19 +166,6 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	argv = append(argv, "-v=2")
 
 	return argv, nil
-}
-
-// To use user-defined DNS Controller:
-// 1. DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
-// 2. export DNSCONTROLLER_IMAGE=[your docker hub repo]
-// 3. make kops and create/apply cluster
-func (tf *TemplateFunctions) DnsControllerImage() (string, error) {
-	image := os.Getenv("DNSCONTROLLER_IMAGE")
-	if image == "" {
-		return "kope/dns-controller", nil
-	} else {
-		return image, nil
-	}
 }
 
 func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
