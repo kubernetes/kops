@@ -53,6 +53,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
+	"k8s.io/kops/pkg/templates"
 )
 
 const DefaultMaxTaskDuration = 10 * time.Minute
@@ -429,7 +430,7 @@ func (c *ApplyClusterCmd) Run() error {
 		// No proto code options; no file model
 
 		case "cloudup":
-			templates, err := assets.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
+			templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
 			if err != nil {
 				return fmt.Errorf("error loading templates: %v", err)
 			}
@@ -705,7 +706,7 @@ func (c *ApplyClusterCmd) Run() error {
 		shouldPrecreateDNS = false
 
 	case TargetDryRun:
-		target = fi.NewDryRunTarget(os.Stdout)
+		target = fi.NewDryRunTarget(assetBuilder, os.Stdout)
 		dryRun = true
 
 		// Avoid making changes on a dry-run

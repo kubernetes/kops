@@ -26,11 +26,12 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"k8s.io/kops/pkg/templates"
 )
 
 type BootstrapChannelBuilder struct {
 	cluster      *kops.Cluster
-	templates    *assets.Templates
+	templates    *templates.Templates
 	assetBuilder *assets.AssetBuilder
 }
 
