@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
@@ -36,7 +37,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kops/pkg/assets"
 )
 
 var EtcdClusters = []string{"main", "events"}
@@ -53,6 +53,9 @@ type populateClusterSpec struct {
 
 	// fullCluster holds the built completed cluster spec
 	fullCluster *api.Cluster
+
+	// assetBuilder holds the assets.AssetBuilder in which we accumulate assets
+	assetBuilder *assets.AssetBuilder
 }
 
 func findModelStore() (vfs.Path, error) {
@@ -62,7 +65,7 @@ func findModelStore() (vfs.Path, error) {
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
 // We do this so that we don't need any real "brains" on the node side.
-func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
+func PopulateClusterSpec(cluster *api.Cluster, assetBuilder *assets.AssetBuilder) (*api.Cluster, error) {
 	modelStore, err := findModelStore()
 	if err != nil {
 		return nil, err
@@ -72,6 +75,7 @@ func PopulateClusterSpec(cluster *api.Cluster) (*api.Cluster, error) {
 		InputCluster: cluster,
 		ModelStore:   modelStore,
 		Models:       []string{"config"},
+		assetBuilder: assetBuilder,
 	}
 	err = c.run()
 	if err != nil {
@@ -257,6 +261,7 @@ func (c *populateClusterSpec) run() error {
 	}
 	tf := &TemplateFunctions{
 		cluster:      cluster,
+		assetBuilder: c.assetBuilder,
 		tags:         tags,
 		modelContext: modelContext,
 	}
@@ -276,6 +281,7 @@ func (c *populateClusterSpec) run() error {
 	optionsContext := &components.OptionsContext{
 		ClusterName:       cluster.ObjectMeta.Name,
 		KubernetesVersion: *sv,
+		AssetBuilder:      c.assetBuilder,
 	}
 
 	var fileModels []string

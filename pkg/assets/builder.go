@@ -3,23 +3,29 @@ package assets
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/util/pkg/vfs"
 	"os"
 	"strings"
 )
 
 // AssetBuilder discovers and remaps assets
 type AssetBuilder struct {
-	Assets []*Asset
+	Cluster *kops.Cluster
+	Assets  []*Asset
 }
 
 type Asset struct {
+	Name   string
 	Origin string
 	Mirror string
 }
 
-func NewAssetBuilder() *AssetBuilder {
-	return &AssetBuilder{}
+func NewAssetBuilder(cluster *kops.Cluster) *AssetBuilder {
+	return &AssetBuilder{
+		Cluster: cluster,
+	}
 }
 
 func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
@@ -65,4 +71,43 @@ func (a *AssetBuilder) remapImage(image string) (string, error) {
 	a.Assets = append(a.Assets, asset)
 
 	return image, nil
+}
+
+func IsBaseURL(kubernetesVersion string) bool {
+	return strings.HasPrefix(kubernetesVersion, "http:") || strings.HasPrefix(kubernetesVersion, "https:")
+}
+
+// ComponentImage returns the docker image name for the specified component
+func (a *AssetBuilder) ComponentImage(component string) (string, error) {
+	if component == "kube-dns" {
+		// TODO: Once we are shipping different versions, start to use them
+		return a.remapImage("gcr.io/google_containers/kubedns-amd64:1.3")
+	}
+
+	clusterSpec := &a.Cluster.Spec
+	if !IsBaseURL(clusterSpec.KubernetesVersion) {
+		image := "gcr.io/google_containers/" + component + ":" + "v" + clusterSpec.KubernetesVersion
+		return a.remapImage(image)
+	}
+
+	baseURL := clusterSpec.KubernetesVersion
+	baseURL = strings.TrimSuffix(baseURL, "/")
+
+	tagURL := baseURL + "/bin/linux/amd64/" + component + ".docker_tag"
+	glog.V(2).Infof("Downloading docker tag for %s from: %s", component, tagURL)
+
+	b, err := vfs.Context.ReadFile(tagURL)
+	if err != nil {
+		return "", fmt.Errorf("error reading tag file %q: %v", tagURL, err)
+	}
+	tag := strings.TrimSpace(string(b))
+	glog.V(2).Infof("Found tag %q for %q", tag, component)
+
+	imageName := "gcr.io/google_containers/" + component + ":" + tag
+	asset := &Asset{
+		Name:   imageName,
+		Origin: baseURL + "/bin/linux/amd64/" + component,
+	}
+	a.Assets = append(a.Assets, asset)
+	return imageName, nil
 }

@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 )

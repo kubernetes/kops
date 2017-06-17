@@ -25,10 +25,10 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sort"
-	"k8s.io/kops/pkg/assets"
 )
 
 // DryRunTarget is a special Target that does not execute anything, but instead tracks all changes.

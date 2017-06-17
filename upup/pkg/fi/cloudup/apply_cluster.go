@@ -37,9 +37,9 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/awsmodel"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/vspheremodel"
+	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -53,7 +53,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kops/pkg/templates"
 )
 
 const DefaultMaxTaskDuration = 10 * time.Minute
@@ -137,7 +136,9 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	c.channel = channel
 
-	err = c.upgradeSpecs()
+	assetBuilder := assets.NewAssetBuilder(c.Cluster)
+	// NB: upgradeSpecs changes c.Cluster
+	err = c.upgradeSpecs(assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -202,7 +203,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	if len(c.Assets) == 0 {
 		var baseURL string
-		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
+		if assets.IsBaseURL(cluster.Spec.KubernetesVersion) {
 			baseURL = cluster.Spec.KubernetesVersion
 		} else {
 			baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + cluster.Spec.KubernetesVersion
@@ -411,6 +412,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	tf := &TemplateFunctions{
 		cluster:        cluster,
+		assetBuilder:   assetBuilder,
 		instanceGroups: c.InstanceGroups,
 		tags:           clusterTags,
 		region:         region,
@@ -420,8 +422,6 @@ func (c *ApplyClusterCmd) Run() error {
 	l.Tags = clusterTags
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
-
-	assetBuilder := assets.NewAssetBuilder()
 
 	var fileModels []string
 	for _, m := range c.Models {
@@ -777,13 +777,13 @@ func findHash(url string) (*hashing.Hash, error) {
 }
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
-func (c *ApplyClusterCmd) upgradeSpecs() error {
+func (c *ApplyClusterCmd) upgradeSpecs(assetBuilder *assets.AssetBuilder) error {
 	//err := c.Cluster.PerformAssignments()
 	//if err != nil {
 	//	return fmt.Errorf("error populating configuration: %v", err)
 	//}
 
-	fullCluster, err := PopulateClusterSpec(c.Cluster)
+	fullCluster, err := PopulateClusterSpec(c.Cluster, assetBuilder)
 	if err != nil {
 		return err
 	}
