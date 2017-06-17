@@ -19,9 +19,17 @@ type AssetBuilder struct {
 }
 
 type Asset struct {
-	Name   string
-	Hash   string
+	// ImageName is set for container images.  It is the image we would "docker run".
+	// Because we can pull from mirrors, the name may be different than the origin.
+	ImageName string
+
+	// Origin is the canonical location of the asset
 	Origin string
+
+	// Hash is the hash of the asset
+	Hash string
+
+	// Mirror is the location of the asset we should actually read from.
 	Mirror string
 }
 
@@ -110,8 +118,8 @@ func (a *AssetBuilder) ComponentImage(component string) (string, error) {
 
 	imageName := "gcr.io/google_containers/" + component + ":" + tag
 	asset := &Asset{
-		Name:   imageName,
-		Origin: baseURL + "/bin/linux/amd64/" + component,
+		ImageName: imageName,
+		Origin:    baseURL + "/bin/linux/amd64/" + component,
 	}
 	a.addAsset(asset)
 	return imageName, nil
