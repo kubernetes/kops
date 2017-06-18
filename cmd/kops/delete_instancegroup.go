@@ -119,11 +119,6 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 		return fmt.Errorf("ClusterName is required")
 	}
 
-	if !options.Yes {
-		// Just for sanity / safety
-		return fmt.Errorf("Yes must be specified")
-	}
-
 	cluster, err := GetCluster(f, clusterName)
 	if err != nil {
 		return err
@@ -147,6 +142,13 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 		return err
 	}
 
+	fmt.Fprintf(out, "InstanceGroup %q found for deletion\n", groupName)
+
+	if !options.Yes {
+		fmt.Fprintf(out, "\nMust specify --yes to delete instancegroup\n")
+		return nil
+	}
+
 	d := &instancegroups.DeleteInstanceGroup{}
 	d.Cluster = cluster
 	d.Cloud = cloud
@@ -157,7 +159,7 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 		return err
 	}
 
-	fmt.Fprintf(out, "InstanceGroup %q deleted\n", group.ObjectMeta.Name)
+	fmt.Fprintf(out, "\nDeleted InstanceGroup: %q\n", group.ObjectMeta.Name)
 
 	return nil
 }
