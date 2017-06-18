@@ -128,12 +128,12 @@ func (t *CloudformationTarget) Finish(taskMap map[string]fi.Task) error {
 	//}
 
 	//providersByName := make(map[string]map[string]interface{})
-	//if t.Cloud.ProviderID() == fi.CloudProviderGCE {
+	//if t.Cloud.ProviderID() == kops.CloudProviderGCE {
 	//	providerGoogle := make(map[string]interface{})
 	//	providerGoogle["project"] = t.Project
 	//	providerGoogle["region"] = t.Region
 	//	providersByName["google"] = providerGoogle
-	//} else if t.Cloud.ProviderID() == fi.CloudProviderAWS {
+	//} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 	//	providerAWS := make(map[string]interface{})
 	//	providerAWS["region"] = t.Region
 	//	providersByName["aws"] = providerAWS

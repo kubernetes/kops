@@ -23,7 +23,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 	"net/url"
 )
@@ -241,8 +240,14 @@ func FindKopsVersionSpec(versions []KopsVersionSpec, version semver.Version) *Ko
 	return nil
 }
 
+type CloudProviderID string
+
+const CloudProviderAWS CloudProviderID = "aws"
+const CloudProviderGCE CloudProviderID = "gce"
+const CloudProviderVSphere CloudProviderID = "vsphere"
+
 // FindImage returns the image for the cloudprovider, or nil if none found
-func (c *Channel) FindImage(provider fi.CloudProviderID, kubernetesVersion semver.Version) *ChannelImageSpec {
+func (c *Channel) FindImage(provider CloudProviderID, kubernetesVersion semver.Version) *ChannelImageSpec {
 	var matches []*ChannelImageSpec
 
 	for _, image := range c.Spec.Images {

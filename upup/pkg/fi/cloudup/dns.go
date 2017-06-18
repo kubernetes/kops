@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/dns-controller/pkg/dns"
-	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops"
 	kopsdns "k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
@@ -39,7 +39,7 @@ const (
 	PlaceholderTTL = 10
 )
 
-func findZone(cluster *api.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
+func findZone(cluster *kops.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 	dns, err := cloud.DNS()
 	if err != nil {
 		return nil, fmt.Errorf("error building DNS provider: %v", err)
@@ -81,7 +81,7 @@ func findZone(cluster *api.Cluster, cloud fi.Cloud) (dnsprovider.Zone, error) {
 	return zone, nil
 }
 
-func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
+func validateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 	kopsModelContext := &model.KopsModelContext{
 		Cluster: cluster,
 		// We are not initializing a lot of the fields here; revisit once UsePrivateDNS is "real"
@@ -121,7 +121,7 @@ func validateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	return nil
 }
 
-func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
+func precreateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 	// TODO: Move to update
 	if !featureflag.DNSPreCreate.Enabled() {
 		glog.V(4).Infof("Skipping DNS record pre-creation because feature flag not enabled")
@@ -164,7 +164,7 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	recordsMap := make(map[string]dnsprovider.ResourceRecordSet)
 	// vSphere provider uses CoreDNS, which doesn't have rrs.List() function supported.
 	// Thus we use rrs.Get() to check every dnsHostname instead
-	if cloud.ProviderID() != fi.CloudProviderVSphere {
+	if cloud.ProviderID() != kops.CloudProviderVSphere {
 		// TODO: We should change the filter to be a suffix match instead
 		//records, err := rrs.List("", "")
 		records, err := rrs.List()
@@ -186,7 +186,7 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 	for _, dnsHostname := range dnsHostnames {
 		dnsHostname = dns.EnsureDotSuffix(dnsHostname)
 		found := false
-		if cloud.ProviderID() != fi.CloudProviderVSphere {
+		if cloud.ProviderID() != kops.CloudProviderVSphere {
 			dnsRecord := recordsMap["A::"+dnsHostname]
 			if dnsRecord != nil {
 				rrdatas := dnsRecord.Rrdatas()
@@ -243,7 +243,7 @@ func precreateDNS(cluster *api.Cluster, cloud fi.Cloud) error {
 }
 
 // buildPrecreateDNSHostnames returns the hostnames we should precreate
-func buildPrecreateDNSHostnames(cluster *api.Cluster) []string {
+func buildPrecreateDNSHostnames(cluster *kops.Cluster) []string {
 	dnsInternalSuffix := ".internal." + cluster.ObjectMeta.Name
 
 	var dnsHostnames []string
