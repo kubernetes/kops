@@ -39,6 +39,31 @@ NODEUP_URL={{ NodeUpSource }}
 NODEUP_HASH={{ NodeUpSourceHash }}
 
 {{ S3Env }}
+{{ ProxyEnv }}
+
+if [[ ! -z $HTTP_PROXY ]] || [[ ! -z $HTTPS_PROXY ]]; then
+  printf "\nAcquire::http::Proxy \\\"$HTTP_PROXY\\\";" >> /etc/apt/apt.conf.d/01proxy
+
+  printf "\nhttp_proxy=$HTTP_PROXY" >> /etc/wgetrc
+  printf "\nhttps_proxy=$HTTPS_PROXY" >> /etc/wgetrc
+  printf "\nuse_proxy=on" >> /etc/wgetrc
+
+  echo HTTP_PROXY=$HTTP_PROXY >> /etc/environment
+  echo HTTPS_PROXY=$HTTPS_PROXY >> /etc/environment
+  echo NO_PROXY=$NO_PROXY >> /etc/environment
+
+  mkdir -p /etc/systemd/system/docker.service.d
+  printf "[Service]\n" >> /etc/systemd/system/docker.service.d/http-proxy.conf
+  printf "Environment=\"HTTP_PROXY=$HTTP_PROXY\" \"HTTPS_PROXY=$HTTPS_PROXY\" \"NO_PROXY=$NO_PROXY\"\n" >> /etc/systemd/system/docker.service.d/http-proxy.conf
+
+  printf "DOCKER_OPTS=\"--config=/root/.docker\"\n" >> /etc/default/docker
+  printf "HTTP_PROXY=$HTTP_PROXY\n" >> /etc/default/docker
+  printf "HTTPS_PROXY=$HTTPS_PROXY\n" >> /etc/default/docker
+  printf "NO_PROXY=$NO_PROXY\n" >> /etc/default/docker
+
+  systemctl daemon-reload
+  systemctl restart docker
+fi
 
 function ensure-install-dir() {
   INSTALL_DIR="/var/cache/kubernetes-install"

@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"os"
 )
 
 // KubeAPIServerBuilder install kube-apiserver (just the manifest at the moment)
@@ -158,6 +159,14 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 				HostPort:      8080,
 			},
 		},
+	}
+
+	if os.Getenv("HTTP_PROXY") != "" || os.Getenv("HTTPS_PROXY") != "" {
+		container.Env = []v1.EnvVar{
+			{Name: "HTTP_PROXY", Value: os.Getenv("HTTP_PROXY")},
+			{Name: "HTTPS_PROXY", Value: os.Getenv("HTTPS_PROXY")},
+			{Name: "NO_PROXY", Value: os.Getenv("NO_PROXY")},
+		}
 	}
 
 	for _, path := range b.SSLHostPaths() {

@@ -100,6 +100,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
 
 	dest["DnsControllerImage"] = tf.DnsControllerImage
+
+	dest["ProxyEnv"] = tf.ProxyEnv
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
@@ -203,4 +205,16 @@ func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
 	argv = append(argv, "--source=ingress")
 
 	return argv, nil
+}
+
+func (tf *TemplateFunctions) ProxyEnv() map[string]string {
+	if os.Getenv("CLUSTER_HTTP_PROXY") != "" || os.Getenv("CLUSTER_HTTPS_PROXY") != "" {
+		return map[string]string {
+			"HTTP_PROXY": os.Getenv("CLUSTER_HTTP_PROXY"),
+			"HTTPS_PROXY": os.Getenv("CLUSTER_HTTPS_PROXY"),
+			"NO_PROXY": os.Getenv("CLUSTER_NO_PROXY"),
+		}
+	}
+
+	return nil
 }
