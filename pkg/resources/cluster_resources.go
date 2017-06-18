@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -63,11 +64,11 @@ type ClusterResources struct {
 
 func (c *ClusterResources) ListResources() (map[string]*ResourceTracker, error) {
 	switch c.Cloud.ProviderID() {
-	case fi.CloudProviderAWS:
+	case kops.CloudProviderAWS:
 		return c.listResourcesAWS()
-	case fi.CloudProviderGCE:
+	case kops.CloudProviderGCE:
 		return c.listResourcesGCE()
-	case fi.CloudProviderVSphere:
+	case kops.CloudProviderVSphere:
 		return c.listResourcesVSphere()
 	default:
 		return nil, fmt.Errorf("Delete on clusters on %q not (yet) supported", c.Cloud.ProviderID())
