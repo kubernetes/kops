@@ -83,12 +83,12 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			sort.Strings(allMembers)
 
-			switch fi.CloudProviderID(b.Cluster.Spec.CloudProvider) {
-			case fi.CloudProviderAWS:
+			switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
+			case kops.CloudProviderAWS:
 				b.addAWSVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
-			case fi.CloudProviderGCE:
+			case kops.CloudProviderGCE:
 				b.addGCEVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
-			case fi.CloudProviderVSphere:
+			case kops.CloudProviderVSphere:
 				b.addVSphereVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.CloudProvider)
@@ -144,7 +144,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 	//// The name is normally something like "us-east1-a", and the dashes are particularly expensive
 	//// because of the escaping needed (3 characters for each dash)
 	//switch tf.cluster.Spec.CloudProvider {
-	//case string(fi.CloudProviderGCE):
+	//case string(kops.CloudProviderGCE):
 	//	// TODO: If we're still struggling for size, we don't need to put ourselves in the allmembers list
 	//	for i := range allMembers {
 	//		allMembers[i] = strings.Replace(allMembers[i], "-", "", -1)

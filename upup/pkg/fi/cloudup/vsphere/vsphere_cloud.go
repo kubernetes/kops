@@ -62,8 +62,8 @@ const (
 var _ fi.Cloud = &VSphereCloud{}
 
 // ProviderID returns ID for vSphere type cloud provider.
-func (c *VSphereCloud) ProviderID() fi.CloudProviderID {
-	return fi.CloudProviderVSphere
+func (c *VSphereCloud) ProviderID() kops.CloudProviderID {
+	return kops.CloudProviderVSphere
 }
 
 // NewVSphereCloud returns VSphereCloud instance for given ClusterSpec.
