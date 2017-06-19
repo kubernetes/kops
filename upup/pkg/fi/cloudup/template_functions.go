@@ -30,16 +30,16 @@ package cloudup
 import (
 	"encoding/base64"
 	"fmt"
-	"os"
-	"strings"
-	"text/template"
-
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"os"
+	"strconv"
+	"strings"
+	"text/template"
 )
 
 type TemplateFunctions struct {
@@ -102,6 +102,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["Region"] = func() string {
 		return tf.region
 	}
+
+	dest["ProxyEnv"] = tf.ProxyEnv
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
@@ -196,4 +198,31 @@ func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
 	argv = append(argv, "--source=ingress")
 
 	return argv, nil
+}
+
+func (tf *TemplateFunctions) ProxyEnv() (map[string]string, error) {
+	envs := map[string]string{}
+	proxies := tf.cluster.Spec.EgressProxy
+	if proxies == nil {
+		return envs, nil
+	}
+	httpProxy := proxies.HTTPProxy
+	if httpProxy.Host != "" {
+		url := "http://"
+		if httpProxy.User != "" {
+			url += httpProxy.User
+			if httpProxy.Password != "" {
+				url += ":" + httpProxy.Password
+			}
+			url += "@"
+		}
+		url += httpProxy.Host + ":" + strconv.Itoa(httpProxy.Port)
+		envs["http_proxy"] = url
+		envs["https_proxy"] = url
+		envs["ftp_proxy"] = url
+	}
+	if proxies.ProxyExcludes != "" {
+		envs["no_proxy"] = proxies.ProxyExcludes
+	}
+	return envs, nil
 }

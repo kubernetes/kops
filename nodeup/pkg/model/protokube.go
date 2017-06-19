@@ -259,6 +259,7 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 
 	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("S3_ENDPOINT") != "" {
+
 		buffer.WriteString(" ")
 		buffer.WriteString("-e S3_ENDPOINT=")
 		buffer.WriteString("'")
@@ -278,6 +279,22 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 		buffer.WriteString("'")
 		buffer.WriteString(" ")
 	}
+
+	buffer.WriteString(" -e http_proxy=")
+	buffer.WriteString(os.Getenv("http_proxy"))
+	buffer.WriteString(" ")
+	buffer.WriteString(" -e http_proxy=")
+	buffer.WriteString(os.Getenv("http_proxy"))
+	buffer.WriteString(" ")
+	buffer.WriteString(" -e https_proxy=")
+	buffer.WriteString(os.Getenv("https_proxy"))
+	buffer.WriteString(" ")
+	buffer.WriteString(" -e ftp_proxy=")
+	buffer.WriteString(os.Getenv("ftp_proxy"))
+	buffer.WriteString(" ")
+	buffer.WriteString(" -e no_proxy=")
+	buffer.WriteString(os.Getenv("no_proxy"))
+	buffer.WriteString(" ")
 
 	return buffer.String()
 }
