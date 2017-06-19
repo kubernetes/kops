@@ -56,9 +56,9 @@ admin@ip-172-20-36-161:~$ exit
 $ scp -r admin@<master-node>:backup-events/ .
 ```
 
-## 2 - Add a new master
+## 2 - Create instance groups
 
-### a - Create the instance group
+### a - Create new master instance group
 
 Create 1 kops instance group for the first one of your new masters, in
 a different AZ from the existing one.
@@ -70,7 +70,19 @@ $ kops create instancegroup master-<availability-zone2> --subnet <availability-z
  * ``maxSize`` and ``minSize`` should be 1,
  * only one zone should be listed.
 
-### b - Reference the new masters in your cluster configuration
+### b - Create third master instance group
+
+Instance group for the third master, in a different AZ from the existing one, is
+also required. However, real EC2 instance is not required until the second master launches.
+
+```bash
+$ kops create instancegroup master-<availability-zone3> --subnet <availability-zone3> --role Master
+```
+
+ * ``maxSize`` and ``minSize`` should be **0**,
+ * only one zone should be listed.
+
+### c - Reference the new masters in your cluster configuration
 
 *kops will refuse to have only 2 members in the etcd clusters, so we have to
 reference a third one, even if we have not created it yet.*
@@ -78,10 +90,20 @@ reference a third one, even if we have not created it yet.*
 ```bash
 $ kops edit cluster example.com
 ```
+
  * In ``.spec.etcdClusters`` 2 new members in each cluster, one for each new
  availability zone.
 
-### c - Add a new member to the etcd clusters
+```yaml
+    - instanceGroup: master-<availability-zone2>
+      name: <availability-zone2>
+    - instanceGroup: master-<availability-zone3>
+      name: <availability-zone3>
+```
+
+## 3 - Add a new master
+
+### a - Add a new member to the etcd clusters
 
 **The clusters will stop to work until the new member is started**.
 
@@ -90,7 +112,7 @@ $ kubectl --namespace=kube-system exec etcd-server-ip-172-20-36-161.ec2.internal
 $ kubectl --namespace=kube-system exec etcd-server-events-ip-172-20-36-161.ec2.internal -- etcdctl --endpoint http://127.0.0.1:4002 member add etcd-events-<availability-zone2> http://etcd-events-<availability-zone2>.internal.example.com:2381
 ```
 
-### d - Launch the new master
+### b - Launch the new master
 
 ```bash
 $ kops update cluster example.com --yes
@@ -138,19 +160,17 @@ Restart protokube on the new master:
 root@ip-172-20-116-230:~# systemctl start protokube
 ```
 
-## 3 - Add the third master
+## 4 - Add the third master
 
-### a - Create the instance group
+### a - Edit instance group
 
-Create 1 kops instance group for the third master, in
-a different AZ from the existing ones.
+Prepare to launch the third master instance:
 
 ```bash
-$ kops create instancegroup master-<availability-zone3> --subnet <availability-zone3> --role Master
+$ kops edit instancegroup master-<availability-zone3>
 ```
 
- * ``maxSize`` and ``minSize`` should be 1,
- * only one zone should be listed.
+* Replace ``maxSize`` and ``minSize`` values to **1**.
 
 ### b - Add a new member to the etcd clusters
 
@@ -205,7 +225,7 @@ $ kops create instancegroup master-<availability-zone3> --subnet <availability-z
  root@ip-172-20-139-130:~# systemctl start protokube
  ```
 
-## 4 - Cleanup
+## 5 - Cleanup
 
 To be sure that everything runs smoothly and is setup correctly, it is advised
 to terminate the masters one after the other (always keeping 2 of them up and
