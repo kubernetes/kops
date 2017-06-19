@@ -18,10 +18,12 @@ package cloudup
 
 import (
 	"fmt"
+	"net"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/vfs"
-	"strings"
 
 	kopsversion "k8s.io/kops"
 )
@@ -81,6 +83,11 @@ func PerformAssignments(c *kops.Cluster) error {
 		return err
 	}
 
+	c.Spec.EgressProxy, err = assignProxy(c)
+	if err != nil {
+		return err
+	}
+
 	return ensureKubernetesVersion(c)
 }
 
@@ -128,4 +135,85 @@ func FindLatestKubernetesVersion() (string, error) {
 	}
 	latestVersion := strings.TrimSpace(string(b))
 	return latestVersion, nil
+}
+
+func assignProxy(cluster *kops.Cluster) (*kops.EgressProxySpec, error) {
+
+	egressProxy := cluster.Spec.EgressProxy
+	// Add default no_proxy values if we are using a http proxy
+	if egressProxy != nil {
+
+		var egressSlice []string
+		if egressProxy.ProxyExcludes != "" {
+			egressSlice = strings.Split(egressProxy.ProxyExcludes, ",")
+		}
+
+		ip, _, err := net.ParseCIDR(cluster.Spec.NonMasqueradeCIDR)
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse Non Masquerade CIDR")
+		}
+
+		firstIP, err := incrementIP(ip, cluster.Spec.NonMasqueradeCIDR)
+		if err != nil {
+			return nil, fmt.Errorf("unable to get first ip address in Non Masquerade CIDR")
+		}
+
+		// run through the basic list
+		for _, exclude := range []string{
+			"127.0.0.1",
+			"localhost",
+			cluster.Spec.ClusterDNSDomain, // TODO we may want this for public loadbalancers
+			cluster.Spec.MasterPublicName,
+			cluster.ObjectMeta.Name,
+			firstIP,
+			cluster.Spec.NonMasqueradeCIDR,
+		} {
+			if exclude == "" {
+				continue
+			}
+			if !strings.Contains(egressProxy.ProxyExcludes, exclude) {
+				egressSlice = append(egressSlice, exclude)
+			}
+		}
+
+		awsNoProxy := "169.254.169.254"
+
+		if cluster.Spec.CloudProvider == "aws" && !strings.Contains(cluster.Spec.EgressProxy.ProxyExcludes, awsNoProxy) {
+			egressSlice = append(egressSlice, awsNoProxy)
+		}
+
+		// the kube-apiserver will need to talk to kubelets on their node IP addresses port 10250
+		// for pod logs to be available via the api
+		if cluster.Spec.NetworkCIDR != "" {
+			if !strings.Contains(cluster.Spec.EgressProxy.ProxyExcludes, cluster.Spec.NetworkCIDR) {
+				egressSlice = append(egressSlice, cluster.Spec.NetworkCIDR)
+			}
+		} else {
+			glog.Warningf("No NetworkCIDR defined (yet), not adding to egressProxy.excludes")
+		}
+
+		egressProxy.ProxyExcludes = strings.Join(egressSlice, ",")
+		glog.V(8).Infof("Completed setting up Proxy excludes as follows: %q", egressProxy.ProxyExcludes)
+	} else {
+		glog.V(8).Info("Not setting up Proxy Excludes")
+	}
+
+	return egressProxy, nil
+}
+
+func incrementIP(ip net.IP, cidr string) (string, error) {
+	_, ipNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return "", err
+	}
+	for i := len(ip) - 1; i >= 0; i-- {
+		ip[i]++
+		if ip[i] != 0 {
+			break
+		}
+	}
+	if !ipNet.Contains(ip) {
+		return "", fmt.Errorf("overflowed CIDR while incrementing IP")
+	}
+	return ip.String(), nil
 }

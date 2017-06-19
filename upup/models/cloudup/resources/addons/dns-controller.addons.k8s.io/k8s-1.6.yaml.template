@@ -38,6 +38,13 @@ spec:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
 {{ end }}
+{{- if .EgressProxy }}
+        env:
+{{ range $name, $value := ProxyEnv }}
+        - name: {{ $name }}
+          value: {{ $value }}
+{{ end }}
+{{- end }}
         resources:
           requests:
             cpu: 50m
