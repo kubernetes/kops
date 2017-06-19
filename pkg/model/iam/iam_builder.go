@@ -308,7 +308,11 @@ var _ fi.Resource = &IAMPolicyResource{}
 var _ fi.HasDependencies = &IAMPolicyResource{}
 
 func (b *IAMPolicyResource) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	return []fi.Task{b.DNSZone}
+	var deps []fi.Task
+	if b.DNSZone != nil {
+		deps = append(deps, b.DNSZone)
+	}
+	return deps
 }
 
 // Open produces the AWS IAM policy for the given role

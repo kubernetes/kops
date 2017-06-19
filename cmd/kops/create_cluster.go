@@ -34,6 +34,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -802,7 +803,12 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		} else {
 			switch cluster.Spec.Topology.Masters {
 			case api.TopologyPublic:
-				cluster.Spec.API.DNS = &api.DNSAccessSpec{}
+				if dns.IsGossipHostname(cluster.Name) {
+					// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
+					cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+				} else {
+					cluster.Spec.API.DNS = &api.DNSAccessSpec{}
+				}
 
 			case api.TopologyPrivate:
 				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
