@@ -83,7 +83,6 @@ func (b *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		"-v", "/var/run/dbus:/var/run/dbus",
 		"-v", "/run/systemd:/run/systemd",
 		"--net=host",
-		"--privileged",
 		"--env", "KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
 		b.ProtokubeEnvironmentVariables(),
 		b.ProtokubeImageName(),
