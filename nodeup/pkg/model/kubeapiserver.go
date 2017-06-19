@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+	"strconv"
 )
 
 // KubeAPIServerBuilder install kube-apiserver (just the manifest at the moment)
@@ -190,6 +191,41 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		// 'Device or resource busy' error
 		auditLogPathDir := filepath.Dir(*auditLogPath)
 		addHostPathMapping(pod, container, "auditlogpathdir", auditLogPathDir).ReadOnly = false
+	}
+
+	if b.Cluster.Spec.EgressProxy != nil {
+		proxies := b.Cluster.Spec.EgressProxy
+		httpProxy := proxies.HTTPProxy
+		if httpProxy.Host != "" {
+			url := "http://"
+			if httpProxy.User != "" {
+				url += httpProxy.User
+				if httpProxy.Password != "" {
+					url += ":" + httpProxy.Password
+				}
+				url += "@"
+			}
+			url += httpProxy.Host + ":" + strconv.Itoa(httpProxy.Port)
+			container.Env = append(container.Env,
+				v1.EnvVar{
+					Name:  "http_proxy",
+					Value: url,
+				},
+				v1.EnvVar{
+					Name:  "https_proxy",
+					Value: url,
+				},
+				v1.EnvVar{
+					Name:  "ftp_proxy",
+					Value: url,
+				})
+		}
+		if proxies.ProxyExcludes != "" {
+			x := v1.EnvVar{
+				Name:  "no_proxy",
+				Value: proxies.ProxyExcludes}
+			container.Env = append(container.Env, x)
+		}
 	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)

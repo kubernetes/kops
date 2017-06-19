@@ -49,7 +49,11 @@ spec:
           - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"min":2}}
           - --logtostderr=true
           - --v=2
-
+          env:
+{{ range $name, $value := ProxyEnv }}
+          - name: {{ $name }}
+            value: {{ $value }}
+{{ end }}
 ---
 
 apiVersion: extensions/v1beta1
@@ -120,6 +124,10 @@ spec:
         env:
         - name: PROMETHEUS_PORT
           value: "10055"
+{{ range $name, $value := ProxyEnv }}
+        - name: {{ $name }}
+          value: {{ $value }}
+{{ end }}
         ports:
         - containerPort: 10053
           name: dns-local
