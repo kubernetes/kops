@@ -276,6 +276,9 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 	var buffer bytes.Buffer
 
+	// TODO write out an environments file for this.  This is getting a tad long.
+
+	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("AWS_REGION") != "" {
 		buffer.WriteString(" ")
 		buffer.WriteString("-e 'AWS_REGION=")
@@ -284,7 +287,6 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 		buffer.WriteString(" ")
 	}
 
-	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("S3_ENDPOINT") != "" {
 		buffer.WriteString(" ")
 		buffer.WriteString("-e S3_ENDPOINT=")
@@ -306,7 +308,19 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 		buffer.WriteString(" ")
 	}
 
+	t.writeProxyEnvVars(&buffer)
+
 	return buffer.String()
+}
+
+func (t *ProtokubeBuilder) writeProxyEnvVars(buffer *bytes.Buffer) {
+	for _, envVar := range getProxyEnvVars(t.Cluster.Spec.EgressProxy) {
+		buffer.WriteString(" -e ")
+		buffer.WriteString(envVar.Name)
+		buffer.WriteString("=")
+		buffer.WriteString(envVar.Value)
+		buffer.WriteString(" ")
+	}
 }
 
 // buildCertificateTask is responsible for build a certificate request task
