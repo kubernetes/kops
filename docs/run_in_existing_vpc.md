@@ -146,3 +146,7 @@ Please note:
   in their route table.  Private subnets should not have public IPs, and will typically have a NAT gateway
   configured as their default route.
 * kops won't create a route-table at all if we're not creating subnets.
+
+### Proxy VPC Egress
+
+See [HTTP Forward Proxy Support](http_proxy.md)

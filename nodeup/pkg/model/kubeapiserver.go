@@ -223,6 +223,7 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 				HostPort:      8080,
 			},
 		},
+		Env: getProxyEnvVars(b.Cluster.Spec.EgressProxy),
 	}
 
 	for _, path := range b.SSLHostPaths() {
