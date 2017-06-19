@@ -23,6 +23,7 @@ import (
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"os"
+	"strconv"
 	"text/template"
 )
 
@@ -33,7 +34,7 @@ type BootstrapScript struct {
 	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
 }
 
-func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHolder, error) {
+func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, ps *kops.EgressProxySpec) (*fi.ResourceHolder, error) {
 	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
 		// Bastions are just bare machines (currently), used as SSH jump-hosts
 		return nil, nil
@@ -70,6 +71,40 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHo
 					os.Getenv("S3_SECRET_ACCESS_KEY"))
 			}
 			return ""
+		},
+
+		"ProxyEnv": func() string {
+			scriptSnippet := ""
+
+			if ps != nil && ps.HTTPProxy.Host != "" {
+				httpProxyUrl := "http://"
+				if ps.HTTPProxy.User != "" {
+
+					httpProxyUrl += ps.HTTPProxy.User
+					if ps.HTTPProxy.Password != "" {
+						httpProxyUrl += "@" + ps.HTTPProxy.Password
+					}
+				}
+				httpProxyUrl += ps.HTTPProxy.Host + ":" + strconv.Itoa(ps.HTTPProxy.Port)
+				scriptSnippet =
+					"export http_proxy=" + httpProxyUrl + "\n" +
+						"export https_proxy=${http_proxy}\n" +
+						"export ftp_proxy=${http_proxy}\n" +
+						"export no_proxy=" + ps.ProxyExcludes + "\n" +
+						"echo \"export http_proxy=${http_proxy}\" >> /etc/default/docker\n" +
+						"echo \"export https_proxy=${http_proxy}\" >> /etc/default/docker\n" +
+						"echo \"export ftp_proxy=${http_proxy}\" >> /etc/default/docker\n" +
+						"echo \"export no_proxy=${no_proxy}\" >> /etc/default/docker\n" +
+						"echo \"export http_proxy=${http_proxy}\" >> /etc/environment\n" +
+						"echo \"export https_proxy=${http_proxy}\" >> /etc/environment\n" +
+						"echo \"export ftp_proxy=${http_proxy}\" >> /etc/environment\n" +
+						"echo \"export no_proxy=${no_proxy}\" >> /etc/environment\n" +
+						"echo DefaultEnvironment=\\\"http_proxy=${http_proxy}\\\" \\\"https_proxy=${http_proxy}\\\" \\\"ftp_proxy=${http_proxy}\\\" \\\"no_proxy=${no_proxy}\\\" >> /etc/systemd/system.conf\n" +
+						"systemctl daemon-reload\n" +
+						"systemctl daemon-reexec\n" +
+						"echo \"Acquire::http::Proxy \\\"${http_proxy}\\\";\" > /etc/apt/apt.conf.d/30proxy\n\n"
+			}
+			return scriptSnippet
 		},
 	}
 

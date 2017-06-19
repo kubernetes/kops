@@ -50,7 +50,11 @@ spec:
           - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
           - --logtostderr=true
           - --v=2
-
+        env:
+        {{ range $name, $value := ProxyEnv }}
+        - name: {{ $name }}
+          value: {{ $value }}
+        {{ end }}
 ---
 
 apiVersion: extensions/v1beta1

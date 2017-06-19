@@ -31,6 +31,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -100,6 +101,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
 
 	dest["DnsControllerImage"] = tf.DnsControllerImage
+
+	dest["ProxyEnv"] = tf.ProxyEnv
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
@@ -203,4 +206,31 @@ func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
 	argv = append(argv, "--source=ingress")
 
 	return argv, nil
+}
+
+func (tf *TemplateFunctions) ProxyEnv() (map[string]string, error) {
+	envs := map[string]string{}
+	proxies := tf.cluster.Spec.EgressProxy
+	if proxies == nil {
+		return envs, nil
+	}
+	httpProxy := proxies.HTTPProxy
+	if httpProxy.Host != "" {
+		url := "http://"
+		if httpProxy.User != "" {
+			url += httpProxy.User
+			if httpProxy.Password != "" {
+				url += ":" + httpProxy.Password
+			}
+			url += "@"
+		}
+		url += httpProxy.Host + ":" + strconv.Itoa(httpProxy.Port)
+		envs["http_proxy"] = url
+		envs["https_proxy"] = url
+		envs["ftp_proxy"] = url
+	}
+	if proxies.ProxyExcludes != "" {
+		envs["no_proxy"] = proxies.ProxyExcludes
+	}
+	return envs, nil
 }

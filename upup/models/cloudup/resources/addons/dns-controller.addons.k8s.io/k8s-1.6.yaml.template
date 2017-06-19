@@ -38,10 +38,16 @@ spec:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
 {{ end }}
+        env:
+{{ range $name, $value := ProxyEnv }}
+        - name: {{ $name }}
+          value: {{ $value }}
+{{ end }}
         resources:
           requests:
             cpu: 50m
             memory: 50Mi
+
 
 ---
 

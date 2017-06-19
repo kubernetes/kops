@@ -67,6 +67,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_DNSSpec_To_v1alpha2_DNSSpec,
 		Convert_v1alpha2_DockerConfig_To_kops_DockerConfig,
 		Convert_kops_DockerConfig_To_v1alpha2_DockerConfig,
+		Convert_v1alpha2_EgressProxySpec_To_kops_EgressProxySpec,
+		Convert_kops_EgressProxySpec_To_v1alpha2_EgressProxySpec,
 		Convert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec,
 		Convert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec,
 		Convert_v1alpha2_EtcdMemberSpec_To_kops_EtcdMemberSpec,
@@ -83,6 +85,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_FederationSpec_To_v1alpha2_FederationSpec,
 		Convert_v1alpha2_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec,
 		Convert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec,
+		Convert_v1alpha2_HTTPProxySpec_To_kops_HTTPProxySpec,
+		Convert_kops_HTTPProxySpec_To_v1alpha2_HTTPProxySpec,
 		Convert_v1alpha2_HookSpec_To_kops_HookSpec,
 		Convert_kops_HookSpec_To_v1alpha2_HookSpec,
 		Convert_v1alpha2_InstanceGroup_To_kops_InstanceGroup,
@@ -470,6 +474,15 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.SSHAccess = in.SSHAccess
+	if in.EgressProxy != nil {
+		in, out := &in.EgressProxy, &out.EgressProxy
+		*out = new(kops.EgressProxySpec)
+		if err := Convert_v1alpha2_EgressProxySpec_To_kops_EgressProxySpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.EgressProxy = nil
+	}
 	out.KubernetesAPIAccess = in.KubernetesAPIAccess
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
@@ -651,6 +664,15 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.SSHAccess = in.SSHAccess
+	if in.EgressProxy != nil {
+		in, out := &in.EgressProxy, &out.EgressProxy
+		*out = new(EgressProxySpec)
+		if err := Convert_kops_EgressProxySpec_To_v1alpha2_EgressProxySpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.EgressProxy = nil
+	}
 	out.KubernetesAPIAccess = in.KubernetesAPIAccess
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
@@ -898,6 +920,30 @@ func Convert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfig, o
 	return autoConvert_kops_DockerConfig_To_v1alpha2_DockerConfig(in, out, s)
 }
 
+func autoConvert_v1alpha2_EgressProxySpec_To_kops_EgressProxySpec(in *EgressProxySpec, out *kops.EgressProxySpec, s conversion.Scope) error {
+	if err := Convert_v1alpha2_HTTPProxySpec_To_kops_HTTPProxySpec(&in.HTTPProxy, &out.HTTPProxy, s); err != nil {
+		return err
+	}
+	out.ProxyExcludes = in.ProxyExcludes
+	return nil
+}
+
+func Convert_v1alpha2_EgressProxySpec_To_kops_EgressProxySpec(in *EgressProxySpec, out *kops.EgressProxySpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_EgressProxySpec_To_kops_EgressProxySpec(in, out, s)
+}
+
+func autoConvert_kops_EgressProxySpec_To_v1alpha2_EgressProxySpec(in *kops.EgressProxySpec, out *EgressProxySpec, s conversion.Scope) error {
+	if err := Convert_kops_HTTPProxySpec_To_v1alpha2_HTTPProxySpec(&in.HTTPProxy, &out.HTTPProxy, s); err != nil {
+		return err
+	}
+	out.ProxyExcludes = in.ProxyExcludes
+	return nil
+}
+
+func Convert_kops_EgressProxySpec_To_v1alpha2_EgressProxySpec(in *kops.EgressProxySpec, out *EgressProxySpec, s conversion.Scope) error {
+	return autoConvert_kops_EgressProxySpec_To_v1alpha2_EgressProxySpec(in, out, s)
+}
+
 func autoConvert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	if in.Members != nil {
@@ -1104,6 +1150,30 @@ func autoConvert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in
 
 func Convert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in *kops.FlannelNetworkingSpec, out *FlannelNetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in, out, s)
+}
+
+func autoConvert_v1alpha2_HTTPProxySpec_To_kops_HTTPProxySpec(in *HTTPProxySpec, out *kops.HTTPProxySpec, s conversion.Scope) error {
+	out.Host = in.Host
+	out.Port = in.Port
+	out.User = in.User
+	out.Password = in.Password
+	return nil
+}
+
+func Convert_v1alpha2_HTTPProxySpec_To_kops_HTTPProxySpec(in *HTTPProxySpec, out *kops.HTTPProxySpec, s conversion.Scope) error {
+	return autoConvert_v1alpha2_HTTPProxySpec_To_kops_HTTPProxySpec(in, out, s)
+}
+
+func autoConvert_kops_HTTPProxySpec_To_v1alpha2_HTTPProxySpec(in *kops.HTTPProxySpec, out *HTTPProxySpec, s conversion.Scope) error {
+	out.Host = in.Host
+	out.Port = in.Port
+	out.User = in.User
+	out.Password = in.Password
+	return nil
+}
+
+func Convert_kops_HTTPProxySpec_To_v1alpha2_HTTPProxySpec(in *kops.HTTPProxySpec, out *HTTPProxySpec, s conversion.Scope) error {
+	return autoConvert_kops_HTTPProxySpec_To_v1alpha2_HTTPProxySpec(in, out, s)
 }
 
 func autoConvert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec, s conversion.Scope) error {
@@ -1476,7 +1546,6 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeP
 	out.CPURequest = in.CPURequest
 	out.LogLevel = in.LogLevel
 	out.ClusterCIDR = in.ClusterCIDR
-	// WARNING: in.HostnameOverride requires manual conversion: does not exist in peer-type
 	out.Master = in.Master
 	return nil
 }
