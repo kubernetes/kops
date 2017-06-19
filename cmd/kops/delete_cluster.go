@@ -210,6 +210,6 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		glog.Warningf("error removing kube config: %v", err)
 	}
 
-	fmt.Fprintf(out, "\nCluster deleted\n")
+	fmt.Fprintf(out, "\nCluster %s deleted\n", clusterName)
 	return nil
 }
