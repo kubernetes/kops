@@ -186,6 +186,7 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 			InitialDelaySeconds: 15,
 			TimeoutSeconds:      15,
 		},
+		Env: getProxyEnvVars(b.Cluster.Spec.EgressProxy),
 	}
 
 	for _, path := range b.SSLHostPaths() {

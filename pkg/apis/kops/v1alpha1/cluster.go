@@ -212,6 +212,9 @@ type ClusterSpec struct {
 	//KubeProxyTestArgs             string `json:",omitempty"`
 	//KubeProxyTestLogLevel         string `json:",omitempty"`
 
+	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
+	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
+
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 
@@ -369,4 +372,17 @@ type ClusterZoneSpec struct {
 	ProviderID string `json:"id,omitempty"`
 
 	Egress string `json:"egress,omitempty"`
+}
+
+type EgressProxySpec struct {
+	HTTPProxy     HTTPProxy `json:"httpProxy,omitempty"`
+	ProxyExcludes string    `json:"excludes,omitempty"`
+}
+
+type HTTPProxy struct {
+	Host string `json:"host,omitempty"`
+	Port int    `json:"port,omitempty"`
+	// TODO #3070
+	// User     string `json:"user,omitempty"`
+	// Password string `json:"password,omitempty"`
 }
