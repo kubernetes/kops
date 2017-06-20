@@ -335,6 +335,7 @@ func autoConvert_v1alpha2_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	out.NodeTags = in.NodeTags
 	out.NodeInstancePrefix = in.NodeInstancePrefix
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
+	out.ElbSecurityGroup = in.ElbSecurityGroup
 	out.VSphereUsername = in.VSphereUsername
 	out.VSpherePassword = in.VSpherePassword
 	out.VSphereServer = in.VSphereServer
@@ -354,6 +355,7 @@ func autoConvert_kops_CloudConfiguration_To_v1alpha2_CloudConfiguration(in *kops
 	out.NodeTags = in.NodeTags
 	out.NodeInstancePrefix = in.NodeInstancePrefix
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
+	out.ElbSecurityGroup = in.ElbSecurityGroup
 	out.VSphereUsername = in.VSphereUsername
 	out.VSpherePassword = in.VSpherePassword
 	out.VSphereServer = in.VSphereServer
@@ -1476,7 +1478,6 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeP
 	out.CPURequest = in.CPURequest
 	out.LogLevel = in.LogLevel
 	out.ClusterCIDR = in.ClusterCIDR
-	// WARNING: in.HostnameOverride requires manual conversion: does not exist in peer-type
 	out.Master = in.Master
 	return nil
 }

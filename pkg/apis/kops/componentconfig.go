@@ -692,7 +692,8 @@ type CloudConfiguration struct {
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// AWS cloud-config options
-	DisableSecurityGroupIngress *bool `json:"disableSecurityGroupIngress,omitempty"`
+	DisableSecurityGroupIngress *bool   `json:"disableSecurityGroupIngress,omitempty"`
+	ElbSecurityGroup            *string `json:"elbSecurityGroup,omitempty"`
 
 	// vSphere cloud-config specs
 	VSphereUsername      *string `json:"vSphereUsername,omitempty"`
