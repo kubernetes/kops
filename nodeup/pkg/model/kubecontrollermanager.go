@@ -227,21 +227,21 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 			//envs["ftp_proxy"] = url
 			container.Env = append(container.Env,
 				v1.EnvVar{
-					Name: "http_proxy",
+					Name:  "http_proxy",
 					Value: url,
 				},
 				v1.EnvVar{
-					Name: "https_proxy",
+					Name:  "https_proxy",
 					Value: url,
 				},
 				v1.EnvVar{
-					Name: "ftp_proxy",
+					Name:  "ftp_proxy",
 					Value: url,
 				})
 		}
 		if proxies.ProxyExcludes != "" {
 			x := v1.EnvVar{
-				Name: "no_proxy",
+				Name:  "no_proxy",
 				Value: proxies.ProxyExcludes}
 			container.Env = append(container.Env, x)
 		}
