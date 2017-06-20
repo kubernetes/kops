@@ -165,3 +165,21 @@ On AWS, this is the id of the VPC the cluster is created in. If creating a clust
 spec:
   networkID: vpc-abcdefg1
 ```
+
+### cloudConfig
+
+If you are using aws as `cloudProvider`, you can disable authorization of ELB security group to Kubernetes Nodes security group. In other words, it will not add security group rule.
+This can be usefull to avoid AWS limit: 50 rules per security group.
+```yaml
+spec:
+  cloudConfig:
+    disableSecurityGroupIngress: true
+```
+For avoid to create security group per each elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name. Also, security group must be empty, because Kubernetes will add rules per ports that are specified in service file.
+This can be usefull to avoid AWS limits: 500 security groups per region and 50 rules per security group.
+
+```yaml
+spec:
+  cloudConfig:
+    elbSecurityGroup: sg-123445678
+```
