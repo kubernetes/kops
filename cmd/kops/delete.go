@@ -42,11 +42,11 @@ type DeleteOptions struct {
 
 var (
 	delete_long = templates.LongDesc(i18n.T(`
-	Delete Kubernetes clusters, instancegroups, and or secrets.
+	Delete Kubernetes clusters, instancegroups, and secrets, or a combination of the before mentioned.
 	`))
 
 	delete_example = templates.Examples(i18n.T(`
-		# Create a cluster using a manifest file
+		# Delete a cluster using a manifest file
 		kops delete -f my-cluster.yaml
 
 		# Delete a cluster in AWS.
