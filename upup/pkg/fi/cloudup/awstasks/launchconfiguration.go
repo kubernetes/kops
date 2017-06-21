@@ -316,6 +316,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 				if attempt > maxAttempts {
 					return fmt.Errorf("IAM instance profile not yet created/propagated (original error: %v)", message)
 				}
+				glog.V(4).Infof("got an error indicating that the IAM instance profile %q is not ready: %q", fi.StringValue(e.IAMInstanceProfile.Name), message)
 				glog.Infof("waiting for IAM instance profile %q to be ready", fi.StringValue(e.IAMInstanceProfile.Name))
 				time.Sleep(10 * time.Second)
 				continue

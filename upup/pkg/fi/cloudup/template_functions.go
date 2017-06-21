@@ -31,21 +31,21 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/sets"
-	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/dns"
-	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/model/components"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"os"
 	"strings"
 	"text/template"
+
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
+	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
 type TemplateFunctions struct {
-	cluster        *api.Cluster
-	instanceGroups []*api.InstanceGroup
+	cluster        *kops.Cluster
+	instanceGroups []*kops.InstanceGroup
 
 	tags   sets.String
 	region string
@@ -89,11 +89,13 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["CloudTags"] = tf.modelContext.CloudTagsForInstanceGroup
 
-	dest["KubeDNS"] = func() *api.KubeDNSConfig {
+	dest["KubeDNS"] = func() *kops.KubeDNSConfig {
 		return tf.cluster.Spec.KubeDNS
 	}
 
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
+
+	dest["ExternalDnsArgv"] = tf.ExternalDnsArgv
 
 	// TODO: Only for GCE?
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
@@ -118,7 +120,7 @@ func (tf *TemplateFunctions) HasTag(tag string) bool {
 }
 
 // GetInstanceGroup returns the instance group with the specified name
-func (tf *TemplateFunctions) GetInstanceGroup(name string) (*api.InstanceGroup, error) {
+func (tf *TemplateFunctions) GetInstanceGroup(name string) (*kops.InstanceGroup, error) {
 	for _, ig := range tf.instanceGroups {
 		if ig.ObjectMeta.Name == name {
 			return ig, nil
@@ -141,13 +143,15 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	} else {
 		argv = append(argv, "--watch-ingress=false")
 	}
+	argv = append(argv, "--watch-ingress=false")
 
-	switch fi.CloudProviderID(tf.cluster.Spec.CloudProvider) {
-	case fi.CloudProviderAWS:
+
+	switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
+	case kops.CloudProviderAWS:
 		argv = append(argv, "--dns=aws-route53")
-	case fi.CloudProviderGCE:
+	case kops.CloudProviderGCE:
 		argv = append(argv, "--dns=google-clouddns")
-	case fi.CloudProviderVSphere:
+	case kops.CloudProviderVSphere:
 		argv = append(argv, "--dns=coredns")
 		argv = append(argv, "--dns-server="+*tf.cluster.Spec.CloudConfig.VSphereCoreDNSServer)
 
@@ -189,4 +193,25 @@ func (tf *TemplateFunctions) DnsControllerImage() (string, error) {
 	} else {
 		return image, nil
 	}
+}
+
+func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
+	var argv []string
+
+	cloudProvider := tf.cluster.Spec.CloudProvider
+
+	switch kops.CloudProviderID(cloudProvider) {
+	case kops.CloudProviderAWS:
+		argv = append(argv, "--provider=aws")
+	case kops.CloudProviderGCE:
+		project := tf.cluster.Spec.Project
+		argv = append(argv, "--provider=google")
+		argv = append(argv, "--google-project="+project)
+	default:
+		return nil, fmt.Errorf("unhandled cloudprovider %q", tf.cluster.Spec.CloudProvider)
+	}
+
+	argv = append(argv, "--source=ingress")
+
+	return argv, nil
 }

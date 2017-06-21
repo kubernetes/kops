@@ -1,14 +1,22 @@
 ## kops create instancegroup
 
-Create instancegroup
+Create an instancegroup.
 
 ### Synopsis
 
 
-Create an instancegroup configuration.
+Create an instancegroup configuration.  kops has the concept of "instance groups", which are a group of similar virutal machines. On AWS, they map to an AutoScalingGroup. An ig work either as a Kubernetes master or a node.
 
 ```
 kops create instancegroup
+```
+
+### Examples
+
+```
+  # Create an instancegroup for the k8s-cluster.example.com cluster.
+  kops create ig --name=k8s-cluster.example.com node-example \
+  --role node --subnet 172.16.32.1/24
 ```
 
 ### Options
@@ -34,5 +42,5 @@ kops create instancegroup
 ```
 
 ### SEE ALSO
-* [kops create](kops_create.md)	 - Create a resource by filename or stdin.
+* [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 

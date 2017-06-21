@@ -1,11 +1,19 @@
 ## kops create secret
 
-Create secrets
+Create a secret.
 
 ### Synopsis
 
 
-Create secrets.
+Create a secret
+
+### Examples
+
+```
+  # Create an new ssh public key called admin.
+  kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
+  --name k8s-cluster.example.com --state s3://example.com
+```
 
 ### Options inherited from parent commands
 
@@ -23,6 +31,6 @@ Create secrets.
 ```
 
 ### SEE ALSO
-* [kops create](kops_create.md)	 - Create a resource by filename or stdin.
-* [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create SSH publickey
+* [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
+* [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create a ssh public key.
 

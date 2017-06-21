@@ -4,7 +4,7 @@ You can secure `kops` with MFA by creating an AWS role & policy that requires MF
 
 ## The Workaround
 
-The work around uses `aws sts-assume role` in combination with an MFA prompt to retrieve temporary AWS access keys. This provides `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN` environment variables which are automatically picked up by Go AWS SDK. You provide the MFA & Role ARNs, then invoke `kops`.
+The work around uses `aws sts assume-role` in combination with an MFA prompt to retrieve temporary AWS access keys. This provides `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN` environment variables which are automatically picked up by Go AWS SDK. You provide the MFA & Role ARNs, then invoke `kops`.
 
 Here's an example wrapper script:
 
@@ -18,12 +18,12 @@ main() {
 	local serial_number="${KOPS_MFA_ARN:-}"
 	local token_code
 
-	if [ -z "${KOPS_MFA_ROLE_ARN}" ]; then
+	if [ -z "${role_arn}" ]; then
 		echo "Set the KOPS_MFA_ROLE_ARN environment variable" 1>&2
 		return 1
 	fi
 
-	if [ -z "${KOPS_MFA_ARN}" ]; then
+	if [ -z "${serial_number}" ]; then
 		echo "Set the KOPS_MFA_ARN environment variable" 1>&2
 		return 1
 	fi

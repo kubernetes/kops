@@ -183,6 +183,15 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log").ReadOnly = false
 
+	auditLogPath := b.Cluster.Spec.KubeAPIServer.AuditLogPath
+	if auditLogPath != nil {
+		// Mount the directory of the path instead, as kube-apiserver rotates the log by renaming the file.
+		// Renaming is not possible when the file is mounted as the host path, and will return a
+		// 'Device or resource busy' error
+		auditLogPathDir := filepath.Dir(*auditLogPath)
+		addHostPathMapping(pod, container, "auditlogpathdir", auditLogPathDir).ReadOnly = false
+	}
+
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
 	return pod, nil

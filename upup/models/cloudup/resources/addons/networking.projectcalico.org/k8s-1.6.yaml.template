@@ -36,17 +36,59 @@ data:
         }
     }
 
-  # The default IP Pool to be created for the cluster.
-  # Pod IP addresses will be assigned from this pool.
-  ippool.yaml: |
-      apiVersion: v1
-      kind: ipPool
-      metadata:
-        cidr: {{ .NonMasqueradeCIDR }}
-      spec:
-        ipip:
-          enabled: true
-        nat-outgoing: true
+---
+
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: calico
+  labels:
+    role.kubernetes.io/networking: "1"
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  - namespaces
+  - nodes
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - extensions
+  resources:
+  - networkpolicies
+  verbs:
+  - get
+  - list
+  - watch
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: calico
+  namespace: kube-system
+  labels:
+    role.kubernetes.io/networking: "1"
+---
+
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: calico
+  labels:
+    role.kubernetes.io/networking: "1"
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: calico
+subjects:
+- kind: ServiceAccount
+  name: calico
+  namespace: kube-system
 
 ---
 
@@ -70,6 +112,8 @@ spec:
       labels:
         k8s-app: calico-node
         role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       hostNetwork: true
       serviceAccountName: calico
@@ -83,7 +127,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v1.1.1
+          image: calico/node:v1.2.1
           resources:
             requests:
               cpu: 10m
@@ -100,12 +144,13 @@ spec:
                 configMapKeyRef:
                   name: calico-config
                   key: enable_bgp
+            # Configure the IP Pool from which Pod IPs will be chosen.
+            - name: CALICO_IPV4POOL_CIDR
+              value: "{{ .NonMasqueradeCIDR }}"
+            - name: CALICO_IPV4POOL_IPIP
+              value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}cross-subnet{{- else -}}always{{- end -}}"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
-              value: "true"
-            # Don't configure a default pool.  This is done by the Job
-            # below.
-            - name: NO_DEFAULT_POOLS
               value: "true"
             # Auto-detect the BGP IP address.
             - name: IP
@@ -122,7 +167,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v1.6.1
+          image: calico/cni:v1.8.3
           resources:
             requests:
               cpu: 10m
@@ -198,7 +243,7 @@ spec:
         operator: Exists
       containers:
         - name: calico-policy-controller
-          image: calico/kube-policy-controller:v0.5.4
+          image: calico/kube-policy-controller:v0.6.0
           resources:
             requests:
               cpu: 10m
@@ -219,93 +264,36 @@ spec:
             - name: CONFIGURE_ETC_HOSTS
               value: "true"
 
----
-
-## This manifest deploys a Job which performs one time
-# configuration of Calico
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: configure-calico
-  namespace: kube-system
-  labels:
-    k8s-app: calico
-    role.kubernetes.io/networking: "1"
-spec:
-  template:
-    metadata:
-      name: configure-calico
-      annotations:
-        scheduler.alpha.kubernetes.io/critical-pod: ''
-    spec:
-      hostNetwork: true
-      serviceAccountName: calico
-      tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
-      - key: CriticalAddonsOnly
-        operator: Exists
-      restartPolicy: OnFailure
-      containers:
-        # Writes basic configuration to datastore.
-        - name: configure-calico
-          image: calico/ctl:v1.1.1
-          args:
-          - apply
-          - -f
-          - /etc/config/calico/ippool.yaml
-          volumeMounts:
-            - name: config-volume
-              mountPath: /etc/config
-          env:
-            # The location of the etcd cluster.
-            - name: ETCD_ENDPOINTS
-              valueFrom:
-                configMapKeyRef:
-                  name: calico-config
-                  key: etcd_endpoints
-      volumes:
-       - name: config-volume
-         configMap:
-           name: calico-config
-           items:
-            - key: ippool.yaml
-              path: calico/ippool.yaml
-
+{{ if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}
+# This manifest installs the k8s-ec2-srcdst container, which disables
+# src/dst ip checks to allow BGP to function for calico for hosts within subnets
+# This only applies for AWS environments.
 ---
 
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: calico
+  name: k8s-ec2-srcdst
   labels:
     role.kubernetes.io/networking: "1"
 rules:
 - apiGroups:
   - ""
   resources:
-  - pods
-  - namespaces
   - nodes
   verbs:
   - get
   - list
   - watch
-- apiGroups:
-  - extensions
-  resources:
-  - networkpolicies
-  verbs:
-  - get
-  - list
-  - watch
+  - update
+  - patch
 
 ---
 
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: calico
+  name: k8s-ec2-srcdst
   namespace: kube-system
   labels:
     role.kubernetes.io/networking: "1"
@@ -314,14 +302,67 @@ metadata:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: calico
+  name: k8s-ec2-srcdst
   labels:
     role.kubernetes.io/networking: "1"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: calico
+  name: k8s-ec2-srcdst
 subjects:
 - kind: ServiceAccount
-  name: calico
+  name: k8s-ec2-srcdst
   namespace: kube-system
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: k8s-ec2-srcdst
+  namespace: kube-system
+  labels:
+    k8s-app: k8s-ec2-srcdst
+    role.kubernetes.io/networking: "1"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: k8s-ec2-srcdst
+  template:
+    metadata:
+      labels:
+        k8s-app: k8s-ec2-srcdst
+        role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
+    spec:
+      hostNetwork: true
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+      - key: CriticalAddonsOnly
+        operator: Exists
+      serviceAccountName: k8s-ec2-srcdst
+      containers:
+        - image: ottoyiu/k8s-ec2-srcdst:v0.1.0
+          name: k8s-ec2-srcdst
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+          env:
+            - name: AWS_REGION
+              value: {{ Region }}
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: "/etc/ssl/certs/ca-certificates.crt"
+              readOnly: true
+          imagePullPolicy: "Always"
+      volumes:
+        - name: ssl-certs
+          hostPath:
+            path: "/etc/ssl/certs/ca-certificates.crt"
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+{{- end -}}

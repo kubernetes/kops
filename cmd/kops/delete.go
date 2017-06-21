@@ -21,10 +21,10 @@ import (
 	"io"
 
 	"bytes"
-
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
@@ -42,16 +42,22 @@ type DeleteOptions struct {
 
 var (
 	delete_long = templates.LongDesc(i18n.T(`
-	Delete clusters and instancegroups.
+	Delete Kubernetes clusters, instancegroups, and secrets, or a combination of the before mentioned.
 	`))
 
 	delete_example = templates.Examples(i18n.T(`
-		# Create a cluster using a file
+		# Delete a cluster using a manifest file
 		kops delete -f my-cluster.yaml
 
 		# Delete a cluster in AWS.
-		kops delete cluster --name=k8s.cluster.site --state=s3://kops-state-1234 
+		kops delete cluster --name=k8s.example.com --state=s3://kops-state-1234
+
+		# Delete an instancegroup for the k8s-cluster.example.com cluster.
+		# The --yes option runs the command immediately.
+		kops delete ig --name=k8s-cluster.example.com node-example --yes
 	`))
+
+	delete_short = i18n.T("Delete clusters,instancegroups, or secrets.")
 )
 
 func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
@@ -59,7 +65,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:        "delete -f FILENAME [--yes]",
-		Short:      i18n.T("Delete clusters and instancegroups."),
+		Short:      delete_short,
 		Long:       delete_long,
 		Example:    delete_example,
 		SuggestFor: []string{"rm"},
@@ -86,12 +92,11 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 
 func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 	// Codecs provides access to encoding and decoding for the scheme
-	codecs := kopsapi.Codecs //serializer.NewCodecFactory(scheme)
+	codec := kopsapi.Codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
-	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
+	// We could have more than one cluster in a manifest so we are using a set
+	deletedClusters := sets.NewString()
 
-	var sb bytes.Buffer
-	fmt.Fprintf(&sb, "\n")
 	for _, f := range d.Filenames {
 		contents, err := vfs.Context.ReadFile(f)
 		if err != nil {
@@ -111,38 +116,36 @@ func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 
 			switch v := o.(type) {
 			case *kopsapi.Cluster:
-				options := &DeleteClusterOptions{}
-				options.ClusterName = v.ObjectMeta.Name
-				options.Yes = d.Yes
+				options := &DeleteClusterOptions{
+					ClusterName: v.ObjectMeta.Name,
+					Yes:         d.Yes,
+				}
 				err = RunDeleteCluster(factory, out, options)
 				if err != nil {
 					exitWithError(err)
 				}
-				if d.Yes {
-					fmt.Fprintf(&sb, "Deleted cluster/%s\n", v.ObjectMeta.Name)
-				}
+				deletedClusters.Insert(v.ObjectMeta.Name)
 			case *kopsapi.InstanceGroup:
-				options := &DeleteInstanceGroupOptions{}
-				options.GroupName = v.ObjectMeta.Name
-				options.ClusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
-				options.Yes = d.Yes
+				options := &DeleteInstanceGroupOptions{
+					GroupName:   v.ObjectMeta.Name,
+					ClusterName: v.ObjectMeta.Labels[kopsapi.LabelClusterName],
+					Yes:         d.Yes,
+				}
+
+				// If the cluster has been already deleted we cannot delete the ig
+				if deletedClusters.Has(options.ClusterName) {
+					glog.V(4).Infof("Skipping instance group %q because cluster %q has been deleted", v.ObjectMeta.Name, options.ClusterName)
+					continue
+				}
+
 				err := RunDeleteInstanceGroup(factory, out, options)
 				if err != nil {
 					exitWithError(err)
-				}
-				if d.Yes {
-					fmt.Fprintf(&sb, "Deleted instancegroup/%s\n", v.ObjectMeta.Name)
 				}
 			default:
 				glog.V(2).Infof("Type of object was %T", v)
 				return fmt.Errorf("Unhandled kind %q in %s", gvk, f)
 			}
-		}
-	}
-	{
-		_, err := out.Write(sb.Bytes())
-		if err != nil {
-			return fmt.Errorf("error writing to output: %v", err)
 		}
 	}
 

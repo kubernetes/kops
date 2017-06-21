@@ -37,7 +37,7 @@ type clusterDiscoveryVSphere struct {
 
 type vsphereListFn func() ([]*ResourceTracker, error)
 
-func (c *AwsCluster) listResourcesVSphere() (map[string]*ResourceTracker, error) {
+func (c *ClusterResources) listResourcesVSphere() (map[string]*ResourceTracker, error) {
 	vsphereCloud := c.Cloud.(*vsphere.VSphereCloud)
 
 	resources := make(map[string]*ResourceTracker)

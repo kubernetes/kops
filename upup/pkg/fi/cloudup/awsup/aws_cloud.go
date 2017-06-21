@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	k8sroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
@@ -132,8 +133,8 @@ type awsCloudImplementation struct {
 
 var _ fi.Cloud = &awsCloudImplementation{}
 
-func (c *awsCloudImplementation) ProviderID() fi.CloudProviderID {
-	return fi.CloudProviderAWS
+func (c *awsCloudImplementation) ProviderID() kops.CloudProviderID {
+	return kops.CloudProviderAWS
 }
 
 func (c *awsCloudImplementation) Region() string {

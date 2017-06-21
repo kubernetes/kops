@@ -18,6 +18,8 @@ package kutil
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -27,10 +29,10 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"time"
 )
 
 // ConvertKubeupCluster performs a conversion of a cluster that was imported from kube-up
@@ -115,37 +117,37 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		return fmt.Errorf("error finding instances: %v", err)
 	}
 
-	subnets, err := DescribeSubnets(x.Cloud)
+	subnets, err := resources.DescribeSubnets(x.Cloud)
 	if err != nil {
 		return fmt.Errorf("error finding subnets: %v", err)
 	}
 
-	securityGroups, err := DescribeSecurityGroups(x.Cloud)
+	securityGroups, err := resources.DescribeSecurityGroups(x.Cloud)
 	if err != nil {
 		return fmt.Errorf("error finding security groups: %v", err)
 	}
 
-	volumes, err := DescribeVolumes(x.Cloud)
+	volumes, err := resources.DescribeVolumes(x.Cloud)
 	if err != nil {
 		return err
 	}
 
-	dhcpOptions, err := DescribeDhcpOptions(x.Cloud)
+	dhcpOptions, err := resources.DescribeDhcpOptions(x.Cloud)
 	if err != nil {
 		return err
 	}
 
-	routeTables, err := DescribeRouteTables(x.Cloud)
+	routeTables, err := resources.DescribeRouteTables(x.Cloud)
 	if err != nil {
 		return err
 	}
 
-	autoscalingGroups, err := findAutoscalingGroups(awsCloud, oldTags)
+	autoscalingGroups, err := resources.FindAutoscalingGroups(awsCloud, oldTags)
 	if err != nil {
 		return err
 	}
 
-	elbs, _, err := DescribeELBs(x.Cloud)
+	elbs, _, err := resources.DescribeELBs(x.Cloud)
 	if err != nil {
 		return err
 	}
@@ -303,7 +305,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		}
 
 		if retagGateway {
-			gateways, err := DescribeInternetGatewaysIgnoreTags(x.Cloud)
+			gateways, err := resources.DescribeInternetGatewaysIgnoreTags(x.Cloud)
 			if err != nil {
 				return fmt.Errorf("error listing gateways: %v", err)
 			}

@@ -102,6 +102,19 @@ spec:
     oidcCAFile: /etc/kubernetes/ssl/kc-ca.pem
 ```
 
+#### audit logging
+
+Read more about this here: https://kubernetes.io/docs/admin/audit
+
+```yaml
+spec:
+  kubeAPIServer:
+    auditLogPath: /var/log/kube-apiserver-audit.log
+    auditLogMaxAge: 10
+    auditLogMaxBackups: 1
+    auditLogMaxSize: 100
+```
+
 #### runtimeConfig
 
 Keys and values here are translated into `--runtime-config` values for `kube-apiserver`, separated by commas.
@@ -132,6 +145,15 @@ Default kops behavior is false. `watchIngress: true` uses the default _dns-contr
 ### kubelet
 
 This block contains configurations for `kubelet`.  See https://kubernetes.io/docs/admin/kubelet/
+
+NOTE: Where the corresponding configuration value can be empty, fields can be set to empty in the spec, and an empty string will be passed as the configuration value.
+ ```yaml
+ spec:
+   kubelet:
+     resolvConf: ""
+```
+
+Will result in the flag `--resolv-conf=` being built.
 
 ####  Feature Gates
 

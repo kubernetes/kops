@@ -2,6 +2,14 @@ output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privatecanal-example-com.id}"]
 }
 
+output "bastions_role_arn" {
+  value = "${aws_iam_role.bastions-privatecanal-example-com.arn}"
+}
+
+output "bastions_role_name" {
+  value = "${aws_iam_role.bastions-privatecanal-example-com.name}"
+}
+
 output "cluster_name" {
   value = "privatecanal.example.com"
 }
@@ -10,12 +18,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privatecanal-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-privatecanal-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-privatecanal-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-privatecanal-example-com.id}"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-privatecanal-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-privatecanal-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-privatecanal-example-com.name}"
 }
 
 output "region" {
@@ -205,18 +229,18 @@ resource "aws_elb" "bastion-privatecanal-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privatecanal-example-com" {
-  name  = "bastions.privatecanal.example.com"
-  roles = ["${aws_iam_role.bastions-privatecanal-example-com.name}"]
+  name = "bastions.privatecanal.example.com"
+  role = "${aws_iam_role.bastions-privatecanal-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privatecanal-example-com" {
-  name  = "masters.privatecanal.example.com"
-  roles = ["${aws_iam_role.masters-privatecanal-example-com.name}"]
+  name = "masters.privatecanal.example.com"
+  role = "${aws_iam_role.masters-privatecanal-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privatecanal-example-com" {
-  name  = "nodes.privatecanal.example.com"
-  roles = ["${aws_iam_role.nodes-privatecanal-example-com.name}"]
+  name = "nodes.privatecanal.example.com"
+  role = "${aws_iam_role.nodes-privatecanal-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privatecanal-example-com" {
@@ -648,4 +672,8 @@ resource "aws_vpc_dhcp_options" "privatecanal-example-com" {
 resource "aws_vpc_dhcp_options_association" "privatecanal-example-com" {
   vpc_id          = "${aws_vpc.privatecanal-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.privatecanal-example-com.id}"
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
 }

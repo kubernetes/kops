@@ -81,7 +81,9 @@ type KubeletConfigSpec struct {
 	// one must set --hairpin-mode=veth-flag, because bridge assumes the
 	// existence of a container bridge named cbr0.
 	HairpinMode string `json:"hairpinMode,omitempty" flag:"hairpin-mode"`
+
 	// The node has babysitter process monitoring docker and kubelet.
+	// Removed as of 1.7
 	BabysitDaemons *bool `json:"babysitDaemons,omitempty" flag:"babysit-daemons"`
 
 	// maxPods is the number of pods that can run on this Kubelet.
@@ -99,6 +101,10 @@ type KubeletConfigSpec struct {
 	// registerSchedulable tells the kubelet to register the node as
 	// schedulable. No-op if register-node is false.
 	RegisterSchedulable *bool `json:"registerSchedulable,omitempty" flag:"register-schedulable"`
+
+	// ResolverConfig is the resolver configuration file used as the basis
+	// for the container DNS resolution configuration."), []
+	ResolverConfig *string `json:"resolvConf" flag:"resolv-conf" flag-include-empty:"true"`
 
 	// nodeLabels to add when registering the node in the cluster.
 	NodeLabels map[string]string `json:"nodeLabels,omitempty" flag:"node-labels"`

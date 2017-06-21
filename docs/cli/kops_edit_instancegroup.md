@@ -1,18 +1,28 @@
 ## kops edit instancegroup
 
-Edit instancegroup
+Edit instancegroup.
 
 ### Synopsis
 
 
-Edit an instancegroup configuration.
+Edit a cluster configuration. 
 
-This command changes the cloud specification in the registry.
+This command changes the instancegroup cloud specification in the registry. 
 
-It does not update the cloud resources, to apply the changes use "kops update cluster".
+  To set your preferred editor, you can define the EDITOR environment variable.
+  When you have done this, kops will use the editor that you have set.
+  
+kops edit does not update the cloud resources, to apply the changes use "kops update cluster".
 
 ```
 kops edit instancegroup
+```
+
+### Examples
+
+```
+  # Edit a instancegroup configuration.
+  kops edit ig --name k8s-cluster.example.com node --state=s3://kops-state-1234
 ```
 
 ### Options inherited from parent commands
@@ -31,5 +41,5 @@ kops edit instancegroup
 ```
 
 ### SEE ALSO
-* [kops edit](kops_edit.md)	 - Edit clusters and other resrouces.
+* [kops edit](kops_edit.md)	 - Edit clusters and other resources.
 

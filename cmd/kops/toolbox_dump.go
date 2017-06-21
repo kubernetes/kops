@@ -19,13 +19,28 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"io"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	toolbox_dump_long = templates.LongDesc(i18n.T(`
+	Displays cluster information.  Includes information about cloud and Kubernetes resources.`))
+
+	toolbox_dump_example = templates.Examples(i18n.T(`
+	# Dump cluster information
+	kops toolbox dump --name k8s-cluster.example.com
+	`))
+
+	toolbox_dump_short = i18n.T(`Dump cluster information`)
 )
 
 type ToolboxDumpOptions struct {
@@ -43,8 +58,10 @@ func NewCmdToolboxDump(f *util.Factory, out io.Writer) *cobra.Command {
 	options.InitDefaults()
 
 	cmd := &cobra.Command{
-		Use:   "dump",
-		Short: "Dump cloud information about a cluster",
+		Use:     "dump",
+		Short:   toolbox_dump_short,
+		Long:    toolbox_dump_long,
+		Example: toolbox_dump_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if err := rootCommand.ProcessArgs(args); err != nil {
 				exitWithError(err)
@@ -91,7 +108,7 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 	}
 
 	// Todo lets make this smart enough to detect the cloud and switch on the ClusterResources interface
-	d := &resources.AwsCluster{}
+	d := &resources.ClusterResources{}
 	d.ClusterName = options.ClusterName
 	d.Cloud = cloud
 

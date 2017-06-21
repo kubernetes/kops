@@ -105,6 +105,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec,
 		Convert_v1alpha1_KubenetNetworkingSpec_To_kops_KubenetNetworkingSpec,
 		Convert_kops_KubenetNetworkingSpec_To_v1alpha1_KubenetNetworkingSpec,
+		Convert_v1alpha1_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec,
+		Convert_kops_KuberouterNetworkingSpec_To_v1alpha1_KuberouterNetworkingSpec,
 		Convert_v1alpha1_LeaderElectionConfiguration_To_kops_LeaderElectionConfiguration,
 		Convert_kops_LeaderElectionConfiguration_To_v1alpha1_LeaderElectionConfiguration,
 		Convert_v1alpha1_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec,
@@ -255,6 +257,7 @@ func Convert_kops_CNINetworkingSpec_To_v1alpha1_CNINetworkingSpec(in *kops.CNINe
 }
 
 func autoConvert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *CalicoNetworkingSpec, out *kops.CalicoNetworkingSpec, s conversion.Scope) error {
+	out.CrossSubnet = in.CrossSubnet
 	return nil
 }
 
@@ -263,6 +266,7 @@ func Convert_v1alpha1_CalicoNetworkingSpec_To_kops_CalicoNetworkingSpec(in *Cali
 }
 
 func autoConvert_kops_CalicoNetworkingSpec_To_v1alpha1_CalicoNetworkingSpec(in *kops.CalicoNetworkingSpec, out *CalicoNetworkingSpec, s conversion.Scope) error {
+	out.CrossSubnet = in.CrossSubnet
 	return nil
 }
 
@@ -1483,6 +1487,7 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.MaxPods = in.MaxPods
 	out.NvidiaGPUs = in.NvidiaGPUs
 	out.PodCIDR = in.PodCIDR
+	out.ResolverConfig = in.ResolverConfig
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
 	out.NodeLabels = in.NodeLabels
@@ -1530,6 +1535,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.MaxPods = in.MaxPods
 	out.NvidiaGPUs = in.NvidiaGPUs
 	out.PodCIDR = in.PodCIDR
+	out.ResolverConfig = in.ResolverConfig
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
 	out.NodeLabels = in.NodeLabels
@@ -1568,6 +1574,22 @@ func autoConvert_kops_KubenetNetworkingSpec_To_v1alpha1_KubenetNetworkingSpec(in
 
 func Convert_kops_KubenetNetworkingSpec_To_v1alpha1_KubenetNetworkingSpec(in *kops.KubenetNetworkingSpec, out *KubenetNetworkingSpec, s conversion.Scope) error {
 	return autoConvert_kops_KubenetNetworkingSpec_To_v1alpha1_KubenetNetworkingSpec(in, out, s)
+}
+
+func autoConvert_v1alpha1_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec(in *KuberouterNetworkingSpec, out *kops.KuberouterNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_v1alpha1_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec(in *KuberouterNetworkingSpec, out *kops.KuberouterNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_v1alpha1_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec(in, out, s)
+}
+
+func autoConvert_kops_KuberouterNetworkingSpec_To_v1alpha1_KuberouterNetworkingSpec(in *kops.KuberouterNetworkingSpec, out *KuberouterNetworkingSpec, s conversion.Scope) error {
+	return nil
+}
+
+func Convert_kops_KuberouterNetworkingSpec_To_v1alpha1_KuberouterNetworkingSpec(in *kops.KuberouterNetworkingSpec, out *KuberouterNetworkingSpec, s conversion.Scope) error {
+	return autoConvert_kops_KuberouterNetworkingSpec_To_v1alpha1_KuberouterNetworkingSpec(in, out, s)
 }
 
 func autoConvert_v1alpha1_LeaderElectionConfiguration_To_kops_LeaderElectionConfiguration(in *LeaderElectionConfiguration, out *kops.LeaderElectionConfiguration, s conversion.Scope) error {
@@ -1690,6 +1712,15 @@ func autoConvert_v1alpha1_NetworkingSpec_To_kops_NetworkingSpec(in *NetworkingSp
 	} else {
 		out.Canal = nil
 	}
+	if in.Kuberouter != nil {
+		in, out := &in.Kuberouter, &out.Kuberouter
+		*out = new(kops.KuberouterNetworkingSpec)
+		if err := Convert_v1alpha1_KuberouterNetworkingSpec_To_kops_KuberouterNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Kuberouter = nil
+	}
 	return nil
 }
 
@@ -1779,6 +1810,15 @@ func autoConvert_kops_NetworkingSpec_To_v1alpha1_NetworkingSpec(in *kops.Network
 	} else {
 		out.Canal = nil
 	}
+	if in.Kuberouter != nil {
+		in, out := &in.Kuberouter, &out.Kuberouter
+		*out = new(KuberouterNetworkingSpec)
+		if err := Convert_kops_KuberouterNetworkingSpec_To_v1alpha1_KuberouterNetworkingSpec(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.Kuberouter = nil
+	}
 	return nil
 }
 
@@ -1803,6 +1843,7 @@ func Convert_kops_RBACAuthorizationSpec_To_v1alpha1_RBACAuthorizationSpec(in *ko
 }
 
 func autoConvert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveNetworkingSpec, out *kops.WeaveNetworkingSpec, s conversion.Scope) error {
+	out.MTU = in.MTU
 	return nil
 }
 
@@ -1811,6 +1852,7 @@ func Convert_v1alpha1_WeaveNetworkingSpec_To_kops_WeaveNetworkingSpec(in *WeaveN
 }
 
 func autoConvert_kops_WeaveNetworkingSpec_To_v1alpha1_WeaveNetworkingSpec(in *kops.WeaveNetworkingSpec, out *WeaveNetworkingSpec, s conversion.Scope) error {
+	out.MTU = in.MTU
 	return nil
 }
 

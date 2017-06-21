@@ -24,19 +24,23 @@ import (
 
 var (
 	upgrade_long = templates.LongDesc(i18n.T(`
-	Upgrades a k8s cluster.
+	Automates checking for and applying Kubernetes updates. This upgrades a cluster to the latest recommended
+	production ready k8s version. After this command is run usekops update cluder, and kops rolling-update cluster
+	to finish a cluster upgrade.
 	`))
 
 	upgrade_example = templates.Examples(i18n.T(`
-		# After cluster has been created, configure it with:
-		kops upgrade cluster k8s.cluster.site --yes --state=s3://kops-state-1234
+	# Upgrade a cluster's Kubernetes version.
+	kops upgrade cluster kubernetes-cluster.example.com --yes --state=s3://kops-state-1234
 	`))
+
+	upgrade_short = i18n.T("Upgrade a kubernetes cluster.")
 )
 
 // upgradeCmd represents the upgrade command
 var upgradeCmd = &cobra.Command{
 	Use:     "upgrade",
-	Short:   i18n.T("Automates checking for and applying Kubernetes updates."),
+	Short:   upgrade_short,
 	Long:    upgrade_long,
 	Example: upgrade_example,
 }

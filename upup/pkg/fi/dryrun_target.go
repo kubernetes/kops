@@ -157,6 +157,11 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 						field := changes.Field(i)
 
 						fieldName := changes.Type().Field(i).Name
+						if changes.Type().Field(i).PkgPath != "" {
+							// Not exported
+							continue
+						}
+
 						fieldValue := ValueAsString(field)
 
 						shouldPrint := true
@@ -217,6 +222,11 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 				}
 				if valC.Kind() == reflect.Struct {
 					for i := 0; i < valC.NumField(); i++ {
+						if valC.Type().Field(i).PkgPath != "" {
+							// Not exported
+							continue
+						}
+
 						fieldValC := valC.Field(i)
 
 						changed := true

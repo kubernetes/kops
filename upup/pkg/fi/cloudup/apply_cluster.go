@@ -25,8 +25,8 @@ import (
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kops"
-	api "k8s.io/kops/pkg/apis/kops"
+	kopsbase "k8s.io/kops"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
@@ -66,9 +66,9 @@ var AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(fa
 var CloudupModels = []string{"config", "proto", "cloudup"}
 
 type ApplyClusterCmd struct {
-	Cluster *api.Cluster
+	Cluster *kops.Cluster
 
-	InstanceGroups []*api.InstanceGroup
+	InstanceGroups []*kops.InstanceGroup
 
 	// NodeUpSource is the location from which we download nodeup
 	NodeUpSource string
@@ -99,7 +99,7 @@ type ApplyClusterCmd struct {
 	MaxTaskDuration time.Duration
 
 	// The channel we are using
-	channel *api.Channel
+	channel *kops.Channel
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -112,7 +112,7 @@ func (c *ApplyClusterCmd) Run() error {
 		if err != nil {
 			return err
 		}
-		var instanceGroups []*api.InstanceGroup
+		var instanceGroups []*kops.InstanceGroup
 		for i := range list.Items {
 			instanceGroups = append(instanceGroups, &list.Items[i])
 		}
@@ -290,8 +290,8 @@ func (c *ApplyClusterCmd) Run() error {
 		InstanceGroups: c.InstanceGroups,
 	}
 
-	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
-	case fi.CloudProviderGCE:
+	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kops.CloudProviderGCE:
 		{
 			gceCloud := cloud.(*gce.GCECloud)
 			region = gceCloud.Region
@@ -312,7 +312,7 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 		}
 
-	case fi.CloudProviderAWS:
+	case kops.CloudProviderAWS:
 		{
 			awsCloud := cloud.(awsup.AWSCloud)
 			region = awsCloud.Region()
@@ -371,7 +371,7 @@ func (c *ApplyClusterCmd) Run() error {
 			l.TemplateFunctions["MachineTypeInfo"] = awsup.GetMachineTypeInfo
 		}
 
-	case fi.CloudProviderVSphere:
+	case kops.CloudProviderVSphere:
 		{
 			if !AlphaAllowVsphere.Enabled() {
 				return fmt.Errorf("Vsphere support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowVsphere")
@@ -429,8 +429,8 @@ func (c *ApplyClusterCmd) Run() error {
 				&BootstrapChannelBuilder{cluster: cluster},
 			)
 
-			switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
-			case fi.CloudProviderAWS:
+			switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+			case kops.CloudProviderAWS:
 				awsModelContext := &awsmodel.AWSModelContext{
 					KopsModelContext: modelContext,
 				}
@@ -449,7 +449,7 @@ func (c *ApplyClusterCmd) Run() error {
 					&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 				)
 
-			case fi.CloudProviderGCE:
+			case kops.CloudProviderGCE:
 				gceModelContext := &gcemodel.GCEModelContext{
 					KopsModelContext: modelContext,
 				}
@@ -467,7 +467,7 @@ func (c *ApplyClusterCmd) Run() error {
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext},
 					//&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 				)
-			case fi.CloudProviderVSphere:
+			case kops.CloudProviderVSphere:
 				l.Builders = append(l.Builders,
 					&model.PKIModelBuilder{KopsModelContext: modelContext})
 
@@ -490,7 +490,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	// RenderNodeUpConfig returns the NodeUp config, in YAML format
-	renderNodeUpConfig := func(ig *api.InstanceGroup) (*nodeup.NodeUpConfig, error) {
+	renderNodeUpConfig := func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error) {
 		if ig == nil {
 			return nil, fmt.Errorf("instanceGroup cannot be nil")
 		}
@@ -527,7 +527,7 @@ func (c *ApplyClusterCmd) Run() error {
 			// TODO: pull kube-dns image
 			// When using a custom version, we want to preload the images over http
 			components := []string{"kube-proxy"}
-			if role == api.InstanceGroupRoleMaster {
+			if role == kops.InstanceGroupRoleMaster {
 				components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
 			}
 			for _, component := range components {
@@ -555,7 +555,7 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 
 			config.ProtokubeImage = &nodeup.Image{
-				Name:   kops.DefaultProtokubeImageName(),
+				Name:   kopsbase.DefaultProtokubeImageName(),
 				Source: location,
 				Hash:   hash.Hex(),
 			}
@@ -572,8 +572,8 @@ func (c *ApplyClusterCmd) Run() error {
 		NodeUpSourceHash:    "",
 		NodeUpSource:        c.NodeUpSource,
 	}
-	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
-	case fi.CloudProviderAWS:
+	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kops.CloudProviderAWS:
 		awsModelContext := &awsmodel.AWSModelContext{
 			KopsModelContext: modelContext,
 		}
@@ -583,7 +583,7 @@ func (c *ApplyClusterCmd) Run() error {
 			BootstrapScript: bootstrapScriptBuilder,
 		})
 
-	case fi.CloudProviderGCE:
+	case kops.CloudProviderGCE:
 		{
 			gceModelContext := &gcemodel.GCEModelContext{
 				KopsModelContext: modelContext,
@@ -594,7 +594,7 @@ func (c *ApplyClusterCmd) Run() error {
 				BootstrapScript: bootstrapScriptBuilder,
 			})
 		}
-	case fi.CloudProviderVSphere:
+	case kops.CloudProviderVSphere:
 		{
 			vsphereModelContext := &vspheremodel.VSphereModelContext{
 				KopsModelContext: modelContext,
@@ -787,14 +787,14 @@ func (c *ApplyClusterCmd) upgradeSpecs() error {
 
 // validateKopsVersion ensures that kops meet the version requirements / recommendations in the channel
 func (c *ApplyClusterCmd) validateKopsVersion() error {
-	kopsVersion, err := semver.ParseTolerant(kops.Version)
+	kopsVersion, err := semver.ParseTolerant(kopsbase.Version)
 	if err != nil {
-		glog.Warningf("unable to parse kops version %q", kops.Version)
+		glog.Warningf("unable to parse kops version %q", kopsbase.Version)
 		// Not a hard-error
 		return nil
 	}
 
-	versionInfo := api.FindKopsVersionSpec(c.channel.Spec.KopsVersions, kopsVersion)
+	versionInfo := kops.FindKopsVersionSpec(c.channel.Spec.KopsVersions, kopsVersion)
 	if versionInfo == nil {
 		glog.Warningf("unable to find version information for kops version %q in channel", kopsVersion)
 		// Not a hard-error
@@ -860,7 +860,7 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 	// TODO: make util.ParseKubernetesVersion not return a pointer
 	kubernetesVersion := *parsed
 
-	versionInfo := api.FindKubernetesVersionSpec(c.channel.Spec.KubernetesVersions, kubernetesVersion)
+	versionInfo := kops.FindKubernetesVersionSpec(c.channel.Spec.KubernetesVersions, kubernetesVersion)
 	if versionInfo == nil {
 		glog.Warningf("unable to find version information for kubernetes version %q in channel", kubernetesVersion)
 		// Not a hard-error
@@ -923,17 +923,17 @@ func buildPermalink(key, anchor string) string {
 	return url
 }
 
-func ChannelForCluster(c *api.Cluster) (*api.Channel, error) {
+func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
 	channelLocation := c.Spec.Channel
 	if channelLocation == "" {
-		channelLocation = api.DefaultChannel
+		channelLocation = kops.DefaultChannel
 	}
-	return api.LoadChannel(channelLocation)
+	return kops.LoadChannel(channelLocation)
 }
 
 // needsStaticUtils checks if we need our static utils on this OS.
 // This is only needed currently on CoreOS, but we don't have a nice way to detect it yet
-func needsStaticUtils(c *api.Cluster, instanceGroups []*api.InstanceGroup) bool {
+func needsStaticUtils(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
 	// TODO: Do real detection of CoreOS (but this has to work with AMI names, and maybe even forked AMIs)
 	return true
 }

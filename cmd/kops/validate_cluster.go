@@ -43,10 +43,10 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ValidateClusterOptions{}
 
 	cmd := &cobra.Command{
-		Use: "cluster",
-		//Aliases: []string{"cluster"},
-		Short: "Validate cluster",
-		Long:  `Validate a kubernetes cluster`,
+		Use:     "cluster",
+		Short:   validate_short,
+		Long:    validate_long,
+		Example: validate_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunValidateCluster(f, cmd, args, os.Stdout, options)
 			if err != nil {

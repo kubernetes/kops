@@ -19,6 +19,7 @@ package model
 import (
 	"strings"
 
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -98,7 +99,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 		)
 	}
 
-	if b.Cluster.Spec.CloudProvider == string(fi.CloudProviderAWS) {
+	if b.Cluster.Spec.CloudProvider == string(kops.CloudProviderAWS) {
 		sysctls = append(sysctls,
 			"# AWS settings",
 			"",
@@ -107,7 +108,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"")
 	}
 
-	if b.Cluster.Spec.CloudProvider == string(fi.CloudProviderGCE) {
+	if b.Cluster.Spec.CloudProvider == string(kops.CloudProviderGCE) {
 		sysctls = append(sysctls,
 			"# GCE settings",
 			"",

@@ -1,52 +1,3 @@
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: weave-net
-  labels:
-    role.kubernetes.io/networking: "1"
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  - namespaces
-  - nodes
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - extensions
-  resources:
-  - networkpolicies
-  verbs:
-  - get
-  - list
-  - watch
----
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: weave-net
-  namespace: kube-system
-  labels:
-    role.kubernetes.io/networking: "1"
----
-kind: ClusterRoleBinding
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: weave-net
-  labels:
-    role.kubernetes.io/networking: "1"
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: weave-net
-subjects:
-- kind: ServiceAccount
-  name: weave-net
-  namespace: kube-system
----
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
@@ -61,12 +12,22 @@ spec:
       labels:
         name: weave-net
         role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/tolerations: |
+          [
+            {
+              "key": "dedicated",
+              "operator": "Equal",
+              "value": "master",
+              "effect": "NoSchedule"
+            }
+          ]
     spec:
       hostNetwork: true
       hostPID: true
       containers:
         - name: weave
-          image: weaveworks/weave-kube:1.9.4
+          image: weaveworks/weave-kube:1.9.8
           command:
             - /home/weave/launch.sh
           livenessProbe:
@@ -97,8 +58,15 @@ spec:
             limits:
               cpu: 100m
               memory: 200Mi
+          env:
+            - name: IPALLOC_RANGE
+              value: {{ .KubeControllerManager.ClusterCIDR }}
+            {{- if .Networking.Weave.MTU }}
+            - name: WEAVE_MTU
+              value: "{{ .Networking.Weave.MTU }}"
+            {{- end }}
         - name: weave-npc
-          image: weaveworks/weave-npc:1.9.4
+          image: weaveworks/weave-npc:1.9.8
           resources:
             requests:
               cpu: 100m
@@ -106,16 +74,15 @@ spec:
             limits:
               cpu: 100m
               memory: 200Mi
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
           securityContext:
             privileged: true
       restartPolicy: Always
-      tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
-      serviceAccountName: weave-net
-      securityContext:
-        seLinuxOptions:
-          type: spc_t
       volumes:
         - name: weavedb
           emptyDir: {}

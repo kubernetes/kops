@@ -62,8 +62,8 @@ const (
 var _ fi.Cloud = &VSphereCloud{}
 
 // ProviderID returns ID for vSphere type cloud provider.
-func (c *VSphereCloud) ProviderID() fi.CloudProviderID {
-	return fi.CloudProviderVSphere
+func (c *VSphereCloud) ProviderID() kops.CloudProviderID {
+	return kops.CloudProviderVSphere
 }
 
 // NewVSphereCloud returns VSphereCloud instance for given ClusterSpec.
@@ -246,8 +246,6 @@ func (c *VSphereCloud) UploadAndAttachISO(vm *string, isoFile string) error {
 		return err
 	}
 
-	var refs []types.ManagedObjectReference
-	refs = append(refs, vmRef.Reference())
 	var vmResult mo.VirtualMachine
 
 	pc := property.DefaultCollector(c.Client.Client)
@@ -313,8 +311,6 @@ func (c *VSphereCloud) FindVMUUID(vm *string) (string, error) {
 		return "", err
 	}
 
-	var refs []types.ManagedObjectReference
-	refs = append(refs, vmRef.Reference())
 	var vmResult mo.VirtualMachine
 
 	pc := property.DefaultCollector(c.Client.Client)
@@ -382,8 +378,6 @@ func (c *VSphereCloud) DeleteCloudInitISO(vm *string) error {
 		return err
 	}
 
-	var refs []types.ManagedObjectReference
-	refs = append(refs, vmRef.Reference())
 	var vmResult mo.VirtualMachine
 
 	pc := property.DefaultCollector(c.Client.Client)

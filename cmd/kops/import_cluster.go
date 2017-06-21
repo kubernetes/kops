@@ -32,9 +32,10 @@ var importCluster ImportClusterCmd
 
 func init() {
 	cmd := &cobra.Command{
-		Use:   "cluster",
-		Short: "Import existing cluster into the state store",
-		Long:  `Imports the settings of an existing k8s cluster.`,
+		Use:     "cluster",
+		Short:   import_short,
+		Long:    import_long,
+		Example: import_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := importCluster.Run()
 			if err != nil {

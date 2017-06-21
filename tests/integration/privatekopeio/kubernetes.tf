@@ -2,6 +2,14 @@ output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privatekopeio-example-com.id}"]
 }
 
+output "bastions_role_arn" {
+  value = "${aws_iam_role.bastions-privatekopeio-example-com.arn}"
+}
+
+output "bastions_role_name" {
+  value = "${aws_iam_role.bastions-privatekopeio-example-com.name}"
+}
+
 output "cluster_name" {
   value = "privatekopeio.example.com"
 }
@@ -10,12 +18,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privatekopeio-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-privatekopeio-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-privatekopeio-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-privatekopeio-example-com.id}"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-privatekopeio-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-privatekopeio-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-privatekopeio-example-com.name}"
 }
 
 output "region" {
@@ -201,18 +225,18 @@ resource "aws_elb" "bastion-privatekopeio-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privatekopeio-example-com" {
-  name  = "bastions.privatekopeio.example.com"
-  roles = ["${aws_iam_role.bastions-privatekopeio-example-com.name}"]
+  name = "bastions.privatekopeio.example.com"
+  role = "${aws_iam_role.bastions-privatekopeio-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privatekopeio-example-com" {
-  name  = "masters.privatekopeio.example.com"
-  roles = ["${aws_iam_role.masters-privatekopeio-example-com.name}"]
+  name = "masters.privatekopeio.example.com"
+  role = "${aws_iam_role.masters-privatekopeio-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privatekopeio-example-com" {
-  name  = "nodes.privatekopeio.example.com"
-  roles = ["${aws_iam_role.nodes-privatekopeio-example-com.name}"]
+  name = "nodes.privatekopeio.example.com"
+  role = "${aws_iam_role.nodes-privatekopeio-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privatekopeio-example-com" {
@@ -639,4 +663,8 @@ resource "aws_vpc_dhcp_options" "privatekopeio-example-com" {
 resource "aws_vpc_dhcp_options_association" "privatekopeio-example-com" {
   vpc_id          = "${aws_vpc.privatekopeio-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.privatekopeio-example-com.id}"
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
 }

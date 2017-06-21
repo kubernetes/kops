@@ -1,15 +1,18 @@
 ## kops edit cluster
 
-Edit cluster
+Edit cluster.
 
 ### Synopsis
 
 
 Edit a cluster configuration. 
 
-This command changes the cloud specification in the registry. 
+This command changes the cluster cloud specification in the registry. 
 
-It does not update the cloud resources, to apply the changes use "kops update cluster".
+  To set your preferred editor, you can define the EDITOR environment variable.
+  When you have done this, kops will use the editor that you have set.
+  
+kops edit does not update the cloud resources, to apply the changes use "kops update cluster".
 
 ```
 kops edit cluster
@@ -38,5 +41,5 @@ kops edit cluster
 ```
 
 ### SEE ALSO
-* [kops edit](kops_edit.md)	 - Edit clusters and other resrouces.
+* [kops edit](kops_edit.md)	 - Edit clusters and other resources.
 

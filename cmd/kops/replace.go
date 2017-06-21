@@ -26,9 +26,24 @@ import (
 	"k8s.io/kops/util/pkg/vfs"
 
 	"bytes"
+
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	replace_long = templates.LongDesc(i18n.T(`
+		Replace a resource specification by filename or stdin.`))
+
+	replace_example = templates.Examples(i18n.T(`
+		# Replace a cluster specification using a file
+		kops replace -f my-cluster.yaml
+		`))
+
+	replace_short = i18n.T(`Replace cluster resources.`)
 )
 
 type ReplaceOptions struct {
@@ -39,8 +54,10 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ReplaceOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "replace -f FILENAME",
-		Short: "Replace a resource by filename or stdin.",
+		Use:     "replace -f FILENAME",
+		Short:   replace_short,
+		Long:    replace_long,
+		Example: replace_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameEmpty(options.Filenames) {
 				cmd.Help()

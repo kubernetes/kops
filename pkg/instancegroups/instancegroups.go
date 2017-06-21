@@ -14,49 +14,28 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kutil
+package instancegroups
 
 import (
 	"fmt"
-	"sync"
+	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/client-go/tools/clientcmd"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"os"
 )
-
-// RollingUpdateCluster is a struct containing cluster information for a rolling update.
-type RollingUpdateCluster struct {
-	Cloud fi.Cloud
-
-	MasterInterval  time.Duration
-	NodeInterval    time.Duration
-	BastionInterval time.Duration
-
-	Force bool
-
-	K8sClient        kubernetes.Interface
-	ClientConfig     clientcmd.ClientConfig
-	FailOnDrainError bool
-	FailOnValidate   bool
-	CloudOnly        bool
-	ClusterName      string
-	ValidateRetries  int
-	DrainInterval    time.Duration
-}
 
 // FindCloudInstanceGroups joins data from the cloud and the instance groups into a map that can be used for updates.
 func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*CloudInstanceGroup, error) {
@@ -66,7 +45,7 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 
 	tags := awsCloud.Tags()
 
-	asgs, err := findAutoscalingGroups(awsCloud, tags)
+	asgs, err := resources.FindAutoscalingGroups(awsCloud, tags)
 	if err != nil {
 		return nil, err
 	}
@@ -115,130 +94,36 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 	return groups, nil
 }
 
-// RollingUpdate performs a rolling update on a K8s Cluster.
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
-	if len(groups) == 0 {
-		glog.Infof("Cloud Instance Group length is zero. Not doing a rolling-update.")
-		return nil
-	}
+// DeleteInstanceGroup removes the cloud resources for an InstanceGroup
+type DeleteInstanceGroup struct {
+	Cluster   *api.Cluster
+	Cloud     fi.Cloud
+	Clientset simple.Clientset
+}
 
-	var resultsMutex sync.Mutex
-	results := make(map[string]error)
-
-	masterGroups := make(map[string]*CloudInstanceGroup)
-	nodeGroups := make(map[string]*CloudInstanceGroup)
-	bastionGroups := make(map[string]*CloudInstanceGroup)
-	for k, group := range groups {
-		switch group.InstanceGroup.Spec.Role {
-		case api.InstanceGroupRoleNode:
-			nodeGroups[k] = group
-		case api.InstanceGroupRoleMaster:
-			masterGroups[k] = group
-		case api.InstanceGroupRoleBastion:
-			bastionGroups[k] = group
-		default:
-			return fmt.Errorf("unknown group type for group %q", group.InstanceGroup.ObjectMeta.Name)
-		}
-	}
-
-	// Upgrade bastions first; if these go down we can't see anything
-	{
-		var wg sync.WaitGroup
-
-		for k, bastionGroup := range bastionGroups {
-			wg.Add(1)
-			go func(k string, group *CloudInstanceGroup) {
-				resultsMutex.Lock()
-				results[k] = fmt.Errorf("function panic bastions")
-				resultsMutex.Unlock()
-
-				defer wg.Done()
-
-				err := group.RollingUpdate(c, instanceGroups, true, c.BastionInterval)
-
-				resultsMutex.Lock()
-				results[k] = err
-				resultsMutex.Unlock()
-			}(k, bastionGroup)
+func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
+	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
+	cig := groups[group.ObjectMeta.Name]
+	if cig == nil {
+		glog.Warningf("AutoScalingGroup %q not found in cloud - skipping delete", group.ObjectMeta.Name)
+	} else {
+		if len(groups) != 1 {
+			return fmt.Errorf("Multiple InstanceGroup resources found in cloud")
 		}
 
-		wg.Wait()
-	}
+		glog.Infof("Deleting AutoScalingGroup %q", group.ObjectMeta.Name)
 
-	// Upgrade master next
-	{
-		var wg sync.WaitGroup
-
-		// We run master nodes in series, even if they are in separate instance groups
-		// typically they will be in separate instance groups, so we can force the zones,
-		// and we don't want to roll all the masters at the same time.  See issue #284
-		wg.Add(1)
-
-		go func() {
-			for k := range masterGroups {
-				resultsMutex.Lock()
-				results[k] = fmt.Errorf("function panic masters")
-				resultsMutex.Unlock()
-			}
-
-			defer wg.Done()
-
-			for k, group := range masterGroups {
-				err := group.RollingUpdate(c, instanceGroups, false, c.MasterInterval)
-
-				resultsMutex.Lock()
-				results[k] = err
-				resultsMutex.Unlock()
-
-				// TODO: Bail on error?
-			}
-		}()
-
-		wg.Wait()
-	}
-
-	// Upgrade nodes, with greater parallelism
-	{
-		var wg sync.WaitGroup
-
-		// We run nodes in series, even if they are in separate instance groups
-		// typically they will not being separate instance groups. If you roll the nodes in parallel
-		// you can get into a scenario where you can evict multiple statefulset pods from the same
-		// statefulset at the same time. Further improvements needs to be made to protect from this as
-		// well.
-
-		wg.Add(1)
-
-		go func() {
-			for k := range nodeGroups {
-				resultsMutex.Lock()
-				results[k] = fmt.Errorf("function panic nodes")
-				resultsMutex.Unlock()
-			}
-
-			defer wg.Done()
-
-			for k, group := range nodeGroups {
-				err := group.RollingUpdate(c, instanceGroups, false, c.NodeInterval)
-
-				resultsMutex.Lock()
-				results[k] = err
-				resultsMutex.Unlock()
-
-				// TODO: Bail on error?
-			}
-		}()
-
-		wg.Wait()
-	}
-
-	for _, err := range results {
+		err = cig.Delete(c.Cloud)
 		if err != nil {
-			return err
+			return fmt.Errorf("error deleting cloud resources for InstanceGroup: %v", err)
 		}
 	}
 
-	glog.Infof("Rolling update completed!")
+	err = c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).Delete(group.ObjectMeta.Name, nil)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -251,20 +136,6 @@ type CloudInstanceGroup struct {
 	NeedUpdate    []*CloudInstanceGroupInstance
 
 	asg *autoscaling.Group
-}
-
-// CloudInstanceGroupInstance describes an instance in an autoscaling group.
-type CloudInstanceGroupInstance struct {
-	ASGInstance *autoscaling.Instance
-	Node        *v1.Node
-}
-
-func (c *CloudInstanceGroup) MinSize() int {
-	return int(aws.Int64Value(c.asg.MinSize))
-}
-
-func (c *CloudInstanceGroup) MaxSize() int {
-	return int(aws.Int64Value(c.asg.MaxSize))
 }
 
 func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) *CloudInstanceGroup {
@@ -298,6 +169,24 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 	}
 
 	return n
+}
+
+// CloudInstanceGroupInstance describes an instance in an autoscaling group.
+type CloudInstanceGroupInstance struct {
+	ASGInstance *autoscaling.Instance
+	Node        *v1.Node
+}
+
+func (n *CloudInstanceGroup) String() string {
+	return "CloudInstanceGroup:" + n.ASGName
+}
+
+func (c *CloudInstanceGroup) MinSize() int {
+	return int(aws.Int64Value(c.asg.MinSize))
+}
+
+func (c *CloudInstanceGroup) MaxSize() int {
+	return int(aws.Int64Value(c.asg.MaxSize))
 }
 
 // TODO: Temporarily increase size of ASG?
@@ -556,8 +445,4 @@ func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
 	}
 
 	return nil
-}
-
-func (n *CloudInstanceGroup) String() string {
-	return "CloudInstanceGroup:" + n.ASGName
 }

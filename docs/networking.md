@@ -30,11 +30,12 @@ and NAT gateways are single AZ, multiple route tables are needed to use each NAT
 
 Several different providers are currently built into kops:
 
-1. kopeio-vxlan
-2. [weave](https://github.com/weaveworks/weave-kube)
-3. [flannel](https://github.com/coreos/flannel)
-4. [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
-5. [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
+* [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
+* [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
+* [flannel](https://github.com/coreos/flannel)
+* [kopeio-vxlan](https://github.com/kopeio/networking)
+* [kube-router](https://github.com/cloudnativelabs/kube-router)
+* [weave](https://github.com/weaveworks/weave-kube)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
@@ -91,11 +92,28 @@ step is to install CNI networking. Most of the CNI network providers are
 moving to installing their components plugins via a Daemonset.  For instance weave will
 install with the following command:
 
+Daemonset installation for K8s 1.6.x or above.
+```console
+$ kubectl create -f https://git.io/weave-kube-1.6
+```
+
+Daemonset installation for K8s 1.4.x or 1.5.x.
 ```console
 $ kubectl create -f https://git.io/weave-kube
 ```
 
-The above daemonset installation requires K8s 1.4.x or above.
+### Configuring Weave MTU
+
+The Weave MTU is configurable by editing the cluster and setting `mtu` option in the weave configuration.
+AWS VPCs support jumbo frames, so on cluster creation kops sets the weave MTU to 8912 bytes (9001 minus overhead).
+
+```
+spec:
+  networking:
+    weave:
+      mtu: 8912
+```
+
 
 ### Calico Example for CNI and Network Policy
 
@@ -116,6 +134,52 @@ $ kops create cluster \
 ```
 
 The above will deploy a daemonset installation which requires K8s 1.4.x or above.
+
+##### Enable Cross-Subnet mode in Calico (AWS only)
+Calico [since 2.1] supports a new option for IP-in-IP mode where traffic is only encapsulated
+when it’s destined to subnets with intermediate infrastructure lacking Calico route awareness
+– for example, across heterogeneous public clouds or on AWS where traffic is crossing availability zones/ regions.
+
+With this mode, IP-in-IP encapsulation is only performed selectively. This provides better performance in AWS
+multi-AZ deployments, and in general when deploying on networks where pools of nodes with L2 connectivity
+are connected via a router. 
+
+Reference: [Calico 2.1 Release Notes](https://www.projectcalico.org/project-calico-2-1-released/)
+
+Note that Calico by default, routes between nodes within a subnet are distributed using a full node-to-node BGP mesh.
+Each node automatically sets up a BGP peering with every other node within the same L2 network.
+This full node-to-node mesh per L2 network has its scaling challenges for larger scale deployments.
+BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster.
+The setup of BGP route reflectors is currently out of the scope of kops.
+
+Read more here: [BGP route reflectors](http://docs.projectcalico.org/v2.2/usage/routereflector/calico-routereflector)
+
+
+To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous `kops create ...` command.
+
+`kops edit cluster`  will show you a block like this:
+
+```
+  networking:
+    calico: {}
+```
+
+You will need to change that block, and add an additional field, to look like this:
+
+```
+  networking:
+    calico:
+      crossSubnet: true
+```
+
+This `crossSubnet` field can also be defined within a cluster specification file, and the entire cluster can be create by running:
+`kops create -f k8s-cluster.example.com.yaml`
+
+In the case of AWS, EC2 instances have source/destination checks enabled by default.
+When you enable cross-subnet mode in kops, an addon controller ([k8s-ec2-srcdst](https://github.com/ottoyiu/k8s-ec2-srcdst))
+will be deployed as a Pod (which will be scheduled on one of the masters) to facilitate the disabling of said source/destination address checks.
+Only the masters have the IAM policy (`ec2:*`) to allow k8s-ec2-srcdst to execute `ec2:ModifyInstanceAttribute`.
+
 
 #### More information about Calico
 
@@ -168,6 +232,33 @@ For support with Calico Policies you can reach out on Slack or Github:
 For support with Flannel you can submit an issue on Github:
 
 - [Flannel](https://github.com/coreos/flannel/issues)
+
+### Kube-router example for CNI, IPVS based service proxy and Network Policy enforcer
+
+[Kube-router](https://github.com/cloudnativelabs/kube-router) is project that provides one cohesive soltion that provides CNI networking for pods, an IPVS based network service proxy and iptables based network policy enforcement.
+
+#### Installing kube-router on a new Cluster
+
+The following command sets up a cluster with Kube-router as the CNI, service proxy and networking policy provider
+
+```
+$ kops create cluster \
+  --node-count 2 \
+  --zones us-west-2a \
+  --master-zones us-west-2a \
+  --dns-zone aws.cloudnativelabs.net \
+  --node-size t2.medium \
+  --master-size t2.medium \
+  --networking kube-router \
+  --yes \
+  --name myclustername.mydns.io
+```
+
+Currently kube-router supports 1.6 and above. Please note that kube-router will also provide service proxy, so kube-proxy will not be deployed in to the cluster. Kube-router used node routing stack for cross node pod-to-pod connectivity with out any encapsulation. In the case of AWS, EC2 instances have source/destination checks enabled by default. So please ensure to turn off source-destination checks on the AWS EC2 instances by running below command.
+
+```
+aws ec2 modify-instance-attribute --instance-id <ec2 instance id> --no-source-dest-check
+```
 
 ### Validating CNI Installation
 

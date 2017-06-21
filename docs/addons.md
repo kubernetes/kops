@@ -16,7 +16,7 @@ The [dashboard project](https://github.com/kubernetes/dashboard) provides a nice
 
 Install using:
 ```
-kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.5.0.yaml
+kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/kubernetes-dashboard/v1.6.0.yaml
 ```
 
 And then navigate to `https://api.<clustername>/ui`
@@ -35,7 +35,7 @@ Monitoring supports the horizontal pod autoscaler.
 
 Install using:
 ```
-kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/monitoring-standalone/v1.3.0.yaml
+kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/monitoring-standalone/v1.6.0.yaml
 ```
 
 

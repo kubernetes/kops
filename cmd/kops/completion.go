@@ -21,8 +21,11 @@ import (
 	"io"
 
 	"bytes"
+
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 const boilerPlate = `
@@ -53,49 +56,39 @@ type CompletionOptions struct {
 }
 
 var (
-	longDescription = `
+	completion_long = templates.LongDesc(i18n.T(`
+	Output shell completion code for the specified shell (bash or zsh).
+	The shell code must be evalutated to provide interactive
+	completion of kops commands.  This can be done by sourcing it from
+	the .bash_profile.
 
-Output shell completion code for the specified shell (bash or zsh).
-The shell code must be evalutated to provide interactive
-completion of kops commands.  This can be done by sourcing it from
-the .bash_profile.
+	Note: this requires the bash-completion framework, which is not installed
+	by default on Mac. Once installed, bash_completion must be evaluated.  This can be done by adding the
+	following line to the .bash_profile
 
-Note: this requires the bash-completion framework, which is not installed
-by default on Mac.  This can be installed by using homebrew:
 
-	$ brew install bash-completion
+	Note for zsh users: zsh completions are only supported in versions of zsh >= 5.2`))
 
-Once installed, bash_completion must be evaluated.  This can be done by adding the
-following line to the .bash_profile
+	completion_example = templates.Examples(i18n.T(`
+	# For OSX users install bash completion using homebrew
+	brew install bash-completion
+	source $(brew --prefix)/etc/bash_completion
 
-	$ source $(brew --prefix)/etc/bash_completion
-
-Note for zsh users: [1] zsh completions are only supported in versions of zsh >= 5.2`
-	example = `
-
-# Install bash completion on a Mac using homebrew
-
-$ brew install bash-completion
-
-$ printf "
-# Bash completion support
-source $(brew --prefix)/etc/bash_completion
-" >> $HOME/.bash_profile
-	source $HOME/.bash_profile
-	# Load the kops completion code for bash into the current shell
+	# Bash completion support
+	printf "source $(brew --prefix)/etc/bash_completion\n" >> $HOME/.bash_profile
+	source $HOME/.bash_profile  
 	source <(kops completion bash)
-	# Write bash completion code to a file and source if from .bash_profile
 	kops completion bash > ~/.kops/completion.bash.inc
-	printf "
+	chmod +x $HOME/.kops/completion.bash.inc
 
-# kops shell completion
-'$HOME/.kops/completion.bash.inc'
-" >> $HOME/.bash_profile
+	# kops shell completion
+	printf "$HOME/.kops/completion.bash.inc\n" >> $HOME/.bash_profile
+	source $HOME/.bash_profile
 
-$ source $HOME/.bash_profile
+	# Load the kops completion code for zsh[1] into the current shell
+	source <(kops completion zsh)`))
 
-# Load the kops completion code for zsh[1] into the current shell
-source <(kops completion zsh)`
+	completion_short = i18n.T("Output shell completion code for the given shell (bash or zsh).")
 )
 
 func NewCmdCompletion(f *util.Factory, out io.Writer) *cobra.Command {
@@ -103,9 +96,9 @@ func NewCmdCompletion(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "completion",
-		Short:   "Output shell completion code for the given shell (bash or zsh).",
-		Long:    longDescription,
-		Example: example,
+		Short:   completion_short,
+		Long:    completion_long,
+		Example: completion_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunCompletion(f, cmd, args, out, options)
 			if err != nil {

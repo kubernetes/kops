@@ -19,8 +19,9 @@ package resources
 import (
 	"bufio"
 	"bytes"
-	"compress/gzip"
 	"fmt"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -29,13 +30,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
-	"io"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"strings"
-	"sync"
-	"time"
 )
 
 const (
@@ -45,42 +42,134 @@ const (
 	TypeLoadBalancer            = "load-balancer"
 )
 
-type ResourceTracker struct {
-	Name string
-	Type string
-	ID   string
-
-	blocks  []string
-	blocked []string
-	done    bool
-
-	deleter      func(cloud fi.Cloud, tracker *ResourceTracker) error
-	groupKey     string
-	groupDeleter func(cloud fi.Cloud, trackers []*ResourceTracker) error
-
-	Dumper func(r *ResourceTracker) (interface{}, error)
-
-	obj interface{}
-}
-
 type listFn func(fi.Cloud, string) ([]*ResourceTracker, error)
 
-func gunzipBytes(d []byte) ([]byte, error) {
-	var out bytes.Buffer
-	in := bytes.NewReader(d)
-	r, err := gzip.NewReader(in)
-	if err != nil {
-		return nil, fmt.Errorf("error building gunzip reader: %v", err)
+func (c *ClusterResources) listResourcesAWS() (map[string]*ResourceTracker, error) {
+	cloud := c.Cloud.(awsup.AWSCloud)
+
+	resources := make(map[string]*ResourceTracker)
+
+	// These are the functions that are used for looking up
+	// cluster resources by their tags.
+	listFunctions := []listFn{
+
+		// CloudFormation
+		//ListCloudFormationStacks,
+
+		// EC2
+		ListInstances,
+		ListKeypairs,
+		ListSecurityGroups,
+		ListVolumes,
+		// EC2 VPC
+		ListDhcpOptions,
+		ListInternetGateways,
+		ListRouteTables,
+		ListSubnets,
+		ListVPCs,
+		// ELBs
+		ListELBs,
+		// ASG
+		ListAutoScalingGroups,
+
+		// Route 53
+		ListRoute53Records,
+		// IAM
+		ListIAMInstanceProfiles,
+		ListIAMRoles,
 	}
-	defer r.Close()
-	_, err = io.Copy(&out, r)
-	if err != nil {
-		return nil, fmt.Errorf("error decompressing data: %v", err)
+	for _, fn := range listFunctions {
+		trackers, err := fn(cloud, c.ClusterName)
+		if err != nil {
+			return nil, err
+		}
+		for _, t := range trackers {
+			resources[t.Type+":"+t.ID] = t
+		}
 	}
-	return out.Bytes(), nil
+
+	{
+		// Gateways weren't tagged in kube-up
+		// If we are deleting the VPC, we should delete the attached gateway
+		// (no real reason not to; easy to recreate; no real state etc)
+
+		gateways, err := DescribeInternetGatewaysIgnoreTags(cloud)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, igw := range gateways {
+			for _, attachment := range igw.Attachments {
+				vpcID := aws.StringValue(attachment.VpcId)
+				igwID := aws.StringValue(igw.InternetGatewayId)
+				if vpcID == "" || igwID == "" {
+					continue
+				}
+				if resources["vpc:"+vpcID] != nil && resources["internet-gateway:"+igwID] == nil {
+					resources["internet-gateway:"+igwID] = &ResourceTracker{
+						Name:    FindName(igw.Tags),
+						ID:      igwID,
+						Type:    "internet-gateway",
+						deleter: DeleteInternetGateway,
+					}
+				}
+			}
+		}
+	}
+
+	{
+		// We delete a launch configuration if it is bound to one of the tagged security groups
+		securityGroups := sets.NewString()
+		for k := range resources {
+			if !strings.HasPrefix(k, "security-group:") {
+				continue
+			}
+			id := strings.TrimPrefix(k, "security-group:")
+			securityGroups.Insert(id)
+		}
+		lcs, err := FindAutoScalingLaunchConfigurations(cloud, securityGroups)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, t := range lcs {
+			resources[t.Type+":"+t.ID] = t
+		}
+	}
+
+	if err := addUntaggedRouteTables(cloud, c.ClusterName, resources); err != nil {
+		return nil, err
+	}
+
+	{
+		// We delete a NAT gateway if it is linked to our route table
+		routeTableIds := sets.NewString()
+		for k := range resources {
+			if !strings.HasPrefix(k, ec2.ResourceTypeRouteTable+":") {
+				continue
+			}
+			id := strings.TrimPrefix(k, ec2.ResourceTypeRouteTable+":")
+			routeTableIds.Insert(id)
+		}
+		natGateways, err := FindNatGateways(cloud, routeTableIds)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, t := range natGateways {
+			resources[t.Type+":"+t.ID] = t
+		}
+	}
+
+	for k, t := range resources {
+		if t.done {
+			delete(resources, k)
+		}
+	}
+	return resources, nil
 }
 
-func buildEC2Filters(cloud fi.Cloud) []*ec2.Filter {
+func BuildEC2Filters(cloud fi.Cloud) []*ec2.Filter {
 	awsCloud := cloud.(awsup.AWSCloud)
 	tags := awsCloud.Tags()
 
@@ -139,156 +228,100 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 	return nil
 }
 
-func (c *AwsCluster) DeleteResources(resources map[string]*ResourceTracker) error {
-	depMap := make(map[string][]string)
+// FindAutoscalingGroups finds autoscaling groups matching the specified tags
+// This isn't entirely trivial because autoscaling doesn't let us filter with as much precision as we would like
+func FindAutoscalingGroups(cloud awsup.AWSCloud, tags map[string]string) ([]*autoscaling.Group, error) {
+	var asgs []*autoscaling.Group
 
-	done := make(map[string]*ResourceTracker)
-
-	var mutex sync.Mutex
-
-	for k, t := range resources {
-		for _, block := range t.blocks {
-			depMap[block] = append(depMap[block], k)
+	glog.V(2).Infof("Listing all Autoscaling groups matching cluster tags")
+	var asgNames []*string
+	{
+		var asFilters []*autoscaling.Filter
+		for _, v := range tags {
+			// Not an exact match, but likely the best we can do
+			asFilters = append(asFilters, &autoscaling.Filter{
+				Name:   aws.String("value"),
+				Values: []*string{aws.String(v)},
+			})
+		}
+		request := &autoscaling.DescribeTagsInput{
+			Filters: asFilters,
 		}
 
-		for _, blocked := range t.blocked {
-			depMap[k] = append(depMap[k], blocked)
-		}
+		err := cloud.Autoscaling().DescribeTagsPages(request, func(p *autoscaling.DescribeTagsOutput, lastPage bool) bool {
+			for _, t := range p.Tags {
+				switch *t.ResourceType {
+				case "auto-scaling-group":
+					asgNames = append(asgNames, t.ResourceId)
+				default:
+					glog.Warningf("Unknown resource type: %v", *t.ResourceType)
 
-		if t.done {
-			done[k] = t
+				}
+			}
+			return true
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error listing autoscaling cluster tags: %v", err)
 		}
 	}
 
-	glog.V(2).Infof("Dependencies")
-	for k, v := range depMap {
-		glog.V(2).Infof("\t%s\t%v", k, v)
+	if len(asgNames) != 0 {
+		request := &autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: asgNames,
+		}
+		err := cloud.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
+			for _, asg := range p.AutoScalingGroups {
+				if !MatchesAsgTags(tags, asg.Tags) {
+					// We used an inexact filter above
+					continue
+				}
+				// Check for "Delete in progress" (the only use of .Status)
+				if asg.Status != nil {
+					glog.Warningf("Skipping ASG %v (which matches tags): %v", *asg.AutoScalingGroupARN, *asg.Status)
+					continue
+				}
+				asgs = append(asgs, asg)
+			}
+			return true
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
+		}
+
 	}
 
-	iterationsWithNoProgress := 0
-	for {
-		// TODO: Some form of default ordering based on types?
-
-		failed := make(map[string]*ResourceTracker)
-
-		for {
-			phase := make(map[string]*ResourceTracker)
-
-			for k, r := range resources {
-				if _, d := done[k]; d {
-					continue
-				}
-
-				if _, d := failed[k]; d {
-					// Only attempt each resource once per pass
-					continue
-				}
-
-				ready := true
-				for _, dep := range depMap[k] {
-					if _, d := done[dep]; !d {
-						glog.V(4).Infof("dependency %q of %q not deleted; skipping", dep, k)
-						ready = false
-					}
-				}
-				if !ready {
-					continue
-				}
-
-				phase[k] = r
-			}
-
-			if len(phase) == 0 {
-				break
-			}
-
-			groups := make(map[string][]*ResourceTracker)
-			for k, t := range phase {
-				groupKey := t.groupKey
-				if groupKey == "" {
-					groupKey = "_" + k
-				}
-				groups[groupKey] = append(groups[groupKey], t)
-			}
-
-			var wg sync.WaitGroup
-			for _, trackers := range groups {
-				wg.Add(1)
-
-				go func(trackers []*ResourceTracker) {
-					mutex.Lock()
-					for _, t := range trackers {
-						k := t.Type + ":" + t.ID
-						failed[k] = t
-					}
-					mutex.Unlock()
-
-					defer wg.Done()
-
-					human := trackers[0].Type + ":" + trackers[0].ID
-
-					var err error
-					if trackers[0].groupDeleter != nil {
-						err = trackers[0].groupDeleter(c.Cloud, trackers)
-					} else {
-						if len(trackers) != 1 {
-							glog.Fatalf("found group without groupKey")
-						}
-						err = trackers[0].deleter(c.Cloud, trackers[0])
-					}
-					if err != nil {
-						mutex.Lock()
-						if IsDependencyViolation(err) {
-							fmt.Printf("%s\tstill has dependencies, will retry\n", human)
-							glog.V(4).Infof("API call made when had dependency: %s", human)
-						} else {
-							fmt.Printf("%s\terror deleting resource, will retry: %v\n", human, err)
-						}
-						for _, t := range trackers {
-							k := t.Type + ":" + t.ID
-							failed[k] = t
-						}
-						mutex.Unlock()
-					} else {
-						mutex.Lock()
-						fmt.Printf("%s\tok\n", human)
-
-						iterationsWithNoProgress = 0
-						for _, t := range trackers {
-							k := t.Type + ":" + t.ID
-							delete(failed, k)
-							done[k] = t
-						}
-						mutex.Unlock()
-					}
-				}(trackers)
-			}
-			wg.Wait()
-		}
-
-		if len(resources) == len(done) {
-			return nil
-		}
-
-		fmt.Printf("Not all resources deleted; waiting before reattempting deletion\n")
-		for k := range resources {
-			if _, d := done[k]; d {
-				continue
-			}
-
-			fmt.Printf("\t%s\n", k)
-		}
-
-		iterationsWithNoProgress++
-		if iterationsWithNoProgress > 42 {
-			return fmt.Errorf("Not making progress deleting resources; giving up")
-		}
-
-		time.Sleep(10 * time.Second)
-	}
+	return asgs, nil
 }
 
-func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
+// FindAutoscalingLaunchConfiguration finds an AWS launch configuration given its name
+func FindAutoscalingLaunchConfiguration(cloud awsup.AWSCloud, name string) (*autoscaling.LaunchConfiguration, error) {
+	glog.V(2).Infof("Retrieving Autoscaling LaunchConfigurations %q", name)
+
+	var results []*autoscaling.LaunchConfiguration
+
+	request := &autoscaling.DescribeLaunchConfigurationsInput{
+		LaunchConfigurationNames: []*string{&name},
+	}
+	err := cloud.Autoscaling().DescribeLaunchConfigurationsPages(request, func(p *autoscaling.DescribeLaunchConfigurationsOutput, lastPage bool) bool {
+		for _, t := range p.LaunchConfigurations {
+			results = append(results, t)
+		}
+		return true
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing autoscaling LaunchConfigurations: %v", err)
+	}
+
+	if len(results) == 0 {
+		return nil, nil
+	}
+	if len(results) != 1 {
+		return nil, fmt.Errorf("Found multiple LaunchConfigurations with name %q", name)
+	}
+	return results[0], nil
+}
+
+func MatchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
@@ -401,7 +434,7 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, erro
 
 	glog.V(2).Infof("Querying EC2 instances")
 	request := &ec2.DescribeInstancesInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 
 	var trackers []*ResourceTracker
@@ -570,7 +603,7 @@ func DescribeSecurityGroups(cloud fi.Cloud) ([]*ec2.SecurityGroup, error) {
 
 	glog.V(2).Infof("Listing EC2 SecurityGroups")
 	request := &ec2.DescribeSecurityGroupsInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeSecurityGroups(request)
 	if err != nil {
@@ -680,7 +713,7 @@ func DescribeVolumes(cloud fi.Cloud) ([]*ec2.Volume, error) {
 
 	glog.V(2).Infof("Listing EC2 Volumes")
 	request := &ec2.DescribeVolumesInput{
-		Filters: buildEC2Filters(c),
+		Filters: BuildEC2Filters(c),
 	}
 
 	err := c.EC2().DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) bool {
@@ -918,7 +951,7 @@ func DescribeSubnets(cloud fi.Cloud) ([]*ec2.Subnet, error) {
 
 	glog.V(2).Infof("Listing EC2 subnets")
 	request := &ec2.DescribeSubnetsInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeSubnets(request)
 	if err != nil {
@@ -972,7 +1005,7 @@ func DescribeRouteTables(cloud fi.Cloud) ([]*ec2.RouteTable, error) {
 
 	glog.V(2).Infof("Listing EC2 RouteTables")
 	request := &ec2.DescribeRouteTablesInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeRouteTables(request)
 	if err != nil {
@@ -1071,7 +1104,7 @@ func DescribeDhcpOptions(cloud fi.Cloud) ([]*ec2.DhcpOptions, error) {
 
 	glog.V(2).Infof("Listing EC2 DhcpOptions")
 	request := &ec2.DescribeDhcpOptionsInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeDhcpOptions(request)
 	if err != nil {
@@ -1180,7 +1213,7 @@ func DescribeInternetGateways(cloud fi.Cloud) ([]*ec2.InternetGateway, error) {
 
 	glog.V(2).Infof("Listing EC2 InternetGateways")
 	request := &ec2.DescribeInternetGatewaysInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeInternetGateways(request)
 	if err != nil {
@@ -1249,7 +1282,7 @@ func DescribeVPCs(cloud fi.Cloud) ([]*ec2.Vpc, error) {
 
 	glog.V(2).Infof("Listing EC2 VPC")
 	request := &ec2.DescribeVpcsInput{
-		Filters: buildEC2Filters(cloud),
+		Filters: BuildEC2Filters(cloud),
 	}
 	response, err := c.EC2().DescribeVpcs(request)
 	if err != nil {
@@ -1312,7 +1345,7 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*ResourceTrack
 
 	tags := c.Tags()
 
-	asgs, err := findAutoscalingGroups(c, tags)
+	asgs, err := FindAutoscalingGroups(c, tags)
 	if err != nil {
 		return nil, err
 	}

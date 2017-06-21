@@ -1,14 +1,21 @@
 ## kops get federations
 
-get federations
+Get federation.
 
 ### Synopsis
 
 
-List or get federations.
+Display one or many federation resources.
 
 ```
 kops get federations
+```
+
+### Examples
+
+```
+  # Get a cluster
+  kops get federation --name k8s-cluster.example.com
 ```
 
 ### Options inherited from parent commands
@@ -28,5 +35,5 @@ kops get federations
 ```
 
 ### SEE ALSO
-* [kops get](kops_get.md)	 - List all instances of a resource.
+* [kops get](kops_get.md)	 - Get one or many resources.
 

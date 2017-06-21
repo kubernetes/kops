@@ -21,7 +21,8 @@ import (
 	"fmt"
 	"github.com/blang/semver"
 	"github.com/golang/glog"
-	"k8s.io/kops"
+	kopsbase "k8s.io/kops"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
@@ -125,7 +126,7 @@ func (t *ProtokubeBuilder) ProtokubeImageName() string {
 	}
 	if name == "" {
 		// use current default corresponding to this version of nodeup
-		name = kops.DefaultProtokubeImageName()
+		name = kopsbase.DefaultProtokubeImageName()
 	}
 	return name
 }
@@ -219,12 +220,12 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		f.Cloud = fi.String(t.Cluster.Spec.CloudProvider)
 
 		if f.DNSProvider == nil {
-			switch fi.CloudProviderID(t.Cluster.Spec.CloudProvider) {
-			case fi.CloudProviderAWS:
+			switch kops.CloudProviderID(t.Cluster.Spec.CloudProvider) {
+			case kops.CloudProviderAWS:
 				f.DNSProvider = fi.String("aws-route53")
-			case fi.CloudProviderGCE:
+			case kops.CloudProviderGCE:
 				f.DNSProvider = fi.String("google-clouddns")
-			case fi.CloudProviderVSphere:
+			case kops.CloudProviderVSphere:
 				f.DNSProvider = fi.String("coredns")
 				f.ClusterId = fi.String(t.Cluster.ObjectMeta.Name)
 				f.DNSServer = fi.String(*t.Cluster.Spec.CloudConfig.VSphereCoreDNSServer)

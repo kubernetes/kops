@@ -1,6 +1,4 @@
-#!/bin/bash
-
-# Copyright 2016 The Kubernetes Authors.
+# Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,19 +12,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-. $(dirname "${BASH_SOURCE}")/common.sh
-
-TMP_DOCS="${KUBE_ROOT}/.build/docs"
-rm -rf $TMP_DOCS
-mkdir -p $TMP_DOCS
-
-BIN="${GOPATH}/bin/kops"
-
-command -v $BIN >/dev/null 2>&1 || { echo >&2 "kops must be installed. Please run make.  Aborting."; exit 1; }
-
-$BIN genhelpdocs --out $TMP_DOCS
-
-if [[ "$(diff $TMP_DOCS ${KUBE_ROOT}/docs/cli)" != "" ]]; then
-	  echo "Please run make gen-cli-docs."
-	  exit 1
-fi
+#!/bin/sh -eu
+make ci
