@@ -28,6 +28,8 @@ const LabelClusterName = "kops.k8s.io/cluster"
 // Deprecated - use the new labels & taints node-role.kubernetes.io/master and node-role.kubernetes.io/node
 const TaintNoScheduleMaster15 = "dedicated=master:NoSchedule"
 
+// +genclient=true
+
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
 	metav1.TypeMeta   `json:",inline"`

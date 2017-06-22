@@ -100,7 +100,7 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		return err
 	}
 
-	clusterList, err := client.Clusters().List(metav1.ListOptions{})
+	clusterList, err := client.ListClusters(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

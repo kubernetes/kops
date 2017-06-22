@@ -121,7 +121,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 		return err
 	}
 
-	cluster, err := client.Clusters().Get(options.clusterName)
+	cluster, err := client.GetCluster(options.clusterName)
 	if err != nil {
 		return err
 	}
@@ -139,7 +139,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 
 	clusters, err := buildClusters(args, clusterList)
 
-	ig, err := client.InstanceGroups(options.clusterName).List(metav1.ListOptions{})
+	ig, err := client.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

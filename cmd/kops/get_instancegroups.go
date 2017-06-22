@@ -85,7 +85,12 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(clusterName).List(metav1.ListOptions{})
+	cluster, err := clientset.GetCluster(clusterName)
+	if err != nil {
+		return fmt.Errorf("error fetching cluster %q: %v", cluster, err)
+	}
+
+	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}

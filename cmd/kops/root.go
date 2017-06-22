@@ -277,7 +277,7 @@ func GetCluster(factory *util.Factory, clusterName string) (*kopsapi.Cluster, er
 		return nil, err
 	}
 
-	cluster, err := clientset.Clusters().Get(clusterName)
+	cluster, err := clientset.GetCluster(clusterName)
 	if err != nil {
 		return nil, fmt.Errorf("error reading cluster configuration: %v", err)
 	}

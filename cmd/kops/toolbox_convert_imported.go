@@ -99,12 +99,12 @@ func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxC
 		return fmt.Errorf("ClusterName is required")
 	}
 
-	cluster, err := clientset.Clusters().Get(options.ClusterName)
+	cluster, err := clientset.GetCluster(options.ClusterName)
 	if err != nil {
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
