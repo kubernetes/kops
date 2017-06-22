@@ -69,7 +69,7 @@ func (c *ImportClusterCmd) Run() error {
 		return err
 	}
 
-	cluster, err := clientset.Clusters().Get(clusterName)
+	cluster, err := clientset.GetCluster(clusterName)
 	if err != nil {
 		return err
 	}

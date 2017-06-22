@@ -36,6 +36,7 @@ import (
 // but allows us to configure S3 credentials, for example
 type VFSContext struct {
 	s3Context    *S3Context
+	k8sContext   *KubernetesContext
 	memfsContext *MemFSContext
 	// mutex guards gcsClient
 	mutex sync.Mutex
@@ -44,7 +45,8 @@ type VFSContext struct {
 }
 
 var Context = VFSContext{
-	s3Context: NewS3Context(),
+	s3Context:  NewS3Context(),
+	k8sContext: NewKubernetesContext(),
 }
 
 // ReadLocation reads a file from a vfs URL
@@ -104,6 +106,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 
 	if strings.HasPrefix(p, "gs://") {
 		return c.buildGCSPath(p)
+	}
+
+	if strings.HasPrefix(p, "k8s://") {
+		return c.buildKubernetesPath(p)
 	}
 
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
@@ -217,6 +223,24 @@ func (c *VFSContext) buildS3Path(p string) (*S3Path, error) {
 
 	s3path := newS3Path(c.s3Context, bucket, u.Path)
 	return s3path, nil
+}
+
+func (c *VFSContext) buildKubernetesPath(p string) (*KubernetesPath, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid kubernetes vfs path: %q", p)
+	}
+	if u.Scheme != "k8s" {
+		return nil, fmt.Errorf("invalid kubernetes vfs path: %q", p)
+	}
+
+	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid kubernetes vfs path: %q", p)
+	}
+
+	k8sPath := newKubernetesPath(c.k8sContext, bucket, u.Path)
+	return k8sPath, nil
 }
 
 func (c *VFSContext) buildMemFSPath(p string) (*MemFSPath, error) {

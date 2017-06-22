@@ -33,3 +33,7 @@ cp ${WORK_DIR}/go/bin/conversion-gen ${GOPATH}/bin/
 
 GOPATH=${WORK_DIR}/go/ go install k8s.io/kubernetes/cmd/libs/go2idl/defaulter-gen
 cp ${WORK_DIR}/go/bin/defaulter-gen ${GOPATH}/bin/
+
+GOPATH=${WORK_DIR}/go/ go install k8s.io/kubernetes/cmd/libs/go2idl/client-gen
+cp ${WORK_DIR}/go/bin/client-gen ${GOPATH}/bin/
+

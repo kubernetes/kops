@@ -20,6 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +genclient=true
+
 // Federation represents a federated set of kubernetes clusters
 type Federation struct {
 	metav1.TypeMeta   `json:",inline"`

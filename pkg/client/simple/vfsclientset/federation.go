@@ -17,12 +17,15 @@ limitations under the License.
 package vfsclientset
 
 import (
+	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/watch"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/validation"
-	"k8s.io/kops/pkg/client/simple"
+	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 )
 
 type FederationVFS struct {
@@ -42,9 +45,12 @@ func newFederationVFS(c *VFSClientset) *FederationVFS {
 	return r
 }
 
-var _ simple.FederationInterface = &FederationVFS{}
+var _ kopsinternalversion.FederationInterface = &FederationVFS{}
 
-func (c *FederationVFS) Get(name string) (*api.Federation, error) {
+func (c *FederationVFS) Get(name string, options metav1.GetOptions) (*api.Federation, error) {
+	if options.ResourceVersion != "" {
+		return nil, fmt.Errorf("ResourceVersion not supported in FederationVFS::Get")
+	}
 	o, err := c.get(name)
 	if err != nil {
 		return nil, err
@@ -83,4 +89,16 @@ func (c *FederationVFS) Update(g *api.Federation) (*api.Federation, error) {
 
 func (c *FederationVFS) Delete(name string, options *metav1.DeleteOptions) error {
 	return c.delete(name, options)
+}
+
+func (r *FederationVFS) DeleteCollection(options *metav1.DeleteOptions, listOptions metav1.ListOptions) error {
+	return fmt.Errorf("FederationVFS DeleteCollection not implemented for vfs store")
+}
+
+func (r *FederationVFS) Watch(opts metav1.ListOptions) (watch.Interface, error) {
+	return nil, fmt.Errorf("FederationVFS Watch not implemented for vfs store")
+}
+
+func (r *FederationVFS) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *api.Federation, err error) {
+	return nil, fmt.Errorf("FederationVFS Patch not implemented for vfs store")
 }
