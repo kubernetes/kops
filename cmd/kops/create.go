@@ -17,10 +17,9 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
-
-	"bytes"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -140,7 +139,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 
 			switch v := o.(type) {
 			case *kopsapi.Federation:
-				_, err = clientset.Federations().Create(v)
+				_, err = clientset.FederationsFor(v).Create(v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("federation %q already exists", v.ObjectMeta.Name)
@@ -156,7 +155,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				if err != nil {
 					return fmt.Errorf("error populating configuration: %v", err)
 				}
-				_, err = clientset.Clusters().Create(v)
+				_, err = clientset.ClustersFor(v).Create(v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
@@ -172,7 +171,12 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
 				}
-				_, err = clientset.InstanceGroups(clusterName).Create(v)
+				cluster, err := clientset.GetCluster(clusterName)
+				if err != nil {
+					return fmt.Errorf("error querying cluster %q: %v", clusterName, err)
+				}
+
+				_, err = clientset.InstanceGroupsFor(cluster).Create(v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("instanceGroup %q already exists", v.ObjectMeta.Name)

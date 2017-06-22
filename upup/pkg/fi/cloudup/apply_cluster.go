@@ -108,7 +108,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if c.InstanceGroups == nil {
-		list, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).List(metav1.ListOptions{})
+		list, err := c.Clientset.InstanceGroupsFor(c.Cluster).List(metav1.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -709,7 +709,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		for _, g := range c.InstanceGroups {
-			_, err := c.Clientset.InstanceGroups(c.Cluster.ObjectMeta.Name).Update(g)
+			_, err := c.Clientset.InstanceGroupsFor(c.Cluster).Update(g)
 			if err != nil {
 				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.ObjectMeta.Name, err)
 			}

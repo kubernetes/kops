@@ -31,7 +31,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -72,7 +71,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	cluster.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
 	cluster.Spec.SSHAccess = []string{"0.0.0.0/0"}
 
-	configBase, err := x.Clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(clusterName)
+	configBase, err := x.Clientset.ConfigBaseFor(cluster)
 	if err != nil {
 		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
 	}
