@@ -415,6 +415,16 @@ verify-gofmt:
 verify-packages:
 	hack/verify-packages.sh
 
+.PHONY: verify-apimachinery
+verify-apimachinery: apimachinery
+	if [[ `git status --porcelain` ]]; then \
+	    echo "Changes found when creating apimachinery." 1>&2; \
+	    echo `git status --porcelain` 1>&2; \
+	    echo "This test will fail if git changes are not committed." 1>&2; \
+	    echo "Please run make apimachinery." 1>&2; \
+	    exit 1; \
+	fi 
+
 .PHONY: verify-gendocs
 verify-gendocs: kops
 	TMP_DOCS="$$(mktemp -d)"; \
@@ -435,7 +445,7 @@ verify-gendocs: kops
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-boilerplate nodeup-gocode examples test | verify-gendocs verify-packages
+ci: govet verify-gofmt verify-boilerplate nodeup-gocode examples test | verify-gendocs verify-packages verify-apimachinery
 	echo "Done!"
 
 # --------------------------------------------------
