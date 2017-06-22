@@ -1476,7 +1476,6 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha2_KubeProxyConfig(in *kops.KubeP
 	out.CPURequest = in.CPURequest
 	out.LogLevel = in.LogLevel
 	out.ClusterCIDR = in.ClusterCIDR
-	// WARNING: in.HostnameOverride requires manual conversion: does not exist in peer-type
 	out.Master = in.Master
 	return nil
 }
