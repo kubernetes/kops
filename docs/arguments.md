@@ -1,4 +1,4 @@
-# Detailed description of arguments
+# Detailed description of a few arguments
 
 ## admin-access
 
@@ -63,9 +63,9 @@ Values:
 
 `out` determines the directory into which kubectl will write the target output.  It defaults to `out/terraform`
 
-# YAML-only Arguments
+# API only Arguments
 
-Certain arguments can only be passed via YAML, eg, `kops edit cluster`. The following documents some of the more interesting or lesser-known options.
+Certain arguments can only be passed via the API, eg, `kops edit cluster`. The following documents some of the more interesting or lesser-known options.
 
 ## kubeletPreferredAddressTypes
 
@@ -79,3 +79,5 @@ kubeAPIServer:
 	- InternalIP
 	- ExternalIP
 ```
+
+More information about using YAML is available [here](manifests_and_customizing_via_api.md).

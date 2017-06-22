@@ -1,9 +1,8 @@
 # Description of Keys in `config` and `cluster.spec`
 
-This list is not complete, but aims to document any keys that are less than self-explanatory.
+This list is not complete but aims to document any keys that are less than self-explanatory. Our [godoc](https://godoc.org/k8s.io/kops/pkg/apis/kops) reference provides a more detailed list of API values. [ClusterSpec](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec), defined as `kind: Cluster` in YAML, and [InstanceGroup](https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroup), defined as `kind: InstanceGroup` in YAML, are the two top-level API values used to describe a cluster.
 
 ## spec
-
 
 ### api
 
@@ -159,9 +158,39 @@ Will result in the flag `--feature-gates=ExperimentalCriticalPodAnnotation=true,
 
 ### networkID
 
-On AWS, this is the id of the VPC the cluster is created in. If creating a cluster from scratch, this field doesn't need to be specified at create time; `kops` will create a `VPC` for you.
+On AWS, this is the id of the VPC the cluster is created in. If creating a cluster from scratch, this field does not need to be specified at create time; `kops` will create a `VPC` for you.
 
 ```yaml
 spec:
   networkID: vpc-abcdefg1
 ```
+
+More information about re-using a VPC is [here](run_in_existing_vpc.md).
+
+### hooks
+
+Hooks allow a the execution of a container before the installation of Kubneretes on every node in a cluster.  For intance you can install nvidia drivers for using GPUs.
+
+```
+spec:
+  # many sections removed
+  hooks:
+  - execContainer:
+      image: kopeio/nvidia-bootstrap:1.6
+```
+
+Install Ceph
+
+```
+spec:
+  # many sections removed
+  hooks:
+  - execContainer:
+      command:
+      - sh
+      - -c
+      - chroot /rootfs apt-get update && chroot /rootfs apt-get install -y ceph-common
+      image: busybox
+```
+
+
