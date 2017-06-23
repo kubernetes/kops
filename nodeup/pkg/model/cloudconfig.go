@@ -68,6 +68,9 @@ func (b *CloudConfigBuilder) Build(c *fi.ModelBuilderContext) error {
 		if cloudConfig.DisableSecurityGroupIngress != nil {
 			lines = append(lines, fmt.Sprintf("DisableSecurityGroupIngress = %t", *cloudConfig.DisableSecurityGroupIngress))
 		}
+		if cloudConfig.ElbSecurityGroup != nil {
+			lines = append(lines, fmt.Sprintf("ElbSecurityGroup = %t", *cloudConfig.ElbSecurityGroup))
+		}
 	case "vsphere":
 		vm_uuid, err := getVMUUID(b.Cluster.Spec.KubernetesVersion)
 		if err != nil {
