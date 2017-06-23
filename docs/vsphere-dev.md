@@ -1,12 +1,12 @@
 # Development process and hacks for vSphere
 
-This document contains few details, guidelines and tips about ongoing effort for vSphere support for kops.
+This document contains details about ongoing effort for vSphere support in kops- how to use kops with vSphere, contact information and current status. vSphere support in kops is an experimental feature, under `KOPS_FEATURE_FLAGS=+VSphereCloudProvider` feature flag and is not production ready yet.
 
 ## Contact
-We are using [#sig-onprem channel](https://kubernetes.slack.com/messages/sig-onprem/) for discussing vSphere support for kops. Please feel free to join and talk to us.
+We are using [#kops channel](https://kubernetes.slack.com/messages/C3QUFP0QM) for discussing vSphere support for kops. Please feel free to join and talk to us.
 
-## Process
-Here is a [list of requirements and tasks](https://docs.google.com/document/d/10L7I98GuW7o7QuX_1QTouxC0t0aEO_68uHKNc7o4fXY/edit#heading=h.6wyer21z75n9 "Kops-vSphere specification") that we are working on. Once the basic infrastructure for vSphere is ready, we will move these tasks to issues.
+## Current status
+Here is the [current status](vsphere-development-status.md) of vSphere support in kops.
 
 ## Setting up DNS
 Since vSphere doesn't have built-in DNS service, we use CoreDNS to support the DNS requirement in vSphere provider. This requires the users to setup a CoreDNS server before creating a kubernetes cluster. Please follow the following instructions to setup.
