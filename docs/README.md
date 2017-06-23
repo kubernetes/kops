@@ -75,7 +75,8 @@ Overview
     * for cluster nodes
 * [Secret management](secrets.md)
 * [Single-master to multi-master update](single-to-multi-master.md)
-
+* [Developers guide for vSphere support](vsphere-dev.md)
+* [vSphere support status](vsphere-development-status.md)
 
 ### Security ###
 
