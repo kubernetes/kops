@@ -397,7 +397,8 @@ govet:
 	  k8s.io/kops/util/... \
 	  k8s.io/kops/upup/... \
 	  k8s.io/kops/protokube/... \
-	  k8s.io/kops/dns-controller/...
+	  k8s.io/kops/dns-controller/... \
+	  k8s.io/kops/tests/...
 
 
 # --------------------------------------------------
