@@ -28,7 +28,7 @@ type EtcdBuilder struct {
 	*NodeupModelContext
 }
 
-var _ fi.ModelBuilder = &LogrotateBuilder{}
+var _ fi.ModelBuilder = &EtcdBuilder{}
 
 func (b *EtcdBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
