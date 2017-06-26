@@ -20,11 +20,17 @@ import (
 	"fmt"
 	"time"
 
+	"os"
+
 	"github.com/golang/glog"
+	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/kubernetes/pkg/kubectl/cmd"
+	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 
 const (
@@ -46,17 +52,97 @@ type NodeAPIAdapter struct {
 
 	//TODO: convert to arg on WaitForNodeToBe
 	// K8s timeout on method call
-	timeout time.Duration
+	timeout      time.Duration
+	clientConfig clientcmd.ClientConfig
 }
 
-func NewNodeAPIAdapter(client kubernetes.Interface, timeout time.Duration) (*NodeAPIAdapter, error) {
+func NewNodeAPIAdapter(client kubernetes.Interface, timeout time.Duration, clientConfig clientcmd.ClientConfig) (*NodeAPIAdapter, error) {
 	if client == nil {
 		return nil, fmt.Errorf("client not provided")
 	}
 	return &NodeAPIAdapter{
-		client:  client,
-		timeout: timeout,
+		client:       client,
+		timeout:      timeout,
+		clientConfig: clientConfig,
 	}, nil
+}
+
+// DrainNode drains a K8s node.
+func (nodeAA *NodeAPIAdapter) DrainNode(nodeName string, cordon bool, drainInterval time.Duration) error {
+
+	options, err := nodeAA.setupOptions()
+
+	if err != nil {
+		return err
+	}
+
+	cmd := &cobra.Command{
+		Use: "cordon NODE",
+	}
+	args := []string{nodeName}
+	if err := options.SetupDrain(cmd, args); err != nil {
+		return fmt.Errorf("error setting up drain: %v", err)
+	}
+
+	if cordon {
+		if err := options.RunCordonOrUncordon(true); err != nil {
+			return fmt.Errorf("error cordoning node node: %v", err)
+		}
+	}
+
+	if err := options.RunDrain(); err != nil {
+		return fmt.Errorf("error draining node: %v", err)
+	}
+
+	if drainInterval > time.Second*0 {
+		glog.V(3).Infof("Waiting for %s for pods to stabilize after draining.", drainInterval)
+		time.Sleep(drainInterval)
+	}
+
+	return nil
+}
+
+// CordonNode cardons a K8s node.
+func (nodeAA *NodeAPIAdapter) CordonNode(nodeName string) error {
+
+	options, err := nodeAA.setupOptions()
+
+	if err != nil {
+		return err
+	}
+
+	cmd := &cobra.Command{
+		Use: "cordon NODE",
+	}
+	args := []string{nodeName}
+	if err := options.SetupDrain(cmd, args); err != nil {
+		return fmt.Errorf("error setting up drain: %v", err)
+	}
+
+	if err := options.RunCordonOrUncordon(true); err != nil {
+		return fmt.Errorf("error cordoning node node: %v", err)
+	}
+	return nil
+}
+
+func (nodeAA *NodeAPIAdapter) setupOptions() (options *cmd.DrainOptions, err error) {
+	if nodeAA.clientConfig == nil {
+		return nil, fmt.Errorf("ClientConfig not set")
+	}
+	f := cmdutil.NewFactory(nodeAA.clientConfig)
+
+	// TODO: Send out somewhere else, also DrainOptions has errout
+
+	options = &cmd.DrainOptions{
+		Factory:          f,
+		Out:              os.Stdout,
+		IgnoreDaemonsets: true,
+		Force:            true,
+		DeleteLocalData:  true,
+		ErrOut:           os.Stderr,
+	}
+
+	return options, nil
 }
 
 // GetAllNodes is a access to get all nodes from a cluster api

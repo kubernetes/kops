@@ -21,6 +21,7 @@ import (
 	"io"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -51,7 +52,21 @@ var (
 
 	Use export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
 	and validates the cluster.  New flags for Drain and Validation operations will be shown when
-	the environment variable is set.`))
+	the environment variable is set.
+
+	Node Replacement Strategies Alpa Feature
+
+	We are now including three new strategies that influence node replacement. All masters and bastions
+	are rolled sequentially before the nodes, and this flag does not influence their replacement.  These
+	strategies utilize the feature flag mentioned above.
+
+	1. "asg" - A node is drained then deleted.  The cloud then replaces the node automatically. (default)
+	2. "pre-create" - All node instance groups are duplicated first; then all old nodes are cordoned.
+	3. "create" - As each node instance group rolls, the instance group is duplicated, then all
+	old nodes are cordoned.
+
+	The second and third options create new instance groups; next, the old nodes are cardoned.
+	`))
 
 	rollingupdate_example = templates.Examples(i18n.T(`
 		# Roll the currently selected kops cluster
@@ -74,6 +89,19 @@ var (
 		  --fail-on-validate-error="false" \
 		  --node-interval 8m \
 		  --instance-group nodes
+
+		# Use the pre-create node strategy. First all new nodes are created
+		# The old nodes are cordon, drained and deleted.
+		export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate,+RollingUpdateStrategies"
+		kops rolling-update cluster k8s-cluster.example.com --yes \
+		  --strategy pre-create
+
+		# Roll the k8s-cluster.example.com kops cluster, and only roll the instancegroup named "foo".
+		kops rolling-update cluster k8s-cluster.example.com --yes \
+		  --fail-on-validate-error="false" \
+		  --node-interval 8m \
+		  --instance-group foo
+
 		`))
 
 	rollingupdate_short = i18n.T(`Rolling update a cluster.`)
@@ -108,6 +136,8 @@ type RollingUpdateOptions struct {
 	// InstanceGroups is the list of instance groups to rolling-update;
 	// if not specified all instance groups will be updated
 	InstanceGroups []string
+
+	Strategy string
 }
 
 func (o *RollingUpdateOptions) InitDefaults() {
@@ -153,6 +183,10 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
 		cmd.Flags().IntVar(&options.ValidateRetries, "validate-retries", options.ValidateRetries, "The number of times that a node will be validated.  Between validation kops sleeps the master-interval/2 or node-interval/2 duration.")
 		cmd.Flags().DurationVar(&options.DrainInterval, "drain-interval", options.DrainInterval, "The duration that a rolling-update will wait after the node is drained.")
+		if featureflag.RollingUpdateStrategies.Enabled() {
+			cmd.Flags().StringVarP(&options.Strategy, "strategy", "s", options.Strategy, "When new nodes are created. Supported: "+strings.Join(instancegroups.StrategyTypes.List(), ", ")+".")
+		}
+
 	}
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
@@ -203,6 +237,13 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 
 	if options.ValidateRetries <= 0 {
 		return fmt.Errorf("validate-retries flag cannot be 0 or smaller")
+	}
+
+	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
+		if !instancegroups.StrategyTypes.Has(options.Strategy) {
+			return fmt.Errorf("Strategy: %q not known, please use one of: %q", options.Strategy,
+				strings.Join(instancegroups.StrategyTypes.List(), ", "))
+		}
 	}
 
 	var nodes []v1.Node
@@ -339,6 +380,9 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		glog.V(2).Infof("New rolling update with drain and validate enabled.")
+		if featureflag.RollingUpdateStrategies.Enabled() {
+			glog.V(2).Infof("Using %s algorithm to create new nodes.", options.Strategy)
+		}
 	}
 	d := &instancegroups.RollingUpdateCluster{
 		MasterInterval:   options.MasterInterval,
@@ -353,6 +397,9 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		ClusterName:      options.ClusterName,
 		ValidateRetries:  options.ValidateRetries,
 		DrainInterval:    options.DrainInterval,
+		Clientset:        clientset,
+		Strategy:         options.Strategy,
+		Cluster:          cluster,
 	}
 	return d.RollingUpdate(groups, list)
 }
