@@ -192,7 +192,7 @@ for some of these instructions.
 ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --caller-reference $ID | jq .DelegationSet.NameServers
 ```
 
-* You will now go to your registrars page and log in. You will need to create a
+* You will now go to your registrar's page and log in. You will need to create a
   new **SUBDOMAIN**, and use the 4 NS records received from the above command for the new
   **SUBDOMAIN**. This **MUST** be done in order to use your cluster. Do **NOT**
   change your top level NS record, or you might take your site offline.
@@ -210,6 +210,12 @@ guide to include:
 
 ```
 kops create cluster --dns private $NAME
+```
+
+If you have a mix of public and private zones, you will also need to include the `--dns-zone` argument with the hosted zone id you wish to deploy in:
+
+```
+kops create cluster --dns private --dns-zone ZABCDEFG $NAME
 ```
 
 ## Testing your DNS setup
@@ -282,7 +288,7 @@ documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#
 
 ## Prepare local environment
 
-We're ready to start creating our first cluster!  Let's first setup a few
+We're ready to start creating our first cluster!  Let's first set up a few
 environment variables to make this process easier.
 
 ```bash
