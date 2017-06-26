@@ -20,13 +20,19 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/golang/glog"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
 )
+
+// TODO add code comments
 
 // A cluster to validate
 type ValidationCluster struct {
@@ -54,6 +60,60 @@ type ValidationNode struct {
 	Status   v1.ConditionStatus `json:"status,omitempty"`
 }
 
+type ValidateClusterRetries struct {
+	Cluster         *api.Cluster
+	Clientset       simple.Clientset
+	Interval        time.Duration
+	ValidateRetries int
+	K8sClient       kubernetes.Interface
+}
+
+func (v ValidateClusterRetries) GetInstanceGroupsAndValidateCluster() error {
+	// get the new list of ig
+	list, err := v.Clientset.InstanceGroupsFor(v.Cluster).List(metav1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("unable to get instance groups: %v", err)
+	}
+
+	// validate the cluster
+	if err := v.ValidateClusterWithRetries(list); err != nil {
+		return fmt.Errorf("unable to validate cluster: %v", err)
+	}
+	return nil
+}
+
+// ValidateClusterWithRetries runs our validation methods on the K8s Cluster x times and then fails.
+func (v ValidateClusterRetries) ValidateClusterWithRetries(instanceGroupList *api.InstanceGroupList) (err error) {
+
+	// TODO - We are going to need to improve Validate to allow for more than one node, not master
+	// TODO - going down at a time.
+	for i := 0; i <= v.ValidateRetries; i++ {
+
+		if _, err = ValidateCluster(v.Cluster.ObjectMeta.Name, instanceGroupList, v.K8sClient); err != nil {
+			glog.Infof("Cluster did not validate, and waiting longer: %v.", err)
+			time.Sleep(v.Interval / 2)
+		} else {
+			glog.Infof("Cluster validated.")
+			return nil
+		}
+
+	}
+
+	// FIXME handle force and cloud only
+	// for loop is done, and did not end when the cluster validated
+	return fmt.Errorf("cluster validation failed: %v", err)
+}
+
+func (v *ValidateClusterRetries) ValidateCluster(instanceGroupList *api.InstanceGroupList) error {
+
+	if _, err := ValidateCluster(v.Cluster.ObjectMeta.Name, instanceGroupList, v.K8sClient); err != nil {
+		return fmt.Errorf("cluster %q did not pass validation: %v", v.Cluster.ObjectMeta.Name, err)
+	}
+
+	return nil
+
+}
+
 // ValidateCluster validate a k8s cluster with a provided instance group list
 func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupList, clusterKubernetesClient kubernetes.Interface) (*ValidationCluster, error) {
 	var instanceGroups []*kops.InstanceGroup
@@ -78,7 +138,7 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 		return nil, fmt.Errorf("cannot set timeout %q: %v", clusterName, err)
 	}
 
-	nodeAA, err := NewNodeAPIAdapter(clusterKubernetesClient, timeout)
+	nodeAA, err := NewNodeAPIAdapter(clusterKubernetesClient, timeout, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error building node adapter for %q: %v", clusterName, err)
 	}

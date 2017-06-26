@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -149,6 +150,20 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	}
 
 	return ig, nil
+}
+
+// CreateInstanceGroup validates and creates a new instance group.
+func CreateInstanceGroup(ig *kops.InstanceGroup, cluster *kops.Cluster, clientset simple.Clientset) error {
+
+	if err := validation.ValidateInstanceGroup(ig); err != nil {
+		return fmt.Errorf("error validating InstanceGroup: %v", err)
+	}
+
+	if _, err := clientset.InstanceGroupsFor(cluster).Create(ig); err != nil {
+		return fmt.Errorf("error storing InstanceGroup: %v", err)
+	}
+
+	return nil
 }
 
 // defaultNodeMachineType returns the default MachineType for nodes, based on the cloudprovider
