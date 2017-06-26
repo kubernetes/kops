@@ -11,7 +11,17 @@ To perform rolling update, you need to update the cloud resources first with "ko
 
 Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply" prior to running "kops rolling-update cluster" 
 
-Use export KOPS FEATURE FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes and validates the cluster.  New flags for Drain and Validation operations will be shown when the environment variable is set.
+Use export KOPS FEATURE FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes and validates the cluster.  New flags for Drain and Validation operations will be shown when the environment variable is set. 
+
+Node Replacement Strategies Alpha Feature 
+
+We are now including three new strategies that influence node replacement. All masters and bastions are rolled sequentially before the nodes, and this flag does not influence their replacement.  These strategies utilize the feature flag mentioned above. 
+
+  1. "default" - A node is drained then deleted.  The cloud then replaces the node automatically.  
+  2. "create-all-new-ig-first" - All node instance groups are duplicated first; then all old nodes are cordoned.  
+  3. "create-new-by-ig" - As each node instance group rolls, the instance group is duplicated, then all old nodes are cordoned.  
+
+The second and third options create new instance groups. In order to use this ALPHA feature you need to enable +DrainAndValidateRollingUpdate,+RollingUpdateStrategies feature flags.
 
 ### Examples
 
@@ -36,6 +46,21 @@ Use export KOPS FEATURE FLAGS="+DrainAndValidateRollingUpdate" to use beta code 
   --fail-on-validate-error="false" \
   --node-interval 8m \
   --instance-group nodes
+  
+  # Roll the k8s-cluster.example.com kops cluster, and only roll the instancegroup named "foo".
+  kops rolling-update cluster k8s-cluster.example.com --yes \
+  --fail-on-validate-error="false" \
+  --node-interval 8m \
+  --instance-group foo
+  
+  # Use the create-new-by-ig node strategy. Master(s) are update in series, and then
+  # each instance groups is updated in a loop. A new instance group is created, cluster is validated,
+  # and then the old nodes are cordon, drained and deleted. This process is repeated
+  # for every node instance group.
+  export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate,+RollingUpdateStrategies"
+  kops rolling-update cluster k8s-cluster.example.com --yes \
+  --strategy create-new-by-ig --master-interval=8m \
+  --node-interval=8m
 ```
 
 ### Options inherited from parent commands

@@ -74,7 +74,7 @@ func setupNodeAA(t *testing.T, conditions []v1.NodeCondition, nodeName string) *
 
 	c := fake.NewSimpleClientset(node)
 	//c.Validate(t, response, err)
-	nodeAA, err := NewNodeAPIAdapter(c, time.Duration(10)*time.Millisecond)
+	nodeAA, err := NewNodeAPIAdapter(c, time.Duration(10)*time.Millisecond, nil)
 	if err != nil {
 		t.Fatalf("unexpected error building NodeAPIAdapter: %v", err)
 	}
