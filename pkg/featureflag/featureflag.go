@@ -42,6 +42,9 @@ var DNSPreCreate = New("DNSPreCreate", Bool(true))
 // DrainAndValidateRollingUpdate if set will use new rolling update code that will drain and validate.
 var DrainAndValidateRollingUpdate = New("DrainAndValidateRollingUpdate", Bool(false))
 
+// RollingUpdateStrategies if set will use new rolling update code that will drain and validate.
+var RollingUpdateStrategies = New("RollingUpdateStrategies", Bool(false))
+
 // VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled.
 var VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
 

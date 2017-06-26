@@ -22,11 +22,29 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 )
+
+// Different rolling update strategy types
+const (
+	// Create all new instance groups before removing the old instance groups.
+	PRE_CREATE = "create-all-new-ig-first"
+	// Iterate through the instance groups and create new replacement ig one by one.
+	CREATE = "create-new-by-ig"
+	// Origin method, which removes a node one by one and the node is replaced via
+	// the cloud, such as ASG.
+	DEFAULT = "default"
+)
+
+// StrategyTypes are used for checking an outputting the strategies.
+var StrategyTypes = sets.NewString(PRE_CREATE, CREATE, DEFAULT)
 
 // RollingUpdateCluster is a struct containing cluster information for a rolling update.
 type RollingUpdateCluster struct {
@@ -46,10 +64,15 @@ type RollingUpdateCluster struct {
 	ClusterName      string
 	ValidateRetries  int
 	DrainInterval    time.Duration
+
+	Strategy string
+
+	Cluster   *api.Cluster
+	Clientset simple.Clientset
 }
 
 // RollingUpdate performs a rolling update on a K8s Cluster.
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
+func (r *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		glog.Infof("Cloud Instance Group length is zero. Not doing a rolling-update.")
 		return nil
@@ -87,7 +110,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 				defer wg.Done()
 
-				err := group.RollingUpdate(c, instanceGroups, true, c.BastionInterval)
+				err := group.RollingUpdate(r, instanceGroups, true, r.BastionInterval)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -117,7 +140,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 			defer wg.Done()
 
 			for k, group := range masterGroups {
-				err := group.RollingUpdate(c, instanceGroups, false, c.MasterInterval)
+				err := group.RollingUpdate(r, instanceGroups, false, r.MasterInterval)
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -130,40 +153,46 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 		wg.Wait()
 	}
 
-	// Upgrade nodes, with greater parallelism
-	{
-		var wg sync.WaitGroup
-
-		// We run nodes in series, even if they are in separate instance groups
-		// typically they will not being separate instance groups. If you roll the nodes in parallel
-		// you can get into a scenario where you can evict multiple statefulset pods from the same
-		// statefulset at the same time. Further improvements needs to be made to protect from this as
-		// well.
-
-		wg.Add(1)
-
-		go func() {
-			for k := range nodeGroups {
-				resultsMutex.Lock()
-				results[k] = fmt.Errorf("function panic nodes")
-				resultsMutex.Unlock()
-			}
-
-			defer wg.Done()
-
-			for k, group := range nodeGroups {
-				err := group.RollingUpdate(c, instanceGroups, false, c.NodeInterval)
-
-				resultsMutex.Lock()
-				results[k] = err
-				resultsMutex.Unlock()
-
-				// TODO: Bail on error?
-			}
-		}()
-
-		wg.Wait()
+	// TODO - Do we want a WaitGroup on this?  I am not sure why we have wait groups and
+	// TODO - go func() here?
+	if r.Strategy == PRE_CREATE && featureflag.DrainAndValidateRollingUpdate.Enabled() && featureflag.RollingUpdateStrategies.Enabled() {
+		return r.RollingUpdateNodesPreCreate(nodeGroups)
 	}
+	var wg sync.WaitGroup
+
+	// We run nodes in series, even if they are in separate instance groups
+	// typically they will not being separate instance groups. If you roll the nodes in parallel
+	// you can get into a scenario where you can evict multiple statefulset pods from the same
+	// statefulset at the same time. Further improvements needs to be made to protect from this as
+	// well.
+
+	wg.Add(1)
+
+	go func() {
+		for k := range nodeGroups {
+			resultsMutex.Lock()
+			results[k] = fmt.Errorf("function panic nodes")
+			resultsMutex.Unlock()
+		}
+
+		defer wg.Done()
+		for k, group := range nodeGroups {
+			var err error
+			if r.Strategy == CREATE && featureflag.DrainAndValidateRollingUpdate.Enabled() && featureflag.RollingUpdateStrategies.Enabled() {
+				err = group.RollingUpdateNodesCreate(r)
+			} else {
+				err = group.RollingUpdate(r, instanceGroups, false, r.NodeInterval)
+			}
+
+			resultsMutex.Lock()
+			results[k] = err
+			resultsMutex.Unlock()
+
+			// TODO: Bail on error?
+		}
+	}()
+
+	wg.Wait()
 
 	for _, err := range results {
 		if err != nil {
@@ -172,5 +201,79 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 	}
 
 	glog.Infof("Rolling update completed!")
+	return nil
+}
+
+// RollingUpdateNodesPreCreate create all new nodes instance group(s) then cordons all nodes.
+// Old nodes are then drained and the old instance group(s) is deleted.
+func (r *RollingUpdateCluster) RollingUpdateNodesPreCreate(nodeGroups map[string]*CloudInstanceGroup) error {
+
+	nodeGroupsUpdate := make([]*CloudInstanceGroup, 0)
+
+	// Figure out which CloudInstanceGroups need updating and create a new instance group for each
+	{
+		for _, group := range nodeGroups {
+			update := group.NeedUpdate
+			if r.Force {
+				update = append(update, group.Ready...)
+			}
+
+			if len(update) == 0 {
+				return nil
+			}
+
+			if _, ok := group.InstanceGroup.ObjectMeta.Annotations[KOPS_IG_CHILD]; !ok {
+				suffix := getSuffix(group.InstanceGroup.ObjectMeta.Name)
+				ig, err := group.DuplicateClusterInstanceGroup(r.Cluster, r.Clientset, suffix)
+				if err != nil {
+					return fmt.Errorf("unable to create instance group: %v", err)
+				}
+				glog.Infof("Creating Replacement Instance Group, %q, based on Instance Group %q.", ig.Name, group.InstanceGroup.Name)
+			}
+
+			nodeGroupsUpdate = append(nodeGroupsUpdate, group)
+		}
+	}
+
+	if err := updateCluster(r.Cluster, r.Clientset); err != nil {
+		return fmt.Errorf("unable to update cluster: %v", err)
+	}
+
+	glog.Info("Waiting for new Instance Group(s) to start")
+	time.Sleep(r.NodeInterval)
+
+	// get the new list of ig and validate cluster
+	if err := validateCluster(r); err != nil {
+		return fmt.Errorf("unable to validate cluster: %v", err)
+	}
+
+	if r.CloudOnly {
+		glog.Warningf("not cordoning nodes as --cloud-only is set")
+	} else {
+		// cardon the nodes
+		glog.Infof("Cordoning all nodes")
+		for _, group := range nodeGroupsUpdate {
+			if err := group.CordonNodes(r); err != nil {
+				return fmt.Errorf("unable to cordon nodes: %v", err)
+			}
+		}
+	}
+
+	for _, group := range nodeGroupsUpdate {
+
+		if err := group.DrainAndDelete(r); err != nil {
+			return fmt.Errorf("unable to drain and delete nodes: %v", err)
+		}
+
+		// validate new nodes
+		if err := validateCluster(r); err != nil {
+			return fmt.Errorf("unable to validate cluster: %v", err)
+		}
+
+		glog.Infof("Deleted old Instance Group: %q", group.InstanceGroup.Name)
+	}
+
+	glog.Infof("Nodes rolling-update completed")
+
 	return nil
 }

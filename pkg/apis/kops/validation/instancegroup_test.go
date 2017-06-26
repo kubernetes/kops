@@ -46,6 +46,7 @@ func TestDefaultTaintsEnforcedBefore160(t *testing.T) {
 			Spec: kops.InstanceGroupSpec{
 				Taints: p.taints,
 				Role:   p.role,
+				AdditionalSecurityGroups: []string{"sg-1234abcd"},
 			},
 		}
 
