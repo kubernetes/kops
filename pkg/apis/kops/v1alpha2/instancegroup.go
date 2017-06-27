@@ -68,6 +68,8 @@ type InstanceGroupSpec struct {
 	RootVolumeSize *int32 `json:"rootVolumeSize,omitempty"`
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string `json:"rootVolumeType,omitempty"`
+	// RootVolumeOptimization enables EBS optimization for an instance
+	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
 
 	Subnets []string `json:"subnets,omitempty"`
 
