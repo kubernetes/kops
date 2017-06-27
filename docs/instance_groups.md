@@ -186,3 +186,12 @@ Example: `kops delete ig morenodes`
 
 No rolling-update is needed (and note this is not currently graceful, so there may be interruptions to
 workloads where the pods are running on those nodes).
+
+## EBS Volume Optimization
+
+EBS-Optimized instances can be created by setting the following field:
+
+```
+spec:
+  rootVolumeOptimization: true
+```
