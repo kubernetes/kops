@@ -388,7 +388,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Canal != nil {
 		key := "networking.projectcalico.org.canal"
-		version := "1.0"
+		version := "1.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
