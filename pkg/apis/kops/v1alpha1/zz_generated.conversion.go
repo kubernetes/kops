@@ -1122,6 +1122,7 @@ func autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.MachineType = in.MachineType
 	out.RootVolumeSize = in.RootVolumeSize
 	out.RootVolumeType = in.RootVolumeType
+	out.RootVolumeOptimization = in.RootVolumeOptimization
 	// WARNING: in.Zones requires manual conversion: does not exist in peer-type
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
@@ -1150,6 +1151,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in *kops.I
 	out.MachineType = in.MachineType
 	out.RootVolumeSize = in.RootVolumeSize
 	out.RootVolumeType = in.RootVolumeType
+	out.RootVolumeOptimization = in.RootVolumeOptimization
 	// WARNING: in.Subnets requires manual conversion: does not exist in peer-type
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
