@@ -194,3 +194,17 @@ func (c *MockAWSCloud) Route53() route53iface.Route53API {
 func (c *MockAWSCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return nil, fmt.Errorf("MockAWSCloud FindVPCInfo not implemented")
 }
+
+// DefaultInstanceType determines an instance type for the specified cluster & instance group
+func (c *MockAWSCloud) DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
+	switch ig.Spec.Role {
+	case kops.InstanceGroupRoleMaster:
+		return "m3.medium", nil
+	case kops.InstanceGroupRoleNode:
+		return "t2.medium", nil
+	case kops.InstanceGroupRoleBastion:
+		return "t2.micro", nil
+	default:
+		return "", fmt.Errorf("MockAWSCloud DefaultInstanceType does not handle %s", ig.Spec.Role)
+	}
+}
