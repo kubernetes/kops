@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -116,6 +117,9 @@ type AWSCloud interface {
 
 	// WithTags created a copy of AWSCloud with the specified default-tags bound
 	WithTags(tags map[string]string) AWSCloud
+
+	// DefaultInstanceType determines a suitable instance type for the specified instance group
+	DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error)
 }
 
 type awsCloudImplementation struct {
@@ -748,4 +752,114 @@ func (c *awsCloudImplementation) FindVPCInfo(vpcID string) (*fi.VPCInfo, error) 
 	}
 
 	return vpcInfo, nil
+}
+
+// DefaultInstanceType determines an instance type for the specified cluster & instance group
+func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
+	var candidates []string
+
+	switch ig.Spec.Role {
+	case kops.InstanceGroupRoleMaster:
+		// Some regions do not (currently) support the m3 family; the c4 large is the cheapest non-burstable instance
+		// (us-east-2, ca-central-1, eu-west-2, ap-northeast-2).
+		// Also some accounts are no longer supporting m3 in us-east-1 zones
+		candidates = []string{"m3.medium", "c4.large"}
+
+	// TODO: We used to have logic like the following...
+	//	{{ if gt .TotalNodeCount 500 }}
+	//	MasterMachineType: n1-standard-32
+	//	{{ else if gt .TotalNodeCount 250 }}
+	//MasterMachineType: n1-standard-16
+	//{{ else if gt .TotalNodeCount 100 }}
+	//MasterMachineType: n1-standard-8
+	//{{ else if gt .TotalNodeCount 10 }}
+	//MasterMachineType: n1-standard-4
+	//{{ else if gt .TotalNodeCount 5 }}
+	//MasterMachineType: n1-standard-2
+	//{{ else }}
+	//MasterMachineType: n1-standard-1
+	//{{ end }}
+	//
+	//{{ if gt TotalNodeCount 500 }}
+	//MasterMachineType: c4.8xlarge
+	//{{ else if gt TotalNodeCount 250 }}
+	//MasterMachineType: c4.4xlarge
+	//{{ else if gt TotalNodeCount 100 }}
+	//MasterMachineType: m3.2xlarge
+	//{{ else if gt TotalNodeCount 10 }}
+	//MasterMachineType: m3.xlarge
+	//{{ else if gt TotalNodeCount 5 }}
+	//MasterMachineType: m3.large
+	//{{ else }}
+	//MasterMachineType: m3.medium
+	//{{ end }}
+
+	case kops.InstanceGroupRoleNode:
+		candidates = []string{"t2.medium"}
+
+	case kops.InstanceGroupRoleBastion:
+		candidates = []string{"t2.micro"}
+
+	default:
+		return "", fmt.Errorf("unhandled role %q", ig.Spec.Role)
+	}
+
+	// Find the AZs the InstanceGroup targets
+	igZones := sets.NewString()
+	for _, subnetName := range ig.Spec.Subnets {
+		var subnet *kops.ClusterSubnetSpec
+		for i := range cluster.Spec.Subnets {
+			if cluster.Spec.Subnets[i].Name == subnetName {
+				subnet = &cluster.Spec.Subnets[i]
+			}
+		}
+		if subnet == nil {
+			return "", fmt.Errorf("subnet %q is not defined in cluster", subnetName)
+		}
+		igZones.Insert(subnet.Zone)
+	}
+
+	// TODO: Validate that instance type exists in all AZs, but skip AZs that don't support any VPC stuff
+	for _, instanceType := range candidates {
+		zones, err := c.zonesWithInstanceType(instanceType)
+		if err != nil {
+			return "", err
+		}
+		if zones.IsSuperset(igZones) {
+			return instanceType, nil
+		} else {
+			glog.V(2).Infof("can't use instance type %q, available in zones %v but need %v", instanceType, zones, igZones)
+		}
+	}
+
+	return "", fmt.Errorf("could not find a suitable supported instance type for the instance group %q (type %q) in region %q", ig.Name, ig.Spec.Role, c.region)
+}
+
+// supportsInstanceType uses the DescribeReservedInstancesOfferings API call to determine if an instance type is supported in a region
+func (c *awsCloudImplementation) zonesWithInstanceType(instanceType string) (sets.String, error) {
+	glog.V(4).Infof("checking if instance type %q is supported in region %q", instanceType, c.region)
+	request := &ec2.DescribeReservedInstancesOfferingsInput{}
+	request.InstanceTenancy = aws.String("default")
+	request.IncludeMarketplace = aws.Bool(false)
+	request.OfferingClass = aws.String("standard")
+	request.OfferingType = aws.String("No Upfront")
+	request.ProductDescription = aws.String("Linux/UNIX (Amazon VPC)")
+	request.InstanceType = aws.String(instanceType)
+
+	zones := sets.NewString()
+
+	response, err := c.ec2.DescribeReservedInstancesOfferings(request)
+	if err != nil {
+		return zones, fmt.Errorf("error checking if instance type %q is supported in region %q: %v", instanceType, c.region, err)
+	}
+
+	for _, item := range response.ReservedInstancesOfferings {
+		if aws.StringValue(item.InstanceType) == instanceType {
+			zones.Insert(aws.StringValue(item.AvailabilityZone))
+		} else {
+			glog.Warningf("skipping non-matching instance type offering: %v", item)
+		}
+	}
+
+	return zones, nil
 }
