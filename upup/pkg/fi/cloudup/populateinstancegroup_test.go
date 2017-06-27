@@ -61,29 +61,6 @@ func TestPopulateInstanceGroup_Role_Required(t *testing.T) {
 	expectErrorFromPopulateInstanceGroup(t, cluster, g, channel, "Role")
 }
 
-func Test_defaultMasterMachineType(t *testing.T) {
-	cluster := buildMinimalCluster()
-
-	tests := map[string]string{
-		"us-east-1b": "m3.medium",
-		"us-east-2b": "c4.large",
-		"eu-west-1b": "m3.medium",
-	}
-
-	for zone, expected := range tests {
-		cluster.Spec.Subnets = []api.ClusterSubnetSpec{
-			{
-				Name: "subnet-" + zone,
-				Zone: zone,
-			},
-		}
-		actual := defaultMasterMachineType(cluster)
-		if actual != expected {
-			t.Fatalf("zone=%q actual=%q; expected=%q", zone, actual, expected)
-		}
-	}
-}
-
 func expectErrorFromPopulateInstanceGroup(t *testing.T, cluster *api.Cluster, g *api.InstanceGroup, channel *api.Channel, message string) {
 	_, err := PopulateInstanceGroupSpec(cluster, g, channel)
 	if err == nil {
