@@ -22,6 +22,11 @@ type KubeletConfigSpec struct {
 	// not used for clusters version 1.6 and later - flag removed
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
+	// AnonymousAuth permits you to control auth to the kubelet api
+	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
+	// ClientCAFile is the path to a CA certificate
+	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
+
 	// kubeconfigPath is the path to the kubeconfig file with authorization
 	// information and API server location
 	// kops will only use this for clusters version 1.6 and later
@@ -413,6 +418,9 @@ type KubeAPIServerConfig struct {
 	TLSCertFile string `json:"tlsCertFile,omitempty" flag:"tls-cert-file"`
 	// TODO: Remove unused TLSPrivateKeyFile
 	TLSPrivateKeyFile string `json:"tlsPrivateKeyFile,omitempty" flag:"tls-private-key-file"`
+
+	KubeletClientCertificate string `json:"kubeletClientCertificate,omitempty" flag:"kubelet-client-certificate"`
+	KubeletClientKey         string `json:"kubeletClientKey,omitempty" flag:"kubelet-client-key"`
 
 	// TODO: Remove unused TokenAuthFile
 	TokenAuthFile string `json:"tokenAuthFile,omitempty" flag:"token-auth-file"`
