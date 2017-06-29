@@ -27,6 +27,10 @@ spec:
     recommendedVersion: 1.4.12
     requiredVersion: 1.4.2
   kopsVersions:
+  - range: ">=1.7.0-alpha.1"
+    #recommendedVersion: 1.6.0
+    #requiredVersion: 1.6.0
+    kubernetesVersion: 1.7.0-rc.1
   - range: ">=1.6.0-alpha.1"
     #recommendedVersion: 1.6.0
     #requiredVersion: 1.6.0
