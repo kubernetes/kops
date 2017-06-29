@@ -9,7 +9,7 @@ To change the CIDR allowed to access SSH (and HTTPS), set AdminAccess on the clu
 When using the default images, the SSH username will be `admin`, and the SSH private key is be
 the private key corresponding to the public key in `kops get secrets --type sshpublickey admin`.  When
 creating a new cluster, the SSH public key can be specified with the `--ssh-public-key` option, and it
-defaults to `~/.ssh/id_rsa.pub`.
+defaults to `~/.ssh/id_rsa.pub`. You may also concatenate multiple public keys together to provide access to several users while avoiding a shared private key.
 
 > Note: In CoreOS, SSH username will be `core`.
 
