@@ -96,7 +96,7 @@ func (b *LogrotateBuilder) addLogRotate(c *fi.ModelBuilderContext, name, path st
 		"  copytruncate",
 		"  missingok",
 		"  notifempty",
-		"  compress",
+		"  delaycompress",
 		"  maxsize " + options.MaxSize,
 		"  daily",
 		"  create 0644 root root",
