@@ -162,7 +162,7 @@
    "path": "oauth2/v1/certs",
    "httpMethod": "GET",
    "response": {
-    "$ref": "X509"
+    "$ref": "Bucket"
    }
   }
  },

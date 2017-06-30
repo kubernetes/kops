@@ -4,14 +4,30 @@ package etcd
 
 import (
 	"sort"
+	"strings"
 	"testing"
 
-	"github.com/coredns/coredns/middleware/etcd/msg"
-	"github.com/coredns/coredns/middleware/pkg/dnsrecorder"
-	"github.com/coredns/coredns/middleware/test"
+	"github.com/miekg/coredns/middleware/etcd/msg"
+	"github.com/miekg/coredns/middleware/pkg/dnsrecorder"
+	"github.com/miekg/coredns/middleware/test"
 
 	"github.com/miekg/dns"
 )
+
+func TestIsDebug(t *testing.T) {
+	if ok := isDebug("o-o.debug.miek.nl."); ok != "miek.nl." {
+		t.Errorf("expected o-o.debug.miek.nl. to be debug")
+	}
+	if ok := isDebug(strings.ToLower("o-o.Debug.miek.nl.")); ok != "miek.nl." {
+		t.Errorf("expected o-o.Debug.miek.nl. to be debug")
+	}
+	if ok := isDebug("i-o.debug.miek.nl."); ok != "" {
+		t.Errorf("expected i-o.Debug.miek.nl. to be non-debug")
+	}
+	if ok := isDebug(strings.ToLower("i-o.Debug.")); ok != "" {
+		t.Errorf("expected o-o.Debug. to be non-debug")
+	}
+}
 
 func TestDebugLookup(t *testing.T) {
 	etc := newEtcdMiddleware()
@@ -26,7 +42,11 @@ func TestDebugLookup(t *testing.T) {
 		m := tc.Msg()
 
 		rec := dnsrecorder.New(&test.ResponseWriter{})
-		etc.ServeDNS(ctxt, rec, m)
+		_, err := etc.ServeDNS(ctxt, rec, m)
+		if err != nil {
+			t.Errorf("expected no error, got %v\n", err)
+			continue
+		}
 
 		resp := rec.Msg
 		sort.Sort(test.RRSet(resp.Answer))
@@ -60,7 +80,11 @@ func TestDebugLookupFalse(t *testing.T) {
 		m := tc.Msg()
 
 		rec := dnsrecorder.New(&test.ResponseWriter{})
-		etc.ServeDNS(ctxt, rec, m)
+		_, err := etc.ServeDNS(ctxt, rec, m)
+		if err != nil {
+			t.Errorf("expected no error, got %v\n", err)
+			continue
+		}
 
 		resp := rec.Msg
 		sort.Sort(test.RRSet(resp.Answer))

@@ -152,7 +152,18 @@ func TestServeRaftPrefix(t *testing.T) {
 		req.Header.Set("X-Server-Version", version.Version)
 		rw := httptest.NewRecorder()
 		h := newPipelineHandler(NewNopTransporter(), tt.p, types.ID(0))
-		h.ServeHTTP(rw, req)
+
+		// goroutine because the handler panics to disconnect on raft error
+		donec := make(chan struct{})
+		go func() {
+			defer func() {
+				recover()
+				close(donec)
+			}()
+			h.ServeHTTP(rw, req)
+		}()
+		<-donec
+
 		if rw.Code != tt.wcode {
 			t.Errorf("#%d: got code=%d, want %d", i, rw.Code, tt.wcode)
 		}
@@ -348,6 +359,7 @@ type fakePeer struct {
 	snapMsgs []snap.Message
 	peerURLs types.URLs
 	connc    chan *outgoingConn
+	paused   bool
 }
 
 func newFakePeer() *fakePeer {
@@ -358,9 +370,23 @@ func newFakePeer() *fakePeer {
 	}
 }
 
-func (pr *fakePeer) send(m raftpb.Message)                 { pr.msgs = append(pr.msgs, m) }
-func (pr *fakePeer) sendSnap(m snap.Message)               { pr.snapMsgs = append(pr.snapMsgs, m) }
+func (pr *fakePeer) send(m raftpb.Message) {
+	if pr.paused {
+		return
+	}
+	pr.msgs = append(pr.msgs, m)
+}
+
+func (pr *fakePeer) sendSnap(m snap.Message) {
+	if pr.paused {
+		return
+	}
+	pr.snapMsgs = append(pr.snapMsgs, m)
+}
+
 func (pr *fakePeer) update(urls types.URLs)                { pr.peerURLs = urls }
 func (pr *fakePeer) attachOutgoingConn(conn *outgoingConn) { pr.connc <- conn }
 func (pr *fakePeer) activeSince() time.Time                { return time.Time{} }
 func (pr *fakePeer) stop()                                 {}
+func (pr *fakePeer) Pause()                                { pr.paused = true }
+func (pr *fakePeer) Resume()                               { pr.paused = false }

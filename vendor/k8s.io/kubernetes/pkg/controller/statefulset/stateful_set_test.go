@@ -22,21 +22,21 @@ import (
 	"testing"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/cache"
-
 	"k8s.io/kubernetes/pkg/api/v1"
 	apps "k8s.io/kubernetes/pkg/apis/apps/v1beta1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 	informers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"
 	"k8s.io/kubernetes/pkg/controller"
+	"k8s.io/kubernetes/pkg/controller/history"
 )
 
 func alwaysReady() bool { return true }
 
 func TestStatefulSetControllerCreates(t *testing.T) {
-	ssc, spc := newFakeStatefulSetController()
 	set := newStatefulSet(3)
+	ssc, spc := newFakeStatefulSetController(set)
 	if err := scaleUpStatefulSetController(set, ssc, spc); err != nil {
 		t.Errorf("Failed to turn up StatefulSet : %s", err)
 	}
@@ -51,8 +51,8 @@ func TestStatefulSetControllerCreates(t *testing.T) {
 }
 
 func TestStatefulSetControllerDeletes(t *testing.T) {
-	ssc, spc := newFakeStatefulSetController()
 	set := newStatefulSet(3)
+	ssc, spc := newFakeStatefulSetController(set)
 	if err := scaleUpStatefulSetController(set, ssc, spc); err != nil {
 		t.Errorf("Failed to turn up StatefulSet : %s", err)
 	}
@@ -79,8 +79,8 @@ func TestStatefulSetControllerDeletes(t *testing.T) {
 }
 
 func TestStatefulSetControllerRespectsTermination(t *testing.T) {
-	ssc, spc := newFakeStatefulSetController()
 	set := newStatefulSet(3)
+	ssc, spc := newFakeStatefulSetController(set)
 	if err := scaleUpStatefulSetController(set, ssc, spc); err != nil {
 		t.Errorf("Failed to turn up StatefulSet : %s", err)
 	}
@@ -92,11 +92,11 @@ func TestStatefulSetControllerRespectsTermination(t *testing.T) {
 	if set.Status.Replicas != 3 {
 		t.Error("Falied to scale statefulset to 3 replicas")
 	}
-	pods, err := spc.addTerminatedPod(set, 3)
+	pods, err := spc.addTerminatingPod(set, 3)
 	if err != nil {
 		t.Error(err)
 	}
-	pods, err = spc.addTerminatedPod(set, 4)
+	pods, err = spc.addTerminatingPod(set, 4)
 	if err != nil {
 		t.Error(err)
 	}
@@ -130,8 +130,8 @@ func TestStatefulSetControllerRespectsTermination(t *testing.T) {
 }
 
 func TestStatefulSetControllerBlocksScaling(t *testing.T) {
-	ssc, spc := newFakeStatefulSetController()
 	set := newStatefulSet(3)
+	ssc, spc := newFakeStatefulSetController(set)
 	if err := scaleUpStatefulSetController(set, ssc, spc); err != nil {
 		t.Errorf("Failed to turn up StatefulSet : %s", err)
 	}
@@ -173,6 +173,63 @@ func TestStatefulSetControllerBlocksScaling(t *testing.T) {
 	}
 	if len(pods) != 3 {
 		t.Error("StatefulSet does not resume when terminated Pod is removed")
+	}
+}
+
+func TestStatefulSetControllerDeletionTimestamp(t *testing.T) {
+	set := newStatefulSet(3)
+	set.DeletionTimestamp = new(metav1.Time)
+	ssc, spc := newFakeStatefulSetController(set)
+
+	spc.setsIndexer.Add(set)
+
+	// Force a sync. It should not try to create any Pods.
+	ssc.enqueueStatefulSet(set)
+	fakeWorker(ssc)
+
+	selector, err := metav1.LabelSelectorAsSelector(set.Spec.Selector)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pods, err := spc.podsLister.Pods(set.Namespace).List(selector)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(pods), 0; got != want {
+		t.Errorf("len(pods) = %v, want %v", got, want)
+	}
+}
+
+func TestStatefulSetControllerDeletionTimestampRace(t *testing.T) {
+	set := newStatefulSet(3)
+	// The bare client says it IS deleted.
+	set.DeletionTimestamp = new(metav1.Time)
+	ssc, spc := newFakeStatefulSetController(set)
+
+	// The lister (cache) says it's NOT deleted.
+	set2 := *set
+	set2.DeletionTimestamp = nil
+	spc.setsIndexer.Add(&set2)
+
+	// The recheck occurs in the presence of a matching orphan.
+	pod := newStatefulSetPod(set, 1)
+	pod.OwnerReferences = nil
+	spc.podsIndexer.Add(pod)
+
+	// Force a sync. It should not try to create any Pods.
+	ssc.enqueueStatefulSet(set)
+	fakeWorker(ssc)
+
+	selector, err := metav1.LabelSelectorAsSelector(set.Spec.Selector)
+	if err != nil {
+		t.Fatal(err)
+	}
+	pods, err := spc.podsLister.Pods(set.Namespace).List(selector)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got, want := len(pods), 1; got != want {
+		t.Errorf("len(pods) = %v, want %v", got, want)
 	}
 }
 
@@ -437,8 +494,8 @@ func TestStatefulSetControllerGetStatefulSetsForPod(t *testing.T) {
 }
 
 func TestGetPodsForStatefulSetAdopt(t *testing.T) {
-	ssc, spc := newFakeStatefulSetController()
 	set := newStatefulSet(5)
+	ssc, spc := newFakeStatefulSetController(set)
 	pod1 := newStatefulSetPod(set, 1)
 	// pod2 is an orphan with matching labels and name.
 	pod2 := newStatefulSetPod(set, 2)
@@ -479,8 +536,8 @@ func TestGetPodsForStatefulSetAdopt(t *testing.T) {
 }
 
 func TestGetPodsForStatefulSetRelease(t *testing.T) {
-	ssc, spc := newFakeStatefulSetController()
 	set := newStatefulSet(3)
+	ssc, spc := newFakeStatefulSetController(set)
 	pod1 := newStatefulSetPod(set, 1)
 	// pod2 is owned but has wrong name.
 	pod2 := newStatefulSetPod(set, 2)
@@ -518,19 +575,22 @@ func TestGetPodsForStatefulSetRelease(t *testing.T) {
 	}
 }
 
-func newFakeStatefulSetController() (*StatefulSetController, *fakeStatefulPodControl) {
-	client := fake.NewSimpleClientset()
+func newFakeStatefulSetController(initialObjects ...runtime.Object) (*StatefulSetController, *fakeStatefulPodControl) {
+	client := fake.NewSimpleClientset(initialObjects...)
 	informerFactory := informers.NewSharedInformerFactory(client, controller.NoResyncPeriodFunc())
 	fpc := newFakeStatefulPodControl(informerFactory.Core().V1().Pods(), informerFactory.Apps().V1beta1().StatefulSets())
+	ssu := newFakeStatefulSetStatusUpdater(informerFactory.Apps().V1beta1().StatefulSets())
 	ssc := NewStatefulSetController(
 		informerFactory.Core().V1().Pods(),
 		informerFactory.Apps().V1beta1().StatefulSets(),
 		informerFactory.Core().V1().PersistentVolumeClaims(),
+		informerFactory.Apps().V1beta1().ControllerRevisions(),
 		client,
 	)
+	ssh := history.NewFakeHistory(informerFactory.Apps().V1beta1().ControllerRevisions())
 	ssc.podListerSynced = alwaysReady
 	ssc.setListerSynced = alwaysReady
-	ssc.control = NewDefaultStatefulSetControl(fpc)
+	ssc.control = NewDefaultStatefulSetControl(fpc, ssu, ssh)
 
 	return ssc, fpc
 }
@@ -558,7 +618,7 @@ func scaleUpStatefulSetController(set *apps.StatefulSet, ssc *StatefulSetControl
 	if err != nil {
 		return err
 	}
-	for set.Status.Replicas < *set.Spec.Replicas {
+	for set.Status.ReadyReplicas < *set.Spec.Replicas {
 		pods, err := spc.podsLister.Pods(set.Namespace).List(selector)
 		ord := len(pods) - 1
 		pod := getPodAtOrdinal(pods, ord)
@@ -584,7 +644,7 @@ func scaleUpStatefulSetController(set *apps.StatefulSet, ssc *StatefulSetControl
 		pod = getPodAtOrdinal(pods, ord)
 		ssc.updatePod(&prev, pod)
 		fakeWorker(ssc)
-		if err := assertInvariants(set, spc); err != nil {
+		if err := assertMonotonicInvariants(set, spc); err != nil {
 			return err
 		}
 		if obj, _, err := spc.setsIndexer.Get(set); err != nil {
@@ -594,7 +654,7 @@ func scaleUpStatefulSetController(set *apps.StatefulSet, ssc *StatefulSetControl
 		}
 
 	}
-	return assertInvariants(set, spc)
+	return assertMonotonicInvariants(set, spc)
 }
 
 func scaleDownStatefulSetController(set *apps.StatefulSet, ssc *StatefulSetController, spc *fakeStatefulPodControl) error {
@@ -613,7 +673,7 @@ func scaleDownStatefulSetController(set *apps.StatefulSet, ssc *StatefulSetContr
 	spc.setsIndexer.Add(set)
 	ssc.enqueueStatefulSet(set)
 	fakeWorker(ssc)
-	pods, err = spc.addTerminatedPod(set, ord)
+	pods, err = spc.addTerminatingPod(set, ord)
 	pod = getPodAtOrdinal(pods, ord)
 	ssc.updatePod(&prev, pod)
 	fakeWorker(ssc)
@@ -623,7 +683,7 @@ func scaleDownStatefulSetController(set *apps.StatefulSet, ssc *StatefulSetContr
 	for set.Status.Replicas > *set.Spec.Replicas {
 		pods, err = spc.podsLister.Pods(set.Namespace).List(selector)
 		ord := len(pods)
-		pods, err = spc.addTerminatedPod(set, ord)
+		pods, err = spc.addTerminatingPod(set, ord)
 		pod = getPodAtOrdinal(pods, ord)
 		ssc.updatePod(&prev, pod)
 		fakeWorker(ssc)
@@ -636,5 +696,5 @@ func scaleDownStatefulSetController(set *apps.StatefulSet, ssc *StatefulSetContr
 			set = obj.(*apps.StatefulSet)
 		}
 	}
-	return assertInvariants(set, spc)
+	return assertMonotonicInvariants(set, spc)
 }

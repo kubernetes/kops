@@ -64,7 +64,11 @@ func electCommandFunc(cmd *cobra.Command, args []string) {
 }
 
 func observe(c *clientv3.Client, election string) error {
-	e := concurrency.NewElection(c, election)
+	s, err := concurrency.NewSession(c)
+	if err != nil {
+		return err
+	}
+	e := concurrency.NewElection(s, election)
 	ctx, cancel := context.WithCancel(context.TODO())
 
 	donec := make(chan struct{})
@@ -94,7 +98,11 @@ func observe(c *clientv3.Client, election string) error {
 }
 
 func campaign(c *clientv3.Client, election string, prop string) error {
-	e := concurrency.NewElection(c, election)
+	s, err := concurrency.NewSession(c)
+	if err != nil {
+		return err
+	}
+	e := concurrency.NewElection(s, election)
 	ctx, cancel := context.WithCancel(context.TODO())
 
 	donec := make(chan struct{})
@@ -106,12 +114,7 @@ func campaign(c *clientv3.Client, election string, prop string) error {
 		close(donec)
 	}()
 
-	s, serr := concurrency.NewSession(c)
-	if serr != nil {
-		return serr
-	}
-
-	if err := e.Campaign(ctx, prop); err != nil {
+	if err = e.Campaign(ctx, prop); err != nil {
 		return err
 	}
 

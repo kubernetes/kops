@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/middleware/pkg/response"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/middleware/pkg/response"
 
 	"github.com/hashicorp/golang-lru"
 	"github.com/miekg/dns"
@@ -130,7 +130,7 @@ const (
 
 	defaultCap = 10000 // default capacity of the cache.
 
-	// Success is the class for caching positive caching.
+	// Success is the class for caching postive caching.
 	Success = "success"
 	// Denial is the class defined for negative caching.
 	Denial = "denial"

@@ -833,10 +833,6 @@ type SurveysStartResponse struct {
 	// include in any error reporting or troubleshooting requests.
 	RequestId string `json:"requestId,omitempty"`
 
-	// Resource: Survey object containing the specification of the started
-	// Survey.
-	Resource *Survey `json:"resource,omitempty"`
-
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
 	googleapi.ServerResponse `json:"-"`
@@ -868,10 +864,6 @@ type SurveysStopResponse struct {
 	// RequestId: Unique request ID used for logging and debugging. Please
 	// include in any error reporting or troubleshooting requests.
 	RequestId string `json:"requestId,omitempty"`
-
-	// Resource: Survey object containing the specification of the stopped
-	// Survey.
-	Resource *Survey `json:"resource,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.

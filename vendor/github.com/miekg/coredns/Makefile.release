@@ -20,68 +20,34 @@
 # * Get an access token: https://help.github.com/articles/creating-an-access-token-for-command-line-use/
 # * export GITHUB_ACCESS_TOKEN=<token>
 # * Up the version in coremain/version.go
+# * Commit -am'releasing <version>
 # * Run: make -f Makefile.release
-#   * will commit your change with 'Release $VERSION'
-#   * push to github
-#   * build the release and do all that fluff.
-#
-# Steps for docker
-# * Login into docker: docker login (should have push creds for coredns registry)
-# * Run: make -f Makefile.release docker
-# 
-# Docker push should happen after you make the new release and uploaded it to Github.
 
-NAME:=coredns
+NAME=coredns
 VERSION:=$(shell grep 'coreVersion' coremain/version.go | awk '{ print $$3 }' | tr -d '"')
-ARCH:=$(shell uname -m)
-GITHUB:=coredns
-DOCKER:=coredns
-DOCKER_IMAGE_NAME:=$(DOCKER)/$(NAME)
+ARCH=$(shell uname -m)
+GITHUB=miekg
 
-all:	commit push build tar release
-
-docker: docker-build docker-release
+all:	push build release
 
 .PHONY: push
 push:
 	@echo Pushing release to master
 	git push
 
-.PHONY: commit
-commit:
-	@echo Committing
-	git commit -am"Release $(VERSION)"
-
 .PHONY: build
 build:
-	@echo Building: $(VERSION)
-	mkdir -p build/Darwin     && CGO_ENABLED=0 GOOS=darwin            go build -ldflags="-s -w" -o build/Darwin/$(NAME)
-	mkdir -p build/Linux/Arm  && CGO_ENABLED=0 GOOS=linux GOARCH=arm  go build -ldflags="-s -w" -o build/Linux/Arm/$(NAME)
-	mkdir -p build/Linux      && CGO_ENABLED=0 GOOS=linux             go build -ldflags="-s -w" -o build/Linux/$(NAME)
+	@echo Releasing: $(VERSION)
+	mkdir -p build/Darwin && CGO_ENABLED=0 GOOS=darwin go build -ldflags="-s -w" -o build/Darwin/$(NAME)
+	mkdir -p build/Linux  && CGO_ENABLED=0 GOOS=linux  go build -ldflags="-s -w" -o build/Linux/$(NAME)
 
-
-.PHONY: tar
-tar:
-	rm -rf release && mkdir release
-	tar -zcf release/$(NAME)_$(VERSION)_linux_$(ARCH).tgz -C build/Linux $(NAME)
-	tar -zcf release/$(NAME)_$(VERSION)_linux_armv6l.tgz -C build/Linux/Arm $(NAME)
-	tar -zcf release/$(NAME)_$(VERSION)_darwin_$(ARCH).tgz -C build/Darwin $(NAME)
 
 .PHONY: release
 release:
-	@echo Releasing: $(VERSION)
+	rm -rf release && mkdir release
+	tar -zcf release/$(NAME)_$(VERSION)_linux_$(ARCH).tgz -C build/Linux $(NAME)
+	tar -zcf release/$(NAME)_$(VERSION)_darwin_$(ARCH).tgz -C build/Darwin $(NAME)
 	gh-release create $(GITHUB)/$(NAME) $(VERSION)
-
-.PHONY: docker-build
-docker:
-	CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w"
-	docker build -t $(DOCKER_IMAGE_NAME) .
-	docker tag $(DOCKER_IMAGE_NAME):latest $(DOCKER_IMAGE_NAME):$(VERSION)
-
-.PHONY: docker-release
-docker-release:
-	@echo Pushing: $(VERSION)
-	docker tag $(DOCKER_IMAGE_NAME):latest $(DOCKER_IMAGE_NAME):$(VERSION)
 
 .PHONY: clean
 clean:

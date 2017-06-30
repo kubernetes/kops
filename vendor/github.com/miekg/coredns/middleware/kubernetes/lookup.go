@@ -4,19 +4,15 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/coredns/coredns/middleware/etcd/msg"
-	"github.com/coredns/coredns/middleware/pkg/dnsutil"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware/etcd/msg"
+	"github.com/miekg/coredns/middleware/pkg/dnsutil"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 )
 
 func (k Kubernetes) records(state request.Request, exact bool) ([]msg.Service, error) {
-	r, err := k.parseRequest(state.Name(), state.Type())
-	if err != nil {
-		return nil, err
-	}
-	services, err := k.Records(r)
+	services, err := k.Records(state.Name(), exact)
 	if err != nil {
 		return nil, err
 	}

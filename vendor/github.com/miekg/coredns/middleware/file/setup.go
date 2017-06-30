@@ -2,13 +2,12 @@ package file
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"path"
 
-	"github.com/coredns/coredns/core/dnsserver"
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/middleware/pkg/dnsutil"
-	"github.com/coredns/coredns/middleware/proxy"
+	"github.com/miekg/coredns/core/dnsserver"
+	"github.com/miekg/coredns/middleware"
 
 	"github.com/mholt/caddy"
 )
@@ -91,7 +90,6 @@ func fileParse(c *caddy.Controller) (Zones, error) {
 			}
 
 			noReload := false
-			prxy := proxy.Proxy{}
 			for c.NextBlock() {
 				t, _, e := TransferParse(c, false)
 				if e != nil {
@@ -100,17 +98,6 @@ func fileParse(c *caddy.Controller) (Zones, error) {
 				switch c.Val() {
 				case "no_reload":
 					noReload = true
-
-				case "upstream":
-					args := c.RemainingArgs()
-					if len(args) == 0 {
-						return Zones{}, c.ArgErr()
-					}
-					ups, err := dnsutil.ParseHostPortOrFile(args...)
-					if err != nil {
-						return Zones{}, err
-					}
-					prxy = proxy.NewLookup(ups)
 				}
 
 				for _, origin := range origins {
@@ -118,7 +105,6 @@ func fileParse(c *caddy.Controller) (Zones, error) {
 						z[origin].TransferTo = append(z[origin].TransferTo, t...)
 					}
 					z[origin].NoReload = noReload
-					z[origin].Proxy = prxy
 				}
 			}
 		}
@@ -139,26 +125,24 @@ func TransferParse(c *caddy.Controller, secondary bool) (tos, froms []string, er
 			tos = c.RemainingArgs()
 			for i := range tos {
 				if tos[i] != "*" {
-					normalized, err := dnsutil.ParseHostPort(tos[i], "53")
-					if err != nil {
-						return nil, nil, err
+					if x := net.ParseIP(tos[i]); x == nil {
+						return nil, nil, fmt.Errorf("must specify an IP addres: `%s'", tos[i])
 					}
-					tos[i] = normalized
+					tos[i] = middleware.Addr(tos[i]).Normalize()
 				}
 			}
 		}
 		if value == "from" {
 			if !secondary {
-				return nil, nil, fmt.Errorf("can't use `transfer from` when not being a secondary")
+				return nil, nil, fmt.Errorf("can't use `transfer from` when not being a seconary")
 			}
 			froms = c.RemainingArgs()
 			for i := range froms {
 				if froms[i] != "*" {
-					normalized, err := dnsutil.ParseHostPort(froms[i], "53")
-					if err != nil {
-						return nil, nil, err
+					if x := net.ParseIP(froms[i]); x == nil {
+						return nil, nil, fmt.Errorf("must specify an IP addres: `%s'", froms[i])
 					}
-					froms[i] = normalized
+					froms[i] = middleware.Addr(froms[i]).Normalize()
 				} else {
 					return nil, nil, fmt.Errorf("can't use '*' in transfer from")
 				}

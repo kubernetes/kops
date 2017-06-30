@@ -1,18 +1,3 @@
-// Copyright 2013-2015 CoreOS, Inc.
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-// Semantic Versions http://semver.org
 package semver
 
 import (
@@ -44,37 +29,17 @@ func splitOff(input *string, delim string) (val string) {
 	return val
 }
 
-func New(version string) *Version {
-	return Must(NewVersion(version))
-}
-
 func NewVersion(version string) (*Version, error) {
 	v := Version{}
 
-	if err := v.Set(version); err != nil {
-		return nil, err
-	}
-
-	return &v, nil
-}
-
-// Must is a helper for wrapping NewVersion and will panic if err is not nil.
-func Must(v *Version, err error) *Version {
-	if err != nil {
-		panic(err)
-	}
-	return v
-}
-
-// Set parses and updates v from the given version string. Implements flag.Value
-func (v *Version) Set(version string) error {
-	metadata := splitOff(&version, "+")
-	preRelease := PreRelease(splitOff(&version, "-"))
 	dotParts := strings.SplitN(version, ".", 3)
 
 	if len(dotParts) != 3 {
-		return fmt.Errorf("%s is not in dotted-tri format", version)
+		return nil, errors.New(fmt.Sprintf("%s is not in dotted-tri format", version))
 	}
+
+	v.Metadata = splitOff(&dotParts[2], "+")
+	v.PreRelease = PreRelease(splitOff(&dotParts[2], "-"))
 
 	parsed := make([]int64, 3, 3)
 
@@ -82,83 +47,63 @@ func (v *Version) Set(version string) error {
 		val, err := strconv.ParseInt(v, 10, 64)
 		parsed[i] = val
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	v.Metadata = metadata
-	v.PreRelease = preRelease
 	v.Major = parsed[0]
 	v.Minor = parsed[1]
 	v.Patch = parsed[2]
-	return nil
+
+	return &v, nil
 }
 
-func (v Version) String() string {
+func Must(v *Version, err error) *Version {
+	if err != nil {
+		panic(err)
+	}
+	return v
+}
+
+func (v *Version) String() string {
 	var buffer bytes.Buffer
 
-	fmt.Fprintf(&buffer, "%d.%d.%d", v.Major, v.Minor, v.Patch)
+	base := fmt.Sprintf("%d.%d.%d", v.Major, v.Minor, v.Patch)
+	buffer.WriteString(base)
 
 	if v.PreRelease != "" {
-		fmt.Fprintf(&buffer, "-%s", v.PreRelease)
+		buffer.WriteString(fmt.Sprintf("-%s", v.PreRelease))
 	}
 
 	if v.Metadata != "" {
-		fmt.Fprintf(&buffer, "+%s", v.Metadata)
+		buffer.WriteString(fmt.Sprintf("+%s", v.Metadata))
 	}
 
 	return buffer.String()
 }
 
-func (v *Version) UnmarshalYAML(unmarshal func(interface{}) error) error {
-	var data string
-	if err := unmarshal(&data); err != nil {
-		return err
+func (v *Version) LessThan(versionB Version) bool {
+	versionA := *v
+	cmp := recursiveCompare(versionA.Slice(), versionB.Slice())
+
+	if cmp == 0 {
+		cmp = preReleaseCompare(versionA, versionB)
 	}
-	return v.Set(data)
-}
 
-func (v Version) MarshalJSON() ([]byte, error) {
-	return []byte(`"` + v.String() + `"`), nil
-}
-
-func (v *Version) UnmarshalJSON(data []byte) error {
-	l := len(data)
-	if l == 0 || string(data) == `""` {
-		return nil
+	if cmp == -1 {
+		return true
 	}
-	if l < 2 || data[0] != '"' || data[l-1] != '"' {
-		return errors.New("invalid semver string")
-	}
-	return v.Set(string(data[1 : l-1]))
+
+	return false
 }
 
-// Compare tests if v is less than, equal to, or greater than versionB,
-// returning -1, 0, or +1 respectively.
-func (v Version) Compare(versionB Version) int {
-	if cmp := recursiveCompare(v.Slice(), versionB.Slice()); cmp != 0 {
-		return cmp
-	}
-	return preReleaseCompare(v, versionB)
-}
-
-// Equal tests if v is equal to versionB.
-func (v Version) Equal(versionB Version) bool {
-	return v.Compare(versionB) == 0
-}
-
-// LessThan tests if v is less than versionB.
-func (v Version) LessThan(versionB Version) bool {
-	return v.Compare(versionB) < 0
-}
-
-// Slice converts the comparable parts of the semver into a slice of integers.
-func (v Version) Slice() []int64 {
+/* Slice converts the comparable parts of the semver into a slice of strings */
+func (v *Version) Slice() []int64 {
 	return []int64{v.Major, v.Minor, v.Patch}
 }
 
-func (p PreRelease) Slice() []string {
-	preRelease := string(p)
+func (p *PreRelease) Slice() []string {
+	preRelease := string(*p)
 	return strings.Split(preRelease, ".")
 }
 
@@ -174,7 +119,7 @@ func preReleaseCompare(versionA Version, versionB Version) int {
 		return -1
 	}
 
-	// If there is a prerelease, check and compare each part.
+	// If there is a prelease, check and compare each part.
 	return recursivePreReleaseCompare(a.Slice(), b.Slice())
 }
 
@@ -196,12 +141,9 @@ func recursiveCompare(versionA []int64, versionB []int64) int {
 }
 
 func recursivePreReleaseCompare(versionA []string, versionB []string) int {
-	// A larger set of pre-release fields has a higher precedence than a smaller set,
-	// if all of the preceding identifiers are equal.
+	// Handle slice length disparity.
 	if len(versionA) == 0 {
-		if len(versionB) > 0 {
-			return -1
-		}
+		// Nothing to compare too, so we return 0
 		return 0
 	} else if len(versionB) == 0 {
 		// We're longer than versionB so return 1.
@@ -211,8 +153,7 @@ func recursivePreReleaseCompare(versionA []string, versionB []string) int {
 	a := versionA[0]
 	b := versionB[0]
 
-	aInt := false
-	bInt := false
+	aInt := false; bInt := false
 
 	aI, err := strconv.Atoi(versionA[0])
 	if err == nil {
@@ -222,13 +163,6 @@ func recursivePreReleaseCompare(versionA []string, versionB []string) int {
 	bI, err := strconv.Atoi(versionB[0])
 	if err == nil {
 		bInt = true
-	}
-
-	// Numeric identifiers always have lower precedence than non-numeric identifiers.
-	if aInt && !bInt {
-		return -1
-	} else if !aInt && bInt {
-		return 1
 	}
 
 	// Handle Integer Comparison

@@ -9,7 +9,6 @@
 package dns
 
 //go:generate go run msg_generate.go
-//go:generate go run compress_generate.go
 
 import (
 	crand "crypto/rand"
@@ -17,8 +16,21 @@ import (
 	"math/big"
 	"math/rand"
 	"strconv"
-	"sync"
 )
+
+func init() {
+	// Initialize default math/rand source using crypto/rand to provide better
+	// security without the performance trade-off.
+	buf := make([]byte, 8)
+	_, err := crand.Read(buf)
+	if err != nil {
+		// Failed to read from cryptographic source, fallback to default initial
+		// seed (1) by returning early
+		return
+	}
+	seed := binary.BigEndian.Uint64(buf)
+	rand.Seed(int64(seed))
+}
 
 const maxCompressionOffset = 2 << 13 // We have 14 bits for the compression pointer
 
@@ -46,7 +58,7 @@ var (
 	ErrTruncated     error = &Error{err: "failed to unpack truncated message"} // ErrTruncated indicates that we failed to unpack a truncated message. We unpacked as much as we had so Msg can still be used, if desired.
 )
 
-// Id by default, returns a 16 bits random number to be used as a
+// Id, by default, returns a 16 bits random number to be used as a
 // message id. The random provided should be good enough. This being a
 // variable the function can be reassigned to a custom function.
 // For instance, to make it return a static value:
@@ -54,45 +66,11 @@ var (
 //	dns.Id = func() uint16 { return 3 }
 var Id func() uint16 = id
 
-var (
-	idLock sync.Mutex
-	idRand *rand.Rand
-)
-
 // id returns a 16 bits random number to be used as a
 // message id. The random provided should be good enough.
 func id() uint16 {
-	idLock.Lock()
-
-	if idRand == nil {
-		// This (partially) works around
-		// https://github.com/golang/go/issues/11833 by only
-		// seeding idRand upon the first call to id.
-
-		var seed int64
-		var buf [8]byte
-
-		if _, err := crand.Read(buf[:]); err == nil {
-			seed = int64(binary.LittleEndian.Uint64(buf[:]))
-		} else {
-			seed = rand.Int63()
-		}
-
-		idRand = rand.New(rand.NewSource(seed))
-	}
-
-	// The call to idRand.Uint32 must be within the
-	// mutex lock because *rand.Rand is not safe for
-	// concurrent use.
-	//
-	// There is no added performance overhead to calling
-	// idRand.Uint32 inside a mutex lock over just
-	// calling rand.Uint32 as the global math/rand rng
-	// is internally protected by a sync.Mutex.
-	id := uint16(idRand.Uint32())
-
-	idLock.Unlock()
-	return id
+	id32 := rand.Uint32()
+	return uint16(id32)
 }
 
 // MsgHdr is a a manually-unpacked version of (id, bits).
@@ -225,6 +203,12 @@ func packDomainName(s string, msg []byte, off int, compression map[string]int, c
 					bs[j] = bs[j+2]
 				}
 				ls -= 2
+			} else if bs[i] == 't' {
+				bs[i] = '\t'
+			} else if bs[i] == 'r' {
+				bs[i] = '\r'
+			} else if bs[i] == 'n' {
+				bs[i] = '\n'
 			}
 			escapedDot = bs[i] == '.'
 			bsFresh = false
@@ -263,9 +247,7 @@ func packDomainName(s string, msg []byte, off int, compression map[string]int, c
 				bsFresh = true
 			}
 			// Don't try to compress '.'
-			// We should only compress when compress it true, but we should also still pick
-			// up names that can be used for *future* compression(s).
-			if compression != nil && roBs[begin:] != "." {
+			if compress && roBs[begin:] != "." {
 				if p, ok := compression[roBs[begin:]]; !ok {
 					// Only offsets smaller than this can be used.
 					if offset < maxCompressionOffset {
@@ -353,6 +335,10 @@ Loop:
 					fallthrough
 				case '"', '\\':
 					s = append(s, '\\', b)
+				case '\t':
+					s = append(s, '\\', 't')
+				case '\r':
+					s = append(s, '\\', 'r')
 				default:
 					if b < 32 || b >= 127 { // unprintable use \DDD
 						var buf [3]byte
@@ -445,6 +431,12 @@ func packTxtString(s string, msg []byte, offset int, tmp []byte) (int, error) {
 			if i+2 < len(bs) && isDigit(bs[i]) && isDigit(bs[i+1]) && isDigit(bs[i+2]) {
 				msg[offset] = dddToByte(bs[i:])
 				i += 2
+			} else if bs[i] == 't' {
+				msg[offset] = '\t'
+			} else if bs[i] == 'r' {
+				msg[offset] = '\r'
+			} else if bs[i] == 'n' {
+				msg[offset] = '\n'
 			} else {
 				msg[offset] = bs[i]
 			}
@@ -516,6 +508,12 @@ func unpackTxtString(msg []byte, offset int) (string, int, error) {
 		switch b {
 		case '"', '\\':
 			s = append(s, '\\', b)
+		case '\t':
+			s = append(s, `\t`...)
+		case '\r':
+			s = append(s, `\r`...)
+		case '\n':
+			s = append(s, `\n`...)
 		default:
 			if b < 32 || b > 127 { // unprintable
 				var buf [3]byte
@@ -734,10 +732,12 @@ func (dns *Msg) PackBuffer(buf []byte) (msg []byte, err error) {
 
 	// We need the uncompressed length here, because we first pack it and then compress it.
 	msg = buf
-	uncompressedLen := compressedLen(dns, false)
-	if packLen := uncompressedLen + 1; len(msg) < packLen {
+	compress := dns.Compress
+	dns.Compress = false
+	if packLen := dns.Len() + 1; len(msg) < packLen {
 		msg = make([]byte, packLen)
 	}
+	dns.Compress = compress
 
 	// Pack it in: header and then the pieces.
 	off := 0
@@ -781,6 +781,9 @@ func (dns *Msg) Unpack(msg []byte) (err error) {
 	if dh, off, err = unpackMsgHdr(msg, off); err != nil {
 		return err
 	}
+	if off == len(msg) {
+		return ErrTruncated
+	}
 
 	dns.Id = dh.Id
 	dns.Response = (dh.Bits & _QR) != 0
@@ -793,10 +796,6 @@ func (dns *Msg) Unpack(msg []byte) (err error) {
 	dns.AuthenticatedData = (dh.Bits & _AD) != 0
 	dns.CheckingDisabled = (dh.Bits & _CD) != 0
 	dns.Rcode = int(dh.Bits & 0xF)
-
-	if off == len(msg) {
-		return ErrTruncated
-	}
 
 	// Optimistically use the count given to us in the header
 	dns.Question = make([]Question, 0, int(dh.Qdcount))
@@ -890,18 +889,16 @@ func (dns *Msg) String() string {
 // If dns.Compress is true compression it is taken into account. Len()
 // is provided to be a faster way to get the size of the resulting packet,
 // than packing it, measuring the size and discarding the buffer.
-func (dns *Msg) Len() int { return compressedLen(dns, dns.Compress) }
-
-// compressedLen returns the message length when in compressed wire format
-// when compress is true, otherwise the uncompressed length is returned.
-func compressedLen(dns *Msg, compress bool) int {
+func (dns *Msg) Len() int {
 	// We always return one more than needed.
 	l := 12 // Message header is always 12 bytes
-	compression := map[string]int{}
-
+	var compression map[string]int
+	if dns.Compress {
+		compression = make(map[string]int)
+	}
 	for i := 0; i < len(dns.Question); i++ {
 		l += dns.Question[i].len()
-		if compress {
+		if dns.Compress {
 			compressionLenHelper(compression, dns.Question[i].Name)
 		}
 	}
@@ -910,7 +907,7 @@ func compressedLen(dns *Msg, compress bool) int {
 			continue
 		}
 		l += dns.Answer[i].len()
-		if compress {
+		if dns.Compress {
 			k, ok := compressionLenSearch(compression, dns.Answer[i].Header().Name)
 			if ok {
 				l += 1 - k
@@ -928,7 +925,7 @@ func compressedLen(dns *Msg, compress bool) int {
 			continue
 		}
 		l += dns.Ns[i].len()
-		if compress {
+		if dns.Compress {
 			k, ok := compressionLenSearch(compression, dns.Ns[i].Header().Name)
 			if ok {
 				l += 1 - k
@@ -946,7 +943,7 @@ func compressedLen(dns *Msg, compress bool) int {
 			continue
 		}
 		l += dns.Extra[i].len()
-		if compress {
+		if dns.Compress {
 			k, ok := compressionLenSearch(compression, dns.Extra[i].Header().Name)
 			if ok {
 				l += 1 - k
@@ -990,6 +987,97 @@ func compressionLenSearch(c map[string]int, s string) (int, bool) {
 			break
 		}
 		off, end = NextLabel(s, off)
+	}
+	return 0, false
+}
+
+// TODO(miek): should add all types, because the all can be *used* for compression. Autogenerate from msg_generate and put in zmsg.go
+func compressionLenHelperType(c map[string]int, r RR) {
+	switch x := r.(type) {
+	case *NS:
+		compressionLenHelper(c, x.Ns)
+	case *MX:
+		compressionLenHelper(c, x.Mx)
+	case *CNAME:
+		compressionLenHelper(c, x.Target)
+	case *PTR:
+		compressionLenHelper(c, x.Ptr)
+	case *SOA:
+		compressionLenHelper(c, x.Ns)
+		compressionLenHelper(c, x.Mbox)
+	case *MB:
+		compressionLenHelper(c, x.Mb)
+	case *MG:
+		compressionLenHelper(c, x.Mg)
+	case *MR:
+		compressionLenHelper(c, x.Mr)
+	case *MF:
+		compressionLenHelper(c, x.Mf)
+	case *MD:
+		compressionLenHelper(c, x.Md)
+	case *RT:
+		compressionLenHelper(c, x.Host)
+	case *RP:
+		compressionLenHelper(c, x.Mbox)
+		compressionLenHelper(c, x.Txt)
+	case *MINFO:
+		compressionLenHelper(c, x.Rmail)
+		compressionLenHelper(c, x.Email)
+	case *AFSDB:
+		compressionLenHelper(c, x.Hostname)
+	case *SRV:
+		compressionLenHelper(c, x.Target)
+	case *NAPTR:
+		compressionLenHelper(c, x.Replacement)
+	case *RRSIG:
+		compressionLenHelper(c, x.SignerName)
+	case *NSEC:
+		compressionLenHelper(c, x.NextDomain)
+		// HIP?
+	}
+}
+
+// Only search on compressing these types.
+func compressionLenSearchType(c map[string]int, r RR) (int, bool) {
+	switch x := r.(type) {
+	case *NS:
+		return compressionLenSearch(c, x.Ns)
+	case *MX:
+		return compressionLenSearch(c, x.Mx)
+	case *CNAME:
+		return compressionLenSearch(c, x.Target)
+	case *DNAME:
+		return compressionLenSearch(c, x.Target)
+	case *PTR:
+		return compressionLenSearch(c, x.Ptr)
+	case *SOA:
+		k, ok := compressionLenSearch(c, x.Ns)
+		k1, ok1 := compressionLenSearch(c, x.Mbox)
+		if !ok && !ok1 {
+			return 0, false
+		}
+		return k + k1, true
+	case *MB:
+		return compressionLenSearch(c, x.Mb)
+	case *MG:
+		return compressionLenSearch(c, x.Mg)
+	case *MR:
+		return compressionLenSearch(c, x.Mr)
+	case *MF:
+		return compressionLenSearch(c, x.Mf)
+	case *MD:
+		return compressionLenSearch(c, x.Md)
+	case *RT:
+		return compressionLenSearch(c, x.Host)
+	case *MINFO:
+		k, ok := compressionLenSearch(c, x.Rmail)
+		k1, ok1 := compressionLenSearch(c, x.Email)
+		if !ok && !ok1 {
+			return 0, false
+		}
+		return k + k1, true
+	case *AFSDB:
+		return compressionLenSearch(c, x.Hostname)
 	}
 	return 0, false
 }

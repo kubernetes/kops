@@ -4,18 +4,16 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"log"
 	"net"
 	"net/http"
-	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/middleware/pkg/dnsutil"
-	"github.com/coredns/coredns/middleware/pkg/tls"
+	"github.com/miekg/coredns/middleware"
+
 	"github.com/mholt/caddy/caddyfile"
 	"github.com/miekg/dns"
 )
@@ -39,7 +37,12 @@ type staticUpstream struct {
 	}
 	WithoutPathPrefix string
 	IgnoredSubDomains []string
-	ex                Exchanger
+	options           Options
+}
+
+// Options ...
+type Options struct {
+	Ecs []*net.IPNet // EDNS0 CLIENT SUBNET address (v4/v6) to add in CIDR notaton.
 }
 
 // NewStaticUpstreams parses the configuration input and sets up
@@ -48,13 +51,12 @@ func NewStaticUpstreams(c *caddyfile.Dispenser) ([]Upstream, error) {
 	var upstreams []Upstream
 	for c.Next() {
 		upstream := &staticUpstream{
-			from:        ".",
+			from:        "",
 			Hosts:       nil,
 			Policy:      &Random{},
 			Spray:       nil,
 			FailTimeout: 10 * time.Second,
 			MaxFails:    1,
-			ex:          newDNSEx(),
 		}
 
 		if !c.Args(&upstream.from) {
@@ -66,9 +68,26 @@ func NewStaticUpstreams(c *caddyfile.Dispenser) ([]Upstream, error) {
 		}
 
 		// process the host list, substituting in any nameservers in files
-		toHosts, err := dnsutil.ParseHostPortOrFile(to...)
-		if err != nil {
-			return upstreams, err
+		var toHosts []string
+		for _, host := range to {
+			h, _, err := net.SplitHostPort(host)
+			if err != nil {
+				h = host
+			}
+			if x := net.ParseIP(h); x == nil {
+				// it's a file, parse as resolv.conf
+				c, err := dns.ClientConfigFromFile(host)
+				if err == os.ErrNotExist {
+					return upstreams, fmt.Errorf("not an IP address or file: `%s'", h)
+				} else if err != nil {
+					return upstreams, err
+				}
+				for _, s := range c.Servers {
+					toHosts = append(toHosts, net.JoinHostPort(s, c.Port))
+				}
+			} else {
+				toHosts = append(toHosts, host)
+			}
 		}
 
 		for c.NextBlock() {
@@ -80,7 +99,7 @@ func NewStaticUpstreams(c *caddyfile.Dispenser) ([]Upstream, error) {
 		upstream.Hosts = make([]*UpstreamHost, len(toHosts))
 		for i, host := range toHosts {
 			uh := &UpstreamHost{
-				Name:        host,
+				Name:        defaultHostPort(host),
 				Conns:       0,
 				Fails:       0,
 				FailTimeout: upstream.FailTimeout,
@@ -101,7 +120,6 @@ func NewStaticUpstreams(c *caddyfile.Dispenser) ([]Upstream, error) {
 				}(upstream),
 				WithoutPathPrefix: upstream.WithoutPathPrefix,
 			}
-
 			upstream.Hosts[i] = uh
 		}
 
@@ -120,6 +138,10 @@ func RegisterPolicy(name string, policy func() Policy) {
 
 func (u *staticUpstream) From() string {
 	return u.from
+}
+
+func (u *staticUpstream) Options() Options {
+	return u.options
 }
 
 func parseBlock(c *caddyfile.Dispenser, u *staticUpstream) error {
@@ -184,43 +206,6 @@ func parseBlock(c *caddyfile.Dispenser, u *staticUpstream) error {
 		u.IgnoredSubDomains = ignoredDomains
 	case "spray":
 		u.Spray = &Spray{}
-	case "protocol":
-		encArgs := c.RemainingArgs()
-		if len(encArgs) == 0 {
-			return c.ArgErr()
-		}
-		switch encArgs[0] {
-		case "dns":
-			if len(encArgs) > 1 {
-				if encArgs[1] == "force_tcp" {
-					opts := Options{ForceTCP: true}
-					u.ex = newDNSExWithOption(opts)
-				} else {
-					return fmt.Errorf("only force_tcp allowed as parameter to dns")
-				}
-			} else {
-				u.ex = newDNSEx()
-			}
-		case "https_google":
-			boot := []string{"8.8.8.8:53", "8.8.4.4:53"}
-			if len(encArgs) > 2 && encArgs[1] == "bootstrap" {
-				boot = encArgs[2:]
-			}
-
-			u.ex = newGoogle("", boot) // "" for default in google.go
-		case "grpc":
-			if len(encArgs) == 2 && encArgs[1] == "insecure" {
-				u.ex = newGrpcClient(nil, u)
-				return nil
-			}
-			tls, err := tls.NewTLSConfigFromArgs(encArgs[1:]...)
-			if err != nil {
-				return err
-			}
-			u.ex = newGrpcClient(tls, u)
-		default:
-			return fmt.Errorf("%s: %s", errInvalidProtocol, encArgs[0])
-		}
 
 	default:
 		return c.Errf("unknown property '%s'", c.Val())
@@ -230,42 +215,16 @@ func parseBlock(c *caddyfile.Dispenser, u *staticUpstream) error {
 
 func (u *staticUpstream) healthCheck() {
 	for _, host := range u.Hosts {
-		var hostName, checkPort string
-
-		// The DNS server might be an HTTP server.  If so, extract its name.
-		if url, err := url.Parse(host.Name); err == nil {
-			hostName = url.Host
-		} else {
-			hostName = host.Name
-		}
-
-		// Extract the port number from the parsed server name.
-		checkHostName, checkPort, err := net.SplitHostPort(hostName)
-		if err != nil {
-			checkHostName = hostName
-		}
-
+		port := ""
 		if u.HealthCheck.Port != "" {
-			checkPort = u.HealthCheck.Port
+			port = ":" + u.HealthCheck.Port
 		}
-
-		hostURL := "http://" + net.JoinHostPort(checkHostName, checkPort) + u.HealthCheck.Path
-
-		host.checkMu.Lock()
-		defer host.checkMu.Unlock()
-
+		hostURL := host.Name + port + u.HealthCheck.Path
 		if r, err := http.Get(hostURL); err == nil {
 			io.Copy(ioutil.Discard, r.Body)
 			r.Body.Close()
-			if r.StatusCode < 200 || r.StatusCode >= 400 {
-				log.Printf("[WARNING] Health check URL %s returned HTTP code %d\n",
-					hostURL, r.StatusCode)
-				host.Unhealthy = true
-			} else {
-				host.Unhealthy = false
-			}
+			host.Unhealthy = r.StatusCode < 200 || r.StatusCode >= 400
 		} else {
-			log.Printf("[WARNING] Health check probe failed: %v\n", err)
 			host.Unhealthy = true
 		}
 	}
@@ -327,17 +286,22 @@ func (u *staticUpstream) Select() *UpstreamHost {
 	return u.Spray.Select(pool)
 }
 
-func (u *staticUpstream) IsAllowedDomain(name string) bool {
-	if dns.Name(name) == dns.Name(u.From()) {
-		return true
-	}
-
+func (u *staticUpstream) IsAllowedPath(name string) bool {
 	for _, ignoredSubDomain := range u.IgnoredSubDomains {
-		if middleware.Name(ignoredSubDomain).Matches(name) {
+		if dns.Name(name) == dns.Name(u.From()) {
+			return true
+		}
+		if middleware.Name(name).Matches(ignoredSubDomain + u.From()) {
 			return false
 		}
 	}
 	return true
 }
 
-func (u *staticUpstream) Exchanger() Exchanger { return u.ex }
+func defaultHostPort(s string) string {
+	_, _, e := net.SplitHostPort(s)
+	if e == nil {
+		return s
+	}
+	return net.JoinHostPort(s, "53")
+}

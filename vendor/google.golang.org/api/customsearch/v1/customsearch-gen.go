@@ -531,6 +531,20 @@ func (s *SearchSearchInformation) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *SearchSearchInformation) UnmarshalJSON(data []byte) error {
+	type noMethod SearchSearchInformation
+	var s1 struct {
+		SearchTime gensupport.JSONFloat64 `json:"searchTime"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.SearchTime = float64(s1.SearchTime)
+	return nil
+}
+
 type SearchSpelling struct {
 	CorrectedQuery string `json:"correctedQuery,omitempty"`
 

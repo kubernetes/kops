@@ -1,21 +1,21 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/U2e0AY0QdJ71_cdhHQcfMiNxwXs\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/nQhQ0ficvWp-12GO3JqcmACC7lI\"",
  "discoveryVersion": "v1",
  "id": "toolresults:v1beta3",
  "name": "toolresults",
  "canonicalName": "Tool Results",
  "version": "v1beta3",
- "revision": "20161116",
+ "revision": "20170417",
  "title": "Cloud Tool Results API",
- "description": "Reads and publishes results from Cloud Test Lab.",
+ "description": "Reads and publishes results from Firebase Test Lab.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
   "x16": "https://www.gstatic.com/images/branding/product/1x/googleg_16dp.png",
   "x32": "https://www.gstatic.com/images/branding/product/1x/googleg_32dp.png"
  },
- "documentationLink": "https://developers.google.com/cloud-test-lab/",
+ "documentationLink": "https://firebase.google.com/docs/test-lab/",
  "protocol": "rest",
  "baseUrl": "https://www.googleapis.com/toolresults/v1beta3/projects/",
  "basePath": "/toolresults/v1beta3/projects/",
@@ -93,10 +93,130 @@
     }
    }
   },
+  "BasicPerfSampleSeries": {
+   "id": "BasicPerfSampleSeries",
+   "type": "object",
+   "description": "Encapsulates the metadata for basic sample series represented by a line chart",
+   "properties": {
+    "perfMetricType": {
+     "type": "string",
+     "enum": [
+      "cpu",
+      "graphics",
+      "memory",
+      "network",
+      "perfMetricTypeUnspecified"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
+    "perfUnit": {
+     "type": "string",
+     "enum": [
+      "bytesPerSecond",
+      "framesPerSecond",
+      "kibibyte",
+      "percent",
+      "perfUnitUnspecified"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
+    "sampleSeriesLabel": {
+     "type": "string",
+     "enum": [
+      "cpuKernel",
+      "cpuTotal",
+      "cpuUser",
+      "graphicsFrameRate",
+      "memoryRssPrivate",
+      "memoryRssShared",
+      "memoryRssTotal",
+      "memoryTotal",
+      "networkReceived",
+      "networkSent",
+      "ntBytesReceived",
+      "ntBytesTransferred",
+      "sampleSeriesTypeUnspecified"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    }
+   }
+  },
+  "BatchCreatePerfSamplesRequest": {
+   "id": "BatchCreatePerfSamplesRequest",
+   "type": "object",
+   "description": "The request must provide up to a maximum of 5000 samples to be created; a larger sample size will cause an INVALID_ARGUMENT error",
+   "properties": {
+    "perfSamples": {
+     "type": "array",
+     "description": "The set of PerfSamples to create should not include existing timestamps",
+     "items": {
+      "$ref": "PerfSample"
+     }
+    }
+   }
+  },
+  "BatchCreatePerfSamplesResponse": {
+   "id": "BatchCreatePerfSamplesResponse",
+   "type": "object",
+   "properties": {
+    "perfSamples": {
+     "type": "array",
+     "items": {
+      "$ref": "PerfSample"
+     }
+    }
+   }
+  },
+  "CPUInfo": {
+   "id": "CPUInfo",
+   "type": "object",
+   "properties": {
+    "cpuProcessor": {
+     "type": "string",
+     "description": "description of the device processor ie '1.8 GHz hexa core 64-bit ARMv8-A'"
+    },
+    "cpuSpeedInGhz": {
+     "type": "number",
+     "description": "the CPU clock speed in GHz",
+     "format": "float"
+    },
+    "numberOfCores": {
+     "type": "integer",
+     "description": "the number of CPU cores",
+     "format": "int32"
+    }
+   }
+  },
   "Duration": {
    "id": "Duration",
    "type": "object",
-   "description": "A Duration represents a signed, fixed-length span of time represented as a count of seconds and fractions of seconds at nanosecond resolution. It is independent of any calendar and concepts like \"day\" or \"month\". It is related to Timestamp in that the difference between two Timestamp values is a Duration and it can be added or subtracted from a Timestamp. Range is approximately +-10,000 years.\n\nExample 1: Compute Duration from two Timestamps in pseudo code.\n\nTimestamp start = ...; Timestamp end = ...; Duration duration = ...;\n\nduration.seconds = end.seconds - start.seconds; duration.nanos = end.nanos - start.nanos;\n\nif (duration.seconds  0) { duration.seconds += 1; duration.nanos -= 1000000000; } else if (durations.seconds \u003e 0 && duration.nanos \u003c 0) { duration.seconds -= 1; duration.nanos += 1000000000; }\n\nExample 2: Compute Timestamp from Timestamp + Duration in pseudo code.\n\nTimestamp start = ...; Duration duration = ...; Timestamp end = ...;\n\nend.seconds = start.seconds + duration.seconds; end.nanos = start.nanos + duration.nanos;\n\nif (end.nanos = 1000000000) { end.seconds += 1; end.nanos -= 1000000000; }\n\nExample 3: Compute Duration from datetime.timedelta in Python.\n\ntd = datetime.timedelta(days=3, minutes=10) duration = Duration() duration.FromTimedelta(td)",
+   "description": "A Duration represents a signed, fixed-length span of time represented as a count of seconds and fractions of seconds at nanosecond resolution. It is independent of any calendar and concepts like \"day\" or \"month\". It is related to Timestamp in that the difference between two Timestamp values is a Duration and it can be added or subtracted from a Timestamp. Range is approximately +-10,000 years.\n\n# Examples\n\nExample 1: Compute Duration from two Timestamps in pseudo code.\n\nTimestamp start = ...; Timestamp end = ...; Duration duration = ...;\n\nduration.seconds = end.seconds - start.seconds; duration.nanos = end.nanos - start.nanos;\n\nif (duration.seconds  0) { duration.seconds += 1; duration.nanos -= 1000000000; } else if (durations.seconds \u003e 0 && duration.nanos \u003c 0) { duration.seconds -= 1; duration.nanos += 1000000000; }\n\nExample 2: Compute Timestamp from Timestamp + Duration in pseudo code.\n\nTimestamp start = ...; Duration duration = ...; Timestamp end = ...;\n\nend.seconds = start.seconds + duration.seconds; end.nanos = start.nanos + duration.nanos;\n\nif (end.nanos = 1000000000) { end.seconds += 1; end.nanos -= 1000000000; }\n\nExample 3: Compute Duration from datetime.timedelta in Python.\n\ntd = datetime.timedelta(days=3, minutes=10) duration = Duration() duration.FromTimedelta(td)\n\n# JSON Mapping\n\nIn JSON format, the Duration type is encoded as a string rather than an object, where the string ends in the suffix \"s\" (indicating seconds) and is preceded by the number of seconds, with nanoseconds expressed as fractional seconds. For example, 3 seconds with 0 nanoseconds should be encoded in JSON format as \"3s\", while 3 seconds and 1 nanosecond should be expressed in JSON format as \"3.000000001s\", and 3 seconds and 1 microsecond should be expressed in JSON format as \"3.000001s\".",
    "properties": {
     "nanos": {
      "type": "integer",
@@ -105,7 +225,7 @@
     },
     "seconds": {
      "type": "string",
-     "description": "Signed seconds of the span of time. Must be from -315,576,000,000 to +315,576,000,000 inclusive.",
+     "description": "Signed seconds of the span of time. Must be from -315,576,000,000 to +315,576,000,000 inclusive. Note: these bounds are computed from: 60 sec/min * 60 min/hr * 24 hr/day * 365.25 days/year * 10000 years",
      "format": "int64"
     }
    }
@@ -281,6 +401,35 @@
     }
    }
   },
+  "ListPerfSampleSeriesResponse": {
+   "id": "ListPerfSampleSeriesResponse",
+   "type": "object",
+   "properties": {
+    "perfSampleSeries": {
+     "type": "array",
+     "description": "The resulting PerfSampleSeries sorted by id",
+     "items": {
+      "$ref": "PerfSampleSeries"
+     }
+    }
+   }
+  },
+  "ListPerfSamplesResponse": {
+   "id": "ListPerfSamplesResponse",
+   "type": "object",
+   "properties": {
+    "nextPageToken": {
+     "type": "string",
+     "description": "Optional, returned if result size exceeds the page size specified in the request (or the default page size, 500, if unspecified). It indicates the last sample timestamp to be used as page_token in subsequent request"
+    },
+    "perfSamples": {
+     "type": "array",
+     "items": {
+      "$ref": "PerfSample"
+     }
+    }
+   }
+  },
   "ListStepThumbnailsResponse": {
    "id": "ListStepThumbnailsResponse",
    "type": "object",
@@ -314,6 +463,22 @@
      "items": {
       "$ref": "Step"
      }
+    }
+   }
+  },
+  "MemoryInfo": {
+   "id": "MemoryInfo",
+   "type": "object",
+   "properties": {
+    "memoryCapInKibibyte": {
+     "type": "string",
+     "description": "Maximum memory that can be allocated to the process in KiB",
+     "format": "int64"
+    },
+    "memoryTotalInKibibyte": {
+     "type": "string",
+     "description": "Total memory available on the device in KiB",
+     "format": "int64"
     }
    }
   },
@@ -355,6 +520,116 @@
       "",
       ""
      ]
+    }
+   }
+  },
+  "PerfEnvironment": {
+   "id": "PerfEnvironment",
+   "type": "object",
+   "description": "Encapsulates performance environment info",
+   "properties": {
+    "cpuInfo": {
+     "$ref": "CPUInfo",
+     "description": "CPU related environment info"
+    },
+    "memoryInfo": {
+     "$ref": "MemoryInfo",
+     "description": "Memory related environment info"
+    }
+   }
+  },
+  "PerfMetricsSummary": {
+   "id": "PerfMetricsSummary",
+   "type": "object",
+   "description": "A summary of perf metrics collected and performance environment info",
+   "properties": {
+    "executionId": {
+     "type": "string",
+     "description": "A tool results execution ID."
+    },
+    "historyId": {
+     "type": "string",
+     "description": "A tool results history ID."
+    },
+    "perfEnvironment": {
+     "$ref": "PerfEnvironment",
+     "description": "Describes the environment in which the performance metrics were collected"
+    },
+    "perfMetrics": {
+     "type": "array",
+     "description": "Set of resource collected",
+     "items": {
+      "type": "string",
+      "enum": [
+       "cpu",
+       "graphics",
+       "memory",
+       "network",
+       "perfMetricTypeUnspecified"
+      ],
+      "enumDescriptions": [
+       "",
+       "",
+       "",
+       "",
+       ""
+      ]
+     }
+    },
+    "projectId": {
+     "type": "string",
+     "description": "The cloud project"
+    },
+    "stepId": {
+     "type": "string",
+     "description": "A tool results step ID."
+    }
+   }
+  },
+  "PerfSample": {
+   "id": "PerfSample",
+   "type": "object",
+   "description": "Resource representing a single performance measure or data point",
+   "properties": {
+    "sampleTime": {
+     "$ref": "Timestamp",
+     "description": "Timestamp of collection"
+    },
+    "value": {
+     "type": "number",
+     "description": "Value observed",
+     "format": "double"
+    }
+   }
+  },
+  "PerfSampleSeries": {
+   "id": "PerfSampleSeries",
+   "type": "object",
+   "description": "Resource representing a collection of performance samples (or data points)",
+   "properties": {
+    "basicPerfSampleSeries": {
+     "$ref": "BasicPerfSampleSeries",
+     "description": "Basic series represented by a line chart"
+    },
+    "executionId": {
+     "type": "string",
+     "description": "A tool results execution ID."
+    },
+    "historyId": {
+     "type": "string",
+     "description": "A tool results history ID."
+    },
+    "projectId": {
+     "type": "string",
+     "description": "The cloud project"
+    },
+    "sampleSeriesId": {
+     "type": "string",
+     "description": "A sample series id"
+    },
+    "stepId": {
+     "type": "string",
+     "description": "A tool results step ID."
     }
    }
   },
@@ -692,7 +967,7 @@
   "Timestamp": {
    "id": "Timestamp",
    "type": "object",
-   "description": "A Timestamp represents a point in time independent of any time zone or calendar, represented as seconds and fractions of seconds at nanosecond resolution in UTC Epoch time. It is encoded using the Proleptic Gregorian Calendar which extends the Gregorian calendar backwards to year one. It is encoded assuming all minutes are 60 seconds long, i.e. leap seconds are \"smeared\" so that no leap second table is needed for interpretation. Range is from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. By restricting to that range, we ensure that we can convert to and from RFC 3339 date strings. See [https://www.ietf.org/rfc/rfc3339.txt](https://www.ietf.org/rfc/rfc3339.txt).\n\nExample 1: Compute Timestamp from POSIX `time()`.\n\nTimestamp timestamp; timestamp.set_seconds(time(NULL)); timestamp.set_nanos(0);\n\nExample 2: Compute Timestamp from POSIX `gettimeofday()`.\n\nstruct timeval tv; gettimeofday(&tv, NULL);\n\nTimestamp timestamp; timestamp.set_seconds(tv.tv_sec); timestamp.set_nanos(tv.tv_usec * 1000);\n\nExample 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.\n\nFILETIME ft; GetSystemTimeAsFileTime(&ft); UINT64 ticks = (((UINT64)ft.dwHighDateTime) \u003c\u003c 32) | ft.dwLowDateTime;\n\n// A Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z. Timestamp timestamp; timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL)); timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));\n\nExample 4: Compute Timestamp from Java `System.currentTimeMillis()`.\n\nlong millis = System.currentTimeMillis();\n\nTimestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000) .setNanos((int) ((millis % 1000) * 1000000)).build();\n\n\n\nExample 5: Compute Timestamp from current time in Python.\n\ntimestamp = Timestamp() timestamp.GetCurrentTime()",
+   "description": "A Timestamp represents a point in time independent of any time zone or calendar, represented as seconds and fractions of seconds at nanosecond resolution in UTC Epoch time. It is encoded using the Proleptic Gregorian Calendar which extends the Gregorian calendar backwards to year one. It is encoded assuming all minutes are 60 seconds long, i.e. leap seconds are \"smeared\" so that no leap second table is needed for interpretation. Range is from 0001-01-01T00:00:00Z to 9999-12-31T23:59:59.999999999Z. By restricting to that range, we ensure that we can convert to and from RFC 3339 date strings. See [https://www.ietf.org/rfc/rfc3339.txt](https://www.ietf.org/rfc/rfc3339.txt).\n\n# Examples\n\nExample 1: Compute Timestamp from POSIX `time()`.\n\nTimestamp timestamp; timestamp.set_seconds(time(NULL)); timestamp.set_nanos(0);\n\nExample 2: Compute Timestamp from POSIX `gettimeofday()`.\n\nstruct timeval tv; gettimeofday(&tv, NULL);\n\nTimestamp timestamp; timestamp.set_seconds(tv.tv_sec); timestamp.set_nanos(tv.tv_usec * 1000);\n\nExample 3: Compute Timestamp from Win32 `GetSystemTimeAsFileTime()`.\n\nFILETIME ft; GetSystemTimeAsFileTime(&ft); UINT64 ticks = (((UINT64)ft.dwHighDateTime) \u003c\u003c 32) | ft.dwLowDateTime;\n\n// A Windows tick is 100 nanoseconds. Windows epoch 1601-01-01T00:00:00Z // is 11644473600 seconds before Unix epoch 1970-01-01T00:00:00Z. Timestamp timestamp; timestamp.set_seconds((INT64) ((ticks / 10000000) - 11644473600LL)); timestamp.set_nanos((INT32) ((ticks % 10000000) * 100));\n\nExample 4: Compute Timestamp from Java `System.currentTimeMillis()`.\n\nlong millis = System.currentTimeMillis();\n\nTimestamp timestamp = Timestamp.newBuilder().setSeconds(millis / 1000) .setNanos((int) ((millis % 1000) * 1000000)).build();\n\n\n\nExample 5: Compute Timestamp from current time in Python.\n\ntimestamp = Timestamp() timestamp.GetCurrentTime()\n\n# JSON Mapping\n\nIn JSON format, the Timestamp type is encoded as a string in the [RFC 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the format is \"{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z\" where {year} is always expressed using four digits while {month}, {day}, {hour}, {min}, and {sec} are zero-padded to two digits each. The fractional seconds, which can go up to 9 digits (i.e. up to 1 nanosecond resolution), are optional. The \"Z\" suffix indicates the timezone (\"UTC\"); the timezone is required, though only UTC (as indicated by \"Z\") is presently supported.\n\nFor example, \"2017-01-15T01:30:15.01Z\" encodes 15.01 seconds past 01:30 UTC on January 15, 2017.\n\nIn JavaScript, one can convert a Date object to this format using the standard [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/toISOString] method. In Python, a standard `datetime.datetime` object can be converted to this format using [`strftime`](https://docs.python.org/2/library/time.html#time.strftime) with the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in Java, one can use the Joda Time's [`ISODateTimeFormat.dateTime()`]( http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()) to obtain a formatter capable of generating timestamps in this format.",
    "properties": {
     "nanos": {
      "type": "integer",
@@ -1192,6 +1467,50 @@
             "https://www.googleapis.com/auth/cloud-platform"
            ]
           },
+          "getPerfMetricsSummary": {
+           "id": "toolresults.projects.histories.executions.steps.getPerfMetricsSummary",
+           "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfMetricsSummary",
+           "httpMethod": "GET",
+           "description": "Retrieves a PerfMetricsSummary.\n\nMay return any of the following error code(s): - NOT_FOUND - The specified PerfMetricsSummary does not exist",
+           "parameters": {
+            "executionId": {
+             "type": "string",
+             "description": "A tool results execution ID.",
+             "required": true,
+             "location": "path"
+            },
+            "historyId": {
+             "type": "string",
+             "description": "A tool results history ID.",
+             "required": true,
+             "location": "path"
+            },
+            "projectId": {
+             "type": "string",
+             "description": "The cloud project",
+             "required": true,
+             "location": "path"
+            },
+            "stepId": {
+             "type": "string",
+             "description": "A tool results step ID.",
+             "required": true,
+             "location": "path"
+            }
+           },
+           "parameterOrder": [
+            "projectId",
+            "historyId",
+            "executionId",
+            "stepId"
+           ],
+           "response": {
+            "$ref": "PerfMetricsSummary"
+           },
+           "scopes": [
+            "https://www.googleapis.com/auth/cloud-platform"
+           ]
+          },
           "list": {
            "id": "toolresults.projects.histories.executions.steps.list",
            "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps",
@@ -1341,6 +1660,345 @@
           }
          },
          "resources": {
+          "perfMetricsSummary": {
+           "methods": {
+            "create": {
+             "id": "toolresults.projects.histories.executions.steps.perfMetricsSummary.create",
+             "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfMetricsSummary",
+             "httpMethod": "POST",
+             "description": "Creates a PerfMetricsSummary resource.\n\nMay return any of the following error code(s): - ALREADY_EXISTS - A PerfMetricSummary already exists for the given Step - NOT_FOUND - The containing Step does not exist",
+             "parameters": {
+              "executionId": {
+               "type": "string",
+               "description": "A tool results execution ID.",
+               "required": true,
+               "location": "path"
+              },
+              "historyId": {
+               "type": "string",
+               "description": "A tool results history ID.",
+               "required": true,
+               "location": "path"
+              },
+              "projectId": {
+               "type": "string",
+               "description": "The cloud project",
+               "required": true,
+               "location": "path"
+              },
+              "stepId": {
+               "type": "string",
+               "description": "A tool results step ID.",
+               "required": true,
+               "location": "path"
+              }
+             },
+             "parameterOrder": [
+              "projectId",
+              "historyId",
+              "executionId",
+              "stepId"
+             ],
+             "request": {
+              "$ref": "PerfMetricsSummary"
+             },
+             "response": {
+              "$ref": "PerfMetricsSummary"
+             },
+             "scopes": [
+              "https://www.googleapis.com/auth/cloud-platform"
+             ]
+            }
+           }
+          },
+          "perfSampleSeries": {
+           "methods": {
+            "create": {
+             "id": "toolresults.projects.histories.executions.steps.perfSampleSeries.create",
+             "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries",
+             "httpMethod": "POST",
+             "description": "Creates a PerfSampleSeries.\n\nMay return any of the following error code(s): - ALREADY_EXISTS - PerfMetricSummary already exists for the given Step - NOT_FOUND - The containing Step does not exist",
+             "parameters": {
+              "executionId": {
+               "type": "string",
+               "description": "A tool results execution ID.",
+               "required": true,
+               "location": "path"
+              },
+              "historyId": {
+               "type": "string",
+               "description": "A tool results history ID.",
+               "required": true,
+               "location": "path"
+              },
+              "projectId": {
+               "type": "string",
+               "description": "The cloud project",
+               "required": true,
+               "location": "path"
+              },
+              "stepId": {
+               "type": "string",
+               "description": "A tool results step ID.",
+               "required": true,
+               "location": "path"
+              }
+             },
+             "parameterOrder": [
+              "projectId",
+              "historyId",
+              "executionId",
+              "stepId"
+             ],
+             "request": {
+              "$ref": "PerfSampleSeries"
+             },
+             "response": {
+              "$ref": "PerfSampleSeries"
+             },
+             "scopes": [
+              "https://www.googleapis.com/auth/cloud-platform"
+             ]
+            },
+            "get": {
+             "id": "toolresults.projects.histories.executions.steps.perfSampleSeries.get",
+             "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries/{sampleSeriesId}",
+             "httpMethod": "GET",
+             "description": "Gets a PerfSampleSeries.\n\nMay return any of the following error code(s): - NOT_FOUND - The specified PerfSampleSeries does not exist",
+             "parameters": {
+              "executionId": {
+               "type": "string",
+               "description": "A tool results execution ID.",
+               "required": true,
+               "location": "path"
+              },
+              "historyId": {
+               "type": "string",
+               "description": "A tool results history ID.",
+               "required": true,
+               "location": "path"
+              },
+              "projectId": {
+               "type": "string",
+               "description": "The cloud project",
+               "required": true,
+               "location": "path"
+              },
+              "sampleSeriesId": {
+               "type": "string",
+               "description": "A sample series id",
+               "required": true,
+               "location": "path"
+              },
+              "stepId": {
+               "type": "string",
+               "description": "A tool results step ID.",
+               "required": true,
+               "location": "path"
+              }
+             },
+             "parameterOrder": [
+              "projectId",
+              "historyId",
+              "executionId",
+              "stepId",
+              "sampleSeriesId"
+             ],
+             "response": {
+              "$ref": "PerfSampleSeries"
+             },
+             "scopes": [
+              "https://www.googleapis.com/auth/cloud-platform"
+             ]
+            },
+            "list": {
+             "id": "toolresults.projects.histories.executions.steps.perfSampleSeries.list",
+             "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries",
+             "httpMethod": "GET",
+             "description": "Lists PerfSampleSeries for a given Step.\n\nThe request provides an optional filter which specifies one or more PerfMetricsType to include in the result; if none returns all. The resulting PerfSampleSeries are sorted by ids.\n\nMay return any of the following canonical error codes: - NOT_FOUND - The containing Step does not exist",
+             "parameters": {
+              "executionId": {
+               "type": "string",
+               "description": "A tool results execution ID.",
+               "required": true,
+               "location": "path"
+              },
+              "filter": {
+               "type": "string",
+               "description": "Specify one or more PerfMetricType values such as CPU to filter the result",
+               "enum": [
+                "cpu",
+                "graphics",
+                "memory",
+                "network",
+                "perfMetricTypeUnspecified"
+               ],
+               "enumDescriptions": [
+                "",
+                "",
+                "",
+                "",
+                ""
+               ],
+               "repeated": true,
+               "location": "query"
+              },
+              "historyId": {
+               "type": "string",
+               "description": "A tool results history ID.",
+               "required": true,
+               "location": "path"
+              },
+              "projectId": {
+               "type": "string",
+               "description": "The cloud project",
+               "required": true,
+               "location": "path"
+              },
+              "stepId": {
+               "type": "string",
+               "description": "A tool results step ID.",
+               "required": true,
+               "location": "path"
+              }
+             },
+             "parameterOrder": [
+              "projectId",
+              "historyId",
+              "executionId",
+              "stepId"
+             ],
+             "response": {
+              "$ref": "ListPerfSampleSeriesResponse"
+             },
+             "scopes": [
+              "https://www.googleapis.com/auth/cloud-platform"
+             ]
+            }
+           },
+           "resources": {
+            "samples": {
+             "methods": {
+              "batchCreate": {
+               "id": "toolresults.projects.histories.executions.steps.perfSampleSeries.samples.batchCreate",
+               "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries/{sampleSeriesId}/samples:batchCreate",
+               "httpMethod": "POST",
+               "description": "Creates a batch of PerfSamples - a client can submit multiple batches of Perf Samples through repeated calls to this method in order to split up a large request payload - duplicates and existing timestamp entries will be ignored. - the batch operation may partially succeed - the set of elements successfully inserted is returned in the response (omits items which already existed in the database).\n\nMay return any of the following canonical error codes: - NOT_FOUND - The containing PerfSampleSeries does not exist",
+               "parameters": {
+                "executionId": {
+                 "type": "string",
+                 "description": "A tool results execution ID.",
+                 "required": true,
+                 "location": "path"
+                },
+                "historyId": {
+                 "type": "string",
+                 "description": "A tool results history ID.",
+                 "required": true,
+                 "location": "path"
+                },
+                "projectId": {
+                 "type": "string",
+                 "description": "The cloud project",
+                 "required": true,
+                 "location": "path"
+                },
+                "sampleSeriesId": {
+                 "type": "string",
+                 "description": "A sample series id",
+                 "required": true,
+                 "location": "path"
+                },
+                "stepId": {
+                 "type": "string",
+                 "description": "A tool results step ID.",
+                 "required": true,
+                 "location": "path"
+                }
+               },
+               "parameterOrder": [
+                "projectId",
+                "historyId",
+                "executionId",
+                "stepId",
+                "sampleSeriesId"
+               ],
+               "request": {
+                "$ref": "BatchCreatePerfSamplesRequest"
+               },
+               "response": {
+                "$ref": "BatchCreatePerfSamplesResponse"
+               },
+               "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+               ]
+              },
+              "list": {
+               "id": "toolresults.projects.histories.executions.steps.perfSampleSeries.samples.list",
+               "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries/{sampleSeriesId}/samples",
+               "httpMethod": "GET",
+               "description": "Lists the Performance Samples of a given Sample Series - The list results are sorted by timestamps ascending - The default page size is 500 samples; and maximum size allowed 5000 - The response token indicates the last returned PerfSample timestamp - When the results size exceeds the page size, submit a subsequent request including the page token to return the rest of the samples up to the page limit\n\nMay return any of the following canonical error codes: - OUT_OF_RANGE - The specified request page_token is out of valid range - NOT_FOUND - The containing PerfSampleSeries does not exist",
+               "parameters": {
+                "executionId": {
+                 "type": "string",
+                 "description": "A tool results execution ID.",
+                 "required": true,
+                 "location": "path"
+                },
+                "historyId": {
+                 "type": "string",
+                 "description": "A tool results history ID.",
+                 "required": true,
+                 "location": "path"
+                },
+                "pageSize": {
+                 "type": "integer",
+                 "description": "The default page size is 500 samples, and the maximum size is 5000. If the page_size is greater than 5000, the effective page size will be 5000",
+                 "format": "int32",
+                 "location": "query"
+                },
+                "pageToken": {
+                 "type": "string",
+                 "description": "Optional, the next_page_token returned in the previous response",
+                 "location": "query"
+                },
+                "projectId": {
+                 "type": "string",
+                 "description": "The cloud project",
+                 "required": true,
+                 "location": "path"
+                },
+                "sampleSeriesId": {
+                 "type": "string",
+                 "description": "A sample series id",
+                 "required": true,
+                 "location": "path"
+                },
+                "stepId": {
+                 "type": "string",
+                 "description": "A tool results step ID.",
+                 "required": true,
+                 "location": "path"
+                }
+               },
+               "parameterOrder": [
+                "projectId",
+                "historyId",
+                "executionId",
+                "stepId",
+                "sampleSeriesId"
+               ],
+               "response": {
+                "$ref": "ListPerfSamplesResponse"
+               },
+               "scopes": [
+                "https://www.googleapis.com/auth/cloud-platform"
+               ]
+              }
+             }
+            }
+           }
+          },
           "thumbnails": {
            "methods": {
             "list": {

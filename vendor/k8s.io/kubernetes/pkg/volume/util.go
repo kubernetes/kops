@@ -96,7 +96,10 @@ func internalRecycleVolumeByWatchingPodUntilCompletion(pvName string, pod *v1.Po
 	// Now only the old pod or the new pod run. Watch it until it finishes
 	// and send all events on the pod to the PV
 	for {
-		event := <-podCh
+		event, ok := <-podCh
+		if !ok {
+			return fmt.Errorf("recycler pod %q watch channel had been closed", pod.Name)
+		}
 		switch event.Object.(type) {
 		case *v1.Pod:
 			// POD changed
@@ -198,13 +201,14 @@ func (c *realRecyclerClient) WatchPod(name, namespace string, stopChannel chan s
 		return nil, err
 	}
 
-	eventCh := make(chan watch.Event, 0)
+	eventCh := make(chan watch.Event, 30)
 
 	go func() {
 		defer eventWatch.Stop()
 		defer podWatch.Stop()
 		defer close(eventCh)
-
+		var podWatchChannelClosed bool
+		var eventWatchChannelClosed bool
 		for {
 			select {
 			case _ = <-stopChannel:
@@ -212,15 +216,19 @@ func (c *realRecyclerClient) WatchPod(name, namespace string, stopChannel chan s
 
 			case podEvent, ok := <-podWatch.ResultChan():
 				if !ok {
-					return
+					podWatchChannelClosed = true
+				} else {
+					eventCh <- podEvent
 				}
-				eventCh <- podEvent
-
 			case eventEvent, ok := <-eventWatch.ResultChan():
 				if !ok {
-					return
+					eventWatchChannelClosed = true
+				} else {
+					eventCh <- eventEvent
 				}
-				eventCh <- eventEvent
+			}
+			if podWatchChannelClosed && eventWatchChannelClosed {
+				break
 			}
 		}
 	}()
@@ -378,7 +386,7 @@ func MountOptionFromSpec(spec *Spec, options ...string) []string {
 	pv := spec.PersistentVolume
 
 	if pv != nil {
-		if mo, ok := pv.Annotations[MountOptionAnnotation]; ok {
+		if mo, ok := pv.Annotations[v1.MountOptionAnnotation]; ok {
 			moList := strings.Split(mo, ",")
 			return JoinMountOptions(moList, options)
 		}
@@ -401,4 +409,48 @@ func JoinMountOptions(userOptions []string, systemOptions []string) []string {
 		allMountOptions.Insert(mountOption)
 	}
 	return allMountOptions.UnsortedList()
+}
+
+// ZonesToSet converts a string containing a comma separated list of zones to set
+func ZonesToSet(zonesString string) (sets.String, error) {
+	zonesSlice := strings.Split(zonesString, ",")
+	zonesSet := make(sets.String)
+	for _, zone := range zonesSlice {
+		trimmedZone := strings.TrimSpace(zone)
+		if trimmedZone == "" {
+			return make(sets.String), fmt.Errorf("comma separated list of zones (%q) must not contain an empty zone", zonesString)
+		}
+		zonesSet.Insert(trimmedZone)
+	}
+	return zonesSet, nil
+}
+
+// ValidateZone returns:
+// - an error in case zone is an empty string or contains only any combination of spaces and tab characters
+// - nil otherwise
+func ValidateZone(zone string) error {
+	if strings.TrimSpace(zone) == "" {
+		return fmt.Errorf("the provided %q zone is not valid, it's an empty string or contains only spaces and tab characters", zone)
+	}
+	return nil
+}
+
+// AccessModesContains returns whether the requested mode is contained by modes
+func AccessModesContains(modes []v1.PersistentVolumeAccessMode, mode v1.PersistentVolumeAccessMode) bool {
+	for _, m := range modes {
+		if m == mode {
+			return true
+		}
+	}
+	return false
+}
+
+// AccessModesContainedInAll returns whether all of the requested modes are contained by modes
+func AccessModesContainedInAll(indexedModes []v1.PersistentVolumeAccessMode, requestedModes []v1.PersistentVolumeAccessMode) bool {
+	for _, mode := range requestedModes {
+		if !AccessModesContains(indexedModes, mode) {
+			return false
+		}
+	}
+	return true
 }

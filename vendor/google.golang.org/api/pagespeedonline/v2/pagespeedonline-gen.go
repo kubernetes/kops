@@ -464,6 +464,20 @@ func (s *ResultFormattedResultsRuleResults) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *ResultFormattedResultsRuleResults) UnmarshalJSON(data []byte) error {
+	type noMethod ResultFormattedResultsRuleResults
+	var s1 struct {
+		RuleImpact gensupport.JSONFloat64 `json:"ruleImpact"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.RuleImpact = float64(s1.RuleImpact)
+	return nil
+}
+
 type ResultFormattedResultsRuleResultsUrlBlocks struct {
 	// Header: Heading to be displayed with the list of URLs.
 	Header *PagespeedApiFormatStringV2 `json:"header,omitempty"`

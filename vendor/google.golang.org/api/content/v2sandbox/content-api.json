@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/QIeaaaKpbR6AnbTNjcCCIDMwTuY\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/GuL1MzGrpXtMZGxY6n9_TdfBzPA\"",
  "discoveryVersion": "v1",
  "id": "content:v2sandbox",
  "name": "content",
  "canonicalName": "Shopping Content",
  "version": "v2sandbox",
- "revision": "20161110",
+ "revision": "20170406",
  "title": "Content API for Shopping",
  "description": "Manages product items, inventory, and Merchant Center accounts for Google Shopping.",
  "ownerDomain": "google.com",
@@ -299,7 +299,7 @@
     },
     "explicitMarketingPreference": {
      "type": "boolean",
-     "description": "If set, this indicates the user explicitly chose to opt in or out of providing marketing rights to the merchant. If unset, this indicates the user has already made this choice in a previous purchase, and was thus not shown the marketing right opt in/out checkbox during the Purchases on Google checkout flow."
+     "description": "If set, this indicates the user explicitly chose to opt in or out of providing marketing rights to the merchant. If unset, this indicates the user has already made this choice in a previous purchase, and was thus not shown the marketing right opt in/out checkbox during the checkout flow."
     },
     "fullName": {
      "type": "string",
@@ -1526,7 +1526,7 @@
     },
     "explicitMarketingPreference": {
      "type": "boolean",
-     "description": "If set, this indicates the user explicitly chose to opt in or out of providing marketing rights to the merchant. If unset, this indicates the user has already made this choice in a previous purchase, and was thus not shown the marketing right opt in/out checkbox during the Purchases on Google checkout flow. Optional."
+     "description": "If set, this indicates the user explicitly chose to opt in or out of providing marketing rights to the merchant. If unset, this indicates the user has already made this choice in a previous purchase, and was thus not shown the marketing right opt in/out checkbox during the checkout flow. Optional."
     },
     "fullName": {
      "type": "string",
@@ -1723,7 +1723,7 @@
      "id": "content.orders.acknowledge",
      "path": "{merchantId}/orders/{orderId}/acknowledge",
      "httpMethod": "POST",
-     "description": "Marks an order as acknowledged.",
+     "description": "Marks an order as acknowledged. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -1757,7 +1757,7 @@
      "id": "content.orders.advancetestorder",
      "path": "{merchantId}/testorders/{orderId}/advance",
      "httpMethod": "POST",
-     "description": "Sandbox only. Moves a test order from state \"inProgress\" to state \"pendingShipment\".",
+     "description": "Sandbox only. Moves a test order from state \"inProgress\" to state \"pendingShipment\". This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -1788,7 +1788,7 @@
      "id": "content.orders.cancel",
      "path": "{merchantId}/orders/{orderId}/cancel",
      "httpMethod": "POST",
-     "description": "Cancels all line items in an order.",
+     "description": "Cancels all line items in an order, making a full refund. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -1822,7 +1822,7 @@
      "id": "content.orders.cancellineitem",
      "path": "{merchantId}/orders/{orderId}/cancelLineItem",
      "httpMethod": "POST",
-     "description": "Cancels a line item.",
+     "description": "Cancels a line item, making a full refund. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -1856,7 +1856,7 @@
      "id": "content.orders.createtestorder",
      "path": "{merchantId}/testorders",
      "httpMethod": "POST",
-     "description": "Sandbox only. Creates a test order.",
+     "description": "Sandbox only. Creates a test order. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -1883,7 +1883,7 @@
      "id": "content.orders.custombatch",
      "path": "orders/batch",
      "httpMethod": "POST",
-     "description": "Retrieves or modifies multiple orders in a single request.",
+     "description": "Retrieves or modifies multiple orders in a single request. This method can only be called for non-multi-client accounts.",
      "request": {
       "$ref": "OrdersCustomBatchRequest"
      },
@@ -1898,7 +1898,7 @@
      "id": "content.orders.get",
      "path": "{merchantId}/orders/{orderId}",
      "httpMethod": "GET",
-     "description": "Retrieves an order from your Merchant Center account.",
+     "description": "Retrieves an order from your Merchant Center account. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -1929,7 +1929,7 @@
      "id": "content.orders.getbymerchantorderid",
      "path": "{merchantId}/ordersbymerchantid/{merchantOrderId}",
      "httpMethod": "GET",
-     "description": "Retrieves an order using merchant order id.",
+     "description": "Retrieves an order using merchant order id. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -1960,7 +1960,7 @@
      "id": "content.orders.gettestordertemplate",
      "path": "{merchantId}/testordertemplates/{templateName}",
      "httpMethod": "GET",
-     "description": "Sandbox only. Retrieves an order template that can be used to quickly create a new order in sandbox.",
+     "description": "Sandbox only. Retrieves an order template that can be used to quickly create a new order in sandbox. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -2003,7 +2003,7 @@
      "id": "content.orders.list",
      "path": "{merchantId}/orders",
      "httpMethod": "GET",
-     "description": "Lists the orders in your Merchant Center account.",
+     "description": "Lists the orders in your Merchant Center account. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "acknowledged": {
        "type": "boolean",
@@ -2098,7 +2098,7 @@
      "id": "content.orders.refund",
      "path": "{merchantId}/orders/{orderId}/refund",
      "httpMethod": "POST",
-     "description": "Refund a portion of the order, up to the full amount paid.",
+     "description": "Refund a portion of the order, up to the full amount paid. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -2132,7 +2132,7 @@
      "id": "content.orders.returnlineitem",
      "path": "{merchantId}/orders/{orderId}/returnLineItem",
      "httpMethod": "POST",
-     "description": "Returns a line item.",
+     "description": "Returns a line item. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -2166,7 +2166,7 @@
      "id": "content.orders.shiplineitems",
      "path": "{merchantId}/orders/{orderId}/shipLineItems",
      "httpMethod": "POST",
-     "description": "Marks line item(s) as shipped.",
+     "description": "Marks line item(s) as shipped. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -2200,7 +2200,7 @@
      "id": "content.orders.updatemerchantorderid",
      "path": "{merchantId}/orders/{orderId}/updateMerchantOrderId",
      "httpMethod": "POST",
-     "description": "Updates the merchant order ID for a given order.",
+     "description": "Updates the merchant order ID for a given order. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",
@@ -2234,7 +2234,7 @@
      "id": "content.orders.updateshipment",
      "path": "{merchantId}/orders/{orderId}/updateShipment",
      "httpMethod": "POST",
-     "description": "Updates a shipment's status, carrier, and/or tracking ID.",
+     "description": "Updates a shipment's status, carrier, and/or tracking ID. This method can only be called for non-multi-client accounts.",
      "parameters": {
       "merchantId": {
        "type": "string",

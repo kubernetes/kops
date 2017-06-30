@@ -3,22 +3,17 @@ package test
 import (
 	"io/ioutil"
 	"log"
-	"sync"
 
-	"github.com/coredns/coredns/core/dnsserver"
+	"github.com/miekg/coredns/core/dnsserver"
 
 	// Hook in CoreDNS.
-	_ "github.com/coredns/coredns/core"
+	_ "github.com/miekg/coredns/core"
 
 	"github.com/mholt/caddy"
 )
 
-var mu sync.Mutex
-
 // CoreDNSServer returns a CoreDNS test server. It just takes a normal Corefile as input.
 func CoreDNSServer(corefile string) (*caddy.Instance, error) {
-	mu.Lock()
-	defer mu.Unlock()
 	caddy.Quiet = true
 	dnsserver.Quiet = true
 	log.SetOutput(ioutil.Discard)
