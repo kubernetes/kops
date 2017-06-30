@@ -531,7 +531,7 @@ func (t *awsCloudImplementation) DescribeInstance(instanceID string) (*ec2.Insta
 		return nil, nil
 	}
 	if len(response.Reservations) != 1 {
-		glog.Fatalf("found multiple Reservations for instance id")
+		glog.Fatalf("found multiple Reservations for %q", instanceID)
 	}
 
 	reservation := response.Reservations[0]
@@ -540,7 +540,7 @@ func (t *awsCloudImplementation) DescribeInstance(instanceID string) (*ec2.Insta
 	}
 
 	if len(reservation.Instances) != 1 {
-		return nil, fmt.Errorf("found multiple Instances for instance id")
+		return nil, fmt.Errorf("found multiple Instances for %q", instanceID)
 	}
 
 	instance := reservation.Instances[0]
@@ -562,7 +562,7 @@ func (t *awsCloudImplementation) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
 		return nil, nil
 	}
 	if len(response.Vpcs) != 1 {
-		return nil, fmt.Errorf("found multiple VPCs for instance id")
+		return nil, fmt.Errorf("found multiple VPCs for %q", vpcID)
 	}
 
 	vpc := response.Vpcs[0]
