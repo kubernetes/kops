@@ -125,7 +125,7 @@ func RunCompletion(f *util.Factory, cmd *cobra.Command, args []string, out io.Wr
 		return fmt.Errorf("shell is required")
 	}
 
-	run, found := completion_shells[args[0]]
+	run, found := completion_shells[c.Shell]
 	if !found {
 		return fmt.Errorf("Unsupported shell type %q.", args[0])
 	}
