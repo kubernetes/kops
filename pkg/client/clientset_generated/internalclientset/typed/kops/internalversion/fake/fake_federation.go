@@ -34,6 +34,8 @@ type FakeFederations struct {
 
 var federationsResource = schema.GroupVersionResource{Group: "kops", Version: "", Resource: "federations"}
 
+var federationsKind = schema.GroupVersionKind{Group: "kops", Version: "", Kind: "Federation"}
+
 func (c *FakeFederations) Create(federation *kops.Federation) (result *kops.Federation, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(federationsResource, c.ns, federation), &kops.Federation{})
@@ -80,7 +82,7 @@ func (c *FakeFederations) Get(name string, options v1.GetOptions) (result *kops.
 
 func (c *FakeFederations) List(opts v1.ListOptions) (result *kops.FederationList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(federationsResource, c.ns, opts), &kops.FederationList{})
+		Invokes(testing.NewListAction(federationsResource, federationsKind, c.ns, opts), &kops.FederationList{})
 
 	if obj == nil {
 		return nil, err

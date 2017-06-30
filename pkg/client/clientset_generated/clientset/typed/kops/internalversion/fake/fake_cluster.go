@@ -34,6 +34,8 @@ type FakeClusters struct {
 
 var clustersResource = schema.GroupVersionResource{Group: "kops", Version: "", Resource: "clusters"}
 
+var clustersKind = schema.GroupVersionKind{Group: "kops", Version: "", Kind: "Cluster"}
+
 func (c *FakeClusters) Create(cluster *kops.Cluster) (result *kops.Cluster, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(clustersResource, c.ns, cluster), &kops.Cluster{})
@@ -80,7 +82,7 @@ func (c *FakeClusters) Get(name string, options v1.GetOptions) (result *kops.Clu
 
 func (c *FakeClusters) List(opts v1.ListOptions) (result *kops.ClusterList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(clustersResource, c.ns, opts), &kops.ClusterList{})
+		Invokes(testing.NewListAction(clustersResource, clustersKind, c.ns, opts), &kops.ClusterList{})
 
 	if obj == nil {
 		return nil, err
