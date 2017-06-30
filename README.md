@@ -39,6 +39,7 @@ launching a Kubernetes cluster hosted on AWS.
 * Ability to generate configuration files for AWS [CloudFormation](https://aws.amazon.com/cloudformation/) and Terraform [Terraform configuration](/docs/terraform.md)
 * Supports custom Kubernetes [add-ons](/docs/addons.md)
 * Command line [autocompletion](/docs/cli/kops_completion.md)
+* Manifest Based API [Configuration](/docs/manifests_and_customizing_via_api.md)
 * Community supported!
 
 
@@ -58,6 +59,9 @@ Documentation is in the `/docs` directory, [and the index is here.](docs/README.
 $ brew update && brew install kops
 
 ```
+
+The `kops` binary is also available via our [releases](https://github.com/kubernetes/kops/releases/latest).
+
 ### Linux
 
 Download the [latest release](https://github.com/kubernetes/kops/releases/latest), then:
@@ -66,9 +70,6 @@ Download the [latest release](https://github.com/kubernetes/kops/releases/latest
 $ chmod +x kops-linux-amd64                 # Add execution permissions
 $ mv kops-linux-amd64 /usr/local/bin/kops   # Move the kops to /usr/local/bin
 ```
-
-
-
 
 ## History
 
