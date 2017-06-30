@@ -127,6 +127,7 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*api.InstanceGroup, 
 	return nil, fmt.Errorf("InstanceGroup %q not found", name)
 }
 
+// DnsControllerArgv returns the args to the DNS controller
 func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	var argv []string
 
@@ -141,6 +142,7 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	} else {
 		argv = append(argv, "--watch-ingress=false")
 	}
+
 
 	switch fi.CloudProviderID(tf.cluster.Spec.CloudProvider) {
 	case fi.CloudProviderAWS:
