@@ -240,6 +240,9 @@ func loadSpec(cPath string) (spec *specs.Spec, err error) {
 	if err = json.NewDecoder(cf).Decode(&spec); err != nil {
 		return nil, err
 	}
+	if err = validatePlatform(&spec.Platform); err != nil {
+		return nil, err
+	}
 	return spec, validateProcessSpec(&spec.Process)
 }
 
@@ -253,4 +256,14 @@ func createLibContainerRlimit(rlimit specs.Rlimit) (configs.Rlimit, error) {
 		Hard: uint64(rlimit.Hard),
 		Soft: uint64(rlimit.Soft),
 	}, nil
+}
+
+func validatePlatform(platform *specs.Platform) error {
+	if platform.OS != runtime.GOOS {
+		return fmt.Errorf("target os %s mismatch with current os %s", platform.OS, runtime.GOOS)
+	}
+	if platform.Arch != runtime.GOARCH {
+		return fmt.Errorf("target arch %s mismatch with current arch %s", platform.Arch, runtime.GOARCH)
+	}
+	return nil
 }

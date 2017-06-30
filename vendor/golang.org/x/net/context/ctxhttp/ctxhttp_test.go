@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 	"time"
 
@@ -64,8 +63,8 @@ func TestCancelBeforeHeaders(t *testing.T) {
 		res.Body.Close()
 		t.Fatal("Get returned unexpected nil error")
 	}
-	if !strings.Contains(err.Error(), "canceled") {
-		t.Errorf("err = %v; want something with \"canceled\"", err)
+	if err != context.Canceled {
+		t.Errorf("err = %v; want %v", err, context.Canceled)
 	}
 }
 

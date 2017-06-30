@@ -2669,6 +2669,22 @@ func (s *PlacePosition) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *PlacePosition) UnmarshalJSON(data []byte) error {
+	type noMethod PlacePosition
+	var s1 struct {
+		Latitude  gensupport.JSONFloat64 `json:"latitude"`
+		Longitude gensupport.JSONFloat64 `json:"longitude"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Latitude = float64(s1.Latitude)
+	s.Longitude = float64(s1.Longitude)
+	return nil
+}
+
 type PlusDomainsAclentryResource struct {
 	// DisplayName: A descriptive name for this entry. Suitable for display.
 	DisplayName string `json:"displayName,omitempty"`

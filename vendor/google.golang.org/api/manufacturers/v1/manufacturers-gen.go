@@ -100,20 +100,108 @@ type AccountsProductsService struct {
 // see
 // https://support.google.com/manufacturers/answer/6124116.
 type Attributes struct {
+	// AdditionalImageLink: The additional images of the product. For more
+	// information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#addlimage.
+	AdditionalImageLink []*Image `json:"additionalImageLink,omitempty"`
+
+	// AgeGroup: The target age group of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#agegroup.
+	AgeGroup string `json:"ageGroup,omitempty"`
+
 	// Brand: The brand name of the product. For more information,
 	// see
 	// https://support.google.com/manufacturers/answer/6124116#brand.
 	Brand string `json:"brand,omitempty"`
+
+	// Capacity: The capacity of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#capacity.
+	Capacity *Capacity `json:"capacity,omitempty"`
+
+	// Color: The color of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#color.
+	Color string `json:"color,omitempty"`
+
+	// Count: The count of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#count.
+	Count *Count `json:"count,omitempty"`
+
+	// Description: The description of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#descriptio
+	// n.
+	Description string `json:"description,omitempty"`
+
+	// DisclosureDate: The disclosure date of the product. For more
+	// information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#disclosure
+	// .
+	DisclosureDate string `json:"disclosureDate,omitempty"`
+
+	// FeatureDescription: The rich format description of the product. For
+	// more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#featuredes
+	// c.
+	FeatureDescription []*FeatureDescription `json:"featureDescription,omitempty"`
+
+	// Flavor: The flavor of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#flavor.
+	Flavor string `json:"flavor,omitempty"`
+
+	// Format: The format of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#format.
+	Format string `json:"format,omitempty"`
+
+	// Gender: The target gender of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#gender.
+	Gender string `json:"gender,omitempty"`
 
 	// Gtin: The Global Trade Item Number (GTIN) of the product. For more
 	// information,
 	// see https://support.google.com/manufacturers/answer/6124116#gtin.
 	Gtin []string `json:"gtin,omitempty"`
 
+	// ImageLink: The image of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#image.
+	ImageLink *Image `json:"imageLink,omitempty"`
+
+	// ItemGroupId: The item group id of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#itemgroupi
+	// d.
+	ItemGroupId string `json:"itemGroupId,omitempty"`
+
+	// Material: The material of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#material.
+	Material string `json:"material,omitempty"`
+
 	// Mpn: The Manufacturer Part Number (MPN) of the product. For more
 	// information,
 	// see https://support.google.com/manufacturers/answer/6124116#mpn.
 	Mpn string `json:"mpn,omitempty"`
+
+	// Pattern: The pattern of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#pattern.
+	Pattern string `json:"pattern,omitempty"`
+
+	// ProductDetail: The details of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#productdet
+	// ail.
+	ProductDetail []*ProductDetail `json:"productDetail,omitempty"`
 
 	// ProductLine: The name of the group of products related to the
 	// product. For more
@@ -129,27 +217,99 @@ type Attributes struct {
 	// e.
 	ProductName string `json:"productName,omitempty"`
 
-	// ProductPageUrl: The URL of the manufacturer's detail page of the
-	// product. For more
+	// ProductPageUrl: The URL of the detail page of the product. For more
 	// information,
 	// see
 	// https://support.google.com/manufacturers/answer/6124116#productpag
 	// e.
 	ProductPageUrl string `json:"productPageUrl,omitempty"`
 
-	// ProductType: The manufacturer's category of the product. For more
-	// information,
+	// ProductType: The category of the product. For more information,
 	// see
 	// https://support.google.com/manufacturers/answer/6124116#producttyp
 	// e.
 	ProductType []string `json:"productType,omitempty"`
+
+	// ReleaseDate: The release date of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#release.
+	ReleaseDate string `json:"releaseDate,omitempty"`
+
+	// Scent: The scent of the product. For more information, see
+	//  https://support.google.com/manufacturers/answer/6124116#scent.
+	Scent string `json:"scent,omitempty"`
+
+	// Size: The size of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#size.
+	Size string `json:"size,omitempty"`
+
+	// SizeSystem: The size system of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#sizesystem
+	// .
+	SizeSystem string `json:"sizeSystem,omitempty"`
+
+	// SizeType: The size type of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#sizetype.
+	SizeType string `json:"sizeType,omitempty"`
+
+	// SuggestedRetailPrice: The suggested retail price (MSRP) of the
+	// product. For more information,
+	// see https://support.google.com/manufacturers/answer/6124116#price.
+	SuggestedRetailPrice *Price `json:"suggestedRetailPrice,omitempty"`
+
+	// Theme: The theme of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#theme.
+	Theme string `json:"theme,omitempty"`
 
 	// Title: The title of the product. For more information,
 	// see
 	// https://support.google.com/manufacturers/answer/6124116#title.
 	Title string `json:"title,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Brand") to
+	// VideoLink: The videos of the product. For more information,
+	// see
+	// https://support.google.com/manufacturers/answer/6124116#video.
+	VideoLink []string `json:"videoLink,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AdditionalImageLink")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AdditionalImageLink") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Attributes) MarshalJSON() ([]byte, error) {
+	type noMethod Attributes
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Capacity: The capacity of a product. For more information,
+// see
+// https://support.google.com/manufacturers/answer/6124116#capacity.
+type Capacity struct {
+	// Unit: The unit of the capacity, i.e., MB, GB, or TB.
+	Unit string `json:"unit,omitempty"`
+
+	// Value: The numeric value of the capacity.
+	Value int64 `json:"value,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "Unit") to
 	// unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
@@ -157,7 +317,7 @@ type Attributes struct {
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Brand") to include in API
+	// NullFields is a list of field names (e.g. "Unit") to include in API
 	// requests with the JSON null value. By default, fields with empty
 	// values are omitted from API requests. However, any field with an
 	// empty value appearing in NullFields will be sent to the server as
@@ -166,8 +326,141 @@ type Attributes struct {
 	NullFields []string `json:"-"`
 }
 
-func (s *Attributes) MarshalJSON() ([]byte, error) {
-	type noMethod Attributes
+func (s *Capacity) MarshalJSON() ([]byte, error) {
+	type noMethod Capacity
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Count: The number of products in a single package. For more
+// information,
+// see
+// https://support.google.com/manufacturers/answer/6124116#count.
+type Count struct {
+	// Unit: The unit in which these products are counted.
+	Unit string `json:"unit,omitempty"`
+
+	// Value: The numeric value of the number of products in a package.
+	Value int64 `json:"value,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "Unit") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Unit") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Count) MarshalJSON() ([]byte, error) {
+	type noMethod Count
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// FeatureDescription: A feature description of the product. For more
+// information,
+// see
+// https://support.google.com/manufacturers/answer/6124116#featuredes
+// c.
+type FeatureDescription struct {
+	// Headline: A short description of the feature.
+	Headline string `json:"headline,omitempty"`
+
+	// Image: An optional image describing the feature.
+	Image *Image `json:"image,omitempty"`
+
+	// Text: A detailed description of the feature.
+	Text string `json:"text,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Headline") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Headline") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *FeatureDescription) MarshalJSON() ([]byte, error) {
+	type noMethod FeatureDescription
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Image: An image.
+type Image struct {
+	// ImageUrl: The URL of the image. For crawled images, this is the
+	// provided URL. For
+	// uploaded images, this is a serving URL from Google if the image has
+	// been
+	// processed successfully.
+	ImageUrl string `json:"imageUrl,omitempty"`
+
+	// Status: The status of the image.
+	// @OutputOnly
+	//
+	// Possible values:
+	//   "STATUS_UNSPECIFIED" - Status is unspecified. Should not be used.
+	//   "PENDING_PROCESSING" - Image was uploaded and is being processed.
+	//   "PENDING_CRAWL" - The image crawl is still pending.
+	//   "OK" - The image was processed and it meets the requirements.
+	//   "ROBOTED" - The image URL is protected by robots.txt file and
+	// cannot be crawled.
+	//   "XROBOTED" - The image URL is protected by X-Robots-Tag and cannot
+	// be crawled.
+	//   "CRAWL_ERROR" - There was an error while crawling the image.
+	//   "PROCESSING_ERROR" - The image cannot be processed.
+	//   "DECODING_ERROR" - The image cannot be decoded.
+	//   "TOO_BIG" - The image is too big.
+	//   "CRAWL_SKIPPED" - The image was manually overridden and will not be
+	// crawled.
+	Status string `json:"status,omitempty"`
+
+	// Type: The type of the image, i.e., crawled or uploaded.
+	// @OutputOnly
+	//
+	// Possible values:
+	//   "TYPE_UNSPECIFIED" - Type is unspecified. Should not be used.
+	//   "CRAWLED" - The image was crawled from a provided URL.
+	//   "UPLOADED" - The image was uploaded.
+	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ImageUrl") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ImageUrl") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Image) MarshalJSON() ([]byte, error) {
+	type noMethod Image
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -201,6 +494,9 @@ type Issue struct {
 	// still
 	// pending review.
 	Severity string `json:"severity,omitempty"`
+
+	// Timestamp: The timestamp when this issue appeared.
+	Timestamp string `json:"timestamp,omitempty"`
 
 	// Type: The server-generated type of the issue, for
 	// example,
@@ -261,6 +557,37 @@ type ListProductsResponse struct {
 
 func (s *ListProductsResponse) MarshalJSON() ([]byte, error) {
 	type noMethod ListProductsResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// Price: A price.
+type Price struct {
+	// Amount: The numeric value of the price.
+	Amount string `json:"amount,omitempty"`
+
+	// Currency: The currency in which the price is denoted.
+	Currency string `json:"currency,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Amount") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Amount") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *Price) MarshalJSON() ([]byte, error) {
+	type noMethod Price
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -368,6 +695,44 @@ type Product struct {
 
 func (s *Product) MarshalJSON() ([]byte, error) {
 	type noMethod Product
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// ProductDetail: A product detail of the product. For more information,
+// see
+// https://support.google.com/manufacturers/answer/6124116#productdet
+// ail.
+type ProductDetail struct {
+	// AttributeName: The name of the attribute.
+	AttributeName string `json:"attributeName,omitempty"`
+
+	// AttributeValue: The value of the attribute.
+	AttributeValue string `json:"attributeValue,omitempty"`
+
+	// SectionName: A short section name that can be reused between multiple
+	// product details.
+	SectionName string `json:"sectionName,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "AttributeName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "AttributeName") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ProductDetail) MarshalJSON() ([]byte, error) {
+	type noMethod ProductDetail
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }

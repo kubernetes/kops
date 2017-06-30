@@ -1969,6 +1969,22 @@ func (s *GeolayerdataGeo) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *GeolayerdataGeo) UnmarshalJSON(data []byte) error {
+	type noMethod GeolayerdataGeo
+	var s1 struct {
+		Latitude  gensupport.JSONFloat64 `json:"latitude"`
+		Longitude gensupport.JSONFloat64 `json:"longitude"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Latitude = float64(s1.Latitude)
+	s.Longitude = float64(s1.Longitude)
+	return nil
+}
+
 type GeolayerdataGeoBoundaryItem struct {
 	Latitude int64 `json:"latitude,omitempty"`
 
@@ -2055,6 +2071,22 @@ func (s *GeolayerdataGeoViewportHi) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *GeolayerdataGeoViewportHi) UnmarshalJSON(data []byte) error {
+	type noMethod GeolayerdataGeoViewportHi
+	var s1 struct {
+		Latitude  gensupport.JSONFloat64 `json:"latitude"`
+		Longitude gensupport.JSONFloat64 `json:"longitude"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Latitude = float64(s1.Latitude)
+	s.Longitude = float64(s1.Longitude)
+	return nil
+}
+
 type GeolayerdataGeoViewportLo struct {
 	Latitude float64 `json:"latitude,omitempty"`
 
@@ -2081,6 +2113,22 @@ func (s *GeolayerdataGeoViewportLo) MarshalJSON() ([]byte, error) {
 	type noMethod GeolayerdataGeoViewportLo
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *GeolayerdataGeoViewportLo) UnmarshalJSON(data []byte) error {
+	type noMethod GeolayerdataGeoViewportLo
+	var s1 struct {
+		Latitude  gensupport.JSONFloat64 `json:"latitude"`
+		Longitude gensupport.JSONFloat64 `json:"longitude"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Latitude = float64(s1.Latitude)
+	s.Longitude = float64(s1.Longitude)
+	return nil
 }
 
 type Layersummaries struct {
@@ -2277,6 +2325,8 @@ type Notification struct {
 
 	// Kind: Resource type.
 	Kind string `json:"kind,omitempty"`
+
+	NotificationGroup string `json:"notificationGroup,omitempty"`
 
 	NotificationType string `json:"notification_type,omitempty"`
 
@@ -2633,8 +2683,6 @@ type Series struct {
 	// Kind: Resource type.
 	Kind string `json:"kind,omitempty"`
 
-	// Series: Series info list. The client always expects this element in
-	// the JSON output, hence declared here as OutputAlways.
 	Series []*SeriesSeries `json:"series,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -2806,6 +2854,8 @@ type UsersettingsNotification struct {
 
 	MoreFromSeries *UsersettingsNotificationMoreFromSeries `json:"moreFromSeries,omitempty"`
 
+	RewardExpirations *UsersettingsNotificationRewardExpirations `json:"rewardExpirations,omitempty"`
+
 	// ForceSendFields is a list of field names (e.g. "MoreFromAuthors") to
 	// unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
@@ -2878,6 +2928,32 @@ type UsersettingsNotificationMoreFromSeries struct {
 
 func (s *UsersettingsNotificationMoreFromSeries) MarshalJSON() ([]byte, error) {
 	type noMethod UsersettingsNotificationMoreFromSeries
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type UsersettingsNotificationRewardExpirations struct {
+	OptedState string `json:"opted_state,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "OptedState") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "OptedState") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *UsersettingsNotificationRewardExpirations) MarshalJSON() ([]byte, error) {
+	type noMethod UsersettingsNotificationRewardExpirations
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -3302,6 +3378,20 @@ func (s *VolumeSaleInfoListPrice) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *VolumeSaleInfoListPrice) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeSaleInfoListPrice
+	var s1 struct {
+		Amount gensupport.JSONFloat64 `json:"amount"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Amount = float64(s1.Amount)
+	return nil
+}
+
 type VolumeSaleInfoOffers struct {
 	// FinskyOfferType: The finsky offer type (e.g., PURCHASE=0 RENTAL=3)
 	FinskyOfferType int64 `json:"finskyOfferType,omitempty"`
@@ -3373,6 +3463,20 @@ func (s *VolumeSaleInfoOffersListPrice) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *VolumeSaleInfoOffersListPrice) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeSaleInfoOffersListPrice
+	var s1 struct {
+		AmountInMicros gensupport.JSONFloat64 `json:"amountInMicros"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.AmountInMicros = float64(s1.AmountInMicros)
+	return nil
+}
+
 // VolumeSaleInfoOffersRentalDuration: The rental duration (for rental
 // offers only).
 type VolumeSaleInfoOffersRentalDuration struct {
@@ -3401,6 +3505,20 @@ func (s *VolumeSaleInfoOffersRentalDuration) MarshalJSON() ([]byte, error) {
 	type noMethod VolumeSaleInfoOffersRentalDuration
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *VolumeSaleInfoOffersRentalDuration) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeSaleInfoOffersRentalDuration
+	var s1 struct {
+		Count gensupport.JSONFloat64 `json:"count"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Count = float64(s1.Count)
+	return nil
 }
 
 // VolumeSaleInfoOffersRetailPrice: Offer retail (=discounted) price in
@@ -3432,6 +3550,20 @@ func (s *VolumeSaleInfoOffersRetailPrice) MarshalJSON() ([]byte, error) {
 	type noMethod VolumeSaleInfoOffersRetailPrice
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *VolumeSaleInfoOffersRetailPrice) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeSaleInfoOffersRetailPrice
+	var s1 struct {
+		AmountInMicros gensupport.JSONFloat64 `json:"amountInMicros"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.AmountInMicros = float64(s1.AmountInMicros)
+	return nil
 }
 
 // VolumeSaleInfoRetailPrice: The actual selling price of the book. This
@@ -3466,6 +3598,20 @@ func (s *VolumeSaleInfoRetailPrice) MarshalJSON() ([]byte, error) {
 	type noMethod VolumeSaleInfoRetailPrice
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *VolumeSaleInfoRetailPrice) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeSaleInfoRetailPrice
+	var s1 struct {
+		Amount gensupport.JSONFloat64 `json:"amount"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Amount = float64(s1.Amount)
+	return nil
 }
 
 // VolumeSearchInfo: Search result information related to this volume.
@@ -3838,6 +3984,20 @@ func (s *VolumeVolumeInfo) MarshalJSON() ([]byte, error) {
 	type noMethod VolumeVolumeInfo
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *VolumeVolumeInfo) UnmarshalJSON(data []byte) error {
+	type noMethod VolumeVolumeInfo
+	var s1 struct {
+		AverageRating gensupport.JSONFloat64 `json:"averageRating"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.AverageRating = float64(s1.AverageRating)
+	return nil
 }
 
 // VolumeVolumeInfoDimensions: Physical dimensions of this volume.
@@ -7661,6 +7821,13 @@ func (r *MylibraryAnnotationsService) Insert(annotation *Annotation) *MylibraryA
 	return c
 }
 
+// AnnotationId sets the optional parameter "annotationId": The ID for
+// the annotation to insert.
+func (c *MylibraryAnnotationsInsertCall) AnnotationId(annotationId string) *MylibraryAnnotationsInsertCall {
+	c.urlParams_.Set("annotationId", annotationId)
+	return c
+}
+
 // Country sets the optional parameter "country": ISO-3166-1 code to
 // override the IP-based location.
 func (c *MylibraryAnnotationsInsertCall) Country(country string) *MylibraryAnnotationsInsertCall {
@@ -7770,6 +7937,11 @@ func (c *MylibraryAnnotationsInsertCall) Do(opts ...googleapi.CallOption) (*Anno
 	//   "httpMethod": "POST",
 	//   "id": "books.mylibrary.annotations.insert",
 	//   "parameters": {
+	//     "annotationId": {
+	//       "description": "The ID for the annotation to insert.",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "country": {
 	//       "description": "ISO-3166-1 code to override the IP-based location.",
 	//       "location": "query",

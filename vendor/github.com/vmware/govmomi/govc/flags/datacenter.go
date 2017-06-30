@@ -126,6 +126,13 @@ func (flag *DatacenterFlag) Datacenter() (*object.Datacenter, error) {
 	return flag.dc, err
 }
 
+func (flag *DatacenterFlag) DatacenterIfSpecified() (*object.Datacenter, error) {
+	if flag.path == "" {
+		return nil, nil
+	}
+	return flag.Datacenter()
+}
+
 func (flag *DatacenterFlag) ManagedObjects(ctx context.Context, args []string) ([]types.ManagedObjectReference, error) {
 	var refs []types.ManagedObjectReference
 

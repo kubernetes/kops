@@ -226,6 +226,7 @@ func NewPurchasesService(s *Service) *PurchasesService {
 	rs := &PurchasesService{s: s}
 	rs.Products = NewPurchasesProductsService(s)
 	rs.Subscriptions = NewPurchasesSubscriptionsService(s)
+	rs.Voidedpurchases = NewPurchasesVoidedpurchasesService(s)
 	return rs
 }
 
@@ -235,6 +236,8 @@ type PurchasesService struct {
 	Products *PurchasesProductsService
 
 	Subscriptions *PurchasesSubscriptionsService
+
+	Voidedpurchases *PurchasesVoidedpurchasesService
 }
 
 func NewPurchasesProductsService(s *Service) *PurchasesProductsService {
@@ -252,6 +255,15 @@ func NewPurchasesSubscriptionsService(s *Service) *PurchasesSubscriptionsService
 }
 
 type PurchasesSubscriptionsService struct {
+	s *Service
+}
+
+func NewPurchasesVoidedpurchasesService(s *Service) *PurchasesVoidedpurchasesService {
+	rs := &PurchasesVoidedpurchasesService{s: s}
+	return rs
+}
+
+type PurchasesVoidedpurchasesService struct {
 	s *Service
 }
 
@@ -688,6 +700,64 @@ type DeveloperComment struct {
 
 func (s *DeveloperComment) MarshalJSON() ([]byte, error) {
 	type noMethod DeveloperComment
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type DeviceMetadata struct {
+	// CpuMake: Device CPU make e.g. "Qualcomm"
+	CpuMake string `json:"cpuMake,omitempty"`
+
+	// CpuModel: Device CPU model e.g. "MSM8974"
+	CpuModel string `json:"cpuModel,omitempty"`
+
+	// DeviceClass: Device class (e.g. tablet)
+	DeviceClass string `json:"deviceClass,omitempty"`
+
+	// GlEsVersion: OpenGL version
+	GlEsVersion int64 `json:"glEsVersion,omitempty"`
+
+	// Manufacturer: Device manufacturer (e.g. Motorola)
+	Manufacturer string `json:"manufacturer,omitempty"`
+
+	// NativePlatform: Comma separated list of native platforms (e.g. "arm",
+	// "arm7")
+	NativePlatform string `json:"nativePlatform,omitempty"`
+
+	// ProductName: Device model name (e.g. Droid)
+	ProductName string `json:"productName,omitempty"`
+
+	// RamMb: Device RAM in Megabytes e.g. "2048"
+	RamMb int64 `json:"ramMb,omitempty"`
+
+	// ScreenDensityDpi: Screen density in DPI
+	ScreenDensityDpi int64 `json:"screenDensityDpi,omitempty"`
+
+	// ScreenHeightPx: Screen height in pixels
+	ScreenHeightPx int64 `json:"screenHeightPx,omitempty"`
+
+	// ScreenWidthPx: Screen width in pixels
+	ScreenWidthPx int64 `json:"screenWidthPx,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CpuMake") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CpuMake") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *DeviceMetadata) MarshalJSON() ([]byte, error) {
+	type noMethod DeviceMetadata
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -1983,6 +2053,11 @@ type SubscriptionPurchase struct {
 	// milliseconds since the Epoch.
 	StartTimeMillis int64 `json:"startTimeMillis,omitempty,string"`
 
+	// UserCancellationTimeMillis: The time at which the subscription was
+	// canceled by the user, in milliseconds since the epoch. Only present
+	// if cancelReason is 0.
+	UserCancellationTimeMillis int64 `json:"userCancellationTimeMillis,omitempty,string"`
+
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
 	googleapi.ServerResponse `json:"-"`
@@ -2193,6 +2268,20 @@ func (s *Track) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *Track) UnmarshalJSON(data []byte) error {
+	type noMethod Track
+	var s1 struct {
+		UserFraction gensupport.JSONFloat64 `json:"userFraction"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.UserFraction = float64(s1.UserFraction)
+	return nil
+}
+
 type TracksListResponse struct {
 	// Kind: Identifies what kind of resource this is. Value: the fixed
 	// string "androidpublisher#tracksListResponse".
@@ -2245,8 +2334,17 @@ type UserComment struct {
 	// be absent.
 	Device string `json:"device,omitempty"`
 
+	// DeviceMetadata: Some information about the characteristics of the
+	// user's device
+	DeviceMetadata *DeviceMetadata `json:"deviceMetadata,omitempty"`
+
 	// LastModified: The last time at which this comment was updated.
 	LastModified *Timestamp `json:"lastModified,omitempty"`
+
+	// OriginalText: Untranslated text of the review, in the case where the
+	// review has been translated. If the review has not been translated
+	// this is left blank.
+	OriginalText string `json:"originalText,omitempty"`
 
 	// ReviewerLanguage: Language code for the reviewer. This is taken from
 	// the device settings so is not guaranteed to match the language the
@@ -2261,6 +2359,13 @@ type UserComment struct {
 	// in those cases the title and body are concatenated and separated by a
 	// tab character.
 	Text string `json:"text,omitempty"`
+
+	// ThumbsDownCount: Number of users who have given this review a thumbs
+	// down
+	ThumbsDownCount int64 `json:"thumbsDownCount,omitempty"`
+
+	// ThumbsUpCount: Number of users who have given this review a thumbs up
+	ThumbsUpCount int64 `json:"thumbsUpCount,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "AndroidOsVersion") to
 	// unconditionally include in API requests. By default, fields with
@@ -2282,6 +2387,83 @@ type UserComment struct {
 
 func (s *UserComment) MarshalJSON() ([]byte, error) {
 	type noMethod UserComment
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// VoidedPurchase: A VoidedPurchase resource indicates a purchase that
+// was either cancelled/refunded/charged-back.
+type VoidedPurchase struct {
+	// Kind: This kind represents a voided purchase object in the
+	// androidpublisher service.
+	Kind string `json:"kind,omitempty"`
+
+	// PurchaseTimeMillis: The time at which the purchase was made, in
+	// milliseconds since the epoch (Jan 1, 1970).
+	PurchaseTimeMillis int64 `json:"purchaseTimeMillis,omitempty,string"`
+
+	// PurchaseToken: The token that was generated when a purchase was made.
+	// This uniquely identifies a purchase.
+	PurchaseToken string `json:"purchaseToken,omitempty"`
+
+	// VoidedTimeMillis: The time at which the purchase was
+	// cancelled/refunded/charged-back, in milliseconds since the epoch (Jan
+	// 1, 1970).
+	VoidedTimeMillis int64 `json:"voidedTimeMillis,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "Kind") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Kind") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VoidedPurchase) MarshalJSON() ([]byte, error) {
+	type noMethod VoidedPurchase
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type VoidedPurchasesListResponse struct {
+	PageInfo *PageInfo `json:"pageInfo,omitempty"`
+
+	TokenPagination *TokenPagination `json:"tokenPagination,omitempty"`
+
+	VoidedPurchases []*VoidedPurchase `json:"voidedPurchases,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "PageInfo") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PageInfo") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *VoidedPurchasesListResponse) MarshalJSON() ([]byte, error) {
+	type noMethod VoidedPurchasesListResponse
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -10696,6 +10878,208 @@ func (c *PurchasesSubscriptionsRevokeCall) Do(opts ...googleapi.CallOption) erro
 
 }
 
+// method id "androidpublisher.purchases.voidedpurchases.list":
+
+type PurchasesVoidedpurchasesListCall struct {
+	s            *Service
+	packageName  string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists the purchases that were cancelled, refunded or
+// charged-back.
+func (r *PurchasesVoidedpurchasesService) List(packageName string) *PurchasesVoidedpurchasesListCall {
+	c := &PurchasesVoidedpurchasesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.packageName = packageName
+	return c
+}
+
+// EndTime sets the optional parameter "endTime": The time, in
+// milliseconds since the Epoch, of the newest voided in-app product
+// purchase that you want to see in the response. The value of this
+// parameter cannot be greater than the current time and is ignored if a
+// pagination token is set. Default value is current time.
+func (c *PurchasesVoidedpurchasesListCall) EndTime(endTime int64) *PurchasesVoidedpurchasesListCall {
+	c.urlParams_.Set("endTime", fmt.Sprint(endTime))
+	return c
+}
+
+// MaxResults sets the optional parameter "maxResults":
+func (c *PurchasesVoidedpurchasesListCall) MaxResults(maxResults int64) *PurchasesVoidedpurchasesListCall {
+	c.urlParams_.Set("maxResults", fmt.Sprint(maxResults))
+	return c
+}
+
+// StartIndex sets the optional parameter "startIndex":
+func (c *PurchasesVoidedpurchasesListCall) StartIndex(startIndex int64) *PurchasesVoidedpurchasesListCall {
+	c.urlParams_.Set("startIndex", fmt.Sprint(startIndex))
+	return c
+}
+
+// StartTime sets the optional parameter "startTime": The time, in
+// milliseconds since the Epoch, of the oldest voided in-app product
+// purchase that you want to see in the response. The value of this
+// parameter cannot be older than 30 days and is ignored if a pagination
+// token is set. Default value is current time minus 30 days.
+func (c *PurchasesVoidedpurchasesListCall) StartTime(startTime int64) *PurchasesVoidedpurchasesListCall {
+	c.urlParams_.Set("startTime", fmt.Sprint(startTime))
+	return c
+}
+
+// Token sets the optional parameter "token":
+func (c *PurchasesVoidedpurchasesListCall) Token(token string) *PurchasesVoidedpurchasesListCall {
+	c.urlParams_.Set("token", token)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *PurchasesVoidedpurchasesListCall) Fields(s ...googleapi.Field) *PurchasesVoidedpurchasesListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *PurchasesVoidedpurchasesListCall) IfNoneMatch(entityTag string) *PurchasesVoidedpurchasesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *PurchasesVoidedpurchasesListCall) Context(ctx context.Context) *PurchasesVoidedpurchasesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *PurchasesVoidedpurchasesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *PurchasesVoidedpurchasesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{packageName}/purchases/voidedpurchases")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"packageName": c.packageName,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "androidpublisher.purchases.voidedpurchases.list" call.
+// Exactly one of *VoidedPurchasesListResponse or error will be non-nil.
+// Any non-2xx status code is an error. Response headers are in either
+// *VoidedPurchasesListResponse.ServerResponse.Header or (if a response
+// was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *PurchasesVoidedpurchasesListCall) Do(opts ...googleapi.CallOption) (*VoidedPurchasesListResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &VoidedPurchasesListResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists the purchases that were cancelled, refunded or charged-back.",
+	//   "httpMethod": "GET",
+	//   "id": "androidpublisher.purchases.voidedpurchases.list",
+	//   "parameterOrder": [
+	//     "packageName"
+	//   ],
+	//   "parameters": {
+	//     "endTime": {
+	//       "description": "The time, in milliseconds since the Epoch, of the newest voided in-app product purchase that you want to see in the response. The value of this parameter cannot be greater than the current time and is ignored if a pagination token is set. Default value is current time.",
+	//       "format": "int64",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "maxResults": {
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "packageName": {
+	//       "description": "The package name of the application for which voided purchases need to be returned (for example, 'com.some.thing').",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "startIndex": {
+	//       "format": "uint32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "startTime": {
+	//       "description": "The time, in milliseconds since the Epoch, of the oldest voided in-app product purchase that you want to see in the response. The value of this parameter cannot be older than 30 days and is ignored if a pagination token is set. Default value is current time minus 30 days.",
+	//       "format": "int64",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "token": {
+	//       "location": "query",
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{packageName}/purchases/voidedpurchases",
+	//   "response": {
+	//     "$ref": "VoidedPurchasesListResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/androidpublisher"
+	//   ]
+	// }
+
+}
+
 // method id "androidpublisher.reviews.get":
 
 type ReviewsGetCall struct {
@@ -10713,6 +11097,13 @@ func (r *ReviewsService) Get(packageNameid string, reviewId string) *ReviewsGetC
 	c := &ReviewsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.packageNameid = packageNameid
 	c.reviewId = reviewId
+	return c
+}
+
+// TranslationLanguage sets the optional parameter
+// "translationLanguage":
+func (c *ReviewsGetCall) TranslationLanguage(translationLanguage string) *ReviewsGetCall {
+	c.urlParams_.Set("translationLanguage", translationLanguage)
 	return c
 }
 
@@ -10829,6 +11220,10 @@ func (c *ReviewsGetCall) Do(opts ...googleapi.CallOption) (*Review, error) {
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
+	//     },
+	//     "translationLanguage": {
+	//       "location": "query",
+	//       "type": "string"
 	//     }
 	//   },
 	//   "path": "{packageName}/reviews/{reviewId}",
@@ -10853,7 +11248,8 @@ type ReviewsListCall struct {
 	header_       http.Header
 }
 
-// List: Returns a list of reviews.
+// List: Returns a list of reviews. Only reviews from last week will be
+// returned.
 func (r *ReviewsService) List(packageNameid string) *ReviewsListCall {
 	c := &ReviewsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.packageNameid = packageNameid
@@ -10875,6 +11271,13 @@ func (c *ReviewsListCall) StartIndex(startIndex int64) *ReviewsListCall {
 // Token sets the optional parameter "token":
 func (c *ReviewsListCall) Token(token string) *ReviewsListCall {
 	c.urlParams_.Set("token", token)
+	return c
+}
+
+// TranslationLanguage sets the optional parameter
+// "translationLanguage":
+func (c *ReviewsListCall) TranslationLanguage(translationLanguage string) *ReviewsListCall {
+	c.urlParams_.Set("translationLanguage", translationLanguage)
 	return c
 }
 
@@ -10972,7 +11375,7 @@ func (c *ReviewsListCall) Do(opts ...googleapi.CallOption) (*ReviewsListResponse
 	}
 	return ret, nil
 	// {
-	//   "description": "Returns a list of reviews.",
+	//   "description": "Returns a list of reviews. Only reviews from last week will be returned.",
 	//   "httpMethod": "GET",
 	//   "id": "androidpublisher.reviews.list",
 	//   "parameterOrder": [
@@ -10996,6 +11399,10 @@ func (c *ReviewsListCall) Do(opts ...googleapi.CallOption) (*ReviewsListResponse
 	//       "type": "integer"
 	//     },
 	//     "token": {
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "translationLanguage": {
 	//       "location": "query",
 	//       "type": "string"
 	//     }

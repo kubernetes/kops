@@ -10,11 +10,11 @@
 In its most basic form, a simple reverse proxy uses this syntax:
 
 ~~~
-proxy FROM TO
+proxy FROM To
 ~~~
 
-* **FROM** is the base domain to match for the request to be proxied.
-* **TO** is the destination endpoint to proxy to.
+* **FROM** is the base path to match for the request to be proxied
+* **TO** is the destination endpoint to proxy to
 
 However, advanced features including load balancing can be utilized with an expanded syntax:
 
@@ -26,34 +26,17 @@ proxy FROM TO... {
     health_check PATH:PORT [DURATION]
     except IGNORED_NAMES...
     spray
-    protocol [dns [force_tcp]|https_google [bootstrap ADDRESS...]|grpc [insecure|CA-PEM|KEY-PEM CERT-PEM|KEY-PEM CERT-PEM CA-PEM]]
 }
 ~~~
 
 * **FROM** is the name to match for the request to be proxied.
-* **TO** is the destination endpoint to proxy to. At least one is required, but multiple may be
-  specified. **TO** may be an IP:Port pair, or may reference a file in resolv.conf format
-* `policy` is the load balancing policy to use; applies only with multiple backends. May be one of
-  random, least_conn, or round_robin. Default is random.
-* `fail_timeout` specifies how long to consider a backend as down after it has failed. While it is
-  down, requests will not be routed to that backend. A backend is "down" if CoreDNS fails to
-  communicate with it. The default value is 10 seconds ("10s").
-* `max_fails` is the number of failures within fail_timeout that are needed before considering
-  a backend to be down. If 0, the backend will never be marked as down. Default is 1.
-* `health_check` will check path (on port) on each backend. If a backend returns a status code of
-  200-399, then that backend is healthy. If it doesn't, the backend is marked as unhealthy for
-  duration and no requests are routed to it. If this option is not provided then health checks are
-  disabled. The default duration is 30 seconds ("30s").
-* **IGNORED_NAMES** in `except` is a space-separated list of domains to exclude from proxying.
-  Requests that match none of these names will be passed through.
-* `spray` when all backends are unhealthy, randomly pick one to send the traffic to. (This is
-  a failsafe.)
-* `protocol` specifies what protocol to use to speak to an upstream, `dns` (the default) is plain
-  old DNS, and `https_google` uses `https://dns.google.com` and speaks a JSON DNS dialect. Note when
-  using this **TO** will be ignored. The `grpc` option will talk to a server that has implemented
-  the [DnsService](https://github.com/coredns/coredns/pb/dns.proto).
-  An out-of-tree middleware that implements the server side of this can be found at
-  [here](https://github.com/infobloxopen/coredns-grpc).
+* **TO** is the destination endpoint to proxy to. At least one is required, but multiple may be specified. To may be an IP:Port pair, or may reference a file in resolv.conf format
+* `policy` is the load balancing policy to use; applies only with multiple backends. May be one of random, least_conn, or round_robin. Default is random.
+* `fail_timeout` specifies how long to consider a backend as down after it has failed. While it is down, requests will not be routed to that backend. A backend is "down" if CoreDNS fails to communicate with it. The default value is 10 seconds ("10s").
+* `max_fails` is the number of failures within fail_timeout that are needed before considering a backend to be down. If 0, the backend will never be marked as down. Default is 1.
+* `health_check` will check path (on port) on each backend. If a backend returns a status code of 200-399, then that backend is healthy. If it doesn't, the backend is marked as unhealthy for duration and no requests are routed to it. If this option is not provided then health checks are disabled. The default duration is 10 seconds ("10s").
+* `ignored_names...` is a space-separated list of paths to exclude from proxying. Requests that match any of these paths will be passed through.
+* `spray` when all backends are unhealthy, randomly pick one to send the traffic to. (This is a failsafe.)
 
 ## Policies
 
@@ -65,42 +48,14 @@ There are three load-balancing policies available:
 All polices implement randomly spraying packets to backend hosts when *no healthy* hosts are
 available. This is to preeempt the case where the healthchecking (as a mechanism) fails.
 
-## Upstream Protocols
-
-Currently `protocol` supports `dns` (i.e., standard DNS over UDP/TCP) and `https_google` (JSON
-payload over HTTPS). Note that with `https_google` the entire transport is encrypted. Only *you* and
-*Google* can see your DNS activity.
-
-* `dns`: uses the standard DNS exchange. You can pass `force_tcp` to make sure that the proxied connection is performed
-  over TCP, regardless of the inbound request's protocol.
-* `https_google`: bootstrap **ADDRESS...** is used to (re-)resolve `dns.google.com` to an address to
-  connect to. This happens every 300s. If not specified the default is used: 8.8.8.8:53/8.8.4.4:53.
-  Note that **TO** is *ignored* when `https_google` is used, as its upstream is defined as
-  `dns.google.com`.
-
-  Debug queries are enabled by default and currently there is no way to turn them off. When CoreDNS
-  receives a debug query (i.e. the name is prefixed with `o-o.debug.`) a TXT record with Comment
-  from `dns.google.com` is added. Note this is not always set.
-* `grpc`: options are used to control how the TLS connection is made to the gRPC server.
-  * None - No client authentication is used, and the system CAs are used to verify the server certificate.
-  * `insecure` - TLS is not used, the connection is made in plaintext (not good in production).
-  * CA-PEM - No client authentication is used, and the file CA-PEM is used to verify the server certificate.
-  * KEY-PEM CERT-PEM - Client authentication is used with the specified key/cert pair. The server
-    certificate is verified with the system CAs.
-  * KEY-PEM CERT-PEM CA-PEM - Client authentication is used with the specified key/cert pair. The
-    server certificate is verified using the CA-PEM file.
-
-  An out-of-tree middleware that implements the server side of this can be found at
-  [here](https://github.com/infobloxopen/coredns-grpc).
-
 ## Metrics
 
 If monitoring is enabled (via the *prometheus* directive) then the following metric is exported:
 
-* coredns_proxy_request_count_total{proto, proxy_proto, from}
+* coredns_proxy_request_count_total{zone, proto, family}
 
-Where `proxy_proto` is the protocol used (`dns`, `grpc`, or `https_google`) and `from` is **FROM**
-specified in the config, `proto` is the protocol used by the incoming query ("tcp" or "udp").
+This has some overlap with `coredns_dns_request_count_total{zone, proto, family}`, but allows for
+specifics on upstream query resolving. See the *prometheus* documentation for more details.
 
 ## Examples
 
@@ -113,13 +68,13 @@ proxy example.org localhost:9005
 Load-balance all requests between three backends (using random policy):
 
 ~~~
-proxy . dns1.local:53 dns2.local:1053 dns3.local
+proxy . web1.local:53 web2.local:1053 web3.local
 ~~~
 
 Same as above, but round-robin style:
 
 ~~~
-proxy . dns1.local:53 dns2.local:1053 dns3.local {
+proxy . web1.local:53 web2.local:1053 web3.local {
 	policy round_robin
 }
 ~~~
@@ -127,7 +82,7 @@ proxy . dns1.local:53 dns2.local:1053 dns3.local {
 With health checks and proxy headers to pass hostname, IP, and scheme upstream:
 
 ~~~
-proxy . dns1.local:53 dns2.local:53 dns3.local:53 {
+proxy . web1.local:53 web2.local:53 web3.local:53 {
 	policy round_robin
 	health_check /health:8080
 }
@@ -146,29 +101,5 @@ Proxy everything except example.org using the host resolv.conf nameservers:
 ~~~
 proxy . /etc/resolv.conf {
 	except miek.nl example.org
-}
-~~~
-
-Proxy all requests within example.org to Google's dns.google.com.
-
-~~~
-proxy example.org 1.2.3.4:53 {
-    protocol https_google
-}
-~~~
-
-Proxy everything with HTTPS to `dns.google.com`, except `example.org`. Then have another proxy in
-another stanza that uses plain DNS to resolve names under `example.org`.
-
-~~~
-. {
-    proxy . 1.2.3.4:53 {
-        execpt example.org
-        protocol https_google
-    }
-}
-
-example.org {
-    proxy . 8.8.8.8:53
 }
 ~~~

@@ -373,7 +373,7 @@ func createCgroupConfig(name string, useSystemdCgroup bool, spec *specs.Spec) (*
 			c.Resources.CpusetMems = *r.CPU.Mems
 		}
 	}
-	if r.Pids != nil {
+	if r.Pids != nil && r.Pids.Limit != nil {
 		c.Resources.PidsLimit = *r.Pids.Limit
 	}
 	if r.BlockIO != nil {
@@ -438,6 +438,9 @@ func createCgroupConfig(name string, useSystemdCgroup bool, spec *specs.Spec) (*
 		}
 	}
 	for _, l := range r.HugepageLimits {
+		if l.Pagesize == nil || l.Limit == nil {
+			return nil, fmt.Errorf("pagesize and limit can not be empty")
+		}
 		c.Resources.HugetlbLimit = append(c.Resources.HugetlbLimit, &configs.HugepageLimit{
 			Pagesize: *l.Pagesize,
 			Limit:    *l.Limit,
@@ -534,6 +537,8 @@ func createDevices(spec *specs.Spec, config *configs.Config) error {
 	// merge in additional devices from the spec
 	for _, d := range spec.Linux.Devices {
 		var uid, gid uint32
+		var filemode os.FileMode = 0666
+
 		if d.UID != nil {
 			uid = *d.UID
 		}
@@ -544,12 +549,15 @@ func createDevices(spec *specs.Spec, config *configs.Config) error {
 		if err != nil {
 			return err
 		}
+		if d.FileMode != nil {
+			filemode = *d.FileMode
+		}
 		device := &configs.Device{
 			Type:     dt,
 			Path:     d.Path,
 			Major:    d.Major,
 			Minor:    d.Minor,
-			FileMode: *d.FileMode,
+			FileMode: filemode,
 			Uid:      uid,
 			Gid:      gid,
 		}

@@ -2,7 +2,7 @@
    runc pause - pause suspends all processes inside the container
 
 # SYNOPSIS
-   runc pause <container-id>
+   runc pause <container-id> [container-id...]
 
 Where "<container-id>" is the name for the instance of the container to be
 paused. 

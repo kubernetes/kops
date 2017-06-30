@@ -7,7 +7,7 @@ package examplepb
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
 import math "math"
-import _ "google.golang.org/genproto/googleapis/api/annotations"
+import _ "github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/google/api"
 
 import (
 	context "golang.org/x/net/context"
@@ -38,27 +38,6 @@ func (m *NonEmptyProto) String() string            { return proto.CompactTextStr
 func (*NonEmptyProto) ProtoMessage()               {}
 func (*NonEmptyProto) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{1} }
 
-func (m *NonEmptyProto) GetA() string {
-	if m != nil {
-		return m.A
-	}
-	return ""
-}
-
-func (m *NonEmptyProto) GetB() string {
-	if m != nil {
-		return m.B
-	}
-	return ""
-}
-
-func (m *NonEmptyProto) GetC() string {
-	if m != nil {
-		return m.C
-	}
-	return ""
-}
-
 type UnaryProto struct {
 	Str string `protobuf:"bytes,1,opt,name=str" json:"str,omitempty"`
 }
@@ -67,13 +46,6 @@ func (m *UnaryProto) Reset()                    { *m = UnaryProto{} }
 func (m *UnaryProto) String() string            { return proto.CompactTextString(m) }
 func (*UnaryProto) ProtoMessage()               {}
 func (*UnaryProto) Descriptor() ([]byte, []int) { return fileDescriptor3, []int{2} }
-
-func (m *UnaryProto) GetStr() string {
-	if m != nil {
-		return m.Str
-	}
-	return ""
-}
 
 type NestedProto struct {
 	A *UnaryProto `protobuf:"bytes,1,opt,name=a" json:"a,omitempty"`
@@ -91,20 +63,6 @@ func (m *NestedProto) GetA() *UnaryProto {
 		return m.A
 	}
 	return nil
-}
-
-func (m *NestedProto) GetB() string {
-	if m != nil {
-		return m.B
-	}
-	return ""
-}
-
-func (m *NestedProto) GetC() string {
-	if m != nil {
-		return m.C
-	}
-	return ""
 }
 
 type SingleNestedProto struct {
@@ -679,7 +637,7 @@ func init() { proto.RegisterFile("examples/examplepb/flow_combination.proto", fi
 
 var fileDescriptor3 = []byte{
 	// 656 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xbc, 0x96, 0x3f, 0x8f, 0x12, 0x4f,
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x09, 0x6e, 0x88, 0x02, 0xff, 0xbc, 0x96, 0x3f, 0x8f, 0x12, 0x4f,
 	0x18, 0xc7, 0xf3, 0x70, 0xc9, 0x2f, 0xb9, 0xe1, 0xfe, 0x70, 0xcb, 0x2f, 0x08, 0x1c, 0x1e, 0x77,
 	0xe3, 0x25, 0xe2, 0xbf, 0x5d, 0x82, 0xd5, 0x51, 0x9e, 0xd1, 0x92, 0x5c, 0xb8, 0xd8, 0x6c, 0x63,
 	0x66, 0x87, 0x15, 0x48, 0x60, 0x67, 0x6e, 0x77, 0x0d, 0x5e, 0x08, 0x31, 0xb1, 0xb1, 0xb4, 0xf0,

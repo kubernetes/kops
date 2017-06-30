@@ -22,31 +22,42 @@ import (
 	pb "github.com/coreos/etcd/raft/raftpb"
 )
 
-// TODO(xiangli): Test panic cases
-
 func TestStorageTerm(t *testing.T) {
 	ents := []pb.Entry{{Index: 3, Term: 3}, {Index: 4, Term: 4}, {Index: 5, Term: 5}}
 	tests := []struct {
 		i uint64
 
-		werr  error
-		wterm uint64
+		werr   error
+		wterm  uint64
+		wpanic bool
 	}{
-		{2, ErrCompacted, 0},
-		{3, nil, 3},
-		{4, nil, 4},
-		{5, nil, 5},
+		{2, ErrCompacted, 0, false},
+		{3, nil, 3, false},
+		{4, nil, 4, false},
+		{5, nil, 5, false},
+		{6, ErrUnavailable, 0, false},
 	}
 
 	for i, tt := range tests {
 		s := &MemoryStorage{ents: ents}
-		term, err := s.Term(tt.i)
-		if err != tt.werr {
-			t.Errorf("#%d: err = %v, want %v", i, err, tt.werr)
-		}
-		if term != tt.wterm {
-			t.Errorf("#%d: term = %d, want %d", i, term, tt.wterm)
-		}
+
+		func() {
+			defer func() {
+				if r := recover(); r != nil {
+					if !tt.wpanic {
+						t.Errorf("%d: panic = %v, want %v", i, true, tt.wpanic)
+					}
+				}
+			}()
+
+			term, err := s.Term(tt.i)
+			if err != tt.werr {
+				t.Errorf("#%d: err = %v, want %v", i, err, tt.werr)
+			}
+			if term != tt.wterm {
+				t.Errorf("#%d: term = %d, want %d", i, term, tt.wterm)
+			}
+		}()
 	}
 }
 
@@ -243,5 +254,32 @@ func TestStorageAppend(t *testing.T) {
 		if !reflect.DeepEqual(s.ents, tt.wentries) {
 			t.Errorf("#%d: entries = %v, want %v", i, s.ents, tt.wentries)
 		}
+	}
+}
+
+func TestStorageApplySnapshot(t *testing.T) {
+	cs := &pb.ConfState{Nodes: []uint64{1, 2, 3}}
+	data := []byte("data")
+
+	tests := []pb.Snapshot{{Data: data, Metadata: pb.SnapshotMetadata{Index: 4, Term: 4, ConfState: *cs}},
+		{Data: data, Metadata: pb.SnapshotMetadata{Index: 3, Term: 3, ConfState: *cs}},
+	}
+
+	s := NewMemoryStorage()
+
+	//Apply Snapshot successful
+	i := 0
+	tt := tests[i]
+	err := s.ApplySnapshot(tt)
+	if err != nil {
+		t.Errorf("#%d: err = %v, want %v", i, err, nil)
+	}
+
+	//Apply Snapshot fails due to ErrSnapOutOfDate
+	i = 1
+	tt = tests[i]
+	err = s.ApplySnapshot(tt)
+	if err != ErrSnapOutOfDate {
+		t.Errorf("#%d: err = %v, want %v", i, err, ErrSnapOutOfDate)
 	}
 }

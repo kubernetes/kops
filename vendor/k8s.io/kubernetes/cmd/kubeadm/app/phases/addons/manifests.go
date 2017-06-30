@@ -59,6 +59,8 @@ spec:
   selector:
     matchLabels:
       k8s-app: kube-proxy
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -77,6 +79,10 @@ spec:
         volumeMounts:
         - mountPath: /var/lib/kube-proxy
           name: kube-proxy
+        # TODO: Make this a file hostpath mount
+        - mountPath: /run/xtables.lock
+          name: xtables-lock
+          readOnly: false
       hostNetwork: true
       serviceAccountName: kube-proxy
       # TODO: Why doesn't the Decoder recognize this new field and decode it properly? Right now it's ignored
@@ -87,9 +93,12 @@ spec:
       - name: kube-proxy
         configMap:
           name: kube-proxy
+      - name: xtables-lock
+        hostPath:
+          path: /run/xtables.lock
 `
 
-	KubeDNSVersion = "1.14.1"
+	KubeDNSVersion = "1.14.4"
 
 	KubeDNSDeployment = `
 
@@ -161,7 +170,6 @@ spec:
         - --dns-port=10053
         - --config-dir=/kube-dns-config
         - --v=2
-        # Do we need to set __PILLAR__FEDERATIONS__DOMAIN__MAP__ here?
         env:
         - name: PROMETHEUS_PORT
           value: "10055"
@@ -272,6 +280,9 @@ metadata:
     kubernetes.io/name: "KubeDNS"
   name: kube-dns
   namespace: kube-system
+  # Without this resourceVersion value, an update of the Service between versions will yield:
+  #   Service "kube-dns" is invalid: metadata.resourceVersion: Invalid value: "": must be specified for an update
+  resourceVersion: "0"
 spec:
   clusterIP: {{ .DNSIP }}
   ports:

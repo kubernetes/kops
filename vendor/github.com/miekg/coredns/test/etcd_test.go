@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coredns/coredns/middleware/etcd"
-	"github.com/coredns/coredns/middleware/etcd/msg"
-	"github.com/coredns/coredns/middleware/proxy"
-	"github.com/coredns/coredns/middleware/test"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware/etcd"
+	"github.com/miekg/coredns/middleware/etcd/msg"
+	"github.com/miekg/coredns/middleware/proxy"
+	"github.com/miekg/coredns/middleware/test"
+	"github.com/miekg/coredns/request"
 
 	etcdc "github.com/coreos/etcd/client"
 	"github.com/miekg/dns"
@@ -31,7 +31,7 @@ func etcdMiddleware() *etcd.Etcd {
 
 // This test starts two coredns servers (and needs etcd). Configure a stubzones in both (that will loop) and
 // will then test if we detect this loop.
-func TestEtcdStubLoop(t *testing.T) {
+func TestEtcdStubForwarding(t *testing.T) {
 	// TODO(miek)
 }
 
@@ -66,20 +66,21 @@ func TestEtcdStubAndProxyLookup(t *testing.T) {
 		defer delete(ctx, t, etc, serv.Key)
 	}
 
-	p := proxy.NewLookup([]string{udp}) // use udp port from the server
+	p := proxy.New([]string{udp}) // use udp port from the server
 	state := request.Request{W: &test.ResponseWriter{}, Req: new(dns.Msg)}
 	resp, err := p.Lookup(state, "example.com.", dns.TypeA)
 	if err != nil {
-		t.Fatalf("Expected to receive reply, but didn't: %v", err)
+		t.Error("Expected to receive reply, but didn't")
+		return
 	}
 	if len(resp.Answer) == 0 {
-		t.Fatalf("Expected to at least one RR in the answer section, got none")
+		t.Error("Expected to at least one RR in the answer section, got none")
 	}
 	if resp.Answer[0].Header().Rrtype != dns.TypeA {
 		t.Errorf("Expected RR to A, got: %d", resp.Answer[0].Header().Rrtype)
 	}
 	if resp.Answer[0].(*dns.A).A.String() != "93.184.216.34" {
-		t.Errorf("Expected 93.184.216.34, got: %s", resp.Answer[0].(*dns.A).A.String())
+		t.Errorf("Expected 93.184.216.34, got: %d", resp.Answer[0].(*dns.A).A.String())
 	}
 }
 

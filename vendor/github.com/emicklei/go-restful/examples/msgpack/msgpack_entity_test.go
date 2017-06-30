@@ -10,9 +10,9 @@ import (
 	"testing"
 	"time"
 
-	restful "github.com/emicklei/go-restful"
-	"gopkg.in/vmihailenco/msgpack.v2"
 	"io/ioutil"
+
+	restful "github.com/emicklei/go-restful"
 )
 
 func TestMsgPack(t *testing.T) {
@@ -86,7 +86,7 @@ func expectMsgPackDocument(t *testing.T, r *http.Response, doc interface{}) {
 	data, err := ioutil.ReadAll(r.Body)
 	defer r.Body.Close()
 	if err != nil {
-		t.Error("ExpectMsgPackDocument: unable to read response body :%v", err)
+		t.Errorf("ExpectMsgPackDocument: unable to read response body :%v", err)
 		return
 	}
 	// put the body back for re-reads
@@ -94,7 +94,7 @@ func expectMsgPackDocument(t *testing.T, r *http.Response, doc interface{}) {
 
 	err = msgpack.Unmarshal(data, doc)
 	if err != nil {
-		t.Error("ExpectMsgPackDocument: unable to unmarshal MsgPack:%v", err)
+		t.Errorf("ExpectMsgPackDocument: unable to unmarshal MsgPack:%v", err)
 	}
 }
 

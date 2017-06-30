@@ -103,6 +103,16 @@ func TestSignatureForLabels(t *testing.T) {
 			out:    14695981039346656037,
 		},
 		{
+			in:     Metric{},
+			labels: LabelNames{"empty"},
+			out:    7187873163539638612,
+		},
+		{
+			in:     Metric{"name": "garland, briggs", "fear": "love is not enough"},
+			labels: LabelNames{"empty"},
+			out:    7187873163539638612,
+		},
+		{
 			in:     Metric{"name": "garland, briggs", "fear": "love is not enough"},
 			labels: LabelNames{"fear", "name"},
 			out:    5799056148416392346,

@@ -344,28 +344,6 @@ func (reaper *StatefulSetReaper) Stop(namespace, name string, timeout time.Durat
 		return err
 	}
 
-	// TODO: This shouldn't be needed, see corresponding TODO in StatefulSetHasDesiredReplicas.
-	// StatefulSet should track generation number.
-	pods := reaper.podClient.Pods(namespace)
-	selector, _ := metav1.LabelSelectorAsSelector(ss.Spec.Selector)
-	options := metav1.ListOptions{LabelSelector: selector.String()}
-	podList, err := pods.List(options)
-	if err != nil {
-		return err
-	}
-
-	errList := []error{}
-	for _, pod := range podList.Items {
-		if err := pods.Delete(pod.Name, gracePeriod); err != nil {
-			if !errors.IsNotFound(err) {
-				errList = append(errList, err)
-			}
-		}
-	}
-	if len(errList) > 0 {
-		return utilerrors.NewAggregate(errList)
-	}
-
 	// TODO: Cleanup volumes? We don't want to accidentally delete volumes from
 	// stop, so just leave this up to the statefulset.
 	falseVar := false
@@ -438,6 +416,13 @@ func (reaper *DeploymentReaper) Stop(namespace, name string, timeout time.Durati
 		return deployments.Get(name, metav1.GetOptions{})
 	}, deployment.Generation, 1*time.Second, 1*time.Minute); err != nil {
 		return err
+	}
+
+	// Do not cascade deletion for overlapping deployments.
+	// A Deployment with this annotation will not create or manage anything,
+	// so we can assume any matching ReplicaSets belong to another Deployment.
+	if len(deployment.Annotations[deploymentutil.OverlapAnnotation]) > 0 {
+		return deployments.Delete(name, nil)
 	}
 
 	// Stop all replica sets belonging to this Deployment.

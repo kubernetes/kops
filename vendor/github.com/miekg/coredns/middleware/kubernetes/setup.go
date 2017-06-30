@@ -3,12 +3,12 @@ package kubernetes
 import (
 	"errors"
 	"fmt"
-	"net"
 	"strings"
 	"time"
 
-	"github.com/coredns/coredns/core/dnsserver"
-	"github.com/coredns/coredns/middleware"
+	"github.com/miekg/coredns/core/dnsserver"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/middleware/kubernetes/nametemplate"
 
 	"github.com/mholt/caddy"
 	unversionedapi "k8s.io/client-go/1.5/pkg/api/unversioned"
@@ -52,7 +52,8 @@ func setup(c *caddy.Controller) error {
 
 func kubernetesParse(c *caddy.Controller) (*Kubernetes, error) {
 	k8s := &Kubernetes{ResyncPeriod: defaultResyncPeriod}
-	k8s.PodMode = PodModeDisabled
+	k8s.NameTemplate = new(nametemplate.Template)
+	k8s.NameTemplate.SetTemplate(defaultNameTemplate)
 
 	for c.Next() {
 		if c.Val() == "kubernetes" {
@@ -67,46 +68,18 @@ func kubernetesParse(c *caddy.Controller) (*Kubernetes, error) {
 			middleware.Zones(k8s.Zones).Normalize()
 
 			if k8s.Zones == nil || len(k8s.Zones) < 1 {
-				return nil, errors.New("zone name must be provided for kubernetes middleware")
-			}
-
-			k8s.primaryZone = -1
-			for i, z := range k8s.Zones {
-				if strings.HasSuffix(z, "in-addr.arpa.") || strings.HasSuffix(z, "ip6.arpa.") {
-					continue
-				}
-				k8s.primaryZone = i
-				break
-			}
-
-			if k8s.primaryZone == -1 {
-				return nil, errors.New("non-reverse zone name must be given for Kubernetes")
+				return nil, errors.New("Zone name must be provided for kubernetes middleware.")
 			}
 
 			for c.NextBlock() {
 				switch c.Val() {
-				case "cidrs":
+				case "template":
 					args := c.RemainingArgs()
 					if len(args) > 0 {
-						for _, cidrStr := range args {
-							_, cidr, err := net.ParseCIDR(cidrStr)
-							if err != nil {
-								return nil, errors.New("Invalid cidr: " + cidrStr)
-							}
-							k8s.ReverseCidrs = append(k8s.ReverseCidrs, *cidr)
-
-						}
-						continue
-					}
-					return nil, c.ArgErr()
-				case "pods":
-					args := c.RemainingArgs()
-					if len(args) == 1 {
-						switch args[0] {
-						case PodModeDisabled, PodModeInsecure, PodModeVerified:
-							k8s.PodMode = args[0]
-						default:
-							return nil, errors.New("Value for pods must be one of: disabled, verified, insecure")
+						template := strings.Join(args, "")
+						err := k8s.NameTemplate.SetTemplate(template)
+						if err != nil {
+							return nil, err
 						}
 						continue
 					}
@@ -164,6 +137,6 @@ func kubernetesParse(c *caddy.Controller) (*Kubernetes, error) {
 }
 
 const (
+	defaultNameTemplate = "{service}.{namespace}.{type}.{zone}"
 	defaultResyncPeriod = 5 * time.Minute
-	defaultPodMode      = PodModeDisabled
 )

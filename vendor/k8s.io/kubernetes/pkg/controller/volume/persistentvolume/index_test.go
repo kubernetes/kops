@@ -25,6 +25,8 @@ import (
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/testapi"
 	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/kubernetes/pkg/api/v1/ref"
+	"k8s.io/kubernetes/pkg/volume"
 )
 
 func makePVC(size string, modfn func(*v1.PersistentVolumeClaim)) *v1.PersistentVolumeClaim {
@@ -256,7 +258,7 @@ func TestAllPossibleAccessModes(t *testing.T) {
 		t.Errorf("Expected 3 arrays of modes that match RWO, but got %v", len(possibleModes))
 	}
 	for _, m := range possibleModes {
-		if !contains(m, v1.ReadWriteOnce) {
+		if !volume.AccessModesContains(m, v1.ReadWriteOnce) {
 			t.Errorf("AccessModes does not contain %s", v1.ReadWriteOnce)
 		}
 	}
@@ -265,7 +267,7 @@ func TestAllPossibleAccessModes(t *testing.T) {
 	if len(possibleModes) != 1 {
 		t.Errorf("Expected 1 array of modes that match RWX, but got %v", len(possibleModes))
 	}
-	if !contains(possibleModes[0], v1.ReadWriteMany) {
+	if !volume.AccessModesContains(possibleModes[0], v1.ReadWriteMany) {
 		t.Errorf("AccessModes does not contain %s", v1.ReadWriteOnce)
 	}
 
@@ -616,7 +618,7 @@ func TestFindingPreboundVolumes(t *testing.T) {
 			Resources:   v1.ResourceRequirements{Requests: v1.ResourceList{v1.ResourceName(v1.ResourceStorage): resource.MustParse("1Gi")}},
 		},
 	}
-	claimRef, err := v1.GetReference(api.Scheme, claim)
+	claimRef, err := ref.GetReference(api.Scheme, claim)
 	if err != nil {
 		t.Errorf("error getting claimRef: %v", err)
 	}
@@ -688,4 +690,13 @@ func (c byCapacity) Swap(i, j int) {
 
 func (c byCapacity) Len() int {
 	return len(c.volumes)
+}
+
+// matchStorageCapacity is a matchPredicate used to sort and find volumes
+func matchStorageCapacity(pvA, pvB *v1.PersistentVolume) bool {
+	aQty := pvA.Spec.Capacity[v1.ResourceStorage]
+	bQty := pvB.Spec.Capacity[v1.ResourceStorage]
+	aSize := aQty.Value()
+	bSize := bQty.Value()
+	return aSize <= bSize
 }

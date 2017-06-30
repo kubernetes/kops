@@ -47,7 +47,7 @@ const basePath = "https://www.googleapis.com/apps/licensing/v1/product/"
 
 // OAuth2 scopes used by this API.
 const (
-	// View and manage Google Apps licenses for your domain
+	// View and manage G Suite licenses for your domain
 	AppsLicensingScope = "https://www.googleapis.com/auth/apps.licensing"
 )
 
@@ -92,14 +92,20 @@ type LicenseAssignment struct {
 	// Kind: Identifies the resource as a LicenseAssignment.
 	Kind string `json:"kind,omitempty"`
 
-	// ProductId: Name of the product.
+	// ProductId: Id of the product.
 	ProductId string `json:"productId,omitempty"`
+
+	// ProductName: Display Name of the product.
+	ProductName string `json:"productName,omitempty"`
 
 	// SelfLink: Link to this page.
 	SelfLink string `json:"selfLink,omitempty"`
 
-	// SkuId: Name of the sku of the product.
+	// SkuId: Id of the sku of the product.
 	SkuId string `json:"skuId,omitempty"`
+
+	// SkuName: Display Name of the sku of the product.
+	SkuName string `json:"skuName,omitempty"`
 
 	// UserId: Email id of the user.
 	UserId string `json:"userId,omitempty"`

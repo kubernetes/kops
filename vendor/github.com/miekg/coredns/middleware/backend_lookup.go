@@ -6,9 +6,9 @@ import (
 	"net"
 	"time"
 
-	"github.com/coredns/coredns/middleware/etcd/msg"
-	"github.com/coredns/coredns/middleware/pkg/dnsutil"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware/etcd/msg"
+	"github.com/miekg/coredns/middleware/pkg/dnsutil"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 )
@@ -410,7 +410,7 @@ func BackendError(b ServiceBackend, zone string, rcode int, state request.Reques
 	state.SizeAndDo(m)
 	state.W.WriteMsg(m)
 	// Return success as the rcode to signal we have written to the client.
-	return dns.RcodeSuccess, err
+	return dns.RcodeSuccess, nil
 }
 
 // ServicesToTxt puts debug in TXT RRs.

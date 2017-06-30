@@ -1,15 +1,11 @@
 # CoreDNS
 
-[![Documentation](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/coredns/coredns)
-[![Build Status](https://img.shields.io/travis/coredns/coredns.svg?style=flat-square&label=build)](https://travis-ci.org/coredns/coredns)
-[![Code Coverage](https://img.shields.io/codecov/c/github/coredns/coredns/master.svg?style=flat-square)](https://codecov.io/github/coredns/coredns?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/coredns/coredns?style=flat-square)](https://goreportcard.com/report/coredns/coredns)
+ [![Documentation](https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square)](https://godoc.org/github.com/miekg/coredns)
+ [![Build Status](https://img.shields.io/travis/miekg/coredns.svg?style=flat-square&label=build)](https://travis-ci.org/miekg/coredns)
 
-CoreDNS is a DNS server that started as a fork of [Caddy](https://github.com/mholt/caddy/). It has
-the same model: it chains middleware. In fact it's so similar that CoreDNS is now a server type
-plugin for Caddy.
-
-CoreDNS is also a [Cloud Native Computing Foundation](https://cncf.io) inception level project.
+CoreDNS is a DNS server that started as a fork of [Caddy](https://github.com/mholt/caddy/). It has the
+same model: it chains middleware. In fact it's so similar that CoreDNS is now a server type plugin for
+Caddy.
 
 CoreDNS is the successor to [SkyDNS](https://github.com/skynetservices/skydns). SkyDNS is a thin
 layer that exposes services in etcd in the DNS. CoreDNS builds on this idea and is a generic DNS
@@ -17,9 +13,6 @@ server that can talk to multiple backends (etcd, kubernetes, etc.).
 
 CoreDNS aims to be a fast and flexible DNS server. The keyword here is *flexible*: with CoreDNS you
 are able to do what you want with your DNS data. And if not: write some middleware!
-
-CoreDNS can listen for DNS request coming in over UDP/TCP (go'old DNS), TLS ([RFC
-7858](https://tools.ietf.org/html/rfc7858)) and gRPC (not a standard.
 
 Currently CoreDNS is able to:
 
@@ -46,11 +39,11 @@ Each of the middlewares has a README.md of its own.
 
 ## Status
 
-CoreDNS can be used as an authoritative nameserver for your domains, and should be stable enough to
+CoreDNS can be used as a authoritative nameserver for your domains, and should be stable enough to
 provide you with good DNS(SEC) service.
 
-There are still a few known [issues](https://github.com/coredns/coredns/issues), and work is ongoing
-on making things fast and to reduce the memory usage.
+There are still few [issues](https://github.com/miekg/coredns/issues), and work is ongoing on making
+things fast and to reduce the memory usage.
 
 All in all, CoreDNS should be able to provide you with enough functionality to replace parts of BIND
 9, Knot, NSD or PowerDNS and SkyDNS. Most documentation is in the source and some blog articles can
@@ -146,58 +139,20 @@ nameserver *and* rewrite ANY queries to HINFO.
 }
 ~~~
 
-### Zone Specification
 
-The following Corefile fragment is legal, but does not explicitly define a zone to listen on:
+## What Remains To Be Done
 
-~~~ txt
-{
-   # ...
-}
-~~~
+* Optimizations.
+* Load testing.
+* The [issues](https://github.com/miekg/coredns/issues).
 
-This defaults to `.:53` (or whatever `-dns.port` is).
-
-The next one only defines a port:
-~~~ txt
-:123 {
-    # ...
-}
-~~~
-This defaults to the root zone `.`, but can't be overruled with the `-dns.port` flag.
-
-Just specifying a zone, default to listening on port 53 (can still be overridden with `-dns.port`:
-
-~~~ txt
-example.org {
-    # ...
-}
-~~~
-
-Listening on TLS and for gRPC? Use:
-
-~~~ txt
-tls://example.org grpc://example.org {
-    # ...
-}
-~~~
-
-Specifying ports works in the same way:
-
-~~~ txt
-grpc://example.org:1443 {
-    # ...
-}
-~~~
-
-When no transport protocol is specified the default `dns://` is assumed.
 
 ## Blog and Contact
 
 Website: <https://coredns.io>
 Twitter: [@corednsio](https://twitter.com/corednsio)
 Docs: <https://miek.nl/tags/coredns/>
-Github: <https://github.com/coredns/coredns>
+Github: <https://github.com/miekg/coredns>
 
 
 ## Systemd Service File

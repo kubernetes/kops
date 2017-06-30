@@ -23,6 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
+	"k8s.io/client-go/discovery"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
@@ -44,8 +45,13 @@ const (
 	KubeconfigSecretDataKey = "kubeconfig"
 
 	// Used in and to create the kube-dns configmap storing the zone info
-	FedDomainMapKey      = "federations"
-	KubeDnsConfigmapName = "kube-dns"
+	FedDomainMapKey       = "federations"
+	KubeDnsConfigmapName  = "kube-dns"
+	FedDNSZoneName        = "dns-zone-name"
+	FedNameServer         = "nameserver"
+	FedDNSProvider        = "dns-provider"
+	FedDNSProviderCoreDNS = "coredns"
+	KubeDnsStubDomains    = "stubDomains"
 
 	// DefaultFederationSystemNamespace is the namespace in which
 	// federation system components are hosted.
@@ -148,18 +154,26 @@ func (o *SubcommandOptions) SetName(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
-func CreateKubeconfigSecret(clientset client.Interface, kubeconfig *clientcmdapi.Config, namespace, name string, dryRun bool) (*api.Secret, error) {
+func CreateKubeconfigSecret(clientset client.Interface, kubeconfig *clientcmdapi.Config, namespace, name, federationName, clusterName string, dryRun bool) (*api.Secret, error) {
 	configBytes, err := clientcmd.Write(*kubeconfig)
 	if err != nil {
 		return nil, err
+	}
+	annotations := map[string]string{
+		federationapi.FederationNameAnnotation: federationName,
+	}
+
+	if clusterName != "" {
+		annotations[federationapi.ClusterNameAnnotation] = clusterName
 	}
 
 	// Build the secret object with the minified and flattened
 	// kubeconfig content.
 	secret := &api.Secret{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      name,
-			Namespace: namespace,
+			Name:        name,
+			Namespace:   namespace,
+			Annotations: annotations,
 		},
 		Data: map[string][]byte{
 			KubeconfigSecretDataKey: configBytes,
@@ -213,11 +227,29 @@ func GetServerAddress(c *federationapi.Cluster) (string, error) {
 }
 
 func buildConfigFromSecret(secret *api.Secret, serverAddress string) (*restclient.Config, error) {
-	kubeconfigGetter := kubeconfigGetterForSecret(secret)
-	clusterConfig, err := clientcmd.BuildConfigFromKubeconfigGetter(serverAddress, kubeconfigGetter)
+	var clusterConfig *restclient.Config
+	var err error
+	// Pre-1.7, the secret contained a serialized kubeconfig which contained appropriate credentials.
+	// Post-1.7, the secret contains credentials for a service account.
+	// Check for the service account credentials, and use them if they exist; if not, use the
+	// serialized kubeconfig.
+	token, tokenFound := secret.Data["token"]
+	ca, caFound := secret.Data["ca.crt"]
+	if tokenFound != caFound {
+		return nil, fmt.Errorf("secret should have values for either both 'ca.crt' and 'token' in its Data, or neither: %v", secret)
+	} else if tokenFound && caFound {
+		clusterConfig, err = clientcmd.BuildConfigFromFlags(serverAddress, "")
+		clusterConfig.CAData = ca
+		clusterConfig.BearerToken = string(token)
+	} else {
+		kubeconfigGetter := kubeconfigGetterForSecret(secret)
+		clusterConfig, err = clientcmd.BuildConfigFromKubeconfigGetter(serverAddress, kubeconfigGetter)
+	}
+
 	if err != nil {
 		return nil, err
 	}
+
 	clusterConfig.QPS = KubeAPIQPS
 	clusterConfig.Burst = KubeAPIBurst
 
@@ -232,6 +264,21 @@ func GetVersionedClientForRBACOrFail(hostFactory cmdutil.Factory) (client.Interf
 	if err != nil {
 		return nil, err
 	}
+
+	rbacVersion, err := getRBACVersion(discoveryclient)
+	if err != nil && !discoveryclient.Fresh() {
+		discoveryclient.Invalidate()
+		rbacVersion, err = getRBACVersion(discoveryclient)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	return hostFactory.ClientSetForVersion(rbacVersion)
+}
+
+func getRBACVersion(discoveryclient discovery.CachedDiscoveryInterface) (*schema.GroupVersion, error) {
+
 	groupList, err := discoveryclient.ServerGroups()
 	if err != nil {
 		return nil, fmt.Errorf("Couldn't get clientset to create RBAC roles in the host cluster: %v", err)
@@ -244,19 +291,33 @@ func GetVersionedClientForRBACOrFail(hostFactory cmdutil.Factory) (client.Interf
 				if err != nil {
 					return nil, err
 				}
-				return hostFactory.ClientSetForVersion(&gv)
+				return &gv, nil
 			}
-			for i := 0; i < len(g.Versions); i++ {
-				if g.Versions[i].GroupVersion != "" {
-					gv, err := schema.ParseGroupVersion(g.Versions[i].GroupVersion)
+			for _, version := range g.Versions {
+				if version.GroupVersion != "" {
+					gv, err := schema.ParseGroupVersion(version.GroupVersion)
 					if err != nil {
 						return nil, err
 					}
-					return hostFactory.ClientSetForVersion(&gv)
+					return &gv, nil
 				}
 			}
 		}
 	}
 
 	return nil, &NoRBACAPIError{rbacAPINotAvailable}
+}
+
+// ClusterServiceAccountName returns the name of a service account
+// whose credentials are used by the host cluster to access the
+// client cluster.
+func ClusterServiceAccountName(joiningClusterName, hostContext string) string {
+	return fmt.Sprintf("%s-%s", joiningClusterName, hostContext)
+}
+
+// ClusterRoleName returns the name of a ClusterRole and its associated
+// ClusterRoleBinding that are used to allow the service account to
+// access necessary resources on the cluster.
+func ClusterRoleName(federationName, serviceAccountName string) string {
+	return fmt.Sprintf("federation-controller-manager:%s-%s", federationName, serviceAccountName)
 }
