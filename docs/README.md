@@ -91,17 +91,18 @@
 
 ## Development
 
-* [E2E testing with `kops` clusters](development/testing.md)
 * [Developing using Docker](development/Docker.md)
-* [Updating Go Dependencies](development/dependencies.md)
-* [Hack Directory](development/hack.md)
-* [Rolling Update Diagrams](development/rolling_update.md)
-* [Examlpe on how to add a feature](development/adding_a_feature.md)
-* [Documentation Guidelines](development/documentation.md)
-* [Releasing with Homebrew](development/homebrew.md)
-* [Notes on master instance sizing](development/instancesizes.md)
 * [Development with vSphere](development/vsphere-dev.md)
+* [Documentation Guidelines](development/documentation.md)
+* [E2E testing with `kops` clusters](development/testing.md)
+* [Example on how to add a feature](development/adding_a_feature.md)
+* [Hack Directory](development/hack.md)
 * [How to update `kops` API](development/api_updates.md)
-* [Notes on Gossip design](development/gossip.md)
 * [Low level description on how kops works](how_it_works.md)
+* [Notes on Gossip design](development/gossip.md)
+* [Notes on master instance sizing](development/instancesizes.md)
 * [Our release process](development/release.md)
+* [Releasing with Homebrew](development/homebrew.md)
+* [Rolling Update Diagrams](development/rolling_update.md)
+* [Updating Go Dependencies](development/dependencies.md)
+

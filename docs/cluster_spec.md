@@ -165,7 +165,7 @@ spec:
   networkID: vpc-abcdefg1
 ```
 
-More information about re-using a VPC is [here](run_in_existing_vpc.md).
+More information about running in an existing VPC is [here](run_in_existing_vpc.md).
 
 ### hooks
 

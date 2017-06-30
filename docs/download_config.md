@@ -7,15 +7,15 @@ If you download the config spec file on a running cluster that is configured the
 Let us say you create your cluster with the following configuration options:
 
 ```
-declare -x KOPS_STATE_STORE=s3://k8s-us-west
-declare -x CLOUD=aws
-declare -x ZONE="us-west-1a"
-declare -x MASTER_ZONES="us-west-1a"
-declare -x NAME=k8s.example.com
-declare -x K8S_VERSION=1.6.4
-declare -x NETWORKCIDER="10.240.0.0/16"
-declare -x MASTER_SIZE="t2.medium"
-declare -x WORKER_SIZE="t2.large"
+export KOPS_STATE_STORE=s3://k8s-us-west
+export CLOUD=aws
+export ZONE="us-west-1a"
+export MASTER_ZONES="us-west-1a"
+export NAME=k8s.example.com
+export K8S_VERSION=1.6.4
+export NETWORKCIDER="10.240.0.0/16"
+export MASTER_SIZE="m3.large"
+export WORKER_SIZE="m4.large"
 ```
 Next you call the kops command to create the cluster in your terminal:
 

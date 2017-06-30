@@ -6,7 +6,7 @@ This document also applies to using the `kops` API to customize a Kubernetes clu
 
 > We like to think of it as `kubectl` for Clusters.
 
-Because of the above statement `kops` includes an API which provides a feature for users to utilize YAML or JSON manifests for managing their `kops` created Kubernetes installations.  In the same way, you can use a YAML manifest to deploy a Job you can deploy and manage a `kops` Kuberentes instance with a manifest.  All of these values are also usable via the interactive editor with `kops edit`.
+Because of the above statement `kops` includes an API which provides a feature for users to utilize YAML or JSON manifests for managing their `kops` created Kubernetes installations.  In the same way, you can use a YAML manifest to deploy a Job you can deploy and manage a `kops` Kuberenetes instance with a manifest.  All of these values are also usable via the interactive editor with `kops edit`.
 
 The following is a list of the benefits of using a file to manage instances.
 
@@ -30,7 +30,7 @@ export KOPS_STATE_STORE=s3://example-state-store
     --bastion \
     --node-count 3 \
     --node-size m4.xlarge \
-    --kubernetes-version v1.7.0-beta.2 \
+    --kubernetes-version v1.6.6 \
     --master-size m4.large \
     --vpc vpc-6335dd1a
 ```
@@ -79,7 +79,7 @@ spec:
     name: events
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: 1.6.1
+  kubernetesVersion: 1.6.6
   masterPublicName: api.k8s.example.com
   networkCIDR: 172.20.0.0/16
   networkID: vpc-6335dd1a
@@ -131,7 +131,7 @@ metadata:
     kops.k8s.io/cluster: k8s.example.com
   name: bastions
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-05-02
+  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
   machineType: t2.micro
   maxSize: 1
   minSize: 1
@@ -152,7 +152,7 @@ metadata:
     kops.k8s.io/cluster: k8s.example.com
   name: master-us-east-2d
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-05-02
+  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
   machineType: m4.large
   maxSize: 1
   minSize: 1
@@ -171,7 +171,7 @@ metadata:
     kops.k8s.io/cluster: k8s.example.com
   name: master-us-east-2b
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-05-02
+  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
   machineType: m4.large
   maxSize: 1
   minSize: 1
@@ -190,7 +190,7 @@ metadata:
     kops.k8s.io/cluster: k8s.example.com
   name: master-us-east-2c
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-05-02
+  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
   machineType: m4.large
   maxSize: 1
   minSize: 1
@@ -209,7 +209,7 @@ metadata:
     kops.k8s.io/cluster: k8s.example.com
   name: nodes
 spec:
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-05-02
+  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
   machineType: m4.xlarge
   maxSize: 3
   minSize: 3
@@ -248,14 +248,13 @@ spec:
   cloudLabels:
     team: example
     project: ion
-  image: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-05-02
+  image: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
   machineType: m4.10xlarge
   maxSize: 42
   minSize: 42
   maxPrice: "0.35"
   role: Node
   subnets:
-  - us-east-2d
   - us-east-2c
 ```
 
@@ -332,4 +331,11 @@ More documentation is available in the [Instance Group](instance_groups.md) docu
 
 ## Closing Thoughts
 
-Using a document based configuration for building and managing `kops` clusters is powerful.  Do use these features with caution.  If you do not need to define or customize a value, let `kops` create and possibly modify the value by default.  Again do not use the ClusterSpec provided by the command `kops get cluster --full`.  Let kops build the entire specification for you, and it will make cluster management like upgrades much easier.  But if you need to run a custom version of Kubernetes Controller Manager, set `kubeControllerManager.image` and update your cluster.  Do take care with setting custom values and test before using in production.
+Using YAML or JSON-based configuration for building and managing kops clusters is powerful, but use with caution.
+
+- If you do not need to define or customize a value, let kops set that value
+Setting too many values dont allow kops to do its job in setting up the cluster and you may end up with strange bugs
+- If you end up with strange bugs, try letting kops do more
+- Be cautious, take care, and test test test outside of production!
+
+If you need to run a custom version of Kubernetes Controller Manager, set `kubeControllerManager.image` and update your cluster, and that is the beauty of using a manifest for your cluster.
