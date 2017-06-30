@@ -40,6 +40,7 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
@@ -129,6 +130,7 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*kops.InstanceGroup,
 	return nil, fmt.Errorf("InstanceGroup %q not found", name)
 }
 
+// DnsControllerArgv returns the args to the DNS controller
 func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	var argv []string
 
@@ -144,7 +146,6 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 		argv = append(argv, "--watch-ingress=false")
 	}
 	argv = append(argv, "--watch-ingress=false")
-
 
 	switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
