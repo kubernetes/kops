@@ -50,7 +50,7 @@ type LaunchConfiguration struct {
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string
 	// RootVolumeOptimization enables EBS optimization for an instance
-	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
+	RootVolumeOptimization *bool
 
 	// SpotPrice is set to the spot-price bid if this is a spot pricing request
 	SpotPrice string
