@@ -26,8 +26,10 @@ import (
 )
 
 const (
-	DefaultVolumeSize = 20
-	DefaultVolumeType = "gp2"
+	DefaultVolumeSizeNode    = 128
+	DefaultVolumeSizeMaster  = 64
+	DefaultVolumeSizeBastion = 32
+	DefaultVolumeType        = "gp2"
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
@@ -48,7 +50,16 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		{
 			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
 			if volumeSize == 0 {
-				volumeSize = DefaultVolumeSize
+				switch ig.Spec.Role {
+				case kops.InstanceGroupRoleMaster:
+					volumeSize = DefaultVolumeSizeMaster
+				case kops.InstanceGroupRoleNode:
+					volumeSize = DefaultVolumeSizeNode
+				case kops.InstanceGroupRoleBastion:
+					volumeSize = DefaultVolumeSizeBastion
+				default:
+					return fmt.Errorf("this case should not get hit, kops.Role not found %s", ig.Spec.Role)
+				}
 			}
 			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
 			if volumeType == "" {
