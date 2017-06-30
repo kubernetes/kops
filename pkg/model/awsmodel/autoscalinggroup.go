@@ -26,8 +26,9 @@ import (
 )
 
 const (
-	DefaultVolumeSize = 20
-	DefaultVolumeType = "gp2"
+	DefaultVolumeSizeNode   = 100
+	DefaultVolumeSizeMaster = 50
+	DefaultVolumeType       = "gp2"
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
@@ -48,7 +49,11 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		{
 			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
 			if volumeSize == 0 {
-				volumeSize = DefaultVolumeSize
+				if ig.IsMaster() {
+					volumeSize = DefaultVolumeSizeMaster
+				} else {
+					volumeSize = DefaultVolumeSizeNode
+				}
 			}
 			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
 			if volumeType == "" {
