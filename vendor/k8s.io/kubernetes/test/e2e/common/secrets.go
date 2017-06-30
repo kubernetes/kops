@@ -453,7 +453,8 @@ func secretForTest(namespace, name string) *v1.Secret {
 	}
 }
 
-func doSecretE2EWithoutMapping(f *framework.Framework, defaultMode *int32, secretName string, fsGroup *int64, uid *int64) {
+func doSecretE2EWithoutMapping(f *framework.Framework, defaultMode *int32, secretName string,
+	fsGroup *int64, uid *int64) {
 	var (
 		volumeName      = "secret-volume"
 		volumeMountPath = "/etc/secret-volume"

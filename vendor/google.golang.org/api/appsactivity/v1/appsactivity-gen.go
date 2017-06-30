@@ -1,4 +1,4 @@
-// Package appsactivity provides access to the Google Apps Activity API.
+// Package appsactivity provides access to the G Suite Activity API.
 //
 // See https://developers.google.com/google-apps/activity/
 //
@@ -47,7 +47,7 @@ const basePath = "https://www.googleapis.com/appsactivity/v1/"
 
 // OAuth2 scopes used by this API.
 const (
-	// View the activity history of your Google Apps
+	// View the activity history of your Google apps
 	ActivityScope = "https://www.googleapis.com/auth/activity"
 
 	// View and manage the files in your Google Drive

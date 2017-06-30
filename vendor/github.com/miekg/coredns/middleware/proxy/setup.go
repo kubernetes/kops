@@ -1,8 +1,8 @@
 package proxy
 
 import (
-	"github.com/coredns/coredns/core/dnsserver"
-	"github.com/coredns/coredns/middleware"
+	"github.com/miekg/coredns/core/dnsserver"
+	"github.com/miekg/coredns/middleware"
 
 	"github.com/mholt/caddy"
 )
@@ -19,25 +19,11 @@ func setup(c *caddy.Controller) error {
 	if err != nil {
 		return middleware.Error("proxy", err)
 	}
-
-	t := dnsserver.GetMiddleware(c, "trace")
-	P := &Proxy{Trace: t}
 	dnsserver.GetConfig(c).AddMiddleware(func(next middleware.Handler) middleware.Handler {
-		P.Next = next
-		P.Upstreams = &upstreams
-		return P
+		return Proxy{Next: next, Client: newClient(), Upstreams: upstreams}
 	})
 
-	c.OnStartup(OnStartupMetrics)
-
-	for _, u := range upstreams {
-		c.OnStartup(func() error {
-			return u.Exchanger().OnStartup(P)
-		})
-		c.OnShutdown(func() error {
-			return u.Exchanger().OnShutdown(P)
-		})
-	}
+	c.OnStartup(OnStartup)
 
 	return nil
 }

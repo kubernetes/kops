@@ -120,6 +120,22 @@ func (s *AntennaCharacteristics) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *AntennaCharacteristics) UnmarshalJSON(data []byte) error {
+	type noMethod AntennaCharacteristics
+	var s1 struct {
+		Height            gensupport.JSONFloat64 `json:"height"`
+		HeightUncertainty gensupport.JSONFloat64 `json:"heightUncertainty"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Height = float64(s1.Height)
+	s.HeightUncertainty = float64(s1.HeightUncertainty)
+	return nil
+}
+
 // DatabaseSpec: This message contains the name and URI of a database.
 type DatabaseSpec struct {
 	// Name: The display name for a database.
@@ -480,6 +496,24 @@ func (s *FrequencyRange) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *FrequencyRange) UnmarshalJSON(data []byte) error {
+	type noMethod FrequencyRange
+	var s1 struct {
+		MaxPowerDBm gensupport.JSONFloat64 `json:"maxPowerDBm"`
+		StartHz     gensupport.JSONFloat64 `json:"startHz"`
+		StopHz      gensupport.JSONFloat64 `json:"stopHz"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.MaxPowerDBm = float64(s1.MaxPowerDBm)
+	s.StartHz = float64(s1.StartHz)
+	s.StopHz = float64(s1.StopHz)
+	return nil
+}
+
 // GeoLocation: This parameter is used to specify the geolocation of the
 // device.
 type GeoLocation struct {
@@ -576,6 +610,24 @@ func (s *GeoLocationEllipse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *GeoLocationEllipse) UnmarshalJSON(data []byte) error {
+	type noMethod GeoLocationEllipse
+	var s1 struct {
+		Orientation   gensupport.JSONFloat64 `json:"orientation"`
+		SemiMajorAxis gensupport.JSONFloat64 `json:"semiMajorAxis"`
+		SemiMinorAxis gensupport.JSONFloat64 `json:"semiMinorAxis"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Orientation = float64(s1.Orientation)
+	s.SemiMajorAxis = float64(s1.SemiMajorAxis)
+	s.SemiMinorAxis = float64(s1.SemiMinorAxis)
+	return nil
+}
+
 // GeoLocationPoint: A single geolocation on the globe.
 type GeoLocationPoint struct {
 	// Latitude: A required floating-point number that expresses the
@@ -611,6 +663,22 @@ func (s *GeoLocationPoint) MarshalJSON() ([]byte, error) {
 	type noMethod GeoLocationPoint
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *GeoLocationPoint) UnmarshalJSON(data []byte) error {
+	type noMethod GeoLocationPoint
+	var s1 struct {
+		Latitude  gensupport.JSONFloat64 `json:"latitude"`
+		Longitude gensupport.JSONFloat64 `json:"longitude"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Latitude = float64(s1.Latitude)
+	s.Longitude = float64(s1.Longitude)
+	return nil
 }
 
 // GeoLocationPolygon: A region is represented using the polygonal
@@ -906,6 +974,22 @@ func (s *PawsGetSpectrumBatchResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *PawsGetSpectrumBatchResponse) UnmarshalJSON(data []byte) error {
+	type noMethod PawsGetSpectrumBatchResponse
+	var s1 struct {
+		MaxContiguousBwHz gensupport.JSONFloat64 `json:"maxContiguousBwHz"`
+		MaxTotalBwHz      gensupport.JSONFloat64 `json:"maxTotalBwHz"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.MaxContiguousBwHz = float64(s1.MaxContiguousBwHz)
+	s.MaxTotalBwHz = float64(s1.MaxTotalBwHz)
+	return nil
+}
+
 // PawsGetSpectrumRequest: The request message for the available
 // spectrum query protocol which must include the device's geolocation.
 type PawsGetSpectrumRequest struct {
@@ -1106,6 +1190,22 @@ func (s *PawsGetSpectrumResponse) MarshalJSON() ([]byte, error) {
 	type noMethod PawsGetSpectrumResponse
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *PawsGetSpectrumResponse) UnmarshalJSON(data []byte) error {
+	type noMethod PawsGetSpectrumResponse
+	var s1 struct {
+		MaxContiguousBwHz gensupport.JSONFloat64 `json:"maxContiguousBwHz"`
+		MaxTotalBwHz      gensupport.JSONFloat64 `json:"maxTotalBwHz"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.MaxContiguousBwHz = float64(s1.MaxContiguousBwHz)
+	s.MaxTotalBwHz = float64(s1.MaxTotalBwHz)
+	return nil
 }
 
 // PawsInitRequest: The initialization request message allows the master
@@ -1595,6 +1695,20 @@ func (s *RulesetInfo) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *RulesetInfo) UnmarshalJSON(data []byte) error {
+	type noMethod RulesetInfo
+	var s1 struct {
+		MaxLocationChange gensupport.JSONFloat64 `json:"maxLocationChange"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.MaxLocationChange = float64(s1.MaxLocationChange)
+	return nil
+}
+
 // SpectrumMessage: Available spectrum can be logically characterized by
 // a list of frequency ranges and permissible power levels for each
 // range.
@@ -1633,6 +1747,20 @@ func (s *SpectrumMessage) MarshalJSON() ([]byte, error) {
 	type noMethod SpectrumMessage
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *SpectrumMessage) UnmarshalJSON(data []byte) error {
+	type noMethod SpectrumMessage
+	var s1 struct {
+		Bandwidth gensupport.JSONFloat64 `json:"bandwidth"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Bandwidth = float64(s1.Bandwidth)
+	return nil
 }
 
 // SpectrumSchedule: The spectrum schedule element combines an event

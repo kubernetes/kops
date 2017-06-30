@@ -7,7 +7,7 @@ go:
 go_import_path: k8s.io/gengo
 
 script:
+  - find . -name Makefile | xargs -n1 dirname | while read DIR; do make -C $DIR test; done
   - go test -v ./...
   - go run ./examples/set-gen/main.go -i k8s.io/gengo/examples/set-gen/sets/types -o ./examples/set-gen/sets --verify-only
   - go run ./examples/import-boss/main.go -i k8s.io/gengo/... --verify-only
-  - ./examples/deepcopy-gen/test.sh

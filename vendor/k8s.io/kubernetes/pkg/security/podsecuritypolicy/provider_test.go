@@ -69,13 +69,13 @@ func TestCreatePodSecurityContextNonmutating(t *testing.T) {
 				// these are pod mutating strategies that are tested above
 				FSGroup: extensions.FSGroupStrategyOptions{
 					Rule: extensions.FSGroupStrategyMustRunAs,
-					Ranges: []extensions.IDRange{
+					Ranges: []extensions.GroupIDRange{
 						{Min: 1, Max: 1},
 					},
 				},
 				SupplementalGroups: extensions.SupplementalGroupsStrategyOptions{
 					Rule: extensions.SupplementalGroupsStrategyMustRunAs,
-					Ranges: []extensions.IDRange{
+					Ranges: []extensions.GroupIDRange{
 						{Min: 1, Max: 1},
 					},
 				},
@@ -111,76 +111,86 @@ func TestCreatePodSecurityContextNonmutating(t *testing.T) {
 }
 
 func TestCreateContainerSecurityContextNonmutating(t *testing.T) {
-	// Create a pod with a security context that needs filling in
-	createPod := func() *api.Pod {
-		return &api.Pod{
-			Spec: api.PodSpec{
-				Containers: []api.Container{{
-					SecurityContext: &api.SecurityContext{},
-				}},
-			},
+	untrue := false
+	tests := []struct {
+		security *api.SecurityContext
+	}{
+		{nil},
+		{&api.SecurityContext{RunAsNonRoot: &untrue}},
+	}
+
+	for _, tc := range tests {
+		// Create a pod with a security context that needs filling in
+		createPod := func() *api.Pod {
+			return &api.Pod{
+				Spec: api.PodSpec{
+					Containers: []api.Container{{
+						SecurityContext: tc.security,
+					}},
+				},
+			}
 		}
-	}
 
-	// Create a PSP with strategies that will populate a blank security context
-	createPSP := func() *extensions.PodSecurityPolicy {
-		var uid int64 = 1
-		return &extensions.PodSecurityPolicy{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: "psp-sa",
-				Annotations: map[string]string{
-					seccomp.AllowedProfilesAnnotationKey: "*",
-					seccomp.DefaultProfileAnnotationKey:  "foo",
+		// Create a PSP with strategies that will populate a blank security context
+		createPSP := func() *extensions.PodSecurityPolicy {
+			uid := int64(1)
+			return &extensions.PodSecurityPolicy{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "psp-sa",
+					Annotations: map[string]string{
+						seccomp.AllowedProfilesAnnotationKey: "*",
+						seccomp.DefaultProfileAnnotationKey:  "foo",
+					},
 				},
-			},
-			Spec: extensions.PodSecurityPolicySpec{
-				DefaultAddCapabilities:   []api.Capability{"foo"},
-				RequiredDropCapabilities: []api.Capability{"bar"},
-				RunAsUser: extensions.RunAsUserStrategyOptions{
-					Rule:   extensions.RunAsUserStrategyMustRunAs,
-					Ranges: []extensions.IDRange{{Min: uid, Max: uid}},
+				Spec: extensions.PodSecurityPolicySpec{
+					DefaultAddCapabilities:   []api.Capability{"foo"},
+					RequiredDropCapabilities: []api.Capability{"bar"},
+					RunAsUser: extensions.RunAsUserStrategyOptions{
+						Rule:   extensions.RunAsUserStrategyMustRunAs,
+						Ranges: []extensions.UserIDRange{{Min: uid, Max: uid}},
+					},
+					SELinux: extensions.SELinuxStrategyOptions{
+						Rule:           extensions.SELinuxStrategyMustRunAs,
+						SELinuxOptions: &api.SELinuxOptions{User: "you"},
+					},
+					// these are pod mutating strategies that are tested above
+					FSGroup: extensions.FSGroupStrategyOptions{
+						Rule: extensions.FSGroupStrategyRunAsAny,
+					},
+					SupplementalGroups: extensions.SupplementalGroupsStrategyOptions{
+						Rule: extensions.SupplementalGroupsStrategyRunAsAny,
+					},
+					// mutates the container SC by defaulting to true if container sets nil
+					ReadOnlyRootFilesystem: true,
 				},
-				SELinux: extensions.SELinuxStrategyOptions{
-					Rule:           extensions.SELinuxStrategyMustRunAs,
-					SELinuxOptions: &api.SELinuxOptions{User: "you"},
-				},
-				// these are pod mutating strategies that are tested above
-				FSGroup: extensions.FSGroupStrategyOptions{
-					Rule: extensions.FSGroupStrategyRunAsAny,
-				},
-				SupplementalGroups: extensions.SupplementalGroupsStrategyOptions{
-					Rule: extensions.SupplementalGroupsStrategyRunAsAny,
-				},
-				// mutates the container SC by defaulting to true if container sets nil
-				ReadOnlyRootFilesystem: true,
-			},
+			}
 		}
-	}
 
-	pod := createPod()
-	psp := createPSP()
+		pod := createPod()
+		psp := createPSP()
 
-	provider, err := NewSimpleProvider(psp, "namespace", NewSimpleStrategyFactory())
-	if err != nil {
-		t.Fatalf("unable to create provider %v", err)
-	}
-	sc, _, err := provider.CreateContainerSecurityContext(pod, &pod.Spec.Containers[0])
-	if err != nil {
-		t.Fatalf("unable to create container security context %v", err)
-	}
+		provider, err := NewSimpleProvider(psp, "namespace", NewSimpleStrategyFactory())
+		if err != nil {
+			t.Fatalf("unable to create provider %v", err)
+		}
+		sc, _, err := provider.CreateContainerSecurityContext(pod, &pod.Spec.Containers[0])
+		if err != nil {
+			t.Fatalf("unable to create container security context %v", err)
+		}
 
-	// The generated security context should have filled in missing options, so they should differ
-	if reflect.DeepEqual(sc, &pod.Spec.Containers[0].SecurityContext) {
-		t.Error("expected created security context to be different than container's, but they were identical")
-	}
+		// The generated security context should have filled in missing options, so they should differ
+		if reflect.DeepEqual(sc, &pod.Spec.Containers[0].SecurityContext) {
+			t.Error("expected created security context to be different than container's, but they were identical")
+		}
 
-	// Creating the provider or the security context should not have mutated the psp or pod
-	if !reflect.DeepEqual(createPod(), pod) {
-		diffs := diff.ObjectDiff(createPod(), pod)
-		t.Errorf("pod was mutated by CreateContainerSecurityContext. diff:\n%s", diffs)
-	}
-	if !reflect.DeepEqual(createPSP(), psp) {
-		t.Error("psp was mutated by CreateContainerSecurityContext")
+		// Creating the provider or the security context should not have mutated the psp or pod
+		if !reflect.DeepEqual(createPod(), pod) {
+			diffs := diff.ObjectDiff(createPod(), pod)
+			t.Errorf("pod was mutated by CreateContainerSecurityContext. diff:\n%s", diffs)
+		}
+		if !reflect.DeepEqual(createPSP(), psp) {
+			t.Error("psp was mutated by CreateContainerSecurityContext")
+		}
 	}
 }
 
@@ -199,7 +209,7 @@ func TestValidatePodSecurityContextFailures(t *testing.T) {
 	failSupplementalGroupPSP := defaultPSP()
 	failSupplementalGroupPSP.Spec.SupplementalGroups = extensions.SupplementalGroupsStrategyOptions{
 		Rule: extensions.SupplementalGroupsStrategyMustRunAs,
-		Ranges: []extensions.IDRange{
+		Ranges: []extensions.GroupIDRange{
 			{Min: 1, Max: 1},
 		},
 	}
@@ -210,7 +220,7 @@ func TestValidatePodSecurityContextFailures(t *testing.T) {
 	failFSGroupPSP := defaultPSP()
 	failFSGroupPSP.Spec.FSGroup = extensions.FSGroupStrategyOptions{
 		Rule: extensions.FSGroupStrategyMustRunAs,
-		Ranges: []extensions.IDRange{
+		Ranges: []extensions.GroupIDRange{
 			{Min: 1, Max: 1},
 		},
 	}
@@ -352,11 +362,11 @@ func TestValidatePodSecurityContextFailures(t *testing.T) {
 func TestValidateContainerSecurityContextFailures(t *testing.T) {
 	// fail user strat
 	failUserPSP := defaultPSP()
-	var uid int64 = 999
-	var badUID int64 = 1
+	uid := int64(999)
+	badUID := int64(1)
 	failUserPSP.Spec.RunAsUser = extensions.RunAsUserStrategyOptions{
 		Rule:   extensions.RunAsUserStrategyMustRunAs,
-		Ranges: []extensions.IDRange{{Min: uid, Max: uid}},
+		Ranges: []extensions.UserIDRange{{Min: uid, Max: uid}},
 	}
 	failUserPod := defaultPod()
 	failUserPod.Spec.Containers[0].SecurityContext.RunAsUser = &badUID
@@ -511,7 +521,7 @@ func TestValidatePodSecurityContextSuccess(t *testing.T) {
 	supGroupPSP := defaultPSP()
 	supGroupPSP.Spec.SupplementalGroups = extensions.SupplementalGroupsStrategyOptions{
 		Rule: extensions.SupplementalGroupsStrategyMustRunAs,
-		Ranges: []extensions.IDRange{
+		Ranges: []extensions.GroupIDRange{
 			{Min: 1, Max: 5},
 		},
 	}
@@ -521,7 +531,7 @@ func TestValidatePodSecurityContextSuccess(t *testing.T) {
 	fsGroupPSP := defaultPSP()
 	fsGroupPSP.Spec.FSGroup = extensions.FSGroupStrategyOptions{
 		Rule: extensions.FSGroupStrategyMustRunAs,
-		Ranges: []extensions.IDRange{
+		Ranges: []extensions.GroupIDRange{
 			{Min: 1, Max: 5},
 		},
 	}
@@ -649,10 +659,10 @@ func TestValidateContainerSecurityContextSuccess(t *testing.T) {
 
 	// success user strat
 	userPSP := defaultPSP()
-	var uid int64 = 999
+	uid := int64(999)
 	userPSP.Spec.RunAsUser = extensions.RunAsUserStrategyOptions{
 		Rule:   extensions.RunAsUserStrategyMustRunAs,
-		Ranges: []extensions.IDRange{{Min: uid, Max: uid}},
+		Ranges: []extensions.UserIDRange{{Min: uid, Max: uid}},
 	}
 	userPod := defaultPod()
 	userPod.Spec.Containers[0].SecurityContext.RunAsUser = &uid

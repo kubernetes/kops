@@ -1,13 +1,12 @@
 package etcd
 
 import (
-	"errors"
+	"fmt"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/middleware/etcd/msg"
-	"github.com/coredns/coredns/middleware/pkg/debug"
-	"github.com/coredns/coredns/middleware/pkg/dnsutil"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/middleware/etcd/msg"
+	"github.com/miekg/coredns/middleware/pkg/dnsutil"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -18,14 +17,14 @@ func (e *Etcd) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (
 	opt := middleware.Options{}
 	state := request.Request{W: w, Req: r}
 	if state.QClass() != dns.ClassINET {
-		return dns.RcodeServerFailure, middleware.Error(e.Name(), errors.New("can only deal with ClassINET"))
+		return dns.RcodeServerFailure, fmt.Errorf("can only deal with ClassINET")
 	}
 	name := state.Name()
 	if e.Debugging {
-		if bug := debug.IsDebug(name); bug != "" {
+		if debug := isDebug(name); debug != "" {
 			opt.Debug = r.Question[0].Name
 			state.Clear()
-			state.Req.Question[0].Name = bug
+			state.Req.Question[0].Name = debug
 		}
 	}
 
@@ -43,10 +42,13 @@ func (e *Etcd) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (
 
 	zone := middleware.Zones(e.Zones).Matches(state.Name())
 	if zone == "" {
+		if e.Next == nil {
+			return dns.RcodeServerFailure, nil
+		}
 		if opt.Debug != "" {
 			r.Question[0].Name = opt.Debug
 		}
-		return middleware.NextOrFailure(e.Name(), e.Next, ctx, w, r)
+		return e.Next.ServeDNS(ctx, w, r)
 	}
 
 	var (
@@ -89,8 +91,7 @@ func (e *Etcd) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (
 	}
 
 	if e.IsNameError(err) {
-		// Make err nil when returning here, so we don't log spam for NXDOMAIN.
-		return middleware.BackendError(e, zone, dns.RcodeNameError, state, debug, nil /* err */, opt)
+		return middleware.BackendError(e, zone, dns.RcodeNameError, state, debug, err, opt)
 	}
 	if err != nil {
 		return middleware.BackendError(e, zone, dns.RcodeServerFailure, state, debug, err, opt)

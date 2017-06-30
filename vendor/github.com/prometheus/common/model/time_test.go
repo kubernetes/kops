@@ -84,3 +84,46 @@ func TestDuration(t *testing.T) {
 		t.Fatalf("Expected %s to be equal to %s", delta, duration)
 	}
 }
+
+func TestParseDuration(t *testing.T) {
+	var cases = []struct {
+		in  string
+		out time.Duration
+	}{
+		{
+			in:  "324ms",
+			out: 324 * time.Millisecond,
+		}, {
+			in:  "3s",
+			out: 3 * time.Second,
+		}, {
+			in:  "5m",
+			out: 5 * time.Minute,
+		}, {
+			in:  "1h",
+			out: time.Hour,
+		}, {
+			in:  "4d",
+			out: 4 * 24 * time.Hour,
+		}, {
+			in:  "3w",
+			out: 3 * 7 * 24 * time.Hour,
+		}, {
+			in:  "10y",
+			out: 10 * 365 * 24 * time.Hour,
+		},
+	}
+
+	for _, c := range cases {
+		d, err := ParseDuration(c.in)
+		if err != nil {
+			t.Errorf("Unexpected error on input %q", c.in)
+		}
+		if time.Duration(d) != c.out {
+			t.Errorf("Expected %v but got %v", c.out, d)
+		}
+		if d.String() != c.in {
+			t.Errorf("Expected duration string %q but got %q", c.in, d.String())
+		}
+	}
+}

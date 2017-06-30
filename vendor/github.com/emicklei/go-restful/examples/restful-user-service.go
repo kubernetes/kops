@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/emicklei/go-restful"
-	"github.com/emicklei/go-restful/swagger"
+	"github.com/emicklei/go-restful-swagger12"
 )
 
 // This example is functionally the same as the example in restful-user-resource.go
@@ -31,14 +31,16 @@ func (u UserService) Register() {
 		// docs
 		Doc("get all users").
 		Operation("findAllUsers").
-		Returns(200, "OK", []User{}))
+		Writes([]User{}).
+		Returns(200, "OK", nil))
 
 	ws.Route(ws.GET("/{user-id}").To(u.findUser).
 		// docs
 		Doc("get a user").
 		Operation("findUser").
 		Param(ws.PathParameter("user-id", "identifier of the user").DataType("string")).
-		Writes(User{})) // on the response
+		Writes(User{}). // on the response
+		Returns(404, "Not Found", nil))
 
 	ws.Route(ws.PUT("/{user-id}").To(u.updateUser).
 		// docs
@@ -65,7 +67,11 @@ func (u UserService) Register() {
 // GET http://localhost:8080/users
 //
 func (u UserService) findAllUsers(request *restful.Request, response *restful.Response) {
-	response.WriteEntity(u.users)
+	list := []User{}
+	for _, each := range u.users {
+		list = append(list, each)
+	}
+	response.WriteEntity(list)
 }
 
 // GET http://localhost:8080/users/1

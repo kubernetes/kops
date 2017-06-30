@@ -117,9 +117,9 @@ return off, err
 			switch {
 			case st.Tag(i) == `dns:"-"`: // ignored
 			case st.Tag(i) == `dns:"cdomain-name"`:
-				o("off, err = PackDomainName(rr.%s, msg, off, compression, compress)\n")
+				fallthrough
 			case st.Tag(i) == `dns:"domain-name"`:
-				o("off, err = PackDomainName(rr.%s, msg, off, compression, false)\n")
+				o("off, err = PackDomainName(rr.%s, msg, off, compression, compress)\n")
 			case st.Tag(i) == `dns:"a"`:
 				o("off, err = packDataA(rr.%s, msg, off)\n")
 			case st.Tag(i) == `dns:"aaaa"`:
@@ -139,9 +139,6 @@ return off, err
 			case st.Tag(i) == `dns:"base64"`:
 				o("off, err = packStringBase64(rr.%s, msg, off)\n")
 
-			case strings.HasPrefix(st.Tag(i), `dns:"size-hex:SaltLength`): // Hack to fix empty salt length for NSEC3
-				o("if rr.%s == \"-\" { /* do nothing, empty salt */ }\n")
-				continue
 			case strings.HasPrefix(st.Tag(i), `dns:"size-hex`): // size-hex can be packed just like hex
 				fallthrough
 			case st.Tag(i) == `dns:"hex"`:
@@ -169,7 +166,7 @@ return off, err
 			}
 		}
 		// We have packed everything, only now we know the rdlength of this RR
-		fmt.Fprintln(b, "rr.Header().Rdlength = uint16(off-headerEnd)")
+		fmt.Fprintln(b, "rr.Header().Rdlength = uint16(off- headerEnd)")
 		fmt.Fprintln(b, "return off, nil }\n")
 	}
 

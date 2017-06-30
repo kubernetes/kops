@@ -1,11 +1,12 @@
 package main
 
 import (
+	"net/http"
+
 	"github.com/emicklei/go-restful"
-	"github.com/emicklei/go-restful/swagger"
+	"github.com/emicklei/go-restful-swagger12"
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/memcache"
-	"net/http"
 )
 
 // This example is functionally the same as ../restful-user-service.go

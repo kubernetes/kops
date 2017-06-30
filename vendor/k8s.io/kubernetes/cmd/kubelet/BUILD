@@ -7,11 +7,13 @@ load(
     "go_binary",
     "go_library",
 )
+load("//pkg/version:def.bzl", "version_x_defs")
 
 go_binary(
     name = "kubelet",
     library = ":go_default_library",
     tags = ["automanaged"],
+    x_defs = version_x_defs(),
 )
 
 go_library(
@@ -24,9 +26,9 @@ go_library(
         "//pkg/client/metrics/prometheus:go_default_library",
         "//pkg/version/prometheus:go_default_library",
         "//pkg/version/verflag:go_default_library",
-        "//vendor:github.com/spf13/pflag",
-        "//vendor:k8s.io/apiserver/pkg/util/flag",
-        "//vendor:k8s.io/apiserver/pkg/util/logs",
+        "//vendor/github.com/spf13/pflag:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/util/flag:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/util/logs:go_default_library",
     ],
 )
 

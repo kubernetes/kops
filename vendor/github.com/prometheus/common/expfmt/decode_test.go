@@ -21,6 +21,9 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/golang/protobuf/proto"
+	dto "github.com/prometheus/client_model/go"
+
 	"github.com/prometheus/common/model"
 )
 
@@ -102,9 +105,14 @@ func TestProtoDecoder(t *testing.T) {
 	scenarios := []struct {
 		in       string
 		expected model.Vector
+		fail     bool
 	}{
 		{
 			in: "",
+		},
+		{
+			in:   "\x8f\x01\n\rrequest_count\x12\x12Number of requests\x18\x00\"0\n#\n\x0fsome_!abel_name\x12\x10some_label_value\x1a\t\t\x00\x00\x00\x00\x00\x00E\xc0\"6\n)\n\x12another_label_name\x12\x13another_label_value\x1a\t\t\x00\x00\x00\x00\x00\x00U@",
+			fail: true,
 		},
 		{
 			in: "\x8f\x01\n\rrequest_count\x12\x12Number of requests\x18\x00\"0\n#\n\x0fsome_label_name\x12\x10some_label_value\x1a\t\t\x00\x00\x00\x00\x00\x00E\xc0\"6\n)\n\x12another_label_name\x12\x13another_label_value\x1a\t\t\x00\x00\x00\x00\x00\x00U@",
@@ -281,6 +289,12 @@ func TestProtoDecoder(t *testing.T) {
 			if err == io.EOF {
 				break
 			}
+			if scenario.fail {
+				if err == nil {
+					t.Fatal("Expected error but got none")
+				}
+				break
+			}
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -352,5 +366,70 @@ func TestDiscriminatorHTTPHeader(t *testing.T) {
 func BenchmarkDiscriminatorHTTPHeader(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		testDiscriminatorHTTPHeader(b)
+	}
+}
+
+func TestExtractSamples(t *testing.T) {
+	var (
+		goodMetricFamily1 = &dto.MetricFamily{
+			Name: proto.String("foo"),
+			Help: proto.String("Help for foo."),
+			Type: dto.MetricType_COUNTER.Enum(),
+			Metric: []*dto.Metric{
+				&dto.Metric{
+					Counter: &dto.Counter{
+						Value: proto.Float64(4711),
+					},
+				},
+			},
+		}
+		goodMetricFamily2 = &dto.MetricFamily{
+			Name: proto.String("bar"),
+			Help: proto.String("Help for bar."),
+			Type: dto.MetricType_GAUGE.Enum(),
+			Metric: []*dto.Metric{
+				&dto.Metric{
+					Gauge: &dto.Gauge{
+						Value: proto.Float64(3.14),
+					},
+				},
+			},
+		}
+		badMetricFamily = &dto.MetricFamily{
+			Name: proto.String("bad"),
+			Help: proto.String("Help for bad."),
+			Type: dto.MetricType(42).Enum(),
+			Metric: []*dto.Metric{
+				&dto.Metric{
+					Gauge: &dto.Gauge{
+						Value: proto.Float64(2.7),
+					},
+				},
+			},
+		}
+
+		opts = &DecodeOptions{
+			Timestamp: 42,
+		}
+	)
+
+	got, err := ExtractSamples(opts, goodMetricFamily1, goodMetricFamily2)
+	if err != nil {
+		t.Error("Unexpected error from ExtractSamples:", err)
+	}
+	want := model.Vector{
+		&model.Sample{Metric: model.Metric{model.MetricNameLabel: "foo"}, Value: 4711, Timestamp: 42},
+		&model.Sample{Metric: model.Metric{model.MetricNameLabel: "bar"}, Value: 3.14, Timestamp: 42},
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("unexpected samples extracted, got: %v, want: %v", got, want)
+	}
+
+	got, err = ExtractSamples(opts, goodMetricFamily1, badMetricFamily, goodMetricFamily2)
+	if err == nil {
+		t.Error("Expected error from ExtractSamples")
+	}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("unexpected samples extracted, got: %v, want: %v", got, want)
 	}
 }

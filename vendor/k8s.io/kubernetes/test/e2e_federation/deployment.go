@@ -36,8 +36,7 @@ import (
 )
 
 const (
-	FederationDeploymentName   = "federation-deployment"
-	FederatedDeploymentTimeout = 120 * time.Second
+	FederationDeploymentName = "federation-deployment"
 )
 
 // Create/delete deployment api objects
@@ -70,11 +69,11 @@ var _ = framework.KubeDescribe("Federation deployments [Feature:Federation]", fu
 	// e2e cases for federated deployment controller
 	Describe("Federated Deployment", func() {
 		var (
-			clusters map[string]*cluster
+			clusters fedframework.ClusterSlice
 		)
 		BeforeEach(func() {
 			fedframework.SkipUnlessFederated(f.ClientSet)
-			clusters, _ = getRegisteredClusters(UserAgentName, f)
+			clusters = f.GetRegisteredClusters()
 		})
 
 		AfterEach(func() {
@@ -141,7 +140,7 @@ func deleteAllDeploymentsOrFail(clientset *fedclientset.Clientset, nsName string
 // verifyCascadingDeletionForDeployment verifies that deployments are deleted
 // from underlying clusters when orphan dependents is false and they are not
 // deleted when orphan dependents is true.
-func verifyCascadingDeletionForDeployment(clientset *fedclientset.Clientset, clusters map[string]*cluster, orphanDependents *bool, nsName string) {
+func verifyCascadingDeletionForDeployment(clientset *fedclientset.Clientset, clusters fedframework.ClusterSlice, orphanDependents *bool, nsName string) {
 	deployment := createDeploymentOrFail(clientset, nsName)
 	deploymentName := deployment.Name
 	// Check subclusters if the deployment was created there.
@@ -167,8 +166,9 @@ func verifyCascadingDeletionForDeployment(clientset *fedclientset.Clientset, clu
 	errMessages := []string{}
 	// deployment should be present in underlying clusters unless orphanDependents is false.
 	shouldExist := orphanDependents == nil || *orphanDependents == true
-	for clusterName, clusterClientset := range clusters {
-		_, err := clusterClientset.Extensions().Deployments(nsName).Get(deploymentName, metav1.GetOptions{})
+	for _, cluster := range clusters {
+		clusterName := cluster.Name
+		_, err := cluster.Extensions().Deployments(nsName).Get(deploymentName, metav1.GetOptions{})
 		if shouldExist && errors.IsNotFound(err) {
 			errMessages = append(errMessages, fmt.Sprintf("unexpected NotFound error for deployment %s in cluster %s, expected deployment to exist", deploymentName, clusterName))
 		} else if !shouldExist && !errors.IsNotFound(err) {
@@ -180,13 +180,13 @@ func verifyCascadingDeletionForDeployment(clientset *fedclientset.Clientset, clu
 	}
 }
 
-func waitForDeploymentOrFail(c *fedclientset.Clientset, namespace string, deploymentName string, clusters map[string]*cluster) {
+func waitForDeploymentOrFail(c *fedclientset.Clientset, namespace string, deploymentName string, clusters fedframework.ClusterSlice) {
 	err := waitForDeployment(c, namespace, deploymentName, clusters)
 	framework.ExpectNoError(err, "Failed to verify deployment %q/%q, err: %v", namespace, deploymentName, err)
 }
 
-func waitForDeployment(c *fedclientset.Clientset, namespace string, deploymentName string, clusters map[string]*cluster) error {
-	err := wait.Poll(10*time.Second, FederatedDeploymentTimeout, func() (bool, error) {
+func waitForDeployment(c *fedclientset.Clientset, namespace string, deploymentName string, clusters fedframework.ClusterSlice) error {
+	err := wait.Poll(10*time.Second, fedframework.FederatedDefaultTestTimeout, func() (bool, error) {
 		fdep, err := c.Deployments(namespace).Get(deploymentName, metav1.GetOptions{})
 		if err != nil {
 			return false, err
@@ -195,12 +195,12 @@ func waitForDeployment(c *fedclientset.Clientset, namespace string, deploymentNa
 		for _, cluster := range clusters {
 			dep, err := cluster.Extensions().Deployments(namespace).Get(deploymentName, metav1.GetOptions{})
 			if err != nil && !errors.IsNotFound(err) {
-				By(fmt.Sprintf("Failed getting deployment: %q/%q/%q, err: %v", cluster.name, namespace, deploymentName, err))
+				By(fmt.Sprintf("Failed getting deployment: %q/%q/%q, err: %v", cluster.Name, namespace, deploymentName, err))
 				return false, err
 			}
 			if err == nil {
 				if !verifyDeployment(fdep, dep) {
-					By(fmt.Sprintf("Deployment meta or spec not match for cluster %q:\n    federation: %v\n    cluster: %v", cluster.name, fdep, dep))
+					By(fmt.Sprintf("Deployment meta or spec not match for cluster %q:\n    federation: %v\n    cluster: %v", cluster.Name, fdep, dep))
 					return false, nil
 				}
 				specReplicas += *dep.Spec.Replicas
@@ -260,7 +260,7 @@ func deleteDeploymentOrFail(clientset *fedclientset.Clientset, nsName string, de
 	}
 
 	// Wait for the deployment to be deleted.
-	err = wait.Poll(5*time.Second, wait.ForeverTestTimeout, func() (bool, error) {
+	err = wait.Poll(10*time.Second, fedframework.FederatedDefaultTestTimeout, func() (bool, error) {
 		_, err := clientset.Extensions().Deployments(nsName).Get(deploymentName, metav1.GetOptions{})
 		if err != nil && errors.IsNotFound(err) {
 			return true, nil
