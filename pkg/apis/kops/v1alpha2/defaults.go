@@ -22,10 +22,7 @@ import (
 )
 
 func addDefaultingFuncs(scheme *runtime.Scheme) error {
-	RegisterDefaults(scheme)
-	return scheme.AddDefaultingFuncs(
-		SetDefaults_ClusterSpec,
-	)
+	return RegisterDefaults(scheme)
 }
 
 func SetDefaults_ClusterSpec(obj *ClusterSpec) {

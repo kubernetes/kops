@@ -113,7 +113,16 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := rootCommand.cobraCommand
 
-	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
+	//cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
+	goflag.CommandLine.VisitAll(func(goflag *goflag.Flag) {
+		switch goflag.Name {
+		case "cloud-provider-gce-lb-src-cidrs":
+			// Skip; this is dragged in by the google cloudprovider dependency
+
+		default:
+			cmd.PersistentFlags().AddGoFlag(goflag)
+		}
+	})
 
 	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.kops.yaml)")
 
