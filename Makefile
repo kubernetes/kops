@@ -358,6 +358,7 @@ copydeps:
 	ln -sf kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
 	ln -sf kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
 	ln -sf kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
+	ln -sf kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
 
 .PHONY: gofmt
 gofmt:
