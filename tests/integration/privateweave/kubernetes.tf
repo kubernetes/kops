@@ -301,7 +301,7 @@ resource "aws_launch_configuration" "bastion-privateweave-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 32
     delete_on_termination = true
   }
 
@@ -322,7 +322,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privateweave-exam
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 64
     delete_on_termination = true
   }
 
@@ -348,7 +348,7 @@ resource "aws_launch_configuration" "nodes-privateweave-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 128
     delete_on_termination = true
   }
 
