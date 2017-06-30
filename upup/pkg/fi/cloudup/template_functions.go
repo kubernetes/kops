@@ -133,16 +133,20 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 
 	argv = append(argv, "/usr/bin/dns-controller")
 
-	if tf.cluster.Spec.DNSController != nil {
-		watchIngress := fi.BoolValue(tf.cluster.Spec.DNSController.WatchIngress)
+	externalDns := tf.cluster.Spec.ExternalDNS
+	if externalDns == nil {
+		externalDns = &api.ExternalDNSConfig{}
+		argv = append(argv, "--watch-ingress=false")
+		glog.Infoln("watch-ingress=false set on DNSController")
+	} else {
+		watchIngress := fi.BoolValue(externalDns.WatchIngress)
 		if watchIngress {
 			glog.Warningln("--watch-ingress=true set on DNSController. ")
-			glog.Warningln("This may cause problems with previously defined services: https://github.com/kubernetes/kops/issues/2496")
+			glog.Warningln("this may cause problems with previously defined services: https://github.com/kubernetes/kops/issues/2496")
+		} else {
+			argv = append(argv, "--watch-ingress=false")
 		}
-	} else {
-		argv = append(argv, "--watch-ingress=false")
 	}
-
 
 	switch fi.CloudProviderID(tf.cluster.Spec.CloudProvider) {
 	case fi.CloudProviderAWS:

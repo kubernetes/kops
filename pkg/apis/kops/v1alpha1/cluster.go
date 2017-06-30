@@ -223,7 +223,7 @@ type ClusterSpec struct {
 	Kubelet               *KubeletConfigSpec           `json:"kubelet,omitempty"`
 	MasterKubelet         *KubeletConfigSpec           `json:"masterKubelet,omitempty"`
 	CloudConfig           *CloudConfiguration          `json:"cloudConfig,omitempty"`
-	DNSController         *DNSControllerSpec           `json:"dnsController,omitempty"`
+	ExternalDNS           *ExternalDNSConfig           `json:"externalDns,omitempty"`
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
@@ -301,7 +301,7 @@ type KubeDNSConfig struct {
 	ServerIP string `json:"serverIP,omitempty"`
 }
 
-type DNSControllerSpec struct {
+type ExternalDNSConfig struct {
 	WatchIngress *bool `json:"watchIngress,omitempty"`
 }
 
