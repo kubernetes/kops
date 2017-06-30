@@ -68,7 +68,11 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 				string(v1.NodeInternalIP),
 				string(v1.NodeHostName),
 				string(v1.NodeExternalIP),
-				string(v1.NodeLegacyHostIP),
+			}
+
+			if b.IsKubernetesLT("1.7") {
+				// NodeLegacyHostIP was removed in 1.7; we add it to prior versions with lowest precedence
+				c.KubeletPreferredAddressTypes = append(c.KubeletPreferredAddressTypes, "LegacyHostIP")
 			}
 		}
 	}

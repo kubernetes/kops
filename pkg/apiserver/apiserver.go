@@ -20,6 +20,7 @@ import (
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/apiserver/pkg/server"
+	genericapiserver "k8s.io/apiserver/pkg/server"
 
 	"k8s.io/kops/pkg/apis/kops"
 	_ "k8s.io/kops/pkg/apis/kops/install"
@@ -81,7 +82,7 @@ func (c *Config) SkipComplete() completedConfig {
 
 // New returns a new instance of APIDiscoveryServer from the given config.
 func (c completedConfig) New() (*APIDiscoveryServer, error) {
-	genericServer, err := c.Config.GenericConfig.SkipComplete().New() // completion is done in Complete, no need for a second time
+	genericServer, err := c.Config.GenericConfig.SkipComplete().New("kops-apiserver", genericapiserver.EmptyDelegate) // completion is done in Complete, no need for a second time
 	if err != nil {
 		return nil, err
 	}
