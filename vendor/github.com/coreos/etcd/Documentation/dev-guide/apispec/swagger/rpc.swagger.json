@@ -636,6 +636,33 @@
         ]
       }
     },
+    "/v3alpha/kv/lease/timetolive": {
+      "post": {
+        "summary": "LeaseTimeToLive retrieves lease information.",
+        "operationId": "LeaseTimeToLive",
+        "responses": {
+          "200": {
+            "description": "",
+            "schema": {
+              "$ref": "#/definitions/etcdserverpbLeaseTimeToLiveResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/etcdserverpbLeaseTimeToLiveRequest"
+            }
+          }
+        ],
+        "tags": [
+          "Lease"
+        ]
+      }
+    },
     "/v3alpha/kv/put": {
       "post": {
         "summary": "Put puts the given key into the key-value store.\nA put request increments the revision of the key-value store\nand generates one event in the event history.",
@@ -951,7 +978,8 @@
       "enum": [
         "EQUAL",
         "GREATER",
-        "LESS"
+        "LESS",
+        "NOT_EQUAL"
       ],
       "default": "EQUAL"
     },
@@ -992,6 +1020,15 @@
         "VALUE"
       ],
       "default": "KEY"
+    },
+    "WatchCreateRequestFilterType": {
+      "type": "string",
+      "enum": [
+        "NOPUT",
+        "NODELETE"
+      ],
+      "default": "NOPUT",
+      "description": "- NOPUT: filter out put event.\n - NODELETE: filter out delete event."
     },
     "authpbPermission": {
       "type": "object",
@@ -1482,7 +1519,7 @@
         "range_end": {
           "type": "string",
           "format": "byte",
-          "description": "range_end is the key following the last key to delete for the range [key, range_end).\nIf range_end is not given, the range is defined to contain only the key argument.\nIf range_end is '\\0', the range is all keys greater than or equal to the key argument."
+          "description": "range_end is the key following the last key to delete for the range [key, range_end).\nIf range_end is not given, the range is defined to contain only the key argument.\nIf range_end is one bit larger than the given key, then the range is all\nthe all keys with the prefix (the given key).\nIf range_end is '\\0', the range is all keys greater than or equal to the key argument."
         }
       }
     },
@@ -1602,6 +1639,52 @@
       "properties": {
         "header": {
           "$ref": "#/definitions/etcdserverpbResponseHeader"
+        }
+      }
+    },
+    "etcdserverpbLeaseTimeToLiveRequest": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID is the lease ID for the lease."
+        },
+        "keys": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "keys is true to query all the keys attached to this lease."
+        }
+      }
+    },
+    "etcdserverpbLeaseTimeToLiveResponse": {
+      "type": "object",
+      "properties": {
+        "ID": {
+          "type": "string",
+          "format": "int64",
+          "description": "ID is the lease ID from the keep alive request."
+        },
+        "TTL": {
+          "type": "string",
+          "format": "int64",
+          "description": "TTL is the remaining TTL in seconds for the lease; the lease will expire in under TTL+1 seconds."
+        },
+        "grantedTTL": {
+          "type": "string",
+          "format": "int64",
+          "description": "GrantedTTL is the initial granted time in seconds upon lease creation/renewal."
+        },
+        "header": {
+          "$ref": "#/definitions/etcdserverpbResponseHeader"
+        },
+        "keys": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "byte"
+          },
+          "description": "Keys is the list of keys attached to this lease."
         }
       }
     },
@@ -1782,6 +1865,26 @@
           "type": "string",
           "format": "int64",
           "description": "limit is a limit on the number of keys returned for the request."
+        },
+        "max_create_revision": {
+          "type": "string",
+          "format": "int64",
+          "description": "max_create_revision is the upper bound for returned key create revisions; all keys with\ngreater create revisions will be filtered away."
+        },
+        "max_mod_revision": {
+          "type": "string",
+          "format": "int64",
+          "description": "max_mod_revision is the upper bound for returned key mod revisions; all keys with\ngreater mod revisions will be filtered away."
+        },
+        "min_create_revision": {
+          "type": "string",
+          "format": "int64",
+          "description": "min_create_revision is the lower bound for returned key create revisions; all keys with\nlesser create trevisions will be filtered away."
+        },
+        "min_mod_revision": {
+          "type": "string",
+          "format": "int64",
+          "description": "min_mod_revision is the lower bound for returned key mod revisions; all keys with\nlesser mod revisions will be filtered away."
         },
         "range_end": {
           "type": "string",
@@ -2004,6 +2107,13 @@
     "etcdserverpbWatchCreateRequest": {
       "type": "object",
       "properties": {
+        "filters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WatchCreateRequestFilterType"
+          },
+          "description": "filters filter the events at server side before it sends back to the watcher."
+        },
         "key": {
           "type": "string",
           "format": "byte",
@@ -2022,7 +2132,7 @@
         "range_end": {
           "type": "string",
           "format": "byte",
-          "description": "range_end is the end of the range [key, range_end) to watch. If range_end is not given,\nonly the key argument is watched. If range_end is equal to '\\0', all keys greater than\nor equal to the key argument are watched."
+          "description": "range_end is the end of the range [key, range_end) to watch. If range_end is not given,\nonly the key argument is watched. If range_end is equal to '\\0', all keys greater than\nor equal to the key argument are watched.\nIf the range_end is one bit larger than the given key,\nthen all keys with the prefix (the given key) will be watched."
         },
         "start_revision": {
           "type": "string",

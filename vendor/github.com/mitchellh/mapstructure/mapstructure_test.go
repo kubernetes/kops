@@ -1,20 +1,30 @@
 package mapstructure
 
 import (
+	"encoding/json"
+	"io"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 )
 
 type Basic struct {
-	Vstring string
-	Vint    int
-	Vuint   uint
-	Vbool   bool
-	Vfloat  float64
-	Vextra  string
-	vsilent bool
-	Vdata   interface{}
+	Vstring     string
+	Vint        int
+	Vuint       uint
+	Vbool       bool
+	Vfloat      float64
+	Vextra      string
+	vsilent     bool
+	Vdata       interface{}
+	VjsonInt    int
+	VjsonFloat  float64
+	VjsonNumber json.Number
+}
+
+type BasicSquash struct {
+	Test Basic `mapstructure:",squash"`
 }
 
 type Embedded struct {
@@ -30,6 +40,17 @@ type EmbeddedPointer struct {
 type EmbeddedSquash struct {
 	Basic   `mapstructure:",squash"`
 	Vunique string
+}
+
+type SliceAlias []string
+
+type EmbeddedSlice struct {
+	SliceAlias `mapstructure:"slice_alias"`
+	Vunique    string
+}
+
+type SquashOnNonStructType struct {
+	InvalidSquashType int `mapstructure:",squash"`
 }
 
 type Map struct {
@@ -51,6 +72,10 @@ type NestedPointer struct {
 	Vbar *Basic
 }
 
+type NilInterface struct {
+	W io.Writer
+}
+
 type Slice struct {
 	Vfoo string
 	Vbar []string
@@ -58,6 +83,10 @@ type Slice struct {
 
 type SliceOfStruct struct {
 	Value []Basic
+}
+
+type Func struct {
+	Foo func() string
 }
 
 type Tagged struct {
@@ -87,6 +116,8 @@ type TypeConversionResult struct {
 	StringToUint       uint
 	StringToBool       bool
 	StringToFloat      float32
+	StringToStrSlice   []string
+	StringToIntSlice   []int
 	SliceToMap         map[string]interface{}
 	MapToSlice         []interface{}
 }
@@ -95,13 +126,16 @@ func TestBasicTypes(t *testing.T) {
 	t.Parallel()
 
 	input := map[string]interface{}{
-		"vstring": "foo",
-		"vint":    42,
-		"Vuint":   42,
-		"vbool":   true,
-		"Vfloat":  42.42,
-		"vsilent": true,
-		"vdata":   42,
+		"vstring":     "foo",
+		"vint":        42,
+		"Vuint":       42,
+		"vbool":       true,
+		"Vfloat":      42.42,
+		"vsilent":     true,
+		"vdata":       42,
+		"vjsonInt":    json.Number("1234"),
+		"vjsonFloat":  json.Number("1234.5"),
+		"vjsonNumber": json.Number("1234.5"),
 	}
 
 	var result Basic
@@ -142,6 +176,18 @@ func TestBasicTypes(t *testing.T) {
 	if result.Vdata != 42 {
 		t.Error("vdata should be valid")
 	}
+
+	if result.VjsonInt != 1234 {
+		t.Errorf("vjsonint value should be 1234: %#v", result.VjsonInt)
+	}
+
+	if result.VjsonFloat != 1234.5 {
+		t.Errorf("vjsonfloat value should be 1234.5: %#v", result.VjsonFloat)
+	}
+
+	if !reflect.DeepEqual(result.VjsonNumber, json.Number("1234.5")) {
+		t.Errorf("vjsonnumber value should be '1234.5': %T, %#v", result.VjsonNumber, result.VjsonNumber)
+	}
 }
 
 func TestBasic_IntWithFloat(t *testing.T) {
@@ -155,6 +201,47 @@ func TestBasic_IntWithFloat(t *testing.T) {
 	err := Decode(input, &result)
 	if err != nil {
 		t.Fatalf("got an err: %s", err)
+	}
+}
+
+func TestBasic_Merge(t *testing.T) {
+	t.Parallel()
+
+	input := map[string]interface{}{
+		"vint": 42,
+	}
+
+	var result Basic
+	result.Vuint = 100
+	err := Decode(input, &result)
+	if err != nil {
+		t.Fatalf("got an err: %s", err)
+	}
+
+	expected := Basic{
+		Vint:  42,
+		Vuint: 100,
+	}
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("bad: %#v", result)
+	}
+}
+
+func TestDecode_BasicSquash(t *testing.T) {
+	t.Parallel()
+
+	input := map[string]interface{}{
+		"vstring": "foo",
+	}
+
+	var result BasicSquash
+	err := Decode(input, &result)
+	if err != nil {
+		t.Fatalf("got an err: %s", err.Error())
+	}
+
+	if result.Test.Vstring != "foo" {
+		t.Errorf("vstring value should be 'foo': %#v", result.Test.Vstring)
 	}
 }
 
@@ -197,8 +284,41 @@ func TestDecode_EmbeddedPointer(t *testing.T) {
 
 	var result EmbeddedPointer
 	err := Decode(input, &result)
-	if err == nil {
-		t.Fatal("should get error")
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	expected := EmbeddedPointer{
+		Basic: &Basic{
+			Vstring: "innerfoo",
+		},
+		Vunique: "bar",
+	}
+	if !reflect.DeepEqual(result, expected) {
+		t.Fatalf("bad: %#v", result)
+	}
+}
+
+func TestDecode_EmbeddedSlice(t *testing.T) {
+	t.Parallel()
+
+	input := map[string]interface{}{
+		"slice_alias": []string{"foo", "bar"},
+		"vunique":     "bar",
+	}
+
+	var result EmbeddedSlice
+	err := Decode(input, &result)
+	if err != nil {
+		t.Fatalf("got an err: %s", err.Error())
+	}
+
+	if !reflect.DeepEqual(result.SliceAlias, SliceAlias([]string{"foo", "bar"})) {
+		t.Errorf("slice value: %#v", result.SliceAlias)
+	}
+
+	if result.Vunique != "bar" {
+		t.Errorf("vunique value should be 'bar': %#v", result.Vunique)
 	}
 }
 
@@ -225,6 +345,22 @@ func TestDecode_EmbeddedSquash(t *testing.T) {
 	}
 }
 
+func TestDecode_SquashOnNonStructType(t *testing.T) {
+	t.Parallel()
+
+	input := map[string]interface{}{
+		"InvalidSquashType": 42,
+	}
+
+	var result SquashOnNonStructType
+	err := Decode(input, &result)
+	if err == nil {
+		t.Fatal("unexpected success decoding invalid squash field type")
+	} else if !strings.Contains(err.Error(), "unsupported type for squash") {
+		t.Fatalf("unexpected error message for invalid squash field type: %s", err)
+	}
+}
+
 func TestDecode_DecodeHook(t *testing.T) {
 	t.Parallel()
 
@@ -234,6 +370,43 @@ func TestDecode_DecodeHook(t *testing.T) {
 
 	decodeHook := func(from reflect.Kind, to reflect.Kind, v interface{}) (interface{}, error) {
 		if from == reflect.String && to != reflect.String {
+			return 5, nil
+		}
+
+		return v, nil
+	}
+
+	var result Basic
+	config := &DecoderConfig{
+		DecodeHook: decodeHook,
+		Result:     &result,
+	}
+
+	decoder, err := NewDecoder(config)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	err = decoder.Decode(input)
+	if err != nil {
+		t.Fatalf("got an err: %s", err)
+	}
+
+	if result.Vint != 5 {
+		t.Errorf("vint should be 5: %#v", result.Vint)
+	}
+}
+
+func TestDecode_DecodeHookType(t *testing.T) {
+	t.Parallel()
+
+	input := map[string]interface{}{
+		"vint": "WHAT",
+	}
+
+	decodeHook := func(from reflect.Type, to reflect.Type, v interface{}) (interface{}, error) {
+		if from.Kind() == reflect.String &&
+			to.Kind() != reflect.String {
 			return 5, nil
 		}
 
@@ -279,6 +452,78 @@ func TestDecode_Nil(t *testing.T) {
 	}
 }
 
+func TestDecode_NilInterfaceHook(t *testing.T) {
+	t.Parallel()
+
+	input := map[string]interface{}{
+		"w": "",
+	}
+
+	decodeHook := func(f, t reflect.Type, v interface{}) (interface{}, error) {
+		if t.String() == "io.Writer" {
+			return nil, nil
+		}
+
+		return v, nil
+	}
+
+	var result NilInterface
+	config := &DecoderConfig{
+		DecodeHook: decodeHook,
+		Result:     &result,
+	}
+
+	decoder, err := NewDecoder(config)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	err = decoder.Decode(input)
+	if err != nil {
+		t.Fatalf("got an err: %s", err)
+	}
+
+	if result.W != nil {
+		t.Errorf("W should be nil: %#v", result.W)
+	}
+}
+
+func TestDecode_FuncHook(t *testing.T) {
+	t.Parallel()
+
+	input := map[string]interface{}{
+		"foo": "baz",
+	}
+
+	decodeHook := func(f, t reflect.Type, v interface{}) (interface{}, error) {
+		if t.Kind() != reflect.Func {
+			return v, nil
+		}
+		val := v.(string)
+		return func() string { return val }, nil
+	}
+
+	var result Func
+	config := &DecoderConfig{
+		DecodeHook: decodeHook,
+		Result:     &result,
+	}
+
+	decoder, err := NewDecoder(config)
+	if err != nil {
+		t.Fatalf("err: %s", err)
+	}
+
+	err = decoder.Decode(input)
+	if err != nil {
+		t.Fatalf("got an err: %s", err)
+	}
+
+	if result.Foo() != "baz" {
+		t.Errorf("Foo call result should be 'baz': %s", result.Foo())
+	}
+}
+
 func TestDecode_NonStruct(t *testing.T) {
 	t.Parallel()
 
@@ -295,6 +540,26 @@ func TestDecode_NonStruct(t *testing.T) {
 
 	if result["foo"] != "bar" {
 		t.Fatal("foo is not bar")
+	}
+}
+
+func TestDecode_StructMatch(t *testing.T) {
+	t.Parallel()
+
+	input := map[string]interface{}{
+		"vbar": Basic{
+			Vstring: "foo",
+		},
+	}
+
+	var result Nested
+	err := Decode(input, &result)
+	if err != nil {
+		t.Fatalf("got an err: %s", err.Error())
+	}
+
+	if result.Vbar.Vstring != "foo" {
+		t.Errorf("bad: %#v", result)
 	}
 }
 
@@ -321,6 +586,8 @@ func TestDecode_TypeConversion(t *testing.T) {
 		"StringToUint":       "42",
 		"StringToBool":       "1",
 		"StringToFloat":      "42.42",
+		"StringToStrSlice":   "A",
+		"StringToIntSlice":   "42",
 		"SliceToMap":         []interface{}{},
 		"MapToSlice":         map[string]interface{}{},
 	}
@@ -359,6 +626,8 @@ func TestDecode_TypeConversion(t *testing.T) {
 		StringToUint:       42,
 		StringToBool:       true,
 		StringToFloat:      42.42,
+		StringToStrSlice:   []string{"A"},
+		StringToIntSlice:   []int{42},
 		SliceToMap:         map[string]interface{}{},
 		MapToSlice:         []interface{}{},
 	}
@@ -457,6 +726,38 @@ func TestMap(t *testing.T) {
 
 	if result.Vother["bar"] != "bar" {
 		t.Errorf("'bar' key should be bar, got: %#v", result.Vother["bar"])
+	}
+}
+
+func TestMapMerge(t *testing.T) {
+	t.Parallel()
+
+	input := map[string]interface{}{
+		"vfoo": "foo",
+		"vother": map[interface{}]interface{}{
+			"foo": "foo",
+			"bar": "bar",
+		},
+	}
+
+	var result Map
+	result.Vother = map[string]string{"hello": "world"}
+	err := Decode(input, &result)
+	if err != nil {
+		t.Fatalf("got an error: %s", err)
+	}
+
+	if result.Vfoo != "foo" {
+		t.Errorf("vfoo value should be 'foo': %#v", result.Vfoo)
+	}
+
+	expected := map[string]string{
+		"foo":   "foo",
+		"bar":   "bar",
+		"hello": "world",
+	}
+	if !reflect.DeepEqual(result.Vother, expected) {
+		t.Errorf("bad: %#v", result.Vother)
 	}
 }
 
@@ -637,6 +938,33 @@ func TestSliceOfStruct(t *testing.T) {
 	}
 }
 
+func TestSliceToMap(t *testing.T) {
+	t.Parallel()
+
+	input := []map[string]interface{}{
+		{
+			"foo": "bar",
+		},
+		{
+			"bar": "baz",
+		},
+	}
+
+	var result map[string]interface{}
+	err := WeakDecode(input, &result)
+	if err != nil {
+		t.Fatalf("got an error: %s", err)
+	}
+
+	expected := map[string]interface{}{
+		"foo": "bar",
+		"bar": "baz",
+	}
+	if !reflect.DeepEqual(result, expected) {
+		t.Errorf("bad: %#v", result)
+	}
+}
+
 func TestInvalidType(t *testing.T) {
 	t.Parallel()
 
@@ -656,6 +984,42 @@ func TestInvalidType(t *testing.T) {
 	}
 
 	if derr.Errors[0] != "'Vstring' expected type 'string', got unconvertible type 'int'" {
+		t.Errorf("got unexpected error: %s", err)
+	}
+
+	inputNegIntUint := map[string]interface{}{
+		"vuint": -42,
+	}
+
+	err = Decode(inputNegIntUint, &result)
+	if err == nil {
+		t.Fatal("error should exist")
+	}
+
+	derr, ok = err.(*Error)
+	if !ok {
+		t.Fatalf("error should be kind of Error, instead: %#v", err)
+	}
+
+	if derr.Errors[0] != "cannot parse 'Vuint', -42 overflows uint" {
+		t.Errorf("got unexpected error: %s", err)
+	}
+
+	inputNegFloatUint := map[string]interface{}{
+		"vuint": -42.0,
+	}
+
+	err = Decode(inputNegFloatUint, &result)
+	if err == nil {
+		t.Fatal("error should exist")
+	}
+
+	derr, ok = err.(*Error)
+	if !ok {
+		t.Fatalf("error should be kind of Error, instead: %#v", err)
+	}
+
+	if derr.Errors[0] != "cannot parse 'Vuint', -42.000000 overflows uint" {
 		t.Errorf("got unexpected error: %s", err)
 	}
 }
@@ -690,7 +1054,8 @@ func TestMetadata(t *testing.T) {
 		t.Fatalf("err: %s", err.Error())
 	}
 
-	expectedKeys := []string{"Vfoo", "Vbar.Vstring", "Vbar.Vuint", "Vbar"}
+	expectedKeys := []string{"Vbar", "Vbar.Vstring", "Vbar.Vuint", "Vfoo"}
+	sort.Strings(md.Keys)
 	if !reflect.DeepEqual(md.Keys, expectedKeys) {
 		t.Fatalf("bad keys: %#v", md.Keys)
 	}

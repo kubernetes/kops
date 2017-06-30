@@ -19,7 +19,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
+	"path/filepath"
 	"reflect"
 	"testing"
 
@@ -40,7 +40,7 @@ func TestNew(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err = %v, want nil", err)
 	}
-	if g := path.Base(w.tail().Name()); g != walName(0, 0) {
+	if g := filepath.Base(w.tail().Name()); g != walName(0, 0) {
 		t.Errorf("name = %+v, want %+v", g, walName(0, 0))
 	}
 	defer w.Close()
@@ -51,7 +51,7 @@ func TestNew(t *testing.T) {
 		t.Fatal(err)
 	}
 	gd := make([]byte, off)
-	f, err := os.Open(path.Join(p, path.Base(w.tail().Name())))
+	f, err := os.Open(filepath.Join(p, filepath.Base(w.tail().Name())))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,7 +90,7 @@ func TestNewForInitedDir(t *testing.T) {
 	}
 	defer os.RemoveAll(p)
 
-	os.Create(path.Join(p, walName(0, 0)))
+	os.Create(filepath.Join(p, walName(0, 0)))
 	if _, err = Create(p, nil); err == nil || err != os.ErrExist {
 		t.Errorf("err = %v, want %v", err, os.ErrExist)
 	}
@@ -103,7 +103,7 @@ func TestOpenAtIndex(t *testing.T) {
 	}
 	defer os.RemoveAll(dir)
 
-	f, err := os.Create(path.Join(dir, walName(0, 0)))
+	f, err := os.Create(filepath.Join(dir, walName(0, 0)))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -113,7 +113,7 @@ func TestOpenAtIndex(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err = %v, want nil", err)
 	}
-	if g := path.Base(w.tail().Name()); g != walName(0, 0) {
+	if g := filepath.Base(w.tail().Name()); g != walName(0, 0) {
 		t.Errorf("name = %+v, want %+v", g, walName(0, 0))
 	}
 	if w.seq() != 0 {
@@ -122,7 +122,7 @@ func TestOpenAtIndex(t *testing.T) {
 	w.Close()
 
 	wname := walName(2, 10)
-	f, err = os.Create(path.Join(dir, wname))
+	f, err = os.Create(filepath.Join(dir, wname))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -132,7 +132,7 @@ func TestOpenAtIndex(t *testing.T) {
 	if err != nil {
 		t.Fatalf("err = %v, want nil", err)
 	}
-	if g := path.Base(w.tail().Name()); g != wname {
+	if g := filepath.Base(w.tail().Name()); g != wname {
 		t.Errorf("name = %+v, want %+v", g, wname)
 	}
 	if w.seq() != 2 {
@@ -172,7 +172,7 @@ func TestCut(t *testing.T) {
 		t.Fatal(err)
 	}
 	wname := walName(1, 1)
-	if g := path.Base(w.tail().Name()); g != wname {
+	if g := filepath.Base(w.tail().Name()); g != wname {
 		t.Errorf("name = %s, want %s", g, wname)
 	}
 
@@ -188,14 +188,14 @@ func TestCut(t *testing.T) {
 		t.Fatal(err)
 	}
 	wname = walName(2, 2)
-	if g := path.Base(w.tail().Name()); g != wname {
+	if g := filepath.Base(w.tail().Name()); g != wname {
 		t.Errorf("name = %s, want %s", g, wname)
 	}
 
 	// check the state in the last WAL
 	// We do check before closing the WAL to ensure that Cut syncs the data
 	// into the disk.
-	f, err := os.Open(path.Join(p, wname))
+	f, err := os.Open(filepath.Join(p, wname))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -210,6 +210,69 @@ func TestCut(t *testing.T) {
 	}
 	if !reflect.DeepEqual(gst, state) {
 		t.Errorf("state = %+v, want %+v", gst, state)
+	}
+}
+
+func TestSaveWithCut(t *testing.T) {
+	p, err := ioutil.TempDir(os.TempDir(), "waltest")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(p)
+
+	w, err := Create(p, []byte("metadata"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	state := raftpb.HardState{Term: 1}
+	if err = w.Save(state, nil); err != nil {
+		t.Fatal(err)
+	}
+	bigData := make([]byte, 500)
+	strdata := "Hello World!!"
+	copy(bigData, strdata)
+	// set a lower value for SegmentSizeBytes, else the test takes too long to complete
+	restoreLater := SegmentSizeBytes
+	const EntrySize int = 500
+	SegmentSizeBytes = 2 * 1024
+	defer func() { SegmentSizeBytes = restoreLater }()
+	var index uint64 = 0
+	for totalSize := 0; totalSize < int(SegmentSizeBytes); totalSize += EntrySize {
+		ents := []raftpb.Entry{{Index: index, Term: 1, Data: bigData}}
+		if err = w.Save(state, ents); err != nil {
+			t.Fatal(err)
+		}
+		index++
+	}
+
+	w.Close()
+
+	neww, err := Open(p, walpb.Snapshot{})
+	if err != nil {
+		t.Fatalf("err = %v, want nil", err)
+	}
+	defer neww.Close()
+	wname := walName(1, index)
+	if g := filepath.Base(neww.tail().Name()); g != wname {
+		t.Errorf("name = %s, want %s", g, wname)
+	}
+
+	_, newhardstate, entries, err := neww.ReadAll()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(newhardstate, state) {
+		t.Errorf("Hard State = %+v, want %+v", newhardstate, state)
+	}
+	if len(entries) != int(SegmentSizeBytes/int64(EntrySize)) {
+		t.Errorf("Number of entries = %d, expected = %d", len(entries), int(SegmentSizeBytes/int64(EntrySize)))
+	}
+	for _, oneent := range entries {
+		if !bytes.Equal(oneent.Data, bigData) {
+			t.Errorf("the saved data does not match at Index %d : found: %s , want :%s", oneent.Index, oneent.Data, bigData)
+		}
 	}
 }
 
@@ -353,7 +416,7 @@ func TestRecoverAfterCut(t *testing.T) {
 	}
 	md.Close()
 
-	if err := os.Remove(path.Join(p, walName(4, 4))); err != nil {
+	if err := os.Remove(filepath.Join(p, walName(4, 4))); err != nil {
 		t.Fatal(err)
 	}
 
@@ -507,7 +570,7 @@ func TestReleaseLockTo(t *testing.T) {
 	}
 	for i, l := range w.locks {
 		var lockIndex uint64
-		_, lockIndex, err = parseWalName(path.Base(l.Name()))
+		_, lockIndex, err = parseWalName(filepath.Base(l.Name()))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -525,7 +588,7 @@ func TestReleaseLockTo(t *testing.T) {
 	if len(w.locks) != 1 {
 		t.Errorf("len(w.locks) = %d, want %d", len(w.locks), 1)
 	}
-	_, lockIndex, err := parseWalName(path.Base(w.locks[0].Name()))
+	_, lockIndex, err := parseWalName(filepath.Base(w.locks[0].Name()))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -610,11 +673,11 @@ func TestRestartCreateWal(t *testing.T) {
 	defer os.RemoveAll(p)
 
 	// make temporary directory so it looks like initialization is interrupted
-	tmpdir := path.Clean(p) + ".tmp"
+	tmpdir := filepath.Clean(p) + ".tmp"
 	if err = os.Mkdir(tmpdir, fileutil.PrivateDirMode); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = os.OpenFile(path.Join(tmpdir, "test"), os.O_WRONLY|os.O_CREATE, fileutil.PrivateFileMode); err != nil {
+	if _, err = os.OpenFile(filepath.Join(tmpdir, "test"), os.O_WRONLY|os.O_CREATE, fileutil.PrivateFileMode); err != nil {
 		t.Fatal(err)
 	}
 
@@ -666,7 +729,7 @@ func TestOpenOnTornWrite(t *testing.T) {
 		}
 	}
 
-	fn := path.Join(p, path.Base(w.tail().Name()))
+	fn := filepath.Join(p, filepath.Base(w.tail().Name()))
 	w.Close()
 
 	// clobber some entry with 0's to simulate a torn write

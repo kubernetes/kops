@@ -1,0 +1,194 @@
+swagger: "2.0"
+info: <
+  title: "Google Example Library API"
+  version: "v1"
+  description: "A simple Google Example Library API."
+>
+host: "library-example.googleapis.com"
+paths: <
+  path: <
+    name: "/v1/{sharedParameter}/pets"
+    value: <
+      post: <
+        operation_id: "simpleMethod"
+        parameters: <
+          parameter: <
+            body_parameter: <
+              name: "myBodyRef"
+              in: "body"
+              schema: <
+                properties: <
+                  additional_properties: <
+                    name: "myStringA"
+                    value: <
+                      type: <
+                        value: "string"
+                      >
+                    >
+                  >
+                >
+              >
+            >
+          >
+        >
+        parameters: <
+          parameter: <
+            non_body_parameter: <
+              query_parameter_sub_schema: <
+                required: true
+                in: "query"
+                description: "New description"
+                name: "paramToOverride"
+                type: "string"
+              >
+            >
+          >
+        >
+        parameters: <
+          parameter: <
+            non_body_parameter: <
+              query_parameter_sub_schema: <
+                required: true
+                in: "query"
+                description: "test"
+                name: "paramAtSwaggerScope"
+                type: "integer"
+                format: "int32"
+              >
+            >
+          >
+        >
+        responses: <
+          response_code: <
+            name: "default"
+            value: <
+              response: <
+                description: "successful operation"
+                schema: <
+                  schema: <
+                    properties: <
+                      additional_properties: <
+                        name: "myStringA"
+                        value: <
+                          type: <
+                            value: "string"
+                          >
+                        >
+                      >
+                    >
+                  >
+                >
+              >
+            >
+          >
+        >
+      >
+      parameters: <
+        parameter: <
+          non_body_parameter: <
+            path_parameter_sub_schema: <
+              required: true
+              in: "path"
+              description: "Shared parameter"
+              name: "sharedParameter"
+              type: "string"
+            >
+          >
+        >
+      >
+      parameters: <
+        parameter: <
+          non_body_parameter: <
+            query_parameter_sub_schema: <
+              required: true
+              in: "query"
+              description: "Description to override"
+              name: "paramToOverride"
+              type: "string"
+            >
+          >
+        >
+      >
+    >
+  >
+>
+definitions: <
+  additional_properties: <
+    name: "SimpleDef"
+    value: <
+      properties: <
+        additional_properties: <
+          name: "myStringA"
+          value: <
+            type: <
+              value: "string"
+            >
+          >
+        >
+      >
+    >
+  >
+>
+parameters: <
+  additional_properties: <
+    name: "paramAtSwaggerScope"
+    value: <
+      non_body_parameter: <
+        query_parameter_sub_schema: <
+          required: true
+          in: "query"
+          description: "test"
+          name: "paramAtSwaggerScope"
+          type: "integer"
+          format: "int32"
+        >
+      >
+    >
+  >
+>
+vendor_extension: <
+  name: "x-samplecompanyone-book"
+  value: <
+    value: <
+      type_url: "type.googleapis.com/samplecompanyone.SampleCompanyOneBook"
+      value: "\010{\020\347\007"
+    >
+    yaml: "code: 123\nmessage: 999\n"
+  >
+>
+vendor_extension: <
+  name: "x-samplecompanyone-shelve"
+  value: <
+    value: <
+      type_url: "type.googleapis.com/samplecompanyone.SampleCompanyOneShelve"
+      value: "\010{\020\347\007"
+    >
+    yaml: "foo1: 123\nbar: 999\n"
+  >
+>
+vendor_extension: <
+  name: "x-samplecompanytwo-book"
+  value: <
+    value: <
+      type_url: "type.googleapis.com/samplecompanytwo.SampleCompanyTwoBook"
+      value: "\010{\020\347\007"
+    >
+    yaml: "code: 123\nmessage: 999\n"
+  >
+>
+vendor_extension: <
+  name: "x-samplecompanytwo-shelve"
+  value: <
+    value: <
+      type_url: "type.googleapis.com/samplecompanytwo.SampleCompanyTwoShelve"
+      value: "\010{\020\347\007"
+    >
+    yaml: "foo1: 123\nbar: 999\n"
+  >
+>
+vendor_extension: <
+  name: "x-unhandled"
+  value: <
+    yaml: "code: 123\nmessage: 999\n"
+  >
+>

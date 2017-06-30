@@ -14,16 +14,16 @@
 package prometheus_test
 
 import (
-	"flag"
+	"bytes"
 	"fmt"
 	"math"
 	"net/http"
-	"os"
 	"runtime"
 	"sort"
-	"time"
+	"strings"
 
 	dto "github.com/prometheus/client_model/go"
+	"github.com/prometheus/common/expfmt"
 
 	"github.com/golang/protobuf/proto"
 
@@ -48,16 +48,12 @@ func ExampleGauge() {
 }
 
 func ExampleGaugeVec() {
-	binaryVersion := flag.String("binary_version", "debug", "Version of the binary: debug, canary, production.")
-	flag.Parse()
-
 	opsQueued := prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Namespace:   "our_company",
-			Subsystem:   "blob_storage",
-			Name:        "ops_queued",
-			Help:        "Number of blob storage operations waiting to be processed, partitioned by user and type.",
-			ConstLabels: prometheus.Labels{"binary_version": *binaryVersion},
+			Namespace: "our_company",
+			Subsystem: "blob_storage",
+			Name:      "ops_queued",
+			Help:      "Number of blob storage operations waiting to be processed, partitioned by user and type.",
 		},
 		[]string{
 			// Which user has requested the operation?
@@ -117,7 +113,7 @@ func ExampleCounter() {
 	pushComplete := make(chan struct{})
 	// TODO: Start a goroutine that performs repository pushes and reports
 	// each completion via the channel.
-	for _ = range pushComplete {
+	for range pushComplete {
 		pushCounter.Inc()
 	}
 	// Output:
@@ -125,14 +121,10 @@ func ExampleCounter() {
 }
 
 func ExampleCounterVec() {
-	binaryVersion := flag.String("environment", "test", "Execution environment: test, staging, production.")
-	flag.Parse()
-
 	httpReqs := prometheus.NewCounterVec(
 		prometheus.CounterOpts{
-			Name:        "http_requests_total",
-			Help:        "How many HTTP requests processed, partitioned by status code and HTTP method.",
-			ConstLabels: prometheus.Labels{"env": *binaryVersion},
+			Name: "http_requests_total",
+			Help: "How many HTTP requests processed, partitioned by status code and HTTP method.",
 		},
 		[]string{"code", "method"},
 	)
@@ -177,8 +169,8 @@ func ExampleInstrumentHandler() {
 
 func ExampleLabelPairSorter() {
 	labelPairs := []*dto.LabelPair{
-		&dto.LabelPair{Name: proto.String("status"), Value: proto.String("404")},
-		&dto.LabelPair{Name: proto.String("method"), Value: proto.String("get")},
+		{Name: proto.String("status"), Value: proto.String("404")},
+		{Name: proto.String("method"), Value: proto.String("get")},
 	}
 
 	sort.Sort(prometheus.LabelPairSorter(labelPairs))
@@ -342,8 +334,9 @@ func ExampleRegister() {
 
 func ExampleSummary() {
 	temps := prometheus.NewSummary(prometheus.SummaryOpts{
-		Name: "pond_temperature_celsius",
-		Help: "The temperature of the frog pond.", // Sorry, we can't measure how badly it smells.
+		Name:       "pond_temperature_celsius",
+		Help:       "The temperature of the frog pond.",
+		Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 	})
 
 	// Simulate some observations.
@@ -380,8 +373,9 @@ func ExampleSummary() {
 func ExampleSummaryVec() {
 	temps := prometheus.NewSummaryVec(
 		prometheus.SummaryOpts{
-			Name: "pond_temperature_celsius",
-			Help: "The temperature of the frog pond.", // Sorry, we can't measure how badly it smells.
+			Name:       "pond_temperature_celsius",
+			Help:       "The temperature of the frog pond.",
+			Objectives: map[float64]float64{0.5: 0.05, 0.9: 0.01, 0.99: 0.001},
 		},
 		[]string{"species"},
 	)
@@ -396,89 +390,90 @@ func ExampleSummaryVec() {
 	temps.WithLabelValues("leiopelma-hochstetteri")
 
 	// Just for demonstration, let's check the state of the summary vector
-	// by (ab)using its Collect method and the Write method of its elements
-	// (which is usually only used by Prometheus internally - code like the
-	// following will never appear in your own code).
-	metricChan := make(chan prometheus.Metric)
-	go func() {
-		defer close(metricChan)
-		temps.Collect(metricChan)
-	}()
+	// by registering it with a custom registry and then let it collect the
+	// metrics.
+	reg := prometheus.NewRegistry()
+	reg.MustRegister(temps)
 
-	metricStrings := []string{}
-	for metric := range metricChan {
-		dtoMetric := &dto.Metric{}
-		metric.Write(dtoMetric)
-		metricStrings = append(metricStrings, proto.MarshalTextString(dtoMetric))
+	metricFamilies, err := reg.Gather()
+	if err != nil || len(metricFamilies) != 1 {
+		panic("unexpected behavior of custom test registry")
 	}
-	sort.Strings(metricStrings) // For reproducible print order.
-	fmt.Println(metricStrings)
+	fmt.Println(proto.MarshalTextString(metricFamilies[0]))
 
 	// Output:
-	// [label: <
-	//   name: "species"
-	//   value: "leiopelma-hochstetteri"
-	// >
-	// summary: <
-	//   sample_count: 0
-	//   sample_sum: 0
-	//   quantile: <
-	//     quantile: 0.5
-	//     value: nan
+	// name: "pond_temperature_celsius"
+	// help: "The temperature of the frog pond."
+	// type: SUMMARY
+	// metric: <
+	//   label: <
+	//     name: "species"
+	//     value: "leiopelma-hochstetteri"
 	//   >
-	//   quantile: <
-	//     quantile: 0.9
-	//     value: nan
-	//   >
-	//   quantile: <
-	//     quantile: 0.99
-	//     value: nan
-	//   >
-	// >
-	//  label: <
-	//   name: "species"
-	//   value: "lithobates-catesbeianus"
-	// >
-	// summary: <
-	//   sample_count: 1000
-	//   sample_sum: 31956.100000000017
-	//   quantile: <
-	//     quantile: 0.5
-	//     value: 32.4
-	//   >
-	//   quantile: <
-	//     quantile: 0.9
-	//     value: 41.4
-	//   >
-	//   quantile: <
-	//     quantile: 0.99
-	//     value: 41.9
+	//   summary: <
+	//     sample_count: 0
+	//     sample_sum: 0
+	//     quantile: <
+	//       quantile: 0.5
+	//       value: nan
+	//     >
+	//     quantile: <
+	//       quantile: 0.9
+	//       value: nan
+	//     >
+	//     quantile: <
+	//       quantile: 0.99
+	//       value: nan
+	//     >
 	//   >
 	// >
-	//  label: <
-	//   name: "species"
-	//   value: "litoria-caerulea"
+	// metric: <
+	//   label: <
+	//     name: "species"
+	//     value: "lithobates-catesbeianus"
+	//   >
+	//   summary: <
+	//     sample_count: 1000
+	//     sample_sum: 31956.100000000017
+	//     quantile: <
+	//       quantile: 0.5
+	//       value: 32.4
+	//     >
+	//     quantile: <
+	//       quantile: 0.9
+	//       value: 41.4
+	//     >
+	//     quantile: <
+	//       quantile: 0.99
+	//       value: 41.9
+	//     >
+	//   >
 	// >
-	// summary: <
-	//   sample_count: 1000
-	//   sample_sum: 29969.50000000001
-	//   quantile: <
-	//     quantile: 0.5
-	//     value: 31.1
+	// metric: <
+	//   label: <
+	//     name: "species"
+	//     value: "litoria-caerulea"
 	//   >
-	//   quantile: <
-	//     quantile: 0.9
-	//     value: 41.3
-	//   >
-	//   quantile: <
-	//     quantile: 0.99
-	//     value: 41.9
+	//   summary: <
+	//     sample_count: 1000
+	//     sample_sum: 29969.50000000001
+	//     quantile: <
+	//       quantile: 0.5
+	//       value: 31.1
+	//     >
+	//     quantile: <
+	//       quantile: 0.9
+	//       value: 41.3
+	//     >
+	//     quantile: <
+	//       quantile: 0.99
+	//       value: 41.9
+	//     >
 	//   >
 	// >
-	// ]
 }
 
-func ExampleConstSummary() {
+func ExampleNewConstSummary() {
 	desc := prometheus.NewDesc(
 		"http_request_duration_seconds",
 		"A summary of the HTTP request durations.",
@@ -574,7 +569,7 @@ func ExampleHistogram() {
 	// >
 }
 
-func ExampleConstHistogram() {
+func ExampleNewConstHistogram() {
 	desc := prometheus.NewDesc(
 		"http_request_duration_seconds",
 		"A histogram of the HTTP request durations.",
@@ -632,18 +627,128 @@ func ExampleConstHistogram() {
 	// >
 }
 
-func ExamplePushCollectors() {
-	hostname, _ := os.Hostname()
-	completionTime := prometheus.NewGauge(prometheus.GaugeOpts{
-		Name: "db_backup_last_completion_time",
-		Help: "The timestamp of the last succesful completion of a DB backup.",
+func ExampleAlreadyRegisteredError() {
+	reqCounter := prometheus.NewCounter(prometheus.CounterOpts{
+		Name: "requests_total",
+		Help: "The total number of requests served.",
 	})
-	completionTime.Set(float64(time.Now().Unix()))
-	if err := prometheus.PushCollectors(
-		"db_backup", hostname,
-		"http://pushgateway:9091",
-		completionTime,
-	); err != nil {
-		fmt.Println("Could not push completion time to Pushgateway:", err)
+	if err := prometheus.Register(reqCounter); err != nil {
+		if are, ok := err.(prometheus.AlreadyRegisteredError); ok {
+			// A counter for that metric has been registered before.
+			// Use the old counter from now on.
+			reqCounter = are.ExistingCollector.(prometheus.Counter)
+		} else {
+			// Something else went wrong!
+			panic(err)
+		}
 	}
+	reqCounter.Inc()
+}
+
+func ExampleGatherers() {
+	reg := prometheus.NewRegistry()
+	temp := prometheus.NewGaugeVec(
+		prometheus.GaugeOpts{
+			Name: "temperature_kelvin",
+			Help: "Temperature in Kelvin.",
+		},
+		[]string{"location"},
+	)
+	reg.MustRegister(temp)
+	temp.WithLabelValues("outside").Set(273.14)
+	temp.WithLabelValues("inside").Set(298.44)
+
+	var parser expfmt.TextParser
+
+	text := `
+# TYPE humidity_percent gauge
+# HELP humidity_percent Humidity in %.
+humidity_percent{location="outside"} 45.4
+humidity_percent{location="inside"} 33.2
+# TYPE temperature_kelvin gauge
+# HELP temperature_kelvin Temperature in Kelvin.
+temperature_kelvin{location="somewhere else"} 4.5
+`
+
+	parseText := func() ([]*dto.MetricFamily, error) {
+		parsed, err := parser.TextToMetricFamilies(strings.NewReader(text))
+		if err != nil {
+			return nil, err
+		}
+		var result []*dto.MetricFamily
+		for _, mf := range parsed {
+			result = append(result, mf)
+		}
+		return result, nil
+	}
+
+	gatherers := prometheus.Gatherers{
+		reg,
+		prometheus.GathererFunc(parseText),
+	}
+
+	gathering, err := gatherers.Gather()
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	out := &bytes.Buffer{}
+	for _, mf := range gathering {
+		if _, err := expfmt.MetricFamilyToText(out, mf); err != nil {
+			panic(err)
+		}
+	}
+	fmt.Print(out.String())
+	fmt.Println("----------")
+
+	// Note how the temperature_kelvin metric family has been merged from
+	// different sources. Now try
+	text = `
+# TYPE humidity_percent gauge
+# HELP humidity_percent Humidity in %.
+humidity_percent{location="outside"} 45.4
+humidity_percent{location="inside"} 33.2
+# TYPE temperature_kelvin gauge
+# HELP temperature_kelvin Temperature in Kelvin.
+# Duplicate metric:
+temperature_kelvin{location="outside"} 265.3
+ # Wrong labels:
+temperature_kelvin 4.5
+`
+
+	gathering, err = gatherers.Gather()
+	if err != nil {
+		fmt.Println(err)
+	}
+	// Note that still as many metrics as possible are returned:
+	out.Reset()
+	for _, mf := range gathering {
+		if _, err := expfmt.MetricFamilyToText(out, mf); err != nil {
+			panic(err)
+		}
+	}
+	fmt.Print(out.String())
+
+	// Output:
+	// # HELP humidity_percent Humidity in %.
+	// # TYPE humidity_percent gauge
+	// humidity_percent{location="inside"} 33.2
+	// humidity_percent{location="outside"} 45.4
+	// # HELP temperature_kelvin Temperature in Kelvin.
+	// # TYPE temperature_kelvin gauge
+	// temperature_kelvin{location="inside"} 298.44
+	// temperature_kelvin{location="outside"} 273.14
+	// temperature_kelvin{location="somewhere else"} 4.5
+	// ----------
+	// 2 error(s) occurred:
+	// * collected metric temperature_kelvin label:<name:"location" value:"outside" > gauge:<value:265.3 >  was collected before with the same name and label values
+	// * collected metric temperature_kelvin gauge:<value:4.5 >  has label dimensions inconsistent with previously collected metrics in the same metric family
+	// # HELP humidity_percent Humidity in %.
+	// # TYPE humidity_percent gauge
+	// humidity_percent{location="inside"} 33.2
+	// humidity_percent{location="outside"} 45.4
+	// # HELP temperature_kelvin Temperature in Kelvin.
+	// # TYPE temperature_kelvin gauge
+	// temperature_kelvin{location="inside"} 298.44
+	// temperature_kelvin{location="outside"} 273.14
 }

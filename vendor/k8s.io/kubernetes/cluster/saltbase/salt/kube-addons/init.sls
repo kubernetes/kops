@@ -47,6 +47,18 @@ addon-dir-create:
     - file_mode: 644
 {% endif %}
 
+{% if pillar.get('enable_cluster_monitoring', '').lower() == 'stackdriver' %}
+/etc/kubernetes/addons/cluster-monitoring/stackdriver:
+  file.recurse:
+    - source: salt://kube-addons/cluster-monitoring/stackdriver
+    - include_pat: E@(^.+\.yaml$|^.+\.json$)
+    - template: jinja
+    - user: root
+    - group: root
+    - dir_mode: 755
+    - file_mode: 644
+{% endif %}
+
 {% if pillar.get('enable_cluster_monitoring', '').lower() == 'standalone' %}
 /etc/kubernetes/addons/cluster-monitoring/standalone:
   file.recurse:
@@ -159,6 +171,17 @@ addon-dir-create:
 /etc/kubernetes/addons/fluentd-{{ pillar.get('logging_destination') }}:
   file.recurse:
     - source: salt://kube-addons/fluentd-{{ pillar.get('logging_destination') }}
+    - include_pat: E@^.+\.yaml$
+    - user: root
+    - group: root
+    - dir_mode: 755
+    - file_mode: 644
+{% endif %}
+
+{% if pillar.get('enable_metadata_proxy', '').lower() == 'true' %}
+/etc/kubernetes/addons/metadata-proxy/gce:
+  file.recurse:
+    - source: salt://kube-addons/metadata-proxy/gce
     - include_pat: E@^.+\.yaml$
     - user: root
     - group: root

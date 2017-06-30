@@ -81,7 +81,7 @@ type Blah struct {
 	} else {
 		// Dear reader, I apologize for making the worst change
 		// detection test in the history of ever.
-		if e, a := "snippet_writer_test.go:78", err.Error(); !strings.Contains(a, e) {
+		if e, a := "snippet_writer_test.go", err.Error(); !strings.Contains(a, e) {
 			t.Errorf("Expected %q but didn't find it in %q", e, a)
 		}
 	}

@@ -1,4 +1,4 @@
-# Copyright (c) 2014-2016 VMware, Inc. All Rights Reserved.
+# Copyright (c) 2014-2017 VMware, Inc. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,6 +14,29 @@
 
 require "nokogiri"
 require "test/unit"
+
+$namespaces = %w(vim25)
+
+def valid_ns?(t)
+  $namespaces.include?(t)
+end
+
+def init_type(io, name, kind)
+  t = "reflect.TypeOf((*#{kind})(nil)).Elem()"
+
+  io.print "func init() {\n"
+
+  if $target == "vim25"
+    io.print "t[\"#{name}\"] = #{t}\n"
+  else
+    unless name.start_with? "Base"
+      name = "#{$target}:#{name}"
+    end
+    io.print "types.Add(\"#{name}\", #{t})\n"
+  end
+
+  io.print "}\n\n"
+end
 
 class Peek
   class Type
@@ -70,8 +93,8 @@ class Peek
   def self.dump_interfaces(io)
     types.keys.sort.each do |name|
       next unless base?(name)
-
-      types[name].klass.dump_interface(io, name)
+      klass = types[name].klass
+      klass.dump_interface(io, name) if klass
     end
   end
 end
@@ -139,17 +162,20 @@ class Simple
     return n
   end
 
+  def ns(t = self.type)
+    t.split(":", 2)[0]
+  end
+
   def vim_type?
-    ns, _ = self.type.split(":", 2)
-    ns == "vim25" or ns == "internalvim25" or ns == "internalreflect"
+    valid_ns? ns
   end
 
   def vim_type(t = self.type)
-    ns, t = t.split(":", 2)
-    if ns != "vim25" and ns != "internalvim25" and ns != "internalreflect"
+    ns, kind = t.split(":", 2)
+    if ! valid_ns? ns
         raise
     end
-    t
+    kind
   end
 
   def base_type?
@@ -199,7 +225,11 @@ class Simple
           self.need_omitempty = false
         end
       when "anyType"
-        t = "AnyType"
+        pkg = ""
+        if $target != "vim25"
+          pkg = "types."
+        end
+        t = "#{pkg}AnyType"
       when "byte"
       when "double"
         t = "float64"
@@ -215,10 +245,17 @@ class Simple
         raise "unknown type: %s" % t
       end
     else
+      pkg = ""
+      if $target != self.ns
+        pkg = "types."
+      end
+
       t = vim_type
+
       if base_type?
-        prefix += "Base"
+        prefix += "#{pkg}Base"
       else
+        t = pkg + t
         prefix += "*" if !slice? && !enum_type? && optional?
       end
     end
@@ -297,9 +334,7 @@ class Element < Simple
 
   def dump_init(io)
     if has_type?
-      io.print "func init() {\n"
-      io.print "t[\"%s\"] = reflect.TypeOf((*%s)(nil)).Elem()\n" % [name, name]
-      io.print "}\n\n"
+      init_type io, name, name
     end
   end
 
@@ -347,9 +382,7 @@ class SimpleType < Simple
   end
 
   def dump_init(io)
-    io.print "func init() {\n"
-    io.print "t[\"%s\"] = reflect.TypeOf((*%s)(nil)).Elem()\n" % [name, name]
-    io.print "}\n\n"
+    init_type io, name, name
   end
 
   def peek
@@ -381,7 +414,7 @@ class ComplexType < Simple
       base = extension["base"]
       assert_not_nil base
 
-      vim_type(base)
+      base
     end
 
     def dump(io)
@@ -393,7 +426,7 @@ class ComplexType < Simple
     end
 
     def peek
-      Sequence.new(@node).peek(base)
+      Sequence.new(@node).peek(vim_type(base))
     end
   end
 
@@ -411,8 +444,15 @@ class ComplexType < Simple
 
     def dump(io, base = nil)
       return unless elements = sequence
+      if base != nil
+        kind = vim_type(base)
 
-      io.print "%s\n\n" % base
+        pkg = ""
+        if $target != ns(base)
+          pkg = "types."
+        end
+        io.print "#{pkg}#{kind}\n\n"
+      end
 
       elements.each do |e|
         e.dump_field(io)
@@ -425,9 +465,7 @@ class ComplexType < Simple
       io.print "type Base%s interface {\n" % name
       io.print "%s\n" % method
       io.print "}\n\n"
-      io.print "func init() {\n"
-      io.print "t[\"Base%s\"] = reflect.TypeOf((*%s)(nil)).Elem()\n" % [name, name]
-      io.print "}\n\n"
+      init_type io, "Base#{name}", name
     end
 
     def peek(base = nil)
@@ -468,9 +506,7 @@ class ComplexType < Simple
   end
 
   def dump_init(io)
-    io.print "func init() {\n"
-    io.print "t[\"%s\"] = reflect.TypeOf((*%s)(nil)).Elem()\n" % [name, name]
-    io.print "}\n\n"
+    init_type io, name, name
   end
 
   def dump(io)
@@ -488,12 +524,12 @@ end
 class Schema
   include Test::Unit::Assertions
 
-  def initialize(xml, parent = nil)
-    @xml = Nokogiri::XML.parse(xml)
-  end
+  attr_accessor :namespace
 
-  def targetNamespace
-    @xml.root["targetNamespace"]
+  def initialize(xml)
+    @xml = Nokogiri::XML.parse(xml)
+    @namespace = @xml.root.attr("targetNamespace").split(":", 2)[1]
+    @xml
   end
 
   # We have some assumptions about structure, make sure they hold.
@@ -578,6 +614,10 @@ class Schema
   def types
     return to_enum(:types) unless block_given?
 
+    if $target != self.namespace
+      return
+    end
+
     imports.each do |i|
       i.types do |t|
         yield t
@@ -599,7 +639,14 @@ class Schema
         when "include", "import"
           next
         when "element"
-          yield Element.new(n)
+          e = Element.new(n)
+          if e.has_type? && e.vim_type?
+            if e.ns == $target
+              yield e
+            end
+          else
+            yield e
+          end
         when "simpleType"
           yield SimpleType.new(n)
         when "complexType"
@@ -646,7 +693,7 @@ class Operation
 
   def remove_ns(x)
     ns, x = x.split(":", 2)
-    if ns != "vim25" and ns != "internalvim25" and ns != "internalreflect"
+    if ! valid_ns? ns
         raise
     end
     x
@@ -654,7 +701,7 @@ class Operation
 
   def keep_ns(x)
     ns, x = x.split(":", 2)
-    if ns != "vim25" and ns != "internalvim25" and ns != "internalreflect"
+    if ! valid_ns? ns
         raise
     end
     ns
@@ -730,6 +777,11 @@ class WSDL
 
   def initialize(xml)
     @xml = Nokogiri::XML.parse(xml)
+    $target = @xml.root["targetNamespace"].split(":", 2)[1]
+
+    unless $namespaces.include? $target
+      $namespaces.push $target
+    end
   end
 
   def validate_assumptions!
@@ -781,7 +833,7 @@ class WSDL
   def self.header(name)
     return <<EOF
 /*
-Copyright (c) 2014-2016 VMware, Inc. All Rights Reserved.
+Copyright (c) 2014-2017 VMware, Inc. All Rights Reserved.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

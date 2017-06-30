@@ -126,3 +126,112 @@ load test_helper
   run govc object.collect '/ha-datacenter/network/VM Network' summary
   assert_success
 }
+
+@test "object.find" {
+  unset GOVC_DATACENTER
+
+  run govc find "/enoent"
+  assert_failure
+
+  run govc find
+  assert_success
+
+  run govc find .
+  assert_success
+
+  run govc find /
+  assert_success
+
+  run govc find . -type HostSystem
+  assert_success
+
+  dc=$(govc find / -type Datacenter | head -1)
+
+  run govc find "$dc" -maxdepth 0
+  assert_output "$dc"
+
+  run govc find "$dc/vm" -maxdepth 0
+  assert_output "$dc/vm"
+
+  run govc find "$dc" -maxdepth 1 -type Folder
+  assert_success
+  # /<datacenter>/{vm,network,host,datastore}
+  [ ${#lines[@]} -eq 4 ]
+
+  folder=$(govc find -type Folder -name vm)
+
+  vm=$(new_empty_vm)
+
+  run govc find . -name "$vm"
+  assert_output "$folder/$vm"
+
+  run govc find "$folder" -name "$vm"
+  assert_output "$folder/$vm"
+
+  # moref for VM Network
+  net=$(govc find -i network -name "$GOVC_NETWORK")
+
+  # $vm.network.contains($net) == true
+  run govc find . -type m -name "$vm" -network "$net"
+  assert_output "$folder/$vm"
+
+  # remove network reference
+  run govc device.remove -vm "$vm" ethernet-0
+  assert_success
+
+  # $vm.network.contains($net) == false
+  run govc find . -type VirtualMachine -name "$vm" -network "$net"
+  assert_output ""
+
+  run govc find "$folder" -type VirtualMachine -name "govc-test-*" -runtime.powerState poweredOn
+  assert_output ""
+
+  run govc find "$folder" -type VirtualMachine -name "govc-test-*" -runtime.powerState poweredOff
+  assert_output "$folder/$vm"
+
+  run govc vm.power -on "$vm"
+  assert_success
+
+  run govc find "$folder" -type VirtualMachine -name "govc-test-*" -runtime.powerState poweredOff
+  assert_output ""
+
+  run govc find "$folder" -type VirtualMachine -name "govc-test-*" -runtime.powerState poweredOn
+  assert_output "$folder/$vm"
+
+  # output paths should be relative to "." in these cases
+  export GOVC_DATACENTER=$dc
+
+  folder="./vm"
+
+  run govc find . -name "$vm"
+  assert_output "$folder/$vm"
+
+  run govc find "$folder" -name "$vm"
+}
+
+@test "object.method" {
+  vcsim_env
+
+  vm=$(govc find vm -type m | head -1)
+
+  run govc object.method -enable=false -name NoSuchMethod "$vm"
+  assert_failure
+
+  run govc object.method -enable=false -name Destroy_Task enoent
+  assert_failure
+
+  run govc object.collect -s "$vm" disabledMethod
+  ! assert_matches "Destroy_Task" "$output"
+
+  run govc object.method -enable=false -name Destroy_Task "$vm"
+  assert_success
+
+  run govc object.collect -s "$vm" disabledMethod
+  assert_matches "Destroy_Task" "$output"
+
+  run govc object.method -enable -name Destroy_Task "$vm"
+  assert_success
+
+  run govc object.collect -s "$vm" disabledMethod
+  ! assert_matches "Destroy_Task" "$output"
+}

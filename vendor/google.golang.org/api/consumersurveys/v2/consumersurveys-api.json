@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/rHWbtxT3gC8DAqrI4kJjmo2JS7Q\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/e7DEYLH6SdmU14auNlU-9VK4HgU\"",
  "discoveryVersion": "v1",
  "id": "consumersurveys:v2",
  "name": "consumersurveys",
  "canonicalName": "Consumer Surveys",
  "version": "v2",
- "revision": "20161101",
+ "revision": "20170407",
  "title": "Consumer Surveys API",
  "description": "Creates and conducts surveys, lists the surveys that an authenticated user owns, and retrieves survey results and information about specified surveys.",
  "ownerDomain": "google.com",
@@ -454,10 +454,6 @@
     "requestId": {
      "type": "string",
      "description": "Unique request ID used for logging and debugging. Please include in any error reporting or troubleshooting requests."
-    },
-    "resource": {
-     "$ref": "Survey",
-     "description": "Survey object containing the specification of the started Survey."
     }
    }
   },
@@ -468,10 +464,6 @@
     "requestId": {
      "type": "string",
      "description": "Unique request ID used for logging and debugging. Please include in any error reporting or troubleshooting requests."
-    },
-    "resource": {
-     "$ref": "Survey",
-     "description": "Survey object containing the specification of the stopped Survey."
     }
    }
   },

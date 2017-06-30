@@ -33,10 +33,11 @@ type ip struct {
 	*flags.OutputFlag
 	*flags.SearchFlag
 
-	esx bool
-	all bool
-	v4  bool
-	nic string
+	esx  bool
+	all  bool
+	v4   bool
+	wait time.Duration
+	nic  string
 }
 
 func init() {
@@ -54,6 +55,7 @@ func (cmd *ip) Register(ctx context.Context, f *flag.FlagSet) {
 	f.BoolVar(&cmd.all, "a", false, "Wait for an IP address on all NICs")
 	f.StringVar(&cmd.nic, "n", "", "Wait for IP address on NIC, specified by device name or MAC")
 	f.BoolVar(&cmd.v4, "v4", false, "Only report IPv4 addresses")
+	f.DurationVar(&cmd.wait, "wait", time.Hour, "Wait time for the VM obtain an IP address")
 }
 
 func (cmd *ip) Usage() string {
@@ -83,8 +85,12 @@ When given the '-n' flag, filters '-a' behavior to the nic specified by MAC addr
 The 'esxcli' flag does not require vmware-tools to be installed, but does require the ESX host to
 have the /Net/GuestIPHack setting enabled.
 
+The 'wait' flag default to 1hr (original default was infinite).  If a VM does not obtain an IP within
+the wait time, the command will still exit with status 0.
+
 Examples:
   govc vm.ip $vm
+  govc vm.ip -wait 5m $vm
   govc vm.ip -a -v4 $vm
   govc vm.ip -n 00:0c:29:57:7b:c3 $vm
   govc vm.ip -n ethernet-0 $vm
@@ -113,10 +119,10 @@ func (cmd *ip) Run(ctx context.Context, f *flag.FlagSet) error {
 		return err
 	}
 
-	var get func(*object.VirtualMachine) (string, error)
+	var get func(*object.VirtualMachine, context.Context) (string, error)
 
 	if cmd.esx {
-		get = func(vm *object.VirtualMachine) (string, error) {
+		get = func(vm *object.VirtualMachine, deadline context.Context) (string, error) {
 			guest := esxcli.NewGuestInfo(c)
 
 			ticker := time.NewTicker(time.Millisecond * 500)
@@ -133,6 +139,8 @@ func (cmd *ip) Run(ctx context.Context, f *flag.FlagSet) error {
 					if ip != "0.0.0.0" {
 						return ip, nil
 					}
+				case <-deadline.Done():
+					return "", nil
 				}
 			}
 		}
@@ -142,9 +150,9 @@ func (cmd *ip) Run(ctx context.Context, f *flag.FlagSet) error {
 			hwaddr = strings.Split(cmd.nic, ",")
 		}
 
-		get = func(vm *object.VirtualMachine) (string, error) {
+		get = func(vm *object.VirtualMachine, deadline context.Context) (string, error) {
 			if cmd.all || hwaddr != nil {
-				macs, err := vm.WaitForNetIP(ctx, cmd.v4, hwaddr...)
+				macs, err := vm.WaitForNetIP(deadline, cmd.v4, hwaddr...)
 				if err != nil {
 					return "", err
 				}
@@ -157,14 +165,25 @@ func (cmd *ip) Run(ctx context.Context, f *flag.FlagSet) error {
 				}
 				return strings.Join(ips, ","), nil
 			}
-			return vm.WaitForIP(ctx)
+			return vm.WaitForIP(deadline)
 		}
 	}
 
 	for _, vm := range vms {
-		ip, err := get(vm)
+		deadline, cancel := context.WithDeadline(ctx, time.Now().Add(cmd.wait))
+
+		ip, err := get(vm, deadline)
 		if err != nil {
-			return err
+			if deadline.Err() != context.DeadlineExceeded {
+				cancel()
+				return err
+			}
+		}
+
+		cancel()
+
+		if ip == "" {
+			continue
 		}
 
 		// TODO(PN): Display inventory path to VM

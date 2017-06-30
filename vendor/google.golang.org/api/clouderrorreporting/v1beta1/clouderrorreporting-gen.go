@@ -535,13 +535,40 @@ type ReportedErrorEvent struct {
 	// Error Reporting system will be used.
 	EventTime string `json:"eventTime,omitempty"`
 
-	// Message: [Required] A message describing the error. The message can
-	// contain an
-	// exception stack in one of the supported programming languages and
-	// formats.
-	// In that case, the message is parsed and detailed exception
-	// information
-	// is returned when retrieving the error event again.
+	// Message: [Required] The error message.
+	// If no `context.reportLocation` is provided, the message must contain
+	// a
+	// header (typically consisting of the exception type name and an
+	// error
+	// message) and an exception stack trace in one of the supported
+	// programming
+	// languages and formats.
+	// Supported languages are Java, Python, JavaScript, Ruby, C#, PHP, and
+	// Go.
+	// Supported stack trace formats are:
+	//
+	// * **Java**: Must be the return value of
+	// [`Throwable.printStackTrace()`](https://docs.oracle.com/javase/7/docs/
+	// api/java/lang/Throwable.html#printStackTrace%28%29).
+	// * **Python**: Must be the return value of
+	// [`traceback.format_exc()`](https://docs.python.org/2/library/traceback
+	// .html#traceback.format_exc).
+	// * **JavaScript**: Must be the value of
+	// [`error.stack`](https://github.com/v8/v8/wiki/Stack-Trace-API)
+	// as returned by V8.
+	// * **Ruby**: Must contain frames returned by
+	// [`Exception.backtrace`](https://ruby-doc.org/core-2.2.0/Exception.html
+	// #method-i-backtrace).
+	// * **C#**: Must be the return value of
+	// [`Exception.ToString()`](https://msdn.microsoft.com/en-us/library/syst
+	// em.exception.tostring.aspx).
+	// * **PHP**: Must start with `PHP (Notice|Parse error|Fatal
+	// error|Warning)`
+	// and contain the result of
+	// [`(string)$exception`](http://php.net/manual/en/exception.tostring.php
+	// ).
+	// * **Go**: Must be the return value of
+	// [`runtime.Stack()`](https://golang.org/pkg/runtime/debug/#Stack).
 	Message string `json:"message,omitempty"`
 
 	// ServiceContext: [Required] The service context in which this error
@@ -575,6 +602,15 @@ func (s *ReportedErrorEvent) MarshalJSON() ([]byte, error) {
 // Its version changes over time and multiple versions can run in
 // parallel.
 type ServiceContext struct {
+	// ResourceType: Type of the MonitoredResource. List of possible
+	// values:
+	// https://cloud.google.com/monitoring/api/resources
+	//
+	// Value is set automatically for incoming errors and must not be set
+	// when
+	// reporting errors.
+	ResourceType string `json:"resourceType,omitempty"`
+
 	// Service: An identifier of the service, such as the name of
 	// the
 	// executable, job, or Google App Engine service name. This field is
@@ -593,9 +629,12 @@ type ServiceContext struct {
 	// provided,
 	// which could represent a version label or a Git SHA-1 hash, for
 	// example.
+	// For App Engine standard environment, the version is set to the
+	// version of
+	// the app.
 	Version string `json:"version,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Service") to
+	// ForceSendFields is a list of field names (e.g. "ResourceType") to
 	// unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
@@ -603,10 +642,10 @@ type ServiceContext struct {
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Service") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
+	// NullFields is a list of field names (e.g. "ResourceType") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
 	// null. It is an error if a field in this list has a non-empty value.
 	// This may be used to include null fields in Patch requests.
 	NullFields []string `json:"-"`
@@ -619,13 +658,12 @@ func (s *ServiceContext) MarshalJSON() ([]byte, error) {
 }
 
 // SourceLocation: Indicates a location in the source code of the
-// service for which
-// errors are reported.
-// This data should be provided by the application when reporting an
-// error,
-// unless the error report has been generated automatically from Google
-// App
-// Engine logs. All fields are optional.
+// service for which errors are
+// reported. `functionName` must be provided by the application when
+// reporting
+// an error, unless the error report contains a `message` with a
+// supported
+// exception stack trace. All fields are optional for the later case.
 type SourceLocation struct {
 	// FilePath: The source code filename, which can include a truncated
 	// relative
@@ -839,7 +877,7 @@ func (c *ProjectsDeleteEventsCall) Do(opts ...googleapi.CallOption) (*DeleteEven
 	//   ],
 	//   "parameters": {
 	//     "projectName": {
-	//       "description": "[Required] The resource name of the Google Cloud Platform project. Written\nas `projects/` plus the\n[Google Cloud Platform project ID](https://support.google.com/cloud/answer/6158840).\nExample: `projects/my-project-123`.",
+	//       "description": "[Required] The resource name of the Google Cloud Platform project. Written\nas `projects/` plus the\n[Google Cloud Platform project\nID](https://support.google.com/cloud/answer/6158840).\nExample: `projects/my-project-123`.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
@@ -893,6 +931,16 @@ func (c *ProjectsEventsListCall) PageSize(pageSize int64) *ProjectsEventsListCal
 // `next_page_token` provided by a previous response.
 func (c *ProjectsEventsListCall) PageToken(pageToken string) *ProjectsEventsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// ServiceFilterResourceType sets the optional parameter
+// "serviceFilter.resourceType": [Optional] The exact value to match
+// against
+// [`ServiceContext.resource_type`](/error-reporting/reference/re
+// st/v1beta1/ServiceContext#FIELDS.resource_type).
+func (c *ProjectsEventsListCall) ServiceFilterResourceType(serviceFilterResourceType string) *ProjectsEventsListCall {
+	c.urlParams_.Set("serviceFilter.resourceType", serviceFilterResourceType)
 	return c
 }
 
@@ -1050,10 +1098,15 @@ func (c *ProjectsEventsListCall) Do(opts ...googleapi.CallOption) (*ListEventsRe
 	//       "type": "string"
 	//     },
 	//     "projectName": {
-	//       "description": "[Required] The resource name of the Google Cloud Platform project. Written\nas `projects/` plus the\n[Google Cloud Platform project ID](https://support.google.com/cloud/answer/6158840).\nExample: `projects/my-project-123`.",
+	//       "description": "[Required] The resource name of the Google Cloud Platform project. Written\nas `projects/` plus the\n[Google Cloud Platform project\nID](https://support.google.com/cloud/answer/6158840).\nExample: `projects/my-project-123`.",
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "serviceFilter.resourceType": {
+	//       "description": "[Optional] The exact value to match against\n[`ServiceContext.resource_type`](/error-reporting/reference/rest/v1beta1/ServiceContext#FIELDS.resource_type).",
+	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "serviceFilter.service": {
@@ -1337,6 +1390,16 @@ func (c *ProjectsGroupStatsListCall) PageToken(pageToken string) *ProjectsGroupS
 	return c
 }
 
+// ServiceFilterResourceType sets the optional parameter
+// "serviceFilter.resourceType": [Optional] The exact value to match
+// against
+// [`ServiceContext.resource_type`](/error-reporting/reference/re
+// st/v1beta1/ServiceContext#FIELDS.resource_type).
+func (c *ProjectsGroupStatsListCall) ServiceFilterResourceType(serviceFilterResourceType string) *ProjectsGroupStatsListCall {
+	c.urlParams_.Set("serviceFilter.resourceType", serviceFilterResourceType)
+	return c
+}
+
 // ServiceFilterService sets the optional parameter
 // "serviceFilter.service": [Optional] The exact value to match
 // against
@@ -1533,6 +1596,11 @@ func (c *ProjectsGroupStatsListCall) Do(opts ...googleapi.CallOption) (*ListGrou
 	//       "location": "path",
 	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "serviceFilter.resourceType": {
+	//       "description": "[Optional] The exact value to match against\n[`ServiceContext.resource_type`](/error-reporting/reference/rest/v1beta1/ServiceContext#FIELDS.resource_type).",
+	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "serviceFilter.service": {

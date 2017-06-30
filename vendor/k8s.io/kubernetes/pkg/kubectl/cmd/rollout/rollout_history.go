@@ -37,14 +37,14 @@ var (
 		# View the rollout history of a deployment
 		kubectl rollout history deployment/abc
 
-		# View the details of deployment revision 3
-		kubectl rollout history deployment/abc --revision=3`)
+		# View the details of daemonset revision 3
+		kubectl rollout history daemonset/abc --revision=3`)
 )
 
 func NewCmdRolloutHistory(f cmdutil.Factory, out io.Writer) *cobra.Command {
 	options := &resource.FilenameOptions{}
 
-	validArgs := []string{"deployment"}
+	validArgs := []string{"deployment", "daemonset"}
 	argAliases := kubectl.ResourceAliases(validArgs)
 
 	cmd := &cobra.Command{
@@ -74,14 +74,12 @@ func RunHistory(f cmdutil.Factory, cmd *cobra.Command, out io.Writer, args []str
 		return fmt.Errorf("revision must be a positive integer: %v", revision)
 	}
 
-	mapper, typer := f.Object()
-
 	cmdNamespace, enforceNamespace, err := f.DefaultNamespace()
 	if err != nil {
 		return err
 	}
 
-	r := resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.ClientForMapping), f.Decoder(true)).
+	r := f.NewBuilder(true).
 		NamespaceParam(cmdNamespace).DefaultNamespace().
 		FilenameParam(enforceNamespace, options).
 		ResourceTypeOrNameArgs(true, args...).

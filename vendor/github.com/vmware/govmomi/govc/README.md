@@ -139,7 +139,7 @@ When new govc commands or flags are added, the PATCH version will be incremented
 version from within a script, for example:
 
 ```
-govc version -require 0.7.1
+govc version -require 0.14
 ```
 
 ## Projects using govc
@@ -149,6 +149,14 @@ govc version -require 0.7.1
 * [Kubernetes vSphere Provider](https://github.com/kubernetes/kubernetes/tree/master/cluster/vsphere)
 
 * [VMware VIC Engine](https://github.com/vmware/vic)
+
+* [vSphere Docker Volume Service](https://github.com/vmware/docker-volume-vsphere)
+
+* [golang/build](https://github.com/golang/build)
+
+## Related projects
+
+* [rvc](https://github.com/vmware/rvc)
 
 ## License
 

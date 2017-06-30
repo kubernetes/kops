@@ -318,6 +318,22 @@ func (s *AnalyzeDataDescriptionFeaturesNumeric) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *AnalyzeDataDescriptionFeaturesNumeric) UnmarshalJSON(data []byte) error {
+	type noMethod AnalyzeDataDescriptionFeaturesNumeric
+	var s1 struct {
+		Mean     gensupport.JSONFloat64 `json:"mean"`
+		Variance gensupport.JSONFloat64 `json:"variance"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Mean = float64(s1.Mean)
+	s.Variance = float64(s1.Variance)
+	return nil
+}
+
 // AnalyzeDataDescriptionFeaturesText: Description of multiple-word text
 // values of this feature.
 type AnalyzeDataDescriptionFeaturesText struct {
@@ -412,6 +428,22 @@ func (s *AnalyzeDataDescriptionOutputFeatureNumeric) MarshalJSON() ([]byte, erro
 	type noMethod AnalyzeDataDescriptionOutputFeatureNumeric
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *AnalyzeDataDescriptionOutputFeatureNumeric) UnmarshalJSON(data []byte) error {
+	type noMethod AnalyzeDataDescriptionOutputFeatureNumeric
+	var s1 struct {
+		Mean     gensupport.JSONFloat64 `json:"mean"`
+		Variance gensupport.JSONFloat64 `json:"variance"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Mean = float64(s1.Mean)
+	s.Variance = float64(s1.Variance)
+	return nil
 }
 
 type AnalyzeDataDescriptionOutputFeatureText struct {
@@ -629,6 +661,20 @@ func (s *Output) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *Output) UnmarshalJSON(data []byte) error {
+	type noMethod Output
+	var s1 struct {
+		OutputValue gensupport.JSONFloat64 `json:"outputValue"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.OutputValue = float64(s1.OutputValue)
+	return nil
+}
+
 type OutputOutputMulti struct {
 	// Label: The class label.
 	Label string `json:"label,omitempty"`
@@ -657,6 +703,20 @@ func (s *OutputOutputMulti) MarshalJSON() ([]byte, error) {
 	type noMethod OutputOutputMulti
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *OutputOutputMulti) UnmarshalJSON(data []byte) error {
+	type noMethod OutputOutputMulti
+	var s1 struct {
+		Score gensupport.JSONFloat64 `json:"score"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Score = float64(s1.Score)
+	return nil
 }
 
 type Training struct {
@@ -784,6 +844,24 @@ func (s *TrainingModelInfo) MarshalJSON() ([]byte, error) {
 	type noMethod TrainingModelInfo
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *TrainingModelInfo) UnmarshalJSON(data []byte) error {
+	type noMethod TrainingModelInfo
+	var s1 struct {
+		ClassWeightedAccuracy  gensupport.JSONFloat64 `json:"classWeightedAccuracy"`
+		ClassificationAccuracy gensupport.JSONFloat64 `json:"classificationAccuracy"`
+		MeanSquaredError       gensupport.JSONFloat64 `json:"meanSquaredError"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.ClassWeightedAccuracy = float64(s1.ClassWeightedAccuracy)
+	s.ClassificationAccuracy = float64(s1.ClassificationAccuracy)
+	s.MeanSquaredError = float64(s1.MeanSquaredError)
+	return nil
 }
 
 type TrainingTrainingInstances struct {

@@ -20,9 +20,6 @@ base:
 {% elif pillar.get('network_provider', '').lower() == 'cni' %}
     - cni
 {% endif %}
-{% if grains['cloud'] is defined and grains['cloud'] == 'azure-legacy' %}
-    - openvpn-client
-{% endif %}
     - helpers
     - kube-client-tools
     - kube-node-unpacker
@@ -63,17 +60,10 @@ base:
     - kube-client-tools
     - kube-master-addons
     - kube-admission-controls
-{% if pillar.get('enable_node_logging', '').lower() == 'true' and pillar['logging_destination'] == 'gcp' %}
-    - fluentd-gcp
-{% endif %}
 {% if grains['cloud'] is defined and grains['cloud'] != 'vagrant' %}
     - logrotate
 {% endif %}
     - kube-addons
-{% if grains['cloud'] is defined and grains['cloud'] == 'azure-legacy' %}
-    - openvpn
-    - nginx
-{% endif %}
 {% if grains['cloud'] is defined and grains['cloud'] in [ 'vagrant', 'gce', 'aws', 'photon-controller', 'openstack', 'azure-legacy'] %}
     - docker
     - kubelet
@@ -86,7 +76,4 @@ base:
 {% endif %}
 {% if pillar.get('enable_rescheduler', '').lower() == 'true' %}
     - rescheduler
-{% endif %}
-{% if pillar.get('network_policy_provider', '').lower() == 'calico' %}
-    - calico.master
 {% endif %}

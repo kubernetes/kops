@@ -148,6 +148,21 @@ func (pc *change) output(name string, rval reflect.Value, rtype reflect.Type) {
 	fmt.Fprintf(pc.cmd.Out, "%s\t%s\t%s\n", name, rtype, s)
 }
 
+func (pc *change) writeStruct(name string, rval reflect.Value, rtype reflect.Type) {
+	for i := 0; i < rval.NumField(); i++ {
+		fval := rval.Field(i)
+		field := rtype.Field(i)
+
+		if field.Anonymous {
+			pc.writeStruct(name, fval, fval.Type())
+			continue
+		}
+
+		fname := fmt.Sprintf("%s.%s%s", name, strings.ToLower(field.Name[:1]), field.Name[1:])
+		pc.output(fname, fval, field.Type)
+	}
+}
+
 func (pc *change) Write(w io.Writer) error {
 	tw := tabwriter.NewWriter(pc.cmd.Out, 4, 0, 2, ' ', 0)
 	pc.cmd.Out = tw
@@ -167,17 +182,7 @@ func (pc *change) Write(w io.Writer) error {
 		}
 
 		if pc.cmd.single && rtype.Kind() == reflect.Struct && !rtype.Implements(stringer) {
-			for i := 0; i < rval.NumField(); i++ {
-				fval := rval.Field(i)
-				field := rtype.Field(i)
-
-				if field.Anonymous {
-					continue
-				}
-
-				fname := fmt.Sprintf("%s.%s%s", c.Name, strings.ToLower(field.Name[:1]), field.Name[1:])
-				pc.output(fname, fval, field.Type)
-			}
+			pc.writeStruct(c.Name, rval, rtype)
 			continue
 		}
 
