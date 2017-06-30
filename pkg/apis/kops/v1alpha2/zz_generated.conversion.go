@@ -63,8 +63,6 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_ClusterSubnetSpec_To_v1alpha2_ClusterSubnetSpec,
 		Convert_v1alpha2_DNSAccessSpec_To_kops_DNSAccessSpec,
 		Convert_kops_DNSAccessSpec_To_v1alpha2_DNSAccessSpec,
-		Convert_v1alpha2_DNSControllerSpec_To_kops_DNSControllerSpec,
-		Convert_kops_DNSControllerSpec_To_v1alpha2_DNSControllerSpec,
 		Convert_v1alpha2_DNSSpec_To_kops_DNSSpec,
 		Convert_kops_DNSSpec_To_v1alpha2_DNSSpec,
 		Convert_v1alpha2_DockerConfig_To_kops_DockerConfig,
@@ -75,6 +73,8 @@ func RegisterConversions(scheme *runtime.Scheme) error {
 		Convert_kops_EtcdMemberSpec_To_v1alpha2_EtcdMemberSpec,
 		Convert_v1alpha2_ExecContainerAction_To_kops_ExecContainerAction,
 		Convert_kops_ExecContainerAction_To_v1alpha2_ExecContainerAction,
+		Convert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig,
+		Convert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig,
 		Convert_v1alpha2_ExternalNetworkingSpec_To_kops_ExternalNetworkingSpec,
 		Convert_kops_ExternalNetworkingSpec_To_v1alpha2_ExternalNetworkingSpec,
 		Convert_v1alpha2_Federation_To_kops_Federation,
@@ -565,14 +565,14 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.CloudConfig = nil
 	}
-	if in.DNSController != nil {
-		in, out := &in.DNSController, &out.DNSController
-		*out = new(kops.DNSControllerSpec)
-		if err := Convert_v1alpha2_DNSControllerSpec_To_kops_DNSControllerSpec(*in, *out, s); err != nil {
+	if in.ExternalDNS != nil {
+		in, out := &in.ExternalDNS, &out.ExternalDNS
+		*out = new(kops.ExternalDNSConfig)
+		if err := Convert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(*in, *out, s); err != nil {
 			return err
 		}
 	} else {
-		out.DNSController = nil
+		out.ExternalDNS = nil
 	}
 	if in.Networking != nil {
 		in, out := &in.Networking, &out.Networking
@@ -662,15 +662,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
 	out.AdditionalPolicies = in.AdditionalPolicies
-	if in.DNSController != nil {
-		in, out := &in.DNSController, &out.DNSController
-		*out = new(DNSControllerSpec)
-		if err := Convert_kops_DNSControllerSpec_To_v1alpha2_DNSControllerSpec(*in, *out, s); err != nil {
-			return err
-		}
-	} else {
-		out.DNSController = nil
-	}
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
 		*out = make([]*EtcdClusterSpec, len(*in))
@@ -764,6 +755,15 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.CloudConfig = nil
 	}
+	if in.ExternalDNS != nil {
+		in, out := &in.ExternalDNS, &out.ExternalDNS
+		*out = new(ExternalDNSConfig)
+		if err := Convert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(*in, *out, s); err != nil {
+			return err
+		}
+	} else {
+		out.ExternalDNS = nil
+	}
 	if in.Networking != nil {
 		in, out := &in.Networking, &out.Networking
 		*out = new(NetworkingSpec)
@@ -852,24 +852,6 @@ func autoConvert_kops_DNSAccessSpec_To_v1alpha2_DNSAccessSpec(in *kops.DNSAccess
 
 func Convert_kops_DNSAccessSpec_To_v1alpha2_DNSAccessSpec(in *kops.DNSAccessSpec, out *DNSAccessSpec, s conversion.Scope) error {
 	return autoConvert_kops_DNSAccessSpec_To_v1alpha2_DNSAccessSpec(in, out, s)
-}
-
-func autoConvert_v1alpha2_DNSControllerSpec_To_kops_DNSControllerSpec(in *DNSControllerSpec, out *kops.DNSControllerSpec, s conversion.Scope) error {
-	out.WatchIngress = in.WatchIngress
-	return nil
-}
-
-func Convert_v1alpha2_DNSControllerSpec_To_kops_DNSControllerSpec(in *DNSControllerSpec, out *kops.DNSControllerSpec, s conversion.Scope) error {
-	return autoConvert_v1alpha2_DNSControllerSpec_To_kops_DNSControllerSpec(in, out, s)
-}
-
-func autoConvert_kops_DNSControllerSpec_To_v1alpha2_DNSControllerSpec(in *kops.DNSControllerSpec, out *DNSControllerSpec, s conversion.Scope) error {
-	out.WatchIngress = in.WatchIngress
-	return nil
-}
-
-func Convert_kops_DNSControllerSpec_To_v1alpha2_DNSControllerSpec(in *kops.DNSControllerSpec, out *DNSControllerSpec, s conversion.Scope) error {
-	return autoConvert_kops_DNSControllerSpec_To_v1alpha2_DNSControllerSpec(in, out, s)
 }
 
 func autoConvert_v1alpha2_DNSSpec_To_kops_DNSSpec(in *DNSSpec, out *kops.DNSSpec, s conversion.Scope) error {
@@ -1020,6 +1002,24 @@ func autoConvert_kops_ExecContainerAction_To_v1alpha2_ExecContainerAction(in *ko
 
 func Convert_kops_ExecContainerAction_To_v1alpha2_ExecContainerAction(in *kops.ExecContainerAction, out *ExecContainerAction, s conversion.Scope) error {
 	return autoConvert_kops_ExecContainerAction_To_v1alpha2_ExecContainerAction(in, out, s)
+}
+
+func autoConvert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(in *ExternalDNSConfig, out *kops.ExternalDNSConfig, s conversion.Scope) error {
+	out.WatchIngress = in.WatchIngress
+	return nil
+}
+
+func Convert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(in *ExternalDNSConfig, out *kops.ExternalDNSConfig, s conversion.Scope) error {
+	return autoConvert_v1alpha2_ExternalDNSConfig_To_kops_ExternalDNSConfig(in, out, s)
+}
+
+func autoConvert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(in *kops.ExternalDNSConfig, out *ExternalDNSConfig, s conversion.Scope) error {
+	out.WatchIngress = in.WatchIngress
+	return nil
+}
+
+func Convert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(in *kops.ExternalDNSConfig, out *ExternalDNSConfig, s conversion.Scope) error {
+	return autoConvert_kops_ExternalDNSConfig_To_v1alpha2_ExternalDNSConfig(in, out, s)
 }
 
 func autoConvert_v1alpha2_ExternalNetworkingSpec_To_kops_ExternalNetworkingSpec(in *ExternalNetworkingSpec, out *kops.ExternalNetworkingSpec, s conversion.Scope) error {
