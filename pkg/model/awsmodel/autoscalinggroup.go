@@ -65,8 +65,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				ImageID:            s(ig.Spec.Image),
 				InstanceType:       s(ig.Spec.MachineType),
 
-				RootVolumeSize: i64(int64(volumeSize)),
-				RootVolumeType: s(volumeType),
+				RootVolumeSize:         i64(int64(volumeSize)),
+				RootVolumeType:         s(volumeType),
+				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
 			}
 
 			if ig.Spec.Tenancy != "" {
