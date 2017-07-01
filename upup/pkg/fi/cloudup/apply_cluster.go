@@ -40,6 +40,7 @@ import (
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/vspheremodel"
+	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -53,7 +54,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kops/pkg/templates"
 )
 
 const DefaultMaxTaskDuration = 10 * time.Minute
@@ -643,9 +643,6 @@ func (c *ApplyClusterCmd) Run() error {
 	//	}
 	//	return count, nil
 	//}
-	l.TemplateFunctions["Region"] = func() string {
-		return region
-	}
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
 	tf.AddTo(l.TemplateFunctions)

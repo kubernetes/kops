@@ -25,10 +25,10 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sort"
-	"k8s.io/kops/pkg/assets"
 )
 
 // DryRunTarget is a special Target that does not execute anything, but instead tracks all changes.
@@ -315,9 +315,9 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 	}
 
 	if len(t.assetBuilder.Assets) != 0 {
-		fmt.Fprintf(b, "Assets:\n")
+		glog.V(4).Infof("Assets:")
 		for _, a := range t.assetBuilder.Assets {
-			fmt.Fprintf(b, "  %-20s %s\n", a.Origin, a.Mirror)
+			glog.V(4).Infof("  %s %s", a.Origin, a.Mirror)
 		}
 	}
 
