@@ -29,6 +29,7 @@ kops update cluster
       --create-kube-config      Will control automatically creating the kube config file on your local filesystem (default true)
       --model string            Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --out string              Path to write any local output
+      --phase string            Subset of tasks to run
       --ssh-public-key string   SSH public key to use (deprecated: use kops create secret instead)
       --target string           Target - direct, terraform, cloudformation (default "direct")
       --yes                     Actually create cloud resources
