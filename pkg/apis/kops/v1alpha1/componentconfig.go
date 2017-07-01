@@ -22,6 +22,11 @@ type KubeletConfigSpec struct {
 	// not used for clusters version 1.6 and later
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
+	// AnonymousAuth chooses if you want anonymous auth on the kubelet api
+	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
+	// ClientCAFile is the path to a file container the CA certificate
+	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
+
 	// kubeconfigPath is the path to the kubeconfig file with authorization
 	// information and API server location
 	// kops will only use this for clusters version 1.6 and later
@@ -407,6 +412,9 @@ type KubeAPIServerConfig struct {
 	AllowPrivileged       *bool             `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
 	APIServerCount        *int32            `json:"apiServerCount,omitempty" flag:"apiserver-count"`
 	RuntimeConfig         map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
+
+	KubeletClientCertificate string `json:"kubeletClientCertificate,omitempty" flag:"kubelet-client-certificate"`
+	KubeletClientKey         string `json:"kubeletClientKey,omitempty" flag:"kubelet-client-key"`
 
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 
