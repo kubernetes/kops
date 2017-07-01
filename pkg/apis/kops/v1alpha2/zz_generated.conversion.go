@@ -1301,6 +1301,8 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.BasicAuthFile = in.BasicAuthFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
+	out.KubeletClientCertificate = in.KubeletClientCertificate
+	out.KubeletClientKey = in.KubeletClientKey
 	out.TokenAuthFile = in.TokenAuthFile
 	out.AllowPrivileged = in.AllowPrivileged
 	out.APIServerCount = in.APIServerCount
@@ -1345,6 +1347,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
+	out.KubeletClientCertificate = in.KubeletClientCertificate
+	out.KubeletClientKey = in.KubeletClientKey
 	out.TokenAuthFile = in.TokenAuthFile
 	out.AllowPrivileged = in.AllowPrivileged
 	out.APIServerCount = in.APIServerCount
@@ -1526,9 +1530,11 @@ func Convert_kops_KubeSchedulerConfig_To_v1alpha2_KubeSchedulerConfig(in *kops.K
 
 func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *KubeletConfigSpec, out *kops.KubeletConfigSpec, s conversion.Scope) error {
 	out.APIServers = in.APIServers
+	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeconfigPath = in.KubeconfigPath
 	out.RequireKubeconfig = in.RequireKubeconfig
 	out.LogLevel = in.LogLevel
+	out.ClientCAFile = in.ClientCAFile
 	out.PodManifestPath = in.PodManifestPath
 	out.HostnameOverride = in.HostnameOverride
 	out.AllowPrivileged = in.AllowPrivileged
@@ -1574,9 +1580,11 @@ func Convert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *KubeletCon
 
 func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.KubeletConfigSpec, out *KubeletConfigSpec, s conversion.Scope) error {
 	out.APIServers = in.APIServers
+	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeconfigPath = in.KubeconfigPath
 	out.RequireKubeconfig = in.RequireKubeconfig
 	out.LogLevel = in.LogLevel
+	out.ClientCAFile = in.ClientCAFile
 	out.PodManifestPath = in.PodManifestPath
 	out.HostnameOverride = in.HostnameOverride
 	out.AllowPrivileged = in.AllowPrivileged
