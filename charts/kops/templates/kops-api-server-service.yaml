@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: kops-api-server
+spec:
+  type: LoadBalancer
+  selector:
+    app: kops-api-server
+  ports:
+  - name: insecure
+    protocol: TCP
+    port: 80
+    targetPort: 8080

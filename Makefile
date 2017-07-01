@@ -503,4 +503,4 @@ kops-server-build:
 
 .PHONY: kops-server-push
 kops-server-push: kops-server-build
-	docker push ${DOCKER_REGISTRY}/kops-server:latest
+	docker push ${DOCKER_REGISTRY}/kops:latest

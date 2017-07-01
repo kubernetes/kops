@@ -20,7 +20,7 @@ import (
 	"flag"
 	"os"
 	"runtime"
-
+	"fmt"
 	"k8s.io/kops/pkg/apiserver/cmd/server"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/util/logs"
@@ -38,7 +38,12 @@ func main() {
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
 
-	cmd := server.NewCommandStartKopsServer(os.Stdout, os.Stderr)
+	cmd, err := server.NewCommandStartKopsServer(os.Stdout, os.Stderr)
+	if err != nil {
+		// Kris todo get this out of here
+		fmt.Println(err)
+		os.Exit(1)
+	}
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
 	if err := cmd.Execute(); err != nil {
 		cmdutil.CheckErr(err)

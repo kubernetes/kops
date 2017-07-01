@@ -18,7 +18,6 @@ package server
 
 import (
 	"io"
-
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -33,6 +32,8 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	//"os"
+	//"net"
 )
 
 const defaultEtcdPathPrefix = "/registry/kops.kubernetes.io"
@@ -49,12 +50,13 @@ type KopsServerOptions struct {
 }
 
 // NewCommandStartKopsServer provides a CLI handler for 'start master' command
-func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
+func NewCommandStartKopsServer(out, err io.Writer) (*cobra.Command, error) {
 	o := &KopsServerOptions{
 		Etcd: genericoptions.NewEtcdOptions(&storagebackend.Config{
 			Prefix: defaultEtcdPathPrefix,
 			Copier: kops.Scheme,
 			Codec:  nil,
+
 		}),
 		//SecureServing:  genericoptions.NewSecureServingOptions(),
 		InsecureServing: genericoptions.NewInsecureServingOptions(),
@@ -85,8 +87,9 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 	o.Authentication.AddFlags(flags)
 	o.Authorization.AddFlags(flags)
 
-	return cmd
+	return cmd, nil
 }
+
 
 func (o KopsServerOptions) Validate(args []string) error {
 	return nil
