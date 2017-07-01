@@ -97,6 +97,10 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	// TODO: Only for GCE?
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
+
+	dest["Region"] = func() string {
+		return tf.region
+	}
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer

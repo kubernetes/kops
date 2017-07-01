@@ -23,10 +23,10 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kops/pkg/templates"
 )
 
 type BootstrapChannelBuilder struct {
