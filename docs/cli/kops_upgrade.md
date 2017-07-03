@@ -5,7 +5,7 @@ Upgrade a kubernetes cluster.
 ### Synopsis
 
 
-Automates checking for and applying Kubernetes updates. This upgrades a cluster to the latest recommended production ready k8s version. After this command is run usekops update cluder, and kops rolling-update cluster to finish a cluster upgrade.
+Automates checking for and applying Kubernetes updates. This upgrades a cluster to the latest recommended production ready k8s version. After this command is run, use kops update cluster and kops rolling-update cluster to finish a cluster upgrade.
 
 ### Examples
 
