@@ -80,6 +80,12 @@ export AWS_SECRET_ACCESS_KEY=<secret key>
 
 ## Configure DNS
 
+Note: If you are using Kops 1.6.2 or later, then DNS configuratin is 
+optional. Instead, a gossip-based cluster can be easily created. The 
+only requirement to trigger this is to have the cluster name end with 
+`k8s.local`. If a gossip-based cluster is created then you can skip 
+this section.
+
 In order to build a Kubernetes cluster with `kops`, we need to prepare
 somewhere to build the required DNS records.  There are three scenarios
 below and you should choose the one that most closely matches your AWS
@@ -208,6 +214,8 @@ kops create cluster --dns private $NAME
 
 ## Testing your DNS setup
 
+This section is not be required if a gossip-based cluster is created.
+
 You should now able to dig your domain (or subdomain) and see the AWS Name
 Servers on the other end.
 
@@ -229,7 +237,7 @@ This is a critical component of setting up clusters. If you are experiencing
 problems with the Kubernetes API not coming up, chances are something is wrong
 with the clusters DNS.
 
-**Please DO NOT MOVE ON until you have validated your NS records!**
+**Please DO NOT MOVE ON until you have validated your NS records! This is not be required if a gossip-based cluster is created.**
 
 ## Cluster State storage
 
@@ -279,6 +287,13 @@ environment variables to make this process easier.
 
 ```bash
 export NAME=myfirstcluster.example.com
+export KOPS_STATE_STORE=s3://prefix-example-com-state-store
+```
+
+For a gossip-based cluster, make sure the name ends with `k8s.local`. For example:
+
+```bash
+export NAME=myfirstcluster.k8s.local
 export KOPS_STATE_STORE=s3://prefix-example-com-state-store
 ```
 
