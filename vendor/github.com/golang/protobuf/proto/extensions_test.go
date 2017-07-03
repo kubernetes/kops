@@ -40,7 +40,6 @@ import (
 
 	"github.com/golang/protobuf/proto"
 	pb "github.com/golang/protobuf/proto/testdata"
-	"golang.org/x/sync/errgroup"
 )
 
 func TestGetExtensionsWithMissingExtensions(t *testing.T) {
@@ -505,32 +504,5 @@ func TestClearAllExtensions(t *testing.T) {
 	proto.ClearAllExtensions(m)
 	if proto.HasExtension(m, desc) {
 		t.Errorf("proto.HasExtension(%s): got true, want false", proto.MarshalTextString(m))
-	}
-}
-
-func TestMarshalRace(t *testing.T) {
-	// unregistered extension
-	desc := &proto.ExtensionDesc{
-		ExtendedType:  (*pb.MyMessage)(nil),
-		ExtensionType: (*bool)(nil),
-		Field:         101010100,
-		Name:          "emptyextension",
-		Tag:           "varint,0,opt",
-	}
-
-	m := &pb.MyMessage{Count: proto.Int32(4)}
-	if err := proto.SetExtension(m, desc, proto.Bool(true)); err != nil {
-		t.Errorf("proto.SetExtension(m, desc, true): got error %q, want nil", err)
-	}
-
-	var g errgroup.Group
-	for n := 3; n > 0; n-- {
-		g.Go(func() error {
-			_, err := proto.Marshal(m)
-			return err
-		})
-	}
-	if err := g.Wait(); err != nil {
-		t.Fatal(err)
 	}
 }

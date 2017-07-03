@@ -497,7 +497,7 @@ func RunInitMasterChecks(cfg *kubeadmapi.MasterConfiguration) error {
 		PortOpenCheck{port: 10251},
 		PortOpenCheck{port: 10252},
 		HTTPProxyCheck{Proto: "https", Host: cfg.API.AdvertiseAddress, Port: int(cfg.API.BindPort)},
-		DirAvailableCheck{Path: filepath.Join(kubeadmapi.GlobalEnvParams.KubernetesDir, "manifests")},
+		DirAvailableCheck{Path: filepath.Join(kubeadmapi.GlobalEnvParams.KubernetesDir, kubeadmconstants.ManifestsSubDirName)},
 		DirAvailableCheck{Path: "/var/lib/kubelet"},
 		FileContentCheck{Path: bridgenf, Content: []byte{'1'}},
 		InPathCheck{executable: "ip", mandatory: true},
@@ -515,7 +515,7 @@ func RunInitMasterChecks(cfg *kubeadmapi.MasterConfiguration) error {
 		// Only do etcd related checks when no external endpoints were specified
 		checks = append(checks,
 			PortOpenCheck{port: 2379},
-			DirAvailableCheck{Path: "/var/lib/etcd"},
+			DirAvailableCheck{Path: cfg.Etcd.DataDir},
 		)
 	} else {
 		// Only check etcd version when external endpoints are specified
@@ -525,11 +525,13 @@ func RunInitMasterChecks(cfg *kubeadmapi.MasterConfiguration) error {
 	}
 
 	// Check the config for authorization mode
-	switch cfg.AuthorizationMode {
-	case authzmodes.ModeABAC:
-		checks = append(checks, FileExistingCheck{Path: kubeadmconstants.AuthorizationPolicyPath})
-	case authzmodes.ModeWebhook:
-		checks = append(checks, FileExistingCheck{Path: kubeadmconstants.AuthorizationWebhookConfigPath})
+	for _, authzMode := range cfg.AuthorizationModes {
+		switch authzMode {
+		case authzmodes.ModeABAC:
+			checks = append(checks, FileExistingCheck{Path: kubeadmconstants.AuthorizationPolicyPath})
+		case authzmodes.ModeWebhook:
+			checks = append(checks, FileExistingCheck{Path: kubeadmconstants.AuthorizationWebhookConfigPath})
+		}
 	}
 
 	return RunChecks(checks, os.Stderr)
@@ -543,7 +545,7 @@ func RunJoinNodeChecks(cfg *kubeadmapi.NodeConfiguration) error {
 		ServiceCheck{Service: "kubelet", CheckIfActive: false},
 		ServiceCheck{Service: "docker", CheckIfActive: true},
 		PortOpenCheck{port: 10250},
-		DirAvailableCheck{Path: filepath.Join(kubeadmapi.GlobalEnvParams.KubernetesDir, "manifests")},
+		DirAvailableCheck{Path: filepath.Join(kubeadmapi.GlobalEnvParams.KubernetesDir, kubeadmconstants.ManifestsSubDirName)},
 		DirAvailableCheck{Path: "/var/lib/kubelet"},
 		FileAvailableCheck{Path: cfg.CACertPath},
 		FileAvailableCheck{Path: filepath.Join(kubeadmapi.GlobalEnvParams.KubernetesDir, kubeadmconstants.KubeletKubeConfigFileName)},

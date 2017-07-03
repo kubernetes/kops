@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"regexp"
 
-	"github.com/coredns/coredns/middleware/file"
+	"github.com/miekg/coredns/middleware/file"
 
 	"github.com/miekg/dns"
 )
@@ -43,7 +43,6 @@ func (a Auto) Walk() error {
 			log.Printf("[WARNING] Opening %s failed: %s", path, err)
 			return nil
 		}
-		defer reader.Close()
 
 		zo, err := file.Parse(reader, origin, path)
 		if err != nil {
@@ -52,7 +51,6 @@ func (a Auto) Walk() error {
 		}
 
 		zo.NoReload = a.loader.noReload
-		zo.Proxy = a.loader.proxy
 		zo.TransferTo = a.loader.transferTo
 
 		a.Zones.Add(zo, origin)

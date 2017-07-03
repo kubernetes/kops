@@ -34,6 +34,8 @@ type FakeInstanceGroups struct {
 
 var instancegroupsResource = schema.GroupVersionResource{Group: "kops", Version: "", Resource: "instancegroups"}
 
+var instancegroupsKind = schema.GroupVersionKind{Group: "kops", Version: "", Kind: "InstanceGroup"}
+
 func (c *FakeInstanceGroups) Create(instanceGroup *kops.InstanceGroup) (result *kops.InstanceGroup, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewCreateAction(instancegroupsResource, c.ns, instanceGroup), &kops.InstanceGroup{})
@@ -80,7 +82,7 @@ func (c *FakeInstanceGroups) Get(name string, options v1.GetOptions) (result *ko
 
 func (c *FakeInstanceGroups) List(opts v1.ListOptions) (result *kops.InstanceGroupList, err error) {
 	obj, err := c.Fake.
-		Invokes(testing.NewListAction(instancegroupsResource, c.ns, opts), &kops.InstanceGroupList{})
+		Invokes(testing.NewListAction(instancegroupsResource, instancegroupsKind, c.ns, opts), &kops.InstanceGroupList{})
 
 	if obj == nil {
 		return nil, err

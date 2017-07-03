@@ -434,8 +434,10 @@ func testTextParseError(t testing.TB) {
 	}{
 		// 0: No new-line at end of input.
 		{
-			in:  `bla 3.14`,
-			err: "EOF",
+			in: `
+bla 3.14
+blubber 42`,
+			err: "text format parsing error in line 3: unexpected end of input stream",
 		},
 		// 1: Invalid escape sequence in label value.
 		{

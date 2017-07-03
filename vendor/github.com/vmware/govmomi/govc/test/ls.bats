@@ -22,15 +22,6 @@ load test_helper
   assert_success
   [ ${#lines[@]} -eq 0 ]
 
-  # search entire inventory
-  run govc ls -t HostSystem '/**'
-  assert_success
-  [ ${#lines[@]} -eq 1 ]
-
-  run govc ls -t HostSystem ./...
-  assert_success
-  [ ${#lines[@]} -eq 1 ]
-
   run govc ls host
   assert_success
   [ ${#lines[@]} -ge 1 ]
@@ -38,6 +29,35 @@ load test_helper
   run govc ls enoent
   assert_success
   [ ${#lines[@]} -eq 0 ]
+}
+
+@test "ls -R" {
+  # search entire inventory
+  run govc ls ./...
+  assert_success
+  # should have at least 1 dc + folders, 1 host, 1 network, 1 datastore
+  [ ${#lines[@]} -ge 9 ]
+
+  run govc ls -t HostSystem ./...
+  assert_success
+  [ ${#lines[@]} -eq 1 ]
+
+  run govc ls -t Datacenter /...
+  assert_success
+  [ ${#lines[@]} -eq 1 ]
+
+  run govc ls -t ResourcePool host/...
+  assert_success
+  [ ${#lines[@]} -ge 1 ]
+
+  run govc ls -t ResourcePool vm/...
+  assert_success
+  [ ${#lines[@]} -eq 0 ]
+
+  c=$(govc ls -t ComputeResource ./... | head -1)
+  run govc ls -t ResourcePool "$c/..."
+  assert_success
+  [ ${#lines[@]} -ge 1 ]
 }
 
 @test "ls vm" {

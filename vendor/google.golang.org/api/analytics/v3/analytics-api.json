@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/CEwIV9fdNgUw9Oy31M8HLJeTPyQ\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/kNCxeHzf8zHSdahaoD4fNF__mRA\"",
  "discoveryVersion": "v1",
  "id": "analytics:v3",
  "name": "analytics",
  "version": "v3",
- "revision": "20161004",
+ "revision": "20170321",
  "title": "Google Analytics API",
  "description": "Views and manages your Google Analytics data.",
  "ownerDomain": "google.com",
@@ -5944,6 +5944,40 @@
     },
     "remarketingAudience": {
      "methods": {
+      "delete": {
+       "id": "analytics.management.remarketingAudience.delete",
+       "path": "management/accounts/{accountId}/webproperties/{webPropertyId}/remarketingAudiences/{remarketingAudienceId}",
+       "httpMethod": "DELETE",
+       "description": "Delete a remarketing audience.",
+       "parameters": {
+        "accountId": {
+         "type": "string",
+         "description": "Account ID to which the remarketing audience belongs.",
+         "required": true,
+         "location": "path"
+        },
+        "remarketingAudienceId": {
+         "type": "string",
+         "description": "The ID of the remarketing audience to delete.",
+         "required": true,
+         "location": "path"
+        },
+        "webPropertyId": {
+         "type": "string",
+         "description": "Web property ID to which the remarketing audience belongs.",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "accountId",
+        "webPropertyId",
+        "remarketingAudienceId"
+       ],
+       "scopes": [
+        "https://www.googleapis.com/auth/analytics.edit"
+       ]
+      },
       "get": {
        "id": "analytics.management.remarketingAudience.get",
        "path": "management/accounts/{accountId}/webproperties/{webPropertyId}/remarketingAudiences/{remarketingAudienceId}",

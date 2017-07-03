@@ -18,10 +18,8 @@ require "vim_wsdl"
 
 require "test/unit"
 
-PATH = File.expand_path("../rbvmomi", __FILE__)
-
 def read(file)
-  File.open(File.join(PATH, file))
+  File.open(file)
 end
 
 class Prop
@@ -198,7 +196,6 @@ class Vmodl
     @data.map do |k,v|
       next if !v.is_a?(Hash)
       next if v["kind"] != "managed"
-      next if k =~ /^pbm/i
 
       Managed.new(self, k, v)
     end.compact
@@ -209,14 +206,14 @@ if !File.directory?(ARGV.first)
   raise "first argument not a directory"
 end
 
-wsdl = WSDL.new(WSDL.read "vim.wsdl")
+wsdl = WSDL.new(WSDL.read ARGV[1]+".wsdl")
 wsdl.validate_assumptions!
 wsdl.peek()
 
+vmodl = Vmodl.new(read ARGV[2] || "./rbvmomi/vmodl.db")
+
 File.open(File.join(ARGV.first, "mo/mo.go"), "w") do |io|
   io.print WSDL.header("mo")
-
-  vmodl = Vmodl.new(read "vmodl.db")
 
   vmodl.
     managed.

@@ -44,6 +44,21 @@ To enter a URL that is not in the list, prefix `universal-argument`, for example
 
   `C-u M-x govc-vm`
 
+To avoid putting your credentials in a variable, you can use the
+auth-source search integration.
+
+```
+  (setq govc-urls `("myserver-vmware-2"))
+```
+
+And then put this line in your `auth-sources` (e.g. `~/.authinfo.gpg`):
+```
+    machine myserver-vmware-2 login tzz password mypass url "myserver-vmware-2.some.domain.here:443?insecure=true"
+```
+
+Which will result in the URL "tzz:mypass@myserver-vmware-2.some.domain.here:443?insecure=true".
+For more details on `auth-sources`, see Info node `(auth) Help for users`.
+
 When in `govc-vm` or `govc-host` mode, a default URL is composed with the
 current session credentials and the IP address of the current vm/host and
 the vm/host name as the session name.  This makes it easier to connect to
@@ -121,7 +136,9 @@ Keybinding     | Description
 <kbd>E</kbd>   | Events via govc events -n `govc-max-events`
 <kbd>L</kbd>   | Logs via govc logs -n `govc-max-events`
 <kbd>J</kbd>   | JSON via govc host
+<kbd>M</kbd>   | Metrics info
 <kbd>N</kbd>   | Netstat via `govc-esxcli-netstat-info` with current host id
+<kbd>O</kbd>   | Object browser via govc object
 <kbd>c</kbd>   | Connect new session for the current govc mode
 <kbd>p</kbd>   | Pool-mode with current session
 <kbd>s</kbd>   | Datastore-mode with current session
@@ -139,9 +156,11 @@ during initialization.
 
 Keybinding     | Description
 ---------------|------------------------------------------------------------
+<kbd>D</kbd>   | Destroy via `govc-pool-destroy` on the pool selection
 <kbd>E</kbd>   | Events via govc events -n `govc-max-events`
 <kbd>J</kbd>   | JSON via govc pool
-<kbd>D</kbd>   | Destroy via `govc-pool-destroy` on the pool selection
+<kbd>M</kbd>   | Metrics info
+<kbd>O</kbd>   | Object browser via govc object
 <kbd>c</kbd>   | Connect new session for the current govc mode
 <kbd>h</kbd>   | Host-mode with current session
 <kbd>s</kbd>   | Datastore-mode with current session
@@ -160,6 +179,8 @@ during initialization.
 Keybinding     | Description
 ---------------|------------------------------------------------------------
 <kbd>J</kbd>   | JSON via govc datastore
+<kbd>M</kbd>   | Metrics info
+<kbd>O</kbd>   | Object browser via govc object
 <kbd>RET</kbd> | Browse datastore
 <kbd>c</kbd>   | Connect new session for the current govc mode
 <kbd>h</kbd>   | Host-mode with current session
@@ -200,6 +221,7 @@ Keybinding     | Description
 ---------------|------------------------------------------------------------
 <kbd>E</kbd>   | Events via govc events -n `govc-max-events`
 <kbd>J</kbd>   | JSON via govc vm
+<kbd>O</kbd>   | Object browser via govc object
 <kbd>X</kbd>   | ExtraConfig via `govc-vm-extra-config` on the current selection
 <kbd>RET</kbd> | Devices via `govc-device` on the current selection
 <kbd>C</kbd>   | Console screenshot via `govc-vm-screen` on the current selection
@@ -210,8 +232,9 @@ Keybinding     | Description
 <kbd>@</kbd>   | Reboot via `govc-vm-reboot` on the current selection
 <kbd>&</kbd>   | Suspend via `govc-vm-suspend` on the current selection
 <kbd>H</kbd>   | Host info via `govc-host` with host(s) of current selection
-<kbd>S</kbd>   | Datastore via `govc-datastore-ls` with datastore of current selection
+<kbd>M</kbd>   | Metrics info
 <kbd>P</kbd>   | Ping VM
+<kbd>S</kbd>   | Datastore via `govc-datastore-ls` with datastore of current selection
 <kbd>c</kbd>   | Connect new session for the current govc mode
 <kbd>h</kbd>   | Host-mode with current session
 <kbd>p</kbd>   | Pool-mode with current session
@@ -231,3 +254,37 @@ Keybinding     | Description
 ---------------|------------------------------------------------------------
 <kbd>J</kbd>   | JSON via govc device
 <kbd>RET</kbd> | Tabulated govc device
+
+## govc-object-mode
+
+Major mode for handling a govc object.
+
+In addition to any hooks its parent mode `govc-tabulated-list-mode` might have run,
+this mode runs the hook `govc-object-mode-hook`, as the final step
+during initialization.
+
+### govc-object-mode-map
+
+Keybinding     | Description
+---------------|------------------------------------------------------------
+<kbd>J</kbd>   | JSON object selection via govc object
+<kbd>N</kbd>   | Next managed object reference
+<kbd>O</kbd>   | Object browser via govc object
+<kbd>DEL</kbd> | Parent object selection if reachable, otherwise prompt with `govc-object-history`
+<kbd>RET</kbd> | Expand object selection via govc object
+
+## govc-metric-mode
+
+Major mode for handling a govc metric.
+
+In addition to any hooks its parent mode `govc-tabulated-list-mode` might have run,
+this mode runs the hook `govc-metric-mode-hook`, as the final step
+during initialization.
+
+### govc-metric-mode-map
+
+Keybinding     | Description
+---------------|------------------------------------------------------------
+<kbd>RET</kbd> | Sample metrics
+<kbd>P</kbd>   | Plot metric sample
+<kbd>s</kbd>   | Select metric names

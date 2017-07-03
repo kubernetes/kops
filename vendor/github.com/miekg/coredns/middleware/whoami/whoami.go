@@ -6,7 +6,8 @@ import (
 	"net"
 	"strconv"
 
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -14,7 +15,9 @@ import (
 
 // Whoami is a middleware that returns your IP address, port and the protocol used for connecting
 // to CoreDNS.
-type Whoami struct{}
+type Whoami struct {
+	Next middleware.Handler
+}
 
 // ServeDNS implements the middleware.Handler interface.
 func (wh Whoami) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {

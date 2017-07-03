@@ -68,7 +68,7 @@ func TestValidatePersistentVolumes(t *testing.T) {
 
 func testVolumeWithMountOption(name string, namespace string, mountOptions string, spec api.PersistentVolumeSpec) *api.PersistentVolume {
 	annotations := map[string]string{
-		MountOptionAnnotation: mountOptions,
+		api.MountOptionAnnotation: mountOptions,
 	}
 	objMeta := metav1.ObjectMeta{
 		Name:        name,
@@ -82,5 +82,32 @@ func testVolumeWithMountOption(name string, namespace string, mountOptions strin
 	return &api.PersistentVolume{
 		ObjectMeta: objMeta,
 		Spec:       spec,
+	}
+}
+
+func TestValidatePathNoBacksteps(t *testing.T) {
+	testCases := map[string]struct {
+		path        string
+		expectedErr bool
+	}{
+		"valid path": {
+			path: "/foo/bar",
+		},
+		"invalid path": {
+			path:        "/foo/bar/..",
+			expectedErr: true,
+		},
+	}
+
+	for name, tc := range testCases {
+		err := ValidatePathNoBacksteps(tc.path)
+
+		if err == nil && tc.expectedErr {
+			t.Fatalf("expected test `%s` to return an error but it didnt", name)
+		}
+
+		if err != nil && !tc.expectedErr {
+			t.Fatalf("expected test `%s` to return no error but got `%v`", name, err)
+		}
 	}
 }

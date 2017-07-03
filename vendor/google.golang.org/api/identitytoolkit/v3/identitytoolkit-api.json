@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/Mf51tMCOQelv7PWZO1aUHit4Saw\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/yXklm7FmX0B5usOgdbt9pvbqhCA\"",
  "discoveryVersion": "v1",
  "id": "identitytoolkit:v3",
  "name": "identitytoolkit",
  "canonicalName": "Identity Toolkit",
  "version": "v3",
- "revision": "20161114",
+ "revision": "20170413",
  "title": "Google Identity Toolkit API",
  "description": "Help the third party sites to implement federated login.",
  "ownerDomain": "google.com",
@@ -70,6 +70,9 @@
  "auth": {
   "oauth2": {
    "scopes": {
+    "https://www.googleapis.com/auth/cloud-platform": {
+     "description": "View and manage your data across Google Cloud Platform services"
+    },
     "https://www.googleapis.com/auth/firebase": {
      "description": "View and administer all your Firebase data and settings"
     }
@@ -135,7 +138,7 @@
   "DownloadAccountResponse": {
    "id": "DownloadAccountResponse",
    "type": "object",
-   "description": "Respone of downloading accounts in batch.",
+   "description": "Response of downloading accounts in batch.",
    "properties": {
     "kind": {
      "type": "string",
@@ -350,6 +353,10 @@
     "nextPageToken": {
      "type": "string",
      "description": "The token for the next page. This should be taken from the previous response."
+    },
+    "targetProjectId": {
+     "type": "string",
+     "description": "Specify which project (field value is actually project id) to operate. Only used when provided credential."
     }
    }
   },
@@ -710,6 +717,10 @@
      "type": "string",
      "description": "Instance id token of the app."
     },
+    "localId": {
+     "type": "string",
+     "description": "Privileged caller can create user with specified user id."
+    },
     "password": {
      "type": "string",
      "description": "The new password of the user."
@@ -780,6 +791,10 @@
    "type": "object",
    "description": "Request to verify the IDP assertion.",
    "properties": {
+    "autoCreate": {
+     "type": "boolean",
+     "description": "When it's true, automatically creates a new account if the user doesn't exist. When it's false, allows existing user to sign in normally and throws exception if the user doesn't exist."
+    },
     "delegatedProjectNumber": {
      "type": "string",
      "description": "GCP project number of the requesting delegated app. Currently only intended for Firebase V1 migration.",
@@ -931,6 +946,22 @@
    "type": "object",
    "description": "Request of getting a code for user confirmation (reset password, change email etc.)",
    "properties": {
+    "androidInstallApp": {
+     "type": "boolean",
+     "description": "whether or not to install the android app on the device where the link is opened"
+    },
+    "androidMinimumVersion": {
+     "type": "string",
+     "description": "minimum version of the app. if the version on the device is lower than this version then the user is taken to the play store to upgrade the app"
+    },
+    "androidPackageName": {
+     "type": "string",
+     "description": "android package name of the android app to handle the action code"
+    },
+    "canHandleCodeInApp": {
+     "type": "boolean",
+     "description": "whether or not the app can handle the oob code without first going to web"
+    },
     "captchaResp": {
      "type": "string",
      "description": "The recaptcha response from the user."
@@ -939,9 +970,21 @@
      "type": "string",
      "description": "The recaptcha challenge presented to the user."
     },
+    "continueUrl": {
+     "type": "string",
+     "description": "The url to continue to the Gitkit app"
+    },
     "email": {
      "type": "string",
      "description": "The email of the user."
+    },
+    "iOSAppStoreId": {
+     "type": "string",
+     "description": "iOS app store id to download the app if it's not already installed"
+    },
+    "iOSBundleId": {
+     "type": "string",
+     "description": "the iOS bundle id of iOS app to handle the action code"
     },
     "idToken": {
      "type": "string",
@@ -1002,6 +1045,10 @@
     "email": {
      "type": "string",
      "description": "The email of the user."
+    },
+    "emailVerified": {
+     "type": "boolean",
+     "description": "If email has been verified."
     },
     "expiresIn": {
      "type": "string",
@@ -1181,6 +1228,10 @@
      "description": "The timestamp when the password was last updated.",
      "format": "double"
     },
+    "phoneNumber": {
+     "type": "string",
+     "description": "User's phone number."
+    },
     "photoUrl": {
      "type": "string",
      "description": "The URL of the user profile photo."
@@ -1202,6 +1253,10 @@
        "federatedId": {
         "type": "string",
         "description": "User's identifier at IDP."
+       },
+       "phoneNumber": {
+        "type": "string",
+        "description": "User's phone number."
        },
        "photoUrl": {
         "type": "string",
@@ -1316,6 +1371,10 @@
     "inputEmail": {
      "type": "string",
      "description": "It's the identifier param in the createAuthUri request if the identifier is an email. It can be used to check whether the user input email is different from the asserted email."
+    },
+    "isNewUser": {
+     "type": "boolean",
+     "description": "True if it's a new user sign-in, false if it's a returning user."
     },
     "kind": {
      "type": "string",
@@ -1509,7 +1568,10 @@
      },
      "response": {
       "$ref": "CreateAuthUriResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "deleteAccount": {
      "id": "identitytoolkit.relyingparty.deleteAccount",
@@ -1521,7 +1583,10 @@
      },
      "response": {
       "$ref": "DeleteAccountResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "downloadAccount": {
      "id": "identitytoolkit.relyingparty.downloadAccount",
@@ -1535,6 +1600,7 @@
       "$ref": "DownloadAccountResponse"
      },
      "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/firebase"
      ]
     },
@@ -1548,7 +1614,10 @@
      },
      "response": {
       "$ref": "GetAccountInfoResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "getOobConfirmationCode": {
      "id": "identitytoolkit.relyingparty.getOobConfirmationCode",
@@ -1560,7 +1629,10 @@
      },
      "response": {
       "$ref": "GetOobConfirmationCodeResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "getProjectConfig": {
      "id": "identitytoolkit.relyingparty.getProjectConfig",
@@ -1581,7 +1653,10 @@
      },
      "response": {
       "$ref": "IdentitytoolkitRelyingpartyGetProjectConfigResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "getPublicKeys": {
      "id": "identitytoolkit.relyingparty.getPublicKeys",
@@ -1590,7 +1665,10 @@
      "description": "Get token signing public key.",
      "response": {
       "$ref": "IdentitytoolkitRelyingpartyGetPublicKeysResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "getRecaptchaParam": {
      "id": "identitytoolkit.relyingparty.getRecaptchaParam",
@@ -1599,7 +1677,10 @@
      "description": "Get recaptcha secure param.",
      "response": {
       "$ref": "GetRecaptchaParamResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "resetPassword": {
      "id": "identitytoolkit.relyingparty.resetPassword",
@@ -1611,7 +1692,10 @@
      },
      "response": {
       "$ref": "ResetPasswordResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "setAccountInfo": {
      "id": "identitytoolkit.relyingparty.setAccountInfo",
@@ -1623,7 +1707,10 @@
      },
      "response": {
       "$ref": "SetAccountInfoResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "setProjectConfig": {
      "id": "identitytoolkit.relyingparty.setProjectConfig",
@@ -1635,7 +1722,10 @@
      },
      "response": {
       "$ref": "IdentitytoolkitRelyingpartySetProjectConfigResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "signOutUser": {
      "id": "identitytoolkit.relyingparty.signOutUser",
@@ -1647,7 +1737,10 @@
      },
      "response": {
       "$ref": "IdentitytoolkitRelyingpartySignOutUserResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "signupNewUser": {
      "id": "identitytoolkit.relyingparty.signupNewUser",
@@ -1659,7 +1752,10 @@
      },
      "response": {
       "$ref": "SignupNewUserResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "uploadAccount": {
      "id": "identitytoolkit.relyingparty.uploadAccount",
@@ -1673,6 +1769,7 @@
       "$ref": "UploadAccountResponse"
      },
      "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/firebase"
      ]
     },
@@ -1686,7 +1783,10 @@
      },
      "response": {
       "$ref": "VerifyAssertionResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "verifyCustomToken": {
      "id": "identitytoolkit.relyingparty.verifyCustomToken",
@@ -1698,7 +1798,10 @@
      },
      "response": {
       "$ref": "VerifyCustomTokenResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     },
     "verifyPassword": {
      "id": "identitytoolkit.relyingparty.verifyPassword",
@@ -1710,7 +1813,10 @@
      },
      "response": {
       "$ref": "VerifyPasswordResponse"
-     }
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/cloud-platform"
+     ]
     }
    }
   }

@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/reJOwDPkrjuqU_m9CL56zWFA9Q4\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/y29Ei9gfsS6BekrALyS-uw4tzTU\"",
  "discoveryVersion": "v1",
  "id": "appsactivity:v1",
  "name": "appsactivity",
  "version": "v1",
- "revision": "20161111",
- "title": "Google Apps Activity API",
+ "revision": "20170215",
+ "title": "G Suite Activity API",
  "description": "Provides a historical view of activity.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
@@ -70,7 +70,7 @@
   "oauth2": {
    "scopes": {
     "https://www.googleapis.com/auth/activity": {
-     "description": "View the activity history of your Google Apps"
+     "description": "View the activity history of your Google apps"
     },
     "https://www.googleapis.com/auth/drive": {
      "description": "View and manage the files in your Google Drive"

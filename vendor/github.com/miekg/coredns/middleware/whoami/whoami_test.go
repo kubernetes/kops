@@ -3,8 +3,9 @@ package whoami
 import (
 	"testing"
 
-	"github.com/coredns/coredns/middleware/pkg/dnsrecorder"
-	"github.com/coredns/coredns/middleware/test"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/middleware/pkg/dnsrecorder"
+	"github.com/miekg/coredns/middleware/test"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -14,6 +15,7 @@ func TestWhoami(t *testing.T) {
 	wh := Whoami{}
 
 	tests := []struct {
+		next          middleware.Handler
 		qname         string
 		qtype         uint16
 		expectedCode  int
@@ -21,6 +23,7 @@ func TestWhoami(t *testing.T) {
 		expectedErr   error
 	}{
 		{
+			next:          test.NextHandler(dns.RcodeSuccess, nil),
 			qname:         "example.org",
 			qtype:         dns.TypeA,
 			expectedCode:  dns.RcodeSuccess,
@@ -32,6 +35,7 @@ func TestWhoami(t *testing.T) {
 	ctx := context.TODO()
 
 	for i, tc := range tests {
+		wh.Next = tc.next
 		req := new(dns.Msg)
 		req.SetQuestion(dns.Fqdn(tc.qname), tc.qtype)
 

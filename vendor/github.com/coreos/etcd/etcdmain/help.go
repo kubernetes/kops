@@ -14,7 +14,11 @@
 
 package etcdmain
 
-import "strconv"
+import (
+	"strconv"
+
+	"github.com/coreos/etcd/embed"
+)
 
 var (
 	usageline = `usage: etcd [flags]
@@ -48,9 +52,9 @@ member flags:
 		list of URLs to listen on for peer traffic.
 	--listen-client-urls 'http://localhost:2379'
 		list of URLs to listen on for client traffic.
-	--max-snapshots '` + strconv.Itoa(defaultMaxSnapshots) + `'
+	--max-snapshots '` + strconv.Itoa(embed.DefaultMaxSnapshots) + `'
 		maximum number of snapshot files to retain (0 is unlimited).
-	--max-wals '` + strconv.Itoa(defaultMaxWALs) + `'
+	--max-wals '` + strconv.Itoa(embed.DefaultMaxWALs) + `'
 		maximum number of wal files to retain (0 is unlimited).
 	--cors ''
 		comma-separated whitelist of origins for CORS (cross-origin resource sharing).
@@ -135,6 +139,8 @@ logging flags
 		enable debug-level logging for etcd.
 	--log-package-levels ''
 		specify a particular log level for each etcd package (eg: 'etcdmain=CRITICAL,etcdserver=DEBUG').
+	--log-output 'default'
+		specify 'stdout' or 'stderr' to skip journald logging even when running under systemd.
 
 unsafe flags:
 
@@ -143,9 +149,11 @@ given by the consensus protocol.
 
 	--force-new-cluster 'false'
 		force to create a new one-member cluster.
-	
+
 profiling flags:
 	--enable-pprof 'false'
-		Enable runtime profiling data via HTTP server. Address is at client URL + "/debug/pprof"
+		Enable runtime profiling data via HTTP server. Address is at client URL + "/debug/pprof/"
+	--metrics 'basic'
+	  Set level of detail for exported metrics, specify 'extensive' to include histogram metrics.
 `
 )

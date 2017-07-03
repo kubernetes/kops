@@ -4,7 +4,6 @@ package grpc.gateway.examples.examplepb;
 
 import "google/api/annotations.proto";
 import "google/protobuf/empty.proto";
-import "google/protobuf/duration.proto";
 import "examples/sub/message.proto";
 import "examples/sub2/message.proto";
 import "google/protobuf/timestamp.proto";
@@ -59,9 +58,6 @@ message ABitOfEverything {
 	string nonConventionalNameValue = 26;
 
 	google.protobuf.Timestamp timestamp_value = 27;
-
-        // repeated enum value. it is comma-separated in query
-	repeated NumericEnum repeated_enum_value = 28;
 }
 
 // NumericEnum is one or zero.
@@ -101,11 +97,6 @@ service ABitOfEverythingService {
 			delete: "/v1/example/a_bit_of_everything/{uuid}"
 		};
 	}
-	rpc GetQuery(ABitOfEverything) returns (google.protobuf.Empty) {
-		option (google.api.http) = {
-			get: "/v1/example/a_bit_of_everything/query/{uuid}"
-		};
-	}
 	rpc Echo(grpc.gateway.examples.sub.StringMessage) returns (grpc.gateway.examples.sub.StringMessage) {
 		option (google.api.http) = {
 			get: "/v1/example/a_bit_of_everything/echo/{value}"
@@ -124,14 +115,9 @@ service ABitOfEverythingService {
 			body: "*"
 		};
 	}
-	rpc NoBindings(google.protobuf.Duration) returns (google.protobuf.Empty) {}
 	rpc Timeout(google.protobuf.Empty) returns (google.protobuf.Empty) {
 		option (google.api.http) = {
 			get: "/v2/example/timeout",
 		};
 	}
-}
-
-service AnotherServiceWithNoBindings {
-	rpc NoBindings(google.protobuf.Empty) returns (google.protobuf.Empty) {}
 }

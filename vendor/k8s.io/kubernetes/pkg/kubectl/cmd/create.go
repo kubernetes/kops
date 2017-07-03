@@ -23,11 +23,11 @@ import (
 
 	"github.com/spf13/cobra"
 
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kubernetes/pkg/kubectl"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
 	"k8s.io/kubernetes/pkg/util/i18n"
 )
@@ -39,12 +39,12 @@ type CreateOptions struct {
 }
 
 var (
-	create_long = templates.LongDesc(`
+	create_long = templates.LongDesc(i18n.T(`
 		Create a resource by filename or stdin.
 
-		JSON and YAML formats are accepted.`)
+		JSON and YAML formats are accepted.`))
 
-	create_example = templates.Examples(`
+	create_example = templates.Examples(i18n.T(`
 		# Create a pod using the data in pod.json.
 		kubectl create -f ./pod.json
 
@@ -52,7 +52,7 @@ var (
 		cat pod.json | kubectl create -f -
 
 		# Edit the data in docker-registry.yaml in JSON using the v1 API format then create the resource using the edited data.
-		kubectl create -f docker-registry.yaml --edit --output-version=v1 -o json`)
+		kubectl create -f docker-registry.yaml --edit --output-version=v1 -o json`))
 )
 
 func NewCmdCreate(f cmdutil.Factory, out, errOut io.Writer) *cobra.Command {
@@ -124,11 +124,17 @@ func RunCreate(f cmdutil.Factory, cmd *cobra.Command, out, errOut io.Writer, opt
 		return err
 	}
 
-	mapper, typer, err := f.UnstructuredObject()
+	mapper, _, err := f.UnstructuredObject()
 	if err != nil {
 		return err
 	}
-	r := resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.UnstructuredClientForMapping), unstructured.UnstructuredJSONScheme).
+
+	builder, err := f.NewUnstructuredBuilder(true)
+	if err != nil {
+		return err
+	}
+
+	r := builder.
 		Schema(schema).
 		ContinueOnError().
 		NamespaceParam(cmdNamespace).DefaultNamespace().
@@ -188,7 +194,25 @@ func RunCreate(f cmdutil.Factory, cmd *cobra.Command, out, errOut io.Writer, opt
 }
 
 func RunEditOnCreate(f cmdutil.Factory, out, errOut io.Writer, cmd *cobra.Command, options *resource.FilenameOptions) error {
-	return runEdit(f, out, errOut, cmd, []string{}, options, EditBeforeCreateMode)
+	editOptions := &editor.EditOptions{
+		EditMode:        editor.EditBeforeCreateMode,
+		FilenameOptions: *options,
+		ValidateOptions: cmdutil.ValidateOptions{
+			EnableValidation: cmdutil.GetFlagBool(cmd, "validate"),
+			SchemaCacheDir:   cmdutil.GetFlagString(cmd, "schema-cache-dir"),
+		},
+		Output:             cmdutil.GetFlagString(cmd, "output"),
+		WindowsLineEndings: cmdutil.GetFlagBool(cmd, "windows-line-endings"),
+		ApplyAnnotation:    cmdutil.GetFlagBool(cmd, cmdutil.ApplyAnnotationsFlag),
+		Record:             cmdutil.GetFlagBool(cmd, "record"),
+		ChangeCause:        f.Command(cmd, false),
+		Include3rdParty:    cmdutil.GetFlagBool(cmd, "include-extended-apis"),
+	}
+	err := editOptions.Complete(f, out, errOut, []string{})
+	if err != nil {
+		return err
+	}
+	return editOptions.Run()
 }
 
 // createAndRefresh creates an object from input info and refreshes info with that object
@@ -271,5 +295,5 @@ func RunCreateSubcommand(f cmdutil.Factory, cmd *cobra.Command, out io.Writer, o
 		return nil
 	}
 
-	return f.PrintObject(cmd, mapper, obj, out)
+	return f.PrintObject(cmd, false, mapper, obj, out)
 }

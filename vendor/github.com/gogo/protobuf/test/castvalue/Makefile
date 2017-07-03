@@ -1,6 +1,6 @@
-# Extensions for Protocol Buffers to create more go like structures.
+# Protocol Buffers for Go with Gadgets
 #
-# Copyright (c) 2013, Vastech SA (PTY) LTD. All rights reserved.
+# Copyright (c) 2013, The GoGo Authors. All rights reserved.
 # http://github.com/gogo/protobuf
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,8 +29,9 @@
 regenerate:
 	rm -rf combos
 	go install github.com/gogo/protobuf/protoc-gen-combo
+	go install github.com/gogo/protobuf/protoc-gen-gogo
 	protoc-min-version --version="3.0.0" --gogo_out=. --proto_path=../../../../../:../../protobuf/:. castvalue.proto
-	protoc-gen-combo --default=false --version="3.0.0" --proto_path=../../../../../:../../protobuf/:. castvalue.proto
+	protoc-gen-combo --default=false --version="3.0.0" --gogo_out=. --proto_path=../../../../../:../../protobuf/:. castvalue.proto
 	cp mytypes.go ./combos/both/ || true
 	cp mytypes.go ./combos/marshaler/ || true
 	cp mytypes.go ./combos/unmarshaler/ || true

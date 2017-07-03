@@ -96,7 +96,8 @@ func Run(address string, opts ...runtime.ServeMuxOption) error {
 	}
 	mux.Handle("/", gw)
 
-	return http.ListenAndServe(address, allowCORS(mux))
+	http.ListenAndServe(address, allowCORS(mux))
+	return nil
 }
 
 func main() {

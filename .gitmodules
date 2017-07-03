@@ -265,9 +265,6 @@
 [submodule "_vendor/github.com/elazarl/go-bindata-assetfs"]
 	path = _vendor/github.com/elazarl/go-bindata-assetfs
 	url = https://github.com/elazarl/go-bindata-assetfs
-[submodule "_vendor/github.com/grpc-ecosystem"]
-	path = _vendor/github.com/grpc-ecosystem
-	url = https://github.com/grpc-ecosystem/grpc-gateway
 [submodule "_vendor/gopkg.in/natefinch/lumberjack.v2"]
 	path = _vendor/gopkg.in/natefinch/lumberjack.v2
 	url = https://gopkg.in/natefinch/lumberjack.v2
@@ -289,3 +286,30 @@
 [submodule "_vendor/github.com/weaveworks/mesh"]
 	path = _vendor/github.com/weaveworks/mesh
 	url = https://github.com/weaveworks/mesh
+[submodule "_vendor/github.com/grpc-ecosystem/go-grpc-prometheus"]
+	path = _vendor/github.com/grpc-ecosystem/go-grpc-prometheus
+	url = https://github.com/grpc-ecosystem/go-grpc-prometheus
+[submodule "_vendor/github.com/grpc-ecosystem/grpc-gateway"]
+	path = _vendor/github.com/grpc-ecosystem/grpc-gateway
+	url = https://github.com/grpc-ecosystem/grpc-gateway
+[submodule "_vendor/github.com/emicklei/go-restful-swagger12"]
+	path = _vendor/github.com/emicklei/go-restful-swagger12
+	url = https://github.com/emicklei/go-restful-swagger12
+[submodule "_vendor/github.com/fatih/camelcase"]
+	path = _vendor/github.com/fatih/camelcase
+	url = https://github.com/fatih/camelcase
+[submodule "_vendor/github.com/go-openapi/loads"]
+	path = _vendor/github.com/go-openapi/loads
+	url = https://github.com/go-openapi/loads
+[submodule "_vendor/github.com/go-openapi/analysis"]
+	path = _vendor/github.com/go-openapi/analysis
+	url = https://github.com/go-openapi/analysis
+[submodule "_vendor/github.com/googleapis/gnostic"]
+	path = _vendor/github.com/googleapis/gnostic
+	url = https://github.com/googleapis/gnostic
+[submodule "_vendor/github.com/hashicorp/golang-lru"]
+	path = _vendor/github.com/hashicorp/golang-lru
+	url = https://github.com/hashicorp/golang-lru
+[submodule "_vendor/github.com/Azure/go-autorest"]
+	path = _vendor/github.com/Azure/go-autorest
+	url = https://github.com/Azure/go-autorest

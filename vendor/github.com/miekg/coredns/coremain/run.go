@@ -14,10 +14,10 @@ import (
 
 	"github.com/mholt/caddy"
 
-	"github.com/coredns/coredns/core/dnsserver"
+	"github.com/miekg/coredns/core/dnsserver"
 
 	// Plug in CoreDNS
-	_ "github.com/coredns/coredns/core"
+	_ "github.com/miekg/coredns/core"
 )
 
 func init() {
