@@ -3,7 +3,7 @@ package request
 import (
 	"testing"
 
-	"github.com/coredns/coredns/middleware/test"
+	"github.com/miekg/coredns/middleware/test"
 
 	"github.com/miekg/dns"
 )

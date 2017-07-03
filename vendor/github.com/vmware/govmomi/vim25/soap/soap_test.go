@@ -38,18 +38,22 @@ func TestEmptyEnvelope(t *testing.T) {
 	}
 }
 
-func TestEmptyHeader(t *testing.T) {
-	h := Header{}
+func TestNonEmptyHeader(t *testing.T) {
+	env := Envelope{
+		Header: struct {
+			Foo string
+		}{"bar"},
+	}
 
-	b, err := xml.Marshal(h)
+	b, err := xml.Marshal(env)
 	if err != nil {
 		t.Errorf("error: %s", err)
 		return
 	}
 
-	expected := `<Header xmlns="http://schemas.xmlsoap.org/soap/envelope/"></Header>`
-	actual := string(b)
-	if expected != actual {
-		t.Fatalf("expected: %s, actual: %s", expected, actual)
+	env = Envelope{}
+	err = xml.Unmarshal(b, &env)
+	if err != nil {
+		t.Errorf("error: %s", err)
 	}
 }

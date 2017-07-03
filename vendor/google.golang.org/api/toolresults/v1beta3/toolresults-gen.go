@@ -1,6 +1,6 @@
 // Package toolresults provides access to the Cloud Tool Results API.
 //
-// See https://developers.google.com/cloud-test-lab/
+// See https://firebase.google.com/docs/test-lab/
 //
 // Usage example:
 //
@@ -113,6 +113,8 @@ type ProjectsHistoriesExecutionsService struct {
 
 func NewProjectsHistoriesExecutionsStepsService(s *Service) *ProjectsHistoriesExecutionsStepsService {
 	rs := &ProjectsHistoriesExecutionsStepsService{s: s}
+	rs.PerfMetricsSummary = NewProjectsHistoriesExecutionsStepsPerfMetricsSummaryService(s)
+	rs.PerfSampleSeries = NewProjectsHistoriesExecutionsStepsPerfSampleSeriesService(s)
 	rs.Thumbnails = NewProjectsHistoriesExecutionsStepsThumbnailsService(s)
 	return rs
 }
@@ -120,7 +122,41 @@ func NewProjectsHistoriesExecutionsStepsService(s *Service) *ProjectsHistoriesEx
 type ProjectsHistoriesExecutionsStepsService struct {
 	s *Service
 
+	PerfMetricsSummary *ProjectsHistoriesExecutionsStepsPerfMetricsSummaryService
+
+	PerfSampleSeries *ProjectsHistoriesExecutionsStepsPerfSampleSeriesService
+
 	Thumbnails *ProjectsHistoriesExecutionsStepsThumbnailsService
+}
+
+func NewProjectsHistoriesExecutionsStepsPerfMetricsSummaryService(s *Service) *ProjectsHistoriesExecutionsStepsPerfMetricsSummaryService {
+	rs := &ProjectsHistoriesExecutionsStepsPerfMetricsSummaryService{s: s}
+	return rs
+}
+
+type ProjectsHistoriesExecutionsStepsPerfMetricsSummaryService struct {
+	s *Service
+}
+
+func NewProjectsHistoriesExecutionsStepsPerfSampleSeriesService(s *Service) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesService {
+	rs := &ProjectsHistoriesExecutionsStepsPerfSampleSeriesService{s: s}
+	rs.Samples = NewProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesService(s)
+	return rs
+}
+
+type ProjectsHistoriesExecutionsStepsPerfSampleSeriesService struct {
+	s *Service
+
+	Samples *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesService
+}
+
+func NewProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesService(s *Service) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesService {
+	rs := &ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesService{s: s}
+	return rs
+}
+
+type ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesService struct {
+	s *Service
 }
 
 func NewProjectsHistoriesExecutionsStepsThumbnailsService(s *Service) *ProjectsHistoriesExecutionsStepsThumbnailsService {
@@ -230,6 +266,174 @@ func (s *Any) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// BasicPerfSampleSeries: Encapsulates the metadata for basic sample
+// series represented by a line chart
+type BasicPerfSampleSeries struct {
+	// Possible values:
+	//   "cpu"
+	//   "graphics"
+	//   "memory"
+	//   "network"
+	//   "perfMetricTypeUnspecified"
+	PerfMetricType string `json:"perfMetricType,omitempty"`
+
+	// Possible values:
+	//   "bytesPerSecond"
+	//   "framesPerSecond"
+	//   "kibibyte"
+	//   "percent"
+	//   "perfUnitUnspecified"
+	PerfUnit string `json:"perfUnit,omitempty"`
+
+	// Possible values:
+	//   "cpuKernel"
+	//   "cpuTotal"
+	//   "cpuUser"
+	//   "graphicsFrameRate"
+	//   "memoryRssPrivate"
+	//   "memoryRssShared"
+	//   "memoryRssTotal"
+	//   "memoryTotal"
+	//   "networkReceived"
+	//   "networkSent"
+	//   "ntBytesReceived"
+	//   "ntBytesTransferred"
+	//   "sampleSeriesTypeUnspecified"
+	SampleSeriesLabel string `json:"sampleSeriesLabel,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "PerfMetricType") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PerfMetricType") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BasicPerfSampleSeries) MarshalJSON() ([]byte, error) {
+	type noMethod BasicPerfSampleSeries
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// BatchCreatePerfSamplesRequest: The request must provide up to a
+// maximum of 5000 samples to be created; a larger sample size will
+// cause an INVALID_ARGUMENT error
+type BatchCreatePerfSamplesRequest struct {
+	// PerfSamples: The set of PerfSamples to create should not include
+	// existing timestamps
+	PerfSamples []*PerfSample `json:"perfSamples,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "PerfSamples") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PerfSamples") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BatchCreatePerfSamplesRequest) MarshalJSON() ([]byte, error) {
+	type noMethod BatchCreatePerfSamplesRequest
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type BatchCreatePerfSamplesResponse struct {
+	PerfSamples []*PerfSample `json:"perfSamples,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "PerfSamples") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PerfSamples") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *BatchCreatePerfSamplesResponse) MarshalJSON() ([]byte, error) {
+	type noMethod BatchCreatePerfSamplesResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type CPUInfo struct {
+	// CpuProcessor: description of the device processor ie '1.8 GHz hexa
+	// core 64-bit ARMv8-A'
+	CpuProcessor string `json:"cpuProcessor,omitempty"`
+
+	// CpuSpeedInGhz: the CPU clock speed in GHz
+	CpuSpeedInGhz float64 `json:"cpuSpeedInGhz,omitempty"`
+
+	// NumberOfCores: the number of CPU cores
+	NumberOfCores int64 `json:"numberOfCores,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CpuProcessor") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CpuProcessor") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *CPUInfo) MarshalJSON() ([]byte, error) {
+	type noMethod CPUInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *CPUInfo) UnmarshalJSON(data []byte) error {
+	type noMethod CPUInfo
+	var s1 struct {
+		CpuSpeedInGhz gensupport.JSONFloat64 `json:"cpuSpeedInGhz"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.CpuSpeedInGhz = float64(s1.CpuSpeedInGhz)
+	return nil
+}
+
 // Duration: A Duration represents a signed, fixed-length span of time
 // represented as a count of seconds and fractions of seconds at
 // nanosecond resolution. It is independent of any calendar and concepts
@@ -237,6 +441,8 @@ func (s *Any) MarshalJSON() ([]byte, error) {
 // difference between two Timestamp values is a Duration and it can be
 // added or subtracted from a Timestamp. Range is approximately +-10,000
 // years.
+//
+// # Examples
 //
 // Example 1: Compute Duration from two Timestamps in pseudo
 // code.
@@ -267,6 +473,17 @@ func (s *Any) MarshalJSON() ([]byte, error) {
 //
 // td = datetime.timedelta(days=3, minutes=10) duration = Duration()
 // duration.FromTimedelta(td)
+//
+// # JSON Mapping
+//
+// In JSON format, the Duration type is encoded as a string rather than
+// an object, where the string ends in the suffix "s" (indicating
+// seconds) and is preceded by the number of seconds, with nanoseconds
+// expressed as fractional seconds. For example, 3 seconds with 0
+// nanoseconds should be encoded in JSON format as "3s", while 3 seconds
+// and 1 nanosecond should be expressed in JSON format as
+// "3.000000001s", and 3 seconds and 1 microsecond should be expressed
+// in JSON format as "3.000001s".
 type Duration struct {
 	// Nanos: Signed fractions of a second at nanosecond resolution of the
 	// span of time. Durations less than one second are represented with a 0
@@ -277,7 +494,9 @@ type Duration struct {
 	Nanos int64 `json:"nanos,omitempty"`
 
 	// Seconds: Signed seconds of the span of time. Must be from
-	// -315,576,000,000 to +315,576,000,000 inclusive.
+	// -315,576,000,000 to +315,576,000,000 inclusive. Note: these bounds
+	// are computed from: 60 sec/min * 60 min/hr * 24 hr/day * 365.25
+	// days/year * 10000 years
 	Seconds int64 `json:"seconds,omitempty,string"`
 
 	// ForceSendFields is a list of field names (e.g. "Nanos") to
@@ -707,6 +926,74 @@ func (s *ListHistoriesResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+type ListPerfSampleSeriesResponse struct {
+	// PerfSampleSeries: The resulting PerfSampleSeries sorted by id
+	PerfSampleSeries []*PerfSampleSeries `json:"perfSampleSeries,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "PerfSampleSeries") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "PerfSampleSeries") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListPerfSampleSeriesResponse) MarshalJSON() ([]byte, error) {
+	type noMethod ListPerfSampleSeriesResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+type ListPerfSamplesResponse struct {
+	// NextPageToken: Optional, returned if result size exceeds the page
+	// size specified in the request (or the default page size, 500, if
+	// unspecified). It indicates the last sample timestamp to be used as
+	// page_token in subsequent request
+	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	PerfSamples []*PerfSample `json:"perfSamples,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "NextPageToken") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "NextPageToken") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ListPerfSamplesResponse) MarshalJSON() ([]byte, error) {
+	type noMethod ListPerfSamplesResponse
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // ListStepThumbnailsResponse: A response containing the thumbnails in a
 // step.
 type ListStepThumbnailsResponse struct {
@@ -794,6 +1081,38 @@ func (s *ListStepsResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+type MemoryInfo struct {
+	// MemoryCapInKibibyte: Maximum memory that can be allocated to the
+	// process in KiB
+	MemoryCapInKibibyte int64 `json:"memoryCapInKibibyte,omitempty,string"`
+
+	// MemoryTotalInKibibyte: Total memory available on the device in KiB
+	MemoryTotalInKibibyte int64 `json:"memoryTotalInKibibyte,omitempty,string"`
+
+	// ForceSendFields is a list of field names (e.g. "MemoryCapInKibibyte")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "MemoryCapInKibibyte") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *MemoryInfo) MarshalJSON() ([]byte, error) {
+	type noMethod MemoryInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Outcome: Interprets a result so that humans and machines can act on
 // it.
 type Outcome struct {
@@ -861,6 +1180,189 @@ type Outcome struct {
 
 func (s *Outcome) MarshalJSON() ([]byte, error) {
 	type noMethod Outcome
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PerfEnvironment: Encapsulates performance environment info
+type PerfEnvironment struct {
+	// CpuInfo: CPU related environment info
+	CpuInfo *CPUInfo `json:"cpuInfo,omitempty"`
+
+	// MemoryInfo: Memory related environment info
+	MemoryInfo *MemoryInfo `json:"memoryInfo,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CpuInfo") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CpuInfo") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PerfEnvironment) MarshalJSON() ([]byte, error) {
+	type noMethod PerfEnvironment
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PerfMetricsSummary: A summary of perf metrics collected and
+// performance environment info
+type PerfMetricsSummary struct {
+	// ExecutionId: A tool results execution ID.
+	ExecutionId string `json:"executionId,omitempty"`
+
+	// HistoryId: A tool results history ID.
+	HistoryId string `json:"historyId,omitempty"`
+
+	// PerfEnvironment: Describes the environment in which the performance
+	// metrics were collected
+	PerfEnvironment *PerfEnvironment `json:"perfEnvironment,omitempty"`
+
+	// PerfMetrics: Set of resource collected
+	//
+	// Possible values:
+	//   "cpu"
+	//   "graphics"
+	//   "memory"
+	//   "network"
+	//   "perfMetricTypeUnspecified"
+	PerfMetrics []string `json:"perfMetrics,omitempty"`
+
+	// ProjectId: The cloud project
+	ProjectId string `json:"projectId,omitempty"`
+
+	// StepId: A tool results step ID.
+	StepId string `json:"stepId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g. "ExecutionId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ExecutionId") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PerfMetricsSummary) MarshalJSON() ([]byte, error) {
+	type noMethod PerfMetricsSummary
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// PerfSample: Resource representing a single performance measure or
+// data point
+type PerfSample struct {
+	// SampleTime: Timestamp of collection
+	SampleTime *Timestamp `json:"sampleTime,omitempty"`
+
+	// Value: Value observed
+	Value float64 `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "SampleTime") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "SampleTime") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PerfSample) MarshalJSON() ([]byte, error) {
+	type noMethod PerfSample
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *PerfSample) UnmarshalJSON(data []byte) error {
+	type noMethod PerfSample
+	var s1 struct {
+		Value gensupport.JSONFloat64 `json:"value"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Value = float64(s1.Value)
+	return nil
+}
+
+// PerfSampleSeries: Resource representing a collection of performance
+// samples (or data points)
+type PerfSampleSeries struct {
+	// BasicPerfSampleSeries: Basic series represented by a line chart
+	BasicPerfSampleSeries *BasicPerfSampleSeries `json:"basicPerfSampleSeries,omitempty"`
+
+	// ExecutionId: A tool results execution ID.
+	ExecutionId string `json:"executionId,omitempty"`
+
+	// HistoryId: A tool results history ID.
+	HistoryId string `json:"historyId,omitempty"`
+
+	// ProjectId: The cloud project
+	ProjectId string `json:"projectId,omitempty"`
+
+	// SampleSeriesId: A sample series id
+	SampleSeriesId string `json:"sampleSeriesId,omitempty"`
+
+	// StepId: A tool results step ID.
+	StepId string `json:"stepId,omitempty"`
+
+	// ServerResponse contains the HTTP response code and headers from the
+	// server.
+	googleapi.ServerResponse `json:"-"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "BasicPerfSampleSeries") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "BasicPerfSampleSeries") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *PerfSampleSeries) MarshalJSON() ([]byte, error) {
+	type noMethod PerfSampleSeries
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -1708,6 +2210,8 @@ func (s *Thumbnail) MarshalJSON() ([]byte, error) {
 // [https://www.ietf.org/rfc/rfc3339.txt](https://www.ietf.org/rfc/rfc333
 // 9.txt).
 //
+// # Examples
+//
 // Example 1: Compute Timestamp from POSIX `time()`.
 //
 // Timestamp timestamp; timestamp.set_seconds(time(NULL));
@@ -1746,6 +2250,33 @@ func (s *Thumbnail) MarshalJSON() ([]byte, error) {
 // Example 5: Compute Timestamp from current time in Python.
 //
 // timestamp = Timestamp() timestamp.GetCurrentTime()
+//
+// # JSON Mapping
+//
+// In JSON format, the Timestamp type is encoded as a string in the [RFC
+// 3339](https://www.ietf.org/rfc/rfc3339.txt) format. That is, the
+// format is "{year}-{month}-{day}T{hour}:{min}:{sec}[.{frac_sec}]Z"
+// where {year} is always expressed using four digits while {month},
+// {day}, {hour}, {min}, and {sec} are zero-padded to two digits each.
+// The fractional seconds, which can go up to 9 digits (i.e. up to 1
+// nanosecond resolution), are optional. The "Z" suffix indicates the
+// timezone ("UTC"); the timezone is required, though only UTC (as
+// indicated by "Z") is presently supported.
+//
+// For example, "2017-01-15T01:30:15.01Z" encodes 15.01 seconds past
+// 01:30 UTC on January 15, 2017.
+//
+// In JavaScript, one can convert a Date object to this format using the
+// standard
+// [toISOString()](https://developer.mozilla.org/en-US/docs/Web/JavaScrip
+// t/Reference/Global_Objects/Date/toISOString] method. In Python, a
+// standard `datetime.datetime` object can be converted to this format
+// using
+// [`strftime`](https://docs.python.org/2/library/time.html#time.strftime
+// ) with the time format spec '%Y-%m-%dT%H:%M:%S.%fZ'. Likewise, in
+// Java, one can use the Joda Time's [`ISODateTimeFormat.dateTime()`](
+// http://joda-time.sourceforge.net/apidocs/org/joda/time/format/ISODateTimeFormat.html#dateTime()) to obtain a formatter capable of generating timestamps in this
+// format.
 type Timestamp struct {
 	// Nanos: Non-negative fractions of a second at nanosecond resolution.
 	// Negative second values with fractions must still have non-negative
@@ -3825,6 +4356,176 @@ func (c *ProjectsHistoriesExecutionsStepsGetCall) Do(opts ...googleapi.CallOptio
 
 }
 
+// method id "toolresults.projects.histories.executions.steps.getPerfMetricsSummary":
+
+type ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall struct {
+	s            *Service
+	projectId    string
+	historyId    string
+	executionId  string
+	stepId       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// GetPerfMetricsSummary: Retrieves a PerfMetricsSummary.
+//
+// May return any of the following error code(s): - NOT_FOUND - The
+// specified PerfMetricsSummary does not exist
+func (r *ProjectsHistoriesExecutionsStepsService) GetPerfMetricsSummary(projectId string, historyId string, executionId string, stepId string) *ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall {
+	c := &ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.projectId = projectId
+	c.historyId = historyId
+	c.executionId = executionId
+	c.stepId = stepId
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall) Fields(s ...googleapi.Field) *ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall) IfNoneMatch(entityTag string) *ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall) Context(ctx context.Context) *ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfMetricsSummary")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"projectId":   c.projectId,
+		"historyId":   c.historyId,
+		"executionId": c.executionId,
+		"stepId":      c.stepId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "toolresults.projects.histories.executions.steps.getPerfMetricsSummary" call.
+// Exactly one of *PerfMetricsSummary or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *PerfMetricsSummary.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsHistoriesExecutionsStepsGetPerfMetricsSummaryCall) Do(opts ...googleapi.CallOption) (*PerfMetricsSummary, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &PerfMetricsSummary{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Retrieves a PerfMetricsSummary.\n\nMay return any of the following error code(s): - NOT_FOUND - The specified PerfMetricsSummary does not exist",
+	//   "httpMethod": "GET",
+	//   "id": "toolresults.projects.histories.executions.steps.getPerfMetricsSummary",
+	//   "parameterOrder": [
+	//     "projectId",
+	//     "historyId",
+	//     "executionId",
+	//     "stepId"
+	//   ],
+	//   "parameters": {
+	//     "executionId": {
+	//       "description": "A tool results execution ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "historyId": {
+	//       "description": "A tool results history ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "projectId": {
+	//       "description": "The cloud project",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "stepId": {
+	//       "description": "A tool results step ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfMetricsSummary",
+	//   "response": {
+	//     "$ref": "PerfMetricsSummary"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
 // method id "toolresults.projects.histories.executions.steps.list":
 
 type ProjectsHistoriesExecutionsStepsListCall struct {
@@ -4400,6 +5101,1144 @@ func (c *ProjectsHistoriesExecutionsStepsPublishXunitXmlFilesCall) Do(opts ...go
 	//   ]
 	// }
 
+}
+
+// method id "toolresults.projects.histories.executions.steps.perfMetricsSummary.create":
+
+type ProjectsHistoriesExecutionsStepsPerfMetricsSummaryCreateCall struct {
+	s                  *Service
+	projectId          string
+	historyId          string
+	executionId        string
+	stepId             string
+	perfmetricssummary *PerfMetricsSummary
+	urlParams_         gensupport.URLParams
+	ctx_               context.Context
+	header_            http.Header
+}
+
+// Create: Creates a PerfMetricsSummary resource.
+//
+// May return any of the following error code(s): - ALREADY_EXISTS - A
+// PerfMetricSummary already exists for the given Step - NOT_FOUND - The
+// containing Step does not exist
+func (r *ProjectsHistoriesExecutionsStepsPerfMetricsSummaryService) Create(projectId string, historyId string, executionId string, stepId string, perfmetricssummary *PerfMetricsSummary) *ProjectsHistoriesExecutionsStepsPerfMetricsSummaryCreateCall {
+	c := &ProjectsHistoriesExecutionsStepsPerfMetricsSummaryCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.projectId = projectId
+	c.historyId = historyId
+	c.executionId = executionId
+	c.stepId = stepId
+	c.perfmetricssummary = perfmetricssummary
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsHistoriesExecutionsStepsPerfMetricsSummaryCreateCall) Fields(s ...googleapi.Field) *ProjectsHistoriesExecutionsStepsPerfMetricsSummaryCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsHistoriesExecutionsStepsPerfMetricsSummaryCreateCall) Context(ctx context.Context) *ProjectsHistoriesExecutionsStepsPerfMetricsSummaryCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsHistoriesExecutionsStepsPerfMetricsSummaryCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsHistoriesExecutionsStepsPerfMetricsSummaryCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.perfmetricssummary)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfMetricsSummary")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"projectId":   c.projectId,
+		"historyId":   c.historyId,
+		"executionId": c.executionId,
+		"stepId":      c.stepId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "toolresults.projects.histories.executions.steps.perfMetricsSummary.create" call.
+// Exactly one of *PerfMetricsSummary or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *PerfMetricsSummary.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsHistoriesExecutionsStepsPerfMetricsSummaryCreateCall) Do(opts ...googleapi.CallOption) (*PerfMetricsSummary, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &PerfMetricsSummary{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates a PerfMetricsSummary resource.\n\nMay return any of the following error code(s): - ALREADY_EXISTS - A PerfMetricSummary already exists for the given Step - NOT_FOUND - The containing Step does not exist",
+	//   "httpMethod": "POST",
+	//   "id": "toolresults.projects.histories.executions.steps.perfMetricsSummary.create",
+	//   "parameterOrder": [
+	//     "projectId",
+	//     "historyId",
+	//     "executionId",
+	//     "stepId"
+	//   ],
+	//   "parameters": {
+	//     "executionId": {
+	//       "description": "A tool results execution ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "historyId": {
+	//       "description": "A tool results history ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "projectId": {
+	//       "description": "The cloud project",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "stepId": {
+	//       "description": "A tool results step ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfMetricsSummary",
+	//   "request": {
+	//     "$ref": "PerfMetricsSummary"
+	//   },
+	//   "response": {
+	//     "$ref": "PerfMetricsSummary"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "toolresults.projects.histories.executions.steps.perfSampleSeries.create":
+
+type ProjectsHistoriesExecutionsStepsPerfSampleSeriesCreateCall struct {
+	s                *Service
+	projectId        string
+	historyId        string
+	executionId      string
+	stepId           string
+	perfsampleseries *PerfSampleSeries
+	urlParams_       gensupport.URLParams
+	ctx_             context.Context
+	header_          http.Header
+}
+
+// Create: Creates a PerfSampleSeries.
+//
+// May return any of the following error code(s): - ALREADY_EXISTS -
+// PerfMetricSummary already exists for the given Step - NOT_FOUND - The
+// containing Step does not exist
+func (r *ProjectsHistoriesExecutionsStepsPerfSampleSeriesService) Create(projectId string, historyId string, executionId string, stepId string, perfsampleseries *PerfSampleSeries) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesCreateCall {
+	c := &ProjectsHistoriesExecutionsStepsPerfSampleSeriesCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.projectId = projectId
+	c.historyId = historyId
+	c.executionId = executionId
+	c.stepId = stepId
+	c.perfsampleseries = perfsampleseries
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesCreateCall) Fields(s ...googleapi.Field) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesCreateCall) Context(ctx context.Context) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.perfsampleseries)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"projectId":   c.projectId,
+		"historyId":   c.historyId,
+		"executionId": c.executionId,
+		"stepId":      c.stepId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "toolresults.projects.histories.executions.steps.perfSampleSeries.create" call.
+// Exactly one of *PerfSampleSeries or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *PerfSampleSeries.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesCreateCall) Do(opts ...googleapi.CallOption) (*PerfSampleSeries, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &PerfSampleSeries{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates a PerfSampleSeries.\n\nMay return any of the following error code(s): - ALREADY_EXISTS - PerfMetricSummary already exists for the given Step - NOT_FOUND - The containing Step does not exist",
+	//   "httpMethod": "POST",
+	//   "id": "toolresults.projects.histories.executions.steps.perfSampleSeries.create",
+	//   "parameterOrder": [
+	//     "projectId",
+	//     "historyId",
+	//     "executionId",
+	//     "stepId"
+	//   ],
+	//   "parameters": {
+	//     "executionId": {
+	//       "description": "A tool results execution ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "historyId": {
+	//       "description": "A tool results history ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "projectId": {
+	//       "description": "The cloud project",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "stepId": {
+	//       "description": "A tool results step ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries",
+	//   "request": {
+	//     "$ref": "PerfSampleSeries"
+	//   },
+	//   "response": {
+	//     "$ref": "PerfSampleSeries"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "toolresults.projects.histories.executions.steps.perfSampleSeries.get":
+
+type ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall struct {
+	s              *Service
+	projectId      string
+	historyId      string
+	executionId    string
+	stepId         string
+	sampleSeriesId string
+	urlParams_     gensupport.URLParams
+	ifNoneMatch_   string
+	ctx_           context.Context
+	header_        http.Header
+}
+
+// Get: Gets a PerfSampleSeries.
+//
+// May return any of the following error code(s): - NOT_FOUND - The
+// specified PerfSampleSeries does not exist
+func (r *ProjectsHistoriesExecutionsStepsPerfSampleSeriesService) Get(projectId string, historyId string, executionId string, stepId string, sampleSeriesId string) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall {
+	c := &ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.projectId = projectId
+	c.historyId = historyId
+	c.executionId = executionId
+	c.stepId = stepId
+	c.sampleSeriesId = sampleSeriesId
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall) Fields(s ...googleapi.Field) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall) IfNoneMatch(entityTag string) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall) Context(ctx context.Context) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries/{sampleSeriesId}")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"projectId":      c.projectId,
+		"historyId":      c.historyId,
+		"executionId":    c.executionId,
+		"stepId":         c.stepId,
+		"sampleSeriesId": c.sampleSeriesId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "toolresults.projects.histories.executions.steps.perfSampleSeries.get" call.
+// Exactly one of *PerfSampleSeries or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *PerfSampleSeries.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesGetCall) Do(opts ...googleapi.CallOption) (*PerfSampleSeries, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &PerfSampleSeries{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Gets a PerfSampleSeries.\n\nMay return any of the following error code(s): - NOT_FOUND - The specified PerfSampleSeries does not exist",
+	//   "httpMethod": "GET",
+	//   "id": "toolresults.projects.histories.executions.steps.perfSampleSeries.get",
+	//   "parameterOrder": [
+	//     "projectId",
+	//     "historyId",
+	//     "executionId",
+	//     "stepId",
+	//     "sampleSeriesId"
+	//   ],
+	//   "parameters": {
+	//     "executionId": {
+	//       "description": "A tool results execution ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "historyId": {
+	//       "description": "A tool results history ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "projectId": {
+	//       "description": "The cloud project",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "sampleSeriesId": {
+	//       "description": "A sample series id",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "stepId": {
+	//       "description": "A tool results step ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries/{sampleSeriesId}",
+	//   "response": {
+	//     "$ref": "PerfSampleSeries"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "toolresults.projects.histories.executions.steps.perfSampleSeries.list":
+
+type ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall struct {
+	s            *Service
+	projectId    string
+	historyId    string
+	executionId  string
+	stepId       string
+	urlParams_   gensupport.URLParams
+	ifNoneMatch_ string
+	ctx_         context.Context
+	header_      http.Header
+}
+
+// List: Lists PerfSampleSeries for a given Step.
+//
+// The request provides an optional filter which specifies one or more
+// PerfMetricsType to include in the result; if none returns all. The
+// resulting PerfSampleSeries are sorted by ids.
+//
+// May return any of the following canonical error codes: - NOT_FOUND -
+// The containing Step does not exist
+func (r *ProjectsHistoriesExecutionsStepsPerfSampleSeriesService) List(projectId string, historyId string, executionId string, stepId string) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall {
+	c := &ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.projectId = projectId
+	c.historyId = historyId
+	c.executionId = executionId
+	c.stepId = stepId
+	return c
+}
+
+// Filter sets the optional parameter "filter": Specify one or more
+// PerfMetricType values such as CPU to filter the result
+//
+// Possible values:
+//   "cpu"
+//   "graphics"
+//   "memory"
+//   "network"
+//   "perfMetricTypeUnspecified"
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall) Filter(filter ...string) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall {
+	c.urlParams_.SetMulti("filter", append([]string{}, filter...))
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall) Fields(s ...googleapi.Field) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall) IfNoneMatch(entityTag string) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall) Context(ctx context.Context) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"projectId":   c.projectId,
+		"historyId":   c.historyId,
+		"executionId": c.executionId,
+		"stepId":      c.stepId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "toolresults.projects.histories.executions.steps.perfSampleSeries.list" call.
+// Exactly one of *ListPerfSampleSeriesResponse or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *ListPerfSampleSeriesResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesListCall) Do(opts ...googleapi.CallOption) (*ListPerfSampleSeriesResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &ListPerfSampleSeriesResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists PerfSampleSeries for a given Step.\n\nThe request provides an optional filter which specifies one or more PerfMetricsType to include in the result; if none returns all. The resulting PerfSampleSeries are sorted by ids.\n\nMay return any of the following canonical error codes: - NOT_FOUND - The containing Step does not exist",
+	//   "httpMethod": "GET",
+	//   "id": "toolresults.projects.histories.executions.steps.perfSampleSeries.list",
+	//   "parameterOrder": [
+	//     "projectId",
+	//     "historyId",
+	//     "executionId",
+	//     "stepId"
+	//   ],
+	//   "parameters": {
+	//     "executionId": {
+	//       "description": "A tool results execution ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "filter": {
+	//       "description": "Specify one or more PerfMetricType values such as CPU to filter the result",
+	//       "enum": [
+	//         "cpu",
+	//         "graphics",
+	//         "memory",
+	//         "network",
+	//         "perfMetricTypeUnspecified"
+	//       ],
+	//       "enumDescriptions": [
+	//         "",
+	//         "",
+	//         "",
+	//         "",
+	//         ""
+	//       ],
+	//       "location": "query",
+	//       "repeated": true,
+	//       "type": "string"
+	//     },
+	//     "historyId": {
+	//       "description": "A tool results history ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "projectId": {
+	//       "description": "The cloud project",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "stepId": {
+	//       "description": "A tool results step ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries",
+	//   "response": {
+	//     "$ref": "ListPerfSampleSeriesResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "toolresults.projects.histories.executions.steps.perfSampleSeries.samples.batchCreate":
+
+type ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesBatchCreateCall struct {
+	s                             *Service
+	projectId                     string
+	historyId                     string
+	executionId                   string
+	stepId                        string
+	sampleSeriesId                string
+	batchcreateperfsamplesrequest *BatchCreatePerfSamplesRequest
+	urlParams_                    gensupport.URLParams
+	ctx_                          context.Context
+	header_                       http.Header
+}
+
+// BatchCreate: Creates a batch of PerfSamples - a client can submit
+// multiple batches of Perf Samples through repeated calls to this
+// method in order to split up a large request payload - duplicates and
+// existing timestamp entries will be ignored. - the batch operation may
+// partially succeed - the set of elements successfully inserted is
+// returned in the response (omits items which already existed in the
+// database).
+//
+// May return any of the following canonical error codes: - NOT_FOUND -
+// The containing PerfSampleSeries does not exist
+func (r *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesService) BatchCreate(projectId string, historyId string, executionId string, stepId string, sampleSeriesId string, batchcreateperfsamplesrequest *BatchCreatePerfSamplesRequest) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesBatchCreateCall {
+	c := &ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesBatchCreateCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.projectId = projectId
+	c.historyId = historyId
+	c.executionId = executionId
+	c.stepId = stepId
+	c.sampleSeriesId = sampleSeriesId
+	c.batchcreateperfsamplesrequest = batchcreateperfsamplesrequest
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesBatchCreateCall) Fields(s ...googleapi.Field) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesBatchCreateCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesBatchCreateCall) Context(ctx context.Context) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesBatchCreateCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesBatchCreateCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesBatchCreateCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.batchcreateperfsamplesrequest)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries/{sampleSeriesId}/samples:batchCreate")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"projectId":      c.projectId,
+		"historyId":      c.historyId,
+		"executionId":    c.executionId,
+		"stepId":         c.stepId,
+		"sampleSeriesId": c.sampleSeriesId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "toolresults.projects.histories.executions.steps.perfSampleSeries.samples.batchCreate" call.
+// Exactly one of *BatchCreatePerfSamplesResponse or error will be
+// non-nil. Any non-2xx status code is an error. Response headers are in
+// either *BatchCreatePerfSamplesResponse.ServerResponse.Header or (if a
+// response was returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesBatchCreateCall) Do(opts ...googleapi.CallOption) (*BatchCreatePerfSamplesResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &BatchCreatePerfSamplesResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Creates a batch of PerfSamples - a client can submit multiple batches of Perf Samples through repeated calls to this method in order to split up a large request payload - duplicates and existing timestamp entries will be ignored. - the batch operation may partially succeed - the set of elements successfully inserted is returned in the response (omits items which already existed in the database).\n\nMay return any of the following canonical error codes: - NOT_FOUND - The containing PerfSampleSeries does not exist",
+	//   "httpMethod": "POST",
+	//   "id": "toolresults.projects.histories.executions.steps.perfSampleSeries.samples.batchCreate",
+	//   "parameterOrder": [
+	//     "projectId",
+	//     "historyId",
+	//     "executionId",
+	//     "stepId",
+	//     "sampleSeriesId"
+	//   ],
+	//   "parameters": {
+	//     "executionId": {
+	//       "description": "A tool results execution ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "historyId": {
+	//       "description": "A tool results history ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "projectId": {
+	//       "description": "The cloud project",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "sampleSeriesId": {
+	//       "description": "A sample series id",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "stepId": {
+	//       "description": "A tool results step ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries/{sampleSeriesId}/samples:batchCreate",
+	//   "request": {
+	//     "$ref": "BatchCreatePerfSamplesRequest"
+	//   },
+	//   "response": {
+	//     "$ref": "BatchCreatePerfSamplesResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// method id "toolresults.projects.histories.executions.steps.perfSampleSeries.samples.list":
+
+type ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall struct {
+	s              *Service
+	projectId      string
+	historyId      string
+	executionId    string
+	stepId         string
+	sampleSeriesId string
+	urlParams_     gensupport.URLParams
+	ifNoneMatch_   string
+	ctx_           context.Context
+	header_        http.Header
+}
+
+// List: Lists the Performance Samples of a given Sample Series - The
+// list results are sorted by timestamps ascending - The default page
+// size is 500 samples; and maximum size allowed 5000 - The response
+// token indicates the last returned PerfSample timestamp - When the
+// results size exceeds the page size, submit a subsequent request
+// including the page token to return the rest of the samples up to the
+// page limit
+//
+// May return any of the following canonical error codes: - OUT_OF_RANGE
+// - The specified request page_token is out of valid range - NOT_FOUND
+// - The containing PerfSampleSeries does not exist
+func (r *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesService) List(projectId string, historyId string, executionId string, stepId string, sampleSeriesId string) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall {
+	c := &ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.projectId = projectId
+	c.historyId = historyId
+	c.executionId = executionId
+	c.stepId = stepId
+	c.sampleSeriesId = sampleSeriesId
+	return c
+}
+
+// PageSize sets the optional parameter "pageSize": The default page
+// size is 500 samples, and the maximum size is 5000. If the page_size
+// is greater than 5000, the effective page size will be 5000
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall) PageSize(pageSize int64) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall {
+	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
+	return c
+}
+
+// PageToken sets the optional parameter "pageToken": Optional, the
+// next_page_token returned in the previous response
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall) PageToken(pageToken string) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall {
+	c.urlParams_.Set("pageToken", pageToken)
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall) Fields(s ...googleapi.Field) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// IfNoneMatch sets the optional parameter which makes the operation
+// fail if the object's ETag matches the given value. This is useful for
+// getting updates only after the object has changed since the last
+// request. Use googleapi.IsNotModified to check whether the response
+// error from Do is the result of In-None-Match.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall) IfNoneMatch(entityTag string) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall {
+	c.ifNoneMatch_ = entityTag
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall) Context(ctx context.Context) *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	if c.ifNoneMatch_ != "" {
+		reqHeaders.Set("If-None-Match", c.ifNoneMatch_)
+	}
+	var body io.Reader = nil
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries/{sampleSeriesId}/samples")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("GET", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"projectId":      c.projectId,
+		"historyId":      c.historyId,
+		"executionId":    c.executionId,
+		"stepId":         c.stepId,
+		"sampleSeriesId": c.sampleSeriesId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "toolresults.projects.histories.executions.steps.perfSampleSeries.samples.list" call.
+// Exactly one of *ListPerfSamplesResponse or error will be non-nil. Any
+// non-2xx status code is an error. Response headers are in either
+// *ListPerfSamplesResponse.ServerResponse.Header or (if a response was
+// returned at all) in error.(*googleapi.Error).Header. Use
+// googleapi.IsNotModified to check whether the returned error was
+// because http.StatusNotModified was returned.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall) Do(opts ...googleapi.CallOption) (*ListPerfSamplesResponse, error) {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if res != nil && res.StatusCode == http.StatusNotModified {
+		if res.Body != nil {
+			res.Body.Close()
+		}
+		return nil, &googleapi.Error{
+			Code:   res.StatusCode,
+			Header: res.Header,
+		}
+	}
+	if err != nil {
+		return nil, err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return nil, err
+	}
+	ret := &ListPerfSamplesResponse{
+		ServerResponse: googleapi.ServerResponse{
+			Header:         res.Header,
+			HTTPStatusCode: res.StatusCode,
+		},
+	}
+	target := &ret
+	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+		return nil, err
+	}
+	return ret, nil
+	// {
+	//   "description": "Lists the Performance Samples of a given Sample Series - The list results are sorted by timestamps ascending - The default page size is 500 samples; and maximum size allowed 5000 - The response token indicates the last returned PerfSample timestamp - When the results size exceeds the page size, submit a subsequent request including the page token to return the rest of the samples up to the page limit\n\nMay return any of the following canonical error codes: - OUT_OF_RANGE - The specified request page_token is out of valid range - NOT_FOUND - The containing PerfSampleSeries does not exist",
+	//   "httpMethod": "GET",
+	//   "id": "toolresults.projects.histories.executions.steps.perfSampleSeries.samples.list",
+	//   "parameterOrder": [
+	//     "projectId",
+	//     "historyId",
+	//     "executionId",
+	//     "stepId",
+	//     "sampleSeriesId"
+	//   ],
+	//   "parameters": {
+	//     "executionId": {
+	//       "description": "A tool results execution ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "historyId": {
+	//       "description": "A tool results history ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "pageSize": {
+	//       "description": "The default page size is 500 samples, and the maximum size is 5000. If the page_size is greater than 5000, the effective page size will be 5000",
+	//       "format": "int32",
+	//       "location": "query",
+	//       "type": "integer"
+	//     },
+	//     "pageToken": {
+	//       "description": "Optional, the next_page_token returned in the previous response",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "projectId": {
+	//       "description": "The cloud project",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "sampleSeriesId": {
+	//       "description": "A sample series id",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "stepId": {
+	//       "description": "A tool results step ID.",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "{projectId}/histories/{historyId}/executions/{executionId}/steps/{stepId}/perfSampleSeries/{sampleSeriesId}/samples",
+	//   "response": {
+	//     "$ref": "ListPerfSamplesResponse"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
+	// }
+
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *ProjectsHistoriesExecutionsStepsPerfSampleSeriesSamplesListCall) Pages(ctx context.Context, f func(*ListPerfSamplesResponse) error) error {
+	c.ctx_ = ctx
+	defer c.PageToken(c.urlParams_.Get("pageToken")) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.PageToken(x.NextPageToken)
+	}
 }
 
 // method id "toolresults.projects.histories.executions.steps.thumbnails.list":

@@ -6,8 +6,8 @@ import (
 	"io"
 	"log"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -32,13 +32,16 @@ func (f File) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (i
 	state := request.Request{W: w, Req: r}
 
 	if state.QClass() != dns.ClassINET {
-		return dns.RcodeServerFailure, middleware.Error(f.Name(), errors.New("can only deal with ClassINET"))
+		return dns.RcodeServerFailure, errors.New("can only deal with ClassINET")
 	}
 	qname := state.Name()
 	// TODO(miek): match the qname better in the map
 	zone := middleware.Zones(f.Zones.Names).Matches(qname)
 	if zone == "" {
-		return middleware.NextOrFailure(f.Name(), f.Next, ctx, w, r)
+		if f.Next != nil {
+			return f.Next.ServeDNS(ctx, w, r)
+		}
+		return dns.RcodeServerFailure, errors.New("no next middleware found")
 	}
 
 	z, ok := f.Zones.Z[zone]
@@ -81,7 +84,7 @@ func (f File) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (i
 		return xfr.ServeDNS(ctx, w, r)
 	}
 
-	answer, ns, extra, result := z.Lookup(state, qname)
+	answer, ns, extra, result := z.Lookup(qname, state.QType(), state.Do())
 
 	m := new(dns.Msg)
 	m.SetReply(r)

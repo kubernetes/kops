@@ -1,8 +1,8 @@
 package dnssec
 
 import (
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 	"github.com/prometheus/client_golang/prometheus"
@@ -18,7 +18,7 @@ func (d Dnssec) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) 
 	qtype := state.QType()
 	zone := middleware.Zones(d.zones).Matches(qname)
 	if zone == "" {
-		return middleware.NextOrFailure(d.Name(), d.Next, ctx, w, r)
+		return d.Next.ServeDNS(ctx, w, r)
 	}
 
 	// Intercept queries for DNSKEY, but only if one of the zones matches the qname, otherwise we let
@@ -36,7 +36,7 @@ func (d Dnssec) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) 
 	}
 
 	drr := &ResponseWriter{w, d}
-	return middleware.NextOrFailure(d.Name(), d.Next, ctx, drr, r)
+	return d.Next.ServeDNS(ctx, drr, r)
 }
 
 var (

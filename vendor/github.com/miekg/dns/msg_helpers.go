@@ -263,6 +263,8 @@ func unpackString(msg []byte, off int) (string, int, error) {
 		switch b {
 		case '"', '\\':
 			s = append(s, '\\', b)
+		case '\t', '\r', '\n':
+			s = append(s, b)
 		default:
 			if b < 32 || b > 127 { // unprintable
 				var buf [3]byte

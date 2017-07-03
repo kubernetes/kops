@@ -31,6 +31,12 @@
 
 syntax = "proto2";
 
+import "google/protobuf/any.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/wrappers.proto";
+
 package jsonpb;
 
 import weak "gogoproto/gogo.proto";
@@ -93,6 +99,7 @@ message MsgWithOneof {
     string title = 1;
     int64 salary = 2;
     string Country = 3;
+    string home_address = 4;
   }
 }
 
@@ -111,4 +118,21 @@ message Complex {
   }
   optional double imaginary = 1;
   extensions 100 to max;
+}
+
+message KnownTypes {
+  optional google.protobuf.Any an = 14;
+  optional google.protobuf.Duration dur = 1;
+  optional google.protobuf.Struct st = 12;
+  optional google.protobuf.Timestamp ts = 2;
+
+  optional google.protobuf.DoubleValue dbl = 3;
+  optional google.protobuf.FloatValue flt = 4;
+  optional google.protobuf.Int64Value i64 = 5;
+  optional google.protobuf.UInt64Value u64 = 6;
+  optional google.protobuf.Int32Value i32 = 7;
+  optional google.protobuf.UInt32Value u32 = 8;
+  optional google.protobuf.BoolValue bool = 9;
+  optional google.protobuf.StringValue str = 10;
+  optional google.protobuf.BytesValue bytes = 11;
 }

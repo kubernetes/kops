@@ -89,3 +89,52 @@ func BenchmarkLabelValues(b *testing.B) {
 		testLabelValues(b)
 	}
 }
+
+func TestLabelNameIsValid(t *testing.T) {
+	var scenarios = []struct {
+		ln    LabelName
+		valid bool
+	}{
+		{
+			ln:    "Avalid_23name",
+			valid: true,
+		},
+		{
+			ln:    "_Avalid_23name",
+			valid: true,
+		},
+		{
+			ln:    "1valid_23name",
+			valid: false,
+		},
+		{
+			ln:    "avalid_23name",
+			valid: true,
+		},
+		{
+			ln:    "Ava:lid_23name",
+			valid: false,
+		},
+		{
+			ln:    "a lid_23name",
+			valid: false,
+		},
+		{
+			ln:    ":leading_colon",
+			valid: false,
+		},
+		{
+			ln:    "colon:in:the:middle",
+			valid: false,
+		},
+	}
+
+	for _, s := range scenarios {
+		if s.ln.IsValid() != s.valid {
+			t.Errorf("Expected %v for %q using IsValid method", s.valid, s.ln)
+		}
+		if LabelNameRE.MatchString(string(s.ln)) != s.valid {
+			t.Errorf("Expected %v for %q using regexp match", s.valid, s.ln)
+		}
+	}
+}

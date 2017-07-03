@@ -62,3 +62,37 @@ func RegisterDevDirective(name, before string) {
 	}
 	fmt.Printf("[INFO] %s\n", msg)
 }
+
+// Add here, and in core/coredns.go to use them.
+
+// Directives are registered in the order they should be
+// executed.
+//
+// Ordering is VERY important. Every middleware will
+// feel the effects of all other middleware below
+// (after) them during a request, but they must not
+// care what middleware above them are doing.
+var directives = []string{
+	"root",
+	"bind",
+	"health",
+	"pprof",
+
+	"prometheus",
+	"errors",
+	"log",
+	"chaos",
+	"cache",
+
+	"rewrite",
+	"loadbalance",
+
+	"dnssec",
+	"file",
+	"auto",
+	"secondary",
+	"etcd",
+	"kubernetes",
+	"proxy",
+	"whoami",
+}

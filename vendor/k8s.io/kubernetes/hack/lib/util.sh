@@ -334,6 +334,12 @@ kube::util::group-version-to-pkg-path() {
     meta/v1)
       echo "../vendor/k8s.io/apimachinery/pkg/apis/meta/v1"
       ;;
+    meta/v1alpha1)
+      echo "vendor/k8s.io/apimachinery/pkg/apis/meta/v1alpha1"
+      ;;
+    meta/v1alpha1)
+      echo "../vendor/k8s.io/apimachinery/pkg/apis/meta/v1alpha1"
+      ;;
     unversioned)
       echo "pkg/api/unversioned"
       ;;
@@ -469,7 +475,8 @@ kube::util::ensure_clean_working_dir() {
 
 # Ensure that the given godep version is installed and in the path
 kube::util::ensure_godep_version() {
-  if [[ "$(godep version)" == *"godep ${1}"* ]]; then
+  GODEP_VERSION=${1:-"v79"}
+  if [[ "$(godep version)" == *"godep ${GODEP_VERSION}"* ]]; then
     return
   fi
 
@@ -478,7 +485,7 @@ kube::util::ensure_godep_version() {
 
   GOPATH="${KUBE_TEMP}/go" go get -d -u github.com/tools/godep 2>/dev/null
   pushd "${KUBE_TEMP}/go/src/github.com/tools/godep" >/dev/null
-    git checkout "${1:-v74}"
+    git checkout "${GODEP_VERSION}"
     GOPATH="${KUBE_TEMP}/go" go install .
   popd >/dev/null
 
@@ -534,20 +541,6 @@ kube::util::download_file() {
     fi
   done
   return 1
-}
-
-# Test whether cfssl and cfssljson are installed.
-# Sets:
-#  CFSSL_BIN: The path of the installed cfssl binary
-#  CFSSLJSON_BIN: The path of the installed cfssljson binary
-function kube::util::test_cfssl_installed {
-    if ! command -v cfssl &>/dev/null || ! command -v cfssljson &>/dev/null; then
-      echo "Failed to successfully run 'cfssl', please verify that cfssl and cfssljson are in \$PATH."
-      echo "Hint: export PATH=\$PATH:\$GOPATH/bin; go get -u github.com/cloudflare/cfssl/cmd/..."
-      exit 1
-    fi
-    CFSSL_BIN=$(command -v cfssl)
-    CFSSLJSON_BIN=$(command -v cfssljson)
 }
 
 # Test whether openssl is installed.
@@ -693,6 +686,91 @@ EOF
   fi
 }
 
+# Wait for background jobs to finish. Return with
+# an error status if any of the jobs failed.
+kube::util::wait-for-jobs() {
+  local fail=0
+  local job
+  for job in $(jobs -p); do
+    wait "${job}" || fail=$((fail + 1))
+  done
+  return ${fail}
+}
 
+# kube::util::join <delim> <list...>
+# Concatenates the list elements with the delimiter passed as first parameter
+#
+# Ex: kube::util::join , a b c
+#  -> a,b,c
+function kube::util::join {
+  local IFS="$1"
+  shift
+  echo "$*"
+}
+
+# Downloads cfssl/cfssljson into $1 directory if they do not already exist in PATH
+#
+# Assumed vars:
+#   $1 (cfssl directory) (optional)
+#
+# Sets:
+#  CFSSL_BIN: The path of the installed cfssl binary
+#  CFSSLJSON_BIN: The path of the installed cfssljson binary
+#
+function kube::util::ensure-cfssl {
+  if command -v cfssl &>/dev/null && command -v cfssljson &>/dev/null; then
+    CFSSL_BIN=$(command -v cfssl)
+    CFSSLJSON_BIN=$(command -v cfssljson)
+    return 0
+  fi
+
+  # Create a temp dir for cfssl if no directory was given
+  local cfssldir=${1:-}
+  if [[ -z "${cfssldir}" ]]; then
+    kube::util::ensure-temp-dir
+    cfssldir="${KUBE_TEMP}/cfssl"
+  fi
+
+  mkdir -p "${cfssldir}"
+  pushd "${cfssldir}" > /dev/null
+
+    echo "Unable to successfully run 'cfssl' from $PATH; downloading instead..."
+    kernel=$(uname -s)
+    case "${kernel}" in
+      Linux)
+        curl -s -L -o cfssl https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+        curl -s -L -o cfssljson https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+        ;;
+      Darwin)
+        curl -s -L -o cfssl https://pkg.cfssl.org/R1.2/cfssl_darwin-amd64
+        curl -s -L -o cfssljson https://pkg.cfssl.org/R1.2/cfssljson_darwin-amd64
+        ;;
+      *)
+        echo "Unknown, unsupported platform: ${kernel}." >&2
+        echo "Supported platforms: Linux, Darwin." >&2
+        exit 2
+    esac
+
+    chmod +x cfssl || true
+    chmod +x cfssljson || true
+
+    CFSSL_BIN="${cfssldir}/cfssl"
+    CFSSLJSON_BIN="${cfssldir}/cfssljson"
+    if [[ ! -x ${CFSSL_BIN} || ! -x ${CFSSLJSON_BIN} ]]; then
+      echo "Failed to download 'cfssl'. Please install cfssl and cfssljson and verify they are in \$PATH."
+      echo "Hint: export PATH=\$PATH:\$GOPATH/bin; go get -u github.com/cloudflare/cfssl/cmd/..."
+      exit 1
+    fi
+  popd > /dev/null
+}
+
+# Some useful colors.
+if [[ -z "${color_start-}" ]]; then
+  declare -r color_start="\033["
+  declare -r color_red="${color_start}0;31m"
+  declare -r color_yellow="${color_start}0;33m"
+  declare -r color_green="${color_start}0;32m"
+  declare -r color_norm="${color_start}0m"
+fi
 
 # ex: ts=2 sw=2 et filetype=sh

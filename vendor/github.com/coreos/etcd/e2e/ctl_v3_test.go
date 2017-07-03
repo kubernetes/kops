@@ -15,11 +15,13 @@
 package e2e
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/coreos/etcd/pkg/flags"
 	"github.com/coreos/etcd/pkg/testutil"
 	"github.com/coreos/etcd/version"
 )
@@ -37,12 +39,27 @@ func ctlV3Version(cx ctlCtx) error {
 	return spawnWithExpect(cmdArgs, version.Version)
 }
 
+// TestCtlV3DialWithHTTPScheme ensures that client handles endpoints with HTTPS scheme.
+func TestCtlV3DialWithHTTPScheme(t *testing.T) {
+	testCtl(t, dialWithSchemeTest, withCfg(configClientTLS))
+}
+
+func dialWithSchemeTest(cx ctlCtx) {
+	cmdArgs := append(cx.prefixArgs(cx.epc.endpoints()), "put", "foo", "bar")
+	if err := spawnWithExpect(cmdArgs, "OK"); err != nil {
+		cx.t.Fatal(err)
+	}
+}
+
 type ctlCtx struct {
 	t                 *testing.T
 	cfg               etcdProcessClusterConfig
 	quotaBackendBytes int64
+	noStrictReconfig  bool
 
 	epc *etcdProcessCluster
+
+	envMap map[string]struct{}
 
 	dialTimeout time.Duration
 
@@ -88,6 +105,14 @@ func withCompactPhysical() ctlOption {
 	return func(cx *ctlCtx) { cx.compactPhysical = true }
 }
 
+func withNoStrictReconfig() ctlOption {
+	return func(cx *ctlCtx) { cx.noStrictReconfig = true }
+}
+
+func withFlagByEnv() ctlOption {
+	return func(cx *ctlCtx) { cx.envMap = make(map[string]struct{}) }
+}
+
 func testCtl(t *testing.T, testFunc func(ctlCtx), opts ...ctlOption) {
 	defer testutil.AfterTest(t)
 
@@ -106,6 +131,7 @@ func testCtl(t *testing.T, testFunc func(ctlCtx), opts ...ctlOption) {
 	if ret.quotaBackendBytes > 0 {
 		ret.cfg.quotaBackendBytes = ret.quotaBackendBytes
 	}
+	ret.cfg.noStrictReconfig = ret.noStrictReconfig
 
 	epc, err := newEtcdProcessCluster(&ret.cfg)
 	if err != nil {
@@ -115,6 +141,11 @@ func testCtl(t *testing.T, testFunc func(ctlCtx), opts ...ctlOption) {
 
 	defer func() {
 		os.Unsetenv("ETCDCTL_API")
+		if ret.envMap != nil {
+			for k := range ret.envMap {
+				os.Unsetenv(k)
+			}
+		}
 		if errC := ret.epc.Close(); errC != nil {
 			t.Fatalf("error closing etcd processes (%v)", errC)
 		}
@@ -126,54 +157,60 @@ func testCtl(t *testing.T, testFunc func(ctlCtx), opts ...ctlOption) {
 		testFunc(ret)
 	}()
 
+	timeout := 2*ret.dialTimeout + time.Second
+	if ret.dialTimeout == 0 {
+		timeout = 30 * time.Second
+	}
 	select {
-	case <-time.After(2*ret.dialTimeout + time.Second):
-		if ret.dialTimeout > 0 {
-			t.Fatalf("test timed out for %v", ret.dialTimeout)
-		}
+	case <-time.After(timeout):
+		testutil.FatalStack(t, fmt.Sprintf("test timed out after %v", timeout))
 	case <-donec:
 	}
 }
 
-func (cx *ctlCtx) PrefixArgs() []string {
+func (cx *ctlCtx) prefixArgs(eps []string) []string {
 	if len(cx.epc.proxies()) > 0 { // TODO: add proxy check as in v2
 		panic("v3 proxy not implemented")
 	}
 
-	endpoints := ""
-	if backends := cx.epc.backends(); len(backends) != 0 {
-		es := []string{}
-		for _, b := range backends {
-			es = append(es, stripSchema(b.cfg.acurl))
-		}
-		endpoints = strings.Join(es, ",")
-	}
-	cmdArgs := []string{"../bin/etcdctl", "--endpoints", endpoints, "--dial-timeout", cx.dialTimeout.String()}
+	fmap := make(map[string]string)
+	fmap["endpoints"] = strings.Join(eps, ",")
+	fmap["dial-timeout"] = cx.dialTimeout.String()
 	if cx.epc.cfg.clientTLS == clientTLS {
 		if cx.epc.cfg.isClientAutoTLS {
-			cmdArgs = append(cmdArgs, "--insecure-transport=false", "--insecure-skip-tls-verify")
+			fmap["insecure-transport"] = "false"
+			fmap["insecure-skip-tls-verify"] = "true"
 		} else {
-			cmdArgs = append(cmdArgs, "--cacert", caPath, "--cert", certPath, "--key", privateKeyPath)
+			fmap["cacert"] = caPath
+			fmap["cert"] = certPath
+			fmap["key"] = privateKeyPath
 		}
 	}
-
 	if cx.user != "" {
-		cmdArgs = append(cmdArgs, "--user="+cx.user+":"+cx.pass)
+		fmap["user"] = cx.user + ":" + cx.pass
 	}
 
+	useEnv := cx.envMap != nil
+
+	cmdArgs := []string{ctlBinPath}
+	for k, v := range fmap {
+		if useEnv {
+			ek := flags.FlagToEnv("ETCDCTL", k)
+			os.Setenv(ek, v)
+			cx.envMap[ek] = struct{}{}
+		} else {
+			cmdArgs = append(cmdArgs, fmt.Sprintf("--%s=%s", k, v))
+		}
+	}
 	return cmdArgs
+}
+
+// PrefixArgs prefixes etcdctl command.
+// Make sure to unset environment variables after tests.
+func (cx *ctlCtx) PrefixArgs() []string {
+	return cx.prefixArgs(cx.epc.grpcEndpoints())
 }
 
 func isGRPCTimedout(err error) bool {
 	return strings.Contains(err.Error(), "grpc: timed out trying to connect")
-}
-
-func stripSchema(s string) string {
-	if strings.HasPrefix(s, "http://") {
-		s = strings.Replace(s, "http://", "", -1)
-	}
-	if strings.HasPrefix(s, "https://") {
-		s = strings.Replace(s, "https://", "", -1)
-	}
-	return s
 }

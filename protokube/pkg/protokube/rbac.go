@@ -19,8 +19,11 @@ package protokube
 import (
 	"fmt"
 	"github.com/golang/glog"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/kubernetes/cmd/kubeadm/app/phases/apiconfig"
+	"k8s.io/client-go/pkg/api/v1"
+	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 )
 
 func InitializeRBAC(kubeContext *KubernetesContext) error {
@@ -31,10 +34,12 @@ func InitializeRBAC(kubeContext *KubernetesContext) error {
 	clientset := k8sClient.(*kubernetes.Clientset)
 
 	var errors []error
-	if err := apiconfig.CreateServiceAccounts(clientset); err != nil {
+	// kube-dns & kube-proxy service accounts
+	if err := createServiceAccounts(clientset); err != nil {
 		errors = append(errors, fmt.Errorf("error creating service accounts: %v", err))
 	}
-	if err := apiconfig.CreateClusterRoleBindings(clientset); err != nil {
+	//Currently all kubeadm specific
+	if err := createClusterRoleBindings(clientset); err != nil {
 		errors = append(errors, fmt.Errorf("error creating cluster role bindings: %v", err))
 	}
 
@@ -47,5 +52,117 @@ func InitializeRBAC(kubeContext *KubernetesContext) error {
 		return errors[0]
 	}
 
+	return nil
+}
+
+// The below code should mirror the code in kubeadm.
+// We'll develop it here then contribute it back once they are out of core -
+// otherwise it is using the wrong version of the k8s client.
+const (
+	// KubeProxyClusterRoleName sets the name for the kube-proxy ClusterRole
+	KubeProxyClusterRoleName = "system:node-proxier"
+
+	clusterRoleKind    = "ClusterRole"
+	roleKind           = "Role"
+	serviceAccountKind = "ServiceAccount"
+	rbacAPIGroup       = "rbac.authorization.k8s.io"
+	//anonymousUser            = "system:anonymous"
+
+	// Constants for what we name our ServiceAccounts with limited access to the cluster in case of RBAC
+	KubeDNSServiceAccountName   = "kube-dns"
+	KubeProxyServiceAccountName = "kube-proxy"
+)
+
+// CreateServiceAccounts creates the necessary serviceaccounts that kubeadm uses/might use, if they don't already exist.
+func createServiceAccounts(clientset kubernetes.Interface) error {
+	serviceAccounts := []v1.ServiceAccount{
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      KubeDNSServiceAccountName,
+				Namespace: metav1.NamespaceSystem,
+			},
+		},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      KubeProxyServiceAccountName,
+				Namespace: metav1.NamespaceSystem,
+			},
+		},
+	}
+
+	for _, sa := range serviceAccounts {
+		if _, err := clientset.CoreV1().ServiceAccounts(metav1.NamespaceSystem).Create(&sa); err != nil {
+			if !apierrors.IsAlreadyExists(err) {
+				return err
+			}
+		}
+	}
+	return nil
+}
+
+func createClusterRoleBindings(clientset *kubernetes.Clientset) error {
+	clusterRoleBindings := []rbac.ClusterRoleBinding{
+		//{
+		//	ObjectMeta: metav1.ObjectMeta{
+		//		Name: "kubeadm:kubelet-bootstrap",
+		//	},
+		//	RoleRef: rbac.RoleRef{
+		//		APIGroup: rbacAPIGroup,
+		//		Kind:     clusterRoleKind,
+		//		Name:     NodeBootstrapperClusterRoleName,
+		//	},
+		//	Subjects: []rbac.Subject{
+		//		{
+		//			Kind: "Group",
+		//			Name: bootstrapapi.BootstrapGroup,
+		//		},
+		//	},
+		//},
+		//{
+		//	ObjectMeta: metav1.ObjectMeta{
+		//		Name: nodeAutoApproveBootstrap,
+		//	},
+		//	RoleRef: rbac.RoleRef{
+		//		APIGroup: rbacAPIGroup,
+		//		Kind:     clusterRoleKind,
+		//		Name:     nodeAutoApproveBootstrap,
+		//	},
+		//	Subjects: []rbac.Subject{
+		//		{
+		//			Kind: "Group",
+		//			Name: bootstrapapi.BootstrapGroup,
+		//		},
+		//	},
+		//},
+		{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: "kubeadm:node-proxier",
+			},
+			RoleRef: rbac.RoleRef{
+				APIGroup: rbacAPIGroup,
+				Kind:     clusterRoleKind,
+				Name:     KubeProxyClusterRoleName,
+			},
+			Subjects: []rbac.Subject{
+				{
+					Kind:      serviceAccountKind,
+					Name:      KubeProxyServiceAccountName,
+					Namespace: metav1.NamespaceSystem,
+				},
+			},
+		},
+	}
+
+	for _, clusterRoleBinding := range clusterRoleBindings {
+		if _, err := clientset.RbacV1beta1().ClusterRoleBindings().Create(&clusterRoleBinding); err != nil {
+			if !apierrors.IsAlreadyExists(err) {
+				return fmt.Errorf("unable to create RBAC clusterrolebinding: %v", err)
+			}
+
+			if _, err := clientset.RbacV1beta1().ClusterRoleBindings().Update(&clusterRoleBinding); err != nil {
+				return fmt.Errorf("unable to update RBAC clusterrolebinding: %v", err)
+			}
+		}
+	}
 	return nil
 }

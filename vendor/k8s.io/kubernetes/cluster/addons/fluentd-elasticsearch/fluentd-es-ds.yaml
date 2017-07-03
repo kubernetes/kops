@@ -23,11 +23,14 @@ spec:
     spec:
       containers:
       - name: fluentd-es
-        image: gcr.io/google_containers/fluentd-elasticsearch:1.22
+        image: gcr.io/google_containers/fluentd-elasticsearch:1.23
         command:
           - '/bin/sh'
           - '-c'
-          - '/usr/sbin/td-agent 2>&1 >> /var/log/fluentd.log'
+          - '/usr/sbin/td-agent $FLUENTD_ARGS'
+        env:
+        - name: FLUENTD_AGRS
+          value: -q
         resources:
           limits:
             memory: 200Mi
@@ -41,10 +44,7 @@ spec:
           mountPath: /var/lib/docker/containers
           readOnly: true
       nodeSelector:
-        alpha.kubernetes.io/fluentd-ds-ready: "true"
-      tolerations:
-      - key : "node.alpha.kubernetes.io/ismaster"
-        effect: "NoSchedule"
+        beta.kubernetes.io/fluentd-ds-ready: "true"
       terminationGracePeriodSeconds: 30
       volumes:
       - name: varlog

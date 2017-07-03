@@ -6,7 +6,6 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
-	"github.com/golang/protobuf/ptypes/duration"
 	"github.com/golang/protobuf/ptypes/empty"
 	examples "github.com/grpc-ecosystem/grpc-gateway/examples/examplepb"
 	sub "github.com/grpc-ecosystem/grpc-gateway/examples/sub"
@@ -171,19 +170,6 @@ func (s *_ABitOfEverythingServer) Delete(ctx context.Context, msg *sub2.IdMessag
 	return new(empty.Empty), nil
 }
 
-func (s *_ABitOfEverythingServer) GetQuery(ctx context.Context, msg *examples.ABitOfEverything) (*empty.Empty, error) {
-	s.m.Lock()
-	defer s.m.Unlock()
-
-	glog.Info(msg)
-	if _, ok := s.v[msg.Uuid]; ok {
-		s.v[msg.Uuid] = msg
-	} else {
-		return nil, grpc.Errorf(codes.NotFound, "not found")
-	}
-	return new(empty.Empty), nil
-}
-
 func (s *_ABitOfEverythingServer) Echo(ctx context.Context, msg *sub.StringMessage) (*sub.StringMessage, error) {
 	s.m.Lock()
 	defer s.m.Unlock()
@@ -233,10 +219,6 @@ func (s *_ABitOfEverythingServer) DeepPathEcho(ctx context.Context, msg *example
 
 	glog.Info(msg)
 	return msg, nil
-}
-
-func (s *_ABitOfEverythingServer) NoBindings(ctx context.Context, msg *duration.Duration) (*empty.Empty, error) {
-	return nil, nil
 }
 
 func (s *_ABitOfEverythingServer) Timeout(ctx context.Context, msg *empty.Empty) (*empty.Empty, error) {

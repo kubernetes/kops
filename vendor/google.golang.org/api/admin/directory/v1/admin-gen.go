@@ -809,7 +809,7 @@ type ChromeOsDevice struct {
 	LastEnrollmentTime string `json:"lastEnrollmentTime,omitempty"`
 
 	// LastSync: Date and time the device was last synchronized with the
-	// policy settings in the Google Apps administrator control panel
+	// policy settings in the G Suite administrator control panel
 	// (Read-only)
 	LastSync string `json:"lastSync,omitempty"`
 
@@ -1036,7 +1036,7 @@ type Customer struct {
 	// Etag: ETag of the resource.
 	Etag string `json:"etag,omitempty"`
 
-	// Id: The unique ID for the customer's Google account. (Readonly)
+	// Id: The unique ID for the customer's G Suite account. (Readonly)
 	Id string `json:"id,omitempty"`
 
 	// Kind: Identifies the resource as a customer. Value:
@@ -1561,7 +1561,7 @@ type MobileDevice struct {
 	Etag string `json:"etag,omitempty"`
 
 	// FirstSync: Date and time the device was first synchronized with the
-	// policy settings in the Google Apps administrator control panel
+	// policy settings in the G Suite administrator control panel
 	// (Read-only)
 	FirstSync string `json:"firstSync,omitempty"`
 
@@ -1581,7 +1581,7 @@ type MobileDevice struct {
 	Kind string `json:"kind,omitempty"`
 
 	// LastSync: Date and time the device was last synchronized with the
-	// policy settings in the Google Apps administrator control panel
+	// policy settings in the G Suite administrator control panel
 	// (Read-only)
 	LastSync string `json:"lastSync,omitempty"`
 
@@ -2435,6 +2435,22 @@ func (s *SchemaFieldSpecNumericIndexingSpec) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *SchemaFieldSpecNumericIndexingSpec) UnmarshalJSON(data []byte) error {
+	type noMethod SchemaFieldSpecNumericIndexingSpec
+	var s1 struct {
+		MaxValue gensupport.JSONFloat64 `json:"maxValue"`
+		MinValue gensupport.JSONFloat64 `json:"minValue"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.MaxValue = float64(s1.MaxValue)
+	s.MinValue = float64(s1.MinValue)
+	return nil
+}
+
 // Schemas: JSON response template for List Schema operation in
 // Directory API.
 type Schemas struct {
@@ -2586,7 +2602,7 @@ type User struct {
 	// change password in next login
 	ChangePasswordAtNextLogin bool `json:"changePasswordAtNextLogin,omitempty"`
 
-	// CreationTime: User's Google account creation time. (Read-only)
+	// CreationTime: User's G Suite account creation time. (Read-only)
 	CreationTime string `json:"creationTime,omitempty"`
 
 	// CustomSchemas: Custom fields of the user.
@@ -2627,6 +2643,12 @@ type User struct {
 	// (Read-only)
 	IsDelegatedAdmin bool `json:"isDelegatedAdmin,omitempty"`
 
+	// IsEnforcedIn2Sv: Is 2-step verification enforced (Read-only)
+	IsEnforcedIn2Sv bool `json:"isEnforcedIn2Sv,omitempty"`
+
+	// IsEnrolledIn2Sv: Is enrolled in 2-step verification (Read-only)
+	IsEnrolledIn2Sv bool `json:"isEnrolledIn2Sv,omitempty"`
+
 	// IsMailboxSetup: Is mailbox setup (Read-only)
 	IsMailboxSetup bool `json:"isMailboxSetup,omitempty"`
 
@@ -2635,6 +2657,8 @@ type User struct {
 
 	// LastLoginTime: User's last login time. (Read-only)
 	LastLoginTime string `json:"lastLoginTime,omitempty"`
+
+	Locations interface{} `json:"locations,omitempty"`
 
 	// Name: User's name
 	Name *UserName `json:"name,omitempty"`
@@ -2654,10 +2678,14 @@ type User struct {
 
 	Phones interface{} `json:"phones,omitempty"`
 
+	PosixAccounts interface{} `json:"posixAccounts,omitempty"`
+
 	// PrimaryEmail: username of User
 	PrimaryEmail string `json:"primaryEmail,omitempty"`
 
 	Relations interface{} `json:"relations,omitempty"`
+
+	SshPublicKeys interface{} `json:"sshPublicKeys,omitempty"`
 
 	// Suspended: Indicates if user is suspended
 	Suspended bool `json:"suspended,omitempty"`
@@ -2932,6 +2960,60 @@ func (s *UserIm) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// UserLocation: JSON template for a location entry.
+type UserLocation struct {
+	// Area: Textual location. This is most useful for display purposes to
+	// concisely describe the location. E.g. "Mountain View, CA", "Near
+	// Seattle", "US-NYC-9TH 9A209A".
+	Area string `json:"area,omitempty"`
+
+	// BuildingId: Building Identifier.
+	BuildingId string `json:"buildingId,omitempty"`
+
+	// CustomType: Custom Type.
+	CustomType string `json:"customType,omitempty"`
+
+	// DeskCode: Most specific textual code of individual desk location.
+	DeskCode string `json:"deskCode,omitempty"`
+
+	// FloorName: Floor name/number.
+	FloorName string `json:"floorName,omitempty"`
+
+	// FloorSection: Floor Section. More specific location within the floor.
+	// E.g. if a floor is divided into sections "A", "B", and "C", this
+	// field would identify one of those values.
+	FloorSection string `json:"floorSection,omitempty"`
+
+	// Type: Each entry can have a type which indicates standard types of
+	// that entry. For example location could be of types default and desk.
+	// In addition to standard type, an entry can have a custom type and can
+	// give it any name. Such types should have "custom" as type and also
+	// have a customType value.
+	Type string `json:"type,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Area") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Area") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *UserLocation) MarshalJSON() ([]byte, error) {
+	type noMethod UserLocation
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // UserMakeAdmin: JSON request template for setting/revoking admin
 // status of a user in Directory API.
 type UserMakeAdmin struct {
@@ -3152,6 +3234,57 @@ func (s *UserPhoto) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// UserPosixAccount: JSON template for a POSIX account entry.
+// Description of the field family: go/fbs-posix.
+type UserPosixAccount struct {
+	// Gecos: The GECOS (user information) for this account.
+	Gecos string `json:"gecos,omitempty"`
+
+	// Gid: The default group ID.
+	Gid int64 `json:"gid,omitempty"`
+
+	// HomeDirectory: The path to the home directory for this account.
+	HomeDirectory string `json:"homeDirectory,omitempty"`
+
+	// Primary: If this is user's primary account within the SystemId.
+	Primary bool `json:"primary,omitempty"`
+
+	// Shell: The path to the login shell for this account.
+	Shell string `json:"shell,omitempty"`
+
+	// SystemId: System identifier for which account Username or Uid apply
+	// to.
+	SystemId string `json:"systemId,omitempty"`
+
+	// Uid: The POSIX compliant user ID.
+	Uid int64 `json:"uid,omitempty"`
+
+	// Username: The username of the account.
+	Username string `json:"username,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Gecos") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Gecos") to include in API
+	// requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *UserPosixAccount) MarshalJSON() ([]byte, error) {
+	type noMethod UserPosixAccount
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // UserRelation: JSON template for a relation entry.
 type UserRelation struct {
 	// CustomType: Custom Type.
@@ -3183,6 +3316,41 @@ type UserRelation struct {
 
 func (s *UserRelation) MarshalJSON() ([]byte, error) {
 	type noMethod UserRelation
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// UserSshPublicKey: JSON template for a POSIX account entry.
+type UserSshPublicKey struct {
+	// ExpirationTimeUsec: An expiration time in microseconds since epoch.
+	ExpirationTimeUsec int64 `json:"expirationTimeUsec,omitempty,string"`
+
+	// Fingerprint: A SHA-256 fingerprint of the SSH public key. (Read-only)
+	Fingerprint string `json:"fingerprint,omitempty"`
+
+	// Key: An SSH public key.
+	Key string `json:"key,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ExpirationTimeUsec")
+	// to unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ExpirationTimeUsec") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *UserSshPublicKey) MarshalJSON() ([]byte, error) {
+	type noMethod UserSshPublicKey
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -3960,13 +4128,13 @@ func (c *ChromeosdevicesActionCall) Do(opts ...googleapi.CallOption) error {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
 	//     },
 	//     "resourceId": {
-	//       "description": "Immutable id of Chrome OS Device",
+	//       "description": "Immutable ID of Chrome OS Device",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -4119,13 +4287,13 @@ func (c *ChromeosdevicesGetCall) Do(opts ...googleapi.CallOption) (*ChromeOsDevi
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
 	//     },
 	//     "deviceId": {
-	//       "description": "Immutable id of Chrome OS Device",
+	//       "description": "Immutable ID of Chrome OS Device",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -4339,7 +4507,7 @@ func (c *ChromeosdevicesListCall) Do(opts ...googleapi.CallOption) (*ChromeOsDev
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -4573,13 +4741,13 @@ func (c *ChromeosdevicesPatchCall) Do(opts ...googleapi.CallOption) (*ChromeOsDe
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
 	//     },
 	//     "deviceId": {
-	//       "description": "Immutable id of Chrome OS Device",
+	//       "description": "Immutable ID of Chrome OS Device",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -4741,13 +4909,13 @@ func (c *ChromeosdevicesUpdateCall) Do(opts ...googleapi.CallOption) (*ChromeOsD
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
 	//     },
 	//     "deviceId": {
-	//       "description": "Immutable id of Chrome OS Device",
+	//       "description": "Immutable ID of Chrome OS Device",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -5269,7 +5437,7 @@ func (c *DomainAliasesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -5413,7 +5581,7 @@ func (c *DomainAliasesGetCall) Do(opts ...googleapi.CallOption) (*DomainAlias, e
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -5550,7 +5718,7 @@ func (c *DomainAliasesInsertCall) Do(opts ...googleapi.CallOption) (*DomainAlias
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -5697,7 +5865,7 @@ func (c *DomainAliasesListCall) Do(opts ...googleapi.CallOption) (*DomainAliases
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -5805,7 +5973,7 @@ func (c *DomainsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -5949,7 +6117,7 @@ func (c *DomainsGetCall) Do(opts ...googleapi.CallOption) (*Domains, error) {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -6086,7 +6254,7 @@ func (c *DomainsInsertCall) Do(opts ...googleapi.CallOption) (*Domains, error) {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -6226,7 +6394,7 @@ func (c *DomainsListCall) Do(opts ...googleapi.CallOption) (*Domains2, error) {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -6610,9 +6778,9 @@ func (r *GroupsService) List() *GroupsListCall {
 	return c
 }
 
-// Customer sets the optional parameter "customer": Immutable id of the
-// Google Apps account. In case of multi-domain, to fetch all groups for
-// a customer, fill this field instead of domain.
+// Customer sets the optional parameter "customer": Immutable ID of the
+// G Suite account. In case of multi-domain, to fetch all groups for a
+// customer, fill this field instead of domain.
 func (c *GroupsListCall) Customer(customer string) *GroupsListCall {
 	c.urlParams_.Set("customer", customer)
 	return c
@@ -6744,7 +6912,7 @@ func (c *GroupsListCall) Do(opts ...googleapi.CallOption) (*Groups, error) {
 	//   "id": "directory.groups.list",
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account. In case of multi-domain, to fetch all groups for a customer, fill this field instead of domain.",
+	//       "description": "Immutable ID of the G Suite account. In case of multi-domain, to fetch all groups for a customer, fill this field instead of domain.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -8417,13 +8585,13 @@ func (c *MobiledevicesActionCall) Do(opts ...googleapi.CallOption) error {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
 	//     },
 	//     "resourceId": {
-	//       "description": "Immutable id of Mobile Device",
+	//       "description": "Immutable ID of Mobile Device",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -8526,13 +8694,13 @@ func (c *MobiledevicesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
 	//     },
 	//     "resourceId": {
-	//       "description": "Immutable id of Mobile Device",
+	//       "description": "Immutable ID of Mobile Device",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -8682,7 +8850,7 @@ func (c *MobiledevicesGetCall) Do(opts ...googleapi.CallOption) (*MobileDevice, 
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -8701,7 +8869,7 @@ func (c *MobiledevicesGetCall) Do(opts ...googleapi.CallOption) (*MobileDevice, 
 	//       "type": "string"
 	//     },
 	//     "resourceId": {
-	//       "description": "Immutable id of Mobile Device",
+	//       "description": "Immutable ID of Mobile Device",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -8903,7 +9071,7 @@ func (c *MobiledevicesListCall) Do(opts ...googleapi.CallOption) (*MobileDevices
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -9096,7 +9264,7 @@ func (c *NotificationsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "The unique ID for the customer's Google account. The customerId is also returned as part of the Users resource.",
+	//       "description": "The unique ID for the customer's G Suite account. The customerId is also returned as part of the Users resource.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -9240,7 +9408,7 @@ func (c *NotificationsGetCall) Do(opts ...googleapi.CallOption) (*Notification, 
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "The unique ID for the customer's Google account. The customerId is also returned as part of the Users resource.",
+	//       "description": "The unique ID for the customer's G Suite account. The customerId is also returned as part of the Users resource.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -9405,7 +9573,7 @@ func (c *NotificationsListCall) Do(opts ...googleapi.CallOption) (*Notifications
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "The unique ID for the customer's Google account.",
+	//       "description": "The unique ID for the customer's G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -9576,7 +9744,7 @@ func (c *NotificationsPatchCall) Do(opts ...googleapi.CallOption) (*Notification
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "The unique ID for the customer's Google account.",
+	//       "description": "The unique ID for the customer's G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -9719,7 +9887,7 @@ func (c *NotificationsUpdateCall) Do(opts ...googleapi.CallOption) (*Notificatio
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "The unique ID for the customer's Google account.",
+	//       "description": "The unique ID for the customer's G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -9830,7 +9998,7 @@ func (c *OrgunitsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -9975,7 +10143,7 @@ func (c *OrgunitsGetCall) Do(opts ...googleapi.CallOption) (*OrgUnit, error) {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -10113,7 +10281,7 @@ func (c *OrgunitsInsertCall) Do(opts ...googleapi.CallOption) (*OrgUnit, error) 
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -10271,7 +10439,7 @@ func (c *OrgunitsListCall) Do(opts ...googleapi.CallOption) (*OrgUnits, error) {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -10426,7 +10594,7 @@ func (c *OrgunitsPatchCall) Do(opts ...googleapi.CallOption) (*OrgUnit, error) {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -10570,7 +10738,7 @@ func (c *OrgunitsUpdateCall) Do(opts ...googleapi.CallOption) (*OrgUnit, error) 
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -10717,7 +10885,7 @@ func (c *PrivilegesListCall) Do(opts ...googleapi.CallOption) (*Privileges, erro
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable ID of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -10826,7 +10994,7 @@ func (c *ResourcesCalendarsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//       "type": "string"
 	//     },
 	//     "customer": {
-	//       "description": "The unique ID for the customer's Google account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
+	//       "description": "The unique ID for the customer's G Suite account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -10970,7 +11138,7 @@ func (c *ResourcesCalendarsGetCall) Do(opts ...googleapi.CallOption) (*CalendarR
 	//       "type": "string"
 	//     },
 	//     "customer": {
-	//       "description": "The unique ID for the customer's Google account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
+	//       "description": "The unique ID for the customer's G Suite account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -11101,7 +11269,7 @@ func (c *ResourcesCalendarsInsertCall) Do(opts ...googleapi.CallOption) (*Calend
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "The unique ID for the customer's Google account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
+	//       "description": "The unique ID for the customer's G Suite account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -11255,7 +11423,7 @@ func (c *ResourcesCalendarsListCall) Do(opts ...googleapi.CallOption) (*Calendar
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "The unique ID for the customer's Google account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
+	//       "description": "The unique ID for the customer's G Suite account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -11431,7 +11599,7 @@ func (c *ResourcesCalendarsPatchCall) Do(opts ...googleapi.CallOption) (*Calenda
 	//       "type": "string"
 	//     },
 	//     "customer": {
-	//       "description": "The unique ID for the customer's Google account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
+	//       "description": "The unique ID for the customer's G Suite account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -11574,7 +11742,7 @@ func (c *ResourcesCalendarsUpdateCall) Do(opts ...googleapi.CallOption) (*Calend
 	//       "type": "string"
 	//     },
 	//     "customer": {
-	//       "description": "The unique ID for the customer's Google account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
+	//       "description": "The unique ID for the customer's G Suite account. As an account administrator, you can also use the my_customer alias to represent your account's customer ID.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -11679,7 +11847,7 @@ func (c *RoleAssignmentsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable ID of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -11823,7 +11991,7 @@ func (c *RoleAssignmentsGetCall) Do(opts ...googleapi.CallOption) (*RoleAssignme
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable ID of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -11960,7 +12128,7 @@ func (c *RoleAssignmentsInsertCall) Do(opts ...googleapi.CallOption) (*RoleAssig
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable ID of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -12130,7 +12298,7 @@ func (c *RoleAssignmentsListCall) Do(opts ...googleapi.CallOption) (*RoleAssignm
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable ID of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -12277,7 +12445,7 @@ func (c *RolesDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable ID of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -12421,7 +12589,7 @@ func (c *RolesGetCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable ID of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -12558,7 +12726,7 @@ func (c *RolesInsertCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable ID of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -12712,7 +12880,7 @@ func (c *RolesListCall) Do(opts ...googleapi.CallOption) (*Roles, error) {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -12881,7 +13049,7 @@ func (c *RolesPatchCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable ID of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -13024,7 +13192,7 @@ func (c *RolesUpdateCall) Do(opts ...googleapi.CallOption) (*Role, error) {
 	//   ],
 	//   "parameters": {
 	//     "customer": {
-	//       "description": "Immutable ID of the Google Apps account.",
+	//       "description": "Immutable ID of the G Suite account.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -13135,7 +13303,7 @@ func (c *SchemasDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -13279,7 +13447,7 @@ func (c *SchemasGetCall) Do(opts ...googleapi.CallOption) (*Schema, error) {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -13416,7 +13584,7 @@ func (c *SchemasInsertCall) Do(opts ...googleapi.CallOption) (*Schema, error) {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -13556,7 +13724,7 @@ func (c *SchemasListCall) Do(opts ...googleapi.CallOption) (*Schemas, error) {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -13691,7 +13859,7 @@ func (c *SchemasPatchCall) Do(opts ...googleapi.CallOption) (*Schema, error) {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -13834,7 +14002,7 @@ func (c *SchemasUpdateCall) Do(opts ...googleapi.CallOption) (*Schema, error) {
 	//   ],
 	//   "parameters": {
 	//     "customerId": {
-	//       "description": "Immutable id of the Google Apps account",
+	//       "description": "Immutable ID of the G Suite account",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
@@ -14692,9 +14860,9 @@ func (c *UsersListCall) CustomFieldMask(customFieldMask string) *UsersListCall {
 	return c
 }
 
-// Customer sets the optional parameter "customer": Immutable id of the
-// Google Apps account. In case of multi-domain, to fetch all users for
-// a customer, fill this field instead of domain.
+// Customer sets the optional parameter "customer": Immutable ID of the
+// G Suite account. In case of multi-domain, to fetch all users for a
+// customer, fill this field instead of domain.
 func (c *UsersListCall) Customer(customer string) *UsersListCall {
 	c.urlParams_.Set("customer", customer)
 	return c
@@ -14899,7 +15067,7 @@ func (c *UsersListCall) Do(opts ...googleapi.CallOption) (*Users, error) {
 	//       "type": "string"
 	//     },
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account. In case of multi-domain, to fetch all users for a customer, fill this field instead of domain.",
+	//       "description": "Immutable ID of the G Suite account. In case of multi-domain, to fetch all users for a customer, fill this field instead of domain.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -15544,9 +15712,9 @@ func (c *UsersWatchCall) CustomFieldMask(customFieldMask string) *UsersWatchCall
 	return c
 }
 
-// Customer sets the optional parameter "customer": Immutable id of the
-// Google Apps account. In case of multi-domain, to fetch all users for
-// a customer, fill this field instead of domain.
+// Customer sets the optional parameter "customer": Immutable ID of the
+// G Suite account. In case of multi-domain, to fetch all users for a
+// customer, fill this field instead of domain.
 func (c *UsersWatchCall) Customer(customer string) *UsersWatchCall {
 	c.urlParams_.Set("customer", customer)
 	return c
@@ -15743,7 +15911,7 @@ func (c *UsersWatchCall) Do(opts ...googleapi.CallOption) (*Channel, error) {
 	//       "type": "string"
 	//     },
 	//     "customer": {
-	//       "description": "Immutable id of the Google Apps account. In case of multi-domain, to fetch all users for a customer, fill this field instead of domain.",
+	//       "description": "Immutable ID of the G Suite account. In case of multi-domain, to fetch all users for a customer, fill this field instead of domain.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },

@@ -20,6 +20,7 @@ import (
 	"reflect"
 	"testing"
 
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -31,7 +32,7 @@ import (
 	. "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 )
 
-func TestSetDefaultDaemonSet(t *testing.T) {
+func TestSetDefaultDaemonSetSpec(t *testing.T) {
 	defaultLabels := map[string]string{"foo": "bar"}
 	period := int64(v1.DefaultTerminationGracePeriodSeconds)
 	defaultTemplate := v1.PodTemplateSpec{
@@ -77,6 +78,7 @@ func TestSetDefaultDaemonSet(t *testing.T) {
 					UpdateStrategy: DaemonSetUpdateStrategy{
 						Type: OnDeleteDaemonSetStrategyType,
 					},
+					RevisionHistoryLimit: newInt32(10),
 				},
 			},
 		},
@@ -88,7 +90,8 @@ func TestSetDefaultDaemonSet(t *testing.T) {
 					},
 				},
 				Spec: DaemonSetSpec{
-					Template: defaultTemplate,
+					Template:             defaultTemplate,
+					RevisionHistoryLimit: newInt32(1),
 				},
 			},
 			expected: &DaemonSet{
@@ -105,6 +108,7 @@ func TestSetDefaultDaemonSet(t *testing.T) {
 					UpdateStrategy: DaemonSetUpdateStrategy{
 						Type: OnDeleteDaemonSetStrategyType,
 					},
+					RevisionHistoryLimit: newInt32(1),
 				},
 			},
 		},
@@ -116,19 +120,7 @@ func TestSetDefaultDaemonSet(t *testing.T) {
 					UpdateStrategy: DaemonSetUpdateStrategy{
 						Type: OnDeleteDaemonSetStrategyType,
 					},
-				},
-			},
-		},
-		{ // Update strategy.
-			original: &DaemonSet{
-				Spec: DaemonSetSpec{},
-			},
-			expected: &DaemonSet{
-				Spec: DaemonSetSpec{
-					Template: templateNoLabel,
-					UpdateStrategy: DaemonSetUpdateStrategy{
-						Type: OnDeleteDaemonSetStrategyType,
-					},
+					RevisionHistoryLimit: newInt32(10),
 				},
 			},
 		},
@@ -142,6 +134,7 @@ func TestSetDefaultDaemonSet(t *testing.T) {
 					UpdateStrategy: DaemonSetUpdateStrategy{
 						Type: OnDeleteDaemonSetStrategyType,
 					},
+					RevisionHistoryLimit: newInt32(10),
 				},
 			},
 		},
@@ -156,7 +149,7 @@ func TestSetDefaultDaemonSet(t *testing.T) {
 			t.Errorf("(%d) unexpected object: %v", i, got)
 			t.FailNow()
 		}
-		if !reflect.DeepEqual(got.Spec, expected.Spec) {
+		if !apiequality.Semantic.DeepEqual(got.Spec, expected.Spec) {
 			t.Errorf("(%d) got different than expected\ngot:\n\t%+v\nexpected:\n\t%+v", i, got.Spec, expected.Spec)
 		}
 	}
@@ -295,7 +288,7 @@ func TestSetDefaultDeployment(t *testing.T) {
 			t.Errorf("unexpected object: %v", got)
 			t.FailNow()
 		}
-		if !reflect.DeepEqual(got.Spec, expected.Spec) {
+		if !apiequality.Semantic.DeepEqual(got.Spec, expected.Spec) {
 			t.Errorf("object mismatch!\nexpected:\n\t%+v\ngot:\n\t%+v", got.Spec, expected.Spec)
 		}
 	}

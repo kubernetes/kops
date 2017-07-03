@@ -9,15 +9,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coredns/coredns/middleware/etcd/msg"
-	"github.com/coredns/coredns/middleware/pkg/dnsrecorder"
-	"github.com/coredns/coredns/middleware/pkg/singleflight"
-	"github.com/coredns/coredns/middleware/pkg/tls"
-	"github.com/coredns/coredns/middleware/proxy"
-	"github.com/coredns/coredns/middleware/test"
+	"github.com/mholt/caddy"
+	"github.com/miekg/coredns/middleware/etcd/msg"
+	"github.com/miekg/coredns/middleware/pkg/dnsrecorder"
+	"github.com/miekg/coredns/middleware/pkg/singleflight"
+	"github.com/miekg/coredns/middleware/proxy"
+	"github.com/miekg/coredns/middleware/test"
 
 	etcdc "github.com/coreos/etcd/client"
-	"github.com/mholt/caddy"
+	"github.com/miekg/dns"
 	"golang.org/x/net/context"
 )
 
@@ -29,11 +29,10 @@ func newEtcdMiddleware() *Etcd {
 	ctxt, _ = context.WithTimeout(context.Background(), etcdTimeout)
 
 	endpoints := []string{"http://localhost:2379"}
-	tlsc, _ := tls.NewTLSConfigFromArgs()
-	client, _ := newEtcdClient(endpoints, tlsc)
+	client, _ := newEtcdClient(endpoints, "", "", "")
 
 	return &Etcd{
-		Proxy:      proxy.NewLookup([]string{"8.8.8.8:53"}),
+		Proxy:      proxy.New([]string{"8.8.8.8:53"}),
 		PathPrefix: "skydns",
 		Ctx:        context.Background(),
 		Inflight:   &singleflight.Group{},
@@ -67,7 +66,11 @@ func TestLookup(t *testing.T) {
 		m := tc.Msg()
 
 		rec := dnsrecorder.New(&test.ResponseWriter{})
-		etc.ServeDNS(ctxt, rec, m)
+		_, err := etc.ServeDNS(ctxt, rec, m)
+		if err != nil {
+			t.Errorf("expected no error, got: %v for %s %s\n", err, m.Question[0].Name, dns.Type(m.Question[0].Qtype))
+			return
+		}
 
 		resp := rec.Msg
 		sort.Sort(test.RRSet(resp.Answer))

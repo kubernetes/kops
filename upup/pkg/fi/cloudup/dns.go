@@ -200,11 +200,11 @@ func precreateDNS(cluster *kops.Cluster, cloud fi.Cloud) error {
 				}
 			}
 		} else {
-			dnsRecord, err := rrs.Get(dnsHostname)
+			dnsRecords, err := rrs.Get(dnsHostname)
 			if err != nil {
 				return fmt.Errorf("Failed to get DNS record %s with error: %v", dnsHostname, err)
 			}
-			if dnsRecord != nil {
+			for _, dnsRecord := range dnsRecords {
 				if dnsRecord.Type() != "A" {
 					glog.V(4).Infof("Found DNS record %s with type %s, continue to create A type", dnsHostname, dnsRecord.Type())
 				} else {
