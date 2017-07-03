@@ -69,7 +69,7 @@ function create-node-pki {
 
   # TODO(mikedanese): remove this when we don't support downgrading to versions
   # < 1.6.
-  ln -s "${CA_CERT_BUNDLE_PATH}" /etc/kubernetes/ca.crt
+  ln -sf "${CA_CERT_BUNDLE_PATH}" /etc/kubernetes/ca.crt
 }
 
 # A hookpoint for setting up local devices
@@ -91,7 +91,7 @@ function config-ip-firewall {
   echo "Configuring IP firewall rules"
 
   iptables -N KUBE-METADATA-SERVER
-  iptables -A FORWARD -p tcp -d 169.254.169.254 --dport 80 -j KUBE-METADATA-SERVER
+  iptables -I FORWARD -p tcp -d 169.254.169.254 --dport 80 -j KUBE-METADATA-SERVER
 
   if [[ -n "${KUBE_FIREWALL_METADATA_SERVER:-}" ]]; then
     iptables -A KUBE-METADATA-SERVER -j DROP
@@ -419,6 +419,7 @@ enable_cluster_ui: '$(echo "$ENABLE_CLUSTER_UI" | sed -e "s/'/''/g")'
 enable_node_problem_detector: '$(echo "$ENABLE_NODE_PROBLEM_DETECTOR" | sed -e "s/'/''/g")'
 enable_l7_loadbalancing: '$(echo "$ENABLE_L7_LOADBALANCING" | sed -e "s/'/''/g")'
 enable_node_logging: '$(echo "$ENABLE_NODE_LOGGING" | sed -e "s/'/''/g")'
+enable_metadata_proxy: '$(echo "$ENABLE_METADATA_PROXY" | sed -e "s/'/''/g")'
 enable_rescheduler: '$(echo "$ENABLE_RESCHEDULER" | sed -e "s/'/''/g")'
 logging_destination: '$(echo "$LOGGING_DESTINATION" | sed -e "s/'/''/g")'
 elasticsearch_replicas: '$(echo "$ELASTICSEARCH_LOGGING_REPLICAS" | sed -e "s/'/''/g")'
@@ -571,6 +572,11 @@ EOF
 node_labels: '$(echo "${NODE_LABELS}" | sed -e "s/'/''/g")'
 EOF
     fi
+    if [ -n "${NODE_TAINTS:-}" ]; then
+      cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
+node_taints: '$(echo "${NODE_TAINTS}" | sed -e "s/'/''/g")'
+EOF
+    fi    
     if [ -n "${EVICTION_HARD:-}" ]; then
       cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
 eviction_hard: '$(echo "${EVICTION_HARD}" | sed -e "s/'/''/g")'
@@ -580,30 +586,17 @@ EOF
       cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
 enable_cluster_autoscaler: '$(echo "${ENABLE_CLUSTER_AUTOSCALER}" | sed -e "s/'/''/g")'
 autoscaler_mig_config: '$(echo "${AUTOSCALER_MIG_CONFIG}" | sed -e "s/'/''/g")'
-EOF
-    fi
-    if [[ "${FEDERATION:-}" == "true" ]]; then
-      local federations_domain_map="${FEDERATIONS_DOMAIN_MAP:-}"
-      if [[ -z "${federations_domain_map}" && -n "${FEDERATION_NAME:-}" && -n "${DNS_ZONE_NAME:-}" ]]; then
-        federations_domain_map="${FEDERATION_NAME}=${DNS_ZONE_NAME}"
-      fi
-      if [[ -n "${federations_domain_map}" ]]; then
-        cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
-federations_domain_map: '$(echo "- --federations=${federations_domain_map}" | sed -e "s/'/''/g")'
-EOF
-      else
-        cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
-federations_domain_map: ''
-EOF
-      fi
-    else
-      cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
-federations_domain_map: ''
+autoscaler_expander_config: '$(echo "${AUTOSCALER_EXPANDER_CONFIG}" | sed -e "s/'/''/g")'
 EOF
     fi
     if [ -n "${SCHEDULING_ALGORITHM_PROVIDER:-}" ]; then
       cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
 scheduling_algorithm_provider: '$(echo "${SCHEDULING_ALGORITHM_PROVIDER}" | sed -e "s/'/''/g")'
+EOF
+    fi
+    if [ -n "${ENABLE_IP_ALIASES:-}" ]; then
+      cat <<EOF >>/srv/salt-overlay/pillar/cluster-params.sls
+enable_ip_aliases: '$(echo "$ENABLE_IP_ALIASES" | sed -e "s/'/''/g")'
 EOF
     fi
 }
@@ -629,7 +622,7 @@ function convert-bytes-gce-kube() {
 #    connect to the apiserver.
 
 function create-salt-kubelet-auth() {
-  local -r kubelet_kubeconfig_file="/srv/salt-overlay/salt/kubelet/kubeconfig"
+  local -r kubelet_kubeconfig_file="/srv/salt-overlay/salt/kubelet/bootstrap-kubeconfig"
   if [ ! -e "${kubelet_kubeconfig_file}" ]; then
     mkdir -p /srv/salt-overlay/salt/kubelet
     (umask 077;
@@ -644,7 +637,7 @@ users:
 clusters:
 - name: local
   cluster:
-    server: https://kubernetes-master
+    server: https://${KUBERNETES_MASTER_NAME}
     certificate-authority: ${CA_CERT_BUNDLE_PATH}
 contexts:
 - context:
@@ -815,7 +808,7 @@ function run-salt() {
   echo "== Calling Salt =="
   local rc=0
   for i in {0..6}; do
-    salt-call --local state.highstate && rc=0 || rc=$?
+    salt-call --retcode-passthrough --local state.highstate && rc=0 || rc=$?
     if [[ "${rc}" == 0 ]]; then
       return 0
     fi

@@ -34,12 +34,14 @@ type Finder struct {
 	client  *vim25.Client
 	r       recurser
 	dc      *object.Datacenter
+	si      *object.SearchIndex
 	folders *object.DatacenterFolders
 }
 
 func NewFinder(client *vim25.Client, all bool) *Finder {
 	f := &Finder{
 		client: client,
+		si:     object.NewSearchIndex(client),
 		r: recurser{
 			Collector: property.DefaultCollector(client),
 			All:       all,
@@ -53,6 +55,38 @@ func (f *Finder) SetDatacenter(dc *object.Datacenter) *Finder {
 	f.dc = dc
 	f.folders = nil
 	return f
+}
+
+// findRoot makes it possible to use "find" mode with a different root path.
+// Example: ResourcePoolList("/dc1/host/cluster1/...")
+func (f *Finder) findRoot(ctx context.Context, root *list.Element, parts []string) bool {
+	if len(parts) == 0 {
+		return false
+	}
+
+	ix := len(parts) - 1
+
+	if parts[ix] != "..." {
+		return false
+	}
+
+	if ix == 0 {
+		return true // We already have the Object for root.Path
+	}
+
+	// Lookup the Object for the new root.Path
+	rootPath := path.Join(root.Path, path.Join(parts[:ix]...))
+
+	ref, err := f.si.FindByInventoryPath(ctx, rootPath)
+	if err != nil || ref == nil {
+		// If we get an error or fail to match, fall through to find() with the original root and path
+		return false
+	}
+
+	root.Path = rootPath
+	root.Object = ref
+
+	return true
 }
 
 func (f *Finder) find(ctx context.Context, arg string, s *spec) ([]list.Element, error) {
@@ -94,7 +128,11 @@ func (f *Finder) find(ctx context.Context, arg string, s *spec) ([]list.Element,
 	}
 
 	if s.listMode(isPath) {
-		return f.r.List(ctx, s, root, parts)
+		if f.findRoot(ctx, &root, parts) {
+			parts = []string{"*"}
+		} else {
+			return f.r.List(ctx, s, root, parts)
+		}
 	}
 
 	s.Parents = append(s.Parents, s.Nested...)
@@ -226,13 +264,8 @@ func (f *Finder) managedObjectList(ctx context.Context, path string, tl bool, in
 	}
 
 	if tl {
-		if path == "/**" || path == "./..." {
-			// TODO: support switching to find mode for any path, not just relative to f.rootFolder or f.dcReference
-			path = "*"
-		} else {
-			s.Contents = true
-			s.ListMode = types.NewBool(true)
-		}
+		s.Contents = true
+		s.ListMode = types.NewBool(true)
 	}
 
 	return f.find(ctx, path, s)
@@ -696,8 +729,12 @@ func (f *Finder) NetworkList(ctx context.Context, path string) ([]object.Network
 	for _, e := range es {
 		ref := e.Object.Reference()
 		switch ref.Type {
-		case "Network", "OpaqueNetwork":
+		case "Network":
 			r := object.NewNetwork(f.client, ref)
+			r.InventoryPath = e.Path
+			ns = append(ns, r)
+		case "OpaqueNetwork":
+			r := object.NewOpaqueNetwork(f.client, ref)
 			r.InventoryPath = e.Path
 			ns = append(ns, r)
 		case "DistributedVirtualPortgroup":

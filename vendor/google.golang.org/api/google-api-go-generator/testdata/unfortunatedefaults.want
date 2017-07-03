@@ -224,3 +224,23 @@ func (s *Thing) MarshalJSON() ([]byte, error) {
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
+
+func (s *Thing) UnmarshalJSON(data []byte) error {
+	type noMethod Thing
+	var s1 struct {
+		NumericEmptyDefaultD    gensupport.JSONFloat64  `json:"numeric_empty_default_d"`
+		NumericEmptyDefaultE    gensupport.JSONFloat64  `json:"numeric_empty_default_e"`
+		NumericNonemptyDefaultB *gensupport.JSONFloat64 `json:"numeric_nonempty_default_b"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.NumericEmptyDefaultD = float64(s1.NumericEmptyDefaultD)
+	s.NumericEmptyDefaultE = float64(s1.NumericEmptyDefaultE)
+	if s1.NumericNonemptyDefaultB != nil {
+		s.NumericNonemptyDefaultB = (*float64)(s1.NumericNonemptyDefaultB)
+	}
+	return nil
+}

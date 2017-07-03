@@ -1,6 +1,6 @@
-# Extensions for Protocol Buffers to create more go like structures.
+# Protocol Buffers for Go with Gadgets
 #
-# Copyright (c) 2013, Vastech SA (PTY) LTD. All rights reserved.
+# Copyright (c) 2013, The GoGo Authors. All rights reserved.
 # http://github.com/gogo/protobuf
 #
 # Redistribution and use in source and binary forms, with or without

@@ -1,13 +1,13 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/FyUD9D0inmca5JWfAKYW1_Iol18\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/WD_dCFRiB71YKGuRij6Gw1Sn7dI\"",
  "discoveryVersion": "v1",
  "id": "licensing:v1",
  "name": "licensing",
  "version": "v1",
- "revision": "20150901",
+ "revision": "20170213",
  "title": "Enterprise License Manager API",
- "description": "Licensing API to view and manage license for your domain.",
+ "description": "Views and manages licenses for your domain.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "icons": {
@@ -70,7 +70,7 @@
   "oauth2": {
    "scopes": {
     "https://www.googleapis.com/auth/apps.licensing": {
-     "description": "View and manage Google Apps licenses for your domain"
+     "description": "View and manage G Suite licenses for your domain"
     }
    }
   }
@@ -92,12 +92,16 @@
     },
     "productId": {
      "type": "string",
-     "description": "Name of the product.",
+     "description": "Id of the product.",
      "annotations": {
       "required": [
        "licensing.licenseAssignments.update"
       ]
      }
+    },
+    "productName": {
+     "type": "string",
+     "description": "Display Name of the product."
     },
     "selfLink": {
      "type": "string",
@@ -105,12 +109,16 @@
     },
     "skuId": {
      "type": "string",
-     "description": "Name of the sku of the product.",
+     "description": "Id of the sku of the product.",
      "annotations": {
       "required": [
        "licensing.licenseAssignments.update"
       ]
      }
+    },
+    "skuName": {
+     "type": "string",
+     "description": "Display Name of the sku of the product."
     },
     "userId": {
      "type": "string",

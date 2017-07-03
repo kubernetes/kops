@@ -1,3 +1,26 @@
+## 0.8.0 / 2016-08-17
+* [CHANGE] Registry is doing more consistency checks. This might break
+  existing setups that used to export inconsistent metrics.
+* [CHANGE] Pushing to Pushgateway moved to package `push` and changed to allow
+  arbitrary grouping.
+* [CHANGE] Removed `SelfCollector`.
+* [CHANGE] Removed `PanicOnCollectError` and `EnableCollectChecks` methods.
+* [CHANGE] Moved packages to the prometheus/common repo: `text`, `model`,
+  `extraction`.
+* [CHANGE] Deprecated a number of functions.
+* [FEATURE] Allow custom registries. Added `Registerer` and `Gatherer`
+  interfaces.
+* [FEATURE] Separated HTTP exposition, allowing custom HTTP handlers (package
+  `promhttp`) and enabling the creation of other exposition mechanisms.
+* [FEATURE] `MustRegister` is variadic now, allowing registration of many
+  collectors in one call.
+* [FEATURE] Added HTTP API v1 package.
+* [ENHANCEMENT] Numerous documentation improvements.
+* [ENHANCEMENT] Improved metric sorting.
+* [ENHANCEMENT] Inlined fnv64a hashing for improved performance.
+* [ENHANCEMENT] Several test improvements.
+* [BUGFIX] Handle collisions in MetricVec.
+
 ## 0.7.0 / 2015-07-27
 * [CHANGE] Rename ExporterLabelPrefix to ExportedLabelPrefix.
 * [BUGFIX] Closed gaps in metric consistency check.

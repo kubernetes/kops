@@ -25,13 +25,14 @@ func TestDocument(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := &Document{
-		ID:          "storage:v1",
-		Name:        "storage",
-		Version:     "v1",
-		Title:       "Cloud Storage JSON API",
-		RootURL:     "https://www.googleapis.com/",
-		ServicePath: "storage/v1/",
-		BasePath:    "/storage/v1/",
+		ID:                "storage:v1",
+		Name:              "storage",
+		Version:           "v1",
+		Title:             "Cloud Storage JSON API",
+		RootURL:           "https://www.googleapis.com/",
+		ServicePath:       "storage/v1/",
+		BasePath:          "/storage/v1/",
+		DocumentationLink: "https://developers.google.com/storage/docs/json_api/",
 		Auth: Auth{
 			OAuth2Scopes: []Scope{
 				{"https://www.googleapis.com/auth/cloud-platform",
@@ -54,33 +55,33 @@ func TestDocument(t *testing.T) {
 				Type:        "object",
 				Description: "A bucket.",
 				Kind:        StructKind,
-				Properties: map[string]*Schema{
-					"id": stringSchema,
-					"kind": &Schema{
-						Type:    "string",
-						Kind:    SimpleKind,
-						Default: "storage#bucket",
-					},
-					"cors": &Schema{
+				Properties: []*Property{
+					{"cors", &Schema{
 						Type: "array",
 						Kind: ArrayKind,
 						ItemSchema: &Schema{
 							Type: "object",
 							Kind: StructKind,
-							Properties: map[string]*Schema{
-								"maxAgeSeconds": &Schema{
+							Properties: []*Property{
+								{"maxAgeSeconds", &Schema{
 									Type:   "integer",
 									Format: "int32",
 									Kind:   SimpleKind,
-								},
-								"method": &Schema{
+								}},
+								{"method", &Schema{
 									Type:       "array",
 									Kind:       ArrayKind,
 									ItemSchema: stringSchema,
-								},
+								}},
 							},
 						},
-					},
+					}},
+					{"id", stringSchema},
+					{"kind", &Schema{
+						Type:    "string",
+						Kind:    SimpleKind,
+						Default: "storage#bucket",
+					}},
 				},
 			},
 			"Buckets": &Schema{
@@ -88,8 +89,8 @@ func TestDocument(t *testing.T) {
 				Name: "Buckets",
 				Type: "object",
 				Kind: StructKind,
-				Properties: map[string]*Schema{
-					"items": &Schema{
+				Properties: []*Property{
+					{"items", &Schema{
 						Type: "array",
 						Kind: ArrayKind,
 						ItemSchema: &Schema{
@@ -97,7 +98,7 @@ func TestDocument(t *testing.T) {
 							Ref:       "Bucket",
 							RefSchema: nil,
 						},
-					},
+					}},
 				},
 			},
 			"VariantExample": &Schema{
@@ -120,9 +121,7 @@ func TestDocument(t *testing.T) {
 				ID:         "oauth2.getCertForOpenIdConnect",
 				Path:       "oauth2/v1/certs",
 				HTTPMethod: "GET",
-				Response: struct {
-					Ref string `json:"$ref"`
-				}{"X509"},
+				Response:   &Schema{Ref: "Bucket", Kind: ReferenceKind},
 			},
 		},
 		Resources: ResourceList{
@@ -167,9 +166,7 @@ func TestDocument(t *testing.T) {
 							},
 						},
 						ParameterOrder: []string{"bucket"},
-						Response: struct {
-							Ref string `json:"$ref"`
-						}{"Bucket"},
+						Response:       &Schema{Ref: "Bucket", Kind: ReferenceKind},
 						Scopes: []string{
 							"https://www.googleapis.com/auth/cloud-platform",
 							"https://www.googleapis.com/auth/cloud-platform.read-only",
@@ -198,7 +195,10 @@ func TestDocument(t *testing.T) {
 		},
 	}
 	// Resolve schema references.
-	want.Schemas["Buckets"].Properties["items"].ItemSchema.RefSchema = want.Schemas["Bucket"]
+	bucket := want.Schemas["Bucket"]
+	want.Schemas["Buckets"].Properties[0].Schema.ItemSchema.RefSchema = bucket
+	want.Methods[0].Response.RefSchema = bucket
+	want.Resources[0].Methods[0].Response.RefSchema = bucket
 	for k, gs := range got.Schemas {
 		ws := want.Schemas[k]
 		if !reflect.DeepEqual(gs, ws) {

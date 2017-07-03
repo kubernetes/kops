@@ -36,7 +36,7 @@ make check
 sudo make install
 ```
 
-Then, `go get -u` as usual the following packages:
+Then, `go get -u` as usual.
 
 ```sh
 go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
@@ -90,7 +90,7 @@ Make sure that your `$GOPATH/bin` is in your `$PATH`.
    protoc -I/usr/local/include -I. \
      -I$GOPATH/src \
      -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-     --go_out=plugins=grpc:. \
+     --go_out=Mgoogle/api/annotations.proto=github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis/google/api,plugins=grpc:. \
      path/to/your_service.proto
    ```
    
@@ -109,13 +109,11 @@ Make sure that your `$GOPATH/bin` is in your `$PATH`.
      protoc -I/usr/local/include -I. \
        -I$GOPATH/src \
        -I$GOPATH/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis \
-       --plugin=protoc-gen-grpc=grpc_ruby_plugin \
+       --plugin=protoc-gen-grpc-ruby=grpc_ruby_plugin \
        --grpc-ruby_out=. \
        path/to/your/service.proto
      ```
-   2. Add the googleapis-common-protos gem (or your language equivalent) as a dependency to your project.
-   3. Implement your service
-   
+   2. Implement your service
 5. Generate reverse-proxy
    
    ```sh
@@ -127,15 +125,11 @@ Make sure that your `$GOPATH/bin` is in your `$PATH`.
    ```
    
    It will generate a reverse proxy `path/to/your_service.pb.gw.go`.
-
-   Note: After generating the code for each of the stubs, in order to build the code, you will want to run ```go get .``` from the directory containing the stubs.
-
 6. Write an entrypoint
    
    Now you need to write an entrypoint of the proxy server.
    ```go
    package main
-
    import (
      "flag"
      "net/http"
@@ -164,7 +158,8 @@ Make sure that your `$GOPATH/bin` is in your `$PATH`.
        return err
      }
    
-     return http.ListenAndServe(":8080", mux)
+     http.ListenAndServe(":8080", mux)
+     return nil
    }
    
    func main() {
@@ -191,9 +186,6 @@ Make sure that your `$GOPATH/bin` is in your `$PATH`.
 `protoc-gen-grpc-gateway` supports custom mapping from Protobuf `import` to Golang import path.
 They are compatible to [the parameters with same names in `protoc-gen-go`](https://github.com/golang/protobuf#parameters).
 
-In addition we also support the `request_context` parameter in order to use the `http.Request`'s Context (only for Go 1.7 and above).
-This parameter can be useful to pass request scoped context between the gateway and the gRPC service.
-
 `protoc-gen-grpc-gateway` also supports some more command line flags to control logging. You can give these flags together with parameters above. Run `protoc-gen-grpc-gateway --help` for more details about the flags.
 
 ## More Examples
@@ -212,15 +204,14 @@ To use the same port for custom HTTP handlers (e.g. serving `swagger.json`), gRP
 * Method parameters in request body
 * Method parameters in request path
 * Method parameters in query string
-* Enum fields in path parameter (including repeated enum fields).
-* Mapping streaming APIs to newline-delimited JSON streams
-* Mapping HTTP headers with `Grpc-Metadata-` prefix to gRPC metadata (prefixed with `grpcgateway-`)
+* Mapping streaming APIs to JSON streams
+* Mapping HTTP headers with `Grpc-Metadata-` prefix to gRPC metadata
 * Optionally emitting API definition for [Swagger](http://swagger.io).
 * Setting [gRPC timeouts](http://www.grpc.io/docs/guides/wire.html) through inbound HTTP `Grpc-Timeout` header.
 
 ### Want to support
 But not yet.
-* bytes fields in path parameter. #5
+* bytes and enum fields in path parameter. #5
 * Optionally generating the entrypoint. #8
 * `import_path` parameter
 
@@ -237,9 +228,7 @@ But patch is welcome.
 * HTTP request source IP is added as `X-Forwarded-For` gRPC request header
 * HTTP request host is added as `X-Forwarded-Host` gRPC request header
 * HTTP `Authorization` header is added as `authorization` gRPC request header 
-* Remaining Permanent HTTP header keys (as specified by the IANA [here](http://www.iana.org/assignments/message-headers/message-headers.xhtml) are prefixed with `grpcgateway-` and added with their values to gRPC request header
-* HTTP headers that start with 'Grpc-Metadata-' are mapped to gRPC metadata (prefixed with `grpcgateway-`)
-* While configurable, the default {un,}marshaling uses [jsonpb](https://godoc.org/github.com/golang/protobuf/jsonpb) with `OrigName: true`.
+* Remaining HTTP header keys are prefixed with `Grpc-Metadata-` and added with their values to gRPC request header
 
 # Contribution
 See [CONTRIBUTING.md](http://github.com/grpc-ecosystem/grpc-gateway/blob/master/CONTRIBUTING.md).

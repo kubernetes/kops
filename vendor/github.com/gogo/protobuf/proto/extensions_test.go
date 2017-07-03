@@ -35,6 +35,7 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"sort"
 	"testing"
 
 	"github.com/gogo/protobuf/proto"
@@ -45,7 +46,7 @@ func TestGetExtensionsWithMissingExtensions(t *testing.T) {
 	msg := &pb.MyMessage{}
 	ext1 := &pb.Ext{}
 	if err := proto.SetExtension(msg, pb.E_Ext_More, ext1); err != nil {
-		t.Fatalf("Could not set ext1: %s", ext1)
+		t.Fatalf("Could not set ext1: %s", err)
 	}
 	exts, err := proto.GetExtensions(msg, []*proto.ExtensionDesc{
 		pb.E_Ext_More,
@@ -60,6 +61,58 @@ func TestGetExtensionsWithMissingExtensions(t *testing.T) {
 	if exts[1] != nil {
 		t.Errorf("ext2 in returned extensions: %T %v", exts[1], exts[1])
 	}
+}
+
+func TestExtensionDescsWithMissingExtensions(t *testing.T) {
+	msg := &pb.MyMessage{Count: proto.Int32(0)}
+	extdesc1 := pb.E_Ext_More
+	if descs, err := proto.ExtensionDescs(msg); len(descs) != 0 || err != nil {
+		t.Errorf("proto.ExtensionDescs: got %d descs, error %v; want 0, nil", len(descs), err)
+	}
+
+	ext1 := &pb.Ext{}
+	if err := proto.SetExtension(msg, extdesc1, ext1); err != nil {
+		t.Fatalf("Could not set ext1: %s", err)
+	}
+	extdesc2 := &proto.ExtensionDesc{
+		ExtendedType:  (*pb.MyMessage)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         123456789,
+		Name:          "a.b",
+		Tag:           "varint,123456789,opt",
+	}
+	ext2 := proto.Bool(false)
+	if err := proto.SetExtension(msg, extdesc2, ext2); err != nil {
+		t.Fatalf("Could not set ext2: %s", err)
+	}
+
+	b, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatalf("Could not marshal msg: %v", err)
+	}
+	if err = proto.Unmarshal(b, msg); err != nil {
+		t.Fatalf("Could not unmarshal into msg: %v", err)
+	}
+
+	descs, err := proto.ExtensionDescs(msg)
+	if err != nil {
+		t.Fatalf("proto.ExtensionDescs: got error %v", err)
+	}
+	sortExtDescs(descs)
+	wantDescs := []*proto.ExtensionDesc{extdesc1, {Field: extdesc2.Field}}
+	if !reflect.DeepEqual(descs, wantDescs) {
+		t.Errorf("proto.ExtensionDescs(msg) sorted extension ids: got %+v, want %+v", descs, wantDescs)
+	}
+}
+
+type ExtensionDescSlice []*proto.ExtensionDesc
+
+func (s ExtensionDescSlice) Len() int           { return len(s) }
+func (s ExtensionDescSlice) Less(i, j int) bool { return s[i].Field < s[j].Field }
+func (s ExtensionDescSlice) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+
+func sortExtDescs(s []*proto.ExtensionDesc) {
+	sort.Sort(ExtensionDescSlice(s))
 }
 
 func TestGetExtensionStability(t *testing.T) {
@@ -425,6 +478,61 @@ func TestUnmarshalRepeatingNonRepeatedExtension(t *testing.T) {
 		}
 		if !reflect.DeepEqual(*ext, want) {
 			t.Errorf("[%s] Wrong value for ComplexExtension: got: %v want: %v\n", test.name, ext, want)
+		}
+	}
+}
+
+func TestClearAllExtensions(t *testing.T) {
+	// unregistered extension
+	desc := &proto.ExtensionDesc{
+		ExtendedType:  (*pb.MyMessage)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         101010100,
+		Name:          "emptyextension",
+		Tag:           "varint,0,opt",
+	}
+	m := &pb.MyMessage{}
+	if proto.HasExtension(m, desc) {
+		t.Errorf("proto.HasExtension(%s): got true, want false", proto.MarshalTextString(m))
+	}
+	if err := proto.SetExtension(m, desc, proto.Bool(true)); err != nil {
+		t.Errorf("proto.SetExtension(m, desc, true): got error %q, want nil", err)
+	}
+	if !proto.HasExtension(m, desc) {
+		t.Errorf("proto.HasExtension(%s): got false, want true", proto.MarshalTextString(m))
+	}
+	proto.ClearAllExtensions(m)
+	if proto.HasExtension(m, desc) {
+		t.Errorf("proto.HasExtension(%s): got true, want false", proto.MarshalTextString(m))
+	}
+}
+
+func TestMarshalRace(t *testing.T) {
+	// unregistered extension
+	desc := &proto.ExtensionDesc{
+		ExtendedType:  (*pb.MyMessage)(nil),
+		ExtensionType: (*bool)(nil),
+		Field:         101010100,
+		Name:          "emptyextension",
+		Tag:           "varint,0,opt",
+	}
+
+	m := &pb.MyMessage{Count: proto.Int32(4)}
+	if err := proto.SetExtension(m, desc, proto.Bool(true)); err != nil {
+		t.Errorf("proto.SetExtension(m, desc, true): got error %q, want nil", err)
+	}
+
+	errChan := make(chan error, 3)
+	for n := 3; n > 0; n-- {
+		go func() {
+			_, err := proto.Marshal(m)
+			errChan <- err
+		}()
+	}
+	for i := 0; i < 3; i++ {
+		err := <-errChan
+		if err != nil {
+			t.Fatal(err)
 		}
 	}
 }

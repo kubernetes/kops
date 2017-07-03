@@ -1196,6 +1196,22 @@ func (s *PostLocation) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *PostLocation) UnmarshalJSON(data []byte) error {
+	type noMethod PostLocation
+	var s1 struct {
+		Lat gensupport.JSONFloat64 `json:"lat"`
+		Lng gensupport.JSONFloat64 `json:"lng"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Lat = float64(s1.Lat)
+	s.Lng = float64(s1.Lng)
+	return nil
+}
+
 // PostReplies: The container of comments on this Post.
 type PostReplies struct {
 	// Items: The List of Comments for this Post.

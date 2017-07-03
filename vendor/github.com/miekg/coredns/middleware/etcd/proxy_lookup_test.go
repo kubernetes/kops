@@ -6,17 +6,17 @@ import (
 	"sort"
 	"testing"
 
-	"github.com/coredns/coredns/middleware/etcd/msg"
-	"github.com/coredns/coredns/middleware/pkg/dnsrecorder"
-	"github.com/coredns/coredns/middleware/proxy"
-	"github.com/coredns/coredns/middleware/test"
+	"github.com/miekg/coredns/middleware/etcd/msg"
+	"github.com/miekg/coredns/middleware/pkg/dnsrecorder"
+	"github.com/miekg/coredns/middleware/proxy"
+	"github.com/miekg/coredns/middleware/test"
 
 	"github.com/miekg/dns"
 )
 
 func TestProxyLookupFailDebug(t *testing.T) {
 	etc := newEtcdMiddleware()
-	etc.Proxy = proxy.NewLookup([]string{"127.0.0.1:154"})
+	etc.Proxy = proxy.New([]string{"127.0.0.1:154"})
 	etc.Debugging = true
 
 	for _, serv := range servicesProxy {

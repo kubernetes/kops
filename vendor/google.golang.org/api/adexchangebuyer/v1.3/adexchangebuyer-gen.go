@@ -743,6 +743,20 @@ func (s *CreativeNativeAd) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *CreativeNativeAd) UnmarshalJSON(data []byte) error {
+	type noMethod CreativeNativeAd
+	var s1 struct {
+		StarRating gensupport.JSONFloat64 `json:"starRating"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.StarRating = float64(s1.StarRating)
+	return nil
+}
+
 // CreativeNativeAdAppIcon: The app icon, for app download ads.
 type CreativeNativeAdAppIcon struct {
 	Height int64 `json:"height,omitempty"`
@@ -1112,6 +1126,48 @@ func (s *PerformanceReport) MarshalJSON() ([]byte, error) {
 	type noMethod PerformanceReport
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *PerformanceReport) UnmarshalJSON(data []byte) error {
+	type noMethod PerformanceReport
+	var s1 struct {
+		BidRate                 gensupport.JSONFloat64 `json:"bidRate"`
+		BidRequestRate          gensupport.JSONFloat64 `json:"bidRequestRate"`
+		FilteredBidRate         gensupport.JSONFloat64 `json:"filteredBidRate"`
+		InventoryMatchRate      gensupport.JSONFloat64 `json:"inventoryMatchRate"`
+		Latency50thPercentile   gensupport.JSONFloat64 `json:"latency50thPercentile"`
+		Latency85thPercentile   gensupport.JSONFloat64 `json:"latency85thPercentile"`
+		Latency95thPercentile   gensupport.JSONFloat64 `json:"latency95thPercentile"`
+		NoQuotaInRegion         gensupport.JSONFloat64 `json:"noQuotaInRegion"`
+		OutOfQuota              gensupport.JSONFloat64 `json:"outOfQuota"`
+		PixelMatchRequests      gensupport.JSONFloat64 `json:"pixelMatchRequests"`
+		PixelMatchResponses     gensupport.JSONFloat64 `json:"pixelMatchResponses"`
+		QuotaConfiguredLimit    gensupport.JSONFloat64 `json:"quotaConfiguredLimit"`
+		QuotaThrottledLimit     gensupport.JSONFloat64 `json:"quotaThrottledLimit"`
+		SuccessfulRequestRate   gensupport.JSONFloat64 `json:"successfulRequestRate"`
+		UnsuccessfulRequestRate gensupport.JSONFloat64 `json:"unsuccessfulRequestRate"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.BidRate = float64(s1.BidRate)
+	s.BidRequestRate = float64(s1.BidRequestRate)
+	s.FilteredBidRate = float64(s1.FilteredBidRate)
+	s.InventoryMatchRate = float64(s1.InventoryMatchRate)
+	s.Latency50thPercentile = float64(s1.Latency50thPercentile)
+	s.Latency85thPercentile = float64(s1.Latency85thPercentile)
+	s.Latency95thPercentile = float64(s1.Latency95thPercentile)
+	s.NoQuotaInRegion = float64(s1.NoQuotaInRegion)
+	s.OutOfQuota = float64(s1.OutOfQuota)
+	s.PixelMatchRequests = float64(s1.PixelMatchRequests)
+	s.PixelMatchResponses = float64(s1.PixelMatchResponses)
+	s.QuotaConfiguredLimit = float64(s1.QuotaConfiguredLimit)
+	s.QuotaThrottledLimit = float64(s1.QuotaThrottledLimit)
+	s.SuccessfulRequestRate = float64(s1.SuccessfulRequestRate)
+	s.UnsuccessfulRequestRate = float64(s1.UnsuccessfulRequestRate)
+	return nil
 }
 
 // PerformanceReportList: The configuration data for an Ad Exchange

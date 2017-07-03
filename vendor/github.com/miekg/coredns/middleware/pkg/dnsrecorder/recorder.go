@@ -16,7 +16,7 @@ import (
 type Recorder struct {
 	dns.ResponseWriter
 	Rcode int
-	Len   int
+	Size  int
 	Msg   *dns.Msg
 	Start time.Time
 }
@@ -39,16 +39,16 @@ func (r *Recorder) WriteMsg(res *dns.Msg) error {
 	r.Rcode = res.Rcode
 	// We may get called multiple times (axfr for instance).
 	// Save the last message, but add the sizes.
-	r.Len += res.Len()
+	r.Size += res.Len()
 	r.Msg = res
 	return r.ResponseWriter.WriteMsg(res)
 }
 
-// Write is a wrapper that records the length of the message that gets written.
+// Write is a wrapper that records the size of the message that gets written.
 func (r *Recorder) Write(buf []byte) (int, error) {
 	n, err := r.ResponseWriter.Write(buf)
 	if err == nil {
-		r.Len += n
+		r.Size += n
 	}
 	return n, err
 }

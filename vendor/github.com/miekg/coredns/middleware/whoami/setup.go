@@ -1,8 +1,8 @@
 package whoami
 
 import (
-	"github.com/coredns/coredns/core/dnsserver"
-	"github.com/coredns/coredns/middleware"
+	"github.com/miekg/coredns/core/dnsserver"
+	"github.com/miekg/coredns/middleware"
 
 	"github.com/mholt/caddy"
 )
@@ -21,7 +21,7 @@ func setupWhoami(c *caddy.Controller) error {
 	}
 
 	dnsserver.GetConfig(c).AddMiddleware(func(next middleware.Handler) middleware.Handler {
-		return Whoami{}
+		return Whoami{Next: next}
 	})
 
 	return nil

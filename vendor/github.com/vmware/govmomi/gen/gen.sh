@@ -16,23 +16,38 @@
 
 set -e
 
-if [ ! -f rbvmomi/vmodl.db ]; then
-  git clone https://github.com/vmware/rbvmomi
-fi
+generate() {
+  dst="$1"
+  wsdl="$2"
+  modl="$3"
 
-dst=../vim25
+  pkgs=(types methods)
+  if [ -n "$modl" ] ; then
+    pkgs+=(mo)
+  fi
 
-pkgs=$(echo $dst/{types,methods,mo})
-mkdir -p $pkgs
+  for p in "${pkgs[@]}"
+  do
+    mkdir -p "$dst/$p"
+  done
 
-bundle exec ruby gen_from_wsdl.rb $dst
-bundle exec ruby gen_from_vmodl.rb $dst
+  echo "generating $dst/..."
 
-for p in $pkgs
-do
-  echo $p
-  cd $p
-  goimports -w *.go
-  go install
-  cd -
-done
+  bundle exec ruby gen_from_wsdl.rb "$dst" "$wsdl"
+  if [ -n "$modl" ] ; then
+    bundle exec ruby gen_from_vmodl.rb "$dst" "$wsdl" "$modl"
+  fi
+
+  for p in "${pkgs[@]}"
+  do
+    pushd "$dst/$p" >/dev/null
+    goimports -w ./*.go
+    go install
+    popd >/dev/null
+  done
+}
+
+# ./sdk/ contains the contents of wsdl.zip from vimbase build 5037323
+
+generate "../vim25" "vim" "./rbvmomi/vmodl.db" # from github.com/vmware/rbvmomi@f6907e6
+generate "../pbm" "pbm"

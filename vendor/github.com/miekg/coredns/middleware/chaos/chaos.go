@@ -4,8 +4,8 @@ package chaos
 import (
 	"os"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -23,7 +23,7 @@ type Chaos struct {
 func (c Chaos) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
 	state := request.Request{W: w, Req: r}
 	if state.QClass() != dns.ClassCHAOS || state.QType() != dns.TypeTXT {
-		return middleware.NextOrFailure(c.Name(), c.Next, ctx, w, r)
+		return c.Next.ServeDNS(ctx, w, r)
 	}
 
 	m := new(dns.Msg)

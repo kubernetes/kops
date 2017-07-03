@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/EvKs3Hkvcx40X69CkSu-499XWyU\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/XJ8vjwOJUtuz-unNR2L_5stMJIc\"",
  "discoveryVersion": "v1",
  "id": "adexchangebuyer:v1.4",
  "name": "adexchangebuyer",
  "canonicalName": "Ad Exchange Buyer",
  "version": "v1.4",
- "revision": "20161020",
+ "revision": "20170215",
  "title": "Ad Exchange Buyer API",
  "description": "Accesses your bidding-account information, submits creatives for validation, finds available direct deals, and retrieves performance reports.",
  "ownerDomain": "google.com",
@@ -90,7 +90,7 @@
       "properties": {
        "bidProtocol": {
         "type": "string",
-        "description": "The protocol that the bidder endpoint is using. By default, OpenRTB protocols use JSON, except PROTOCOL_OPENRTB_PROTOBUF. PROTOCOL_OPENRTB_PROTOBUF uses protobuf encoding over the latest OpenRTB protocol version, which is 2.4 right now. Allowed values:  \n- PROTOCOL_ADX \n- PROTOCOL_OPENRTB_2_2 \n- PROTOCOL_OPENRTB_2_3 \n- PROTOCOL_OPENRTB_2_4 \n- PROTOCOL_OPENRTB_PROTOBUF"
+        "description": "The protocol that the bidder endpoint is using. OpenRTB protocols with prefix PROTOCOL_OPENRTB_PROTOBUF use proto buffer, otherwise use JSON.  Allowed values:  \n- PROTOCOL_ADX \n- PROTOCOL_OPENRTB_2_2 \n- PROTOCOL_OPENRTB_2_3 \n- PROTOCOL_OPENRTB_2_4 \n- PROTOCOL_OPENRTB_PROTOBUF_2_3 \n- PROTOCOL_OPENRTB_PROTOBUF_2_4"
        },
        "maximumQps": {
         "type": "integer",
@@ -396,7 +396,7 @@
     },
     "advertiserName": {
      "type": "string",
-     "description": "The name of the company being advertised in the creative.",
+     "description": "The name of the company being advertised in the creative. The value provided must exist in the advertisers.txt file.",
      "annotations": {
       "required": [
        "adexchangebuyer.creatives.insert"
@@ -415,7 +415,7 @@
     },
     "attribute": {
      "type": "array",
-     "description": "All attributes for the ads that may be shown from this snippet.",
+     "description": "List of buyer selectable attributes for the ads that may be shown from this snippet. Each attribute is represented by an integer as defined in  buyer-declarable-creative-attributes.txt.",
      "items": {
       "type": "integer",
       "format": "int32"
@@ -529,7 +529,7 @@
          },
          "filteringStatus": {
           "type": "integer",
-          "description": "The filtering status code. Please refer to the creative-status-codes.txt file for different statuses.",
+          "description": "The filtering status code as defined in  creative-status-codes.txt.",
           "format": "int32"
          }
         }
@@ -676,7 +676,7 @@
     },
     "productCategories": {
      "type": "array",
-     "description": "Detected product categories, if any. Read-only. This field should not be set in requests.",
+     "description": "Detected product categories, if any. Each category is represented by an integer as defined in  ad-product-categories.txt. Read-only. This field should not be set in requests.",
      "items": {
       "type": "integer",
       "format": "int32"
@@ -684,7 +684,7 @@
     },
     "restrictedCategories": {
      "type": "array",
-     "description": "All restricted categories for the ads that may be shown from this snippet.",
+     "description": "All restricted categories for the ads that may be shown from this snippet. Each category is represented by an integer as defined in the  ad-restricted-categories.txt.",
      "items": {
       "type": "integer",
       "format": "int32"
@@ -692,7 +692,7 @@
     },
     "sensitiveCategories": {
      "type": "array",
-     "description": "Detected sensitive categories, if any. Read-only. This field should not be set in requests.",
+     "description": "Detected sensitive categories, if any. Each category is represented by an integer as defined in  ad-sensitive-categories.txt. Read-only. This field should not be set in requests.",
      "items": {
       "type": "integer",
       "format": "int32"
@@ -723,7 +723,7 @@
           },
           "geoCriteriaId": {
            "type": "array",
-           "description": "Only set when contextType=LOCATION. Represents the geo criterias this restriction applies to.",
+           "description": "Only set when contextType=LOCATION. Represents the geo criterias this restriction applies to. Impressions are considered to match a context if either the user location or publisher location matches a given geoCriteriaId.",
            "items": {
             "type": "integer",
             "format": "int32"
@@ -768,7 +768,7 @@
     },
     "vendorType": {
      "type": "array",
-     "description": "All vendor types for the ads that may be shown from this snippet.",
+     "description": "List of vendor types for the ads that may be shown from this snippet. Each vendor type is represented by an integer as defined in vendors.txt.",
      "items": {
       "type": "integer",
       "format": "int32"
@@ -857,6 +857,10 @@
    "id": "DealServingMetadata",
    "type": "object",
    "properties": {
+    "alcoholAdsAllowed": {
+     "type": "boolean",
+     "description": "True if alcohol ads are allowed for this deal (read-only). This field is only populated when querying for finalized orders using the method GetFinalizedOrderDeals"
+    },
     "dealPauseStatus": {
      "$ref": "DealServingMetadataDealPauseStatus",
      "description": "Tracks which parties (if any) have paused a deal. (readonly, except via PauseResumeOrderDeals action)"
@@ -1305,7 +1309,7 @@
     },
     "inventoryDescription": {
      "type": "string",
-     "description": "Description for the deal terms. (updatable)"
+     "description": "Description for the deal terms. (buyer-readonly)"
     },
     "isRfpTemplate": {
      "type": "boolean",
@@ -1707,6 +1711,11 @@
       "type": "string"
      }
     },
+    "minimumViewabilityDecile": {
+     "type": "integer",
+     "description": "Requests where the predicted viewability is below the specified decile will not match. E.g. if the buyer sets this value to 5, requests from slots where the predicted viewability is below 50% will not match. If the predicted viewability is unknown this field will be ignored.",
+     "format": "int32"
+    },
     "mobileCarriers": {
      "type": "array",
      "description": "Requests containing any of these mobile carrier ids will match. Values are from mobile-carriers.csv in the downloadable files section.",
@@ -1952,6 +1961,10 @@
     "legacyOfferId": {
      "type": "string",
      "description": "Optional legacy offer id if this offer is a preferred deal offer."
+    },
+    "marketplacePublisherProfileId": {
+     "type": "string",
+     "description": "Marketplace publisher profile Id. This Id differs from the regular publisher_profile_id in that 1. This is a new id, the old Id will be deprecated in 2017. 2. This id uniquely identifies a publisher profile by itself."
     },
     "name": {
      "type": "string",
@@ -3445,7 +3458,7 @@
         "propose",
         "proposeAndAccept",
         "unknownAction",
-        "updateFinalized"
+        "updateNonTerms"
        ],
        "enumDescriptions": [
         "",
@@ -3541,7 +3554,7 @@
         "propose",
         "proposeAndAccept",
         "unknownAction",
-        "updateFinalized"
+        "updateNonTerms"
        ],
        "enumDescriptions": [
         "",

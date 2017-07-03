@@ -522,6 +522,24 @@ func (s *Location) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *Location) UnmarshalJSON(data []byte) error {
+	type noMethod Location
+	var s1 struct {
+		Accuracy  gensupport.JSONFloat64 `json:"accuracy"`
+		Latitude  gensupport.JSONFloat64 `json:"latitude"`
+		Longitude gensupport.JSONFloat64 `json:"longitude"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Accuracy = float64(s1.Accuracy)
+	s.Latitude = float64(s1.Latitude)
+	s.Longitude = float64(s1.Longitude)
+	return nil
+}
+
 // LocationsListResponse: A list of Locations. This is the response from
 // the server to GET requests on the locations collection.
 type LocationsListResponse struct {
