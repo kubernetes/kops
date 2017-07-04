@@ -25,7 +25,7 @@ import (
 var (
 	upgrade_long = templates.LongDesc(i18n.T(`
 	Automates checking for and applying Kubernetes updates. This upgrades a cluster to the latest recommended
-	production ready k8s version. After this command is run usekops update cluder, and kops rolling-update cluster
+	production ready k8s version. After this command is run, use kops update cluster and kops rolling-update cluster
 	to finish a cluster upgrade.
 	`))
 
