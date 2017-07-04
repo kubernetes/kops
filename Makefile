@@ -120,17 +120,15 @@ kops-gobindata: gobindata-tool
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
-.PHONY: check-builds-in-go15
-check-builds-in-go15:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.5 make -f /go/src/k8s.io/kops/Makefile kops
+# 1.8 is preferred, 1.9 is coming soon so we have a target for it
+.PHONY: check-builds-in-go18
+check-builds-in-go18:
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.8 make -C /go/src/k8s.io/kops ci
 
-.PHONY: check-builds-in-go16
-check-builds-in-go16:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.6 make -f /go/src/k8s.io/kops/Makefile kops
+.PHONY: check-builds-in-go19
+check-builds-in-go19:
+	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.9 make -C /go/src/k8s.io/kops ci
 
-.PHONY: check-builds-in-go17
-check-builds-in-go17:
-	docker run -v ${GOPATH_1ST}/src/k8s.io/kops:/go/src/k8s.io/kops golang:1.7 make -f /go/src/k8s.io/kops/Makefile kops
 
 .PHONY: codegen
 codegen: kops-gobindata
