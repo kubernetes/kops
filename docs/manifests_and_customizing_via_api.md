@@ -15,11 +15,11 @@ The following is a list of the benefits of using a file to manage instances.
 - Ability to check-in files to source control that represents an installation.
 - Run commands such as `kops delete -f mycuster.yaml`.
 
-# Exporting a Cluster
+## Exporting a Cluster
 
 At this time you must run `kops create cluster` and then export the YAML from the state store.   We plan in the future to have the capability to generate kops YAML via the command line.  The following is an example of creating a cluster and exporting the YAML.
 
-```
+```shell
 export NAME=k8s.example.com
 export KOPS_STATE_STORE=s3://example-state-store
  kops create cluster $NAME \
@@ -37,7 +37,7 @@ export KOPS_STATE_STORE=s3://example-state-store
 
 The next step is to export the configuration to a YAML document.  `kops` has a command that allows the export in a single YAML document, but since JSON files need to separate documents, we only export YAML with a single command.  You can export JSON with multiple commands.
 
-```
+```shell
 kops get $NAME -o yaml > $NAME.yaml
 ```
 
@@ -45,7 +45,7 @@ The above command exports a YAML document which contains the definition of the c
 
 The following is the contents of the exported YAML file.
 
-```YAML
+```yaml
 apiVersion: kops/v1alpha2
 kind: Cluster
 metadata:
@@ -222,19 +222,17 @@ spec:
 
 Next, delete the cluster from the state store.
 
-```
+```console
 kops delete -f $NAME.yaml
 # validate that you want to remove the cluster
 kops delete -f $NAME.yaml --yes
 ```
 
-## YAML examples
-
-FIXME: rename this section.
+## YAML Examples
 
 With the above YAML file, a user can add configurations that are not available via the command line.  For instance, you can add a `MaxPrice` value to a new instance group and use spot instances.  Also add node and cloud labels for the new instance group.
 
-```
+```yaml
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
@@ -262,7 +260,7 @@ This configuration will create an autoscale group that will include 42 m4.10xlar
 
 To create the cluster execute:
 
-```
+```shell
 kops create -f $NAME.yaml
 kops create secret --name $NAME sshpublickey admin -i ~/.ssh/id_rsa.pub
 kops update cluster $NAME --yes
@@ -273,7 +271,7 @@ Please refer to the rolling-update [documentation](cli/kops_rolling-update_clust
 
 Update the cluster spec YAML file, and to update the cluster run:
 
-```
+```shell
 kops replace -f $NAME.yaml
 kops update cluster $NAME --yes
 kops rolling-update cluster $NAME --yes
@@ -287,7 +285,7 @@ Please refer to the rolling-update [documentation](cli/kops_rolling-update_clust
 
 ### Cluster Spec
 
-```YAML
+```yaml
 apiVersion: kops/v1alpha2
 kind: Cluster
 metadata:
@@ -312,7 +310,7 @@ More information about some of the elements in the `ClusterSpec` is available in
 
 To access the full configuration that a `kops` installation is running execute:
 
-```
+```bash
 kops get cluster $NAME --full -o yaml
 ```
 
@@ -320,7 +318,7 @@ This command prints the entire YAML configuration.  But _do not_ use the full do
 
 ### Instance Groups
 
-```YAML
+```yaml
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
