@@ -28,29 +28,30 @@
 * [kubectl](kubectl.md)
     * how to point kubectl to your `kops` cluster
 
+## Advanced / Detailed List of Configurations
+
+### API / Configuration References
+* [Godocs for Cluster - `clusterSepc`](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec).
+* [Godocs for Instance Group - `instanceGroupSpec`](https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
+
+### API Usage Guides
+* [`kops` cluster API definitions](cluster_spec.md)
+    * overview of some of the API value to customize a `kops` cluster
+* [`kops` instance groups API](instance_groups.md)
+    * overview of some of the API value to customize a `kops` groups of ks8 nodes
+* [Using Manifests and Customizating via the API](manifests_and_customizing_via_api.md)
 
 ## Operations
-
-* API / Manifest Custom Values
-    * [godocs Cluster specific documentation - `spec`](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec).
-    * [godocs Instance Group specific documentation - `spec`] (https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
 * [Cluster addon manager](addon_manager.md)
 * [Cluster addons](addons.md)
 * [Cluster configuration management](changing_configuration.md)
-* [`kops` cluster API definitions](cluster_spec.md)
-    * overview of some of the API value to customize a `kops` cluster
 * [Cluster upgrades and migrations](cluster_upgrades_and_migrations.md)
 * [`etcd` volume encryption setup](etcd_volume_encryption.md)
 * [`etcd` backup setup](etcd_backup.md)
 * [GPU setup](gpu.md)
 * [High Availability](high_availability.md)
-* [`kops` instance groups API](instance_groups.md)
-    * overview of some of the API value to customize a `kops` groups of ks8 nodes
 * [InstanceGroup images](images.md)
     * how to use other image for cluster nodes, and information on available/tested images
-* [Using Manifests and Customization via the API](manifests_and_customizing_via_api.md)
-    * how to use YAML to manage clusters.
-    * how to customize cluster via the `kops` API.
 * [`k8s` upgrading](upgrade.md)
 * [`kops` updating](update_kops.md)
 * [`kube-up` to `kops` upgrade](upgrade_from_kubeup.md)
