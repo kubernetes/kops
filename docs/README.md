@@ -31,15 +31,15 @@
 ## Advanced / Detailed List of Configurations
 
 ### API / Configuration References
-* [Godocs for Cluster - `clusterSepc`](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec).
-* [Godocs for Instance Group - `instanceGroupSpec`](https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
+* [Godocs for Cluster - `ClusterSepc`](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec).
+* [Godocs for Instance Group - `InstanceGroupSpec`](https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
 
 ### API Usage Guides
 * [`kops` cluster API definitions](cluster_spec.md)
     * overview of some of the API value to customize a `kops` cluster
 * [`kops` instance groups API](instance_groups.md)
-    * overview of some of the API value to customize a `kops` groups of ks8 nodes
-* [Using Manifests and Customizating via the API](manifests_and_customizing_via_api.md)
+    * overview of some of the API value to customize a `kops` groups of k8s nodes
+* [Using Manifests and Customizing via the API](manifests_and_customizing_via_api.md)
 
 ## Operations
 * [Cluster addon manager](addon_manager.md)
