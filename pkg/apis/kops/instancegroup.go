@@ -79,6 +79,7 @@ type InstanceGroupSpec struct {
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
 
+	// Subnets is the names of the Subnets (as specified in the Cluster) where machines in this instance group should be placed
 	Subnets []string `json:"subnets,omitempty"`
 
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
