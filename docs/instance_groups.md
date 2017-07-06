@@ -63,7 +63,7 @@ The procedure to resize an instance group works the same way:
 
 ## Changing the root volume size or type
 
-The default volume size for Masters is 50 GB, while the default volume size for a node is 100 GB.
+The default volume size for Masters is 64 GB, while the default volume size for a node is 128 GB.
 
 The procedure to resize the root volume works the same way:
 
