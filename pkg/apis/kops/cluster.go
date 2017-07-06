@@ -134,6 +134,7 @@ type ClusterSpec struct {
 	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
 	// Tags for AWS instance groups
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
+	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
 	// Hooks for custom actions e.g. on first installation
 	Hooks []HookSpec `json:"hooks,omitempty"`
 	// Alternative locations for files and containers
