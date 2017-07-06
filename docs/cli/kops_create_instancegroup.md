@@ -16,7 +16,7 @@ kops create instancegroup
 ```
   # Create an instancegroup for the k8s-cluster.example.com cluster.
   kops create ig --name=k8s-cluster.example.com node-example \
-  --role node --subnet 172.16.32.1/24
+  --role node --subnet my-subnet-name
 ```
 
 ### Options
