@@ -77,6 +77,12 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	if clusterSpec.Authentication != nil {
+		if clusterSpec.Authentication.Kopeio != nil {
+			c.AuthenticationTokenWebhookConfigFile = fi.String("/etc/kubernetes/authn.config")
+		}
+	}
+
 	if clusterSpec.Authorization == nil || clusterSpec.Authorization.IsEmpty() {
 		// Do nothing - use the default as defined by the apiserver
 		// (this won't happen anyway because of our default logic)
