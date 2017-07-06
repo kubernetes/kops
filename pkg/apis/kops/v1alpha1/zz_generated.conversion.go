@@ -361,6 +361,7 @@ func autoConvert_v1alpha1_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	out.NodeTags = in.NodeTags
 	out.NodeInstancePrefix = in.NodeInstancePrefix
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
+	out.ElbSecurityGroup = in.ElbSecurityGroup
 	out.VSphereUsername = in.VSphereUsername
 	out.VSpherePassword = in.VSpherePassword
 	out.VSphereServer = in.VSphereServer
@@ -381,6 +382,7 @@ func autoConvert_kops_CloudConfiguration_To_v1alpha1_CloudConfiguration(in *kops
 	out.NodeTags = in.NodeTags
 	out.NodeInstancePrefix = in.NodeInstancePrefix
 	out.DisableSecurityGroupIngress = in.DisableSecurityGroupIngress
+	out.ElbSecurityGroup = in.ElbSecurityGroup
 	out.VSphereUsername = in.VSphereUsername
 	out.VSpherePassword = in.VSpherePassword
 	out.VSphereServer = in.VSphereServer
