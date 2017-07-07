@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -834,7 +835,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 		tracker := &ResourceTracker{
 			Name:    FindName(subnet.Tags),
 			ID:      aws.StringValue(subnet.SubnetId),
-			Type:    "subnet",
+			Type:    ec2.ResourceTypeSubnet,
 			deleter: DeleteSubnet,
 		}
 		tracker.blocks = append(tracker.blocks, "vpc:"+aws.StringValue(subnet.VpcId))
@@ -1085,7 +1086,7 @@ func ListDhcpOptions(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, er
 		tracker := &ResourceTracker{
 			Name:    FindName(o.Tags),
 			ID:      aws.StringValue(o.DhcpOptionsId),
-			Type:    "dhcp-options",
+			Type:    ec2.ResourceTypeDhcpOptions,
 			deleter: DeleteDhcpOptions,
 		}
 
@@ -1997,10 +1998,10 @@ func ListIAMInstanceProfiles(cloud fi.Cloud, clusterName string) ([]*ResourceTra
 
 	request := &iam.ListInstanceProfilesInput{}
 	err := c.IAM().ListInstanceProfilesPages(request, func(p *iam.ListInstanceProfilesOutput, lastPage bool) bool {
-		for _, p := range p.InstanceProfiles {
-			name := aws.StringValue(p.InstanceProfileName)
+		for _, i := range p.InstanceProfiles {
+			name := aws.StringValue(i.InstanceProfileName)
 			if remove[name] {
-				profiles = append(profiles, p)
+				profiles = append(profiles, i)
 			}
 		}
 		return true
@@ -2046,4 +2047,53 @@ func FindELBName(tags []*elb.Tag) string {
 		return name
 	}
 	return ""
+}
+
+// FilterUserProvidedItems removes user provided items such as subnets, and or the vpc.
+func FilterUserProvidedItems(resourceTrackers map[string]*ResourceTracker, clusterSpec api.ClusterSpec) {
+	for resourceName, resourceTracker := range resourceTrackers {
+
+		// Remove provide subnets and nat gw
+		{
+			if resourceTracker.Type == ec2.ResourceTypeSubnet || resourceTracker.Type == TypeNatGateway {
+				for _, clusterSubnet := range clusterSpec.Subnets {
+					// clusterSubnet.ProviderID, an AWS Subnet ID, can be provided by user, if it matches the current resource
+					// do not delete the Subnet.
+					if resourceTracker.ID == clusterSubnet.ProviderID {
+						glog.V(4).Infof("Filtering User Provided Subnet[%s] from Delete List.\n", resourceTracker.ID)
+						delete(resourceTrackers, resourceName)
+					}
+
+					// clusterSubnet.Egress, an AWS NatGW ID, can be provided by user, if it matches the current resource
+					// do not delete the NatGW.
+					// TODO what about EIP? It does not seem to be deleting ...
+					if resourceTracker.ID == clusterSubnet.Egress {
+						glog.V(4).Infof("Filtering User Provided nat-gw[%s] from Delete List.\n", resourceTracker.ID)
+						delete(resourceTrackers, resourceName)
+					}
+				}
+			}
+		}
+
+		// Remove VPC items
+		{
+			// clusterSpec.NetworkID, an AWS VPC ID, can be provided by user, if it defined, do not delete
+			// VPC components, including the VPC itself.
+			if clusterSpec.NetworkID != "" {
+				switch resourceTracker.Type {
+				case ec2.ResourceTypeVpc:
+					glog.V(4).Infof("Filtering User Provided vpc[%s] from Delete List.\n", resourceTracker.ID)
+					delete(resourceTrackers, resourceName)
+				case ec2.ResourceTypeDhcpOptions:
+					glog.V(4).Infof("Filtering User Provided dhcp-options[%s] from Delete List.\n", resourceTracker.ID)
+					delete(resourceTrackers, resourceName)
+				case ec2.ResourceTypeRouteTable:
+					glog.V(4).Infof("Filtering User Provided route-table[%s] from Delete List.\n", resourceTracker.ID)
+					delete(resourceTrackers, resourceName)
+				}
+			}
+		}
+
+	}
+
 }
