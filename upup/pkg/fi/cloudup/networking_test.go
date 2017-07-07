@@ -49,7 +49,7 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 
 	cluster := &api.Cluster{Spec: api.ClusterSpec{}}
-	cluster.Spec.KubernetesVersion = "v1.6.2"
+	cluster.Spec.KubernetesVersion = "v1.7.0"
 	cniAsset, cniAssetHashString, err := findCNIAssets(cluster)
 
 	if err != nil {
