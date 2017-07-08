@@ -32,10 +32,7 @@ func (m *Manifest) RemapImages(mapper ImageRemapFunction) error {
 	if err != nil {
 		return err
 	}
-	//if changed {
-	//	// invalidate cached rendering
-	//	m.bytes = nil
-	//}
+
 	return nil
 }
 

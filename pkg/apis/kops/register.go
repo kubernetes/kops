@@ -65,6 +65,7 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&InstanceGroupList{},
 		&Federation{},
 		&FederationList{},
+		&Inventory{},
 	)
 	//metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
@@ -77,5 +78,8 @@ func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
 func (obj *Federation) GetObjectKind() schema.ObjectKind {
+	return &obj.TypeMeta
+}
+func (obj *Inventory) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
