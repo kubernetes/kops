@@ -71,6 +71,14 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHo
 			}
 			return ""
 		},
+
+		"AWS_REGION": func() string {
+			if os.Getenv("AWS_REGION") != "" {
+				return fmt.Sprintf("export AWS_REGION=%s\n",
+					os.Getenv("AWS_REGION"))
+			}
+			return ""
+		},
 	}
 
 	templateResource, err := NewTemplateResource("nodeup", resources.AWSNodeUpTemplate, functions, nil)

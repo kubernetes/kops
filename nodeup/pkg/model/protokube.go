@@ -247,9 +247,18 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 }
 
 func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
+	var buffer bytes.Buffer
+
+	if os.Getenv("AWS_REGION") != "" {
+		buffer.WriteString(" ")
+		buffer.WriteString("-e 'AWS_REGION=")
+		buffer.WriteString(os.Getenv("AWS_REGION"))
+		buffer.WriteString("'")
+		buffer.WriteString(" ")
+	}
+
 	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("S3_ENDPOINT") != "" {
-		var buffer bytes.Buffer
 		buffer.WriteString(" ")
 		buffer.WriteString("-e S3_ENDPOINT=")
 		buffer.WriteString("'")
@@ -268,9 +277,7 @@ func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
 		buffer.WriteString("'")
 		buffer.WriteString(" ")
-
-		return buffer.String()
 	}
 
-	return ""
+	return buffer.String()
 }
