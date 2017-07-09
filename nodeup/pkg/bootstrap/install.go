@@ -110,9 +110,16 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 	manifest.Set("Unit", "Description", "Run kops bootstrap (nodeup)")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
 
+	var buffer bytes.Buffer
+
+	if os.Getenv("AWS_REGION") != "" {
+		buffer.WriteString("\"AWS_REGION=")
+		buffer.WriteString(os.Getenv("AWS_REGION"))
+		buffer.WriteString("\" ")
+	}
+
 	// Pass in required credentials when using user-defined s3 endpoint
 	if os.Getenv("S3_ENDPOINT") != "" {
-		var buffer bytes.Buffer
 		buffer.WriteString("\"S3_ENDPOINT=")
 		buffer.WriteString(os.Getenv("S3_ENDPOINT"))
 		buffer.WriteString("\" ")
@@ -125,7 +132,9 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 		buffer.WriteString("\"S3_SECRET_ACCESS_KEY=")
 		buffer.WriteString(os.Getenv("S3_SECRET_ACCESS_KEY"))
 		buffer.WriteString("\" ")
+	}
 
+	if buffer.String() != "" {
 		manifest.Set("Service", "Environment", buffer.String())
 	}
 
