@@ -293,11 +293,13 @@ func addRoute53ListHostedZonesPermission(p *IAMPolicy) {
 }
 
 // IAMPrefix returns the prefix for AWS ARNs in the current region, for use with IAM
-// it is arn:aws everywhere but in cn-north, where it is arn:aws-cn
+// it is arn:aws everywhere but in cn-north and us-gov-west-1
 func (b *IAMPolicyBuilder) IAMPrefix() string {
 	switch b.Region {
 	case "cn-north-1":
 		return "arn:aws-cn"
+	case "us-gov-west-1":
+		return "arn:aws-us-gov"
 	default:
 		return "arn:aws"
 	}
