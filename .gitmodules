@@ -319,3 +319,6 @@
 [submodule "_vendor/github.com/google/go-querystring"]
 	path = _vendor/github.com/google/go-querystring
 	url = https://github.com/google/go-querystring.git
+[submodule "_vendor/github.com/tent/http-link-go"]
+	path = _vendor/github.com/tent/http-link-go
+	url = https://github.com/tent/http-link-go.git
