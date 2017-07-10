@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
@@ -39,6 +40,8 @@ import (
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/vspheremodel"
+	"k8s.io/kops/pkg/templates"
+	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -418,6 +421,8 @@ func (c *ApplyClusterCmd) Run() error {
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
+	assetBuilder := assets.NewAssetBuilder()
+
 	var fileModels []string
 	for _, m := range c.Models {
 		switch m {
@@ -425,8 +430,18 @@ func (c *ApplyClusterCmd) Run() error {
 		// No proto code options; no file model
 
 		case "cloudup":
+			templates, err := templates.LoadTemplates(cluster, models.NewAssetPath("cloudup/resources"))
+			if err != nil {
+				return fmt.Errorf("error loading templates: %v", err)
+			}
+			tf.AddTo(templates.TemplateFunctions)
+
 			l.Builders = append(l.Builders,
-				&BootstrapChannelBuilder{cluster: cluster},
+				&BootstrapChannelBuilder{
+					cluster:      cluster,
+					templates:    templates,
+					assetBuilder: assetBuilder,
+				},
 			)
 
 			switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -628,9 +643,6 @@ func (c *ApplyClusterCmd) Run() error {
 	//	}
 	//	return count, nil
 	//}
-	l.TemplateFunctions["Region"] = func() string {
-		return region
-	}
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
 	tf.AddTo(l.TemplateFunctions)
@@ -691,7 +703,7 @@ func (c *ApplyClusterCmd) Run() error {
 		shouldPrecreateDNS = false
 
 	case TargetDryRun:
-		target = fi.NewDryRunTarget(os.Stdout)
+		target = fi.NewDryRunTarget(assetBuilder, os.Stdout)
 		dryRun = true
 
 		// Avoid making changes on a dry-run

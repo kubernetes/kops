@@ -34,6 +34,7 @@ k8s.io/kops/pkg/apis/nodeup
 k8s.io/kops/pkg/apiserver
 k8s.io/kops/pkg/apiserver/cmd/server
 k8s.io/kops/pkg/apiserver/registry/cluster
+k8s.io/kops/pkg/assets
 k8s.io/kops/pkg/client/clientset_generated/clientset
 k8s.io/kops/pkg/client/clientset_generated/clientset/fake
 k8s.io/kops/pkg/client/clientset_generated/clientset/scheme
@@ -61,6 +62,7 @@ k8s.io/kops/pkg/featureflag
 k8s.io/kops/pkg/flagbuilder
 k8s.io/kops/pkg/instancegroups
 k8s.io/kops/pkg/kubeconfig
+k8s.io/kops/pkg/kubemanifest
 k8s.io/kops/pkg/model
 k8s.io/kops/pkg/model/awsmodel
 k8s.io/kops/pkg/model/components
@@ -70,6 +72,8 @@ k8s.io/kops/pkg/model/resources
 k8s.io/kops/pkg/model/vspheremodel
 k8s.io/kops/pkg/resources
 k8s.io/kops/pkg/systemd
+k8s.io/kops/pkg/templates
+k8s.io/kops/pkg/testutils
 k8s.io/kops/pkg/util/stringorslice
 k8s.io/kops/pkg/validation
 k8s.io/kops/protokube/cmd/protokube

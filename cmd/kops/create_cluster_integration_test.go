@@ -24,6 +24,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/testutils"
 	"path"
 	"strings"
 	"testing"
@@ -73,7 +74,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	factoryOptions := &util.FactoryOptions{}
 	factoryOptions.RegistryPath = "memfs://tests"
 
-	h := NewIntegrationTestHarness(t)
+	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
 	h.SetupMockAWS()
