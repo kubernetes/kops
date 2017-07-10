@@ -203,6 +203,21 @@ spec:
     disableSecurityGroupIngress: true
 ```
 
+### registryMirrors
+
+If you have a bunch of Docker instances (physicsal or vm) running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet (DockerHub). By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
+This setting benefits not only cluster provisioning but also image pulling.
+
+@see [Cache-Mirror Dockerhub For Speed](https://hackernoon.com/mirror-cache-dockerhub-locally-for-speed-f4eebd21a5ca)
+@see [Configure the Docker daemon](https://docs.docker.com/registry/recipes/mirror/#configure-the-docker-daemon).
+
+```yaml
+spec:
+  docker:
+    registryMirrors:
+    - https://registry.example.com
+```
+
 #### WARNING: this works only for Kubernetes version above 1.7.0.
 
 For avoid to create security group per each elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name. Also, security group must be empty, because Kubernetes will add rules per ports that are specified in service file.
