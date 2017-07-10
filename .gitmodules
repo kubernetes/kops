@@ -316,3 +316,6 @@
 [submodule "_vendor/github.com/digitalocean/godo"]
 	path = _vendor/github.com/digitalocean/godo
 	url = https://github.com/digitalocean/godo.git
+[submodule "_vendor/github.com/google/go-querystring"]
+	path = _vendor/github.com/google/go-querystring
+	url = https://github.com/google/go-querystring.git
