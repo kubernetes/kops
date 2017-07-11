@@ -18,6 +18,7 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -43,7 +44,7 @@ func (b *KubeSchedulerOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if config.Image == "" {
-		image, err := Image("kube-scheduler", clusterSpec)
+		image, err := assets.Image("kube-scheduler", clusterSpec)
 		if err != nil {
 			return err
 		}

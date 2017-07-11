@@ -110,6 +110,7 @@ func NewCmdGet(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdGetFederations(f, out, options))
 	cmd.AddCommand(NewCmdGetInstanceGroups(f, out, options))
 	cmd.AddCommand(NewCmdGetSecrets(f, out, options))
+	cmd.AddCommand(NewCmdGetInventory(f, out, options))
 
 	return cmd
 }

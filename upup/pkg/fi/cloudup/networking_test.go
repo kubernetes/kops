@@ -18,6 +18,7 @@ package cloudup
 
 import (
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model/components"
 	"os"
 	"testing"
 )
@@ -49,19 +50,21 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 
 	cluster := &api.Cluster{Spec: api.ClusterSpec{}}
-	cluster.Spec.KubernetesVersion = "v1.7.0"
+	cluster.Spec.KubernetesVersion = "v1.6.2"
+
+	baseUrl := components.GCR_STORAGE
 	cniAsset, cniAssetHashString, err := findCNIAssets(cluster)
 
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)
 	}
 
-	if cniAsset != defaultCNIAssetK8s1_6 {
-		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAssetK8s1_5, cniAsset)
+	if cniAsset != baseUrl+"/"+defaultCNIAssetK8s1_6 {
+		t.Errorf("Expected default CNI version %q and got %q", baseUrl+"/"+defaultCNIAssetK8s1_6, cniAsset)
 	}
 
 	if cniAssetHashString != defaultCNIAssetHashStringK8s1_6 {
-		t.Errorf("Expected default CNI Version Hash String %q and got %q", defaultCNIAssetHashStringK8s1_5, cniAssetHashString)
+		t.Errorf("Expected default CNI Version Hash String %q and got %q", defaultCNIAssetHashStringK8s1_6, cniAssetHashString)
 	}
 
 }
@@ -71,13 +74,14 @@ func Test_FindCNIAssetDefaultValue1_5(t *testing.T) {
 	cluster := &api.Cluster{Spec: api.ClusterSpec{}}
 	cluster.Spec.KubernetesVersion = "v1.5.12"
 	cniAsset, cniAssetHashString, err := findCNIAssets(cluster)
+	baseUrl := components.GCR_STORAGE
 
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)
 	}
 
-	if cniAsset != defaultCNIAssetK8s1_5 {
-		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAssetK8s1_5, cniAsset)
+	if cniAsset != baseUrl+"/"+defaultCNIAssetK8s1_5 {
+		t.Errorf("Expected default CNI version %q and got %q", baseUrl+"/"+defaultCNIAssetK8s1_5, cniAsset)
 	}
 
 	if cniAssetHashString != defaultCNIAssetHashStringK8s1_5 {

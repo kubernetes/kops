@@ -18,15 +18,20 @@ package assets
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/pkg/kubemanifest"
 	"os"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/kubemanifest"
 )
+
+var YAMLSep = []byte("\n\n---\n\n")
 
 // AssetBuilder discovers and remaps assets
 type AssetBuilder struct {
-	Assets []*Asset
+	Assets      []*Asset
+	ClusterSpec *kops.ClusterSpec
 }
 
 type Asset struct {
@@ -38,12 +43,15 @@ func NewAssetBuilder() *AssetBuilder {
 	return &AssetBuilder{}
 }
 
-func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
+func (a *AssetBuilder) RemapManifest(data []byte, clusterSpec *kops.ClusterSpec) ([]byte, error) {
 	manifests, err := kubemanifest.LoadManifestsFrom(data)
 	if err != nil {
 		return nil, err
 	}
 
+	a.ClusterSpec = clusterSpec
+
+	var remappedManifest []byte
 	for _, manifest := range manifests {
 		err := manifest.RemapImages(a.remapImage)
 		if err != nil {
@@ -54,8 +62,12 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 			return nil, fmt.Errorf("error re-marshalling manifest: %v", err)
 		}
 
-		glog.Infof("manifest: %v", string(y))
+		glog.V(10).Infof("manifest: %v", string(y))
+		remappedManifest = append(remappedManifest, y...)
+		remappedManifest = append(remappedManifest, YAMLSep...)
 	}
+
+	return remappedManifest, nil
 
 	return data, nil
 }
@@ -72,8 +84,28 @@ func (a *AssetBuilder) remapImage(image string) (string, error) {
 		// 3. make kops and create/apply cluster
 		override := os.Getenv("DNSCONTROLLER_IMAGE")
 		if override != "" {
-			image = override
+			asset.Mirror = override
+			a.Assets = append(a.Assets, asset)
+			return image, nil
 		}
+	}
+
+	if strings.HasPrefix(image, GCR_IO) {
+		override, err := GetGoogleImageRegistryContainer(a.ClusterSpec, image)
+
+		if err != nil {
+			return "", err
+		}
+
+		image = override
+	} else {
+		override, err := GetContainer(a.ClusterSpec, image)
+
+		if err != nil {
+			return "", err
+		}
+
+		image = override
 	}
 
 	asset.Mirror = image

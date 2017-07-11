@@ -24,6 +24,7 @@ import (
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/model/components"
 )
 
 func usesCNI(c *api.Cluster) bool {
@@ -83,18 +84,13 @@ func usesCNI(c *api.Cluster) bool {
 	return true
 }
 
-// TODO: we really need to sort this out:
-// https://github.com/kubernetes/kops/issues/724
-// https://github.com/kubernetes/kops/issues/626
-// https://github.com/kubernetes/kubernetes/issues/30338
-
 const (
 	// 1.5.x k8s uses release 07a8a28637e97b22eb8dfe710eeae1344f69d16e
-	defaultCNIAssetK8s1_5           = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz"
+	defaultCNIAssetK8s1_5           = "network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz"
 	defaultCNIAssetHashStringK8s1_5 = "19d49f7b2b99cd2493d5ae0ace896c64e289ccbb"
 
 	// 1.6.x k8s uses release 0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff
-	defaultCNIAssetK8s1_6           = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz"
+	defaultCNIAssetK8s1_6           = "network-plugins/cni-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz"
 	defaultCNIAssetHashStringK8s1_6 = "1d9788b0f5420e1a219aad2cb8681823fc515e7c"
 
 	// Environment variable for overriding CNI url
@@ -118,9 +114,21 @@ func findCNIAssets(c *api.Cluster) (string, string, error) {
 
 	if sv.GTE(semver.Version{Major: 1, Minor: 6, Patch: 0, Pre: nil, Build: nil}) {
 		glog.V(2).Infof("Adding default CNI asset: %s", defaultCNIAssetK8s1_6)
-		return defaultCNIAssetK8s1_6, defaultCNIAssetHashStringK8s1_6, nil
+
+		// Get the file location.  This value can be overridden by using a cluster asset file repository.
+		url, err := components.GetGoogleFileRepositoryURL(&c.Spec, defaultCNIAssetK8s1_6)
+		if err != nil {
+			return "", "", fmt.Errorf("unable to create valid url from %q, %v", defaultCNIAssetK8s1_6, err)
+		}
+		return url, defaultCNIAssetHashStringK8s1_6, nil
 	}
 
 	glog.V(2).Infof("Adding default CNI asset: %s", defaultCNIAssetK8s1_5)
-	return defaultCNIAssetK8s1_5, defaultCNIAssetHashStringK8s1_5, nil
+
+	// Get the file location.  This value can be overridden by using a cluster asset file repository.
+	url, err := components.GetGoogleFileRepositoryURL(&c.Spec, defaultCNIAssetK8s1_5)
+	if err != nil {
+		return "", "", fmt.Errorf("unable to create valid url from %q, %v", defaultCNIAssetK8s1_5, err)
+	}
+	return url, defaultCNIAssetHashStringK8s1_5, nil
 }
