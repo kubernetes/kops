@@ -378,6 +378,26 @@ You can look at all the system components with the following command.
 kubectl -n kube-system get po
 ```
 
+## Delete the Cluster
+
+Running a Kubernetes cluster within AWS obviously costs money, and so you may
+want to delete your cluster if you are finished running experiments.
+
+You can preview all of the AWS resources that will be destroyed when the cluster
+is deleted by issuing the following command.
+
+```
+kops delete cluster --name ${NAME}
+```
+
+When you are sure you want to delete your cluster, issue the delete command
+with the `--yes` flag. Note that this command is very destructive, and will
+delete your cluster and everything contained within it!
+
+```
+kops delete cluster --name ${NAME} --yes
+```
+
 # What's next?
 
 We've barely scratched the surface of the capabilities of `kops` in this guide,
