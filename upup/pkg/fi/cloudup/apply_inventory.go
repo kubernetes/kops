@@ -208,6 +208,8 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 			c.Location = protokubeImageSource.Source
 			c.Hash = protokubeImageSource.Hash
 			c.SHA = protokubeImageSource.Source + ".sha1"
+		} else {
+			c.Location = protokubeImageSource.Name
 		}
 		inv.Spec.ContainerAssets = append(inv.Spec.ContainerAssets, c)
 	}

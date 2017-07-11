@@ -18,11 +18,14 @@ package cloudup
 
 import (
 	"fmt"
+	"strings"
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
+	api_util "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -58,8 +61,30 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Contents: fi.WrapResource(fi.NewBytesResource(addonsYAML)),
 	}
 
+	sv, err := api_util.ParseKubernetesVersion(b.cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return fmt.Errorf("unable to determine kubernetes version from %q", b.cluster.Spec.KubernetesVersion)
+	}
+
+	optionsContext := &components.OptionsContext{
+		KubernetesVersion: *sv,
+	}
+
+	isVersionGTE1_6 := optionsContext.IsKubernetesGTE("1.6")
+	isVersionLT1_6 := optionsContext.IsKubernetesLT("1.6")
+
 	for key, manifest := range manifests {
 		name := b.cluster.ObjectMeta.Name + "-addons-" + key
+
+		if strings.Contains(manifest, "1.6") {
+			pre16 := strings.Contains(manifest, "pre-k8s-1.6")
+
+			if pre16 && isVersionGTE1_6 {
+				continue
+			} else if !pre16 && isVersionLT1_6 {
+				continue
+			}
+		}
 
 		manifestResource := b.templates.Find(manifest)
 		if manifestResource == nil {
