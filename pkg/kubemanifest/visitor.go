@@ -26,17 +26,17 @@ type visitorBase struct {
 }
 
 func (m *visitorBase) VisitString(path []string, v string, mutator func(string)) error {
-	glog.Infof("string value at %s: %s", strings.Join(path, "."), v)
+	glog.V(10).Infof("string value at %s: %s", strings.Join(path, "."), v)
 	return nil
 }
 
 func (m *visitorBase) VisitBool(path []string, v bool, mutator func(bool)) error {
-	glog.Infof("string value at %s: %s", strings.Join(path, "."), v)
+	glog.V(10).Infof("string value at %s: %s", strings.Join(path, "."), v)
 	return nil
 }
 
 func (m *visitorBase) VisitFloat64(path []string, v float64, mutator func(float64)) error {
-	glog.Infof("float64 value at %s: %s", strings.Join(path, "."), v)
+	glog.V(10).Infof("float64 value at %s: %s", strings.Join(path, "."), v)
 	return nil
 }
 
