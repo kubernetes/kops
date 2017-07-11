@@ -26,6 +26,8 @@ import (
 	"k8s.io/kops/pkg/kubemanifest"
 )
 
+var YAMLSep = []byte("\n\n---\n\n")
+
 // AssetBuilder discovers and remaps assets
 type AssetBuilder struct {
 	Assets      []*Asset
@@ -49,6 +51,7 @@ func (a *AssetBuilder) RemapManifest(data []byte, clusterSpec *kops.ClusterSpec)
 
 	a.ClusterSpec = clusterSpec
 
+	var remappedManifest []byte
 	for _, manifest := range manifests {
 		err := manifest.RemapImages(a.remapImage)
 		if err != nil {
@@ -59,8 +62,12 @@ func (a *AssetBuilder) RemapManifest(data []byte, clusterSpec *kops.ClusterSpec)
 			return nil, fmt.Errorf("error re-marshalling manifest: %v", err)
 		}
 
-		glog.V(2).Infof("manifest: %v", string(y))
+		glog.V(10).Infof("manifest: %v", string(y))
+		remappedManifest = append(remappedManifest, y...)
+		remappedManifest = append(remappedManifest, YAMLSep...)
 	}
+
+	return remappedManifest, nil
 
 	return data, nil
 }
