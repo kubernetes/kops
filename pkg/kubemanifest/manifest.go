@@ -24,7 +24,6 @@ import (
 )
 
 type Manifest struct {
-	//bytes []byte
 	data map[string]interface{}
 }
 
@@ -52,14 +51,10 @@ func LoadManifestsFrom(contents []byte) ([]*Manifest, error) {
 }
 
 func (m *Manifest) ToYAML() ([]byte, error) {
-	//if m.bytes == nil {
 	b, err := yaml.Marshal(m.data)
 	if err != nil {
 		return nil, fmt.Errorf("error marshalling manifest to yaml: %v", err)
 	}
-	//	m.bytes = b
-	//}
-	//return m.bytes, nil
 	return b, nil
 }
 
