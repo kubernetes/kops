@@ -70,5 +70,6 @@ kops get
 * [kops get clusters](kops_get_clusters.md)	 - Get one or many clusters.
 * [kops get federations](kops_get_federations.md)	 - Get federation.
 * [kops get instancegroups](kops_get_instancegroups.md)	 - Get one or many instancegroups
+* [kops get inventory](kops_get_inventory.md)	 - Output a list of IoTk - inventory of all things kops. 
 * [kops get secrets](kops_get_secrets.md)	 - Get one or many secrets.
 
