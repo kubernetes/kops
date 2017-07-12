@@ -136,7 +136,7 @@ You can check your week number using:
 date +%V
 ```
 
-The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community#slack-chat) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you!
+The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you!
 
 
 ## GitHub Issues
@@ -150,7 +150,7 @@ If you think you have found a bug please follow the instructions below.
 - Note the version of kops you are running (from `kops version`), and the command line options you are using
 - Open a [new issue](https://github.com/kubernetes/kops/issues/new)
 - Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
-- Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community#slack-chat)
+- Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media)
 
 
 ### Features
