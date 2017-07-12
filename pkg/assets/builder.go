@@ -18,15 +18,18 @@ package assets
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/pkg/kubemanifest"
 	"os"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/kubemanifest"
 )
 
 // AssetBuilder discovers and remaps assets
 type AssetBuilder struct {
-	Assets []*Asset
+	Assets      []*Asset
+	ClusterSpec *kops.ClusterSpec
 }
 
 type Asset struct {
@@ -34,8 +37,10 @@ type Asset struct {
 	Mirror string
 }
 
-func NewAssetBuilder() *AssetBuilder {
-	return &AssetBuilder{}
+func NewAssetBuilder(clusterSpec *kops.ClusterSpec) *AssetBuilder {
+	return &AssetBuilder{
+		ClusterSpec: clusterSpec,
+	}
 }
 
 func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
@@ -62,6 +67,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	}
 
 	return remappedManifest, nil
+
 }
 
 func (a *AssetBuilder) remapImage(image string) (string, error) {
@@ -76,8 +82,28 @@ func (a *AssetBuilder) remapImage(image string) (string, error) {
 		// 3. make kops and create/apply cluster
 		override := os.Getenv("DNSCONTROLLER_IMAGE")
 		if override != "" {
-			image = override
+			asset.Mirror = override
+			a.Assets = append(a.Assets, asset)
+			return image, nil
 		}
+	}
+
+	if strings.HasPrefix(image, GCR_IO) {
+		override, err := GetGoogleImageRegistryContainer(a.ClusterSpec, image)
+
+		if err != nil {
+			return "", err
+		}
+
+		image = override
+	} else {
+		override, err := GetContainer(a.ClusterSpec, image)
+
+		if err != nil {
+			return "", err
+		}
+
+		image = override
 	}
 
 	asset.Mirror = image

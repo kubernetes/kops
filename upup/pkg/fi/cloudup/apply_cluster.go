@@ -106,6 +106,10 @@ type ApplyClusterCmd struct {
 
 	// The channel we are using
 	channel *kops.Channel
+
+	// inventory of files and containers needed in order
+	// to upload assets to new location
+	Inventory *kops.Inventory
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -208,7 +212,10 @@ func (c *ApplyClusterCmd) Run() error {
 		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
 			baseURL = cluster.Spec.KubernetesVersion
 		} else {
-			baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + cluster.Spec.KubernetesVersion
+			baseURL, err = components.GetGoogleFileRepositoryURL(&c.Cluster.Spec, "/release/v"+cluster.Spec.KubernetesVersion)
+			if err != nil {
+				return err
+			}
 		}
 		baseURL = strings.TrimSuffix(baseURL, "/")
 
@@ -250,7 +257,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		if needsStaticUtils(cluster, c.InstanceGroups) {
-			utilsLocation := BaseUrl() + "linux/amd64/utils.tar.gz"
+			utilsLocation := BaseUrl(&cluster.Spec) + "linux/amd64/utils.tar.gz"
 			glog.V(4).Infof("Using default utils.tar.gz location: %q", utilsLocation)
 
 			hash, err := findHash(utilsLocation)
@@ -262,7 +269,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if c.NodeUpSource == "" {
-		c.NodeUpSource = NodeUpLocation()
+		c.NodeUpSource = NodeUpLocation(&cluster.Spec)
 	}
 
 	checkExisting := true
@@ -271,8 +278,6 @@ func (c *ApplyClusterCmd) Run() error {
 		"keypair":     &fitasks.Keypair{},
 		"secret":      &fitasks.Secret{},
 		"managedFile": &fitasks.ManagedFile{},
-
-		// DNS
 		//"dnsZone": &dnstasks.DNSZone{},
 	})
 
@@ -372,10 +377,6 @@ func (c *ApplyClusterCmd) Run() error {
 				// Autoscaling
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
 				"launchConfiguration": &awstasks.LaunchConfiguration{},
-
-				//// Route53
-				//"dnsName": &awstasks.DNSName{},
-				//"dnsZone": &awstasks.DNSZone{},
 			})
 
 			if len(sshPublicKeys) == 0 {
@@ -438,7 +439,7 @@ func (c *ApplyClusterCmd) Run() error {
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
-	assetBuilder := assets.NewAssetBuilder()
+	assetBuilder := assets.NewAssetBuilder(&cluster.Spec)
 
 	var fileModels []string
 	for _, m := range c.Models {
@@ -491,13 +492,9 @@ func (c *ApplyClusterCmd) Run() error {
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
 
 					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext},
-					//&model.BastionModelBuilder{KopsModelContext: modelContext},
-					//&model.DNSModelBuilder{KopsModelContext: modelContext},
 					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext},
 					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext},
-					//&model.IAMModelBuilder{KopsModelContext: modelContext},
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext},
-					//&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 				)
 			case kops.CloudProviderVSphere:
 				l.Builders = append(l.Builders,
@@ -579,18 +576,12 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		{
-			location := ProtokubeImageSource()
-
-			hash, err := findHash(location)
+			proto, err := ProtokubeImageSource(&c.Cluster.Spec)
 			if err != nil {
 				return nil, err
 			}
+			config.ProtokubeImage = proto
 
-			config.ProtokubeImage = &nodeup.Image{
-				Name:   kopsbase.DefaultProtokubeImageName(),
-				Source: location,
-				Hash:   hash.Hex(),
-			}
 		}
 
 		config.Images = images
@@ -642,24 +633,6 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
 
-	//// TotalNodeCount computes the total count of nodes
-	//l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
-	//	count := 0
-	//	for _, group := range c.InstanceGroups {
-	//		if group.IsMaster() {
-	//			continue
-	//		}
-	//		if group.Spec.MaxSize != nil {
-	//			count += *group.Spec.MaxSize
-	//		} else if group.Spec.MinSize != nil {
-	//			count += *group.Spec.MinSize
-	//		} else {
-	//			// Guestimate
-	//			count += 5
-	//		}
-	//	}
-	//	return count, nil
-	//}
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
 	tf.AddTo(l.TemplateFunctions)
@@ -672,6 +645,7 @@ func (c *ApplyClusterCmd) Run() error {
 	var target fi.Target
 	dryRun := false
 	shouldPrecreateDNS := true
+	inventoryTarget := false
 
 	switch c.TargetName {
 	case TargetDirect:
@@ -726,6 +700,17 @@ func (c *ApplyClusterCmd) Run() error {
 		// Avoid making changes on a dry-run
 		shouldPrecreateDNS = false
 
+	case TargetInventory:
+		// Utilized to build an api.Inventory
+		// This target was created because TargetDryRun outputs to STDOUT.  This allows for the rendering of
+		// api.Inventory in YAML or JSON.
+		target = fi.NewInventoryTarget()
+		inventoryTarget = true
+		dryRun = true
+
+		// Avoid making changes on a dry-run
+		shouldPrecreateDNS = false
+
 	default:
 		return fmt.Errorf("unsupported target type %q", c.TargetName)
 	}
@@ -771,6 +756,25 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("error closing target: %v", err)
 	}
 
+	// TargetInventory is Run, only used for creating and getting inventory for a kops kubernetes cluster.
+	{
+		if inventoryTarget {
+			inv := &ApplyInventory{
+				Cluster:             cluster,
+				InstanceGroups:      c.InstanceGroups,
+				NodeUpConfigBuilder: renderNodeUpConfig,
+				TaskMap:             context.AllTasks(),
+				AssetBuilder:        assetBuilder,
+			}
+
+			c.Inventory, err = inv.BuildInventoryAssets()
+
+			if err != nil {
+				return fmt.Errorf("error building inventory: %v", err)
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -792,10 +796,6 @@ func findHash(url string) (*hashing.Hash, error) {
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
 func (c *ApplyClusterCmd) upgradeSpecs() error {
-	//err := c.Cluster.PerformAssignments()
-	//if err != nil {
-	//	return fmt.Errorf("error populating configuration: %v", err)
-	//}
 
 	fullCluster, err := PopulateClusterSpec(c.Cluster)
 	if err != nil {

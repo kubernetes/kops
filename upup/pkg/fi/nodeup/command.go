@@ -272,7 +272,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			Tags:     nodeTags,
 		}
 	case "dryrun":
-		assetBuilder := assets.NewAssetBuilder()
+		assetBuilder := assets.NewAssetBuilder(&c.cluster.Spec)
 		target = fi.NewDryRunTarget(assetBuilder, out)
 	case "cloudinit":
 		checkExisting = false

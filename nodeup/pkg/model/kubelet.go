@@ -18,12 +18,14 @@ package model
 
 import (
 	"fmt"
+
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
@@ -143,6 +145,17 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
 		// Kubenet is neither CNI nor not-CNI, so we need to pass it `--network-plugin-dir` also
 		flags += " --network-plugin-dir=" + b.CNIBinDir()
+	}
+
+	// If a cluster has a container registry set, flag kubelet to use the pause container from that registry.
+	if b.Cluster.Spec.Assets != nil && b.Cluster.Spec.Assets.ContainerRegistry != nil {
+		// TODO another hardcoded version
+		pause, err := assets.GetGoogleImageRegistryContainer(&b.Cluster.Spec, "pause-amd64:3.0")
+
+		if err != nil {
+			return nil, err
+		}
+		flags += " --pod-infra-container-image=" + pause
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"

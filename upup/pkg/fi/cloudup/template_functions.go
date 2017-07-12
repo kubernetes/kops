@@ -36,9 +36,9 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
@@ -111,7 +111,7 @@ func (tf *TemplateFunctions) SharedVPC() bool {
 
 // Image returns the docker image name for the specified component
 func (tf *TemplateFunctions) Image(component string) (string, error) {
-	return components.Image(component, &tf.cluster.Spec)
+	return assets.Image(component, &tf.cluster.Spec)
 }
 
 // HasTag returns true if the specified tag is set
