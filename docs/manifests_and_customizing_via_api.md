@@ -327,7 +327,7 @@ metadata:
 spec:
 ```
 
-Full documentation is accessible via [godocs] (https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
+Full documentation is accessible via [godocs](https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
 
 Instance Groups map to auto scale groups in AWS, and Instance Groups in GCE.  They are an API level description of a group of compute instances used as Masters or Nodes.
 
