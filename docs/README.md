@@ -103,7 +103,7 @@
 * [Example on how to add a feature](development/adding_a_feature.md)
 * [Hack Directory](development/hack.md)
 * [How to update `kops` API](development/api_updates.md)
-* [Low level description on how kops works](how_it_works.md)
+* [Low level description on how kops works](development/how_it_works.md)
 * [Notes on Gossip design](development/gossip.md)
 * [Notes on master instance sizing](development/instancesizes.md)
 * [Our release process](development/release.md)
