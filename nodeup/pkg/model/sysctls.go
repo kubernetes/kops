@@ -97,10 +97,11 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"fs.file-max = 2097152",
 			"",
 
-			"# Max number of inotify watches for a user",
-			"# Since dockerd runs as a single user, the default value of 128 per user is too low",
+			"# Max number of inotify instances and watches for a user",
+			"# Since dockerd runs as a single user, the default instances value of 128 per user is too low",
 			"# e.g. uses of inotify: nginx ingress controller, kubectl logs -f",
 			"fs.inotify.max_user_instances = 8192",
+			"fs.inotify.max_user_watches = 524288",
 			"",
 		)
 	}
