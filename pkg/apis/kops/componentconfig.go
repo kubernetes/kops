@@ -242,7 +242,7 @@ type KubeletConfigSpec struct {
 	PodCIDR string `json:"podCIDR,omitempty" flag:"pod-cidr"`
 	// ResolverConfig is the resolver configuration file used as the basis
 	// for the container DNS resolution configuration."), []
-	ResolverConfig *string `json:"resolvConf" flag:"resolv-conf" flag-include-empty:"true"`
+	ResolverConfig *string `json:"resolvConf,omitempty" flag:"resolv-conf" flag-include-empty:"true"`
 	//// cpuCFSQuota is Enable CPU CFS quota enforcement for containers that
 	//// specify CPU limits
 	//CPUCFSQuota bool `json:"cpuCFSQuota"`
