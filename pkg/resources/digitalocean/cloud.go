@@ -26,10 +26,12 @@ import (
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
+// TokenSource implements oauth2.TokenSource
 type TokenSource struct {
 	AccessToken string
 }
 
+// Token() returns oauth2.Token
 func (t *TokenSource) Token() (*oauth2.Token, error) {
 	token := &oauth2.Token{
 		AccessToken: t.AccessToken,
@@ -37,6 +39,7 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 	return token, nil
 }
 
+// Cloud exposes all the interfaces required to operate on DigitalOcean resources
 type Cloud struct {
 	client *godo.Client
 
@@ -44,6 +47,8 @@ type Cloud struct {
 	tags   map[string]string
 }
 
+// NewCloud returns a Cloud, expecting the env var DO_ACCESS_TOKEN
+// NewCloud will return an err if DO_ACCESS_TOKEN is not defined
 func NewCloud() (*Cloud, error) {
 	accessToken := os.Getenv("DO_ACCESS_TOKEN")
 	if accessToken == "" {
@@ -62,6 +67,7 @@ func NewCloud() (*Cloud, error) {
 	}, nil
 }
 
+// DNS returns a DO implementation for dnsprovider.Interface
 func (c *Cloud) DNS() (dnsprovider.Interface, error) {
 	provider := dns.NewProvider(c.client)
 	return provider, nil
