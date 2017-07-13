@@ -44,6 +44,8 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 		return nil, err
 	}
 
+	var yamlSep = []byte("\n\n---\n\n")
+	var remappedManifest []byte
 	for _, manifest := range manifests {
 		err := manifest.RemapImages(a.remapImage)
 		if err != nil {
@@ -54,10 +56,12 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 			return nil, fmt.Errorf("error re-marshalling manifest: %v", err)
 		}
 
-		glog.Infof("manifest: %v", string(y))
+		glog.V(10).Infof("manifest: %v", string(y))
+		remappedManifest = append(remappedManifest, y...)
+		remappedManifest = append(remappedManifest, yamlSep...)
 	}
 
-	return data, nil
+	return remappedManifest, nil
 }
 
 func (a *AssetBuilder) remapImage(image string) (string, error) {
