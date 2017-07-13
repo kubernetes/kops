@@ -60,6 +60,9 @@ const DefaultMaxTaskDuration = 10 * time.Minute
 
 const starline = "*********************************************************************************\n"
 
+// AlphaAllowDO is a feature flag that gates DigitalOcean support while it is alpha
+var AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
+
 // AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
 var AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
 
@@ -315,6 +318,15 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 		}
 
+	case kops.CloudProviderDO:
+		{
+			if !AlphaAllowDO.Enabled() {
+				return fmt.Errorf("DigitalOcean support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowDO to enable it")
+			}
+
+			// this is a no-op for now, add tasks to this list as more DO support is added
+			l.AddTypes(map[string]interface{}{})
+		}
 	case kops.CloudProviderAWS:
 		{
 			awsCloud := cloud.(awsup.AWSCloud)
