@@ -30,7 +30,10 @@ type DockerConfig struct {
 	Storage *string `json:"storage,omitempty" flag:"storage-driver"`
 
 	InsecureRegistry *string `json:"insecureRegistry,omitempty" flag:"insecure-registry"`
-	MTU              *int32  `json:"mtu,omitempty" flag:"mtu"`
+
+	// Set mirrors for dockerd, benefiting cluster provisioning and image pulling
+	RegistryMirrors []string `json:"registryMirrors,omitempty" flag:"registry-mirror,repeat"`
+	MTU             *int32   `json:"mtu,omitempty" flag:"mtu"`
 
 	// The bridge cidr (--bip) flag
 	BridgeIP *string `json:"bridgeIP,omitempty" flag:"bip"`
