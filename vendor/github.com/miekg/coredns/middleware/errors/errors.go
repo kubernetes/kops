@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -27,7 +27,7 @@ type errorHandler struct {
 func (h errorHandler) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
 	defer h.recovery(ctx, w, r)
 
-	rcode, err := middleware.NextOrFailure(h.Name(), h.Next, ctx, w, r)
+	rcode, err := h.Next.ServeDNS(ctx, w, r)
 
 	if err != nil {
 		state := request.Request{W: w, Req: r}

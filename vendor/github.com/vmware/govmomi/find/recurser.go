@@ -20,7 +20,6 @@ import (
 	"context"
 	"os"
 	"path"
-	"path/filepath"
 
 	"github.com/vmware/govmomi/list"
 	"github.com/vmware/govmomi/object"
@@ -183,7 +182,7 @@ func (r recurser) List(ctx context.Context, s *spec, root list.Element, parts []
 
 	var out []list.Element
 	for _, e := range in {
-		matched, err := filepath.Match(pattern, path.Base(e.Path))
+		matched, err := path.Match(pattern, path.Base(e.Path))
 		if err != nil {
 			return nil, err
 		}
@@ -208,7 +207,7 @@ func (r recurser) Find(ctx context.Context, s *spec, root list.Element, parts []
 
 	if len(parts) > 0 {
 		pattern := parts[0]
-		matched, err := filepath.Match(pattern, path.Base(root.Path))
+		matched, err := path.Match(pattern, path.Base(root.Path))
 		if err != nil {
 			return nil, err
 		}

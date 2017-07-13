@@ -59,6 +59,7 @@ for grpc-gateway
 | LeaseGrant | LeaseGrantRequest | LeaseGrantResponse | LeaseGrant creates a lease which expires if the server does not receive a keepAlive within a given time to live period. All keys attached to the lease will be expired and deleted if the lease expires. Each expired key generates a delete event in the event history. |
 | LeaseRevoke | LeaseRevokeRequest | LeaseRevokeResponse | LeaseRevoke revokes a lease. All keys attached to the lease will expire and be deleted. |
 | LeaseKeepAlive | LeaseKeepAliveRequest | LeaseKeepAliveResponse | LeaseKeepAlive keeps the lease alive by streaming keep alive requests from the client to the server and streaming keep alive responses from the server to the client. |
+| LeaseTimeToLive | LeaseTimeToLiveRequest | LeaseTimeToLiveResponse | LeaseTimeToLive retrieves lease information. |
 
 
 
@@ -426,7 +427,7 @@ Empty field.
 | Field | Description | Type |
 | ----- | ----------- | ---- |
 | key | key is the first key to delete in the range. | bytes |
-| range_end | range_end is the key following the last key to delete for the range [key, range_end). If range_end is not given, the range is defined to contain only the key argument. If range_end is '\0', the range is all keys greater than or equal to the key argument. | bytes |
+| range_end | range_end is the key following the last key to delete for the range [key, range_end). If range_end is not given, the range is defined to contain only the key argument. If range_end is one bit larger than the given key, then the range is all the all keys with the prefix (the given key). If range_end is '\0', the range is all keys greater than or equal to the key argument. | bytes |
 | prev_kv | If prev_kv is set, etcd gets the previous key-value pairs before deleting it. The previous key-value pairs will be returned in the delte response. | bool |
 
 
@@ -507,6 +508,27 @@ Empty field.
 | Field | Description | Type |
 | ----- | ----------- | ---- |
 | header |  | ResponseHeader |
+
+
+
+##### message `LeaseTimeToLiveRequest` (etcdserver/etcdserverpb/rpc.proto)
+
+| Field | Description | Type |
+| ----- | ----------- | ---- |
+| ID | ID is the lease ID for the lease. | int64 |
+| keys | keys is true to query all the keys attached to this lease. | bool |
+
+
+
+##### message `LeaseTimeToLiveResponse` (etcdserver/etcdserverpb/rpc.proto)
+
+| Field | Description | Type |
+| ----- | ----------- | ---- |
+| header |  | ResponseHeader |
+| ID | ID is the lease ID from the keep alive request. | int64 |
+| TTL | TTL is the remaining TTL in seconds for the lease; the lease will expire in under TTL+1 seconds. | int64 |
+| grantedTTL | GrantedTTL is the initial granted time in seconds upon lease creation/renewal. | int64 |
+| keys | Keys is the list of keys attached to this lease. | (slice of) bytes |
 
 
 
@@ -619,6 +641,10 @@ Empty field.
 | serializable | serializable sets the range request to use serializable member-local reads. Range requests are linearizable by default; linearizable requests have higher latency and lower throughput than serializable requests but reflect the current consensus of the cluster. For better performance, in exchange for possible stale reads, a serializable range request is served locally without needing to reach consensus with other nodes in the cluster. | bool |
 | keys_only | keys_only when set returns only the keys and not the values. | bool |
 | count_only | count_only when set returns only the count of the keys in the range. | bool |
+| min_mod_revision | min_mod_revision is the lower bound for returned key mod revisions; all keys with lesser mod revisions will be filtered away. | int64 |
+| max_mod_revision | max_mod_revision is the upper bound for returned key mod revisions; all keys with greater mod revisions will be filtered away. | int64 |
+| min_create_revision | min_create_revision is the lower bound for returned key create revisions; all keys with lesser create trevisions will be filtered away. | int64 |
+| max_create_revision | max_create_revision is the upper bound for returned key create revisions; all keys with greater create revisions will be filtered away. | int64 |
 
 
 
@@ -736,9 +762,10 @@ From google paxosdb paper: Our implementation hinges around a powerful primitive
 | Field | Description | Type |
 | ----- | ----------- | ---- |
 | key | key is the key to register for watching. | bytes |
-| range_end | range_end is the end of the range [key, range_end) to watch. If range_end is not given, only the key argument is watched. If range_end is equal to '\0', all keys greater than or equal to the key argument are watched. | bytes |
+| range_end | range_end is the end of the range [key, range_end) to watch. If range_end is not given, only the key argument is watched. If range_end is equal to '\0', all keys greater than or equal to the key argument are watched. If the range_end is one bit larger than the given key, then all keys with the prefix (the given key) will be watched. | bytes |
 | start_revision | start_revision is an optional revision to watch from (inclusive). No start_revision is "now". | int64 |
 | progress_notify | progress_notify is set so that the etcd server will periodically send a WatchResponse with no events to the new watcher if there are no recent events. It is useful when clients wish to recover a disconnected watcher starting from a recent known revision. The etcd server may decide how often it will send notifications based on current load. | bool |
+| filters | filter out put event. filter out delete event. filters filter the events at server side before it sends back to the watcher. | (slice of) FilterType |
 | prev_kv | If prev_kv is set, created watcher gets the previous KV before the event happens. If the previous KV is already compacted, nothing will be returned. | bool |
 
 
@@ -795,6 +822,22 @@ From google paxosdb paper: Our implementation hinges around a powerful primitive
 | ----- | ----------- | ---- |
 | ID |  | int64 |
 | TTL |  | int64 |
+
+
+
+##### message `LeaseInternalRequest` (lease/leasepb/lease.proto)
+
+| Field | Description | Type |
+| ----- | ----------- | ---- |
+| LeaseTimeToLiveRequest |  | etcdserverpb.LeaseTimeToLiveRequest |
+
+
+
+##### message `LeaseInternalResponse` (lease/leasepb/lease.proto)
+
+| Field | Description | Type |
+| ----- | ----------- | ---- |
+| LeaseTimeToLiveResponse |  | etcdserverpb.LeaseTimeToLiveResponse |
 
 
 

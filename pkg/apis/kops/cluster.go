@@ -22,6 +22,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// +genclient=true
+
 type Cluster struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -237,6 +239,9 @@ type ClusterSpec struct {
 	// API field controls how the API is exposed outside the cluster
 	API *AccessSpec `json:"api,omitempty"`
 
+	// Authentication field controls how the cluster is configured for authentication
+	Authentication *AuthenticationSpec `json:"authentication,omitempty"`
+
 	// Authorization field controls how the cluster is configured for authorization
 	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
 
@@ -256,6 +261,17 @@ type ExecContainerAction struct {
 	Image string `json:"image,omitempty" `
 
 	Command []string `json:"command,omitempty"`
+}
+
+type AuthenticationSpec struct {
+	Kopeio *KopeioAuthenticationSpec `json:"kopeio,omitempty"`
+}
+
+func (s *AuthenticationSpec) IsEmpty() bool {
+	return s.Kopeio == nil
+}
+
+type KopeioAuthenticationSpec struct {
 }
 
 type AuthorizationSpec struct {
@@ -386,6 +402,8 @@ func (c *Cluster) FillDefaults() error {
 	} else if c.Spec.Networking.Calico != nil {
 		// OK
 	} else if c.Spec.Networking.Canal != nil {
+		// OK
+	} else if c.Spec.Networking.Kuberouter != nil {
 		// OK
 	} else {
 		// No networking model selected; choose Kubenet

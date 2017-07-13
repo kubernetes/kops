@@ -1,11 +1,17 @@
 ## kops describe
 
-Get additional information about cloud resources.
+Describe a resource.
 
 ### Synopsis
 
 
-Get additional information about cloud resources.
+Get additional information about cloud and cluster resources.
+
+### Examples
+
+```
+  
+```
 
 ### Options inherited from parent commands
 
@@ -23,6 +29,6 @@ Get additional information about cloud resources.
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
-* [kops describe secrets](kops_describe_secrets.md)	 - Describe secrets
+* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops describe secrets](kops_describe_secrets.md)	 - Describe a cluster secret
 

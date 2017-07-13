@@ -17,12 +17,30 @@ limitations under the License.
 package main
 
 import (
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	export_kubecfg_long = templates.LongDesc(i18n.T(`
+	Export a kubecfg file for a cluster from the state store. The configuration
+	will be saved into a users $HOME/.kube/config file.
+	To export the kubectl configuration to a specific file set the KUBECONFIG
+	environment variable.`))
+
+	export_kubecfg_example = templates.Examples(i18n.T(`
+	# export a kubecfg file
+	kops export kubecfg kubernetes-cluster.example.com
+		`))
+
+	export_kubecfg_short = i18n.T(`Export kubecfg.`)
 )
 
 type ExportKubecfgOptions struct {
@@ -34,9 +52,10 @@ func NewCmdExportKubecfg(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ExportKubecfgOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "kubecfg CLUSTERNAME",
-		Short: "Generate a kubecfg file for a cluster",
-		Long:  `Creates a kubecfg file for a cluster, based on the state`,
+		Use:     "kubecfg CLUSTERNAME",
+		Short:   export_kubecfg_short,
+		Long:    export_kubecfg_long,
+		Example: export_kubecfg_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunExportKubecfg(f, out, options, args)
 			if err != nil {

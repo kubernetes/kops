@@ -29,15 +29,19 @@ kube::version::get_version_vars
 # instead of volatile-status.txt.
 # Stamped rules will be retriggered by changes to stable-status.txt, but not by
 # changes to volatile-status.txt.
+# IMPORTANT: the camelCase vars should match the lists in hack/lib/version.sh
+# and pkg/version/def.bzl.
 cat <<EOF
 STABLE_BUILD_GIT_COMMIT ${KUBE_GIT_COMMIT-}
 STABLE_BUILD_SCM_STATUS ${KUBE_GIT_TREE_STATE-}
 STABLE_BUILD_SCM_REVISION ${KUBE_GIT_VERSION-}
 STABLE_BUILD_MAJOR_VERSION ${KUBE_GIT_MAJOR-}
 STABLE_BUILD_MINOR_VERSION ${KUBE_GIT_MINOR-}
-STABLE_gitCommit ${KUBE_GIT_COMMIT-}
-STABLE_gitTreeState ${KUBE_GIT_TREE_STATE-}
-STABLE_gitVersion ${KUBE_GIT_VERSION-}
-STABLE_gitMajor ${KUBE_GIT_MAJOR-}
-STABLE_gitMinor ${KUBE_GIT_MINOR-}
+STABLE_DOCKER_TAG ${KUBE_GIT_VERSION/+/_}
+gitCommit ${KUBE_GIT_COMMIT-}
+gitTreeState ${KUBE_GIT_TREE_STATE-}
+gitVersion ${KUBE_GIT_VERSION-}
+gitMajor ${KUBE_GIT_MAJOR-}
+gitMinor ${KUBE_GIT_MINOR-}
+buildDate $(date -u +'%Y-%m-%dT%H:%M:%SZ')
 EOF

@@ -449,19 +449,21 @@ func (o *dnsOp) deleteRecords(k recordKey) error {
 			return fmt.Errorf("zone does not support resource records %q", zone.Name())
 		}
 
-		dnsRecord, err := rrsProvider.Get(fqdn)
+		dnsRecords, err := rrsProvider.Get(fqdn)
 		if err != nil {
 			return fmt.Errorf("Failed to get DNS record %s with error: %v", fqdn, err)
 		}
 
-		if dnsRecord != nil && string(dnsRecord.Type()) == string(k.RecordType) {
-			cs, err := o.getChangeset(zone)
-			if err != nil {
-				return err
-			}
+		for _, dnsRecord := range dnsRecords {
+			if string(dnsRecord.Type()) == string(k.RecordType) {
+				cs, err := o.getChangeset(zone)
+				if err != nil {
+					return err
+				}
 
-			glog.V(2).Infof("Deleting resource record %s %s", fqdn, k.RecordType)
-			cs.Remove(dnsRecord)
+				glog.V(2).Infof("Deleting resource record %s %s", fqdn, k.RecordType)
+				cs.Remove(dnsRecord)
+			}
 		}
 
 		return nil
@@ -518,13 +520,16 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 	var existing dnsprovider.ResourceRecordSet
 	// TODO: work-around before ResourceRecordSets.List() is implemented for CoreDNS
 	if isCoreDNSZone(zone) {
-		dnsRecord, err := rrsProvider.Get(fqdn)
+		dnsRecords, err := rrsProvider.Get(fqdn)
 		if err != nil {
 			return fmt.Errorf("Failed to get DNS record %s with error: %v", fqdn, err)
 		}
-		if dnsRecord != nil && string(dnsRecord.Type()) == string(k.RecordType) {
-			glog.V(8).Infof("Found matching record: %s %s", k.RecordType, fqdn)
-			existing = dnsRecord
+
+		for _, dnsRecord := range dnsRecords {
+			if string(dnsRecord.Type()) == string(k.RecordType) {
+				glog.V(8).Infof("Found matching record: %s %s", k.RecordType, fqdn)
+				existing = dnsRecord
+			}
 		}
 	} else {
 		// when DNS provider is aws-route53 or google-clouddns

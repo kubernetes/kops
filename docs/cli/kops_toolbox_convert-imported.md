@@ -1,14 +1,25 @@
 ## kops toolbox convert-imported
 
-Convert an imported cluster into a kops cluster
+Convert an imported cluster into a kops cluster.
 
 ### Synopsis
 
 
-Convert an imported cluster into a kops cluster
+Convert an imported cluster into a kops cluster.
 
 ```
 kops toolbox convert-imported
+```
+
+### Examples
+
+```
+  # Import and convert a cluster
+  kops import cluster --name k8s-cluster.example.com --region us-east-1 \
+  --state=s3://k8s-cluster.example.com
+  
+  kops toolbox convert-imported k8s-cluster.example.com  \
+  --newname k8s-cluster.example.com
 ```
 
 ### Options

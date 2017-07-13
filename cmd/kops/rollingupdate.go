@@ -25,9 +25,10 @@ import (
 
 func NewCmdRollingUpdate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "rolling-update",
-		Short: "Initiate rolling updates on clusters.",
-		Long:  `rolling update clusters`,
+		Use:     "rolling-update",
+		Short:   rollingupdate_short,
+		Long:    rollingupdate_long,
+		Example: rollingupdate_example,
 	}
 
 	// create subcommands

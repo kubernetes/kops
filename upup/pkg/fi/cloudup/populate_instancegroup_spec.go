@@ -21,7 +21,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
-	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
@@ -65,13 +65,13 @@ var awsDedicatedInstanceExceptions = map[string]bool{
 
 // PopulateInstanceGroupSpec sets default values in the InstanceGroup
 // The InstanceGroup is simpler than the cluster spec, so we just populate in place (like the rest of k8s)
-func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, channel *api.Channel) (*api.InstanceGroup, error) {
+func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup, channel *kops.Channel) (*kops.InstanceGroup, error) {
 	err := validation.ValidateInstanceGroup(input)
 	if err != nil {
 		return nil, err
 	}
 
-	ig := &api.InstanceGroup{}
+	ig := &kops.InstanceGroup{}
 	utils.JsonMergeStruct(ig, input)
 
 	// TODO: Clean up
@@ -85,7 +85,7 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 		if ig.Spec.MaxSize == nil {
 			ig.Spec.MaxSize = fi.Int32(1)
 		}
-	} else if ig.Spec.Role == api.InstanceGroupRoleBastion {
+	} else if ig.Spec.Role == kops.InstanceGroupRoleBastion {
 		if ig.Spec.MachineType == "" {
 			ig.Spec.MachineType = defaultBastionMachineType(cluster)
 		}
@@ -112,8 +112,8 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 	}
 
 	if ig.Spec.Tenancy != "" && ig.Spec.Tenancy != "default" {
-		switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
-		case fi.CloudProviderAWS:
+		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		case kops.CloudProviderAWS:
 			if _, ok := awsDedicatedInstanceExceptions[ig.Spec.MachineType]; ok {
 				return nil, fmt.Errorf("Invalid dedicated instance type: %s", ig.Spec.MachineType)
 			}
@@ -126,10 +126,10 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 		if len(ig.Spec.Subnets) == 0 {
 			return nil, fmt.Errorf("Master InstanceGroup %s did not specify any Subnets", ig.ObjectMeta.Name)
 		}
-	} else if ig.Spec.Role == api.InstanceGroupRoleBastion {
+	} else if ig.Spec.Role == kops.InstanceGroupRoleBastion {
 		if len(ig.Spec.Subnets) == 0 {
 			for _, subnet := range cluster.Spec.Subnets {
-				if subnet.Type == api.SubnetTypeUtility {
+				if subnet.Type == kops.SubnetTypeUtility {
 					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
 				}
 			}
@@ -137,7 +137,7 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 	} else {
 		if len(ig.Spec.Subnets) == 0 {
 			for _, subnet := range cluster.Spec.Subnets {
-				if subnet.Type != api.SubnetTypeUtility {
+				if subnet.Type != kops.SubnetTypeUtility {
 					ig.Spec.Subnets = append(ig.Spec.Subnets, subnet.Name)
 				}
 			}
@@ -152,13 +152,13 @@ func PopulateInstanceGroupSpec(cluster *api.Cluster, input *api.InstanceGroup, c
 }
 
 // defaultNodeMachineType returns the default MachineType for nodes, based on the cloudprovider
-func defaultNodeMachineType(cluster *api.Cluster) string {
-	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
-	case fi.CloudProviderAWS:
+func defaultNodeMachineType(cluster *kops.Cluster) string {
+	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kops.CloudProviderAWS:
 		return defaultNodeMachineTypeAWS
-	case fi.CloudProviderGCE:
+	case kops.CloudProviderGCE:
 		return defaultNodeMachineTypeGCE
-	case fi.CloudProviderVSphere:
+	case kops.CloudProviderVSphere:
 		return defaultNodeMachineTypeVSphere
 	default:
 		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
@@ -167,7 +167,7 @@ func defaultNodeMachineType(cluster *api.Cluster) string {
 }
 
 // defaultMasterMachineType returns the default MachineType for masters, based on the cloudprovider
-func defaultMasterMachineType(cluster *api.Cluster) string {
+func defaultMasterMachineType(cluster *kops.Cluster) string {
 	// TODO: We used to have logic like the following...
 	//	{{ if gt .TotalNodeCount 500 }}
 	//	MasterMachineType: n1-standard-32
@@ -197,8 +197,8 @@ func defaultMasterMachineType(cluster *api.Cluster) string {
 	//MasterMachineType: m3.medium
 	//{{ end }}
 
-	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
-	case fi.CloudProviderAWS:
+	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kops.CloudProviderAWS:
 		region, err := awsup.FindRegion(cluster)
 		if err != nil {
 			glog.Warningf("cannot determine region from cluster zones: %v", err)
@@ -210,9 +210,9 @@ func defaultMasterMachineType(cluster *api.Cluster) string {
 			return masterMachineType
 		}
 		return defaultMasterMachineTypeAWS
-	case fi.CloudProviderGCE:
+	case kops.CloudProviderGCE:
 		return defaultMasterMachineTypeGCE
-	case fi.CloudProviderVSphere:
+	case kops.CloudProviderVSphere:
 		return defaultMasterMachineTypeVSphere
 	default:
 		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
@@ -221,13 +221,13 @@ func defaultMasterMachineType(cluster *api.Cluster) string {
 }
 
 // defaultBastionMachineType returns the default MachineType for bastions, based on the cloudprovider
-func defaultBastionMachineType(cluster *api.Cluster) string {
-	switch fi.CloudProviderID(cluster.Spec.CloudProvider) {
-	case fi.CloudProviderAWS:
+func defaultBastionMachineType(cluster *kops.Cluster) string {
+	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kops.CloudProviderAWS:
 		return defaultBastionMachineTypeAWS
-	case fi.CloudProviderGCE:
+	case kops.CloudProviderGCE:
 		return defaultBastionMachineTypeGCE
-	case fi.CloudProviderVSphere:
+	case kops.CloudProviderVSphere:
 		return defaultBastionMachineTypeVSphere
 	default:
 		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
@@ -236,7 +236,7 @@ func defaultBastionMachineType(cluster *api.Cluster) string {
 }
 
 // defaultImage returns the default Image, based on the cloudprovider
-func defaultImage(cluster *api.Cluster, channel *api.Channel) string {
+func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
 	if channel != nil {
 		var kubernetesVersion *semver.Version
 		if cluster.Spec.KubernetesVersion != "" {
@@ -247,12 +247,12 @@ func defaultImage(cluster *api.Cluster, channel *api.Channel) string {
 			}
 		}
 		if kubernetesVersion != nil {
-			image := channel.FindImage(fi.CloudProviderID(cluster.Spec.CloudProvider), *kubernetesVersion)
+			image := channel.FindImage(kops.CloudProviderID(cluster.Spec.CloudProvider), *kubernetesVersion)
 			if image != nil {
 				return image.Name
 			}
 		}
-	} else if fi.CloudProviderID(cluster.Spec.CloudProvider) == fi.CloudProviderVSphere {
+	} else if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderVSphere {
 		return defaultVSphereNodeImage
 	}
 	glog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)

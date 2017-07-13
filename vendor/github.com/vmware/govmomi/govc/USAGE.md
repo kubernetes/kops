@@ -206,6 +206,23 @@ Options:
   -size=10.0GB              Size of new disk
 ```
 
+## datastore.disk.info
+
+```
+Usage: govc datastore.disk.info [OPTIONS] VMDK
+
+Query VMDK info on DS.
+
+Examples:
+  govc datastore.disk.info disks/disk1.vmdk
+
+Options:
+  -c=false                  Chain format
+  -d=false                  Include datastore in output
+  -ds=                      Datastore [GOVC_DATASTORE]
+  -p=true                   Include parents
+```
+
 ## datastore.download
 
 ```
@@ -847,6 +864,51 @@ Options:
 Usage: govc fields.set [OPTIONS] KEY VALUE PATH...
 
 Options:
+```
+
+## find
+
+```
+Usage: govc find [OPTIONS] [ROOT] [KEY VAL]...
+
+Find managed objects.
+
+ROOT can be an inventory path or ManagedObjectReference.
+ROOT defaults to '.', an alias for the root folder or DC if set.
+
+Optional KEY VAL pairs can be used to filter results against object instance properties.
+
+The '-type' flag value can be a managed entity type or one of the following aliases:
+
+  a    VirtualApp
+  c    ClusterComputeResource
+  d    Datacenter
+  f    Folder
+  g    DistributedVirtualPortgroup
+  h    HostSystem
+  m    VirtualMachine
+  n    Network
+  o    OpaqueNetwork
+  p    ResourcePool
+  r    ComputeResource
+  s    Datastore
+  w    DistributedVirtualSwitch
+
+Examples:
+  govc find
+  govc find /dc1 -type c
+  govc find vm -name my-vm-*
+  govc find . -type n
+  govc find . -type m -runtime.powerState poweredOn
+  govc find . -type m -datastore $(govc find -i datastore -name vsanDatastore)
+  govc find . -type s -summary.type vsan
+  govc find . -type h -hardware.cpuInfo.numCpuCores 16
+
+Options:
+  -i=false                  Print the managed object reference
+  -maxdepth=-1              Max depth
+  -name=*                   Resource name
+  -type=[]                  Resource type
 ```
 
 ## firewall.ruleset.find
@@ -1743,6 +1805,136 @@ Options:
   -t=                       Object type
 ```
 
+## metric.change
+
+```
+Usage: govc metric.change [OPTIONS] NAME...
+
+Change counter NAME levels.
+
+Examples:
+  govc metric.change -level 1 net.bytesRx.average net.bytesTx.average
+
+Options:
+  -device-level=0           Level for the per device counter
+  -i=0                      Interval ID
+  -level=0                  Level for the aggregate counter
+```
+
+## metric.info
+
+```
+Usage: govc metric.info [OPTIONS] PATH [NAME]...
+
+Metric info for NAME.
+
+If PATH is a value other than '-', provider summary and instance list are included
+for the given object type.
+
+If NAME is not specified, all available metrics for the given INTERVAL are listed.
+An object PATH must be provided in this case.
+
+Examples:
+  govc metric.info vm/my-vm
+  govc metric.info -i 300 vm/my-vm
+  govc metric.info - cpu.usage.average
+  govc metric.info /dc1/host/cluster cpu.usage.average
+
+Options:
+  -i=0                      Interval ID
+```
+
+## metric.interval.change
+
+```
+Usage: govc metric.interval.change [OPTIONS]
+
+Change historical metric intervals.
+
+Examples:
+  govc metric.interval.change -i 300 -level 2
+  govc metric.interval.change -i 86400 -enabled=false
+
+Options:
+  -enabled=<nil>            Enable or disable
+  -i=0                      Interval ID
+  -level=0                  Level
+```
+
+## metric.interval.info
+
+```
+Usage: govc metric.interval.info [OPTIONS]
+
+List historical metric intervals.
+
+Examples:
+  govc metric.interval.info
+  govc metric.interval.info -i 300
+
+Options:
+  -i=0                      Interval ID
+```
+
+## metric.ls
+
+```
+Usage: govc metric.ls [OPTIONS] PATH
+
+List available metrics for PATH.
+
+Examples:
+  govc metric.ls /dc1/host/cluster1
+  govc metric.ls datastore/*
+  govc metric.ls vm/* | grep mem. | xargs govc metric.sample vm/*
+
+Options:
+  -i=0                      Interval ID
+  -l=false                  Long listing format
+```
+
+## metric.reset
+
+```
+Usage: govc metric.reset [OPTIONS] NAME...
+
+Reset counter NAME to the default level of data collection.
+
+Examples:
+  govc metric.reset net.bytesRx.average net.bytesTx.average
+
+Options:
+  -i=0                      Interval ID
+```
+
+## metric.sample
+
+```
+Usage: govc metric.sample [OPTIONS] PATH... NAME...
+
+Sample for object PATH of metric NAME.
+
+Interval ID defaults to 20 (realtime) if supported, otherwise 300 (5m interval).
+
+If PLOT value is set to '-', output a gnuplot script.  If non-empty with another
+value, PLOT will pipe the script to gnuplot for you.  The value is also used to set
+the gnuplot 'terminal' variable, unless the value is that of the DISPLAY env var.
+Only 1 metric NAME can be specified when the PLOT flag is set.
+
+Examples:
+  govc metric.sample host/cluster1/* cpu.usage.average
+  govc metric.sample -plot .png host/cluster1/* cpu.usage.average | xargs open
+  govc metric.sample vm/* net.bytesTx.average net.bytesTx.average
+
+Options:
+  -d=30                     Limit object display name to D chars
+  -i=0                      Interval ID
+  -instance=*               Instance
+  -n=6                      Max number of samples
+  -plot=                    Plot data using gnuplot
+  -t=false                  Include sample times
+```
+
 ## object.collect
 
 ```
@@ -2415,8 +2607,12 @@ When given the '-n' flag, filters '-a' behavior to the nic specified by MAC addr
 The 'esxcli' flag does not require vmware-tools to be installed, but does require the ESX host to
 have the /Net/GuestIPHack setting enabled.
 
+The 'wait' flag default to 1hr (original default was infinite).  If a VM does not obtain an IP within
+the wait time, the command will still exit with status 0.
+
 Examples:
   govc vm.ip $vm
+  govc vm.ip -wait 5m $vm
   govc vm.ip -a -v4 $vm
   govc vm.ip -n 00:0c:29:57:7b:c3 $vm
   govc vm.ip -n ethernet-0 $vm
@@ -2428,6 +2624,7 @@ Options:
   -esxcli=false             Use esxcli instead of guest tools
   -n=                       Wait for IP address on NIC, specified by device name or MAC
   -v4=false                 Only report IPv4 addresses
+  -wait=1h0m0s              Wait time for the VM obtain an IP address
 ```
 
 ## vm.markastemplate

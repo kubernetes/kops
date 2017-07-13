@@ -1,11 +1,11 @@
 ## kops delete
 
-Delete clusters and instancegroups.
+Delete clusters,instancegroups, or secrets.
 
 ### Synopsis
 
 
-Delete clusters and instancegroups.
+Delete Kubernetes clusters, instancegroups, and secrets, or a combination of the before mentioned.
 
 ```
 kops delete -f FILENAME [--yes]
@@ -14,11 +14,15 @@ kops delete -f FILENAME [--yes]
 ### Examples
 
 ```
-  # Create a cluster using a file
+  # Delete a cluster using a manifest file
   kops delete -f my-cluster.yaml
   
   # Delete a cluster in AWS.
-  kops delete cluster --name=k8s.cluster.site --state=s3://kops-state-1234
+  kops delete cluster --name=k8s.example.com --state=s3://kops-state-1234
+  
+  # Delete an instancegroup for the k8s-cluster.example.com cluster.
+  # The --yes option runs the command immediately.
+  kops delete ig --name=k8s-cluster.example.com node-example --yes
 ```
 
 ### Options
@@ -44,8 +48,8 @@ kops delete -f FILENAME [--yes]
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
-* [kops delete cluster](kops_delete_cluster.md)	 - Delete cluster
+* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops delete cluster](kops_delete_cluster.md)	 - Delete a cluster.
 * [kops delete instancegroup](kops_delete_instancegroup.md)	 - Delete instancegroup
-* [kops delete secret](kops_delete_secret.md)	 - Delete secret
+* [kops delete secret](kops_delete_secret.md)	 - Delete a secret
 

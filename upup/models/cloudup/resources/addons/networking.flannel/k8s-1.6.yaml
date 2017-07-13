@@ -21,7 +21,8 @@ data:
       "type": "flannel",
       "delegate": {
         "forceAddress": true,
-        "isDefaultGateway": true
+        "isDefaultGateway": true,
+        "hairpinMode": true
       }
     }
   net-conf.json: |

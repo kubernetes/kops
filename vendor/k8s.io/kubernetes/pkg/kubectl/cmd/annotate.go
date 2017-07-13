@@ -27,7 +27,6 @@ import (
 
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/json"
@@ -65,7 +64,7 @@ type AnnotateOptions struct {
 }
 
 var (
-	annotate_long = templates.LongDesc(`
+	annotateLong = templates.LongDesc(`
 		Update the annotations on one or more resources.
 
 		* An annotation is a key/value pair that can hold larger (compared to a label), and possibly not human-readable, data.
@@ -73,9 +72,9 @@ var (
 		* If --overwrite is true, then existing annotations can be overwritten, otherwise attempting to overwrite an annotation will result in an error.
 		* If --resource-version is specified, then updates will use this resource version, otherwise the existing resource-version will be used.
 
-		` + valid_resources)
+		` + validResources)
 
-	annotate_example = templates.Examples(`
+	annotateExample = templates.Examples(i18n.T(`
     # Update pod 'foo' with the annotation 'description' and the value 'my frontend'.
     # If the same annotation is set multiple times, only the last value will be applied
     kubectl annotate pods foo description='my frontend'
@@ -94,7 +93,7 @@ var (
 
     # Update pod 'foo' by removing an annotation named 'description' if it exists.
     # Does not require the --overwrite flag.
-    kubectl annotate pods foo description-`)
+    kubectl annotate pods foo description-`))
 )
 
 func NewCmdAnnotate(f cmdutil.Factory, out io.Writer) *cobra.Command {
@@ -114,10 +113,10 @@ func NewCmdAnnotate(f cmdutil.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "annotate [--overwrite] (-f FILENAME | TYPE NAME) KEY_1=VAL_1 ... KEY_N=VAL_N [--resource-version=version]",
 		Short:   i18n.T("Update the annotations on a resource"),
-		Long:    annotate_long,
-		Example: annotate_example,
+		Long:    annotateLong,
+		Example: annotateExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			if err := options.Complete(f, out, cmd, args); err != nil {
+			if err := options.Complete(out, cmd, args); err != nil {
 				cmdutil.CheckErr(cmdutil.UsageError(cmd, err.Error()))
 			}
 			if err := options.Validate(); err != nil {
@@ -144,7 +143,7 @@ func NewCmdAnnotate(f cmdutil.Factory, out io.Writer) *cobra.Command {
 }
 
 // Complete adapts from the command line args and factory to the data required.
-func (o *AnnotateOptions) Complete(f cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []string) (err error) {
+func (o *AnnotateOptions) Complete(out io.Writer, cmd *cobra.Command, args []string) (err error) {
 	o.out = out
 	o.local = cmdutil.GetFlagBool(cmd, "local")
 	o.overwrite = cmdutil.GetFlagBool(cmd, "overwrite")
@@ -186,11 +185,12 @@ func (o AnnotateOptions) RunAnnotate(f cmdutil.Factory, cmd *cobra.Command) erro
 
 	changeCause := f.Command(cmd, false)
 
-	mapper, typer, err := f.UnstructuredObject()
+	builder, err := f.NewUnstructuredBuilder(!o.local)
 	if err != nil {
 		return err
 	}
-	b := resource.NewBuilder(mapper, typer, resource.ClientMapperFunc(f.UnstructuredClientForMapping), unstructured.UnstructuredJSONScheme).
+
+	b := builder.
 		ContinueOnError().
 		NamespaceParam(namespace).DefaultNamespace().
 		FilenameParam(enforceNamespace, &o.FilenameOptions).
@@ -223,10 +223,13 @@ func (o AnnotateOptions) RunAnnotate(f cmdutil.Factory, cmd *cobra.Command) erro
 		}
 
 		var outputObj runtime.Object
-		obj, err := cmdutil.MaybeConvertObject(info.Object, info.Mapping.GroupVersionKind.GroupVersion(), info.Mapping)
+		var obj runtime.Object
+
+		obj, err = cmdutil.MaybeConvertObject(info.Object, info.Mapping.GroupVersionKind.GroupVersion(), info.Mapping)
 		if err != nil {
 			return err
 		}
+
 		if o.dryrun || o.local {
 			if err := o.updateAnnotations(obj); err != nil {
 				return err
@@ -271,8 +274,18 @@ func (o AnnotateOptions) RunAnnotate(f cmdutil.Factory, cmd *cobra.Command) erro
 				return err
 			}
 		}
-		if o.outputFormat != "" {
-			return f.PrintObject(cmd, mapper, outputObj, o.out)
+
+		var mapper meta.RESTMapper
+		if o.local {
+			mapper, _ = f.Object()
+		} else {
+			mapper, _, err = f.UnstructuredObject()
+			if err != nil {
+				return err
+			}
+		}
+		if len(o.outputFormat) > 0 {
+			return f.PrintObject(cmd, o.local, mapper, outputObj, o.out)
 		}
 		cmdutil.PrintSuccess(mapper, false, o.out, info.Mapping.Resource, info.Name, o.dryrun, "annotated")
 		return nil

@@ -710,6 +710,10 @@ func (s *KindExpression) MarshalJSON() ([]byte, error) {
 //     assert (0.0, -170.0) == NormalizeLatLng(180.0, 10.0)
 //     assert (-90.0, 10.0) == NormalizeLatLng(270.0, 10.0)
 //     assert (90.0, 10.0) == NormalizeLatLng(-270.0, 10.0)
+//
+// The code in logs/storage/validator/logs_validator_traits.cc treats
+// this type
+// as if it were annotated as ST_LOCATION.
 type LatLng struct {
 	// Latitude: The latitude in degrees. It must be in the range [-90.0,
 	// +90.0].
@@ -740,6 +744,22 @@ func (s *LatLng) MarshalJSON() ([]byte, error) {
 	type noMethod LatLng
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *LatLng) UnmarshalJSON(data []byte) error {
+	type noMethod LatLng
+	var s1 struct {
+		Latitude  gensupport.JSONFloat64 `json:"latitude"`
+		Longitude gensupport.JSONFloat64 `json:"longitude"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Latitude = float64(s1.Latitude)
+	s.Longitude = float64(s1.Longitude)
+	return nil
 }
 
 // LookupRequest: The request for Datastore.Lookup.
@@ -1562,6 +1582,22 @@ func (s *Value) MarshalJSON() ([]byte, error) {
 	type noMethod Value
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *Value) UnmarshalJSON(data []byte) error {
+	type noMethod Value
+	var s1 struct {
+		DoubleValue *gensupport.JSONFloat64 `json:"doubleValue"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	if s1.DoubleValue != nil {
+		s.DoubleValue = (*float64)(s1.DoubleValue)
+	}
+	return nil
 }
 
 // method id "datastore.projects.allocateIds":

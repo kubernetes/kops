@@ -59,7 +59,7 @@ func (e *InstanceGroupManager) Find(c *fi.Context) (*InstanceGroupManager, error
 	actual.Zone = fi.String(lastComponent(r.Zone))
 	actual.BaseInstanceName = &r.BaseInstanceName
 	actual.TargetSize = &r.TargetSize
-	actual.InstanceTemplate = &InstanceTemplate{Name: fi.String(lastComponent(r.InstanceTemplate))}
+	actual.InstanceTemplate = &InstanceTemplate{ID: fi.String(lastComponent(r.InstanceTemplate))}
 
 	for _, targetPool := range r.TargetPools {
 		actual.TargetPools = append(actual.TargetPools, &TargetPool{
@@ -82,12 +82,17 @@ func (_ *InstanceGroupManager) CheckChanges(a, e, changes *InstanceGroupManager)
 func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *InstanceGroupManager) error {
 	project := t.Cloud.Project
 
+	instanceTemplateURL, err := e.InstanceTemplate.URL(project)
+	if err != nil {
+		return err
+	}
+
 	i := &compute.InstanceGroupManager{
 		Name:             *e.Name,
 		Zone:             *e.Zone,
 		BaseInstanceName: *e.BaseInstanceName,
 		TargetSize:       *e.TargetSize,
-		InstanceTemplate: e.InstanceTemplate.URL(project),
+		InstanceTemplate: instanceTemplateURL,
 	}
 
 	for _, targetPool := range e.TargetPools {
@@ -119,6 +124,22 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 			}
 
 			changes.TargetPools = nil
+		}
+
+		if changes.InstanceTemplate != nil {
+			request := &compute.InstanceGroupManagersSetInstanceTemplateRequest{
+				InstanceTemplate: instanceTemplateURL,
+			}
+			op, err := t.Cloud.Compute.InstanceGroupManagers.SetInstanceTemplate(t.Cloud.Project, *e.Zone, i.Name, request).Do()
+			if err != nil {
+				return fmt.Errorf("error updating InstanceTemplate for InstanceGroupManager: %v", err)
+			}
+
+			if err := t.Cloud.WaitForOp(op); err != nil {
+				return fmt.Errorf("error updating InstanceTemplate for InstanceGroupManager: %v", err)
+			}
+
+			changes.InstanceTemplate = nil
 		}
 
 		empty := &InstanceGroupManager{}

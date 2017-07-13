@@ -8,11 +8,13 @@
 
 The easiest way to get a production grade Kubernetes cluster up and running.
 
+
 ## What is kops?
 
 We like to think of it as `kubectl` for clusters.
 
 `kops` helps you create, destroy, upgrade and maintain production-grade, highly available, Kubernetes clusters from the command line.  AWS (Amazon Web Services) is currently officially supported, with GCE and VMware vSphere in alpha and other platforms planned.
+
 
 ## Can I see it in action?
 
@@ -27,6 +29,7 @@ We like to think of it as `kubectl` for clusters.
 To replicate the above demo, check out our [tutorial](/docs/aws.md) for
 launching a Kubernetes cluster hosted on AWS.
 
+
 ## Features
 
 * Automates the provisioning of Kubernetes clusters in ([AWS](/docs/aws.md))
@@ -36,17 +39,29 @@ launching a Kubernetes cluster hosted on AWS.
 * Ability to generate configuration files for AWS [CloudFormation](https://aws.amazon.com/cloudformation/) and Terraform [Terraform configuration](/docs/terraform.md)
 * Supports custom Kubernetes [add-ons](/docs/addons.md)
 * Command line [autocompletion](/docs/cli/kops_completion.md)
+* Manifest Based API [Configuration](/docs/manifests_and_customizing_via_api.md)
 * Community supported!
+
+
+## Documentations
+
+Documentation is in the `/docs` directory, [and the index is here.](docs/README.md)
+
 
 ## Installing
 
 `kubectl` is required, see [here](http://kubernetes.io/docs/user-guide/prereqs/).
 
+
 ### OSX From Homebrew (Latest Stable Release)
 
 ```console
 $ brew update && brew install kops
+
 ```
+
+The `kops` binary is also available via our [releases](https://github.com/kubernetes/kops/releases/latest).
+
 ### Linux
 
 Download the [latest release](https://github.com/kubernetes/kops/releases/latest), then:
@@ -56,26 +71,11 @@ $ chmod +x kops-linux-amd64                 # Add execution permissions
 $ mv kops-linux-amd64 /usr/local/bin/kops   # Move the kops to /usr/local/bin
 ```
 
-### Developer From Source
-
-
-Go 1.8+ and make are required. You may need to do a full build including pushing protokube, nodeup, and kops to s3.
-
-See the [install notes](/docs/install.md) for more information.
-
-```console
-$ go get -d k8s.io/kops
-$ cd ${GOPATH}/src/k8s.io/kops/
-$ git checkout release
-$ make
-```
-
-At this time, Windows is not a supported platform.
-
 ## History
 
 See the [releases](https://github.com/kubernetes/kops/releases) for more
 information on changes between releases.
+
 
 ## Getting involved and contributing!
 
@@ -108,9 +108,11 @@ __Pull Requests__
 * [@geojaz](https://github.com/geojaz)
 * [@yissachar](https://github.com/yissachar)
 
+
 ## Office Hours
 
 Kops maintainers set aside one hour every other week for **public** office hours. Office hours are hosted on a [zoom video chat](https://zoom.us/my/k8ssigaws) on Fridays at [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12), on odd week numbered weeks.  We strive to get to know and help developers either working on `kops` or interested in getting to know more about the project.
+
 
 ### Open Office Hours Topics
 
@@ -136,19 +138,10 @@ date +%V
 
 The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community#slack-chat) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you!
 
-## Other Resources
-
- - Create [kubecfg settings for kubectl](/docs/tips.md#create-kubecfg-settings-for-kubectl)
- - Set up [add-ons](/docs/addons.md), to add important functionality to Kubernetes
- - Learn about [InstanceGroups](/docs/instance_groups.md); change
- instance types, number of nodes, and other options
- - Read about [networking options](/docs/networking.md)
- - Look at our [other interesting modes](/docs/commands.md#other-interesting-modes)
- - Full command line interface [documentation](/docs/cli/kops.md)
 
 ## GitHub Issues
 
-#### Bugs
+### Bugs
 
 If you think you have found a bug please follow the instructions below.
 
@@ -159,7 +152,8 @@ If you think you have found a bug please follow the instructions below.
 - Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
 - Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community#slack-chat)
 
-#### Features
+
+### Features
 
 We also use the issue tracker to track features. If you have an idea for a feature, or think you can help kops become even more awesome follow the steps below.
 

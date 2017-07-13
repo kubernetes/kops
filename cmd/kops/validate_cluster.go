@@ -43,10 +43,10 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ValidateClusterOptions{}
 
 	cmd := &cobra.Command{
-		Use: "cluster",
-		//Aliases: []string{"cluster"},
-		Short: "Validate cluster",
-		Long:  `Validate a kubernetes cluster`,
+		Use:     "cluster",
+		Short:   validate_short,
+		Long:    validate_long,
+		Example: validate_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunValidateCluster(f, cmd, args, os.Stdout, options)
 			if err != nil {
@@ -74,7 +74,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return err
 	}
 
-	list, err := clientSet.InstanceGroups(cluster.ObjectMeta.Name).List(metav1.ListOptions{})
+	list, err := clientSet.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
 	}

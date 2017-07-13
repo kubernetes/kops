@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/26Y5Yyn2D8WwxhPa2zJyQ3Axz8I\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/8JFCy9G09DiKop8V7jh2RwsOYyI\"",
  "discoveryVersion": "v1",
  "id": "groupssettings:v1",
  "name": "groupssettings",
@@ -72,7 +72,7 @@
   "oauth2": {
    "scopes": {
     "https://www.googleapis.com/auth/apps.groups.settings": {
-     "description": "View and manage the settings of a Google Apps Group"
+     "description": "View and manage the settings of a G Suite group"
     }
    }
   }

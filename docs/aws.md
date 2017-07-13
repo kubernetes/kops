@@ -52,14 +52,11 @@ You can create the kops IAM user from the command line using the following:
 ```bash
 aws iam create-group --group-name kops
 
-export arns="
-arn:aws:iam::aws:policy/AmazonEC2FullAccess
-arn:aws:iam::aws:policy/AmazonRoute53FullAccess
-arn:aws:iam::aws:policy/AmazonS3FullAccess
-arn:aws:iam::aws:policy/IAMFullAccess
-arn:aws:iam::aws:policy/AmazonVPCFullAccess"
-
-for arn in $arns; do aws iam attach-group-policy --policy-arn "$arn" --group-name kops; done
+aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonEC2FullAccess --group-name kops
+aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonRoute53FullAccess --group-name kops
+aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess --group-name kops
+aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/IAMFullAccess --group-name kops
+aws iam attach-group-policy --policy-arn arn:aws:iam::aws:policy/AmazonVPCFullAccess --group-name kops
 
 aws iam create-user --user-name kops
 
@@ -82,6 +79,12 @@ export AWS_SECRET_ACCESS_KEY=<secret key>
 ```
 
 ## Configure DNS
+
+Note: If you are using Kops 1.6.2 or later, then DNS configuration is 
+optional. Instead, a gossip-based cluster can be easily created. The 
+only requirement to trigger this is to have the cluster name end with 
+`k8s.local`. If a gossip-based cluster is created then you can skip 
+this section.
 
 In order to build a Kubernetes cluster with `kops`, we need to prepare
 somewhere to build the required DNS records.  There are three scenarios
@@ -211,6 +214,8 @@ kops create cluster --dns private $NAME
 
 ## Testing your DNS setup
 
+This section is not be required if a gossip-based cluster is created.
+
 You should now able to dig your domain (or subdomain) and see the AWS Name
 Servers on the other end.
 
@@ -232,7 +237,7 @@ This is a critical component of setting up clusters. If you are experiencing
 problems with the Kubernetes API not coming up, chances are something is wrong
 with the clusters DNS.
 
-**Please DO NOT MOVE ON until you have validated your NS records!**
+**Please DO NOT MOVE ON until you have validated your NS records! This is not be required if a gossip-based cluster is created.**
 
 ## Cluster State storage
 
@@ -282,6 +287,13 @@ environment variables to make this process easier.
 
 ```bash
 export NAME=myfirstcluster.example.com
+export KOPS_STATE_STORE=s3://prefix-example-com-state-store
+```
+
+For a gossip-based cluster, make sure the name ends with `k8s.local`. For example:
+
+```bash
+export NAME=myfirstcluster.k8s.local
 export KOPS_STATE_STORE=s3://prefix-example-com-state-store
 ```
 
@@ -364,6 +376,26 @@ You can look at all the system components with the following command.
 
 ```
 kubectl -n kube-system get po
+```
+
+## Delete the Cluster
+
+Running a Kubernetes cluster within AWS obviously costs money, and so you may
+want to delete your cluster if you are finished running experiments.
+
+You can preview all of the AWS resources that will be destroyed when the cluster
+is deleted by issuing the following command.
+
+```
+kops delete cluster --name ${NAME}
+```
+
+When you are sure you want to delete your cluster, issue the delete command
+with the `--yes` flag. Note that this command is very destructive, and will
+delete your cluster and everything contained within it!
+
+```
+kops delete cluster --name ${NAME} --yes
 ```
 
 # What's next?

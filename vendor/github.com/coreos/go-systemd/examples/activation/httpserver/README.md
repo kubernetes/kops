@@ -5,10 +5,10 @@ simple HTTP server on http://127.0.0.1:8076
 
 To try it out `go get` the httpserver and run it under the systemd-activate helper
 
-```
-export GOPATH=`pwd`
+```bash
+export GOPATH="$PWD"
 go get github.com/coreos/go-systemd/examples/activation/httpserver
-sudo /usr/lib/systemd/systemd-activate -l 127.0.0.1:8076 ./bin/httpserver
+/usr/lib/systemd/systemd-activate -l 127.0.0.1:8076 ./bin/httpserver
 ```
 
 Then curl the URL and you will notice that it starts up:
