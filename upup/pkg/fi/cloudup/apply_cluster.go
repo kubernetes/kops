@@ -238,7 +238,12 @@ func (c *ApplyClusterCmd) Run() error {
 				return err
 			}
 
-			c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset)
+			if cniAssetHashString == "" {
+				glog.Warningf("cniAssetHashString is empty, using cniAsset directly: %s", cniAsset)
+				c.Assets = append(c.Assets, cniAsset)
+			} else {
+				c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset)
+			}
 		}
 
 		if needsStaticUtils(cluster, c.InstanceGroups) {
