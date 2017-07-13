@@ -109,7 +109,7 @@ type KubeletConfigSpec struct {
 
 	// ResolverConfig is the resolver configuration file used as the basis
 	// for the container DNS resolution configuration."), []
-	ResolverConfig *string `json:"resolvConf" flag:"resolv-conf" flag-include-empty:"true"`
+	ResolverConfig *string `json:"resolvConf,omitempty" flag:"resolv-conf" flag-include-empty:"true"`
 
 	// nodeLabels to add when registering the node in the cluster.
 	NodeLabels map[string]string `json:"nodeLabels,omitempty" flag:"node-labels"`
