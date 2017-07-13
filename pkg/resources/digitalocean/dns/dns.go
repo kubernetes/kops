@@ -366,14 +366,8 @@ func listDomains(c *godo.Client) ([]godo.Domain, error) {
 		return nil, fmt.Errorf("failed to list domains: %v", err)
 	}
 
-	if resp.StatusCode != 200 {
-		respData, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("error reading response body: %v", err)
-		}
-
-		return nil, fmt.Errorf("received non 200 status code: %d from api: %v",
-			resp.StatusCode, string(respData))
+	if err = handleResponse(resp); err != nil {
+		return nil, err
 	}
 
 	return domains, err
@@ -386,14 +380,8 @@ func createDomain(c *godo.Client, createRequest *godo.DomainCreateRequest) (*god
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 {
-		respData, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("error reading response body: %v", err)
-		}
-
-		return nil, fmt.Errorf("received non 200 status code: %d from api: %v",
-			resp.StatusCode, string(respData))
+	if err = handleResponse(resp); err != nil {
+		return nil, err
 	}
 
 	return domain, nil
@@ -406,14 +394,8 @@ func deleteDomain(c *godo.Client, name string) error {
 		return err
 	}
 
-	if resp.StatusCode != 200 {
-		respData, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("error reading response body: %v", err)
-		}
-
-		return fmt.Errorf("received non 200 status code: %d from api: %v",
-			resp.StatusCode, string(respData))
+	if err = handleResponse(resp); err != nil {
+		return err
 	}
 
 	return nil
@@ -426,14 +408,8 @@ func getRecords(c *godo.Client, zoneName string) ([]godo.DomainRecord, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != 200 {
-		respData, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("error reading response body: %v", err)
-		}
-
-		return nil, fmt.Errorf("received non 200 status code: %d from api: %v",
-			resp.StatusCode, string(respData))
+	if err = handleResponse(resp); err != nil {
+		return nil, err
 	}
 
 	return records, nil
@@ -446,14 +422,8 @@ func createRecord(c *godo.Client, zoneName string, createRequest *godo.DomainRec
 		return fmt.Errorf("error applying changeset: %v", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		respData, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("error reading response body: %v", err)
-		}
-
-		return fmt.Errorf("received non 200 status code: %d from api: %v",
-			resp.StatusCode, string(respData))
+	if err = handleResponse(resp); err != nil {
+		return err
 	}
 
 	return nil
@@ -466,14 +436,8 @@ func editRecord(c *godo.Client, zoneName string, recordID int, editRequest *godo
 		return fmt.Errorf("error applying changeset: %v", err)
 	}
 
-	if resp.StatusCode != http.StatusOK {
-		respData, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("error reading response body: %v", err)
-		}
-
-		return fmt.Errorf("received non 200 status code: %d from api: %v",
-			resp.StatusCode, string(respData))
+	if err = handleResponse(resp); err != nil {
+		return err
 	}
 
 	return nil
@@ -486,6 +450,14 @@ func deleteRecord(c *godo.Client, zoneName string, recordID int) error {
 		return fmt.Errorf("error applying changeset: %v", err)
 	}
 
+	if err = handleResponse(resp); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func handleResponse(resp *godo.Response) error {
 	if resp.StatusCode != http.StatusOK {
 		respData, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
