@@ -24,6 +24,8 @@ import (
 	"github.com/digitalocean/godo"
 	"github.com/digitalocean/godo/context"
 
+	"github.com/golang/glog"
+
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
 )
@@ -265,6 +267,12 @@ func (r *resourceRecordChangeset) Upsert(rrset dnsprovider.ResourceRecordSet) dn
 // Apply adds new records stored in r.additions, updates records stored
 // in r.upserts and deletes records stored in r.removals
 func (r *resourceRecordChangeset) Apply() error {
+	glog.V(2).Infof("applying changes in record change set")
+	if r.IsEmpty() {
+		glog.V(2).Infof("record change set is empty")
+		return nil
+	}
+
 	if len(r.additions) > 0 {
 		for _, record := range r.additions {
 			recordCreateRequest := &godo.DomainRecordEditRequest{
@@ -278,6 +286,8 @@ func (r *resourceRecordChangeset) Apply() error {
 				return fmt.Errorf("could not create record: %v", err)
 			}
 		}
+
+		glog.V(2).Infof("record change set additions complete")
 	}
 
 	if len(r.removals) > 0 {
@@ -305,6 +315,7 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 		}
 
+		glog.V(2).Infof("record change set removals complete")
 	}
 
 	if len(r.upserts) > 0 {
@@ -339,8 +350,10 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 		}
 
+		glog.V(2).Infof("record change set upserts complete")
 	}
 
+	glog.V(2).Infof("record change sets successfully applied")
 	return nil
 }
 
