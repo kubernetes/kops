@@ -3,9 +3,8 @@ package pprof
 import (
 	"sync"
 
-	"github.com/coredns/coredns/middleware"
-
 	"github.com/mholt/caddy"
+	"github.com/miekg/coredns/middleware"
 )
 
 func init() {

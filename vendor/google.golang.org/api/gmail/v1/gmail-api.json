@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/wAsgFKksxbOpV_PEgBKXtQ8pzKw\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/UwagAxm_I2G-u6KLgFC6FvmGYn8\"",
  "discoveryVersion": "v1",
  "id": "gmail:v1",
  "name": "gmail",
  "version": "v1",
- "revision": "20161107",
+ "revision": "20170405",
  "title": "Gmail API",
  "description": "Access Gmail mailboxes including sending user email.",
  "ownerDomain": "google.com",
@@ -70,7 +70,7 @@
   "oauth2": {
    "scopes": {
     "https://mail.google.com/": {
-     "description": "View and manage your mail"
+     "description": "Read, send, delete, and manage your email"
     },
     "https://www.googleapis.com/auth/gmail.compose": {
      "description": "Manage drafts and send emails"
@@ -143,6 +143,33 @@
     "ids": {
      "type": "array",
      "description": "The IDs of the messages to delete.",
+     "items": {
+      "type": "string"
+     }
+    }
+   }
+  },
+  "BatchModifyMessagesRequest": {
+   "id": "BatchModifyMessagesRequest",
+   "type": "object",
+   "properties": {
+    "addLabelIds": {
+     "type": "array",
+     "description": "A list of label IDs to add to messages.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "ids": {
+     "type": "array",
+     "description": "The IDs of the messages to modify. There is a limit of 1000 ids per request.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "removeLabelIds": {
+     "type": "array",
+     "description": "A list of label IDs to remove from messages.",
      "items": {
       "type": "string"
      }
@@ -642,6 +669,19 @@
     }
    }
   },
+  "ListSmimeInfoResponse": {
+   "id": "ListSmimeInfoResponse",
+   "type": "object",
+   "properties": {
+    "smimeInfo": {
+     "type": "array",
+     "description": "List of SmimeInfo.",
+     "items": {
+      "$ref": "SmimeInfo"
+     }
+    }
+   }
+  },
   "ListThreadsResponse": {
    "id": "ListThreadsResponse",
    "type": "object",
@@ -954,6 +994,43 @@
     }
    }
   },
+  "SmimeInfo": {
+   "id": "SmimeInfo",
+   "type": "object",
+   "description": "An S/MIME email config.",
+   "properties": {
+    "encryptedKeyPassword": {
+     "type": "string",
+     "description": "Encrypted key password, when key is encrypted."
+    },
+    "expiration": {
+     "type": "string",
+     "description": "When the certificate expires (in milliseconds since epoch).",
+     "format": "int64"
+    },
+    "id": {
+     "type": "string",
+     "description": "The immutable ID for the SmimeInfo."
+    },
+    "isDefault": {
+     "type": "boolean",
+     "description": "Whether this SmimeInfo is the default one for this user's send-as address."
+    },
+    "issuerCn": {
+     "type": "string",
+     "description": "The S/MIME certificate issuer's common name."
+    },
+    "pem": {
+     "type": "string",
+     "description": "PEM formatted X509 concatenated certificate string (standard base64 encoding). Format used for returning key, which includes public key as well as certificate chain (not private key)."
+    },
+    "pkcs12": {
+     "type": "string",
+     "description": "PKCS#12 format containing a single private/public key pair and certificate chain. This format is only accepted from client for creating a new SmimeInfo and is never returned, because the private key is not intended to be exported. PKCS#12 may be encrypted, in which case encryptedKeyPassword should be set appropriately.",
+     "format": "byte"
+    }
+   }
+  },
   "SmtpMsa": {
    "id": "SmtpMsa",
    "type": "object",
@@ -1053,7 +1130,7 @@
     },
     "restrictToDomain": {
      "type": "boolean",
-     "description": "Flag that determines whether responses are sent to recipients who are outside of the user's domain. This feature is only available for Google Apps users."
+     "description": "Flag that determines whether responses are sent to recipients who are outside of the user's domain. This feature is only available for G Suite users."
     },
     "startTime": {
      "type": "string",
@@ -1486,6 +1563,24 @@
        "httpMethod": "GET",
        "description": "Lists the history of all changes to the given mailbox. History results are returned in chronological order (increasing historyId).",
        "parameters": {
+        "historyTypes": {
+         "type": "string",
+         "description": "History types to be returned by the function",
+         "enum": [
+          "labelAdded",
+          "labelRemoved",
+          "messageAdded",
+          "messageDeleted"
+         ],
+         "enumDescriptions": [
+          "",
+          "",
+          "",
+          ""
+         ],
+         "repeated": true,
+         "location": "query"
+        },
         "labelId": {
          "type": "string",
          "description": "Only return messages with a label matching the ID.",
@@ -1756,6 +1851,31 @@
         "https://mail.google.com/"
        ]
       },
+      "batchModify": {
+       "id": "gmail.users.messages.batchModify",
+       "path": "{userId}/messages/batchModify",
+       "httpMethod": "POST",
+       "description": "Modifies the labels on the specified messages.",
+       "parameters": {
+        "userId": {
+         "type": "string",
+         "description": "The user's email address. The special value me can be used to indicate the authenticated user.",
+         "default": "me",
+         "required": true,
+         "location": "path"
+        }
+       },
+       "parameterOrder": [
+        "userId"
+       ],
+       "request": {
+        "$ref": "BatchModifyMessagesRequest"
+       },
+       "scopes": [
+        "https://mail.google.com/",
+        "https://www.googleapis.com/auth/gmail.modify"
+       ]
+      },
       "delete": {
        "id": "gmail.users.messages.delete",
        "path": "{userId}/messages/{id}",
@@ -1850,7 +1970,7 @@
        "parameters": {
         "deleted": {
          "type": "boolean",
-         "description": "Mark the email as permanently deleted (not TRASH) and only visible in Google Apps Vault to a Vault administrator. Only used for Google Apps for Work accounts.",
+         "description": "Mark the email as permanently deleted (not TRASH) and only visible in Google Vault to a Vault administrator. Only used for G Suite accounts.",
          "default": "false",
          "location": "query"
         },
@@ -1907,7 +2027,7 @@
         "accept": [
          "message/rfc822"
         ],
-        "maxSize": "35MB",
+        "maxSize": "50MB",
         "protocols": {
          "simple": {
           "multipart": true,
@@ -1928,7 +2048,7 @@
        "parameters": {
         "deleted": {
          "type": "boolean",
-         "description": "Mark the email as permanently deleted (not TRASH) and only visible in Google Apps Vault to a Vault administrator. Only used for Google Apps for Work accounts.",
+         "description": "Mark the email as permanently deleted (not TRASH) and only visible in Google Vault to a Vault administrator. Only used for G Suite accounts.",
          "default": "false",
          "location": "query"
         },
@@ -1973,7 +2093,7 @@
         "accept": [
          "message/rfc822"
         ],
-        "maxSize": "35MB",
+        "maxSize": "50MB",
         "protocols": {
          "simple": {
           "multipart": true,
@@ -2350,7 +2470,7 @@
        "id": "gmail.users.settings.updateAutoForwarding",
        "path": "{userId}/settings/autoForwarding",
        "httpMethod": "PUT",
-       "description": "Updates the auto-forwarding setting for the specified account. A verified forwarding address must be specified when auto-forwarding is enabled.",
+       "description": "Updates the auto-forwarding setting for the specified account. A verified forwarding address must be specified when auto-forwarding is enabled.\n\nThis method is only available to service account clients that have been delegated domain-wide authority.",
        "parameters": {
         "userId": {
          "type": "string",
@@ -2582,7 +2702,7 @@
          "id": "gmail.users.settings.forwardingAddresses.create",
          "path": "{userId}/settings/forwardingAddresses",
          "httpMethod": "POST",
-         "description": "Creates a forwarding address. If ownership verification is required, a message will be sent to the recipient and the resource's verification status will be set to pending; otherwise, the resource will be created with verification status set to accepted.",
+         "description": "Creates a forwarding address. If ownership verification is required, a message will be sent to the recipient and the resource's verification status will be set to pending; otherwise, the resource will be created with verification status set to accepted.\n\nThis method is only available to service account clients that have been delegated domain-wide authority.",
          "parameters": {
           "userId": {
            "type": "string",
@@ -2609,7 +2729,7 @@
          "id": "gmail.users.settings.forwardingAddresses.delete",
          "path": "{userId}/settings/forwardingAddresses/{forwardingEmail}",
          "httpMethod": "DELETE",
-         "description": "Deletes the specified forwarding address and revokes any verification that may have been required.",
+         "description": "Deletes the specified forwarding address and revokes any verification that may have been required.\n\nThis method is only available to service account clients that have been delegated domain-wide authority.",
          "parameters": {
           "forwardingEmail": {
            "type": "string",
@@ -2702,7 +2822,7 @@
          "id": "gmail.users.settings.sendAs.create",
          "path": "{userId}/settings/sendAs",
          "httpMethod": "POST",
-         "description": "Creates a custom \"from\" send-as alias. If an SMTP MSA is specified, Gmail will attempt to connect to the SMTP service to validate the configuration before creating the alias. If ownership verification is required for the alias, a message will be sent to the email address and the resource's verification status will be set to pending; otherwise, the resource will be created with verification status set to accepted. If a signature is provided, Gmail will sanitize the HTML before saving it with the alias.",
+         "description": "Creates a custom \"from\" send-as alias. If an SMTP MSA is specified, Gmail will attempt to connect to the SMTP service to validate the configuration before creating the alias. If ownership verification is required for the alias, a message will be sent to the email address and the resource's verification status will be set to pending; otherwise, the resource will be created with verification status set to accepted. If a signature is provided, Gmail will sanitize the HTML before saving it with the alias.\n\nThis method is only available to service account clients that have been delegated domain-wide authority.",
          "parameters": {
           "userId": {
            "type": "string",
@@ -2729,7 +2849,7 @@
          "id": "gmail.users.settings.sendAs.delete",
          "path": "{userId}/settings/sendAs/{sendAsEmail}",
          "httpMethod": "DELETE",
-         "description": "Deletes the specified send-as alias. Revokes any verification that may have been required for using it.",
+         "description": "Deletes the specified send-as alias. Revokes any verification that may have been required for using it.\n\nThis method is only available to service account clients that have been delegated domain-wide authority.",
          "parameters": {
           "sendAsEmail": {
            "type": "string",
@@ -2818,7 +2938,7 @@
          "id": "gmail.users.settings.sendAs.patch",
          "path": "{userId}/settings/sendAs/{sendAsEmail}",
          "httpMethod": "PATCH",
-         "description": "Updates a send-as alias. If a signature is provided, Gmail will sanitize the HTML before saving it with the alias. This method supports patch semantics.",
+         "description": "Updates a send-as alias. If a signature is provided, Gmail will sanitize the HTML before saving it with the alias.\n\nAddresses other than the primary address for the account can only be updated by service account clients that have been delegated domain-wide authority. This method supports patch semantics.",
          "parameters": {
           "sendAsEmail": {
            "type": "string",
@@ -2853,7 +2973,7 @@
          "id": "gmail.users.settings.sendAs.update",
          "path": "{userId}/settings/sendAs/{sendAsEmail}",
          "httpMethod": "PUT",
-         "description": "Updates a send-as alias. If a signature is provided, Gmail will sanitize the HTML before saving it with the alias.",
+         "description": "Updates a send-as alias. If a signature is provided, Gmail will sanitize the HTML before saving it with the alias.\n\nAddresses other than the primary address for the account can only be updated by service account clients that have been delegated domain-wide authority.",
          "parameters": {
           "sendAsEmail": {
            "type": "string",
@@ -2888,7 +3008,7 @@
          "id": "gmail.users.settings.sendAs.verify",
          "path": "{userId}/settings/sendAs/{sendAsEmail}/verify",
          "httpMethod": "POST",
-         "description": "Sends a verification email to the specified send-as alias address. The verification status must be pending.",
+         "description": "Sends a verification email to the specified send-as alias address. The verification status must be pending.\n\nThis method is only available to service account clients that have been delegated domain-wide authority.",
          "parameters": {
           "sendAsEmail": {
            "type": "string",
@@ -2911,6 +3031,196 @@
          "scopes": [
           "https://www.googleapis.com/auth/gmail.settings.sharing"
          ]
+        }
+       },
+       "resources": {
+        "smimeInfo": {
+         "methods": {
+          "delete": {
+           "id": "gmail.users.settings.sendAs.smimeInfo.delete",
+           "path": "{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}",
+           "httpMethod": "DELETE",
+           "description": "Deletes the specified S/MIME config for the specified send-as alias.",
+           "parameters": {
+            "id": {
+             "type": "string",
+             "description": "The immutable ID for the SmimeInfo.",
+             "required": true,
+             "location": "path"
+            },
+            "sendAsEmail": {
+             "type": "string",
+             "description": "The email address that appears in the \"From:\" header for mail sent using this alias.",
+             "required": true,
+             "location": "path"
+            },
+            "userId": {
+             "type": "string",
+             "description": "The user's email address. The special value me can be used to indicate the authenticated user.",
+             "default": "me",
+             "required": true,
+             "location": "path"
+            }
+           },
+           "parameterOrder": [
+            "userId",
+            "sendAsEmail",
+            "id"
+           ],
+           "scopes": [
+            "https://www.googleapis.com/auth/gmail.settings.basic",
+            "https://www.googleapis.com/auth/gmail.settings.sharing"
+           ]
+          },
+          "get": {
+           "id": "gmail.users.settings.sendAs.smimeInfo.get",
+           "path": "{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}",
+           "httpMethod": "GET",
+           "description": "Gets the specified S/MIME config for the specified send-as alias.",
+           "parameters": {
+            "id": {
+             "type": "string",
+             "description": "The immutable ID for the SmimeInfo.",
+             "required": true,
+             "location": "path"
+            },
+            "sendAsEmail": {
+             "type": "string",
+             "description": "The email address that appears in the \"From:\" header for mail sent using this alias.",
+             "required": true,
+             "location": "path"
+            },
+            "userId": {
+             "type": "string",
+             "description": "The user's email address. The special value me can be used to indicate the authenticated user.",
+             "default": "me",
+             "required": true,
+             "location": "path"
+            }
+           },
+           "parameterOrder": [
+            "userId",
+            "sendAsEmail",
+            "id"
+           ],
+           "response": {
+            "$ref": "SmimeInfo"
+           },
+           "scopes": [
+            "https://mail.google.com/",
+            "https://www.googleapis.com/auth/gmail.modify",
+            "https://www.googleapis.com/auth/gmail.readonly",
+            "https://www.googleapis.com/auth/gmail.settings.basic",
+            "https://www.googleapis.com/auth/gmail.settings.sharing"
+           ]
+          },
+          "insert": {
+           "id": "gmail.users.settings.sendAs.smimeInfo.insert",
+           "path": "{userId}/settings/sendAs/{sendAsEmail}/smimeInfo",
+           "httpMethod": "POST",
+           "description": "Insert (upload) the given S/MIME config for the specified send-as alias. Note that pkcs12 format is required for the key.",
+           "parameters": {
+            "sendAsEmail": {
+             "type": "string",
+             "description": "The email address that appears in the \"From:\" header for mail sent using this alias.",
+             "required": true,
+             "location": "path"
+            },
+            "userId": {
+             "type": "string",
+             "description": "The user's email address. The special value me can be used to indicate the authenticated user.",
+             "default": "me",
+             "required": true,
+             "location": "path"
+            }
+           },
+           "parameterOrder": [
+            "userId",
+            "sendAsEmail"
+           ],
+           "request": {
+            "$ref": "SmimeInfo"
+           },
+           "response": {
+            "$ref": "SmimeInfo"
+           },
+           "scopes": [
+            "https://www.googleapis.com/auth/gmail.settings.basic",
+            "https://www.googleapis.com/auth/gmail.settings.sharing"
+           ]
+          },
+          "list": {
+           "id": "gmail.users.settings.sendAs.smimeInfo.list",
+           "path": "{userId}/settings/sendAs/{sendAsEmail}/smimeInfo",
+           "httpMethod": "GET",
+           "description": "Lists S/MIME configs for the specified send-as alias.",
+           "parameters": {
+            "sendAsEmail": {
+             "type": "string",
+             "description": "The email address that appears in the \"From:\" header for mail sent using this alias.",
+             "required": true,
+             "location": "path"
+            },
+            "userId": {
+             "type": "string",
+             "description": "The user's email address. The special value me can be used to indicate the authenticated user.",
+             "default": "me",
+             "required": true,
+             "location": "path"
+            }
+           },
+           "parameterOrder": [
+            "userId",
+            "sendAsEmail"
+           ],
+           "response": {
+            "$ref": "ListSmimeInfoResponse"
+           },
+           "scopes": [
+            "https://mail.google.com/",
+            "https://www.googleapis.com/auth/gmail.modify",
+            "https://www.googleapis.com/auth/gmail.readonly",
+            "https://www.googleapis.com/auth/gmail.settings.basic",
+            "https://www.googleapis.com/auth/gmail.settings.sharing"
+           ]
+          },
+          "setDefault": {
+           "id": "gmail.users.settings.sendAs.smimeInfo.setDefault",
+           "path": "{userId}/settings/sendAs/{sendAsEmail}/smimeInfo/{id}/setDefault",
+           "httpMethod": "POST",
+           "description": "Sets the default S/MIME config for the specified send-as alias.",
+           "parameters": {
+            "id": {
+             "type": "string",
+             "description": "The immutable ID for the SmimeInfo.",
+             "required": true,
+             "location": "path"
+            },
+            "sendAsEmail": {
+             "type": "string",
+             "description": "The email address that appears in the \"From:\" header for mail sent using this alias.",
+             "required": true,
+             "location": "path"
+            },
+            "userId": {
+             "type": "string",
+             "description": "The user's email address. The special value me can be used to indicate the authenticated user.",
+             "default": "me",
+             "required": true,
+             "location": "path"
+            }
+           },
+           "parameterOrder": [
+            "userId",
+            "sendAsEmail",
+            "id"
+           ],
+           "scopes": [
+            "https://www.googleapis.com/auth/gmail.settings.basic",
+            "https://www.googleapis.com/auth/gmail.settings.sharing"
+           ]
+          }
+         }
         }
        }
       }

@@ -21,13 +21,18 @@ import (
 
 	channelsapi "k8s.io/kops/channels/pkg/api"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 type BootstrapChannelBuilder struct {
-	cluster *kops.Cluster
+	cluster      *kops.Cluster
+	templates    *templates.Templates
+	assetBuilder *assets.AssetBuilder
 }
 
 var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
@@ -55,10 +60,26 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	for key, manifest := range manifests {
 		name := b.cluster.ObjectMeta.Name + "-addons-" + key
+
+		manifestResource := b.templates.Find(manifest)
+		if manifestResource == nil {
+			return fmt.Errorf("unable to find manifest %s", manifest)
+		}
+
+		manifestBytes, err := fi.ResourceAsBytes(manifestResource)
+		if err != nil {
+			return fmt.Errorf("error reading manifest %s: %v", manifest, err)
+		}
+
+		manifestBytes, err = b.assetBuilder.RemapManifest(manifestBytes)
+		if err != nil {
+			return fmt.Errorf("error remapping manifest %s: %v", manifest, err)
+		}
+
 		tasks[name] = &fitasks.ManagedFile{
 			Name:     fi.String(name),
 			Location: fi.String(manifest),
-			Contents: &fi.ResourceHolder{Name: manifest},
+			Contents: fi.WrapResource(fi.NewBytesResource(manifestBytes)),
 		}
 	}
 
@@ -89,7 +110,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "kube-dns.addons.k8s.io"
-		version := "1.6.1-alpha.2"
+		version := "1.14.4"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -139,7 +160,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "dns-controller.addons.k8s.io"
-		version := "1.6.1"
+		version := "1.7.0"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -169,6 +190,43 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				Id:                id,
 			})
 			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
+	if featureflag.EnableExternalDNS.Enabled() {
+		{
+			key := "external-dns.addons.k8s.io"
+			version := "0.3.0"
+
+			{
+				location := key + "/pre-k8s-1.6.yaml"
+				id := "pre-k8s-1.6"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: "<1.6.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
+
+			{
+				location := key + "/k8s-1.6.yaml"
+				id := "k8s-1.6"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.6.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
 		}
 	}
 
@@ -241,7 +299,9 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
-		version := "1.9.4"
+
+		// 1.9.8-kops.2 = 1.9.8 plus IPALLOC_RANGE and WEAVE_MTU
+		version := "1.9.8-kops.2"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -276,7 +336,9 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
-		version := "0.7.1"
+
+		// 0.7.2-kops.1 = 0.7.1 + hairpinMode fix
+		version := "0.7.2-kops.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -311,7 +373,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Calico != nil {
 		key := "networking.projectcalico.org"
-		version := "2.1.1"
+		// 2.1.2-kops.1 = 2.1.1 with CIDR change
+		version := "2.1.2-kops.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -346,7 +409,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Canal != nil {
 		key := "networking.projectcalico.org.canal"
-		version := "1.0"
+		version := "1.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -371,6 +434,49 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				Name:              fi.String(key),
 				Version:           fi.String(version),
 				Selector:          networkingSelector,
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.6.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
+	if b.cluster.Spec.Networking.Kuberouter != nil {
+		key := "networking.kuberouter"
+
+		version := "0.1.0"
+
+		{
+			location := key + "/k8s-1.6.yaml"
+			id := "k8s-1.6"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          networkingSelector,
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.6.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
+	authenticationSelector := map[string]string{"role.kubernetes.io/authentication": "1"}
+
+	if b.cluster.Spec.Authentication != nil && b.cluster.Spec.Authentication.Kopeio != nil {
+		key := "authentication.kope.io"
+		version := "1.0.20170619"
+
+		{
+			location := key + "/k8s-1.6.yaml"
+			id := "k8s-1.6"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          authenticationSelector,
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.6.0",
 				Id:                id,

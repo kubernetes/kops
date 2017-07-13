@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/EryczuhiHcKqlFJxE4k-NqDjXtI\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/rRpL0Yww6KCNEEWca1YtyKw9Y48\"",
  "discoveryVersion": "v1",
  "id": "tagmanager:v1",
  "name": "tagmanager",
@@ -74,22 +74,22 @@
      "description": "Delete your Google Tag Manager containers"
     },
     "https://www.googleapis.com/auth/tagmanager.edit.containers": {
-     "description": "Manage your Google Tag Manager containers"
+     "description": "Manage your Google Tag Manager container and its subcomponents, excluding versioning and publishing"
     },
     "https://www.googleapis.com/auth/tagmanager.edit.containerversions": {
      "description": "Manage your Google Tag Manager container versions"
     },
     "https://www.googleapis.com/auth/tagmanager.manage.accounts": {
-     "description": "Manage your Google Tag Manager accounts"
+     "description": "View and manage your Google Tag Manager accounts"
     },
     "https://www.googleapis.com/auth/tagmanager.manage.users": {
-     "description": "Manage user permissions of your Google Tag Manager data"
+     "description": "Manage user permissions of your Google Tag Manager account and container"
     },
     "https://www.googleapis.com/auth/tagmanager.publish": {
-     "description": "Publish your Google Tag Manager containers"
+     "description": "Publish your Google Tag Manager container versions"
     },
     "https://www.googleapis.com/auth/tagmanager.readonly": {
-     "description": "View your Google Tag Manager containers"
+     "description": "View your Google Tag Manager container and its subcomponents"
     }
    }
   }

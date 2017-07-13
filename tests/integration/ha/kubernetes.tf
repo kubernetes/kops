@@ -6,12 +6,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-ha-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-ha-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-ha-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-ha-example-com.id}"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-ha-example-com.id}", "${aws_subnet.us-test-1b-ha-example-com.id}", "${aws_subnet.us-test-1c-ha-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-ha-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-ha-example-com.name}"
 }
 
 output "region" {
@@ -211,13 +227,13 @@ resource "aws_ebs_volume" "c-etcd-main-ha-example-com" {
 }
 
 resource "aws_iam_instance_profile" "masters-ha-example-com" {
-  name  = "masters.ha.example.com"
-  roles = ["${aws_iam_role.masters-ha-example-com.name}"]
+  name = "masters.ha.example.com"
+  role = "${aws_iam_role.masters-ha-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-ha-example-com" {
-  name  = "nodes.ha.example.com"
-  roles = ["${aws_iam_role.nodes-ha-example-com.name}"]
+  name = "nodes.ha.example.com"
+  role = "${aws_iam_role.nodes-ha-example-com.name}"
 }
 
 resource "aws_iam_role" "masters-ha-example-com" {
@@ -268,7 +284,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-ha-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 64
     delete_on_termination = true
   }
 
@@ -294,7 +310,7 @@ resource "aws_launch_configuration" "master-us-test-1b-masters-ha-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 64
     delete_on_termination = true
   }
 
@@ -320,7 +336,7 @@ resource "aws_launch_configuration" "master-us-test-1c-masters-ha-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 64
     delete_on_termination = true
   }
 
@@ -346,7 +362,7 @@ resource "aws_launch_configuration" "nodes-ha-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 128
     delete_on_termination = true
   }
 
@@ -567,4 +583,8 @@ resource "aws_vpc_dhcp_options" "ha-example-com" {
 resource "aws_vpc_dhcp_options_association" "ha-example-com" {
   vpc_id          = "${aws_vpc.ha-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.ha-example-com.id}"
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
 }

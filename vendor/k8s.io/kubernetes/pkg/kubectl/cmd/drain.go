@@ -87,12 +87,12 @@ const (
 )
 
 var (
-	cordon_long = templates.LongDesc(`
-		Mark node as unschedulable.`)
+	cordon_long = templates.LongDesc(i18n.T(`
+		Mark node as unschedulable.`))
 
-	cordon_example = templates.Examples(`
+	cordon_example = templates.Examples(i18n.T(`
 		# Mark node "foo" as unschedulable.
-		kubectl cordon foo`)
+		kubectl cordon foo`))
 )
 
 func NewCmdCordon(f cmdutil.Factory, out io.Writer) *cobra.Command {
@@ -112,12 +112,12 @@ func NewCmdCordon(f cmdutil.Factory, out io.Writer) *cobra.Command {
 }
 
 var (
-	uncordon_long = templates.LongDesc(`
-		Mark node as schedulable.`)
+	uncordon_long = templates.LongDesc(i18n.T(`
+		Mark node as schedulable.`))
 
-	uncordon_example = templates.Examples(`
+	uncordon_example = templates.Examples(i18n.T(`
 		# Mark node "foo" as schedulable.
-		$ kubectl uncordon foo`)
+		$ kubectl uncordon foo`))
 )
 
 func NewCmdUncordon(f cmdutil.Factory, out io.Writer) *cobra.Command {
@@ -137,7 +137,7 @@ func NewCmdUncordon(f cmdutil.Factory, out io.Writer) *cobra.Command {
 }
 
 var (
-	drain_long = templates.LongDesc(`
+	drain_long = templates.LongDesc(i18n.T(`
 		Drain node in preparation for maintenance.
 
 		The given node will be marked unschedulable to prevent new pods from arriving.
@@ -160,14 +160,14 @@ var (
 		When you are ready to put the node back into service, use kubectl uncordon, which
 		will make the node schedulable again.
 
-		![Workflow](http://kubernetes.io/images/docs/kubectl_drain.svg)`)
+		![Workflow](http://kubernetes.io/images/docs/kubectl_drain.svg)`))
 
-	drain_example = templates.Examples(`
+	drain_example = templates.Examples(i18n.T(`
 		# Drain node "foo", even if there are pods not managed by a ReplicationController, ReplicaSet, Job, DaemonSet or StatefulSet on it.
 		$ kubectl drain foo --force
 
 		# As above, but abort if there are pods not managed by a ReplicationController, ReplicaSet, Job, DaemonSet or StatefulSet, and use a grace period of 15 minutes.
-		$ kubectl drain foo --grace-period=900`)
+		$ kubectl drain foo --grace-period=900`))
 )
 
 func NewCmdDrain(f cmdutil.Factory, out, errOut io.Writer) *cobra.Command {
@@ -215,7 +215,7 @@ func (o *DrainOptions) SetupDrain(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	r := o.Factory.NewBuilder().
+	r := o.Factory.NewBuilder(true).
 		NamespaceParam(cmdNamespace).DefaultNamespace().
 		ResourceNames("node", args[0]).
 		Do()
@@ -496,7 +496,7 @@ func (o *DrainOptions) evictPods(pods []api.Pod, policyGroupVersion string, getP
 					break
 				} else if apierrors.IsTooManyRequests(err) {
 					time.Sleep(5 * time.Second)
-				} else {
+				} else if !apierrors.IsNotFound(err) {
 					errCh <- fmt.Errorf("error when evicting pod %q: %v", pod.Name, err)
 					return
 				}
@@ -544,7 +544,7 @@ func (o *DrainOptions) deletePods(pods []api.Pod, getPodFn func(namespace, name 
 	}
 	for _, pod := range pods {
 		err := o.deletePod(pod)
-		if err != nil {
+		if err != nil && !apierrors.IsNotFound(err) {
 			return err
 		}
 	}

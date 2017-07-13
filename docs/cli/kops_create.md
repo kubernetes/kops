@@ -1,11 +1,18 @@
 ## kops create
 
-Create a resource by filename or stdin.
+Create a resource by command line, filename or stdin.
 
 ### Synopsis
 
 
-Create a resource by filename or stdin.
+Create a resource:
+  
+  * cluster  
+  * instancegroup  
+  * secret  
+  * federation  
+
+Create a cluster, instancegroup or secret using command line flags or YAML cluster spec. Clusters and instancegroups can be created using the YAML cluster spec.
 
 ```
 kops create -f FILENAME
@@ -14,14 +21,22 @@ kops create -f FILENAME
 ### Examples
 
 ```
-  # Create a cluster using a file
+  # Create a cluster using a cluser spec file
   kops create -f my-cluster.yaml
   
   # Create a cluster in AWS
-  kops create cluster --name=example.com \
+  kops create cluster --name=kubernetes-cluster.example.com \
   --state=s3://kops-state-1234 --zones=eu-west-1a \
   --node-count=2 --node-size=t2.micro --master-size=t2.micro \
   --dns-zone=example.com
+  
+  # Create an instancegroup for the k8s-cluster.example.com cluster.
+  kops create ig --name=k8s-cluster.example.com node-example \
+  --role node --subnet my-subnet-name
+  
+  # Create an new ssh public key called admin.
+  kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
+  --name k8s-cluster.example.com --state s3://example.com
 ```
 
 ### Options
@@ -46,8 +61,8 @@ kops create -f FILENAME
 ```
 
 ### SEE ALSO
-* [kops](kops.md)	 - kops is kubernetes ops
-* [kops create cluster](kops_create_cluster.md)	 - Create cluster
-* [kops create instancegroup](kops_create_instancegroup.md)	 - Create instancegroup
-* [kops create secret](kops_create_secret.md)	 - Create secrets
+* [kops](kops.md)	 - kops is Kubernetes ops.
+* [kops create cluster](kops_create_cluster.md)	 - Create a Kubernetes cluster.
+* [kops create instancegroup](kops_create_instancegroup.md)	 - Create an instancegroup.
+* [kops create secret](kops_create_secret.md)	 - Create a secret.
 

@@ -1,11 +1,11 @@
 package metrics
 
 import (
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/middleware/metrics/vars"
-	"github.com/coredns/coredns/middleware/pkg/dnsrecorder"
-	"github.com/coredns/coredns/middleware/pkg/rcode"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/middleware/metrics/vars"
+	"github.com/miekg/coredns/middleware/pkg/dnsrecorder"
+	"github.com/miekg/coredns/middleware/pkg/rcode"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -23,9 +23,9 @@ func (m *Metrics) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg
 
 	// Record response to get status code and size of the reply.
 	rw := dnsrecorder.New(w)
-	status, err := middleware.NextOrFailure(m.Name(), m.Next, ctx, rw, r)
+	status, err := m.Next.ServeDNS(ctx, rw, r)
 
-	vars.Report(state, zone, rcode.ToString(rw.Rcode), rw.Len, rw.Start)
+	vars.Report(state, zone, rcode.ToString(rw.Rcode), rw.Size, rw.Start)
 
 	return status, err
 }

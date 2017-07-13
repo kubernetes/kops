@@ -37,15 +37,17 @@ See [etcdctl][etcdctl] for a simple command line client.
 
 ### Getting etcd
 
-The easiest way to get etcd is to use one of the pre-built release binaries which are available for OSX, Linux, Windows, AppC (ACI), and Docker. Instructions for using these binaries are on the [GitHub releases page][github-release].
+The easiest way to get etcd is to use one of the pre-built release binaries which are available for OSX, Linux, Windows, [rkt][rkt], and Docker. Instructions for using these binaries are on the [GitHub releases page][github-release].
 
-For those wanting to try the very latest version, you can build the latest version of etcd from the `master` branch.
-You will first need [*Go*](https://golang.org/) installed on your machine (version 1.6+ is required).
+For those wanting to try the very latest version, you can [build the latest version of etcd][dl-build] from the `master` branch.
+You will first need [*Go*](https://golang.org/) installed on your machine (version 1.7+ is required).
 All development occurs on `master`, including new features and bug fixes.
 Bug fixes are first targeted at `master` and subsequently ported to release branches, as described in the [branch management][branch-management] guide.
 
+[rkt]: https://github.com/coreos/rkt/releases/
 [github-release]: https://github.com/coreos/etcd/releases/
 [branch-management]: ./Documentation/branch_management.md
+[dl-build]: ./Documentation/dl_build.md#build-the-latest-version
 
 ### Running etcd
 
@@ -92,6 +94,10 @@ This will bring up 3 etcd members `infra1`, `infra2` and `infra3` and etcd proxy
 
 Every cluster member and proxy accepts key value reads and key value writes.
 
+### Running etcd on Kubernetes
+
+If you want to run etcd cluster on Kubernetes, try [etcd operator](https://github.com/coreos/etcd-operator).
+
 ### Next steps
 
 Now it's time to dig into the full etcd API and other guides.
@@ -130,4 +136,5 @@ See [reporting bugs](Documentation/reporting_bugs.md) for details about reportin
 ### License
 
 etcd is under the Apache 2.0 license. See the [LICENSE](LICENSE) file for details.
+
 

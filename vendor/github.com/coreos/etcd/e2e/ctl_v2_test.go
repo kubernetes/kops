@@ -258,10 +258,6 @@ func TestCtlV2Backup(t *testing.T) { // For https://github.com/coreos/etcd/issue
 	cfg2.forceNewCluster = true
 	epc2 := setupEtcdctlTest(t, &cfg2, false)
 
-	if _, err := epc2.procs[0].proc.Expect("etcdserver: published"); err != nil {
-		t.Fatal(err)
-	}
-
 	// check if backup went through correctly
 	if err := etcdctlGet(epc2, "foo1", "bar", false); err != nil {
 		t.Fatal(err)
@@ -316,22 +312,50 @@ func TestCtlV2AuthWithCommonName(t *testing.T) {
 	}
 }
 
+func TestCtlV2ClusterHealth(t *testing.T) {
+	defer testutil.AfterTest(t)
+	epc := setupEtcdctlTest(t, &configNoTLS, true)
+	defer func() {
+		if err := epc.Close(); err != nil {
+			t.Fatalf("error closing etcd processes (%v)", err)
+		}
+	}()
+
+	// has quorum
+	if err := etcdctlClusterHealth(epc, "cluster is healthy"); err != nil {
+		t.Fatalf("cluster-health expected to be healthy (%v)", err)
+	}
+
+	// cut quorum
+	epc.procs[0].Stop()
+	epc.procs[1].Stop()
+	if err := etcdctlClusterHealth(epc, "cluster is unhealthy"); err != nil {
+		t.Fatalf("cluster-health expected to be unhealthy (%v)", err)
+	}
+	epc.procs[0], epc.procs[1] = nil, nil
+}
+
 func etcdctlPrefixArgs(clus *etcdProcessCluster) []string {
 	endpoints := ""
 	if proxies := clus.proxies(); len(proxies) != 0 {
 		endpoints = proxies[0].cfg.acurl
-	} else if backends := clus.backends(); len(backends) != 0 {
+	} else if processes := clus.processes(); len(processes) != 0 {
 		es := []string{}
-		for _, b := range backends {
+		for _, b := range processes {
 			es = append(es, b.cfg.acurl)
 		}
 		endpoints = strings.Join(es, ",")
 	}
-	cmdArgs := []string{"../bin/etcdctl", "--endpoints", endpoints}
+	cmdArgs := []string{ctlBinPath, "--endpoints", endpoints}
 	if clus.cfg.clientTLS == clientTLS {
 		cmdArgs = append(cmdArgs, "--ca-file", caPath, "--cert-file", certPath, "--key-file", privateKeyPath)
 	}
 	return cmdArgs
+}
+
+func etcdctlClusterHealth(clus *etcdProcessCluster, val string) error {
+	cmdArgs := append(etcdctlPrefixArgs(clus), "cluster-health")
+	return spawnWithExpect(cmdArgs, val)
 }
 
 func etcdctlSet(clus *etcdProcessCluster, key, value string) error {
@@ -431,7 +455,7 @@ func etcdctlBackup(clus *etcdProcessCluster, dataDir, backupDir string) error {
 }
 
 func mustEtcdctl(t *testing.T) {
-	if !fileutil.Exist("../bin/etcdctl") {
+	if !fileutil.Exist(binDir + "/etcdctl") {
 		t.Fatalf("could not find etcdctl binary")
 	}
 }

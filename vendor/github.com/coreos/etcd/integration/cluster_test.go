@@ -20,11 +20,14 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/coreos/etcd/client"
+	"github.com/coreos/etcd/etcdserver"
 	"github.com/coreos/etcd/pkg/testutil"
+	"github.com/coreos/pkg/capnslog"
 
 	"golang.org/x/net/context"
 )
@@ -316,6 +319,10 @@ func TestIssue3699(t *testing.T) {
 	for leaderID != 3 {
 		c.Members[leaderID].Stop(t)
 		<-c.Members[leaderID].s.StopNotify()
+		// do not restart the killed member immediately.
+		// the member will advance its election timeout after restart,
+		// so it will have a better chance to become the leader again.
+		time.Sleep(time.Duration(electionTicks * int(tickDuration)))
 		c.Members[leaderID].Restart(t)
 		leaderID = c.waitLeader(t, c.Members)
 	}
@@ -346,6 +353,140 @@ func TestIssue3699(t *testing.T) {
 	cancel()
 }
 
+// TestRejectUnhealthyAdd ensures an unhealthy cluster rejects adding members.
+func TestRejectUnhealthyAdd(t *testing.T) {
+	defer testutil.AfterTest(t)
+	c := NewCluster(t, 3)
+	for _, m := range c.Members {
+		m.ServerConfig.StrictReconfigCheck = true
+	}
+	c.Launch(t)
+	defer c.Terminate(t)
+
+	// make cluster unhealthy and wait for downed peer
+	c.Members[0].Stop(t)
+	c.WaitLeader(t)
+
+	// all attempts to add member should fail
+	for i := 1; i < len(c.Members); i++ {
+		err := c.addMemberByURL(t, c.URL(i), "unix://foo:12345")
+		if err == nil {
+			t.Fatalf("should have failed adding peer")
+		}
+		// TODO: client should return descriptive error codes for internal errors
+		if !strings.Contains(err.Error(), "has no leader") {
+			t.Errorf("unexpected error (%v)", err)
+		}
+	}
+
+	// make cluster healthy
+	c.Members[0].Restart(t)
+	c.WaitLeader(t)
+	time.Sleep(2 * etcdserver.HealthInterval)
+
+	// add member should succeed now that it's healthy
+	var err error
+	for i := 1; i < len(c.Members); i++ {
+		if err = c.addMemberByURL(t, c.URL(i), "unix://foo:12345"); err == nil {
+			break
+		}
+	}
+	if err != nil {
+		t.Fatalf("should have added peer to healthy cluster (%v)", err)
+	}
+}
+
+// TestRejectUnhealthyRemove ensures an unhealthy cluster rejects removing members
+// if quorum will be lost.
+func TestRejectUnhealthyRemove(t *testing.T) {
+	defer testutil.AfterTest(t)
+	c := NewCluster(t, 5)
+	for _, m := range c.Members {
+		m.ServerConfig.StrictReconfigCheck = true
+	}
+	c.Launch(t)
+	defer c.Terminate(t)
+
+	// make cluster unhealthy and wait for downed peer; (3 up, 2 down)
+	c.Members[0].Stop(t)
+	c.Members[1].Stop(t)
+	c.WaitLeader(t)
+
+	// reject remove active member since (3,2)-(1,0) => (2,2) lacks quorum
+	err := c.removeMember(t, uint64(c.Members[2].s.ID()))
+	if err == nil {
+		t.Fatalf("should reject quorum breaking remove")
+	}
+	// TODO: client should return more descriptive error codes for internal errors
+	if !strings.Contains(err.Error(), "has no leader") {
+		t.Errorf("unexpected error (%v)", err)
+	}
+
+	// member stopped after launch; wait for missing heartbeats
+	time.Sleep(time.Duration(electionTicks * int(tickDuration)))
+
+	// permit remove dead member since (3,2) - (0,1) => (3,1) has quorum
+	if err = c.removeMember(t, uint64(c.Members[0].s.ID())); err != nil {
+		t.Fatalf("should accept removing down member")
+	}
+
+	// bring cluster to (4,1)
+	c.Members[0].Restart(t)
+
+	// restarted member must be connected for a HealthInterval before remove is accepted
+	time.Sleep((3 * etcdserver.HealthInterval) / 2)
+
+	// accept remove member since (4,1)-(1,0) => (3,1) has quorum
+	if err = c.removeMember(t, uint64(c.Members[0].s.ID())); err != nil {
+		t.Fatalf("expected to remove member, got error %v", err)
+	}
+}
+
+// TestRestartRemoved ensures that restarting removed member must exit
+// if 'initial-cluster-state' is set 'new' and old data directory still exists
+// (see https://github.com/coreos/etcd/issues/7512 for more).
+func TestRestartRemoved(t *testing.T) {
+	defer testutil.AfterTest(t)
+	capnslog.SetGlobalLogLevel(capnslog.INFO)
+
+	// 1. start single-member cluster
+	c := NewCluster(t, 1)
+	for _, m := range c.Members {
+		m.ServerConfig.StrictReconfigCheck = true
+	}
+	c.Launch(t)
+	defer c.Terminate(t)
+
+	// 2. add a new member
+	c.AddMember(t)
+	c.WaitLeader(t)
+
+	oldm := c.Members[0]
+	oldm.keepDataDirTerminate = true
+
+	// 3. remove first member, shut down without deleting data
+	if err := c.removeMember(t, uint64(c.Members[0].s.ID())); err != nil {
+		t.Fatalf("expected to remove member, got error %v", err)
+	}
+	c.WaitLeader(t)
+
+	// 4. restart first member with 'initial-cluster-state=new'
+	// wrong config, expects exit within ReqTimeout
+	oldm.ServerConfig.NewCluster = false
+	if err := oldm.Restart(t); err != nil {
+		t.Fatalf("unexpected ForceRestart error: %v", err)
+	}
+	defer func() {
+		oldm.Close()
+		os.RemoveAll(oldm.ServerConfig.DataDir)
+	}()
+	select {
+	case <-oldm.s.StopNotify():
+	case <-time.After(time.Minute):
+		t.Fatalf("removed member didn't exit within %v", time.Minute)
+	}
+}
+
 // clusterMustProgress ensures that cluster can make progress. It creates
 // a random key first, and check the new key could be got from all client urls
 // of the cluster.
@@ -369,5 +510,50 @@ func clusterMustProgress(t *testing.T, membs []*member) {
 			t.Fatalf("#%d: watch on %s error: %v", i, u, err)
 		}
 		mcancel()
+	}
+}
+
+func TestTransferLeader(t *testing.T) {
+	defer testutil.AfterTest(t)
+
+	clus := NewClusterV3(t, &ClusterConfig{Size: 3})
+	defer clus.Terminate(t)
+
+	oldLeadIdx := clus.WaitLeader(t)
+	oldLeadID := uint64(clus.Members[oldLeadIdx].s.ID())
+
+	// ensure followers go through leader transition while learship transfer
+	idc := make(chan uint64)
+	for i := range clus.Members {
+		if oldLeadIdx != i {
+			go func(m *member) {
+				idc <- checkLeaderTransition(t, m, oldLeadID)
+			}(clus.Members[i])
+		}
+	}
+
+	err := clus.Members[oldLeadIdx].s.TransferLeadership()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// wait until leader transitions have happened
+	var newLeadIDs [2]uint64
+	for i := range newLeadIDs {
+		select {
+		case newLeadIDs[i] = <-idc:
+		case <-time.After(time.Second):
+			t.Fatal("timed out waiting for leader transition")
+		}
+	}
+
+	// remaining members must agree on the same leader
+	if newLeadIDs[0] != newLeadIDs[1] {
+		t.Fatalf("expected same new leader %d == %d", newLeadIDs[0], newLeadIDs[1])
+	}
+
+	// new leader must be different than the old leader
+	if oldLeadID == newLeadIDs[0] {
+		t.Fatalf("expected old leader %d != new leader %d", oldLeadID, newLeadIDs[0])
 	}
 }

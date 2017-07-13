@@ -76,12 +76,3 @@ message Nested {
 message MessageWithMap {
   map<bool, bytes> byte_mapping = 1;
 }
-
-
-message IntMap {
-  map<int32, int32> rtt = 1;
-}
-
-message IntMaps {
-  repeated IntMap maps = 1;
-}

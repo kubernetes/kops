@@ -6,10 +6,10 @@ var StringToType = reverseInt16(TypeToString)
 // StringToClass is the reverse of ClassToString, needed for string parsing.
 var StringToClass = reverseInt16(ClassToString)
 
-// StringToOpcode is a map of opcodes to strings.
+// Map of opcodes strings.
 var StringToOpcode = reverseInt(OpcodeToString)
 
-// StringToRcode is a map of rcodes to strings.
+// Map of rcodes strings.
 var StringToRcode = reverseInt(RcodeToString)
 
 // Reverse a map

@@ -108,12 +108,16 @@ func (e *E2EServices) startKubelet() (*server, error) {
 		// sense to test it that way
 		isSystemd = true
 		unitName := fmt.Sprintf("kubelet-%d.service", rand.Int31())
-		cmdArgs = append(cmdArgs, systemdRun, "--unit="+unitName, "--remain-after-exit", builder.GetKubeletServerBin())
+		cmdArgs = append(cmdArgs, systemdRun, "--unit="+unitName, "--slice=runtime.slice", "--remain-after-exit", builder.GetKubeletServerBin())
 		killCommand = exec.Command("systemctl", "kill", unitName)
 		restartCommand = exec.Command("systemctl", "restart", unitName)
 		e.logFiles["kubelet.log"] = logFileData{
 			journalctlCommand: []string{"-u", unitName},
 		}
+		cmdArgs = append(cmdArgs,
+			"--kubelet-cgroups=/kubelet.slice",
+			"--cgroup-root=/",
+		)
 	} else {
 		cmdArgs = append(cmdArgs, builder.GetKubeletServerBin())
 		cmdArgs = append(cmdArgs,
@@ -133,7 +137,12 @@ func (e *E2EServices) startKubelet() (*server, error) {
 		"--serialize-image-pulls", "false",
 		"--pod-manifest-path", manifestPath,
 		"--file-check-frequency", "10s", // Check file frequently so tests won't wait too long
-		"--pod-cidr", "10.180.0.0/24", // Assign a fixed CIDR to the node because there is no node controller.
+		// Assign a fixed CIDR to the node because there is no node controller.
+		//
+		// Note: this MUST be in sync with with the IP in
+		// - cluster/gce/config-test.sh and
+		// - test/e2e_node/conformance/run_test.sh.
+		"--pod-cidr", "10.100.0.0/24",
 		"--eviction-pressure-transition-period", "30s",
 		// Apply test framework feature gates by default. This could also be overridden
 		// by kubelet-flags.
@@ -143,13 +152,20 @@ func (e *E2EServices) startKubelet() (*server, error) {
 		"--v", LOG_VERBOSITY_LEVEL, "--logtostderr",
 	)
 	// Enable kubenet by default.
-	cniDir, err := getCNIDirectory()
+	cniBinDir, err := getCNIBinDirectory()
 	if err != nil {
 		return nil, err
 	}
+
+	cniConfDir, err := getCNIConfDirectory()
+	if err != nil {
+		return nil, err
+	}
+
 	cmdArgs = append(cmdArgs,
 		"--network-plugin=kubenet",
-		"--network-plugin-dir", cniDir)
+		"--cni-bin-dir", cniBinDir,
+		"--cni-conf-dir", cniConfDir)
 
 	// Keep hostname override for convenience.
 	if framework.TestContext.NodeName != "" { // If node name is specified, set hostname override.
@@ -190,14 +206,22 @@ func createPodManifestDirectory() (string, error) {
 	return path, nil
 }
 
-// getCNIDirectory returns CNI directory.
-func getCNIDirectory() (string, error) {
+// getCNIBinDirectory returns CNI directory.
+func getCNIBinDirectory() (string, error) {
 	cwd, err := os.Getwd()
 	if err != nil {
 		return "", err
 	}
-	// TODO(random-liu): Make sure the cni directory name is the same with that in remote/remote.go
 	return filepath.Join(cwd, "cni", "bin"), nil
+}
+
+// getCNIConfDirectory returns CNI Configuration directory.
+func getCNIConfDirectory() (string, error) {
+	cwd, err := os.Getwd()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(cwd, "cni", "net.d"), nil
 }
 
 // adjustArgsForSystemd escape special characters in kubelet arguments for systemd. Systemd

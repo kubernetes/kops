@@ -1,18 +1,23 @@
 ## kops update cluster
 
-Create or update cloud or cluster resources to match current cluster state.
+Update a cluster.
 
 ### Synopsis
 
 
-Create or update cloud or cluster resources to match current cluster state.  If the cluster or cloud resources already
-		exist this command may modify those resources.
+Create or update cloud or cluster resources to match current cluster state.  If the cluster or cloud resources already exist this command may modify those resources. 
 
-		If nodes need updating such as during a Kubernetes upgrade, a rolling-update may
-		be required as well.
+If nodes need updating such as during a Kubernetes upgrade, a rolling-update may be required as well.
 
 ```
 kops update cluster
+```
+
+### Examples
+
+```
+  # After cluster has been editted or upgraded, configure it with:
+  kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
 ```
 
 ### Options
@@ -22,7 +27,7 @@ kops update cluster
       --model string            Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --out string              Path to write any local output
       --ssh-public-key string   SSH public key to use (deprecated: use kops create secret instead)
-      --target string           Target - direct, terraform (default "direct")
+      --target string           Target - direct, terraform, cloudformation (default "direct")
       --yes                     Actually create cloud resources
 ```
 
@@ -42,5 +47,5 @@ kops update cluster
 ```
 
 ### SEE ALSO
-* [kops update](kops_update.md)	 - Creates or updates cloud resources to match cluster spec.
+* [kops update](kops_update.md)	 - Update a cluster.
 

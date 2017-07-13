@@ -19,16 +19,20 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
+	"os"
+	"path/filepath"
+	"strings"
+
+	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
-	"os"
-	"path/filepath"
-	"strings"
+	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 type CreateInstanceGroupOptions struct {
@@ -36,6 +40,23 @@ type CreateInstanceGroupOptions struct {
 	Subnets []string
 }
 
+var (
+	create_ig_long = templates.LongDesc(i18n.T(`
+		Create an instancegroup configuration.  kops has the concept of "instance groups",
+		which are a group of similar virutal machines. On AWS, they map to an
+		AutoScalingGroup. An ig work either as a Kubernetes master or a node.`))
+
+	create_ig_example = templates.Examples(i18n.T(`
+
+		# Create an instancegroup for the k8s-cluster.example.com cluster.
+		kops create ig --name=k8s-cluster.example.com node-example \
+		  --role node --subnet my-subnet-name
+		`))
+
+	create_ig_short = i18n.T(`Create an instancegroup.`)
+)
+
+//  NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
 func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateInstanceGroupOptions{
 		Role: string(api.InstanceGroupRoleNode),
@@ -44,8 +65,9 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "instancegroup",
 		Aliases: []string{"instancegroups", "ig"},
-		Short:   "Create instancegroup",
-		Long:    `Create an instancegroup configuration.`,
+		Short:   create_ig_short,
+		Long:    create_ig_long,
+		Example: create_ig_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunCreateInstanceGroup(f, cmd, args, os.Stdout, options)
 			if err != nil {
@@ -90,7 +112,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return err
 	}
 
-	existing, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Get(groupName)
+	existing, err := clientset.InstanceGroupsFor(cluster).Get(groupName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -154,7 +176,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return err
 	}
 
-	_, err = clientset.InstanceGroups(cluster.ObjectMeta.Name).Create(group)
+	_, err = clientset.InstanceGroupsFor(cluster).Create(group)
 	if err != nil {
 		return fmt.Errorf("error storing InstanceGroup: %v", err)
 	}

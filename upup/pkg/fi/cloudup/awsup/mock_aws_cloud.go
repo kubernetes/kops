@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
@@ -72,7 +73,7 @@ type MockCloud struct {
 	MockRoute53        route53iface.Route53API
 }
 
-func (c *MockCloud) ProviderID() fi.CloudProviderID {
+func (c *MockCloud) ProviderID() kops.CloudProviderID {
 	return "mock"
 }
 

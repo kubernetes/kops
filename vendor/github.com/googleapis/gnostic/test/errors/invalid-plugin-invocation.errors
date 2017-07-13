@@ -1,0 +1,12 @@
+Errors reading examples/v2.0/yaml/petstore.yaml
+Invalid invocation of gnostic_plugin: foo=bar,:abc
+Errors reading examples/v2.0/yaml/petstore.yaml
+Invalid invocation of gnostic_plugin: ,foo=bar:abc
+Errors reading examples/v2.0/yaml/petstore.yaml
+Invalid invocation of gnostic_plugin: foo=:abc
+Errors reading examples/v2.0/yaml/petstore.yaml
+Invalid invocation of gnostic_plugin: =bar:abc
+Errors reading examples/v2.0/yaml/petstore.yaml
+Invalid invocation of gnostic_plugin: ,,:abc
+Errors reading examples/v2.0/yaml/petstore.yaml
+Invalid invocation of gnostic_plugin: foo=bar=baz:abc

@@ -26,27 +26,26 @@ func TestGetPasswd(t *testing.T) {
 	}
 
 	ds := []testData{
-		testData{[]byte("abc\n"), "***\n", "abc", 0, "Password parsing should stop at \\n"},
-		testData{[]byte("abc\r"), "***\n", "abc", 0, "Password parsing should stop at \\r"},
-		testData{[]byte("a\nbc\n"), "*\n", "a", 3, "Password parsing should stop at \\n"},
-		testData{[]byte("*!]|\n"), "****\n", "*!]|", 0, "Special characters shouldn't affect the password."},
+		testData{[]byte("abc\n"), "***", "abc", 0, "Password parsing should stop at \\n"},
+		testData{[]byte("abc\r"), "***", "abc", 0, "Password parsing should stop at \\r"},
+		testData{[]byte("a\nbc\n"), "*", "a", 3, "Password parsing should stop at \\n"},
+		testData{[]byte("*!]|\n"), "****", "*!]|", 0, "Special characters shouldn't affect the password."},
 
-		testData{[]byte("abc\r\n"), "***\n", "abc", 1,
+		testData{[]byte("abc\r\n"), "***", "abc", 1,
 			"Password parsing should stop at \\r; Windows LINE_MODE should be unset so \\r is not converted to \\r\\n."},
 
-		testData{[]byte{'a', 'b', 'c', 8, '\n'}, "***\b \b\n", "ab", 0, "Backspace byte should remove the last read byte."},
-		testData{[]byte{'a', 'b', 127, 'c', '\n'}, "**\b \b*\n", "ac", 0, "Delete byte should remove the last read byte."},
-		testData{[]byte{'a', 'b', 127, 'c', 8, 127, '\n'}, "**\b \b*\b \b\b \b\n", "", 0, "Successive deletes continue to delete."},
-		testData{[]byte{8, 8, 8, '\n'}, "\n", "", 0, "Deletes before characters are noops."},
-		testData{[]byte{8, 8, 8, 'a', 'b', 'c', '\n'}, "***\n", "abc", 0, "Deletes before characters are noops."},
+		testData{[]byte{'a', 'b', 'c', 8, '\n'}, "***\b \b", "ab", 0, "Backspace byte should remove the last read byte."},
+		testData{[]byte{'a', 'b', 127, 'c', '\n'}, "**\b \b*", "ac", 0, "Delete byte should remove the last read byte."},
+		testData{[]byte{'a', 'b', 127, 'c', 8, 127, '\n'}, "**\b \b*\b \b\b \b", "", 0, "Successive deletes continue to delete."},
+		testData{[]byte{8, 8, 8, '\n'}, "", "", 0, "Deletes before characters are noops."},
+		testData{[]byte{8, 8, 8, 'a', 'b', 'c', '\n'}, "***", "abc", 0, "Deletes before characters are noops."},
 
-		testData{[]byte{'a', 'b', 0, 'c', '\n'}, "***\n", "abc", 0,
+		testData{[]byte{'a', 'b', 0, 'c', '\n'}, "***", "abc", 0,
 			"Nil byte should be ignored due; may get unintended nil bytes from syscalls on Windows."},
 	}
 
 	// Redirecting output for tests as they print to os.Stdout but we want to
 	// capture and test the output.
-	origStdOut := os.Stdout
 	for _, masked := range []bool{true, false} {
 		for _, d := range ds {
 			pipeBytesToStdin(d.input)
@@ -55,12 +54,10 @@ func TestGetPasswd(t *testing.T) {
 			if err != nil {
 				t.Fatal(err.Error())
 			}
-			os.Stdout = w
 
-			result, err := getPasswd(masked)
-			os.Stdout = origStdOut
+			result, err := getPasswd("", masked, os.Stdin, w)
 			if err != nil {
-				t.Errorf("Error getting password:", err.Error())
+				t.Errorf("Error getting password: %s", err.Error())
 			}
 			leftOnBuffer := flushStdin()
 
@@ -77,7 +74,7 @@ func TestGetPasswd(t *testing.T) {
 			if masked {
 				expectedOutput = []byte(d.masked)
 			} else {
-				expectedOutput = []byte("\n")
+				expectedOutput = []byte("")
 			}
 			if bytes.Compare(expectedOutput, output) != 0 {
 				t.Errorf("Expected output to equal %v (%q) but got %v (%q) instead when masked=%v. %s", expectedOutput, string(expectedOutput), output, string(output), masked, d.reason)
@@ -178,7 +175,7 @@ func pipeBytesToStdin(b []byte) (int, error) {
 // TestGetPasswd_Err tests errors are properly handled from getch()
 func TestGetPasswd_Err(t *testing.T) {
 	var inBuffer *bytes.Buffer
-	getch = func() (byte, error) {
+	getch = func(io.Reader) (byte, error) {
 		b, err := inBuffer.ReadByte()
 		if err != nil {
 			return 13, err

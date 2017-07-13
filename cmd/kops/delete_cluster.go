@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-
 	"io"
 
 	"github.com/golang/glog"
@@ -47,13 +46,18 @@ type DeleteClusterOptions struct {
 
 var (
 	delete_cluster_long = templates.LongDesc(i18n.T(`
-	Deletes a k8s cluster.
+	Deletes a Kubernetes cluster and all associated resources.  Resources include instancegroups,
+	secrets and the state store.  There is no "UNDO" for this command.
 	`))
 
 	delete_cluster_example = templates.Examples(i18n.T(`
-		# Delete a cluster in AWS.
-		kops delete cluster --name=k8s.cluster.site --yes
+	# Delete a cluster.
+	# The --yes option runs the command immediately.
+	kops delete cluster --name=k8s.cluster.site --yes
+
 	`))
+
+	delete_cluster_short = i18n.T("Delete a cluster.")
 )
 
 func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -61,7 +65,7 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "cluster CLUSTERNAME [--yes]",
-		Short:   "Delete cluster",
+		Short:   delete_cluster_short,
 		Long:    delete_cluster_long,
 		Example: delete_cluster_example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -135,8 +139,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 			}
 		}
 
-		// Todo lets make this smart enough to detect the cloud and switch on the ClusterResources interface
-		d := &resources.AwsCluster{}
+		d := &resources.ClusterResources{}
 		d.ClusterName = clusterName
 		d.Cloud = cloud
 
@@ -171,7 +174,8 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 			}
 
 			if !options.Yes {
-				return fmt.Errorf("Must specify --yes to delete")
+				fmt.Fprintf(out, "\nMust specify --yes to delete cluster\n")
+				return nil
 			}
 
 			fmt.Fprintf(out, "\n")
@@ -205,6 +209,6 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		glog.Warningf("error removing kube config: %v", err)
 	}
 
-	fmt.Fprintf(out, "\nCluster deleted\n")
+	fmt.Fprintf(out, "\nDeleted cluster: %q\n", clusterName)
 	return nil
 }

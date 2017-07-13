@@ -22,7 +22,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"path/filepath"
+	"path"
 	"strings"
 	"text/tabwriter"
 
@@ -73,7 +73,7 @@ func (cmd *info) Usage() string {
 func (cmd *info) match(p string, devices object.VirtualDeviceList) object.VirtualDeviceList {
 	var matches object.VirtualDeviceList
 	match := func(name string) bool {
-		matched, _ := filepath.Match(p, name)
+		matched, _ := path.Match(p, name)
 		return matched
 	}
 

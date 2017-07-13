@@ -28,6 +28,8 @@ const LabelClusterName = "kops.k8s.io/cluster"
 // Deprecated - use the new labels & taints node-role.kubernetes.io/master and node-role.kubernetes.io/node
 const TaintNoScheduleMaster15 = "dedicated=master:NoSchedule"
 
+// +genclient=true
+
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
 	metav1.TypeMeta   `json:",inline"`
@@ -74,7 +76,10 @@ type InstanceGroupSpec struct {
 	RootVolumeSize *int32 `json:"rootVolumeSize,omitempty"`
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string `json:"rootVolumeType,omitempty"`
+	// RootVolumeOptimization enables EBS optimization for an instance
+	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
 
+	// Subnets is the names of the Subnets (as specified in the Cluster) where machines in this instance group should be placed
 	Subnets []string `json:"subnets,omitempty"`
 
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid

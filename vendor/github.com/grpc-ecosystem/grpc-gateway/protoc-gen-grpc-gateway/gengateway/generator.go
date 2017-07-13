@@ -13,7 +13,6 @@ import (
 	plugin "github.com/golang/protobuf/protoc-gen-go/plugin"
 	"github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/descriptor"
 	gen "github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway/generator"
-	options "google.golang.org/genproto/googleapis/api/annotations"
 )
 
 var (
@@ -21,13 +20,12 @@ var (
 )
 
 type generator struct {
-	reg               *descriptor.Registry
-	baseImports       []descriptor.GoPackage
-	useRequestContext bool
+	reg         *descriptor.Registry
+	baseImports []descriptor.GoPackage
 }
 
 // New returns a new generator which generates grpc gateway files.
-func New(reg *descriptor.Registry, useRequestContext bool) gen.Generator {
+func New(reg *descriptor.Registry) gen.Generator {
 	var imports []descriptor.GoPackage
 	for _, pkgpath := range []string{
 		"io",
@@ -56,7 +54,7 @@ func New(reg *descriptor.Registry, useRequestContext bool) gen.Generator {
 		}
 		imports = append(imports, pkg)
 	}
-	return &generator{reg: reg, baseImports: imports, useRequestContext: useRequestContext}
+	return &generator{reg: reg, baseImports: imports}
 }
 
 func (g *generator) Generate(targets []*descriptor.File) ([]*plugin.CodeGeneratorResponse_File, error) {
@@ -99,13 +97,15 @@ func (g *generator) generate(file *descriptor.File) (string, error) {
 	for _, svc := range file.Services {
 		for _, m := range svc.Methods {
 			pkg := m.RequestType.File.GoPkg
-			if m.Options == nil || !proto.HasExtension(m.Options, options.E_Http) ||
-				pkg == file.GoPkg || pkgSeen[pkg.Path] {
+			if pkg == file.GoPkg {
+				continue
+			}
+			if pkgSeen[pkg.Path] {
 				continue
 			}
 			pkgSeen[pkg.Path] = true
 			imports = append(imports, pkg)
 		}
 	}
-	return applyTemplate(param{File: file, Imports: imports, UseRequestContext: g.useRequestContext})
+	return applyTemplate(param{File: file, Imports: imports})
 }

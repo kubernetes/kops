@@ -26,13 +26,12 @@ import (
 
 // GetNamespacesFromPodAffinityTerm returns a set of names
 // according to the namespaces indicated in podAffinityTerm.
-// 1. If the namespaces is nil considers the given pod's namespace
-// 2. If the namespaces is empty list then considers all the namespaces
+// If namespaces is empty it considers the given pod's namespace.
 func GetNamespacesFromPodAffinityTerm(pod *v1.Pod, podAffinityTerm *v1.PodAffinityTerm) sets.String {
 	names := sets.String{}
-	if podAffinityTerm.Namespaces == nil {
+	if len(podAffinityTerm.Namespaces) == 0 {
 		names.Insert(pod.Namespace)
-	} else if len(podAffinityTerm.Namespaces) != 0 {
+	} else {
 		names.Insert(podAffinityTerm.Namespaces...)
 	}
 	return names
@@ -41,7 +40,7 @@ func GetNamespacesFromPodAffinityTerm(pod *v1.Pod, podAffinityTerm *v1.PodAffini
 // PodMatchesTermsNamespaceAndSelector returns true if the given <pod>
 // matches the namespace and selector defined by <affinityPod>`s <term>.
 func PodMatchesTermsNamespaceAndSelector(pod *v1.Pod, namespaces sets.String, selector labels.Selector) bool {
-	if len(namespaces) != 0 && !namespaces.Has(pod.Namespace) {
+	if !namespaces.Has(pod.Namespace) {
 		return false
 	}
 
@@ -57,7 +56,20 @@ func NodesHaveSameTopologyKey(nodeA, nodeB *v1.Node, topologyKey string) bool {
 	if len(topologyKey) == 0 {
 		return false
 	}
-	return nodeA.Labels != nil && nodeB.Labels != nil && len(nodeA.Labels[topologyKey]) > 0 && nodeA.Labels[topologyKey] == nodeB.Labels[topologyKey]
+
+	if nodeA.Labels == nil || nodeB.Labels == nil {
+		return false
+	}
+
+	nodeALabel, okA := nodeA.Labels[topologyKey]
+	nodeBLabel, okB := nodeB.Labels[topologyKey]
+
+	// If found label in both nodes, check the label
+	if okB && okA {
+		return nodeALabel == nodeBLabel
+	}
+
+	return false
 }
 
 type Topologies struct {

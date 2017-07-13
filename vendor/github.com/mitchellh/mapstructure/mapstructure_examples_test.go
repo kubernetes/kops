@@ -62,11 +62,11 @@ func ExampleDecode_errors() {
 	// Output:
 	// 5 error(s) decoding:
 	//
-	// * 'Name' expected type 'string', got unconvertible type 'int'
 	// * 'Age' expected type 'int', got unconvertible type 'string'
 	// * 'Emails[0]' expected type 'string', got unconvertible type 'int'
 	// * 'Emails[1]' expected type 'string', got unconvertible type 'int'
 	// * 'Emails[2]' expected type 'string', got unconvertible type 'int'
+	// * 'Name' expected type 'string', got unconvertible type 'int'
 }
 
 func ExampleDecode_metadata() {
@@ -166,4 +166,38 @@ func ExampleDecode_tags() {
 	fmt.Printf("%#v", result)
 	// Output:
 	// mapstructure.Person{Name:"Mitchell", Age:91}
+}
+
+func ExampleDecode_embeddedStruct() {
+	// Squashing multiple embedded structs is allowed using the squash tag.
+	// This is demonstrated by creating a composite struct of multiple types
+	// and decoding into it. In this case, a person can carry with it both
+	// a Family and a Location, as well as their own FirstName.
+	type Family struct {
+		LastName string
+	}
+	type Location struct {
+		City string
+	}
+	type Person struct {
+		Family    `mapstructure:",squash"`
+		Location  `mapstructure:",squash"`
+		FirstName string
+	}
+
+	input := map[string]interface{}{
+		"FirstName": "Mitchell",
+		"LastName":  "Hashimoto",
+		"City":      "San Francisco",
+	}
+
+	var result Person
+	err := Decode(input, &result)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("%s %s, %s", result.FirstName, result.LastName, result.City)
+	// Output:
+	// Mitchell Hashimoto, San Francisco
 }

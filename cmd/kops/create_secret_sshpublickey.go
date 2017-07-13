@@ -18,12 +18,29 @@ package main
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
 	"io/ioutil"
+	"os"
+
+	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops/registry"
-	"os"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	create_secret_sshpublickey_long = templates.LongDesc(i18n.T(`
+	Create a new ssh public key, and store the key in the state store.  The
+	key is not updated by this command.`))
+
+	create_secret_sshpublickey_example = templates.Examples(i18n.T(`
+	# Create an new ssh public key called admin.
+	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
+		--name k8s-cluster.example.com --state s3://example.com
+	`))
+
+	create_secret_sshpublickey_short = i18n.T(`Create a ssh public key.`)
 )
 
 type CreateSecretPublickeyOptions struct {
@@ -36,9 +53,10 @@ func NewCmdCreateSecretPublicKey(f *util.Factory, out io.Writer) *cobra.Command 
 	options := &CreateSecretPublickeyOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "sshpublickey",
-		Short: "Create SSH publickey",
-		Long:  `Create SSH publickey.`,
+		Use:     "sshpublickey",
+		Short:   create_secret_sshpublickey_short,
+		Long:    create_secret_sshpublickey_long,
+		Example: create_secret_sshpublickey_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) == 0 {
 				exitWithError(fmt.Errorf("syntax: NAME -i <PublicKeyPath>"))

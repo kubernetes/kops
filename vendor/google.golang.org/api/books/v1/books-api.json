@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/qBcgfnv8LaBwEppyThW1YG_JvBU\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/q1aPzEOdugLS9_Y8FK61EmJhEHg\"",
  "discoveryVersion": "v1",
  "id": "books:v1",
  "name": "books",
  "version": "v1",
- "revision": "20161005",
+ "revision": "20170313",
  "title": "Books API",
  "description": "Searches for books and manages your Google Books library.",
  "ownerDomain": "google.com",
@@ -1166,6 +1166,9 @@
      "description": "Resource type.",
      "default": "books#notification"
     },
+    "notificationGroup": {
+     "type": "string"
+    },
     "notification_type": {
      "type": "string"
     },
@@ -1374,7 +1377,6 @@
     },
     "series": {
      "type": "array",
-     "description": "Series info list. The client always expects this element in the JSON output, hence declared here as OutputAlways.",
      "items": {
       "type": "object",
       "properties": {
@@ -1451,6 +1453,14 @@
        }
       },
       "moreFromSeries": {
+       "type": "object",
+       "properties": {
+        "opted_state": {
+         "type": "string"
+        }
+       }
+      },
+      "rewardExpirations": {
        "type": "object",
        "properties": {
         "opted_state": {
@@ -3158,6 +3168,11 @@
        "httpMethod": "POST",
        "description": "Inserts a new annotation.",
        "parameters": {
+        "annotationId": {
+         "type": "string",
+         "description": "The ID for the annotation to insert.",
+         "location": "query"
+        },
         "country": {
          "type": "string",
          "description": "ISO-3166-1 code to override the IP-based location.",

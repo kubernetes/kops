@@ -96,16 +96,15 @@ type SpeechService struct {
 	s *Service
 }
 
-// AsyncRecognizeRequest: `AsyncRecognizeRequest` is the top-level
-// message sent by the client for
+// AsyncRecognizeRequest: The top-level message sent by the client for
 // the `AsyncRecognize` method.
 type AsyncRecognizeRequest struct {
-	// Audio: [Required] The audio data to be recognized.
+	// Audio: *Required* The audio data to be recognized.
 	Audio *RecognitionAudio `json:"audio,omitempty"`
 
-	// Config: [Required] The `config` message provides information to the
-	// recognizer
-	// that specifies how to process the request.
+	// Config: *Required* Provides information to the recognizer that
+	// specifies how to
+	// process the request.
 	Config *RecognitionConfig `json:"config,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Audio") to
@@ -129,11 +128,6 @@ func (s *AsyncRecognizeRequest) MarshalJSON() ([]byte, error) {
 	type noMethod AsyncRecognizeRequest
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
-}
-
-// CancelOperationRequest: The request message for
-// Operations.CancelOperation.
-type CancelOperationRequest struct {
 }
 
 // Empty: A generic empty message that you can re-use to avoid defining
@@ -315,11 +309,11 @@ func (s *RecognitionAudio) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// RecognitionConfig: The `RecognitionConfig` message provides
-// information to the recognizer
-// that specifies how to process the request.
+// RecognitionConfig: Provides information to the recognizer that
+// specifies how to process the
+// request.
 type RecognitionConfig struct {
-	// Encoding: [Required] Encoding of audio data sent in all
+	// Encoding: *Required* Encoding of audio data sent in all
 	// `RecognitionAudio` messages.
 	//
 	// Possible values:
@@ -347,7 +341,7 @@ type RecognitionConfig struct {
 	// be 16000 Hz.
 	Encoding string `json:"encoding,omitempty"`
 
-	// LanguageCode: [Optional] The language of the supplied audio as a
+	// LanguageCode: *Optional* The language of the supplied audio as a
 	// BCP-47 language tag.
 	// Example: "en-GB"  https://www.rfc-editor.org/rfc/bcp/bcp47.txt
 	// If omitted, defaults to "en-US". See
@@ -356,7 +350,7 @@ type RecognitionConfig struct {
 	// for a list of the currently supported language codes.
 	LanguageCode string `json:"languageCode,omitempty"`
 
-	// MaxAlternatives: [Optional] Maximum number of recognition hypotheses
+	// MaxAlternatives: *Optional* Maximum number of recognition hypotheses
 	// to be returned.
 	// Specifically, the maximum number of `SpeechRecognitionAlternative`
 	// messages
@@ -364,10 +358,10 @@ type RecognitionConfig struct {
 	// The server may return fewer than `max_alternatives`.
 	// Valid values are `0`-`30`. A value of `0` or `1` will return a
 	// maximum of
-	// `1`. If omitted, defaults to `1`.
+	// one. If omitted, will return a maximum of one.
 	MaxAlternatives int64 `json:"maxAlternatives,omitempty"`
 
-	// ProfanityFilter: [Optional] If set to `true`, the server will attempt
+	// ProfanityFilter: *Optional* If set to `true`, the server will attempt
 	// to filter out
 	// profanities, replacing all but the initial character in each filtered
 	// word
@@ -376,7 +370,7 @@ type RecognitionConfig struct {
 	// won't be filtered out.
 	ProfanityFilter bool `json:"profanityFilter,omitempty"`
 
-	// SampleRate: [Required] Sample rate in Hertz of the audio data sent in
+	// SampleRate: *Required* Sample rate in Hertz of the audio data sent in
 	// all
 	// `RecognitionAudio` messages. Valid values are: 8000-48000.
 	// 16000 is optimal. For best results, set the sampling rate of the
@@ -386,7 +380,7 @@ type RecognitionConfig struct {
 	// the audio source (instead of re-sampling).
 	SampleRate int64 `json:"sampleRate,omitempty"`
 
-	// SpeechContext: [Optional] A means to provide context to assist the
+	// SpeechContext: *Optional* A means to provide context to assist the
 	// speech recognition.
 	SpeechContext *SpeechContext `json:"speechContext,omitempty"`
 
@@ -417,7 +411,7 @@ func (s *RecognitionConfig) MarshalJSON() ([]byte, error) {
 // specific words and phrases
 // in the results.
 type SpeechContext struct {
-	// Phrases: [Optional] A list of strings containing words and phrases
+	// Phrases: *Optional* A list of strings containing words and phrases
 	// "hints" so that
 	// the speech recognition is more likely to recognize them. This can be
 	// used
@@ -456,18 +450,22 @@ func (s *SpeechContext) MarshalJSON() ([]byte, error) {
 // SpeechRecognitionAlternative: Alternative hypotheses (a.k.a. n-best
 // list).
 type SpeechRecognitionAlternative struct {
-	// Confidence: [Output-only] The confidence estimate between 0.0 and
+	// Confidence: *Output-only* The confidence estimate between 0.0 and
 	// 1.0. A higher number
-	// means the system is more confident that the recognition is
-	// correct.
-	// This field is typically provided only for the top hypothesis, and
-	// only for
-	// `is_final=true` results.
-	// The default of 0.0 is a sentinel value indicating confidence was not
-	// set.
+	// indicates an estimated greater likelihood that the recognized words
+	// are
+	// correct. This field is typically provided only for the top
+	// hypothesis, and
+	// only for `is_final=true` results. Clients should not rely on
+	// the
+	// `confidence` field as it is not guaranteed to be accurate, or even
+	// set, in
+	// any of the results.
+	// The default of 0.0 is a sentinel value indicating `confidence` was
+	// not set.
 	Confidence float64 `json:"confidence,omitempty"`
 
-	// Transcript: [Output-only] Transcript text representing the words that
+	// Transcript: *Output-only* Transcript text representing the words that
 	// the user spoke.
 	Transcript string `json:"transcript,omitempty"`
 
@@ -494,10 +492,24 @@ func (s *SpeechRecognitionAlternative) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *SpeechRecognitionAlternative) UnmarshalJSON(data []byte) error {
+	type noMethod SpeechRecognitionAlternative
+	var s1 struct {
+		Confidence gensupport.JSONFloat64 `json:"confidence"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Confidence = float64(s1.Confidence)
+	return nil
+}
+
 // SpeechRecognitionResult: A speech recognition result corresponding to
 // a portion of the audio.
 type SpeechRecognitionResult struct {
-	// Alternatives: [Output-only] May contain one or more recognition
+	// Alternatives: *Output-only* May contain one or more recognition
 	// hypotheses (up to the
 	// maximum specified in `max_alternatives`).
 	Alternatives []*SpeechRecognitionAlternative `json:"alternatives,omitempty"`
@@ -644,16 +656,15 @@ func (s *Status) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// SyncRecognizeRequest: `SyncRecognizeRequest` is the top-level message
-// sent by the client for
+// SyncRecognizeRequest: The top-level message sent by the client for
 // the `SyncRecognize` method.
 type SyncRecognizeRequest struct {
-	// Audio: [Required] The audio data to be recognized.
+	// Audio: *Required* The audio data to be recognized.
 	Audio *RecognitionAudio `json:"audio,omitempty"`
 
-	// Config: [Required] The `config` message provides information to the
-	// recognizer
-	// that specifies how to process the request.
+	// Config: *Required* Provides information to the recognizer that
+	// specifies how to
+	// process the request.
 	Config *RecognitionConfig `json:"config,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Audio") to
@@ -679,13 +690,13 @@ func (s *SyncRecognizeRequest) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// SyncRecognizeResponse: `SyncRecognizeResponse` is the only message
-// returned to the client by
-// `SyncRecognize`. It contains the result as zero or more
-// sequential
-// `SpeechRecognitionResult` messages.
+// SyncRecognizeResponse: The only message returned to the client by
+// `SyncRecognize`. method. It
+// contains the result as zero or more sequential
+// `SpeechRecognitionResult`
+// messages.
 type SyncRecognizeResponse struct {
-	// Results: [Output-only] Sequential list of transcription results
+	// Results: *Output-only* Sequential list of transcription results
 	// corresponding to
 	// sequential portions of audio.
 	Results []*SpeechRecognitionResult `json:"results,omitempty"`
@@ -720,12 +731,11 @@ func (s *SyncRecognizeResponse) MarshalJSON() ([]byte, error) {
 // method id "speech.operations.cancel":
 
 type OperationsCancelCall struct {
-	s                      *Service
-	name                   string
-	canceloperationrequest *CancelOperationRequest
-	urlParams_             gensupport.URLParams
-	ctx_                   context.Context
-	header_                http.Header
+	s          *Service
+	name       string
+	urlParams_ gensupport.URLParams
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Cancel: Starts asynchronous cancellation on a long-running operation.
@@ -746,10 +756,9 @@ type OperationsCancelCall struct {
 // an Operation.error value with a google.rpc.Status.code of
 // 1,
 // corresponding to `Code.CANCELLED`.
-func (r *OperationsService) Cancel(name string, canceloperationrequest *CancelOperationRequest) *OperationsCancelCall {
+func (r *OperationsService) Cancel(name string) *OperationsCancelCall {
 	c := &OperationsCancelCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
-	c.canceloperationrequest = canceloperationrequest
 	return c
 }
 
@@ -785,11 +794,6 @@ func (c *OperationsCancelCall) doRequest(alt string) (*http.Response, error) {
 	}
 	reqHeaders.Set("User-Agent", c.s.userAgent())
 	var body io.Reader = nil
-	body, err := googleapi.WithoutDataWrapper.JSONReader(c.canceloperationrequest)
-	if err != nil {
-		return nil, err
-	}
-	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "v1beta1/operations/{+name}:cancel")
 	urls += "?" + c.urlParams_.Encode()
@@ -856,9 +860,6 @@ func (c *OperationsCancelCall) Do(opts ...googleapi.CallOption) (*Empty, error) 
 	//     }
 	//   },
 	//   "path": "v1beta1/operations/{+name}:cancel",
-	//   "request": {
-	//     "$ref": "CancelOperationRequest"
-	//   },
 	//   "response": {
 	//     "$ref": "Empty"
 	//   },
@@ -1356,9 +1357,12 @@ type SpeechAsyncrecognizeCall struct {
 }
 
 // Asyncrecognize: Performs asynchronous speech recognition: receive
-// results via the
-// google.longrunning.Operations interface. Returns either
-// an
+// results via
+// the
+// [google.longrunning.Operations]
+// (/speech/reference/rest/v1beta1/op
+// erations#Operation)
+// interface. Returns either an
 // `Operation.error` or an `Operation.response` which contains
 // an `AsyncRecognizeResponse` message.
 func (r *SpeechService) Asyncrecognize(asyncrecognizerequest *AsyncRecognizeRequest) *SpeechAsyncrecognizeCall {
@@ -1450,7 +1454,7 @@ func (c *SpeechAsyncrecognizeCall) Do(opts ...googleapi.CallOption) (*Operation,
 	}
 	return ret, nil
 	// {
-	//   "description": "Performs asynchronous speech recognition: receive results via the\ngoogle.longrunning.Operations interface. Returns either an\n`Operation.error` or an `Operation.response` which contains\nan `AsyncRecognizeResponse` message.",
+	//   "description": "Performs asynchronous speech recognition: receive results via the\n[google.longrunning.Operations]\n(/speech/reference/rest/v1beta1/operations#Operation)\ninterface. Returns either an\n`Operation.error` or an `Operation.response` which contains\nan `AsyncRecognizeResponse` message.",
 	//   "flatPath": "v1beta1/speech:asyncrecognize",
 	//   "httpMethod": "POST",
 	//   "id": "speech.speech.asyncrecognize",

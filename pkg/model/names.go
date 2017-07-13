@@ -27,13 +27,10 @@ func (b *KopsModelContext) SecurityGroupName(role kops.InstanceGroupRole) string
 	switch role {
 	case kops.InstanceGroupRoleBastion:
 		return "bastion." + b.ClusterName()
-
 	case kops.InstanceGroupRoleNode:
 		return "nodes." + b.ClusterName()
-
 	case kops.InstanceGroupRoleMaster:
 		return "masters." + b.ClusterName()
-
 	default:
 		glog.Fatalf("unknown role: %v", role)
 		return ""
@@ -100,23 +97,18 @@ func (b *KopsModelContext) NameForDNSZone() string {
 }
 
 func (b *KopsModelContext) IAMName(role kops.InstanceGroupRole) string {
-	var name string
-
 	switch role {
 	case kops.InstanceGroupRoleMaster:
-		name = "masters." + b.ClusterName()
-
+		return "masters." + b.ClusterName()
 	case kops.InstanceGroupRoleBastion:
-		name = "bastions." + b.ClusterName()
-
+		return "bastions." + b.ClusterName()
 	case kops.InstanceGroupRoleNode:
-		name = "nodes." + b.ClusterName()
+		return "nodes." + b.ClusterName()
 
 	default:
 		glog.Fatalf("unknown InstanceGroup Role: %q", role)
+		return ""
 	}
-
-	return name
 }
 
 func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) *awstasks.IAMInstanceProfile {

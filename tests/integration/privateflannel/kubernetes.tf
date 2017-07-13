@@ -2,6 +2,14 @@ output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privateflannel-example-com.id}"]
 }
 
+output "bastions_role_arn" {
+  value = "${aws_iam_role.bastions-privateflannel-example-com.arn}"
+}
+
+output "bastions_role_name" {
+  value = "${aws_iam_role.bastions-privateflannel-example-com.name}"
+}
+
 output "cluster_name" {
   value = "privateflannel.example.com"
 }
@@ -10,12 +18,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privateflannel-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-privateflannel-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-privateflannel-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-privateflannel-example-com.id}"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-privateflannel-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-privateflannel-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-privateflannel-example-com.name}"
 }
 
 output "region" {
@@ -205,18 +229,18 @@ resource "aws_elb" "bastion-privateflannel-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privateflannel-example-com" {
-  name  = "bastions.privateflannel.example.com"
-  roles = ["${aws_iam_role.bastions-privateflannel-example-com.name}"]
+  name = "bastions.privateflannel.example.com"
+  role = "${aws_iam_role.bastions-privateflannel-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privateflannel-example-com" {
-  name  = "masters.privateflannel.example.com"
-  roles = ["${aws_iam_role.masters-privateflannel-example-com.name}"]
+  name = "masters.privateflannel.example.com"
+  role = "${aws_iam_role.masters-privateflannel-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privateflannel-example-com" {
-  name  = "nodes.privateflannel.example.com"
-  roles = ["${aws_iam_role.nodes-privateflannel-example-com.name}"]
+  name = "nodes.privateflannel.example.com"
+  role = "${aws_iam_role.nodes-privateflannel-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privateflannel-example-com" {
@@ -277,7 +301,7 @@ resource "aws_launch_configuration" "bastion-privateflannel-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 32
     delete_on_termination = true
   }
 
@@ -298,7 +322,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privateflannel-ex
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 64
     delete_on_termination = true
   }
 
@@ -324,7 +348,7 @@ resource "aws_launch_configuration" "nodes-privateflannel-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 128
     delete_on_termination = true
   }
 
@@ -648,4 +672,8 @@ resource "aws_vpc_dhcp_options" "privateflannel-example-com" {
 resource "aws_vpc_dhcp_options_association" "privateflannel-example-com" {
   vpc_id          = "${aws_vpc.privateflannel-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.privateflannel-example-com.id}"
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
 }

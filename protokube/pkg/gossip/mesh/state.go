@@ -90,8 +90,8 @@ func (s *state) snapshot() *gossip.GossipStateSnapshot {
 	}
 	s.lastSnapshot = snapshot
 	return snapshot
-
 }
+
 func (s *state) put(key string, data []byte) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
@@ -102,6 +102,11 @@ func (s *state) put(key string, data []byte) {
 		Data:    data,
 		Version: now,
 	}
+
+	if s.data.Records == nil {
+		s.data.Records = make(map[string]*KVStateRecord)
+	}
+
 	s.data.Records[key] = v
 	s.version++
 }
@@ -115,6 +120,10 @@ func (s *state) updateValues(removeKeys []string, putEntries map[string]string) 
 	defer s.mtx.Unlock()
 
 	now := s.now()
+
+	if s.data.Records == nil {
+		s.data.Records = make(map[string]*KVStateRecord)
+	}
 
 	for _, k := range removeKeys {
 		v := &KVStateRecord{
@@ -160,6 +169,14 @@ var _ mesh.GossipData = &KVState{}
 
 func mergeKVState(dest *KVState, src *KVState, changes *KVState) bool {
 	changed := false
+
+	if dest.Records == nil {
+		dest.Records = make(map[string]*KVStateRecord)
+	}
+
+	if changes != nil && changes.Records == nil {
+		changes.Records = make(map[string]*KVStateRecord)
+	}
 
 	for k, update := range src.Records {
 		existing, found := dest.Records[k]

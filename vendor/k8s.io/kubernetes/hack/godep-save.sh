@@ -22,7 +22,7 @@ KUBE_ROOT=$(dirname "${BASH_SOURCE}")/..
 source "${KUBE_ROOT}/hack/lib/init.sh"
 source "${KUBE_ROOT}/hack/lib/util.sh"
 
-kube::util::ensure_godep_version v74
+kube::util::ensure_godep_version v79
 
 # Some things we want in godeps aren't code dependencies, so ./...
 # won't pick them up.
@@ -50,8 +50,14 @@ pushd "${KUBE_ROOT}" > /dev/null
   if [ ! -e "vendor/k8s.io/kube-aggregator" ]; then
     ln -s ../../staging/src/k8s.io/kube-aggregator vendor/k8s.io/kube-aggregator
   fi
+  if [ ! -e "vendor/k8s.io/apiextensions-apiserver" ]; then
+    ln -s ../../staging/src/k8s.io/apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
+  fi
   if [ ! -e "vendor/k8s.io/sample-apiserver" ]; then
     ln -s ../../staging/src/k8s.io/sample-apiserver vendor/k8s.io/sample-apiserver
+  fi
+  if [ ! -e "vendor/k8s.io/metrics" ]; then
+    ln -s ../../staging/src/k8s.io/metrics vendor/k8s.io/metrics
   fi
 popd > /dev/null
 

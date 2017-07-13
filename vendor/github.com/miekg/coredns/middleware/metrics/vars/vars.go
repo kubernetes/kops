@@ -1,12 +1,12 @@
 package vars
 
 import (
-	"github.com/coredns/coredns/middleware"
+	"github.com/miekg/coredns/middleware"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-// Request* and Response* are the prometheus counters and gauges we are using for exporting metrics.
+// Request* and Reponse* are the prometheus counters and gauges we are using for exporting metrics.
 var (
 	RequestCount = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Namespace: middleware.Namespace,
