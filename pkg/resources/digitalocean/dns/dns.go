@@ -17,7 +17,6 @@ limitations under the License.
 package dns
 
 import (
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -276,7 +275,7 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 			err := createRecord(r.client, r.zone.Name(), recordCreateRequest)
 			if err != nil {
-				return err
+				return fmt.Errorf("could not create record: %v", err)
 			}
 		}
 	}
@@ -297,7 +296,7 @@ func (r *resourceRecordChangeset) Apply() error {
 				}
 			}
 			if !found {
-				return errors.New("could not find desired record to remove")
+				return fmt.Errorf("could not find desired record to remove")
 			}
 
 			err := deleteRecord(r.client, r.zone.Name(), desiredRecord.ID)
@@ -325,7 +324,7 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 
 			if !found {
-				return errors.New("could not find desired record to upsert")
+				return fmt.Errorf("could not find desired record to upsert")
 			}
 
 			domainEditRequest := &godo.DomainRecordEditRequest{
@@ -364,7 +363,7 @@ func listDomains(c *godo.Client) ([]godo.Domain, error) {
 	// TODO (andrewsykim): pagination in ListOptions
 	domains, resp, err := c.Domains.List(context.TODO(), &godo.ListOptions{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to list domains: %v", err)
 	}
 
 	if resp.StatusCode != 200 {
