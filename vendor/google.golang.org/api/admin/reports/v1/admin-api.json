@@ -1,14 +1,14 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/QGy4Wv90L7XHcKxA0VDj0fNkDc0\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/-tkaOVzArVVhbxGreMOY21mRaV8\"",
  "discoveryVersion": "v1",
  "id": "admin:reports_v1",
  "name": "admin",
  "canonicalName": "reports",
  "version": "reports_v1",
- "revision": "20160704",
+ "revision": "20170320",
  "title": "Admin Reports API",
- "description": "Fetches reports for the administrators of Google Apps customers about the usage, collaboration, security, and risk for their users.",
+ "description": "Fetches reports for the administrators of G Suite customers about the usage, collaboration, security, and risk for their users.",
  "ownerDomain": "google.com",
  "ownerName": "Google",
  "packagePath": "admin",
@@ -72,10 +72,10 @@
   "oauth2": {
    "scopes": {
     "https://www.googleapis.com/auth/admin.reports.audit.readonly": {
-     "description": "View audit reports of Google Apps for your domain"
+     "description": "View audit reports for your G Suite domain"
     },
     "https://www.googleapis.com/auth/admin.reports.usage.readonly": {
-     "description": "View usage reports of Google Apps for your domain"
+     "description": "View usage reports for your G Suite domain"
     }
    }
   }
@@ -464,7 +464,7 @@
        "type": "string",
        "description": "Application name for which the events are to be retrieved.",
        "required": true,
-       "pattern": "(admin)|(calendar)|(drive)|(login)|(mobile)|(token)|(groups)|(saml)",
+       "pattern": "(admin)|(calendar)|(drive)|(login)|(mobile)|(token)|(groups)|(saml)|(chat)",
        "location": "path"
       },
       "customerId": {
@@ -475,7 +475,7 @@
       },
       "endTime": {
        "type": "string",
-       "description": "Return events which occured at or before this time.",
+       "description": "Return events which occurred at or before this time.",
        "pattern": "(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d)(?:\\.(\\d+))?(?:(Z)|([-+])(\\d\\d):(\\d\\d))",
        "location": "query"
       },
@@ -505,7 +505,7 @@
       },
       "startTime": {
        "type": "string",
-       "description": "Return events which occured at or after this time.",
+       "description": "Return events which occurred at or after this time.",
        "pattern": "(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d)(?:\\.(\\d+))?(?:(Z)|([-+])(\\d\\d):(\\d\\d))",
        "location": "query"
       },
@@ -543,7 +543,7 @@
        "type": "string",
        "description": "Application name for which the events are to be retrieved.",
        "required": true,
-       "pattern": "(admin)|(calendar)|(drive)|(login)|(mobile)|(token)|(groups)|(saml)",
+       "pattern": "(admin)|(calendar)|(drive)|(login)|(mobile)|(token)|(groups)|(saml)|(chat)",
        "location": "path"
       },
       "customerId": {
@@ -554,7 +554,7 @@
       },
       "endTime": {
        "type": "string",
-       "description": "Return events which occured at or before this time.",
+       "description": "Return events which occurred at or before this time.",
        "pattern": "(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d)(?:\\.(\\d+))?(?:(Z)|([-+])(\\d\\d):(\\d\\d))",
        "location": "query"
       },
@@ -584,7 +584,7 @@
       },
       "startTime": {
        "type": "string",
-       "description": "Return events which occured at or after this time.",
+       "description": "Return events which occurred at or after this time.",
        "pattern": "(\\d\\d\\d\\d)-(\\d\\d)-(\\d\\d)T(\\d\\d):(\\d\\d):(\\d\\d)(?:\\.(\\d+))?(?:(Z)|([-+])(\\d\\d):(\\d\\d))",
        "location": "query"
       },
@@ -659,7 +659,7 @@
       "parameters": {
        "type": "string",
        "description": "Represents the application name, parameter name pairs to fetch in csv as app_name1:param_name1, app_name2:param_name2.",
-       "pattern": "(((accounts)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)):[^,]+,)*(((accounts)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)):[^,]+)",
+       "pattern": "(((accounts)|(classroom)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)|(drive)):[^,]+,)*(((accounts)|(classroom)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)|(drive)):[^,]+)",
        "location": "query"
       }
      },
@@ -699,7 +699,7 @@
       "filters": {
        "type": "string",
        "description": "Represents the set of filters including parameter operator value.",
-       "pattern": "(((accounts)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)):[a-z0-9_]+[\u003c,\u003c=,==,\u003e=,\u003e,!=][^,]+,)*(((accounts)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)):[a-z0-9_]+[\u003c,\u003c=,==,\u003e=,\u003e,!=][^,]+)",
+       "pattern": "(((accounts)|(classroom)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)|(drive)):[a-z0-9_]+[\u003c,\u003c=,==,\u003e=,\u003e,!=][^,]+,)*(((accounts)|(classroom)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)|(drive)):[a-z0-9_]+[\u003c,\u003c=,==,\u003e=,\u003e,!=][^,]+)",
        "location": "query"
       },
       "maxResults": {
@@ -717,7 +717,7 @@
       "parameters": {
        "type": "string",
        "description": "Represents the application name, parameter name pairs to fetch in csv as app_name1:param_name1, app_name2:param_name2.",
-       "pattern": "(((accounts)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)):[^,]+,)*(((accounts)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)):[^,]+)",
+       "pattern": "(((accounts)|(classroom)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)|(drive)):[^,]+,)*(((accounts)|(classroom)|(cros)|(gmail)|(calendar)|(docs)|(gplus)|(sites)|(device_management)|(drive)):[^,]+)",
        "location": "query"
       },
       "userKey": {

@@ -44,9 +44,12 @@ type EditClusterOptions struct {
 var (
 	edit_cluster_long = templates.LongDesc(i18n.T(`Edit a cluster configuration.
 
-This command changes the cloud specification in the registry.
+	This command changes the cluster cloud specification in the registry.
 
-It does not update the cloud resources, to apply the changes use "kops update cluster".`))
+    	To set your preferred editor, you can define the EDITOR environment variable.
+    	When you have done this, kops will use the editor that you have set.
+
+	kops edit does not update the cloud resources, to apply the changes use "kops update cluster".`))
 
 	edit_cluster_example = templates.Examples(i18n.T(`
 		# Edit a cluster configuration in AWS.
@@ -59,7 +62,7 @@ func NewCmdEditCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     "cluster",
-		Short:   i18n.T("Edit cluster"),
+		Short:   i18n.T("Edit cluster."),
 		Long:    edit_cluster_long,
 		Example: edit_cluster_example,
 		Run: func(cmd *cobra.Command, args []string) {
@@ -94,7 +97,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(oldCluster.ObjectMeta.Name).List(metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(oldCluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -232,7 +235,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		}
 
 		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.Clusters().Update(newCluster)
+		_, err = clientset.ClustersFor(newCluster).Update(newCluster)
 		if err != nil {
 			return preservedFile(err, file, out)
 		}

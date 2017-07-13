@@ -1,8 +1,7 @@
 package file
 
 import (
-	"github.com/coredns/coredns/middleware/file/tree"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware/file/tree"
 
 	"github.com/miekg/dns"
 )
@@ -25,11 +24,7 @@ const (
 
 // Lookup looks up qname and qtype in the zone. When do is true DNSSEC records are included.
 // Three sets of records are returned, one for the answer, one for authority  and one for the additional section.
-func (z *Zone) Lookup(state request.Request, qname string) ([]dns.RR, []dns.RR, []dns.RR, Result) {
-
-	qtype := state.QType()
-	do := state.Do()
-
+func (z *Zone) Lookup(qname string, qtype uint16, do bool) ([]dns.RR, []dns.RR, []dns.RR, Result) {
 	if !z.NoReload {
 		z.reloadMu.RLock()
 	}
@@ -40,11 +35,12 @@ func (z *Zone) Lookup(state request.Request, qname string) ([]dns.RR, []dns.RR, 
 	}()
 
 	if qtype == dns.TypeSOA {
-		return z.soa(do), z.ns(do), nil, Success
+		soa := z.soa(do)
+		return soa, nil, nil, Success
 	}
 	if qtype == dns.TypeNS && qname == z.origin {
 		nsrrs := z.ns(do)
-		glue := z.Glue(nsrrs, do)
+		glue := z.Glue(nsrrs)
 		return nsrrs, nil, glue, Success
 	}
 
@@ -97,7 +93,7 @@ func (z *Zone) Lookup(state request.Request, qname string) ([]dns.RR, []dns.RR, 
 
 		// If we see NS records, it means the name as been delegated, and we should return the delegation.
 		if nsrrs := elem.Types(dns.TypeNS); nsrrs != nil {
-			glue := z.Glue(nsrrs, do)
+			glue := z.Glue(nsrrs)
 			// If qtype == NS, we should returns success to put RRs in answer.
 			if qtype == dns.TypeNS {
 				return nsrrs, nil, glue, Success
@@ -122,9 +118,9 @@ func (z *Zone) Lookup(state request.Request, qname string) ([]dns.RR, []dns.RR, 
 	// Found entire name.
 	if found && shot {
 
-		// DNAME...?
+		// DNAME...
 		if rrs := elem.Types(dns.TypeCNAME); len(rrs) > 0 && qtype != dns.TypeCNAME {
-			return z.searchCNAME(state, elem, rrs)
+			return z.searchCNAME(elem, rrs, qtype, do)
 		}
 
 		rrs := elem.Types(qtype, qname)
@@ -139,17 +135,13 @@ func (z *Zone) Lookup(state request.Request, qname string) ([]dns.RR, []dns.RR, 
 			return nil, ret, nil, NoData
 		}
 
-		// Additional section processing for MX, SRV. Check response and see if any of the names are in baliwick -
-		// if so add IP addresses to the additional section.
-		additional := additionalProcessing(z, rrs, do)
-
 		if do {
 			sigs := elem.Types(dns.TypeRRSIG)
 			sigs = signatureForSubType(sigs, qtype)
 			rrs = append(rrs, sigs...)
 		}
 
-		return rrs, z.ns(do), additional, Success
+		return rrs, nil, nil, Success
 
 	}
 
@@ -157,10 +149,10 @@ func (z *Zone) Lookup(state request.Request, qname string) ([]dns.RR, []dns.RR, 
 
 	// Found wildcard.
 	if wildElem != nil {
-		auth := z.ns(do)
+		auth := []dns.RR{}
 
 		if rrs := wildElem.Types(dns.TypeCNAME, qname); len(rrs) > 0 {
-			return z.searchCNAME(state, wildElem, rrs)
+			return z.searchCNAME(wildElem, rrs, qtype, do)
 		}
 
 		rrs := wildElem.Types(qtype, qname)
@@ -193,7 +185,7 @@ func (z *Zone) Lookup(state request.Request, qname string) ([]dns.RR, []dns.RR, 
 	rcode := NameError
 
 	// Hacky way to get around empty-non-terminals. If a longer name does exist, but this qname, does not, it
-	// must be an empty-non-terminal. If so, we do the proper NXDOMAIN handling, but set the rcode to be success.
+	// must be an empty-non-terminal. If so, we do the proper NXDOMAIN handling, but the the rcode to be success.
 	if x, found := z.Tree.Next(qname); found {
 		if dns.IsSubDomain(qname, x.Name()) {
 			rcode = Success
@@ -259,12 +251,7 @@ func (z *Zone) ns(do bool) []dns.RR {
 	return z.Apex.NS
 }
 
-// TODO(miek): should be better named, like aditionalProcessing?
-func (z *Zone) searchCNAME(state request.Request, elem *tree.Elem, rrs []dns.RR) ([]dns.RR, []dns.RR, []dns.RR, Result) {
-
-	qtype := state.QType()
-	do := state.Do()
-
+func (z *Zone) searchCNAME(elem *tree.Elem, rrs []dns.RR, qtype uint16, do bool) ([]dns.RR, []dns.RR, []dns.RR, Result) {
 	if do {
 		sigs := elem.Types(dns.TypeRRSIG)
 		sigs = signatureForSubType(sigs, dns.TypeCNAME)
@@ -273,13 +260,9 @@ func (z *Zone) searchCNAME(state request.Request, elem *tree.Elem, rrs []dns.RR)
 		}
 	}
 
-	targetName := rrs[0].(*dns.CNAME).Target
-	elem, _ = z.Tree.Search(targetName)
+	elem, _ = z.Tree.Search(rrs[0].(*dns.CNAME).Target)
 	if elem == nil {
-		if !dns.IsSubDomain(z.origin, targetName) {
-			rrs = append(rrs, z.externalLookup(state, targetName, qtype)...)
-		}
-		return rrs, z.ns(do), nil, Success
+		return rrs, nil, nil, Success
 	}
 
 	i := 0
@@ -296,20 +279,14 @@ Redo:
 				rrs = append(rrs, sigs...)
 			}
 		}
-		targetName := cname[0].(*dns.CNAME).Target
-		elem, _ = z.Tree.Search(targetName)
+		elem, _ = z.Tree.Search(cname[0].(*dns.CNAME).Target)
 		if elem == nil {
-			if !dns.IsSubDomain(z.origin, targetName) {
-				if !dns.IsSubDomain(z.origin, targetName) {
-					rrs = append(rrs, z.externalLookup(state, targetName, qtype)...)
-				}
-			}
-			return rrs, z.ns(do), nil, Success
+			return rrs, nil, nil, Success
 		}
 
 		i++
 		if i > maxChain {
-			return rrs, z.ns(do), nil, Success
+			return rrs, nil, nil, Success
 		}
 
 		goto Redo
@@ -328,7 +305,7 @@ Redo:
 		}
 	}
 
-	return rrs, z.ns(do), nil, Success
+	return rrs, nil, nil, Success
 }
 
 func cnameForType(targets []dns.RR, origQtype uint16) []dns.RR {
@@ -339,15 +316,6 @@ func cnameForType(targets []dns.RR, origQtype uint16) []dns.RR {
 		}
 	}
 	return ret
-}
-
-func (z *Zone) externalLookup(state request.Request, target string, qtype uint16) []dns.RR {
-	m, e := z.Proxy.Lookup(state, target, qtype)
-	if e != nil {
-		// TODO(miek): debugMsg for this as well? Log?
-		return nil
-	}
-	return m.Answer
 }
 
 // signatureForSubType range through the signature and return the correct ones for the subtype.
@@ -364,75 +332,30 @@ func signatureForSubType(rrs []dns.RR, subtype uint16) []dns.RR {
 }
 
 // Glue returns any potential glue records for nsrrs.
-func (z *Zone) Glue(nsrrs []dns.RR, do bool) []dns.RR {
+func (z *Zone) Glue(nsrrs []dns.RR) []dns.RR {
 	glue := []dns.RR{}
 	for _, rr := range nsrrs {
 		if ns, ok := rr.(*dns.NS); ok && dns.IsSubDomain(ns.Header().Name, ns.Ns) {
-			glue = append(glue, z.searchGlue(ns.Ns, do)...)
+			glue = append(glue, z.searchGlue(ns.Ns)...)
 		}
 	}
 	return glue
 }
 
 // searchGlue looks up A and AAAA for name.
-func (z *Zone) searchGlue(name string, do bool) []dns.RR {
+func (z *Zone) searchGlue(name string) []dns.RR {
 	glue := []dns.RR{}
 
 	// A
 	if elem, found := z.Tree.Search(name); found {
 		glue = append(glue, elem.Types(dns.TypeA)...)
-		if do {
-			sigs := elem.Types(dns.TypeRRSIG)
-			sigs = signatureForSubType(sigs, dns.TypeA)
-			glue = append(glue, sigs...)
-		}
 	}
 
 	// AAAA
 	if elem, found := z.Tree.Search(name); found {
 		glue = append(glue, elem.Types(dns.TypeAAAA)...)
-		if do {
-			sigs := elem.Types(dns.TypeRRSIG)
-			sigs = signatureForSubType(sigs, dns.TypeAAAA)
-			glue = append(glue, sigs...)
-		}
 	}
 	return glue
-}
-
-// additionalProcessing checks the current answer section and retrieves A or AAAA records
-// (and possible SIGs) to need to be put in the additional section.
-func additionalProcessing(z *Zone, answer []dns.RR, do bool) (extra []dns.RR) {
-	for _, rr := range answer {
-		name := ""
-		switch x := rr.(type) {
-		case *dns.SRV:
-			name = x.Target
-		case *dns.MX:
-			name = x.Mx
-		}
-		if !dns.IsSubDomain(z.origin, name) {
-			continue
-		}
-
-		elem, _ := z.Tree.Search(name)
-		if elem == nil {
-			continue
-		}
-
-		sigs := elem.Types(dns.TypeRRSIG)
-		for _, addr := range []uint16{dns.TypeA, dns.TypeAAAA} {
-			if a := elem.Types(addr); a != nil {
-				extra = append(extra, a...)
-				if do {
-					sig := signatureForSubType(sigs, addr)
-					extra = append(extra, sig...)
-				}
-			}
-		}
-	}
-
-	return extra
 }
 
 const maxChain = 8

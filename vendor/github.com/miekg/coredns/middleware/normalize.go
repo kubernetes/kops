@@ -7,8 +7,6 @@ import (
 	"github.com/miekg/dns"
 )
 
-// See core/dnsserver/address.go - we should unify these two impls.
-
 // Zones respresents a lists of zone names.
 type Zones []string
 
@@ -58,24 +56,12 @@ type (
 )
 
 // Normalize will return the host portion of host, stripping
-// of any port or transport. The host will also be fully qualified and lowercased.
+// of any port. The host will also be fully qualified and lowercased.
 func (h Host) Normalize() string {
-
-	s := string(h)
-
-	switch {
-	case strings.HasPrefix(s, TransportTLS+"://"):
-		s = s[len(TransportTLS+"://"):]
-	case strings.HasPrefix(s, TransportDNS+"://"):
-		s = s[len(TransportDNS+"://"):]
-	case strings.HasPrefix(s, TransportGRPC+"://"):
-		s = s[len(TransportGRPC+"://"):]
-	}
-
 	// separate host and port
-	host, _, err := net.SplitHostPort(s)
+	host, _, err := net.SplitHostPort(string(h))
 	if err != nil {
-		host, _, _ = net.SplitHostPort(s + ":")
+		host, _, _ = net.SplitHostPort(string(h) + ":")
 	}
 	return Name(host).Normalize()
 }
@@ -91,10 +77,3 @@ func (a Addr) Normalize() string {
 	// TODO(miek): lowercase it?
 	return net.JoinHostPort(addr, port)
 }
-
-// Duplicated from core/dnsserver/address.go !
-const (
-	TransportDNS  = "dns"
-	TransportTLS  = "tls"
-	TransportGRPC = "grpc"
-)

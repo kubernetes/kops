@@ -22,7 +22,7 @@
   (with-help-window (help-buffer) ; TODO: this turned into a mess, but does the job of generating README.md from govc.el
     (dolist (kind '(govc-mode govc-urls
                     govc-session-url govc-session-insecure govc-session-datacenter govc-session-datastore govc-session-network
-                    tabulated-list host pool datastore datastore-ls vm device))
+                    tabulated-list host pool datastore datastore-ls vm device object metric))
       (let* ((name (if (boundp kind) (symbol-name kind) (format "govc-%s-mode" kind)))
              (map (if (equal 'govc-mode kind) 'govc-command-map (intern (concat name "-map"))))
              (doc (lambda (f &optional all)

@@ -1,13 +1,15 @@
 ## kops
 
-kops is kubernetes ops
+kops is Kubernetes ops.
 
 ### Synopsis
 
 
-kops is kubernetes ops. 
+kops is Kubernetes ops. 
 
-It allows you to create, destroy, upgrade and maintain clusters.
+kops is the easiest way to get a production grade Kubernetes cluster up and running. We like to think of it as kubectl for clusters. 
+
+kops helps you create, destroy, upgrade and maintain production-grade, highly available, Kubernetes clusters from the command line.  AWS (Amazon Web Services) is currently officially supported, with GCE and VMware vSphere in alpha support.
 
 ### Options
 
@@ -26,19 +28,18 @@ It allows you to create, destroy, upgrade and maintain clusters.
 
 ### SEE ALSO
 * [kops completion](kops_completion.md)	 - Output shell completion code for the given shell (bash or zsh).
-* [kops create](kops_create.md)	 - Create a resource by filename or stdin.
-* [kops delete](kops_delete.md)	 - Delete clusters and instancegroups.
-* [kops describe](kops_describe.md)	 - Get additional information about cloud resources.
-* [kops edit](kops_edit.md)	 - Edit clusters and other resrouces.
-* [kops export](kops_export.md)	 - Exports a kubecfg for target cluster.
-* [kops get](kops_get.md)	 - List all instances of a resource.
-* [kops import](kops_import.md)	 - Import existing resources into the state store.
-* [kops replace](kops_replace.md)	 - Replace a resource by filename or stdin.
-* [kops rolling-update](kops_rolling-update.md)	 - Initiate rolling updates on clusters.
-* [kops secrets](kops_secrets.md)	 - Manage secrets & keys.
+* [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
+* [kops delete](kops_delete.md)	 - Delete clusters,instancegroups, or secrets.
+* [kops describe](kops_describe.md)	 - Describe a resource.
+* [kops edit](kops_edit.md)	 - Edit clusters and other resources.
+* [kops export](kops_export.md)	 - Export configuration.
+* [kops get](kops_get.md)	 - Get one or many resources.
+* [kops import](kops_import.md)	 - Import a cluster.
+* [kops replace](kops_replace.md)	 - Replace cluster resources.
+* [kops rolling-update](kops_rolling-update.md)	 - Rolling update a cluster.
 * [kops toolbox](kops_toolbox.md)	 - Misc infrequently used commands.
-* [kops update](kops_update.md)	 - Creates or updates cloud resources to match cluster spec.
-* [kops upgrade](kops_upgrade.md)	 - Automates checking for and applying Kubernetes updates.
-* [kops validate](kops_validate.md)	 - Run validation check on Kubernetes cluster.
-* [kops version](kops_version.md)	 - Print the client version information.
+* [kops update](kops_update.md)	 - Update a cluster.
+* [kops upgrade](kops_upgrade.md)	 - Upgrade a kubernetes cluster.
+* [kops validate](kops_validate.md)	 - Validate a kops cluster.
+* [kops version](kops_version.md)	 - Print the kops version information.
 

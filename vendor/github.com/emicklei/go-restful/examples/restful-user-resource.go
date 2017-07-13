@@ -6,7 +6,7 @@ import (
 	"strconv"
 
 	"github.com/emicklei/go-restful"
-	"github.com/emicklei/go-restful/swagger"
+	"github.com/emicklei/go-restful-swagger12"
 )
 
 // This example show a complete (GET,PUT,POST,DELETE) conventional example of

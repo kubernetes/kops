@@ -25,10 +25,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
+
+const PathAuthnConfig = "/etc/kubernetes/authn.config"
 
 // KubeAPIServerBuilder install kube-apiserver (just the manifest at the moment)
 type KubeAPIServerBuilder struct {
@@ -40,6 +44,11 @@ var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
 func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
+	}
+
+	err := b.writeAuthenticationConfig(c)
+	if err != nil {
+		return err
 	}
 
 	{
@@ -74,6 +83,54 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
+}
+
+func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderContext) error {
+	if b.Cluster.Spec.Authentication == nil || b.Cluster.Spec.Authentication.IsEmpty() {
+		return nil
+	}
+
+	if b.Cluster.Spec.Authentication.Kopeio != nil {
+		cluster := kubeconfig.KubectlCluster{
+			Server: "http://127.0.0.1:9001/hooks/authn",
+		}
+		context := kubeconfig.KubectlContext{
+			Cluster: "webhook",
+			User:    "kube-apiserver",
+		}
+
+		config := kubeconfig.KubectlConfig{
+			Kind:       "Config",
+			ApiVersion: "v1",
+		}
+		config.Clusters = append(config.Clusters, &kubeconfig.KubectlClusterWithName{
+			Name:    "webhook",
+			Cluster: cluster,
+		})
+		config.Users = append(config.Users, &kubeconfig.KubectlUserWithName{
+			Name: "kube-apiserver",
+		})
+		config.CurrentContext = "webhook"
+		config.Contexts = append(config.Contexts, &kubeconfig.KubectlContextWithName{
+			Name:    "webhook",
+			Context: context,
+		})
+
+		manifest, err := kops.ToRawYaml(config)
+		if err != nil {
+			return fmt.Errorf("error marshalling authentication config to yaml: %v", err)
+		}
+
+		t := &nodetasks.File{
+			Path:     PathAuthnConfig,
+			Contents: fi.NewBytesResource(manifest),
+			Type:     nodetasks.FileType_File,
+		}
+		c.AddTask(t)
+		return nil
+	} else {
+		return fmt.Errorf("Unrecognized authentication config %v", b.Cluster.Spec.Authentication)
+	}
 }
 
 func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
@@ -182,6 +239,21 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log").ReadOnly = false
+
+	auditLogPath := b.Cluster.Spec.KubeAPIServer.AuditLogPath
+	if auditLogPath != nil {
+		// Mount the directory of the path instead, as kube-apiserver rotates the log by renaming the file.
+		// Renaming is not possible when the file is mounted as the host path, and will return a
+		// 'Device or resource busy' error
+		auditLogPathDir := filepath.Dir(*auditLogPath)
+		addHostPathMapping(pod, container, "auditlogpathdir", auditLogPathDir).ReadOnly = false
+	}
+
+	if b.Cluster.Spec.Authentication != nil {
+		if b.Cluster.Spec.Authentication.Kopeio != nil {
+			addHostPathMapping(pod, container, "authn-config", PathAuthnConfig)
+		}
+	}
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 

@@ -1,3 +1,6 @@
+# Documentation
+
+Please refer to the [cli](cli) directory for full documentation.
 
 ## `kops create cluster`
 

@@ -6,19 +6,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coredns/coredns/middleware/proxy"
-	"github.com/coredns/coredns/middleware/test"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware/proxy"
+	"github.com/miekg/coredns/middleware/test"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 )
 
 func TestLookupCache(t *testing.T) {
-	t.Parallel()
 	// Start auth. CoreDNS holding the auth zone.
 	name, rm, err := test.TempFile(".", exampleOrg)
 	if err != nil {
-		t.Fatalf("failed to create zone: %s", err)
+		t.Fatalf("failed to created zone: %s", err)
 	}
 	defer rm()
 
@@ -56,7 +55,7 @@ func TestLookupCache(t *testing.T) {
 
 	log.SetOutput(ioutil.Discard)
 
-	p := proxy.NewLookup([]string{udp})
+	p := proxy.New([]string{udp})
 	state := request.Request{W: &test.ResponseWriter{}, Req: new(dns.Msg)}
 
 	resp, err := p.Lookup(state, "example.org.", dns.TypeA)
@@ -65,7 +64,7 @@ func TestLookupCache(t *testing.T) {
 	}
 	// expect answer section with A record in it
 	if len(resp.Answer) == 0 {
-		t.Fatal("Expected to at least one RR in the answer section, got none")
+		t.Error("Expected to at least one RR in the answer section, got none")
 	}
 
 	ttl := resp.Answer[0].Header().Ttl

@@ -64,6 +64,7 @@ Make sure you are on the release branch `git checkout release-1.X`
 
 ```
 make release-tag
+git push
 git push --tags
 ```
 

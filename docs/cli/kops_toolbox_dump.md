@@ -1,14 +1,21 @@
 ## kops toolbox dump
 
-Dump cloud information about a cluster
+Dump cluster information
 
 ### Synopsis
 
 
-Dump cloud information about a cluster
+Displays cluster information.  Includes information about cloud and Kubernetes resources.
 
 ```
 kops toolbox dump
+```
+
+### Examples
+
+```
+  # Dump cluster information
+  kops toolbox dump --name k8s-cluster.example.com
 ```
 
 ### Options

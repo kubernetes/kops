@@ -15,6 +15,11 @@ To enable a bastion instance group, a user will need to set the `--bastion` flag
 kops create cluster --topology private --networking $provider --bastion $NAME
 ```
 
+To add a bastion instance group to a pre-existing cluster, create a new instance group with the `--role Bastion` flag and one or more subnets (e.g. `utility-us-east-2a,utility-us-east-2b`). 
+```yaml
+kops create instancegroup --role Bastion --subnet $SUBNET
+```
+
 ### Configure the bastion instance group
 
 You can edit the bastion instance group to make changes. By default the name of the bastion instance group will be `bastions` and you can specify the name of the cluster with `--name` as in:
@@ -114,8 +119,8 @@ Once your cluster is setup and you need to SSH into the bastion you can access a
 ```bash
 # Verify you have an SSH agent running. This should match whatever you built your cluster with.
 ssh-add -l
-# If you need to add an agent
-ssh-add path/to/public/key
+# If you need to add the key to your agent:
+ssh-add path/to/private/key
 
 # Now you can SSH into the bastion
 ssh -A admin@<bastion-ELB-address>

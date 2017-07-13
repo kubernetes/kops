@@ -20,7 +20,8 @@ if !File.directory?(ARGV.first)
   raise "first argument not a directory"
 end
 
-wsdl = WSDL.new(WSDL.read "vim.wsdl")
+target = ARGV[1]
+wsdl = WSDL.new(WSDL.read target+".wsdl")
 wsdl.validate_assumptions!
 wsdl.peek()
 
@@ -41,6 +42,14 @@ end
 
 File.open(File.join(ARGV.first, "types/types.go"), "w") do |io|
   io.print WSDL.header("types")
+  if target != "vim"
+    io.print <<EOF
+import (
+        "context"
+        "github.com/vmware/govmomi/vim25/types"
+)
+EOF
+  end
 
   wsdl.
     types.
@@ -59,6 +68,17 @@ end
 
 File.open(File.join(ARGV.first, "methods/methods.go"), "w") do |io|
   io.print WSDL.header("methods")
+  if target == "vim"
+    target += "25"
+  end
+
+  io.print <<EOF
+import (
+        "context"
+        "github.com/vmware/govmomi/#{target}/types"
+        "github.com/vmware/govmomi/vim25/soap"
+)
+EOF
 
   wsdl.
     operations.

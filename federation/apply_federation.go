@@ -67,7 +67,7 @@ func (o *ApplyFederationOperation) FindKubecfg() (*kubeconfig.KubeconfigBuilder,
 
 	// Loop through looking for a configured cluster
 	for _, controller := range o.Federation.Spec.Controllers {
-		cluster, err := o.KopsClient.Clusters().Get(controller)
+		cluster, err := o.KopsClient.GetCluster(controller)
 		if err != nil {
 			return nil, fmt.Errorf("error reading cluster %q: %v", controller, err)
 		}
@@ -116,7 +116,7 @@ func (o *ApplyFederationOperation) Run() error {
 
 	var controllerKubernetesClients []kubernetes.Interface
 	for _, controller := range o.Federation.Spec.Controllers {
-		cluster, err := o.KopsClient.Clusters().Get(controller)
+		cluster, err := o.KopsClient.GetCluster(controller)
 		if err != nil {
 			return fmt.Errorf("error reading cluster %q: %v", controller, err)
 		}
@@ -150,7 +150,7 @@ func (o *ApplyFederationOperation) Run() error {
 
 	for _, member := range o.Federation.Spec.Members {
 		glog.V(2).Infof("configuring member cluster %q", member)
-		cluster, err := o.KopsClient.Clusters().Get(member)
+		cluster, err := o.KopsClient.GetCluster(member)
 		if err != nil {
 			return fmt.Errorf("error reading cluster %q: %v", member, err)
 		}

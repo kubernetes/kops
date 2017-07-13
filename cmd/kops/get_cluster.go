@@ -21,16 +21,36 @@ import (
 	"os"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	get_cluster_long = templates.LongDesc(i18n.T(`
+	Display one or many cluster resources.`))
+
+	get_cluster_example = templates.Examples(i18n.T(`
+	# Get all clusters in a state store
+	kops get clusters
+
+	# Get a cluster
+	kops get cluster k8s-cluster.example.com`))
+
+	get_cluster_short = i18n.T(`Get one or many clusters.`)
 )
 
 type GetClusterOptions struct {
+	*GetOptions
+
 	// FullSpec determines if we should output the completed (fully populated) spec
 	FullSpec bool
 
@@ -38,14 +58,17 @@ type GetClusterOptions struct {
 	ClusterNames []string
 }
 
-func init() {
-	var options GetClusterOptions
+func NewCmdGetCluster(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
+	options := GetClusterOptions{
+		GetOptions: getOptions,
+	}
 
 	cmd := &cobra.Command{
 		Use:     "clusters",
 		Aliases: []string{"cluster"},
-		Short:   "get clusters",
-		Long:    `List or get clusters.`,
+		Short:   get_cluster_short,
+		Long:    get_cluster_long,
+		Example: get_cluster_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if len(args) != 0 {
 				options.ClusterNames = append(options.ClusterNames, args...)
@@ -68,7 +91,7 @@ func init() {
 
 	cmd.Flags().BoolVar(&options.FullSpec, "full", options.FullSpec, "Show fully populated configuration")
 
-	getCmd.cobraCommand.AddCommand(cmd)
+	return cmd
 }
 
 func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) error {
@@ -77,31 +100,14 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		return err
 	}
 
-	clusterList, err := client.Clusters().List(metav1.ListOptions{})
+	clusterList, err := client.ListClusters(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
 
-	var clusters []*api.Cluster
-	if len(options.ClusterNames) != 0 {
-		m := make(map[string]*api.Cluster)
-		for i := range clusterList.Items {
-			c := &clusterList.Items[i]
-			m[c.ObjectMeta.Name] = c
-		}
-		for _, clusterName := range options.ClusterNames {
-			c := m[clusterName]
-			if c == nil {
-				return fmt.Errorf("cluster not found %q", clusterName)
-			}
-
-			clusters = append(clusters, c)
-		}
-	} else {
-		for i := range clusterList.Items {
-			c := &clusterList.Items[i]
-			clusters = append(clusters, c)
-		}
+	clusters, err := buildClusters(options.ClusterNames, clusterList)
+	if err != nil {
+		return err
 	}
 
 	if len(clusters) == 0 {
@@ -117,49 +123,85 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		}
 	}
 
-	switch getCmd.output {
+	switch options.output {
 	case OutputTable:
-
-		t := &tables.Table{}
-		t.AddColumn("NAME", func(c *api.Cluster) string {
-			return c.ObjectMeta.Name
-		})
-		t.AddColumn("CLOUD", func(c *api.Cluster) string {
-			return c.Spec.CloudProvider
-		})
-		t.AddColumn("ZONES", func(c *api.Cluster) string {
-			zones := sets.NewString()
-			for _, s := range c.Spec.Subnets {
-				zones.Insert(s.Zone)
-			}
-			return strings.Join(zones.List(), ",")
-		})
-		return t.Render(clusters, out, "NAME", "CLOUD", "ZONES")
-
+		return clusterOutputTable(clusters, out)
 	case OutputYaml:
-		for i, cluster := range clusters {
-			if i != 0 {
-				_, err = out.Write([]byte("\n\n---\n\n"))
-				if err != nil {
-					return fmt.Errorf("error writing to stdout: %v", err)
-				}
-			}
-			if err := marshalToWriter(cluster, marshalYaml, out); err != nil {
-				return err
-			}
-		}
-		return nil
+		return clusterOutputYAML(clusters, out)
 	case OutputJSON:
-		for _, cluster := range clusters {
-			if err := marshalToWriter(cluster, marshalJSON, out); err != nil {
-				return err
-			}
-		}
-		return nil
+		return clusterOutputJson(clusters, out)
 
 	default:
-		return fmt.Errorf("Unknown output format: %q", getCmd.output)
+		return fmt.Errorf("Unknown output format: %q", options.output)
 	}
+}
+
+func buildClusters(args []string, clusterList *api.ClusterList) ([]*api.Cluster, error) {
+	var clusters []*api.Cluster
+	if len(args) != 0 {
+		m := make(map[string]*api.Cluster)
+		for i := range clusterList.Items {
+			c := &clusterList.Items[i]
+			m[c.ObjectMeta.Name] = c
+		}
+		for _, clusterName := range args {
+			c := m[clusterName]
+			if c == nil {
+				return nil, fmt.Errorf("cluster not found %q", clusterName)
+			}
+
+			clusters = append(clusters, c)
+		}
+	} else {
+		for i := range clusterList.Items {
+			c := &clusterList.Items[i]
+			clusters = append(clusters, c)
+		}
+	}
+
+	return clusters, nil
+}
+
+func clusterOutputTable(clusters []*api.Cluster, out io.Writer) error {
+	t := &tables.Table{}
+	t.AddColumn("NAME", func(c *api.Cluster) string {
+		return c.ObjectMeta.Name
+	})
+	t.AddColumn("CLOUD", func(c *api.Cluster) string {
+		return c.Spec.CloudProvider
+	})
+	t.AddColumn("ZONES", func(c *api.Cluster) string {
+		zones := sets.NewString()
+		for _, s := range c.Spec.Subnets {
+			zones.Insert(s.Zone)
+		}
+		return strings.Join(zones.List(), ",")
+	})
+
+	return t.Render(clusters, out, "NAME", "CLOUD", "ZONES")
+}
+
+func clusterOutputJson(clusters []*api.Cluster, out io.Writer) error {
+	for _, cluster := range clusters {
+		if err := marshalToWriter(cluster, marshalJSON, out); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func clusterOutputYAML(clusters []*api.Cluster, out io.Writer) error {
+	for i, cluster := range clusters {
+		if i != 0 {
+			if err := writeYAMLSep(out); err != nil {
+				return fmt.Errorf("error writing to stdout: %v", err)
+			}
+		}
+		if err := marshalToWriter(cluster, marshalYaml, out); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func fullClusterSpecs(clusters []*api.Cluster) ([]*api.Cluster, error) {

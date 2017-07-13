@@ -26,6 +26,9 @@ import (
 	"reflect"
 	"sync"
 	"time"
+
+	"golang.org/x/net/context"
+	"golang.org/x/sync/semaphore"
 )
 
 const (
@@ -70,15 +73,13 @@ type Bundler struct {
 
 	handler       func(interface{}) // called to handle a bundle
 	itemSliceZero reflect.Value     // nil (zero value) for slice of items
-	donec         chan struct{}     // closed when the Bundler is closed
-	handlec       chan int          // sent to when a bundle is ready for handling
-	timer         *time.Timer       // implements DelayThreshold
+	flushTimer    *time.Timer       // implements DelayThreshold
 
-	mu            sync.Mutex
-	bufferedSize  int           // total bytes buffered
-	closedBundles []bundle      // bundles waiting to be handled
-	curBundle     bundle        // incoming items added to this bundle
-	calledc       chan struct{} // closed and re-created after handler is called
+	mu        sync.Mutex
+	sem       *semaphore.Weighted // enforces BufferedByteLimit
+	semOnce   sync.Once
+	curBundle bundle          // incoming items added to this bundle
+	handlingc <-chan struct{} // set to non-nil while a handler is running; closed when it returns
 }
 
 type bundle struct {
@@ -86,8 +87,7 @@ type bundle struct {
 	size  int           // size in bytes of all items
 }
 
-// NewBundler creates a new Bundler. When you are finished with a Bundler, call
-// its Stop method.
+// NewBundler creates a new Bundler.
 //
 // itemExample is a value of the type that will be bundled. For example, if you
 // want to create bundles of *Entry, you could pass &Entry{} for itemExample.
@@ -95,6 +95,9 @@ type bundle struct {
 // handler is a function that will be called on each bundle. If itemExample is
 // of type T, the argument to handler is of type []T. handler is always called
 // sequentially for each bundle, and never in parallel.
+//
+// Configure the Bundler by setting its thresholds and limits before calling
+// any of its methods.
 func NewBundler(itemExample interface{}, handler func(interface{})) *Bundler {
 	b := &Bundler{
 		DelayThreshold:       DefaultDelayThreshold,
@@ -104,14 +107,18 @@ func NewBundler(itemExample interface{}, handler func(interface{})) *Bundler {
 
 		handler:       handler,
 		itemSliceZero: reflect.Zero(reflect.SliceOf(reflect.TypeOf(itemExample))),
-		donec:         make(chan struct{}),
-		handlec:       make(chan int, 1),
-		calledc:       make(chan struct{}),
-		timer:         time.NewTimer(1000 * time.Hour), // harmless initial timeout
 	}
 	b.curBundle.items = b.itemSliceZero
-	go b.background()
 	return b
+}
+
+func (b *Bundler) sema() *semaphore.Weighted {
+	// Create the semaphore lazily, because the user may set BufferedByteLimit
+	// after NewBundler.
+	b.semOnce.Do(func() {
+		b.sem = semaphore.NewWeighted(int64(b.BufferedByteLimit))
+	})
+	return b.sem
 }
 
 // Add adds item to the current bundle. It marks the bundle for handling and
@@ -120,8 +127,9 @@ func NewBundler(itemExample interface{}, handler func(interface{})) *Bundler {
 // If the item's size exceeds the maximum bundle size (Bundler.BundleByteLimit), then
 // the item can never be handled. Add returns ErrOversizedItem in this case.
 //
-// If adding the item would exceed the maximum memory allowed (Bundler.BufferedByteLimit),
-// Add returns ErrOverflow.
+// If adding the item would exceed the maximum memory allowed
+// (Bundler.BufferedByteLimit) or an AddWait call is blocked waiting for
+// memory, Add returns ErrOverflow.
 //
 // Add never blocks.
 func (b *Bundler) Add(item interface{}, size int) error {
@@ -130,132 +138,121 @@ func (b *Bundler) Add(item interface{}, size int) error {
 	if b.BundleByteLimit > 0 && size > b.BundleByteLimit {
 		return ErrOversizedItem
 	}
-	b.mu.Lock()
-	defer b.mu.Unlock()
 	// If adding this item would exceed our allotted memory
 	// footprint, we can't accept it.
-	if b.bufferedSize+size > b.BufferedByteLimit {
+	// (TryAcquire also returns false if anything is waiting on the semaphore,
+	// so calls to Add and AddWait shouldn't be mixed.)
+	if !b.sema().TryAcquire(int64(size)) {
 		return ErrOverflow
 	}
+	b.add(item, size)
+	return nil
+}
+
+// add adds item to the current bundle. It marks the bundle for handling and
+// starts a new one if any of the thresholds or limits are exceeded.
+func (b *Bundler) add(item interface{}, size int) {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+
 	// If adding this item to the current bundle would cause it to exceed the
 	// maximum bundle size, close the current bundle and start a new one.
 	if b.BundleByteLimit > 0 && b.curBundle.size+size > b.BundleByteLimit {
-		b.closeAndHandleBundle()
+		b.startFlushLocked()
 	}
 	// Add the item.
 	b.curBundle.items = reflect.Append(b.curBundle.items, reflect.ValueOf(item))
 	b.curBundle.size += size
-	b.bufferedSize += size
-	// If this is the first item in the bundle, restart the timer.
-	if b.curBundle.items.Len() == 1 {
-		b.timer.Reset(b.DelayThreshold)
+
+	// Start a timer to flush the item if one isn't already running.
+	// startFlushLocked clears the timer and closes the bundle at the same time,
+	// so we only allocate a new timer for the first item in each bundle.
+	// (We could try to call Reset on the timer instead, but that would add a lot
+	// of complexity to the code just to save one small allocation.)
+	if b.flushTimer == nil {
+		b.flushTimer = time.AfterFunc(b.DelayThreshold, b.Flush)
 	}
+
 	// If the current bundle equals the count threshold, close it.
 	if b.curBundle.items.Len() == b.BundleCountThreshold {
-		b.closeAndHandleBundle()
+		b.startFlushLocked()
 	}
 	// If the current bundle equals or exceeds the byte threshold, close it.
 	if b.curBundle.size >= b.BundleByteThreshold {
-		b.closeAndHandleBundle()
+		b.startFlushLocked()
 	}
+}
+
+// AddWait adds item to the current bundle. It marks the bundle for handling and
+// starts a new one if any of the thresholds or limits are exceeded.
+//
+// If the item's size exceeds the maximum bundle size (Bundler.BundleByteLimit), then
+// the item can never be handled. AddWait returns ErrOversizedItem in this case.
+//
+// If adding the item would exceed the maximum memory allowed (Bundler.BufferedByteLimit),
+// AddWait blocks until space is available or ctx is done.
+//
+// Calls to Add and AddWait should not be mixed on the same Bundler.
+func (b *Bundler) AddWait(ctx context.Context, item interface{}, size int) error {
+	// If this item exceeds the maximum size of a bundle,
+	// we can never send it.
+	if b.BundleByteLimit > 0 && size > b.BundleByteLimit {
+		return ErrOversizedItem
+	}
+	// If adding this item would exceed our allotted memory footprint, block
+	// until space is available. The semaphore is FIFO, so there will be no
+	// starvation.
+	if err := b.sema().Acquire(ctx, int64(size)); err != nil {
+		return err
+	}
+	// Here, we've reserved space for item. Other goroutines can call AddWait
+	// and even acquire space, but no one can take away our reservation
+	// (assuming sem.Release is used correctly). So there is no race condition
+	// resulting from locking the mutex after sem.Acquire returns.
+	b.add(item, size)
 	return nil
 }
 
-// Flush waits until all items in the Bundler have been handled (that is,
-// until the last invocation of handler has returned).
+// Flush invokes the handler for all remaining items in the Bundler and waits
+// for it to return.
 func (b *Bundler) Flush() {
 	b.mu.Lock()
-	b.closeBundle()
-	// Unconditionally trigger the handling goroutine, to ensure calledc is closed
-	// even if there are no outstanding bundles.
-	select {
-	case b.handlec <- 1:
-	default:
-	}
-	calledc := b.calledc // remember locally, because it may change
+	b.startFlushLocked()
+	done := b.handlingc
 	b.mu.Unlock()
-	<-calledc
-}
 
-// Stop calls Flush, then shuts down the Bundler. Stop should always be
-// called on a Bundler when it is no longer needed. You must wait for all calls
-// to Add to complete before calling Stop. Calling Add concurrently with Stop
-// may result in the added items being ignored.
-func (b *Bundler) Stop() {
-	b.Flush()
-	b.mu.Lock()
-	b.timer.Stop()
-	b.mu.Unlock()
-	close(b.donec)
-}
-
-func (b *Bundler) closeAndHandleBundle() {
-	if b.closeBundle() {
-		// We have created a closed bundle.
-		// Send to handlec without blocking.
-		select {
-		case b.handlec <- 1:
-		default:
-		}
+	if done != nil {
+		<-done
 	}
 }
 
-// closeBundle finishes the current bundle, adds it to the list of closed
-// bundles and informs the background goroutine that there are bundles ready
-// for processing.
-//
-// This should always be called with b.mu held.
-func (b *Bundler) closeBundle() bool {
+func (b *Bundler) startFlushLocked() {
+	if b.flushTimer != nil {
+		b.flushTimer.Stop()
+		b.flushTimer = nil
+	}
+
 	if b.curBundle.items.Len() == 0 {
-		return false
+		return
 	}
-	b.closedBundles = append(b.closedBundles, b.curBundle)
-	b.curBundle.items = b.itemSliceZero
-	b.curBundle.size = 0
-	return true
-}
+	bun := b.curBundle
+	b.curBundle = bundle{items: b.itemSliceZero}
 
-// background runs in a separate goroutine, waiting for events and handling
-// bundles.
-func (b *Bundler) background() {
-	done := false
-	for {
-		timedOut := false
-		// Wait for something to happen.
-		select {
-		case <-b.handlec:
-		case <-b.donec:
-			done = true
-		case <-b.timer.C:
-			timedOut = true
+	done := make(chan struct{})
+	var running <-chan struct{}
+	running, b.handlingc = b.handlingc, done
+
+	go func() {
+		defer func() {
+			b.sem.Release(int64(bun.size))
+			close(done)
+		}()
+
+		if running != nil {
+			// Wait for our turn to call the handler.
+			<-running
 		}
-		// Handle closed bundles.
-		b.mu.Lock()
-		if timedOut {
-			b.closeBundle()
-		}
-		buns := b.closedBundles
-		b.closedBundles = nil
-		// Closing calledc means we've sent all bundles. We need
-		// a new channel for the next set of bundles, which may start
-		// accumulating as soon as we release the lock.
-		calledc := b.calledc
-		b.calledc = make(chan struct{})
-		b.mu.Unlock()
-		for i, bun := range buns {
-			b.handler(bun.items.Interface())
-			// Drop the bundle's items, reducing our memory footprint.
-			buns[i].items = reflect.Value{} // buns[i] because bun is a copy
-			// Note immediately that we have more space, so Adds that occur
-			// during this loop will have a chance of succeeding.
-			b.mu.Lock()
-			b.bufferedSize -= bun.size
-			b.mu.Unlock()
-		}
-		// Signal that we've sent all outstanding bundles.
-		close(calledc)
-		if done {
-			break
-		}
-	}
+
+		b.handler(bun.items.Interface())
+	}()
 }

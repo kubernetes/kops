@@ -89,8 +89,8 @@ func containerWithUser(ptr *int64) *v1.Container {
 }
 
 func TestHaRootUID(t *testing.T) {
-	var nonRoot int64 = 1
-	var root int64 = 0
+	nonRoot := int64(1)
+	root := int64(0)
 
 	tests := map[string]struct {
 		container *v1.Container
@@ -120,7 +120,7 @@ func TestHaRootUID(t *testing.T) {
 }
 
 func TestHasRunAsUser(t *testing.T) {
-	var runAsUser int64 = 0
+	runAsUser := int64(0)
 
 	tests := map[string]struct {
 		container *v1.Container
@@ -147,8 +147,8 @@ func TestHasRunAsUser(t *testing.T) {
 }
 
 func TestHasRootRunAsUser(t *testing.T) {
-	var nonRoot int64 = 1
-	var root int64 = 0
+	nonRoot := int64(1)
+	root := int64(0)
 
 	tests := map[string]struct {
 		container *v1.Container

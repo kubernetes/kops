@@ -1,25 +1,45 @@
 ## kops rolling-update cluster
 
-Rolling update a cluster
+Rolling update a cluster.
 
 ### Synopsis
 
 
-Rolling update a cluster instance groups.
+This command updates a kubernetes cluster to match the cloud, and kops specifications. 
 
-This command updates a kubernetes cluster to match the cloud, and kops specifications.
+To perform rolling update, you need to update the cloud resources first with "kops update cluster" 
 
-To perform rolling update, you need to update the cloud resources first with "kops update cluster"
+Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply" prior to running "kops rolling-update cluster" 
 
-Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply"
-prior to running "kops rolling-update cluster"
-
-Use KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
-and validates the cluster.  New flags for Drain and Validation operations will be shown when
-the environment variable is set.
+Use export KOPS FEATURE FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes and validates the cluster.  New flags for Drain and Validation operations will be shown when the environment variable is set.
 
 ```
 kops rolling-update cluster
+```
+
+### Examples
+
+```
+  # Roll the currently selected kops cluster
+  kops rolling-update cluster --yes
+  
+  # Roll the k8s-cluster.example.com kops cluster
+  # use the new drain an validate functionality
+  export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+  kops rolling-update cluster k8s-cluster.example.com --yes \
+  --fail-on-validate-error="false" \
+  --master-interval=8m \
+  --node-interval=8m
+  
+  
+  # Roll the k8s-cluster.example.com kops cluster
+  # only roll the node instancegroup
+  # use the new drain an validate functionality
+  export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+  kops rolling-update cluster k8s-cluster.example.com --yes \
+  --fail-on-validate-error="false" \
+  --node-interval 8m \
+  --instance-group nodes
 ```
 
 ### Options
@@ -50,5 +70,5 @@ kops rolling-update cluster
 ```
 
 ### SEE ALSO
-* [kops rolling-update](kops_rolling-update.md)	 - Initiate rolling updates on clusters.
+* [kops rolling-update](kops_rolling-update.md)	 - Rolling update a cluster.
 

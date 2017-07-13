@@ -18,10 +18,11 @@ package protokube
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"net"
 	"os/exec"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 type KubeBoot struct {
@@ -154,10 +155,19 @@ func enableKubelet() error {
 	// TODO: Check/log status of kubelet
 	// (in particular, we want to avoid kubernetes/kubernetes#40123 )
 	glog.V(2).Infof("ensuring that kubelet systemd service is running")
-	cmd := exec.Command("systemctl", "start", "--no-block", "kubelet")
+	cmd := exec.Command("systemctl", "status", "--no-block", "kubelet")
 	output, err := cmd.CombinedOutput()
+	glog.V(2).Infof("'systemctl status kubelet' output:\n%s", string(output))
+	if err == nil {
+		glog.V(2).Infof("kubelet systemd service already running")
+		return nil
+	}
+	glog.Infof("kubelet systemd service not running. Starting")
+	cmd = exec.Command("systemctl", "start", "--no-block", "kubelet")
+	output, err = cmd.CombinedOutput()
 	if err != nil {
 		return fmt.Errorf("error starting kubelet: %v\nOutput: %s", err, output)
 	}
+	glog.V(2).Infof("'systemctl start kubelet' output:\n%s", string(output))
 	return nil
 }

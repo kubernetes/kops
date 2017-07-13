@@ -67,7 +67,7 @@ func up() error {
 		return err
 	}
 
-	_, err := clientset.Clusters().Create(cluster)
+	_, err := clientset.ClustersFor(cluster).Create(cluster)
 	if err != nil {
 		return err
 	}
@@ -80,7 +80,7 @@ func up() error {
 			Role:    api.InstanceGroupRoleMaster,
 			Subnets: masterZones,
 		}
-		_, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Create(ig)
+		_, err := clientset.InstanceGroupsFor(cluster).Create(ig)
 		if err != nil {
 			return err
 		}
@@ -95,7 +95,7 @@ func up() error {
 			Subnets: nodeZones,
 		}
 
-		_, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Create(ig)
+		_, err := clientset.InstanceGroupsFor(cluster).Create(ig)
 		if err != nil {
 			return err
 		}

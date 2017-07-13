@@ -22,6 +22,11 @@ type KubeletConfigSpec struct {
 	// not used for clusters version 1.6 and later
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
+	// AnonymousAuth chooses if you want anonymous auth on the kubelet api
+	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
+	// ClientCAFile is the path to a file container the CA certificate
+	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
+
 	// kubeconfigPath is the path to the kubeconfig file with authorization
 	// information and API server location
 	// kops will only use this for clusters version 1.6 and later
@@ -216,7 +221,9 @@ type KubeletConfigSpec struct {
 	// one must set --hairpin-mode=veth-flag, because bridge assumes the
 	// existence of a container bridge named cbr0.
 	HairpinMode string `json:"hairpinMode,omitempty" flag:"hairpin-mode"`
+
 	// The node has babysitter process monitoring docker and kubelet.
+	// Removed as of 1.7
 	BabysitDaemons *bool `json:"babysitDaemons,omitempty" flag:"babysit-daemons"`
 
 	// maxPods is the number of pods that can run on this Kubelet.
@@ -232,9 +239,9 @@ type KubeletConfigSpec struct {
 	// The CIDR to use for pod IP addresses, only used in standalone mode.
 	// In cluster mode, this is obtained from the master.
 	PodCIDR string `json:"podCIDR,omitempty" flag:"pod-cidr"`
-	//// ResolverConfig is the resolver configuration file used as the basis
-	//// for the container DNS resolution configuration."), []
-	//ResolverConfig string `json:"resolvConf"`
+	// ResolverConfig is the resolver configuration file used as the basis
+	// for the container DNS resolution configuration."), []
+	ResolverConfig *string `json:"resolvConf,omitempty" flag:"resolv-conf" flag-include-empty:"true"`
 	//// cpuCFSQuota is Enable CPU CFS quota enforcement for containers that
 	//// specify CPU limits
 	//CPUCFSQuota bool `json:"cpuCFSQuota"`
@@ -405,6 +412,9 @@ type KubeAPIServerConfig struct {
 	AllowPrivileged       *bool             `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
 	APIServerCount        *int32            `json:"apiServerCount,omitempty" flag:"apiserver-count"`
 	RuntimeConfig         map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
+
+	KubeletClientCertificate string `json:"kubeletClientCertificate,omitempty" flag:"kubelet-client-certificate"`
+	KubeletClientKey         string `json:"kubeletClientKey,omitempty" flag:"kubelet-client-key"`
 
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 
@@ -669,7 +679,8 @@ type CloudConfiguration struct {
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// AWS cloud-config options
-	DisableSecurityGroupIngress *bool `json:"disableSecurityGroupIngress,omitempty"`
+	DisableSecurityGroupIngress *bool   `json:"disableSecurityGroupIngress,omitempty"`
+	ElbSecurityGroup            *string `json:"elbSecurityGroup,omitempty"`
 
 	// vSphere cloud-config specs
 	VSphereUsername      *string `json:"vSphereUsername,omitempty"`

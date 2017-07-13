@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 
@@ -25,10 +26,23 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/util/pkg/vfs"
 
-	"bytes"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/util/i18n"
+)
+
+var (
+	replace_long = templates.LongDesc(i18n.T(`
+		Replace a resource specification by filename or stdin.`))
+
+	replace_example = templates.Examples(i18n.T(`
+		# Replace a cluster specification using a file
+		kops replace -f my-cluster.yaml
+		`))
+
+	replace_short = i18n.T(`Replace cluster resources.`)
 )
 
 type ReplaceOptions struct {
@@ -39,8 +53,10 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ReplaceOptions{}
 
 	cmd := &cobra.Command{
-		Use:   "replace -f FILENAME",
-		Short: "Replace a resource by filename or stdin.",
+		Use:     "replace -f FILENAME",
+		Short:   replace_short,
+		Long:    replace_long,
+		Example: replace_example,
 		Run: func(cmd *cobra.Command, args []string) {
 			if cmdutil.IsFilenameEmpty(options.Filenames) {
 				cmd.Help()
@@ -84,13 +100,13 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ReplaceOp
 
 			switch v := o.(type) {
 			case *kopsapi.Federation:
-				_, err = clientset.Federations().Update(v)
+				_, err = clientset.FederationsFor(v).Update(v)
 				if err != nil {
 					return fmt.Errorf("error replacing federation: %v", err)
 				}
 
 			case *kopsapi.Cluster:
-				_, err = clientset.Clusters().Update(v)
+				_, err = clientset.ClustersFor(v).Update(v)
 				if err != nil {
 					return fmt.Errorf("error replacing cluster: %v", err)
 				}
@@ -100,7 +116,11 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ReplaceOp
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to replace instanceGroup", kopsapi.LabelClusterName)
 				}
-				_, err = clientset.InstanceGroups(clusterName).Update(v)
+				cluster, err := clientset.GetCluster(clusterName)
+				if err != nil {
+					return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
+				}
+				_, err = clientset.InstanceGroupsFor(cluster).Update(v)
 				if err != nil {
 					return fmt.Errorf("error replacing instanceGroup: %v", err)
 				}

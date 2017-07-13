@@ -5,18 +5,17 @@ import (
 	"log"
 	"testing"
 
-	"github.com/coredns/coredns/middleware/proxy"
-	"github.com/coredns/coredns/middleware/test"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware/proxy"
+	"github.com/miekg/coredns/middleware/test"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 )
 
 func TestLookupWildcard(t *testing.T) {
-	t.Parallel()
 	name, rm, err := test.TempFile(".", exampleOrg)
 	if err != nil {
-		t.Fatalf("failed to create zone: %s", err)
+		t.Fatalf("failed to created zone: %s", err)
 	}
 	defer rm()
 
@@ -38,7 +37,7 @@ func TestLookupWildcard(t *testing.T) {
 
 	log.SetOutput(ioutil.Discard)
 
-	p := proxy.NewLookup([]string{udp})
+	p := proxy.New([]string{udp})
 	state := request.Request{W: &test.ResponseWriter{}, Req: new(dns.Msg)}
 
 	for _, lookup := range []string{"a.w.example.org.", "a.a.w.example.org."} {

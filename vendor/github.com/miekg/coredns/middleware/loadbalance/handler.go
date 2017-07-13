@@ -2,7 +2,7 @@
 package loadbalance
 
 import (
-	"github.com/coredns/coredns/middleware"
+	"github.com/miekg/coredns/middleware"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -16,7 +16,7 @@ type RoundRobin struct {
 // ServeDNS implements the middleware.Handler interface.
 func (rr RoundRobin) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
 	wrr := &RoundRobinResponseWriter{w}
-	return middleware.NextOrFailure(rr.Name(), rr.Next, ctx, wrr, r)
+	return rr.Next.ServeDNS(ctx, wrr, r)
 }
 
 // Name implements the Handler interface.

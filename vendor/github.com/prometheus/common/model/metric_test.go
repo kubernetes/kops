@@ -81,3 +81,52 @@ func BenchmarkMetric(b *testing.B) {
 		testMetric(b)
 	}
 }
+
+func TestMetricNameIsValid(t *testing.T) {
+	var scenarios = []struct {
+		mn    LabelValue
+		valid bool
+	}{
+		{
+			mn:    "Avalid_23name",
+			valid: true,
+		},
+		{
+			mn:    "_Avalid_23name",
+			valid: true,
+		},
+		{
+			mn:    "1valid_23name",
+			valid: false,
+		},
+		{
+			mn:    "avalid_23name",
+			valid: true,
+		},
+		{
+			mn:    "Ava:lid_23name",
+			valid: true,
+		},
+		{
+			mn:    "a lid_23name",
+			valid: false,
+		},
+		{
+			mn:    ":leading_colon",
+			valid: true,
+		},
+		{
+			mn:    "colon:in:the:middle",
+			valid: true,
+		},
+	}
+
+	for _, s := range scenarios {
+		if IsValidMetricName(s.mn) != s.valid {
+			t.Errorf("Expected %v for %q using IsValidMetricName function", s.valid, s.mn)
+		}
+		if MetricNameRE.MatchString(string(s.mn)) != s.valid {
+			t.Errorf("Expected %v for %q using regexp matching", s.valid, s.mn)
+		}
+	}
+}

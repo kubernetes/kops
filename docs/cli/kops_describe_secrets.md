@@ -1,14 +1,20 @@
 ## kops describe secrets
 
-Describe secrets
+Describe a cluster secret
 
 ### Synopsis
 
 
-Describe secrets.
+Get additional information about cluster secrets.
 
 ```
 kops describe secrets
+```
+
+### Examples
+
+```
+  
 ```
 
 ### Options
@@ -33,5 +39,5 @@ kops describe secrets
 ```
 
 ### SEE ALSO
-* [kops describe](kops_describe.md)	 - Get additional information about cloud resources.
+* [kops describe](kops_describe.md)	 - Describe a resource.
 

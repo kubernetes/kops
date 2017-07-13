@@ -108,25 +108,32 @@ type ProjectsService struct {
 	s *Service
 }
 
-// BillingAccount: A billing account in [Google Developers
-// Console](https://console.developers.google.com/). You can assign a
-// billing account to one or more projects.
+// BillingAccount: A billing account in [Google
+// Cloud
+// Console](https://console.cloud.google.com/). You can assign a billing
+// account
+// to one or more projects.
 type BillingAccount struct {
 	// DisplayName: The display name given to the billing account, such as
-	// `My Billing Account`. This name is displayed in the Google Developers
-	// Console.
+	// `My Billing
+	// Account`. This name is displayed in the Google Cloud Console.
 	DisplayName string `json:"displayName,omitempty"`
 
 	// Name: The resource name of the billing account. The resource name has
-	// the form `billingAccounts/{billing_account_id}`. For example,
-	// `billingAccounts/012345-567890-ABCDEF` would be the resource name for
+	// the form
+	// `billingAccounts/{billing_account_id}`. For
+	// example,
+	// `billingAccounts/012345-567890-ABCDEF` would be the resource name
+	// for
 	// billing account `012345-567890-ABCDEF`.
 	Name string `json:"name,omitempty"`
 
 	// Open: True if the billing account is open, and will therefore be
-	// charged for any usage on associated projects. False if the billing
-	// account is closed, and therefore projects associated with it will be
-	// unable to use paid services.
+	// charged for any
+	// usage on associated projects. False if the billing account is closed,
+	// and
+	// therefore projects associated with it will be unable to use paid
+	// services.
 	Open bool `json:"open,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -163,9 +170,10 @@ type ListBillingAccountsResponse struct {
 	BillingAccounts []*BillingAccount `json:"billingAccounts,omitempty"`
 
 	// NextPageToken: A token to retrieve the next page of results. To
-	// retrieve the next page, call `ListBillingAccounts` again with the
-	// `page_token` field set to this value. This field is empty if there
-	// are no more results to retrieve.
+	// retrieve the next page,
+	// call `ListBillingAccounts` again with the `page_token` field set to
+	// this
+	// value. This field is empty if there are no more results to retrieve.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -200,13 +208,15 @@ func (s *ListBillingAccountsResponse) MarshalJSON() ([]byte, error) {
 // `ListProjectBillingInfoResponse`.
 type ListProjectBillingInfoResponse struct {
 	// NextPageToken: A token to retrieve the next page of results. To
-	// retrieve the next page, call `ListProjectBillingInfo` again with the
-	// `page_token` field set to this value. This field is empty if there
-	// are no more results to retrieve.
+	// retrieve the next page,
+	// call `ListProjectBillingInfo` again with the `page_token` field set
+	// to this
+	// value. This field is empty if there are no more results to retrieve.
 	NextPageToken string `json:"nextPageToken,omitempty"`
 
 	// ProjectBillingInfo: A list of `ProjectBillingInfo` resources
-	// representing the projects associated with the billing account.
+	// representing the projects
+	// associated with the billing account.
 	ProjectBillingInfo []*ProjectBillingInfo `json:"projectBillingInfo,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -236,33 +246,41 @@ func (s *ListProjectBillingInfoResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// ProjectBillingInfo: Encapsulation of billing information for a
-// Developers Console project. A project has at most one associated
-// billing account at a time (but a billing account can be assigned to
-// multiple projects).
+// ProjectBillingInfo: Encapsulation of billing information for a Cloud
+// Console project. A project
+// has at most one associated billing account at a time (but a billing
+// account
+// can be assigned to multiple projects).
 type ProjectBillingInfo struct {
 	// BillingAccountName: The resource name of the billing account
-	// associated with the project, if any. For example,
-	// `billingAccounts/012345-567890-ABCDEF`.
+	// associated with the project, if
+	// any. For example, `billingAccounts/012345-567890-ABCDEF`.
 	BillingAccountName string `json:"billingAccountName,omitempty"`
 
 	// BillingEnabled: True if the project is associated with an open
-	// billing account, to which usage on the project is charged. False if
-	// the project is associated with a closed billing account, or no
-	// billing account at all, and therefore cannot use paid services. This
-	// field is read-only.
+	// billing account, to which
+	// usage on the project is charged. False if the project is associated
+	// with a
+	// closed billing account, or no billing account at all, and therefore
+	// cannot
+	// use paid services. This field is read-only.
 	BillingEnabled bool `json:"billingEnabled,omitempty"`
 
-	// Name: The resource name for the `ProjectBillingInfo`; has the form
+	// Name: The resource name for the `ProjectBillingInfo`; has the
+	// form
 	// `projects/{project_id}/billingInfo`. For example, the resource name
-	// for the billing information for project `tokyo-rain-123` would be
+	// for the
+	// billing information for project `tokyo-rain-123` would
+	// be
 	// `projects/tokyo-rain-123/billingInfo`. This field is read-only.
 	Name string `json:"name,omitempty"`
 
 	// ProjectId: The ID of the project that this `ProjectBillingInfo`
-	// represents, such as `tokyo-rain-123`. This is a convenience field so
-	// that you don't need to parse the `name` field to obtain a project ID.
-	// This field is read-only.
+	// represents, such as
+	// `tokyo-rain-123`. This is a convenience field so that you don't need
+	// to
+	// parse the `name` field to obtain a project ID. This field is
+	// read-only.
 	ProjectId string `json:"projectId,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
@@ -305,7 +323,9 @@ type BillingAccountsGetCall struct {
 }
 
 // Get: Gets information about a billing account. The current
-// authenticated user must be an [owner of the billing
+// authenticated user
+// must be an [owner of the
+// billing
 // account](https://support.google.com/cloud/answer/4430947).
 func (r *BillingAccountsService) Get(name string) *BillingAccountsGetCall {
 	c := &BillingAccountsGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -407,7 +427,8 @@ func (c *BillingAccountsGetCall) Do(opts ...googleapi.CallOption) (*BillingAccou
 	}
 	return ret, nil
 	// {
-	//   "description": "Gets information about a billing account. The current authenticated user must be an [owner of the billing account](https://support.google.com/cloud/answer/4430947).",
+	//   "description": "Gets information about a billing account. The current authenticated user\nmust be an [owner of the billing\naccount](https://support.google.com/cloud/answer/4430947).",
+	//   "flatPath": "v1/billingAccounts/{billingAccountsId}",
 	//   "httpMethod": "GET",
 	//   "id": "cloudbilling.billingAccounts.get",
 	//   "parameterOrder": [
@@ -415,9 +436,9 @@ func (c *BillingAccountsGetCall) Do(opts ...googleapi.CallOption) (*BillingAccou
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name of the billing account to retrieve. For example, `billingAccounts/012345-567890-ABCDEF`.",
+	//       "description": "The resource name of the billing account to retrieve. For example,\n`billingAccounts/012345-567890-ABCDEF`.",
 	//       "location": "path",
-	//       "pattern": "^billingAccounts/[^/]*$",
+	//       "pattern": "^billingAccounts/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -443,7 +464,8 @@ type BillingAccountsListCall struct {
 	header_      http.Header
 }
 
-// List: Lists the billing accounts that the current authenticated user
+// List: Lists the billing accounts that the current authenticated
+// user
 // [owns](https://support.google.com/cloud/answer/4430947).
 func (r *BillingAccountsService) List() *BillingAccountsListCall {
 	c := &BillingAccountsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -451,17 +473,19 @@ func (r *BillingAccountsService) List() *BillingAccountsListCall {
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// The maximum page size is 100; this is also the default.
+// The maximum page size is 100; this is also the
+// default.
 func (c *BillingAccountsListCall) PageSize(pageSize int64) *BillingAccountsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A token
-// identifying a page of results to return. This should be a
+// identifying a page of results to return. This should be
+// a
 // `next_page_token` value returned from a previous
-// `ListBillingAccounts` call. If unspecified, the first page of results
-// is returned.
+// `ListBillingAccounts`
+// call. If unspecified, the first page of results is returned.
 func (c *BillingAccountsListCall) PageToken(pageToken string) *BillingAccountsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
@@ -558,18 +582,20 @@ func (c *BillingAccountsListCall) Do(opts ...googleapi.CallOption) (*ListBilling
 	}
 	return ret, nil
 	// {
-	//   "description": "Lists the billing accounts that the current authenticated user [owns](https://support.google.com/cloud/answer/4430947).",
+	//   "description": "Lists the billing accounts that the current authenticated user\n[owns](https://support.google.com/cloud/answer/4430947).",
+	//   "flatPath": "v1/billingAccounts",
 	//   "httpMethod": "GET",
 	//   "id": "cloudbilling.billingAccounts.list",
+	//   "parameterOrder": [],
 	//   "parameters": {
 	//     "pageSize": {
-	//       "description": "Requested page size. The maximum page size is 100; this is also the default.",
+	//       "description": "Requested page size. The maximum page size is 100; this is also the\ndefault.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
 	//     },
 	//     "pageToken": {
-	//       "description": "A token identifying a page of results to return. This should be a `next_page_token` value returned from a previous `ListBillingAccounts` call. If unspecified, the first page of results is returned.",
+	//       "description": "A token identifying a page of results to return. This should be a\n`next_page_token` value returned from a previous `ListBillingAccounts`\ncall. If unspecified, the first page of results is returned.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -618,7 +644,9 @@ type BillingAccountsProjectsListCall struct {
 }
 
 // List: Lists the projects associated with a billing account. The
-// current authenticated user must be an [owner of the billing
+// current
+// authenticated user must be an [owner of the
+// billing
 // account](https://support.google.com/cloud/answer/4430947).
 func (r *BillingAccountsProjectsService) List(name string) *BillingAccountsProjectsListCall {
 	c := &BillingAccountsProjectsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
@@ -627,17 +655,19 @@ func (r *BillingAccountsProjectsService) List(name string) *BillingAccountsProje
 }
 
 // PageSize sets the optional parameter "pageSize": Requested page size.
-// The maximum page size is 100; this is also the default.
+// The maximum page size is 100; this is also the
+// default.
 func (c *BillingAccountsProjectsListCall) PageSize(pageSize int64) *BillingAccountsProjectsListCall {
 	c.urlParams_.Set("pageSize", fmt.Sprint(pageSize))
 	return c
 }
 
 // PageToken sets the optional parameter "pageToken": A token
-// identifying a page of results to be returned. This should be a
+// identifying a page of results to be returned. This should be
+// a
 // `next_page_token` value returned from a previous
-// `ListProjectBillingInfo` call. If unspecified, the first page of
-// results is returned.
+// `ListProjectBillingInfo`
+// call. If unspecified, the first page of results is returned.
 func (c *BillingAccountsProjectsListCall) PageToken(pageToken string) *BillingAccountsProjectsListCall {
 	c.urlParams_.Set("pageToken", pageToken)
 	return c
@@ -737,7 +767,8 @@ func (c *BillingAccountsProjectsListCall) Do(opts ...googleapi.CallOption) (*Lis
 	}
 	return ret, nil
 	// {
-	//   "description": "Lists the projects associated with a billing account. The current authenticated user must be an [owner of the billing account](https://support.google.com/cloud/answer/4430947).",
+	//   "description": "Lists the projects associated with a billing account. The current\nauthenticated user must be an [owner of the billing\naccount](https://support.google.com/cloud/answer/4430947).",
+	//   "flatPath": "v1/billingAccounts/{billingAccountsId}/projects",
 	//   "httpMethod": "GET",
 	//   "id": "cloudbilling.billingAccounts.projects.list",
 	//   "parameterOrder": [
@@ -745,20 +776,20 @@ func (c *BillingAccountsProjectsListCall) Do(opts ...googleapi.CallOption) (*Lis
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name of the billing account associated with the projects that you want to list. For example, `billingAccounts/012345-567890-ABCDEF`.",
+	//       "description": "The resource name of the billing account associated with the projects that\nyou want to list. For example, `billingAccounts/012345-567890-ABCDEF`.",
 	//       "location": "path",
-	//       "pattern": "^billingAccounts/[^/]*$",
+	//       "pattern": "^billingAccounts/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     },
 	//     "pageSize": {
-	//       "description": "Requested page size. The maximum page size is 100; this is also the default.",
+	//       "description": "Requested page size. The maximum page size is 100; this is also the\ndefault.",
 	//       "format": "int32",
 	//       "location": "query",
 	//       "type": "integer"
 	//     },
 	//     "pageToken": {
-	//       "description": "A token identifying a page of results to be returned. This should be a `next_page_token` value returned from a previous `ListProjectBillingInfo` call. If unspecified, the first page of results is returned.",
+	//       "description": "A token identifying a page of results to be returned. This should be a\n`next_page_token` value returned from a previous `ListProjectBillingInfo`\ncall. If unspecified, the first page of results is returned.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -807,9 +838,12 @@ type ProjectsGetBillingInfoCall struct {
 }
 
 // GetBillingInfo: Gets the billing information for a project. The
-// current authenticated user must have [permission to view the
-// project](https://cloud.google.com/docs/permissions-overview#h.bgs0oxof
-// vnoo ).
+// current authenticated user
+// must have [permission to view
+// the
+// project](https://cloud.google.com/docs/permissions-overview#h.bgs0
+// oxofvnoo
+// ).
 func (r *ProjectsService) GetBillingInfo(name string) *ProjectsGetBillingInfoCall {
 	c := &ProjectsGetBillingInfoCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -910,7 +944,8 @@ func (c *ProjectsGetBillingInfoCall) Do(opts ...googleapi.CallOption) (*ProjectB
 	}
 	return ret, nil
 	// {
-	//   "description": "Gets the billing information for a project. The current authenticated user must have [permission to view the project](https://cloud.google.com/docs/permissions-overview#h.bgs0oxofvnoo ).",
+	//   "description": "Gets the billing information for a project. The current authenticated user\nmust have [permission to view the\nproject](https://cloud.google.com/docs/permissions-overview#h.bgs0oxofvnoo\n).",
+	//   "flatPath": "v1/projects/{projectsId}/billingInfo",
 	//   "httpMethod": "GET",
 	//   "id": "cloudbilling.projects.getBillingInfo",
 	//   "parameterOrder": [
@@ -918,9 +953,9 @@ func (c *ProjectsGetBillingInfoCall) Do(opts ...googleapi.CallOption) (*ProjectB
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name of the project for which billing information is retrieved. For example, `projects/tokyo-rain-123`.",
+	//       "description": "The resource name of the project for which billing information is\nretrieved. For example, `projects/tokyo-rain-123`.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }
@@ -948,33 +983,61 @@ type ProjectsUpdateBillingInfoCall struct {
 }
 
 // UpdateBillingInfo: Sets or updates the billing account associated
-// with a project. You specify the new billing account by setting the
-// `billing_account_name` in the `ProjectBillingInfo` resource to the
-// resource name of a billing account. Associating a project with an
-// open billing account enables billing on the project and allows
-// charges for resource usage. If the project already had a billing
-// account, this method changes the billing account used for resource
-// usage charges. *Note:* Incurred charges that have not yet been
-// reported in the transaction history of the Google Developers Console
-// may be billed to the new billing account, even if the charge occurred
-// before the new billing account was assigned to the project. The
-// current authenticated user must have ownership privileges for both
+// with a project. You specify
+// the new billing account by setting the `billing_account_name` in
 // the
-// [project](https://cloud.google.com/docs/permissions-overview#h.bgs0oxo
-// fvnoo ) and the [billing
-// account](https://support.google.com/cloud/answer/4430947). You can
-// disable billing on the project by setting the `billing_account_name`
-// field to empty. This action disassociates the current billing account
-// from the project. Any billable activity of your in-use services will
-// stop, and your application could stop functioning as expected. Any
-// unbilled charges to date will be billed to the previously associated
-// account. The current authenticated user must be either an owner of
-// the project or an owner of the billing account for the project. Note
-// that associating a project with a *closed* billing account will have
-// much the same effect as disabling billing on the project: any paid
+// `ProjectBillingInfo` resource to the resource name of a billing
+// account.
+// Associating a project with an open billing account enables billing on
+// the
+// project and allows charges for resource usage. If the project already
+// had a
+// billing account, this method changes the billing account used for
+// resource
+// usage charges.
+//
+// *Note:* Incurred charges that have not yet been reported in the
+// transaction
+// history of the Google Cloud Console may be billed to the new
+// billing
+// account, even if the charge occurred before the new billing account
+// was
+// assigned to the project.
+//
+// The current authenticated user must have ownership privileges for
+// both
+// the
+// [project](https://cloud.google.com/docs/permissions-overview#h.bgs
+// 0oxofvnoo
+// ) and the
+// [billing
+// account](https://support.google.com/cloud/answer/4430947).
+//
+// Y
+// ou can disable billing on the project by setting
+// the
+// `billing_account_name` field to empty. This action disassociates
+// the
+// current billing account from the project. Any billable activity of
+// your
+// in-use services will stop, and your application could stop
+// functioning as
+// expected. Any unbilled charges to date will be billed to the
+// previously
+// associated account. The current authenticated user must be either an
+// owner
+// of the project or an owner of the billing account for the
+// project.
+//
+// Note that associating a project with a *closed* billing account will
+// have
+// much the same effect as disabling billing on the project: any
+// paid
 // resources used by the project will be shut down. Thus, unless you
-// wish to disable billing, you should always call this method with the
-// name of an *open* billing account.
+// wish to
+// disable billing, you should always call this method with the name of
+// an
+// *open* billing account.
 func (r *ProjectsService) UpdateBillingInfo(name string, projectbillinginfo *ProjectBillingInfo) *ProjectsUpdateBillingInfoCall {
 	c := &ProjectsUpdateBillingInfoCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.name = name
@@ -1068,7 +1131,8 @@ func (c *ProjectsUpdateBillingInfoCall) Do(opts ...googleapi.CallOption) (*Proje
 	}
 	return ret, nil
 	// {
-	//   "description": "Sets or updates the billing account associated with a project. You specify the new billing account by setting the `billing_account_name` in the `ProjectBillingInfo` resource to the resource name of a billing account. Associating a project with an open billing account enables billing on the project and allows charges for resource usage. If the project already had a billing account, this method changes the billing account used for resource usage charges. *Note:* Incurred charges that have not yet been reported in the transaction history of the Google Developers Console may be billed to the new billing account, even if the charge occurred before the new billing account was assigned to the project. The current authenticated user must have ownership privileges for both the [project](https://cloud.google.com/docs/permissions-overview#h.bgs0oxofvnoo ) and the [billing account](https://support.google.com/cloud/answer/4430947). You can disable billing on the project by setting the `billing_account_name` field to empty. This action disassociates the current billing account from the project. Any billable activity of your in-use services will stop, and your application could stop functioning as expected. Any unbilled charges to date will be billed to the previously associated account. The current authenticated user must be either an owner of the project or an owner of the billing account for the project. Note that associating a project with a *closed* billing account will have much the same effect as disabling billing on the project: any paid resources used by the project will be shut down. Thus, unless you wish to disable billing, you should always call this method with the name of an *open* billing account.",
+	//   "description": "Sets or updates the billing account associated with a project. You specify\nthe new billing account by setting the `billing_account_name` in the\n`ProjectBillingInfo` resource to the resource name of a billing account.\nAssociating a project with an open billing account enables billing on the\nproject and allows charges for resource usage. If the project already had a\nbilling account, this method changes the billing account used for resource\nusage charges.\n\n*Note:* Incurred charges that have not yet been reported in the transaction\nhistory of the Google Cloud Console may be billed to the new billing\naccount, even if the charge occurred before the new billing account was\nassigned to the project.\n\nThe current authenticated user must have ownership privileges for both the\n[project](https://cloud.google.com/docs/permissions-overview#h.bgs0oxofvnoo\n) and the [billing\naccount](https://support.google.com/cloud/answer/4430947).\n\nYou can disable billing on the project by setting the\n`billing_account_name` field to empty. This action disassociates the\ncurrent billing account from the project. Any billable activity of your\nin-use services will stop, and your application could stop functioning as\nexpected. Any unbilled charges to date will be billed to the previously\nassociated account. The current authenticated user must be either an owner\nof the project or an owner of the billing account for the project.\n\nNote that associating a project with a *closed* billing account will have\nmuch the same effect as disabling billing on the project: any paid\nresources used by the project will be shut down. Thus, unless you wish to\ndisable billing, you should always call this method with the name of an\n*open* billing account.",
+	//   "flatPath": "v1/projects/{projectsId}/billingInfo",
 	//   "httpMethod": "PUT",
 	//   "id": "cloudbilling.projects.updateBillingInfo",
 	//   "parameterOrder": [
@@ -1076,9 +1140,9 @@ func (c *ProjectsUpdateBillingInfoCall) Do(opts ...googleapi.CallOption) (*Proje
 	//   ],
 	//   "parameters": {
 	//     "name": {
-	//       "description": "The resource name of the project associated with the billing information that you want to update. For example, `projects/tokyo-rain-123`.",
+	//       "description": "The resource name of the project associated with the billing information\nthat you want to update. For example, `projects/tokyo-rain-123`.",
 	//       "location": "path",
-	//       "pattern": "^projects/[^/]*$",
+	//       "pattern": "^projects/[^/]+$",
 	//       "required": true,
 	//       "type": "string"
 	//     }

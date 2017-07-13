@@ -4,8 +4,8 @@ import (
 	"net"
 	"sync"
 
-	"github.com/coredns/coredns/core/dnsserver"
-	"github.com/coredns/coredns/middleware"
+	"github.com/miekg/coredns/core/dnsserver"
+	"github.com/miekg/coredns/middleware"
 
 	"github.com/mholt/caddy"
 )
@@ -28,10 +28,9 @@ func setup(c *caddy.Controller) error {
 		return m
 	})
 
-	// During restarts we will keep this handler running.
 	metricsOnce.Do(func() {
-		c.OncePerServerBlock(m.OnStartup)
-		c.OnFinalShutdown(m.OnShutdown)
+		c.OnStartup(m.OnStartup)
+		c.OnShutdown(m.OnShutdown)
 	})
 
 	return nil

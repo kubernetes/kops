@@ -25,6 +25,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kops/protokube/pkg/gossip"
+	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"net"
 	"strings"
@@ -364,7 +365,10 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) error {
 }
 
 func (a *AWSVolumes) GossipSeeds() (gossip.SeedProvider, error) {
-	return nil, fmt.Errorf("AWS seed provider not yet implemented")
+	tags := make(map[string]string)
+	tags[awsup.TagClusterName] = a.clusterTag
+
+	return gossipaws.NewSeedProvider(a.ec2, tags)
 }
 
 func (a *AWSVolumes) InstanceID() string {

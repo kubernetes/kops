@@ -10,7 +10,7 @@ By default, a cluster has:
   minimum size and maximum size = 1, so they will run a single instance.  We do this so that the cloud will
   always relaunch masters, even if everything is terminated at once.  We have an instance group per zone
   because we need to force the cloud to run an instance in every zone, so we can mount the master volumes - we
-  can't do that across zones.
+  cannot do that across zones.
 
 ## Listing instance groups
 
@@ -61,8 +61,9 @@ The procedure to resize an instance group works the same way:
 * Apply changes: `kops update cluster <clustername>  --yes`
 * (you do not need a `rolling-update` when changing instancegroup sizes)
 
-
 ## Changing the root volume size or type
+
+The default volume size for Masters is 64 GB, while the default volume size for a node is 128 GB.
 
 The procedure to resize the root volume works the same way:
 
@@ -71,7 +72,7 @@ The procedure to resize the root volume works the same way:
 * Apply changes: `kops update cluster <clustername> --yes`
 * Rolling update to update existing instances: `kops rolling-update cluster --yes`
 
-For example, to set up a 100GB gp2 root volume, your InstanceGroup spec might look like:
+For example, to set up a 200GB gp2 root volume, your InstanceGroup spec might look like:
 
 ```
 metadata:
@@ -82,7 +83,7 @@ spec:
   maxSize: 2
   minSize: 2
   role: Node
-  rootVolumeSize: 100
+  rootVolumeSize: 200
   rootVolumeType: gp2
 ```
 
@@ -186,3 +187,12 @@ Example: `kops delete ig morenodes`
 
 No rolling-update is needed (and note this is not currently graceful, so there may be interruptions to
 workloads where the pods are running on those nodes).
+
+## EBS Volume Optimization
+
+EBS-Optimized instances can be created by setting the following field:
+
+```
+spec:
+  rootVolumeOptimization: true
+```
