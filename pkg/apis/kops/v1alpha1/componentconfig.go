@@ -353,8 +353,12 @@ type KubeProxyConfig struct {
 	//HealthzBindAddress string `json:"healthzBindAddress"`
 	//// healthzPort is the port to bind the health check server. Use 0 to disable.
 	//HealthzPort int32 `json:"healthzPort"`
-	//// hostnameOverride, if non-empty, will be used as the identity instead of the actual hostname.
-	//HostnameOverride string `json:"hostnameOverride"`
+
+	// hostnameOverride, if non-empty, will be used as the identity instead of the actual hostname.
+	// Note: We recognize some additional values:
+	//  @aws uses the hostname from the AWS metadata service
+	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
+
 	//// iptablesMasqueradeBit is the bit of the iptables fwmark space to use for SNAT if using
 	//// the pure iptables proxy mode. Values must be within the range [0, 31].
 	//IPTablesMasqueradeBit *int32 `json:"iptablesMasqueradeBit"`
