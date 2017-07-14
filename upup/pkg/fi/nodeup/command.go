@@ -313,6 +313,13 @@ func evaluateSpec(c *api.Cluster) error {
 		return err
 	}
 
+	if c.Spec.KubeProxy != nil {
+		c.Spec.KubeProxy.HostnameOverride, err = evaluateHostnameOverride(c.Spec.KubeProxy.HostnameOverride)
+		if err != nil {
+			return err
+		}
+	}
+
 	if c.Spec.Docker != nil {
 		err = evaluateDockerSpecStorage(c.Spec.Docker)
 		if err != nil {
