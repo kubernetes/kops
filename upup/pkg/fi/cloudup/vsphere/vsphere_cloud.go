@@ -276,7 +276,7 @@ func (c *VSphereCloud) UploadAndAttachISO(vm *string, isoFile string) error {
 	}
 	glog.V(2).Infof("Uploaded ISO file %s", isoFile)
 
-	// Find the cd-rom devide and insert the cloud init iso file into it.
+	// Find the cd-rom device and insert the cloud init iso file into it.
 	devices, err := vmRef.Device(ctx)
 	if err != nil {
 		return err
