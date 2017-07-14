@@ -48,6 +48,7 @@ func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCreateSecretPublicKey(f, out))
+	cmd.AddCommand(NewCmdCreateSecretCaCert(f, out))
 
 	return cmd
 }

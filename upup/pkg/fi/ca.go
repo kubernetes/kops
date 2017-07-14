@@ -27,11 +27,12 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"github.com/golang/glog"
 	"io"
-	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"time"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 const CertificateId_CA = "ca"
@@ -407,6 +408,16 @@ func parsePEMPrivateKey(pemData []byte) (crypto.PrivateKey, error) {
 
 		pemData = rest
 	}
+}
+
+// LoadPEMPrivateKey public
+func LoadPEMPrivateKey(pemData []byte) (*PrivateKey, error) {
+	pemKey, err := parsePEMPrivateKey(pemData)
+	if err != nil {
+		return nil, fmt.Errorf("failed ot load pem: %v", err)
+	}
+	key := PrivateKey{Key: pemKey}
+	return &key, nil
 }
 
 type CertificatePool struct {
