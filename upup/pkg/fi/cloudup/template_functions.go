@@ -40,8 +40,8 @@ import (
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
 type TemplateFunctions struct {
@@ -153,7 +153,6 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 		}
 	}
 	// argv = append(argv, "--watch-ingress=false")
-
 
 	switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
