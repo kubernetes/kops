@@ -14,7 +14,7 @@ To perform rolling update, you need to update the cloud resources first with "ko
 
 Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply" prior to running "kops rolling-update cluster" 
 
-Use export KOPS FEATURE FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes and validates the cluster.  New flags for Drain and Validation operations will be shown when the environment variable is set.
+Use export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"to use beta code that drains the nodes and validates the cluster.  New flags for Drain and Validation operations will be shown when the environment variable is set.
 
 ```
 kops rolling-update cluster
