@@ -33,6 +33,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/instancegroups"
+	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/tables"
@@ -49,7 +50,7 @@ var (
 	Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply"
 	prior to running "kops rolling-update cluster"
 
-	Use export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
+	Use ` + pretty.Bash("export KOPS_FEATURE_FLAGS=\"+DrainAndValidateRollingUpdate\"") + ` to use beta code that drains the nodes
 	and validates the cluster.  New flags for Drain and Validation operations will be shown when
 	the environment variable is set.`))
 
