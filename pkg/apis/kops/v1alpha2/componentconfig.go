@@ -165,6 +165,11 @@ type KubeProxyConfig struct {
 
 	// Configuration flags - a subset of https://github.com/kubernetes/kubernetes/blob/master/pkg/apis/componentconfig/types.go
 
+	// hostnameOverride, if non-empty, will be used as the identity instead of the actual hostname.
+	// Note: We recognize some additional values:
+	//  @aws uses the hostname from the AWS metadata service
+	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
+
 	// master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
 
