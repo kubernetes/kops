@@ -6,18 +6,18 @@ This document also applies to using the `kops` API to customize a Kubernetes clu
 
 > We like to think of it as `kubectl` for Clusters.
 
-Because of the above statement `kops` includes an API which provides a feature for users to utilize YAML or JSON manifests for managing their `kops` created Kubernetes installations.  In the same way, you can use a YAML manifest to deploy a Job you can deploy and manage a `kops` Kuberenetes instance with a manifest.  All of these values are also usable via the interactive editor with `kops edit`.
+Because of the above statement `kops` includes an API which provides a feature for users to utilize YAML or JSON manifests for managing their `kops` created Kubernetes installations. In the same way, you can use a YAML manifest to deploy a Job you can deploy and manage a `kops` Kuberenetes instance with a manifest. All of these values are also usable via the interactive editor with `kops edit`.
 
 The following is a list of the benefits of using a file to manage instances.
 
 - Capability to access API values that are not accessible via the command line such as setting the max price for spot instances.
-- Create, update, and delete clusters without entering an interactive editor.  This feature is helpful when automating cluster creation.
+- Create, update, and delete clusters without entering an interactive editor. This feature is helpful when automating cluster creation.
 - Ability to check-in files to source control that represents an installation.
 - Run commands such as `kops delete -f mycuster.yaml`.
 
 ## Exporting a Cluster
 
-At this time you must run `kops create cluster` and then export the YAML from the state store.   We plan in the future to have the capability to generate kops YAML via the command line.  The following is an example of creating a cluster and exporting the YAML.
+At this time you must run `kops create cluster` and then export the YAML from the state store. We plan in the future to have the capability to generate kops YAML via the command line. The following is an example of creating a cluster and exporting the YAML.
 
 ```shell
 export NAME=k8s.example.com
@@ -35,7 +35,7 @@ export KOPS_STATE_STORE=s3://example-state-store
     --vpc vpc-6335dd1a
 ```
 
-The next step is to export the configuration to a YAML document.  `kops` has a command that allows the export in a single YAML document, but since JSON files need to separate documents, we only export YAML with a single command.  You can export JSON with multiple commands.
+The next step is to export the configuration to a YAML document. `kops` has a command that allows the export in a single YAML document, but since JSON files need to separate documents, we only export YAML with a single command. You can export JSON with multiple commands.
 
 ```shell
 kops get $NAME -o yaml > $NAME.yaml
@@ -230,7 +230,7 @@ kops delete -f $NAME.yaml --yes
 
 ## YAML Examples
 
-With the above YAML file, a user can add configurations that are not available via the command line.  For instance, you can add a `MaxPrice` value to a new instance group and use spot instances.  Also add node and cloud labels for the new instance group.
+With the above YAML file, a user can add configurations that are not available via the command line. For instance, you can add a `MaxPrice` value to a new instance group and use spot instances. Also add node and cloud labels for the new instance group.
 
 ```yaml
 apiVersion: kops/v1alpha2
@@ -281,7 +281,7 @@ Please refer to the rolling-update [documentation](cli/kops_rolling-update_clust
 
 ## Further References
 
-`kops` implements a full API that defines the various elements in the YAML file exported above.  Two top level components exist; `ClusterSpec` and `InstanceGroup`.
+`kops` implements a full API that defines the various elements in the YAML file exported above. Two top level components exist; `ClusterSpec` and `InstanceGroup`.
 
 ### Cluster Spec
 
@@ -314,7 +314,7 @@ To access the full configuration that a `kops` installation is running execute:
 kops get cluster $NAME --full -o yaml
 ```
 
-This command prints the entire YAML configuration.  But _do not_ use the full document, you may experience strange and unique unwanted behaviors. 
+This command prints the entire YAML configuration. But _do not_ use the full document, you may experience strange and unique unwanted behaviors.
 
 ### Instance Groups
 
@@ -327,19 +327,18 @@ metadata:
 spec:
 ```
 
-Full documentation is accessible via [godocs] (https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
+Full documentation is accessible via [godocs](https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroupSpec).
 
-Instance Groups map to auto scale groups in AWS, and Instance Groups in GCE.  They are an API level description of a group of compute instances used as Masters or Nodes.
+Instance Groups map to Auto Scaling Groups in AWS, and Instance Groups in GCE. They are an API level description of a group of compute instances used as Masters or Nodes.
 
 More documentation is available in the [Instance Group](instance_groups.md) document.
 
 ## Closing Thoughts
 
-Using YAML or JSON-based configuration for building and managing kops clusters is powerful, but use with caution.
+Using YAML or JSON-based configuration for building and managing kops clusters is powerful, but use this strategy with caution.
 
-- If you do not need to define or customize a value, let kops set that value
-Setting too many values dont allow kops to do its job in setting up the cluster and you may end up with strange bugs
-- If you end up with strange bugs, try letting kops do more
+- If you do not need to define or customize a value, let kops set that value. Setting too many values prevents kops from doing its job in setting up the cluster and you may end up with strange bugs.
+- If you end up with strange bugs, try letting kops do more.
 - Be cautious, take care, and test test test outside of production!
 
-If you need to run a custom version of Kubernetes Controller Manager, set `kubeControllerManager.image` and update your cluster, and that is the beauty of using a manifest for your cluster.
+If you need to run a custom version of Kubernetes Controller Manager, set `kubeControllerManager.image` and update your cluster. This is the beauty of using a manifest for your cluster!
