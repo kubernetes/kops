@@ -67,5 +67,6 @@ kops create -f FILENAME
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops create cluster](kops_create_cluster.md)	 - Create a Kubernetes cluster.
 * [kops create instancegroup](kops_create_instancegroup.md)	 - Create an instancegroup.
+* [kops create inventory](kops_create_inventory.md)	 - Update inventory files to the specified destinations(Registry/File Destination).
 * [kops create secret](kops_create_secret.md)	 - Create a secret.
 
