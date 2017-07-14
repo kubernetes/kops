@@ -136,10 +136,10 @@ func (o *CreateClusterOptions) InitDefaults() {
 var (
 	create_cluster_long = templates.LongDesc(i18n.T(`
 	Create a kubernetes cluster using command line flags.
-	This command creates cloud based resources such as networks and virtual machine. Once
+	This command creates cloud based resources such as networks and virtual machines. Once
 	the infrastructure is in place Kubernetes is installed on the virtual machines.
 
-	These operations are done in parrellel and rely on eventual consitency.
+	These operations are done in parallel and rely on eventual consistency.
 	`))
 
 	create_cluster_example = templates.Examples(i18n.T(`
