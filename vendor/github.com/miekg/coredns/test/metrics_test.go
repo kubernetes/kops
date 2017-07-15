@@ -8,15 +8,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coredns/coredns/middleware/cache"
-	"github.com/coredns/coredns/middleware/metrics"
-	mtest "github.com/coredns/coredns/middleware/metrics/test"
-	"github.com/coredns/coredns/middleware/metrics/vars"
+	"github.com/miekg/coredns/middleware/cache"
+	"github.com/miekg/coredns/middleware/metrics"
+	mtest "github.com/miekg/coredns/middleware/metrics/test"
+	"github.com/miekg/coredns/middleware/metrics/vars"
 
 	"github.com/miekg/dns"
 )
-
-// fail when done in parallel
 
 // Start test server that has metrics enabled. Then tear it down again.
 func TestMetricsServer(t *testing.T) {

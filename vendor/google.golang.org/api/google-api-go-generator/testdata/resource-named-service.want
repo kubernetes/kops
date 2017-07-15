@@ -486,6 +486,20 @@ func (s *CpuUtilization) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *CpuUtilization) UnmarshalJSON(data []byte) error {
+	type noMethod CpuUtilization
+	var s1 struct {
+		TargetUtilization gensupport.JSONFloat64 `json:"targetUtilization"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.TargetUtilization = float64(s1.TargetUtilization)
+	return nil
+}
+
 // DebugInstanceRequest: Request message for `Instances.DebugInstance`.
 type DebugInstanceRequest struct {
 }
@@ -797,6 +811,20 @@ func (s *Instance) MarshalJSON() ([]byte, error) {
 	type noMethod Instance
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *Instance) UnmarshalJSON(data []byte) error {
+	type noMethod Instance
+	var s1 struct {
+		Qps gensupport.JSONFloat64 `json:"qps"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Qps = float64(s1.Qps)
+	return nil
 }
 
 // Library: Third-party Python runtime library that is required by the
@@ -1472,6 +1500,24 @@ func (s *Resources) MarshalJSON() ([]byte, error) {
 	type noMethod Resources
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *Resources) UnmarshalJSON(data []byte) error {
+	type noMethod Resources
+	var s1 struct {
+		Cpu      gensupport.JSONFloat64 `json:"cpu"`
+		DiskGb   gensupport.JSONFloat64 `json:"diskGb"`
+		MemoryGb gensupport.JSONFloat64 `json:"memoryGb"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Cpu = float64(s1.Cpu)
+	s.DiskGb = float64(s1.DiskGb)
+	s.MemoryGb = float64(s1.MemoryGb)
+	return nil
 }
 
 // ScriptHandler: Executes a script to handle the request that matches

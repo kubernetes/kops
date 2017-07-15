@@ -7,22 +7,11 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/middleware/metrics/vars"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/middleware/metrics/vars"
 
 	"github.com/prometheus/client_golang/prometheus"
 )
-
-func init() {
-	prometheus.MustRegister(vars.RequestCount)
-	prometheus.MustRegister(vars.RequestDuration)
-	prometheus.MustRegister(vars.RequestSize)
-	prometheus.MustRegister(vars.RequestDo)
-	prometheus.MustRegister(vars.RequestType)
-
-	prometheus.MustRegister(vars.ResponseSize)
-	prometheus.MustRegister(vars.ResponseRcode)
-}
 
 // Metrics holds the prometheus configuration. The metrics' path is fixed to be /metrics
 type Metrics struct {
@@ -30,6 +19,7 @@ type Metrics struct {
 	Addr string
 	ln   net.Listener
 	mux  *http.ServeMux
+	Once sync.Once
 
 	zoneNames []string
 	zoneMap   map[string]bool
@@ -62,25 +52,38 @@ func (m *Metrics) ZoneNames() []string {
 
 // OnStartup sets up the metrics on startup.
 func (m *Metrics) OnStartup() error {
-	ln, err := net.Listen("tcp", m.Addr)
-	if err != nil {
-		log.Printf("[ERROR] Failed to start metrics handler: %s", err)
-		return err
-	}
+	m.Once.Do(func() {
 
-	m.ln = ln
-	ListenAddr = m.ln.Addr().String()
+		ln, err := net.Listen("tcp", m.Addr)
+		if err != nil {
+			log.Printf("[ERROR] Failed to start metrics handler: %s", err)
+			return
+		}
 
-	m.mux = http.NewServeMux()
-	m.mux.Handle("/metrics", prometheus.Handler())
+		m.ln = ln
+		ListenAddr = m.ln.Addr().String()
 
-	go func() {
-		http.Serve(m.ln, m.mux)
-	}()
+		m.mux = http.NewServeMux()
+
+		prometheus.MustRegister(vars.RequestCount)
+		prometheus.MustRegister(vars.RequestDuration)
+		prometheus.MustRegister(vars.RequestSize)
+		prometheus.MustRegister(vars.RequestDo)
+		prometheus.MustRegister(vars.RequestType)
+
+		prometheus.MustRegister(vars.ResponseSize)
+		prometheus.MustRegister(vars.ResponseRcode)
+
+		m.mux.Handle("/metrics", prometheus.Handler())
+
+		go func() {
+			http.Serve(m.ln, m.mux)
+		}()
+	})
 	return nil
 }
 
-// OnShutdown tears down the metrics on shutdown and restart.
+// OnShutdown tears down the metrics on shutdown.
 func (m *Metrics) OnShutdown() error {
 	if m.ln != nil {
 		return m.ln.Close()

@@ -10,6 +10,7 @@ import (
 	"net"
 	"os"
 	"runtime"
+	"sync"
 	"testing"
 	"time"
 
@@ -163,4 +164,37 @@ func doPing(tt pingTest, seq int) error {
 	default:
 		return fmt.Errorf("got %+v from %v; want echo reply", rm, peer)
 	}
+}
+
+func TestConcurrentNonPrivilegedListenPacket(t *testing.T) {
+	if testing.Short() {
+		t.Skip("avoid external network")
+	}
+	switch runtime.GOOS {
+	case "darwin":
+	case "linux":
+		t.Log("you may need to adjust the net.ipv4.ping_group_range kernel state")
+	default:
+		t.Skipf("not supported on %s", runtime.GOOS)
+	}
+
+	network, address := "udp4", "127.0.0.1"
+	if !nettest.SupportsIPv4() {
+		network, address = "udp6", "::1"
+	}
+	const N = 1000
+	var wg sync.WaitGroup
+	wg.Add(N)
+	for i := 0; i < N; i++ {
+		go func() {
+			defer wg.Done()
+			c, err := icmp.ListenPacket(network, address)
+			if err != nil {
+				t.Error(err)
+				return
+			}
+			c.Close()
+		}()
+	}
+	wg.Wait()
 }

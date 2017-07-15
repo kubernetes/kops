@@ -42,10 +42,6 @@ var parser TextParser
 // the difference becomes less relevant, only ~4x.
 //
 // The test data contains 248 samples.
-//
-// BenchmarkProcessor002ParseOnly in the extraction package is not quite
-// comparable to the benchmarks here, but it gives an idea: JSON parsing is even
-// slower than text parsing and needs a comparable amount of allocs.
 
 // BenchmarkParseText benchmarks the parsing of a text-format scrape into metric
 // family DTOs.

@@ -29,7 +29,6 @@ func TestFindConflict(t *testing.T) {
 	}{
 		// no conflict, empty ent
 		{[]pb.Entry{}, 0},
-		{[]pb.Entry{}, 0},
 		// no conflict
 		{[]pb.Entry{{Index: 1, Term: 1}, {Index: 2, Term: 2}, {Index: 3, Term: 3}}, 0},
 		{[]pb.Entry{{Index: 2, Term: 2}, {Index: 3, Term: 3}}, 0},
@@ -73,7 +72,7 @@ func TestIsUpToDate(t *testing.T) {
 		{raftLog.lastIndex() - 1, 2, false},
 		{raftLog.lastIndex(), 2, false},
 		{raftLog.lastIndex() + 1, 2, false},
-		// equal term, lager lastIndex wins
+		// equal term, equal or lager lastIndex wins
 		{raftLog.lastIndex() - 1, 3, false},
 		{raftLog.lastIndex(), 3, true},
 		{raftLog.lastIndex() + 1, 3, true},
@@ -709,7 +708,7 @@ func TestTerm(t *testing.T) {
 
 	for j, tt := range tests {
 		term := mustTerm(l.term(tt.index))
-		if !reflect.DeepEqual(term, tt.w) {
+		if term != tt.w {
 			t.Errorf("#%d: at = %d, want %d", j, term, tt.w)
 		}
 	}
@@ -739,7 +738,7 @@ func TestTermWithUnstableSnapshot(t *testing.T) {
 
 	for i, tt := range tests {
 		term := mustTerm(l.term(tt.index))
-		if !reflect.DeepEqual(term, tt.w) {
+		if term != tt.w {
 			t.Errorf("#%d: at = %d, want %d", i, term, tt.w)
 		}
 	}

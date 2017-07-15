@@ -33,7 +33,7 @@ import (
 )
 
 var (
-	plog = capnslog.NewPackageLogger("github.com/coreos/etcd/proxy", "httpproxy")
+	plog = capnslog.NewPackageLogger("github.com/coreos/etcd", "proxy/httpproxy")
 
 	// Hop-by-hop headers. These are removed when sent to the backend.
 	// http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html
@@ -110,7 +110,7 @@ func (p *reverseProxy) ServeHTTP(rw http.ResponseWriter, clientreq *http.Request
 	var requestClosed int32
 	completeCh := make(chan bool, 1)
 	closeNotifier, ok := rw.(http.CloseNotifier)
-	cancel := httputil.RequestCanceler(p.transport, proxyreq)
+	cancel := httputil.RequestCanceler(proxyreq)
 	if ok {
 		closeCh := closeNotifier.CloseNotify()
 		go func() {

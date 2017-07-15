@@ -1,6 +1,4 @@
 # This ConfigMap can be used to configure a self-hosted Canal installation.
-# See `canal.yaml` for an example of a Canal deployment which uses
-# the config in this ConfigMap.
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -8,7 +6,7 @@ metadata:
   namespace: kube-system
 data:
   # The interface used by canal for host <-> host communication.
-  # If left blank, then the interface is chosing using the node's
+  # If left blank, then the interface is chosen using the node's
   # default route.
   canal_iface: ""
 
@@ -34,12 +32,11 @@ data:
         },
         "kubernetes": {
             "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
-            "kubeconfig": "__KUBECONFIG_FILEPATH__",
-            "node_name": "__KUBERNETES_NODE_NAME__"
+            "kubeconfig": "__KUBECONFIG_FILEPATH__"
         }
     }
 
-  # Flannel network configuration.
+  # Flannel network configuration. Mounted into the flannel container.
   net-conf.json: |
     {
       "Network": "{{ .NonMasqueradeCIDR }}",
@@ -47,7 +44,6 @@ data:
         "Type": "vxlan"
       }
     }
-
 
 ---
 
@@ -61,7 +57,6 @@ metadata:
   namespace: kube-system
   labels:
     k8s-app: canal
-    role.kubernetes.io/networking: "1"
 spec:
   selector:
     matchLabels:
@@ -74,7 +69,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
         scheduler.alpha.kubernetes.io/tolerations: |
           [{"key": "dedicated", "value": "master", "effect": "NoSchedule" },
-           {"key":"CriticalAddonsOnly", "operator":"Exists"}]
+           {"key": "CriticalAddonsOnly", "operator": "Exists"}]
     spec:
       hostNetwork: true
       containers:
@@ -82,10 +77,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v1.0.2
-          resources:
-            requests:
-              cpu: 10m
+          image: quay.io/calico/node:v1.2.1
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -93,22 +85,35 @@ spec:
             # Enable felix logging.
             - name: FELIX_LOGSEVERITYSYS
               value: "info"
+            # Period, in seconds, at which felix re-applies all iptables state
+            - name: FELIX_IPTABLESREFRESHINTERVAL
+              value: "60"
+            # Disable IPV6 support in Felix.
+            - name: FELIX_IPV6SUPPORT
+              value: "false"
             # Don't enable BGP.
             - name: CALICO_NETWORKING_BACKEND
               value: "none"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
+            - name: WAIT_FOR_DATASTORE
+              value: "true"
             # No IP address needed.
             - name: IP
               value: ""
-            # Set the hostname based on the k8s node name.
             - name: HOSTNAME
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            # Set Felix endpoint to host default action to ACCEPT.
+            - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
+              value: "ACCEPT"
           securityContext:
             privileged: true
+          resources:
+            requests:
+              cpu: 250m
           volumeMounts:
             - mountPath: /lib/modules
               name: lib-modules
@@ -119,11 +124,8 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v1.5.6
+          image: quay.io/calico/cni:v1.8.3
           command: ["/install-cni.sh"]
-          resources:
-            requests:
-              cpu: 10m
           env:
             # The CNI network config to install on each node.
             - name: CNI_NETWORK_CONFIG
@@ -131,7 +133,6 @@ spec:
                 configMapKeyRef:
                   name: canal-config
                   key: cni_network_config
-            # Set the hostname based on the k8s node name.
             - name: KUBERNETES_NODE_NAME
               valueFrom:
                 fieldRef:
@@ -148,28 +149,25 @@ spec:
           command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
           securityContext:
             privileged: true
-          resources:
-            requests:
-              cpu: 10m
           env:
-          - name: POD_NAME
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.name
-          - name: POD_NAMESPACE
-            valueFrom:
-              fieldRef:
-                fieldPath: metadata.namespace
-          - name: FLANNELD_IFACE
-            valueFrom:
-              configMapKeyRef:
-                name: canal-config
-                key: canal_iface
-          - name: FLANNELD_IP_MASQ
-            valueFrom:
-              configMapKeyRef:
-                name: canal-config
-                key: masquerade
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: FLANNELD_IFACE
+              valueFrom:
+                configMapKeyRef:
+                  name: canal-config
+                  key: canal_iface
+            - name: FLANNELD_IP_MASQ
+              valueFrom:
+                configMapKeyRef:
+                  name: canal-config
+                  key: masquerade
           volumeMounts:
           - name: run
             mountPath: /run

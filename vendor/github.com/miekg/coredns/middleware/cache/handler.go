@@ -3,8 +3,8 @@ package cache
 import (
 	"time"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 	"github.com/prometheus/client_golang/prometheus"
@@ -22,19 +22,19 @@ func (c *Cache) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) 
 		return c.Next.ServeDNS(ctx, w, r)
 	}
 
-	do := state.Do() // TODO(): might need more from OPT record? Like the actual bufsize?
+	do := state.Do() // might need more from OPT record? Like the actual bufsize?
 
 	if i, ok, expired := c.get(qname, qtype, do); ok && !expired {
+
 		resp := i.toMsg(r)
 		state.SizeAndDo(resp)
-		resp, _ = state.Scrub(resp)
 		w.WriteMsg(resp)
 
 		return dns.RcodeSuccess, nil
 	}
 
 	crr := &ResponseWriter{w, c}
-	return middleware.NextOrFailure(c.Name(), c.Next, ctx, crr, r)
+	return c.Next.ServeDNS(ctx, crr, r)
 }
 
 // Name implements the Handler interface.

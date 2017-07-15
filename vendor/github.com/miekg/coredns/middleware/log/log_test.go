@@ -6,9 +6,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/coredns/coredns/middleware/pkg/dnsrecorder"
-	"github.com/coredns/coredns/middleware/pkg/response"
-	"github.com/coredns/coredns/middleware/test"
+	"github.com/miekg/coredns/middleware/pkg/dnsrecorder"
+	"github.com/miekg/coredns/middleware/pkg/response"
+	"github.com/miekg/coredns/middleware/test"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -39,7 +39,7 @@ func TestLoggedStatus(t *testing.T) {
 	}
 
 	logged := f.String()
-	if !strings.Contains(logged, "A IN example.org. udp 29 false 512") {
+	if !strings.Contains(logged, "A IN example.org. udp false 512") {
 		t.Errorf("Expected it to be logged. Logged string: %s", logged)
 	}
 }

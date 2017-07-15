@@ -169,6 +169,26 @@ func (s *ApiDataRow) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *ApiDataRow) UnmarshalJSON(data []byte) error {
+	type noMethod ApiDataRow
+	var s1 struct {
+		Clicks      gensupport.JSONFloat64 `json:"clicks"`
+		Ctr         gensupport.JSONFloat64 `json:"ctr"`
+		Impressions gensupport.JSONFloat64 `json:"impressions"`
+		Position    gensupport.JSONFloat64 `json:"position"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Clicks = float64(s1.Clicks)
+	s.Ctr = float64(s1.Ctr)
+	s.Impressions = float64(s1.Impressions)
+	s.Position = float64(s1.Position)
+	return nil
+}
+
 type ApiDimensionFilter struct {
 	Dimension string `json:"dimension,omitempty"`
 

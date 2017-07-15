@@ -167,6 +167,20 @@ func (s *DetectionsResourceItem) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *DetectionsResourceItem) UnmarshalJSON(data []byte) error {
+	type noMethod DetectionsResourceItem
+	var s1 struct {
+		Confidence gensupport.JSONFloat64 `json:"confidence"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Confidence = float64(s1.Confidence)
+	return nil
+}
+
 type LanguagesListResponse struct {
 	// Languages: List of source/target languages supported by the
 	// translation API. If target parameter is unspecified, the list is

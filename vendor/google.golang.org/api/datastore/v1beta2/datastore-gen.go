@@ -882,6 +882,22 @@ func (s *Property) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *Property) UnmarshalJSON(data []byte) error {
+	type noMethod Property
+	var s1 struct {
+		DoubleValue *gensupport.JSONFloat64 `json:"doubleValue"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	if s1.DoubleValue != nil {
+		s.DoubleValue = (*float64)(s1.DoubleValue)
+	}
+	return nil
+}
+
 // PropertyExpression: A representation of a property in a projection.
 type PropertyExpression struct {
 	// AggregationFunction: The aggregation function to apply to the
@@ -1419,6 +1435,20 @@ func (s *Value) MarshalJSON() ([]byte, error) {
 	type noMethod Value
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *Value) UnmarshalJSON(data []byte) error {
+	type noMethod Value
+	var s1 struct {
+		DoubleValue gensupport.JSONFloat64 `json:"doubleValue"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.DoubleValue = float64(s1.DoubleValue)
+	return nil
 }
 
 // method id "datastore.datasets.allocateIds":

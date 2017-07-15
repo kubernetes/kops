@@ -18,7 +18,7 @@ func fatal(err error) {
 	os.Exit(1)
 }
 
-// setupSpec performs inital setup based on the cli.Context for the container
+// setupSpec performs initial setup based on the cli.Context for the container
 func setupSpec(context *cli.Context) (*specs.Spec, error) {
 	bundle := context.String("bundle")
 	if bundle != "" {

@@ -1,5 +1,21 @@
 # changelog
 
+### 0.14.0 (2017-04-08)
+
+* Add view.ContainerView type and methods
+
+* Add Collector.RetrieveWithFilter method
+
+* Add property.Filter type
+
+* Implement EthernetCardBackingInfo for OpaqueNetwork
+
+* Finder: support changing object root in find mode
+
+* Add VirtualDiskManager.QueryVirtualDiskInfo
+
+* Add performance.Manager APIs
+
 ### 0.13.0 (2017-03-02)
 
 * Add DatastoreFileManager API wrapper

@@ -6,12 +6,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-complex-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-complex-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-complex-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-complex-example-com.id}", "sg-exampleid3", "sg-exampleid4"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-complex-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-complex-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-complex-example-com.name}"
 }
 
 output "region" {
@@ -42,6 +58,18 @@ resource "aws_autoscaling_group" "master-us-test-1a-masters-complex-example-com"
   }
 
   tag = {
+    key                 = "Owner"
+    value               = "John Doe"
+    propagate_at_launch = true
+  }
+
+  tag = {
+    key                 = "foo/bar"
+    value               = "fib+baz"
+    propagate_at_launch = true
+  }
+
+  tag = {
     key                 = "k8s.io/role/master"
     value               = "1"
     propagate_at_launch = true
@@ -68,6 +96,18 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
   }
 
   tag = {
+    key                 = "Owner"
+    value               = "John Doe"
+    propagate_at_launch = true
+  }
+
+  tag = {
+    key                 = "foo/bar"
+    value               = "fib+baz"
+    propagate_at_launch = true
+  }
+
+  tag = {
     key                 = "k8s.io/role/node"
     value               = "1"
     propagate_at_launch = true
@@ -83,6 +123,8 @@ resource "aws_ebs_volume" "us-test-1a-etcd-events-complex-example-com" {
   tags = {
     KubernetesCluster    = "complex.example.com"
     Name                 = "us-test-1a.etcd-events.complex.example.com"
+    Owner                = "John Doe"
+    "foo/bar"            = "fib+baz"
     "k8s.io/etcd/events" = "us-test-1a/us-test-1a"
     "k8s.io/role/master" = "1"
   }
@@ -97,19 +139,21 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-complex-example-com" {
   tags = {
     KubernetesCluster    = "complex.example.com"
     Name                 = "us-test-1a.etcd-main.complex.example.com"
+    Owner                = "John Doe"
+    "foo/bar"            = "fib+baz"
     "k8s.io/etcd/main"   = "us-test-1a/us-test-1a"
     "k8s.io/role/master" = "1"
   }
 }
 
 resource "aws_iam_instance_profile" "masters-complex-example-com" {
-  name  = "masters.complex.example.com"
-  roles = ["${aws_iam_role.masters-complex-example-com.name}"]
+  name = "masters.complex.example.com"
+  role = "${aws_iam_role.masters-complex-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-complex-example-com" {
-  name  = "nodes.complex.example.com"
-  roles = ["${aws_iam_role.nodes-complex-example-com.name}"]
+  name = "nodes.complex.example.com"
+  role = "${aws_iam_role.nodes-complex-example-com.name}"
 }
 
 resource "aws_iam_role" "masters-complex-example-com" {
@@ -160,7 +204,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-complex-example-c
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 64
     delete_on_termination = true
   }
 
@@ -186,7 +230,7 @@ resource "aws_launch_configuration" "nodes-complex-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 128
     delete_on_termination = true
   }
 
@@ -373,4 +417,8 @@ resource "aws_vpc_dhcp_options" "complex-example-com" {
 resource "aws_vpc_dhcp_options_association" "complex-example-com" {
   vpc_id          = "${aws_vpc.complex-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.complex-example-com.id}"
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
 }

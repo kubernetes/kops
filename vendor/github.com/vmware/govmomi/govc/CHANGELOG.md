@@ -1,5 +1,17 @@
 # changelog
 
+### 0.14.0 (2017-04-08)
+
+* Add find command
+
+* Add '-wait' option to vm.ip to allow a non-waiting query
+
+* Add datastore.disk.info command
+
+* Add bash completion script
+
+* Add metric commands: change, ls, info, sample, reset, interval.change, interval.info
+
 ### 0.13.0 (2017-03-02)
 
 * Add vm.guest.tools command

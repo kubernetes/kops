@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sort"
@@ -41,6 +42,9 @@ type DryRunTarget struct {
 
 	// The destination to which the final report will be printed on Finish()
 	out io.Writer
+
+	// assetBuilder records all assets used
+	assetBuilder *assets.AssetBuilder
 }
 
 type render struct {
@@ -70,9 +74,10 @@ func (a DeletionByTaskName) Less(i, j int) bool {
 
 var _ Target = &DryRunTarget{}
 
-func NewDryRunTarget(out io.Writer) *DryRunTarget {
+func NewDryRunTarget(assetBuilder *assets.AssetBuilder, out io.Writer) *DryRunTarget {
 	t := &DryRunTarget{}
 	t.out = out
+	t.assetBuilder = assetBuilder
 	return t
 }
 
@@ -157,6 +162,11 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 						field := changes.Field(i)
 
 						fieldName := changes.Type().Field(i).Name
+						if changes.Type().Field(i).PkgPath != "" {
+							// Not exported
+							continue
+						}
+
 						fieldValue := ValueAsString(field)
 
 						shouldPrint := true
@@ -217,6 +227,11 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 				}
 				if valC.Kind() == reflect.Struct {
 					for i := 0; i < valC.NumField(); i++ {
+						if valC.Type().Field(i).PkgPath != "" {
+							// Not exported
+							continue
+						}
+
 						fieldValC := valC.Field(i)
 
 						changed := true
@@ -296,6 +311,13 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 		fmt.Fprintf(b, "Will delete items:\n")
 		for _, d := range t.deletions {
 			fmt.Fprintf(b, "  %-20s %s\n", d.TaskName(), d.Item())
+		}
+	}
+
+	if len(t.assetBuilder.Assets) != 0 {
+		glog.V(4).Infof("Assets:")
+		for _, a := range t.assetBuilder.Assets {
+			glog.V(4).Infof("  %s %s", a.Origin, a.Mirror)
 		}
 	}
 

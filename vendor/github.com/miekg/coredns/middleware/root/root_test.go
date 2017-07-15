@@ -3,23 +3,20 @@ package root
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/coredns/coredns/core/dnsserver"
+	"github.com/miekg/coredns/core/dnsserver"
 
 	"github.com/mholt/caddy"
 )
 
 func TestRoot(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-
 	// Predefined error substrings
 	parseErrContent := "Parse error:"
-	unableToAccessErrContent := "unable to access root path"
+	unableToAccessErrContent := "Unable to access root path"
 
 	existingDirPath, err := getTempDirPath()
 	if err != nil {

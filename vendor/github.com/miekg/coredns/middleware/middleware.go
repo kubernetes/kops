@@ -2,11 +2,9 @@
 package middleware
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/miekg/dns"
-	ot "github.com/opentracing/opentracing-go"
 	"golang.org/x/net/context"
 )
 
@@ -66,21 +64,6 @@ func (f HandlerFunc) Name() string { return "handlerfunc" }
 
 // Error returns err with 'middleware/name: ' prefixed to it.
 func Error(name string, err error) error { return fmt.Errorf("%s/%s: %s", "middleware", name, err) }
-
-// NextOrFailure calls next.ServeDNS when next is not nill, otherwise it will return, a ServerFailure
-// and a nil error.
-func NextOrFailure(name string, next Handler, ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
-	if next != nil {
-		if span := ot.SpanFromContext(ctx); span != nil {
-			child := span.Tracer().StartSpan(next.Name(), ot.ChildOf(span.Context()))
-			defer child.Finish()
-			ctx = ot.ContextWithSpan(ctx, child)
-		}
-		return next.ServeDNS(ctx, w, r)
-	}
-
-	return dns.RcodeServerFailure, Error(name, errors.New("no next middleware found"))
-}
 
 // Namespace is the namespace used for the metrics.
 const Namespace = "coredns"

@@ -1,9 +1,8 @@
 # Description of Keys in `config` and `cluster.spec`
 
-This list is not complete, but aims to document any keys that are less than self-explanatory.
+This list is not complete but aims to document any keys that are less than self-explanatory. Our [godoc](https://godoc.org/k8s.io/kops/pkg/apis/kops) reference provides a more detailed list of API values. [ClusterSpec](https://godoc.org/k8s.io/kops/pkg/apis/kops#ClusterSpec), defined as `kind: Cluster` in YAML, and [InstanceGroup](https://godoc.org/k8s.io/kops/pkg/apis/kops#InstanceGroup), defined as `kind: InstanceGroup` in YAML, are the two top-level API values used to describe a cluster.
 
 ## spec
-
 
 ### api
 
@@ -102,6 +101,19 @@ spec:
     oidcCAFile: /etc/kubernetes/ssl/kc-ca.pem
 ```
 
+#### audit logging
+
+Read more about this here: https://kubernetes.io/docs/admin/audit
+
+```yaml
+spec:
+  kubeAPIServer:
+    auditLogPath: /var/log/kube-apiserver-audit.log
+    auditLogMaxAge: 10
+    auditLogMaxBackups: 1
+    auditLogMaxSize: 100
+```
+
 #### runtimeConfig
 
 Keys and values here are translated into `--runtime-config` values for `kube-apiserver`, separated by commas.
@@ -122,6 +134,15 @@ Will result in the flag `--runtime-config=batch/v2alpha1=true,apps/v1alpha1=true
 
 This block contains configurations for `kubelet`.  See https://kubernetes.io/docs/admin/kubelet/
 
+NOTE: Where the corresponding configuration value can be empty, fields can be set to empty in the spec, and an empty string will be passed as the configuration value.
+ ```yaml
+ spec:
+   kubelet:
+     resolvConf: ""
+```
+
+Will result in the flag `--resolv-conf=` being built.
+
 ####  Feature Gates
 
 ```yaml
@@ -137,9 +158,73 @@ Will result in the flag `--feature-gates=ExperimentalCriticalPodAnnotation=true,
 
 ### networkID
 
-On AWS, this is the id of the VPC the cluster is created in. If creating a cluster from scratch, this field doesn't need to be specified at create time; `kops` will create a `VPC` for you.
+On AWS, this is the id of the VPC the cluster is created in. If creating a cluster from scratch, this field does not need to be specified at create time; `kops` will create a `VPC` for you.
 
 ```yaml
 spec:
   networkID: vpc-abcdefg1
+```
+
+More information about running in an existing VPC is [here](run_in_existing_vpc.md).
+
+### hooks
+
+Hooks allow the execution of a container before the installation of Kubneretes on every node in a cluster.  For intance you can install nvidia drivers for using GPUs.
+
+```
+spec:
+  # many sections removed
+  hooks:
+  - execContainer:
+      image: kopeio/nvidia-bootstrap:1.6
+```
+
+Install Ceph
+
+```
+spec:
+  # many sections removed
+  hooks:
+  - execContainer:
+      command:
+      - sh
+      - -c
+      - chroot /rootfs apt-get update && chroot /rootfs apt-get install -y ceph-common
+      image: busybox
+```
+
+### cloudConfig
+
+If you are using aws as `cloudProvider`, you can disable authorization of ELB security group to Kubernetes Nodes security group. In other words, it will not add security group rule.
+This can be usefull to avoid AWS limit: 50 rules per security group.
+```yaml
+spec:
+  cloudConfig:
+    disableSecurityGroupIngress: true
+```
+
+### registryMirrors
+
+If you have a bunch of Docker instances (physicsal or vm) running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet (DockerHub). By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
+This setting benefits not only cluster provisioning but also image pulling.
+
+@see [Cache-Mirror Dockerhub For Speed](https://hackernoon.com/mirror-cache-dockerhub-locally-for-speed-f4eebd21a5ca)
+@see [Configure the Docker daemon](https://docs.docker.com/registry/recipes/mirror/#configure-the-docker-daemon).
+
+```yaml
+spec:
+  docker:
+    registryMirrors:
+    - https://registry.example.com
+```
+
+#### WARNING: this works only for Kubernetes version above 1.7.0.
+
+For avoid to create security group per each elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name. Also, security group must be empty, because Kubernetes will add rules per ports that are specified in service file.
+This can be usefull to avoid AWS limits: 500 security groups per region and 50 rules per security group.
+
+```yaml
+spec:
+  cloudConfig:
+    elbSecurityGroup: sg-123445678
 ```

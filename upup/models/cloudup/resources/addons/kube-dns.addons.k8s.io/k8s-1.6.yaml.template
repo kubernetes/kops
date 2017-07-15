@@ -31,10 +31,9 @@ spec:
         # For 1.6, we keep the old tolerations in case of a downgrade to 1.5
         scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
-      serviceAccountName: kube-dns-autoscaler
       containers:
       - name: autoscaler
-        image: gcr.io/google_containers/cluster-proportional-autoscaler-{{Arch}}:1.1.1
+        image: gcr.io/google_containers/cluster-proportional-autoscaler-{{Arch}}:1.1.2-r2
         resources:
             requests:
                 cpu: "20m"
@@ -50,6 +49,10 @@ spec:
           - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
           - --logtostderr=true
           - --v=2
+      tolerations:
+      - key: "CriticalAddonsOnly"
+        operator: "Exists"
+      serviceAccountName: kube-dns-autoscaler
 
 ---
 
@@ -93,7 +96,7 @@ spec:
 
       containers:
       - name: kubedns
-        image: gcr.io/google_containers/k8s-dns-kube-dns-{{Arch}}:1.14.1
+        image: gcr.io/google_containers/k8s-dns-kube-dns-{{Arch}}:1.14.4
         resources:
           # TODO: Set memory limits when we've profiled the container for large
           # clusters, then set request = limit to keep this container in
@@ -145,7 +148,7 @@ spec:
           mountPath: /kube-dns-config
 
       - name: dnsmasq
-        image: gcr.io/google_containers/k8s-dns-dnsmasq-nanny-{{Arch}}:1.14.1
+        image: gcr.io/google_containers/k8s-dns-dnsmasq-nanny-{{Arch}}:1.14.4
         livenessProbe:
           httpGet:
             path: /healthcheck/dnsmasq
@@ -184,7 +187,7 @@ spec:
           mountPath: /etc/k8s/dns/dnsmasq-nanny
 
       - name: sidecar
-        image: gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.1
+        image: gcr.io/google_containers/k8s-dns-sidecar-amd64:1.14.4
         livenessProbe:
           httpGet:
             path: /metrics
@@ -251,27 +254,20 @@ metadata:
     k8s-addon: kube-dns.addons.k8s.io
   name: kube-dns-autoscaler
 rules:
-- apiGroups:
-  - ""
-  resources:
-  - nodes
-  verbs:
-  - list
-- apiGroups:
-  - ""
-  resources:
-  - configmaps
-  verbs:
-  - get
-  - create
-  - update
-- apiGroups:
-  - "extensions"
-  resources:
-  - deployments/scale
-  verbs:
-  - get
-  - update
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["list"]
+  - apiGroups: [""]
+    resources: ["replicationcontrollers/scale"]
+    verbs: ["get", "update"]
+  - apiGroups: ["extensions"]
+    resources: ["deployments/scale", "replicasets/scale"]
+    verbs: ["get", "update"]
+# Remove the configmaps rule once below issue is fixed:
+# kubernetes-incubator/cluster-proportional-autoscaler#16
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "create"]
 
 ---
 
@@ -286,6 +282,6 @@ roleRef:
   kind: ClusterRole
   name: kube-dns-autoscaler
 subjects:
-- apiGroup: rbac.authorization.k8s.io
-  kind: User
-  name: system:serviceaccount:kube-system:kube-dns-autoscaler
+- kind: ServiceAccount
+  name: kube-dns-autoscaler
+  namespace: kube-system

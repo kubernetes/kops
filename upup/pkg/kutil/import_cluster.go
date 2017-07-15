@@ -17,20 +17,24 @@ limitations under the License.
 package kutil
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/base64"
 	"fmt"
+	"io"
+	"strconv"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
-	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"strconv"
-	"strings"
 )
 
 // ImportCluster tries to reverse engineer an existing k8s cluster, adding it to the cluster registry
@@ -49,31 +53,31 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		return fmt.Errorf("ClusterName must be specified")
 	}
 
-	var instanceGroups []*api.InstanceGroup
+	var instanceGroups []*kops.InstanceGroup
 
-	cluster := &api.Cluster{}
+	cluster := &kops.Cluster{}
 	cluster.ObjectMeta.Annotations = make(map[string]string)
 
 	// This annotation relaxes some validation (e.g. cluster name as full-dns name)
-	cluster.ObjectMeta.Annotations[api.AnnotationNameManagement] = api.AnnotationValueManagementImported
+	cluster.ObjectMeta.Annotations[kops.AnnotationNameManagement] = kops.AnnotationValueManagementImported
 
-	cluster.Spec.CloudProvider = string(fi.CloudProviderAWS)
+	cluster.Spec.CloudProvider = string(kops.CloudProviderAWS)
 	cluster.ObjectMeta.Name = clusterName
 
-	cluster.Spec.KubeControllerManager = &api.KubeControllerManagerConfig{}
+	cluster.Spec.KubeControllerManager = &kops.KubeControllerManagerConfig{}
 
-	cluster.Spec.Channel = api.DefaultChannel
+	cluster.Spec.Channel = kops.DefaultChannel
 
 	cluster.Spec.KubernetesAPIAccess = []string{"0.0.0.0/0"}
 	cluster.Spec.SSHAccess = []string{"0.0.0.0/0"}
 
-	configBase, err := x.Clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(clusterName)
+	configBase, err := x.Clientset.ConfigBaseFor(cluster)
 	if err != nil {
 		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
 	}
 	cluster.Spec.ConfigBase = configBase.Path()
 
-	channel, err := api.LoadChannel(cluster.Spec.Channel)
+	channel, err := kops.LoadChannel(cluster.Spec.Channel)
 	if err != nil {
 		return err
 	}
@@ -84,7 +88,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	}
 
 	var masterInstance *ec2.Instance
-	subnets := make(map[string]*api.ClusterSubnetSpec)
+	subnets := make(map[string]*kops.ClusterSubnetSpec)
 
 	for _, instance := range instances {
 		instanceState := aws.StringValue(instance.State.Name)
@@ -96,10 +100,10 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 			subnet := subnets[subnetName]
 			if subnet == nil {
-				subnet = &api.ClusterSubnetSpec{
+				subnet = &kops.ClusterSubnetSpec{
 					Name: subnetName,
 					Zone: zoneName,
-					Type: api.SubnetTypePublic,
+					Type: kops.SubnetTypePublic,
 				}
 				subnets[subnetName] = subnet
 			}
@@ -135,17 +139,17 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	masterInstanceID := aws.StringValue(masterInstance.InstanceId)
 	glog.Infof("Found master: %q", masterInstanceID)
 
-	masterGroup := &api.InstanceGroup{}
-	masterGroup.Spec.Role = api.InstanceGroupRoleMaster
+	masterGroup := &kops.InstanceGroup{}
+	masterGroup.Spec.Role = kops.InstanceGroupRoleMaster
 	masterGroup.Spec.MinSize = fi.Int32(1)
 	masterGroup.Spec.MaxSize = fi.Int32(1)
 
 	masterGroup.Spec.MachineType = aws.StringValue(masterInstance.InstanceType)
 
-	masterInstanceGroups := []*api.InstanceGroup{masterGroup}
+	masterInstanceGroups := []*kops.InstanceGroup{masterGroup}
 	instanceGroups = append(instanceGroups, masterGroup)
 
-	awsSubnets, err := DescribeSubnets(x.Cloud)
+	awsSubnets, err := resources.DescribeSubnets(x.Cloud)
 	if err != nil {
 		return fmt.Errorf("error finding subnets: %v", err)
 	}
@@ -272,8 +276,8 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	//clusterConfig.DockerStorage = conf.Settings["DOCKER_STORAGE"]
 	//k8s.MasterExtraSans = conf.Settings["MASTER_EXTRA_SANS"] // Not user set
 
-	nodeGroup := &api.InstanceGroup{}
-	nodeGroup.Spec.Role = api.InstanceGroupRoleNode
+	nodeGroup := &kops.InstanceGroup{}
+	nodeGroup.Spec.Role = kops.InstanceGroupRoleNode
 	nodeGroup.ObjectMeta.Name = "nodes"
 	for _, subnet := range subnets {
 		nodeGroup.Spec.Subnets = append(nodeGroup.Spec.Subnets, subnet.Name)
@@ -286,7 +290,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	//}
 
 	{
-		groups, err := findAutoscalingGroups(awsCloud, awsCloud.Tags())
+		groups, err := resources.FindAutoscalingGroups(awsCloud, awsCloud.Tags())
 		if err != nil {
 			return fmt.Errorf("error listing autoscaling groups: %v", err)
 		}
@@ -313,7 +317,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 		// Determine the machine type
 		for _, group := range groups {
 			name := aws.StringValue(group.LaunchConfigurationName)
-			launchConfiguration, err := findAutoscalingLaunchConfiguration(awsCloud, name)
+			launchConfiguration, err := resources.FindAutoscalingLaunchConfiguration(awsCloud, name)
 			if err != nil {
 				return fmt.Errorf("error finding autoscaling LaunchConfiguration %q: %v", name, err)
 			}
@@ -352,12 +356,12 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	}
 
 	for _, etcdClusterName := range []string{"main", "events"} {
-		etcdCluster := &api.EtcdClusterSpec{
+		etcdCluster := &kops.EtcdClusterSpec{
 			Name: etcdClusterName,
 		}
 
 		for _, ig := range masterInstanceGroups {
-			member := &api.EtcdMemberSpec{
+			member := &kops.EtcdMemberSpec{
 				InstanceGroup: fi.String(ig.ObjectMeta.Name),
 			}
 
@@ -474,7 +478,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	//kubeletToken = conf.Settings["KUBELET_TOKEN"]
 	//kubeProxyToken = conf.Settings["KUBE_PROXY_TOKEN"]
 
-	var fullInstanceGroups []*api.InstanceGroup
+	var fullInstanceGroups []*kops.InstanceGroup
 	for _, ig := range instanceGroups {
 		full, err := cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
 		if err != nil {
@@ -618,7 +622,7 @@ func parseInt(s string) (int, error) {
 //}
 
 func findInstances(c awsup.AWSCloud) ([]*ec2.Instance, error) {
-	filters := buildEC2Filters(c)
+	filters := resources.BuildEC2Filters(c)
 
 	request := &ec2.DescribeInstancesInput{
 		Filters: filters,
@@ -824,4 +828,19 @@ func UserDataToString(userData []byte) (string, error) {
 		}
 	}
 	return string(userData), nil
+}
+
+func gunzipBytes(d []byte) ([]byte, error) {
+	var out bytes.Buffer
+	in := bytes.NewReader(d)
+	r, err := gzip.NewReader(in)
+	if err != nil {
+		return nil, fmt.Errorf("error building gunzip reader: %v", err)
+	}
+	defer r.Close()
+	_, err = io.Copy(&out, r)
+	if err != nil {
+		return nil, fmt.Errorf("error decompressing data: %v", err)
+	}
+	return out.Bytes(), nil
 }

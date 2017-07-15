@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/lK1rSeSt4REctli37J8Co4N4a5s\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/z8hLagElncDGGS_B7W6I6uNUHDs\"",
  "discoveryVersion": "v1",
  "id": "androidpublisher:v2",
  "name": "androidpublisher",
  "canonicalName": "Android Publisher",
  "version": "v2",
- "revision": "20161017",
+ "revision": "20170222",
  "title": "Google Play Developer API",
  "description": "Lets Android application developers access their Google Play accounts.",
  "ownerDomain": "google.com",
@@ -253,6 +253,61 @@
     "text": {
      "type": "string",
      "description": "The content of the comment, i.e. reply body."
+    }
+   }
+  },
+  "DeviceMetadata": {
+   "id": "DeviceMetadata",
+   "type": "object",
+   "properties": {
+    "cpuMake": {
+     "type": "string",
+     "description": "Device CPU make e.g. \"Qualcomm\""
+    },
+    "cpuModel": {
+     "type": "string",
+     "description": "Device CPU model e.g. \"MSM8974\""
+    },
+    "deviceClass": {
+     "type": "string",
+     "description": "Device class (e.g. tablet)"
+    },
+    "glEsVersion": {
+     "type": "integer",
+     "description": "OpenGL version",
+     "format": "int32"
+    },
+    "manufacturer": {
+     "type": "string",
+     "description": "Device manufacturer (e.g. Motorola)"
+    },
+    "nativePlatform": {
+     "type": "string",
+     "description": "Comma separated list of native platforms (e.g. \"arm\", \"arm7\")"
+    },
+    "productName": {
+     "type": "string",
+     "description": "Device model name (e.g. Droid)"
+    },
+    "ramMb": {
+     "type": "integer",
+     "description": "Device RAM in Megabytes e.g. \"2048\"",
+     "format": "int32"
+    },
+    "screenDensityDpi": {
+     "type": "integer",
+     "description": "Screen density in DPI",
+     "format": "int32"
+    },
+    "screenHeightPx": {
+     "type": "integer",
+     "description": "Screen height in pixels",
+     "format": "int32"
+    },
+    "screenWidthPx": {
+     "type": "integer",
+     "description": "Screen width in pixels",
+     "format": "int32"
     }
    }
   },
@@ -961,6 +1016,11 @@
      "type": "string",
      "description": "Time at which the subscription was granted, in milliseconds since the Epoch.",
      "format": "int64"
+    },
+    "userCancellationTimeMillis": {
+     "type": "string",
+     "description": "The time at which the subscription was canceled by the user, in milliseconds since the epoch. Only present if cancelReason is 0.",
+     "format": "int64"
     }
    }
   },
@@ -1088,9 +1148,17 @@
      "type": "string",
      "description": "Codename for the reviewer's device, e.g. klte, flounder. May be absent."
     },
+    "deviceMetadata": {
+     "$ref": "DeviceMetadata",
+     "description": "Some information about the characteristics of the user's device"
+    },
     "lastModified": {
      "$ref": "Timestamp",
      "description": "The last time at which this comment was updated."
+    },
+    "originalText": {
+     "type": "string",
+     "description": "Untranslated text of the review, in the case where the review has been translated. If the review has not been translated this is left blank."
     },
     "reviewerLanguage": {
      "type": "string",
@@ -1104,6 +1172,60 @@
     "text": {
      "type": "string",
      "description": "The content of the comment, i.e. review body. In some cases users have been able to write a review with separate title and body; in those cases the title and body are concatenated and separated by a tab character."
+    },
+    "thumbsDownCount": {
+     "type": "integer",
+     "description": "Number of users who have given this review a thumbs down",
+     "format": "int32"
+    },
+    "thumbsUpCount": {
+     "type": "integer",
+     "description": "Number of users who have given this review a thumbs up",
+     "format": "int32"
+    }
+   }
+  },
+  "VoidedPurchase": {
+   "id": "VoidedPurchase",
+   "type": "object",
+   "description": "A VoidedPurchase resource indicates a purchase that was either cancelled/refunded/charged-back.",
+   "properties": {
+    "kind": {
+     "type": "string",
+     "description": "This kind represents a voided purchase object in the androidpublisher service.",
+     "default": "androidpublisher#voidedPurchase"
+    },
+    "purchaseTimeMillis": {
+     "type": "string",
+     "description": "The time at which the purchase was made, in milliseconds since the epoch (Jan 1, 1970).",
+     "format": "int64"
+    },
+    "purchaseToken": {
+     "type": "string",
+     "description": "The token that was generated when a purchase was made. This uniquely identifies a purchase."
+    },
+    "voidedTimeMillis": {
+     "type": "string",
+     "description": "The time at which the purchase was cancelled/refunded/charged-back, in milliseconds since the epoch (Jan 1, 1970).",
+     "format": "int64"
+    }
+   }
+  },
+  "VoidedPurchasesListResponse": {
+   "id": "VoidedPurchasesListResponse",
+   "type": "object",
+   "properties": {
+    "pageInfo": {
+     "$ref": "PageInfo"
+    },
+    "tokenPagination": {
+     "$ref": "TokenPagination"
+    },
+    "voidedPurchases": {
+     "type": "array",
+     "items": {
+      "$ref": "VoidedPurchase"
+     }
     }
    }
   }
@@ -3358,6 +3480,59 @@
        ]
       }
      }
+    },
+    "voidedpurchases": {
+     "methods": {
+      "list": {
+       "id": "androidpublisher.purchases.voidedpurchases.list",
+       "path": "{packageName}/purchases/voidedpurchases",
+       "httpMethod": "GET",
+       "description": "Lists the purchases that were cancelled, refunded or charged-back.",
+       "parameters": {
+        "endTime": {
+         "type": "string",
+         "description": "The time, in milliseconds since the Epoch, of the newest voided in-app product purchase that you want to see in the response. The value of this parameter cannot be greater than the current time and is ignored if a pagination token is set. Default value is current time.",
+         "format": "int64",
+         "location": "query"
+        },
+        "maxResults": {
+         "type": "integer",
+         "format": "uint32",
+         "location": "query"
+        },
+        "packageName": {
+         "type": "string",
+         "description": "The package name of the application for which voided purchases need to be returned (for example, 'com.some.thing').",
+         "required": true,
+         "location": "path"
+        },
+        "startIndex": {
+         "type": "integer",
+         "format": "uint32",
+         "location": "query"
+        },
+        "startTime": {
+         "type": "string",
+         "description": "The time, in milliseconds since the Epoch, of the oldest voided in-app product purchase that you want to see in the response. The value of this parameter cannot be older than 30 days and is ignored if a pagination token is set. Default value is current time minus 30 days.",
+         "format": "int64",
+         "location": "query"
+        },
+        "token": {
+         "type": "string",
+         "location": "query"
+        }
+       },
+       "parameterOrder": [
+        "packageName"
+       ],
+       "response": {
+        "$ref": "VoidedPurchasesListResponse"
+       },
+       "scopes": [
+        "https://www.googleapis.com/auth/androidpublisher"
+       ]
+      }
+     }
     }
    }
   },
@@ -3379,6 +3554,10 @@
        "type": "string",
        "required": true,
        "location": "path"
+      },
+      "translationLanguage": {
+       "type": "string",
+       "location": "query"
       }
      },
      "parameterOrder": [
@@ -3396,7 +3575,7 @@
      "id": "androidpublisher.reviews.list",
      "path": "{packageName}/reviews",
      "httpMethod": "GET",
-     "description": "Returns a list of reviews.",
+     "description": "Returns a list of reviews. Only reviews from last week will be returned.",
      "parameters": {
       "maxResults": {
        "type": "integer",
@@ -3415,6 +3594,10 @@
        "location": "query"
       },
       "token": {
+       "type": "string",
+       "location": "query"
+      },
+      "translationLanguage": {
        "type": "string",
        "location": "query"
       }

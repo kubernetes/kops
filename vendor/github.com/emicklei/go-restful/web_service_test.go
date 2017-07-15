@@ -241,6 +241,29 @@ func TestContentTypeOctet_Issue170(t *testing.T) {
 	}
 }
 
+type exampleBody struct{}
+
+func TestParameterDataTypeDefaults(t *testing.T) {
+	tearDown()
+	ws := new(WebService)
+	route := ws.POST("/post").Reads(&exampleBody{})
+	if route.parameters[0].data.DataType != "*restful.exampleBody" {
+		t.Errorf("body parameter incorrect name: %#v", route.parameters[0].data)
+	}
+}
+
+func TestParameterDataTypeCustomization(t *testing.T) {
+	tearDown()
+	ws := new(WebService)
+	ws.TypeNameHandler(func(sample interface{}) string {
+		return "my.custom.type.name"
+	})
+	route := ws.POST("/post").Reads(&exampleBody{})
+	if route.parameters[0].data.DataType != "my.custom.type.name" {
+		t.Errorf("body parameter incorrect name: %#v", route.parameters[0].data)
+	}
+}
+
 func newPanicingService() *WebService {
 	ws := new(WebService).Path("")
 	ws.Route(ws.GET("/fire").To(doPanic))

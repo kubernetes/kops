@@ -93,7 +93,7 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 		return fmt.Errorf("ClusterName is required")
 	}
 
-	cluster, err := clientset.Clusters().Get(options.ClusterName)
+	cluster, err := clientset.GetCluster(options.ClusterName)
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 	}
 
 	// Todo lets make this smart enough to detect the cloud and switch on the ClusterResources interface
-	d := &resources.AwsCluster{}
+	d := &resources.ClusterResources{}
 	d.ClusterName = options.ClusterName
 	d.Cloud = cloud
 

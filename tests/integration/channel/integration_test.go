@@ -105,7 +105,7 @@ func TestKopsUpgrades(t *testing.T) {
 
 		required, err := versionInfo.IsUpgradeRequired(kopsVersion)
 		if err != nil {
-			t.Errorf("unexpected error from IsUpgradeRequired(%q)", g.KopsVersion, err)
+			t.Errorf("unexpected error from IsUpgradeRequired(%q): %v", g.KopsVersion, err)
 			continue
 		}
 		if required != g.ExpectedRequired {
@@ -199,7 +199,7 @@ func TestKubernetesUpgrades(t *testing.T) {
 
 		required, err := versionInfo.IsUpgradeRequired(kubernetesVersion)
 		if err != nil {
-			t.Errorf("unexpected error from IsUpgradeRequired(%q)", g.KubernetesVersion, err)
+			t.Errorf("unexpected error from IsUpgradeRequired(%q): %v", g.KubernetesVersion, err)
 			continue
 		}
 		if required != g.ExpectedRequired {
@@ -239,7 +239,7 @@ func TestFindImage(t *testing.T) {
 	for _, g := range grid {
 		kubernetesVersion := semver.MustParse(g.KubernetesVersion)
 
-		image := channel.FindImage(fi.CloudProviderAWS, kubernetesVersion)
+		image := channel.FindImage(kops.CloudProviderAWS, kubernetesVersion)
 		name := ""
 		if image != nil {
 			name = image.Name

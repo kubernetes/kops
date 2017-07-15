@@ -10,22 +10,24 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 )
 
 // A Document is an API discovery document.
 type Document struct {
-	ID          string             `json:"id"`
-	Name        string             `json:"name"`
-	Version     string             `json:"version"`
-	Title       string             `json:"title"`
-	RootURL     string             `json:"rootUrl"`
-	ServicePath string             `json:"servicePath"`
-	BasePath    string             `json:"basePath"`
-	Auth        Auth               `json:"auth"`
-	Features    []string           `json:"features"`
-	Methods     MethodList         `json:"methods"`
-	Schemas     map[string]*Schema `json:"schemas"`
-	Resources   ResourceList       `json:"resources"`
+	ID                string             `json:"id"`
+	Name              string             `json:"name"`
+	Version           string             `json:"version"`
+	Title             string             `json:"title"`
+	RootURL           string             `json:"rootUrl"`
+	ServicePath       string             `json:"servicePath"`
+	BasePath          string             `json:"basePath"`
+	DocumentationLink string             `json:"documentationLink"`
+	Auth              Auth               `json:"auth"`
+	Features          []string           `json:"features"`
+	Methods           MethodList         `json:"methods"`
+	Schemas           map[string]*Schema `json:"schemas"`
+	Resources         ResourceList       `json:"resources"`
 }
 
 // init performs additional initialization and checks that
@@ -44,8 +46,15 @@ func (d *Document) init() error {
 			return err
 		}
 	}
+	for _, m := range d.Methods {
+		if err := m.init(schemasByID); err != nil {
+			return err
+		}
+	}
 	for _, r := range d.Resources {
-		r.init("")
+		if err := r.init("", schemasByID); err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -107,7 +116,7 @@ type Schema struct {
 	Type                 string // union types not supported
 	Format               string
 	Description          string
-	Properties           map[string]*Schema
+	Properties           PropertyList
 	ItemSchema           *Schema `json:"items"` // array of schemas not supported
 	AdditionalProperties *Schema // boolean not supported
 	Ref                  string  `json:"$ref"`
@@ -160,7 +169,7 @@ func (s *Schema) init(topLevelSchemas map[string]*Schema) error {
 		return err
 	}
 	for _, p := range s.Properties {
-		if err := p.init(topLevelSchemas); err != nil {
+		if err := p.Schema.init(topLevelSchemas); err != nil {
 			return err
 		}
 	}
@@ -213,6 +222,12 @@ func (s *Schema) ElementSchema() *Schema {
 	}
 }
 
+// IsIntAsString reports whether the schema represents an integer value
+// formatted as a string.
+func (s *Schema) IsIntAsString() bool {
+	return s.Type == "string" && strings.Contains(s.Format, "int")
+}
+
 // Kind classifies a Schema.
 type Kind int
 
@@ -248,6 +263,28 @@ const (
 	ReferenceKind
 )
 
+type Property struct {
+	Name   string
+	Schema *Schema
+}
+
+type PropertyList []*Property
+
+func (pl *PropertyList) UnmarshalJSON(data []byte) error {
+	// In the discovery doc, properties are a map. Convert to a list.
+	var m map[string]*Schema
+	if err := json.Unmarshal(data, &m); err != nil {
+		return err
+	}
+	for _, k := range sortedKeys(m) {
+		*pl = append(*pl, &Property{
+			Name:   k,
+			Schema: m[k],
+		})
+	}
+	return nil
+}
+
 type ResourceList []*Resource
 
 func (rl *ResourceList) UnmarshalJSON(data []byte) error {
@@ -272,11 +309,19 @@ type Resource struct {
 	Resources ResourceList
 }
 
-func (r *Resource) init(parentFullName string) {
+func (r *Resource) init(parentFullName string, topLevelSchemas map[string]*Schema) error {
 	r.FullName = fmt.Sprintf("%s.%s", parentFullName, r.Name)
-	for _, r2 := range r.Resources {
-		r2.init(r.FullName)
+	for _, m := range r.Methods {
+		if err := m.init(topLevelSchemas); err != nil {
+			return err
+		}
 	}
+	for _, r2 := range r.Resources {
+		if err := r2.init(r.FullName, topLevelSchemas); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 type MethodList []*Method
@@ -297,17 +342,15 @@ func (ml *MethodList) UnmarshalJSON(data []byte) error {
 
 // A Method holds information about a resource method.
 type Method struct {
-	Name           string
-	ID             string
-	Path           string
-	HTTPMethod     string
-	Description    string
-	Parameters     ParameterList
-	ParameterOrder []string
-	Request        map[string]interface{}
-	Response       struct {
-		Ref string `json:"$ref"`
-	}
+	Name                  string
+	ID                    string
+	Path                  string
+	HTTPMethod            string
+	Description           string
+	Parameters            ParameterList
+	ParameterOrder        []string
+	Request               *Schema
+	Response              *Schema
 	Scopes                []string
 	MediaUpload           *MediaUpload
 	SupportsMediaDownload bool
@@ -324,6 +367,16 @@ type MediaUpload struct {
 type Protocol struct {
 	Multipart bool
 	Path      string
+}
+
+func (m *Method) init(topLevelSchemas map[string]*Schema) error {
+	if err := m.Request.init(topLevelSchemas); err != nil {
+		return err
+	}
+	if err := m.Response.init(topLevelSchemas); err != nil {
+		return err
+	}
+	return nil
 }
 
 func (m *Method) UnmarshalJSON(data []byte) error {

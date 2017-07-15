@@ -97,7 +97,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(oldCluster.ObjectMeta.Name).List(metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(oldCluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -235,7 +235,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		}
 
 		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.Clusters().Update(newCluster)
+		_, err = clientset.ClustersFor(newCluster).Update(newCluster)
 		if err != nil {
 			return preservedFile(err, file, out)
 		}

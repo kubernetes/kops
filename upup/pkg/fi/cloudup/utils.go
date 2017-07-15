@@ -19,16 +19,17 @@ package cloudup
 import (
 	"fmt"
 	"github.com/golang/glog"
-	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	"strings"
 )
 
-func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
+func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 	var cloud fi.Cloud
 
 	region := ""
@@ -55,7 +56,7 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 
 			project = cluster.Spec.Project
 			if project == "" {
-				return nil, fmt.Errorf("project is required for GCE")
+				return nil, fmt.Errorf("project is required for GCE - try gcloud config get-value project")
 			}
 
 			labels := map[string]string{gce.GceLabelNameKubernetesCluster: gce.SafeClusterName(cluster.ObjectMeta.Name)}
@@ -112,40 +113,7 @@ func BuildCloud(cluster *api.Cluster) (fi.Cloud, error) {
 	return cloud, nil
 }
 
-//func BuildDNS(cluster *api.Cluster, cloud fi.Cloud) (dns.Provider, error) {
-//	var p dns.Provider
-//
-//	switch cluster.Spec.CloudProvider {
-//	case "gce":
-//		{
-//			gceCloud := cloud.(*gce.GCECloud)
-//			glog.Infof("Creating google cloud dns provider for project %q", gceCloud.Project)
-//			k8sDNSProvider, err := clouddns.CreateInterface(gceCloud.Project, nil)
-//			if err != nil {
-//				return nil, fmt.Errorf("error building DNS provider: %v", err)
-//			}
-//
-//			p = &dns.KubernetesDNS{Provider: k8sDNSProvider}
-//		}
-//
-//	case "aws":
-//		{
-//			//awsCloud := cloud.(*awsup.AWSCloud)
-//			config := aws.NewConfig()
-//			client := route53.New(session.New(), config)
-//
-//			p = &dns.DirectRoute53DNS{
-//				Route53: client,
-//			}
-//		}
-//
-//	default:
-//		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
-//	}
-//	return p, nil
-//}
-
-func FindDNSHostedZone(dns dnsprovider.Interface, clusterDNSName string) (string, error) {
+func FindDNSHostedZone(dns dnsprovider.Interface, clusterDNSName string, dnsType kops.DNSType) (string, error) {
 	glog.V(2).Infof("Querying for all DNS zones to find match for %q", clusterDNSName)
 
 	clusterDNSName = "." + strings.TrimSuffix(clusterDNSName, ".")
@@ -159,13 +127,32 @@ func FindDNSHostedZone(dns dnsprovider.Interface, clusterDNSName string) (string
 	if err != nil {
 		return "", fmt.Errorf("error querying zones: %v", err)
 	}
+
 	var zones []dnsprovider.Zone
 	for _, z := range allZones {
 		zoneName := "." + strings.TrimSuffix(z.Name(), ".")
 
-		if strings.HasSuffix(clusterDNSName, zoneName) {
-			zones = append(zones, z)
+		if !strings.HasSuffix(clusterDNSName, zoneName) {
+			continue
 		}
+
+		if dnsType != "" {
+			if awsZone, ok := z.(*route53.Zone); ok {
+				hostedZone := awsZone.Route53HostedZone()
+				if hostedZone.Config != nil {
+					zoneDNSType := kops.DNSTypePublic
+					if fi.BoolValue(hostedZone.Config.PrivateZone) {
+						zoneDNSType = kops.DNSTypePrivate
+					}
+					if zoneDNSType != dnsType {
+						glog.Infof("Found matching hosted zone %q, but it was %q and we require %q", zoneName, zoneDNSType, dnsType)
+						continue
+					}
+				}
+			}
+		}
+
+		zones = append(zones, z)
 	}
 
 	// Find the longest zones
