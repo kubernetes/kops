@@ -420,7 +420,7 @@ func TestMarshalerEncoding(t *testing.T) {
 		name    string
 		m       Message
 		want    []byte
-		wantErr error
+		errType reflect.Type
 	}{
 		{
 			name: "Marshaler that fails",
@@ -428,9 +428,11 @@ func TestMarshalerEncoding(t *testing.T) {
 				err: errors.New("some marshal err"),
 				b:   []byte{5, 6, 7},
 			},
-			// Since there's an error, nothing should be written to buffer.
-			want:    nil,
-			wantErr: errors.New("some marshal err"),
+			// Since the Marshal method returned bytes, they should be written to the
+			// buffer.  (For efficiency, we assume that Marshal implementations are
+			// always correct w.r.t. RequiredNotSetError and output.)
+			want:    []byte{5, 6, 7},
+			errType: reflect.TypeOf(errors.New("some marshal err")),
 		},
 		{
 			name: "Marshaler that fails with RequiredNotSetError",
@@ -446,29 +448,36 @@ func TestMarshalerEncoding(t *testing.T) {
 				10, 3, // for &msgWithFakeMarshaler
 				5, 6, 7, // for &fakeMarshaler
 			},
-			wantErr: &RequiredNotSetError{},
+			errType: reflect.TypeOf(&RequiredNotSetError{}),
 		},
 		{
 			name: "Marshaler that succeeds",
 			m: &fakeMarshaler{
 				b: []byte{0, 1, 2, 3, 4, 127, 255},
 			},
-			want:    []byte{0, 1, 2, 3, 4, 127, 255},
-			wantErr: nil,
+			want: []byte{0, 1, 2, 3, 4, 127, 255},
 		},
 	}
 	for _, test := range tests {
 		b := NewBuffer(nil)
 		err := b.Marshal(test.m)
-		if _, ok := err.(*RequiredNotSetError); ok {
-			// We're not in package proto, so we can only assert the type in this case.
-			err = &RequiredNotSetError{}
-		}
-		if !reflect.DeepEqual(test.wantErr, err) {
-			t.Errorf("%s: got err %v wanted %v", test.name, err, test.wantErr)
+		if reflect.TypeOf(err) != test.errType {
+			t.Errorf("%s: got err %T(%v) wanted %T", test.name, err, err, test.errType)
 		}
 		if !reflect.DeepEqual(test.want, b.Bytes()) {
 			t.Errorf("%s: got bytes %v wanted %v", test.name, b.Bytes(), test.want)
+		}
+		if size := Size(test.m); size != len(b.Bytes()) {
+			t.Errorf("%s: Size(_) = %v, but marshaled to %v bytes", test.name, size, len(b.Bytes()))
+		}
+
+		m, mErr := Marshal(test.m)
+		if !bytes.Equal(b.Bytes(), m) {
+			t.Errorf("%s: Marshal returned %v, but (*Buffer).Marshal wrote %v", test.name, m, b.Bytes())
+		}
+		if !reflect.DeepEqual(err, mErr) {
+			t.Errorf("%s: Marshal err = %q, but (*Buffer).Marshal returned %q",
+				test.name, fmt.Sprint(mErr), fmt.Sprint(err))
 		}
 	}
 }
@@ -1311,7 +1320,7 @@ func TestRequiredFieldEnforcement(t *testing.T) {
 	_, err := Marshal(pb)
 	if err == nil {
 		t.Error("marshal: expected error, got nil")
-	} else if strings.Index(err.Error(), "Label") < 0 {
+	} else if _, ok := err.(*RequiredNotSetError); !ok || !strings.Contains(err.Error(), "Label") {
 		t.Errorf("marshal: bad error type: %v", err)
 	}
 
@@ -1322,7 +1331,24 @@ func TestRequiredFieldEnforcement(t *testing.T) {
 	err = Unmarshal(buf, pb)
 	if err == nil {
 		t.Error("unmarshal: expected error, got nil")
-	} else if strings.Index(err.Error(), "{Unknown}") < 0 {
+	} else if _, ok := err.(*RequiredNotSetError); !ok || !strings.Contains(err.Error(), "{Unknown}") {
+		t.Errorf("unmarshal: bad error type: %v", err)
+	}
+}
+
+// Verify that absent required fields in groups cause Marshal/Unmarshal to return errors.
+func TestRequiredFieldEnforcementGroups(t *testing.T) {
+	pb := &GoTestRequiredGroupField{Group: &GoTestRequiredGroupField_Group{}}
+	if _, err := Marshal(pb); err == nil {
+		t.Error("marshal: expected error, got nil")
+	} else if _, ok := err.(*RequiredNotSetError); !ok || !strings.Contains(err.Error(), "Group.Field") {
+		t.Errorf("marshal: bad error type: %v", err)
+	}
+
+	buf := []byte{11, 12}
+	if err := Unmarshal(buf, pb); err == nil {
+		t.Error("unmarshal: expected error, got nil")
+	} else if _, ok := err.(*RequiredNotSetError); !ok || !strings.Contains(err.Error(), "Group.{Unknown}") {
 		t.Errorf("unmarshal: bad error type: %v", err)
 	}
 }
@@ -1337,7 +1363,7 @@ func TestTypedNilMarshal(t *testing.T) {
 	}
 
 	{
-		m := &Communique{Union: &Communique_Msg{nil}}
+		m := &Communique{Union: &Communique_Msg{Msg: nil}}
 		if _, err := Marshal(m); err == nil || err == ErrNil {
 			t.Errorf("Marshal(%#v): got %v, want errOneofHasNil", m, err)
 		}
@@ -1822,42 +1848,42 @@ func TestRequiredNotSetError(t *testing.T) {
 		"b8067f" // field 103, encoding 0, 0x7f zigzag64
 
 	o := old()
-	bytes, err := Marshal(pb)
+	mbytes, err := Marshal(pb)
 	if _, ok := err.(*RequiredNotSetError); !ok {
 		fmt.Printf("marshal-1 err = %v, want *RequiredNotSetError", err)
-		o.DebugPrint("", bytes)
+		o.DebugPrint("", mbytes)
 		t.Fatalf("expected = %s", expected)
 	}
 	if strings.Index(err.Error(), "RequiredField.Label") < 0 {
 		t.Errorf("marshal-1 wrong err msg: %v", err)
 	}
-	if !equal(bytes, expected, t) {
-		o.DebugPrint("neq 1", bytes)
+	if !equal(mbytes, expected, t) {
+		o.DebugPrint("neq 1", mbytes)
 		t.Fatalf("expected = %s", expected)
 	}
 
 	// Now test Unmarshal by recreating the original buffer.
 	pbd := new(GoTest)
-	err = Unmarshal(bytes, pbd)
+	err = Unmarshal(mbytes, pbd)
 	if _, ok := err.(*RequiredNotSetError); !ok {
 		t.Fatalf("unmarshal err = %v, want *RequiredNotSetError", err)
-		o.DebugPrint("", bytes)
+		o.DebugPrint("", mbytes)
 		t.Fatalf("string = %s", expected)
 	}
 	if strings.Index(err.Error(), "RequiredField.{Unknown}") < 0 {
 		t.Errorf("unmarshal wrong err msg: %v", err)
 	}
-	bytes, err = Marshal(pbd)
+	mbytes, err = Marshal(pbd)
 	if _, ok := err.(*RequiredNotSetError); !ok {
 		t.Errorf("marshal-2 err = %v, want *RequiredNotSetError", err)
-		o.DebugPrint("", bytes)
+		o.DebugPrint("", mbytes)
 		t.Fatalf("string = %s", expected)
 	}
 	if strings.Index(err.Error(), "RequiredField.Label") < 0 {
 		t.Errorf("marshal-2 wrong err msg: %v", err)
 	}
-	if !equal(bytes, expected, t) {
-		o.DebugPrint("neq 2", bytes)
+	if !equal(mbytes, expected, t) {
+		o.DebugPrint("neq 2", mbytes)
 		t.Fatalf("string = %s", expected)
 	}
 }
@@ -1956,14 +1982,54 @@ func TestMapFieldRoundTrips(t *testing.T) {
 }
 
 func TestMapFieldWithNil(t *testing.T) {
-	m := &MessageWithMap{
+	m1 := &MessageWithMap{
 		MsgMapping: map[int64]*FloatingPoint{
 			1: nil,
 		},
 	}
-	b, err := Marshal(m)
-	if err == nil {
-		t.Fatalf("Marshal of bad map should have failed, got these bytes: %v", b)
+	b, err := Marshal(m1)
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	m2 := new(MessageWithMap)
+	if err := Unmarshal(b, m2); err != nil {
+		t.Fatalf("Unmarshal: %v, got these bytes: %v", err, b)
+	}
+	if v, ok := m2.MsgMapping[1]; !ok {
+		t.Error("msg_mapping[1] not present")
+	} else if v != nil {
+		t.Errorf("msg_mapping[1] not nil: %v", v)
+	}
+}
+
+func TestMapFieldWithNilBytes(t *testing.T) {
+	m1 := &MessageWithMap{
+		ByteMapping: map[bool][]byte{
+			false: {},
+			true:  nil,
+		},
+	}
+	n := Size(m1)
+	b, err := Marshal(m1)
+	if err != nil {
+		t.Fatalf("Marshal: %v", err)
+	}
+	if n != len(b) {
+		t.Errorf("Size(m1) = %d; want len(Marshal(m1)) = %d", n, len(b))
+	}
+	m2 := new(MessageWithMap)
+	if err := Unmarshal(b, m2); err != nil {
+		t.Fatalf("Unmarshal: %v, got these bytes: %v", err, b)
+	}
+	if v, ok := m2.ByteMapping[false]; !ok {
+		t.Error("byte_mapping[false] not present")
+	} else if len(v) != 0 {
+		t.Errorf("byte_mapping[false] not empty: %#v", v)
+	}
+	if v, ok := m2.ByteMapping[true]; !ok {
+		t.Error("byte_mapping[true] not present")
+	} else if len(v) != 0 {
+		t.Errorf("byte_mapping[true] not empty: %#v", v)
 	}
 }
 
@@ -2012,7 +2078,7 @@ func TestOneof(t *testing.T) {
 	}
 
 	m = &Communique{
-		Union: &Communique_Name{"Barry"},
+		Union: &Communique_Name{Name: "Barry"},
 	}
 
 	// Round-trip.
@@ -2035,7 +2101,7 @@ func TestOneof(t *testing.T) {
 	}
 
 	// Let's try with a message in the oneof.
-	m.Union = &Communique_Msg{&Strings{StringField: String("deep deep string")}}
+	m.Union = &Communique_Msg{Msg: &Strings{StringField: String("deep deep string")}}
 	b, err = Marshal(m)
 	if err != nil {
 		t.Fatalf("Marshal of message with oneof set to message: %v", err)

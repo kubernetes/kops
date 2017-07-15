@@ -8,15 +8,14 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coredns/coredns/middleware/proxy"
-	"github.com/coredns/coredns/middleware/test"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware/proxy"
+	"github.com/miekg/coredns/middleware/test"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 )
 
 func TestAuto(t *testing.T) {
-	t.Parallel()
 	tmpdir, err := ioutil.TempDir(os.TempDir(), "coredns")
 	if err != nil {
 		t.Fatal(err)
@@ -36,13 +35,13 @@ func TestAuto(t *testing.T) {
 
 	udp, _ := CoreDNSServerPorts(i, 0)
 	if udp == "" {
-		t.Fatal("Could not get UDP listening port")
+		t.Fatalf("Could not get UDP listening port")
 	}
 	defer i.Stop()
 
 	log.SetOutput(ioutil.Discard)
 
-	p := proxy.NewLookup([]string{udp})
+	p := proxy.New([]string{udp})
 	state := request.Request{W: &test.ResponseWriter{}, Req: new(dns.Msg)}
 
 	resp, err := p.Lookup(state, "www.example.org.", dns.TypeA)
@@ -82,7 +81,6 @@ func TestAuto(t *testing.T) {
 }
 
 func TestAutoNonExistentZone(t *testing.T) {
-	t.Parallel()
 	tmpdir, err := ioutil.TempDir(os.TempDir(), "coredns")
 	if err != nil {
 		t.Fatal(err)
@@ -104,11 +102,11 @@ func TestAutoNonExistentZone(t *testing.T) {
 
 	udp, _ := CoreDNSServerPorts(i, 0)
 	if udp == "" {
-		t.Fatal("Could not get UDP listening port")
+		t.Fatalf("Could not get UDP listening port")
 	}
 	defer i.Stop()
 
-	p := proxy.NewLookup([]string{udp})
+	p := proxy.New([]string{udp})
 	state := request.Request{W: &test.ResponseWriter{}, Req: new(dns.Msg)}
 
 	resp, err := p.Lookup(state, "example.org.", dns.TypeA)
@@ -121,7 +119,6 @@ func TestAutoNonExistentZone(t *testing.T) {
 }
 
 func TestAutoAXFR(t *testing.T) {
-	t.Parallel()
 	log.SetOutput(ioutil.Discard)
 
 	tmpdir, err := ioutil.TempDir(os.TempDir(), "coredns")
@@ -144,7 +141,7 @@ func TestAutoAXFR(t *testing.T) {
 
 	udp, _ := CoreDNSServerPorts(i, 0)
 	if udp == "" {
-		t.Fatal("Could not get UDP listening port")
+		t.Fatalf("Could not get UDP listening port")
 	}
 	defer i.Stop()
 
@@ -155,7 +152,7 @@ func TestAutoAXFR(t *testing.T) {
 
 	time.Sleep(1100 * time.Millisecond) // wait for it to be picked up
 
-	p := proxy.NewLookup([]string{udp})
+	p := proxy.New([]string{udp})
 	m := new(dns.Msg)
 	m.SetAxfr("example.org.")
 	state := request.Request{W: &test.ResponseWriter{}, Req: m}
@@ -165,7 +162,7 @@ func TestAutoAXFR(t *testing.T) {
 		t.Fatal("Expected to receive reply, but didn't")
 	}
 	if len(resp.Answer) != 5 {
-		t.Fatalf("Expected response with %d RRs, got %d", 5, len(resp.Answer))
+		t.Fatal("Expected response with %d RRs, got %d", 5, len(resp.Answer))
 	}
 }
 

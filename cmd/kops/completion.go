@@ -75,18 +75,14 @@ var (
 	source $(brew --prefix)/etc/bash_completion
 
 	# Bash completion support
-	printf "
-	  source $(brew --prefix)/etc/bash_completion
-	   " >> $HOME/.bash_profile
-	  source $HOME/.bash_profile
-	  source <(kops completion bash)
-	  kops completion bash > ~/.kops/completion.bash.inc
-	printf "
+	printf "source $(brew --prefix)/etc/bash_completion\n" >> $HOME/.bash_profile
+	source $HOME/.bash_profile  
+	source <(kops completion bash)
+	kops completion bash > ~/.kops/completion.bash.inc
+	chmod +x $HOME/.kops/completion.bash.inc
 
 	# kops shell completion
-	$HOME/.kops/completion.bash.inc'
-	" >> $HOME/.bash_profile
-
+	printf "$HOME/.kops/completion.bash.inc\n" >> $HOME/.bash_profile
 	source $HOME/.bash_profile
 
 	# Load the kops completion code for zsh[1] into the current shell
@@ -129,7 +125,7 @@ func RunCompletion(f *util.Factory, cmd *cobra.Command, args []string, out io.Wr
 		return fmt.Errorf("shell is required")
 	}
 
-	run, found := completion_shells[args[0]]
+	run, found := completion_shells[c.Shell]
 	if !found {
 		return fmt.Errorf("Unsupported shell type %q.", args[0])
 	}

@@ -2,6 +2,14 @@ output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privatedns1-example-com.id}"]
 }
 
+output "bastions_role_arn" {
+  value = "${aws_iam_role.bastions-privatedns1-example-com.arn}"
+}
+
+output "bastions_role_name" {
+  value = "${aws_iam_role.bastions-privatedns1-example-com.name}"
+}
+
 output "cluster_name" {
   value = "privatedns1.example.com"
 }
@@ -10,12 +18,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privatedns1-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-privatedns1-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-privatedns1-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-privatedns1-example-com.id}"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-privatedns1-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-privatedns1-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-privatedns1-example-com.name}"
 }
 
 output "region" {
@@ -205,18 +229,18 @@ resource "aws_elb" "bastion-privatedns1-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privatedns1-example-com" {
-  name  = "bastions.privatedns1.example.com"
-  roles = ["${aws_iam_role.bastions-privatedns1-example-com.name}"]
+  name = "bastions.privatedns1.example.com"
+  role = "${aws_iam_role.bastions-privatedns1-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privatedns1-example-com" {
-  name  = "masters.privatedns1.example.com"
-  roles = ["${aws_iam_role.masters-privatedns1-example-com.name}"]
+  name = "masters.privatedns1.example.com"
+  role = "${aws_iam_role.masters-privatedns1-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privatedns1-example-com" {
-  name  = "nodes.privatedns1.example.com"
-  roles = ["${aws_iam_role.nodes-privatedns1-example-com.name}"]
+  name = "nodes.privatedns1.example.com"
+  role = "${aws_iam_role.nodes-privatedns1-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privatedns1-example-com" {
@@ -277,7 +301,7 @@ resource "aws_launch_configuration" "bastion-privatedns1-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 32
     delete_on_termination = true
   }
 
@@ -298,7 +322,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privatedns1-examp
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 64
     delete_on_termination = true
   }
 
@@ -324,7 +348,7 @@ resource "aws_launch_configuration" "nodes-privatedns1-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 128
     delete_on_termination = true
   }
 
@@ -653,4 +677,8 @@ resource "aws_vpc_dhcp_options" "privatedns1-example-com" {
 resource "aws_vpc_dhcp_options_association" "privatedns1-example-com" {
   vpc_id          = "${aws_vpc.privatedns1-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.privatedns1-example-com.id}"
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
 }

@@ -169,6 +169,13 @@ message GoTest {
   };
 }
 
+// For testing a group containing a required field.
+message GoTestRequiredGroupField {
+  required group Group = 1 {
+    required int32 Field = 2;
+  };
+}
+
 // For testing skipping of unrecognized fields.
 // Numbers are all big, larger than tag numbers in GoTestField,
 // the message used in the corresponding test.
@@ -237,6 +244,10 @@ message OtherMessage {
   extensions 100 to max;
 }
 
+message RequiredInnerMessage {
+  required InnerMessage leo_finally_won_an_oscar = 1;
+}
+
 message MyMessage {
   required int32 count = 1;
   optional string name = 2;
@@ -244,6 +255,7 @@ message MyMessage {
   repeated string pet = 4;
   optional InnerMessage inner = 5;
   repeated OtherMessage others = 6;
+  optional RequiredInnerMessage we_must_go_deeper = 13;
   repeated InnerMessage rep_inner = 12;
 
   enum Color {
@@ -483,6 +495,7 @@ message GroupNew {
 
 message FloatingPoint {
   required double f = 1;
+  optional bool exact = 2;
 }
 
 message MessageWithMap {

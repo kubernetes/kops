@@ -96,15 +96,15 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	}
 
 	kcm.ClusterName = b.Context.ClusterName
-	switch fi.CloudProviderID(clusterSpec.CloudProvider) {
-	case fi.CloudProviderAWS:
+	switch kops.CloudProviderID(clusterSpec.CloudProvider) {
+	case kops.CloudProviderAWS:
 		kcm.CloudProvider = "aws"
 
-	case fi.CloudProviderGCE:
+	case kops.CloudProviderGCE:
 		kcm.CloudProvider = "gce"
 		kcm.ClusterName = gce.SafeClusterName(b.Context.ClusterName)
 
-	case fi.CloudProviderVSphere:
+	case kops.CloudProviderVSphere:
 		kcm.CloudProvider = "vsphere"
 
 	default:
@@ -139,7 +139,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.ConfigureCloudRoutes = fi.Bool(true)
 	} else if networking.External != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil {
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external

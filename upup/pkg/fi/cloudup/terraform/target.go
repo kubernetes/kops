@@ -22,6 +22,7 @@ import (
 	"github.com/golang/glog"
 	hcl_parser "github.com/hashicorp/hcl/json/parser"
 	"io/ioutil"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"os"
 	"path"
@@ -176,16 +177,16 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 	}
 
 	providersByName := make(map[string]map[string]interface{})
-	if t.Cloud.ProviderID() == fi.CloudProviderGCE {
+	if t.Cloud.ProviderID() == kops.CloudProviderGCE {
 		providerGoogle := make(map[string]interface{})
 		providerGoogle["project"] = t.Project
 		providerGoogle["region"] = t.Region
 		providersByName["google"] = providerGoogle
-	} else if t.Cloud.ProviderID() == fi.CloudProviderAWS {
+	} else if t.Cloud.ProviderID() == kops.CloudProviderAWS {
 		providerAWS := make(map[string]interface{})
 		providerAWS["region"] = t.Region
 		providersByName["aws"] = providerAWS
-	} else if t.Cloud.ProviderID() == fi.CloudProviderVSphere {
+	} else if t.Cloud.ProviderID() == kops.CloudProviderVSphere {
 		providerVSphere := make(map[string]interface{})
 		providerVSphere["region"] = t.Region
 		providersByName["vsphere"] = providerVSphere
@@ -213,7 +214,12 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		outputVariables[tfName] = tfVar
 	}
 
+	// See https://github.com/kubernetes/kops/pull/2424 for why we require 0.9.3
+	terraformConfiguration := make(map[string]interface{})
+	terraformConfiguration["required_version"] = ">= 0.9.3"
+
 	data := make(map[string]interface{})
+	data["terraform"] = terraformConfiguration
 	data["resource"] = resourcesByType
 	if len(providersByName) != 0 {
 		data["provider"] = providersByName

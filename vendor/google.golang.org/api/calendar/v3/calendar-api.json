@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"C5oy1hgQsABtYOYIOXWcR3BgYqU/VWub4J15NN4SkSidNp3dhsb_pzo\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/vYgKdX3g1VPmww06h2PorJos8j4\"",
  "discoveryVersion": "v1",
  "id": "calendar:v3",
  "name": "calendar",
  "version": "v3",
- "revision": "20160927",
+ "revision": "20170319",
  "title": "Calendar API",
  "description": "Manipulates events and other calendar data.",
  "ownerDomain": "google.com",
@@ -337,7 +337,7 @@
    "properties": {
     "method": {
      "type": "string",
-     "description": "The method used to deliver the notification. Possible values are:  \n- \"email\" - Reminders are sent via email. \n- \"sms\" - Reminders are sent via SMS. This value is read-only and is ignored on inserts and updates. SMS reminders are only available for Google Apps for Work, Education, and Government customers.",
+     "description": "The method used to deliver the notification. Possible values are:  \n- \"email\" - Reminders are sent via email. \n- \"sms\" - Reminders are sent via SMS. This value is read-only and is ignored on inserts and updates. SMS reminders are only available for G Suite customers.",
      "annotations": {
       "required": [
        "calendar.calendarList.insert",
@@ -452,6 +452,42 @@
      "type": "string",
      "description": "Last modification time of the color palette (as a RFC3339 timestamp). Read-only.",
      "format": "date-time"
+    }
+   }
+  },
+  "DeepLinkData": {
+   "id": "DeepLinkData",
+   "type": "object",
+   "properties": {
+    "links": {
+     "type": "array",
+     "items": {
+      "$ref": "Link"
+     }
+    },
+    "url": {
+     "type": "string"
+    }
+   }
+  },
+  "DisplayInfo": {
+   "id": "DisplayInfo",
+   "type": "object",
+   "properties": {
+    "appIconUrl": {
+     "type": "string"
+    },
+    "appShortTitle": {
+     "type": "string"
+    },
+    "appTitle": {
+     "type": "string"
+    },
+    "linkShortTitle": {
+     "type": "string"
+    },
+    "linkTitle": {
+     "type": "string"
     }
    }
   },
@@ -895,13 +931,27 @@
     }
    }
   },
+  "EventHabitInstance": {
+   "id": "EventHabitInstance",
+   "type": "object",
+   "properties": {
+    "data": {
+     "$ref": "HabitInstanceData",
+     "description": "Metadata specific to this instance."
+    },
+    "parentId": {
+     "type": "string",
+     "description": "Id of the habit this instance belongs to."
+    }
+   }
+  },
   "EventReminder": {
    "id": "EventReminder",
    "type": "object",
    "properties": {
     "method": {
      "type": "string",
-     "description": "The method used by this reminder. Possible values are:  \n- \"email\" - Reminders are sent via email. \n- \"sms\" - Reminders are sent via SMS. These are only available for Google Apps for Work, Education, and Government customers. Requests to set SMS reminders for other account types are ignored. \n- \"popup\" - Reminders are sent via a UI popup.",
+     "description": "The method used by this reminder. Possible values are:  \n- \"email\" - Reminders are sent via email. \n- \"sms\" - Reminders are sent via SMS. These are only available for G Suite customers. Requests to set SMS reminders for other account types are ignored. \n- \"popup\" - Reminders are sent via a UI popup.",
      "annotations": {
       "required": [
        "calendar.calendarList.insert",
@@ -1108,6 +1158,60 @@
      "type": "string",
      "description": "The start of the interval.",
      "format": "date-time"
+    }
+   }
+  },
+  "HabitInstanceData": {
+   "id": "HabitInstanceData",
+   "type": "object",
+   "properties": {
+    "status": {
+     "type": "string"
+    },
+    "statusInferred": {
+     "type": "boolean"
+    },
+    "type": {
+     "type": "string"
+    }
+   }
+  },
+  "LaunchInfo": {
+   "id": "LaunchInfo",
+   "type": "object",
+   "properties": {
+    "appId": {
+     "type": "string"
+    },
+    "installUrl": {
+     "type": "string"
+    },
+    "intentAction": {
+     "type": "string"
+    },
+    "uri": {
+     "type": "string"
+    }
+   }
+  },
+  "Link": {
+   "id": "Link",
+   "type": "object",
+   "properties": {
+    "applinkingSource": {
+     "type": "string"
+    },
+    "displayInfo": {
+     "$ref": "DisplayInfo"
+    },
+    "launchInfo": {
+     "$ref": "LaunchInfo"
+    },
+    "platform": {
+     "type": "string"
+    },
+    "url": {
+     "type": "string"
     }
    }
   },

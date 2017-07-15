@@ -18,15 +18,16 @@ package v1alpha1
 
 // NetworkingSpec allows selection and configuration of a networking plugin
 type NetworkingSpec struct {
-	Classic  *ClassicNetworkingSpec  `json:"classic,omitempty"`
-	Kubenet  *KubenetNetworkingSpec  `json:"kubenet,omitempty"`
-	External *ExternalNetworkingSpec `json:"external,omitempty"`
-	CNI      *CNINetworkingSpec      `json:"cni,omitempty"`
-	Kopeio   *KopeioNetworkingSpec   `json:"kopeio,omitempty"`
-	Weave    *WeaveNetworkingSpec    `json:"weave,omitempty"`
-	Flannel  *FlannelNetworkingSpec  `json:"flannel,omitempty"`
-	Calico   *CalicoNetworkingSpec   `json:"calico,omitempty"`
-	Canal    *CanalNetworkingSpec    `json:"canal,omitempty"`
+	Classic    *ClassicNetworkingSpec    `json:"classic,omitempty"`
+	Kubenet    *KubenetNetworkingSpec    `json:"kubenet,omitempty"`
+	External   *ExternalNetworkingSpec   `json:"external,omitempty"`
+	CNI        *CNINetworkingSpec        `json:"cni,omitempty"`
+	Kopeio     *KopeioNetworkingSpec     `json:"kopeio,omitempty"`
+	Weave      *WeaveNetworkingSpec      `json:"weave,omitempty"`
+	Flannel    *FlannelNetworkingSpec    `json:"flannel,omitempty"`
+	Calico     *CalicoNetworkingSpec     `json:"calico,omitempty"`
+	Canal      *CanalNetworkingSpec      `json:"canal,omitempty"`
+	Kuberouter *KuberouterNetworkingSpec `json:"kuberouter,omitempty"`
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
@@ -54,6 +55,7 @@ type KopeioNetworkingSpec struct {
 
 // Weave declares that we want Weave networking
 type WeaveNetworkingSpec struct {
+	MTU *int32 `json:"mtu,omitempty"`
 }
 
 // Flannel declares that we want Flannel networking
@@ -62,8 +64,13 @@ type FlannelNetworkingSpec struct {
 
 // Calico declares that we want Calico networking
 type CalicoNetworkingSpec struct {
+	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
 }
 
 // Canal declares that we want Canal networking
 type CanalNetworkingSpec struct {
+}
+
+// Kuberouter declares that we want Canal networking
+type KuberouterNetworkingSpec struct {
 }

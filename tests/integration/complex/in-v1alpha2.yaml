@@ -8,6 +8,9 @@ spec:
   - 0.0.0.0/0
   channel: stable
   cloudProvider: aws
+  cloudLabels:
+    Owner: John Doe
+    foo/bar: fib+baz
   configBase: memfs://clusters.example.com/complex.example.com
   etcdClusters:
   - etcdMembers:

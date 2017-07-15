@@ -49,6 +49,8 @@ type LaunchConfiguration struct {
 	RootVolumeSize *int64
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string
+	// RootVolumeOptimization enables EBS optimization for an instance
+	RootVolumeOptimization *bool
 
 	// SpotPrice is set to the spot-price bid if this is a spot pricing request
 	SpotPrice string
@@ -246,6 +248,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 	request.LaunchConfigurationName = &launchConfigurationName
 	request.ImageId = image.ImageId
 	request.InstanceType = e.InstanceType
+	request.EbsOptimized = e.RootVolumeOptimization
 
 	if e.SSHKey != nil {
 		request.KeyName = e.SSHKey.Name
@@ -316,6 +319,7 @@ func (_ *LaunchConfiguration) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *La
 				if attempt > maxAttempts {
 					return fmt.Errorf("IAM instance profile not yet created/propagated (original error: %v)", message)
 				}
+				glog.V(4).Infof("got an error indicating that the IAM instance profile %q is not ready: %q", fi.StringValue(e.IAMInstanceProfile.Name), message)
 				glog.Infof("waiting for IAM instance profile %q to be ready", fi.StringValue(e.IAMInstanceProfile.Name))
 				time.Sleep(10 * time.Second)
 				continue
@@ -340,6 +344,7 @@ type terraformLaunchConfiguration struct {
 	AssociatePublicIpAddress *bool                   `json:"associate_public_ip_address,omitempty"`
 	UserData                 *terraform.Literal      `json:"user_data,omitempty"`
 	RootBlockDevice          *terraformBlockDevice   `json:"root_block_device,omitempty"`
+	EBSOptimized             *bool                   `json:"ebs_optimized,omitempty"`
 	EphemeralBlockDevice     []*terraformBlockDevice `json:"ephemeral_block_device,omitempty"`
 	Lifecycle                *terraform.Lifecycle    `json:"lifecycle,omitempty"`
 	SpotPrice                *string                 `json:"spot_price,omitempty"`
@@ -391,6 +396,8 @@ func (_ *LaunchConfiguration) RenderTerraform(t *terraform.TerraformTarget, a, e
 	}
 
 	tf.AssociatePublicIpAddress = e.AssociatePublicIP
+
+	tf.EBSOptimized = e.RootVolumeOptimization
 
 	{
 		rootDevices, err := e.buildRootDevice(cloud)
@@ -452,6 +459,7 @@ func (e *LaunchConfiguration) TerraformLink() *terraform.Literal {
 type cloudformationLaunchConfiguration struct {
 	AssociatePublicIpAddress *bool                        `json:"AssociatePublicIpAddress,omitempty"`
 	BlockDeviceMappings      []*cloudformationBlockDevice `json:"BlockDeviceMappings,omitempty"`
+	EBSOptimized             *bool                        `json:"EbsOptimized,omitempty"`
 	IAMInstanceProfile       *cloudformation.Literal      `json:"IamInstanceProfile,omitempty"`
 	ImageID                  *string                      `json:"ImageId,omitempty"`
 	InstanceType             *string                      `json:"InstanceType,omitempty"`
@@ -516,6 +524,8 @@ func (_ *LaunchConfiguration) RenderCloudformation(t *cloudformation.Cloudformat
 		cf.SecurityGroups = append(cf.SecurityGroups, sg.CloudformationLink())
 	}
 	cf.AssociatePublicIpAddress = e.AssociatePublicIP
+
+	cf.EBSOptimized = e.RootVolumeOptimization
 
 	{
 		rootDevices, err := e.buildRootDevice(cloud)

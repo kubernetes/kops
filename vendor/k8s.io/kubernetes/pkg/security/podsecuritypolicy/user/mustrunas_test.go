@@ -39,7 +39,7 @@ func TestNewMustRunAs(t *testing.T) {
 		},
 		"valid opts": {
 			opts: &extensions.RunAsUserStrategyOptions{
-				Ranges: []extensions.IDRange{
+				Ranges: []extensions.UserIDRange{
 					{Min: 1, Max: 1},
 				},
 			},
@@ -59,7 +59,7 @@ func TestNewMustRunAs(t *testing.T) {
 
 func TestGenerate(t *testing.T) {
 	opts := &extensions.RunAsUserStrategyOptions{
-		Ranges: []extensions.IDRange{
+		Ranges: []extensions.UserIDRange{
 			{Min: 1, Max: 1},
 		},
 	}
@@ -78,11 +78,14 @@ func TestGenerate(t *testing.T) {
 
 func TestValidate(t *testing.T) {
 	opts := &extensions.RunAsUserStrategyOptions{
-		Ranges: []extensions.IDRange{
+		Ranges: []extensions.UserIDRange{
 			{Min: 1, Max: 1},
 			{Min: 10, Max: 20},
 		},
 	}
+
+	validID := int64(15)
+	invalidID := int64(21)
 
 	tests := map[string]struct {
 		container   *api.Container
@@ -91,7 +94,7 @@ func TestValidate(t *testing.T) {
 		"good container": {
 			container: &api.Container{
 				SecurityContext: &api.SecurityContext{
-					RunAsUser: int64Ptr(15),
+					RunAsUser: &validID,
 				},
 			},
 		},
@@ -112,7 +115,7 @@ func TestValidate(t *testing.T) {
 		"invalid id": {
 			container: &api.Container{
 				SecurityContext: &api.SecurityContext{
-					RunAsUser: int64Ptr(21),
+					RunAsUser: &invalidID,
 				},
 			},
 			expectedMsg: "does not match required range",
@@ -145,8 +148,4 @@ func TestValidate(t *testing.T) {
 			}
 		}
 	}
-}
-
-func int64Ptr(i int64) *int64 {
-	return &i
 }

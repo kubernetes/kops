@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/BurntSushi/toml"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v1"
 )
 
 // !!!NOTE!!!
@@ -635,7 +635,7 @@ localtime = true`[1:]
 func makeTempDir(name string, t testing.TB) string {
 	dir := time.Now().Format(name + backupTimeFormat)
 	dir = filepath.Join(os.TempDir(), dir)
-	isNilUp(os.Mkdir(dir, 0700), t, 1)
+	isNilUp(os.Mkdir(dir, 0777), t, 1)
 	return dir
 }
 

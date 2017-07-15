@@ -86,7 +86,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		return err
 	}
 
-	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -294,13 +294,13 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		}
 
 		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.Clusters().Update(cluster)
+		_, err = clientset.ClustersFor(cluster).Update(cluster)
 		if err != nil {
 			return err
 		}
 
 		for _, g := range instanceGroups {
-			_, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Update(g)
+			_, err := clientset.InstanceGroupsFor(cluster).Update(g)
 			if err != nil {
 				return fmt.Errorf("error writing InstanceGroup %q: %v", g.ObjectMeta.Name, err)
 			}

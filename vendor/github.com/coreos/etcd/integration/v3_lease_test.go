@@ -233,6 +233,91 @@ func TestV3LeaseExists(t *testing.T) {
 	}
 }
 
+// TestV3LeaseRenewStress keeps creating lease and renewing it immediately to ensure the renewal goes through.
+// it was oberserved that the immediate lease renewal after granting a lease from follower resulted lease not found.
+// related issue https://github.com/coreos/etcd/issues/6978
+func TestV3LeaseRenewStress(t *testing.T) {
+	testLeaseStress(t, stressLeaseRenew)
+}
+
+// TestV3LeaseTimeToLiveStress keeps creating lease and retriving it immediately to ensure the lease can be retrived.
+// it was oberserved that the immediate lease retrival after granting a lease from follower resulted lease not found.
+// related issue https://github.com/coreos/etcd/issues/6978
+func TestV3LeaseTimeToLiveStress(t *testing.T) {
+	testLeaseStress(t, stressLeaseTimeToLive)
+}
+
+func testLeaseStress(t *testing.T, stresser func(context.Context, pb.LeaseClient) error) {
+	defer testutil.AfterTest(t)
+	clus := NewClusterV3(t, &ClusterConfig{Size: 3})
+	defer clus.Terminate(t)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	errc := make(chan error)
+
+	for i := 0; i < 30; i++ {
+		for j := 0; j < 3; j++ {
+			go func(i int) { errc <- stresser(ctx, toGRPC(clus.Client(i)).Lease) }(j)
+		}
+	}
+
+	for i := 0; i < 90; i++ {
+		if err := <-errc; err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func stressLeaseRenew(tctx context.Context, lc pb.LeaseClient) (reterr error) {
+	defer func() {
+		if tctx.Err() != nil {
+			reterr = nil
+		}
+	}()
+	lac, err := lc.LeaseKeepAlive(tctx)
+	if err != nil {
+		return err
+	}
+	for tctx.Err() == nil {
+		resp, gerr := lc.LeaseGrant(tctx, &pb.LeaseGrantRequest{TTL: 60})
+		if gerr != nil {
+			continue
+		}
+		err = lac.Send(&pb.LeaseKeepAliveRequest{ID: resp.ID})
+		if err != nil {
+			continue
+		}
+		rresp, rxerr := lac.Recv()
+		if rxerr != nil {
+			continue
+		}
+		if rresp.TTL == 0 {
+			return fmt.Errorf("TTL shouldn't be 0 so soon")
+		}
+	}
+	return nil
+}
+
+func stressLeaseTimeToLive(tctx context.Context, lc pb.LeaseClient) (reterr error) {
+	defer func() {
+		if tctx.Err() != nil {
+			reterr = nil
+		}
+	}()
+	for tctx.Err() == nil {
+		resp, gerr := lc.LeaseGrant(tctx, &pb.LeaseGrantRequest{TTL: 60})
+		if gerr != nil {
+			continue
+		}
+		_, kerr := lc.LeaseTimeToLive(tctx, &pb.LeaseTimeToLiveRequest{ID: resp.ID})
+		if rpctypes.Error(kerr) == rpctypes.ErrLeaseNotFound {
+			return kerr
+		}
+	}
+	return nil
+}
+
 func TestV3PutOnNonExistLease(t *testing.T) {
 	defer testutil.AfterTest(t)
 	clus := NewClusterV3(t, &ClusterConfig{Size: 1})
@@ -245,7 +330,31 @@ func TestV3PutOnNonExistLease(t *testing.T) {
 	putr := &pb.PutRequest{Key: []byte("foo"), Value: []byte("bar"), Lease: badLeaseID}
 	_, err := toGRPC(clus.RandClient()).KV.Put(ctx, putr)
 	if !eqErrGRPC(err, rpctypes.ErrGRPCLeaseNotFound) {
-		t.Errorf("err = %v, want %v", err, rpctypes.ErrGRPCCompacted)
+		t.Errorf("err = %v, want %v", err, rpctypes.ErrGRPCLeaseNotFound)
+	}
+}
+
+// TestV3GetNonExistLease tests the case where the non exist lease is report as lease not found error using LeaseTimeToLive()
+// A bug was found when a non leader etcd server returns nil instead of lease not found error which caues the server to crash.
+// related issue https://github.com/coreos/etcd/issues/6537
+func TestV3GetNonExistLease(t *testing.T) {
+	defer testutil.AfterTest(t)
+	clus := NewClusterV3(t, &ClusterConfig{Size: 3})
+	defer clus.Terminate(t)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	leaseTTLr := &pb.LeaseTimeToLiveRequest{
+		ID:   123,
+		Keys: true,
+	}
+
+	for _, client := range clus.clients {
+		_, err := toGRPC(client).Lease.LeaseTimeToLive(ctx, leaseTTLr)
+		if !eqErrGRPC(err, rpctypes.ErrGRPCLeaseNotFound) {
+			t.Errorf("err = %v, want %v", err, rpctypes.ErrGRPCLeaseNotFound)
+		}
 	}
 }
 
@@ -367,6 +476,234 @@ func TestV3LeaseFailover(t *testing.T) {
 
 	if !leaseExist(t, clus, lresp.ID) {
 		t.Error("unexpected lease not exists")
+	}
+}
+
+const fiveMinTTL int64 = 300
+
+// TestV3LeaseRecoverAndRevoke ensures that revoking a lease after restart deletes the attached key.
+func TestV3LeaseRecoverAndRevoke(t *testing.T) {
+	clus := NewClusterV3(t, &ClusterConfig{Size: 1})
+	defer clus.Terminate(t)
+
+	kvc := toGRPC(clus.Client(0)).KV
+	lsc := toGRPC(clus.Client(0)).Lease
+
+	lresp, err := lsc.LeaseGrant(context.TODO(), &pb.LeaseGrantRequest{TTL: fiveMinTTL})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lresp.Error != "" {
+		t.Fatal(lresp.Error)
+	}
+	_, err = kvc.Put(context.TODO(), &pb.PutRequest{Key: []byte("foo"), Value: []byte("bar"), Lease: lresp.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// restart server and ensure lease still exists
+	clus.Members[0].Stop(t)
+	clus.Members[0].Restart(t)
+	clus.waitLeader(t, clus.Members)
+
+	// overwrite old client with newly dialed connection
+	// otherwise, error with "grpc: RPC failed fast due to transport failure"
+	nc, err := NewClientV3(clus.Members[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	kvc = toGRPC(nc).KV
+	lsc = toGRPC(nc).Lease
+	defer nc.Close()
+
+	// revoke should delete the key
+	_, err = lsc.LeaseRevoke(context.TODO(), &pb.LeaseRevokeRequest{ID: lresp.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rresp, err := kvc.Range(context.TODO(), &pb.RangeRequest{Key: []byte("foo")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rresp.Kvs) != 0 {
+		t.Fatalf("lease removed but key remains")
+	}
+}
+
+// TestV3LeaseRevokeAndRecover ensures that revoked key stays deleted after restart.
+func TestV3LeaseRevokeAndRecover(t *testing.T) {
+	clus := NewClusterV3(t, &ClusterConfig{Size: 1})
+	defer clus.Terminate(t)
+
+	kvc := toGRPC(clus.Client(0)).KV
+	lsc := toGRPC(clus.Client(0)).Lease
+
+	lresp, err := lsc.LeaseGrant(context.TODO(), &pb.LeaseGrantRequest{TTL: fiveMinTTL})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lresp.Error != "" {
+		t.Fatal(lresp.Error)
+	}
+	_, err = kvc.Put(context.TODO(), &pb.PutRequest{Key: []byte("foo"), Value: []byte("bar"), Lease: lresp.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// revoke should delete the key
+	_, err = lsc.LeaseRevoke(context.TODO(), &pb.LeaseRevokeRequest{ID: lresp.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// restart server and ensure revoked key doesn't exist
+	clus.Members[0].Stop(t)
+	clus.Members[0].Restart(t)
+	clus.waitLeader(t, clus.Members)
+
+	// overwrite old client with newly dialed connection
+	// otherwise, error with "grpc: RPC failed fast due to transport failure"
+	nc, err := NewClientV3(clus.Members[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	kvc = toGRPC(nc).KV
+	defer nc.Close()
+
+	rresp, err := kvc.Range(context.TODO(), &pb.RangeRequest{Key: []byte("foo")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rresp.Kvs) != 0 {
+		t.Fatalf("lease removed but key remains")
+	}
+}
+
+// TestV3LeaseRecoverKeyWithDetachedLease ensures that revoking a detached lease after restart
+// does not delete the key.
+func TestV3LeaseRecoverKeyWithDetachedLease(t *testing.T) {
+	clus := NewClusterV3(t, &ClusterConfig{Size: 1})
+	defer clus.Terminate(t)
+
+	kvc := toGRPC(clus.Client(0)).KV
+	lsc := toGRPC(clus.Client(0)).Lease
+
+	lresp, err := lsc.LeaseGrant(context.TODO(), &pb.LeaseGrantRequest{TTL: fiveMinTTL})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if lresp.Error != "" {
+		t.Fatal(lresp.Error)
+	}
+	_, err = kvc.Put(context.TODO(), &pb.PutRequest{Key: []byte("foo"), Value: []byte("bar"), Lease: lresp.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// overwrite lease with none
+	_, err = kvc.Put(context.TODO(), &pb.PutRequest{Key: []byte("foo"), Value: []byte("bar")})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// restart server and ensure lease still exists
+	clus.Members[0].Stop(t)
+	clus.Members[0].Restart(t)
+	clus.waitLeader(t, clus.Members)
+
+	// overwrite old client with newly dialed connection
+	// otherwise, error with "grpc: RPC failed fast due to transport failure"
+	nc, err := NewClientV3(clus.Members[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	kvc = toGRPC(nc).KV
+	lsc = toGRPC(nc).Lease
+	defer nc.Close()
+
+	// revoke the detached lease
+	_, err = lsc.LeaseRevoke(context.TODO(), &pb.LeaseRevokeRequest{ID: lresp.ID})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rresp, err := kvc.Range(context.TODO(), &pb.RangeRequest{Key: []byte("foo")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rresp.Kvs) != 1 {
+		t.Fatalf("only detached lease removed, key should remain")
+	}
+}
+
+func TestV3LeaseRecoverKeyWithMutipleLease(t *testing.T) {
+	clus := NewClusterV3(t, &ClusterConfig{Size: 1})
+	defer clus.Terminate(t)
+
+	kvc := toGRPC(clus.Client(0)).KV
+	lsc := toGRPC(clus.Client(0)).Lease
+
+	var leaseIDs []int64
+	for i := 0; i < 2; i++ {
+		lresp, err := lsc.LeaseGrant(context.TODO(), &pb.LeaseGrantRequest{TTL: fiveMinTTL})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if lresp.Error != "" {
+			t.Fatal(lresp.Error)
+		}
+		leaseIDs = append(leaseIDs, lresp.ID)
+
+		_, err = kvc.Put(context.TODO(), &pb.PutRequest{Key: []byte("foo"), Value: []byte("bar"), Lease: lresp.ID})
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	// restart server and ensure lease still exists
+	clus.Members[0].Stop(t)
+	clus.Members[0].Restart(t)
+	clus.waitLeader(t, clus.Members)
+	for i, leaseID := range leaseIDs {
+		if !leaseExist(t, clus, leaseID) {
+			t.Errorf("#%d: unexpected lease not exists", i)
+		}
+	}
+
+	// overwrite old client with newly dialed connection
+	// otherwise, error with "grpc: RPC failed fast due to transport failure"
+	nc, err := NewClientV3(clus.Members[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	kvc = toGRPC(nc).KV
+	lsc = toGRPC(nc).Lease
+	defer nc.Close()
+
+	// revoke the old lease
+	_, err = lsc.LeaseRevoke(context.TODO(), &pb.LeaseRevokeRequest{ID: leaseIDs[0]})
+	if err != nil {
+		t.Fatal(err)
+	}
+	// key should still exist
+	rresp, err := kvc.Range(context.TODO(), &pb.RangeRequest{Key: []byte("foo")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rresp.Kvs) != 1 {
+		t.Fatalf("only detached lease removed, key should remain")
+	}
+
+	// revoke the latest lease
+	_, err = lsc.LeaseRevoke(context.TODO(), &pb.LeaseRevokeRequest{ID: leaseIDs[1]})
+	if err != nil {
+		t.Fatal(err)
+	}
+	rresp, err = kvc.Range(context.TODO(), &pb.RangeRequest{Key: []byte("foo")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rresp.Kvs) != 0 {
+		t.Fatalf("lease removed but key remains")
 	}
 }
 

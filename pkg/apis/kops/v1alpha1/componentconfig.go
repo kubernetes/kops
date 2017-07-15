@@ -22,6 +22,11 @@ type KubeletConfigSpec struct {
 	// not used for clusters version 1.6 and later
 	APIServers string `json:"apiServers,omitempty" flag:"api-servers"`
 
+	// AnonymousAuth chooses if you want anonymous auth on the kubelet api
+	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
+	// ClientCAFile is the path to a file container the CA certificate
+	ClientCAFile string `json:"clientCaFile,omitempty" flag:"client-ca-file"`
+
 	// kubeconfigPath is the path to the kubeconfig file with authorization
 	// information and API server location
 	// kops will only use this for clusters version 1.6 and later
@@ -234,9 +239,9 @@ type KubeletConfigSpec struct {
 	// The CIDR to use for pod IP addresses, only used in standalone mode.
 	// In cluster mode, this is obtained from the master.
 	PodCIDR string `json:"podCIDR,omitempty" flag:"pod-cidr"`
-	//// ResolverConfig is the resolver configuration file used as the basis
-	//// for the container DNS resolution configuration."), []
-	//ResolverConfig string `json:"resolvConf"`
+	// ResolverConfig is the resolver configuration file used as the basis
+	// for the container DNS resolution configuration."), []
+	ResolverConfig *string `json:"resolvConf,omitempty" flag:"resolv-conf" flag-include-empty:"true"`
 	//// cpuCFSQuota is Enable CPU CFS quota enforcement for containers that
 	//// specify CPU limits
 	//CPUCFSQuota bool `json:"cpuCFSQuota"`
@@ -348,8 +353,12 @@ type KubeProxyConfig struct {
 	//HealthzBindAddress string `json:"healthzBindAddress"`
 	//// healthzPort is the port to bind the health check server. Use 0 to disable.
 	//HealthzPort int32 `json:"healthzPort"`
-	//// hostnameOverride, if non-empty, will be used as the identity instead of the actual hostname.
-	//HostnameOverride string `json:"hostnameOverride"`
+
+	// hostnameOverride, if non-empty, will be used as the identity instead of the actual hostname.
+	// Note: We recognize some additional values:
+	//  @aws uses the hostname from the AWS metadata service
+	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
+
 	//// iptablesMasqueradeBit is the bit of the iptables fwmark space to use for SNAT if using
 	//// the pure iptables proxy mode. Values must be within the range [0, 31].
 	//IPTablesMasqueradeBit *int32 `json:"iptablesMasqueradeBit"`
@@ -407,6 +416,9 @@ type KubeAPIServerConfig struct {
 	AllowPrivileged       *bool             `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
 	APIServerCount        *int32            `json:"apiServerCount,omitempty" flag:"apiserver-count"`
 	RuntimeConfig         map[string]string `json:"runtimeConfig,omitempty" flag:"runtime-config"`
+
+	KubeletClientCertificate string `json:"kubeletClientCertificate,omitempty" flag:"kubelet-client-certificate"`
+	KubeletClientKey         string `json:"kubeletClientKey,omitempty" flag:"kubelet-client-key"`
 
 	AnonymousAuth *bool `json:"anonymousAuth,omitempty" flag:"anonymous-auth"`
 
@@ -671,7 +683,8 @@ type CloudConfiguration struct {
 	NodeTags           *string `json:"nodeTags,omitempty"`
 	NodeInstancePrefix *string `json:"nodeInstancePrefix,omitempty"`
 	// AWS cloud-config options
-	DisableSecurityGroupIngress *bool `json:"disableSecurityGroupIngress,omitempty"`
+	DisableSecurityGroupIngress *bool   `json:"disableSecurityGroupIngress,omitempty"`
+	ElbSecurityGroup            *string `json:"elbSecurityGroup,omitempty"`
 
 	// vSphere cloud-config specs
 	VSphereUsername      *string `json:"vSphereUsername,omitempty"`

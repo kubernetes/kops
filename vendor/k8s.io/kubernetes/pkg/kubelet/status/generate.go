@@ -21,6 +21,14 @@ import (
 	"strings"
 
 	"k8s.io/kubernetes/pkg/api/v1"
+	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
+)
+
+const (
+	UnknownContainerStatuses = "UnknownContainerStatuses"
+	PodCompleted             = "PodCompleted"
+	ContainersNotReady       = "ContainersNotReady"
+	ContainersNotInitialized = "ContainersNotInitialized"
 )
 
 // GeneratePodReadyCondition returns ready condition if all containers in a pod are ready, else it
@@ -31,13 +39,13 @@ func GeneratePodReadyCondition(spec *v1.PodSpec, containerStatuses []v1.Containe
 		return v1.PodCondition{
 			Type:   v1.PodReady,
 			Status: v1.ConditionFalse,
-			Reason: "UnknownContainerStatuses",
+			Reason: UnknownContainerStatuses,
 		}
 	}
 	unknownContainers := []string{}
 	unreadyContainers := []string{}
 	for _, container := range spec.Containers {
-		if containerStatus, ok := v1.GetContainerStatus(containerStatuses, container.Name); ok {
+		if containerStatus, ok := podutil.GetContainerStatus(containerStatuses, container.Name); ok {
 			if !containerStatus.Ready {
 				unreadyContainers = append(unreadyContainers, container.Name)
 			}
@@ -51,7 +59,7 @@ func GeneratePodReadyCondition(spec *v1.PodSpec, containerStatuses []v1.Containe
 		return v1.PodCondition{
 			Type:   v1.PodReady,
 			Status: v1.ConditionFalse,
-			Reason: "PodCompleted",
+			Reason: PodCompleted,
 		}
 	}
 
@@ -67,7 +75,7 @@ func GeneratePodReadyCondition(spec *v1.PodSpec, containerStatuses []v1.Containe
 		return v1.PodCondition{
 			Type:    v1.PodReady,
 			Status:  v1.ConditionFalse,
-			Reason:  "ContainersNotReady",
+			Reason:  ContainersNotReady,
 			Message: unreadyMessage,
 		}
 	}
@@ -86,13 +94,13 @@ func GeneratePodInitializedCondition(spec *v1.PodSpec, containerStatuses []v1.Co
 		return v1.PodCondition{
 			Type:   v1.PodInitialized,
 			Status: v1.ConditionFalse,
-			Reason: "UnknownContainerStatuses",
+			Reason: UnknownContainerStatuses,
 		}
 	}
 	unknownContainers := []string{}
 	unreadyContainers := []string{}
 	for _, container := range spec.InitContainers {
-		if containerStatus, ok := v1.GetContainerStatus(containerStatuses, container.Name); ok {
+		if containerStatus, ok := podutil.GetContainerStatus(containerStatuses, container.Name); ok {
 			if !containerStatus.Ready {
 				unreadyContainers = append(unreadyContainers, container.Name)
 			}
@@ -106,7 +114,7 @@ func GeneratePodInitializedCondition(spec *v1.PodSpec, containerStatuses []v1.Co
 		return v1.PodCondition{
 			Type:   v1.PodInitialized,
 			Status: v1.ConditionTrue,
-			Reason: "PodCompleted",
+			Reason: PodCompleted,
 		}
 	}
 
@@ -122,7 +130,7 @@ func GeneratePodInitializedCondition(spec *v1.PodSpec, containerStatuses []v1.Co
 		return v1.PodCondition{
 			Type:    v1.PodInitialized,
 			Status:  v1.ConditionFalse,
-			Reason:  "ContainersNotInitialized",
+			Reason:  ContainersNotInitialized,
 			Message: unreadyMessage,
 		}
 	}

@@ -47,6 +47,9 @@ const basePath = "https://www.googleapis.com/identitytoolkit/v3/relyingparty/"
 
 // OAuth2 scopes used by this API.
 const (
+	// View and manage your data across Google Cloud Platform services
+	CloudPlatformScope = "https://www.googleapis.com/auth/cloud-platform"
+
 	// View and administer all your Firebase data and settings
 	FirebaseScope = "https://www.googleapis.com/auth/firebase"
 )
@@ -174,7 +177,7 @@ func (s *DeleteAccountResponse) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
-// DownloadAccountResponse: Respone of downloading accounts in batch.
+// DownloadAccountResponse: Response of downloading accounts in batch.
 type DownloadAccountResponse struct {
 	// Kind: The fixed string "identitytoolkit#DownloadAccountResponse".
 	Kind string `json:"kind,omitempty"`
@@ -503,6 +506,10 @@ type IdentitytoolkitRelyingpartyDownloadAccountRequest struct {
 	// NextPageToken: The token for the next page. This should be taken from
 	// the previous response.
 	NextPageToken string `json:"nextPageToken,omitempty"`
+
+	// TargetProjectId: Specify which project (field value is actually
+	// project id) to operate. Only used when provided credential.
+	TargetProjectId string `json:"targetProjectId,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g.
 	// "DelegatedProjectNumber") to unconditionally include in API requests.
@@ -954,6 +961,9 @@ type IdentitytoolkitRelyingpartySignupNewUserRequest struct {
 	// InstanceId: Instance id token of the app.
 	InstanceId string `json:"instanceId,omitempty"`
 
+	// LocalId: Privileged caller can create user with specified user id.
+	LocalId string `json:"localId,omitempty"`
+
 	// Password: The new password of the user.
 	Password string `json:"password,omitempty"`
 
@@ -1050,6 +1060,11 @@ func (s *IdentitytoolkitRelyingpartyUploadAccountRequest) MarshalJSON() ([]byte,
 // IdentitytoolkitRelyingpartyVerifyAssertionRequest: Request to verify
 // the IDP assertion.
 type IdentitytoolkitRelyingpartyVerifyAssertionRequest struct {
+	// AutoCreate: When it's true, automatically creates a new account if
+	// the user doesn't exist. When it's false, allows existing user to sign
+	// in normally and throws exception if the user doesn't exist.
+	AutoCreate bool `json:"autoCreate,omitempty"`
+
 	// DelegatedProjectNumber: GCP project number of the requesting
 	// delegated app. Currently only intended for Firebase V1 migration.
 	DelegatedProjectNumber int64 `json:"delegatedProjectNumber,omitempty,string"`
@@ -1086,22 +1101,20 @@ type IdentitytoolkitRelyingpartyVerifyAssertionRequest struct {
 	// createAuthUri request.
 	SessionId string `json:"sessionId,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g.
-	// "DelegatedProjectNumber") to unconditionally include in API requests.
-	// By default, fields with empty values are omitted from API requests.
-	// However, any non-pointer, non-interface field appearing in
-	// ForceSendFields will be sent to the server regardless of whether the
-	// field is empty or not. This may be used to include empty fields in
-	// Patch requests.
+	// ForceSendFields is a list of field names (e.g. "AutoCreate") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "DelegatedProjectNumber")
-	// to include in API requests with the JSON null value. By default,
-	// fields with empty values are omitted from API requests. However, any
-	// field with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "AutoCreate") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
 	NullFields []string `json:"-"`
 }
 
@@ -1257,14 +1270,41 @@ func (s *IdpConfig) MarshalJSON() ([]byte, error) {
 // Relyingparty: Request of getting a code for user confirmation (reset
 // password, change email etc.)
 type Relyingparty struct {
+	// AndroidInstallApp: whether or not to install the android app on the
+	// device where the link is opened
+	AndroidInstallApp bool `json:"androidInstallApp,omitempty"`
+
+	// AndroidMinimumVersion: minimum version of the app. if the version on
+	// the device is lower than this version then the user is taken to the
+	// play store to upgrade the app
+	AndroidMinimumVersion string `json:"androidMinimumVersion,omitempty"`
+
+	// AndroidPackageName: android package name of the android app to handle
+	// the action code
+	AndroidPackageName string `json:"androidPackageName,omitempty"`
+
+	// CanHandleCodeInApp: whether or not the app can handle the oob code
+	// without first going to web
+	CanHandleCodeInApp bool `json:"canHandleCodeInApp,omitempty"`
+
 	// CaptchaResp: The recaptcha response from the user.
 	CaptchaResp string `json:"captchaResp,omitempty"`
 
 	// Challenge: The recaptcha challenge presented to the user.
 	Challenge string `json:"challenge,omitempty"`
 
+	// ContinueUrl: The url to continue to the Gitkit app
+	ContinueUrl string `json:"continueUrl,omitempty"`
+
 	// Email: The email of the user.
 	Email string `json:"email,omitempty"`
+
+	// IOSAppStoreId: iOS app store id to download the app if it's not
+	// already installed
+	IOSAppStoreId string `json:"iOSAppStoreId,omitempty"`
+
+	// IOSBundleId: the iOS bundle id of iOS app to handle the action code
+	IOSBundleId string `json:"iOSBundleId,omitempty"`
 
 	// IdToken: The user's Gitkit login token for email change.
 	IdToken string `json:"idToken,omitempty"`
@@ -1281,20 +1321,21 @@ type Relyingparty struct {
 	// UserIp: The IP address of the user.
 	UserIp string `json:"userIp,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "CaptchaResp") to
-	// unconditionally include in API requests. By default, fields with
+	// ForceSendFields is a list of field names (e.g. "AndroidInstallApp")
+	// to unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
 	// server regardless of whether the field is empty or not. This may be
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "CaptchaResp") to include
-	// in API requests with the JSON null value. By default, fields with
-	// empty values are omitted from API requests. However, any field with
-	// an empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "AndroidInstallApp") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
 	NullFields []string `json:"-"`
 }
 
@@ -1354,6 +1395,9 @@ type SetAccountInfoResponse struct {
 
 	// Email: The email of the user.
 	Email string `json:"email,omitempty"`
+
+	// EmailVerified: If email has been verified.
+	EmailVerified bool `json:"emailVerified,omitempty"`
 
 	// ExpiresIn: If idToken is STS id token, then this field will be
 	// expiration time of STS id token in seconds.
@@ -1599,6 +1643,9 @@ type UserInfo struct {
 	// PasswordUpdatedAt: The timestamp when the password was last updated.
 	PasswordUpdatedAt float64 `json:"passwordUpdatedAt,omitempty"`
 
+	// PhoneNumber: User's phone number.
+	PhoneNumber string `json:"phoneNumber,omitempty"`
+
 	// PhotoUrl: The URL of the user profile photo.
 	PhotoUrl string `json:"photoUrl,omitempty"`
 
@@ -1643,6 +1690,20 @@ func (s *UserInfo) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *UserInfo) UnmarshalJSON(data []byte) error {
+	type noMethod UserInfo
+	var s1 struct {
+		PasswordUpdatedAt gensupport.JSONFloat64 `json:"passwordUpdatedAt"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.PasswordUpdatedAt = float64(s1.PasswordUpdatedAt)
+	return nil
+}
+
 type UserInfoProviderUserInfo struct {
 	// DisplayName: The user's display name at the IDP.
 	DisplayName string `json:"displayName,omitempty"`
@@ -1652,6 +1713,9 @@ type UserInfoProviderUserInfo struct {
 
 	// FederatedId: User's identifier at IDP.
 	FederatedId string `json:"federatedId,omitempty"`
+
+	// PhoneNumber: User's phone number.
+	PhoneNumber string `json:"phoneNumber,omitempty"`
 
 	// PhotoUrl: The user's photo url at the IDP.
 	PhotoUrl string `json:"photoUrl,omitempty"`
@@ -1745,6 +1809,10 @@ type VerifyAssertionResponse struct {
 	// the identifier is an email. It can be used to check whether the user
 	// input email is different from the asserted email.
 	InputEmail string `json:"inputEmail,omitempty"`
+
+	// IsNewUser: True if it's a new user sign-in, false if it's a returning
+	// user.
+	IsNewUser bool `json:"isNewUser,omitempty"`
 
 	// Kind: The fixed string "identitytoolkit#VerifyAssertionResponse".
 	Kind string `json:"kind,omitempty"`
@@ -2074,7 +2142,10 @@ func (c *RelyingpartyCreateAuthUriCall) Do(opts ...googleapi.CallOption) (*Creat
 	//   },
 	//   "response": {
 	//     "$ref": "CreateAuthUriResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -2188,7 +2259,10 @@ func (c *RelyingpartyDeleteAccountCall) Do(opts ...googleapi.CallOption) (*Delet
 	//   },
 	//   "response": {
 	//     "$ref": "DeleteAccountResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -2304,10 +2378,32 @@ func (c *RelyingpartyDownloadAccountCall) Do(opts ...googleapi.CallOption) (*Dow
 	//     "$ref": "DownloadAccountResponse"
 	//   },
 	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
 	//     "https://www.googleapis.com/auth/firebase"
 	//   ]
 	// }
 
+}
+
+// Pages invokes f for each page of results.
+// A non-nil error returned from f will halt the iteration.
+// The provided context supersedes any context provided to the Context method.
+func (c *RelyingpartyDownloadAccountCall) Pages(ctx context.Context, f func(*DownloadAccountResponse) error) error {
+	c.ctx_ = ctx
+	defer func(pt string) { c.identitytoolkitrelyingpartydownloadaccountrequest.NextPageToken = pt }(c.identitytoolkitrelyingpartydownloadaccountrequest.NextPageToken) // reset paging to original point
+	for {
+		x, err := c.Do()
+		if err != nil {
+			return err
+		}
+		if err := f(x); err != nil {
+			return err
+		}
+		if x.NextPageToken == "" {
+			return nil
+		}
+		c.identitytoolkitrelyingpartydownloadaccountrequest.NextPageToken = x.NextPageToken
+	}
 }
 
 // method id "identitytoolkit.relyingparty.getAccountInfo":
@@ -2419,7 +2515,10 @@ func (c *RelyingpartyGetAccountInfoCall) Do(opts ...googleapi.CallOption) (*GetA
 	//   },
 	//   "response": {
 	//     "$ref": "GetAccountInfoResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -2533,7 +2632,10 @@ func (c *RelyingpartyGetOobConfirmationCodeCall) Do(opts ...googleapi.CallOption
 	//   },
 	//   "response": {
 	//     "$ref": "GetOobConfirmationCodeResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -2680,7 +2782,10 @@ func (c *RelyingpartyGetProjectConfigCall) Do(opts ...googleapi.CallOption) (*Id
 	//   "path": "getProjectConfig",
 	//   "response": {
 	//     "$ref": "IdentitytoolkitRelyingpartyGetProjectConfigResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -2778,7 +2883,10 @@ func (c *RelyingpartyGetPublicKeysCall) Do(opts ...googleapi.CallOption) (map[st
 	//   "path": "publicKeys",
 	//   "response": {
 	//     "$ref": "IdentitytoolkitRelyingpartyGetPublicKeysResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -2896,7 +3004,10 @@ func (c *RelyingpartyGetRecaptchaParamCall) Do(opts ...googleapi.CallOption) (*G
 	//   "path": "getRecaptchaParam",
 	//   "response": {
 	//     "$ref": "GetRecaptchaParamResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -3010,7 +3121,10 @@ func (c *RelyingpartyResetPasswordCall) Do(opts ...googleapi.CallOption) (*Reset
 	//   },
 	//   "response": {
 	//     "$ref": "ResetPasswordResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -3124,7 +3238,10 @@ func (c *RelyingpartySetAccountInfoCall) Do(opts ...googleapi.CallOption) (*SetA
 	//   },
 	//   "response": {
 	//     "$ref": "SetAccountInfoResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -3240,7 +3357,10 @@ func (c *RelyingpartySetProjectConfigCall) Do(opts ...googleapi.CallOption) (*Id
 	//   },
 	//   "response": {
 	//     "$ref": "IdentitytoolkitRelyingpartySetProjectConfigResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -3356,7 +3476,10 @@ func (c *RelyingpartySignOutUserCall) Do(opts ...googleapi.CallOption) (*Identit
 	//   },
 	//   "response": {
 	//     "$ref": "IdentitytoolkitRelyingpartySignOutUserResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -3470,7 +3593,10 @@ func (c *RelyingpartySignupNewUserCall) Do(opts ...googleapi.CallOption) (*Signu
 	//   },
 	//   "response": {
 	//     "$ref": "SignupNewUserResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -3586,6 +3712,7 @@ func (c *RelyingpartyUploadAccountCall) Do(opts ...googleapi.CallOption) (*Uploa
 	//     "$ref": "UploadAccountResponse"
 	//   },
 	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform",
 	//     "https://www.googleapis.com/auth/firebase"
 	//   ]
 	// }
@@ -3701,7 +3828,10 @@ func (c *RelyingpartyVerifyAssertionCall) Do(opts ...googleapi.CallOption) (*Ver
 	//   },
 	//   "response": {
 	//     "$ref": "VerifyAssertionResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -3815,7 +3945,10 @@ func (c *RelyingpartyVerifyCustomTokenCall) Do(opts ...googleapi.CallOption) (*V
 	//   },
 	//   "response": {
 	//     "$ref": "VerifyCustomTokenResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }
@@ -3929,7 +4062,10 @@ func (c *RelyingpartyVerifyPasswordCall) Do(opts ...googleapi.CallOption) (*Veri
 	//   },
 	//   "response": {
 	//     "$ref": "VerifyPasswordResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/cloud-platform"
+	//   ]
 	// }
 
 }

@@ -29,7 +29,7 @@ func TestCORSFilter_Preflight(t *testing.T) {
 	httpRequest.Header.Set(HEADER_AccessControlRequestHeaders, "X-Custom-Header, X-Additional-Header")
 
 	httpWriter := httptest.NewRecorder()
-	DefaultContainer.dispatch(httpWriter, httpRequest)
+	DefaultContainer.Dispatch(httpWriter, httpRequest)
 
 	actual := httpWriter.Header().Get(HEADER_AccessControlAllowOrigin)
 	if "http://api.bob.com" != actual {
@@ -78,7 +78,7 @@ func TestCORSFilter_Actual(t *testing.T) {
 	httpRequest.Header.Set("X-Custom-Header", "value")
 
 	httpWriter := httptest.NewRecorder()
-	DefaultContainer.dispatch(httpWriter, httpRequest)
+	DefaultContainer.Dispatch(httpWriter, httpRequest)
 	actual := httpWriter.Header().Get(HEADER_AccessControlAllowOrigin)
 	if "http://api.bob.com" != actual {
 		t.Fatal("expected: http://api.bob.com but got:" + actual)
@@ -117,7 +117,7 @@ func TestCORSFilter_AllowedDomains(t *testing.T) {
 		httpRequest, _ := http.NewRequest("PUT", "http://api.his.com/cors", nil)
 		httpRequest.Header.Set(HEADER_Origin, each.origin)
 		httpWriter := httptest.NewRecorder()
-		DefaultContainer.dispatch(httpWriter, httpRequest)
+		DefaultContainer.Dispatch(httpWriter, httpRequest)
 		actual := httpWriter.Header().Get(HEADER_AccessControlAllowOrigin)
 		if actual != each.origin && each.allowed {
 			t.Fatal("expected to be accepted")

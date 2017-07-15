@@ -7,8 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coredns/coredns/middleware/test"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware/test"
 
 	"github.com/miekg/dns"
 )
@@ -32,17 +31,11 @@ func TestZoneReload(t *testing.T) {
 
 	z.Reload()
 
-	r := new(dns.Msg)
-	r.SetQuestion("miek.nl", dns.TypeSOA)
-	state := request.Request{W: &test.ResponseWriter{}, Req: r}
-	if _, _, _, res := z.Lookup(state, "miek.nl."); res != Success {
+	if _, _, _, res := z.Lookup("miek.nl.", dns.TypeSOA, false); res != Success {
 		t.Fatalf("failed to lookup, got %d", res)
 	}
 
-	r = new(dns.Msg)
-	r.SetQuestion("miek.nl", dns.TypeNS)
-	state = request.Request{W: &test.ResponseWriter{}, Req: r}
-	if _, _, _, res := z.Lookup(state, "miek.nl."); res != Success {
+	if _, _, _, res := z.Lookup("miek.nl.", dns.TypeNS, false); res != Success {
 		t.Fatalf("failed to lookup, got %d", res)
 	}
 

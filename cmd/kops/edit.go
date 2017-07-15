@@ -51,7 +51,7 @@ var (
 func NewCmdEdit(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "edit",
-		Short:   i18n.T("Edit clusters and other resrouces."),
+		Short:   i18n.T("Edit clusters and other resources."),
 		Long:    edit_long,
 		Example: edit_example,
 	}

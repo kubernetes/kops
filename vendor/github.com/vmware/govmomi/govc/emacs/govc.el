@@ -3,7 +3,7 @@
 ;; Author: The govc developers
 ;; URL: https://github.com/vmware/govmomi/tree/master/govc/emacs
 ;; Keywords: convenience
-;; Version: 0.13.0
+;; Version: 0.14.0
 ;; Package-Requires: ((emacs "24.3") (dash "1.5.0") (s "1.9.0") (magit-popup "2.0.50") (json-mode "1.6.0"))
 
 ;; This file is NOT part of GNU Emacs.
@@ -799,6 +799,83 @@ Inherit SESSION if given."
   :actions (govc-keymap-popup govc-object-mode-map))
 
 
+;;; govc metric mode
+(defun govc-metric-sample ()
+  "Sample metrics."
+  (interactive)
+  (govc-shell-command (govc-format-command "metric.sample" govc-args govc-filter (govc-selection))))
+
+(defun govc-metric-sample-plot ()
+  "Plot metric sample."
+  (interactive)
+  (let* ((type (if (and (display-images-p) (not (eq current-prefix-arg '-))) 'png 'dumb))
+         (max (if (member "-i" govc-args) "60" "180"))
+         (args (append govc-args (list "-n" max "-plot" type govc-filter)))
+         (session (govc-current-session))
+         (metrics (govc-selection)))
+    (with-current-buffer (get-buffer-create "*govc*")
+      (govc-session-clone session)
+      (erase-buffer)
+      (delete-other-windows)
+      (if (eq type 'dumb)
+          (split-window-right)
+        (split-window-below))
+      (display-buffer-use-some-window (current-buffer) '((inhibit-same-window . t)))
+      (--each metrics
+        (let* ((cmd (govc-format-command "metric.sample" args it))
+               (data (govc-process cmd 'buffer-string)))
+          (if (eq type 'dumb)
+              (insert data)
+            (insert-image (create-image (string-as-unibyte data) type t))))))))
+
+(defun govc-metric-select (metrics)
+  "Select metric names.  METRICS is a regexp."
+  (interactive (list (read-regexp "Select metrics" (regexp-quote ".usage."))))
+  (save-excursion
+    (goto-char (point-min))
+    (while (not (eobp))
+      (if (string-match-p metrics (tabulated-list-get-id))
+          (govc-tabulated-list-mark)
+        (govc-tabulated-list-unmark)))))
+
+(defun govc-metric-info ()
+  "Wrapper for govc metric.info."
+  (govc-table-info "metric.info" (list govc-args (car govc-filter))))
+
+(defvar govc-metric-mode-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "RET") 'govc-metric-sample)
+    (define-key map (kbd "P") 'govc-metric-sample-plot)
+    (define-key map (kbd "s") 'govc-metric-select)
+    map)
+  "Keymap for `govc-metric-mode'.")
+
+(defun govc-metric ()
+  "Metrics info."
+  (interactive)
+  (let ((session (govc-current-session))
+        (filter (or (govc-selection) (list govc-session-path)))
+        (buffer (get-buffer-create "*govc-metric*")))
+    (pop-to-buffer buffer)
+    (govc-metric-mode)
+    (govc-session-clone session)
+    (if current-prefix-arg (setq govc-args '("-i" "300")))
+    (setq govc-filter filter)
+    (tabulated-list-print)))
+
+(define-derived-mode govc-metric-mode govc-tabulated-list-mode "Metric"
+  "Major mode for handling a govc metric."
+  (setq tabulated-list-format [("Name" 35 t)
+                               ("Group" 15 t)
+                               ("Unit" 4 t)
+                               ("Level" 5 t)
+                               ("Summary" 50)]
+        tabulated-list-sort-key (cons "Name" nil)
+        tabulated-list-padding 2
+        tabulated-list-entries #'govc-metric-info)
+  (tabulated-list-init-header))
+
+
 ;;; govc host mode
 (defun govc-ls-host ()
   "List hosts."
@@ -851,6 +928,7 @@ Inherit SESSION if given."
     (define-key map "E" 'govc-events)
     (define-key map "L" 'govc-logs)
     (define-key map "J" 'govc-host-json-info)
+    (define-key map "M" 'govc-metric)
     (define-key map "N" 'govc-host-esxcli-netstat)
     (define-key map "O" 'govc-object-info)
     (define-key map "c" 'govc-mode-new-session)
@@ -920,10 +998,11 @@ Optionally filter by FILTER and inherit SESSION."
 
 (defvar govc-pool-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map "D" 'govc-pool-destroy-selection)
     (define-key map "E" 'govc-events)
     (define-key map "J" 'govc-pool-json-info)
+    (define-key map "M" 'govc-metric)
     (define-key map "O" 'govc-object-info)
-    (define-key map "D" 'govc-pool-destroy-selection)
     (define-key map "c" 'govc-mode-new-session)
     (define-key map "h" 'govc-host-with-session)
     (define-key map "s" 'govc-datastore-with-session)
@@ -1036,6 +1115,13 @@ Optionally filter by FILTER and inherit SESSION."
    (govc-format-command "datastore.tail"
                         (list "-n" govc-max-events (if current-prefix-arg "-f")) (govc-selection))))
 
+(defun govc-datastore-disk-info ()
+  "Info datastore disk."
+  (interactive)
+  (delete-other-windows)
+  (govc-shell-command
+   (govc-format-command "datastore.disk.info" (if current-prefix-arg "-c") (govc-selection))))
+
 (defun govc-datastore-ls-json ()
   "JSON via govc datastore.ls -json on current selection."
   (interactive)
@@ -1066,6 +1152,7 @@ Optionally filter by FILTER and inherit SESSION."
 
 (defvar govc-datastore-ls-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map "I" 'govc-datastore-disk-info)
     (define-key map "J" 'govc-datastore-ls-json)
     (define-key map "S" 'govc-datastore-ls-r-json)
     (define-key map "D" 'govc-datastore-rm-selection)
@@ -1111,6 +1198,7 @@ Optionally filter by FILTER and inherit SESSION."
 (defvar govc-datastore-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map "J" 'govc-datastore-json-info)
+    (define-key map "M" 'govc-metric)
     (define-key map "O" 'govc-object-info)
     (define-key map (kbd "RET") 'govc-datastore-ls-selection)
     (define-key map "c" 'govc-mode-new-session)
@@ -1365,8 +1453,9 @@ Open via `eww' by default, via `browse-url' if ARG is non-nil."
     (define-key map "@" 'govc-vm-reboot-selection)
     (define-key map "&" 'govc-vm-suspend-selection)
     (define-key map "H" 'govc-vm-host)
-    (define-key map "S" 'govc-vm-datastore)
+    (define-key map "M" 'govc-metric)
     (define-key map "P" 'govc-vm-ping)
+    (define-key map "S" 'govc-vm-datastore)
     (define-key map "c" 'govc-mode-new-session)
     (define-key map "h" 'govc-host-with-session)
     (define-key map "p" 'govc-pool-with-session)

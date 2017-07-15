@@ -98,6 +98,7 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 	c.Spec.Docker = &api.DockerConfig{
 		MTU:              fi.Int32(5678),
 		InsecureRegistry: fi.String("myregistry.com:1234"),
+		RegistryMirrors:  []string{"https://registry.example.com"},
 		LogOpt:           []string{"env=FOO"},
 	}
 
@@ -119,6 +120,10 @@ func TestPopulateCluster_Docker_Spec(t *testing.T) {
 
 	if fi.StringValue(full.Spec.Docker.InsecureRegistry) != "myregistry.com:1234" {
 		t.Fatalf("Unexpected Docker InsecureRegistry: %v", full.Spec.Docker.InsecureRegistry)
+	}
+
+	if strings.Join(full.Spec.Docker.RegistryMirrors, "!") != "https://registry.example.com" {
+		t.Fatalf("Unexpected Docker RegistryMirrors: %v", full.Spec.Docker.RegistryMirrors)
 	}
 
 	if strings.Join(full.Spec.Docker.LogOpt, "!") != "env=FOO" {

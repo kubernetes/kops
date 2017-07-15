@@ -3,7 +3,7 @@ package file
 import (
 	"testing"
 
-	"github.com/coredns/coredns/middleware/test"
+	"github.com/miekg/coredns/middleware/test"
 
 	"github.com/mholt/caddy"
 )

@@ -1,6 +1,6 @@
 # cache
 
-*cache* enables a frontend cache. It will cache all records except zone transfers and metadata records.
+*cache* enables a frontend cache.
 
 ## Syntax
 
@@ -8,15 +8,13 @@
 cache [TTL] [ZONES...]
 ~~~
 
-* **TTL** max TTL in seconds. If not specified, the maximum TTL will be used which is 3600 for
-    noerror responses and 1800 for denial of existence ones.
-    A set TTL of 300 *cache 300* would cache the record up to 300 seconds.
-    Smaller record provided TTLs will take precedence.
+* **TTL** max TTL in seconds. If not specified, the maximum TTL will be used which is 1 hour for
+    noerror responses and half an hour for denial of existence ones.
 * **ZONES** zones it should cache for. If empty, the zones from the configuration block are used.
 
 Each element in the cache is cached according to its TTL (with **TTL** as the max).
 For the negative cache, the SOA's MinTTL value is used. A cache can contain up to 10,000 items by
-default. A TTL of zero is not allowed. No cache invalidation triggered by other middlewares is available. Therefore even reloaded items might still be cached for the duration of the TTL.
+default. A TTL of zero is not allowed.
 
 If you want more control:
 
@@ -28,7 +26,7 @@ cache [TTL] [ZONES...] {
 ~~~
 
 * **TTL**  and **ZONES** as above.
-* `success`, override the settings for caching successful responses, **CAPACITY** indicates the maximum
+* `success`, override the settings for caching succesful responses, **CAPACITY** indicates the maximum
   number of packets we cache before we start evicting (LRU). **TTL** overrides the cache maximum TTL.
 * `denial`, override the settings for caching denial of existence responses, **CAPACITY** indicates the maximum
   number of packets we cache before we start evicting (LRU). **TTL** overrides the cache maximum TTL.

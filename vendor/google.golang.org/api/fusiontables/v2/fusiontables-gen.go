@@ -193,6 +193,24 @@ func (s *Bucket) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *Bucket) UnmarshalJSON(data []byte) error {
+	type noMethod Bucket
+	var s1 struct {
+		Max     gensupport.JSONFloat64 `json:"max"`
+		Min     gensupport.JSONFloat64 `json:"min"`
+		Opacity gensupport.JSONFloat64 `json:"opacity"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Max = float64(s1.Max)
+	s.Min = float64(s1.Min)
+	s.Opacity = float64(s1.Opacity)
+	return nil
+}
+
 // Column: Specifies the details of a column in a table.
 type Column struct {
 	// BaseColumn: Identifier of the base column. If present, this column is
@@ -511,6 +529,20 @@ func (s *LineStyle) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *LineStyle) UnmarshalJSON(data []byte) error {
+	type noMethod LineStyle
+	var s1 struct {
+		StrokeOpacity gensupport.JSONFloat64 `json:"strokeOpacity"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.StrokeOpacity = float64(s1.StrokeOpacity)
+	return nil
+}
+
 // Point: Represents a point object.
 type Point struct {
 	// Coordinates: The coordinates that define the point.
@@ -660,6 +692,22 @@ func (s *PolygonStyle) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *PolygonStyle) UnmarshalJSON(data []byte) error {
+	type noMethod PolygonStyle
+	var s1 struct {
+		FillOpacity   gensupport.JSONFloat64 `json:"fillOpacity"`
+		StrokeOpacity gensupport.JSONFloat64 `json:"strokeOpacity"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.FillOpacity = float64(s1.FillOpacity)
+	s.StrokeOpacity = float64(s1.StrokeOpacity)
+	return nil
+}
+
 // Sqlresponse: Represents a response to a SQL statement.
 type Sqlresponse struct {
 	// Columns: Columns in the table.
@@ -783,6 +831,22 @@ func (s *StyleFunctionGradient) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+func (s *StyleFunctionGradient) UnmarshalJSON(data []byte) error {
+	type noMethod StyleFunctionGradient
+	var s1 struct {
+		Max gensupport.JSONFloat64 `json:"max"`
+		Min gensupport.JSONFloat64 `json:"min"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Max = float64(s1.Max)
+	s.Min = float64(s1.Min)
+	return nil
+}
+
 type StyleFunctionGradientColors struct {
 	// Color: Color in #RRGGBB format.
 	Color string `json:"color,omitempty"`
@@ -811,6 +875,20 @@ func (s *StyleFunctionGradientColors) MarshalJSON() ([]byte, error) {
 	type noMethod StyleFunctionGradientColors
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *StyleFunctionGradientColors) UnmarshalJSON(data []byte) error {
+	type noMethod StyleFunctionGradientColors
+	var s1 struct {
+		Opacity gensupport.JSONFloat64 `json:"opacity"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.Opacity = float64(s1.Opacity)
+	return nil
 }
 
 // StyleSetting: Represents a complete StyleSettings object. The primary

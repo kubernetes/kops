@@ -93,16 +93,6 @@ func TestRoundTripProto3(t *testing.T) {
 	}
 }
 
-func TestGettersForBasicTypesExist(t *testing.T) {
-	var m pb.Message
-	if got := m.GetNested().GetBunny(); got != "" {
-		t.Errorf("m.GetNested().GetBunny() = %q, want empty string", got)
-	}
-	if got := m.GetNested().GetCute(); got {
-		t.Errorf("m.GetNested().GetCute() = %t, want false", got)
-	}
-}
-
 func TestProto3SetDefaults(t *testing.T) {
 	in := &pb.Message{
 		Terrain: map[string]*pb.Nested{

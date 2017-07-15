@@ -29,7 +29,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -195,8 +194,8 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string {
 	tags := make(map[string]string)
 
-	switch fi.CloudProviderID(m.Cluster.Spec.CloudProvider) {
-	case fi.CloudProviderAWS:
+	switch kops.CloudProviderID(m.Cluster.Spec.CloudProvider) {
+	case kops.CloudProviderAWS:
 		tags[awsup.TagClusterName] = m.Cluster.ObjectMeta.Name
 		if name != "" {
 			tags["Name"] = name

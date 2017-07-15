@@ -7,11 +7,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/middleware/etcd/msg"
-	"github.com/coredns/coredns/middleware/pkg/singleflight"
-	"github.com/coredns/coredns/middleware/proxy"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/middleware/etcd/msg"
+	"github.com/miekg/coredns/middleware/pkg/singleflight"
+	"github.com/miekg/coredns/middleware/proxy"
+	"github.com/miekg/coredns/request"
 
 	etcdc "github.com/coreos/etcd/client"
 	"github.com/miekg/dns"

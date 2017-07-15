@@ -25,14 +25,14 @@ import (
 
 func TestMustRunAsOptions(t *testing.T) {
 	tests := map[string]struct {
-		ranges []extensions.IDRange
+		ranges []extensions.GroupIDRange
 		pass   bool
 	}{
 		"empty": {
-			ranges: []extensions.IDRange{},
+			ranges: []extensions.GroupIDRange{},
 		},
 		"ranges": {
-			ranges: []extensions.IDRange{
+			ranges: []extensions.GroupIDRange{
 				{Min: 1, Max: 1},
 			},
 			pass: true,
@@ -52,23 +52,23 @@ func TestMustRunAsOptions(t *testing.T) {
 
 func TestGenerate(t *testing.T) {
 	tests := map[string]struct {
-		ranges   []extensions.IDRange
+		ranges   []extensions.GroupIDRange
 		expected []int64
 	}{
 		"multi value": {
-			ranges: []extensions.IDRange{
+			ranges: []extensions.GroupIDRange{
 				{Min: 1, Max: 2},
 			},
 			expected: []int64{1},
 		},
 		"single value": {
-			ranges: []extensions.IDRange{
+			ranges: []extensions.GroupIDRange{
 				{Min: 1, Max: 1},
 			},
 			expected: []int64{1},
 		},
 		"multi range": {
-			ranges: []extensions.IDRange{
+			ranges: []extensions.GroupIDRange{
 				{Min: 1, Max: 1},
 				{Min: 2, Max: 500},
 			},
@@ -118,27 +118,27 @@ func TestValidate(t *testing.T) {
 	}
 
 	tests := map[string]struct {
-		ranges []extensions.IDRange
+		ranges []extensions.GroupIDRange
 		pod    *api.Pod
 		groups []int64
 		pass   bool
 	}{
 		"nil security context": {
 			pod: &api.Pod{},
-			ranges: []extensions.IDRange{
+			ranges: []extensions.GroupIDRange{
 				{Min: 1, Max: 3},
 			},
 		},
 		"empty groups": {
 			pod: validPod(),
-			ranges: []extensions.IDRange{
+			ranges: []extensions.GroupIDRange{
 				{Min: 1, Max: 3},
 			},
 		},
 		"not in range": {
 			pod:    validPod(),
 			groups: []int64{5},
-			ranges: []extensions.IDRange{
+			ranges: []extensions.GroupIDRange{
 				{Min: 1, Max: 3},
 				{Min: 4, Max: 4},
 			},
@@ -146,7 +146,7 @@ func TestValidate(t *testing.T) {
 		"in range 1": {
 			pod:    validPod(),
 			groups: []int64{2},
-			ranges: []extensions.IDRange{
+			ranges: []extensions.GroupIDRange{
 				{Min: 1, Max: 3},
 			},
 			pass: true,
@@ -154,7 +154,7 @@ func TestValidate(t *testing.T) {
 		"in range boundry min": {
 			pod:    validPod(),
 			groups: []int64{1},
-			ranges: []extensions.IDRange{
+			ranges: []extensions.GroupIDRange{
 				{Min: 1, Max: 3},
 			},
 			pass: true,
@@ -162,7 +162,7 @@ func TestValidate(t *testing.T) {
 		"in range boundry max": {
 			pod:    validPod(),
 			groups: []int64{3},
-			ranges: []extensions.IDRange{
+			ranges: []extensions.GroupIDRange{
 				{Min: 1, Max: 3},
 			},
 			pass: true,
@@ -170,7 +170,7 @@ func TestValidate(t *testing.T) {
 		"singular range": {
 			pod:    validPod(),
 			groups: []int64{4},
-			ranges: []extensions.IDRange{
+			ranges: []extensions.GroupIDRange{
 				{Min: 4, Max: 4},
 			},
 			pass: true,
