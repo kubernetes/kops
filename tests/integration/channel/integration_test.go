@@ -20,7 +20,6 @@ import (
 	"github.com/blang/semver"
 	"io/ioutil"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"path"
 	"testing"
 )
