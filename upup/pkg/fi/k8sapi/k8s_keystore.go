@@ -126,6 +126,9 @@ func (c *KubernetesKeystore) StoreKeypair(id string, cert *fi.Certificate, priva
 	}
 
 	secret, err := keypair.Encode()
+	if err != nil {
+		return fmt.Errorf("error encoding keypair: %+v  err: %s", keypair, err)
+	}
 	createdSecret, err := c.client.CoreV1().Secrets(c.namespace).Create(secret)
 	if err != nil {
 		return fmt.Errorf("error creating secret %s/%s: %v", secret.Namespace, secret.Name, err)
