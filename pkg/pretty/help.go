@@ -22,10 +22,13 @@ import (
 	"strings"
 )
 
+// Bash markdown-quotes a bash command for insertion into help text.
 func Bash(s string) string {
 	return fmt.Sprintf("`%s`", s)
 }
 
+// LongDesc is used for formatting help text for a commands Long Description.
+// It de-dents it and trims it.
 func LongDesc(s string) string {
 	s = heredoc.Doc(s)
 	s = strings.TrimSpace(s)
