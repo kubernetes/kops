@@ -55,7 +55,7 @@ func main() {
 	glog.Flush()
 
 	dnsProviderId := "aws-route53"
-	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns, coredns)")
+	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns, coredns, gossip)")
 
 	gossipListen := "0.0.0.0:3998"
 	flags.StringVar(&gossipListen, "gossip-listen", gossipListen, "The address on which to listen if gossip is enabled")
@@ -107,7 +107,7 @@ func main() {
 	//}
 
 	var dnsProviders []dnsprovider.Interface
-	{
+	if dnsProviderId != "gossip" {
 		var file io.Reader
 		if dnsProviderId == k8scoredns.ProviderName {
 			var lines []string
