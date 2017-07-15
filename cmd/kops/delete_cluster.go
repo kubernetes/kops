@@ -151,6 +151,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		if len(clusterResources) == 0 {
 			fmt.Fprintf(out, "No cloud resources to delete\n")
 		} else {
+			resources.FilterUserProvidedItems(clusterResources, cluster.Spec)
 			wouldDeleteCloudResources = true
 
 			t := &tables.Table{}
