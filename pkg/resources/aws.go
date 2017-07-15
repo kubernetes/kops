@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -1768,6 +1769,12 @@ func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, trackers []*
 }
 
 func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	var trackers []*ResourceTracker
+
+	if dns.IsGossipHostname(clusterName) {
+		return trackers, nil
+	}
+
 	c := cloud.(awsup.AWSCloud)
 
 	// Normalize cluster name, with leading "."
@@ -1794,8 +1801,6 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 			return nil, fmt.Errorf("error querying for route53 zones: %v", err)
 		}
 	}
-
-	var trackers []*ResourceTracker
 
 	for i := range zones {
 		// Be super careful because we close over this later (in groupDeleter)
