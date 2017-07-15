@@ -20,11 +20,17 @@ kops create instancegroup
   # Create an instancegroup for the k8s-cluster.example.com cluster.
   kops create ig --name=k8s-cluster.example.com node-example \
   --role node --subnet my-subnet-name
+  
+  # Create a YAML manifest for an instancegroup for the k8s-cluster.example.com cluster.
+  kops create ig --name=k8s-cluster.example.com node-example \
+  --role node --subnet my-subnet-name --dry-run -oyaml
 ```
 
 ### Options
 
 ```
+      --dry-run              If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
+  -o, --output string        Ouput format. One of json|yaml
       --role string          Type of instance group to create (Node,Master,Bastion) (default "Node")
       --subnet stringSlice   Subnets in which to create instance group
 ```
