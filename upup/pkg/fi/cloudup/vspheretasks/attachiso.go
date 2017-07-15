@@ -93,7 +93,7 @@ func (_ *AttachISO) CheckChanges(a, e, changes *AttachISO) error {
 func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *AttachISO) error {
 	startupScript, err := changes.BootstrapScript.ResourceNodeUp(changes.IG)
 	if err != nil {
-		return err
+		return fmt.Errorf("error on resource nodeup: %v", err)
 	}
 	startupStr, err := startupScript.AsString()
 	if err != nil {
@@ -101,7 +101,7 @@ func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *At
 	}
 	dir, err := ioutil.TempDir("", *changes.VM.Name)
 	if err != nil {
-		return err
+		return fmt.Errorf("error creating tempdir: %v", err)
 	}
 
 	defer os.RemoveAll(dir)
