@@ -39,6 +39,7 @@ NODEUP_URL={{ NodeUpSource }}
 NODEUP_HASH={{ NodeUpSourceHash }}
 
 {{ S3Env }}
+{{ AWS_REGION }}
 
 function ensure-install-dir() {
   INSTALL_DIR="/var/cache/kubernetes-install"
