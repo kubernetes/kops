@@ -11,8 +11,8 @@ if ! [[ "$0" =~ "scripts/genproto.sh" ]]; then
 fi
 
 # for now, be conservative about what version of protoc we expect
-if ! [[ $(protoc --version) =~ "3.0.0" ]]; then
-	echo "could not find protoc 3.0.0, is it installed + in PATH?"
+if ! [[ $(protoc --version) =~ "3.1.0" ]]; then
+	echo "could not find protoc 3.1.0, is it installed + in PATH?"
 	exit 255
 fi
 
@@ -20,11 +20,11 @@ fi
 DIRS="./wal/walpb ./etcdserver/etcdserverpb ./snap/snappb ./raft/raftpb ./mvcc/mvccpb ./lease/leasepb ./auth/authpb"
 
 # exact version of protoc-gen-gogo to build
-GOGO_PROTO_SHA="5f813990bfffa3c2f4414dbea480e705ab280358"
-GRPC_GATEWAY_SHA="c8ec92d0481dd77d9b8c1808eb6476d190aa039a"
+GOGO_PROTO_SHA="8d70fb3182befc465c4a1eac8ad4d38ff49778e2"
+GRPC_GATEWAY_SHA="84398b94e188ee336f307779b57b3aa91af7063c"
 
 # set up self-contained GOPATH for building
-export GOPATH=${PWD}/gopath
+export GOPATH=${PWD}/gopath.proto
 export GOBIN=${PWD}/bin
 export PATH="${GOBIN}:${PATH}"
 
@@ -110,4 +110,3 @@ if [ "$1" = "-g" ]; then
 else
 	echo "skipping grpc API reference document auto-generation..."
 fi
-

@@ -17,32 +17,32 @@ limitations under the License.
 package server
 
 import (
+	"fmt"
 	"io"
+	"net"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/registry/generic"
-	"k8s.io/apiserver/pkg/registry/generic/registry"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
 	"k8s.io/apiserver/pkg/storage/storagebackend"
-	"k8s.io/kops/pkg/apiserver"
-	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	//"k8s.io/kops/pkg/apis/kops/v1alpha1"
-	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/apiserver"
+	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 
 const defaultEtcdPathPrefix = "/registry/kops.kubernetes.io"
 
 type KopsServerOptions struct {
-	Etcd *genericoptions.EtcdOptions
-	//SecureServing  *genericoptions.SecureServingOptions
-	InsecureServing *genericoptions.ServingOptions
-	Authentication  *genericoptions.DelegatingAuthenticationOptions
-	Authorization   *genericoptions.DelegatingAuthorizationOptions
+	Etcd          *genericoptions.EtcdOptions
+	SecureServing *genericoptions.SecureServingOptions
+	//InsecureServing *genericoptions.ServingOptions
+	Authentication *genericoptions.DelegatingAuthenticationOptions
+	Authorization  *genericoptions.DelegatingAuthorizationOptions
 
 	StdOut io.Writer
 	StdErr io.Writer
@@ -56,10 +56,10 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 			Copier: kops.Scheme,
 			Codec:  nil,
 		}),
-		//SecureServing:  genericoptions.NewSecureServingOptions(),
-		InsecureServing: genericoptions.NewInsecureServingOptions(),
-		Authentication:  genericoptions.NewDelegatingAuthenticationOptions(),
-		Authorization:   genericoptions.NewDelegatingAuthorizationOptions(),
+		SecureServing: genericoptions.NewSecureServingOptions(),
+		//InsecureServing: genericoptions.NewInsecureServingOptions(),
+		Authentication: genericoptions.NewDelegatingAuthenticationOptions(),
+		Authorization:  genericoptions.NewDelegatingAuthorizationOptions(),
 
 		StdOut: out,
 		StdErr: err,
@@ -80,8 +80,8 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 
 	flags := cmd.Flags()
 	o.Etcd.AddFlags(flags)
-	//o.SecureServing.AddFlags(flags)
-	o.InsecureServing.AddFlags(flags)
+	o.SecureServing.AddFlags(flags)
+	//o.InsecureServing.AddFlags(flags)
 	o.Authentication.AddFlags(flags)
 	o.Authorization.AddFlags(flags)
 
@@ -98,35 +98,39 @@ func (o *KopsServerOptions) Complete() error {
 
 func (o KopsServerOptions) RunKopsServer() error {
 	// TODO have a "real" external address
-	//if err := o.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost"); err != nil {
-	//	return fmt.Errorf("error creating self-signed certificates: %v", err)
+	if err := o.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost", nil, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
+		return fmt.Errorf("error creating self-signed certificates: %v", err)
+	}
+
+	serverConfig := genericapiserver.NewConfig(kops.Codecs)
+	// 1.6: serverConfig := genericapiserver.NewConfig().WithSerializer(kops.Codecs)
+	//if err := o.RecommendedOptions.ApplyTo(serverConfig); err != nil {
+	//      return nil, err
 	//}
 
-	genericAPIServerConfig := genericapiserver.NewConfig().WithSerializer(kops.Codecs)
+	serverConfig.CorsAllowedOriginList = []string{".*"}
 
-	//if err := o.SecureServing.ApplyTo(genericAPIServerConfig); err != nil {
-	//	return err
-	//}
-	if err := o.InsecureServing.ApplyTo(genericAPIServerConfig); err != nil {
+	if err := o.Etcd.ApplyTo(serverConfig); err != nil {
 		return err
 	}
+
+	if err := o.SecureServing.ApplyTo(serverConfig); err != nil {
+		return err
+	}
+	//if err := o.InsecureServing.ApplyTo(serverConfig); err != nil {
+	//      return err
+	//}
+
 	glog.Warningf("Authentication/Authorization disabled")
-	//if _, err := genericAPIServerConfig.ApplyDelegatingAuthenticationOptions(o.Authentication); err != nil {
-	//	return err
-	//}
-	//if _, err := genericAPIServerConfig.ApplyDelegatingAuthorizationOptions(o.Authorization); err != nil {
-	//	return err
-	//}
 
 	//var err error
 	//privilegedLoopbackToken := uuid.NewRandom().String()
-	//loopbackCert := []byte(nil)
-	//if genericAPIServerConfig.LoopbackClientConfig, err = genericAPIServerConfig.SecureServingInfo.NewLoopbackClientConfig(privilegedLoopbackToken, loopbackCert); err != nil {
-	//	return err
-	//}
+	//if genericAPIServerConfig.LoopbackClientConfig, err = genericAPIServerConfig.SecureServingInfo.NewSelfClientConfig(privilegedLoopbackToken); err != nil {
+	//               return err
+	//       }
 
 	config := apiserver.Config{
-		GenericConfig:     genericAPIServerConfig,
+		GenericConfig:     serverConfig,
 		RESTOptionsGetter: &restOptionsFactory{storageConfig: &o.Etcd.StorageConfig},
 	}
 
@@ -134,9 +138,8 @@ func (o KopsServerOptions) RunKopsServer() error {
 	if err != nil {
 		return err
 	}
-	server.GenericAPIServer.PrepareRun().Run(wait.NeverStop)
+	return server.GenericAPIServer.PrepareRun().Run(wait.NeverStop)
 
-	return nil
 }
 
 type restOptionsFactory struct {
@@ -144,11 +147,17 @@ type restOptionsFactory struct {
 }
 
 func (f *restOptionsFactory) GetRESTOptions(resource schema.GroupResource) (generic.RESTOptions, error) {
-	return generic.RESTOptions{
+	ro := generic.RESTOptions{
 		StorageConfig:           f.storageConfig,
-		Decorator:               registry.StorageWithCacher,
+		Decorator:               generic.UndecoratedStorage,
 		DeleteCollectionWorkers: 1,
 		EnableGarbageCollection: false,
 		ResourcePrefix:          f.storageConfig.Prefix + "/" + resource.Group + "/" + resource.Resource,
-	}, nil
+	}
+
+	//if f.Options.EnableWatchCache {
+	//	ro.Decorator = registry.StorageWithCacher(f.Options.DefaultWatchCacheSize)
+	//}
+
+	return ro, nil
 }

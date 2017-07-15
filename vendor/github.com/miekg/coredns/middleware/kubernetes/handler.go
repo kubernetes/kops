@@ -1,11 +1,11 @@
 package kubernetes
 
 import (
-	"errors"
+	"fmt"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/middleware/pkg/dnsutil"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/middleware/pkg/dnsutil"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -15,7 +15,7 @@ import (
 func (k Kubernetes) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
 	state := request.Request{W: w, Req: r}
 	if state.QClass() != dns.ClassINET {
-		return dns.RcodeServerFailure, middleware.Error(k.Name(), errors.New("can only deal with ClassINET"))
+		return dns.RcodeServerFailure, fmt.Errorf("can only deal with ClassINET")
 	}
 
 	m := new(dns.Msg)
@@ -26,17 +26,10 @@ func (k Kubernetes) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.M
 	// otherwise delegate to the next in the pipeline.
 	zone := middleware.Zones(k.Zones).Matches(state.Name())
 	if zone == "" {
-		if state.Type() != "PTR" {
-			return middleware.NextOrFailure(k.Name(), k.Next, ctx, w, r)
+		if k.Next == nil {
+			return dns.RcodeServerFailure, nil
 		}
-		// If this is a PTR request, and the request is in a defined
-		// pod/service cidr range, process the request in this middleware,
-		// otherwise pass to next middleware.
-		if !k.isRequestInReverseRange(state) {
-			return middleware.NextOrFailure(k.Name(), k.Next, ctx, w, r)
-		}
-		// Set the zone to this specific request.
-		zone = state.Name()
+		return k.Next.ServeDNS(ctx, w, r)
 	}
 
 	var (
@@ -45,7 +38,7 @@ func (k Kubernetes) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.M
 	)
 	switch state.Type() {
 	case "A":
-		records, _, err = middleware.A(&k, zone, state, nil, middleware.Options{})
+		records, _, err = middleware.A(&k, zone, state, nil, middleware.Options{}) // Hmm wrt to '&k'
 	case "AAAA":
 		records, _, err = middleware.AAAA(&k, zone, state, nil, middleware.Options{})
 	case "TXT":
@@ -71,8 +64,7 @@ func (k Kubernetes) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.M
 		_, _, err = middleware.A(&k, zone, state, nil, middleware.Options{})
 	}
 	if k.IsNameError(err) {
-		// Make err nil when returning here, so we don't log spam for NXDOMAIN.
-		return middleware.BackendError(&k, zone, dns.RcodeNameError, state, nil /*debug*/, nil /* err */, middleware.Options{})
+		return middleware.BackendError(&k, zone, dns.RcodeNameError, state, nil /*debug*/, err, middleware.Options{})
 	}
 	if err != nil {
 		return dns.RcodeServerFailure, err

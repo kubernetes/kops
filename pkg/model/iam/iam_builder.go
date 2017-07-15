@@ -182,6 +182,8 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 	if b.HostedZoneID != "" {
 		addRoute53Permissions(p, b.HostedZoneID)
 	}
+	// dns-controller currently assumes it can list the hosted zones, even when using gossip
+	addRoute53ListHostedZonesPermission(p)
 
 	// For S3 IAM permissions, we grant permissions to subtrees.  So find the parents;
 	// we don't need to grant mypath and mypath/child.
@@ -279,7 +281,9 @@ func addRoute53Permissions(p *IAMPolicy, hostedZoneID string) {
 		Action:   stringorslice.Slice([]string{"route53:GetChange"}),
 		Resource: stringorslice.Slice([]string{"arn:aws:route53:::change/*"}),
 	})
+}
 
+func addRoute53ListHostedZonesPermission(p *IAMPolicy) {
 	wildcard := stringorslice.Slice([]string{"*"})
 	p.Statement = append(p.Statement, &IAMStatement{
 		Effect:   IAMStatementEffectAllow,
@@ -289,11 +293,13 @@ func addRoute53Permissions(p *IAMPolicy, hostedZoneID string) {
 }
 
 // IAMPrefix returns the prefix for AWS ARNs in the current region, for use with IAM
-// it is arn:aws everywhere but in cn-north, where it is arn:aws-cn
+// it is arn:aws everywhere but in cn-north and us-gov-west-1
 func (b *IAMPolicyBuilder) IAMPrefix() string {
 	switch b.Region {
 	case "cn-north-1":
 		return "arn:aws-cn"
+	case "us-gov-west-1":
+		return "arn:aws-us-gov"
 	default:
 		return "arn:aws"
 	}
@@ -308,7 +314,11 @@ var _ fi.Resource = &IAMPolicyResource{}
 var _ fi.HasDependencies = &IAMPolicyResource{}
 
 func (b *IAMPolicyResource) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	return []fi.Task{b.DNSZone}
+	var deps []fi.Task
+	if b.DNSZone != nil {
+		deps = append(deps, b.DNSZone)
+	}
+	return deps
 }
 
 // Open produces the AWS IAM policy for the given role

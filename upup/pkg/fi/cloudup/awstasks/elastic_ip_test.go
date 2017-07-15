@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"os"
@@ -103,7 +104,8 @@ func TestElasticIPCreate(t *testing.T) {
 }
 
 func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
-	target := fi.NewDryRunTarget(os.Stderr)
+	assetBuilder := assets.NewAssetBuilder()
+	target := fi.NewDryRunTarget(assetBuilder, os.Stderr)
 	context, err := fi.NewContext(target, cloud, nil, nil, nil, true, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)

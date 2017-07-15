@@ -291,6 +291,10 @@ type DynamicLinkInfo struct {
 	// Required.
 	Link string `json:"link,omitempty"`
 
+	// NavigationInfo: Information of navigation behavior of a Firebase
+	// Dynamic Links.
+	NavigationInfo *NavigationInfo `json:"navigationInfo,omitempty"`
+
 	// SocialMetaTagInfo: Parameters for social meta tag params.
 	// Used to set meta tag data for link previews on social sites.
 	SocialMetaTagInfo *SocialMetaTagInfo `json:"socialMetaTagInfo,omitempty"`
@@ -546,6 +550,38 @@ type IosInfo struct {
 
 func (s *IosInfo) MarshalJSON() ([]byte, error) {
 	type noMethod IosInfo
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// NavigationInfo: Information of navigation behavior.
+type NavigationInfo struct {
+	// EnableForcedRedirect: If this option is on, FDL click will be forced
+	// to redirect rather than
+	// show an interstitial page.
+	EnableForcedRedirect bool `json:"enableForcedRedirect,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g.
+	// "EnableForcedRedirect") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EnableForcedRedirect") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *NavigationInfo) MarshalJSON() ([]byte, error) {
+	type noMethod NavigationInfo
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }

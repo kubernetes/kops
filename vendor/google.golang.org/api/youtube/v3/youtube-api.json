@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/A3ttvUq-FH-9G6uAbfXxwyLfegU\"",
+ "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/f81k8b4sv9uLeywfoj2KpL2xcPg\"",
  "discoveryVersion": "v1",
  "id": "youtube:v3",
  "name": "youtube",
  "canonicalName": "YouTube",
  "version": "v3",
- "revision": "20161017",
+ "revision": "20170130",
  "title": "YouTube Data API",
  "description": "Supports core YouTube features, such as uploading videos, creating and managing playlists, searching for content, and much more.",
  "ownerDomain": "google.com",
@@ -762,12 +762,14 @@
      "enum": [
       "1080p",
       "1440p",
+      "2160p",
       "240p",
       "360p",
       "480p",
       "720p"
      ],
      "enumDescriptions": [
+      "",
       "",
       "",
       "",
@@ -1478,6 +1480,13 @@
    "type": "object",
    "description": "Freebase topic information related to the channel.",
    "properties": {
+    "topicCategories": {
+     "type": "array",
+     "description": "A list of Wikipedia URLs that describe the channel's content.",
+     "items": {
+      "type": "string"
+     }
+    },
     "topicIds": {
      "type": "array",
      "description": "A list of Freebase topic IDs associated with the channel. You can retrieve information about each topic using the Freebase Topic API.",
@@ -1762,7 +1771,7 @@
   "ContentRating": {
    "id": "ContentRating",
    "type": "object",
-   "description": "Ratings schemes. The country-specific ratings are mostly for movies and shows. NEXT_ID: 68",
+   "description": "Ratings schemes. The country-specific ratings are mostly for movies and shows. NEXT_ID: 69",
    "properties": {
     "acbRating": {
      "type": "string",
@@ -2699,6 +2708,30 @@
       "mccypUnrated"
      ],
      "enumDescriptions": [
+      "",
+      "",
+      "",
+      "",
+      ""
+     ]
+    },
+    "mcstRating": {
+     "type": "string",
+     "description": "The video's rating system for Vietnam - MCST",
+     "enum": [
+      "mcst0",
+      "mcst16plus",
+      "mcstC13",
+      "mcstC16",
+      "mcstC18",
+      "mcstGPg",
+      "mcstP",
+      "mcstUnrated"
+     ],
+     "enumDescriptions": [
+      "",
+      "",
+      "",
       "",
       "",
       "",
@@ -4428,7 +4461,7 @@
    "properties": {
     "authorChannelId": {
      "type": "string",
-     "description": "The ID of the user that authored this message, this field is not always filled. textMessageEvent - the user that wrote the message fanFundingEvent - the user that funded the broadcast newSponsorEvent - the user that just became a sponsor messageDeletedEvent - the moderator that took the action messageRetractedEvent - the author that retracted their message userBannedEvent - the moderator that took the action"
+     "description": "The ID of the user that authored this message, this field is not always filled. textMessageEvent - the user that wrote the message fanFundingEvent - the user that funded the broadcast newSponsorEvent - the user that just became a sponsor messageDeletedEvent - the moderator that took the action messageRetractedEvent - the author that retracted their message userBannedEvent - the moderator that took the action superChatEvent - the user that made the purchase"
     },
     "displayMessage": {
      "type": "string",
@@ -4468,6 +4501,10 @@
      "description": "The date and time when the message was orignally published. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
      "format": "date-time"
     },
+    "superChatDetails": {
+     "$ref": "LiveChatSuperChatDetails",
+     "description": "Details about the Super Chat event, this is only set if the type is 'superChatEvent'."
+    },
     "textMessageDetails": {
      "$ref": "LiveChatTextMessageDetails",
      "description": "Details about the text message, this is only set if the type is 'textMessageEvent'."
@@ -4487,11 +4524,13 @@
       "pollVotedEvent",
       "sponsorOnlyModeEndedEvent",
       "sponsorOnlyModeStartedEvent",
+      "superChatEvent",
       "textMessageEvent",
       "tombstone",
       "userBannedEvent"
      ],
      "enumDescriptions": [
+      "",
       "",
       "",
       "",
@@ -4665,6 +4704,34 @@
     "pollId": {
      "type": "string",
      "description": "The poll the user voted on."
+    }
+   }
+  },
+  "LiveChatSuperChatDetails": {
+   "id": "LiveChatSuperChatDetails",
+   "type": "object",
+   "properties": {
+    "amountDisplayString": {
+     "type": "string",
+     "description": "A rendered string that displays the fund amount and currency to the user."
+    },
+    "amountMicros": {
+     "type": "string",
+     "description": "The amount purchased by the user, in micros (1,750,000 micros = 1.75).",
+     "format": "uint64"
+    },
+    "currency": {
+     "type": "string",
+     "description": "The currency in which the purchase was made."
+    },
+    "tier": {
+     "type": "integer",
+     "description": "The tier in which the amount belongs to. Lower amounts belong to lower tiers. Starts at 1.",
+     "format": "uint32"
+    },
+    "userComment": {
+     "type": "string",
+     "description": "The comment added by the user to this Super Chat event."
     }
    }
   },
@@ -5187,6 +5254,11 @@
     "videoId": {
      "type": "string",
      "description": "The ID that YouTube uses to uniquely identify a video. To retrieve the video resource, set the id query parameter to this value in your API request."
+    },
+    "videoPublishedAt": {
+     "type": "string",
+     "description": "The date and time that the video was published to YouTube. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
+     "format": "date-time"
     }
    }
   },
@@ -5914,6 +5986,111 @@
     "title": {
      "type": "string",
      "description": "The title of the subscriber."
+    }
+   }
+  },
+  "SuperChatEvent": {
+   "id": "SuperChatEvent",
+   "type": "object",
+   "description": "A superChatEvent resource represents a Super Chat purchase on a YouTube channel.",
+   "properties": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "id": {
+     "type": "string",
+     "description": "The ID that YouTube assigns to uniquely identify the Super Chat event."
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#superChatEvent\".",
+     "default": "youtube#superChatEvent"
+    },
+    "snippet": {
+     "$ref": "SuperChatEventSnippet",
+     "description": "The snippet object contains basic details about the Super Chat event."
+    }
+   }
+  },
+  "SuperChatEventListResponse": {
+   "id": "SuperChatEventListResponse",
+   "type": "object",
+   "properties": {
+    "etag": {
+     "type": "string",
+     "description": "Etag of this resource."
+    },
+    "eventId": {
+     "type": "string",
+     "description": "Serialized EventId of the request which produced this response."
+    },
+    "items": {
+     "type": "array",
+     "description": "A list of Super Chat purchases that match the request criteria.",
+     "items": {
+      "$ref": "SuperChatEvent"
+     }
+    },
+    "kind": {
+     "type": "string",
+     "description": "Identifies what kind of resource this is. Value: the fixed string \"youtube#superChatEventListResponse\".",
+     "default": "youtube#superChatEventListResponse"
+    },
+    "nextPageToken": {
+     "type": "string",
+     "description": "The token that can be used as the value of the pageToken parameter to retrieve the next page in the result set."
+    },
+    "pageInfo": {
+     "$ref": "PageInfo"
+    },
+    "tokenPagination": {
+     "$ref": "TokenPagination"
+    },
+    "visitorId": {
+     "type": "string",
+     "description": "The visitorId identifies the visitor."
+    }
+   }
+  },
+  "SuperChatEventSnippet": {
+   "id": "SuperChatEventSnippet",
+   "type": "object",
+   "properties": {
+    "amountMicros": {
+     "type": "string",
+     "description": "The purchase amount, in micros of the purchase currency. e.g., 1 is represented as 1000000.",
+     "format": "uint64"
+    },
+    "channelId": {
+     "type": "string",
+     "description": "Channel id where the event occurred."
+    },
+    "commentText": {
+     "type": "string",
+     "description": "The text contents of the comment left by the user."
+    },
+    "createdAt": {
+     "type": "string",
+     "description": "The date and time when the event occurred. The value is specified in ISO 8601 (YYYY-MM-DDThh:mm:ss.sZ) format.",
+     "format": "date-time"
+    },
+    "currency": {
+     "type": "string",
+     "description": "The currency in which the purchase was made. ISO 4217."
+    },
+    "displayString": {
+     "type": "string",
+     "description": "A rendered string that displays the purchase amount and currency (e.g., \"$1.00\"). The string is rendered for the given language."
+    },
+    "messageType": {
+     "type": "integer",
+     "description": "The tier for the paid message, which is based on the amount of money spent to purchase the message.",
+     "format": "uint32"
+    },
+    "supporterDetails": {
+     "$ref": "ChannelProfileDetails",
+     "description": "Details about the supporter."
     }
    }
   },
@@ -7110,9 +7287,11 @@
        "docFile",
        "imageFile",
        "notAVideoFile",
-       "projectFile"
+       "projectFile",
+       "unsupportedSpatialAudioLayout"
       ],
       "enumDescriptions": [
+       "",
        "",
        "",
        "",
@@ -7129,9 +7308,15 @@
       "type": "string",
       "enum": [
        "nonStreamableMov",
-       "sendBestQualityVideo"
+       "sendBestQualityVideo",
+       "spatialAudio",
+       "sphericalVideo",
+       "vrVideo"
       ],
       "enumDescriptions": [
+       "",
+       "",
+       "",
        "",
        ""
       ]
@@ -7149,9 +7334,13 @@
        "problematicVideoCodec",
        "unknownAudioCodec",
        "unknownContainer",
-       "unknownVideoCodec"
+       "unknownVideoCodec",
+       "unsupportedSphericalProjectionType",
+       "unsupportedVrStereoMode"
       ],
       "enumDescriptions": [
+       "",
+       "",
        "",
        "",
        "",
@@ -7197,6 +7386,13 @@
     "relevantTopicIds": {
      "type": "array",
      "description": "Similar to topic_id, except that these topics are merely relevant to the video. These are topics that may be mentioned in, or appear in the video. You can retrieve information about each topic using Freebase Topic API.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "topicCategories": {
+     "type": "array",
+     "description": "A list of Wikipedia URLs that provide a high-level description of the video's content.",
      "items": {
       "type": "string"
      }
@@ -10077,6 +10273,54 @@
     }
    }
   },
+  "superChatEvents": {
+   "methods": {
+    "list": {
+     "id": "youtube.superChatEvents.list",
+     "path": "superChatEvents",
+     "httpMethod": "GET",
+     "description": "Lists Super Chat events for a channel.",
+     "parameters": {
+      "hl": {
+       "type": "string",
+       "description": "The hl parameter instructs the API to retrieve localized resource metadata for a specific application language that the YouTube website supports. The parameter value must be a language code included in the list returned by the i18nLanguages.list method.\n\nIf localized resource details are available in that language, the resource's snippet.localized object will contain the localized values. However, if localized details are not available, the snippet.localized object will contain resource details in the resource's default language.",
+       "location": "query"
+      },
+      "maxResults": {
+       "type": "integer",
+       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.",
+       "default": "5",
+       "format": "uint32",
+       "minimum": "0",
+       "maximum": "50",
+       "location": "query"
+      },
+      "pageToken": {
+       "type": "string",
+       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.",
+       "location": "query"
+      },
+      "part": {
+       "type": "string",
+       "description": "The part parameter specifies the superChatEvent resource parts that the API response will include. Supported values are id and snippet.",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "part"
+     ],
+     "response": {
+      "$ref": "SuperChatEventListResponse"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/youtube",
+      "https://www.googleapis.com/auth/youtube.force-ssl",
+      "https://www.googleapis.com/auth/youtube.readonly"
+     ]
+    }
+   }
+  },
   "thumbnails": {
    "methods": {
     "set": {
@@ -10386,7 +10630,7 @@
       },
       "maxResults": {
        "type": "integer",
-       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.\n\nNote: This parameter is supported for use in conjunction with the myRating parameter, but it is not supported for use in conjunction with the id parameter.",
+       "description": "The maxResults parameter specifies the maximum number of items that should be returned in the result set.\n\nNote: This parameter is supported for use in conjunction with the myRating and chart parameters, but it is not supported for use in conjunction with the id parameter.",
        "default": "5",
        "format": "uint32",
        "minimum": "1",
@@ -10421,7 +10665,7 @@
       },
       "pageToken": {
        "type": "string",
-       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.\n\nNote: This parameter is supported for use in conjunction with the myRating parameter, but it is not supported for use in conjunction with the id parameter.",
+       "description": "The pageToken parameter identifies a specific page in the result set that should be returned. In an API response, the nextPageToken and prevPageToken properties identify other pages that could be retrieved.\n\nNote: This parameter is supported for use in conjunction with the myRating and chart parameters, but it is not supported for use in conjunction with the id parameter.",
        "location": "query"
       },
       "part": {

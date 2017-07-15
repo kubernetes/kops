@@ -1,5 +1,7 @@
-// Copyright (c) 2015, Vastech SA (PTY) LTD. All rights reserved.
-// http://github.com/gogo/protobuf/gogoproto
+// Protocol Buffers for Go with Gadgets
+//
+// Copyright (c) 2015, The GoGo Authors. All rights reserved.
+// http://github.com/gogo/protobuf
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -35,8 +37,70 @@ import (
 
 func TestNilMaps(t *testing.T) {
 	m := &AllMaps{StringToMsgMap: map[string]*FloatingPoint{"a": nil}}
-	if _, err := proto.Marshal(m); err == nil {
-		t.Fatalf("expected error")
+	data, err := proto.Marshal(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	size := m.Size()
+	protoSize := proto.Size(m)
+	marshaledSize := len(data)
+	if size != protoSize || marshaledSize != protoSize {
+		t.Errorf("size %d != protoSize %d != marshaledSize %d", size, protoSize, marshaledSize)
+	}
+	m2 := &AllMaps{}
+	if err := proto.Unmarshal(data, m2); err != nil {
+		t.Fatal(err)
+	}
+	if v, ok := m2.StringToMsgMap["a"]; !ok {
+		t.Error("element not in map")
+	} else if v != nil {
+		t.Errorf("element should be nil, but its %v", v)
+	}
+}
+
+func TestNilMapsBytes(t *testing.T) {
+	m := &AllMaps{StringToBytesMap: map[string][]byte{"a": nil}}
+	data, err := proto.Marshal(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	size := m.Size()
+	protoSize := proto.Size(m)
+	marshaledSize := len(data)
+	if size != protoSize || marshaledSize != protoSize {
+		t.Errorf("size %d != protoSize %d != marshaledSize %d", size, protoSize, marshaledSize)
+	}
+	m2 := &AllMaps{}
+	if err := proto.Unmarshal(data, m2); err != nil {
+		t.Fatal(err)
+	}
+	if v, ok := m2.StringToBytesMap["a"]; !ok {
+		t.Error("element not in map")
+	} else if len(v) != 0 {
+		t.Errorf("element should be empty, but its %v", v)
+	}
+}
+
+func TestEmptyMapsBytes(t *testing.T) {
+	m := &AllMaps{StringToBytesMap: map[string][]byte{"b": {}}}
+	data, err := proto.Marshal(m)
+	if err != nil {
+		t.Fatal(err)
+	}
+	size := m.Size()
+	protoSize := proto.Size(m)
+	marshaledSize := len(data)
+	if size != protoSize || marshaledSize != protoSize {
+		t.Errorf("size %d != protoSize %d != marshaledSize %d", size, protoSize, marshaledSize)
+	}
+	m2 := &AllMaps{}
+	if err := proto.Unmarshal(data, m2); err != nil {
+		t.Fatal(err)
+	}
+	if v, ok := m2.StringToBytesMap["b"]; !ok {
+		t.Error("element not in map")
+	} else if len(v) != 0 {
+		t.Errorf("element should be empty, but its %v", v)
 	}
 }
 
@@ -56,6 +120,40 @@ func TestCustomTypeMarshalUnmarshal(t *testing.T) {
 		}
 		if !reflect.DeepEqual(m1, m2) {
 			t.Errorf("expected %+v, got %+v", m1, m2)
+		}
+	}
+}
+
+func TestNotPackedToPacked(t *testing.T) {
+	input := []uint64{1, 10e9}
+	notpacked := &NotPacked{Key: input}
+	if data, err := proto.Marshal(notpacked); err != nil {
+		t.Fatal(err)
+	} else {
+		packed := &Message{}
+		if err := proto.Unmarshal(data, packed); err != nil {
+			t.Fatal(err)
+		}
+		output := packed.Key
+		if !reflect.DeepEqual(input, output) {
+			t.Fatalf("expected %#v, got %#v", input, output)
+		}
+	}
+}
+
+func TestPackedToNotPacked(t *testing.T) {
+	input := []uint64{1, 10e9}
+	packed := &Message{Key: input}
+	if data, err := proto.Marshal(packed); err != nil {
+		t.Fatal(err)
+	} else {
+		notpacked := &NotPacked{}
+		if err := proto.Unmarshal(data, notpacked); err != nil {
+			t.Fatal(err)
+		}
+		output := notpacked.Key
+		if !reflect.DeepEqual(input, output) {
+			t.Fatalf("expected %#v, got %#v", input, output)
 		}
 	}
 }

@@ -25,6 +25,7 @@ import (
 	"k8s.io/kubernetes/pkg/api/v1"
 	apps "k8s.io/kubernetes/pkg/apis/apps/v1beta1"
 	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 	schedulerapi "k8s.io/kubernetes/plugin/pkg/scheduler/api"
 	"k8s.io/kubernetes/plugin/pkg/scheduler/schedulercache"
 	schedulertesting "k8s.io/kubernetes/plugin/pkg/scheduler/testing"
@@ -381,7 +382,7 @@ func TestZoneSelectorSpreadPriority(t *testing.T) {
 
 	buildNodeLabels := func(failureDomain string) map[string]string {
 		labels := map[string]string{
-			metav1.LabelZoneFailureDomain: failureDomain,
+			kubeletapis.LabelZoneFailureDomain: failureDomain,
 		}
 		return labels
 	}
@@ -736,6 +737,29 @@ func TestZoneSpreadPriority(t *testing.T) {
 		if !reflect.DeepEqual(test.expectedList, list) {
 			t.Errorf("%s: expected %#v, got %#v", test.test, test.expectedList, list)
 		}
+	}
+}
+
+func TestGetNodeClassificationByLabels(t *testing.T) {
+	const machine01 = "machine01"
+	const machine02 = "machine02"
+	const zoneA = "zoneA"
+	zone1 := map[string]string{
+		"zone": zoneA,
+	}
+	labeledNodes := map[string]map[string]string{
+		machine01: zone1,
+	}
+	expectedNonLabeledNodes := []string{machine02}
+	serviceAffinity := ServiceAntiAffinity{label: "zone"}
+	newLabeledNodes, noNonLabeledNodes := serviceAffinity.getNodeClassificationByLabels(makeLabeledNodeList(labeledNodes))
+	noLabeledNodes, newnonLabeledNodes := serviceAffinity.getNodeClassificationByLabels(makeNodeList(expectedNonLabeledNodes))
+	label, _ := newLabeledNodes[machine01]
+	if label != zoneA && len(noNonLabeledNodes) != 0 {
+		t.Errorf("Expected only labeled node with label zoneA and no noNonLabeledNodes")
+	}
+	if len(noLabeledNodes) != 0 && newnonLabeledNodes[0] != machine02 {
+		t.Errorf("Expected only non labled nodes")
 	}
 }
 

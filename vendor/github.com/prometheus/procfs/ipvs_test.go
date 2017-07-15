@@ -14,7 +14,7 @@ var (
 		OutgoingBytes:   0,
 	}
 	expectedIPVSBackendStatuses = []IPVSBackendStatus{
-		IPVSBackendStatus{
+		{
 			LocalAddress:  net.ParseIP("192.168.0.22"),
 			LocalPort:     3306,
 			RemoteAddress: net.ParseIP("192.168.82.22"),
@@ -24,7 +24,7 @@ var (
 			ActiveConn:    248,
 			InactConn:     2,
 		},
-		IPVSBackendStatus{
+		{
 			LocalAddress:  net.ParseIP("192.168.0.22"),
 			LocalPort:     3306,
 			RemoteAddress: net.ParseIP("192.168.83.24"),
@@ -34,7 +34,7 @@ var (
 			ActiveConn:    248,
 			InactConn:     2,
 		},
-		IPVSBackendStatus{
+		{
 			LocalAddress:  net.ParseIP("192.168.0.22"),
 			LocalPort:     3306,
 			RemoteAddress: net.ParseIP("192.168.83.21"),
@@ -44,7 +44,7 @@ var (
 			ActiveConn:    248,
 			InactConn:     1,
 		},
-		IPVSBackendStatus{
+		{
 			LocalAddress:  net.ParseIP("192.168.0.57"),
 			LocalPort:     3306,
 			RemoteAddress: net.ParseIP("192.168.84.22"),
@@ -54,7 +54,7 @@ var (
 			ActiveConn:    0,
 			InactConn:     0,
 		},
-		IPVSBackendStatus{
+		{
 			LocalAddress:  net.ParseIP("192.168.0.57"),
 			LocalPort:     3306,
 			RemoteAddress: net.ParseIP("192.168.82.21"),
@@ -64,7 +64,7 @@ var (
 			ActiveConn:    1499,
 			InactConn:     0,
 		},
-		IPVSBackendStatus{
+		{
 			LocalAddress:  net.ParseIP("192.168.0.57"),
 			LocalPort:     3306,
 			RemoteAddress: net.ParseIP("192.168.50.21"),
@@ -74,7 +74,7 @@ var (
 			ActiveConn:    1498,
 			InactConn:     0,
 		},
-		IPVSBackendStatus{
+		{
 			LocalAddress:  net.ParseIP("192.168.0.55"),
 			LocalPort:     3306,
 			RemoteAddress: net.ParseIP("192.168.50.26"),
@@ -84,7 +84,7 @@ var (
 			ActiveConn:    0,
 			InactConn:     0,
 		},
-		IPVSBackendStatus{
+		{
 			LocalAddress:  net.ParseIP("192.168.0.55"),
 			LocalPort:     3306,
 			RemoteAddress: net.ParseIP("192.168.49.32"),
@@ -94,21 +94,65 @@ var (
 			ActiveConn:    0,
 			InactConn:     0,
 		},
+		{
+			LocalAddress:  net.ParseIP("2620::1"),
+			LocalPort:     80,
+			RemoteAddress: net.ParseIP("2620::2"),
+			RemotePort:    80,
+			Proto:         "TCP",
+			Weight:        1,
+			ActiveConn:    0,
+			InactConn:     0,
+		},
+		{
+			LocalAddress:  net.ParseIP("2620::1"),
+			LocalPort:     80,
+			RemoteAddress: net.ParseIP("2620::3"),
+			RemotePort:    80,
+			Proto:         "TCP",
+			Weight:        1,
+			ActiveConn:    0,
+			InactConn:     0,
+		},
+		{
+			LocalAddress:  net.ParseIP("2620::1"),
+			LocalPort:     80,
+			RemoteAddress: net.ParseIP("2620::4"),
+			RemotePort:    80,
+			Proto:         "TCP",
+			Weight:        1,
+			ActiveConn:    1,
+			InactConn:     1,
+		},
+		{
+			LocalMark:     "10001000",
+			RemoteAddress: net.ParseIP("192.168.50.26"),
+			RemotePort:    3306,
+			Proto:         "FWM",
+			Weight:        0,
+			ActiveConn:    0,
+			InactConn:     1,
+		},
+		{
+			LocalMark:     "10001000",
+			RemoteAddress: net.ParseIP("192.168.50.21"),
+			RemotePort:    3306,
+			Proto:         "FWM",
+			Weight:        0,
+			ActiveConn:    0,
+			InactConn:     2,
+		},
 	}
 )
 
 func TestIPVSStats(t *testing.T) {
-	fs, err := NewFS("fixtures")
-	if err != nil {
-		t.Fatal(err)
-	}
-	stats, err := fs.NewIPVSStats()
+	stats, err := FS("fixtures").NewIPVSStats()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	if stats != expectedIPVSStats {
-		t.Errorf("want %+v, got %+v", expectedIPVSStats, stats)
+		t.Errorf("want %+v, have %+v", expectedIPVSStats, stats)
 	}
 }
 
@@ -121,7 +165,7 @@ func TestParseIPPort(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !(gotIP.Equal(ip) && port == gotPort) {
-		t.Errorf("want %s:%d, got %s:%d", ip, port, gotIP, gotPort)
+		t.Errorf("want %s:%d, have %s:%d", ip, port, gotIP, gotPort)
 	}
 }
 
@@ -137,7 +181,7 @@ func TestParseIPPortInvalid(t *testing.T) {
 	for _, s := range testcases {
 		ip, port, err := parseIPPort(s)
 		if ip != nil || port != uint16(0) || err == nil {
-			t.Errorf("Expected error for input %s, got ip = %s, port = %v, err = %v", s, ip, port, err)
+			t.Errorf("Expected error for input %s, have ip = %s, port = %v, err = %v", s, ip, port, err)
 		}
 	}
 }
@@ -146,51 +190,48 @@ func TestParseIPPortIPv6(t *testing.T) {
 	ip := net.ParseIP("dead:beef::1")
 	port := uint16(8080)
 
-	gotIP, gotPort, err := parseIPPort("DEADBEEF000000000000000000000001:1F90")
+	gotIP, gotPort, err := parseIPPort("[DEAD:BEEF:0000:0000:0000:0000:0000:0001]:1F90")
 	if err != nil {
 		t.Fatal(err)
 	}
 	if !(gotIP.Equal(ip) && port == gotPort) {
-		t.Errorf("want %s:%d, got %s:%d", ip, port, gotIP, gotPort)
+		t.Errorf("want %s:%d, have %s:%d", ip, port, gotIP, gotPort)
 	}
-
 }
 
 func TestIPVSBackendStatus(t *testing.T) {
-	fs, err := NewFS("fixtures")
+	backendStats, err := FS("fixtures").NewIPVSBackendStatus()
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	backendStats, err := fs.NewIPVSBackendStatus()
-	if err != nil {
-		t.Fatal(err)
+	if want, have := len(expectedIPVSBackendStatuses), len(backendStats); want != have {
+		t.Fatalf("want %d backend statuses, have %d", want, have)
 	}
 
 	for idx, expect := range expectedIPVSBackendStatuses {
 		if !backendStats[idx].LocalAddress.Equal(expect.LocalAddress) {
-			t.Errorf("expected LocalAddress %s, got %s", expect.LocalAddress, backendStats[idx].LocalAddress)
+			t.Errorf("want LocalAddress %s, have %s", expect.LocalAddress, backendStats[idx].LocalAddress)
 		}
 		if backendStats[idx].LocalPort != expect.LocalPort {
-			t.Errorf("expected LocalPort %d, got %d", expect.LocalPort, backendStats[idx].LocalPort)
+			t.Errorf("want LocalPort %d, have %d", expect.LocalPort, backendStats[idx].LocalPort)
 		}
 		if !backendStats[idx].RemoteAddress.Equal(expect.RemoteAddress) {
-			t.Errorf("expected RemoteAddress %s, got %s", expect.RemoteAddress, backendStats[idx].RemoteAddress)
+			t.Errorf("want RemoteAddress %s, have %s", expect.RemoteAddress, backendStats[idx].RemoteAddress)
 		}
 		if backendStats[idx].RemotePort != expect.RemotePort {
-			t.Errorf("expected RemotePort %d, got %d", expect.RemotePort, backendStats[idx].RemotePort)
+			t.Errorf("want RemotePort %d, have %d", expect.RemotePort, backendStats[idx].RemotePort)
 		}
 		if backendStats[idx].Proto != expect.Proto {
-			t.Errorf("expected Proto %s, got %s", expect.Proto, backendStats[idx].Proto)
+			t.Errorf("want Proto %s, have %s", expect.Proto, backendStats[idx].Proto)
 		}
 		if backendStats[idx].Weight != expect.Weight {
-			t.Errorf("expected Weight %d, got %d", expect.Weight, backendStats[idx].Weight)
+			t.Errorf("want Weight %d, have %d", expect.Weight, backendStats[idx].Weight)
 		}
 		if backendStats[idx].ActiveConn != expect.ActiveConn {
-			t.Errorf("expected ActiveConn %d, got %d", expect.ActiveConn, backendStats[idx].ActiveConn)
+			t.Errorf("want ActiveConn %d, have %d", expect.ActiveConn, backendStats[idx].ActiveConn)
 		}
 		if backendStats[idx].InactConn != expect.InactConn {
-			t.Errorf("expected InactConn %d, got %d", expect.InactConn, backendStats[idx].InactConn)
+			t.Errorf("want InactConn %d, have %d", expect.InactConn, backendStats[idx].InactConn)
 		}
 	}
 }

@@ -163,7 +163,7 @@ func (r *resourceRecordSets) List() ([]dnsprovider.ResourceRecordSet, error) {
 }
 
 // Get returns the ResourceRecordSet with the name in the Zone. if the named resource record set does not exist, but no error occurred, the returned set, and error, are both nil.
-func (r *resourceRecordSets) Get(name string) (dnsprovider.ResourceRecordSet, error) {
+func (r *resourceRecordSets) Get(name string) ([]dnsprovider.ResourceRecordSet, error) {
 	snapshot := r.zone.dnsView.Snapshot()
 
 	records := snapshot.RecordsForZoneAndName(r.zone.zoneInfo, name)
@@ -175,14 +175,7 @@ func (r *resourceRecordSets) Get(name string) (dnsprovider.ResourceRecordSet, er
 	for _, rr := range records {
 		rrs = append(rrs, &resourceRecordSet{data: rr})
 	}
-	if len(rrs) == 0 {
-		return nil, nil
-	}
-	if len(rrs) != 1 {
-		// TODO: We need to fix this in the dnsprovider interface
-		return nil, fmt.Errorf("found multiple records in zone=%q, name=%q", r.zone, name)
-	}
-	return rrs[0], nil
+	return rrs, nil
 }
 
 // New allocates a new ResourceRecordSet, which can then be passed to ResourceRecordChangeset Add() or Remove()

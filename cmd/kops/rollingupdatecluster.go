@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/tables"
@@ -48,18 +49,18 @@ var (
 	Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply"
 	prior to running "kops rolling-update cluster"
 
-	Use KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
+	Use export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate" to use beta code that drains the nodes
 	and validates the cluster.  New flags for Drain and Validation operations will be shown when
 	the environment variable is set.`))
 
 	rollingupdate_example = templates.Examples(i18n.T(`
 		# Roll the currently selected kops cluster
-		kops rollingupdate cluster --yes
+		kops rolling-update cluster --yes
 
 		# Roll the k8s-cluster.example.com kops cluster
 		# use the new drain an validate functionality
-		KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
-		kops rollingupdate cluster k8s-cluster.example.com --yes \
+		export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+		kops rolling-update cluster k8s-cluster.example.com --yes \
 		  --fail-on-validate-error="false" \
 		  --master-interval=8m \
 		  --node-interval=8m
@@ -68,8 +69,8 @@ var (
 		# Roll the k8s-cluster.example.com kops cluster
 		# only roll the node instancegroup
 		# use the new drain an validate functionality
-		KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
-		kops rollingupdate cluster k8s-cluster.example.com --yes \
+		export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+		kops rolling-update cluster k8s-cluster.example.com --yes \
 		  --fail-on-validate-error="false" \
 		  --node-interval 8m \
 		  --instance-group nodes
@@ -224,7 +225,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		}
 	}
 
-	list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(metav1.ListOptions{})
+	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -265,32 +266,32 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return err
 	}
 
-	groups, err := kutil.FindCloudInstanceGroups(cloud, cluster, instanceGroups, warnUnmatched, nodes)
+	groups, err := instancegroups.FindCloudInstanceGroups(cloud, cluster, instanceGroups, warnUnmatched, nodes)
 	if err != nil {
 		return err
 	}
 
 	{
 		t := &tables.Table{}
-		t.AddColumn("NAME", func(r *kutil.CloudInstanceGroup) string {
+		t.AddColumn("NAME", func(r *instancegroups.CloudInstanceGroup) string {
 			return r.InstanceGroup.ObjectMeta.Name
 		})
-		t.AddColumn("STATUS", func(r *kutil.CloudInstanceGroup) string {
+		t.AddColumn("STATUS", func(r *instancegroups.CloudInstanceGroup) string {
 			return r.Status
 		})
-		t.AddColumn("NEEDUPDATE", func(r *kutil.CloudInstanceGroup) string {
+		t.AddColumn("NEEDUPDATE", func(r *instancegroups.CloudInstanceGroup) string {
 			return strconv.Itoa(len(r.NeedUpdate))
 		})
-		t.AddColumn("READY", func(r *kutil.CloudInstanceGroup) string {
+		t.AddColumn("READY", func(r *instancegroups.CloudInstanceGroup) string {
 			return strconv.Itoa(len(r.Ready))
 		})
-		t.AddColumn("MIN", func(r *kutil.CloudInstanceGroup) string {
+		t.AddColumn("MIN", func(r *instancegroups.CloudInstanceGroup) string {
 			return strconv.Itoa(r.MinSize())
 		})
-		t.AddColumn("MAX", func(r *kutil.CloudInstanceGroup) string {
+		t.AddColumn("MAX", func(r *instancegroups.CloudInstanceGroup) string {
 			return strconv.Itoa(r.MaxSize())
 		})
-		t.AddColumn("NODES", func(r *kutil.CloudInstanceGroup) string {
+		t.AddColumn("NODES", func(r *instancegroups.CloudInstanceGroup) string {
 			var nodes []*v1.Node
 			for _, i := range r.Ready {
 				if i.Node != nil {
@@ -304,7 +305,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			}
 			return strconv.Itoa(len(nodes))
 		})
-		var l []*kutil.CloudInstanceGroup
+		var l []*instancegroups.CloudInstanceGroup
 		for _, v := range groups {
 			l = append(l, v)
 		}
@@ -339,7 +340,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
 		glog.V(2).Infof("New rolling update with drain and validate enabled.")
 	}
-	d := &kutil.RollingUpdateCluster{
+	d := &instancegroups.RollingUpdateCluster{
 		MasterInterval:   options.MasterInterval,
 		NodeInterval:     options.NodeInterval,
 		Force:            options.Force,

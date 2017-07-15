@@ -100,6 +100,77 @@ func TestWriteData(t *testing.T) {
 	}
 }
 
+func TestWriteDataPadded(t *testing.T) {
+	tests := [...]struct {
+		streamID   uint32
+		endStream  bool
+		data       []byte
+		pad        []byte
+		wantHeader FrameHeader
+	}{
+		// Unpadded:
+		0: {
+			streamID:  1,
+			endStream: true,
+			data:      []byte("foo"),
+			pad:       nil,
+			wantHeader: FrameHeader{
+				Type:     FrameData,
+				Flags:    FlagDataEndStream,
+				Length:   3,
+				StreamID: 1,
+			},
+		},
+
+		// Padded bit set, but no padding:
+		1: {
+			streamID:  1,
+			endStream: true,
+			data:      []byte("foo"),
+			pad:       []byte{},
+			wantHeader: FrameHeader{
+				Type:     FrameData,
+				Flags:    FlagDataEndStream | FlagDataPadded,
+				Length:   4,
+				StreamID: 1,
+			},
+		},
+
+		// Padded bit set, with padding:
+		2: {
+			streamID:  1,
+			endStream: false,
+			data:      []byte("foo"),
+			pad:       []byte("bar"),
+			wantHeader: FrameHeader{
+				Type:     FrameData,
+				Flags:    FlagDataPadded,
+				Length:   7,
+				StreamID: 1,
+			},
+		},
+	}
+	for i, tt := range tests {
+		fr, _ := testFramer()
+		fr.WriteDataPadded(tt.streamID, tt.endStream, tt.data, tt.pad)
+		f, err := fr.ReadFrame()
+		if err != nil {
+			t.Errorf("%d. ReadFrame: %v", i, err)
+			continue
+		}
+		got := f.Header()
+		tt.wantHeader.valid = true
+		if got != tt.wantHeader {
+			t.Errorf("%d. read %+v; want %+v", i, got, tt.wantHeader)
+			continue
+		}
+		df := f.(*DataFrame)
+		if !bytes.Equal(df.Data(), tt.data) {
+			t.Errorf("%d. got %q; want %q", i, df.Data(), tt.data)
+		}
+	}
+}
+
 func TestWriteHeaders(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -921,7 +992,7 @@ func TestMetaFrameHeader(t *testing.T) {
 					":path", "/", // bogus
 				))
 			},
-			want:          StreamError{1, ErrCodeProtocol},
+			want:          streamError(1, ErrCodeProtocol),
 			wantErrReason: "pseudo header field after regular",
 		},
 		7: {
@@ -932,7 +1003,7 @@ func TestMetaFrameHeader(t *testing.T) {
 					"foo", "bar",
 				))
 			},
-			want:          StreamError{1, ErrCodeProtocol},
+			want:          streamError(1, ErrCodeProtocol),
 			wantErrReason: "invalid pseudo-header \":unknown\"",
 		},
 		8: {
@@ -943,7 +1014,7 @@ func TestMetaFrameHeader(t *testing.T) {
 					":status", "100",
 				))
 			},
-			want:          StreamError{1, ErrCodeProtocol},
+			want:          streamError(1, ErrCodeProtocol),
 			wantErrReason: "mix of request and response pseudo headers",
 		},
 		9: {
@@ -954,7 +1025,7 @@ func TestMetaFrameHeader(t *testing.T) {
 					":method", "POST",
 				))
 			},
-			want:          StreamError{1, ErrCodeProtocol},
+			want:          streamError(1, ErrCodeProtocol),
 			wantErrReason: "duplicate pseudo-header \":method\"",
 		},
 		10: {
@@ -965,13 +1036,13 @@ func TestMetaFrameHeader(t *testing.T) {
 		11: {
 			name:          "invalid_field_name",
 			w:             func(f *Framer) { write(f, encodeHeaderRaw(t, "CapitalBad", "x")) },
-			want:          StreamError{1, ErrCodeProtocol},
+			want:          streamError(1, ErrCodeProtocol),
 			wantErrReason: "invalid header field name \"CapitalBad\"",
 		},
 		12: {
 			name:          "invalid_field_value",
 			w:             func(f *Framer) { write(f, encodeHeaderRaw(t, "key", "bad_null\x00")) },
-			want:          StreamError{1, ErrCodeProtocol},
+			want:          streamError(1, ErrCodeProtocol),
 			wantErrReason: "invalid header field value \"bad_null\\x00\"",
 		},
 	}
@@ -992,6 +1063,13 @@ func TestMetaFrameHeader(t *testing.T) {
 		got, err = f.ReadFrame()
 		if err != nil {
 			got = err
+
+			// Ignore the StreamError.Cause field, if it matches the wantErrReason.
+			// The test table above predates the Cause field.
+			if se, ok := err.(StreamError); ok && se.Cause != nil && se.Cause.Error() == tt.wantErrReason {
+				se.Cause = nil
+				got = se
+			}
 		}
 		if !reflect.DeepEqual(got, tt.want) {
 			if mhg, ok := got.(*MetaHeadersFrame); ok {

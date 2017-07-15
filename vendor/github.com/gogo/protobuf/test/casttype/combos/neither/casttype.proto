@@ -1,5 +1,7 @@
-// Copyright (c) 2015, Vastech SA (PTY) LTD. All rights reserved.
-// http://github.com/gogo/protobuf/gogoproto
+// Protocol Buffers for Go with Gadgets
+//
+// Copyright (c) 2015, The GoGo Authors. All rights reserved.
+// http://github.com/gogo/protobuf
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are
@@ -70,6 +72,7 @@ message Castaway {
 	map<string,uint64> MyCustomMap = 13  [(gogoproto.castkey) = "github.com/gogo/protobuf/test/casttype.MyStringType", (gogoproto.castvalue) = "github.com/gogo/protobuf/test/casttype.MyUint64Type"];
 	map<int32,Wilson> MyNullableMap = 14 [(gogoproto.castkey) = "github.com/gogo/protobuf/test/casttype.MyInt32Type"];
 	map<int32,Wilson> MyEmbeddedMap = 15 [(gogoproto.castkey) = "github.com/gogo/protobuf/test/casttype.MyInt32Type", (gogoproto.nullable) = false];
+	optional string String = 16 [(gogoproto.casttype) = "github.com/gogo/protobuf/test/casttype.MyStringType"];
 }
 
 message Wilson {

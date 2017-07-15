@@ -33,7 +33,7 @@ var (
 	`))
 
 	update_federation_example = templates.Examples(i18n.T(`
-	# After cluster has been editted or upgraded, configure it with:
+	# After cluster has been edited or upgraded, configure it with:
 	kops update federation k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
 	`))
 
@@ -77,7 +77,7 @@ func RunUpdateFederation(factory *util.Factory, cmd *cobra.Command, args []strin
 		return err
 	}
 
-	f, err := clientset.Federations().Get(name)
+	f, err := clientset.GetFederation(name)
 	if err != nil {
 		return fmt.Errorf("error reading federation %q: %v", name, err)
 	}

@@ -44,7 +44,7 @@ The tooling used to build these images is open source:
   used for building the kernel.
 
 The latest image name is kept in the [stable channel manifest](https://github.com/kubernetes/kops/blob/master/channels/stable),
-but an example is `kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21`.  This means to look for an image published 
+but an example is `kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21`.  This means to look for an image published
 by `kope.io`, (which is a well-known alias to account `383156758163`), with the name
 `k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21`.  By using a name instead of an AMI, we can reference an image
 irrespective of the region in which it is located.
@@ -98,8 +98,13 @@ CoreOS support is highly experimental.  Please report any issues.
 
 The following steps are known:
 
-* CoreOS AMIs can be found using `aws ec2 describe-images --region=us-east-1 --owner=595879546273 --filters Name=virtualization-type,Values=hvm`
-* You can specify the name using the `coreos.com` owner alias, for example `coreos.com/CoreOS-stable-1235.9.0-hvm`
+* The latest stable CoreOS AMI can be found using:
+```
+aws ec2 describe-images --region=us-east-1 --owner=595879546273 \
+    --filters "Name=virtualization-type,Values=hvm" "Name=name,Values=CoreOS-stable*" \
+    --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}'
+```
 
+* You can specify the name using the `coreos.com` owner alias, for example `coreos.com/CoreOS-stable-1353.8.0-hvm`
 
-
+> Note: SSH username will be `core`

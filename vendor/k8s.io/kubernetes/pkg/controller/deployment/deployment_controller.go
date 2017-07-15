@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
@@ -52,7 +53,11 @@ import (
 
 const (
 	// maxRetries is the number of times a deployment will be retried before it is dropped out of the queue.
-	maxRetries = 5
+	// With the current rate-limiter in use (5ms*2^(maxRetries-1)) the following numbers represent the times
+	// a deployment is going to be requeued:
+	//
+	// 5ms, 10ms, 20ms, 40ms, 80ms, 160ms, 320ms, 640ms, 1.3s, 2.6s, 5.1s, 10.2s, 20.4s, 41s, 82s
+	maxRetries = 15
 )
 
 // controllerKind contains the schema.GroupVersionKind for this controller type.
@@ -145,9 +150,9 @@ func (dc *DeploymentController) Run(workers int, stopCh <-chan struct{}) {
 	defer dc.queue.ShutDown()
 
 	glog.Infof("Starting deployment controller")
+	defer glog.Infof("Shutting down deployment controller")
 
-	if !cache.WaitForCacheSync(stopCh, dc.dListerSynced, dc.rsListerSynced, dc.podListerSynced) {
-		utilruntime.HandleError(fmt.Errorf("timed out waiting for caches to sync"))
+	if !controller.WaitForCacheSync("deployment", stopCh, dc.dListerSynced, dc.rsListerSynced, dc.podListerSynced) {
 		return
 	}
 
@@ -156,7 +161,6 @@ func (dc *DeploymentController) Run(workers int, stopCh <-chan struct{}) {
 	}
 
 	<-stopCh
-	glog.Infof("Shutting down deployment controller")
 }
 
 func (dc *DeploymentController) addDeployment(obj interface{}) {
@@ -501,7 +505,19 @@ func (dc *DeploymentController) getReplicaSetsForDeployment(d *extensions.Deploy
 	if err != nil {
 		return nil, fmt.Errorf("deployment %s/%s has invalid label selector: %v", d.Namespace, d.Name, err)
 	}
-	cm := controller.NewReplicaSetControllerRefManager(dc.rsControl, d, deploymentSelector, controllerKind)
+	// If any adoptions are attempted, we should first recheck for deletion with
+	// an uncached quorum read sometime after listing ReplicaSets (see #42639).
+	canAdoptFunc := controller.RecheckDeletionTimestamp(func() (metav1.Object, error) {
+		fresh, err := dc.client.ExtensionsV1beta1().Deployments(d.Namespace).Get(d.Name, metav1.GetOptions{})
+		if err != nil {
+			return nil, err
+		}
+		if fresh.UID != d.UID {
+			return nil, fmt.Errorf("original Deployment %v/%v is gone: got uid %v, wanted %v", d.Namespace, d.Name, fresh.UID, d.UID)
+		}
+		return fresh, nil
+	})
+	cm := controller.NewReplicaSetControllerRefManager(dc.rsControl, d, deploymentSelector, controllerKind, canAdoptFunc)
 	return cm.ClaimReplicaSets(rsList)
 }
 
@@ -525,10 +541,8 @@ func (dc *DeploymentController) getPodMapForDeployment(d *extensions.Deployment,
 		podMap[rs.UID] = &v1.PodList{}
 	}
 	for _, pod := range pods {
-		// Ignore inactive Pods since that's what ReplicaSet does.
-		if !controller.IsPodActive(pod) {
-			continue
-		}
+		// Do not ignore inactive Pods because Recreate Deployments need to verify that no
+		// Pods from older versions are running before spinning up new Pods.
 		controllerRef := controller.GetControllerOf(pod)
 		if controllerRef == nil {
 			continue
@@ -560,7 +574,6 @@ func (dc *DeploymentController) syncDeployment(key string) error {
 		return nil
 	}
 	if err != nil {
-		utilruntime.HandleError(fmt.Errorf("Unable to retrieve deployment %v from store: %v", key, err))
 		return err
 	}
 
@@ -581,6 +594,20 @@ func (dc *DeploymentController) syncDeployment(key string) error {
 		return nil
 	}
 
+	// This is the point at which we used to add/remove the overlap annotation.
+	// Now we always remove it if it exists, because it is obsolete as of 1.6.
+	// Although the server no longer adds or looks at the annotation,
+	// it's important to remove it from controllers created before the upgrade,
+	// so that old clients (e.g. kubectl reaper) know they can no longer assume
+	// the controller is blocked due to selector overlap and has no dependents.
+	if _, ok := d.Annotations[util.OverlapAnnotation]; ok {
+		delete(d.Annotations, util.OverlapAnnotation)
+		d, err = dc.client.ExtensionsV1beta1().Deployments(d.Namespace).UpdateStatus(d)
+		if err != nil {
+			return fmt.Errorf("couldn't remove obsolete overlap annotation from deployment %v: %v", key, err)
+		}
+	}
+
 	// List ReplicaSets owned by this Deployment, while reconciling ControllerRef
 	// through adoption/orphaning.
 	rsList, err := dc.getReplicaSetsForDeployment(d)
@@ -588,6 +615,10 @@ func (dc *DeploymentController) syncDeployment(key string) error {
 		return err
 	}
 	// List all Pods owned by this Deployment, grouped by their ReplicaSet.
+	// Current uses of the podMap are:
+	//
+	// * check if a Pod is labeled correctly with the pod-template-hash label.
+	// * check that no old Pods are running in the middle of Recreate Deployments.
 	podMap, err := dc.getPodMapForDeployment(d, rsList)
 	if err != nil {
 		return err
@@ -611,7 +642,7 @@ func (dc *DeploymentController) syncDeployment(key string) error {
 			return err
 		}
 		// So far the cleanup policy was executed once a deployment was paused, scaled up/down, or it
-		// succesfully completed deploying a replica set. Decouple it from the strategies and have it
+		// successfully completed deploying a replica set. Decouple it from the strategies and have it
 		// run almost unconditionally - cleanupDeployment is safe by default.
 		dc.cleanupDeployment(oldRSs, d)
 	}

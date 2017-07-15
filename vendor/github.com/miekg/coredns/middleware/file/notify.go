@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/middleware/pkg/rcode"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/middleware/pkg/rcode"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 )
@@ -71,7 +71,7 @@ func notifyAddr(c *dns.Client, m *dns.Msg, s string) (err error) {
 		}
 	}
 	if err != nil {
-		return fmt.Errorf("Notify for zone %q was not accepted by %q: %q", m.Question[0].Name, s, err)
+		return err
 	}
 	return fmt.Errorf("Notify for zone %q was not accepted by %q: rcode was %q", m.Question[0].Name, s, rcode.ToString(code))
 }

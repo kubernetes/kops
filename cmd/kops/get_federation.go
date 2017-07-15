@@ -24,6 +24,7 @@ import (
 
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
@@ -42,11 +43,13 @@ var (
 )
 
 type GetFederationOptions struct {
+	*GetOptions
 }
 
-func init() {
-	var options GetFederationOptions
-
+func NewCmdGetFederations(f *util.Factory, out io.Writer, getOptions *GetOptions) *cobra.Command {
+	options := GetFederationOptions{
+		GetOptions: getOptions,
+	}
 	cmd := &cobra.Command{
 		Use:     "federations",
 		Aliases: []string{"federation"},
@@ -61,7 +64,7 @@ func init() {
 		},
 	}
 
-	getCmd.cobraCommand.AddCommand(cmd)
+	return cmd
 }
 
 func RunGetFederations(context Factory, out io.Writer, options *GetFederationOptions) error {
@@ -70,7 +73,7 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 		return err
 	}
 
-	list, err := client.Federations().List(metav1.ListOptions{})
+	list, err := client.ListFederations(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -83,7 +86,7 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 		fmt.Fprintf(out, "No federations found\n")
 		return nil
 	}
-	switch getCmd.output {
+	switch options.output {
 
 	case OutputTable:
 
@@ -118,7 +121,7 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 			}
 		}
 	default:
-		return fmt.Errorf("Unknown output format: %q", getCmd.output)
+		return fmt.Errorf("Unknown output format: %q", options.output)
 	}
 	return nil
 }

@@ -7,10 +7,10 @@ import (
 	"log"
 	"testing"
 
-	"github.com/coredns/coredns/middleware/etcd/msg"
-	"github.com/coredns/coredns/middleware/proxy"
-	"github.com/coredns/coredns/middleware/test"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware/etcd/msg"
+	"github.com/miekg/coredns/middleware/proxy"
+	"github.com/miekg/coredns/middleware/test"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -47,7 +47,7 @@ func TestEtcdCacheAndDebug(t *testing.T) {
 		defer delete(ctx, t, etc, serv.Key)
 	}
 
-	p := proxy.NewLookup([]string{udp})
+	p := proxy.New([]string{udp})
 	state := request.Request{W: &test.ResponseWriter{}, Req: new(dns.Msg)}
 
 	resp, err := p.Lookup(state, "b.example.skydns.test.", dns.TypeA)

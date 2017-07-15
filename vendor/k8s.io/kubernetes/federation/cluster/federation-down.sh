@@ -20,13 +20,14 @@ set -o pipefail
 
 KUBE_ROOT=$(readlink -m $(dirname "${BASH_SOURCE}")/../../)
 
-# For $FEDERATION_NAME, $FEDERATION_KUBE_CONTEXT, $HOST_CLUSTER_CONTEXT,
-# $KUBEDNS_CONFIGMAP_NAME and $KUBEDNS_CONFIGMAP_NAMESPACE.
+# For $FEDERATION_NAME, $FEDERATION_NAMESPACE, $FEDERATION_KUBE_CONTEXT,
+# $HOST_CLUSTER_CONTEXT, $KUBEDNS_CONFIGMAP_NAME and
+# $KUBEDNS_CONFIGMAP_NAMESPACE.
 source "${KUBE_ROOT}/federation/cluster/common.sh"
 
 # federation_clusters returns a list of all the clusters in
 # federation, if at all the federation control plane exists
-# and there are any clusters registerd.
+# and there are any clusters registered.
 function federation_clusters() {
   if clusters=$("${KUBE_ROOT}/cluster/kubectl.sh" \
       --context="${FEDERATION_KUBE_CONTEXT}" \
@@ -49,8 +50,10 @@ function unjoin_clusters() {
 
     "${KUBE_ROOT}/federation/develop/kubefed.sh" unjoin \
         "${context}" \
+        --federation-system-namespace=${FEDERATION_NAMESPACE} \
         --context="${FEDERATION_KUBE_CONTEXT}" \
-        --host-cluster-context="${HOST_CLUSTER_CONTEXT}"
+        --host-cluster-context="${HOST_CLUSTER_CONTEXT}" \
+        --v=4
   done
 }
 

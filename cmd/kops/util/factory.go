@@ -23,8 +23,14 @@ import (
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/util/pkg/vfs"
 
+	"k8s.io/client-go/rest"
+	kopsclient "k8s.io/kops/pkg/client/clientset_generated/clientset"
+
 	// Register our APIs
+	"github.com/golang/glog"
 	_ "k8s.io/kops/pkg/apis/kops/install"
+	"net/url"
+	"strings"
 )
 
 type FactoryOptions struct {
@@ -49,7 +55,8 @@ A s3 bucket is required to store cluster state information.`
 
 	INVALID_STATE_ERROR = `Unable to read state store s3 bucket.
 Please use a valid s3 bucket uri when setting --state or KOPS_STATE_STORE evn var.
-A valid value follows the format s3://<bucket>.`
+A valid value follows the format s3://<bucket>.
+Trailing slash will be trimmed.`
 )
 
 func (f *Factory) Clientset() (simple.Clientset, error) {
@@ -58,16 +65,46 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 		if registryPath == "" {
 			return nil, field.Required(field.NewPath("State Store"), STATE_ERROR)
 		}
-		basePath, err := vfs.Context.BuildVfsPath(registryPath)
-		if err != nil {
-			return nil, fmt.Errorf("error building path for %q: %v", registryPath, err)
-		}
 
-		if !vfs.IsClusterReadable(basePath) {
-			return nil, field.Invalid(field.NewPath("State Store"), registryPath, INVALID_STATE_ERROR)
-		}
+		// We recognize a `k8s` scheme; this might change in future so we won't document it yet
+		// In practice nobody is going to hit this accidentally, so I don't think we need a feature flag.
+		if strings.HasPrefix(registryPath, "k8s://") {
+			u, err := url.Parse(registryPath)
+			if err != nil {
+				return nil, fmt.Errorf("Invalid kops server url: %q", registryPath)
+			}
 
-		f.clientset = vfsclientset.NewVFSClientset(basePath)
+			config := &rest.Config{
+				Host: u.Scheme + "://" + u.Host,
+			}
+
+			glog.Warning("Using insecure TLS")
+			config.Insecure = true
+
+			kopsClient, err := kopsclient.NewForConfig(config)
+			if err != nil {
+				return nil, fmt.Errorf("error building kops API client: %v", err)
+			}
+
+			f.clientset = &simple.RESTClientset{
+				BaseURL: &url.URL{
+					Scheme: "k8s",
+					Host:   u.Host,
+				},
+				KopsClient: kopsClient.Kops(),
+			}
+		} else {
+			basePath, err := vfs.Context.BuildVfsPath(registryPath)
+			if err != nil {
+				return nil, fmt.Errorf("error building path for %q: %v", registryPath, err)
+			}
+
+			if !vfs.IsClusterReadable(basePath) {
+				return nil, field.Invalid(field.NewPath("State Store"), registryPath, INVALID_STATE_ERROR)
+			}
+
+			f.clientset = vfsclientset.NewVFSClientset(basePath)
+		}
 	}
 
 	return f.clientset, nil

@@ -16,7 +16,7 @@ kops update cluster
 ### Examples
 
 ```
-  # After cluster has been editted or upgraded, configure it with:
+  # After cluster has been edited or upgraded, configure it with:
   kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
 ```
 
@@ -27,7 +27,7 @@ kops update cluster
       --model string            Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --out string              Path to write any local output
       --ssh-public-key string   SSH public key to use (deprecated: use kops create secret instead)
-      --target string           Target - direct, terraform (default "direct")
+      --target string           Target - direct, terraform, cloudformation (default "direct")
       --yes                     Actually create cloud resources
 ```
 

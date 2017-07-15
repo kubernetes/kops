@@ -1,9 +1,7 @@
 package dnsserver
 
 import (
-	"crypto/tls"
-
-	"github.com/coredns/coredns/middleware"
+	"github.com/miekg/coredns/middleware"
 
 	"github.com/mholt/caddy"
 )
@@ -22,13 +20,6 @@ type Config struct {
 	// Root points to a base directory we we find user defined "things".
 	// First consumer is the file middleware to looks for zone files in this place.
 	Root string
-
-	// The transport we implement, normally just "dns" over TCP/UDP, but could be
-	// DNS-over-TLS or DNS-over-gRPC.
-	Transport string
-
-	// TLSConfig when listening for encrypted connections (gRPC, DNS-over-TLS).
-	TLSConfig *tls.Config
 
 	// Middleware stack.
 	Middleware []middleware.Middleware
@@ -56,6 +47,7 @@ func GetConfig(c *caddy.Controller) *Config {
 // Note that this is order dependent and the order is defined in directives.go, i.e. if your middleware
 // comes before the middleware you are checking; it will not be there (yet).
 func GetMiddleware(c *caddy.Controller, name string) middleware.Handler {
+	// TODO(miek): calling the handler h(nil) should be a noop...
 	conf := GetConfig(c)
 	for _, h := range conf.Middleware {
 		x := h(nil)

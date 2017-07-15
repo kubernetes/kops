@@ -6,20 +6,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/coredns/coredns/middleware/proxy"
-	"github.com/coredns/coredns/middleware/test"
-	"github.com/coredns/coredns/request"
-
+	"github.com/miekg/coredns/middleware/proxy"
+	"github.com/miekg/coredns/middleware/test"
+	"github.com/miekg/coredns/request"
 	"github.com/miekg/dns"
 )
 
 func TestZoneReload(t *testing.T) {
-	t.Parallel()
 	log.SetOutput(ioutil.Discard)
 
 	name, rm, err := TempFile(".", exampleOrg)
 	if err != nil {
-		t.Fatalf("Failed to create zone: %s", err)
+		t.Fatalf("Failed to created zone: %s", err)
 	}
 	defer rm()
 
@@ -43,12 +41,12 @@ example.net:0 {
 	}
 	defer i.Stop()
 
-	p := proxy.NewLookup([]string{udp})
+	p := proxy.New([]string{udp})
 	state := request.Request{W: &test.ResponseWriter{}, Req: new(dns.Msg)}
 
 	resp, err := p.Lookup(state, "example.org.", dns.TypeA)
 	if err != nil {
-		t.Fatalf("Expected to receive reply, but didn't: %s", err)
+		t.Fatal("Expected to receive reply, but didn't")
 	}
 	if len(resp.Answer) != 2 {
 		t.Fatalf("Expected two RR in answer section got %d", len(resp.Answer))

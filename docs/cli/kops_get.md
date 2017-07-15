@@ -12,9 +12,16 @@ Display one or many resources.
   * secret  
   * federation
 
+```
+kops get
+```
+
 ### Examples
 
 ```
+  # Get all resource in a single cluster as yaml
+  kops get --name k8s-cluster.example.com -o yaml
+  
   # Get all clusters in a state store
   kops get clusters
   

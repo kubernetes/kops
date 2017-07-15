@@ -9,15 +9,17 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"testing"
 )
 
-func newConf(url string) *Config {
+func newConf(serverURL string) *Config {
 	return &Config{
-		ClientID:     "CLIENT_ID",
-		ClientSecret: "CLIENT_SECRET",
-		Scopes:       []string{"scope1", "scope2"},
-		TokenURL:     url + "/token",
+		ClientID:       "CLIENT_ID",
+		ClientSecret:   "CLIENT_SECRET",
+		Scopes:         []string{"scope1", "scope2"},
+		TokenURL:       serverURL + "/token",
+		EndpointParams: url.Values{"audience": {"audience1"}},
 	}
 }
 
@@ -48,8 +50,8 @@ func TestTokenRequest(t *testing.T) {
 		if err != nil {
 			t.Errorf("failed reading request body: %s.", err)
 		}
-		if string(body) != "client_id=CLIENT_ID&grant_type=client_credentials&scope=scope1+scope2" {
-			t.Errorf("payload = %q; want %q", string(body), "client_id=CLIENT_ID&grant_type=client_credentials&scope=scope1+scope2")
+		if string(body) != "audience=audience1&grant_type=client_credentials&scope=scope1+scope2" {
+			t.Errorf("payload = %q; want %q", string(body), "grant_type=client_credentials&scope=scope1+scope2")
 		}
 		w.Header().Set("Content-Type", "application/x-www-form-urlencoded")
 		w.Write([]byte("access_token=90d64460d14870c08c81352a05dedd3465940a7c&token_type=bearer"))
@@ -84,7 +86,7 @@ func TestTokenRefreshRequest(t *testing.T) {
 			t.Errorf("Unexpected Content-Type header, %v is found.", headerContentType)
 		}
 		body, _ := ioutil.ReadAll(r.Body)
-		if string(body) != "client_id=CLIENT_ID&grant_type=client_credentials&scope=scope1+scope2" {
+		if string(body) != "audience=audience1&grant_type=client_credentials&scope=scope1+scope2" {
 			t.Errorf("Unexpected refresh token payload, %v is found.", string(body))
 		}
 	}))

@@ -15,10 +15,13 @@
 package bundler
 
 import (
+	"fmt"
 	"reflect"
 	"sync"
 	"testing"
 	"time"
+
+	"golang.org/x/net/context"
 )
 
 func TestBundlerCount1(t *testing.T) {
@@ -33,7 +36,7 @@ func TestBundlerCount1(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	b.Stop()
+	b.Flush()
 	got := handler.bundles()
 	want := [][]int{{0}, {1}, {2}}
 	if !reflect.DeepEqual(got, want) {
@@ -95,7 +98,7 @@ func TestBundlerByteThreshold(t *testing.T) {
 	add(5, 2)
 	// Passed byte threshold, but not limit: bundle = 3, 4, 5
 	add(6, 1)
-	b.Stop()
+	b.Flush()
 	bgot := handler.bundles()
 	bwant := [][]int{{1, 2}, {3, 4, 5}, {6}}
 	if !reflect.DeepEqual(bgot, bwant) {
@@ -128,7 +131,7 @@ func TestBundlerLimit(t *testing.T) {
 	// Exceeded byte limit: bundle = 3, 4
 	add(6, 2)
 	// Exceeded byte limit: bundle = 5
-	b.Stop()
+	b.Flush()
 	bgot := handler.bundles()
 	bwant := [][]int{{1, 2}, {3, 4}, {5}, {6}}
 	if !reflect.DeepEqual(bgot, bwant) {
@@ -138,6 +141,64 @@ func TestBundlerLimit(t *testing.T) {
 	twant := []int{0, 0, 0, 0}
 	if !reflect.DeepEqual(tgot, twant) {
 		t.Errorf("times: got %v, want %v", tgot, twant)
+	}
+}
+
+func TestAddWait(t *testing.T) {
+	var (
+		mu     sync.Mutex
+		events []string
+	)
+	event := func(s string) {
+		mu.Lock()
+		events = append(events, s)
+		mu.Unlock()
+	}
+
+	handlec := make(chan int)
+	done := make(chan struct{})
+	b := NewBundler(int(0), func(interface{}) {
+		<-handlec
+		event("handle")
+	})
+	b.BufferedByteLimit = 3
+	addw := func(sz int) {
+		if err := b.AddWait(context.Background(), 0, sz); err != nil {
+			t.Fatal(err)
+		}
+		event(fmt.Sprintf("addw(%d)", sz))
+	}
+
+	addw(2)
+	go func() {
+		addw(3) // blocks until first bundle is handled
+		close(done)
+	}()
+	// Give addw(3) a chance to finish
+	time.Sleep(100 * time.Millisecond)
+	handlec <- 1 // handle the first bundle
+	select {
+	case <-time.After(time.Second):
+		t.Fatal("timed out")
+	case <-done:
+	}
+	want := []string{"addw(2)", "handle", "addw(3)"}
+	if !reflect.DeepEqual(events, want) {
+		t.Errorf("got  %v\nwant%v", events, want)
+	}
+}
+
+func TestAddWaitCancel(t *testing.T) {
+	b := NewBundler(int(0), func(interface{}) {})
+	b.BufferedByteLimit = 3
+	ctx, cancel := context.WithCancel(context.Background())
+	go func() {
+		time.Sleep(100 * time.Millisecond)
+		cancel()
+	}()
+	err := b.AddWait(ctx, 0, 4)
+	if want := context.Canceled; err != want {
+		t.Fatalf("got %v, want %v", err, want)
 	}
 }
 

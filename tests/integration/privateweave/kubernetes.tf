@@ -2,6 +2,14 @@ output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privateweave-example-com.id}"]
 }
 
+output "bastions_role_arn" {
+  value = "${aws_iam_role.bastions-privateweave-example-com.arn}"
+}
+
+output "bastions_role_name" {
+  value = "${aws_iam_role.bastions-privateweave-example-com.name}"
+}
+
 output "cluster_name" {
   value = "privateweave.example.com"
 }
@@ -10,12 +18,28 @@ output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privateweave-example-com.id}"]
 }
 
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-privateweave-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-privateweave-example-com.name}"
+}
+
 output "node_security_group_ids" {
   value = ["${aws_security_group.nodes-privateweave-example-com.id}"]
 }
 
 output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-privateweave-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-privateweave-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-privateweave-example-com.name}"
 }
 
 output "region" {
@@ -205,18 +229,18 @@ resource "aws_elb" "bastion-privateweave-example-com" {
 }
 
 resource "aws_iam_instance_profile" "bastions-privateweave-example-com" {
-  name  = "bastions.privateweave.example.com"
-  roles = ["${aws_iam_role.bastions-privateweave-example-com.name}"]
+  name = "bastions.privateweave.example.com"
+  role = "${aws_iam_role.bastions-privateweave-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "masters-privateweave-example-com" {
-  name  = "masters.privateweave.example.com"
-  roles = ["${aws_iam_role.masters-privateweave-example-com.name}"]
+  name = "masters.privateweave.example.com"
+  role = "${aws_iam_role.masters-privateweave-example-com.name}"
 }
 
 resource "aws_iam_instance_profile" "nodes-privateweave-example-com" {
-  name  = "nodes.privateweave.example.com"
-  roles = ["${aws_iam_role.nodes-privateweave-example-com.name}"]
+  name = "nodes.privateweave.example.com"
+  role = "${aws_iam_role.nodes-privateweave-example-com.name}"
 }
 
 resource "aws_iam_role" "bastions-privateweave-example-com" {
@@ -277,7 +301,7 @@ resource "aws_launch_configuration" "bastion-privateweave-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 32
     delete_on_termination = true
   }
 
@@ -298,7 +322,7 @@ resource "aws_launch_configuration" "master-us-test-1a-masters-privateweave-exam
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 64
     delete_on_termination = true
   }
 
@@ -324,7 +348,7 @@ resource "aws_launch_configuration" "nodes-privateweave-example-com" {
 
   root_block_device = {
     volume_type           = "gp2"
-    volume_size           = 20
+    volume_size           = 128
     delete_on_termination = true
   }
 
@@ -648,4 +672,8 @@ resource "aws_vpc_dhcp_options" "privateweave-example-com" {
 resource "aws_vpc_dhcp_options_association" "privateweave-example-com" {
   vpc_id          = "${aws_vpc.privateweave-example-com.id}"
   dhcp_options_id = "${aws_vpc_dhcp_options.privateweave-example-com.id}"
+}
+
+terraform = {
+  required_version = ">= 0.9.3"
 }

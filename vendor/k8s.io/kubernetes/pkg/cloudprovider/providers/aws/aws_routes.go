@@ -29,17 +29,27 @@ func (c *Cloud) findRouteTable(clusterName string) (*ec2.RouteTable, error) {
 	// This should be unnecessary (we already filter on TagNameKubernetesCluster,
 	// and something is broken if cluster name doesn't match, but anyway...
 	// TODO: All clouds should be cluster-aware by default
-	request := &ec2.DescribeRouteTablesInput{Filters: c.tagging.addFilters(nil)}
-
-	response, err := c.ec2.DescribeRouteTables(request)
-	if err != nil {
-		return nil, err
-	}
-
 	var tables []*ec2.RouteTable
-	for _, table := range response {
-		if c.tagging.hasClusterTag(table.Tags) {
-			tables = append(tables, table)
+
+	if c.cfg.Global.RouteTableID != "" {
+		request := &ec2.DescribeRouteTablesInput{Filters: []*ec2.Filter{newEc2Filter("route-table-id", c.cfg.Global.RouteTableID)}}
+		response, err := c.ec2.DescribeRouteTables(request)
+		if err != nil {
+			return nil, err
+		}
+
+		tables = response
+	} else {
+		request := &ec2.DescribeRouteTablesInput{Filters: c.tagging.addFilters(nil)}
+		response, err := c.ec2.DescribeRouteTables(request)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, table := range response {
+			if c.tagging.hasClusterTag(table.Tags) {
+				tables = append(tables, table)
+			}
 		}
 	}
 
@@ -80,21 +90,34 @@ func (c *Cloud) ListRoutes(clusterName string) ([]*cloudprovider.Route, error) {
 	}
 
 	for _, r := range table.Routes {
-		instanceID := orEmpty(r.InstanceId)
-		destinationCIDR := orEmpty(r.DestinationCidrBlock)
-
-		if instanceID == "" || destinationCIDR == "" {
+		destinationCIDR := aws.StringValue(r.DestinationCidrBlock)
+		if destinationCIDR == "" {
 			continue
 		}
 
-		instance, found := instances[instanceID]
-		if !found {
-			glog.Warningf("unable to find instance ID %s in the list of instances being routed to", instanceID)
+		route := &cloudprovider.Route{
+			Name:            clusterName + "-" + destinationCIDR,
+			DestinationCIDR: destinationCIDR,
+		}
+
+		// Capture blackhole routes
+		if aws.StringValue(r.State) == ec2.RouteStateBlackhole {
+			route.Blackhole = true
+			routes = append(routes, route)
 			continue
 		}
-		nodeName := mapInstanceToNodeName(instance)
-		routeName := clusterName + "-" + destinationCIDR
-		routes = append(routes, &cloudprovider.Route{Name: routeName, TargetNode: nodeName, DestinationCIDR: destinationCIDR})
+
+		// Capture instance routes
+		instanceID := aws.StringValue(r.InstanceId)
+		if instanceID != "" {
+			instance, found := instances[instanceID]
+			if found {
+				route.TargetNode = mapInstanceToNodeName(instance)
+				routes = append(routes, route)
+			} else {
+				glog.Warningf("unable to find instance ID %s in the list of instances being routed to", instanceID)
+			}
+		}
 	}
 
 	return routes, nil

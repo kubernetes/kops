@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -112,11 +113,23 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd := rootCommand.cobraCommand
 
-	cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
+	//cmd.PersistentFlags().AddGoFlagSet(goflag.CommandLine)
+	goflag.CommandLine.VisitAll(func(goflag *goflag.Flag) {
+		switch goflag.Name {
+		case "cloud-provider-gce-lb-src-cidrs":
+			// Skip; this is dragged in by the google cloudprovider dependency
+
+		default:
+			cmd.PersistentFlags().AddGoFlag(goflag)
+		}
+	})
 
 	cmd.PersistentFlags().StringVar(&rootCommand.configFile, "config", "", "config file (default is $HOME/.kops.yaml)")
 
 	defaultStateStore := os.Getenv("KOPS_STATE_STORE")
+	if strings.HasSuffix(defaultStateStore, "/") {
+		strings.TrimSuffix(defaultStateStore, "/")
+	}
 	cmd.PersistentFlags().StringVarP(&rootCommand.RegistryPath, "state", "", defaultStateStore, "Location of state storage")
 
 	cmd.PersistentFlags().StringVarP(&rootCommand.clusterName, "name", "", "", "Name of cluster")
@@ -127,6 +140,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.AddCommand(NewCmdDelete(f, out))
 	cmd.AddCommand(NewCmdEdit(f, out))
 	cmd.AddCommand(NewCmdExport(f, out))
+	cmd.AddCommand(NewCmdGet(f, out))
 	cmd.AddCommand(NewCmdUpdate(f, out))
 	cmd.AddCommand(NewCmdReplace(f, out))
 	cmd.AddCommand(NewCmdRollingUpdate(f, out))
@@ -272,7 +286,7 @@ func GetCluster(factory *util.Factory, clusterName string) (*kopsapi.Cluster, er
 		return nil, err
 	}
 
-	cluster, err := clientset.Clusters().Get(clusterName)
+	cluster, err := clientset.GetCluster(clusterName)
 	if err != nil {
 		return nil, fmt.Errorf("error reading cluster configuration: %v", err)
 	}

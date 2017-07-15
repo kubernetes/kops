@@ -1,5 +1,7 @@
-// Copyright (c) 2013, Vastech SA (PTY) LTD. All rights reserved.
-// http://github.com/gogo/protobuf/gogoproto
+// Protocol Buffers for Go with Gadgets
+//
+// Copyright (c) 2013, The GoGo Authors. All rights reserved.
+// http://github.com/gogo/protobuf
 //
 // Go support for Protocol Buffers - Google's data interchange format
 //
@@ -64,6 +66,13 @@ option (gogoproto.unsafe_unmarshaler_all) = true;
 
 message FloatingPoint {
   optional double f = 1;
+}
+
+message CustomMap {
+  map<string, bytes> Nullable128s = 1 [(gogoproto.customtype)="github.com/gogo/protobuf/test/custom.Uint128"];
+  map<string, bytes> Uint128s = 2 [(gogoproto.customtype)="github.com/gogo/protobuf/test/custom.Uint128", (gogoproto.nullable)=false];
+  map<string, bytes> NullableIds = 3 [(gogoproto.customtype)="github.com/gogo/protobuf/test.Uuid"];
+  map<string, bytes> Ids = 4 [(gogoproto.customtype)="github.com/gogo/protobuf/test.Uuid", (gogoproto.nullable)=false];
 }
 
 enum MapEnum {

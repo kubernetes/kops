@@ -4,7 +4,7 @@ package auto
 import (
 	"sync"
 
-	"github.com/coredns/coredns/middleware/file"
+	"github.com/miekg/coredns/middleware/file"
 )
 
 // Zones maps zone names to a *Zone. This keep track of what we zones we have loaded at

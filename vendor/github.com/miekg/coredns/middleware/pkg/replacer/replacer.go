@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coredns/coredns/middleware/pkg/dnsrecorder"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware/pkg/dnsrecorder"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 )
@@ -42,7 +42,6 @@ func New(r *dns.Msg, rr *dnsrecorder.Recorder, emptyValue string) Replacer {
 			"{when}": func() string {
 				return time.Now().Format(timeFormat)
 			}(),
-			"{size}":   strconv.Itoa(req.Len()),
 			"{remote}": req.IP(),
 			"{port}":   req.Port(),
 		},
@@ -54,7 +53,7 @@ func New(r *dns.Msg, rr *dnsrecorder.Recorder, emptyValue string) Replacer {
 			rcode = strconv.Itoa(rr.Rcode)
 		}
 		rep.replacements["{rcode}"] = rcode
-		rep.replacements["{rsize}"] = strconv.Itoa(rr.Len)
+		rep.replacements["{size}"] = strconv.Itoa(rr.Size)
 		rep.replacements["{duration}"] = time.Since(rr.Start).String()
 	}
 

@@ -62,20 +62,19 @@ The following place holders are supported:
 * `{proto}`: protocol used (tcp or udp).
 * `{when}`: time of the query.
 * `{remote}`: client's IP address.
-* `{size}`: request size in bytes.
 * `{port}`: client's port.
+* `{rcode}`: response RCODE.
+* `{size}`: response size.
 * `{duration}`: response duration.
-* `{>bufsize}`: the EDNS0 buffer size advertised.
+* `{>bufsize}`: the EDNS0 buffer size advertized by the client.
 * `{>do}`: is the EDNS0 DO (DNSSEC OK) bit set.
 * `{>id}`: query ID
-* `{>opcode}`: query OPCODE.
-* `{rcode}`: response RCODE.
-* `{rsize}`: response size.
+* `{>opcode}`: query OPCODE
 
 The default Common Log Format is:
 
 ~~~ txt
-`{remote} - [{when}] "{type} {class} {name} {proto} {size} {>do} {>bufsize}" {rcode} {rsize} {duration}`
+`{remote} - [{when}] "{type} {class} {name} {proto} {>do} {>bufsize}" {rcode} {size} {duration}`
 ~~~
 
 ## Examples

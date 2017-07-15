@@ -69,12 +69,12 @@ func (clusterStrategy) ValidateUpdate(ctx genericapirequest.Context, obj, old ru
 	// return validation.ValidateServiceInjectionUpdate(obj.(*serviceinjection.ServiceInjection), old.(*serviceinjection.ServiceInjection))
 }
 
-func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, error) {
+func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, bool, error) {
 	cluster, ok := obj.(*kops.Cluster)
 	if !ok {
-		return nil, nil, fmt.Errorf("given object is not a Cluster.")
+		return nil, nil, false, fmt.Errorf("given object is not a Cluster.")
 	}
-	return labels.Set(cluster.Labels), ClusterToSelectableFields(cluster), nil
+	return labels.Set(cluster.Labels), ClusterToSelectableFields(cluster), cluster.Initializers != nil, nil
 }
 
 // MatchCluster is the filter used by the generic etcd backend to watch events

@@ -59,4 +59,5 @@ go-bindata
 upup/models/bindata.go
 
 # Ignore all Exhuberant Ctags files
-tags
+# Removed for now - we have a package named tags
+# tags

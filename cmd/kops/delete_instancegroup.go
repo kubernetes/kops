@@ -23,9 +23,10 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/ui"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/util/i18n"
@@ -119,11 +120,6 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 		return fmt.Errorf("ClusterName is required")
 	}
 
-	if !options.Yes {
-		// Just for sanity / safety
-		return fmt.Errorf("Yes must be specified")
-	}
-
 	cluster, err := GetCluster(f, clusterName)
 	if err != nil {
 		return err
@@ -134,7 +130,7 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 		return err
 	}
 
-	group, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Get(groupName)
+	group, err := clientset.InstanceGroupsFor(cluster).Get(groupName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}
@@ -147,7 +143,14 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 		return err
 	}
 
-	d := &kutil.DeleteInstanceGroup{}
+	fmt.Fprintf(out, "InstanceGroup %q found for deletion\n", groupName)
+
+	if !options.Yes {
+		fmt.Fprintf(out, "\nMust specify --yes to delete instancegroup\n")
+		return nil
+	}
+
+	d := &instancegroups.DeleteInstanceGroup{}
 	d.Cluster = cluster
 	d.Cloud = cloud
 	d.Clientset = clientset
@@ -157,7 +160,7 @@ func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInsta
 		return err
 	}
 
-	fmt.Fprintf(out, "InstanceGroup %q deleted\n", group.ObjectMeta.Name)
+	fmt.Fprintf(out, "\nDeleted InstanceGroup: %q\n", group.ObjectMeta.Name)
 
 	return nil
 }

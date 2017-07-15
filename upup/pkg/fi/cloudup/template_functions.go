@@ -30,21 +30,20 @@ package cloudup
 import (
 	"encoding/base64"
 	"fmt"
+	"strings"
+	"text/template"
+
 	"k8s.io/apimachinery/pkg/util/sets"
-	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
-	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"os"
-	"strings"
-	"text/template"
 )
 
 type TemplateFunctions struct {
-	cluster        *api.Cluster
-	instanceGroups []*api.InstanceGroup
+	cluster        *kops.Cluster
+	instanceGroups []*kops.InstanceGroup
 
 	tags   sets.String
 	region string
@@ -88,16 +87,20 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["CloudTags"] = tf.modelContext.CloudTagsForInstanceGroup
 
-	dest["KubeDNS"] = func() *api.KubeDNSConfig {
+	dest["KubeDNS"] = func() *kops.KubeDNSConfig {
 		return tf.cluster.Spec.KubeDNS
 	}
 
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
 
+	dest["ExternalDnsArgv"] = tf.ExternalDnsArgv
+
 	// TODO: Only for GCE?
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
 
-	dest["DnsControllerImage"] = tf.DnsControllerImage
+	dest["Region"] = func() string {
+		return tf.region
+	}
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
@@ -117,7 +120,7 @@ func (tf *TemplateFunctions) HasTag(tag string) bool {
 }
 
 // GetInstanceGroup returns the instance group with the specified name
-func (tf *TemplateFunctions) GetInstanceGroup(name string) (*api.InstanceGroup, error) {
+func (tf *TemplateFunctions) GetInstanceGroup(name string) (*kops.InstanceGroup, error) {
 	for _, ig := range tf.instanceGroups {
 		if ig.ObjectMeta.Name == name {
 			return ig, nil
@@ -131,16 +134,14 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 
 	argv = append(argv, "/usr/bin/dns-controller")
 
-	// Default dns-controller behavior --watch-ingress=true
-	// Turning on as per: https://github.com/kubernetes/kops/issues/551#issuecomment-275981949
-	// argv = append(argv, "--watch-ingress=false")
+	argv = append(argv, "--watch-ingress=false")
 
-	switch fi.CloudProviderID(tf.cluster.Spec.CloudProvider) {
-	case fi.CloudProviderAWS:
+	switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
+	case kops.CloudProviderAWS:
 		argv = append(argv, "--dns=aws-route53")
-	case fi.CloudProviderGCE:
+	case kops.CloudProviderGCE:
 		argv = append(argv, "--dns=google-clouddns")
-	case fi.CloudProviderVSphere:
+	case kops.CloudProviderVSphere:
 		argv = append(argv, "--dns=coredns")
 		argv = append(argv, "--dns-server="+*tf.cluster.Spec.CloudConfig.VSphereCoreDNSServer)
 
@@ -171,15 +172,23 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	return argv, nil
 }
 
-// To use user-defined DNS Controller:
-// 1. DOCKER_REGISTRY=[your docker hub repo] make dns-controller-push
-// 2. export DNSCONTROLLER_IMAGE=[your docker hub repo]
-// 3. make kops and create/apply cluster
-func (tf *TemplateFunctions) DnsControllerImage() (string, error) {
-	image := os.Getenv("DNSCONTROLLER_IMAGE")
-	if image == "" {
-		return "kope/dns-controller", nil
-	} else {
-		return image, nil
+func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
+	var argv []string
+
+	cloudProvider := tf.cluster.Spec.CloudProvider
+
+	switch kops.CloudProviderID(cloudProvider) {
+	case kops.CloudProviderAWS:
+		argv = append(argv, "--provider=aws")
+	case kops.CloudProviderGCE:
+		project := tf.cluster.Spec.Project
+		argv = append(argv, "--provider=google")
+		argv = append(argv, "--google-project="+project)
+	default:
+		return nil, fmt.Errorf("unhandled cloudprovider %q", tf.cluster.Spec.CloudProvider)
 	}
+
+	argv = append(argv, "--source=ingress")
+
+	return argv, nil
 }

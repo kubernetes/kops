@@ -3,7 +3,7 @@ package cache
 import (
 	"time"
 
-	"github.com/coredns/coredns/middleware/pkg/response"
+	"github.com/miekg/coredns/middleware/pkg/response"
 	"github.com/miekg/dns"
 )
 
@@ -47,7 +47,7 @@ func newItem(m *dns.Msg, d time.Duration) *item {
 }
 
 // toMsg turns i into a message, it tailers the reply to m.
-// The Authoritative bit is always set to 0, because the answer is from the cache.
+// The Autoritative bit is always set to 0, because the answer is from the cache.
 func (i *item) toMsg(m *dns.Msg) *dns.Msg {
 	m1 := new(dns.Msg)
 	m1.SetReply(m)

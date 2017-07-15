@@ -27,8 +27,8 @@ func killContainer(container libcontainer.Container) error {
 
 var deleteCommand = cli.Command{
 	Name:  "delete",
-	Usage: "delete any resources held by one container or more containers often used with detached containers",
-	ArgsUsage: `container-id [container-id...]
+	Usage: "delete any resources held by one or more containers often used with detached containers",
+	ArgsUsage: `<container-id> [container-id...]
 
 Where "<container-id>" is the name for the instance of the container.
 
@@ -41,10 +41,11 @@ status of "ubuntu01" as "stopped" the following will delete resources held for
 	Flags: []cli.Flag{
 		cli.BoolFlag{
 			Name:  "force, f",
-			Usage: "Forcibly kills the container if it is still running",
+			Usage: "Forcibly deletes the container if it is still running (uses SIGKILL)",
 		},
 	},
 	Action: func(context *cli.Context) error {
+		hasError := false
 		if !context.Args().Present() {
 			return fmt.Errorf("runc: \"delete\" requires a minimum of 1 argument")
 		}
@@ -65,11 +66,13 @@ status of "ubuntu01" as "stopped" the following will delete resources held for
 					}
 					fmt.Fprintf(os.Stderr, "container %s is not exist\n", id)
 				}
+				hasError = true
 				continue
 			}
 			s, err := container.Status()
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "status for %s: %v\n", id, err)
+				hasError = true
 				continue
 			}
 			switch s {
@@ -79,17 +82,24 @@ status of "ubuntu01" as "stopped" the following will delete resources held for
 				err := killContainer(container)
 				if err != nil {
 					fmt.Fprintf(os.Stderr, "kill container %s: %v\n", id, err)
+					hasError = true
 				}
 			default:
 				if context.Bool("force") {
 					err := killContainer(container)
 					if err != nil {
 						fmt.Fprintf(os.Stderr, "kill container %s: %v\n", id, err)
+						hasError = true
 					}
 				} else {
 					fmt.Fprintf(os.Stderr, "cannot delete container %s that is not stopped: %s\n", id, s)
+					hasError = true
 				}
 			}
+		}
+
+		if hasError {
+			return fmt.Errorf("one or more of the container deletions failed")
 		}
 		return nil
 	},

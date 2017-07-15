@@ -390,6 +390,12 @@ func ShortenImageURL(defaultProject string, imageURL string) (string, error) {
 	}
 }
 
+type terraformInstance struct {
+	terraformInstanceCommon
+
+	Name string `json:"name"`
+}
+
 func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Instance) error {
 	project := t.Project
 
@@ -404,13 +410,13 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 		return err
 	}
 
-	tf := &terraformInstanceTemplate{
-		Name:         i.Name,
-		CanIPForward: i.CanIpForward,
-		MachineType:  lastComponent(i.MachineType),
-		Zone:         i.Zone,
-		Tags:         i.Tags.Items,
+	tf := &terraformInstance{
+		Name: i.Name,
 	}
+	tf.CanIPForward = i.CanIpForward
+	tf.MachineType = lastComponent(i.MachineType)
+	tf.Zone = i.Zone
+	tf.Tags = i.Tags.Items
 
 	// TF requires zone
 	if tf.Zone == "" && e.Zone != nil {

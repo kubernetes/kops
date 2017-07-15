@@ -50,7 +50,7 @@ var (
 	`))
 
 	update_cluster_example = templates.Examples(i18n.T(`
-	# After cluster has been editted or upgraded, configure it with:
+	# After cluster has been edited or upgraded, configure it with:
 	kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
 	`))
 
@@ -102,7 +102,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Actually create cloud resources")
-	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform")
+	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
 	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -174,7 +174,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 	var instanceGroups []*kops.InstanceGroup
 	{
-		list, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).List(metav1.ListOptions{})
+		list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 		if err != nil {
 			return err
 		}
@@ -286,11 +286,12 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			} else {
 				bastionPublicName := findBastionPublicName(cluster)
 				if bastionPublicName != "" {
-					fmt.Fprintf(sb, " * ssh to the bastion: ssh -i ~/.ssh/id_rsa admin@%s\n", bastionPublicName)
+					fmt.Fprintf(sb, " * ssh to the bastion: ssh -A -i ~/.ssh/id_rsa admin@%s\n", bastionPublicName)
 				} else {
 					fmt.Fprintf(sb, " * to ssh to the bastion, you probably want to configure a bastionPublicName")
 				}
 			}
+			fmt.Fprintf(sb, "The admin user is specific to Debian. If not using Debian please use the appropriate user based on your OS.\n")
 			fmt.Fprintf(sb, " * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
 			fmt.Fprintf(sb, "\n")
 		}

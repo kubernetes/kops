@@ -74,7 +74,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return err
 	}
 
-	list, err := clientSet.InstanceGroups(cluster.ObjectMeta.Name).List(metav1.ListOptions{})
+	list, err := clientSet.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
 	}

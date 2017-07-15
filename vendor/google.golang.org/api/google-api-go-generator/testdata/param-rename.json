@@ -11,6 +11,14 @@
  "ownerName": "Google",
  "protocol": "rest",
  "schemas": {
+   "Event": {
+     "id": "Event",
+     "type": "string"
+   },
+   "ResultTable": {
+     "id": "ResultTable",
+     "type": "string"
+   }
  },
  "resources": {
   "events": {

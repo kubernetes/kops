@@ -6,11 +6,10 @@ import (
 	"regexp"
 	"time"
 
-	"github.com/coredns/coredns/middleware"
-	"github.com/coredns/coredns/middleware/file"
-	"github.com/coredns/coredns/middleware/metrics"
-	"github.com/coredns/coredns/middleware/proxy"
-	"github.com/coredns/coredns/request"
+	"github.com/miekg/coredns/middleware"
+	"github.com/miekg/coredns/middleware/file"
+	"github.com/miekg/coredns/middleware/metrics"
+	"github.com/miekg/coredns/request"
 
 	"github.com/miekg/dns"
 	"golang.org/x/net/context"
@@ -34,7 +33,6 @@ type (
 		// In the future this should be something like ZoneMeta that contains all this stuff.
 		transferTo []string
 		noReload   bool
-		proxy      proxy.Proxy // Proxy for looking up names during the resolution process
 
 		duration time.Duration
 	}
@@ -44,7 +42,7 @@ type (
 func (a Auto) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (int, error) {
 	state := request.Request{W: w, Req: r}
 	if state.QClass() != dns.ClassINET {
-		return dns.RcodeServerFailure, middleware.Error(a.Name(), errors.New("can only deal with ClassINET"))
+		return dns.RcodeServerFailure, errors.New("can only deal with ClassINET")
 	}
 	qname := state.Name()
 
@@ -53,7 +51,10 @@ func (a Auto) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (i
 	// Precheck with the origins, i.e. are we allowed to looks here.
 	zone := middleware.Zones(a.Zones.Origins()).Matches(qname)
 	if zone == "" {
-		return middleware.NextOrFailure(a.Name(), a.Next, ctx, w, r)
+		if a.Next != nil {
+			return a.Next.ServeDNS(ctx, w, r)
+		}
+		return dns.RcodeServerFailure, errors.New("no next middleware found")
 	}
 
 	// Now the real zone.
@@ -72,7 +73,7 @@ func (a Auto) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg) (i
 		return xfr.ServeDNS(ctx, w, r)
 	}
 
-	answer, ns, extra, result := z.Lookup(state, qname)
+	answer, ns, extra, result := z.Lookup(qname, state.QType(), state.Do())
 
 	m := new(dns.Msg)
 	m.SetReply(r)

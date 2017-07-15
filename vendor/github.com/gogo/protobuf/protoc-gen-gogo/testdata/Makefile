@@ -52,7 +52,7 @@ testbuild:	buildprotos
 
 buildprotos:
 	# Invoke protoc once to generate three independent .pb.go files in the same package.
-	protoc --gogo_out=. multi/multi{1,2,3}.proto
+	protoc --gogo_out=. multi/multi1.proto multi/multi2.proto multi/multi3.proto
 
 #extension_test:	extension_test.$O
 #	$(LD) -L. -o $@ $<

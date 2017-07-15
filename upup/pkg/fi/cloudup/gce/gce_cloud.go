@@ -41,8 +41,8 @@ type GCECloud struct {
 
 var _ fi.Cloud = &GCECloud{}
 
-func (c *GCECloud) ProviderID() fi.CloudProviderID {
-	return fi.CloudProviderGCE
+func (c *GCECloud) ProviderID() kops.CloudProviderID {
+	return kops.CloudProviderGCE
 }
 
 func NewGCECloud(region string, project string, labels map[string]string) (*GCECloud, error) {

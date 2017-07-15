@@ -27,13 +27,14 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
-	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -59,6 +60,8 @@ type CreateClusterOptions struct {
 	MasterSize           string
 	MasterCount          int32
 	NodeCount            int32
+	MasterVolumeSize     int32
+	NodeVolumeSize       int32
 	EncryptEtcdStorage   bool
 	Project              string
 	KubernetesVersion    string
@@ -99,6 +102,9 @@ type CreateClusterOptions struct {
 	MasterTenancy string
 	NodeTenancy   string
 
+	// Specify API loadbalancer as public or internal
+	APILoadBalancerType string
+
 	// vSphere options
 	VSphereServer        string
 	VSphereDatacenter    string
@@ -130,10 +136,10 @@ func (o *CreateClusterOptions) InitDefaults() {
 var (
 	create_cluster_long = templates.LongDesc(i18n.T(`
 	Create a kubernetes cluster using command line flags.
-	This command creates cloud based resources such as networks and virtual machine. Once
+	This command creates cloud based resources such as networks and virtual machines. Once
 	the infrastructure is in place Kubernetes is installed on the virtual machines.
 
-	These operations are done in parrellel and rely on eventual consitency.
+	These operations are done in parallel and rely on eventual consistency.
 	`))
 
 	create_cluster_example = templates.Examples(i18n.T(`
@@ -228,6 +234,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.MasterSize, "master-size", options.MasterSize, "Set instance size for masters")
 
+	cmd.Flags().Int32Var(&options.MasterVolumeSize, "master-volume-size", options.MasterVolumeSize, "Set instance volume size (in GB) for masters")
+	cmd.Flags().Int32Var(&options.NodeVolumeSize, "node-volume-size", options.NodeVolumeSize, "Set instance volume size (in GB) for nodes")
+
 	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
 
@@ -235,9 +244,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Int32Var(&options.NodeCount, "node-count", options.NodeCount, "Set the number of nodes")
 	cmd.Flags().BoolVar(&options.EncryptEtcdStorage, "encrypt-etcd-storage", options.EncryptEtcdStorage, "Generate key in aws kms and use it for encrypt etcd volumes")
 
-	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use")
+	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan, weave, flannel, calico, canal.")
+	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel, calico, canal, kube-router.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -269,6 +278,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	// Master and Node Tenancy
 	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
+
+	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
 
 	if featureflag.VSphereCloudProvider.Enabled() {
 		// vSphere flags
@@ -317,9 +328,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
-	cluster, err := clientset.Clusters().Get(clusterName)
+	cluster, err := clientset.GetCluster(clusterName)
 	if err != nil {
-		return err
+		if apierrors.IsNotFound(err) {
+			cluster = nil
+		} else {
+			return err
+		}
 	}
 
 	if cluster != nil {
@@ -327,6 +342,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	cluster = &api.Cluster{}
+	cluster.ObjectMeta.Name = clusterName
 
 	channel, err := api.LoadChannel(c.Channel)
 	if err != nil {
@@ -343,35 +359,11 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 	cluster.Spec.Channel = c.Channel
 
-	configBase, err := clientset.Clusters().(*vfsclientset.ClusterVFS).ConfigBase(clusterName)
+	configBase, err := clientset.ConfigBaseFor(cluster)
 	if err != nil {
 		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
 	}
 	cluster.Spec.ConfigBase = configBase.Path()
-
-	cluster.Spec.Networking = &api.NetworkingSpec{}
-	switch c.Networking {
-	case "classic":
-		cluster.Spec.Networking.Classic = &api.ClassicNetworkingSpec{}
-	case "kubenet":
-		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
-	case "external":
-		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
-	case "cni":
-		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
-	case "kopeio-vxlan":
-		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
-	case "weave":
-		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
-	case "flannel":
-		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{}
-	case "calico":
-		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{}
-	case "canal":
-		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
-	default:
-		return fmt.Errorf("unknown networking mode %q", c.Networking)
-	}
 
 	glog.V(4).Infof("networking mode=%s => %s", c.Networking, fi.DebugAsJsonString(cluster.Spec.Networking))
 
@@ -423,6 +415,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	// We then round-robin around the zones
 	if len(masters) == 0 {
 		var masterSubnets []*api.ClusterSubnetSpec
+		masterCount := c.MasterCount
 		if len(c.MasterZones) != 0 {
 			for _, subnetName := range c.MasterZones {
 				subnet := findSubnet(cluster, subnetName)
@@ -436,20 +429,25 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			if c.MasterCount != 0 && c.MasterCount < int32(len(masterSubnets)) {
 				return fmt.Errorf("specified %d master zones, but also requested %d masters.  If specifying both, the count should match.", len(masterSubnets), c.MasterCount)
 			}
+
+			if masterCount == 0 {
+				// If master count is not specified, default to the number of master zones
+				masterCount = int32(len(c.MasterZones))
+			}
 		} else {
 			for i := range cluster.Spec.Subnets {
 				masterSubnets = append(masterSubnets, &cluster.Spec.Subnets[i])
+			}
+
+			if masterCount == 0 {
+				// If master count is not specified, default to 1
+				masterCount = 1
 			}
 		}
 
 		if len(masterSubnets) == 0 {
 			// Should be unreachable
 			return fmt.Errorf("cannot determine master subnets")
-		}
-
-		masterCount := c.MasterCount
-		if masterCount == 0 {
-			masterCount = int32(len(masterSubnets))
 		}
 
 		for i := 0; i < int(masterCount); i++ {
@@ -588,6 +586,18 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
+	if c.MasterVolumeSize != 0 {
+		for _, group := range masters {
+			group.Spec.RootVolumeSize = fi.Int32(c.MasterVolumeSize)
+		}
+	}
+
+	if c.NodeVolumeSize != 0 {
+		for _, group := range nodes {
+			group.Spec.RootVolumeSize = fi.Int32(c.NodeVolumeSize)
+		}
+	}
+
 	if c.DNSZone != "" {
 		cluster.Spec.DNSZone = c.DNSZone
 	}
@@ -635,10 +645,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Project = c.Project
 	}
 
-	if clusterName != "" {
-		cluster.ObjectMeta.Name = clusterName
-	}
-
 	if c.KubernetesVersion != "" {
 		cluster.Spec.KubernetesVersion = c.KubernetesVersion
 	}
@@ -655,6 +661,39 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		if cluster.Spec.CloudProvider == "" {
 			return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
 		}
+	}
+
+	cluster.Spec.Networking = &api.NetworkingSpec{}
+	switch c.Networking {
+	case "classic":
+		cluster.Spec.Networking.Classic = &api.ClassicNetworkingSpec{}
+	case "kubenet":
+		cluster.Spec.Networking.Kubenet = &api.KubenetNetworkingSpec{}
+	case "external":
+		cluster.Spec.Networking.External = &api.ExternalNetworkingSpec{}
+	case "cni":
+		cluster.Spec.Networking.CNI = &api.CNINetworkingSpec{}
+	case "kopeio-vxlan", "kopeio":
+		cluster.Spec.Networking.Kopeio = &api.KopeioNetworkingSpec{}
+	case "weave":
+		cluster.Spec.Networking.Weave = &api.WeaveNetworkingSpec{}
+
+		if cluster.Spec.CloudProvider == "aws" {
+			// AWS supports "jumbo frames" of 9001 bytes and weave adds up to 87 bytes overhead
+			// sets the default to the largest number that leaves enough overhead and is divisible by 4
+			jumboFrameMTUSize := int32(8912)
+			cluster.Spec.Networking.Weave.MTU = &jumboFrameMTUSize
+		}
+	case "flannel":
+		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{}
+	case "calico":
+		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{}
+	case "canal":
+		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
+	case "kube-router":
+		cluster.Spec.Networking.Kuberouter = &api.KuberouterNetworkingSpec{}
+	default:
+		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
 
 	if c.VPCID != "" {
@@ -690,7 +729,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	case api.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
-			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan', '--networking weave', '--networking flannel', '--networking calico', '--networking canal' are supported for private topologies", c.Networking)
+			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan (or kopeio)', '--networking weave', '--networking flannel', '--networking calico', '--networking canal', '--networking kube-router' are supported for private topologies", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{
 			Masters: api.TopologyPrivate,
@@ -760,19 +799,35 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.API = &api.AccessSpec{}
 	}
 	if cluster.Spec.API.IsEmpty() {
-		switch cluster.Spec.Topology.Masters {
-		case api.TopologyPublic:
-			cluster.Spec.API.DNS = &api.DNSAccessSpec{}
-
-		case api.TopologyPrivate:
+		if c.APILoadBalancerType != "" {
 			cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+		} else {
+			switch cluster.Spec.Topology.Masters {
+			case api.TopologyPublic:
+				if dns.IsGossipHostname(cluster.Name) {
+					// gossip DNS names don't work outside the cluster, so we use a LoadBalancer instead
+					cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+				} else {
+					cluster.Spec.API.DNS = &api.DNSAccessSpec{}
+				}
 
-		default:
-			return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.Masters)
+			case api.TopologyPrivate:
+				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+
+			default:
+				return fmt.Errorf("unknown master topology type: %q", cluster.Spec.Topology.Masters)
+			}
 		}
 	}
 	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
-		cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+		switch c.APILoadBalancerType {
+		case "", "public":
+			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypePublic
+		case "internal":
+			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypeInternal
+		default:
+			return fmt.Errorf("unknown api-loadbalancer-type: %q", c.APILoadBalancerType)
+		}
 	}
 
 	sshPublicKeys := make(map[string][]byte)
@@ -905,7 +960,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 func supportsPrivateTopology(n *api.NetworkingSpec) bool {
 
-	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Flannel != nil || n.Calico != nil || n.Canal != nil {
+	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Flannel != nil || n.Calico != nil || n.Canal != nil || n.Kuberouter != nil {
 		return true
 	}
 	return false

@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -77,9 +78,9 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if c.CacheDir == "" {
 		return fmt.Errorf("CacheDir is required")
 	}
-	assets := fi.NewAssetStore(c.CacheDir)
+	assetStore := fi.NewAssetStore(c.CacheDir)
 	for _, asset := range c.config.Assets {
-		err := assets.Add(asset)
+		err := assetStore.Add(asset)
 		if err != nil {
 			return fmt.Errorf("error adding asset %q: %v", asset, err)
 		}
@@ -207,14 +208,14 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		Architecture:  model.ArchitectureAmd64,
 		InstanceGroup: c.instanceGroup,
 		IsMaster:      nodeTags.Has(TagMaster),
-		Assets:        assets,
+		Assets:        assetStore,
 		KeyStore:      tf.keyStore,
 		SecretStore:   tf.secretStore,
 
 		KubernetesVersion: *k8sVersion,
 	}
 
-	loader := NewLoader(c.config, c.cluster, assets, nodeTags)
+	loader := NewLoader(c.config, c.cluster, assetStore, nodeTags)
 	loader.Builders = append(loader.Builders, &model.DirectoryBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
@@ -231,7 +232,11 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.KubeAPIServerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeControllerManagerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeSchedulerBuilder{NodeupModelContext: modelContext})
-	loader.Builders = append(loader.Builders, &model.KubeProxyBuilder{NodeupModelContext: modelContext})
+	if c.cluster.Spec.Networking.Kuberouter == nil {
+		loader.Builders = append(loader.Builders, &model.KubeProxyBuilder{NodeupModelContext: modelContext})
+	} else {
+		loader.Builders = append(loader.Builders, &model.KubeRouterBuilder{NodeupModelContext: modelContext})
+	}
 	loader.Builders = append(loader.Builders, &model.HookBuilder{NodeupModelContext: modelContext})
 
 	tf.populate(loader.TemplateFunctions)
@@ -267,7 +272,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			Tags:     nodeTags,
 		}
 	case "dryrun":
-		target = fi.NewDryRunTarget(out)
+		assetBuilder := assets.NewAssetBuilder()
+		target = fi.NewDryRunTarget(assetBuilder, out)
 	case "cloudinit":
 		checkExisting = false
 		target = cloudinit.NewCloudInitTarget(out, nodeTags)
@@ -305,6 +311,13 @@ func evaluateSpec(c *api.Cluster) error {
 	c.Spec.MasterKubelet.HostnameOverride, err = evaluateHostnameOverride(c.Spec.MasterKubelet.HostnameOverride)
 	if err != nil {
 		return err
+	}
+
+	if c.Spec.KubeProxy != nil {
+		c.Spec.KubeProxy.HostnameOverride, err = evaluateHostnameOverride(c.Spec.KubeProxy.HostnameOverride)
+		if err != nil {
+			return err
+		}
 	}
 
 	if c.Spec.Docker != nil {

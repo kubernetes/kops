@@ -6,7 +6,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/coredns/coredns/middleware/pkg/edns"
+	"github.com/miekg/coredns/middleware/pkg/edns"
 
 	"github.com/miekg/dns"
 )
@@ -106,10 +106,7 @@ func (r *Request) Do() bool {
 	return false
 }
 
-// Len returns the length in bytes in the request.
-func (r *Request) Len() int { return r.Req.Len() }
-
-// Size returns if buffer size *advertised* in the requests OPT record.
+// Size returns if UDP buffer size advertised in the requests OPT record.
 // Or when the request was over TCP, we return the maximum allowed size of 64K.
 func (r *Request) Size() int {
 	if r.size != 0 {

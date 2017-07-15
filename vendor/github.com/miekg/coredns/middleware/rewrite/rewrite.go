@@ -1,13 +1,12 @@
+// Package rewrite is middleware for rewriting requests internally to something different.
 package rewrite
 
 import (
-	"fmt"
 	"strings"
 
-	"github.com/coredns/coredns/middleware"
+	"github.com/miekg/coredns/middleware"
 
 	"github.com/miekg/dns"
-
 	"golang.org/x/net/context"
 )
 
@@ -38,9 +37,9 @@ func (rw Rewrite) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg
 		switch result := rule.Rewrite(r); result {
 		case RewriteDone:
 			if rw.noRevert {
-				return middleware.NextOrFailure(rw.Name(), rw.Next, ctx, w, r)
+				return rw.Next.ServeDNS(ctx, w, r)
 			}
-			return middleware.NextOrFailure(rw.Name(), rw.Next, ctx, wr, r)
+			return rw.Next.ServeDNS(ctx, wr, r)
 		case RewriteIgnored:
 			break
 		case RewriteStatus:
@@ -50,37 +49,74 @@ func (rw Rewrite) ServeDNS(ctx context.Context, w dns.ResponseWriter, r *dns.Msg
 			// }
 		}
 	}
-	return middleware.NextOrFailure(rw.Name(), rw.Next, ctx, w, r)
+	return rw.Next.ServeDNS(ctx, w, r)
 }
 
 // Name implements the Handler interface.
 func (rw Rewrite) Name() string { return "rewrite" }
 
-// Rule describes a rewrite rule.
+// Rule describes an internal location rewrite rule.
 type Rule interface {
-	// Rewrite rewrites the current request.
+	// Rewrite rewrites the internal location of the current request.
 	Rewrite(*dns.Msg) Result
 }
 
-func newRule(args ...string) (Rule, error) {
-	if len(args) == 0 {
-		return nil, fmt.Errorf("No rule type specified for rewrite")
+// SimpleRule is a simple rewrite rule. If the From and To look like a type
+// the type of the request is rewritten, otherwise the name is.
+// Note: TSIG signed requests will be invalid.
+type SimpleRule struct {
+	From, To           string
+	fromType, toType   uint16
+	fromClass, toClass uint16
+}
+
+// NewSimpleRule creates a new Simple Rule
+func NewSimpleRule(from, to string) SimpleRule {
+	tpf := dns.StringToType[from]
+	tpt := dns.StringToType[to]
+
+	// ANY is both a type and class, ANY class rewritting is way more less frequent
+	// so we default to ANY as a type.
+	clf := dns.StringToClass[from]
+	clt := dns.StringToClass[to]
+	if from == "ANY" {
+		clf = 0
+		clt = 0
 	}
 
-	ruleType := strings.ToLower(args[0])
-	if ruleType != "edns0" && len(args) != 3 {
-		return nil, fmt.Errorf("%s rules must have exactly two arguments", ruleType)
+	// It's only a type/class if uppercase is used.
+	if from != strings.ToUpper(from) {
+		tpf = 0
+		clf = 0
+		from = middleware.Name(from).Normalize()
 	}
-	switch ruleType {
-	case "name":
-		return newNameRule(args[1], args[2])
-	case "class":
-		return newClassRule(args[1], args[2])
-	case "type":
-		return newTypeRule(args[1], args[2])
-	case "edns0":
-		return newEdns0Rule(args[1:]...)
-	default:
-		return nil, fmt.Errorf("invalid rule type %q", args[0])
+	if to != strings.ToUpper(to) {
+		tpt = 0
+		clt = 0
+		to = middleware.Name(to).Normalize()
 	}
+	return SimpleRule{From: from, To: to, fromType: tpf, toType: tpt, fromClass: clf, toClass: clt}
+}
+
+// Rewrite rewrites the the current request.
+func (s SimpleRule) Rewrite(r *dns.Msg) Result {
+	if s.fromType > 0 && s.toType > 0 {
+		if r.Question[0].Qtype == s.fromType {
+			r.Question[0].Qtype = s.toType
+			return RewriteDone
+		}
+	}
+
+	if s.fromClass > 0 && s.toClass > 0 {
+		if r.Question[0].Qclass == s.fromClass {
+			r.Question[0].Qclass = s.toClass
+			return RewriteDone
+		}
+	}
+
+	if s.From == r.Question[0].Name {
+		r.Question[0].Name = s.To
+		return RewriteDone
+	}
+	return RewriteIgnored
 }
