@@ -24,6 +24,7 @@ import (
 
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/formatter"
@@ -112,14 +113,20 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 		return fmt.Errorf("No InstanceGroup objects found")
 	}
 
-	switch options.output {
+	var obj []runtime.Object
+	if options.output != OutputTable {
+		for _, c := range instancegroups {
+			obj = append(obj, c)
+		}
+	}
 
+	switch options.output {
 	case OutputTable:
 		return igOutputTable(cluster, instancegroups, out)
 	case OutputYaml:
-		return igOutputYAML(instancegroups, out)
+		return fullOutputYAML(out, obj...)
 	case OutputJSON:
-		return igOutputJson(instancegroups, out)
+		return fullOutputJSON(out, obj...)
 	default:
 		return fmt.Errorf("Unknown output format: %q", options.output)
 	}
@@ -174,29 +181,6 @@ func igOutputTable(cluster *api.Cluster, instancegroups []*api.InstanceGroup, ou
 	})
 	// SUBNETS is not not selected by default - not as useful as ZONES
 	return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
-}
-
-func igOutputJson(instanceGroups []*api.InstanceGroup, out io.Writer) error {
-	for _, ig := range instanceGroups {
-		if err := marshalToWriter(ig, marshalJSON, out); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-func igOutputYAML(instanceGroups []*api.InstanceGroup, out io.Writer) error {
-	for i, ig := range instanceGroups {
-		if i != 0 {
-			if err := writeYAMLSep(out); err != nil {
-				return fmt.Errorf("error writing to stdout: %v", err)
-			}
-		}
-		if err := marshalToWriter(ig, marshalYaml, out); err != nil {
-			return err
-		}
-	}
-	return nil
 }
 
 func int32PointerToString(v *int32) string {

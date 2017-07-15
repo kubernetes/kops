@@ -45,12 +45,12 @@ func init() {
 	install.Install(GroupFactoryRegistry, Registry, Scheme)
 }
 
-func encoder(gv runtime.GroupVersioner) runtime.Encoder {
-	yaml, ok := runtime.SerializerInfoForMediaType(Codecs.SupportedMediaTypes(), "application/yaml")
+func encoder(gv runtime.GroupVersioner, mediaType string) runtime.Encoder {
+	e, ok := runtime.SerializerInfoForMediaType(Codecs.SupportedMediaTypes(), mediaType)
 	if !ok {
-		glog.Fatalf("no YAML serializer registered")
+		glog.Fatalf("no %s serializer registered", mediaType)
 	}
-	return Codecs.EncoderForVersion(yaml.Serializer, gv)
+	return Codecs.EncoderForVersion(e.Serializer, gv)
 }
 
 func decoder() runtime.Decoder {
@@ -68,7 +68,22 @@ func ToVersionedYaml(obj runtime.Object) ([]byte, error) {
 // ToVersionedYamlWithVersion encodes the object to YAML, in a specified API version
 func ToVersionedYamlWithVersion(obj runtime.Object, version runtime.GroupVersioner) ([]byte, error) {
 	var w bytes.Buffer
-	err := encoder(version).Encode(obj, &w)
+	err := encoder(version, "application/yaml").Encode(obj, &w)
+	if err != nil {
+		return nil, fmt.Errorf("error encoding %T: %v", obj, err)
+	}
+	return w.Bytes(), nil
+}
+
+// ToVersionedJSON encodes the object to JSON
+func ToVersionedJSON(obj runtime.Object) ([]byte, error) {
+	return ToVersionedJSONWithVersion(obj, v1alpha2.SchemeGroupVersion)
+}
+
+// ToVersionedJSONWithVersion encodes the object to JSON, in a specified API version
+func ToVersionedJSONWithVersion(obj runtime.Object, version runtime.GroupVersioner) ([]byte, error) {
+	var w bytes.Buffer
+	err := encoder(version, "application/json").Encode(obj, &w)
 	if err != nil {
 		return nil, fmt.Errorf("error encoding %T: %v", obj, err)
 	}
