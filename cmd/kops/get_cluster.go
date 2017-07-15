@@ -46,6 +46,21 @@ var (
 	kops get cluster k8s-cluster.example.com`))
 
 	get_cluster_short = i18n.T(`Get one or many clusters.`)
+
+	// Warning for --full.  Since we are not using the template from kubectl
+	// we have to have zero white space before the comment characters otherwise
+	// output to stdout is going to be off.
+	get_cluster_full_warning = i18n.T(`
+//
+//   WARNING: Do not use a '--full' cluster specification to define a Kubernetes installation.
+//   You may experience unexpected behavior and other bugs.  Use only the required elements
+//   and any modifications that you require.
+//
+//   Use the following command to retrieve only the required elements:
+//   $ kop get cluster -o yaml
+//
+
+`)
 )
 
 type GetClusterOptions struct {
@@ -121,6 +136,8 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		if err != nil {
 			return err
 		}
+
+		fmt.Fprint(out, get_cluster_full_warning)
 	}
 
 	switch options.output {
