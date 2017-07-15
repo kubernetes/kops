@@ -258,7 +258,9 @@ func (o *FederationConfiguration) EnsureConfiguration(c *fi.Context) error {
 
 		return s, nil
 	})
-
+	if err != nil {
+		return err
+	}
 	// TODO: Prefer username / password or token?
 	user := kubeconfig.KubectlUser{
 		Username: UserAdmin,
