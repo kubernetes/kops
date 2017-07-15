@@ -891,7 +891,9 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 
 		rtRequest := &ec2.DescribeRouteTablesInput{}
 		rtResponse, err := c.EC2().DescribeRouteTables(rtRequest)
-
+		if err != nil {
+			return nil, fmt.Errorf("error describing RouteTables: %v", err)
+		}
 		// sharedNgwIds is the set of IDs for shared NGWs, that we should not delete
 		sharedNgwIds := sets.NewString()
 		{
