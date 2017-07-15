@@ -19,34 +19,35 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
-
-	"io"
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
 	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 var (
-	edit_federation_long = templates.LongDesc(i18n.T(`Edit a cluster configuration.
+	edit_federation_long = pretty.LongDesc(`
+		Edit a cluster configuration.
 
-	This command changes the federation cloud specification in the registry.
+		This command changes the federation cloud specification in the registry.
 
-    	To set your preferred editor, you can define the EDITOR environment variable.
-    	When you have done this, kops will use the editor that you have set.
+		To set your preferred editor, you can define the EDITOR environment variable.
+		When you have done this, kops will use the editor that you have set.
 
-	kops edit does not update the cloud resources, to apply the changes use "kops update cluster".`))
+		kops edit does not update the cloud resources, to apply the changes use ` + pretty.Bash("kops update cluster") + `.`)
 
 	edit_federation_example = templates.Examples(i18n.T(`
-	# Edit a cluster dederation configuration.
-	kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
-	`))
+		# Edit a cluster dederation configuration.
+		kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
+		`))
 
 	edit_federation_short = i18n.T(`Edit federation.`)
 )
