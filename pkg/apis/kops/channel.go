@@ -244,6 +244,7 @@ type CloudProviderID string
 
 const CloudProviderAWS CloudProviderID = "aws"
 const CloudProviderGCE CloudProviderID = "gce"
+const CloudProviderDO CloudProviderID = "digitalocean"
 const CloudProviderVSphere CloudProviderID = "vsphere"
 
 // FindImage returns the image for the cloudprovider, or nil if none found

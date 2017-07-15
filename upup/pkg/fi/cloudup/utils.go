@@ -106,6 +106,10 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 			cloud = vsphereCloud
 		}
+	case "digitalocean":
+		{
+			return nil, fmt.Errorf("digitalocean not supported yet!")
+		}
 
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
