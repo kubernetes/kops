@@ -92,11 +92,18 @@ func (_ *AttachISO) CheckChanges(a, e, changes *AttachISO) error {
 // RenderVSphere executes the actual task logic, for vSphere cloud.
 func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *AttachISO) error {
 	startupScript, err := changes.BootstrapScript.ResourceNodeUp(changes.IG)
+	if err != nil {
+		return err
+	}
 	startupStr, err := startupScript.AsString()
 	if err != nil {
 		return fmt.Errorf("error rendering startup script: %v", err)
 	}
 	dir, err := ioutil.TempDir("", *changes.VM.Name)
+	if err != nil {
+		return err
+	}
+
 	defer os.RemoveAll(dir)
 
 	// Need this in cloud config file for vSphere CloudProvider
