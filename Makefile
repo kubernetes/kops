@@ -158,6 +158,7 @@ test: # Run tests locally
 	go test k8s.io/kops/cmd/... -args -v=1 -logtostderr
 	go test k8s.io/kops/channels/... -args -v=1 -logtostderr
 	go test k8s.io/kops/util/... -args -v=1 -logtostderr
+	go test k8s.io/kops/tests/... -args -v=1 -logtostderr
 
 .PHONY: crossbuild-nodeup
 crossbuild-nodeup:
