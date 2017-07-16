@@ -248,6 +248,7 @@ gcs-publish-ci: gcs-upload
 .PHONY: gen-cli-docs
 gen-cli-docs: kops # Regenerate CLI docs
 	KOPS_STATE_STORE= \
+	KOPS_FEATURE_FLAGS= \
 	${KOPS} genhelpdocs --out docs/cli
 
 .PHONY: push
