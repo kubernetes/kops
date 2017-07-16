@@ -99,6 +99,9 @@ func (c *Context) NewTempDir(prefix string) (string, error) {
 
 var typeContextPtr = reflect.TypeOf((*Context)(nil))
 
+// Render dispatches the creation of an object to the appropriate handler defined on the Task,
+// it is typically called after we have checked the existing state of the Task and determined that is different
+// from the desired state.
 func (c *Context) Render(a, e, changes Task) error {
 	var lifecycle *Lifecycle
 	if hl, ok := e.(HasLifecycle); ok {
