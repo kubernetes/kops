@@ -31,6 +31,9 @@ type ResourceTracker struct {
 	Type string
 	ID   string
 
+	// If true, this resource is not owned by the cluster
+	Shared bool
+
 	blocks  []string
 	blocked []string
 	done    bool

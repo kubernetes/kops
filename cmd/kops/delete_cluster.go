@@ -143,9 +143,17 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		d.ClusterName = clusterName
 		d.Cloud = cloud
 
-		clusterResources, err := d.ListResources()
+		allResources, err := d.ListResources()
 		if err != nil {
 			return err
+		}
+
+		clusterResources := make(map[string]*resources.ResourceTracker)
+		for k, resource := range allResources {
+			if resource.Shared {
+				continue
+			}
+			clusterResources[k] = resource
 		}
 
 		if len(clusterResources) == 0 {
