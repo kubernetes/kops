@@ -18,6 +18,7 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -42,8 +43,13 @@ func (b *KubeDnsOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 	clusterSpec.KubeDNS.ServerIP = ip.String()
 	clusterSpec.KubeDNS.Domain = clusterSpec.ClusterDNSDomain
+
 	// TODO: Once we start shipping more images, start using them
-	clusterSpec.KubeDNS.Image = "gcr.io/google_containers/kubedns-amd64:1.3"
+	// TODO: this is now in an addon, why is it here?
+	clusterSpec.KubeDNS.Image, err = assets.Image("kube-dns", clusterSpec)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
