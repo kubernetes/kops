@@ -78,21 +78,11 @@ type ChannelImageSpec struct {
 
 // LoadChannel loads a Channel object from the specified VFS location
 func LoadChannel(location string) (*Channel, error) {
-	u, err := url.Parse(location)
+	resolved, err := ParseChannelLocation(location)
 	if err != nil {
-		return nil, fmt.Errorf("invalid channel: %q", location)
+		return nil, fmt.Errorf("unable to parse channel location %q: %v", location, err)
 	}
 
-	if !u.IsAbs() {
-		base, err := url.Parse(DefaultChannelBase)
-		if err != nil {
-			return nil, fmt.Errorf("invalid base channel location: %q", DefaultChannelBase)
-		}
-		glog.V(4).Infof("resolving %q against default channel location %q", location, DefaultChannelBase)
-		u = base.ResolveReference(u)
-	}
-
-	resolved := u.String()
 	glog.V(2).Infof("Loading channel from %q", resolved)
 	channelBytes, err := vfs.Context.ReadFile(resolved)
 	if err != nil {
@@ -105,6 +95,25 @@ func LoadChannel(location string) (*Channel, error) {
 	glog.V(4).Infof("Channel contents: %s", string(channelBytes))
 
 	return channel, nil
+}
+
+// ParseChannelLocation returns a valid channel location.
+func ParseChannelLocation(location string) (string, error) {
+	u, err := url.Parse(location)
+	if err != nil {
+		return "", fmt.Errorf("invalid channel %q: %v", location, err)
+	}
+
+	if !u.IsAbs() {
+		base, err := url.Parse(DefaultChannelBase)
+		if err != nil {
+			return "", fmt.Errorf("invalid base channel location %q: %v", DefaultChannelBase, err)
+		}
+		glog.V(4).Infof("resolving %q against default channel location %q", location, DefaultChannelBase)
+		u = base.ResolveReference(u)
+	}
+
+	return u.String(), nil
 }
 
 // ParseChannel parses a Channel object

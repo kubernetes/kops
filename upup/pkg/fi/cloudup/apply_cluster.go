@@ -106,6 +106,10 @@ type ApplyClusterCmd struct {
 
 	// The channel we are using
 	channel *kops.Channel
+
+	// inventory of files and containers needed in order
+	// to upload assets to new location
+	Inventory *assets.Inventory
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -271,8 +275,6 @@ func (c *ApplyClusterCmd) Run() error {
 		"keypair":     &fitasks.Keypair{},
 		"secret":      &fitasks.Secret{},
 		"managedFile": &fitasks.ManagedFile{},
-
-		// DNS
 		//"dnsZone": &dnstasks.DNSZone{},
 	})
 
@@ -372,10 +374,6 @@ func (c *ApplyClusterCmd) Run() error {
 				// Autoscaling
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
 				"launchConfiguration": &awstasks.LaunchConfiguration{},
-
-				//// Route53
-				//"dnsName": &awstasks.DNSName{},
-				//"dnsZone": &awstasks.DNSZone{},
 			})
 
 			if len(sshPublicKeys) == 0 {
@@ -491,13 +489,9 @@ func (c *ApplyClusterCmd) Run() error {
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
 
 					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext},
-					//&model.BastionModelBuilder{KopsModelContext: modelContext},
-					//&model.DNSModelBuilder{KopsModelContext: modelContext},
 					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext},
 					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext},
-					//&model.IAMModelBuilder{KopsModelContext: modelContext},
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext},
-					//&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
 				)
 			case kops.CloudProviderVSphere:
 				l.Builders = append(l.Builders,
@@ -579,6 +573,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		{
+			// TODO update protokube with Assets
 			location := ProtokubeImageSource()
 
 			hash, err := findHash(location)
@@ -642,24 +637,6 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
 
-	//// TotalNodeCount computes the total count of nodes
-	//l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
-	//	count := 0
-	//	for _, group := range c.InstanceGroups {
-	//		if group.IsMaster() {
-	//			continue
-	//		}
-	//		if group.Spec.MaxSize != nil {
-	//			count += *group.Spec.MaxSize
-	//		} else if group.Spec.MinSize != nil {
-	//			count += *group.Spec.MinSize
-	//		} else {
-	//			// Guestimate
-	//			count += 5
-	//		}
-	//	}
-	//	return count, nil
-	//}
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
 	tf.AddTo(l.TemplateFunctions)
@@ -720,7 +697,21 @@ func (c *ApplyClusterCmd) Run() error {
 		shouldPrecreateDNS = false
 
 	case TargetDryRun:
-		target = fi.NewDryRunTarget(assetBuilder, os.Stdout)
+		{
+			inv := &ApplyInventory{
+				Cluster:             cluster,
+				InstanceGroups:      c.InstanceGroups,
+				NodeUpConfigBuilder: renderNodeUpConfig,
+				AssetBuilder:        assetBuilder,
+			}
+
+			c.Inventory, err = inv.BuildInventoryAssets()
+			if err != nil {
+				return fmt.Errorf("error building inventory: %v", err)
+			}
+		}
+
+		target = fi.NewDryRunTarget(os.Stdout, c.Inventory)
 		dryRun = true
 
 		// Avoid making changes on a dry-run
@@ -792,10 +783,6 @@ func findHash(url string) (*hashing.Hash, error) {
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
 func (c *ApplyClusterCmd) upgradeSpecs() error {
-	//err := c.Cluster.PerformAssignments()
-	//if err != nil {
-	//	return fmt.Errorf("error populating configuration: %v", err)
-	//}
 
 	fullCluster, err := PopulateClusterSpec(c.Cluster)
 	if err != nil {
