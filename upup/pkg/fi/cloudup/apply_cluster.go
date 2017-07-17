@@ -109,7 +109,7 @@ type ApplyClusterCmd struct {
 
 	// inventory of files and containers needed in order
 	// to upload assets to new location
-	Inventory *kops.Inventory
+	Inventory *assets.Inventory
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -645,7 +645,6 @@ func (c *ApplyClusterCmd) Run() error {
 	var target fi.Target
 	dryRun := false
 	shouldPrecreateDNS := true
-	inventoryTarget := false
 
 	switch c.TargetName {
 	case TargetDirect:
@@ -694,18 +693,21 @@ func (c *ApplyClusterCmd) Run() error {
 		shouldPrecreateDNS = false
 
 	case TargetDryRun:
-		target = fi.NewDryRunTarget(assetBuilder, os.Stdout)
-		dryRun = true
+		{
+			inv := &ApplyInventory{
+				Cluster:             cluster,
+				InstanceGroups:      c.InstanceGroups,
+				NodeUpConfigBuilder: renderNodeUpConfig,
+				AssetBuilder:        assetBuilder,
+			}
 
-		// Avoid making changes on a dry-run
-		shouldPrecreateDNS = false
+			c.Inventory, err = inv.BuildInventoryAssets()
+			if err != nil {
+				return fmt.Errorf("error building inventory: %v", err)
+			}
+		}
 
-	case TargetInventory:
-		// Utilized to build an api.Inventory
-		// This target was created because TargetDryRun outputs to STDOUT.  This allows for the rendering of
-		// api.Inventory in YAML or JSON.
-		target = fi.NewInventoryTarget()
-		inventoryTarget = true
+		target = fi.NewDryRunTarget(os.Stdout, c.Inventory)
 		dryRun = true
 
 		// Avoid making changes on a dry-run
@@ -754,25 +756,6 @@ func (c *ApplyClusterCmd) Run() error {
 	err = target.Finish(taskMap) //This will finish the apply, and print the changes
 	if err != nil {
 		return fmt.Errorf("error closing target: %v", err)
-	}
-
-	// TargetInventory is Run, only used for creating and getting inventory for a kops kubernetes cluster.
-	{
-		if inventoryTarget {
-			inv := &ApplyInventory{
-				Cluster:             cluster,
-				InstanceGroups:      c.InstanceGroups,
-				NodeUpConfigBuilder: renderNodeUpConfig,
-				TaskMap:             context.AllTasks(),
-				AssetBuilder:        assetBuilder,
-			}
-
-			c.Inventory, err = inv.BuildInventoryAssets()
-
-			if err != nil {
-				return fmt.Errorf("error building inventory: %v", err)
-			}
-		}
 	}
 
 	return nil

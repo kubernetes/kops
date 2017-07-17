@@ -22,17 +22,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"path"
 	"strings"
 
-	"k8s.io/kops/util/pkg/vfs"
-
-	"net/url"
-
 	"github.com/golang/glog"
-	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 const (
@@ -59,10 +57,10 @@ type ContainerFileAssetTransferer struct {
 
 type StageInventory struct {
 	assetTransferers map[string]AssetTransferer
-	inventory        api.InventorySpec
+	inventory        assets.Inventory
 }
 
-func NewStageInventory(fileRepo string, stageFiles bool, containerRepo string, stageContainers bool, assets *api.Inventory) *StageInventory {
+func NewStageInventory(fileRepo string, stageFiles bool, containerRepo string, stageContainers bool, assets *assets.Inventory) *StageInventory {
 	assetTransferers := make(map[string]AssetTransferer)
 
 	if stageFiles {
@@ -79,7 +77,7 @@ func NewStageInventory(fileRepo string, stageFiles bool, containerRepo string, s
 
 	return &StageInventory{
 		assetTransferers: assetTransferers,
-		inventory:        assets.Spec,
+		inventory:        *assets,
 	}
 }
 
@@ -151,7 +149,7 @@ func (f FileAssetTransferer) TransferSha(location string, t string) error {
 }
 
 func (f FileAssetTransferer) Transfer(i interface{}, t string) error {
-	asset := i.(api.ExecutableFileAsset)
+	asset := i.(assets.ExecutableFileAsset)
 	glog.Infof("File asset transfer: %s - %s\n", t, asset.Location)
 
 	glog.Infoln("FileAssetTransferer.Transfer: reading data...")
@@ -186,7 +184,7 @@ func (f FileAssetTransferer) Transfer(i interface{}, t string) error {
 }
 
 func (c ContainerAssetTransferer) Transfer(i interface{}, t string) error {
-	asset := i.(api.ContainerAsset)
+	asset := i.(assets.ContainerAsset)
 	glog.Infof("ContainerAssetTransferer.Transfer: %s - %v\n", t, asset)
 
 	if asset.Location != "" {
@@ -226,7 +224,7 @@ func (c ContainerAssetTransferer) Transfer(i interface{}, t string) error {
 }
 
 func (c ContainerAssetTransferer) TransferFile(i interface{}, t string) error {
-	asset := i.(api.ContainerAsset)
+	asset := i.(assets.ContainerAsset)
 	// TODO update logging to match kops, no use of method and struct member names
 	glog.Infof("ContainerFileAssetTransferer.Transfer starting: %s - %v\n", t, asset)
 

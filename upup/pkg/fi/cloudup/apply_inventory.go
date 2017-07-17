@@ -43,14 +43,13 @@ type ApplyInventory struct {
 	Cluster             *api.Cluster
 	InstanceGroups      []*api.InstanceGroup
 	NodeUpConfigBuilder func(ig *api.InstanceGroup) (*nodeup.NodeUpConfig, error)
-	TaskMap             map[string]fi.Task
 	NodeupLocation      string
 	AssetBuilder        *assets.AssetBuilder
 }
 
 // BuildInventoryAssets populates the Inventory of a kops Kubernetes cluster.  This func is only
 // accessible when running an ApplyClusterCmd.Run() with a target of TargetInventory.
-func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
+func (i *ApplyInventory) BuildInventoryAssets() (*assets.Inventory, error) {
 	if i.Cluster == nil {
 		return nil, fmt.Errorf("cluster cannot be nil")
 	}
@@ -61,20 +60,17 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 		return nil, fmt.Errorf("builder function cannot be nil")
 	}
 
-	inv := &api.Inventory{
-		Spec: api.InventorySpec{
-			Cluster:     &i.Cluster.Spec,
-			KopsVersion: &kops.Version,
-		},
+	inv := &assets.Inventory{
+		KopsVersion: &kops.Version,
 	}
 
-	inventoryBinaryMap := make(map[string]*api.ExecutableFileAsset)
-	inventoryCompressedMap := make(map[string]*api.CompressedFileAsset)
-	inventoryContainerMap := make(map[string]*api.ContainerAsset)
+	inventoryBinaryMap := make(map[string]*assets.ExecutableFileAsset)
+	inventoryCompressedMap := make(map[string]*assets.CompressedFileAsset)
+	inventoryContainerMap := make(map[string]*assets.ContainerAsset)
 	spec := i.Cluster.Spec
 
 	// nodeup binary
-	inventoryBinaryMap["nodeup"] = &api.ExecutableFileAsset{
+	inventoryBinaryMap["nodeup"] = &assets.ExecutableFileAsset{
 		Location: nodeUpLocation,
 		Name:     "nodeup",
 		SHA:      nodeUpLocation + ".sha1",
@@ -82,7 +78,7 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 
 	// kops binary
 	kopsLocation := strings.TrimSuffix(nodeUpLocation, "nodeup") + "kops"
-	inventoryBinaryMap["kops"] = &api.ExecutableFileAsset{
+	inventoryBinaryMap["kops"] = &assets.ExecutableFileAsset{
 		Location: kopsLocation,
 		Name:     "kops",
 		SHA:      kopsLocation + ".sha1",
@@ -114,7 +110,7 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 			if err != nil {
 				return nil, err
 			}
-			inv.Spec.ContainerAssets = append(inv.Spec.ContainerAssets, c)
+			inv.ContainerAssets = append(inv.ContainerAssets, c)
 		}
 
 	}
@@ -126,14 +122,14 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 			return nil, fmt.Errorf("unable to get channel location: %v", err)
 		}
 
-		inv.Spec.ChannelAsset = &api.ChannelAsset{
+		inv.ChannelAsset = &assets.ChannelAsset{
 			Location: channelLocation,
 		}
 
 		if strings.HasSuffix(channelLocation, "alpha") {
-			inv.Spec.ChannelAsset.Name = "alpha"
+			inv.ChannelAsset.Name = "alpha"
 		} else {
-			inv.Spec.ChannelAsset.Name = "stable"
+			inv.ChannelAsset.Name = "stable"
 		}
 	}
 
@@ -147,14 +143,14 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 				return nil, fmt.Errorf("unable to render node config: %v", err)
 			}
 
-			host := &api.HostAsset{
+			host := &assets.HostAsset{
 				Name:          ig.Spec.Image,
 				Cloud:         i.Cluster.Spec.CloudProvider,
 				Role:          string(ig.Spec.Role),
 				InstanceGroup: ig.ObjectMeta.Name,
 			}
 
-			inv.Spec.HostAssets = append(inv.Spec.HostAssets, host)
+			inv.HostAssets = append(inv.HostAssets, host)
 
 			// binary asset
 			for _, a := range n.Assets {
@@ -165,12 +161,12 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 				fileName := name[len(name)-1]
 
 				if strings.HasSuffix(fileName, "gz") {
-					inventoryCompressedMap[asset[0]] = &api.CompressedFileAsset{
+					inventoryCompressedMap[asset[0]] = &assets.CompressedFileAsset{
 						Location: url,
 						Name:     fileName,
 					}
 				} else {
-					a := &api.ExecutableFileAsset{
+					a := &assets.ExecutableFileAsset{
 						Location: url,
 						Name:     fileName,
 						SHA:      url + ".sha1",
@@ -188,7 +184,7 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 
 	// protokube
 	{
-		c := &api.ContainerAsset{
+		c := &assets.ContainerAsset{
 			Name: protokubeImageSource.Name,
 			Tag:  strings.Replace(kops.Version, "+", "-", -1),
 		}
@@ -200,7 +196,7 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 		} else {
 			c.Location = protokubeImageSource.Name
 		}
-		inv.Spec.ContainerAssets = append(inv.Spec.ContainerAssets, c)
+		inv.ContainerAssets = append(inv.ContainerAssets, c)
 	}
 
 	// assets like cni provider
@@ -219,23 +215,23 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 
 	// reduce map to a slice
 	for _, value := range inventoryContainerMap {
-		inv.Spec.ContainerAssets = append(inv.Spec.ContainerAssets, value)
+		inv.ContainerAssets = append(inv.ContainerAssets, value)
 	}
 
 	// reduce map to a slice
 	for _, value := range inventoryBinaryMap {
-		inv.Spec.ExecutableFileAsset = append(inv.Spec.ExecutableFileAsset, value)
+		inv.ExecutableFileAsset = append(inv.ExecutableFileAsset, value)
 	}
 
 	// reduce map to a slice
 	for _, value := range inventoryCompressedMap {
-		inv.Spec.CompressedFileAssets = append(inv.Spec.CompressedFileAssets, value)
+		inv.CompressedFileAssets = append(inv.CompressedFileAssets, value)
 	}
 
 	return inv, nil
 }
 
-func parseContainer(image string, name string) (*api.ContainerAsset, error) {
+func parseContainer(image string, name string) (*assets.ContainerAsset, error) {
 	// List of all containers in the API
 	c, err := assets.ParseContainer(image)
 	if err != nil {
@@ -256,7 +252,7 @@ type ExtractInventory struct {
 	SSHPublicKey      string
 }
 
-func (e *ExtractInventory) ExtractAssets() (*api.Inventory, string, error) {
+func (e *ExtractInventory) ExtractAssets() (*assets.Inventory, string, error) {
 	var cluster *api.Cluster
 	var ig []*api.InstanceGroup
 	var err error

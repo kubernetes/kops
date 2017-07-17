@@ -32,13 +32,13 @@ import (
 
 // ParseContainer parses s and returns a syntactically valid Reference.
 // If an error was encountered it is returned, along with a nil Reference.
-func ParseContainer(s string) (*kops.ContainerAsset, error) {
+func ParseContainer(s string) (*ContainerAsset, error) {
 	ref, err := reference.Parse(s)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse container %q: %v", s, err)
 	}
 
-	asset := &kops.ContainerAsset{}
+	asset := ContainerAsset{}
 	switch r := ref.(type) {
 	case reference.NamedTagged:
 		asset.Tag = r.Tag()
@@ -60,7 +60,7 @@ func ParseContainer(s string) (*kops.ContainerAsset, error) {
 
 	asset.String = ref.String()
 
-	return asset, nil
+	return &asset, nil
 
 }
 
@@ -84,7 +84,7 @@ func GetRegistryAsString(clusterSpec *kops.ClusterSpec) (string, error) {
 	return getRegistry(asset), nil
 }
 
-func getRegistry(asset *kops.ContainerAsset) string {
+func getRegistry(asset *ContainerAsset) string {
 	if asset == nil {
 		return ""
 	}
@@ -103,7 +103,7 @@ func getRegistry(asset *kops.ContainerAsset) string {
 	return buf.String()
 }
 
-func getRepoContainer(registry string, asset *kops.ContainerAsset) (string, error) {
+func getRepoContainer(registry string, asset *ContainerAsset) (string, error) {
 	if asset == nil {
 		return "", fmt.Errorf("asset cannot be nil")
 	}
@@ -135,7 +135,7 @@ func getRepoContainer(registry string, asset *kops.ContainerAsset) (string, erro
 }
 
 // GetContainerRegistry returns a ContainerAsset get the asset container registry if a cluster has an registry.
-func GetContainerRegistry(clusterSpec *kops.ClusterSpec) (*kops.ContainerAsset, error) {
+func GetContainerRegistry(clusterSpec *kops.ClusterSpec) (*ContainerAsset, error) {
 	if clusterSpec == nil {
 		return nil, fmt.Errorf("unable to parse assets container registry as cluster spec is nil")
 	}

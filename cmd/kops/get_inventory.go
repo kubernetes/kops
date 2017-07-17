@@ -24,6 +24,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
@@ -123,11 +124,9 @@ func RunToolboxInventory(f *util.Factory, out io.Writer, options *GetInventoryOp
 		return fmt.Errorf("Error getting inventory: %v", err)
 	}
 
-	// TODO do we want cluster on the inventory?
-	a.Spec.Cluster = nil
-
 	switch options.output {
 	case OutputTable:
+		// FIXME figure this out
 		fmt.Fprintf(out, "\n\n")
 		fmt.Fprintf(out, "Inventory for cluster %q\n\n", clusterName)
 		fmt.Fprintf(out, "\n")
@@ -135,58 +134,58 @@ func RunToolboxInventory(f *util.Factory, out io.Writer, options *GetInventoryOp
 		fmt.Fprintf(out, "FILES\n\n")
 
 		t := &tables.Table{}
-		t.AddColumn("ASSET", func(i *api.ExecutableFileAsset) string {
+		t.AddColumn("ASSET", func(i *assets.ExecutableFileAsset) string {
 			return i.Location
 		})
-		t.AddColumn("NAME", func(i *api.ExecutableFileAsset) string {
+		t.AddColumn("NAME", func(i *assets.ExecutableFileAsset) string {
 			return i.Name
 		})
-		if err := t.Render(a.Spec.ExecutableFileAsset, out, "NAME", "ASSET"); err != nil {
+		if err := t.Render(a.ExecutableFileAsset, out, "NAME", "ASSET"); err != nil {
 			return err
 		}
 
 		fmt.Fprintf(out, "\n\nFILE SHAS\n\n")
 
 		t = &tables.Table{}
-		t.AddColumn("NAME", func(i *api.ExecutableFileAsset) string {
+		t.AddColumn("NAME", func(i *assets.ExecutableFileAsset) string {
 			return i.Name
 		})
-		t.AddColumn("SHA", func(i *api.ExecutableFileAsset) string {
+		t.AddColumn("SHA", func(i *assets.ExecutableFileAsset) string {
 			return i.SHA
 		})
-		if err := t.Render(a.Spec.ExecutableFileAsset, out, "NAME", "SHA"); err != nil {
+		if err := t.Render(a.ExecutableFileAsset, out, "NAME", "SHA"); err != nil {
 			return err
 		}
 
 		fmt.Fprintf(out, "\n\nCOMPRESSED FILES\n\n")
 
 		t = &tables.Table{}
-		t.AddColumn("ASSET", func(i *api.CompressedFileAsset) string {
+		t.AddColumn("ASSET", func(i *assets.CompressedFileAsset) string {
 			return i.Location
 		})
-		t.AddColumn("NAME", func(i *api.CompressedFileAsset) string {
+		t.AddColumn("NAME", func(i *assets.CompressedFileAsset) string {
 			return i.Name
 		})
-		if err := t.Render(a.Spec.CompressedFileAssets, out, "NAME", "ASSET"); err != nil {
+		if err := t.Render(a.CompressedFileAssets, out, "NAME", "ASSET"); err != nil {
 			return err
 		}
 
 		fmt.Fprintf(out, "\n\nCOMPRESSED FILE SHAS\n\n")
 
 		t = &tables.Table{}
-		t.AddColumn("NAME", func(i *api.CompressedFileAsset) string {
+		t.AddColumn("NAME", func(i *assets.CompressedFileAsset) string {
 			return i.Name
 		})
-		t.AddColumn("SHA", func(i *api.CompressedFileAsset) string {
+		t.AddColumn("SHA", func(i *assets.CompressedFileAsset) string {
 			return i.SHA
 		})
-		if err := t.Render(a.Spec.CompressedFileAssets, out, "NAME", "SHA"); err != nil {
+		if err := t.Render(a.CompressedFileAssets, out, "NAME", "SHA"); err != nil {
 			return err
 		}
 
 		fmt.Fprintf(out, "\n\nCONTAINERS\n\n")
 		t = &tables.Table{}
-		t.AddColumn("ASSET", func(i *api.ContainerAsset) string {
+		t.AddColumn("ASSET", func(i *assets.ContainerAsset) string {
 			if i.String != "" {
 				return i.String
 			} else if i.Location != "" {
@@ -198,35 +197,38 @@ func RunToolboxInventory(f *util.Factory, out io.Writer, options *GetInventoryOp
 			return "asset name not set correctly"
 		})
 
-		t.AddColumn("NAME", func(i *api.ContainerAsset) string {
+		t.AddColumn("NAME", func(i *assets.ContainerAsset) string {
 			return i.Name
 		})
-		if err := t.Render(a.Spec.ContainerAssets, out, "NAME", "ASSET"); err != nil {
+		if err := t.Render(a.ContainerAssets, out, "NAME", "ASSET"); err != nil {
 			return err
 		}
 
 		fmt.Fprintf(out, "\n\nHOSTS\n\n")
 		t = &tables.Table{}
-		t.AddColumn("IMAGE", func(i *api.HostAsset) string {
+		t.AddColumn("IMAGE", func(i *assets.HostAsset) string {
 			return i.Name
 		})
 
-		t.AddColumn("INSTANCE GROUP", func(i *api.HostAsset) string {
+		t.AddColumn("INSTANCE GROUP", func(i *assets.HostAsset) string {
 			return i.InstanceGroup
 		})
-		if err := t.Render(a.Spec.HostAssets, out, "INSTANCE GROUP", "IMAGE"); err != nil {
+		if err := t.Render(a.HostAssets, out, "INSTANCE GROUP", "IMAGE"); err != nil {
 			return err
 		}
 
 	case OutputJSON:
-		if err := marshalToWriter(a, marshalJSON, out); err != nil {
-			return err
-		}
+		// FIXME
+		/*
+			if err := marshalToWriter(a, marshalJSON, out); err != nil {
+				return err
+			}*/
 
 	case OutputYaml:
-		if err := marshalToWriter(a, marshalYaml, out); err != nil {
-			return err
-		}
+		/*
+			if err := marshalToWriter(a, marshalYaml, out); err != nil {
+				return err
+			}*/
 	default:
 		return fmt.Errorf("Unknown output format: %q", options.output)
 	}

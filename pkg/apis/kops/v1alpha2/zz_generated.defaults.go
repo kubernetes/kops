@@ -30,7 +30,6 @@ import (
 func RegisterDefaults(scheme *runtime.Scheme) error {
 	scheme.AddTypeDefaultingFunc(&Cluster{}, func(obj interface{}) { SetObjectDefaults_Cluster(obj.(*Cluster)) })
 	scheme.AddTypeDefaultingFunc(&ClusterList{}, func(obj interface{}) { SetObjectDefaults_ClusterList(obj.(*ClusterList)) })
-	scheme.AddTypeDefaultingFunc(&Inventory{}, func(obj interface{}) { SetObjectDefaults_Inventory(obj.(*Inventory)) })
 	return nil
 }
 
@@ -42,11 +41,5 @@ func SetObjectDefaults_ClusterList(in *ClusterList) {
 	for i := range in.Items {
 		a := &in.Items[i]
 		SetObjectDefaults_Cluster(a)
-	}
-}
-
-func SetObjectDefaults_Inventory(in *Inventory) {
-	if in.Spec.Cluster != nil {
-		SetDefaults_ClusterSpec(in.Spec.Cluster)
 	}
 }

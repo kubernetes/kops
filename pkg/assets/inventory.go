@@ -14,26 +14,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package kops
+package assets
 
-import (
-	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
-
-// Inventory provides a data model for assets that compose a kops installation.
-// This API is a top level API that is only used for Inventory CRUD. Create and
-// read are implemented at this point.
 type Inventory struct {
-	v1.TypeMeta `json:",inline"`
-	ObjectMeta  metav1.ObjectMeta `json:"metadata,omitempty"`
-
-	Spec InventorySpec `json:"spec,omitempty"`
-}
-
-type InventorySpec struct {
-	// full cluster
-	Cluster *ClusterSpec `json:"cluster,omitempty"`
 
 	// The file that contains the kops channel
 	// see: https://raw.githubusercontent.com/kubernetes/kops/master/channels/stable
