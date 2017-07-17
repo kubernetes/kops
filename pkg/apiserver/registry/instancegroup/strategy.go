@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cluster
+package instancegroup
 
 import (
 	"fmt"
@@ -31,55 +31,55 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 )
 
-type clusterStrategy struct {
+type instanceGroupStrategy struct {
 	runtime.ObjectTyper
 	names.NameGenerator
 }
 
-var Strategy = clusterStrategy{kops.Scheme, names.SimpleNameGenerator}
+var Strategy = instanceGroupStrategy{kops.Scheme, names.SimpleNameGenerator}
 
-func (clusterStrategy) NamespaceScoped() bool {
+func (instanceGroupStrategy) NamespaceScoped() bool {
 	return true
 }
 
-func (clusterStrategy) PrepareForCreate(ctx genericapirequest.Context, obj runtime.Object) {
+func (instanceGroupStrategy) PrepareForCreate(ctx genericapirequest.Context, obj runtime.Object) {
 }
 
-func (clusterStrategy) PrepareForUpdate(ctx genericapirequest.Context, obj, old runtime.Object) {
+func (instanceGroupStrategy) PrepareForUpdate(ctx genericapirequest.Context, obj, old runtime.Object) {
 }
 
-func (clusterStrategy) Validate(ctx genericapirequest.Context, obj runtime.Object) field.ErrorList {
+func (instanceGroupStrategy) Validate(ctx genericapirequest.Context, obj runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 	// return validation.ValidateServiceInjection(obj.(*serviceinjection.ServiceInjection))
 }
 
-func (clusterStrategy) AllowCreateOnUpdate() bool {
+func (instanceGroupStrategy) AllowCreateOnUpdate() bool {
 	return false
 }
 
-func (clusterStrategy) AllowUnconditionalUpdate() bool {
+func (instanceGroupStrategy) AllowUnconditionalUpdate() bool {
 	return false
 }
 
-func (clusterStrategy) Canonicalize(obj runtime.Object) {
+func (instanceGroupStrategy) Canonicalize(obj runtime.Object) {
 }
 
-func (clusterStrategy) ValidateUpdate(ctx genericapirequest.Context, obj, old runtime.Object) field.ErrorList {
+func (instanceGroupStrategy) ValidateUpdate(ctx genericapirequest.Context, obj, old runtime.Object) field.ErrorList {
 	return field.ErrorList{}
 	// return validation.ValidateServiceInjectionUpdate(obj.(*serviceinjection.ServiceInjection), old.(*serviceinjection.ServiceInjection))
 }
 
 func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, bool, error) {
-	cluster, ok := obj.(*kops.Cluster)
+	instanceGroup, ok := obj.(*kops.InstanceGroup)
 	if !ok {
-		return nil, nil, false, fmt.Errorf("given object is not a Cluster.")
+		return nil, nil, false, fmt.Errorf("given object is not an InstanceGroup.")
 	}
-	return labels.Set(cluster.Labels), ClusterToSelectableFields(cluster), cluster.Initializers != nil, nil
+	return labels.Set(instanceGroup.Labels), InstanceGroupToSelectableFields(instanceGroup), instanceGroup.Initializers != nil, nil
 }
 
-// MatchCluster is the filter used by the generic etcd backend to watch events
+// MatchInstanceGroup is the filter used by the generic etcd backend to watch events
 // from etcd to clients of the apiserver only interested in specific labels/fields.
-func MatchCluster(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
+func MatchInstanceGroup(label labels.Selector, field fields.Selector) storage.SelectionPredicate {
 	return storage.SelectionPredicate{
 		Label:    label,
 		Field:    field,
@@ -87,7 +87,7 @@ func MatchCluster(label labels.Selector, field fields.Selector) storage.Selectio
 	}
 }
 
-// ClusterToSelectableFields returns a field set that represents the object.
-func ClusterToSelectableFields(obj *kops.Cluster) fields.Set {
+// InstanceGroupToSelectableFields returns a field set that represents the object.
+func InstanceGroupToSelectableFields(obj *kops.InstanceGroup) fields.Set {
 	return generic.ObjectMetaFieldsSet(&obj.ObjectMeta, true)
 }
