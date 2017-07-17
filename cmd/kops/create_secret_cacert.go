@@ -46,7 +46,7 @@ var (
 		--state s3://example.com
 	`))
 
-	create_secret_cacert_short = i18n.T(`Create a ssh public key.`)
+	create_secret_cacert_short = i18n.T(`Add intermediate ca cert and private key.`)
 )
 
 type CreateSecretCaCertOptions struct {
