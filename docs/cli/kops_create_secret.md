@@ -35,6 +35,6 @@ Create a secret
 
 ### SEE ALSO
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
-* [kops create secret ca-cert](kops_create_secret_ca-cert.md)	 - Create a ssh public key.
+* [kops create secret ca-cert](kops_create_secret_ca-cert.md)	 - Add intermediate ca cert and private key.
 * [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create a ssh public key.
 

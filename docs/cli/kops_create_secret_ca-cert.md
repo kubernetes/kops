@@ -3,7 +3,7 @@
 
 ## kops create secret ca-cert
 
-Create a ssh public key.
+Add intermediate ca cert and private key.
 
 ### Synopsis
 

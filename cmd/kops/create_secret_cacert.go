@@ -84,6 +84,7 @@ func NewCmdCreateSecretCaCert(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
+// RunCreateSecretCaCert adds a custom intermidiate ca certificate and a pricate key
 func RunCreateSecretCaCert(f *util.Factory, out io.Writer, options *CreateSecretCaCertOptions) error {
 	if options.CaCertPath == "" {
 		return fmt.Errorf("No ca cert provided")
