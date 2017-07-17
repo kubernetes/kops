@@ -101,6 +101,10 @@ func run() error {
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
 
+	// optional flag to override the location of etcd.  Utilized with cluster asset container registry.
+	var etcdImageSource string
+	flags.StringVar(&etcdImageSource, "etcd-image-source", etcdImageSource, "Etcd Source Container Registry")
+
 	flag.Set("logtostderr", "true")
 
 	flags.AddGoFlagSet(flag.CommandLine)
@@ -322,7 +326,8 @@ func run() error {
 
 		Channels: channels,
 
-		Kubernetes: protokube.NewKubernetesContext(),
+		Kubernetes:      protokube.NewKubernetesContext(),
+		EtcdImageSource: etcdImageSource,
 	}
 	k.Init(volumes)
 
