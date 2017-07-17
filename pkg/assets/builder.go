@@ -67,7 +67,6 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	}
 
 	return remappedManifest, nil
-
 }
 
 func (a *AssetBuilder) remapImage(image string) (string, error) {
@@ -90,7 +89,6 @@ func (a *AssetBuilder) remapImage(image string) (string, error) {
 
 	if strings.HasPrefix(image, GCR_IO) {
 		override, err := GetGoogleImageRegistryContainer(a.ClusterSpec, image)
-
 		if err != nil {
 			return "", err
 		}
@@ -98,7 +96,6 @@ func (a *AssetBuilder) remapImage(image string) (string, error) {
 		image = override
 	} else {
 		override, err := GetContainer(a.ClusterSpec, image)
-
 		if err != nil {
 			return "", err
 		}
@@ -107,7 +104,6 @@ func (a *AssetBuilder) remapImage(image string) (string, error) {
 	}
 
 	asset.Mirror = image
-
 	a.Assets = append(a.Assets, asset)
 
 	return image, nil

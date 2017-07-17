@@ -78,11 +78,9 @@ type ChannelImageSpec struct {
 
 // LoadChannel loads a Channel object from the specified VFS location
 func LoadChannel(location string) (*Channel, error) {
-
 	resolved, err := ParseChannelLocation(location)
-
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse channel location: %q", location)
+		return nil, fmt.Errorf("unable to parse channel location %q: %v", location, err)
 	}
 
 	glog.V(2).Infof("Loading channel from %q", resolved)
@@ -101,16 +99,15 @@ func LoadChannel(location string) (*Channel, error) {
 
 // ParseChannelLocation returns a valid channel location.
 func ParseChannelLocation(location string) (string, error) {
-
 	u, err := url.Parse(location)
 	if err != nil {
-		return "", fmt.Errorf("invalid channel: %q", location)
+		return "", fmt.Errorf("invalid channel %q: %v", location, err)
 	}
 
 	if !u.IsAbs() {
 		base, err := url.Parse(DefaultChannelBase)
 		if err != nil {
-			return "", fmt.Errorf("invalid base channel location: %q", DefaultChannelBase)
+			return "", fmt.Errorf("invalid base channel location %q: %v", DefaultChannelBase, err)
 		}
 		glog.V(4).Infof("resolving %q against default channel location %q", location, DefaultChannelBase)
 		u = base.ResolveReference(u)
@@ -261,7 +258,6 @@ const CloudProviderVSphere CloudProviderID = "vsphere"
 
 // FindImage returns the image for the cloudprovider, or nil if none found
 func (c *Channel) FindImage(provider CloudProviderID, kubernetesVersion semver.Version) *ChannelImageSpec {
-
 	var matches []*ChannelImageSpec
 
 	for _, image := range c.Spec.Images {

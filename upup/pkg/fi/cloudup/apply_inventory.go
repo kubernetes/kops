@@ -51,7 +51,6 @@ type ApplyInventory struct {
 // BuildInventoryAssets populates the Inventory of a kops Kubernetes cluster.  This func is only
 // accessible when running an ApplyClusterCmd.Run() with a target of TargetInventory.
 func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
-
 	if i.Cluster == nil {
 		return nil, fmt.Errorf("cluster cannot be nil")
 	}
@@ -92,13 +91,11 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 	// Build Kubernetes Base Containers
 	{
 		etcd, err := assets.GetGoogleImageRegistryContainer(&spec, "etcd:2.2.1")
-
 		if err != nil {
 			return nil, err
 		}
 
 		pause, err := assets.GetGoogleImageRegistryContainer(&spec, "pause-amd64:3.0")
-
 		if err != nil {
 			return nil, err
 		}
@@ -125,7 +122,6 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 	// Build Inventory channel
 	{
 		channelLocation, err := api.ParseChannelLocation(i.Cluster.Spec.Channel)
-
 		if err != nil {
 			return nil, fmt.Errorf("unable to get channel location: %v", err)
 		}
@@ -162,7 +158,6 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 
 			// binary asset
 			for _, a := range n.Assets {
-
 				glog.V(2).Infof("Asset %s", a)
 				asset := strings.Split(a, "@")
 				url := asset[1]
@@ -174,9 +169,7 @@ func (i *ApplyInventory) BuildInventoryAssets() (*api.Inventory, error) {
 						Location: url,
 						Name:     fileName,
 					}
-
 				} else {
-
 					a := &api.ExecutableFileAsset{
 						Location: url,
 						Name:     fileName,
@@ -276,9 +269,7 @@ func (e *ExtractInventory) ExtractAssets() (*api.Inventory, string, error) {
 
 		e.ClusterName = cluster.ObjectMeta.Name
 	} else if e.ClusterName != "" {
-
 		cluster, err = e.Clientset.GetCluster(e.ClusterName)
-
 		if err != nil {
 			return nil, "", fmt.Errorf("Error getting cluster  %q", err)
 		}
@@ -303,10 +294,8 @@ func (e *ExtractInventory) ExtractAssets() (*api.Inventory, string, error) {
 			cluster.Spec.KubernetesVersion = kubernetesVersion.String()
 			e.KubernetesVersion = cluster.Spec.KubernetesVersion
 		} else {
-
 			return nil, "", fmt.Errorf("Unable to find kubernetes version")
 		}
-
 	}
 
 	// TODO check if the cluster has a key?
@@ -344,22 +333,18 @@ func (e *ExtractInventory) ExtractAssets() (*api.Inventory, string, error) {
 	}
 
 	err = applyClusterCmd.Run()
-
 	if err != nil {
 		return nil, "", fmt.Errorf("error applying cluster build: %v", err)
 	}
 
 	a := applyClusterCmd.Inventory
 
-	clusterExists, err := e.Clientset.GetCluster(e.ClusterName)
-
 	// Need to delete tmp ssh key
 	// If we can get ApplyClusterCmd to run w/o ssh key we will not have to create it
+	clusterExists, err := e.Clientset.GetCluster(e.ClusterName)
 	if err != nil || clusterExists == nil {
-
 		glog.V(2).Infof("Deleting cluster resources for %q", e.ClusterName)
 		configBase, err := registry.ConfigBase(cluster)
-
 		if err != nil {
 			return nil, "", err
 		}
@@ -368,7 +353,6 @@ func (e *ExtractInventory) ExtractAssets() (*api.Inventory, string, error) {
 		if err != nil {
 			return nil, "", fmt.Errorf("error removing cluster from state store: %v", err)
 		}
-
 	}
 
 	return a, e.ClusterName, nil
@@ -376,7 +360,6 @@ func (e *ExtractInventory) ExtractAssets() (*api.Inventory, string, error) {
 
 // readFiles inputs and marshalls YAML files.
 func (e *ExtractInventory) readFiles() (*api.Cluster, []*api.InstanceGroup, error) {
-
 	codec := api.Codecs.UniversalDecoder(api.SchemeGroupVersion)
 
 	var cluster *api.Cluster

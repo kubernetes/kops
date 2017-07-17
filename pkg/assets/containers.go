@@ -34,7 +34,6 @@ import (
 // If an error was encountered it is returned, along with a nil Reference.
 func ParseContainer(s string) (*kops.ContainerAsset, error) {
 	ref, err := reference.Parse(s)
-
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse container %q: %v", s, err)
 	}
@@ -67,14 +66,12 @@ func ParseContainer(s string) (*kops.ContainerAsset, error) {
 
 // GetRegistryAsString get the asset container registry as a string if a cluster has an registry.
 func GetRegistryAsString(clusterSpec *kops.ClusterSpec) (string, error) {
-
 	if clusterSpec == nil {
 		return "", fmt.Errorf("unable to parse assets container registry as cluster spec is nil")
 
 	}
 
 	asset, err := GetContainerRegistry(clusterSpec)
-
 	if err != nil {
 		return "", fmt.Errorf("unable to get container registry, asset: %v", err)
 	}
@@ -85,11 +82,9 @@ func GetRegistryAsString(clusterSpec *kops.ClusterSpec) (string, error) {
 	}
 
 	return getRegistry(asset), nil
-
 }
 
 func getRegistry(asset *kops.ContainerAsset) string {
-
 	if asset == nil {
 		return ""
 	}
@@ -109,7 +104,6 @@ func getRegistry(asset *kops.ContainerAsset) string {
 }
 
 func getRepoContainer(registry string, asset *kops.ContainerAsset) (string, error) {
-
 	if asset == nil {
 		return "", fmt.Errorf("asset cannot be nil")
 	}
@@ -142,18 +136,15 @@ func getRepoContainer(registry string, asset *kops.ContainerAsset) (string, erro
 
 // GetContainerRegistry returns a ContainerAsset get the asset container registry if a cluster has an registry.
 func GetContainerRegistry(clusterSpec *kops.ClusterSpec) (*kops.ContainerAsset, error) {
-
 	if clusterSpec == nil {
 		return nil, fmt.Errorf("unable to parse assets container registry as cluster spec is nil")
-
 	}
 
 	if clusterSpec.Assets != nil && clusterSpec.Assets.ContainerRegistry != nil {
 		registry := strings.TrimSuffix(*clusterSpec.Assets.ContainerRegistry, "/")
 		asset, err := ParseContainer(registry)
-
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse assets container registry api value: %v", registry)
+			return nil, fmt.Errorf("unable to parse assets container registry api value %q: %v", registry, err)
 		}
 
 		return asset, nil
@@ -164,14 +155,12 @@ func GetContainerRegistry(clusterSpec *kops.ClusterSpec) (*kops.ContainerAsset, 
 
 // GetContainerAndRegistryAsString returns a full container string if a cluster has an asset container registry.
 func GetContainerAndRegistryAsString(clusterSpec *kops.ClusterSpec, container string) (string, error) {
-
 	if clusterSpec == nil {
 		return "", fmt.Errorf("unable to parse assets container registry as cluster spec is nil")
 
 	}
 
 	registry, err := GetContainerRegistry(clusterSpec)
-
 	if err != nil {
 		return "", err
 	}
@@ -179,13 +168,11 @@ func GetContainerAndRegistryAsString(clusterSpec *kops.ClusterSpec, container st
 	r := getRegistry(registry)
 
 	asset, err := ParseContainer(container)
-
 	if err != nil {
 		return "", err
 	}
 
 	container, err = getRepoContainer(r, asset)
-
 	if err != nil {
 		return "", err
 	}
@@ -196,14 +183,13 @@ func GetContainerAndRegistryAsString(clusterSpec *kops.ClusterSpec, container st
 // GetContainerAsString returns a full parsed container string.
 func GetContainerAsString(container string) (string, error) {
 	asset, err := ParseContainer(container)
-
 	if err != nil {
-		return "", fmt.Errorf("unable to parse container: %+v: %v", container, err)
+		return "", fmt.Errorf("unable to parse container %+v: %v", container, err)
 	}
-	container, err = getRepoContainer("", asset)
 
+	container, err = getRepoContainer("", asset)
 	if err != nil {
-		return "", fmt.Errorf("unable to parse container as asset: %v %v", asset, err)
+		return "", fmt.Errorf("unable to parse container as asset %v: %v", asset, err)
 	}
 
 	return container, nil
@@ -212,12 +198,10 @@ func GetContainerAsString(container string) (string, error) {
 // GetContainer provides a imageName normalized to use a cluster asset container registry if
 // the cluster has a registry.
 func GetContainer(clusterSpec *kops.ClusterSpec, imageName string) (string, error) {
-
 	imageName, err := GetContainerAndRegistryAsString(clusterSpec, imageName)
-
 	if err != nil {
-		glog.Errorf("Unable to get container: %q: %v", imageName, err)
-		return "", fmt.Errorf("unable to parse container %q", imageName)
+		glog.Errorf("unable to get container %q: %v", imageName, err)
+		return "", fmt.Errorf("unable to parse container %q: %v", imageName, err)
 	}
 
 	return imageName, nil
@@ -231,12 +215,10 @@ var googleRepository *string
 // GetGoogleImageRegistryContainer returns a container string, it is used for container that are
 // typically hosted in the google registry.
 func GetGoogleImageRegistryContainer(clusterSpec *kops.ClusterSpec, c string) (string, error) {
-
 	c = strings.TrimPrefix(c, GCR_IO)
 	c, err := GetContainerAsString(c)
-
 	if err != nil {
-		return "", fmt.Errorf("Unable to get google image based container, container does not validate: %v", err)
+		return "", fmt.Errorf("unable to get google image based container, container %q does not validate: %v", c, err)
 	}
 
 	glog.V(2).Infof("container %s", c)
@@ -247,11 +229,11 @@ func GetGoogleImageRegistryContainer(clusterSpec *kops.ClusterSpec, c string) (s
 	}
 
 	repo, err := GetRegistryAsString(clusterSpec)
-	glog.V(2).Infof("registry %s", repo)
-
 	if err != nil {
-		return "", fmt.Errorf("Unable to get google image based container: %v", err)
+		return "", fmt.Errorf("unable to get google image based container: %v", err)
 	}
+
+	glog.V(2).Infof("registry %s", repo)
 
 	if repo != "" {
 		repo = repo + "/"
@@ -269,32 +251,28 @@ func GetGoogleImageRegistryContainer(clusterSpec *kops.ClusterSpec, c string) (s
 
 // Image returns the docker image name for the specified component
 func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
-
 	// TODO figure out if we can add a parameter for version as well
 	// TODO https://github.com/kubernetes/kops/pull/2573#discussion_r117329255
 
 	if component == "kube-dns" {
 		// TODO: Once we are shipping different versions, start to use them
 		i, err := GetGoogleImageRegistryContainer(clusterSpec, "kubedns-amd64:1.3")
-
 		if err != nil {
 			return "", err
 		}
 
 		return i, nil
-
 	}
 
 	if !IsBaseURL(clusterSpec.KubernetesVersion) {
 		c := component + ":" + "v" + clusterSpec.KubernetesVersion
-		i, err := GetGoogleImageRegistryContainer(clusterSpec, c)
 
+		i, err := GetGoogleImageRegistryContainer(clusterSpec, c)
 		if err != nil {
 			return "", err
 		}
 
 		return i, nil
-
 	}
 
 	baseURL := clusterSpec.KubernetesVersion
@@ -307,12 +285,12 @@ func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error reading tag file %q: %v", tagURL, err)
 	}
+
 	tag := strings.TrimSpace(string(b))
 	glog.V(2).Infof("Found tag %q for %q", tag, component)
 	c := component + ":" + tag
 
 	i, err := GetGoogleImageRegistryContainer(clusterSpec, c)
-
 	if err != nil {
 		return "", err
 	}

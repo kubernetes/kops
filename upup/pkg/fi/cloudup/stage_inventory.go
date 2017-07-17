@@ -63,7 +63,6 @@ type StageInventory struct {
 }
 
 func NewStageInventory(fileRepo string, stageFiles bool, containerRepo string, stageContainers bool, assets *api.Inventory) *StageInventory {
-
 	assetTransferers := make(map[string]AssetTransferer)
 
 	if stageFiles {
@@ -85,7 +84,6 @@ func NewStageInventory(fileRepo string, stageFiles bool, containerRepo string, s
 }
 
 func (i *StageInventory) Run() error {
-
 	for _, asset := range i.inventory.ContainerAssets {
 		err := i.processAsset(*asset, AssetContainer)
 		if err != nil {
@@ -107,7 +105,6 @@ func (i *StageInventory) Run() error {
 }
 
 func (i *StageInventory) processAsset(asset interface{}, t string) error {
-
 	assetTransferer := i.assetTransferers[t]
 
 	if assetTransferer == nil {
@@ -154,7 +151,6 @@ func (f FileAssetTransferer) TransferSha(location string, t string) error {
 }
 
 func (f FileAssetTransferer) Transfer(i interface{}, t string) error {
-
 	asset := i.(api.ExecutableFileAsset)
 	glog.Infof("File asset transfer: %s - %s\n", t, asset.Location)
 
@@ -230,7 +226,6 @@ func (c ContainerAssetTransferer) Transfer(i interface{}, t string) error {
 }
 
 func (c ContainerAssetTransferer) TransferFile(i interface{}, t string) error {
-
 	asset := i.(api.ContainerAsset)
 	// TODO update logging to match kops, no use of method and struct member names
 	glog.Infof("ContainerFileAssetTransferer.Transfer starting: %s - %v\n", t, asset)
@@ -337,7 +332,6 @@ func NewUUID() (string, error) {
 }
 
 func tagAndPushToDocker(tagName, imageId string) error {
-
 	glog.Infof("Tagging local image tagName[-]%s\n", tagName)
 	args := []string{"tag", imageId, tagName}
 	err := performExec(dockerExec, args)
@@ -357,7 +351,6 @@ func tagAndPushToDocker(tagName, imageId string) error {
 }
 
 func cleanUpDockerImages(pushedImageId, baseImageId string) error {
-
 	args := []string{"rmi", "-f", pushedImageId}
 	glog.Infof("Removing pushed container image %s\n", strings.Join(args, " "))
 	err := performExec(dockerExec, args)
@@ -376,7 +369,6 @@ func cleanUpDockerImages(pushedImageId, baseImageId string) error {
 }
 
 func performExec(cmdStr string, args []string) error {
-
 	binary, err := exec.LookPath(cmdStr)
 	if err != nil {
 		return fmt.Errorf("Error finding executable file: %s - %v", cmdStr, err)

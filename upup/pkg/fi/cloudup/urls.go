@@ -88,7 +88,6 @@ var protokubeImageSource *nodeup.Image
 // Either a docker name (e.g. gcr.io/protokube:1.4), or a URL (https://...) in which case we download
 // the contents of the url and docker load it
 func ProtokubeImageSource(spec *api.ClusterSpec) (*nodeup.Image, error) {
-
 	protokubeImageSourceEnv := os.Getenv("PROTOKUBE_IMAGE")
 
 	// return cached
@@ -110,7 +109,6 @@ func ProtokubeImageSource(spec *api.ClusterSpec) (*nodeup.Image, error) {
 	}
 
 	if protokubeImageSourceEnv != "" {
-
 		// use env variable
 		hash, err := findHash(protokubeImageSourceEnv)
 		if err != nil {
@@ -123,9 +121,7 @@ func ProtokubeImageSource(spec *api.ClusterSpec) (*nodeup.Image, error) {
 			Hash:   hash.Hex(),
 		}
 		glog.Warningf("Using protokube location from PROTOKUBE_IMAGE env var: %q", protokubeImageSource)
-
 	} else if proto != kops.DefaultProtokubeImageName() {
-
 		// Assets.ContainerRegistry is set
 		if err != nil {
 			return nil, err
@@ -137,7 +133,6 @@ func ProtokubeImageSource(spec *api.ClusterSpec) (*nodeup.Image, error) {
 		}
 		glog.Infof("Using protokube location from assets container registry %q", proto)
 	} else {
-
 		//use default from url
 		source := BaseUrl(spec) + "images/protokube.tar.gz"
 		hash, err := findHash(source)
@@ -151,7 +146,6 @@ func ProtokubeImageSource(spec *api.ClusterSpec) (*nodeup.Image, error) {
 			Hash:   hash.Hex(),
 		}
 		glog.V(4).Infof("Using default protokube location set via kops base url: %v", protokubeImageSource)
-
 	}
 
 	return protokubeImageSource, nil

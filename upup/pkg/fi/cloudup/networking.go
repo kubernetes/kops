@@ -99,7 +99,6 @@ const (
 )
 
 func findCNIAssets(c *api.Cluster) (string, string, error) {
-
 	if cniVersionURL := os.Getenv(ENV_VAR_CNI_VERSION_URL); cniVersionURL != "" {
 		glog.Infof("Using CNI asset version %q, as set in %s", cniVersionURL, ENV_VAR_CNI_VERSION_URL)
 		return cniVersionURL, "", nil

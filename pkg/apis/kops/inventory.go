@@ -32,7 +32,6 @@ type Inventory struct {
 }
 
 type InventorySpec struct {
-
 	// full cluster
 	Cluster *ClusterSpec `json:"cluster,omitempty"`
 
