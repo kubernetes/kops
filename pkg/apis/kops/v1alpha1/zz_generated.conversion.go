@@ -1615,6 +1615,11 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.VolumePluginDirectory = in.VolumePluginDirectory
 	out.Taints = in.Taints
 	out.FeatureGates = in.FeatureGates
+	out.KubeReserved = in.KubeReserved
+	out.KubeReservedCgroup = in.KubeReservedCgroup
+	out.SystemReserved = in.SystemReserved
+	out.SystemReservedCgroup = in.SystemReservedCgroup
+	out.EnforceNodeAllocatable = in.EnforceNodeAllocatable
 	return nil
 }
 
@@ -1666,6 +1671,11 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.VolumePluginDirectory = in.VolumePluginDirectory
 	out.Taints = in.Taints
 	out.FeatureGates = in.FeatureGates
+	out.KubeReserved = in.KubeReserved
+	out.KubeReservedCgroup = in.KubeReservedCgroup
+	out.SystemReserved = in.SystemReserved
+	out.SystemReservedCgroup = in.SystemReservedCgroup
+	out.EnforceNodeAllocatable = in.EnforceNodeAllocatable
 	return nil
 }
 
