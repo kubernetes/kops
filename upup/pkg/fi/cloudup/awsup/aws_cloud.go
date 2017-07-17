@@ -35,7 +35,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	k8sroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
+	dnsproviderroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	"strings"
 	"time"
 )
@@ -683,7 +683,7 @@ func ValidateZones(zones []string, cloud AWSCloud) error {
 }
 
 func (c *awsCloudImplementation) DNS() (dnsprovider.Interface, error) {
-	provider, err := dnsprovider.GetDnsProvider(k8sroute53.ProviderName, nil)
+	provider, err := dnsprovider.GetDnsProvider(dnsproviderroute53.ProviderName, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
 	}
