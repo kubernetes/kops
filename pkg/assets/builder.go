@@ -22,8 +22,13 @@ import (
 	"os"
 	"strings"
 
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 )
+
+// RewriteManifests controls whether we rewrite manifests
+// Because manifest rewriting converts everything to and from YAML, we normalize everything by doing so
+var RewriteManifests = featureflag.New("RewriteManifests", featureflag.Bool(true))
 
 // AssetBuilder discovers and remaps assets
 type AssetBuilder struct {
@@ -40,6 +45,9 @@ func NewAssetBuilder() *AssetBuilder {
 }
 
 func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
+	if !RewriteManifests.Enabled() {
+		return data, nil
+	}
 	manifests, err := kubemanifest.LoadManifestsFrom(data)
 	if err != nil {
 		return nil, err
