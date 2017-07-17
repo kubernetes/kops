@@ -14,10 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package cloudup
+package components
 
-const TargetDirect = "direct"
-const TargetDryRun = "dryrun"
-const TargetTerraform = "terraform"
-const TargetCloudformation = "cloudformation"
-const TargetInventory = "inventory"
+import (
+	"testing"
+
+	"k8s.io/kops/pkg/apis/kops"
+)
+
+func Test_Build_Google_File_URL(t *testing.T) {
+
+	cs := &kops.ClusterSpec{}
+
+	url := "foo"
+
+	s, err := GetGoogleFileRepositoryURL(cs, url)
+
+	if err != nil {
+		t.Fatalf("unable to parse url %q", url)
+	}
+
+	if s != GCR_STORAGE+"/"+url {
+		t.Fatalf("incorret url %q", s)
+	}
+}

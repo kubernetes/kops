@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -120,7 +121,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 	kcm.LogLevel = 2
 
-	image, err := Image("kube-controller-manager", clusterSpec)
+	image, err := assets.Image("kube-controller-manager", clusterSpec)
 	if err != nil {
 		return err
 	}

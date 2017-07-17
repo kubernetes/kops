@@ -69,7 +69,6 @@ func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 func (obj *Federation) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
-
 func addConversionFuncs(scheme *runtime.Scheme) error {
 	return nil
 }
