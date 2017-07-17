@@ -306,106 +306,108 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 		}
 	}
 
-	fmt.Fprintf(out, "Cluster Inventory\n\n")
-	fmt.Fprintf(out, "Files\n\n")
+	if t.inventory != nil {
+		fmt.Fprintf(out, "Cluster Inventory\n\n")
+		fmt.Fprintf(out, "Files\n\n")
 
-	asset := "Asset"
-	name := "Name"
-	sha := "SHA"
+		asset := "Asset"
+		name := "Name"
+		sha := "SHA"
 
-	table := &Table{}
-	table.AddColumn(asset, func(i *assets.ExecutableFileAsset) string {
-		return i.Location
-	})
-	table.AddColumn(name, func(i *assets.ExecutableFileAsset) string {
-		return i.Name
-	})
-	if err := table.Render(t.inventory.ExecutableFileAsset, out, name, asset); err != nil {
-		return err
-	}
-
-	fmt.Fprintf(out, "\n\nFile SHAs\n\n")
-
-	table = &Table{}
-	table.AddColumn(name, func(i *assets.ExecutableFileAsset) string {
-		return i.Name
-	})
-	table.AddColumn(sha, func(i *assets.ExecutableFileAsset) string {
-		return i.SHA
-	})
-	if err := table.Render(t.inventory.ExecutableFileAsset, out, name, sha); err != nil {
-		return err
-	}
-
-	fmt.Fprintf(out, "\n\nCompressed Files\n\n")
-
-	table = &Table{}
-	table.AddColumn(asset, func(i *assets.CompressedFileAsset) string {
-		return i.Location
-	})
-	table.AddColumn(name, func(i *assets.CompressedFileAsset) string {
-		return i.Name
-	})
-	if err := table.Render(t.inventory.CompressedFileAssets, out, name, asset); err != nil {
-		return err
-	}
-
-	fmt.Fprintf(out, "\n\nCompressed File SHAs\n\n")
-
-	table = &Table{}
-	table.AddColumn(name, func(i *assets.CompressedFileAsset) string {
-		return i.Name
-	})
-	table.AddColumn(sha, func(i *assets.CompressedFileAsset) string {
-		return i.SHA
-	})
-	if err := table.Render(t.inventory.CompressedFileAssets, out, name, sha); err != nil {
-		return err
-	}
-
-	fmt.Fprintf(out, "\n\nContainers\n\n")
-	table = &Table{}
-	table.AddColumn(asset, func(i *assets.ContainerAsset) string {
-		if i.String != "" {
-			return i.String
-		} else if i.Location != "" {
+		table := &Table{}
+		table.AddColumn(asset, func(i *assets.ExecutableFileAsset) string {
 			return i.Location
+		})
+		table.AddColumn(name, func(i *assets.ExecutableFileAsset) string {
+			return i.Name
+		})
+		if err := table.Render(t.inventory.ExecutableFileAsset, out, name, asset); err != nil {
+			return err
 		}
 
-		glog.Errorf("unable to print container asset %q", i)
+		fmt.Fprintf(out, "\n\nFile SHAs\n\n")
 
-		return "asset name not set correctly"
-	})
+		table = &Table{}
+		table.AddColumn(name, func(i *assets.ExecutableFileAsset) string {
+			return i.Name
+		})
+		table.AddColumn(sha, func(i *assets.ExecutableFileAsset) string {
+			return i.SHA
+		})
+		if err := table.Render(t.inventory.ExecutableFileAsset, out, name, sha); err != nil {
+			return err
+		}
 
-	table.AddColumn(name, func(i *assets.ContainerAsset) string {
-		return i.Name
-	})
-	if err := table.Render(t.inventory.ContainerAssets, out, name, asset); err != nil {
-		return err
-	}
+		fmt.Fprintf(out, "\n\nCompressed Files\n\n")
 
-	fmt.Fprintf(out, "\n\nHosts\n\n")
-	table = &Table{}
-	table.AddColumn("Image", func(i *assets.HostAsset) string {
-		return i.Name
-	})
+		table = &Table{}
+		table.AddColumn(asset, func(i *assets.CompressedFileAsset) string {
+			return i.Location
+		})
+		table.AddColumn(name, func(i *assets.CompressedFileAsset) string {
+			return i.Name
+		})
+		if err := table.Render(t.inventory.CompressedFileAssets, out, name, asset); err != nil {
+			return err
+		}
 
-	table.AddColumn("Instance Group", func(i *assets.HostAsset) string {
-		return i.InstanceGroup
-	})
-	if err := table.Render(t.inventory.HostAssets, out, "Instance Group", "Image"); err != nil {
-		return err
-	}
+		fmt.Fprintf(out, "\n\nCompressed File SHAs\n\n")
 
-	fmt.Fprintf(out, "\n\n")
+		table = &Table{}
+		table.AddColumn(name, func(i *assets.CompressedFileAsset) string {
+			return i.Name
+		})
+		table.AddColumn(sha, func(i *assets.CompressedFileAsset) string {
+			return i.SHA
+		})
+		if err := table.Render(t.inventory.CompressedFileAssets, out, name, sha); err != nil {
+			return err
+		}
 
-	if len(t.deletions) != 0 {
-		// Give everything a consistent ordering
-		sort.Sort(DeletionByTaskName(t.deletions))
+		fmt.Fprintf(out, "\n\nContainers\n\n")
+		table = &Table{}
+		table.AddColumn(asset, func(i *assets.ContainerAsset) string {
+			if i.String != "" {
+				return i.String
+			} else if i.Location != "" {
+				return i.Location
+			}
 
-		fmt.Fprintf(b, "Will delete items:\n")
-		for _, d := range t.deletions {
-			fmt.Fprintf(b, "  %-20s %s\n", d.TaskName(), d.Item())
+			glog.Errorf("unable to print container asset %q", i)
+
+			return "asset name not set correctly"
+		})
+
+		table.AddColumn(name, func(i *assets.ContainerAsset) string {
+			return i.Name
+		})
+		if err := table.Render(t.inventory.ContainerAssets, out, name, asset); err != nil {
+			return err
+		}
+
+		fmt.Fprintf(out, "\n\nHosts\n\n")
+		table = &Table{}
+		table.AddColumn("Image", func(i *assets.HostAsset) string {
+			return i.Name
+		})
+
+		table.AddColumn("Instance Group", func(i *assets.HostAsset) string {
+			return i.InstanceGroup
+		})
+		if err := table.Render(t.inventory.HostAssets, out, "Instance Group", "Image"); err != nil {
+			return err
+		}
+
+		fmt.Fprintf(out, "\n\n")
+
+		if len(t.deletions) != 0 {
+			// Give everything a consistent ordering
+			sort.Sort(DeletionByTaskName(t.deletions))
+
+			fmt.Fprintf(b, "Will delete items:\n")
+			for _, d := range t.deletions {
+				fmt.Fprintf(b, "  %-20s %s\n", d.TaskName(), d.Item())
+			}
 		}
 	}
 

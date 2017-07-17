@@ -33,7 +33,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
-	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -272,8 +271,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			Tags:     nodeTags,
 		}
 	case "dryrun":
-		assetBuilder := assets.NewAssetBuilder()
-		target = fi.NewDryRunTarget(assetBuilder, out)
+		// TODO do we want full inventory printing?  I am thinking no.
+		target = fi.NewDryRunTarget(out, nil)
 	case "cloudinit":
 		checkExisting = false
 		target = cloudinit.NewCloudInitTarget(out, nodeTags)
