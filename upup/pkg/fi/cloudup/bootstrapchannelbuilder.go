@@ -19,8 +19,13 @@ package cloudup
 import (
 	"fmt"
 
+	"github.com/golang/glog"
+
+	"k8s.io/apimachinery/pkg/util/sets"
 	channelsapi "k8s.io/kops/channels/pkg/api"
+	channels "k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/pkg/apis/kops"
+	api_util "k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/templates"
@@ -40,7 +45,27 @@ var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 	addons, manifests, err := b.buildManifest()
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to build manifests: %v", err)
+	}
+
+	// getting set of required addons
+	requiredAddons := sets.NewString()
+	{
+		sv, err := api_util.ParseKubernetesVersion(b.cluster.Spec.KubernetesVersion)
+		if err != nil {
+			return fmt.Errorf("unable to determine kubernetes version from %q", b.cluster.Spec.KubernetesVersion)
+		}
+
+		channelsAddons := &channels.Addons{APIObject: addons}
+		wrappedAddons, _ := channelsAddons.WrapInAddons()
+
+		// loop through each addon and test if it matches, building set of required addons
+		for _, addon := range wrappedAddons {
+			if addon.Matches(*sv) {
+				glog.V(10).Infof("adding required addon: %s", *addon.Spec.Manifest)
+				requiredAddons.Insert("addons/" + *addon.Spec.Manifest)
+			}
+		}
 	}
 
 	addonsYAML, err := utils.YamlMarshal(addons)
@@ -58,9 +83,20 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		Contents: fi.WrapResource(fi.NewBytesResource(addonsYAML)),
 	}
 
-	for key, manifest := range manifests {
-		name := b.cluster.ObjectMeta.Name + "-addons-" + key
+	// TODO: We may be able to refactor out using manifests and just loop through requiredAddons.
+	// TODO: But this code is critical so I do not want to refactor while removing assets.
 
+	for key, manifest := range manifests {
+
+		// if we do not match the addon do not use it
+		if !requiredAddons.Has(manifest) {
+			glog.V(2).Infof("skipping addon manifest: %s", manifest)
+			continue
+		}
+
+		glog.V(2).Infof("adding addon manifest: %s", manifest)
+
+		name := b.cluster.ObjectMeta.Name + "-addons-" + key
 		manifestResource := b.templates.Find(manifest)
 		if manifestResource == nil {
 			return fmt.Errorf("unable to find manifest %s", manifest)

@@ -69,7 +69,7 @@ func Test_Filtering(t *testing.T) {
 		addon := &Addon{
 			Spec: &g.Input,
 		}
-		actual := addon.matches(k8sVersion)
+		actual := addon.Matches(k8sVersion)
 		if actual != g.Expected {
 			t.Errorf("unexpected result from %v, %s.  got %v", g.Input.KubernetesVersion, g.KubernetesVersion, actual)
 		}
