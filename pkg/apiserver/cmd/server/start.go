@@ -105,7 +105,7 @@ func (o KopsServerOptions) RunKopsServer() error {
 	serverConfig := genericapiserver.NewConfig(kops.Codecs)
 	// 1.6: serverConfig := genericapiserver.NewConfig().WithSerializer(kops.Codecs)
 	//if err := o.RecommendedOptions.ApplyTo(serverConfig); err != nil {
-	//      return nil, err
+	//	return nil, err
 	//}
 
 	serverConfig.CorsAllowedOriginList = []string{".*"}
@@ -139,7 +139,6 @@ func (o KopsServerOptions) RunKopsServer() error {
 		return err
 	}
 	return server.GenericAPIServer.PrepareRun().Run(wait.NeverStop)
-
 }
 
 type restOptionsFactory struct {
