@@ -312,6 +312,7 @@ func (e *ExtractInventory) ExtractAssets() (*assets.Inventory, string, error) {
 		InstanceGroups: ig,
 		TargetName:     TargetDryRun,
 		Models:         []string{"config", "proto", "cloudup"},
+		DryRunStdErr:   true,
 	}
 
 	err = applyClusterCmd.Run()

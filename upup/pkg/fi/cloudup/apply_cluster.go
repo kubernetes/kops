@@ -102,6 +102,9 @@ type ApplyClusterCmd struct {
 	// DryRun is true if this is only a dry run
 	DryRun bool
 
+	// DryRunStdErr is true if we output a dry run to stderr
+	DryRunStdErr bool
+
 	MaxTaskDuration time.Duration
 
 	// The channel we are using
@@ -711,7 +714,12 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 		}
 
-		target = fi.NewDryRunTarget(os.Stdout, c.Inventory)
+		out := os.Stdout
+		if c.DryRunStdErr {
+			out = os.Stderr
+		}
+
+		target = fi.NewDryRunTarget(out, c.Inventory)
 		dryRun = true
 
 		// Avoid making changes on a dry-run
@@ -828,31 +836,31 @@ func (c *ApplyClusterCmd) validateKopsVersion() error {
 	}
 
 	if recommended != nil && !required {
-		fmt.Printf("\n")
-		fmt.Printf(starline)
-		fmt.Printf("\n")
-		fmt.Printf("A new kops version is available: %s\n", recommended)
-		fmt.Printf("\n")
-		fmt.Printf("Upgrading is recommended\n")
-		fmt.Printf("More information: %s\n", buildPermalink("upgrade_kops", recommended.String()))
-		fmt.Printf("\n")
-		fmt.Printf(starline)
-		fmt.Printf("\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, starline)
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "A new kops version is available: %s\n", recommended)
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "Upgrading is recommended\n")
+		fmt.Fprintf(os.Stderr, "More information: %s\n", buildPermalink("upgrade_kops", recommended.String()))
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, starline)
+		fmt.Fprintf(os.Stderr, "\n")
 	} else if required {
-		fmt.Printf("\n")
-		fmt.Printf(starline)
-		fmt.Printf("\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, starline)
+		fmt.Fprintf(os.Stderr, "\n")
 		if recommended != nil {
-			fmt.Printf("A new kops version is available: %s\n", recommended)
+			fmt.Fprintf(os.Stderr, "A new kops version is available: %s\n", recommended)
 		}
-		fmt.Printf("\n")
-		fmt.Printf("This version of kops is no longer supported; upgrading is required\n")
-		fmt.Printf("(you can bypass this check by exporting KOPS_RUN_OBSOLETE_VERSION)\n")
-		fmt.Printf("\n")
-		fmt.Printf("More information: %s\n", buildPermalink("upgrade_kops", recommended.String()))
-		fmt.Printf("\n")
-		fmt.Printf(starline)
-		fmt.Printf("\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "This version of kops is no longer supported; upgrading is required\n")
+		fmt.Fprintf(os.Stderr, "(you can bypass this check by exporting KOPS_RUN_OBSOLETE_VERSION)\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "More information: %s\n", buildPermalink("upgrade_kops", recommended.String()))
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, starline)
+		fmt.Fprintf(os.Stderr, "\n")
 	}
 
 	if required {
@@ -894,31 +902,32 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 	}
 
 	if recommended != nil && !required {
-		fmt.Printf("\n")
-		fmt.Printf(starline)
-		fmt.Printf("\n")
-		fmt.Printf("A new kubernetes version is available: %s\n", recommended)
-		fmt.Printf("Upgrading is recommended (try kops upgrade cluster)\n")
-		fmt.Printf("\n")
-		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", recommended.String()))
-		fmt.Printf("\n")
-		fmt.Printf(starline)
-		fmt.Printf("\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, starline)
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "A new kubernetes version is available: %s\n", recommended)
+		fmt.Fprintf(os.Stderr, "Upgrading is recommended (try kops upgrade cluster)\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "More information: %s\n", buildPermalink("upgrade_k8s", recommended.String()))
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, starline)
+		fmt.Fprintf(os.Stderr, "\n")
 	} else if required {
-		fmt.Printf("\n")
-		fmt.Printf(starline)
-		fmt.Printf("\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, starline)
+		fmt.Fprintf(os.Stderr, "\n")
 		if recommended != nil {
-			fmt.Printf("A new kubernetes version is available: %s\n", recommended)
+			fmt.Fprintf(os.Stderr, "A new kubernetes version is available: %s\n", recommended)
 		}
-		fmt.Printf("\n")
-		fmt.Printf("This version of kubernetes is no longer supported; upgrading is required\n")
-		fmt.Printf("(you can bypass this check by exporting KOPS_RUN_OBSOLETE_VERSION)\n")
-		fmt.Printf("\n")
-		fmt.Printf("More information: %s\n", buildPermalink("upgrade_k8s", recommended.String()))
-		fmt.Printf("\n")
-		fmt.Printf(starline)
-		fmt.Printf("\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "This version of kubernetes is no longer supported; upgrading is required\n")
+		fmt.Fprintf(os.Stderr, "(you can bypass this check by exporting KOPS_RUN_OBSOLETE_VERSION)\n")
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, "More information: %s\n", buildPermalink("upgrade_k8s", recommended.String()))
+		fmt.Fprintf(os.Stderr, "\n")
+		fmt.Fprintf(os.Stderr, starline)
+		fmt.Fprintf(os.Stderr, "\n")
 	}
 
 	if required {
