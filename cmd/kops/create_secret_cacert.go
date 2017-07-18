@@ -34,11 +34,11 @@ import (
 
 var (
 	create_secret_cacert_long = templates.LongDesc(i18n.T(`
-	Add a intermediate ca certificate kay private key. and store the key
+	Add a intermediate ca certificate key private key. and store the key
 	in state store.`))
 
 	create_secret_cacert_example = templates.Examples(i18n.T(`
-	# Add a intermediate ca certificate kay private key. and store the key
+	# Add a intermediate ca certificate key private key. and store the key
 	kops create secret ca-cert \
 		--ca-cert ~/ca.pem \
 		--ca-cert-key ~/ca-key.pem \

@@ -8,7 +8,7 @@ Add intermediate ca cert and private key.
 ### Synopsis
 
 
-Add a intermediate ca certificate kay private key. and store the key in state store.
+Add a intermediate ca certificate key private key. and store the key in state store.
 
 ```
 kops create secret ca-cert
@@ -17,7 +17,7 @@ kops create secret ca-cert
 ### Examples
 
 ```
-  # Add a intermediate ca certificate kay private key. and store the key
+  # Add a intermediate ca certificate key private key. and store the key
   kops create secret ca-cert \
   --ca-cert ~/ca.pem \
   --ca-cert-key ~/ca-key.pem \
