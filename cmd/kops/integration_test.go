@@ -38,20 +38,21 @@ import (
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimal(t *testing.T) {
-	runTest(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha0", false, 1)
-	runTest(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha1", false, 1)
-	runTest(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha2", false, 1)
+	runTest(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha0", false, true, 1)
+	runTest(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha1", false, true, 1)
+	runTest(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha2", false, true, 1)
 }
 
 // TestHA runs the test on a simple HA configuration, similar to kops create cluster minimal.example.com --zones us-west-1a,us-west-1b,us-west-1c --master-count=3
 func TestHA(t *testing.T) {
-	runTest(t, "ha.example.com", "../../tests/integration/ha", "v1alpha1", false, 3)
-	runTest(t, "ha.example.com", "../../tests/integration/ha", "v1alpha2", false, 3)
+	runTest(t, "ha.example.com", "../../tests/integration/ha", "v1alpha1", false, true, 3)
+	runTest(t, "ha.example.com", "../../tests/integration/ha", "v1alpha2", false, true, 3)
 }
 
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
-	runTest(t, "complex.example.com", "../../tests/integration/complex", "v1alpha2", false, 1)
+	hasPublicKey := false
+	runTest(t, "complex.example.com", "../../tests/integration/complex", "v1alpha2", false, hasPublicKey, 1)
 }
 
 // TestMinimalCloudformation runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -63,49 +64,49 @@ func TestMinimalCloudformation(t *testing.T) {
 
 // TestMinimal_141 runs the test on a configuration from 1.4.1 release
 func TestMinimal_141(t *testing.T) {
-	runTest(t, "minimal-141.example.com", "../../tests/integration/minimal-141", "v1alpha0", false, 1)
+	runTest(t, "minimal-141.example.com", "../../tests/integration/minimal-141", "v1alpha0", false, true, 1)
 }
 
 // TestPrivateWeave runs the test on a configuration with private topology, weave networking
 func TestPrivateWeave(t *testing.T) {
-	runTest(t, "privateweave.example.com", "../../tests/integration/privateweave", "v1alpha1", true, 1)
-	runTest(t, "privateweave.example.com", "../../tests/integration/privateweave", "v1alpha2", true, 1)
+	runTest(t, "privateweave.example.com", "../../tests/integration/privateweave", "v1alpha1", true, true, 1)
+	runTest(t, "privateweave.example.com", "../../tests/integration/privateweave", "v1alpha2", true, true, 1)
 }
 
 // TestPrivateFlannel runs the test on a configuration with private topology, flannel networking
 func TestPrivateFlannel(t *testing.T) {
-	runTest(t, "privateflannel.example.com", "../../tests/integration/privateflannel", "v1alpha1", true, 1)
-	runTest(t, "privateflannel.example.com", "../../tests/integration/privateflannel", "v1alpha2", true, 1)
+	runTest(t, "privateflannel.example.com", "../../tests/integration/privateflannel", "v1alpha1", true, true, 1)
+	runTest(t, "privateflannel.example.com", "../../tests/integration/privateflannel", "v1alpha2", true, true, 1)
 }
 
 // TestPrivateCalico runs the test on a configuration with private topology, calico networking
 func TestPrivateCalico(t *testing.T) {
-	runTest(t, "privatecalico.example.com", "../../tests/integration/privatecalico", "v1alpha1", true, 1)
-	runTest(t, "privatecalico.example.com", "../../tests/integration/privatecalico", "v1alpha2", true, 1)
+	runTest(t, "privatecalico.example.com", "../../tests/integration/privatecalico", "v1alpha1", true, true, 1)
+	runTest(t, "privatecalico.example.com", "../../tests/integration/privatecalico", "v1alpha2", true, true, 1)
 }
 
 // TestPrivateCanal runs the test on a configuration with private topology, canal networking
 func TestPrivateCanal(t *testing.T) {
-	runTest(t, "privatecanal.example.com", "../../tests/integration/privatecanal", "v1alpha1", true, 1)
-	runTest(t, "privatecanal.example.com", "../../tests/integration/privatecanal", "v1alpha2", true, 1)
+	runTest(t, "privatecanal.example.com", "../../tests/integration/privatecanal", "v1alpha1", true, true, 1)
+	runTest(t, "privatecanal.example.com", "../../tests/integration/privatecanal", "v1alpha2", true, true, 1)
 }
 
 // TestPrivateKopeio runs the test on a configuration with private topology, kopeio networking
 func TestPrivateKopeio(t *testing.T) {
-	runTest(t, "privatekopeio.example.com", "../../tests/integration/privatekopeio", "v1alpha2", true, 1)
+	runTest(t, "privatekopeio.example.com", "../../tests/integration/privatekopeio", "v1alpha2", true, true, 1)
 }
 
 // TestPrivateDns runs the test on a configuration with private topology, private dns
 func TestPrivateDns1(t *testing.T) {
-	runTest(t, "privatedns1.example.com", "../../tests/integration/privatedns1", "v1alpha2", true, 1)
+	runTest(t, "privatedns1.example.com", "../../tests/integration/privatedns1", "v1alpha2", true, true, 1)
 }
 
 // TestPrivateDns runs the test on a configuration with private topology, private dns, extant vpc
 func TestPrivateDns2(t *testing.T) {
-	runTest(t, "privatedns2.example.com", "../../tests/integration/privatedns2", "v1alpha2", true, 1)
+	runTest(t, "privatedns2.example.com", "../../tests/integration/privatedns2", "v1alpha2", true, true, 1)
 }
 
-func runTest(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int) {
+func runTest(t *testing.T, clusterName string, srcDir string, version string, private bool, hasPublicKey bool, zones int) {
 	var stdout bytes.Buffer
 
 	inputYAML := "in-" + version + ".yaml"
@@ -131,7 +132,7 @@ func runTest(t *testing.T, clusterName string, srcDir string, version string, pr
 		}
 	}
 
-	{
+	if hasPublicKey {
 		options := &CreateSecretPublickeyOptions{}
 		options.ClusterName = clusterName
 		options.Name = "admin"
@@ -212,8 +213,11 @@ func runTest(t *testing.T, clusterName string, srcDir string, version string, pr
 			"aws_iam_role_nodes." + clusterName + "_policy",
 			"aws_iam_role_policy_masters." + clusterName + "_policy",
 			"aws_iam_role_policy_nodes." + clusterName + "_policy",
-			"aws_key_pair_kubernetes." + clusterName + "-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key",
 			"aws_launch_configuration_nodes." + clusterName + "_user_data",
+		}
+
+		if hasPublicKey {
+			expectedFilenames = append(expectedFilenames, "aws_key_pair_kubernetes."+clusterName+"-c4a6ed9aa889b9e2c39cd663eb9c7157_public_key")
 		}
 
 		for i := 0; i < zones; i++ {

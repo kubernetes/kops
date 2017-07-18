@@ -118,6 +118,10 @@ func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) *aws
 
 // SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint
 func (c *KopsModelContext) SSHKeyName() (string, error) {
+	if len(c.SSHPublicKeys) == 0 {
+		return "", nil
+	}
+
 	fingerprint, err := awstasks.ComputeOpenSSHKeyFingerprint(string(c.SSHPublicKeys[0]))
 	if err != nil {
 		return "", err
@@ -128,11 +132,15 @@ func (c *KopsModelContext) SSHKeyName() (string, error) {
 }
 
 func (b *KopsModelContext) LinkToSSHKey() (*awstasks.SSHKey, error) {
+	if len(b.SSHPublicKeys) == 0 {
+		glog.Warningf("Building AWS cluster without an SSH key")
+		return nil, nil
+	}
+
 	sshKeyName, err := b.SSHKeyName()
 	if err != nil {
 		return nil, err
 	}
-
 	return &awstasks.SSHKey{Name: &sshKeyName}, nil
 }
 
