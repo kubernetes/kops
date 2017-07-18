@@ -60,6 +60,7 @@ endif
 # + is valid in semver, but not in docker tags. Fixup CI versions.
 # Note that this mirrors the logic in DefaultProtokubeImageName
 PROTOKUBE_TAG := $(subst +,-,${VERSION})
+KOPS_SERVER_TAG := $(subst +,-,${VERSION})
 
 # Go exports:
 
@@ -500,7 +501,7 @@ kops-server-build:
 	docker pull golang:${GOVERSION}
 	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile kops-server-docker-compile
 	docker cp kops-server-build-${UNIQUE}:/go/.build .
-	docker build -t ${DOCKER_REGISTRY}/kops-server:latest -f images/kops-server/Dockerfile .
+	docker build -t ${DOCKER_REGISTRY}/kops-server:${KOPS_SERVER_TAG} -f images/kops-server/Dockerfile .
 
 .PHONY: kops-server-push
 kops-server-push: kops-server-build
