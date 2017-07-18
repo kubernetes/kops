@@ -17,11 +17,12 @@ limitations under the License.
 package assets
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/pkg/kubemanifest"
 	"os"
 	"strings"
+
+	"k8s.io/kops/pkg/kubemanifest"
 )
 
 // AssetBuilder discovers and remaps assets
@@ -44,8 +45,8 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	var yamlSep = []byte("\n\n---\n\n")
-	var remappedManifest []byte
+	var yamlSeparator = []byte("\n---\n\n")
+	var remappedManifests [][]byte
 	for _, manifest := range manifests {
 		err := manifest.RemapImages(a.remapImage)
 		if err != nil {
@@ -56,12 +57,10 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 			return nil, fmt.Errorf("error re-marshalling manifest: %v", err)
 		}
 
-		glog.V(10).Infof("manifest: %v", string(y))
-		remappedManifest = append(remappedManifest, y...)
-		remappedManifest = append(remappedManifest, yamlSep...)
+		remappedManifests = append(remappedManifests, y)
 	}
 
-	return remappedManifest, nil
+	return bytes.Join(remappedManifests, yamlSeparator), nil
 }
 
 func (a *AssetBuilder) remapImage(image string) (string, error) {
