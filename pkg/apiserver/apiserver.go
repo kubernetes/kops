@@ -17,6 +17,7 @@ limitations under the License.
 package apiserver
 
 import (
+	"k8s.io/apimachinery/pkg/version"
 	"k8s.io/apiserver/pkg/registry/generic"
 	"k8s.io/apiserver/pkg/registry/rest"
 	"k8s.io/apiserver/pkg/server"
@@ -26,8 +27,7 @@ import (
 	_ "k8s.io/kops/pkg/apis/kops/install"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	registrycluster "k8s.io/kops/pkg/apiserver/registry/cluster"
-	//registryinstancegroup "k8s.io/kops/pkg/apiserver/registry/instancegroup"
-	"k8s.io/kubernetes/pkg/version"
+	registryinstancegroup "k8s.io/kops/pkg/apiserver/registry/instancegroup"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -69,8 +69,10 @@ type completedConfig struct {
 func (c *Config) Complete() completedConfig {
 	c.GenericConfig.Complete()
 
-	version := version.Get()
-	c.GenericConfig.Version = &version
+	c.GenericConfig.Version = &version.Info{
+		Major: "1",
+		Minor: "0",
+	}
 
 	return completedConfig{c}
 }
@@ -96,7 +98,8 @@ func (c completedConfig) New() (*APIDiscoveryServer, error) {
 	apiGroupInfo.GroupMeta.GroupVersion = v1alpha2.SchemeGroupVersion
 	v1alpha2storage := map[string]rest.Storage{}
 	v1alpha2storage["clusters"] = registrycluster.NewREST(c.RESTOptionsGetter)
-	//v1alpha2storage["instancegroups"] = registryinstancegroup.NewREST(c.RESTOptionsGetter)
+	//v1alpha2storage["clusters/full"] = registrycluster.NewREST(c.RESTOptionsGetter)
+	v1alpha2storage["instancegroups"] = registryinstancegroup.NewREST(c.RESTOptionsGetter)
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha2"] = v1alpha2storage
 
 	if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {
