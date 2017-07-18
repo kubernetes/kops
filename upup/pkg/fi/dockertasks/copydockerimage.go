@@ -27,7 +27,9 @@ import (
 // typically used for highly secure clusters.
 //go:generate fitask -type=CopyDockerImage
 type CopyDockerImage struct {
-	Name        *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	SourceImage *string
 	TargetImage *string
 }

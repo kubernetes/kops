@@ -272,10 +272,10 @@ func (c *ApplyClusterCmd) Run() error {
 	checkExisting := true
 
 	l.AddTypes(map[string]interface{}{
-		"keypair":     &fitasks.Keypair{},
-		"secret":      &fitasks.Secret{},
-		"managedFile": &fitasks.ManagedFile{},
-
+		"keypair":       &fitasks.Keypair{},
+		"secret":        &fitasks.Secret{},
+		"mirrorSecrets": &fitasks.MirrorSecrets{},
+		"managedFile":   &fitasks.ManagedFile{},
 		// DNS
 		//"dnsZone": &dnstasks.DNSZone{},
 	})

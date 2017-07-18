@@ -20,6 +20,7 @@ import (
 	"k8s.io/apiserver/pkg/authentication/user"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // PKIModelBuilder configures PKI keypairs, as well as tokens
@@ -237,6 +238,20 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		t := &fitasks.Secret{
 			Name:      fi.String("admin"),
 			Lifecycle: b.Lifecycle,
+		}
+		c.AddTask(t)
+	}
+
+	{
+		mirrorPath, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.SecretStore)
+		if err != nil {
+			return err
+		}
+
+		// Keypair used by the kubelet
+		t := &fitasks.MirrorSecrets{
+			Name:       fi.String("mirror-secrets"),
+			MirrorPath: mirrorPath,
 		}
 		c.AddTask(t)
 	}

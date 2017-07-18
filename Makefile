@@ -261,7 +261,7 @@ gen-api-docs:
 	# Install the reference docs commands (apiserver-builder commands invoke these)
 	go get -u github.com/kubernetes-incubator/reference-docs/gen-apidocs/...
 	# Install the code generation commands (apiserver-builder commands invoke these)
-	go install k8s.io/kubernetes/cmd/libs/go2idl/openapi-gen
+	go install k8s.io/kubernetes/staging/src/k8s.io/kube-gen/cmd/openapi-gen
 	# Update the `pkg/openapi/openapi_generated.go`
 	${GOPATH}/bin/apiserver-boot build generated --generator openapi --copyright hack/boilerplate/boilerplate.go.txt
 	go install k8s.io/kops/cmd/kops-server
@@ -505,6 +505,11 @@ apimachinery:
 
 # -----------------------------------------------------
 # kops-server
+
+.PHONY: kops-server
+kops-server:
+	go install -a ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops-server.Version=${VERSION} -X k8s.io/kops-server.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops-server
+
 
 .PHONY: kops-server-docker-compile
 kops-server-docker-compile:

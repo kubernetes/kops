@@ -31,6 +31,7 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/kops/pkg/apiserver/registry/keyset"
 )
 
 func init() {
@@ -100,6 +101,7 @@ func (c completedConfig) New() (*APIDiscoveryServer, error) {
 	v1alpha2storage["clusters"] = registrycluster.NewREST(c.RESTOptionsGetter)
 	//v1alpha2storage["clusters/full"] = registrycluster.NewREST(c.RESTOptionsGetter)
 	v1alpha2storage["instancegroups"] = registryinstancegroup.NewREST(c.RESTOptionsGetter)
+	v1alpha2storage["keysets"] = keyset.NewREST(c.RESTOptionsGetter)
 	apiGroupInfo.VersionedResourcesStorageMap["v1alpha2"] = v1alpha2storage
 
 	if err := s.GenericAPIServer.InstallAPIGroup(&apiGroupInfo); err != nil {

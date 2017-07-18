@@ -109,6 +109,11 @@ type Keystore interface {
 	StoreKeypair(id string, cert *Certificate, privateKey *PrivateKey) error
 }
 
+// HasVFSPath is implemented by keystore & other stores that use a VFS path as their backing store
+type HasVFSPath interface {
+	VFSPath() vfs.Path
+}
+
 func GeneratePrivateKey() (*PrivateKey, error) {
 	rsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
 	if err != nil {
@@ -134,8 +139,8 @@ type CAStore interface {
 	// List will list all the items, but will not fetch the data
 	List() ([]*KeystoreItem, error)
 
-	// VFSPath returns the path where the CAStore is stored
-	VFSPath() vfs.Path
+	//// VFSPath returns the path where the CAStore is stored
+	//VFSPath() vfs.Path
 
 	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
 	AddCert(name string, cert *Certificate) error

@@ -47,6 +47,9 @@ func (c *VFSClientset) ListClusters(options metav1.ListOptions) (*kops.ClusterLi
 }
 
 func (c *VFSClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
+	if cluster.Spec.ConfigBase != "" {
+		return vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+	}
 	return c.clusters().configBase(cluster.Name)
 }
 

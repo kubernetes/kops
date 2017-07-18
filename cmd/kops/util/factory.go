@@ -74,6 +74,8 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 				return nil, fmt.Errorf("Invalid kops server url: %q", registryPath)
 			}
 
+			u.Scheme = "https"
+
 			config := &rest.Config{
 				Host: u.Scheme + "://" + u.Host,
 			}

@@ -1577,6 +1577,27 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 			},
 			Dependencies: []string{},
 		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha1.Assets": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"containerRegistry": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"fileRepository": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
+		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.AuthenticationSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
@@ -2144,11 +2165,17 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 								},
 							},
 						},
+						"assets": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Alternative locations for files and containers",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.Assets"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha1.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha1.ClusterZoneSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.TopologySpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha1.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.Assets", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha1.ClusterZoneSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.TopologySpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.ClusterZoneSpec": {
 			Schema: spec.Schema{
@@ -3386,9 +3413,16 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 								Format:      "",
 							},
 						},
+						"podInfraContainerImage": {
+							SchemaProps: spec.SchemaProps{
+								Description: "podInfraContainerImage is the image whose network/ipc namespaces containers in each pod will use.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"allowPrivileged": {
 							SchemaProps: spec.SchemaProps{
-								Description: "// podInfraContainerImage is the image whose network/ipc namespaces // containers in each pod will use. PodInfraContainerImage string `json:\"podInfraContainerImage\"` // dockerEndpoint is the path to the docker endpoint to communicate with. DockerEndpoint string `json:\"dockerEndpoint\"` // rootDirectory is the directory path to place kubelet files (volume // mounts,etc). RootDirectory string `json:\"rootDirectory\"` // seccompProfileRoot is the directory path for seccomp profiles. SeccompProfileRoot string `json:\"seccompProfileRoot\"` allowPrivileged enables containers to request privileged mode. Defaults to false.",
+								Description: "// dockerEndpoint is the path to the docker endpoint to communicate with. DockerEndpoint string `json:\"dockerEndpoint\"` // rootDirectory is the directory path to place kubelet files (volume // mounts,etc). RootDirectory string `json:\"rootDirectory\"` // seccompProfileRoot is the directory path for seccomp profiles. SeccompProfileRoot string `json:\"seccompProfileRoot\"` allowPrivileged enables containers to request privileged mode. Defaults to false.",
 								Type:        []string{"boolean"},
 								Format:      "",
 							},
@@ -3900,6 +3934,27 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
 					Properties: map[string]spec.Schema{},
+				},
+			},
+			Dependencies: []string{},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.Assets": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"containerRegistry": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"fileRepository": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+					},
 				},
 			},
 			Dependencies: []string{},
@@ -4465,11 +4520,17 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 								},
 							},
 						},
+						"assets": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Alternative locations for files and containers",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.Assets"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha2.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha2.ClusterSubnetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.TopologySpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha2.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.Assets", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha2.ClusterSubnetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.TopologySpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.ClusterSubnetSpec": {
 			Schema: spec.Schema{
@@ -5132,6 +5193,142 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 			Dependencies: []string{
 				"k8s.io/kops/pkg/apis/kops/v1alpha2.KubeletConfigSpec"},
 		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.KeyItem": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"id": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Id is the unique identifier for this key in the keyset",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"publicMaterial": {
+							SchemaProps: spec.SchemaProps{
+								Description: "PublicMaterial holds non-secret material (e.g. a certificate, or SSH public key)",
+								Type:        []string{"string"},
+								Format:      "byte",
+							},
+						},
+						"privateMaterial": {
+							SchemaProps: spec.SchemaProps{
+								Description: "PrivateMaterial holds secret material (e.g. a private key, SSH private key, or symmetric token)",
+								Type:        []string{"string"},
+								Format:      "byte",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.Keyset": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"kind": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"apiVersion": {
+							SchemaProps: spec.SchemaProps{
+								Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"metadata": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta"),
+							},
+						},
+						"spec": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.KeysetSpec"),
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/apimachinery/pkg/apis/meta/v1.ObjectMeta", "k8s.io/kops/pkg/apis/kops/v1alpha2.KeysetSpec"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.KeysetList": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"kind": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"apiVersion": {
+							SchemaProps: spec.SchemaProps{
+								Description: "APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"metadata": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta"),
+							},
+						},
+						"items": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.Keyset"),
+										},
+									},
+								},
+							},
+						},
+					},
+					Required: []string{"items"},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/apimachinery/pkg/apis/meta/v1.ListMeta", "k8s.io/kops/pkg/apis/kops/v1alpha2.Keyset"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.KeysetSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"channel": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Type is the type of the Key",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"keys": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Keys is the set of keys that make up the keyset",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.KeyItem"),
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{
+				"k8s.io/kops/pkg/apis/kops/v1alpha2.KeyItem"},
+		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.KopeioAuthenticationSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
@@ -5710,6 +5907,13 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 						"hostnameOverride": {
 							SchemaProps: spec.SchemaProps{
 								Description: "hostnameOverride is the hostname used to identify the kubelet instead of the actual hostname. Note: We recognize some additional values:\n @aws uses the hostname from the AWS metadata service",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"podInfraContainerImage": {
+							SchemaProps: spec.SchemaProps{
+								Description: "podInfraContainerImage is the image whose network/ipc namespaces containers in each pod will use.",
 								Type:        []string{"string"},
 								Format:      "",
 							},

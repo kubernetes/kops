@@ -18,7 +18,7 @@ package validation
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/api/validation"
+	//"k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
@@ -35,7 +35,8 @@ func ValidateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.
 }
 
 func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
-	allErrs := validation.ValidateObjectMeta(&cluster.ObjectMeta, false, validation.NameIsDNSSubdomain, field.NewPath("metadata"))
+	allErrs := field.ErrorList{}
+	//allErrs := validation.ValidateObjectMeta(&cluster.ObjectMeta, true, validation.NameIsDNSSubdomain, field.NewPath("metadata"))
 	allErrs = append(allErrs, validateClusterSpec(&cluster.Spec, field.NewPath("spec"))...)
 	return allErrs
 }

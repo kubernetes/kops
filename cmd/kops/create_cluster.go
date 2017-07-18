@@ -116,6 +116,9 @@ type CreateClusterOptions struct {
 	// We need VSphereDatastore to support Kubernetes vSphere Cloud Provider (v1.5.3)
 	// We can remove this once we support higher versions.
 	VSphereDatastore string
+
+	// ConfigBase is the location where we will store the configuration, it defaults to the state store
+	ConfigBase string
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -221,6 +224,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Specify --yes to immediately create the cluster")
 	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
 	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
+
+	// Configuration / state location
+	cmd.Flags().StringVar(&options.ConfigBase, "config-base", options.ConfigBase, "The location where the cluster state files should be stored")
 
 	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere")
 
@@ -362,6 +368,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 	cluster.Spec.Channel = c.Channel
 
+	cluster.Spec.ConfigBase = c.ConfigBase
 	configBase, err := clientset.ConfigBaseFor(cluster)
 	if err != nil {
 		return fmt.Errorf("error building ConfigBase for cluster: %v", err)
