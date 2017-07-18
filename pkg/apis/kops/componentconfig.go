@@ -329,6 +329,19 @@ type KubeletConfigSpec struct {
 
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
+
+	// Resource reservation for kubernetes system daemons like the kubelet,
+	// container runtime, node problem detector, etc.
+	KubeReserved map[string]string `json:"kubeReserved,omitempty" flag:"kube-reserved"`
+	// Control group for kube daemons.
+	KubeReservedCgroup string `json:"kubeReservedCgroup,omitempty" flag:"kube-reserved-cgroup"`
+	// Capture resource reservation for OS system daemons like sshd, udev, etc.
+	SystemReserved map[string]string `json:"systemReserved,omitempty" flag:"system-reserved"`
+	// Parent control group for OS system daemons.
+	SystemReservedCgroup string `json:"systemReservedCgroup,omitempty" flag:"system-reserved-cgroup"`
+	// Enforce Allocatable across pods whenever the overall usage across all pods
+	// exceeds Allocatable.
+	EnforceNodeAllocatable string `json:"enforceNodeAllocatable,omitempty" flag:"enforce-node-allocatable"`
 }
 
 type KubeProxyConfig struct {
