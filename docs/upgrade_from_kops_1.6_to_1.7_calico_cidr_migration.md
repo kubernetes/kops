@@ -56,10 +56,11 @@ pool that we no longer want. This is to be executed after an
 and before a `kops rolling-upgrade cluster`.
 
 1. Using kops >= 1.7, update your cluster using `kops update cluster [--yes]`.
-2. Specify your cluster name in a `NAME` variable and run the following bash script:
+2. Specify your cluster name in a `NAME` variable, download the template and bash script, and then run the bash script:
 ```bash
 export NAME="YOUR_CLUSTER_NAME"
 wget https://raw.githubusercontent.com/kubernetes/kops/master/docs/calico_cidr_migration/create_migration_manifest.sh -O create_migration_manifest.sh
+wget https://raw.githubusercontent.com/kubernetes/kops/master/docs/calico_cidr_migration/jobs.yaml.template -O jobs.yaml.template
 chmod +x create_migration_manifest.sh
 ./create_migration_manifest.sh
 ```
