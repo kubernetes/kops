@@ -28,7 +28,7 @@ spec:
       hostNetwork: true
       containers:
       - name: dns-controller
-        image: kope/dns-controller:1.7.0
+        image: kope/dns-controller:1.7.1
         command:
 {{ range $arg := DnsControllerArgv }}
         - "{{ $arg }}"
