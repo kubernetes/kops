@@ -56,10 +56,11 @@ pool that we no longer want. This is to be executed after an
 and before a `kops rolling-upgrade cluster`.
 
 1. Using kops >= 1.7, update your cluster using `kops update cluster [--yes]`.
-2. Specify your cluster name in a `NAME` variable and run the following bash script:
+2. Specify your cluster name in a `NAME` variable, download the template and bash script, and then run the bash script:
 ```bash
 export NAME="YOUR_CLUSTER_NAME"
 wget https://raw.githubusercontent.com/kubernetes/kops/master/docs/calico_cidr_migration/create_migration_manifest.sh -O create_migration_manifest.sh
+wget https://raw.githubusercontent.com/kubernetes/kops/master/docs/calico_cidr_migration/jobs.yaml.template -O jobs.yaml.template
 chmod +x create_migration_manifest.sh
 ./create_migration_manifest.sh
 ```
@@ -67,7 +68,7 @@ This will create a `jobs.yaml` manifest file that is used by the next step.
 
 3. Make sure the current-context in the kubeconfig is the cluster you want to perform this migration.
 Run the job: `kubectl apply -f jobs.yaml`
-4. Run `kops rolling-upgrade --force --yes` to initiate a rolling restart on the cluster.
+4. Run `kops rolling-update --force --yes` to initiate a rolling restart on the cluster.
 This forces a restart of all nodes in the cluster.
 
 That's it, you should see new Pods be allocated IPs in the new IP range!
