@@ -130,7 +130,9 @@ func (s *S3Context) getRegionForBucket(bucket string) (string, error) {
 	var response *s3.GetBucketLocationOutput
 
 	s3Client, err := s.getClient(awsRegion)
-
+	if err != nil {
+		return "", fmt.Errorf("error connecting to S3: %s", err)
+	}
 	// Attempt one GetBucketLocation call the "normal" way (i.e. as the bucket owner)
 	response, err = s3Client.GetBucketLocation(request)
 
