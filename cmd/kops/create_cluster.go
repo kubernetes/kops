@@ -846,10 +846,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if len(c.AdminAccess) != 0 {
 		if len(c.SSHAccess) != 0 {
-			glog.Infof("SSHAccess set to: %s", c.SSHAccess)
 			cluster.Spec.SSHAccess = c.SSHAccess
 		} else {
-			glog.Infof("SSHAccess set to: %s", c.SSHAccess)
 			cluster.Spec.SSHAccess = c.AdminAccess
 		}
 		cluster.Spec.KubernetesAPIAccess = c.AdminAccess
