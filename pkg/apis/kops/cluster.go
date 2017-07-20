@@ -116,6 +116,9 @@ type ClusterSpec struct {
 	// SSHAccess is a list of the CIDRs that can access SSH.
 	SSHAccess []string `json:"sshAccess,omitempty"`
 
+	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
+	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
+
 	// KubernetesAPIAccess is a list of the CIDRs that can access the Kubernetes API endpoint (master HTTPS)
 	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
 
@@ -363,6 +366,18 @@ type ClusterSubnetSpec struct {
 	Egress string `json:"egress,omitempty"`
 
 	Type SubnetType `json:"type,omitempty"`
+}
+
+type EgressProxySpec struct {
+	HTTPProxy     HTTPProxySpec `json:"httpProxy,omitempty"`
+	ProxyExcludes string        `json:"excludes,omitempty"`
+}
+
+type HTTPProxySpec struct {
+	Host     string `json:"host,omitempty"`
+	Port     int    `json:"port,omitempty"`
+	User     string `json:"user,omitempty"`
+	Password string `json:"password,omitempty"`
 }
 
 // FillDefaults populates default values.

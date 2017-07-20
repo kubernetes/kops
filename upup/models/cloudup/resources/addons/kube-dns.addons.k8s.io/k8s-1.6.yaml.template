@@ -49,12 +49,19 @@ spec:
           - --default-params={"linear":{"coresPerReplica":256,"nodesPerReplica":16,"preventSinglePointFailure":true}}
           - --logtostderr=true
           - --v=2
-      tolerations:
+{{ if (len ProxyEnv) ne 0 }}
+        env:
+{{ range $name, $value := ProxyEnv }}
+        - name: {{ $name }}
+          value: {{ $value }}
+{{ end }}
+{{ end }}
+      toleration::
       - key: "CriticalAddonsOnly"
         operator: "Exists"
       serviceAccountName: kube-dns-autoscaler
 
----
+
 
 apiVersion: extensions/v1beta1
 kind: Deployment
