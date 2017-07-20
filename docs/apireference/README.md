@@ -8,10 +8,10 @@ Or build the most recent from src using:
 
 ```sh
 # Install the apiserver-builder commands
-go get github.com/kubernetes-incubator/apiserver-builder/cmd/...
+go get -u github.com/kubernetes-incubator/apiserver-builder/cmd/...
 
-# Install the referene docs commands (apiserver-builder commands invoke these)
-go get github.com/kubernetes-incubator/reference-docs/gen-apidocs/...
+# Install the reference docs commands (apiserver-builder commands invoke these)
+go get -u github.com/kubernetes-incubator/reference-docs/gen-apidocs/...
 
 # Install the code generation commands (apiserver-builder commands invoke these)
 go install k8s.io/kubernetes/cmd/libs/go2idl/openapi-gen
