@@ -24,6 +24,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -40,7 +41,7 @@ type Loader struct {
 	cluster   *api.Cluster
 
 	assets *fi.AssetStore
-	tasks  map[string]fi.Task
+	tasks  map[string]tasks.Task
 
 	tags              sets.String
 	TemplateFunctions template.FuncMap
@@ -49,7 +50,7 @@ type Loader struct {
 func NewLoader(config *nodeup.NodeUpConfig, cluster *api.Cluster, assets *fi.AssetStore, tags sets.String) *Loader {
 	l := &Loader{}
 	l.assets = assets
-	l.tasks = make(map[string]fi.Task)
+	l.tasks = make(map[string]tasks.Task)
 	l.config = config
 	l.cluster = cluster
 	l.TemplateFunctions = make(template.FuncMap)
@@ -89,7 +90,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
 }
 
-func (l *Loader) Build(baseDir vfs.Path) (map[string]fi.Task, error) {
+func (l *Loader) Build(baseDir vfs.Path) (map[string]tasks.Task, error) {
 	// First pass: load options
 	tw := &loader.TreeWalker{
 		DefaultHandler: ignoreHandler,
@@ -152,7 +153,7 @@ func (l *Loader) Build(baseDir vfs.Path) (map[string]fi.Task, error) {
 	return l.tasks, nil
 }
 
-type TaskBuilder func(name string, contents string, meta string) (fi.Task, error)
+type TaskBuilder func(name string, contents string, meta string) (tasks.Task, error)
 
 func (r *Loader) newTaskHandler(prefix string, builder TaskBuilder) loader.Handler {
 	return func(i *loader.TreeWalkItem) error {

@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -128,7 +129,7 @@ func (e *SecurityGroup) findEc2(c *fi.Context) (*ec2.SecurityGroup, error) {
 	return sg, nil
 }
 
-func (e *SecurityGroup) Run(c *fi.Context) error {
+func (e *SecurityGroup) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

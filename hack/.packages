@@ -76,6 +76,7 @@ k8s.io/kops/pkg/resources
 k8s.io/kops/pkg/resources/digitalocean
 k8s.io/kops/pkg/resources/digitalocean/dns
 k8s.io/kops/pkg/systemd
+k8s.io/kops/pkg/tasks
 k8s.io/kops/pkg/templates
 k8s.io/kops/pkg/testutils
 k8s.io/kops/pkg/util/stringorslice

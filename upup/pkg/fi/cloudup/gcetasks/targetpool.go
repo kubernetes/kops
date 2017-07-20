@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -55,7 +56,7 @@ func (e *TargetPool) Find(c *fi.Context) (*TargetPool, error) {
 	return actual, nil
 }
 
-func (e *TargetPool) Run(c *fi.Context) error {
+func (e *TargetPool) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

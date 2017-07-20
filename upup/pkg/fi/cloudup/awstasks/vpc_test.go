@@ -20,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"reflect"
@@ -32,13 +33,13 @@ func TestVPCCreate(t *testing.T) {
 	cloud.MockEC2 = c
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
-	buildTasks := func() map[string]fi.Task {
+	buildTasks := func() map[string]tasks.Task {
 		vpc1 := &VPC{
 			Name: s("vpc1"),
 			CIDR: s("172.21.0.0/16"),
 			Tags: map[string]string{"Name": "vpc1"},
 		}
-		return map[string]fi.Task{
+		return map[string]tasks.Task{
 			"vpc1": vpc1,
 		}
 	}

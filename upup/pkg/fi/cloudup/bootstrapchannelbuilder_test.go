@@ -33,6 +33,7 @@ import (
 
 	// Register our APIs
 	_ "k8s.io/kops/pkg/apis/kops/install"
+	"k8s.io/kops/pkg/tasks"
 )
 
 func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
@@ -84,7 +85,7 @@ func runChannelBuilderTest(t *testing.T, key string) {
 	}
 
 	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+		Tasks: make(map[string]tasks.Task),
 	}
 	err = bcb.Build(context)
 	if err != nil {

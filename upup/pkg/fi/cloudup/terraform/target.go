@@ -23,6 +23,7 @@ import (
 	hcl_parser "github.com/hashicorp/hcl/json/parser"
 	"io/ioutil"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"os"
 	"path"
@@ -157,7 +158,7 @@ func (t *TerraformTarget) AddOutputVariableArray(key string, literal *Literal) e
 	return nil
 }
 
-func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
+func (t *TerraformTarget) Finish(taskMap map[string]tasks.Task) error {
 	resourcesByType := make(map[string]map[string]interface{})
 
 	for _, res := range t.resources {

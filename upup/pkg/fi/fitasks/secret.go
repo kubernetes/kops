@@ -18,6 +18,7 @@ package fitasks
 
 import (
 	"fmt"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -56,7 +57,7 @@ func (e *Secret) Find(c *fi.Context) (*Secret, error) {
 	return actual, nil
 }
 
-func (e *Secret) Run(c *fi.Context) error {
+func (e *Secret) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

@@ -17,7 +17,7 @@ limitations under the License.
 package nodetasks
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/pkg/tasks"
 	"reflect"
 	"testing"
 )
@@ -25,12 +25,12 @@ import (
 func TestServiceTask_Deps(t *testing.T) {
 	s := &Service{}
 
-	tasks := make(map[string]fi.Task)
-	tasks["LoadImageTask1"] = &LoadImageTask{}
-	tasks["FileTask1"] = &File{}
+	taskMap := make(map[string]tasks.Task)
+	taskMap["LoadImageTask1"] = &LoadImageTask{}
+	taskMap["FileTask1"] = &File{}
 
-	deps := s.GetDependencies(tasks)
-	expected := []fi.Task{tasks["FileTask1"]}
+	deps := s.GetDependencies(taskMap)
+	expected := []tasks.Task{taskMap["FileTask1"]}
 	if !reflect.DeepEqual(expected, deps) {
 		t.Fatalf("unexpected deps.  expected=%v, actual=%v", expected, deps)
 	}
@@ -39,17 +39,17 @@ func TestServiceTask_Deps(t *testing.T) {
 type FakeTask struct {
 }
 
-func (t *FakeTask) Run(*fi.Context) error {
+func (t *FakeTask) Run(tasks.Context) error {
 	panic("not implemented")
 }
 func TestServiceTask_UnknownTypes(t *testing.T) {
 	s := &Service{}
 
-	tasks := make(map[string]fi.Task)
-	tasks["FakeTask1"] = &FakeTask{}
+	taskMap := make(map[string]tasks.Task)
+	taskMap["FakeTask1"] = &FakeTask{}
 
-	deps := s.GetDependencies(tasks)
-	expected := []fi.Task{tasks["FakeTask1"]}
+	deps := s.GetDependencies(taskMap)
+	expected := []tasks.Task{taskMap["FakeTask1"]}
 	if !reflect.DeepEqual(expected, deps) {
 		t.Fatalf("unexpected deps.  expected=%v, actual=%v", expected, deps)
 	}

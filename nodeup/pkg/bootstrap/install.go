@@ -23,6 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/systemd"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
@@ -48,7 +49,7 @@ func (i *Installation) Run() error {
 	tags := sets.NewString()
 	tags.Insert(distribution.BuildTags()...)
 
-	tasks := make(map[string]fi.Task)
+	tasks := make(map[string]tasks.Task)
 
 	buildContext := &fi.ModelBuilderContext{
 		Tasks: tasks,

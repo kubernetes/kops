@@ -19,6 +19,7 @@ package nodetasks
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -39,8 +40,8 @@ func NewUpdatePackages() *UpdatePackages {
 	return &UpdatePackages{Updated: true}
 }
 
-func (p *UpdatePackages) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	return []fi.Task{}
+func (p *UpdatePackages) GetDependencies(taskMap map[string]tasks.Task) []tasks.Task {
+	return []tasks.Task{}
 }
 
 func (p *UpdatePackages) String() string {
@@ -51,7 +52,7 @@ func (e *UpdatePackages) Find(c *fi.Context) (*UpdatePackages, error) {
 	return nil, nil
 }
 
-func (e *UpdatePackages) Run(c *fi.Context) error {
+func (e *UpdatePackages) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

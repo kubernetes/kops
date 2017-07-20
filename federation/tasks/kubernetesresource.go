@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/federation/targets/kubernetestarget"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -43,7 +44,7 @@ func (e *KubernetesResource) Find(c *fi.Context) (*KubernetesResource, error) {
 	return nil, nil
 }
 
-func (e *KubernetesResource) Run(c *fi.Context) error {
+func (e *KubernetesResource) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

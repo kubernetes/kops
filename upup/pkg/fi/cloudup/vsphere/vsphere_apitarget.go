@@ -18,7 +18,10 @@ package vsphere
 
 // vsphere_target represents API execution target for vSphere.
 
-import "k8s.io/kops/upup/pkg/fi"
+import (
+	"k8s.io/kops/pkg/tasks"
+	"k8s.io/kops/upup/pkg/fi"
+)
 
 // VSphereAPITarget represents target for vSphere, where cluster deployment with take place.
 type VSphereAPITarget struct {
@@ -35,7 +38,7 @@ func NewVSphereAPITarget(cloud *VSphereCloud) *VSphereAPITarget {
 }
 
 // Finish is no-op for vSphere cloud.
-func (t *VSphereAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *VSphereAPITarget) Finish(taskMap map[string]tasks.Task) error {
 	return nil
 }
 

@@ -20,6 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/ec2"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -83,6 +84,6 @@ func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscaling.Block
 
 var _ fi.HasDependencies = &BlockDeviceMapping{}
 
-func (f *BlockDeviceMapping) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (f *BlockDeviceMapping) GetDependencies(tasks map[string]tasks.Task) []tasks.Task {
 	return nil
 }

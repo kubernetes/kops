@@ -24,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -56,8 +57,8 @@ func (e *ElasticIP) CompareWithID() *string {
 
 var _ fi.HasAddress = &ElasticIP{}
 
-func (e *ElasticIP) FindIPAddress(context *fi.Context) (*string, error) {
-	actual, err := e.find(context.Cloud.(awsup.AWSCloud))
+func (e *ElasticIP) FindIPAddress(context tasks.Context) (*string, error) {
+	actual, err := e.find(context.(*fi.Context).Cloud.(awsup.AWSCloud))
 	if err != nil {
 		return nil, fmt.Errorf("error querying for ElasticIP: %v", err)
 	}
@@ -172,7 +173,7 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 // This is the main entry point of the task, and will actually
 // connect our internal resource representation to an actual
 // resource in AWS
-func (e *ElasticIP) Run(c *fi.Context) error {
+func (e *ElasticIP) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

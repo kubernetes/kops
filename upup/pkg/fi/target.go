@@ -16,9 +16,11 @@ limitations under the License.
 
 package fi
 
+import "k8s.io/kops/pkg/tasks"
+
 type Target interface {
 	// Lifecycle methods, called by the driver
-	Finish(taskMap map[string]Task) error
+	Finish(taskMap map[string]tasks.Task) error
 
 	// ProcessDeletions returns true if we should delete resources
 	// Some providers (e.g. Terraform) actively keep state, and will delete resources automatically

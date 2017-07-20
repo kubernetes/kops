@@ -21,6 +21,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"os"
@@ -37,7 +38,7 @@ func TestElasticIPCreate(t *testing.T) {
 	cloud.MockEC2 = c
 
 	// We define a function so we can rebuild the tasks, because we modify in-place when running
-	buildTasks := func() map[string]fi.Task {
+	buildTasks := func() map[string]tasks.Task {
 		vpc1 := &VPC{
 			Name: s("vpc1"),
 			CIDR: s("172.20.0.0/16"),
@@ -54,7 +55,7 @@ func TestElasticIPCreate(t *testing.T) {
 			TagOnSubnet: subnet1,
 		}
 
-		return map[string]fi.Task{
+		return map[string]tasks.Task{
 			"eip1":    eip1,
 			"subnet1": subnet1,
 			"vpc1":    vpc1,
@@ -103,7 +104,7 @@ func TestElasticIPCreate(t *testing.T) {
 	}
 }
 
-func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
+func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]tasks.Task) {
 	assetBuilder := assets.NewAssetBuilder()
 	target := fi.NewDryRunTarget(assetBuilder, os.Stderr)
 	context, err := fi.NewContext(target, cloud, nil, nil, nil, true, allTasks)

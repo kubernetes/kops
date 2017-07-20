@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -158,7 +159,7 @@ func Test_RunKubeletBuilder(t *testing.T) {
 	basedir := "tests/kubelet/featuregates"
 
 	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+		Tasks: make(map[string]tasks.Task),
 	}
 	nodeUpModelContext, err := LoadModel(basedir)
 	if err != nil {

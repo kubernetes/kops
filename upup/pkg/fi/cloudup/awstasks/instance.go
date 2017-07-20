@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -178,8 +179,8 @@ func nameFromIAMARN(arn *string) *string {
 	return &name
 }
 
-func (e *Instance) Run(c *fi.Context) error {
-	cloud := c.Cloud.(awsup.AWSCloud)
+func (e *Instance) Run(c tasks.Context) error {
+	cloud := c.(*fi.Context).Cloud.(awsup.AWSCloud)
 
 	cloud.AddTags(e.Name, e.Tags)
 

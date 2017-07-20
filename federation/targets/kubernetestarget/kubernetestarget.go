@@ -22,6 +22,7 @@ import (
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/kutil"
 )
@@ -59,7 +60,7 @@ func NewKubernetesTarget(clientset simple.Clientset, keyStore fi.Keystore, clust
 
 var _ fi.Target = &KubernetesTarget{}
 
-func (t *KubernetesTarget) Finish(taskMap map[string]fi.Task) error {
+func (t *KubernetesTarget) Finish(taskMap map[string]tasks.Task) error {
 	return nil
 }
 

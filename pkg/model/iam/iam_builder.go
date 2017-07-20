@@ -26,6 +26,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/pkg/util/stringorslice"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -313,8 +314,8 @@ type IAMPolicyResource struct {
 var _ fi.Resource = &IAMPolicyResource{}
 var _ fi.HasDependencies = &IAMPolicyResource{}
 
-func (b *IAMPolicyResource) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (b *IAMPolicyResource) GetDependencies(taskMap map[string]tasks.Task) []tasks.Task {
+	var deps []tasks.Task
 	if b.DNSZone != nil {
 		deps = append(deps, b.DNSZone)
 	}

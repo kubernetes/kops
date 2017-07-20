@@ -19,6 +19,7 @@ package nodetasks
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -35,7 +36,7 @@ type UserTask struct {
 	Home  string `json:"home"`
 }
 
-var _ fi.Task = &UserTask{}
+var _ tasks.Task = &UserTask{}
 
 func (e *UserTask) String() string {
 	return fmt.Sprintf("User: %s", e.Name)
@@ -51,7 +52,7 @@ func (f *UserTask) SetName(name string) {
 	glog.Fatalf("SetName not supported for User task")
 }
 
-func NewUserTask(name string, contents string, meta string) (fi.Task, error) {
+func NewUserTask(name string, contents string, meta string) (tasks.Task, error) {
 	s := &UserTask{Name: name}
 
 	err := utils.YamlUnmarshal([]byte(contents), s)
@@ -80,7 +81,7 @@ func (e *UserTask) Find(c *fi.Context) (*UserTask, error) {
 	return actual, nil
 }
 
-func (e *UserTask) Run(c *fi.Context) error {
+func (e *UserTask) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

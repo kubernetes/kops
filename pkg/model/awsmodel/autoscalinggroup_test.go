@@ -19,6 +19,7 @@ package awsmodel
 import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"testing"
@@ -85,7 +86,7 @@ func TestRootVolumeOptimizationFlag(t *testing.T) {
 	}
 
 	c := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+		Tasks: make(map[string]tasks.Task),
 	}
 
 	b.Build(c)

@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -33,7 +34,7 @@ type LoadBalancerAccessLog struct {
 	S3BucketPrefix *string
 }
 
-func (_ *LoadBalancerAccessLog) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *LoadBalancerAccessLog) GetDependencies(tasks map[string]tasks.Task) []tasks.Task {
 	return nil
 }
 
@@ -65,7 +66,7 @@ type LoadBalancerConnectionDraining struct {
 	Timeout *int64
 }
 
-func (_ *LoadBalancerConnectionDraining) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *LoadBalancerConnectionDraining) GetDependencies(tasks map[string]tasks.Task) []tasks.Task {
 	return nil
 }
 
@@ -73,7 +74,7 @@ type LoadBalancerCrossZoneLoadBalancing struct {
 	Enabled *bool
 }
 
-func (_ *LoadBalancerCrossZoneLoadBalancing) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *LoadBalancerCrossZoneLoadBalancing) GetDependencies(tasks map[string]tasks.Task) []tasks.Task {
 	return nil
 }
 
@@ -81,7 +82,7 @@ type LoadBalancerConnectionSettings struct {
 	IdleTimeout *int64
 }
 
-func (_ *LoadBalancerConnectionSettings) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (_ *LoadBalancerConnectionSettings) GetDependencies(tasks map[string]tasks.Task) []tasks.Task {
 	return nil
 }
 

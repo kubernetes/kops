@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"os"
@@ -40,10 +41,10 @@ type Context struct {
 
 	CheckExisting bool
 
-	tasks map[string]Task
+	tasks map[string]tasks.Task
 }
 
-func NewContext(target Target, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
+func NewContext(target Target, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]tasks.Task) (*Context, error) {
 	c := &Context{
 		Cloud:             cloud,
 		Target:            target,
@@ -63,7 +64,7 @@ func NewContext(target Target, cloud Cloud, keystore Keystore, secretStore Secre
 	return c, nil
 }
 
-func (c *Context) AllTasks() map[string]Task {
+func (c *Context) AllTasks() map[string]tasks.Task {
 	return c.tasks
 }
 
@@ -98,7 +99,7 @@ func (c *Context) NewTempDir(prefix string) (string, error) {
 
 var typeContextPtr = reflect.TypeOf((*Context)(nil))
 
-func (c *Context) Render(a, e, changes Task) error {
+func (c *Context) Render(a, e, changes tasks.Task) error {
 	if _, ok := c.Target.(*DryRunTarget); ok {
 		return c.Target.(*DryRunTarget).Render(a, e, changes)
 	}

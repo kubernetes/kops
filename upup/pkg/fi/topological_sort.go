@@ -20,38 +20,37 @@ import (
 	"crypto/x509/pkix"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"reflect"
 )
 
 type HasDependencies interface {
-	GetDependencies(tasks map[string]Task) []Task
+	GetDependencies(tasks map[string]tasks.Task) []tasks.Task
 }
 
 // FindTaskDependencies returns a map from each task's key to the discovered list of dependencies
-func FindTaskDependencies(tasks map[string]Task) map[string][]string {
+func FindTaskDependencies(taskMap map[string]tasks.Task) map[string][]string {
 	taskToId := make(map[interface{}]string)
-	for k, t := range tasks {
+	for k, t := range taskMap {
 		taskToId[t] = k
 	}
 
 	edges := make(map[string][]string)
 
-	for k, t := range tasks {
-		task := t.(Task)
-
-		var dependencies []Task
+	for k, task := range taskMap {
+		var dependencies []tasks.Task
 		if hd, ok := task.(HasDependencies); ok {
-			dependencies = hd.GetDependencies(tasks)
+			dependencies = hd.GetDependencies(taskMap)
 		} else {
-			dependencies = reflectForDependencies(tasks, task)
+			dependencies = reflectForDependencies(taskMap, task)
 		}
 
 		var dependencyKeys []string
 		for _, dep := range dependencies {
 			dependencyKey, found := taskToId[dep]
 			if !found {
-				glog.Fatalf("dependency not found: %v", dep)
+				glog.Fatalf("dependency not found: %v (dependency of %s: %v)", dep, k, task)
 			}
 			dependencyKeys = append(dependencyKeys, dependencyKey)
 		}
@@ -67,13 +66,13 @@ func FindTaskDependencies(tasks map[string]Task) map[string][]string {
 	return edges
 }
 
-func reflectForDependencies(tasks map[string]Task, task Task) []Task {
+func reflectForDependencies(tasks map[string]tasks.Task, task tasks.Task) []tasks.Task {
 	v := reflect.ValueOf(task).Elem()
 	return getDependencies(tasks, v)
 }
 
-func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
-	var dependencies []Task
+func getDependencies(taskMap map[string]tasks.Task, v reflect.Value) []tasks.Task {
+	var dependencies []tasks.Task
 
 	err := utils.ReflectRecursive(v, func(path string, f *reflect.StructField, v reflect.Value) error {
 		if utils.IsPrimitiveValue(v) {
@@ -97,9 +96,9 @@ func getDependencies(tasks map[string]Task, v reflect.Value) []Task {
 			// TODO: Can we / should we use a type-switch statement
 			intf := v.Addr().Interface()
 			if hd, ok := intf.(HasDependencies); ok {
-				deps := hd.GetDependencies(tasks)
+				deps := hd.GetDependencies(taskMap)
 				dependencies = append(dependencies, deps...)
-			} else if dep, ok := intf.(Task); ok {
+			} else if dep, ok := intf.(tasks.Task); ok {
 				dependencies = append(dependencies, dep)
 			} else if _, ok := intf.(Resource); ok {
 				// Ignore: not a dependency (?)

@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -61,9 +62,9 @@ type Service struct {
 var _ fi.HasDependencies = &Service{}
 var _ fi.HasName = &Service{}
 
-func (p *Service) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
-	for _, v := range tasks {
+func (p *Service) GetDependencies(taskMap map[string]tasks.Task) []tasks.Task {
+	var deps []tasks.Task
+	for _, v := range taskMap {
 		// We assume that services depend on everything except for
 		// LoadImageTask. If there are any LoadImageTasks (e.g. we're
 		// launching a custom Kubernetes build), they all depend on
@@ -85,7 +86,7 @@ func (s *Service) String() string {
 	return fmt.Sprintf("Service: %s", s.Name)
 }
 
-func NewService(name string, contents string, meta string) (fi.Task, error) {
+func NewService(name string, contents string, meta string) (tasks.Task, error) {
 	s := &Service{Name: name}
 	s.Definition = fi.String(contents)
 
@@ -245,7 +246,7 @@ func getSystemdDependencies(serviceName string, definition string) ([]string, er
 	return dependencies, nil
 }
 
-func (e *Service) Run(c *fi.Context) error {
+func (e *Service) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

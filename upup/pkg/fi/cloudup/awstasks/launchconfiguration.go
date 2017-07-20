@@ -23,6 +23,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -204,7 +205,7 @@ func (e *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]
 	return blockDeviceMappings, nil
 }
 
-func (e *LaunchConfiguration) Run(c *fi.Context) error {
+func (e *LaunchConfiguration) Run(c tasks.Context) error {
 	// TODO: Make Normalize a standard method
 	e.Normalize()
 

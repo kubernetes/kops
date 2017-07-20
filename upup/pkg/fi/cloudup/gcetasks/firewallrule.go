@@ -19,6 +19,7 @@ package gcetasks
 import (
 	"fmt"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -66,7 +67,7 @@ func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
 	return actual, nil
 }
 
-func (e *FirewallRule) Run(c *fi.Context) error {
+func (e *FirewallRule) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

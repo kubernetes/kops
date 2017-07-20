@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -38,15 +39,15 @@ type LoadImageTask struct {
 	Hash   string
 }
 
-var _ fi.Task = &LoadImageTask{}
+var _ tasks.Task = &LoadImageTask{}
 var _ fi.HasDependencies = &LoadImageTask{}
 
-func (t *LoadImageTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (t *LoadImageTask) GetDependencies(taskMap map[string]tasks.Task) []tasks.Task {
 	// LoadImageTask depends on the docker service to ensure we
 	// sideload images after docker is completely updated and
 	// configured.
-	var deps []fi.Task
-	for _, v := range tasks {
+	var deps []tasks.Task
+	for _, v := range taskMap {
 		if svc, ok := v.(*Service); ok && svc.Name == dockerService {
 			deps = append(deps, v)
 		}
@@ -63,7 +64,7 @@ func (e *LoadImageTask) Find(c *fi.Context) (*LoadImageTask, error) {
 	return nil, nil
 }
 
-func (e *LoadImageTask) Run(c *fi.Context) error {
+func (e *LoadImageTask) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
