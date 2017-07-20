@@ -253,6 +253,20 @@ gen-cli-docs: kops # Regenerate CLI docs
 	KOPS_FEATURE_FLAGS= \
 	${KOPS} genhelpdocs --out docs/cli
 
+.PHONY: gen-api-docs
+gen-api-docs:
+	# Follow procedure in docs/apireference/README.md
+	# Install the apiserver-builder commands
+	go get -u github.com/kubernetes-incubator/apiserver-builder/cmd/...
+	# Install the reference docs commands (apiserver-builder commands invoke these)
+	go get -u github.com/kubernetes-incubator/reference-docs/gen-apidocs/...
+	# Install the code generation commands (apiserver-builder commands invoke these)
+	go install k8s.io/kubernetes/cmd/libs/go2idl/openapi-gen
+	# Update the `pkg/openapi/openapi_generated.go`
+	${GOPATH}/bin/apiserver-boot build generated --generator openapi --copyright hack/boilerplate/boilerplate.go.txt
+	go install k8s.io/kops/cmd/kops-server
+	${GOPATH}/bin/apiserver-boot build docs --disable-delegated-auth=false --output-dir docs/apireference --server kops-server
+
 .PHONY: push
 # Will always push a linux-based build up to the server
 push: crossbuild-nodeup
