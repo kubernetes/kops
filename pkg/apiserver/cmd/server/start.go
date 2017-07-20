@@ -17,9 +17,12 @@ limitations under the License.
 package server
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net"
+	"net/http"
+	"os"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -32,6 +35,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/apiserver"
+	"k8s.io/kops/pkg/openapi"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 
@@ -46,6 +50,8 @@ type KopsServerOptions struct {
 
 	StdOut io.Writer
 	StdErr io.Writer
+
+	PrintOpenapi bool
 }
 
 // NewCommandStartKopsServer provides a CLI handler for 'start master' command
@@ -84,6 +90,9 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 	//o.InsecureServing.AddFlags(flags)
 	o.Authentication.AddFlags(flags)
 	o.Authorization.AddFlags(flags)
+
+	flags.BoolVar(&o.PrintOpenapi, "print-openapi", false,
+		"Print the openapi json and exit")
 
 	return cmd
 }
@@ -134,12 +143,47 @@ func (o KopsServerOptions) RunKopsServer() error {
 		RESTOptionsGetter: &restOptionsFactory{storageConfig: &o.Etcd.StorageConfig},
 	}
 
+	// Configure the openapi spec provided on /swagger.json
+	// TODO: Come up with a better titlie and a meaningful version
+	config.GenericConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(
+		openapi.GetOpenAPIDefinitions, kops.Scheme)
+	config.GenericConfig.OpenAPIConfig.Info.Title = "Kops API"
+	config.GenericConfig.OpenAPIConfig.Info.Version = "0.1"
+
 	server, err := config.Complete().New()
 	if err != nil {
 		return err
 	}
-	return server.GenericAPIServer.PrepareRun().Run(wait.NeverStop)
+
+	srv := server.GenericAPIServer.PrepareRun()
+
+	// Just print the openapi spec and exit.  This is useful for
+	// updating the published openapi and generating documentation.
+	if o.PrintOpenapi {
+		fmt.Printf("%s", readOpenapi(server.GenericAPIServer.Handler))
+		os.Exit(0)
+	}
+
+	return srv.Run(wait.NeverStop)
 }
+
+// Read the openapi spec from the http request handler.
+func readOpenapi(handler *genericapiserver.APIServerHandler) string {
+	req, err := http.NewRequest("GET", "/swagger.json", nil)
+	if err != nil {
+		panic(fmt.Errorf("Could not create openapi request %v", err))
+	}
+	resp := &BufferedResponse{}
+	handler.ServeHTTP(resp, req)
+	return resp.String()
+}
+
+type BufferedResponse struct {
+	bytes.Buffer
+}
+
+func (BufferedResponse) Header() http.Header { return http.Header{} }
+func (BufferedResponse) WriteHeader(int)     {}
 
 type restOptionsFactory struct {
 	storageConfig *storagebackend.Config
