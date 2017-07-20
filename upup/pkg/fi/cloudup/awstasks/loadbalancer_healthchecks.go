@@ -18,6 +18,7 @@ package awstasks
 
 import (
 	"github.com/aws/aws-sdk-go/service/elb"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -33,7 +34,7 @@ type LoadBalancerHealthCheck struct {
 
 var _ fi.HasDependencies = &LoadBalancerListener{}
 
-func (e *LoadBalancerHealthCheck) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (e *LoadBalancerHealthCheck) GetDependencies(tasks map[string]tasks.Task) []tasks.Task {
 	return nil
 }
 

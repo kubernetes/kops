@@ -22,6 +22,7 @@ import (
 	"github.com/golang/glog"
 	"io"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"os"
@@ -176,7 +177,7 @@ func (t *CloudInitTarget) AddCommand(addBehaviour AddBehaviour, args ...string) 
 	t.Config.RunCommmands = append(t.Config.RunCommmands, args)
 }
 
-func (t *CloudInitTarget) Finish(taskMap map[string]fi.Task) error {
+func (t *CloudInitTarget) Finish(taskMap map[string]tasks.Task) error {
 	d, err := utils.YamlMarshal(t.Config)
 	if err != nil {
 		return fmt.Errorf("error serializing config to yaml: %v", err)

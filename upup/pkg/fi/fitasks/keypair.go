@@ -20,6 +20,7 @@ import (
 	"crypto/x509"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"net"
 	"sort"
@@ -34,10 +35,10 @@ var wellKnownCertificateTypes = map[string]string{
 //go:generate fitask -type=Keypair
 type Keypair struct {
 	Name               *string
-	Subject            string    `json:"subject"`
-	Type               string    `json:"type"`
-	AlternateNames     []string  `json:"alternateNames"`
-	AlternateNameTasks []fi.Task `json:"alternateNameTasks"`
+	Subject            string       `json:"subject"`
+	Type               string       `json:"type"`
+	AlternateNames     []string     `json:"alternateNames"`
+	AlternateNameTasks []tasks.Task `json:"alternateNameTasks"`
 }
 
 var _ fi.HasCheckExisting = &Keypair{}
@@ -84,7 +85,7 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 	return actual, nil
 }
 
-func (e *Keypair) Run(c *fi.Context) error {
+func (e *Keypair) Run(c tasks.Context) error {
 	err := e.normalize(c)
 	if err != nil {
 		return err
@@ -92,7 +93,7 @@ func (e *Keypair) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
-func (e *Keypair) normalize(c *fi.Context) error {
+func (e *Keypair) normalize(c tasks.Context) error {
 	var alternateNames []string
 
 	for _, s := range e.AlternateNames {

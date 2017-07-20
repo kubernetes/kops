@@ -18,6 +18,7 @@ package local
 
 import (
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -28,7 +29,7 @@ type LocalTarget struct {
 
 var _ fi.Target = &LocalTarget{}
 
-func (t *LocalTarget) Finish(taskMap map[string]fi.Task) error {
+func (t *LocalTarget) Finish(taskMap map[string]tasks.Task) error {
 	return nil
 }
 

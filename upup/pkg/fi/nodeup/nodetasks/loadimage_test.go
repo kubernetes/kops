@@ -17,7 +17,7 @@ limitations under the License.
 package nodetasks
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/pkg/tasks"
 	"reflect"
 	"testing"
 )
@@ -25,14 +25,14 @@ import (
 func TestLoadImageTask_Deps(t *testing.T) {
 	l := &LoadImageTask{}
 
-	tasks := make(map[string]fi.Task)
-	tasks["LoadImageTask1"] = &LoadImageTask{}
-	tasks["FileTask1"] = &File{}
-	tasks["ServiceDocker"] = &Service{Name: "docker.service"}
-	tasks["Service2"] = &Service{Name: "two.service"}
+	taskMap := make(map[string]tasks.Task)
+	taskMap["LoadImageTask1"] = &LoadImageTask{}
+	taskMap["FileTask1"] = &File{}
+	taskMap["ServiceDocker"] = &Service{Name: "docker.service"}
+	taskMap["Service2"] = &Service{Name: "two.service"}
 
-	deps := l.GetDependencies(tasks)
-	expected := []fi.Task{tasks["ServiceDocker"]}
+	deps := l.GetDependencies(taskMap)
+	expected := []tasks.Task{taskMap["ServiceDocker"]}
 	if !reflect.DeepEqual(expected, deps) {
 		t.Fatalf("unexpected deps.  expected=%v, actual=%v", expected, deps)
 	}

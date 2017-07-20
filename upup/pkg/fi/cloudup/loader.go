@@ -24,6 +24,7 @@ import (
 	"io"
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
@@ -57,7 +58,7 @@ type Loader struct {
 
 	Builders []fi.ModelBuilder
 
-	tasks map[string]fi.Task
+	tasks map[string]tasks.Task
 }
 
 type templateResource struct {
@@ -88,7 +89,7 @@ func (a *templateResource) Curry(args []string) fi.TemplateResource {
 }
 
 func (l *Loader) Init() {
-	l.tasks = make(map[string]fi.Task)
+	l.tasks = make(map[string]tasks.Task)
 	l.typeMap = make(map[string]reflect.Type)
 	l.Resources = make(map[string]fi.Resource)
 	l.TemplateFunctions = make(template.FuncMap)
@@ -146,7 +147,7 @@ func ignoreHandler(i *loader.TreeWalkItem) error {
 	return nil
 }
 
-func (l *Loader) BuildTasks(modelStore vfs.Path, models []string) (map[string]fi.Task, error) {
+func (l *Loader) BuildTasks(modelStore vfs.Path, models []string) (map[string]tasks.Task, error) {
 	// Second pass: load everything else
 	tw := &loader.TreeWalker{
 		DefaultHandler: l.objectHandler,
@@ -318,7 +319,7 @@ func (l *Loader) objectHandler(i *loader.TreeWalkItem) error {
 		if found {
 			return fmt.Errorf("found duplicate object: %q", k)
 		}
-		l.tasks[k] = v.(fi.Task)
+		l.tasks[k] = v.(tasks.Task)
 	}
 	return nil
 }

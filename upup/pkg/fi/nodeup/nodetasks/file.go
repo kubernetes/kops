@@ -19,6 +19,7 @@ package nodetasks
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -50,7 +51,7 @@ type File struct {
 	Type    string  `json:"type"`
 }
 
-var _ fi.Task = &File{}
+var _ tasks.Task = &File{}
 var _ fi.HasDependencies = &File{}
 var _ fi.HasName = &File{}
 
@@ -77,10 +78,10 @@ func NewFileTask(name string, src fi.Resource, destPath string, meta string) (*F
 
 var _ fi.HasDependencies = &File{}
 
-func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (f *File) GetDependencies(taskMap map[string]tasks.Task) []tasks.Task {
+	var deps []tasks.Task
 	if f.Owner != nil {
-		ownerTask := tasks["user/"+*f.Owner]
+		ownerTask := taskMap["user/"+*f.Owner]
 		if ownerTask == nil {
 			// The user might be a pre-existing user (e.g. admin)
 			glog.Warningf("Unable to find task %q", "user/"+*f.Owner)
@@ -92,14 +93,14 @@ func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	// Depend on disk mounts
 	// For simplicity, we just depend on _all_ disk mounts
 	// We could check the mountpath, but that feels excessive...
-	for _, v := range tasks {
+	for _, v := range taskMap {
 		if _, ok := v.(*MountDiskTask); ok {
 			deps = append(deps, v)
 		}
 	}
 
 	// Files depend on parent directories
-	for _, v := range tasks {
+	for _, v := range taskMap {
 		dir, ok := v.(*File)
 		if !ok {
 			continue
@@ -208,7 +209,7 @@ func (e *File) Find(c *fi.Context) (*File, error) {
 	return actual, nil
 }
 
-func (e *File) Run(c *fi.Context) error {
+func (e *File) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

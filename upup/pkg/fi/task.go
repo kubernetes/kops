@@ -19,18 +19,15 @@ package fi
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"reflect"
 	"strings"
 )
 
-type Task interface {
-	Run(*Context) error
-}
-
 // TaskAsString renders the task for debug output
 // TODO: Use reflection to make this cleaner: don't recurse into tasks - print their names instead
 // also print resources in a cleaner way (use the resource source information?)
-func TaskAsString(t Task) string {
+func TaskAsString(t tasks.Task) string {
 	return fmt.Sprintf("%T %s", t, DebugAsJsonString(t))
 }
 
@@ -45,10 +42,10 @@ type ModelBuilder interface {
 
 // ModelBuilderContext is a context object that holds state we want to pass to ModelBuilder
 type ModelBuilderContext struct {
-	Tasks map[string]Task
+	Tasks map[string]tasks.Task
 }
 
-func (c *ModelBuilderContext) AddTask(task Task) {
+func (c *ModelBuilderContext) AddTask(task tasks.Task) {
 	key := buildTaskKey(task)
 
 	existing, found := c.Tasks[key]
@@ -62,7 +59,7 @@ func (c *ModelBuilderContext) AddTask(task Task) {
 // It adds the task if it does not already exist.
 // If it does exist, it verifies that the existing task reflect.DeepEqual the new task,
 // if they are different an error is returned.
-func (c *ModelBuilderContext) EnsureTask(task Task) error {
+func (c *ModelBuilderContext) EnsureTask(task tasks.Task) error {
 	key := buildTaskKey(task)
 
 	existing, found := c.Tasks[key]
@@ -82,7 +79,7 @@ func (c *ModelBuilderContext) EnsureTask(task Task) error {
 	return nil
 }
 
-func buildTaskKey(task Task) string {
+func buildTaskKey(task tasks.Task) string {
 	hasName, ok := task.(HasName)
 	if !ok {
 		glog.Fatalf("task %T does not implement HasName", task)

@@ -20,6 +20,7 @@ package vspheretasks
 
 import (
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
@@ -35,9 +36,9 @@ var _ fi.HasName = &VMPowerOn{}
 var _ fi.HasDependencies = &VMPowerOn{}
 
 // GetDependencies returns map of tasks on which this task depends.
-func (o *VMPowerOn) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
-	attachISOTask := tasks["AttachISO/"+*o.AttachISO.Name]
+func (o *VMPowerOn) GetDependencies(taskMap map[string]tasks.Task) []tasks.Task {
+	var deps []tasks.Task
+	attachISOTask := taskMap["AttachISO/"+*o.AttachISO.Name]
 	if attachISOTask == nil {
 		glog.Fatalf("Unable to find attachISO task %s dependency for VMPowerOn %s", *o.AttachISO.Name, *o.Name)
 	}
@@ -56,7 +57,7 @@ func (o *VMPowerOn) SetName(name string) {
 }
 
 // Run executes DefaultDeltaRunMethod for this task.
-func (e *VMPowerOn) Run(c *fi.Context) error {
+func (e *VMPowerOn) Run(c tasks.Context) error {
 	glog.Info("VMPowerOn.Run invoked!")
 	return fi.DefaultDeltaRunMethod(e, c)
 }

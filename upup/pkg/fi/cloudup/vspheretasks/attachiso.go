@@ -26,6 +26,7 @@ import (
 	"io/ioutil"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"net"
@@ -51,9 +52,9 @@ var _ fi.HasName = &AttachISO{}
 var _ fi.HasDependencies = &AttachISO{}
 
 // GetDependencies returns map of tasks on which this task depends.
-func (o *AttachISO) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
-	vmCreateTask := tasks["VirtualMachine/"+*o.VM.Name]
+func (o *AttachISO) GetDependencies(taskMap map[string]tasks.Task) []tasks.Task {
+	var deps []tasks.Task
+	vmCreateTask := taskMap["VirtualMachine/"+*o.VM.Name]
 	if vmCreateTask == nil {
 		glog.Fatalf("Unable to find create VM task %s dependency for AttachISO %s", *o.VM.Name, *o.Name)
 	}
@@ -72,7 +73,7 @@ func (o *AttachISO) SetName(name string) {
 }
 
 // Run invokes DefaultDeltaRunMethod for this task.
-func (e *AttachISO) Run(c *fi.Context) error {
+func (e *AttachISO) Run(c tasks.Context) error {
 	glog.Info("AttachISO.Run invoked!")
 	return fi.DefaultDeltaRunMethod(e, c)
 }

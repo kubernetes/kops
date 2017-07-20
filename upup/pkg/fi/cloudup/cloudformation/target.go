@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"os"
 	"path"
@@ -108,7 +109,7 @@ func (t *CloudformationTarget) Find(ref *Literal) (interface{}, bool) {
 	return r.Properties, true
 }
 
-func (t *CloudformationTarget) Finish(taskMap map[string]fi.Task) error {
+func (t *CloudformationTarget) Finish(taskMap map[string]tasks.Task) error {
 	//resourcesByType := make(map[string]map[string]interface{})
 	//
 	//for _, res := range t.resources {

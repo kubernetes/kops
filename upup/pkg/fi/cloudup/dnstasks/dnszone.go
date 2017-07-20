@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"strings"
@@ -94,7 +95,7 @@ func (e *DNSZone) findExisting(dns dnsprovider.Interface) (dnsprovider.Zone, err
 	return zones[0], nil
 }
 
-func (e *DNSZone) Run(c *fi.Context) error {
+func (e *DNSZone) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

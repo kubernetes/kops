@@ -28,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -89,7 +90,7 @@ func (e *LoadBalancerListener) mapToAWS(loadBalancerPort int64) *elb.Listener {
 
 var _ fi.HasDependencies = &LoadBalancerListener{}
 
-func (e *LoadBalancerListener) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+func (e *LoadBalancerListener) GetDependencies(tasks map[string]tasks.Task) []tasks.Task {
 	return nil
 }
 
@@ -390,8 +391,8 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 
 var _ fi.HasAddress = &LoadBalancer{}
 
-func (e *LoadBalancer) FindIPAddress(context *fi.Context) (*string, error) {
-	cloud := context.Cloud.(awsup.AWSCloud)
+func (e *LoadBalancer) FindIPAddress(context tasks.Context) (*string, error) {
+	cloud := context.(*fi.Context).Cloud.(awsup.AWSCloud)
 
 	lb, err := FindLoadBalancerByNameTag(cloud, fi.StringValue(e.Name))
 	if err != nil {
@@ -408,7 +409,7 @@ func (e *LoadBalancer) FindIPAddress(context *fi.Context) (*string, error) {
 	return &lbDnsName, nil
 }
 
-func (e *LoadBalancer) Run(c *fi.Context) error {
+func (e *LoadBalancer) Run(c tasks.Context) error {
 	// TODO: Make Normalize a standard method
 	e.Normalize()
 

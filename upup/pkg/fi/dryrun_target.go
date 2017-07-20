@@ -27,6 +27,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"sort"
 )
@@ -48,10 +49,10 @@ type DryRunTarget struct {
 }
 
 type render struct {
-	a       Task
+	a       tasks.Task
 	aIsNil  bool
-	e       Task
-	changes Task
+	e       tasks.Task
+	changes tasks.Task
 }
 
 // ByTaskKey sorts []*render by TaskKey (type/name)
@@ -86,7 +87,7 @@ func (t *DryRunTarget) ProcessDeletions() bool {
 	return true
 }
 
-func (t *DryRunTarget) Render(a, e, changes Task) error {
+func (t *DryRunTarget) Render(a, e, changes tasks.Task) error {
 	valA := reflect.ValueOf(a)
 	aIsNil := valA.IsNil()
 
@@ -111,7 +112,7 @@ func (t *DryRunTarget) Delete(deletion Deletion) error {
 	return nil
 }
 
-func idForTask(taskMap map[string]Task, t Task) string {
+func idForTask(taskMap map[string]tasks.Task, t tasks.Task) string {
 	for k, v := range taskMap {
 		if v == t {
 			// Skip task type, if present (taskType/taskName)
@@ -126,7 +127,7 @@ func idForTask(taskMap map[string]Task, t Task) string {
 	return "?"
 }
 
-func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error {
+func (t *DryRunTarget) PrintReport(taskMap map[string]tasks.Task, out io.Writer) error {
 	b := &bytes.Buffer{}
 
 	if len(t.changes) != 0 {
@@ -350,7 +351,7 @@ func tryResourceAsString(v reflect.Value) (string, bool) {
 	return "", false
 }
 
-func getTaskName(t Task) string {
+func getTaskName(t tasks.Task) string {
 	s := fmt.Sprintf("%T", t)
 	lastDot := strings.LastIndexByte(s, '.')
 	if lastDot != -1 {
@@ -458,7 +459,7 @@ func ValueAsString(value reflect.Value) string {
 }
 
 // Finish is called at the end of a run, and prints a list of changes to the configured Writer
-func (t *DryRunTarget) Finish(taskMap map[string]Task) error {
+func (t *DryRunTarget) Finish(taskMap map[string]tasks.Task) error {
 	return t.PrintReport(taskMap, t.out)
 }
 

@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"time"
 )
@@ -41,7 +42,7 @@ func (t *AWSAPITarget) ProcessDeletions() bool {
 	return true
 }
 
-func (t *AWSAPITarget) Finish(taskMap map[string]fi.Task) error {
+func (t *AWSAPITarget) Finish(taskMap map[string]tasks.Task) error {
 	return nil
 }
 

@@ -25,6 +25,7 @@ import (
 	// Register our APIs
 	_ "k8s.io/kops/pkg/apis/kops/install"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/tasks"
 )
 
 func TestDockerBuilder_Simple(t *testing.T) {
@@ -92,7 +93,7 @@ func runDockerBuilderTest(t *testing.T, key string) {
 	}
 
 	context := &fi.ModelBuilderContext{
-		Tasks: make(map[string]fi.Task),
+		Tasks: make(map[string]tasks.Task),
 	}
 
 	builder := DockerBuilder{NodeupModelContext: nodeUpModelContext}

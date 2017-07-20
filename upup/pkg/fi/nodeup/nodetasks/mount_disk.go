@@ -19,6 +19,7 @@ package nodetasks
 import (
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -40,13 +41,13 @@ type MountDiskTask struct {
 	Mountpoint string `json:"mountpoint"`
 }
 
-var _ fi.Task = &MountDiskTask{}
+var _ tasks.Task = &MountDiskTask{}
 
 func (s *MountDiskTask) String() string {
 	return fmt.Sprintf("Disk: %s", s.Name)
 }
 
-func NewMountDiskTask(name string, contents string, meta string) (fi.Task, error) {
+func NewMountDiskTask(name string, contents string, meta string) (tasks.Task, error) {
 	s := &MountDiskTask{Name: name}
 
 	err := utils.YamlUnmarshal([]byte(contents), s)
@@ -86,7 +87,7 @@ func (e *MountDiskTask) Find(c *fi.Context) (*MountDiskTask, error) {
 	return nil, nil
 }
 
-func (e *MountDiskTask) Run(c *fi.Context) error {
+func (e *MountDiskTask) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

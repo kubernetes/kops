@@ -20,6 +20,7 @@ package vspheretasks
 
 import (
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
@@ -62,7 +63,7 @@ func (e *VirtualMachine) Find(c *fi.Context) (*VirtualMachine, error) {
 }
 
 // Run executes DefaultDeltaRunMethod for this task.
-func (e *VirtualMachine) Run(c *fi.Context) error {
+func (e *VirtualMachine) Run(c tasks.Context) error {
 	glog.V(4).Info("VirtualMachine.Run invoked!")
 	return fi.DefaultDeltaRunMethod(e, c)
 }

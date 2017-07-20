@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
@@ -52,11 +53,11 @@ const (
 var _ fi.HasDependencies = &Package{}
 
 // GetDependencies computes dependencies for the package task
-func (e *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
-	var deps []fi.Task
+func (e *Package) GetDependencies(taskMap map[string]tasks.Task) []tasks.Task {
+	var deps []tasks.Task
 
 	// UpdatePackages before we install any packages
-	for _, v := range tasks {
+	for _, v := range taskMap {
 		if _, ok := v.(*UpdatePackages); ok {
 			deps = append(deps, v)
 		}
@@ -64,7 +65,7 @@ func (e *Package) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 
 	// If this package is a bare deb, install it after OS managed packages
 	if !e.isOSPackage() {
-		for _, v := range tasks {
+		for _, v := range taskMap {
 			if vp, ok := v.(*Package); ok {
 				if vp.isOSPackage() {
 					deps = append(deps, v)
@@ -96,7 +97,7 @@ func (p *Package) String() string {
 	return fmt.Sprintf("Package: %s", p.Name)
 }
 
-func NewPackage(name string, contents string, meta string) (fi.Task, error) {
+func NewPackage(name string, contents string, meta string) (tasks.Task, error) {
 	p := &Package{Name: name}
 	if contents != "" {
 		err := json.Unmarshal([]byte(contents), p)
@@ -239,7 +240,7 @@ func (e *Package) findYum(c *fi.Context) (*Package, error) {
 	}, nil
 }
 
-func (e *Package) Run(c *fi.Context) error {
+func (e *Package) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

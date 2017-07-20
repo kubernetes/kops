@@ -21,6 +21,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -104,7 +105,7 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 	return actual, nil
 }
 
-func (e *InternetGateway) Run(c *fi.Context) error {
+func (e *InternetGateway) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

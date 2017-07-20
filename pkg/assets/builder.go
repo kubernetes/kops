@@ -24,6 +24,7 @@ import (
 
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/pkg/tasks"
 )
 
 // RewriteManifests controls whether we rewrite manifests
@@ -44,7 +45,11 @@ func NewAssetBuilder() *AssetBuilder {
 	return &AssetBuilder{}
 }
 
-func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
+// RemapManifest transforms a kubernetes manifest.
+// Whenever we are building a Task that includes a manifest, we should pass it through RemapManifest first.
+// This will:
+// * rewrite the images if they are being redirected to a mirror, and ensure the image is uploaded
+func (a *AssetBuilder) RemapManifest(tasks tasks.TaskBuilderContext, data []byte) ([]byte, error) {
 	if !RewriteManifests.Enabled() {
 		return data, nil
 	}
@@ -56,7 +61,9 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	var yamlSeparator = []byte("\n---\n\n")
 	var remappedManifests [][]byte
 	for _, manifest := range manifests {
-		err := manifest.RemapImages(a.remapImage)
+		err := manifest.RemapImages(func(image string) (string, error) {
+			return a.remapImage(tasks, image)
+		})
 		if err != nil {
 			return nil, fmt.Errorf("error remapping images: %v", err)
 		}
@@ -71,7 +78,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	return bytes.Join(remappedManifests, yamlSeparator), nil
 }
 
-func (a *AssetBuilder) remapImage(image string) (string, error) {
+func (a *AssetBuilder) remapImage(tasks tasks.TaskBuilderContext, image string) (string, error) {
 	asset := &Asset{}
 
 	asset.Origin = image
@@ -88,6 +95,10 @@ func (a *AssetBuilder) remapImage(image string) (string, error) {
 	}
 
 	asset.Mirror = image
+
+	if asset.Origin != asset.Mirror {
+		// TODO: Add task to copy docker image
+	}
 
 	a.Assets = append(a.Assets, asset)
 

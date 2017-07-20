@@ -17,16 +17,18 @@ limitations under the License.
 package fi
 
 import (
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"reflect"
 )
 
 // DefaultDeltaRunMethod implements the standard change-based run procedure:
 // find the existing item; compare properties; call render with (actual, expected, changes)
-func DefaultDeltaRunMethod(e Task, c *Context) error {
-	var a Task
+func DefaultDeltaRunMethod(e tasks.Task, context tasks.Context) error {
+	var a tasks.Task
 	var err error
 
+	c := context.(*Context)
 	checkExisting := c.CheckExisting
 	if hce, ok := e.(HasCheckExisting); ok {
 		checkExisting = hce.CheckExisting(c)
@@ -41,10 +43,10 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 
 	if a == nil {
 		// This is kind of subtle.  We want an interface pointer to a struct of the correct type...
-		a = reflect.New(reflect.TypeOf(e)).Elem().Interface().(Task)
+		a = reflect.New(reflect.TypeOf(e)).Elem().Interface().(tasks.Task)
 	}
 
-	changes := reflect.New(reflect.TypeOf(e).Elem()).Interface().(Task)
+	changes := reflect.New(reflect.TypeOf(e).Elem()).Interface().(tasks.Task)
 	changed := BuildChanges(a, e, changes)
 
 	if changed {
@@ -90,7 +92,7 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 }
 
 // invokeCheckChanges calls the checkChanges method by reflection
-func invokeCheckChanges(a, e, changes Task) error {
+func invokeCheckChanges(a, e, changes tasks.Task) error {
 	rv, err := utils.InvokeMethod(e, "CheckChanges", a, e, changes)
 	if err != nil {
 		return err
@@ -102,14 +104,14 @@ func invokeCheckChanges(a, e, changes Task) error {
 }
 
 // invokeFind calls the find method by reflection
-func invokeFind(e Task, c *Context) (Task, error) {
+func invokeFind(e tasks.Task, c *Context) (tasks.Task, error) {
 	rv, err := utils.InvokeMethod(e, "Find", c)
 	if err != nil {
 		return nil, err
 	}
-	var task Task
+	var task tasks.Task
 	if !rv[0].IsNil() {
-		task = rv[0].Interface().(Task)
+		task = rv[0].Interface().(tasks.Task)
 	}
 	if !rv[1].IsNil() {
 		err = rv[1].Interface().(error)
@@ -118,7 +120,7 @@ func invokeFind(e Task, c *Context) (Task, error) {
 }
 
 // invokeShouldCreate calls the ShouldCreate method by reflection, if it exists
-func invokeShouldCreate(a, e, changes Task) (bool, error) {
+func invokeShouldCreate(a, e, changes tasks.Task) (bool, error) {
 	rv, err := utils.InvokeMethod(e, "ShouldCreate", a, e, changes)
 	if err != nil {
 		if utils.IsMethodNotFound(err) {

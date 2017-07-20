@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tasks"
 )
 
 type executor struct {
@@ -32,7 +33,7 @@ type executor struct {
 type taskState struct {
 	done         bool
 	key          string
-	task         Task
+	task         tasks.Task
 	deadline     time.Time
 	lastError    error
 	dependencies []*taskState
@@ -40,7 +41,7 @@ type taskState struct {
 
 // RunTasks executes all the tasks, considering their dependencies
 // It will perform some re-execution on error, retrying as long as progress is still being made
-func (e *executor) RunTasks(taskMap map[string]Task, maxTaskDuration time.Duration) error {
+func (e *executor) RunTasks(taskMap map[string]tasks.Task, maxTaskDuration time.Duration) error {
 	dependencies := FindTaskDependencies(taskMap)
 
 	taskStates := make(map[string]*taskState)

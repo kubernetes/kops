@@ -71,7 +71,7 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error reading manifest %s: %v", manifest, err)
 		}
 
-		manifestBytes, err = b.assetBuilder.RemapManifest(manifestBytes)
+		manifestBytes, err = b.assetBuilder.RemapManifest(c, manifestBytes)
 		if err != nil {
 			return fmt.Errorf("error remapping manifest %s: %v", manifest, err)
 		}

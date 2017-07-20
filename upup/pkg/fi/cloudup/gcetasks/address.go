@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/kops/pkg/tasks"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -81,8 +82,8 @@ func (e *Address) find(cloud *gce.GCECloud) (*Address, error) {
 
 var _ fi.HasAddress = &Address{}
 
-func (e *Address) FindIPAddress(context *fi.Context) (*string, error) {
-	actual, err := e.find(context.Cloud.(*gce.GCECloud))
+func (e *Address) FindIPAddress(context tasks.Context) (*string, error) {
+	actual, err := e.find(context.(*fi.Context).Cloud.(*gce.GCECloud))
 	if err != nil {
 		return nil, fmt.Errorf("error querying for IPAddress: %v", err)
 	}
@@ -92,7 +93,7 @@ func (e *Address) FindIPAddress(context *fi.Context) (*string, error) {
 	return actual.IPAddress, nil
 }
 
-func (e *Address) Run(c *fi.Context) error {
+func (e *Address) Run(c tasks.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 

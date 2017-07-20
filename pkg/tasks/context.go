@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,29 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package gce
+package tasks
 
-import (
-	"k8s.io/kops/pkg/tasks"
-	"k8s.io/kops/upup/pkg/fi"
-)
-
-type GCEAPITarget struct {
-	Cloud *GCECloud
+type TaskBuilderContext interface {
+	AddTask(task Task)
 }
 
-var _ fi.Target = &GCEAPITarget{}
-
-func NewGCEAPITarget(cloud *GCECloud) *GCEAPITarget {
-	return &GCEAPITarget{
-		Cloud: cloud,
-	}
+type Task interface {
+	Run(Context) error
 }
 
-func (t *GCEAPITarget) Finish(taskMap map[string]tasks.Task) error {
-	return nil
-}
-
-func (t *GCEAPITarget) ProcessDeletions() bool {
-	return true
+type Context interface {
 }
