@@ -61,7 +61,7 @@ kops create cluster
 ### Options
 
 ```
-      --admin-access stringSlice             Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])
+      --admin-access stringSlice             Restrict API access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])
       --api-loadbalancer-type string         Sets the API loadbalancer type to either 'public' or 'internal'
       --associate-public-ip                  Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.
       --authorization string                 Authorization mode to use: AlwaysAllow or RBAC (default "AlwaysAllow")
@@ -90,6 +90,7 @@ kops create cluster
       --node-volume-size int32               Set instance volume size (in GB) for nodes
       --out string                           Path to write any local output
       --project string                       Project to use (must be set on GCE)
+      --ssh-access stringSlice               Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])
       --ssh-public-key string                SSH public key to use (default "~/.ssh/id_rsa.pub")
       --target string                        Target - direct, terraform, cloudformation (default "direct")
   -t, --topology string                      Controls network topology for the cluster. public|private. Default is 'public'. (default "public")
