@@ -1,0 +1,6 @@
+sample: |
+  apiVersion: kops/v1alpha2
+  kind: InstanceGroup
+  metadata:
+    name: instancegroup-example
+  spec:
