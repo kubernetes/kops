@@ -27,10 +27,10 @@ GOVERSION=1.8.3
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.7.0
+DNS_CONTROLLER_TAG=1.7.1
 
-KOPS_RELEASE_VERSION = 1.7.0-alpha.1
-KOPS_CI_VERSION      = 1.7.0-alpha.2
+KOPS_RELEASE_VERSION = 1.7.0-beta.1
+KOPS_CI_VERSION      = 1.7.0-beta.2
 
 # kops install location
 KOPS                 = ${GOPATH_1ST}/bin/kops
