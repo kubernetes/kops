@@ -142,7 +142,7 @@ func TestPopulateCluster_StorageDefault(t *testing.T) {
 	}
 
 	addEtcdClusters(c)
-	assetBuilder := assets.NewAssetBuilder(nil)
+	assetBuilder := assets.NewAssetBuilder(c.Spec.Assets)
 	full, err := PopulateClusterSpec(c, assetBuilder)
 	if err != nil {
 		t.Fatalf("Unexpected error from PopulateCluster: %v", err)

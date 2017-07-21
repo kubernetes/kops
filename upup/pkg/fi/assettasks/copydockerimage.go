@@ -121,6 +121,7 @@ func (_ *CopyDockerImage) Render(c *fi.Context, a, e, changes *CopyDockerImage) 
 	cli, err := newDockerCLI()
 	if err != nil {
 		return err
+
 	}
 
 	source := fi.StringValue(e.SourceImage)
