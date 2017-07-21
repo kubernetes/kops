@@ -464,8 +464,9 @@ func (c *ApplyClusterCmd) Run() error {
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 		} else {
+			// TODO: when the PR for custom IAM roles is merge we may want want to warn as well
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
-			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 		}
 	default:
 		return fmt.Errorf("unknown phase %q", c.Phase)
