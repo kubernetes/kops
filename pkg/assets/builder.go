@@ -36,14 +36,21 @@ type AssetBuilder struct {
 }
 
 type Asset struct {
-	Origin string
-	Mirror string
+	// DockerImage will be the name of the docker image we should run, if this is a docker image
+	DockerImage string
+
+	// CanonicalLocation will be the source location of the image, if we should copy it to the actual location
+	CanonicalLocation string
 }
 
 func NewAssetBuilder() *AssetBuilder {
 	return &AssetBuilder{}
 }
 
+// RemapManifest transforms a kubernetes manifest.
+// Whenever we are building a Task that includes a manifest, we should pass it through RemapManifest first.
+// This will:
+// * rewrite the images if they are being redirected to a mirror, and ensure the image is uploaded
 func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	if !RewriteManifests.Enabled() {
 		return data, nil
@@ -74,7 +81,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 func (a *AssetBuilder) remapImage(image string) (string, error) {
 	asset := &Asset{}
 
-	asset.Origin = image
+	asset.DockerImage = image
 
 	if strings.HasPrefix(image, "kope/dns-controller:") {
 		// To use user-defined DNS Controller:
@@ -87,7 +94,24 @@ func (a *AssetBuilder) remapImage(image string) (string, error) {
 		}
 	}
 
-	asset.Mirror = image
+	registryMirror := os.Getenv("DEV_KOPS_REGISTRY_MIRROR")
+	registryMirror = strings.TrimSuffix(registryMirror, "/")
+	if registryMirror != "" {
+		normalized := image
+
+		// Remove the 'standard' kubernetes image prefix, just for sanity
+		normalized = strings.TrimPrefix(normalized, "gcr.io/google_containers/")
+
+		// We can't nest arbitrarily
+		// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
+		normalized = strings.Replace(normalized, "/", "-", -1)
+		asset.DockerImage = registryMirror + "/" + normalized
+
+		asset.CanonicalLocation = image
+
+		// Run the new image
+		image = asset.DockerImage
+	}
 
 	a.Assets = append(a.Assets, asset)
 
