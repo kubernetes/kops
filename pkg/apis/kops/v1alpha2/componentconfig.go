@@ -43,6 +43,9 @@ type KubeletConfigSpec struct {
 	// Note: We recognize some additional values:
 	//  @aws uses the hostname from the AWS metadata service
 	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
+	// podInfraContainerImage is the image whose network/ipc namespaces
+	// containers in each pod will use.
+	PodInfraContainerImage string `json:"podInfraContainerImage,omitempty" flag:"pod-infra-container-image"`
 	// allowPrivileged enables containers to request privileged mode.
 	// Defaults to false.
 	AllowPrivileged *bool `json:"allowPrivileged,omitempty" flag:"allow-privileged"`
