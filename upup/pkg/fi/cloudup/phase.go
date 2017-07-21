@@ -19,7 +19,8 @@ package cloudup
 type Phase string
 
 const (
-	PhaseIAM     Phase = "iam"
-	PhaseNetwork Phase = "network"
-	PhaseCluster Phase = "cluster"
+	PhaseIAM          Phase = "iam"
+	PhaseNetwork      Phase = "network"
+	PhaseCluster      Phase = "cluster"
+	PhaseAssetsUpdate Phase = "assets"
 )

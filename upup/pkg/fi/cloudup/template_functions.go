@@ -39,7 +39,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
@@ -76,8 +75,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["HasTag"] = tf.HasTag
 
-	dest["Image"] = tf.Image
-
 	dest["WithDefaultBool"] = func(v *bool, defaultValue bool) bool {
 		if v != nil {
 			return *v
@@ -110,11 +107,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
 func (tf *TemplateFunctions) SharedVPC() bool {
 	return tf.cluster.SharedVPC()
-}
-
-// Image returns the docker image name for the specified component
-func (tf *TemplateFunctions) Image(component string) (string, error) {
-	return components.Image(component, &tf.cluster.Spec)
 }
 
 // HasTag returns true if the specified tag is set

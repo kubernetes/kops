@@ -120,7 +120,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 
 	kcm.LogLevel = 2
 
-	image, err := Image("kube-controller-manager", clusterSpec)
+	image, err := Image("kube-controller-manager", clusterSpec, b.Context.AssetBuilder)
 	if err != nil {
 		return err
 	}
