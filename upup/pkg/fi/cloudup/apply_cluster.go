@@ -700,7 +700,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	tf.AddTo(l.TemplateFunctions)
 
-	taskMap, err := l.BuildTasks(modelStore, fileModels)
+	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
