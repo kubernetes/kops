@@ -106,6 +106,9 @@ type ApplyClusterCmd struct {
 
 	// The channel we are using
 	channel *kops.Channel
+
+	// Phase can be set to a Phase to run the specific subset of tasks, if we don't want to run everything
+	Phase Phase
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -440,6 +443,34 @@ func (c *ApplyClusterCmd) Run() error {
 
 	assetBuilder := assets.NewAssetBuilder()
 
+	iamLifecycle := lifecyclePointer(fi.LifecycleSync)
+	networkLifecycle := lifecyclePointer(fi.LifecycleSync)
+	clusterLifecycle := lifecyclePointer(fi.LifecycleSync)
+
+	switch c.Phase {
+	case Phase(""):
+	// Everything ... the default
+
+	case PhaseIAM:
+		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+
+	case PhaseNetwork:
+		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+
+	case PhaseCluster:
+		if c.TargetName == TargetDryRun {
+			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+		} else {
+			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		}
+	default:
+		return fmt.Errorf("unknown phase %q", c.Phase)
+	}
+
 	var fileModels []string
 	for _, m := range c.Models {
 		switch m {
@@ -456,9 +487,11 @@ func (c *ApplyClusterCmd) Run() error {
 			l.Builders = append(l.Builders,
 				&BootstrapChannelBuilder{
 					cluster:      cluster,
+					Lifecycle:    clusterLifecycle,
 					templates:    templates,
 					assetBuilder: assetBuilder,
 				},
+				&model.PKIModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 			)
 
 			switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -468,17 +501,22 @@ func (c *ApplyClusterCmd) Run() error {
 				}
 
 				l.Builders = append(l.Builders,
-					&model.PKIModelBuilder{KopsModelContext: modelContext},
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 
-					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext},
-					&model.BastionModelBuilder{KopsModelContext: modelContext},
-					&model.DNSModelBuilder{KopsModelContext: modelContext},
-					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
-					&model.FirewallModelBuilder{KopsModelContext: modelContext},
-					&model.IAMModelBuilder{KopsModelContext: modelContext},
-					&model.NetworkModelBuilder{KopsModelContext: modelContext},
-					&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
+					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: networkLifecycle},
+					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
+					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
+					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
+				)
+
+				l.Builders = append(l.Builders,
+					&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
+				)
+
+				l.Builders = append(l.Builders,
+					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
 				)
 
 			case kops.CloudProviderGCE:
@@ -487,21 +525,16 @@ func (c *ApplyClusterCmd) Run() error {
 				}
 
 				l.Builders = append(l.Builders,
-					&model.PKIModelBuilder{KopsModelContext: modelContext},
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 
-					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext},
-					//&model.BastionModelBuilder{KopsModelContext: modelContext},
-					//&model.DNSModelBuilder{KopsModelContext: modelContext},
-					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext},
-					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext},
-					//&model.IAMModelBuilder{KopsModelContext: modelContext},
-					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext},
-					//&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
+					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
+					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
+					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
+					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
 				)
+
 			case kops.CloudProviderVSphere:
-				l.Builders = append(l.Builders,
-					&model.PKIModelBuilder{KopsModelContext: modelContext})
+				// No special settings (yet!)
 
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
@@ -613,6 +646,7 @@ func (c *ApplyClusterCmd) Run() error {
 		l.Builders = append(l.Builders, &awsmodel.AutoscalingGroupModelBuilder{
 			AWSModelContext: awsModelContext,
 			BootstrapScript: bootstrapScriptBuilder,
+			Lifecycle:       clusterLifecycle,
 		})
 
 	case kops.CloudProviderGCE:
@@ -624,6 +658,7 @@ func (c *ApplyClusterCmd) Run() error {
 			l.Builders = append(l.Builders, &gcemodel.AutoscalingGroupModelBuilder{
 				GCEModelContext: gceModelContext,
 				BootstrapScript: bootstrapScriptBuilder,
+				Lifecycle:       clusterLifecycle,
 			})
 		}
 	case kops.CloudProviderVSphere:
@@ -635,6 +670,7 @@ func (c *ApplyClusterCmd) Run() error {
 			l.Builders = append(l.Builders, &vspheremodel.AutoscalingGroupModelBuilder{
 				VSphereModelContext: vsphereModelContext,
 				BootstrapScript:     bootstrapScriptBuilder,
+				Lifecycle:           clusterLifecycle,
 			})
 		}
 
@@ -965,4 +1001,8 @@ func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
 func needsStaticUtils(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
 	// TODO: Do real detection of CoreOS (but this has to work with AMI names, and maybe even forked AMIs)
 	return true
+}
+
+func lifecyclePointer(v fi.Lifecycle) *fi.Lifecycle {
+	return &v
 }

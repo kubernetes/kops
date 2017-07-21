@@ -31,7 +31,9 @@ import (
 
 //go:generate fitask -type=VPC
 type VPC struct {
-	Name               *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID                 *string
 	CIDR               *string
 	EnableDNSHostnames *bool
@@ -104,6 +106,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 	if e.ID == nil {
 		e.ID = actual.ID
 	}
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

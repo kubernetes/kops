@@ -31,7 +31,8 @@ import (
 
 //go:generate fitask -type=DHCPOptions
 type DHCPOptions struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	ID                *string
 	DomainName        *string
@@ -93,6 +94,9 @@ func (e *DHCPOptions) Find(c *fi.Context) (*DHCPOptions, error) {
 	}
 
 	e.ID = actual.ID
+
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

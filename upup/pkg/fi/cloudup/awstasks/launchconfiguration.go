@@ -34,7 +34,8 @@ import (
 
 //go:generate fitask -type=LaunchConfiguration
 type LaunchConfiguration struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	UserData *fi.ResourceHolder
 
@@ -155,6 +156,9 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 			actual.ImageID = e.ImageID
 		}
 	}
+
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	if e.ID == nil {
 		e.ID = actual.ID

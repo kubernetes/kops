@@ -35,6 +35,7 @@ const LoadBalancerDefaultIdleTimeout = 5 * time.Minute
 // APILoadBalancerBuilder builds a LoadBalancer for accessing the API
 type APILoadBalancerBuilder struct {
 	*AWSModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &APILoadBalancerBuilder{}
@@ -101,7 +102,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		elb = &awstasks.LoadBalancer{
-			Name:             s("api." + b.ClusterName()),
+			Name:      s("api." + b.ClusterName()),
+			Lifecycle: b.Lifecycle,
+
 			LoadBalancerName: s(loadBalancerName),
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup("api"),
@@ -140,7 +143,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Create security group for API ELB
 	{
 		t := &awstasks.SecurityGroup{
-			Name:             s(b.ELBSecurityGroupName("api")),
+			Name:      s(b.ELBSecurityGroupName("api")),
+			Lifecycle: b.Lifecycle,
+
 			VPC:              b.LinkToVPC(),
 			Description:      s("Security group for api ELB"),
 			RemoveExtraRules: []string{"port=443"},
@@ -151,7 +156,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow traffic from ELB to egress freely
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("api-elb-egress"),
+			Name:      s("api-elb-egress"),
+			Lifecycle: b.Lifecycle,
+
 			SecurityGroup: b.LinkToELBSecurityGroup("api"),
 			Egress:        fi.Bool(true),
 			CIDR:          s("0.0.0.0/0"),
@@ -163,7 +170,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
 			t := &awstasks.SecurityGroupRule{
-				Name:          s("https-api-elb-" + cidr),
+				Name:      s("https-api-elb-" + cidr),
+				Lifecycle: b.Lifecycle,
+
 				SecurityGroup: b.LinkToELBSecurityGroup("api"),
 				CIDR:          s(cidr),
 				FromPort:      i64(443),
@@ -177,7 +186,9 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow HTTPS to the master instances from the ELB
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("https-elb-to-master"),
+			Name:      s("https-elb-to-master"),
+			Lifecycle: b.Lifecycle,
+
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToELBSecurityGroup("api"),
 			FromPort:      i64(443),
@@ -201,7 +212,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	for _, ig := range b.MasterInstanceGroups() {
 		t := &awstasks.LoadBalancerAttachment{
-			Name: s("api-" + ig.ObjectMeta.Name),
+			Name:      s("api-" + ig.ObjectMeta.Name),
+			Lifecycle: b.Lifecycle,
 
 			LoadBalancer:     b.LinkToELB("api"),
 			AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
