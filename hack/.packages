@@ -105,6 +105,7 @@ k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
 k8s.io/kops/upup/pkg/fi/cloudup/terraform
 k8s.io/kops/upup/pkg/fi/cloudup/vsphere
 k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks
+k8s.io/kops/upup/pkg/fi/dockertasks
 k8s.io/kops/upup/pkg/fi/fitasks
 k8s.io/kops/upup/pkg/fi/k8sapi
 k8s.io/kops/upup/pkg/fi/loader
