@@ -29,7 +29,9 @@ import (
 
 //go:generate fitask -type=EBSVolume
 type EBSVolume struct {
-	Name             *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID               *string
 	AvailabilityZone *string
 	VolumeType       *string
@@ -101,6 +103,9 @@ func (e *EBSVolume) find(cloud awsup.AWSCloud) (*EBSVolume, error) {
 	}
 
 	actual.Tags = mapEC2TagsToMap(v.Tags)
+
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

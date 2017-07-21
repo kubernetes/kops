@@ -33,7 +33,9 @@ var wellKnownCertificateTypes = map[string]string{
 
 //go:generate fitask -type=Keypair
 type Keypair struct {
-	Name               *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	Subject            string    `json:"subject"`
 	Type               string    `json:"type"`
 	AlternateNames     []string  `json:"alternateNames"`
@@ -80,6 +82,9 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		AlternateNames: alternateNames,
 		Type:           buildTypeDescription(cert.Certificate),
 	}
+
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

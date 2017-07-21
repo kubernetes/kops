@@ -31,7 +31,9 @@ import (
 
 //go:generate fitask -type=Subnet
 type Subnet struct {
-	Name             *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID               *string
 	VPC              *VPC
 	AvailabilityZone *string
@@ -78,6 +80,9 @@ func (e *Subnet) Find(c *fi.Context) (*Subnet, error) {
 
 	glog.V(2).Infof("found matching subnet %q", *actual.ID)
 	e.ID = actual.ID
+
+	// Prevent spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

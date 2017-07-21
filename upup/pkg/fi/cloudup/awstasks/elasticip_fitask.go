@@ -45,6 +45,13 @@ func (o *ElasticIP) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &ElasticIP{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *ElasticIP) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &ElasticIP{}
 
 // GetName returns the Name of the object, implementing fi.HasName
