@@ -851,6 +851,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			cluster.Spec.SSHAccess = c.AdminAccess
 		}
 		cluster.Spec.KubernetesAPIAccess = c.AdminAccess
+	} else if len(c.AdminAccess) == 0 {
+		cluster.Spec.SSHAccess = c.SSHAccess
 	}
 
 	err = cloudup.PerformAssignments(cluster)
