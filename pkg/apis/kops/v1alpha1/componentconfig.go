@@ -80,9 +80,9 @@ type KubeletConfigSpec struct {
 	// Note: We recognize some additional values:
 	//  @aws uses the hostname from the AWS metadata service
 	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
-	//// podInfraContainerImage is the image whose network/ipc namespaces
-	//// containers in each pod will use.
-	//PodInfraContainerImage string `json:"podInfraContainerImage"`
+	// podInfraContainerImage is the image whose network/ipc namespaces
+	// containers in each pod will use.
+	PodInfraContainerImage string `json:"podInfraContainerImage,omitempty" flag:"pod-infra-container-image"`
 	//// dockerEndpoint is the path to the docker endpoint to communicate with.
 	//DockerEndpoint string `json:"dockerEndpoint"`
 	//// rootDirectory is the directory path to place kubelet files (volume
