@@ -445,24 +445,34 @@ func (c *ApplyClusterCmd) Run() error {
 	iamLifecycle := lifecyclePointer(fi.LifecycleSync)
 	networkLifecycle := lifecyclePointer(fi.LifecycleSync)
 	clusterLifecycle := lifecyclePointer(fi.LifecycleSync)
+	stageAssetsLifecycle := lifecyclePointer(fi.LifecycleSync)
 
 	switch c.Phase {
 	case Phase(""):
 	// Everything ... the default
+	case PhaseAssetsUpdate:
+		assetTransferLifecycle = lifecyclePointer(fi.LifecycleSync)
+		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseIAM:
+		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseNetwork:
+		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseCluster:
 		if c.TargetName == TargetDryRun {
+			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 		} else {
+			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 		}
@@ -683,7 +693,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	tf.AddTo(l.TemplateFunctions)
 
-	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder)
+	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, stageAssetsLifecycle)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
