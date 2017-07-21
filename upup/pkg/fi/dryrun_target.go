@@ -21,14 +21,16 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
+
+	"text/tabwriter"
 
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"sort"
 )
 
 // DryRunTarget is a special Target that does not execute anything, but instead tracks all changes.
@@ -43,8 +45,8 @@ type DryRunTarget struct {
 	// The destination to which the final report will be printed on Finish()
 	out io.Writer
 
-	// assetBuilder records all assets used
-	assetBuilder *assets.AssetBuilder
+	// inventory of cluster
+	inventory *assets.Inventory
 }
 
 type render struct {
@@ -74,10 +76,10 @@ func (a DeletionByTaskName) Less(i, j int) bool {
 
 var _ Target = &DryRunTarget{}
 
-func NewDryRunTarget(assetBuilder *assets.AssetBuilder, out io.Writer) *DryRunTarget {
+func NewDryRunTarget(out io.Writer, inventory *assets.Inventory) *DryRunTarget {
 	t := &DryRunTarget{}
 	t.out = out
-	t.assetBuilder = assetBuilder
+	t.inventory = inventory
 	return t
 }
 
@@ -304,20 +306,108 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 		}
 	}
 
-	if len(t.deletions) != 0 {
-		// Give everything a consistent ordering
-		sort.Sort(DeletionByTaskName(t.deletions))
+	if t.inventory != nil {
+		fmt.Fprintf(out, "Cluster Inventory\n\n")
+		fmt.Fprintf(out, "Files\n\n")
 
-		fmt.Fprintf(b, "Will delete items:\n")
-		for _, d := range t.deletions {
-			fmt.Fprintf(b, "  %-20s %s\n", d.TaskName(), d.Item())
+		asset := "Asset"
+		name := "Name"
+		sha := "SHA"
+
+		table := &Table{}
+		table.AddColumn(asset, func(i *assets.ExecutableFileAsset) string {
+			return i.Location
+		})
+		table.AddColumn(name, func(i *assets.ExecutableFileAsset) string {
+			return i.Name
+		})
+		if err := table.Render(t.inventory.ExecutableFileAsset, out, name, asset); err != nil {
+			return err
 		}
-	}
 
-	if len(t.assetBuilder.Assets) != 0 {
-		glog.V(4).Infof("Assets:")
-		for _, a := range t.assetBuilder.Assets {
-			glog.V(4).Infof("  %s %s", a.Origin, a.Mirror)
+		fmt.Fprintf(out, "\n\nFile SHAs\n\n")
+
+		table = &Table{}
+		table.AddColumn(name, func(i *assets.ExecutableFileAsset) string {
+			return i.Name
+		})
+		table.AddColumn(sha, func(i *assets.ExecutableFileAsset) string {
+			return i.SHA
+		})
+		if err := table.Render(t.inventory.ExecutableFileAsset, out, name, sha); err != nil {
+			return err
+		}
+
+		fmt.Fprintf(out, "\n\nCompressed Files\n\n")
+
+		table = &Table{}
+		table.AddColumn(asset, func(i *assets.CompressedFileAsset) string {
+			return i.Location
+		})
+		table.AddColumn(name, func(i *assets.CompressedFileAsset) string {
+			return i.Name
+		})
+		if err := table.Render(t.inventory.CompressedFileAssets, out, name, asset); err != nil {
+			return err
+		}
+
+		fmt.Fprintf(out, "\n\nCompressed File SHAs\n\n")
+
+		table = &Table{}
+		table.AddColumn(name, func(i *assets.CompressedFileAsset) string {
+			return i.Name
+		})
+		table.AddColumn(sha, func(i *assets.CompressedFileAsset) string {
+			return i.SHA
+		})
+		if err := table.Render(t.inventory.CompressedFileAssets, out, name, sha); err != nil {
+			return err
+		}
+
+		fmt.Fprintf(out, "\n\nContainers\n\n")
+		table = &Table{}
+		table.AddColumn(asset, func(i *assets.ContainerAsset) string {
+			if i.String != "" {
+				return i.String
+			} else if i.Location != "" {
+				return i.Location
+			}
+
+			glog.Errorf("unable to print container asset %q", i)
+
+			return "asset name not set correctly"
+		})
+
+		table.AddColumn(name, func(i *assets.ContainerAsset) string {
+			return i.Name
+		})
+		if err := table.Render(t.inventory.ContainerAssets, out, name, asset); err != nil {
+			return err
+		}
+
+		fmt.Fprintf(out, "\n\nHosts\n\n")
+		table = &Table{}
+		table.AddColumn("Image", func(i *assets.HostAsset) string {
+			return i.Name
+		})
+
+		table.AddColumn("Instance Group", func(i *assets.HostAsset) string {
+			return i.InstanceGroup
+		})
+		if err := table.Render(t.inventory.HostAssets, out, "Instance Group", "Image"); err != nil {
+			return err
+		}
+
+		fmt.Fprintf(out, "\n\n")
+
+		if len(t.deletions) != 0 {
+			// Give everything a consistent ordering
+			sort.Sort(DeletionByTaskName(t.deletions))
+
+			fmt.Fprintf(b, "Will delete items:\n")
+			for _, d := range t.deletions {
+				fmt.Fprintf(b, "  %-20s %s\n", d.TaskName(), d.Item())
+			}
 		}
 	}
 
@@ -465,4 +555,165 @@ func (t *DryRunTarget) Finish(taskMap map[string]Task) error {
 // HasChanges returns true iff any changes would have been made
 func (t *DryRunTarget) HasChanges() bool {
 	return len(t.changes)+len(t.deletions) != 0
+}
+
+// Not sure what to do with this, but I am getting import cycle not allowed
+// TODO: where should I refactor this to?
+
+// Table renders tables to stdout
+type Table struct {
+	columns map[string]*TableColumn
+}
+
+type TableColumn struct {
+	Name   string
+	Getter reflect.Value
+}
+
+func (c *TableColumn) getFromValue(v reflect.Value) string {
+	var args []reflect.Value
+	args = append(args, v)
+	fvs := c.Getter.Call(args)
+	fv := fvs[0]
+
+	return ValueAsString(fv)
+}
+
+type getterFunction func(interface{}) string
+
+// AddColumn registers an available column for formatting
+func (t *Table) AddColumn(name string, getter interface{}) {
+	getterVal := reflect.ValueOf(getter)
+
+	column := &TableColumn{
+		Name:   name,
+		Getter: getterVal,
+	}
+	if t.columns == nil {
+		t.columns = make(map[string]*TableColumn)
+	}
+	t.columns[name] = column
+}
+
+type funcSorter struct {
+	len  int
+	less func(int, int) bool
+	swap func(int, int)
+}
+
+func (f *funcSorter) Len() int {
+	return f.len
+}
+func (f *funcSorter) Less(i, j int) bool {
+	return f.less(i, j)
+}
+func (f *funcSorter) Swap(i, j int) {
+	f.swap(i, j)
+}
+
+func SortByFunction(len int, swap func(int, int), less func(int, int) bool) {
+	sort.Sort(&funcSorter{len, less, swap})
+}
+
+func (t *Table) findColumns(columnNames ...string) ([]*TableColumn, error) {
+	columns := make([]*TableColumn, len(columnNames))
+	for i, columnName := range columnNames {
+		c := t.columns[columnName]
+		if c == nil {
+			return nil, fmt.Errorf("column not found: %v", columnName)
+		}
+		columns[i] = c
+	}
+	return columns, nil
+}
+
+// Render writes the items in a table, to out
+func (t *Table) Render(items interface{}, out io.Writer, columnNames ...string) error {
+	itemsValue := reflect.ValueOf(items)
+	if itemsValue.Kind() != reflect.Slice {
+		glog.Fatal("unexpected kind for items: ", itemsValue.Kind())
+	}
+
+	columns, err := t.findColumns(columnNames...)
+	if err != nil {
+		return err
+	}
+
+	n := itemsValue.Len()
+
+	rows := make([][]string, n)
+	for i := 0; i < n; i++ {
+		row := make([]string, len(columns))
+		item := itemsValue.Index(i)
+		for j, column := range columns {
+			row[j] = column.getFromValue(item)
+		}
+		rows[i] = row
+	}
+
+	SortByFunction(n, func(i, j int) {
+		row := rows[i]
+		rows[i] = rows[j]
+		rows[j] = row
+	}, func(i, j int) bool {
+		l := rows[i]
+		r := rows[j]
+
+		for k := 0; k < len(columns); k++ {
+			lV := l[k]
+			rV := r[k]
+
+			if lV != rV {
+				return lV < rV
+			}
+		}
+		return false
+	})
+
+	var b bytes.Buffer
+	w := new(tabwriter.Writer)
+
+	// Format in tab-separated columns with a tab stop of 8.
+	w.Init(out, 0, 8, 1, '\t', tabwriter.StripEscape)
+
+	writeHeader := true
+	if writeHeader {
+		for i, c := range columns {
+			if i != 0 {
+				b.WriteByte('\t')
+			}
+			b.WriteByte(tabwriter.Escape)
+			b.WriteString(c.Name)
+			b.WriteByte(tabwriter.Escape)
+		}
+		b.WriteByte('\n')
+
+		_, err := w.Write(b.Bytes())
+		if err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
+		b.Reset()
+	}
+
+	for _, row := range rows {
+		for i, col := range row {
+			if i != 0 {
+				b.WriteByte('\t')
+			}
+
+			b.WriteByte(tabwriter.Escape)
+			b.WriteString(col)
+			b.WriteByte(tabwriter.Escape)
+		}
+		b.WriteByte('\n')
+
+		_, err := w.Write(b.Bytes())
+		if err != nil {
+			return fmt.Errorf("error writing to output: %v", err)
+		}
+		b.Reset()
+	}
+	w.Flush()
+
+	return nil
 }
