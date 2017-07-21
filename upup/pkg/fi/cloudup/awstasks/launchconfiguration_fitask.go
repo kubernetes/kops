@@ -45,6 +45,13 @@ func (o *LaunchConfiguration) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &LaunchConfiguration{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *LaunchConfiguration) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &LaunchConfiguration{}
 
 // GetName returns the Name of the object, implementing fi.HasName

@@ -32,7 +32,8 @@ import (
 
 //go:generate fitask -type=SecurityGroup
 type SecurityGroup struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	ID          *string
 	Description *string
@@ -82,6 +83,7 @@ func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 
 	// Prevent spurious comparison failures
 	actual.Shared = e.Shared
+	actual.Lifecycle = e.Lifecycle
 	if e.ID == nil {
 		e.ID = actual.ID
 	}

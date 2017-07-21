@@ -28,7 +28,9 @@ import (
 // FirewallRule represents a GCE firewall rules
 //go:generate fitask -type=FirewallRule
 type FirewallRule struct {
-	Name         *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	Network      *Network
 	SourceTags   []string
 	SourceRanges []string

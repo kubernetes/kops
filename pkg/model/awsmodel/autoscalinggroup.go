@@ -37,6 +37,7 @@ type AutoscalingGroupModelBuilder struct {
 	*AWSModelContext
 
 	BootstrapScript *model.BootstrapScript
+	Lifecycle       *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
@@ -67,7 +68,8 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			t := &awstasks.LaunchConfiguration{
-				Name: s(name),
+				Name:      s(name),
+				Lifecycle: b.Lifecycle,
 
 				SecurityGroups: []*awstasks.SecurityGroup{
 					b.LinkToSecurityGroup(ig.Spec.Role),
@@ -163,7 +165,8 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// AutoscalingGroup
 		{
 			t := &awstasks.AutoscalingGroup{
-				Name: s(name),
+				Name:      s(name),
+				Lifecycle: b.Lifecycle,
 
 				LaunchConfiguration: launchConfiguration,
 			}
