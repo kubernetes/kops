@@ -33,6 +33,11 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
+const (
+	clusterAutoscalerNodeTemplateLabel = "k8s.io/cluster-autoscaler/node-template/label/"
+	clusterAutoscalerNodeTemplateTaint = "k8s.io/cluster-autoscaler/node-template/taint/"
+)
+
 var UseLegacyELBName = featureflag.New("UseLegacyELBName", featureflag.Bool(false))
 
 type KopsModelContext struct {
@@ -171,6 +176,19 @@ func (m *KopsModelContext) CloudTagsForInstanceGroup(ig *kops.InstanceGroup) (ma
 	// Apply any user-specified labels
 	for k, v := range ig.Spec.CloudLabels {
 		labels[k] = v
+	}
+
+	// Apply labels for cluster autoscaler node labels
+	for k, v := range ig.Spec.NodeLabels {
+		labels[clusterAutoscalerNodeTemplateLabel+k] = v
+	}
+
+	// Apply labels for cluster autoscaler node taints
+	for _, v := range ig.Spec.Taints {
+		splits := strings.SplitN(v, "=", 2)
+		if len(splits) > 1 {
+			labels[clusterAutoscalerNodeTemplateTaint+splits[0]] = splits[1]
+		}
 	}
 
 	// The system tags take priority because the cluster likely breaks without them...
