@@ -72,6 +72,7 @@ type CreateClusterOptions struct {
 	NetworkCIDR          string
 	DNSZone              string
 	AdminAccess          []string
+	SSHAccess            []string
 	Networking           string
 	NodeSecurityGroups   []string
 	MasterSecurityGroups []string
@@ -250,7 +251,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
-	cmd.Flags().StringSliceVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
+	cmd.Flags().StringSliceVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict API access to this CIDR.  If not set, access will not be restricted by IP.")
+	cmd.Flags().StringSliceVar(&options.SSHAccess, "ssh-access", options.SSHAccess, "Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])")
 
 	// TODO: Can we deprecate this flag - it is awkward?
 	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
@@ -843,8 +845,14 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	if len(c.AdminAccess) != 0 {
-		cluster.Spec.SSHAccess = c.AdminAccess
+		if len(c.SSHAccess) != 0 {
+			cluster.Spec.SSHAccess = c.SSHAccess
+		} else {
+			cluster.Spec.SSHAccess = c.AdminAccess
+		}
 		cluster.Spec.KubernetesAPIAccess = c.AdminAccess
+	} else if len(c.AdminAccess) == 0 {
+		cluster.Spec.SSHAccess = c.SSHAccess
 	}
 
 	err = cloudup.PerformAssignments(cluster)
