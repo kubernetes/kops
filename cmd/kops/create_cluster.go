@@ -34,6 +34,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
@@ -862,7 +863,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster)
+	assetBuilder := assets.NewAssetBuilder()
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
 	if err != nil {
 		return err
 	}
