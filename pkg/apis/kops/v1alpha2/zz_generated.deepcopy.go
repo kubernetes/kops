@@ -524,6 +524,15 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = make([]string, len(*in))
 		copy(*out, *in)
 	}
+	if in.NetworkRequireGateway != nil {
+		in, out := &in.NetworkRequireGateway, &out.NetworkRequireGateway
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	if in.Topology != nil {
 		in, out := &in.Topology, &out.Topology
 		if *in == nil {

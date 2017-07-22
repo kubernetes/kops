@@ -109,13 +109,20 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	var publicRouteTable *awstasks.RouteTable
 	{
 		// The internet gateway is the main entry point to the cluster.
-		igw := &awstasks.InternetGateway{
-			Name:      s(b.ClusterName()),
-			Lifecycle: b.Lifecycle,
-			VPC:       b.LinkToVPC(),
-			Shared:    fi.Bool(sharedVPC),
+		var igw *awstasks.InternetGateway
+
+		// Skip the creation of the Gateway if b.Cluster.Spec.NetworkRequireGateway is set to false.
+		if b.Cluster.Spec.NetworkRequireGateway != nil && !*b.Cluster.Spec.NetworkRequireGateway {
+			glog.Warningf("kops is skipping the creation of an Internet Gateway, as networkRequireGateway is set to false.")
+		} else {
+			igw = &awstasks.InternetGateway{
+				Name:      s(b.ClusterName()),
+				Lifecycle: b.Lifecycle,
+				VPC:       b.LinkToVPC(),
+				Shared:    fi.Bool(sharedVPC),
+			}
+			c.AddTask(igw)
 		}
-		c.AddTask(igw)
 
 		if !allSubnetsShared {
 			publicRouteTable = &awstasks.RouteTable{
@@ -126,14 +133,19 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 			c.AddTask(publicRouteTable)
 
-			// TODO: Validate when allSubnetsShared
-			c.AddTask(&awstasks.Route{
-				Name:            s("0.0.0.0/0"),
-				Lifecycle:       b.Lifecycle,
-				CIDR:            s("0.0.0.0/0"),
-				RouteTable:      publicRouteTable,
-				InternetGateway: igw,
-			})
+			// If the gateway has not been created do not create the route
+			if igw != nil {
+				// TODO: Validate when allSubnetsShared
+				c.AddTask(&awstasks.Route{
+					Name:            s("0.0.0.0/0"),
+					Lifecycle:       b.Lifecycle,
+					CIDR:            s("0.0.0.0/0"),
+					RouteTable:      publicRouteTable,
+					InternetGateway: igw,
+				})
+			} else {
+				glog.Warningf("kops is skipping adding a default route to the kops managed route table, as networkRequireGateway is set to false.")
+			}
 		}
 	}
 

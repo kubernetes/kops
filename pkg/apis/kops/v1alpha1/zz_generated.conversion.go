@@ -610,6 +610,7 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.NetworkCIDR = in.NetworkCIDR
 	out.AdditionalNetworkCIDRs = in.AdditionalNetworkCIDRs
 	out.NetworkID = in.NetworkID
+	out.NetworkRequireGateway = in.NetworkRequireGateway
 	if in.Topology != nil {
 		in, out := &in.Topology, &out.Topology
 		*out = new(kops.TopologySpec)
@@ -855,6 +856,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	out.NetworkCIDR = in.NetworkCIDR
 	out.AdditionalNetworkCIDRs = in.AdditionalNetworkCIDRs
 	out.NetworkID = in.NetworkID
+	out.NetworkRequireGateway = in.NetworkRequireGateway
 	if in.Topology != nil {
 		in, out := &in.Topology, &out.Topology
 		*out = new(TopologySpec)
