@@ -39,6 +39,11 @@ func TestCreateClusterMinimal(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal", "v1alpha2")
 }
 
+// TestCreateClusterMinimal runs kops create cluster, with a grab-bag of edge cases
+func TestCreateClusterComplex(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/complex", "v1alpha2")
+}
+
 // TestCreateClusterHA runs kops create cluster ha.example.com --zones us-test-1a,us-test-1b,us-test-1c --master-zones us-test-1a,us-test-1b,us-test-1c
 func TestCreateClusterHA(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha1")
@@ -47,7 +52,7 @@ func TestCreateClusterHA(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_encrypt", "v1alpha2")
 }
 
-// TestCreateClusterHASharedZones tests kops create cluster when the master count is bigger than the numebr of zones
+// TestCreateClusterHASharedZones tests kops create cluster when the master count is bigger than the number of zones
 func TestCreateClusterHASharedZones(t *testing.T) {
 	// Cannot be expressed in v1alpha1 API:	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha2")
