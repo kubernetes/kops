@@ -180,5 +180,13 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	// We can do this, or check if we are re-writing the assets to a container registry.
+	// I think it is easiest to just always set it.
+
+	// Set the pause container as a kubelet flag
+	if clusterSpec.Kubelet.PodInfraContainerImage == "" {
+		clusterSpec.Kubelet.PodInfraContainerImage = "gcr.io/google_containers/pause-amd64:3.0"
+	}
+
 	return nil
 }
