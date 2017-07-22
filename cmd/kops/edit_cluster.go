@@ -31,6 +31,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/edit"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
@@ -209,7 +210,8 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			return preservedFile(fmt.Errorf("error populating configuration: %v", err), file, out)
 		}
 
-		fullCluster, err := cloudup.PopulateClusterSpec(newCluster)
+		assetBuilder := assets.NewAssetBuilder()
+		fullCluster, err := cloudup.PopulateClusterSpec(newCluster, assetBuilder)
 		if err != nil {
 			results = editResults{
 				file: file,

@@ -63,7 +63,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	var yamlSeparator = []byte("\n---\n\n")
 	var remappedManifests [][]byte
 	for _, manifest := range manifests {
-		err := manifest.RemapImages(a.remapImage)
+		err := manifest.RemapImages(a.RemapImage)
 		if err != nil {
 			return nil, fmt.Errorf("error remapping images: %v", err)
 		}
@@ -78,7 +78,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	return bytes.Join(remappedManifests, yamlSeparator), nil
 }
 
-func (a *AssetBuilder) remapImage(image string) (string, error) {
+func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	asset := &Asset{}
 
 	asset.DockerImage = image
