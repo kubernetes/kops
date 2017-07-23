@@ -64,7 +64,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 		return fmt.Errorf("OldClusterName must be specified")
 	}
 
-	oldKeyStore, err := registry.KeyStore(cluster)
+	oldKeyStore, err := x.Clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 	}
 	cluster.Spec.ConfigBase = newConfigBase.Path()
 
-	newKeyStore, err := registry.KeyStore(cluster)
+	newKeyStore, err := x.Clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -107,7 +107,7 @@ func (x *ConvertKubeupCluster) Upgrade() error {
 	}
 
 	assetBuilder := assets.NewAssetBuilder()
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(x.Clientset, cluster, assetBuilder)
 	if err != nil {
 		return err
 	}

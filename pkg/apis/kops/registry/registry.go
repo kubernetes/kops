@@ -20,8 +20,6 @@ import (
 	"fmt"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
 	"strings"
 )
@@ -81,22 +79,4 @@ func ConfigBase(c *api.Cluster) (vfs.Path, error) {
 		return nil, fmt.Errorf("error parsing ConfigBase %q: %v", c.Spec.ConfigBase, err)
 	}
 	return configBase, nil
-}
-
-func SecretStore(c *api.Cluster) (fi.SecretStore, error) {
-	configBase, err := ConfigBase(c)
-	if err != nil {
-		return nil, err
-	}
-	basedir := configBase.Join("secrets")
-	return secrets.NewVFSSecretStore(basedir), nil
-}
-
-func KeyStore(c *api.Cluster) (fi.CAStore, error) {
-	configBase, err := ConfigBase(c)
-	if err != nil {
-		return nil, err
-	}
-	basedir := configBase.Join("pki")
-	return fi.NewVFSCAStore(basedir), nil
 }

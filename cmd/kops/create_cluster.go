@@ -879,7 +879,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	assetBuilder := assets.NewAssetBuilder()
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -904,7 +904,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}

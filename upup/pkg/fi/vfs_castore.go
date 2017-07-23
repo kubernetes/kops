@@ -257,10 +257,10 @@ func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*Certificate, error) {
 	return cert, nil
 }
 
-func (c *VFSCAStore) Cert(id string) (*Certificate, error) {
+func (c *VFSCAStore) Cert(id string, dryRun bool) (*Certificate, error) {
 	cert, err := c.FindCert(id)
 	if err == nil && cert == nil {
-		if c.DryRun {
+		if dryRun {
 			glog.Warningf("using empty certificate, because running with DryRun")
 			return &Certificate{}, err
 		}
@@ -416,6 +416,11 @@ func (c *VFSCAStore) List() ([]*KeystoreItem, error) {
 	}
 
 	return items, nil
+}
+
+// MirrorTo will copy keys to a vfs.Path, which is often easier for a machine to read
+func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
+	return vfs.CopyTree(c.basedir, basedir)
 }
 
 func (c *VFSCAStore) IssueCert(id string, serial *big.Int, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error) {

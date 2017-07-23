@@ -20,6 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
 	"net/url"
 	"strings"
@@ -49,6 +51,12 @@ type Clientset interface {
 
 	// ListFederations returns all federations
 	ListFederations(options metav1.ListOptions) (*kops.FederationList, error)
+
+	// SecretStore builds the secret store for the specified cluster
+	SecretStore(cluster *kops.Cluster) (fi.SecretStore, error)
+
+	// KeyStore builds the key store for the specified cluster
+	KeyStore(cluster *kops.Cluster) (fi.CAStore, error)
 }
 
 // RESTClientset is an implementation of clientset that uses a "real" generated REST client
@@ -99,6 +107,16 @@ func (c *RESTClientset) ListFederations(options metav1.ListOptions) (*kops.Feder
 func (c *RESTClientset) GetFederation(name string) (*kops.Federation, error) {
 	namespace := restNamespaceForFederationName(name)
 	return c.KopsClient.Federations(namespace).Get(name, metav1.GetOptions{})
+}
+
+func (c *RESTClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
+	namespace := restNamespaceForFederationName(cluster.Name)
+	return secrets.NewClientsetSecretStore(c.KopsClient, namespace), nil
+}
+
+func (c *RESTClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
+	namespace := restNamespaceForFederationName(cluster.Name)
+	return fi.NewClientsetCAStore(c.KopsClient, namespace), nil
 }
 
 func restNamespaceForClusterName(clusterName string) string {

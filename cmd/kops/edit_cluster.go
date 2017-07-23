@@ -211,7 +211,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		}
 
 		assetBuilder := assets.NewAssetBuilder()
-		fullCluster, err := cloudup.PopulateClusterSpec(newCluster, assetBuilder)
+		fullCluster, err := cloudup.PopulateClusterSpec(clientset, newCluster, assetBuilder)
 		if err != nil {
 			results = editResults{
 				file: file,

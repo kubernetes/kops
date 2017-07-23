@@ -182,13 +182,13 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	keyStore, err := c.Clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
 	keyStore.(*fi.VFSCAStore).DryRun = c.DryRun
 
-	secretStore, err := registry.SecretStore(cluster)
+	secretStore, err := c.Clientset.SecretStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -272,10 +272,11 @@ func (c *ApplyClusterCmd) Run() error {
 	checkExisting := true
 
 	l.AddTypes(map[string]interface{}{
-		"keypair":       &fitasks.Keypair{},
-		"secret":        &fitasks.Secret{},
-		"mirrorSecrets": &fitasks.MirrorSecrets{},
-		"managedFile":   &fitasks.ManagedFile{},
+		"keypair":        &fitasks.Keypair{},
+		"mirrorKeystore": &fitasks.MirrorKeystore{},
+		"secret":         &fitasks.Secret{},
+		"mirrorSecrets":  &fitasks.MirrorSecrets{},
+		"managedFile":    &fitasks.ManagedFile{},
 		// DNS
 		//"dnsZone": &dnstasks.DNSZone{},
 	})
@@ -809,7 +810,7 @@ func findHash(url string) (*hashing.Hash, error) {
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
 func (c *ApplyClusterCmd) upgradeSpecs(assetBuilder *assets.AssetBuilder) error {
-	fullCluster, err := PopulateClusterSpec(c.Cluster, assetBuilder)
+	fullCluster, err := PopulateClusterSpec(c.Clientset, c.Cluster, assetBuilder)
 	if err != nil {
 		return err
 	}

@@ -22,8 +22,8 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kops/pkg/apis/kops/v1alpha2"
-	"k8s.io/kops/pkg/client/clientset_generated/clientset"
+	"k8s.io/kops/pkg/apis/kops"
+	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 	"time"
@@ -31,12 +31,12 @@ import (
 
 type ClientsetSecretStore struct {
 	namespace string
-	clientset clientset.Interface
+	clientset kopsinternalversion.KopsInterface
 }
 
 var _ fi.SecretStore = &ClientsetSecretStore{}
 
-func NewClientsetSecretStore(clientset clientset.Interface, namespace string) fi.SecretStore {
+func NewClientsetSecretStore(clientset kopsinternalversion.KopsInterface, namespace string) fi.SecretStore {
 	c := &ClientsetSecretStore{
 		clientset: clientset,
 		namespace: namespace,
@@ -45,7 +45,7 @@ func NewClientsetSecretStore(clientset clientset.Interface, namespace string) fi
 }
 
 func (c *ClientsetSecretStore) MirrorTo(basedir vfs.Path) error {
-	list, err := c.clientset.KopsV1alpha2().Keysets(c.namespace).List(v1.ListOptions{})
+	list, err := c.clientset.Keysets(c.namespace).List(v1.ListOptions{})
 	if err != nil {
 		return fmt.Errorf("error listing keysets: %v", err)
 	}
@@ -53,7 +53,7 @@ func (c *ClientsetSecretStore) MirrorTo(basedir vfs.Path) error {
 	for i := range list.Items {
 		keyset := &list.Items[i]
 
-		if keyset.Spec.Type != v1alpha2.SecretTypeSecret {
+		if keyset.Spec.Type != kops.SecretTypeSecret {
 			continue
 		}
 
@@ -81,7 +81,7 @@ func (c *ClientsetSecretStore) FindSecret(name string) (*fi.Secret, error) {
 }
 
 func (c *ClientsetSecretStore) ListSecrets() ([]string, error) {
-	list, err := c.clientset.KopsV1alpha2().Keysets(c.namespace).List(v1.ListOptions{})
+	list, err := c.clientset.Keysets(c.namespace).List(v1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error listing keysets: %v", err)
 	}
@@ -91,7 +91,7 @@ func (c *ClientsetSecretStore) ListSecrets() ([]string, error) {
 		keyset := &list.Items[i]
 
 		switch keyset.Spec.Type {
-		case v1alpha2.SecretTypeSecret:
+		case kops.SecretTypeSecret:
 			names = append(names, keyset.Name)
 		}
 	}
@@ -146,7 +146,7 @@ func (c *ClientsetSecretStore) GetOrCreateSecret(name string, secret *fi.Secret)
 }
 
 func (c *ClientsetSecretStore) loadSecret(name string) (*fi.Secret, error) {
-	keyset, err := c.clientset.KopsV1alpha2().Keysets(c.namespace).Get(name, v1.GetOptions{})
+	keyset, err := c.clientset.Keysets(c.namespace).Get(name, v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
@@ -157,7 +157,7 @@ func (c *ClientsetSecretStore) loadSecret(name string) (*fi.Secret, error) {
 	return parseSecret(keyset)
 }
 
-func parseSecret(keyset *v1alpha2.Keyset) (*fi.Secret, error) {
+func parseSecret(keyset *kops.Keyset) (*fi.Secret, error) {
 	primary := fi.FindPrimary(keyset)
 	if primary == nil {
 		return nil, nil
@@ -172,23 +172,23 @@ func parseSecret(keyset *v1alpha2.Keyset) (*fi.Secret, error) {
 }
 
 // createSecret writes the secret, but only if it does not exists
-func (c *ClientsetSecretStore) createSecret(s *fi.Secret, name string) (*v1alpha2.Keyset, error) {
+func (c *ClientsetSecretStore) createSecret(s *fi.Secret, name string) (*kops.Keyset, error) {
 	data, err := json.Marshal(s)
 	if err != nil {
 		return nil, fmt.Errorf("error serializing secret: %v", err)
 	}
 
-	keyset := &v1alpha2.Keyset{}
+	keyset := &kops.Keyset{}
 	keyset.Name = name
-	keyset.Spec.Type = v1alpha2.SecretTypeSecret
+	keyset.Spec.Type = kops.SecretTypeSecret
 
 	t := time.Now().UnixNano()
 	id := fi.BuildPKISerial(t)
 
-	keyset.Spec.Keys = append(keyset.Spec.Keys, v1alpha2.KeyItem{
+	keyset.Spec.Keys = append(keyset.Spec.Keys, kops.KeyItem{
 		Id:              id.String(),
 		PrivateMaterial: data,
 	})
 
-	return c.clientset.KopsV1alpha2().Keysets(c.namespace).Create(keyset)
+	return c.clientset.Keysets(c.namespace).Create(keyset)
 }

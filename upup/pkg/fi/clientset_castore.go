@@ -28,17 +28,16 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/v1alpha2"
-	"k8s.io/kops/pkg/client/clientset_generated/clientset"
+	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
+	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"sync"
 	"time"
 )
 
 type ClientsetCAStore struct {
-	DryRun    bool
 	namespace string
-	clientset clientset.Interface
+	clientset kopsinternalversion.KopsInterface
 
 	mutex         sync.Mutex
 	cacheCaKeyset *keyset
@@ -46,9 +45,10 @@ type ClientsetCAStore struct {
 
 var _ CAStore = &ClientsetCAStore{}
 
-func NewClientsetCAStore(clientset clientset.Interface) CAStore {
+func NewClientsetCAStore(clientset kopsinternalversion.KopsInterface, namespace string) CAStore {
 	c := &ClientsetCAStore{
 		clientset: clientset,
+		namespace: namespace,
 	}
 
 	return c
@@ -118,7 +118,6 @@ func (c *ClientsetCAStore) generateCACertificate() (*keyset, error) {
 	return keyset, nil
 }
 
-//
 //func (c *VFSCAStore) loadCertificates(p vfs.Path) (*certificates, error) {
 //	files, err := p.ReadDir()
 //	if err != nil {
@@ -175,7 +174,7 @@ type keysetItem struct {
 }
 
 func (c *ClientsetCAStore) loadKeyset(name string) (*keyset, error) {
-	o, err := c.clientset.KopsV1alpha2().Keysets(c.namespace).Get(name, v1.GetOptions{})
+	o, err := c.clientset.Keysets(c.namespace).Get(name, v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
 			return nil, nil
@@ -215,8 +214,8 @@ func (c *ClientsetCAStore) loadKeyset(name string) (*keyset, error) {
 	return keyset, nil
 }
 
-func FindPrimary(keyset *v1alpha2.Keyset) *v1alpha2.KeyItem {
-	var primary *v1alpha2.KeyItem
+func FindPrimary(keyset *kops.Keyset) *kops.KeyItem {
+	var primary *kops.KeyItem
 	var primaryVersion *big.Int
 	for i := range keyset.Spec.Keys {
 		item := &keyset.Spec.Keys[i]
@@ -233,10 +232,10 @@ func FindPrimary(keyset *v1alpha2.Keyset) *v1alpha2.KeyItem {
 	}
 	return primary
 }
-func (c *ClientsetCAStore) Cert(name string) (*Certificate, error) {
+func (c *ClientsetCAStore) Cert(name string, dryRun bool) (*Certificate, error) {
 	cert, err := c.FindCert(name)
 	if err == nil && cert == nil {
-		if c.DryRun {
+		if dryRun {
 			glog.Warningf("using empty certificate, because running with DryRun")
 			return &Certificate{}, err
 		}
@@ -246,10 +245,10 @@ func (c *ClientsetCAStore) Cert(name string) (*Certificate, error) {
 
 }
 
-func (c *ClientsetCAStore) CertificatePool(id string) (*CertificatePool, error) {
+func (c *ClientsetCAStore) CertificatePool(id string, dryRun bool) (*CertificatePool, error) {
 	cert, err := c.FindCertificatePool(id)
 	if err == nil && cert == nil {
-		if c.DryRun {
+		if dryRun {
 			glog.Warningf("using empty certificate, because running with DryRun")
 			return &CertificatePool{}, err
 		}
@@ -310,7 +309,7 @@ func (c *ClientsetCAStore) FindCertificatePool(name string) (*CertificatePool, e
 }
 
 func (c *ClientsetCAStore) List() ([]*KeystoreItem, error) {
-	list, err := c.clientset.KopsV1alpha2().Keysets(c.namespace).List(v1.ListOptions{})
+	list, err := c.clientset.Keysets(c.namespace).List(v1.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error listing keysets: %v", err)
 	}
@@ -325,11 +324,11 @@ func (c *ClientsetCAStore) List() ([]*KeystoreItem, error) {
 			}
 
 			switch keyset.Spec.Type {
-			case v1alpha2.SecretTypeSSHPublicKey:
+			case kops.SecretTypeSSHPublicKey:
 				ki.Type = SecretTypeSSHPublicKey
-			case v1alpha2.SecretTypeKeypair:
+			case kops.SecretTypeKeypair:
 				ki.Type = SecretTypeKeypair
-			case v1alpha2.SecretTypeSecret:
+			case kops.SecretTypeSecret:
 				//ki.Type = SecretTypeSecret
 				continue // Ignore
 			default:
@@ -428,10 +427,10 @@ func (c *ClientsetCAStore) FindPrivateKey(name string) (*PrivateKey, error) {
 	return nil, nil
 }
 
-func (c *ClientsetCAStore) PrivateKey(name string) (*PrivateKey, error) {
+func (c *ClientsetCAStore) PrivateKey(name string, dryRun bool) (*PrivateKey, error) {
 	key, err := c.FindPrivateKey(name)
 	if err == nil && key == nil {
-		if c.DryRun {
+		if dryRun {
 			glog.Warningf("using empty certificate, because running with DryRun")
 			return &PrivateKey{}, err
 		}
@@ -463,12 +462,12 @@ func (c *ClientsetCAStore) storeKeypair(name string, id string, cert *Certificat
 		return err
 	}
 
-	client := c.clientset.KopsV1alpha2().Keysets(c.namespace)
+	client := c.clientset.Keysets(c.namespace)
 	o, err := client.Get(name, v1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error reading keyset %q: %v", name, err)
 	}
-	key := v1alpha2.KeyItem{
+	key := kops.KeyItem{
 		Id:              id,
 		PublicMaterial:  publicMaterial.Bytes(),
 		PrivateMaterial: privateMaterial.Bytes(),
@@ -506,12 +505,12 @@ func (c *ClientsetCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 
 	name = "ssh-" + name
 
-	client := c.clientset.KopsV1alpha2().Keysets(c.namespace)
+	client := c.clientset.Keysets(c.namespace)
 	o, err := client.Get(name, v1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error reading keyset %q: %v", name, err)
 	}
-	key := v1alpha2.KeyItem{
+	key := kops.KeyItem{
 		Id:             id,
 		PublicMaterial: pubkey,
 	}
@@ -526,13 +525,13 @@ func (c *ClientsetCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 func (c *ClientsetCAStore) FindSSHPublicKeys(name string) ([]*KeystoreItem, error) {
 	itemName := "ssh-" + name
 
-	client := c.clientset.KopsV1alpha2().Keysets(c.namespace)
+	client := c.clientset.Keysets(c.namespace)
 	o, err := client.Get(itemName, v1.GetOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("error reading keyset %q: %v", itemName, err)
 	}
 
-	if o.Spec.Type != v1alpha2.SecretTypeSSHPublicKey {
+	if o.Spec.Type != kops.SecretTypeSSHPublicKey {
 		return nil, fmt.Errorf("expecting type %s for %q, was type %s", kops.SecretTypeSSHPublicKey, itemName, o.Spec.Type)
 	}
 
@@ -560,4 +559,59 @@ func (c *ClientsetCAStore) DeleteSecret(item *KeystoreItem) error {
 		// Primarily because we need to make sure users can recreate them!
 		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Type)
 	}
+}
+
+func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
+	list, err := c.clientset.Keysets(c.namespace).List(v1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("error listing keysets: %v", err)
+	}
+
+	for i := range list.Items {
+		keyset := &list.Items[i]
+
+		if keyset.Spec.Type == kops.SecretTypeSecret {
+			continue
+		}
+
+		primary := FindPrimary(keyset)
+		if primary == nil {
+			glog.Warningf("skipping keyset with no primary data: %s", keyset.Name)
+			continue
+		}
+
+		switch keyset.Spec.Type {
+		case kops.SecretTypeSSHPublicKey:
+			for i := range keyset.Spec.Keys {
+				item := &keyset.Spec.Keys[i]
+				p := basedir.Join("ssh", "public", keyset.Name, item.Id)
+				err = p.WriteFile(item.PublicMaterial)
+				if err != nil {
+					return fmt.Errorf("error writing %q: %v", p, err)
+				}
+			}
+
+		case kops.SecretTypeKeypair:
+			for i := range keyset.Spec.Keys {
+				item := &keyset.Spec.Keys[i]
+				{
+					p := basedir.Join("issued", keyset.Name, item.Id+".crt")
+					err = p.WriteFile(item.PublicMaterial)
+					if err != nil {
+						return fmt.Errorf("error writing %q: %v", p, err)
+					}
+				}
+				{
+					p := basedir.Join("private", keyset.Name, item.Id+".key")
+					err = p.WriteFile(item.PrivateMaterial)
+					if err != nil {
+						return fmt.Errorf("error writing %q: %v", p, err)
+					}
+				}
+			}
+
+		}
+	}
+
+	return nil
 }

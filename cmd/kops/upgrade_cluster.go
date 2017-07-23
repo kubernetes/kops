@@ -285,7 +285,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		}
 
 		assetBuilder := assets.NewAssetBuilder()
-		fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
+		fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
 		if err != nil {
 			return err
 		}

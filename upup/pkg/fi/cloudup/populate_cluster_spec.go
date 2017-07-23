@@ -25,10 +25,10 @@ import (
 
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/components"
@@ -65,7 +65,7 @@ func findModelStore() (vfs.Path, error) {
 
 // PopulateClusterSpec takes a user-specified cluster spec, and computes the full specification that should be set on the cluster.
 // We do this so that we don't need any real "brains" on the node side.
-func PopulateClusterSpec(cluster *api.Cluster, assetBuilder *assets.AssetBuilder) (*api.Cluster, error) {
+func PopulateClusterSpec(clientset simple.Clientset, cluster *api.Cluster, assetBuilder *assets.AssetBuilder) (*api.Cluster, error) {
 	modelStore, err := findModelStore()
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func PopulateClusterSpec(cluster *api.Cluster, assetBuilder *assets.AssetBuilder
 		Models:       []string{"config"},
 		assetBuilder: assetBuilder,
 	}
-	err = c.run()
+	err = c.run(clientset)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func PopulateClusterSpec(cluster *api.Cluster, assetBuilder *assets.AssetBuilder
 // struct is falling through..
 // @kris-nova
 //
-func (c *populateClusterSpec) run() error {
+func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	err := validation.ValidateCluster(c.InputCluster, false)
 	if err != nil {
 		return err
@@ -188,7 +188,7 @@ func (c *populateClusterSpec) run() error {
 		return fmt.Errorf("ConfigBase path is not cluster readable: %v", cluster.Spec.ConfigBase)
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -201,8 +201,7 @@ func (c *populateClusterSpec) run() error {
 			// We will mirror to ConfigBase
 			basedir := configBase.Join("pki")
 			cluster.Spec.KeyStore = basedir.Path()
-		}
-		if vfs.IsClusterReadable(hasVFSPath.VFSPath()) {
+		} else if vfs.IsClusterReadable(hasVFSPath.VFSPath()) {
 			vfsPath := hasVFSPath.VFSPath()
 			cluster.Spec.KeyStore = vfsPath.Path()
 		} else {
@@ -211,7 +210,7 @@ func (c *populateClusterSpec) run() error {
 		}
 	}
 
-	secretStore, err := registry.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -222,9 +221,7 @@ func (c *populateClusterSpec) run() error {
 			// We will mirror to ConfigBase
 			basedir := configBase.Join("secrets")
 			cluster.Spec.KeyStore = basedir.Path()
-		}
-
-		if vfs.IsClusterReadable(hasVFSPath.VFSPath()) {
+		} else if vfs.IsClusterReadable(hasVFSPath.VFSPath()) {
 			vfsPath := hasVFSPath.VFSPath()
 			cluster.Spec.SecretStore = vfsPath.Path()
 		} else {

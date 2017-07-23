@@ -19,8 +19,11 @@ package vfsclientset
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/registry"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -72,6 +75,24 @@ func (c *VFSClientset) ListFederations(options metav1.ListOptions) (*kops.Federa
 
 func (c *VFSClientset) GetFederation(name string) (*kops.Federation, error) {
 	return c.federations().Get(name, metav1.GetOptions{})
+}
+
+func (c *VFSClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
+	configBase, err := registry.ConfigBase(cluster)
+	if err != nil {
+		return nil, err
+	}
+	basedir := configBase.Join("secrets")
+	return secrets.NewVFSSecretStore(basedir), nil
+}
+
+func (c *VFSClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
+	configBase, err := registry.ConfigBase(cluster)
+	if err != nil {
+		return nil, err
+	}
+	basedir := configBase.Join("pki")
+	return fi.NewVFSCAStore(basedir), nil
 }
 
 func NewVFSClientset(basePath vfs.Path) simple.Clientset {

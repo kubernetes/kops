@@ -168,7 +168,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 	}
 
 	assetBuilder := assets.NewAssetBuilder()
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
+	fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
 	if err != nil {
 		return err
 	}

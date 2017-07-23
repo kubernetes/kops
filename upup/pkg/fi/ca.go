@@ -107,6 +107,9 @@ type Keystore interface {
 
 	// Store the keypair
 	StoreKeypair(id string, cert *Certificate, privateKey *PrivateKey) error
+
+	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
+	MirrorTo(basedir vfs.Path) error
 }
 
 // HasVFSPath is implemented by keystore & other stores that use a VFS path as their backing store

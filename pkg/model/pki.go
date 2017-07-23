@@ -248,9 +248,22 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		// Keypair used by the kubelet
 		t := &fitasks.MirrorSecrets{
 			Name:       fi.String("mirror-secrets"),
+			MirrorPath: mirrorPath,
+		}
+		c.AddTask(t)
+	}
+
+	{
+		mirrorPath, err := vfs.Context.BuildVfsPath(b.Cluster.Spec.KeyStore)
+		if err != nil {
+			return err
+		}
+
+		// Keypair used by the kubelet
+		t := &fitasks.MirrorKeystore{
+			Name:       fi.String("mirror-keystore"),
 			MirrorPath: mirrorPath,
 		}
 		c.AddTask(t)
