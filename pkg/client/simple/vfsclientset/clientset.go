@@ -17,6 +17,9 @@ limitations under the License.
 package vfsclientset
 
 import (
+	"fmt"
+	"strings"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
@@ -93,6 +96,55 @@ func (c *VFSClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
 	}
 	basedir := configBase.Join("pki")
 	return fi.NewVFSCAStore(basedir), nil
+}
+
+func DeleteAllClusterState(basePath vfs.Path) error {
+	paths, err := basePath.ReadTree()
+	if err != nil {
+		return fmt.Errorf("error listing files in state store: %v", err)
+	}
+
+	for _, path := range paths {
+		relativePath, err := vfs.RelativePath(basePath, path)
+		if err != nil {
+			return err
+		}
+		if relativePath == "config" || relativePath == "cluster.spec" {
+			continue
+		}
+		if strings.HasPrefix(relativePath, "addons/") {
+			continue
+		}
+		if strings.HasPrefix(relativePath, "pki/") {
+			continue
+		}
+		if strings.HasPrefix(relativePath, "secrets/") {
+			continue
+		}
+		if strings.HasPrefix(relativePath, "instancegroup/") {
+			continue
+		}
+
+		return fmt.Errorf("refusing to delete: unknown file found: %s", path)
+	}
+
+	for _, path := range paths {
+		err = path.Remove()
+		if err != nil {
+			return fmt.Errorf("error deleting cluster file %s: %v", path, err)
+		}
+	}
+
+	return nil
+}
+
+func (c *VFSClientset) DeleteCluster(cluster *kops.Cluster) error {
+	configBase, err := registry.ConfigBase(cluster)
+	if err != nil {
+		return err
+	}
+
+	return DeleteAllClusterState(configBase)
 }
 
 func NewVFSClientset(basePath vfs.Path) simple.Clientset {

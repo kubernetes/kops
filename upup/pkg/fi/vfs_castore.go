@@ -685,20 +685,24 @@ func formatFingerprint(data []byte) string {
 }
 
 func insertFingerprintColons(id string) string {
+	remaining := id
+
 	var buf bytes.Buffer
 
 	for {
-		if id == "" {
+		if remaining == "" {
 			break
 		}
 		if buf.Len() != 0 {
 			buf.WriteString(":")
 		}
-		if len(id) < 2 {
-			buf.WriteString(id)
+		if len(remaining) < 2 {
+			glog.Warningf("unexpected format for SSH public key id: %q", id)
+			buf.WriteString(remaining)
+			break
 		} else {
-			buf.WriteString(id[0:2])
-			id = id[2:]
+			buf.WriteString(remaining[0:2])
+			remaining = remaining[2:]
 		}
 	}
 	return buf.String()

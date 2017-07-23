@@ -218,7 +218,7 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 		if !ok {
 			// We will mirror to ConfigBase
 			basedir := configBase.Join("secrets")
-			cluster.Spec.KeyStore = basedir.Path()
+			cluster.Spec.SecretStore = basedir.Path()
 		} else if vfs.IsClusterReadable(hasVFSPath.VFSPath()) {
 			vfsPath := hasVFSPath.VFSPath()
 			cluster.Spec.SecretStore = vfsPath.Path()

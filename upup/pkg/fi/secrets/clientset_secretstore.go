@@ -19,6 +19,9 @@ package secrets
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -26,8 +29,10 @@ import (
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
-	"time"
 )
+
+// NamePrefix is a prefix we use to avoid collisions with other keysets
+const NamePrefix = "token-"
 
 type ClientsetSecretStore struct {
 	namespace string
@@ -63,7 +68,8 @@ func (c *ClientsetSecretStore) MirrorTo(basedir vfs.Path) error {
 			continue
 		}
 
-		p := BuildVfsSecretPath(basedir, keyset.Name)
+		name := strings.TrimPrefix(keyset.Name, NamePrefix)
+		p := BuildVfsSecretPath(basedir, name)
 
 		s := &fi.Secret{
 			Data: primary.PrivateMaterial,
@@ -101,20 +107,21 @@ func (c *ClientsetSecretStore) ListSecrets() ([]string, error) {
 
 		switch keyset.Spec.Type {
 		case kops.SecretTypeSecret:
-			names = append(names, keyset.Name)
+			name := strings.TrimPrefix(keyset.Name, NamePrefix)
+			names = append(names, name)
 		}
 	}
 
 	return names, nil
 }
 
-func (c *ClientsetSecretStore) Secret(id string) (*fi.Secret, error) {
-	s, err := c.FindSecret(id)
+func (c *ClientsetSecretStore) Secret(name string) (*fi.Secret, error) {
+	s, err := c.FindSecret(name)
 	if err != nil {
 		return nil, err
 	}
 	if s == nil {
-		return nil, fmt.Errorf("Secret not found: %q", id)
+		return nil, fmt.Errorf("Secret not found: %q", name)
 	}
 	return s, nil
 }
@@ -155,6 +162,7 @@ func (c *ClientsetSecretStore) GetOrCreateSecret(name string, secret *fi.Secret)
 }
 
 func (c *ClientsetSecretStore) loadSecret(name string) (*fi.Secret, error) {
+	name = NamePrefix + name
 	keyset, err := c.clientset.Keysets(c.namespace).Get(name, v1.GetOptions{})
 	if err != nil {
 		if errors.IsNotFound(err) {
@@ -188,7 +196,7 @@ func (c *ClientsetSecretStore) createSecret(s *fi.Secret, name string) (*kops.Ke
 	}
 
 	keyset := &kops.Keyset{}
-	keyset.Name = name
+	keyset.Name = NamePrefix + name
 	keyset.Spec.Type = kops.SecretTypeSecret
 
 	t := time.Now().UnixNano()

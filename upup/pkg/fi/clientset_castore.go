@@ -118,50 +118,6 @@ func (c *ClientsetCAStore) generateCACertificate() (*keyset, error) {
 	return keyset, nil
 }
 
-//func (c *VFSCAStore) loadCertificates(p vfs.Path) (*certificates, error) {
-//	files, err := p.ReadDir()
-//	if err != nil {
-//		if os.IsNotExist(err) {
-//			return nil, nil
-//		}
-//		return nil, err
-//	}
-//
-//	certs := &certificates{
-//		certificates: make(map[string]*Certificate),
-//	}
-//
-//	for _, f := range files {
-//		cert, err := c.loadOneCertificate(f)
-//		if err != nil {
-//			return nil, fmt.Errorf("error loading certificate %q: %v", f, err)
-//		}
-//		name := f.Base()
-//		name = strings.TrimSuffix(name, ".crt")
-//		certs.certificates[name] = cert
-//	}
-//
-//	if len(certs.certificates) == 0 {
-//		return nil, nil
-//	}
-//
-//	var primaryVersion *big.Int
-//	for k := range certs.certificates {
-//		version, ok := big.NewInt(0).SetString(k, 10)
-//		if !ok {
-//			glog.Warningf("Ignoring certificate with non-integer version: %q", k)
-//			continue
-//		}
-//
-//		if primaryVersion == nil || version.Cmp(primaryVersion) > 0 {
-//			certs.primary = k
-//			primaryVersion = version
-//		}
-//	}
-//
-//	return certs, nil
-//}
-
 type keyset struct {
 	items   map[string]*keysetItem
 	primary *keysetItem
@@ -189,6 +145,7 @@ func (c *ClientsetCAStore) loadKeyset(name string) (*keyset, error) {
 	for _, key := range o.Spec.Keys {
 		cert, err := LoadPEMCertificate(key.PublicMaterial)
 		if err != nil {
+			glog.Warningf("key public material was %s", key.PublicMaterial)
 			return nil, fmt.Errorf("error loading certificate %s/%s: %v", name, key.Id, err)
 		}
 		privateKey, err := ParsePEMPrivateKey(key.PrivateMaterial)
@@ -451,6 +408,36 @@ func (c *ClientsetCAStore) CreateKeypair(id string, template *x509.Certificate, 
 	return cert, nil
 }
 
+func (c *ClientsetCAStore) addKey(name string, keysetType kops.KeysetType, item *kops.KeyItem) error {
+	create := false
+	client := c.clientset.Keysets(c.namespace)
+	keyset, err := client.Get(name, v1.GetOptions{})
+	if err != nil {
+		if errors.IsNotFound(err) {
+			keyset = nil
+		} else {
+			return fmt.Errorf("error reading keyset %q: %v", name, err)
+		}
+	}
+	if keyset == nil {
+		keyset = &kops.Keyset{}
+		keyset.Name = name
+		keyset.Spec.Type = keysetType
+		create = true
+	}
+	keyset.Spec.Keys = append(keyset.Spec.Keys, *item)
+	if create {
+		if _, err := client.Create(keyset); err != nil {
+			return fmt.Errorf("error creating keyset %q: %v", name, err)
+		}
+	} else {
+		if _, err := client.Update(keyset); err != nil {
+			return fmt.Errorf("error updating keyset %q: %v", name, err)
+		}
+	}
+	return nil
+}
+
 func (c *ClientsetCAStore) storeKeypair(name string, id string, cert *Certificate, privateKey *PrivateKey) error {
 	var publicMaterial bytes.Buffer
 	if _, err := cert.WriteTo(&publicMaterial); err != nil {
@@ -462,22 +449,12 @@ func (c *ClientsetCAStore) storeKeypair(name string, id string, cert *Certificat
 		return err
 	}
 
-	client := c.clientset.Keysets(c.namespace)
-	o, err := client.Get(name, v1.GetOptions{})
-	if err != nil {
-		return fmt.Errorf("error reading keyset %q: %v", name, err)
-	}
-	key := kops.KeyItem{
+	item := &kops.KeyItem{
 		Id:              id,
 		PublicMaterial:  publicMaterial.Bytes(),
 		PrivateMaterial: privateMaterial.Bytes(),
 	}
-	o.Spec.Keys = append(o.Spec.Keys, key)
-	if _, err := client.Update(o); err != nil {
-		return fmt.Errorf("error updating keyset %q: %v", name, err)
-	}
-
-	return nil
+	return c.addKey(name, kops.SecretTypeKeypair, item)
 }
 
 func (c *ClientsetCAStore) buildSerial() *big.Int {
@@ -505,37 +482,11 @@ func (c *ClientsetCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 
 	name = "ssh-" + name
 
-	create := false
-	client := c.clientset.Keysets(c.namespace)
-	keyset, err := client.Get(name, v1.GetOptions{})
-	if err != nil {
-		if errors.IsNotFound(err) {
-			keyset = nil
-		} else {
-			return fmt.Errorf("error reading keyset %q: %v", name, err)
-		}
-	}
-	if keyset == nil {
-		keyset = &kops.Keyset{}
-		keyset.Name = name
-		create = true
-	}
-	key := kops.KeyItem{
+	item := &kops.KeyItem{
 		Id:             id,
 		PublicMaterial: pubkey,
 	}
-	keyset.Spec.Keys = append(keyset.Spec.Keys, key)
-	if create {
-		if _, err := client.Create(keyset); err != nil {
-			return fmt.Errorf("error creating keyset %q: %v", name, err)
-		}
-	} else {
-		if _, err := client.Update(keyset); err != nil {
-			return fmt.Errorf("error updating keyset %q: %v", name, err)
-		}
-	}
-
-	return nil
+	return c.addKey(name, kops.SecretTypeSSHPublicKey, item)
 }
 
 func (c *ClientsetCAStore) FindSSHPublicKeys(name string) ([]*KeystoreItem, error) {

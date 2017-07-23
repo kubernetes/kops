@@ -62,7 +62,7 @@ type KeyItem struct {
 
 type KeysetSpec struct {
 	// Type is the type of the Key
-	Type KeysetType `json:"channel,omitempty"`
+	Type KeysetType `json:"type,omitempty"`
 
 	// Keys is the set of keys that make up the keyset
 	Keys []KeyItem `json:"keys,omitempty"`
