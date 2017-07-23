@@ -33,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
@@ -754,10 +755,18 @@ func (c *ApplyClusterCmd) Run() error {
 			return fmt.Errorf("error writing completed cluster spec: %v", err)
 		}
 
+		vfsMirror := vfsclientset.NewInstanceGroupMirror(cluster.Name, configBase)
+
 		for _, g := range c.InstanceGroups {
+			// TODO: We need to update the mirror (below), but do we need to update the primary?
 			_, err := c.Clientset.InstanceGroupsFor(c.Cluster).Update(g)
 			if err != nil {
 				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.ObjectMeta.Name, err)
+			}
+
+			// TODO: Don't write if vfsMirror == c.ClientSet
+			if err := vfsMirror.WriteMirror(g); err != nil {
+				return fmt.Errorf("error writing instance group spec to mirror: %v", err)
 			}
 		}
 	}

@@ -181,20 +181,12 @@ func parseSecret(keyset *kops.Keyset) (*fi.Secret, error) {
 	}
 
 	s := &fi.Secret{}
-	err := json.Unmarshal(primary.PrivateMaterial, s)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing secret from %s[%s]: %v", keyset.Name, primary.Id, err)
-	}
+	s.Data = primary.PrivateMaterial
 	return s, nil
 }
 
 // createSecret writes the secret, but only if it does not exists
 func (c *ClientsetSecretStore) createSecret(s *fi.Secret, name string) (*kops.Keyset, error) {
-	data, err := json.Marshal(s)
-	if err != nil {
-		return nil, fmt.Errorf("error serializing secret: %v", err)
-	}
-
 	keyset := &kops.Keyset{}
 	keyset.Name = NamePrefix + name
 	keyset.Spec.Type = kops.SecretTypeSecret
@@ -204,7 +196,7 @@ func (c *ClientsetSecretStore) createSecret(s *fi.Secret, name string) (*kops.Ke
 
 	keyset.Spec.Keys = append(keyset.Spec.Keys, kops.KeyItem{
 		Id:              id.String(),
-		PrivateMaterial: data,
+		PrivateMaterial: s.Data,
 	})
 
 	return c.clientset.Keysets(c.namespace).Create(keyset)
