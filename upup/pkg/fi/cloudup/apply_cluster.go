@@ -450,8 +450,8 @@ func (c *ApplyClusterCmd) Run() error {
 	switch c.Phase {
 	case Phase(""):
 	// Everything ... the default
-	case PhaseAssetsUpdate:
-		assetTransferLifecycle = lifecyclePointer(fi.LifecycleSync)
+	case PhaseStageAssets:
+		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleSync)
 		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
