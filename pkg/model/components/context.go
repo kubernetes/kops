@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
@@ -35,6 +36,8 @@ type OptionsContext struct {
 	ClusterName string
 
 	KubernetesVersion semver.Version
+
+	AssetBuilder *assets.AssetBuilder
 }
 
 func (c *OptionsContext) IsKubernetesGTE(version string) bool {
