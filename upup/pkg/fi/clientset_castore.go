@@ -505,18 +505,34 @@ func (c *ClientsetCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 
 	name = "ssh-" + name
 
+	create := false
 	client := c.clientset.Keysets(c.namespace)
-	o, err := client.Get(name, v1.GetOptions{})
+	keyset, err := client.Get(name, v1.GetOptions{})
 	if err != nil {
-		return fmt.Errorf("error reading keyset %q: %v", name, err)
+		if errors.IsNotFound(err) {
+			keyset = nil
+		} else {
+			return fmt.Errorf("error reading keyset %q: %v", name, err)
+		}
+	}
+	if keyset == nil {
+		keyset = &kops.Keyset{}
+		keyset.Name = name
+		create = true
 	}
 	key := kops.KeyItem{
 		Id:             id,
 		PublicMaterial: pubkey,
 	}
-	o.Spec.Keys = append(o.Spec.Keys, key)
-	if _, err := client.Update(o); err != nil {
-		return fmt.Errorf("error updating keyset %q: %v", name, err)
+	keyset.Spec.Keys = append(keyset.Spec.Keys, key)
+	if create {
+		if _, err := client.Create(keyset); err != nil {
+			return fmt.Errorf("error creating keyset %q: %v", name, err)
+		}
+	} else {
+		if _, err := client.Update(keyset); err != nil {
+			return fmt.Errorf("error updating keyset %q: %v", name, err)
+		}
 	}
 
 	return nil

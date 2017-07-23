@@ -64,7 +64,16 @@ func (c *ClientsetSecretStore) MirrorTo(basedir vfs.Path) error {
 		}
 
 		p := BuildVfsSecretPath(basedir, keyset.Name)
-		if err := p.WriteFile(primary.PrivateMaterial); err != nil {
+
+		s := &fi.Secret{
+			Data: primary.PrivateMaterial,
+		}
+		data, err := json.Marshal(s)
+		if err != nil {
+			return fmt.Errorf("error serializing secret: %v", err)
+		}
+
+		if err := p.WriteFile(data); err != nil {
 			return fmt.Errorf("error writing secret to %q: %v", p, err)
 		}
 	}
