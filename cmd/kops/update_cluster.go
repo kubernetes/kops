@@ -109,7 +109,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
-	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: " + strings.Join(cloudup.Phases.List(), ","))
+	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ","))
 	return cmd
 }
 
@@ -187,7 +187,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		case string(cloudup.PhaseCluster):
 			phase = cloudup.PhaseCluster
 		default:
-			return fmt.Errorf("unknown phase %q, available phases: %s", c.Phase,strings.Join(cloudup.Phases.List(),","))
+			return fmt.Errorf("unknown phase %q, available phases: %s", c.Phase, strings.Join(cloudup.Phases.List(), ","))
 		}
 	}
 
