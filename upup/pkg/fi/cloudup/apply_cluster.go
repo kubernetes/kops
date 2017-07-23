@@ -677,24 +677,6 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
 
-	//// TotalNodeCount computes the total count of nodes
-	//l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
-	//	count := 0
-	//	for _, group := range c.InstanceGroups {
-	//		if group.IsMaster() {
-	//			continue
-	//		}
-	//		if group.Spec.MaxSize != nil {
-	//			count += *group.Spec.MaxSize
-	//		} else if group.Spec.MinSize != nil {
-	//			count += *group.Spec.MinSize
-	//		} else {
-	//			// Guestimate
-	//			count += 5
-	//		}
-	//	}
-	//	return count, nil
-	//}
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
 	tf.AddTo(l.TemplateFunctions)
@@ -827,11 +809,6 @@ func findHash(url string) (*hashing.Hash, error) {
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
 func (c *ApplyClusterCmd) upgradeSpecs(assetBuilder *assets.AssetBuilder) error {
-	//err := c.Cluster.PerformAssignments()
-	//if err != nil {
-	//	return fmt.Errorf("error populating configuration: %v", err)
-	//}
-
 	fullCluster, err := PopulateClusterSpec(c.Cluster, assetBuilder)
 	if err != nil {
 		return err
