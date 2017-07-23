@@ -61,7 +61,7 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 		}
 	}
 
-	assetBuilder := assets.NewAssetBuilder()
+	assetBuilder := assets.NewAssetBuilder(nil)
 	fullSpec, err := PopulateClusterSpec(c, assetBuilder)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec: %v", err)

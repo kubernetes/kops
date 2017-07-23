@@ -167,7 +167,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	assetBuilder := assets.NewAssetBuilder()
+	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets)
 	fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
 	if err != nil {
 		return err
