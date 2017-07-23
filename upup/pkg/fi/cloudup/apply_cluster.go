@@ -143,7 +143,8 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	c.channel = channel
 
-	err = c.upgradeSpecs()
+	assetBuilder := assets.NewAssetBuilder()
+	err = c.upgradeSpecs(assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -440,8 +441,6 @@ func (c *ApplyClusterCmd) Run() error {
 	l.Tags = clusterTags
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
-
-	assetBuilder := assets.NewAssetBuilder()
 
 	iamLifecycle := lifecyclePointer(fi.LifecycleSync)
 	networkLifecycle := lifecyclePointer(fi.LifecycleSync)
@@ -827,13 +826,13 @@ func findHash(url string) (*hashing.Hash, error) {
 }
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
-func (c *ApplyClusterCmd) upgradeSpecs() error {
+func (c *ApplyClusterCmd) upgradeSpecs(assetBuilder *assets.AssetBuilder) error {
 	//err := c.Cluster.PerformAssignments()
 	//if err != nil {
 	//	return fmt.Errorf("error populating configuration: %v", err)
 	//}
 
-	fullCluster, err := PopulateClusterSpec(c.Cluster)
+	fullCluster, err := PopulateClusterSpec(c.Cluster, assetBuilder)
 	if err != nil {
 		return err
 	}

@@ -28,6 +28,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
@@ -283,7 +284,8 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 			return fmt.Errorf("error populating configuration: %v", err)
 		}
 
-		fullCluster, err := cloudup.PopulateClusterSpec(cluster)
+		assetBuilder := assets.NewAssetBuilder()
+		fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
 		if err != nil {
 			return err
 		}
