@@ -26,16 +26,16 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/golang/glog"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/dockertasks"
+	"k8s.io/kops/upup/pkg/fi/assettasks"
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
-
-	"github.com/golang/glog"
 )
 
 const (
@@ -182,7 +182,7 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string, assetBuilder *
 		l.tasks = context.Tasks
 	}
 
-	if err := l.addAssetCopyTasks(assetBuilder.Assets); err != nil {
+	if err := l.addAssetCopyTasks(assetBuilder.ContainerAssets); err != nil {
 		return nil, err
 	}
 
@@ -193,14 +193,14 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string, assetBuilder *
 	return l.tasks, nil
 }
 
-func (l *Loader) addAssetCopyTasks(assets []*assets.Asset) error {
+func (l *Loader) addAssetCopyTasks(assets []*assets.ContainerAsset) error {
 	for _, asset := range assets {
 		if asset.CanonicalLocation != "" && asset.DockerImage != asset.CanonicalLocation {
 			context := &fi.ModelBuilderContext{
 				Tasks: l.tasks,
 			}
 
-			copyImageTask := &dockertasks.CopyDockerImage{
+			copyImageTask := &assettasks.CopyDockerImage{
 				Name:        fi.String(asset.DockerImage),
 				SourceImage: fi.String(asset.CanonicalLocation),
 				TargetImage: fi.String(asset.DockerImage),
