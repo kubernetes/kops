@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
@@ -166,7 +167,8 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster)
+	assetBuilder := assets.NewAssetBuilder()
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
 	if err != nil {
 		return err
 	}
