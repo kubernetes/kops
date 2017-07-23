@@ -192,8 +192,6 @@ func (c *populateClusterSpec) run(clientset simple.Clientset) error {
 	if err != nil {
 		return err
 	}
-	// Always assume a dry run during this phase
-	keyStore.(*fi.VFSCAStore).DryRun = true
 
 	if cluster.Spec.KeyStore == "" {
 		hasVFSPath, ok := keyStore.(fi.HasVFSPath)

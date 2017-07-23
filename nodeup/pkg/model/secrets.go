@@ -37,7 +37,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		ca, err := b.KeyStore.CertificatePool(fi.CertificateId_CA)
+		ca, err := b.KeyStore.CertificatePool(fi.CertificateId_CA, false)
 		if err != nil {
 			return err
 		}
@@ -56,7 +56,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		cert, err := b.KeyStore.Cert("master")
+		cert, err := b.KeyStore.Cert("master", false)
 		if err != nil {
 			return err
 		}
@@ -74,7 +74,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 	{
-		k, err := b.KeyStore.PrivateKey("master")
+		k, err := b.KeyStore.PrivateKey("master", false)
 		if err != nil {
 			return err
 		}

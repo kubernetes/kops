@@ -232,10 +232,10 @@ func FindPrimary(keyset *kops.Keyset) *kops.KeyItem {
 	}
 	return primary
 }
-func (c *ClientsetCAStore) Cert(name string, dryRun bool) (*Certificate, error) {
+func (c *ClientsetCAStore) Cert(name string, createIfMissing bool) (*Certificate, error) {
 	cert, err := c.FindCert(name)
 	if err == nil && cert == nil {
-		if dryRun {
+		if !createIfMissing {
 			glog.Warningf("using empty certificate, because running with DryRun")
 			return &Certificate{}, err
 		}
@@ -245,10 +245,10 @@ func (c *ClientsetCAStore) Cert(name string, dryRun bool) (*Certificate, error) 
 
 }
 
-func (c *ClientsetCAStore) CertificatePool(id string, dryRun bool) (*CertificatePool, error) {
+func (c *ClientsetCAStore) CertificatePool(id string, createIfMissing bool) (*CertificatePool, error) {
 	cert, err := c.FindCertificatePool(id)
 	if err == nil && cert == nil {
-		if dryRun {
+		if !createIfMissing {
 			glog.Warningf("using empty certificate, because running with DryRun")
 			return &CertificatePool{}, err
 		}
@@ -427,10 +427,10 @@ func (c *ClientsetCAStore) FindPrivateKey(name string) (*PrivateKey, error) {
 	return nil, nil
 }
 
-func (c *ClientsetCAStore) PrivateKey(name string, dryRun bool) (*PrivateKey, error) {
+func (c *ClientsetCAStore) PrivateKey(name string, createIfMissing bool) (*PrivateKey, error) {
 	key, err := c.FindPrivateKey(name)
 	if err == nil && key == nil {
-		if dryRun {
+		if !createIfMissing {
 			glog.Warningf("using empty certificate, because running with DryRun")
 			return &PrivateKey{}, err
 		}

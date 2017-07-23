@@ -45,7 +45,7 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 	// If we're using the CertificateSigner, include the CA Key
 	// TODO: use a per-machine key?  use KMS?
 	if b.useCertificateSigner() {
-		ca, err := b.KeyStore.PrivateKey(fi.CertificateId_CA)
+		ca, err := b.KeyStore.PrivateKey(fi.CertificateId_CA, false)
 		if err != nil {
 			return err
 		}

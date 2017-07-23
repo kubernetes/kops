@@ -96,16 +96,16 @@ func (c *NodeupModelContext) CNIConfDir() string {
 }
 
 func (c *NodeupModelContext) buildPKIKubeconfig(id string) (string, error) {
-	caCertificate, err := c.KeyStore.Cert(fi.CertificateId_CA)
+	caCertificate, err := c.KeyStore.Cert(fi.CertificateId_CA, false)
 	if err != nil {
 		return "", fmt.Errorf("error fetching CA certificate from keystore: %v", err)
 	}
 
-	certificate, err := c.KeyStore.Cert(id)
+	certificate, err := c.KeyStore.Cert(id, false)
 	if err != nil {
 		return "", fmt.Errorf("error fetching %q certificate from keystore: %v", id, err)
 	}
-	privateKey, err := c.KeyStore.PrivateKey(id)
+	privateKey, err := c.KeyStore.PrivateKey(id, false)
 	if err != nil {
 		return "", fmt.Errorf("error fetching %q private key from keystore: %v", id, err)
 	}

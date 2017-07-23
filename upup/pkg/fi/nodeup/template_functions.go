@@ -92,9 +92,6 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 		return runtime.GOARCH
 	}
 
-	dest["CACertificate"] = t.CACertificate
-	dest["PrivateKey"] = t.PrivateKey
-	dest["Certificate"] = t.Certificate
 	dest["GetToken"] = t.GetToken
 
 	dest["BuildFlags"] = flagbuilder.BuildFlags
@@ -119,21 +116,6 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["ClusterName"] = func() string {
 		return t.cluster.ObjectMeta.Name
 	}
-}
-
-// CACertificate returns the primary CA certificate for the cluster
-func (t *templateFunctions) CACertificate() (*fi.Certificate, error) {
-	return t.keyStore.Cert(fi.CertificateId_CA)
-}
-
-// PrivateKey returns the specified private key
-func (t *templateFunctions) PrivateKey(id string) (*fi.PrivateKey, error) {
-	return t.keyStore.PrivateKey(id)
-}
-
-// Certificate returns the specified private key
-func (t *templateFunctions) Certificate(id string) (*fi.Certificate, error) {
-	return t.keyStore.Cert(id)
 }
 
 // GetToken returns the specified token

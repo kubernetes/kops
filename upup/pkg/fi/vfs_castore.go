@@ -35,7 +35,6 @@ import (
 )
 
 type VFSCAStore struct {
-	DryRun  bool
 	basedir vfs.Path
 
 	mutex               sync.Mutex
@@ -257,10 +256,10 @@ func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*Certificate, error) {
 	return cert, nil
 }
 
-func (c *VFSCAStore) Cert(id string, dryRun bool) (*Certificate, error) {
+func (c *VFSCAStore) Cert(id string, createIfMissing bool) (*Certificate, error) {
 	cert, err := c.FindCert(id)
 	if err == nil && cert == nil {
-		if dryRun {
+		if !createIfMissing {
 			glog.Warningf("using empty certificate, because running with DryRun")
 			return &Certificate{}, err
 		}
@@ -270,10 +269,10 @@ func (c *VFSCAStore) Cert(id string, dryRun bool) (*Certificate, error) {
 
 }
 
-func (c *VFSCAStore) CertificatePool(id string) (*CertificatePool, error) {
+func (c *VFSCAStore) CertificatePool(id string, createIfMissing bool) (*CertificatePool, error) {
 	cert, err := c.FindCertificatePool(id)
 	if err == nil && cert == nil {
-		if c.DryRun {
+		if !createIfMissing {
 			glog.Warningf("using empty certificate, because running with DryRun")
 			return &CertificatePool{}, err
 		}
@@ -599,10 +598,10 @@ func (c *VFSCAStore) FindPrivateKey(id string) (*PrivateKey, error) {
 	return key, nil
 }
 
-func (c *VFSCAStore) PrivateKey(id string) (*PrivateKey, error) {
+func (c *VFSCAStore) PrivateKey(id string, createIfMissing bool) (*PrivateKey, error) {
 	key, err := c.FindPrivateKey(id)
 	if err == nil && key == nil {
-		if c.DryRun {
+		if !createIfMissing {
 			glog.Warningf("using empty certificate, because running with DryRun")
 			return &PrivateKey{}, err
 		}
