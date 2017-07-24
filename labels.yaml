@@ -1,0 +1,5 @@
+labels:
+  - name: approved
+    color: 0FFA16
+  - name: lgtm
+    color: 0E8A16
