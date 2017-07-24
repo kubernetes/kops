@@ -70,15 +70,7 @@ var (
 
 	EOF
 
-<<<<<<< HEAD
-<<<<<<< HEAD
 	kops toolbox template \
-=======
-	kops toolbox templating \
->>>>>>> f1547da61... MPV implementation of templating to generate cluster.yaml file: related to #2404
-=======
-	kops toolbox template \
->>>>>>> c06171ecf... rename command templating to template
 		--values values.yaml \
 		--template cluster.tmpl.yaml \
 		--output cluster.yaml
@@ -98,15 +90,7 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ToolboxTemplateOption{}
 
 	cmd := &cobra.Command{
-<<<<<<< HEAD
-<<<<<<< HEAD
 		Use:     "template",
-=======
-		Use:     "templating",
->>>>>>> f1547da61... MPV implementation of templating to generate cluster.yaml file: related to #2404
-=======
-		Use:     "template",
->>>>>>> c06171ecf... rename command templating to template
 		Short:   toolbox_templating_short,
 		Long:    toolbox_templating_long,
 		Example: toolbox_templating_example,
