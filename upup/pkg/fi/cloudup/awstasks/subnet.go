@@ -210,6 +210,9 @@ func (_ *Subnet) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Su
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
+		// We probably shouldn't output subnet_ids only in this case - we normally output them by role,
+		// but removing it now might break people.  We could always output subnet_ids though, if we
+		// ever get a request for that.
 		return t.AddOutputVariableArray("subnet_ids", terraform.LiteralFromStringValue(*e.ID))
 	}
 
