@@ -104,6 +104,10 @@ func RunToolboxConvertImported(f *util.Factory, out io.Writer, options *ToolboxC
 		return err
 	}
 
+	if cluster == nil {
+		return fmt.Errorf("cluster %q not found", options.ClusterName)
+	}
+
 	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
