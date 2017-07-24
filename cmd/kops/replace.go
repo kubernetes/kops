@@ -120,6 +120,9 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ReplaceOp
 				if err != nil {
 					return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
 				}
+				if cluster == nil {
+					return fmt.Errorf("cluster %q not found", clusterName)
+				}
 				_, err = clientset.InstanceGroupsFor(cluster).Update(v)
 				if err != nil {
 					return fmt.Errorf("error replacing instanceGroup: %v", err)
