@@ -36,13 +36,5 @@ Misc infrequently used commands.
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops toolbox convert-imported](kops_toolbox_convert-imported.md)	 - Convert an imported cluster into a kops cluster.
 * [kops toolbox dump](kops_toolbox_dump.md)	 - Dump cluster information
-<<<<<<< HEAD
-<<<<<<< HEAD
 * [kops toolbox template](kops_toolbox_template.md)	 - Generate cluster.yaml from template
-=======
-* [kops toolbox templating](kops_toolbox_templating.md)	 - Generate cluster.yaml from template
->>>>>>> f1547da61... MPV implementation of templating to generate cluster.yaml file: related to #2404
-=======
-* [kops toolbox template](kops_toolbox_template.md)	 - Generate cluster.yaml from template
->>>>>>> c06171ecf... rename command templating to template
 
