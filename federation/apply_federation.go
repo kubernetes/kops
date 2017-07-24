@@ -71,6 +71,9 @@ func (o *ApplyFederationOperation) FindKubecfg() (*kubeconfig.KubeconfigBuilder,
 		if err != nil {
 			return nil, fmt.Errorf("error reading cluster %q: %v", controller, err)
 		}
+		if cluster == nil {
+			return nil, fmt.Errorf("cluster %q not found", controller)
+		}
 
 		context, err := o.federationContextForCluster(cluster)
 		if err != nil {
@@ -120,6 +123,9 @@ func (o *ApplyFederationOperation) Run() error {
 		if err != nil {
 			return fmt.Errorf("error reading cluster %q: %v", controller, err)
 		}
+		if cluster == nil {
+			return fmt.Errorf("cluster %q not found", controller)
+		}
 
 		context, err := o.federationContextForCluster(cluster)
 		if err != nil {
@@ -153,6 +159,9 @@ func (o *ApplyFederationOperation) Run() error {
 		cluster, err := o.KopsClient.GetCluster(member)
 		if err != nil {
 			return fmt.Errorf("error reading cluster %q: %v", member, err)
+		}
+		if cluster == nil {
+			return fmt.Errorf("cluster %q not found", member)
 		}
 
 		clusterName := strings.Replace(cluster.Name, ".", "-", -1)
