@@ -90,6 +90,10 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 		return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
 	}
 
+	if cluster == nil {
+		return fmt.Errorf("cluster %q was not found", clusterName)
+	}
+
 	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
 		return err
