@@ -54,7 +54,7 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 		// See https://github.com/kubernetes/kube-deploy/issues/261
 		sysctls = append(sysctls,
 			"# Increase the number of connections",
-			"net.core.somaxconn = 32768",
+			"net.core.somaxconn = 65535",
 			"",
 
 			"# Maximum Socket Receive Buffer",
@@ -65,13 +65,25 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"net.core.wmem_max = 16777216",
 			"",
 
+			"# Tell kernel how long to keep sockets in the state FIN-WAIT-2",
+			"net.ipv4.tcp_fin_timeout = 15",
+			"",
+
+			"# Enable TCP window scaling",
+			"net.ipv4.tcp_window_scaling = 1",
+			"",
+
 			"# Increase the maximum total buffer-space allocatable",
 			"net.ipv4.tcp_wmem = 4096 12582912 16777216",
 			"net.ipv4.tcp_rmem = 4096 12582912 16777216",
 			"",
 
 			"# Increase the number of outstanding syn requests allowed",
-			"net.ipv4.tcp_max_syn_backlog = 8096",
+			"net.ipv4.tcp_max_syn_backlog = 3240000",
+			"",
+
+			"# Increase the maximal number of timewait sockets held by system simultaneously",
+			"net.ipv4.tcp_max_tw_buckets = 1440000",
 			"",
 
 			"# For persistent HTTP connections",
