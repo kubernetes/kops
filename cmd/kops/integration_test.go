@@ -105,6 +105,16 @@ func TestPrivateDns2(t *testing.T) {
 	runTest(t, "privatedns2.example.com", "../../tests/integration/privatedns2", "v1alpha2", true, 1)
 }
 
+// TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
+func TestSharedSubnet(t *testing.T) {
+	runTest(t, "sharedsubnet.example.com", "../../tests/integration/shared_subnet", "v1alpha2", false, 1)
+}
+
+// TestSharedVPC runs the test on a configuration with a shared VPC
+func TestSharedVPC(t *testing.T) {
+	runTest(t, "sharedvpc.example.com", "../../tests/integration/shared_vpc", "v1alpha2", false, 1)
+}
+
 func runTest(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int) {
 	var stdout bytes.Buffer
 
