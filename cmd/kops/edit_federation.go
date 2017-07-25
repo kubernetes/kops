@@ -45,7 +45,7 @@ var (
 		kops edit does not update the cloud resources, to apply the changes use ` + pretty.Bash("kops update cluster") + `.`)
 
 	edit_federation_example = templates.Examples(i18n.T(`
-		# Edit a cluster dederation configuration.
+		# Edit a cluster federation configuration.
 		kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
 		`))
 
