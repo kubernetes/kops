@@ -41,34 +41,6 @@ var (
 
 	toolbox_templating_example = templates.Examples(i18n.T(`
 	# generate cluster.yaml from template and input values
-	cat > values.yaml <<EOF
-	clusterName: eu1
-	kubernetesVersion: 1.7.1
-	dnsZone: k8s.example.com
-	awsRegion: eu-west-1
-	EOF
-
-	cat > cluster.tmpl.yaml <<EOF
-	apiVersion: kops/v1alpha2
-	kind: InstanceGroup
-	metadata:
-		labels:
-			kops.k8s.io/cluster: {{.clusterName}}.{{.dnsZone}}
-		name: nodes
-	spec:
-		image: coreos.com/CoreOS-stable-1409.6.0-hvm
-		machineType: m4.large
-		maxPrice: "0.5"
-		maxSize: 2
-		minSize: 15
-		role: Node
-		rootVolumeSize: 100
-		subnets:
-		- {{.awsRegion}}a
-		- {{.awsRegion}}b
-		- {{.awsRegion}}c
-
-	EOF
 
 	kops toolbox template \
 		--values values.yaml \
