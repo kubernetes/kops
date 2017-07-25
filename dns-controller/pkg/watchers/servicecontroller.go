@@ -64,10 +64,7 @@ func (c *ServiceController) Run() {
 func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
 		var listOpts metav1.ListOptions
-		glog.Warningf("querying without label filter")
-		//listOpts.LabelSelector = labels.Everything()
-		glog.Warningf("querying without field filter")
-		//listOpts.FieldSelector = fields.Everything()
+		glog.V(4).Infof("querying without label filter")
 		serviceList, err := c.kubeClient.CoreV1().Services("").List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing services: %v", err)
@@ -79,10 +76,6 @@ func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 		}
 		c.scope.MarkReady()
 
-		glog.Warningf("querying without label filter")
-		//listOpts.LabelSelector = labels.Everything()
-		glog.Warningf("querying without field filter")
-		//listOpts.FieldSelector = fields.Everything()
 		listOpts.Watch = true
 		listOpts.ResourceVersion = serviceList.ResourceVersion
 		watcher, err := c.kubeClient.CoreV1().Services("").Watch(listOpts)
