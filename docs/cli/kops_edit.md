@@ -25,7 +25,7 @@ Edit a resource configuration. This command changes the cloud specification in t
   kops edit ig --name k8s-cluster.example.com \
   --state=s3://kops-state-1234 nodes
   
-  # Edit a cluster dederation configuration.
+  # Edit a cluster federation configuration.
   kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
 ```
 
