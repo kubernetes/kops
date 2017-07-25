@@ -24,7 +24,7 @@ kops edit federation
 ### Examples
 
 ```
-  # Edit a cluster dederation configuration.
+  # Edit a cluster federation configuration.
   kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
 ```
 
