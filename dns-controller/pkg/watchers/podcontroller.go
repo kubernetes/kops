@@ -66,10 +66,7 @@ func (c *PodController) Run() {
 func (c *PodController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
 		var listOpts metav1.ListOptions
-		glog.Warningf("querying without label filter")
-		//listOpts.LabelSelector = labels.Everything()
-		glog.Warningf("querying without field filter")
-		//listOpts.FieldSelector = fields.Everything()
+		glog.V(4).Infof("querying without label filter")
 		podList, err := c.kubeClient.CoreV1().Pods("").List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing pods: %v", err)
@@ -81,10 +78,6 @@ func (c *PodController) runWatcher(stopCh <-chan struct{}) {
 		}
 		c.scope.MarkReady()
 
-		glog.Warningf("querying without label filter")
-		//listOpts.LabelSelector = labels.Everything()
-		glog.Warningf("querying without field filter")
-		//listOpts.FieldSelector = fields.Everything()
 		listOpts.Watch = true
 		listOpts.ResourceVersion = podList.ResourceVersion
 		watcher, err := c.kubeClient.CoreV1().Pods("").Watch(listOpts)
