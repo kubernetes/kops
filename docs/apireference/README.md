@@ -1,4 +1,4 @@
-# How to update the apirefrence docs
+# How to update the apireference docs
 
 These instructions assume:
 
