@@ -35,7 +35,9 @@ import (
 // DNSZone is a zone object in a dns provider
 //go:generate fitask -type=DNSZone
 type DNSZone struct {
-	Name    *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	DNSName *string
 	ZoneID  *string
 
@@ -91,6 +93,9 @@ func (e *DNSZone) Find(c *fi.Context) (*DNSZone, error) {
 	if e.DNSName == nil {
 		e.DNSName = actual.DNSName
 	}
+
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

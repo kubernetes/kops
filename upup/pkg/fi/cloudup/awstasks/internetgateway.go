@@ -29,7 +29,9 @@ import (
 
 //go:generate fitask -type=InternetGateway
 type InternetGateway struct {
-	Name   *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID     *string
 	VPC    *VPC
 	Shared *bool
@@ -97,6 +99,7 @@ func (e *InternetGateway) Find(c *fi.Context) (*InternetGateway, error) {
 
 	// Prevent spurious comparison failures
 	actual.Shared = e.Shared
+	actual.Lifecycle = e.Lifecycle
 	if e.ID == nil {
 		e.ID = actual.ID
 	}

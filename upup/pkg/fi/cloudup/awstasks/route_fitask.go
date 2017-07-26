@@ -45,6 +45,13 @@ func (o *Route) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &Route{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *Route) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &Route{}
 
 // GetName returns the Name of the object, implementing fi.HasName

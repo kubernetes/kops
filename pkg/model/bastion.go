@@ -35,6 +35,7 @@ const BastionELBDefaultIdleTimeout = 5 * time.Minute
 
 type BastionModelBuilder struct {
 	*KopsModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &BastionModelBuilder{}
@@ -54,7 +55,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Create security group for bastion instances
 	{
 		t := &awstasks.SecurityGroup{
-			Name:             s(b.SecurityGroupName(kops.InstanceGroupRoleBastion)),
+			Name:      s(b.SecurityGroupName(kops.InstanceGroupRoleBastion)),
+			Lifecycle: b.Lifecycle,
+
 			VPC:              b.LinkToVPC(),
 			Description:      s("Security group for bastion"),
 			RemoveExtraRules: []string{"port=22"},
@@ -65,7 +68,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow traffic from bastion instances to egress freely
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("bastion-egress"),
+			Name:      s("bastion-egress"),
+			Lifecycle: b.Lifecycle,
+
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 			Egress:        fi.Bool(true),
 			CIDR:          s("0.0.0.0/0"),
@@ -77,7 +82,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// TODO: Could we get away without an ELB here?  Tricky to fix if dns-controller breaks though...
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("ssh-elb-to-bastion"),
+			Name:      s("ssh-elb-to-bastion"),
+			Lifecycle: b.Lifecycle,
+
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 			SourceGroup:   b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
 			Protocol:      s("tcp"),
@@ -90,7 +97,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow bastion nodes to SSH to masters
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("bastion-to-master-ssh"),
+			Name:      s("bastion-to-master-ssh"),
+			Lifecycle: b.Lifecycle,
+
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 			Protocol:      s("tcp"),
@@ -103,7 +112,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow bastion nodes to SSH to nodes
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("bastion-to-node-ssh"),
+			Name:      s("bastion-to-node-ssh"),
+			Lifecycle: b.Lifecycle,
+
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 			Protocol:      s("tcp"),
@@ -116,7 +127,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Create security group for bastion ELB
 	{
 		t := &awstasks.SecurityGroup{
-			Name:             s(b.ELBSecurityGroupName(BastionELBSecurityGroupPrefix)),
+			Name:      s(b.ELBSecurityGroupName(BastionELBSecurityGroupPrefix)),
+			Lifecycle: b.Lifecycle,
+
 			VPC:              b.LinkToVPC(),
 			Description:      s("Security group for bastion ELB"),
 			RemoveExtraRules: []string{"port=22"},
@@ -127,7 +140,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow traffic from ELB to egress freely
 	{
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("bastion-elb-egress"),
+			Name:      s("bastion-elb-egress"),
+			Lifecycle: b.Lifecycle,
+
 			SecurityGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
 			Egress:        fi.Bool(true),
 			CIDR:          s("0.0.0.0/0"),
@@ -139,7 +154,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Allow external access to ELB
 	for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 		t := &awstasks.SecurityGroupRule{
-			Name:          s("ssh-external-to-bastion-elb-" + sshAccess),
+			Name:      s("ssh-external-to-bastion-elb-" + sshAccess),
+			Lifecycle: b.Lifecycle,
+
 			SecurityGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
 			Protocol:      s("tcp"),
 			FromPort:      i64(22),
@@ -182,7 +199,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		elb = &awstasks.LoadBalancer{
-			Name:             s("bastion." + b.ClusterName()),
+			Name:      s("bastion." + b.ClusterName()),
+			Lifecycle: b.Lifecycle,
+
 			LoadBalancerName: s(loadBalancerName),
 			SecurityGroups: []*awstasks.SecurityGroup{
 				b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
@@ -213,7 +232,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		// Attach the ELB to the ASG
 		t := &awstasks.LoadBalancerAttachment{
-			Name:             s("bastion-elb-attachment"),
+			Name:      s("bastion-elb-attachment"),
+			Lifecycle: b.Lifecycle,
+
 			LoadBalancer:     elb,
 			AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
 		}
@@ -228,7 +249,9 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Here we implement the bastion CNAME logic
 		// By default bastions will create a CNAME that follows the `bastion-$clustername` formula
 		t := &awstasks.DNSName{
-			Name:               s(bastionPublicName),
+			Name:      s(bastionPublicName),
+			Lifecycle: b.Lifecycle,
+
 			Zone:               b.LinkToDNSZone(),
 			ResourceType:       s("A"),
 			TargetLoadBalancer: elb,
