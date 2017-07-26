@@ -97,13 +97,13 @@ func (c *GCECloud) WaitForOp(op *compute.Operation) error {
 	return WaitForOp(c.Compute, op)
 }
 
-func (c *GCECloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+func (c *GCECloud) GetIngressStatus(key string, cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
 	var ingresses []kops.ApiIngressStatus
 
 	// Note that this must match GCEModelContext::NameForForwardingRule
-	name := SafeObjectName("api", cluster.ObjectMeta.Name)
+	name := SafeObjectName(key, cluster.ObjectMeta.Name)
 
-	glog.V(2).Infof("Querying GCE to find ForwardingRules for API (%q)", name)
+	glog.V(2).Infof("Querying GCE to find ForwardingRules for %q", name)
 	forwardingRule, err := c.Compute.ForwardingRules.Get(c.Project, c.Region, name).Do()
 	if err != nil {
 		if !IsNotFound(err) {

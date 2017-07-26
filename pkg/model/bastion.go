@@ -19,6 +19,7 @@ package model
 import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"time"
@@ -245,7 +246,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil {
 		bastionPublicName = b.Cluster.Spec.Topology.Bastion.BastionPublicName
 	}
-	if bastionPublicName != "" {
+	if bastionPublicName != "" && !dns.IsGossipHostname(bastionPublicName) {
 		// Here we implement the bastion CNAME logic
 		// By default bastions will create a CNAME that follows the `bastion-$clustername` formula
 		t := &awstasks.DNSName{
@@ -257,7 +258,6 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			TargetLoadBalancer: elb,
 		}
 		c.AddTask(t)
-
 	}
 	return nil
 }

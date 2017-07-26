@@ -229,13 +229,6 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 	return tags
 }
 
-func (m *KopsModelContext) UsesBastionDns() bool {
-	if m.Cluster.Spec.Topology.Bastion != nil && m.Cluster.Spec.Topology.Bastion.BastionPublicName != "" {
-		return true
-	}
-	return false
-}
-
 func (m *KopsModelContext) UsesSSHBastion() bool {
 	for _, ig := range m.InstanceGroups {
 		if ig.Spec.Role == kops.InstanceGroupRoleBastion {

@@ -764,6 +764,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			bastionGroup.Spec.Image = c.Image
 			instanceGroups = append(instanceGroups, bastionGroup)
 
+			// We populate the cluster with a gossip hostname, but will replace it after an update
 			cluster.Spec.Topology.Bastion = &api.BastionSpec{
 				BastionPublicName: "bastion." + clusterName,
 			}

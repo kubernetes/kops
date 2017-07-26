@@ -72,22 +72,10 @@ func (b *DNSModelBuilder) ensureDNSZone(c *fi.ModelBuilderContext) error {
 
 func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// Add a HostedZone if we are going to publish a dns record that depends on it
-	if b.UsePrivateDNS() {
-		// Check to see if we are using a bastion DNS record that points to the hosted zone
-		// If we are, we need to make sure we include the hosted zone as a task
-
-		if err := b.ensureDNSZone(c); err != nil {
-			return err
-		}
-	} else {
-		// We now create the DNS Zone for AWS even in the case of public zones;
-		// it has to exist for the IAM record anyway.
-		// TODO: We can now rationalize the code paths
-		if !dns.IsGossipHostname(b.Cluster.Name) {
-			if err := b.ensureDNSZone(c); err != nil {
-				return err
-			}
-		}
+	// We now create the DNS Zone for AWS even in the case of public zones;
+	// it has to exist for the IAM record anyway.
+	if err := b.ensureDNSZone(c); err != nil {
+		return err
 	}
 
 	if b.UseLoadBalancerForAPI() {
@@ -95,10 +83,6 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// together for kubectl to be work
 
 		if !dns.IsGossipHostname(b.Cluster.Name) {
-			if err := b.ensureDNSZone(c); err != nil {
-				return err
-			}
-
 			apiDnsName := &awstasks.DNSName{
 				Name:               s(b.Cluster.Spec.MasterPublicName),
 				Lifecycle:          b.Lifecycle,
@@ -107,16 +91,6 @@ func (b *DNSModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				TargetLoadBalancer: b.LinkToELB("api"),
 			}
 			c.AddTask(apiDnsName)
-		}
-	}
-
-	if b.UsesBastionDns() {
-		// Pulling this down into it's own if statement. The DNS configuration here
-		// is similar to others, but I would like to keep it on it's own in case we need
-		// to change anything.
-
-		if err := b.ensureDNSZone(c); err != nil {
-			return err
 		}
 	}
 

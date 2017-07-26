@@ -22,6 +22,7 @@ import (
 	"io"
 	"io/ioutil"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -31,6 +32,8 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -237,6 +240,8 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 		firstRun = !hasKubecfg
 
+		statusStore := &cloudDiscoveryStatusStore{}
+
 		kubecfgCert, err := keyStore.FindCert("kubecfg")
 		if err != nil {
 			// This is only a convenience; don't error because of it
@@ -245,7 +250,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 		if kubecfgCert != nil {
 			glog.Infof("Exporting kubecfg for cluster")
-			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, &cloudDiscoveryStatusStore{})
+			conf, err := kubeconfig.BuildKubecfg(cluster, keyStore, secretStore, statusStore)
 			if err != nil {
 				return err
 			}
@@ -255,6 +260,10 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			}
 		} else {
 			glog.Infof("kubecfg cert not found; won't export kubecfg")
+		}
+
+		if err := updateBastionDNSName(cluster, statusStore, clientset); err != nil {
+			return err
 		}
 	}
 
@@ -366,4 +375,50 @@ func hasKubecfg(contextName string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+// updateBastionDNSName will populate the bastion DNS name, when a gossip hostname is in use.
+// In this case, we must populate the DNS name with the name/address of the LoadBalancer.
+func updateBastionDNSName(cluster *kops.Cluster, statusStore kops.StatusStore, clientset simple.Clientset) error {
+	if cluster.Spec.Topology == nil || cluster.Spec.Topology.Bastion == nil {
+		return nil
+	}
+
+	bastionPublicName := cluster.Spec.Topology.Bastion.BastionPublicName
+	if !dns.IsGossipHostname(bastionPublicName) {
+		return nil
+	}
+
+	ingresses, err := statusStore.GetBastionIngressStatus(cluster)
+	if err != nil {
+		return fmt.Errorf("error getting bastion ingress status: %v", err)
+	}
+
+	var targets []string
+	for _, ingress := range ingresses {
+		if ingress.Hostname != "" {
+			targets = append(targets, ingress.Hostname)
+		}
+		if ingress.IP != "" {
+			targets = append(targets, ingress.IP)
+		}
+	}
+
+	sort.Strings(targets)
+	if len(targets) == 0 {
+		glog.Warningf("Did not find bastion endpoint for gossip hostname; may not be able to reach cluster")
+	} else {
+		if len(targets) != 1 {
+			glog.Warningf("Found multiple bastion endpoints (%v), choosing arbitrarily", targets)
+		}
+		bastionPublicName = targets[0]
+
+		cluster.Spec.Topology.Bastion.BastionPublicName = bastionPublicName
+		_, err := clientset.ClustersFor(cluster).Update(cluster)
+		if err != nil {
+			return fmt.Errorf("error saving cluster with updated bastion DNS name: %v", err)
+		}
+	}
+
+	return nil
 }

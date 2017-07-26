@@ -21,6 +21,7 @@ import "github.com/golang/glog"
 // StatusStore abstracts the key status functions; and lets us introduce status gradually
 type StatusStore interface {
 	GetApiIngressStatus(cluster *Cluster) ([]ApiIngressStatus, error)
+	GetBastionIngressStatus(cluster *Cluster) ([]ApiIngressStatus, error)
 }
 
 // ApiIngress represents the status of an ingress point:
@@ -46,5 +47,10 @@ var _ StatusStore = &NoopStatusStore{}
 
 func (s *NoopStatusStore) GetApiIngressStatus(cluster *Cluster) ([]ApiIngressStatus, error) {
 	glog.Warningf("GetApiIngressStatus called on NoopStore")
+	return nil, nil
+}
+
+func (s *NoopStatusStore) GetBastionIngressStatus(cluster *Cluster) ([]ApiIngressStatus, error) {
+	glog.Warningf("GetBastionIngressStatus called on NoopStore")
 	return nil, nil
 }

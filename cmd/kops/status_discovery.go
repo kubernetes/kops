@@ -40,11 +40,47 @@ func (s *cloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) (
 	}
 
 	if gceCloud, ok := cloud.(*gce.GCECloud); ok {
-		return gceCloud.GetApiIngressStatus(cluster)
+		return gceCloud.GetIngressStatus("api", cluster)
 	}
 
 	if awsCloud, ok := cloud.(awsup.AWSCloud); ok {
 		name := "api." + cluster.Name
+		lb, err := awstasks.FindLoadBalancerByNameTag(awsCloud, name)
+		if lb == nil {
+			return nil, nil
+		}
+		if err != nil {
+			return nil, fmt.Errorf("error looking for AWS ELB: %v", err)
+		}
+		var ingresses []kops.ApiIngressStatus
+
+		if lb != nil {
+			lbDnsName := aws.StringValue(lb.DNSName)
+			if lbDnsName == "" {
+				return nil, fmt.Errorf("Found ELB %q, but it did not have a DNSName", name)
+			}
+
+			ingresses = append(ingresses, kops.ApiIngressStatus{Hostname: lbDnsName})
+		}
+
+		return ingresses, nil
+	}
+
+	return nil, fmt.Errorf("API Ingress Status not implemented for %T", cloud)
+}
+
+func (s *cloudDiscoveryStatusStore) GetBastionIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	if gceCloud, ok := cloud.(*gce.GCECloud); ok {
+		return gceCloud.GetIngressStatus("bastion", cluster)
+	}
+
+	if awsCloud, ok := cloud.(awsup.AWSCloud); ok {
+		name := "bastion." + cluster.Name
 		lb, err := awstasks.FindLoadBalancerByNameTag(awsCloud, name)
 		if lb == nil {
 			return nil, nil
