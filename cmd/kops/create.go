@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/vfs"
@@ -53,6 +54,9 @@ var (
 
 	# Create a cluster using a cluser spec file
 	kops create -f my-cluster.yaml
+
+	# Create secret from secret spec file 
+	kops create -f secret.yaml
 
 	# Create a cluster in AWS
 	kops create cluster --name=kubernetes-cluster.example.com \
@@ -188,6 +192,36 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					return fmt.Errorf("error creating instanceGroup: %v", err)
 				} else {
 					fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
+				}
+
+			case *kopsapi.Secret:
+				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
+				if clusterName == "" {
+					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
+				}
+				if v.Spec.Name == "" {
+					return fmt.Errorf("spec.name is required")
+				}
+				if v.Spec.SshPublicKey == "" {
+					return fmt.Errorf("spec.sshPublicKey is required")
+				}
+
+				cluster, err := clientset.GetCluster(clusterName)
+				if err != nil {
+					return err
+				}
+
+				keyStore, err := registry.KeyStore(cluster)
+				if err != nil {
+					return err
+				}
+
+				sshKeyArr := []byte(v.Spec.SshPublicKey)
+				err = keyStore.AddSSHPublicKey(v.Spec.Name, sshKeyArr)
+				if err != nil {
+					return err
+				} else {
+					fmt.Fprintf(&sb, "Added Secret ssh key\n")
 				}
 
 			default:
