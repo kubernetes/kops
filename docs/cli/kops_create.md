@@ -27,6 +27,9 @@ kops create -f FILENAME
   # Create a cluster using a cluser spec file
   kops create -f my-cluster.yaml
   
+  # Create secret from secret spec file
+  kops create -f secret.yaml
+  
   # Create a cluster in AWS
   kops create cluster --name=kubernetes-cluster.example.com \
   --state=s3://kops-state-1234 --zones=eu-west-1a \
