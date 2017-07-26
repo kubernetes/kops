@@ -22,7 +22,6 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
 	"text/template"
 
 	yaml "gopkg.in/yaml.v2"
@@ -74,7 +73,7 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 
 			options.ClusterName = rootCommand.ClusterName()
 
-			err = RunToolBoxTemplate(f, os.Stdout, options)
+			err = RunToolBoxTemplate(f, out, options)
 			if err != nil {
 				exitWithError(err)
 			}
