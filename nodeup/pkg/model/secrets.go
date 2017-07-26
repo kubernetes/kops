@@ -18,10 +18,11 @@ package model
 
 import (
 	"fmt"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"path/filepath"
 	"strings"
+
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 // SecretBuilder writes secrets
@@ -31,11 +32,13 @@ type SecretBuilder struct {
 
 var _ fi.ModelBuilder = &SecretBuilder{}
 
+// Build is responisble for pulling down the secrets
 func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.KeyStore == nil {
 		return fmt.Errorf("KeyStore not set")
 	}
 
+	// retrieve the platform ca
 	{
 		ca, err := b.KeyStore.CertificatePool(fi.CertificateId_CA)
 		if err != nil {
@@ -53,6 +56,11 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:     nodetasks.FileType_File,
 		}
 		c.AddTask(t)
+	}
+
+	// if we are not a master we can stop here
+	if !b.IsMaster {
+		return nil
 	}
 
 	{
@@ -73,6 +81,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(t)
 	}
+
 	{
 		k, err := b.KeyStore.PrivateKey("master")
 		if err != nil {
