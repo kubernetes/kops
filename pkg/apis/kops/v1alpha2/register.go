@@ -53,6 +53,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&InstanceGroupList{},
 		&Federation{},
 		&FederationList{},
+		&Secret{},
+		&SecretList{},
 	)
 
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
@@ -69,7 +71,9 @@ func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 func (obj *Federation) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
-
+func (obj *Secret) GetObjectKind() schema.ObjectKind {
+	return &obj.TypeMeta
+}
 func addConversionFuncs(scheme *runtime.Scheme) error {
 	return nil
 }
