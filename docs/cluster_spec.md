@@ -188,7 +188,7 @@ spec:
 
 More information about running in an existing VPC is [here](run_in_existing_vpc.md).
 
-### hooks
+### Hooks
 
 Hooks allow the execution of a container before the installation of Kubneretes on every node in a cluster.  For intance you can install nvidia drivers for using GPUs.
 
@@ -197,6 +197,11 @@ spec:
   # many sections removed
   hooks:
   - execContainer:
+      documentation: http://some_url
+      before:
+      - some_service.service
+      requires:
+      - docker.service
       image: kopeio/nvidia-bootstrap:1.6
 ```
 
