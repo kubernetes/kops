@@ -196,13 +196,29 @@ Hooks allow the execution of a container before the installation of Kubneretes o
 spec:
   # many sections removed
   hooks:
-  - execContainer:
-      documentation: http://some_url
-      before:
-      - some_service.service
-      requires:
-      - docker.service
+  - before:
+    - some_service.service
+    requires:
+    - docker.service
+    execContainer:
       image: kopeio/nvidia-bootstrap:1.6
+
+  # or a raw systemd unit
+  hooks:
+  - name: iptable-restore.service
+    masterOnly: true|false # only run this on masters
+    nodeOnly: true|false   # only run this on compute nodes
+    before:
+    - kubelet.service
+    manifest: |
+      [Service]
+      EnvironmentFile=/etc/enviroment
+      # do some stuff
+
+  # or disable a systemd unit
+  hooks:
+  - name: update-engine.service
+    disable: true
 ```
 
 Install Ceph
