@@ -263,14 +263,22 @@ type Assets struct {
 
 // HookSpec is a definition hook
 type HookSpec struct {
-	// Documentation is a link the documentation
-	Documentation string `json:"documentation,omitempty"`
+	// Name is an optional name for the hook, otherwise the name is kops-hook-<index>
+	Name string `json:"name,omitempty"`
+	// Disabled indicates if you want the unit switched off
+	Disabled bool `json:"disabled,omitempty"`
+	// MasterOnly indicates this hooks should only run on a master
+	MasterOnly bool `json:"masterOnly,omitempty"`
+	// NodeOnly indicates this hooks should only run on a compute node
+	NodeOnly bool `json:"nodeOnly,omitempty"`
 	// Requires is a series of systemd units the action requires
 	Requires []string `json:"requires,omitempty"`
 	// Before is a series of systemd units which this hook must run before
 	Before []string `json:"before,omitempty"`
 	// ExecContainer is the image itself
 	ExecContainer *ExecContainerAction `json:"execContainer,omitempty"`
+	// Manifest is a raw systemd unit file
+	Manifest string `json:"manifest,omitempty"`
 }
 
 // ExecContainerAction defines an hood action

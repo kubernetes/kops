@@ -1161,7 +1161,10 @@ func Convert_kops_FlannelNetworkingSpec_To_v1alpha1_FlannelNetworkingSpec(in *ko
 }
 
 func autoConvert_v1alpha1_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec, s conversion.Scope) error {
-	out.Documentation = in.Documentation
+	out.Name = in.Name
+	out.Disabled = in.Disabled
+	out.MasterOnly = in.MasterOnly
+	out.NodeOnly = in.NodeOnly
 	out.Requires = in.Requires
 	out.Before = in.Before
 	if in.ExecContainer != nil {
@@ -1173,6 +1176,7 @@ func autoConvert_v1alpha1_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.Hook
 	} else {
 		out.ExecContainer = nil
 	}
+	out.Manifest = in.Manifest
 	return nil
 }
 
@@ -1182,7 +1186,10 @@ func Convert_v1alpha1_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec
 }
 
 func autoConvert_kops_HookSpec_To_v1alpha1_HookSpec(in *kops.HookSpec, out *HookSpec, s conversion.Scope) error {
-	out.Documentation = in.Documentation
+	out.Name = in.Name
+	out.Disabled = in.Disabled
+	out.MasterOnly = in.MasterOnly
+	out.NodeOnly = in.NodeOnly
 	out.Requires = in.Requires
 	out.Before = in.Before
 	if in.ExecContainer != nil {
@@ -1194,6 +1201,7 @@ func autoConvert_kops_HookSpec_To_v1alpha1_HookSpec(in *kops.HookSpec, out *Hook
 	} else {
 		out.ExecContainer = nil
 	}
+	out.Manifest = in.Manifest
 	return nil
 }
 
