@@ -19,10 +19,12 @@ package systemd
 import (
 	"bytes"
 	"encoding/hex"
-	"github.com/golang/glog"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
+// EscapeCommand is used to escape a command
 func EscapeCommand(argv []string) string {
 	var escaped []string
 	for _, arg := range argv {
@@ -69,7 +71,7 @@ func escapeArg(s string) string {
 
 	if needQuotes {
 		return "\"" + b.String() + "\""
-	} else {
-		return b.String()
 	}
+
+	return b.String()
 }
