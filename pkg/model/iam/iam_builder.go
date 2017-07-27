@@ -182,8 +182,10 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 	if b.HostedZoneID != "" {
 		addRoute53Permissions(p, b.HostedZoneID)
 	}
-	// dns-controller currently assumes it can list the hosted zones, even when using gossip
-	addRoute53ListHostedZonesPermission(p)
+	// dns-controller currently assumes it can list the hosted zones, even when
+	// using gossip and route53-mapper needs permissino to list hosted zones
+	// names.
+	addRoute53ListHostedZonesPermissions(p)
 
 	// For S3 IAM permissions, we grant permissions to subtrees.  So find the parents;
 	// we don't need to grant mypath and mypath/child.
@@ -283,11 +285,14 @@ func addRoute53Permissions(p *IAMPolicy, hostedZoneID string) {
 	})
 }
 
-func addRoute53ListHostedZonesPermission(p *IAMPolicy) {
+func addRoute53ListHostedZonesPermissions(p *IAMPolicy) {
 	wildcard := stringorslice.Slice([]string{"*"})
 	p.Statement = append(p.Statement, &IAMStatement{
-		Effect:   IAMStatementEffectAllow,
-		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
+		Effect: IAMStatementEffectAllow,
+		Action: stringorslice.Of(
+			"route53:ListHostedZones",
+			"route53:ListHostedZonesByName",
+		),
 		Resource: wildcard,
 	})
 }

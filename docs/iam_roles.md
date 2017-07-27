@@ -19,6 +19,7 @@ ecr:DescribeRepositories
 ecr:ListImages
 ecr:BatchGetImage
 route53:ListHostedZones
+route53:ListHostedZonesByName
 route53:GetChange
 // The following permissions are scoped to AWS Route53 HostedZone used to bootstrap the cluster
 // arn:aws:route53:::hostedzone/$hosted_zone_id
@@ -48,6 +49,7 @@ ecr:DescribeRepositories
 ecr:ListImages
 ecr:BatchGetImage
 route53:ListHostedZones
+route53:ListHostedZonesByName
 route53:GetChange
 // The following permissions are scoped to AWS Route53 HostedZone used to bootstrap the cluster
 // arn:aws:route53:::hostedzone/$hosted_zone_id
