@@ -17,16 +17,17 @@ limitations under the License.
 package model
 
 import (
+	"strconv"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"strconv"
-	"strings"
 )
 
-// HooksBuilder configures the hooks
+// HookBuilder configures the hooks
 type HookBuilder struct {
 	*NodeupModelContext
 }
@@ -82,11 +83,19 @@ func (b *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Kops Hook "+name)
+	if hook.Documentation != "" {
+		manifest.Set("Unit", "Documentation", hook.Documentation)
+	}
+	for _, x := range hook.Requires {
+		manifest.Set("Unit", "Requires", x)
+	}
+	for _, x := range hook.Before {
+		manifest.Set("Unit", "Before", x)
+	}
 
 	manifest.Set("Service", "ExecStartPre", dockerPullCommand)
 	manifest.Set("Service", "ExecStart", dockerRunCommand)
 	manifest.Set("Service", "Type", "oneshot")
-
 	manifest.Set("Install", "WantedBy", "multi-user.target")
 
 	manifestString := manifest.Render()
