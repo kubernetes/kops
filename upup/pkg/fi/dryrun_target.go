@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 
@@ -28,7 +29,6 @@ import (
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"sort"
 )
 
 // DryRunTarget is a special Target that does not execute anything, but instead tracks all changes.
@@ -211,6 +211,10 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 			fmt.Fprintf(b, "Will modify resources:\n")
 			// We can't use our reflection helpers here - we want corresponding values from a,e,c
 			for _, r := range updates {
+				valAShared := reflect.ValueOf(r.a).Elem().FieldByName("Shared")
+				if valAShared.IsValid() && reflect.Indirect(valAShared).Bool() {
+					continue
+				}
 				changeList, err := buildChangeList(r.a, r.e, r.changes)
 				if err != nil {
 					return err
