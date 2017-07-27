@@ -256,14 +256,23 @@ type Assets struct {
 	FileRepository    *string `json:"fileRepository,omitempty"`
 }
 
+// HookSpec is a definition hook
 type HookSpec struct {
+	// Documentation is a link the documentation
+	Documentation string `json:"documentation,omitempty"`
+	// Requires is a series of systemd units the action requires
+	Requires []string `json:"requires,omitempty"`
+	// Before is a series of systemd units which this hook must run before
+	Before []string `json:"before,omitempty"`
+	// ExecContainer is the image itself
 	ExecContainer *ExecContainerAction `json:"execContainer,omitempty"`
 }
 
+// ExecContainerAction defines an hood action
 type ExecContainerAction struct {
-	// Docker image name.
+	// Image is the docker image
 	Image string `json:"image,omitempty" `
-
+	// Command is the command supplied to the above image
 	Command []string `json:"command,omitempty"`
 }
 
