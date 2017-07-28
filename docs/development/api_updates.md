@@ -17,7 +17,6 @@ go get k8s.io/kubernetes
 cd ${GOPATH}/src/k8s.io/kubernetes
 git checkout master
 git pull
-go install ./staging/src/k8s.io/kube-gen/cmd/conversion-gen
 ```
 
 Then you can run `make apimachinery && make` to update the generated API machinery code (conversion functions).  Note
