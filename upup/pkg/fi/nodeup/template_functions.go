@@ -36,7 +36,7 @@ const TagMaster = "_kubernetes_master"
 
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
-	nodeupConfig *nodeup.NodeUpConfig
+	nodeupConfig *nodeup.Config
 
 	// cluster is populated with the current cluster
 	cluster *api.Cluster
@@ -52,7 +52,7 @@ type templateFunctions struct {
 }
 
 // newTemplateFunctions is the constructor for templateFunctions
-func newTemplateFunctions(nodeupConfig *nodeup.NodeUpConfig, cluster *api.Cluster, instanceGroup *api.InstanceGroup, tags sets.String) (*templateFunctions, error) {
+func newTemplateFunctions(nodeupConfig *nodeup.Config, cluster *api.Cluster, instanceGroup *api.InstanceGroup, tags sets.String) (*templateFunctions, error) {
 	t := &templateFunctions{
 		nodeupConfig:  nodeupConfig,
 		cluster:       cluster,
