@@ -18,19 +18,20 @@ package model
 
 import (
 	"fmt"
+	"os"
+	"text/template"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model/resources"
 	"k8s.io/kops/upup/pkg/fi"
-	"os"
-	"text/template"
 )
 
 // BootstrapScript creates the bootstrap script
 type BootstrapScript struct {
 	NodeUpSource        string
 	NodeUpSourceHash    string
-	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error)
+	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.Config, error)
 }
 
 func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHolder, error) {

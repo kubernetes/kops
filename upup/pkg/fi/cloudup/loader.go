@@ -20,8 +20,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"io"
+	"os"
+	"reflect"
+	"strings"
+	"text/template"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
@@ -30,10 +34,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/loader"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
-	"os"
-	"reflect"
-	"strings"
-	"text/template"
+
+	"github.com/golang/glog"
 )
 
 const (

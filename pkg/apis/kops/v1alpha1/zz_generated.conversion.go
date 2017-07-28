@@ -392,8 +392,8 @@ func autoConvert_v1alpha1_CloudConfiguration_To_kops_CloudConfiguration(in *Clou
 	out.VSpherePassword = in.VSpherePassword
 	out.VSphereServer = in.VSphereServer
 	out.VSphereDatacenter = in.VSphereDatacenter
-	out.VSphereDatastore = in.VSphereDatastore
 	out.VSphereResourcePool = in.VSphereResourcePool
+	out.VSphereDatastore = in.VSphereDatastore
 	out.VSphereCoreDNSServer = in.VSphereCoreDNSServer
 	return nil
 }
@@ -1359,20 +1359,18 @@ func Convert_kops_KopeioNetworkingSpec_To_v1alpha1_KopeioNetworkingSpec(in *kops
 }
 
 func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *KubeAPIServerConfig, out *kops.KubeAPIServerConfig, s conversion.Scope) error {
-	out.PathSrvKubernetes = in.PathSrvKubernetes
-	out.PathSrvSshproxy = in.PathSrvSshproxy
 	out.Image = in.Image
 	out.LogLevel = in.LogLevel
 	out.CloudProvider = in.CloudProvider
 	out.SecurePort = in.SecurePort
 	out.InsecurePort = in.InsecurePort
 	out.Address = in.Address
-	out.EtcdServers = in.EtcdServers
-	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.AdmissionControl = in.AdmissionControl
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
-	out.ClientCAFile = in.ClientCAFile
+	out.EtcdServers = in.EtcdServers
+	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.BasicAuthFile = in.BasicAuthFile
+	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
 	out.TokenAuthFile = in.TokenAuthFile
@@ -1394,7 +1392,7 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
 	out.AuditLogMaxSize = in.AuditLogMaxSize
 	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
-	out.AuthenticationTokenWebhookCacheTtl = in.AuthenticationTokenWebhookCacheTtl
+	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	return nil
@@ -1406,28 +1404,26 @@ func Convert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *KubeAP
 }
 
 func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *kops.KubeAPIServerConfig, out *KubeAPIServerConfig, s conversion.Scope) error {
-	out.PathSrvKubernetes = in.PathSrvKubernetes
-	out.PathSrvSshproxy = in.PathSrvSshproxy
 	out.Image = in.Image
 	out.LogLevel = in.LogLevel
 	out.CloudProvider = in.CloudProvider
 	out.SecurePort = in.SecurePort
 	out.InsecurePort = in.InsecurePort
 	out.Address = in.Address
-	out.EtcdServers = in.EtcdServers
-	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.AdmissionControl = in.AdmissionControl
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
+	out.EtcdServers = in.EtcdServers
+	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.BasicAuthFile = in.BasicAuthFile
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
 	out.TLSPrivateKeyFile = in.TLSPrivateKeyFile
-	out.KubeletClientCertificate = in.KubeletClientCertificate
-	out.KubeletClientKey = in.KubeletClientKey
 	out.TokenAuthFile = in.TokenAuthFile
 	out.AllowPrivileged = in.AllowPrivileged
 	out.APIServerCount = in.APIServerCount
 	out.RuntimeConfig = in.RuntimeConfig
+	out.KubeletClientCertificate = in.KubeletClientCertificate
+	out.KubeletClientKey = in.KubeletClientKey
 	out.AnonymousAuth = in.AnonymousAuth
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
 	out.StorageBackend = in.StorageBackend
@@ -1441,7 +1437,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
 	out.AuditLogMaxSize = in.AuditLogMaxSize
 	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
-	out.AuthenticationTokenWebhookCacheTtl = in.AuthenticationTokenWebhookCacheTtl
+	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	return nil
@@ -1457,7 +1453,6 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.LogLevel = in.LogLevel
 	out.ServiceAccountPrivateKeyFile = in.ServiceAccountPrivateKeyFile
 	out.Image = in.Image
-	out.PathSrvKubernetes = in.PathSrvKubernetes
 	out.CloudProvider = in.CloudProvider
 	out.ClusterName = in.ClusterName
 	out.ClusterCIDR = in.ClusterCIDR
@@ -1489,7 +1484,6 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	out.LogLevel = in.LogLevel
 	out.ServiceAccountPrivateKeyFile = in.ServiceAccountPrivateKeyFile
 	out.Image = in.Image
-	out.PathSrvKubernetes = in.PathSrvKubernetes
 	out.CloudProvider = in.CloudProvider
 	out.ClusterName = in.ClusterName
 	out.ClusterCIDR = in.ClusterCIDR
@@ -1549,6 +1543,7 @@ func autoConvert_v1alpha1_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.ClusterCIDR = in.ClusterCIDR
 	out.HostnameOverride = in.HostnameOverride
 	out.Master = in.Master
+	out.FeatureGates = in.FeatureGates
 	return nil
 }
 
@@ -1564,6 +1559,7 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha1_KubeProxyConfig(in *kops.KubeP
 	out.ClusterCIDR = in.ClusterCIDR
 	out.HostnameOverride = in.HostnameOverride
 	out.Master = in.Master
+	out.FeatureGates = in.FeatureGates
 	return nil
 }
 
@@ -1624,8 +1620,10 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.PodManifestPath = in.PodManifestPath
 	out.HostnameOverride = in.HostnameOverride
 	out.PodInfraContainerImage = in.PodInfraContainerImage
+	out.SeccompProfileRoot = in.SeccompProfileRoot
 	out.AllowPrivileged = in.AllowPrivileged
 	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
+	out.RegisterNode = in.RegisterNode
 	out.ClusterDomain = in.ClusterDomain
 	out.ClusterDNS = in.ClusterDNS
 	out.NetworkPluginName = in.NetworkPluginName
@@ -1643,6 +1641,7 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.ResolverConfig = in.ResolverConfig
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
+	out.SerializeImagePulls = in.SerializeImagePulls
 	out.NodeLabels = in.NodeLabels
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.EnableCustomMetrics = in.EnableCustomMetrics
@@ -1681,8 +1680,10 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.PodManifestPath = in.PodManifestPath
 	out.HostnameOverride = in.HostnameOverride
 	out.PodInfraContainerImage = in.PodInfraContainerImage
+	out.SeccompProfileRoot = in.SeccompProfileRoot
 	out.AllowPrivileged = in.AllowPrivileged
 	out.EnableDebuggingHandlers = in.EnableDebuggingHandlers
+	out.RegisterNode = in.RegisterNode
 	out.ClusterDomain = in.ClusterDomain
 	out.ClusterDNS = in.ClusterDNS
 	out.NetworkPluginName = in.NetworkPluginName
@@ -1700,6 +1701,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.ResolverConfig = in.ResolverConfig
 	out.ReconcileCIDR = in.ReconcileCIDR
 	out.RegisterSchedulable = in.RegisterSchedulable
+	out.SerializeImagePulls = in.SerializeImagePulls
 	out.NodeLabels = in.NodeLabels
 	out.NonMasqueradeCIDR = in.NonMasqueradeCIDR
 	out.EnableCustomMetrics = in.EnableCustomMetrics
