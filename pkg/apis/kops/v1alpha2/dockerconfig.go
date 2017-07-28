@@ -16,6 +16,7 @@ limitations under the License.
 
 package v1alpha2
 
+// DockerConfig is the configuration for docker
 type DockerConfig struct {
 	Bridge   *string `json:"bridge,omitempty" flag:"bridge"`
 	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
