@@ -302,10 +302,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	var nodeDockerConfig string
 	{
-		secret, err := secretStore.Secret("nodedockercfg")
-		if err != nil {
-			return fmt.Errorf("error retrieving docker config %q: %v", secret, err)
-		}
+		secret, _ := secretStore.Secret("nodedockercfg")
 		if secret != nil {
 			nodeDockerConfig, err = secret.AsString()
 			if err != nil {
