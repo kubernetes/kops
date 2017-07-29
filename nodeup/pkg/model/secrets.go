@@ -133,7 +133,8 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		contents := string(dockercfg.Data)
 
 		t := &nodetasks.File{
-			Path:     filepath.Join("root", ".docker", "config.json"),
+			Path: filepath.Join(
+				"var", "lib", "kubelet", ".docker", "config.json"),
 			Contents: fi.NewStringResource(contents),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0600"),
@@ -149,6 +150,9 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		var lines []string
 		for id, token := range allTokens {
+			if id == "nodedockercfg" {
+				continue
+			}
 			lines = append(lines, token+","+id+","+id)
 		}
 		csv := strings.Join(lines, "\n")
