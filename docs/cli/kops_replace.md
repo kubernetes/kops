@@ -19,11 +19,15 @@ kops replace -f FILENAME
 ```
   # Replace a cluster specification using a file
   kops replace -f my-cluster.yaml
+  
+  # Note, if the resource does not exist the command will error, use --create to provision resource
+  kops replace -f my-cluster.yaml --create
 ```
 
 ### Options
 
 ```
+  -c, --create                 Create any resources which are not found (defaults only to instancegroups for now)
   -f, --filename stringSlice   A list of one or more files separated by a comma.
 ```
 
