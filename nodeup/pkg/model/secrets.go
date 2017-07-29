@@ -70,21 +70,12 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		contents := string(dockercfg.Data)
 
 		t := &nodetasks.File{
-			Path: filepath.Join(
-				"var", "lib", "kubelet", ".docker", "config.json"),
-			Contents: fi.NewStringResource(contents),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0600"),
-		}
-
-		t2 := &nodetasks.File{
 			Path:     filepath.Join("root", ".docker", "config.json"),
 			Contents: fi.NewStringResource(contents),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0600"),
 		}
 		c.AddTask(t)
-		c.AddTask(t2)
 	}
 
 	// if we are not a master we can stop here

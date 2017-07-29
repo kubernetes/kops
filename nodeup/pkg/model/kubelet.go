@@ -146,6 +146,8 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	}
 
 	sysconfig := "DAEMON_ARGS=\"" + flags + "\"\n"
+	// Makes kubelet read /root/.docker/config.json properly
+	sysconfig = sysconfig + "HOME=\"/root" + "\"\n"
 
 	t := &nodetasks.File{
 		Path:     "/etc/sysconfig/kubelet",
