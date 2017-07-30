@@ -17,11 +17,12 @@ limitations under the License.
 package model
 
 import (
-	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+
+	"github.com/golang/glog"
 )
 
 // FirewallBuilder configures the firewall (iptables)
@@ -31,10 +32,10 @@ type FirewallBuilder struct {
 
 var _ fi.ModelBuilder = &FirewallBuilder{}
 
+// Build is responsible for generating any node firewall rules
 func (b *FirewallBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.Distribution == distros.DistributionContainerOS {
 		c.AddTask(b.buildFirewallScript())
-
 		c.AddTask(b.buildSystemdService())
 	}
 
@@ -46,11 +47,9 @@ func (b *FirewallBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Unit", "Description", "Configure iptables for kubernetes")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
 	manifest.Set("Unit", "Before", "network.target")
-
 	manifest.Set("Service", "Type", "oneshot")
 	manifest.Set("Service", "RemainAfterExit", "yes")
 	manifest.Set("Service", "ExecStart", "/home/kubernetes/bin/iptables-setup")
-
 	manifest.Set("Install", "WantedBy", "basic.target")
 
 	manifestString := manifest.Render()
