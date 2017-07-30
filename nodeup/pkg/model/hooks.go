@@ -38,42 +38,55 @@ var _ fi.ModelBuilder = &HookBuilder{}
 
 // Build is responsible for implementing the cluster hook
 func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
-	// iterate the hooks and render the systemd units
-	for i := range h.Cluster.Spec.Hooks {
-		hook := &h.Cluster.Spec.Hooks[i]
+	// we keep a list of hooks name so we can allow local instanceGroup hooks override the cluster ones
+	hookNames := make(map[string]bool, 0)
+	for i, spec := range []*[]kops.HookSpec{&h.InstanceGroup.Spec.Hooks, &h.Cluster.Spec.Hooks} {
+		for _, hook := range *spec {
+			isInstanceGroup := i == 0
+			// filter out on master and node flags if required
+			if (hook.MasterOnly && !h.IsMaster) || (hook.NodeOnly && h.IsMaster) {
+				continue
+			}
+			// i dont want to effect those whom are already using the hooks, so i'm gonna try an keep the name for now
+			// i.e. use the default naming convention - kops-hook-<index>, only those using the Name or hooks in IG should alter
+			var name string
+			switch hook.Name {
+			case "":
+				name = fmt.Sprintf("kops-hook-%d", i)
+				if isInstanceGroup {
+					name = fmt.Sprintf("%s-ig", name)
+				}
+			default:
+				name = hook.Name
+			}
 
-		// filter out on master and node flags if required
-		if (hook.MasterOnly && !h.IsMaster) || (hook.NodeOnly && h.IsMaster) {
-			continue
-		}
+			if _, found := hookNames[name]; found {
+				glog.V(2).Infof("Skipping the hook: %v as we've already processed a similar service name", name)
+				continue
+			}
+			hookNames[name] = true
 
-		// are we disabling the service?
-		if hook.Disabled {
-			enabled := false
-			managed := true
-			c.AddTask(&nodetasks.Service{
-				Name:        hook.Name,
-				ManageState: &managed,
-				Enabled:     &enabled,
-				Running:     &enabled,
-			})
-			continue
-		}
+			// are we disabling the service?
+			if hook.Disabled {
+				enabled := false
+				managed := true
+				c.AddTask(&nodetasks.Service{
+					Name:        hook.Name,
+					ManageState: &managed,
+					Enabled:     &enabled,
+					Running:     &enabled,
+				})
+				continue
+			}
 
-		// use the default naming convention - kops-hook-<index>
-		name := fmt.Sprintf("kops-hook-%d", i)
-		if hook.Name != "" {
-			name = hook.Name
-		}
+			service, err := h.buildSystemdService(name, &hook)
+			if err != nil {
+				return err
+			}
 
-		// generate the systemd service
-		service, err := h.buildSystemdService(name, hook)
-		if err != nil {
-			return err
-		}
-
-		if service != nil {
-			c.AddTask(service)
+			if service != nil {
+				c.AddTask(service)
+			}
 		}
 	}
 
