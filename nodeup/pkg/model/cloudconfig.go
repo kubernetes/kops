@@ -19,12 +19,13 @@ package model
 import (
 	"bufio"
 	"fmt"
+	"os"
+	"strings"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"os"
-	"strings"
 )
 
 const CloudConfigFilePath = "/etc/kubernetes/cloud.config"

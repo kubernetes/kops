@@ -46,19 +46,19 @@ import (
 // We should probably retry for a long time - there is not really any great fallback
 const MaxTaskDuration = 365 * 24 * time.Hour
 
-// NodeUpCommand defines the nodeup command configuration
+// NodeUpCommand the configiruation for nodeup
 type NodeUpCommand struct {
-	config         *nodeup.Config
-	cluster        *api.Cluster
-	instanceGroup  *api.InstanceGroup
-	ConfigLocation string
-	ModelDir       vfs.Path
 	CacheDir       string
-	Target         string
+	ConfigLocation string
 	FSRoot         string
+	ModelDir       vfs.Path
+	Target         string
+	cluster        *api.Cluster
+	config         *nodeup.NodeUpConfig
+	instanceGroup  *api.InstanceGroup
 }
 
-// Run implements the nodeup process
+// Run is responsible for perform the nodeup process
 func (c *NodeUpCommand) Run(out io.Writer) error {
 	if c.FSRoot == "" {
 		return fmt.Errorf("FSRoot is required")
@@ -201,6 +201,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.FileAssetsBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.HookBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeletBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubectlBuilder{NodeupModelContext: modelContext})

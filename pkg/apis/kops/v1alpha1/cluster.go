@@ -134,6 +134,9 @@ type ClusterSpec struct {
 	// Additional policies to add for roles
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 
+	// A collection of files assets for deployed cluster wide
+	FileAssets []*FileAssetSpec `json:"fileAssets,omitempty"`
+
 	//HairpinMode                   string `json:",omitempty"`
 	//
 	//OpencontrailTag               string `json:",omitempty"`
@@ -249,6 +252,22 @@ type ClusterSpec struct {
 
 	// Alternative locations for files and containers
 	Assets *Assets `json:"assets,omitempty"`
+}
+
+// FileAssetSpec defines the structure for a file asset
+type FileAssetSpec struct {
+	// Name is a shortened reference to the asset
+	Name string `json:"name,omitempty"`
+	// Path is the location this file should reside
+	Path string `json:"path,omitempty"`
+	// Mode is unix filemode for the file - defaults to 0400
+	Mode string `json:"mode,omitempty"`
+	// Content is the contents of the file
+	Content string `json:"content,omitempty"`
+	// Templated indicates the content is templated
+	Templated bool `json:"templated,omitempty"`
+	// IsBase64 indicates the contents is base64 encoded
+	IsBase64 bool `json:"isBase64,omitempty"`
 }
 
 type Assets struct {
