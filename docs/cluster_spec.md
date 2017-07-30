@@ -188,9 +188,9 @@ spec:
 
 More information about running in an existing VPC is [here](run_in_existing_vpc.md).
 
-### Hooks
+### hooks
 
-Hooks allow the execution of a container before the installation of Kubneretes on every node in a cluster.  For intance you can install nvidia drivers for using GPUs.
+Hooks allow for the execution of an action before the installation of Kubernetes on every node in a cluster.  For instance you can install nvidia drivers for using GPUs. This hooks can be in the form on docker images or manifest files (systemd units). Hooks can be place in either then cluster spec, meaning the will be globally deployed, or they can be placed into the instanceGroup specification. Note, service names on the instanceGroup which overlap with the cluster spec take precedence and ignore the cluster spec definition, i.e. if you have a unit file 'myunit.service' in cluster and then one in the instanceGroup, only the instanceGroup is applied.
 
 ```
 spec:
@@ -219,6 +219,15 @@ spec:
   hooks:
   - name: update-engine.service
     disable: true
+
+  # or you could wrap this into a full unit
+  hooks:
+  - name: disable-update-engine.service
+    before:
+    - update-engine.service
+    manifest: |
+      Type=oneshot
+      ExecStart=/usr/bin/systemctl stop update-engine.service
 ```
 
 Install Ceph
