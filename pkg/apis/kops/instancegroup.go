@@ -94,6 +94,8 @@ type InstanceGroupSpec struct {
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
+	// FileAssets is a collection of file assets for this instance group
+	FileAssets []*FileAssetSpec `json:"fileAssets,omitempty"`
 	// Describes the tenancy of the instance group. Can be either default or dedicated.
 	// Currently only applies to AWS.
 	Tenancy string `json:"tenancy,omitempty"`
@@ -130,7 +132,7 @@ func PerformAssignmentsInstanceGroups(groups []*InstanceGroup) error {
 	return nil
 }
 
-// IsMaster checks if the instanceGroup is a master role
+// IsMaster checks if instanceGroup is a master
 func (g *InstanceGroup) IsMaster() bool {
 	switch g.Spec.Role {
 	case InstanceGroupRoleMaster:
