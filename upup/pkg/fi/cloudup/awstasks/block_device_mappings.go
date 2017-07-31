@@ -50,8 +50,8 @@ func (i *BlockDeviceMapping) ToEC2(deviceName string) *ec2.BlockDeviceMapping {
 	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil {
 		o.Ebs = &ec2.EbsBlockDevice{}
 		o.Ebs.DeleteOnTermination = i.EbsDeleteOnTermination
-		o.Ebs.VolumeSize          = i.EbsVolumeSize
-		o.Ebs.VolumeType          = i.EbsVolumeType
+		o.Ebs.VolumeSize = i.EbsVolumeSize
+		o.Ebs.VolumeType = i.EbsVolumeType
 	}
 	return o
 }
@@ -75,9 +75,9 @@ func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscaling.Block
 	if i.EbsDeleteOnTermination != nil || i.EbsVolumeSize != nil || i.EbsVolumeType != nil {
 		o.Ebs = &autoscaling.Ebs{}
 		o.Ebs.DeleteOnTermination = i.EbsDeleteOnTermination
-		o.Ebs.VolumeSize          = i.EbsVolumeSize
-		o.Ebs.VolumeType          = i.EbsVolumeType
-		o.Ebs.Iops                = i.EbsVolumeIops
+		o.Ebs.VolumeSize = i.EbsVolumeSize
+		o.Ebs.VolumeType = i.EbsVolumeType
+		o.Ebs.Iops = i.EbsVolumeIops
 	}
 
 	return o
