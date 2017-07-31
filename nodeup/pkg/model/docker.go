@@ -239,7 +239,8 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.12.6-0~ubuntu-xenial",
 		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~ubuntu-xenial_amd64.deb",
 		Hash:          "fffc22da4ad5b20715bbb6c485b2d2bb7e84fd33",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		// Depends: iptables, init-system-helpers (>= 1.18~), lsb-base (>= 4.1+Debian11ubuntu7), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
 	},
 
 	// 1.12.6 - Centos / Rhel7 (two packages)
