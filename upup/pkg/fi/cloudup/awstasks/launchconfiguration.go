@@ -50,7 +50,7 @@ type LaunchConfiguration struct {
 	RootVolumeSize *int64
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string
-	// If volume type is io1, then we need to specify the number of Iops. Default: 100
+	// If volume type is io1, then we need to specify the number of Iops.
 	RootVolumeIops *int64
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool
