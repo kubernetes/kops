@@ -5,12 +5,14 @@ metadata:
   name: calico-config
   namespace: kube-system
 data:
+{{- if not (.Networking.Calico.KubernetesDataStore)}}
   # The calico-etcd PetSet service IP:port
   etcd_endpoints: "{{ $cluster := index .EtcdClusters 0 -}}
                       {{- range $j, $member := $cluster.Members -}}
                           {{- if $j }},{{ end -}}
                           http://etcd-{{ $member.Name }}.internal.{{ ClusterName }}:4001
                       {{- end }}"
+{{- end}}
 
   # True enables BGP networking, false tells Calico to enforce
   # policy only, using native networking.
@@ -21,7 +23,9 @@ data:
     {
         "name": "k8s-pod-network",
         "type": "calico",
+{{- if not (.Networking.Calico.KubernetesDataStore)}}
         "etcd_endpoints": "__ETCD_ENDPOINTS__",
+{{- end}}
         "log_level": "info",
         "ipam": {
             "type": "calico-ipam"
@@ -118,18 +122,17 @@ spec:
       hostNetwork: true
       serviceAccountName: calico
       tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
       - key: CriticalAddonsOnly
-        operator: Exists
-      - effect: NoExecute
-        operator: Exists
-      - effect: NoSchedule
         operator: Exists
       containers:
         # Runs calico/node container on each Kubernetes node.  This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v1.2.1
+          # FIXME Don't merge until this is fixed: https://github.com/projectcalico/libcalico-go/issues/485 
+          image: calico/node:v2.4.0
           resources:
             requests:
               cpu: 10m
@@ -171,7 +174,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v1.8.3
+          image: calico/cni:v1.10.0
           resources:
             requests:
               cpu: 10m
@@ -247,7 +250,7 @@ spec:
         operator: Exists
       containers:
         - name: calico-policy-controller
-          image: calico/kube-policy-controller:v0.6.0
+          image: calico/kube-policy-controller:v0.7.0
           resources:
             requests:
               cpu: 10m

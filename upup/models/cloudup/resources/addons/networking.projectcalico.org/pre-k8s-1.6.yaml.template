@@ -98,6 +98,8 @@ spec:
             # Auto-detect the BGP IP address.
             - name: IP
               value: ""
+            - name: DATASTORE_TYPE
+              value: "{{- if (.Networking.Calico.KubernetesDataStore) -}}kubernetes{{- else -}}etcdv2{{- end -}}"
           securityContext:
             privileged: true
           volumeMounts:

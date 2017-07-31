@@ -394,15 +394,7 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
 					Description: "Duration is a wrapper around time.Duration which supports correct marshaling to YAML and JSON. In particular, it marshals into strings, which can be used as map keys in json.",
-					Properties: map[string]spec.Schema{
-						"Duration": {
-							SchemaProps: spec.SchemaProps{
-								Type:   []string{"integer"},
-								Format: "int64",
-							},
-						},
-					},
-					Required: []string{"Duration"},
+					Properties:  map[string]spec.Schema{},
 				},
 			},
 			Dependencies: []string{},
@@ -1577,6 +1569,27 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 			},
 			Dependencies: []string{},
 		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha1.Assets": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"containerRegistry": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"fileRepository": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
+		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.AuthenticationSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
@@ -1665,6 +1678,13 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 							SchemaProps: spec.SchemaProps{
 								Type:   []string{"boolean"},
 								Format: "",
+							},
+						},
+						"kubernetesDataStore": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Enables Calico's cross-subnet mode when set to true",
+								Type:        []string{"boolean"},
+								Format:      "",
 							},
 						},
 					},
@@ -2144,11 +2164,17 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 								},
 							},
 						},
+						"assets": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Alternative locations for files and containers",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.Assets"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha1.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha1.ClusterZoneSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.TopologySpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha1.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.Assets", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha1.ClusterZoneSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.TopologySpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.ClusterZoneSpec": {
 			Schema: spec.Schema{
@@ -2693,6 +2719,13 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 								Description: "RootVolumeType is the type of the EBS root volume to use (e.g. gp2)",
 								Type:        []string{"string"},
 								Format:      "",
+							},
+						},
+						"rootVolumeIops": {
+							SchemaProps: spec.SchemaProps{
+								Description: "If volume type is io1, then we need to specify the number of Iops.",
+								Type:        []string{"integer"},
+								Format:      "int32",
 							},
 						},
 						"rootVolumeOptimization": {
@@ -3386,9 +3419,16 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 								Format:      "",
 							},
 						},
+						"podInfraContainerImage": {
+							SchemaProps: spec.SchemaProps{
+								Description: "podInfraContainerImage is the image whose network/ipc namespaces containers in each pod will use.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"allowPrivileged": {
 							SchemaProps: spec.SchemaProps{
-								Description: "// podInfraContainerImage is the image whose network/ipc namespaces // containers in each pod will use. PodInfraContainerImage string `json:\"podInfraContainerImage\"` // dockerEndpoint is the path to the docker endpoint to communicate with. DockerEndpoint string `json:\"dockerEndpoint\"` // rootDirectory is the directory path to place kubelet files (volume // mounts,etc). RootDirectory string `json:\"rootDirectory\"` // seccompProfileRoot is the directory path for seccomp profiles. SeccompProfileRoot string `json:\"seccompProfileRoot\"` allowPrivileged enables containers to request privileged mode. Defaults to false.",
+								Description: "// dockerEndpoint is the path to the docker endpoint to communicate with. DockerEndpoint string `json:\"dockerEndpoint\"` // rootDirectory is the directory path to place kubelet files (volume // mounts,etc). RootDirectory string `json:\"rootDirectory\"` // seccompProfileRoot is the directory path for seccomp profiles. SeccompProfileRoot string `json:\"seccompProfileRoot\"` allowPrivileged enables containers to request privileged mode. Defaults to false.",
 								Type:        []string{"boolean"},
 								Format:      "",
 							},
@@ -3904,6 +3944,27 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 			},
 			Dependencies: []string{},
 		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.Assets": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Properties: map[string]spec.Schema{
+						"containerRegistry": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+						"fileRepository": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"string"},
+								Format: "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
+		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.AuthenticationSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
@@ -3979,6 +4040,13 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 							SchemaProps: spec.SchemaProps{
 								Type:   []string{"boolean"},
 								Format: "",
+							},
+						},
+						"kubernetesDataStore": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Enables Calico's cross-subnet mode when set to true",
+								Type:        []string{"boolean"},
+								Format:      "",
 							},
 						},
 					},
@@ -4465,11 +4533,17 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 								},
 							},
 						},
+						"assets": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Alternative locations for files and containers",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.Assets"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha2.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha2.ClusterSubnetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.TopologySpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha2.AccessSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.Assets", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthenticationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.AuthorizationSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CloudConfiguration", "k8s.io/kops/pkg/apis/kops/v1alpha2.ClusterSubnetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.DockerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdClusterSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeAPIServerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeControllerManagerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeDNSConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeProxyConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeSchedulerConfig", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.NetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.TopologySpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.ClusterSubnetSpec": {
 			Schema: spec.Schema{
@@ -5020,6 +5094,13 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 								Description: "RootVolumeType is the type of the EBS root volume to use (e.g. gp2)",
 								Type:        []string{"string"},
 								Format:      "",
+							},
+						},
+						"rootVolumeIops": {
+							SchemaProps: spec.SchemaProps{
+								Description: "If volume type is io1, then we need to specify the number of Iops.",
+								Type:        []string{"integer"},
+								Format:      "int32",
 							},
 						},
 						"rootVolumeOptimization": {
@@ -5710,6 +5791,13 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 						"hostnameOverride": {
 							SchemaProps: spec.SchemaProps{
 								Description: "hostnameOverride is the hostname used to identify the kubelet instead of the actual hostname. Note: We recognize some additional values:\n @aws uses the hostname from the AWS metadata service",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"podInfraContainerImage": {
+							SchemaProps: spec.SchemaProps{
+								Description: "podInfraContainerImage is the image whose network/ipc namespaces containers in each pod will use.",
 								Type:        []string{"string"},
 								Format:      "",
 							},
