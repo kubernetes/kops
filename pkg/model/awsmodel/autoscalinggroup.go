@@ -63,10 +63,10 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					return fmt.Errorf("this case should not get hit, kops.Role not found %s", ig.Spec.Role)
 				}
 			}
-      volumeType := fi.StringValue(ig.Spec.RootVolumeType)
+			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
 			volumeIops := fi.Int32Value(ig.Spec.RootVolumeIops)
 
-			switch  volumeType {
+			switch volumeType {
 			case "io1":
 				if volumeIops == 0 {
 					volumeIops = DefaultVolumeIops

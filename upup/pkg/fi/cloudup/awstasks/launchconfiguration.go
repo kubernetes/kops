@@ -205,7 +205,7 @@ func (e *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]
 		EbsVolumeSize:          e.RootVolumeSize,
 		EbsVolumeType:          e.RootVolumeType,
 		EbsVolumeIops:          e.RootVolumeIops,
-}
+	}
 
 	blockDeviceMappings[rootDeviceName] = rootDeviceMapping
 
