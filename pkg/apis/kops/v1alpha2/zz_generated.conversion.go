@@ -1328,6 +1328,7 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.MachineType = in.MachineType
 	out.RootVolumeSize = in.RootVolumeSize
 	out.RootVolumeType = in.RootVolumeType
+	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeOptimization = in.RootVolumeOptimization
 	out.Subnets = in.Subnets
 	out.MaxPrice = in.MaxPrice
@@ -1362,6 +1363,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	out.MachineType = in.MachineType
 	out.RootVolumeSize = in.RootVolumeSize
 	out.RootVolumeType = in.RootVolumeType
+	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeOptimization = in.RootVolumeOptimization
 	out.Subnets = in.Subnets
 	out.MaxPrice = in.MaxPrice

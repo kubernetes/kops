@@ -30,6 +30,7 @@ const (
 	DefaultVolumeSizeMaster  = 64
 	DefaultVolumeSizeBastion = 32
 	DefaultVolumeType        = "gp2"
+	DefaultVolumeIops        = 100
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
@@ -61,8 +62,15 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					return fmt.Errorf("this case should not get hit, kops.Role not found %s", ig.Spec.Role)
 				}
 			}
-			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
-			if volumeType == "" {
+      volumeType := fi.StringValue(ig.Spec.RootVolumeType)
+			volumeIops := fi.Int32Value(ig.Spec.RootVolumeIops)
+
+			switch  volumeType {
+			case "io1":
+				if volumeIops == 0 {
+					volumeIops = DefaultVolumeIops
+				}
+			default:
 				volumeType = DefaultVolumeType
 			}
 
@@ -79,6 +87,10 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				RootVolumeSize:         i64(int64(volumeSize)),
 				RootVolumeType:         s(volumeType),
 				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
+			}
+
+			if volumeType == "io1" {
+				t.RootVolumeIops = i64(int64(volumeIops))
 			}
 
 			if ig.Spec.Tenancy != "" {

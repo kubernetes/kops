@@ -49,6 +49,8 @@ type LaunchConfiguration struct {
 	RootVolumeSize *int64
 	// RootVolumeType is the type of the EBS root volume to use (e.g. gp2)
 	RootVolumeType *string
+	// If volume type is io1, then we need to specify the number of Iops. Default: 100
+	RootVolumeIops *int64
 	// RootVolumeOptimization enables EBS optimization for an instance
 	RootVolumeOptimization *bool
 
@@ -135,6 +137,7 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 		}
 		actual.RootVolumeSize = b.Ebs.VolumeSize
 		actual.RootVolumeType = b.Ebs.VolumeType
+		actual.RootVolumeIops = b.Ebs.Iops
 	}
 
 	userData, err := base64.StdEncoding.DecodeString(*lc.UserData)
@@ -197,7 +200,8 @@ func (e *LaunchConfiguration) buildRootDevice(cloud awsup.AWSCloud) (map[string]
 		EbsDeleteOnTermination: aws.Bool(true),
 		EbsVolumeSize:          e.RootVolumeSize,
 		EbsVolumeType:          e.RootVolumeType,
-	}
+		EbsVolumeIops:          e.RootVolumeIops,
+}
 
 	blockDeviceMappings[rootDeviceName] = rootDeviceMapping
 
