@@ -64,8 +64,7 @@ func BlockDeviceMappingFromAutoscaling(i *autoscaling.BlockDeviceMapping) (strin
 		o.EbsVolumeSize = i.Ebs.VolumeSize
 		o.EbsVolumeType = i.Ebs.VolumeType
 	}
-
-    return aws.StringValue(i.DeviceName), o
+	return aws.StringValue(i.DeviceName), o
 }
 
 func (i *BlockDeviceMapping) ToAutoscaling(deviceName string) *autoscaling.BlockDeviceMapping {
