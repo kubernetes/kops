@@ -249,6 +249,16 @@ type ClusterSpec struct {
 
 	// Hooks for custom actions e.g. on first installation
 	Hooks []HookSpec `json:"hooks,omitempty"`
+
+	// Alternative locations for files and containers
+	// This API component is under contruction, will remove this comment
+	// once this API is fully functional.
+	Assets *Assets `json:"assets,omitempty"`
+}
+
+type Assets struct {
+	ContainerRegistry *string `json:"containerRegistry,omitempty"`
+	FileRepository    *string `json:"fileRepository,omitempty"`
 }
 
 type HookSpec struct {

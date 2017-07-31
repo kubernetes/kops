@@ -34,7 +34,17 @@ export MIGRATION_TEMPLATE="jobs.yaml.template"
 export MIGRATION_MANIFEST="jobs.yaml"
 export NON_MASQUERADE_CIDR="`kops get cluster $NAME -o json --full | jq .spec.nonMasqueradeCIDR --raw-output`"
 export POD_CIDR="`kops get cluster $NAME -o json --full | jq .spec.kubeControllerManager.clusterCIDR --raw-output`"
+export IS_CROSS_SUBNET="`kops get cluster $NAME -o json --full | jq .spec.networking.calico.crossSubnet --raw-output`"
+
 cp ${MIGRATION_TEMPLATE} ${MIGRATION_MANIFEST}
+
+if [ "$IS_CROSS_SUBNET" = "true" ]; then
+    echo "ipip mode is set to 'cross-subnet'. Honouring in migration manifest."
+else
+    echo "ipip mode is set to 'Always'. Honouring in migration manifest."
+    sed -i "/mode: cross-subnet/d" ${MIGRATION_MANIFEST}
+fi
+
 sed -i -e "s@{{NON_MASQUERADE_CIDR}}@${NON_MASQUERADE_CIDR}@g" ${MIGRATION_MANIFEST}
 sed -i -e "s@{{POD_CIDR}}@${POD_CIDR}@g" ${MIGRATION_MANIFEST}
 

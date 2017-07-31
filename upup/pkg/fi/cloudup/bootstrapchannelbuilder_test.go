@@ -64,7 +64,8 @@ func runChannelBuilderTest(t *testing.T, key string) {
 		t.Fatalf("error from PerformAssignments: %v", err)
 	}
 
-	fullSpec, err := PopulateClusterSpec(cluster)
+	assetBuilder := assets.NewAssetBuilder()
+	fullSpec, err := PopulateClusterSpec(cluster, assetBuilder)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec: %v", err)
 	}

@@ -27,10 +27,10 @@ GOVERSION=1.8.3
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.7.0
+DNS_CONTROLLER_TAG=1.7.1
 
-KOPS_RELEASE_VERSION = 1.7.0-alpha.1
-KOPS_CI_VERSION      = 1.7.0-alpha.2
+KOPS_RELEASE_VERSION = 1.7.0
+KOPS_CI_VERSION      = 1.7.1-beta.1
 
 # kops install location
 KOPS                 = ${GOPATH_1ST}/bin/kops
@@ -136,6 +136,7 @@ codegen: kops-gobindata
 	go install k8s.io/kops/upup/tools/generators/...
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/awstasks
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
+	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/dockertasks
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/fitasks
 
 .PHONY: protobuf
@@ -251,6 +252,20 @@ gen-cli-docs: kops # Regenerate CLI docs
 	KOPS_STATE_STORE= \
 	KOPS_FEATURE_FLAGS= \
 	${KOPS} genhelpdocs --out docs/cli
+
+.PHONY: gen-api-docs
+gen-api-docs:
+	# Follow procedure in docs/apireference/README.md
+	# Install the apiserver-builder commands
+	go get -u github.com/kubernetes-incubator/apiserver-builder/cmd/...
+	# Install the reference docs commands (apiserver-builder commands invoke these)
+	go get -u github.com/kubernetes-incubator/reference-docs/gen-apidocs/...
+	# Install the code generation commands (apiserver-builder commands invoke these)
+	go install k8s.io/kubernetes/cmd/libs/go2idl/openapi-gen
+	# Update the `pkg/openapi/openapi_generated.go`
+	${GOPATH}/bin/apiserver-boot build generated --generator openapi --copyright hack/boilerplate/boilerplate.go.txt
+	go install k8s.io/kops/cmd/kops-server
+	${GOPATH}/bin/apiserver-boot build docs --disable-delegated-auth=false --output-dir docs/apireference --server kops-server
 
 .PHONY: push
 # Will always push a linux-based build up to the server

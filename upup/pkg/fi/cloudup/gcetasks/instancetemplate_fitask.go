@@ -45,6 +45,13 @@ func (o *InstanceTemplate) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &InstanceTemplate{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *InstanceTemplate) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &InstanceTemplate{}
 
 // GetName returns the Name of the object, implementing fi.HasName

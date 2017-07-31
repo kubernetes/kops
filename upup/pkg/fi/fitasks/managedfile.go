@@ -25,7 +25,9 @@ import (
 
 //go:generate fitask -type=ManagedFile
 type ManagedFile struct {
-	Name     *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	Location *string
 	Contents *fi.ResourceHolder
 }
@@ -51,6 +53,9 @@ func (e *ManagedFile) Find(c *fi.Context) (*ManagedFile, error) {
 		Location: e.Location,
 		Contents: fi.WrapResource(fi.NewBytesResource(existingData)),
 	}
+
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

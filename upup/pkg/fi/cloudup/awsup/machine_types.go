@@ -562,4 +562,30 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: nil,
 		GPU:            true,
 	},
+
+	// g3 family
+	{
+		Name:           "g3.4xlarge",
+		MemoryGB:       122,
+		Cores:          16,
+		ECU:            47,
+		EphemeralDisks: nil,
+		GPU:            true,
+	},
+	{
+		Name:           "g3.8xlarge",
+		MemoryGB:       244,
+		ECU:            94,
+		Cores:          32,
+		EphemeralDisks: nil,
+		GPU:            true,
+	},
+	{
+		Name:           "g3.16xlarge",
+		MemoryGB:       488,
+		ECU:            188,
+		Cores:          64,
+		EphemeralDisks: nil,
+		GPU:            true,
+	},
 }

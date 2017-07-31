@@ -36,7 +36,8 @@ const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
 
 //go:generate fitask -type=AutoscalingGroup
 type AutoscalingGroup struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	MinSize *int64
 	MaxSize *int64
@@ -133,6 +134,9 @@ func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	if subnetSlicesEqualIgnoreOrder(actual.Subnets, e.Subnets) {
 		actual.Subnets = e.Subnets
 	}
+
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }
