@@ -18,6 +18,8 @@ package model
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -26,7 +28,6 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"strings"
 )
 
 // DockerBuilder install docker (just the packages at the moment)
@@ -295,10 +296,16 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 	switch b.Distribution {
 	case distros.DistributionCoreOS:
 		glog.Infof("Detected CoreOS; won't install Docker")
+		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
+			return err
+		}
 		return nil
 
 	case distros.DistributionContainerOS:
 		glog.Infof("Detected ContainerOS; won't install Docker")
+		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -456,6 +463,27 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 	service.InitDefaults()
 
 	return service
+}
+
+func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderContext) error {
+	lines := []string{
+		"[Service]",
+		"EnvironmentFile=/etc/sysconfig/docker",
+	}
+	contents := strings.Join(lines, "\n")
+
+	t := &nodetasks.File{
+		Path:     "/etc/systemd/system/docker.service.d/10-kops.conf",
+		Contents: fi.NewStringResource(contents),
+		Type:     nodetasks.FileType_File,
+	}
+	c.AddTask(t)
+
+	if err := b.buildSysconfig(c); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
