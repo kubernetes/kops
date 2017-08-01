@@ -32,7 +32,7 @@ launching a Kubernetes cluster hosted on AWS.
 
 ## Features
 
-* Automates the provisioning of Kubernetes clusters in ([AWS](/docs/aws.md))
+* Automates the provisioning of Kubernetes clusters in [AWS](/docs/aws.md)
 * Deploys Highly Available (HA) Kubernetes Masters
 * Supports upgrading from [kube-up](/docs/upgrade_from_kubeup.md)
 * Built on a state-sync model for **dry-runs** and automatic **idempotency**
