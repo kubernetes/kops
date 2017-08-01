@@ -22,11 +22,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"golang.org/x/crypto/ssh"
 	"io/ioutil"
-	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/diff"
-	"k8s.io/kops/pkg/testutils"
 	"os"
 	"path"
 	"reflect"
@@ -34,6 +30,12 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"golang.org/x/crypto/ssh"
+
+	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/testutils"
 )
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -333,8 +335,10 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 			t.Fatalf("unexpected error reading expected cloudformation output: %v", err)
 		}
 
-		if !bytes.Equal(actualCF, expectedCF) {
-			diffString := diff.FormatDiff(string(expectedCF), string(actualCF))
+		expectedCFTrimmed := strings.TrimSpace(string(expectedCF))
+		actualCFTrimmed := strings.TrimSpace(string(actualCF))
+		if actualCFTrimmed != expectedCFTrimmed {
+			diffString := diff.FormatDiff(expectedCFTrimmed, actualCFTrimmed)
 			t.Logf("diff:\n%s\n", diffString)
 
 			if os.Getenv("KEEP_TEMP_DIR") == "" {

@@ -18,6 +18,7 @@ package gcemodel
 
 import (
 	"fmt"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
@@ -44,7 +45,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		name := b.SafeObjectName(ig.ObjectMeta.Name)
 
-		startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, b.Cluster.Spec.EgressProxy)
+		startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, &b.Cluster.Spec)
 		if err != nil {
 			return err
 		}
