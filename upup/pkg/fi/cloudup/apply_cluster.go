@@ -299,17 +299,6 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 	}
 
-	var nodeDockerConfig string
-	{
-		secret, _ := secretStore.Secret("nodedockercfg")
-		if secret != nil {
-			nodeDockerConfig, err = secret.AsString()
-			if err != nil {
-				return fmt.Errorf("error node docker config not a string? %q: %v", nodeDockerConfig, err)
-			}
-		}
-	}
-
 	modelContext := &model.KopsModelContext{
 		Cluster:        cluster,
 		InstanceGroups: c.InstanceGroups,

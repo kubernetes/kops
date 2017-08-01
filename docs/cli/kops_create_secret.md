@@ -17,7 +17,7 @@ Create a secret
   kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
   --name k8s-cluster.example.com --state s3://example.com
   
-  kops create secret nodedockercfg -i ~/.docker/config.json \
+  kops create secret dockerconfig -f ~/.docker/config.json \
   --name k8s-cluster.example.com --state s3://example.com
 ```
 
@@ -38,6 +38,6 @@ Create a secret
 
 ### SEE ALSO
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
-* [kops create secret nodedockercfg](kops_create_secret_nodedockercfg.md)	 - Create a node docker config.
+* [kops create secret dockerconfig](kops_create_secret_dockerconfig.md)	 - Create a docker config.
 * [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create a ssh public key.
 
