@@ -60,19 +60,17 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.SecretStore != nil {
 		key := "dockerconfig"
-		dockercfg, err := b.SecretStore.Secret(key)
-		if err != nil {
-			return err
+		dockercfg, _ := b.SecretStore.Secret(key)
+		if dockercfg != nil {
+			contents := string(dockercfg.Data)
+			t := &nodetasks.File{
+				Path:     filepath.Join("root", ".docker", "config.json"),
+				Contents: fi.NewStringResource(contents),
+				Type:     nodetasks.FileType_File,
+				Mode:     s("0600"),
+			}
+			c.AddTask(t)
 		}
-		contents := string(dockercfg.Data)
-
-		t := &nodetasks.File{
-			Path:     filepath.Join("root", ".docker", "config.json"),
-			Contents: fi.NewStringResource(contents),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0600"),
-		}
-		c.AddTask(t)
 	}
 
 	// if we are not a master we can stop here
