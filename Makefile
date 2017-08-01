@@ -19,7 +19,7 @@ S3_BUCKET?=s3://must-override/
 GCS_LOCATION?=gs://must-override
 GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
-GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
+GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
 
