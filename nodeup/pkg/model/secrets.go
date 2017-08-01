@@ -59,13 +59,10 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.SecretStore != nil {
-		key := "nodedockercfg"
+		key := "dockerconfig"
 		dockercfg, err := b.SecretStore.Secret(key)
 		if err != nil {
 			return err
-		}
-		if dockercfg == nil {
-			return fmt.Errorf("node docker config not found: %q", key)
 		}
 		contents := string(dockercfg.Data)
 
@@ -149,7 +146,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		var lines []string
 		for id, token := range allTokens {
-			if id == "nodedockercfg" {
+			if id == "dockerconfig" {
 				continue
 			}
 			lines = append(lines, token+","+id+","+id)

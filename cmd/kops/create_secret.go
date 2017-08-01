@@ -34,7 +34,7 @@ var (
 	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
 		--name k8s-cluster.example.com --state s3://example.com
 
-	kops create secret nodedockercfg -i ~/.docker/config.json \
+	kops create secret dockerconfig -f ~/.docker/config.json \
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
 
@@ -51,7 +51,7 @@ func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCreateSecretPublicKey(f, out))
-	cmd.AddCommand(NewCmdCreateSecretNodeDockerConfig(f, out))
+	cmd.AddCommand(NewCmdCreateSecretDockerConfig(f, out))
 
 	return cmd
 }
