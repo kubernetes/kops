@@ -34,7 +34,7 @@ metadata:
   labels:
     k8s-addon: kubernetes-dashboard.addons.k8s.io
     k8s-app: kubernetes-dashboard
-    version: v1.6.2
+    version: v1.6.3
     kubernetes.io/cluster-service: "true"
   name: kubernetes-dashboard
   namespace: kube-system
@@ -49,7 +49,7 @@ spec:
       labels:
         k8s-addon: kubernetes-dashboard.addons.k8s.io
         k8s-app: kubernetes-dashboard
-        version: v1.6.2
+        version: v1.6.3
         kubernetes.io/cluster-service: "true"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
@@ -57,7 +57,7 @@ spec:
     spec:
       containers:
       - name: kubernetes-dashboard
-        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.6.2
+        image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.6.3
         ports:
         - containerPort: 9090
           protocol: TCP
@@ -74,7 +74,6 @@ spec:
           # If not specified, Dashboard will attempt to auto discover the API server and connect
           # to it. Uncomment only if the default does not work.
           # - --apiserver-host=http://my-address:port
-          - --heapster-host=http://heapster.kube-system:80
         livenessProbe:
           httpGet:
             path: /
