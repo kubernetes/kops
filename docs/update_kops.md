@@ -1,4 +1,4 @@
-##How to update Kops - Kubernetes Ops
+## How to update Kops - Kubernetes Ops
 
 Update the latest source code from kubernetes/kops
 
