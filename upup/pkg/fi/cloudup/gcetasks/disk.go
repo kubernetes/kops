@@ -45,9 +45,9 @@ func (e *Disk) CompareWithID() *string {
 }
 
 func (e *Disk) Find(c *fi.Context) (*Disk, error) {
-	cloud := c.Cloud.(*gce.GCECloud)
+	cloud := c.Cloud.(gce.GCECloud)
 
-	r, err := cloud.Compute.Disks.Get(cloud.Project, *e.Zone, *e.Name).Do()
+	r, err := cloud.Compute().Disks.Get(cloud.Project(), *e.Zone, *e.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -100,8 +100,9 @@ func (_ *Disk) CheckChanges(a, e, changes *Disk) error {
 }
 
 func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
+	cloud := t.Cloud
 	typeURL := fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/zones/%s/diskTypes/%s",
-		t.Cloud.Project,
+		cloud.Project(),
 		*e.Zone,
 		*e.VolumeType)
 
@@ -112,14 +113,14 @@ func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
 	}
 
 	if a == nil {
-		_, err := t.Cloud.Compute.Disks.Insert(t.Cloud.Project, *e.Zone, disk).Do()
+		_, err := cloud.Compute().Disks.Insert(cloud.Project(), *e.Zone, disk).Do()
 		if err != nil {
 			return fmt.Errorf("error creating Disk: %v", err)
 		}
 	}
 
 	if changes.Labels != nil {
-		d, err := t.Cloud.Compute.Disks.Get(t.Cloud.Project, *e.Zone, disk.Name).Do()
+		d, err := cloud.Compute().Disks.Get(cloud.Project(), *e.Zone, disk.Name).Do()
 		if err != nil {
 			return fmt.Errorf("error reading created Disk: %v", err)
 		}
@@ -135,14 +136,14 @@ func (_ *Disk) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Disk) error {
 		for k, v := range d.Labels {
 			labelsRequest.Labels[k] = v
 		}
-		for k, v := range t.Cloud.Labels() {
+		for k, v := range cloud.Labels() {
 			labelsRequest.Labels[k] = v
 		}
 		for k, v := range e.Labels {
 			labelsRequest.Labels[k] = v
 		}
 		glog.V(2).Infof("Setting labels on disk %q: %v", disk.Name, labelsRequest.Labels)
-		_, err = t.Cloud.Compute.Disks.SetLabels(t.Cloud.Project, *e.Zone, disk.Name, labelsRequest).Do()
+		_, err = cloud.Compute().Disks.SetLabels(cloud.Project(), *e.Zone, disk.Name, labelsRequest).Do()
 		if err != nil {
 			return fmt.Errorf("error setting labels on created Disk: %v", err)
 		}

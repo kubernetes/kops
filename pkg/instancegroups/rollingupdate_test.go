@@ -99,8 +99,8 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
 	groups := make(map[string]*CloudInstanceGroup)
 	groups["node-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[0],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[0],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
@@ -140,8 +140,8 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 	}
 
 	groups["node-2"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[1],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[1],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
@@ -181,8 +181,8 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 	}
 
 	groups["master-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[2],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[2],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
@@ -210,8 +210,8 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 	}
 
 	groups["bastion-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[3],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[3],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",
@@ -273,8 +273,8 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 
 	groups := make(map[string]*CloudInstanceGroup)
 	groups["node-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[0],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[0],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
@@ -300,8 +300,8 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 	}
 
 	groups["node-2"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[1],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[1],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
@@ -327,8 +327,8 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 	}
 
 	groups["master-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[2],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[2],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
@@ -348,8 +348,8 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 	}
 
 	groups["bastion-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[3],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[3],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",
@@ -431,8 +431,8 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 
 	groups := make(map[string]*CloudInstanceGroup)
 	groups["node-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[0],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[0],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
@@ -458,8 +458,8 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 	}
 
 	groups["node-2"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[1],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[1],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
@@ -485,8 +485,8 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 	}
 
 	groups["master-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[2],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[2],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
@@ -506,8 +506,8 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 	}
 
 	groups["bastion-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[3],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[3],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",
@@ -622,8 +622,8 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 
 	groups := make(map[string]*CloudInstanceGroup)
 	groups["node-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[0],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[0],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
@@ -649,8 +649,8 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 	}
 
 	groups["node-2"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[1],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[1],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
@@ -676,8 +676,8 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 	}
 
 	groups["master-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[2],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[2],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
@@ -697,8 +697,8 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 	}
 
 	groups["bastion-1"] = &CloudInstanceGroup{
-		ASGName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
-		asg:     asgGroups.AutoScalingGroups[3],
+		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
+		group:     asgGroups.AutoScalingGroups[3],
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",

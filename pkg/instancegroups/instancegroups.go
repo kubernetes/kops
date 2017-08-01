@@ -33,65 +33,73 @@ import (
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kubernetes/pkg/kubectl/cmd"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 
 // FindCloudInstanceGroups joins data from the cloud and the instance groups into a map that can be used for updates.
 func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*CloudInstanceGroup, error) {
-	awsCloud := cloud.(awsup.AWSCloud)
 
-	groups := make(map[string]*CloudInstanceGroup)
+	switch c := cloud.(type) {
+	case awsup.AWSCloud:
 
-	tags := awsCloud.Tags()
+		groups := make(map[string]*CloudInstanceGroup)
 
-	asgs, err := resources.FindAutoscalingGroups(awsCloud, tags)
-	if err != nil {
-		return nil, err
-	}
+		tags := c.Tags()
 
-	nodeMap := make(map[string]*v1.Node)
-	for i := range nodes {
-		node := &nodes[i]
-		awsID := node.Spec.ExternalID
-		nodeMap[awsID] = node
-	}
+		asgs, err := resources.FindAutoscalingGroups(c, tags)
+		if err != nil {
+			return nil, err
+		}
 
-	for _, asg := range asgs {
-		name := aws.StringValue(asg.AutoScalingGroupName)
-		var instancegroup *api.InstanceGroup
-		for _, g := range instancegroups {
-			var asgName string
-			switch g.Spec.Role {
-			case api.InstanceGroupRoleMaster:
-				asgName = g.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
-			case api.InstanceGroupRoleNode:
-				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
-			case api.InstanceGroupRoleBastion:
-				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
-			default:
-				glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+		nodeMap := make(map[string]*v1.Node)
+		for i := range nodes {
+			node := &nodes[i]
+			awsID := node.Spec.ExternalID
+			nodeMap[awsID] = node
+		}
+
+		for _, asg := range asgs {
+			name := aws.StringValue(asg.AutoScalingGroupName)
+			var instancegroup *api.InstanceGroup
+			for _, g := range instancegroups {
+				var asgName string
+				switch g.Spec.Role {
+				case api.InstanceGroupRoleMaster:
+					asgName = g.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
+				case api.InstanceGroupRoleNode:
+					asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
+				case api.InstanceGroupRoleBastion:
+					asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
+				default:
+					glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+					continue
+				}
+
+				if name == asgName {
+					if instancegroup != nil {
+						return nil, fmt.Errorf("Found multiple instance groups matching ASG %q", asgName)
+					}
+					instancegroup = g
+				}
+			}
+			if instancegroup == nil {
+				if warnUnmatched {
+					glog.Warningf("Found ASG with no corresponding instance group %q", name)
+				}
 				continue
 			}
-
-			if name == asgName {
-				if instancegroup != nil {
-					return nil, fmt.Errorf("Found multiple instance groups matching ASG %q", asgName)
-				}
-				instancegroup = g
-			}
+			group := buildCloudInstanceGroup(instancegroup, asg, nodeMap)
+			groups[instancegroup.ObjectMeta.Name] = group
 		}
-		if instancegroup == nil {
-			if warnUnmatched {
-				glog.Warningf("Found ASG with no corresponding instance group %q", name)
-			}
-			continue
-		}
-		group := buildCloudInstanceGroup(instancegroup, asg, nodeMap)
-		groups[instancegroup.ObjectMeta.Name] = group
+		return groups, nil
+	case gce.GCECloud:
+		return nil, fmt.Errorf("GCE Cloud is not implmemented as of yet")
+	default:
+		return nil, fmt.Errorf("Cloud is not implmemented as of yet: %v", cloud)
 	}
 
-	return groups, nil
 }
 
 // DeleteInstanceGroup removes the cloud resources for an InstanceGroup
@@ -133,19 +141,19 @@ func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) erro
 // CloudInstanceGroup is the AWS ASG backing an InstanceGroup.
 type CloudInstanceGroup struct {
 	InstanceGroup *api.InstanceGroup
-	ASGName       string
+	GroupName     string
 	Status        string
 	Ready         []*CloudInstanceGroupInstance
 	NeedUpdate    []*CloudInstanceGroupInstance
 
-	asg *autoscaling.Group
+	group interface{}
 }
 
 func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) *CloudInstanceGroup {
 	n := &CloudInstanceGroup{
-		ASGName:       aws.StringValue(g.AutoScalingGroupName),
+		GroupName:     aws.StringValue(g.AutoScalingGroupName),
 		InstanceGroup: ig,
-		asg:           g,
+		group:         g,
 	}
 
 	readyLaunchConfigurationName := aws.StringValue(g.LaunchConfigurationName)
@@ -181,15 +189,25 @@ type CloudInstanceGroupInstance struct {
 }
 
 func (n *CloudInstanceGroup) String() string {
-	return "CloudInstanceGroup:" + n.ASGName
+	return "CloudInstanceGroup:" + n.GroupName
 }
 
 func (c *CloudInstanceGroup) MinSize() int {
-	return int(aws.Int64Value(c.asg.MinSize))
+	if group, ok := c.group.(*autoscaling.Group); ok {
+		return int(aws.Int64Value(group.MinSize))
+	}
+
+	// TODO fix for GCE
+	return 0
 }
 
 func (c *CloudInstanceGroup) MaxSize() int {
-	return int(aws.Int64Value(c.asg.MaxSize))
+	if group, ok := c.group.(*autoscaling.Group); ok {
+		return int(aws.Int64Value(group.MaxSize))
+	}
+
+	// TODO fix for GCE
+	return 0
 }
 
 // TODO: Temporarily increase size of ASG?
@@ -347,9 +365,9 @@ func (n *CloudInstanceGroup) ValidateCluster(rollingUpdateData *RollingUpdateClu
 func (n *CloudInstanceGroup) DeleteAWSInstance(u *CloudInstanceGroupInstance, instanceId string, nodeName string, c awsup.AWSCloud) error {
 
 	if nodeName != "" {
-		glog.Infof("Stopping instance %q, node %q, in AWS ASG %q.", instanceId, nodeName, n.ASGName)
+		glog.Infof("Stopping instance %q, node %q, in AWS ASG %q.", instanceId, nodeName, n.GroupName)
 	} else {
-		glog.Infof("Stopping instance %q, in AWS ASG %q.", instanceId, n.ASGName)
+		glog.Infof("Stopping instance %q, in AWS ASG %q.", instanceId, n.GroupName)
 	}
 
 	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
@@ -416,35 +434,41 @@ func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpd
 }
 
 func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
-	c := cloud.(awsup.AWSCloud)
 
-	// TODO: Graceful?
+	// TODO: Graceful tear down of cloud instances
+	switch c := cloud.(type) {
+	case awsup.AWSCloud:
+		group := g.group.(*autoscaling.Group)
+		// Delete ASG
+		{
+			asgName := aws.StringValue(group.AutoScalingGroupName)
+			glog.V(2).Infof("Deleting autoscaling group %q", asgName)
+			request := &autoscaling.DeleteAutoScalingGroupInput{
+				AutoScalingGroupName: group.AutoScalingGroupName,
+				ForceDelete:          aws.Bool(true),
+			}
+			_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
+			if err != nil {
+				return fmt.Errorf("error deleting autoscaling group %q: %v", asgName, err)
+			}
+		}
 
-	// Delete ASG
-	{
-		asgName := aws.StringValue(g.asg.AutoScalingGroupName)
-		glog.V(2).Infof("Deleting autoscaling group %q", asgName)
-		request := &autoscaling.DeleteAutoScalingGroupInput{
-			AutoScalingGroupName: g.asg.AutoScalingGroupName,
-			ForceDelete:          aws.Bool(true),
+		// Delete LaunchConfig
+		{
+			lcName := aws.StringValue(group.LaunchConfigurationName)
+			glog.V(2).Infof("Deleting autoscaling launch configuration %q", lcName)
+			request := &autoscaling.DeleteLaunchConfigurationInput{
+				LaunchConfigurationName: group.LaunchConfigurationName,
+			}
+			_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
+			if err != nil {
+				return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", lcName, err)
+			}
 		}
-		_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
-		if err != nil {
-			return fmt.Errorf("error deleting autoscaling group %q: %v", asgName, err)
-		}
-	}
-
-	// Delete LaunchConfig
-	{
-		lcName := aws.StringValue(g.asg.LaunchConfigurationName)
-		glog.V(2).Infof("Deleting autoscaling launch configuration %q", lcName)
-		request := &autoscaling.DeleteLaunchConfigurationInput{
-			LaunchConfigurationName: g.asg.LaunchConfigurationName,
-		}
-		_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
-		if err != nil {
-			return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", lcName, err)
-		}
+	case gce.GCECloud:
+		return fmt.Errorf("GCE Cloud is not implmemented as of yet")
+	default:
+		return fmt.Errorf("Cloud is not implmemented as of yet: %v", cloud)
 	}
 
 	return nil

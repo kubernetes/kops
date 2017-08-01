@@ -18,6 +18,7 @@ package gce
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
@@ -29,24 +30,41 @@ import (
 	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
 )
 
-type GCECloud struct {
-	Compute *compute.Service
-	Storage *storage.Service
+type GCECloud interface {
+	ProviderID() kops.CloudProviderID
 
-	Region  string
-	Project string
+	DNS() (dnsprovider.Interface, error)
+
+	// FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil)
+	FindVPCInfo(id string) (*fi.VPCInfo, error)
+	Compute() *compute.Service
+	Storage() *storage.Service
+
+	Region() string
+	Project() string
+	WaitForOp(op *compute.Operation) error
+	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
+	Labels() map[string]string
+}
+
+type gceCloudImplementation struct {
+	compute *compute.Service
+	storage *storage.Service
+
+	region  string
+	project string
 
 	labels map[string]string
 }
 
-var _ fi.Cloud = &GCECloud{}
+var _ fi.Cloud = &gceCloudImplementation{}
 
-func (c *GCECloud) ProviderID() kops.CloudProviderID {
+func (c *gceCloudImplementation) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderGCE
 }
 
-func NewGCECloud(region string, project string, labels map[string]string) (*GCECloud, error) {
-	c := &GCECloud{Region: region, Project: project}
+func NewGCECloud(region string, project string, labels map[string]string) (GCECloud, error) {
+	c := &gceCloudImplementation{region: region, project: project}
 
 	ctx := context.Background()
 
@@ -58,33 +76,45 @@ func NewGCECloud(region string, project string, labels map[string]string) (*GCEC
 	if err != nil {
 		return nil, fmt.Errorf("error building compute API client: %v", err)
 	}
-	c.Compute = computeService
+	c.compute = computeService
 
 	storageService, err := storage.New(client)
 	if err != nil {
 		return nil, fmt.Errorf("error building storage API client: %v", err)
 	}
-	c.Storage = storageService
+	c.storage = storageService
 
 	c.labels = labels
 
 	return c, nil
 }
+func (c *gceCloudImplementation) Compute() *compute.Service {
+	return c.compute
+}
+func (c *gceCloudImplementation) Storage() *storage.Service {
+	return c.storage
+}
+func (c *gceCloudImplementation) Region() string {
+	return c.region
+}
+func (c *gceCloudImplementation) Project() string {
+	return c.project
+}
 
-func (c *GCECloud) DNS() (dnsprovider.Interface, error) {
-	provider, err := clouddns.CreateInterface(c.Project, nil)
+func (c *gceCloudImplementation) DNS() (dnsprovider.Interface, error) {
+	provider, err := clouddns.CreateInterface(c.project, nil)
 	if err != nil {
 		return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
 	}
 	return provider, nil
 }
 
-func (c *GCECloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
+func (c *gceCloudImplementation) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	glog.Warningf("FindVPCInfo not (yet) implemented on GCE")
 	return nil, nil
 }
 
-func (c *GCECloud) Labels() map[string]string {
+func (c *gceCloudImplementation) Labels() map[string]string {
 	// Defensive copy
 	tags := make(map[string]string)
 	for k, v := range c.labels {
@@ -93,18 +123,18 @@ func (c *GCECloud) Labels() map[string]string {
 	return tags
 }
 
-func (c *GCECloud) WaitForOp(op *compute.Operation) error {
-	return WaitForOp(c.Compute, op)
+func (c *gceCloudImplementation) WaitForOp(op *compute.Operation) error {
+	return WaitForOp(c.compute, op)
 }
 
-func (c *GCECloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
+func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
 	var ingresses []kops.ApiIngressStatus
 
 	// Note that this must match GCEModelContext::NameForForwardingRule
 	name := SafeObjectName("api", cluster.ObjectMeta.Name)
 
 	glog.V(2).Infof("Querying GCE to find ForwardingRules for API (%q)", name)
-	forwardingRule, err := c.Compute.ForwardingRules.Get(c.Project, c.Region, name).Do()
+	forwardingRule, err := c.compute.ForwardingRules.Get(c.project, c.region, name).Do()
 	if err != nil {
 		if !IsNotFound(err) {
 			forwardingRule = nil
