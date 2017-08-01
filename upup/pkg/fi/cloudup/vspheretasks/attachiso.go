@@ -21,13 +21,7 @@ package vspheretasks
 import (
 	"bytes"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/pborman/uuid"
 	"io/ioutil"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"net"
 	"net/url"
 	"os"
@@ -35,6 +29,14 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"github.com/golang/glog"
+	"github.com/pborman/uuid"
+
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
 
 // AttachISO represents the cloud-init ISO file attached to a VM on vSphere cloud.
@@ -44,7 +46,7 @@ type AttachISO struct {
 	VM              *VirtualMachine
 	IG              *kops.InstanceGroup
 	BootstrapScript *model.BootstrapScript
-	EtcdClusters    []*kops.EtcdClusterSpec
+	Spec            *kops.ClusterSpec
 }
 
 var _ fi.HasName = &AttachISO{}
@@ -91,8 +93,7 @@ func (_ *AttachISO) CheckChanges(a, e, changes *AttachISO) error {
 
 // RenderVSphere executes the actual task logic, for vSphere cloud.
 func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *AttachISO) error {
-	// TODO #3071 .. need to replace the nil for http proxy support
-	startupScript, err := changes.BootstrapScript.ResourceNodeUp(changes.IG, nil)
+	startupScript, err := changes.BootstrapScript.ResourceNodeUp(changes.IG, changes.Spec)
 	if err != nil {
 		return fmt.Errorf("error on resource nodeup: %v", err)
 	}
@@ -196,7 +197,7 @@ func getVolMetadata(changes *AttachISO) (string, error) {
 	var volsMetadata []vsphere.VolumeMetadata
 
 	// Creating vsphere.VolumeMetadata using clusters EtcdClusterSpec
-	for i, etcd := range changes.EtcdClusters {
+	for i, etcd := range changes.Spec.EtcdClusters {
 		volMetadata := vsphere.VolumeMetadata{}
 		volMetadata.EtcdClusterName = etcd.Name
 		volMetadata.VolumeId = vsphere.GetVolumeId(i + 1)
