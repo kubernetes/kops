@@ -254,11 +254,7 @@ $ kops create cluster \
   --name myclustername.mydns.io
 ```
 
-Currently kube-router supports 1.6 and above. Please note that kube-router will also provide service proxy, so kube-proxy will not be deployed in to the cluster. Kube-router used node routing stack for cross node pod-to-pod connectivity with out any encapsulation. In the case of AWS, EC2 instances have source/destination checks enabled by default. So please ensure to turn off source-destination checks on the AWS EC2 instances by running below command.
-
-```
-aws ec2 modify-instance-attribute --instance-id <ec2 instance id> --no-source-dest-check
-```
+Currently kube-router supports 1.6 and above. Please note that kube-router will also provide service proxy, so kube-proxy will not be deployed in to the cluster.
 
 ### Validating CNI Installation
 
