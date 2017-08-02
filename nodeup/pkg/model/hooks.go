@@ -17,53 +17,130 @@ limitations under the License.
 package model
 
 import (
-	"github.com/golang/glog"
+	"errors"
+	"fmt"
+	"strings"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"strconv"
-	"strings"
+
+	"github.com/golang/glog"
 )
 
-// HooksBuilder configures the hooks
+// HookBuilder configures the hooks
 type HookBuilder struct {
 	*NodeupModelContext
 }
 
 var _ fi.ModelBuilder = &HookBuilder{}
 
-func (b *HookBuilder) Build(c *fi.ModelBuilderContext) error {
-	for i := range b.Cluster.Spec.Hooks {
-		hook := &b.Cluster.Spec.Hooks[i]
+// Build is responsible for implementing the cluster hook
+func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
+	// we keep a list of hooks name so we can allow local instanceGroup hooks override the cluster ones
+	hookNames := make(map[string]bool, 0)
+	for i, spec := range []*[]kops.HookSpec{&h.InstanceGroup.Spec.Hooks, &h.Cluster.Spec.Hooks} {
+		for _, hook := range *spec {
+			isInstanceGroup := i == 0
+			// filter out on master and node flags if required
+			if (hook.MasterOnly && !h.IsMaster) || (hook.NodeOnly && h.IsMaster) {
+				continue
+			}
+			// i dont want to effect those whom are already using the hooks, so i'm gonna try an keep the name for now
+			// i.e. use the default naming convention - kops-hook-<index>, only those using the Name or hooks in IG should alter
+			var name string
+			switch hook.Name {
+			case "":
+				name = fmt.Sprintf("kops-hook-%d", i)
+				if isInstanceGroup {
+					name = fmt.Sprintf("%s-ig", name)
+				}
+			default:
+				name = hook.Name
+			}
 
-		// TODO: Allow (alphanumeric?) names
-		name := strconv.Itoa(i + 1)
+			if _, found := hookNames[name]; found {
+				glog.V(2).Infof("Skipping the hook: %v as we've already processed a similar service name", name)
+				continue
+			}
+			hookNames[name] = true
 
-		service, err := b.buildSystemdService(name, hook)
-		if err != nil {
-			return err
+			// are we disabling the service?
+			if hook.Disabled {
+				enabled := false
+				managed := true
+				c.AddTask(&nodetasks.Service{
+					Name:        hook.Name,
+					ManageState: &managed,
+					Enabled:     &enabled,
+					Running:     &enabled,
+				})
+				continue
+			}
+
+			service, err := h.buildSystemdService(name, &hook)
+			if err != nil {
+				return err
+			}
+
+			if service != nil {
+				c.AddTask(service)
+			}
 		}
-		c.AddTask(service)
 	}
 
 	return nil
 }
 
-func (b *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*nodetasks.Service, error) {
-	// We could give the container a kubeconfig, but we would probably do better to have a real pod / daemonset / job at that point
-	execContainer := hook.ExecContainer
-	if execContainer == nil {
-		glog.Warningf("No ExecContainer found for hook: %v", hook)
+// buildSystemdService is responsible for generating the service
+func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*nodetasks.Service, error) {
+	// perform some basic validation
+	if hook.ExecContainer == nil && hook.Manifest == "" {
+		glog.Warningf("hook: %s has neither a raw unit or exec image configured", name)
 		return nil, nil
 	}
+	if hook.ExecContainer != nil {
+		if err := isValidExecContainerAction(hook.ExecContainer); err != nil {
+			glog.Warningf("invalid hook action, name: %s, error: %v", name, err)
+			return nil, nil
+		}
+	}
+	// build the base unit file
+	unit := &systemd.Manifest{}
+	unit.Set("Unit", "Description", "Kops Hook "+name)
 
-	image := strings.TrimSpace(execContainer.Image)
-	if image == "" {
-		glog.Warningf("No Image found for hook: %v", hook)
-		return nil, nil
+	// add any service dependencies to the unit
+	for _, x := range hook.Requires {
+		unit.Set("Unit", "Requires", x)
+	}
+	for _, x := range hook.Before {
+		unit.Set("Unit", "Before", x)
 	}
 
+	// are we a raw unit file or a docker exec?
+	switch hook.ExecContainer {
+	case nil:
+		unit.SetSection("Service", hook.Manifest)
+	default:
+		if err := h.buildDockerService(unit, hook); err != nil {
+			return nil, err
+		}
+	}
+
+	service := &nodetasks.Service{
+		Name:       name,
+		Definition: s(unit.Render()),
+	}
+
+	service.InitDefaults()
+
+	return service, nil
+}
+
+// buildDockerService is responsible for generating a docker exec unit file
+func (h *HookBuilder) buildDockerService(unit *systemd.Manifest, hook *kops.HookSpec) error {
+	// the docker command line
 	dockerArgs := []string{
 		"/usr/bin/docker",
 		"run",
@@ -74,30 +151,26 @@ func (b *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 		"--privileged",
 		hook.ExecContainer.Image,
 	}
-
-	dockerArgs = append(dockerArgs, execContainer.Command...)
+	dockerArgs = append(dockerArgs, hook.ExecContainer.Command...)
 
 	dockerRunCommand := systemd.EscapeCommand(dockerArgs)
 	dockerPullCommand := systemd.EscapeCommand([]string{"/usr/bin/docker", "pull", hook.ExecContainer.Image})
 
-	manifest := &systemd.Manifest{}
-	manifest.Set("Unit", "Description", "Kops Hook "+name)
+	unit.Set("Service", "ExecStartPre", dockerPullCommand)
+	unit.Set("Service", "ExecStart", dockerRunCommand)
+	unit.Set("Service", "Type", "oneshot")
+	unit.Set("Install", "WantedBy", "multi-user.target")
 
-	manifest.Set("Service", "ExecStartPre", dockerPullCommand)
-	manifest.Set("Service", "ExecStart", dockerRunCommand)
-	manifest.Set("Service", "Type", "oneshot")
+	return nil
+}
 
-	manifest.Set("Install", "WantedBy", "multi-user.target")
-
-	manifestString := manifest.Render()
-	glog.V(8).Infof("Built systemd manifest %q\n%s", name, manifestString)
-
-	service := &nodetasks.Service{
-		Name:       "kops-hook-" + name + ".service",
-		Definition: s(manifestString),
+// isValidExecContainerAction checks the validatity of the execContainer - personally i think this validation
+// should be done high up the chain, but
+func isValidExecContainerAction(action *kops.ExecContainerAction) error {
+	action.Image = strings.TrimSpace(action.Image)
+	if action.Image == "" {
+		return errors.New("the image for the hook exec action not set")
 	}
 
-	service.InitDefaults()
-
-	return service, nil
+	return nil
 }

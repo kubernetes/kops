@@ -18,12 +18,13 @@ package validation
 
 import (
 	"fmt"
+	"net"
+	"strings"
+
 	"k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
-	"net"
-	"strings"
 )
 
 var validDockerConfigStorageValues = []string{"aufs", "btrfs", "devicemapper", "overlay", "overlay2", "zfs"}
@@ -131,16 +132,21 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 	return allErrs
 }
 
-func validateHook(v *kops.HookSpec, fldPath *field.Path) field.ErrorList {
+func validateHook(v *kops.HookSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if v.ExecContainer == nil {
-		allErrs = append(allErrs, field.Required(fldPath, "An action is required"))
+	if !v.Disabled && v.MasterOnly && v.NodeOnly {
+		allErrs = append(allErrs, field.Invalid(fieldPath, v.MasterOnly, "you cannot have both masterOnly and nodeOnly set true"))
 	}
 
-	if v.ExecContainer != nil {
-		allErrs = append(allErrs, validateExecContainerAction(v.ExecContainer, fldPath.Child("ExecContainer"))...)
+	if !v.Disabled && v.ExecContainer == nil && v.Manifest == "" {
+		allErrs = append(allErrs, field.Required(fieldPath, "you must set either manifest or execContainer for a hook"))
 	}
+
+	if !v.Disabled && v.ExecContainer != nil {
+		allErrs = append(allErrs, validateExecContainerAction(v.ExecContainer, fieldPath.Child("ExecContainer"))...)
+	}
+
 	return allErrs
 }
 

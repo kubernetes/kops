@@ -1259,6 +1259,12 @@ func Convert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in *ko
 }
 
 func autoConvert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Disabled = in.Disabled
+	out.MasterOnly = in.MasterOnly
+	out.NodeOnly = in.NodeOnly
+	out.Requires = in.Requires
+	out.Before = in.Before
 	if in.ExecContainer != nil {
 		in, out := &in.ExecContainer, &out.ExecContainer
 		*out = new(kops.ExecContainerAction)
@@ -1268,6 +1274,7 @@ func autoConvert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.Hook
 	} else {
 		out.ExecContainer = nil
 	}
+	out.Manifest = in.Manifest
 	return nil
 }
 
@@ -1277,6 +1284,12 @@ func Convert_v1alpha2_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec
 }
 
 func autoConvert_kops_HookSpec_To_v1alpha2_HookSpec(in *kops.HookSpec, out *HookSpec, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Disabled = in.Disabled
+	out.MasterOnly = in.MasterOnly
+	out.NodeOnly = in.NodeOnly
+	out.Requires = in.Requires
+	out.Before = in.Before
 	if in.ExecContainer != nil {
 		in, out := &in.ExecContainer, &out.ExecContainer
 		*out = new(ExecContainerAction)
@@ -1286,6 +1299,7 @@ func autoConvert_kops_HookSpec_To_v1alpha2_HookSpec(in *kops.HookSpec, out *Hook
 	} else {
 		out.ExecContainer = nil
 	}
+	out.Manifest = in.Manifest
 	return nil
 }
 
@@ -1373,6 +1387,17 @@ func autoConvert_v1alpha2_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeOptimization = in.RootVolumeOptimization
 	out.Subnets = in.Subnets
+	if in.Hooks != nil {
+		in, out := &in.Hooks, &out.Hooks
+		*out = make([]kops.HookSpec, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha2_HookSpec_To_kops_HookSpec(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Hooks = nil
+	}
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
@@ -1408,6 +1433,17 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha2_InstanceGroupSpec(in *kops.I
 	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeOptimization = in.RootVolumeOptimization
 	out.Subnets = in.Subnets
+	if in.Hooks != nil {
+		in, out := &in.Hooks, &out.Hooks
+		*out = make([]HookSpec, len(*in))
+		for i := range *in {
+			if err := Convert_kops_HookSpec_To_v1alpha2_HookSpec(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Hooks = nil
+	}
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
