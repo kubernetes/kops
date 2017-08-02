@@ -41,7 +41,7 @@ type KubeAPIServerBuilder struct {
 
 var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
 
-// Build is responsible for generating the kubernetes api manifest
+// Build is responsible for generating the configuration for the kube-apiserver
 func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
@@ -69,6 +69,19 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:     nodetasks.FileType_File,
 		}
 		c.AddTask(t)
+	}
+
+	// @check if we are using secure client certificates for kubelet and grab the certificates
+	{
+		if b.UseSecureKubelet() {
+			name := "kubelet-api"
+			if err := buildCertificateRequest(c, b.NodeupModelContext, name, ""); err != nil {
+				return err
+			}
+			if err := buildPrivateKeyRequest(c, b.NodeupModelContext, name, ""); err != nil {
+				return err
+			}
+		}
 	}
 
 	// Touch log file, so that docker doesn't create a directory instead
@@ -135,6 +148,7 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 	return fmt.Errorf("Unrecognized authentication config %v", b.Cluster.Spec.Authentication)
 }
 
+// buildPod is responsible for generating the kube-apiserver pod and thus manifest file
 func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	kubeAPIServer := b.Cluster.Spec.KubeAPIServer
 	kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
@@ -150,7 +164,15 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		kubeAPIServer.EtcdServers = []string{"https://127.0.0.1:4001"}
 		kubeAPIServer.EtcdServersOverrides = []string{"/events#https://127.0.0.1:4002"}
 	}
+   
+        // @check if we are using secure kubelet client certificates
+	if b.UseSecureKubelet() {
+		// @note we are making assumption we are using the one's created by the pki model, not custom defined ones
+		kubeAPIServer.KubeletClientCertificate = filepath.Join(b.PathSrvKubernetes(), "kubelet-api.pem")
+		kubeAPIServer.KubeletClientKey = filepath.Join(b.PathSrvKubernetes(), "kubelet-api-key.pem")
+	}
 
+	// build the kube-apiserver flags for the service
 	flags, err := flagbuilder.BuildFlags(b.Cluster.Spec.KubeAPIServer)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-apiserver flags: %v", err)
@@ -228,7 +250,6 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
-
 		addHostPathMapping(pod, container, name, path)
 	}
 
