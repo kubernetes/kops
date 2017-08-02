@@ -18,15 +18,18 @@ package protokube
 
 import (
 	"fmt"
-	"github.com/golang/glog"
+
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
+
+	"github.com/golang/glog"
 )
 
-func InitializeRBAC(kubeContext *KubernetesContext) error {
+// applyRBAC is responsible for initializing RBAC
+func applyRBAC(kubeContext *KubernetesContext) error {
 	k8sClient, err := kubeContext.KubernetesClient()
 	if err != nil {
 		return fmt.Errorf("error connecting to kubernetes: %v", err)
@@ -73,7 +76,7 @@ const (
 	KubeProxyServiceAccountName = "kube-proxy"
 )
 
-// CreateServiceAccounts creates the necessary serviceaccounts that kubeadm uses/might use, if they don't already exist.
+// createServiceAccounts creates the necessary serviceaccounts that kubeadm uses/might use, if they don't already exist.
 func createServiceAccounts(clientset kubernetes.Interface) error {
 	serviceAccounts := []v1.ServiceAccount{
 		{

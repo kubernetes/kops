@@ -212,6 +212,9 @@ type ClusterSpec struct {
 	//KubeProxyTestArgs             string `json:",omitempty"`
 	//KubeProxyTestLogLevel         string `json:",omitempty"`
 
+	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
+	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
+
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 

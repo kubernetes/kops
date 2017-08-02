@@ -44,7 +44,7 @@ package protokube
 //// RunKubelet runs the bootstrap tasks, and watches them until they exit
 //// Currently only one task is supported / will work properly
 //func (k *KubeBoot) RunBootstrapTasks() error {
-//	bootstrapDir := PathFor(BootstrapDir)
+//	bootstrapDir := pathFor(BootstrapDir)
 //
 //	var dirs []os.FileInfo
 //	var err error
