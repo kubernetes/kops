@@ -19,11 +19,12 @@ package fitasks
 import (
 	"crypto/x509"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi"
 	"net"
 	"sort"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 var wellKnownCertificateTypes = map[string]string{
@@ -33,9 +34,8 @@ var wellKnownCertificateTypes = map[string]string{
 
 //go:generate fitask -type=Keypair
 type Keypair struct {
-	Name      *string
-	Lifecycle *fi.Lifecycle
-
+	Name               *string
+	Lifecycle          *fi.Lifecycle
 	Subject            string    `json:"subject"`
 	Type               string    `json:"type"`
 	AlternateNames     []string  `json:"alternateNames"`
