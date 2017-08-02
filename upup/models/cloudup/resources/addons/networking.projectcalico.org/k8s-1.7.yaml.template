@@ -44,7 +44,6 @@ data:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  annotations:
   labels:
     role.kubernetes.io/networking: "1"
   namespace: kube-system
@@ -53,7 +52,6 @@ metadata:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  annotations:
   labels:
     role.kubernetes.io/networking: "1"
   namespace: kube-system
