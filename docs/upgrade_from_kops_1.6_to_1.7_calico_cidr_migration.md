@@ -68,7 +68,7 @@ This will create a `jobs.yaml` manifest file that is used by the next step.
 
 3. Make sure the current-context in the kubeconfig is the cluster you want to perform this migration.
 Run the job: `kubectl apply -f jobs.yaml`
-4. Run `kops rolling-update --force --yes` to initiate a rolling restart on the cluster.
+4. Run `kops rolling-update cluster --force --yes` to initiate a rolling restart on the cluster.
 This forces a restart of all nodes in the cluster.
 
 That's it, you should see new Pods be allocated IPs in the new IP range!
