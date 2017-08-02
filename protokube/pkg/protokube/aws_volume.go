@@ -18,42 +18,40 @@ package protokube
 
 import (
 	"fmt"
+	"net"
+	"strings"
+	"sync"
+	"time"
+
+	"k8s.io/kops/protokube/pkg/gossip"
+	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
-	"k8s.io/kops/protokube/pkg/gossip"
-	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"net"
-	"strings"
-	"sync"
-	"time"
 )
-
-//const TagNameMasterId = "k8s.io/master/id"
-
-//const DefaultAttachDevice = "/dev/xvdb"
 
 var devices = []string{"/dev/xvdu", "/dev/xvdv", "/dev/xvdx", "/dev/xvdx", "/dev/xvdy", "/dev/xvdz"}
 
+// AWSVolumes defines the aws volume implementation
 type AWSVolumes struct {
-	ec2      *ec2.EC2
-	metadata *ec2metadata.EC2Metadata
-
-	zone       string
 	clusterTag string
+	deviceMap  map[string]string
+	ec2        *ec2.EC2
 	instanceId string
 	internalIP net.IP
-
-	mutex     sync.Mutex
-	deviceMap map[string]string
+	metadata   *ec2metadata.EC2Metadata
+	mutex      sync.Mutex
+	zone       string
 }
 
 var _ Volumes = &AWSVolumes{}
 
+// NewAWSVolumes returns a new aws volume provider
 func NewAWSVolumes() (*AWSVolumes, error) {
 	a := &AWSVolumes{
 		deviceMap: make(map[string]string),

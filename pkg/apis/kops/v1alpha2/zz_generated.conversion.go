@@ -562,6 +562,7 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
 	out.AdditionalPolicies = in.AdditionalPolicies
+	out.EnableEtcdTLS = in.EnableEtcdTLS
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
 		*out = make([]*kops.EtcdClusterSpec, len(*in))
@@ -762,6 +763,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
 	out.AdditionalPolicies = in.AdditionalPolicies
+	out.EnableEtcdTLS = in.EnableEtcdTLS
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
 		*out = make([]*EtcdClusterSpec, len(*in))
@@ -1479,6 +1481,9 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.EtcdServers = in.EtcdServers
 	out.EtcdServersOverrides = in.EtcdServersOverrides
+	out.EtcdCAFile = in.EtcdCAFile
+	out.EtcdCertFile = in.EtcdCertFile
+	out.EtcdKeyFile = in.EtcdKeyFile
 	out.BasicAuthFile = in.BasicAuthFile
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
@@ -1524,6 +1529,9 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.EtcdServers = in.EtcdServers
 	out.EtcdServersOverrides = in.EtcdServersOverrides
+	out.EtcdCAFile = in.EtcdCAFile
+	out.EtcdCertFile = in.EtcdCertFile
+	out.EtcdKeyFile = in.EtcdKeyFile
 	out.BasicAuthFile = in.BasicAuthFile
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile

@@ -27,11 +27,13 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"github.com/golang/glog"
 	"io"
-	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"time"
+
+	"k8s.io/kops/util/pkg/vfs"
+
+	"github.com/golang/glog"
 )
 
 const CertificateId_CA = "ca"

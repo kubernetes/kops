@@ -41,6 +41,7 @@ type KubeAPIServerBuilder struct {
 
 var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
 
+// Build is responsible for generating the kubernetes api manifest
 func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
@@ -127,21 +128,28 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 			Type:     nodetasks.FileType_File,
 		}
 		c.AddTask(t)
+
 		return nil
-	} else {
-		return fmt.Errorf("Unrecognized authentication config %v", b.Cluster.Spec.Authentication)
 	}
+
+	return fmt.Errorf("Unrecognized authentication config %v", b.Cluster.Spec.Authentication)
 }
 
 func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	kubeAPIServer := b.Cluster.Spec.KubeAPIServer
-
 	kubeAPIServer.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	kubeAPIServer.TLSCertFile = filepath.Join(b.PathSrvKubernetes(), "server.cert")
 	kubeAPIServer.TLSPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
-
 	kubeAPIServer.BasicAuthFile = filepath.Join(b.PathSrvKubernetes(), "basic_auth.csv")
 	kubeAPIServer.TokenAuthFile = filepath.Join(b.PathSrvKubernetes(), "known_tokens.csv")
+
+	if b.Cluster.Spec.EnableEtcdTLS {
+		kubeAPIServer.EtcdCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
+		kubeAPIServer.EtcdCertFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client.pem")
+		kubeAPIServer.EtcdKeyFile = filepath.Join(b.PathSrvKubernetes(), "etcd-client-key.pem")
+		kubeAPIServer.EtcdServers = []string{"https://127.0.0.1:4001"}
+		kubeAPIServer.EtcdServersOverrides = []string{"/events#https://127.0.0.1:4002"}
+	}
 
 	flags, err := flagbuilder.BuildFlags(b.Cluster.Spec.KubeAPIServer)
 	if err != nil {
