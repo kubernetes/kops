@@ -33,7 +33,7 @@ spec:
   - range: ">=1.7.0-alpha.1"
     #recommendedVersion: 1.6.0
     #requiredVersion: 1.6.0
-    kubernetesVersion: 1.7.0
+    kubernetesVersion: 1.7.2
   - range: ">=1.6.0-alpha.1"
     #recommendedVersion: 1.6.0
     #requiredVersion: 1.6.0
