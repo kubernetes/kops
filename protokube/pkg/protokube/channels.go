@@ -18,11 +18,22 @@ package protokube
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/golang/glog"
 )
+
+// applyChannel is responsible for applying the channel manifests
+func applyChannel(channel string) error {
+	// We don't embed the channels code because we expect this will eventually be part of kubectl
+	glog.Infof("checking channel: %q", channel)
+
+	out, err := execChannels("apply", "channel", channel, "--v=4", "--yes")
+	glog.V(4).Infof("apply channel output was: %v", out)
+	return err
+}
 
 func execChannels(args ...string) (string, error) {
 	kubectlPath := "channels" // Assume in PATH
@@ -40,13 +51,4 @@ func execChannels(args ...string) (string, error) {
 	}
 
 	return string(output), err
-}
-
-func ApplyChannel(channel string) error {
-	// We don't embed the channels code because we expect this will eventually be part of kubectl
-	glog.Infof("checking channel: %q", channel)
-
-	out, err := execChannels("apply", "channel", channel, "--v=4", "--yes")
-	glog.V(4).Infof("apply channel output was: %v", out)
-	return err
 }

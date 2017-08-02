@@ -18,8 +18,7 @@ package model
 
 import (
 	"fmt"
-	"github.com/blang/semver"
-	"github.com/golang/glog"
+
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
@@ -29,6 +28,9 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
 // KubeletBuilder install kubelet
@@ -38,6 +40,7 @@ type KubeletBuilder struct {
 
 var _ fi.ModelBuilder = &KubeletBuilder{}
 
+// Build is responsible for generating the kubelet config
 func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	kubeletConfig, err := b.buildKubeletConfig()
 	if err != nil {
@@ -52,12 +55,11 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// Add kubelet file itself (as an asset)
 	{
-		// TODO: Extract to common function?
+		// @TODO Extract to common function?
 		assetName := "kubelet"
 		assetPath := ""
-		// TODO make Find call to an interface, we cannot mock out this function because it finds a file on disk
+		// @TODO make Find call to an interface, we cannot mock out this function because it finds a file on disk
 		asset, err := b.Assets.Find(assetName, assetPath)
 		if err != nil {
 			return fmt.Errorf("error trying to locate asset %q: %v", assetName, err)
@@ -75,10 +77,8 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// Add kubeconfig
 	{
-		// TODO: Change kubeconfig to be https
-
+		// @TODO Change kubeconfig to be https
 		kubeconfig, err := b.buildPKIKubeconfig("kubelet")
 		if err != nil {
 			return err
@@ -109,6 +109,7 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
+// kubeletPath returns the path of the kubelet based on distro
 func (b *KubeletBuilder) kubeletPath() string {
 	kubeletCommand := "/usr/local/bin/kubelet"
 	if b.Distribution == distros.DistributionCoreOS {
@@ -120,6 +121,7 @@ func (b *KubeletBuilder) kubeletPath() string {
 	return kubeletCommand
 }
 
+// buildSystemdEnvironmentFile renders the environment file for the kubelet
 func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.KubeletConfigSpec) (*nodetasks.File, error) {
 	// TODO: Dump the separate file for flags - just complexity!
 	flags, err := flagbuilder.BuildFlags(kubeletConfig)
@@ -157,6 +159,7 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	return t, nil
 }
 
+// buildSystemdService is responsible for generating the kubelet systemd unit
 func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	kubeletCommand := b.kubeletPath()
 
@@ -176,8 +179,8 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 	manifest.Set("Service", "RestartSec", "2s")
 	manifest.Set("Service", "StartLimitInterval", "0")
 	manifest.Set("Service", "KillMode", "process")
-
 	manifestString := manifest.Render()
+
 	glog.V(8).Infof("Built service manifest %q\n%s", "kubelet", manifestString)
 
 	service := &nodetasks.Service{
@@ -185,8 +188,10 @@ func (b *KubeletBuilder) buildSystemdService() *nodetasks.Service {
 		Definition: s(manifestString),
 	}
 
-	// To avoid going in to backoff, we wait for protokube to start us
-	service.Running = fi.Bool(false)
+	// @check if we are a master allow protokube to start kubelet
+	if b.IsMaster {
+		service.Running = fi.Bool(false)
+	}
 
 	service.InitDefaults()
 
@@ -201,9 +206,9 @@ func (b *KubeletBuilder) buildKubeletConfig() (*kops.KubeletConfigSpec, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building kubelet config: %v", err)
 	}
+
 	// TODO: Memoize if we reuse this
 	return kubeletConfigSpec, nil
-
 }
 
 func (b *KubeletBuilder) addStaticUtils(c *fi.ModelBuilderContext) error {

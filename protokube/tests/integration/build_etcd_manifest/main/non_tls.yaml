@@ -1,3 +1,24 @@
+clientPort: 4001
+clusterName: etcd-main
+clusterToken: token-main
+cpuRequest: "200m"
+dataDirName: data-main
+logFile: /var/log/main.log
+peerPort: 2380
+podName: etcd-server-main
+volumeMountPath: /mnt/main
+me:
+  name: node0
+  internalName: node0.internal
+nodes:
+- name: node0
+  internalName: node0.internal
+- name: node1
+  internalName: node1.internal
+- name: node2
+  internalName: node2.internal
+spec: {}
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -9,9 +30,7 @@ metadata:
 spec:
   containers:
   - command:
-    - /bin/sh
-    - -c
-    - /usr/local/bin/etcd 1>>/var/log/etcd.log 2>&1
+    - /usr/local/bin/etcd
     env:
     - name: ETCD_NAME
       value: node0
@@ -37,6 +56,7 @@ spec:
         host: 127.0.0.1
         path: /health
         port: 4001
+        scheme: HTTP
       initialDelaySeconds: 15
       timeoutSeconds: 15
     name: etcd-container
@@ -53,14 +73,9 @@ spec:
     volumeMounts:
     - mountPath: /var/etcd/data-main
       name: varetcdata
-    - mountPath: /var/log/etcd.log
-      name: varlogetcd
   hostNetwork: true
   volumes:
   - hostPath:
       path: /mnt/main/var/etcd/data-main
     name: varetcdata
-  - hostPath:
-      path: /var/log/main.log
-    name: varlogetcd
 status: {}

@@ -19,32 +19,31 @@ package model
 import (
 	"fmt"
 
-	"github.com/blang/semver"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
+
+	"github.com/blang/semver"
 )
 
+// NodeupModelContext is the context supplied the nodeup tasks
 type NodeupModelContext struct {
-	NodeupConfig *nodeup.Config
-
-	Cluster       *kops.Cluster
-	InstanceGroup *kops.InstanceGroup
-	Architecture  Architecture
-	Distribution  distros.Distribution
-
-	IsMaster bool
-
-	Assets      *fi.AssetStore
-	KeyStore    fi.CAStore
-	SecretStore fi.SecretStore
-
+	Architecture      Architecture
+	Assets            *fi.AssetStore
+	Cluster           *kops.Cluster
+	Distribution      distros.Distribution
+	InstanceGroup     *kops.InstanceGroup
+	IsMaster          bool
+	KeyStore          fi.CAStore
 	KubernetesVersion semver.Version
+	NodeupConfig      *nodeup.Config
+	SecretStore       fi.SecretStore
 }
 
+// SSLHostPaths returns the TLS paths for the distribution
 func (c *NodeupModelContext) SSLHostPaths() []string {
 	paths := []string{"/etc/ssl", "/etc/pki/tls", "/etc/pki/ca-trust"}
 
@@ -52,12 +51,9 @@ func (c *NodeupModelContext) SSLHostPaths() []string {
 	case distros.DistributionCoreOS:
 		// Because /usr is read-only on CoreOS, we can't have any new directories; docker will try (and fail) to create them
 		// TODO: Just check if the directories exist?
-
 		paths = append(paths, "/usr/share/ca-certificates")
-
 	case distros.DistributionContainerOS:
 		paths = append(paths, "/usr/share/ca-certificates")
-
 	default:
 		paths = append(paths, "/usr/share/ssl", "/usr/ssl", "/usr/lib/ssl", "/usr/local/openssl", "/var/ssl", "/etc/openssl")
 	}
@@ -65,6 +61,7 @@ func (c *NodeupModelContext) SSLHostPaths() []string {
 	return paths
 }
 
+// PathSrvKubernetes returns the path for the kubernetes service files
 func (c *NodeupModelContext) PathSrvKubernetes() string {
 	switch c.Distribution {
 	case distros.DistributionContainerOS:
@@ -74,6 +71,7 @@ func (c *NodeupModelContext) PathSrvKubernetes() string {
 	}
 }
 
+// PathSrvSshproxy returns the path for the SSL proxy
 func (c *NodeupModelContext) PathSrvSshproxy() string {
 	switch c.Distribution {
 	case distros.DistributionContainerOS:
@@ -83,6 +81,7 @@ func (c *NodeupModelContext) PathSrvSshproxy() string {
 	}
 }
 
+// CNIBinDir returns the path for the CNI binaries
 func (c *NodeupModelContext) CNIBinDir() string {
 	switch c.Distribution {
 	case distros.DistributionContainerOS:
@@ -92,10 +91,12 @@ func (c *NodeupModelContext) CNIBinDir() string {
 	}
 }
 
+// CNIConfDir returns the CNI directory
 func (c *NodeupModelContext) CNIConfDir() string {
 	return "/etc/cni/net.d/"
 }
 
+// buildPKIKubeconfig generates a kubeconfig
 func (c *NodeupModelContext) buildPKIKubeconfig(id string) (string, error) {
 	caCertificate, err := c.KeyStore.Cert(fi.CertificateId_CA)
 	if err != nil {
@@ -172,10 +173,12 @@ func (c *NodeupModelContext) buildPKIKubeconfig(id string) (string, error) {
 	return string(yaml), nil
 }
 
+// IsKubernetesGTE checks if the version is greater-than-or-equal
 func (c *NodeupModelContext) IsKubernetesGTE(version string) bool {
 	return util.IsKubernetesGTE(version, c.KubernetesVersion)
 }
 
+// UsesCNI checks if the cluster has CNI configured
 func (c *NodeupModelContext) UsesCNI() bool {
 	networking := c.Cluster.Spec.Networking
 	if networking == nil || networking.Classic != nil {

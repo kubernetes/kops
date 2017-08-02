@@ -14,23 +14,32 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package model
+package protokube
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
+	"fmt"
+	"os"
 )
 
-// s is a helper that builds a *string from a string value
-func s(v string) *string {
-	return fi.String(v)
-}
+// touchFile does what is says on the tin, it touches a file
+func touchFile(p string) error {
+	_, err := os.Lstat(p)
+	if err == nil {
+		return nil
+	}
 
-// i64 is a helper that builds a *int64 from an int64 value
-func i64(v int64) *int64 {
-	return fi.Int64(v)
-}
+	if !os.IsNotExist(err) {
+		return fmt.Errorf("error getting state of file %q: %v", p, err)
+	}
 
-// i32 is a helper that builds a *int32 from an int32 value
-func i32(v int32) *int32 {
-	return fi.Int32(v)
+	f, err := os.Create(p)
+	if err != nil {
+		return fmt.Errorf("error touching file %q: %v", p, err)
+	}
+
+	if err = f.Close(); err != nil {
+		return fmt.Errorf("error closing touched file %q: %v", p, err)
+	}
+
+	return nil
 }

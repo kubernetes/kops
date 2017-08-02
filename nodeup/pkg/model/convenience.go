@@ -27,3 +27,8 @@ func s(v string) *string {
 func i64(v int64) *int64 {
 	return fi.Int64(v)
 }
+
+// b returns a pointer to a boolean
+func b(v bool) *bool {
+	return fi.Bool(v)
+}
