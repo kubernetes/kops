@@ -503,6 +503,10 @@ func isCoreDNSZone(zone dnsprovider.Zone) bool {
 	return ok
 }
 
+func FixWildcards(s string) string {
+	return strings.Replace(s, "\\052", "*", 1)
+}
+
 func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error {
 	fqdn := EnsureDotSuffix(k.FQDN)
 
@@ -539,7 +543,7 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 		}
 
 		for _, rr := range rrs {
-			rrName := EnsureDotSuffix(rr.Name())
+			rrName := EnsureDotSuffix(FixWildcards(rr.Name()))
 			if rrName != fqdn {
 				glog.V(8).Infof("Skipping record %q (name != %s)", rrName, fqdn)
 				continue
@@ -564,7 +568,7 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 	}
 
 	if existing != nil {
-		glog.V(2).Infof("will replace existing dns record %s %s", existing.Type(), existing.Name())
+		glog.V(2).Infof("will replace existing dns record %s %s", existing.Type(), FixWildcards(existing.Name()))
 		cs.Remove(existing)
 	}
 
