@@ -19,8 +19,9 @@ package model
 import (
 	"bytes"
 	"fmt"
-	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"os"
+	"strings"
+
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -29,8 +30,9 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"os"
-	"strings"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
 // ProtokubeBuilder configures protokube
@@ -40,6 +42,7 @@ type ProtokubeBuilder struct {
 
 var _ fi.ModelBuilder = &ProtokubeBuilder{}
 
+// Build is responsible for generating the protokube service
 func (b *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.IsMaster {
 		kubeconfig, err := b.buildPKIKubeconfig("kops")
@@ -55,7 +58,13 @@ func (b *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 	}
 
-	// TODO: Should we run _protokube on the nodes?
+	// @check if protokube; we have decided to disable this by default (https://github.com/kubernetes/kops/pull/3091)
+	// unless the gossip dns is switched on
+	if !b.IsMaster && !dns.IsGossipHostname(b.Cluster.Spec.MasterInternalName) {
+		glog.V(2).Infof("skipping the provisioning of protokube on the node, as gossip dns is disabled")
+		return nil
+	}
+
 	service, err := b.buildSystemdService()
 	if err != nil {
 		return err
@@ -95,8 +104,6 @@ func (b *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 	manifest := &systemd.Manifest{}
 	manifest.Set("Unit", "Description", "Kubernetes Protokube Service")
 	manifest.Set("Unit", "Documentation", "https://github.com/kubernetes/kops")
-
-	//manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/protokube")
 	manifest.Set("Service", "ExecStartPre", b.ProtokubeImagePullCommand())
 	manifest.Set("Service", "ExecStart", protokubeCommand)
 	manifest.Set("Service", "Restart", "always")
@@ -119,10 +126,10 @@ func (b *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 }
 
 // ProtokubeImageName returns the docker image for protokube
-func (t *ProtokubeBuilder) ProtokubeImageName() string {
+func (b *ProtokubeBuilder) ProtokubeImageName() string {
 	name := ""
-	if t.NodeupConfig.ProtokubeImage != nil && t.NodeupConfig.ProtokubeImage.Name != "" {
-		name = t.NodeupConfig.ProtokubeImage.Name
+	if b.NodeupConfig.ProtokubeImage != nil && b.NodeupConfig.ProtokubeImage.Name != "" {
+		name = b.NodeupConfig.ProtokubeImage.Name
 	}
 	if name == "" {
 		// use current default corresponding to this version of nodeup
@@ -132,10 +139,10 @@ func (t *ProtokubeBuilder) ProtokubeImageName() string {
 }
 
 // ProtokubeImagePullCommand returns the command to pull the image
-func (t *ProtokubeBuilder) ProtokubeImagePullCommand() string {
+func (b *ProtokubeBuilder) ProtokubeImagePullCommand() string {
 	source := ""
-	if t.NodeupConfig.ProtokubeImage != nil {
-		source = t.NodeupConfig.ProtokubeImage.Source
+	if b.NodeupConfig.ProtokubeImage != nil {
+		source = b.NodeupConfig.ProtokubeImage.Source
 	}
 	if source == "" {
 		// Nothing to pull; return dummy value
@@ -145,41 +152,34 @@ func (t *ProtokubeBuilder) ProtokubeImagePullCommand() string {
 		// We preloaded the image; return a dummy value
 		return "/bin/true"
 	}
-	return "/usr/bin/docker pull " + t.NodeupConfig.ProtokubeImage.Source
+	return "/usr/bin/docker pull " + b.NodeupConfig.ProtokubeImage.Source
 }
 
+// ProtokubeFlags is the options passed to the service
 type ProtokubeFlags struct {
-	Master        *bool  `json:"master,omitempty" flag:"master"`
-	Containerized *bool  `json:"containerized,omitempty" flag:"containerized"`
-	LogLevel      *int32 `json:"logLevel,omitempty" flag:"v"`
-
-	InitializeRBAC *bool `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
-
-	DNSProvider *string `json:"dnsProvider,omitempty" flag:"dns"`
-
-	Zone []string `json:"zone,omitempty" flag:"zone"`
-
-	Channels []string `json:"channels,omitempty" flag:"channels"`
-
-	DNSInternalSuffix *string `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
-	Cloud             *string `json:"cloud,omitempty" flag:"cloud"`
-
-	ApplyTaints *bool `json:"applyTaints,omitempty" flag:"apply-taints"`
-
-	// ClusterId flag is required only for vSphere cloud type, to pass cluster id information to protokube. AWS and GCE workflows ignore this flag.
-	ClusterId *string `json:"cluster-id,omitempty" flag:"cluster-id"`
-	DNSServer *string `json:"dns-server,omitempty" flag:"dns-server"`
+	ApplyTaints       *bool    `json:"applyTaints,omitempty" flag:"apply-taints"`
+	Channels          []string `json:"channels,omitempty" flag:"channels"`
+	Cloud             *string  `json:"cloud,omitempty" flag:"cloud"`
+	ClusterID         *string  `json:"cluster-id,omitempty" flag:"cluster-id"`
+	Containerized     *bool    `json:"containerized,omitempty" flag:"containerized"`
+	DNSInternalSuffix *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
+	DNSProvider       *string  `json:"dnsProvider,omitempty" flag:"dns"`
+	DNSServer         *string  `json:"dns-server,omitempty" flag:"dns-server"`
+	InitializeRBAC    *bool    `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
+	LogLevel          *int32   `json:"logLevel,omitempty" flag:"v"`
+	Master            *bool    `json:"master,omitempty" flag:"master"`
+	Zone              []string `json:"zone,omitempty" flag:"zone"`
 }
 
 // ProtokubeFlags returns the flags object for protokube
-func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeFlags {
+func (b *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeFlags {
 	f := &ProtokubeFlags{}
 
-	master := t.IsMaster
+	master := b.IsMaster
 
 	f.Master = fi.Bool(master)
 	if master {
-		f.Channels = t.NodeupConfig.Channels
+		f.Channels = b.NodeupConfig.Channels
 	}
 
 	if k8sVersion.Major == 1 && k8sVersion.Minor >= 6 {
@@ -191,7 +191,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	f.LogLevel = fi.Int32(4)
 	f.Containerized = fi.Bool(true)
 
-	zone := t.Cluster.Spec.DNSZone
+	zone := b.Cluster.Spec.DNSZone
 	if zone != "" {
 		if strings.Contains(zone, ".") {
 			// match by name
@@ -206,37 +206,37 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		//argv = append(argv, "--zone=*/*")
 	}
 
-	if dns.IsGossipHostname(t.Cluster.Spec.MasterInternalName) {
-		glog.Warningf("MasterInternalName %q implies gossip DNS", t.Cluster.Spec.MasterInternalName)
+	if dns.IsGossipHostname(b.Cluster.Spec.MasterInternalName) {
+		glog.Warningf("MasterInternalName %q implies gossip DNS", b.Cluster.Spec.MasterInternalName)
 		f.DNSProvider = fi.String("gossip")
 
 		/// TODO: This is hacky, but we want it so that we can have a different internal & external name
-		internalSuffix := t.Cluster.Spec.MasterInternalName
+		internalSuffix := b.Cluster.Spec.MasterInternalName
 		internalSuffix = strings.TrimPrefix(internalSuffix, "api.")
 		f.DNSInternalSuffix = fi.String(internalSuffix)
 	}
 
-	if t.Cluster.Spec.CloudProvider != "" {
-		f.Cloud = fi.String(t.Cluster.Spec.CloudProvider)
+	if b.Cluster.Spec.CloudProvider != "" {
+		f.Cloud = fi.String(b.Cluster.Spec.CloudProvider)
 
 		if f.DNSProvider == nil {
-			switch kops.CloudProviderID(t.Cluster.Spec.CloudProvider) {
+			switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
 			case kops.CloudProviderAWS:
 				f.DNSProvider = fi.String("aws-route53")
 			case kops.CloudProviderGCE:
 				f.DNSProvider = fi.String("google-clouddns")
 			case kops.CloudProviderVSphere:
 				f.DNSProvider = fi.String("coredns")
-				f.ClusterId = fi.String(t.Cluster.ObjectMeta.Name)
-				f.DNSServer = fi.String(*t.Cluster.Spec.CloudConfig.VSphereCoreDNSServer)
+				f.ClusterID = fi.String(b.Cluster.ObjectMeta.Name)
+				f.DNSServer = fi.String(*b.Cluster.Spec.CloudConfig.VSphereCoreDNSServer)
 			default:
-				glog.Warningf("Unknown cloudprovider %q; won't set DNS provider", t.Cluster.Spec.CloudProvider)
+				glog.Warningf("Unknown cloudprovider %q; won't set DNS provider", b.Cluster.Spec.CloudProvider)
 			}
 		}
 	}
 
 	if f.DNSInternalSuffix == nil {
-		f.DNSInternalSuffix = fi.String(".internal." + t.Cluster.ObjectMeta.Name)
+		f.DNSInternalSuffix = fi.String(".internal." + b.Cluster.ObjectMeta.Name)
 	}
 
 	if k8sVersion.Major == 1 && k8sVersion.Minor <= 5 {
@@ -246,7 +246,8 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	return f
 }
 
-func (t *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
+// ProtokubeEnvironmentVariables generates the environment variable for protokube
+func (b *ProtokubeBuilder) ProtokubeEnvironmentVariables() string {
 	var buffer bytes.Buffer
 
 	if os.Getenv("AWS_REGION") != "" {
