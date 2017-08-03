@@ -19,16 +19,20 @@ package components
 import (
 	"encoding/binary"
 	"fmt"
+	"math/big"
+	"net"
+	"net/url"
+	"strings"
+
 	"github.com/blang/semver"
-	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"k8s.io/kops/util/pkg/vfs"
-	"math/big"
-	"net"
-	"strings"
+)
+
+const (
+	GCR_STORAGE = "https://storage.googleapis.com/kubernetes-release"
 )
 
 // OptionsContext is the context object for options builders
@@ -121,31 +125,43 @@ func IsBaseURL(kubernetesVersion string) bool {
 	return strings.HasPrefix(kubernetesVersion, "http:") || strings.HasPrefix(kubernetesVersion, "https:")
 }
 
-// Image returns the docker image name for the specified component
-func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
-	if component == "kube-dns" {
-		// TODO: Once we are shipping different versions, start to use them
-		return "gcr.io/google_containers/kubedns-amd64:1.3", nil
+// GetGoogleFileRepositoryURL returns the google file url for binaries typically housed on `GCR_STORAGE`.
+// This function will return the cluster asset file registry normalized url if a file registry is setup.
+func GetGoogleFileRepositoryURL(clusterSpec *kops.ClusterSpec, u string) (string, error) {
+	u = strings.TrimPrefix(u, "/")
+
+	googleUrl := ""
+
+	if clusterSpec.Assets != nil && clusterSpec.Assets.FileRepository != nil {
+		googleUrl = removeSlash(*clusterSpec.Assets.FileRepository) + "/kubernetes-release/" + u
 	}
 
-	if !IsBaseURL(clusterSpec.KubernetesVersion) {
-		return "gcr.io/google_containers/" + component + ":" + "v" + clusterSpec.KubernetesVersion, nil
+	if googleUrl == "" {
+		googleUrl = GCR_STORAGE + "/" + u
 	}
 
-	baseURL := clusterSpec.KubernetesVersion
-	baseURL = strings.TrimSuffix(baseURL, "/")
+	err := validateURL(googleUrl)
 
-	tagURL := baseURL + "/bin/linux/amd64/" + component + ".docker_tag"
-	glog.V(2).Infof("Downloading docker tag for %s from: %s", component, tagURL)
-
-	b, err := vfs.Context.ReadFile(tagURL)
 	if err != nil {
-		return "", fmt.Errorf("error reading tag file %q: %v", tagURL, err)
+		return "", err
 	}
-	tag := strings.TrimSpace(string(b))
-	glog.V(2).Infof("Found tag %q for %q", tag, component)
 
-	return "gcr.io/google_containers/" + component + ":" + tag, nil
+	return googleUrl, err
+
+}
+
+func removeSlash(s string) string {
+	return strings.TrimSuffix(s, "/")
+}
+
+func validateURL(u string) error {
+	_, err := url.ParseRequestURI(u)
+
+	if err != nil {
+		return fmt.Errorf("url is invalid %q", u)
+	}
+
+	return nil
 }
 
 func GCETagForRole(clusterName string, role kops.InstanceGroupRole) string {

@@ -254,7 +254,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		if needsStaticUtils(cluster, c.InstanceGroups) {
-			utilsLocation := BaseUrl() + "linux/amd64/utils.tar.gz"
+			utilsLocation := BaseUrl(&cluster.Spec) + "linux/amd64/utils.tar.gz"
 			glog.V(4).Infof("Using default utils.tar.gz location: %q", utilsLocation)
 
 			hash, err := findHash(utilsLocation)
@@ -266,7 +266,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	if c.NodeUpSource == "" {
-		c.NodeUpSource = NodeUpLocation()
+		c.NodeUpSource = NodeUpLocation(&cluster.Spec)
 	}
 
 	checkExisting := true
@@ -611,18 +611,11 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		{
-			location := ProtokubeImageSource()
-
-			hash, err := findHash(location)
+			proto, err := ProtokubeImageSource(&c.Cluster.Spec)
 			if err != nil {
 				return nil, err
 			}
-
-			config.ProtokubeImage = &nodeup.Image{
-				Name:   kopsbase.DefaultProtokubeImageName(),
-				Source: location,
-				Hash:   hash.Hex(),
-			}
+			config.ProtokubeImage = proto
 		}
 
 		config.Images = images
