@@ -46,7 +46,7 @@ import (
 const MaxTaskDuration = 365 * 24 * time.Hour
 
 type NodeUpCommand struct {
-	config         *nodeup.NodeUpConfig
+	config         *nodeup.Config
 	cluster        *api.Cluster
 	instanceGroup  *api.InstanceGroup
 	ConfigLocation string
