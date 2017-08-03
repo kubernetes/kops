@@ -19,8 +19,9 @@ package model
 import (
 	"bytes"
 	"fmt"
-	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"os"
+	"strings"
+
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
@@ -29,8 +30,9 @@ import (
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"os"
-	"strings"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
 // ProtokubeBuilder configures protokube

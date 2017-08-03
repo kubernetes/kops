@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+
 	"github.com/blang/semver"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
@@ -28,7 +29,7 @@ import (
 )
 
 type NodeupModelContext struct {
-	NodeupConfig *nodeup.NodeUpConfig
+	NodeupConfig *nodeup.Config
 
 	Cluster       *kops.Cluster
 	InstanceGroup *kops.InstanceGroup
