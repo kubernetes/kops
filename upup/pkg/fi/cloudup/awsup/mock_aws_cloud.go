@@ -142,6 +142,16 @@ func (c *MockAWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
 	return nil, fmt.Errorf("MockAWSCloud DescribeVPC not implemented")
 }
 
+func (c *MockAWSCloud) DeleteGroup(name string, template string) error {
+	// TODO implement
+	return nil
+}
+
+func (c *MockAWSCloud) DeleteInstance(id *string) error {
+	// TODO implement
+	return nil
+}
+
 func (c *MockAWSCloud) ResolveImage(name string) (*ec2.Image, error) {
 	return resolveImage(c.MockEC2, name)
 }

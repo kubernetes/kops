@@ -21,43 +21,46 @@ import (
 	"os"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"golang.org/x/net/context"
+	compute "google.golang.org/api/compute/v0.beta"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/client-go/pkg/api/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kubernetes/pkg/kubectl/cmd"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/aws/aws-sdk-go/aws"
+	"k8s.io/kops/pkg/resources"
 )
+
+// TODO how do we refactor this?  I cannot move the code into awsup.AWSCloud as we
+// TODO get a import cycle not allowed
 
 // FindCloudInstanceGroups joins data from the cloud and the instance groups into a map that can be used for updates.
 func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*CloudInstanceGroup, error) {
 
+	groups := make(map[string]*CloudInstanceGroup)
+	nodeMap := make(map[string]*v1.Node)
+	for i := range nodes {
+		node := &nodes[i]
+		awsID := node.Spec.ExternalID
+		nodeMap[awsID] = node
+	}
+
 	switch c := cloud.(type) {
 	case awsup.AWSCloud:
-
-		groups := make(map[string]*CloudInstanceGroup)
-
 		tags := c.Tags()
 
 		asgs, err := resources.FindAutoscalingGroups(c, tags)
 		if err != nil {
-			return nil, err
-		}
-
-		nodeMap := make(map[string]*v1.Node)
-		for i := range nodes {
-			node := &nodes[i]
-			awsID := node.Spec.ExternalID
-			nodeMap[awsID] = node
+			return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
 		}
 
 		for _, asg := range asgs {
@@ -90,76 +93,155 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 				}
 				continue
 			}
-			group := buildCloudInstanceGroup(instancegroup, asg, nodeMap)
+			group := awsBuildCloudInstanceGroup(instancegroup, asg, nodeMap)
 			groups[instancegroup.ObjectMeta.Name] = group
 		}
-		return groups, nil
+
 	case gce.GCECloud:
-		return nil, fmt.Errorf("GCE Cloud is not implmemented as of yet")
+		ctx := context.Background()
+
+		instanceTemplates := make(map[string]*compute.InstanceTemplate)
+		{
+			templates, err := resources.FindInstanceTemplates(c,cluster.ObjectMeta.Name)
+			if err != nil {
+				return nil, err
+			}
+			for _, t := range templates {
+				instanceTemplates[t.SelfLink] = t
+			}
+		}
+
+		var migs []*compute.InstanceGroupManager
+
+		// TODO we need to iterate through the instance groups rather can mig
+		zones, err := c.Zones()
+		if err != nil {
+			return nil, err
+		}
+		for _, zoneName := range zones {
+			err := c.Compute().InstanceGroupManagers.List(c.Project(), zoneName).Pages(ctx, func(page *compute.InstanceGroupManagerList) error {
+				for _, mig := range page.Items {
+					instanceTemplate := instanceTemplates[mig.InstanceTemplate]
+					if instanceTemplate == nil {
+						glog.V(2).Infof("Ignoring MIG with unmanaged InstanceTemplate: %s", mig.InstanceTemplate)
+						continue
+					}
+
+					migs = append(migs, mig)
+				}
+				return nil
+			})
+
+			if err != nil {
+				return nil, fmt.Errorf("error listing InstanceGroupManagers: %v", err)
+			}
+		}
+
+		for _, mig := range migs {
+			name := mig.Name
+			var instancegroup *api.InstanceGroup
+			for _, g := range instancegroups {
+				var asgName string
+				switch g.Spec.Role {
+				case api.InstanceGroupRoleMaster:
+					asgName = g.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
+				case api.InstanceGroupRoleNode:
+					asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
+				case api.InstanceGroupRoleBastion:
+					asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
+				default:
+					glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+					continue
+				}
+
+				if name == asgName {
+					if instancegroup != nil {
+						return nil, fmt.Errorf("Found multiple instance groups matching ASG %q", asgName)
+					}
+					instancegroup = g
+				}
+			}
+			if instancegroup == nil {
+				if warnUnmatched {
+					glog.Warningf("Found ASG with no corresponding instance group %q", name)
+				}
+				continue
+			}
+			group := gceBuildCloudInstanceGroup(instancegroup, mig, nodeMap, c)
+			groups[instancegroup.ObjectMeta.Name] = group
+		}
+
 	default:
 		return nil, fmt.Errorf("Cloud is not implmemented as of yet: %v", cloud)
 	}
 
+	return groups, nil
 }
 
-// DeleteInstanceGroup removes the cloud resources for an InstanceGroup
-type DeleteInstanceGroup struct {
-	Cluster   *api.Cluster
-	Cloud     fi.Cloud
-	Clientset simple.Clientset
-}
-
-func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
-	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
-	if err != nil {
-		return fmt.Errorf("error finding CloudInstanceGroups: %v", err)
+func gceBuildCloudInstanceGroup(ig *api.InstanceGroup, g *compute.InstanceGroupManager, nodeMap map[string]*v1.Node, cloud gce.GCECloud) *CloudInstanceGroup {
+	n := &CloudInstanceGroup{
+		GroupName:     g.Name,
+		InstanceGroup: ig,
+		GroupTemplateName: g.InstanceTemplate,
 	}
-	cig := groups[group.ObjectMeta.Name]
-	if cig == nil {
-		glog.Warningf("AutoScalingGroup %q not found in cloud - skipping delete", group.ObjectMeta.Name)
+
+	// TODO FIXME
+	//readyLaunchConfigurationName := g.InstanceTemplate
+	// This call is not paginated
+	instances, _ := cloud.Compute().InstanceGroupManagers.ListManagedInstances(cloud.Project(), cloud.Region(), g.Name).Do()
+	/*
+	if err != nil {
+		return fmt.Errorf("error listing ManagedInstances in %s: %v", igm.Name, err)
+	}*/
+
+	for _, i := range instances.ManagedInstances {
+		name := gce.LastComponent(i.Instance)
+
+		c := &CloudInstanceGroupInstance{
+			// FIXME
+			//ID: c.Zone() + "/" + name,
+			ID: aws.String(name),
+		}
+
+		// FIXME not sure if this will work :)
+		node := nodeMap[i.Instance]
+		if node != nil {
+			c.Node = node
+		}
+
+		n.NeedUpdate = append(n.NeedUpdate, c)
+
+		/* not certain how to do this
+		if readyLaunchConfigurationName == aws.StringValue(i.InstanceTemplate) {
+			n.Ready = append(n.Ready, c)
+		} else {
+			n.NeedUpdate = append(n.NeedUpdate, c)
+		}*/
+	}
+
+
+	if len(n.NeedUpdate) == 0 {
+		n.Status = "Ready"
 	} else {
-		if len(groups) != 1 {
-			return fmt.Errorf("Multiple InstanceGroup resources found in cloud")
-		}
-
-		glog.Infof("Deleting AutoScalingGroup %q", group.ObjectMeta.Name)
-
-		err = cig.Delete(c.Cloud)
-		if err != nil {
-			return fmt.Errorf("error deleting cloud resources for InstanceGroup: %v", err)
-		}
+		n.Status = "NeedsUpdate"
 	}
 
-	err = c.Clientset.InstanceGroupsFor(c.Cluster).Delete(group.ObjectMeta.Name, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return n
 }
 
-// CloudInstanceGroup is the AWS ASG backing an InstanceGroup.
-type CloudInstanceGroup struct {
-	InstanceGroup *api.InstanceGroup
-	GroupName     string
-	Status        string
-	Ready         []*CloudInstanceGroupInstance
-	NeedUpdate    []*CloudInstanceGroupInstance
-
-	group interface{}
-}
-
-func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) *CloudInstanceGroup {
+func awsBuildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) *CloudInstanceGroup {
 	n := &CloudInstanceGroup{
 		GroupName:     aws.StringValue(g.AutoScalingGroupName),
 		InstanceGroup: ig,
-		group:         g,
+		GroupTemplateName: aws.StringValue(g.LaunchConfigurationName),
 	}
 
 	readyLaunchConfigurationName := aws.StringValue(g.LaunchConfigurationName)
 
 	for _, i := range g.Instances {
-		c := &CloudInstanceGroupInstance{ASGInstance: i}
+		c := &CloudInstanceGroupInstance{
+			ID: i.InstanceId,
+		}
 
 		node := nodeMap[aws.StringValue(i.InstanceId)]
 		if node != nil {
@@ -182,32 +264,62 @@ func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMa
 	return n
 }
 
+// DeleteInstanceGroup removes the cloud resources for an InstanceGroup
+type DeleteInstanceGroup struct {
+	Cluster   *api.Cluster
+	Cloud     fi.Cloud
+	Clientset simple.Clientset
+}
+
+func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
+	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
+	if err != nil {
+		return fmt.Errorf("error finding CloudInstanceGroups: %v", err)
+	}
+	cig := groups[group.ObjectMeta.Name]
+	if cig == nil {
+		glog.Warningf("Group %q not found in cloud - skipping delete", group.ObjectMeta.Name)
+	} else {
+		if len(groups) != 1 {
+			return fmt.Errorf("Multiple InstanceGroup resources found in cloud")
+		}
+
+		glog.Infof("Deleting Group %q", group.ObjectMeta.Name)
+
+		err = cig.Delete(c.Cloud)
+		if err != nil {
+			return fmt.Errorf("error deleting cloud resources for InstanceGroup: %v", err)
+		}
+	}
+
+	err = c.Clientset.InstanceGroupsFor(c.Cluster).Delete(group.ObjectMeta.Name, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// CloudInstanceGroup is the AWS ASG backing an InstanceGroup.
+type CloudInstanceGroup struct {
+	InstanceGroup     *api.InstanceGroup
+	GroupName         string
+	GroupTemplateName string
+	Status            string
+	Ready             []*CloudInstanceGroupInstance
+	NeedUpdate        []*CloudInstanceGroupInstance
+	MinSize           int
+	MaxSize           int
+}
+
 // CloudInstanceGroupInstance describes an instance in an autoscaling group.
 type CloudInstanceGroupInstance struct {
-	ASGInstance *autoscaling.Instance
-	Node        *v1.Node
+	ID   *string
+	Node *v1.Node
 }
 
 func (n *CloudInstanceGroup) String() string {
 	return "CloudInstanceGroup:" + n.GroupName
-}
-
-func (c *CloudInstanceGroup) MinSize() int {
-	if group, ok := c.group.(*autoscaling.Group); ok {
-		return int(aws.Int64Value(group.MinSize))
-	}
-
-	// TODO fix for GCE
-	return 0
-}
-
-func (c *CloudInstanceGroup) MaxSize() int {
-	if group, ok := c.group.(*autoscaling.Group); ok {
-		return int(aws.Int64Value(group.MaxSize))
-	}
-
-	// TODO fix for GCE
-	return 0
 }
 
 // TODO: Temporarily increase size of ASG?
@@ -231,7 +343,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 		return fmt.Errorf("rollingUpdate is missing the InstanceGroupList")
 	}
 
-	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
+	c := rollingUpdateData.Cloud
 
 	update := n.NeedUpdate
 	if rollingUpdateData.Force {
@@ -259,7 +371,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 
 	for _, u := range update {
 
-		instanceId := aws.StringValue(u.ASGInstance.InstanceId)
+		instanceId := u.ID
 
 		nodeName := ""
 		if u.Node != nil {
@@ -268,12 +380,12 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 
 		if isBastion {
 
-			if err = n.DeleteAWSInstance(u, instanceId, nodeName, c); err != nil {
-				glog.Errorf("Error deleting aws instance %q: %v", instanceId, err)
+			if err = n.DeleteInstance(u, nodeName, c); err != nil {
+				glog.Errorf("Error deleting instance %q: %v", *instanceId, err)
 				return err
 			}
 
-			glog.Infof("Deleted a bastion instance, %s, and continuing with rolling-update.", instanceId)
+			glog.Infof("Deleted a bastion instance, %s, and continuing with rolling-update.", *instanceId)
 
 			continue
 
@@ -298,12 +410,12 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 			}
 		}
 
-		if err = n.DeleteAWSInstance(u, instanceId, nodeName, c); err != nil {
-			glog.Errorf("Error deleting aws instance %q, node %q: %v", instanceId, nodeName, err)
+		if err = n.DeleteInstance(u, nodeName, c); err != nil {
+			glog.Errorf("Error deleting instance %q, node %q: %v", instanceId, nodeName, err)
 			return err
 		}
 
-		// Wait for new EC2 instances to be created
+		// Wait for new instances to be created
 		time.Sleep(t)
 
 		if rollingUpdateData.CloudOnly {
@@ -361,25 +473,17 @@ func (n *CloudInstanceGroup) ValidateCluster(rollingUpdateData *RollingUpdateClu
 
 }
 
-// DeleteAWSInstance deletes an EC2 AWS Instance.
-func (n *CloudInstanceGroup) DeleteAWSInstance(u *CloudInstanceGroupInstance, instanceId string, nodeName string, c awsup.AWSCloud) error {
+// DeleteInstance deletes an Instance.
+func (n *CloudInstanceGroup) DeleteInstance(u *CloudInstanceGroupInstance, nodeName string, c fi.Cloud) error {
 
 	if nodeName != "" {
-		glog.Infof("Stopping instance %q, node %q, in AWS ASG %q.", instanceId, nodeName, n.GroupName)
+		glog.Infof("Stopping instance %q, node %q, in AWS ASG %q.", *u.ID, nodeName, n.GroupName)
 	} else {
-		glog.Infof("Stopping instance %q, in AWS ASG %q.", instanceId, n.GroupName)
+		glog.Infof("Stopping instance %q, in AWS ASG %q.", *u.ID, n.GroupName)
 	}
 
-	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-		InstanceId:                     u.ASGInstance.InstanceId,
-		ShouldDecrementDesiredCapacity: aws.Bool(false),
-	}
-
-	if _, err := c.Autoscaling().TerminateInstanceInAutoScalingGroup(request); err != nil {
-		if nodeName != "" {
-			return fmt.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
-		}
-		return fmt.Errorf("error deleting instance %q: %v", instanceId, err)
+	if err := c.DeleteInstance(u.ID); err != nil {
+		return fmt.Errorf("error deleting instance: %v", err)
 	}
 
 	return nil
@@ -435,41 +539,27 @@ func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpd
 
 func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
 
-	// TODO: Graceful tear down of cloud instances
-	switch c := cloud.(type) {
-	case awsup.AWSCloud:
-		group := g.group.(*autoscaling.Group)
-		// Delete ASG
-		{
-			asgName := aws.StringValue(group.AutoScalingGroupName)
-			glog.V(2).Infof("Deleting autoscaling group %q", asgName)
-			request := &autoscaling.DeleteAutoScalingGroupInput{
-				AutoScalingGroupName: group.AutoScalingGroupName,
-				ForceDelete:          aws.Bool(true),
-			}
-			_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
-			if err != nil {
-				return fmt.Errorf("error deleting autoscaling group %q: %v", asgName, err)
-			}
-		}
-
-		// Delete LaunchConfig
-		{
-			lcName := aws.StringValue(group.LaunchConfigurationName)
-			glog.V(2).Infof("Deleting autoscaling launch configuration %q", lcName)
-			request := &autoscaling.DeleteLaunchConfigurationInput{
-				LaunchConfigurationName: group.LaunchConfigurationName,
-			}
-			_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
-			if err != nil {
-				return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", lcName, err)
-			}
-		}
-	case gce.GCECloud:
-		return fmt.Errorf("GCE Cloud is not implmemented as of yet")
-	default:
-		return fmt.Errorf("Cloud is not implmemented as of yet: %v", cloud)
+	if err := cloud.DeleteGroup(g.GroupName, g.GroupTemplateName); err != nil {
+		return fmt.Errorf("unable to delete cloud group: %v", err)
 	}
 
 	return nil
+}
+
+// StringValue returns the value of the string pointer passed in or
+// "" if the pointer is nil.
+func StringValue(v *string) string {
+	if v != nil {
+		return *v
+	}
+	return ""
+}
+
+// Int64Value returns the value of the int64 pointer passed in or
+// 0 if the pointer is nil.
+func Int64Value(v *int64) int64 {
+	if v != nil {
+		return *v
+	}
+	return 0
 }

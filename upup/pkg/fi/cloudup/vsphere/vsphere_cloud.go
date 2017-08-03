@@ -121,6 +121,14 @@ func (c *VSphereCloud) DNS() (dnsprovider.Interface, error) {
 
 }
 
+func (c *VSphereCloud) DeleteGroup(name string, template string) error {
+	return fmt.Errorf("not implemented yet")
+}
+
+func (c *VSphereCloud) DeleteInstance(id *string) error {
+	return fmt.Errorf("not implemented yet")
+}
+
 // FindVPCInfo doesn't perform any operation for now. No VPC is present for vSphere.
 func (c *VSphereCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	glog.Warning("FindVPCInfo not (yet) implemented on VSphere")

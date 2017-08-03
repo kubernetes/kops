@@ -130,18 +130,28 @@ type clusterDiscoveryGCE struct {
 	zones             []string
 }
 
-// findInstanceTemplates finds all instance templates that are associated with the current cluster
+// FindInstanceTemplates finds all instance templates that are associated with the current cluster
 // It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
-func (d *clusterDiscoveryGCE) findInstanceTemplates() ([]*compute.InstanceTemplate, error) {
+func (d *clusterDiscoveryGCE) FindInstanceTemplates() ([]*compute.InstanceTemplate, error) {
 	if d.instanceTemplates != nil {
 		return d.instanceTemplates, nil
 	}
 
-	c := d.gceCloud
+	matches, err := FindInstanceTemplates(d.gceCloud, d.clusterName)
+	if err != nil {
+		return nil, fmt.Errorf("error listing instance groups: %v", err)
+	}
+	d.instanceTemplates = matches
 
-	//clusterTag := gce.SafeClusterName(strings.TrimSpace(d.clusterName))
+	return matches, nil
+}
 
-	findClusterName := strings.TrimSpace(d.clusterName)
+// FindInstanceTemplates finds all instance templates that are associated with the current cluster
+// It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
+func FindInstanceTemplates(c gce.GCECloud, clusterName string) ( []*compute.InstanceTemplate, error) {
+
+
+	findClusterName := strings.TrimSpace(clusterName)
 
 	var matches []*compute.InstanceTemplate
 
@@ -173,15 +183,13 @@ func (d *clusterDiscoveryGCE) findInstanceTemplates() ([]*compute.InstanceTempla
 		return nil, fmt.Errorf("error listing instance groups: %v", err)
 	}
 
-	d.instanceTemplates = matches
-
 	return matches, nil
 }
 
 func (d *clusterDiscoveryGCE) listGCEInstanceTemplates() ([]*ResourceTracker, error) {
 	var trackers []*ResourceTracker
 
-	templates, err := d.findInstanceTemplates()
+	templates, err := d.FindInstanceTemplates()
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +239,7 @@ func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*Resour
 
 	instanceTemplates := make(map[string]*compute.InstanceTemplate)
 	{
-		templates, err := d.findInstanceTemplates()
+		templates, err := d.FindInstanceTemplates()
 		if err != nil {
 			return nil, err
 		}

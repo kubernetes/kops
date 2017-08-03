@@ -18,6 +18,9 @@ package awsup
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -31,13 +34,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
-	"strings"
-	"time"
 )
 
 // By default, aws-sdk-go only retries 3 times, which doesn't give
@@ -200,6 +202,49 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 		Values: awsValues,
 	}
 	return filter
+}
+
+func (c *awsCloudImplementation) DeleteGroup(name string, template string) error {
+
+	// Delete ASG
+	{
+		glog.V(2).Infof("Deleting autoscaling group %q", name)
+		request := &autoscaling.DeleteAutoScalingGroupInput{
+			AutoScalingGroupName: aws.String(name),
+			ForceDelete:          aws.Bool(true),
+		}
+		_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
+		if err != nil {
+			return fmt.Errorf("error deleting autoscaling group %q: %v", name, err)
+		}
+	}
+
+	// Delete LaunchConfig
+	{
+		glog.V(2).Infof("Deleting autoscaling launch configuration %q", template)
+		request := &autoscaling.DeleteLaunchConfigurationInput{
+			LaunchConfigurationName: aws.String(template),
+		}
+		_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
+		if err != nil {
+			return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", template, err)
+		}
+	}
+
+	return nil
+}
+
+func (c *awsCloudImplementation) DeleteInstance(id *string) error {
+	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+		InstanceId:                     id,
+		ShouldDecrementDesiredCapacity: aws.Bool(false),
+	}
+
+	if _, err := c.Autoscaling().TerminateInstanceInAutoScalingGroup(request); err != nil {
+		return fmt.Errorf("error deleting instance %q: %v", id, err)
+	}
+
+	return nil
 }
 
 func (c *awsCloudImplementation) Tags() map[string]string {

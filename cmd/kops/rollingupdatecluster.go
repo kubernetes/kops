@@ -287,10 +287,10 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			return strconv.Itoa(len(r.Ready))
 		})
 		t.AddColumn("MIN", func(r *instancegroups.CloudInstanceGroup) string {
-			return strconv.Itoa(r.MinSize())
+			return strconv.Itoa(r.MinSize)
 		})
 		t.AddColumn("MAX", func(r *instancegroups.CloudInstanceGroup) string {
-			return strconv.Itoa(r.MaxSize())
+			return strconv.Itoa(r.MaxSize)
 		})
 		t.AddColumn("NODES", func(r *instancegroups.CloudInstanceGroup) string {
 			var nodes []*v1.Node

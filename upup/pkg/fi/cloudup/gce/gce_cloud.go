@@ -31,12 +31,7 @@ import (
 )
 
 type GCECloud interface {
-	ProviderID() kops.CloudProviderID
-
-	DNS() (dnsprovider.Interface, error)
-
-	// FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil)
-	FindVPCInfo(id string) (*fi.VPCInfo, error)
+	fi.Cloud
 	Compute() *compute.Service
 	Storage() *storage.Service
 
@@ -45,6 +40,7 @@ type GCECloud interface {
 	WaitForOp(op *compute.Operation) error
 	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
 	Labels() map[string]string
+	Zones() ([]string, error)
 }
 
 type gceCloudImplementation struct {
@@ -88,6 +84,38 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 
 	return c, nil
 }
+
+func (c *gceCloudImplementation) DeleteGroup(name string, template string) error {
+
+	ctx := context.Background()
+	_, err := c.compute.InstanceGroupManagers.Delete(c.project, c.region, name).Context(ctx).Do()
+	if err != nil {
+		return fmt.Errorf("error deleting instance group manager: %v", err)
+	}
+
+	_, err = c.compute.InstanceTemplates.Delete(c.project, template).Context(ctx).Do()
+	if err != nil {
+		return fmt.Errorf("error deleting instance template: %v", err)
+	}
+
+	return nil
+}
+
+func (c *gceCloudImplementation) DeleteInstance(id *string) error {
+	op, err := c.compute.Instances.Delete(c.project, c.region, *id).Do()
+	if err != nil {
+		/*
+			if gce.IsNotFound(err) {
+				return fmt.Errorf("error finding instance: %v", err)
+			}*/
+		return fmt.Errorf("error deleting instance: %v", err)
+	}
+	if err := c.WaitForOp(op); err != nil {
+		return fmt.Errorf("error deleting instance: %v", err)
+	}
+	return nil
+}
+
 func (c *gceCloudImplementation) Compute() *compute.Service {
 	return c.compute
 }
@@ -99,6 +127,32 @@ func (c *gceCloudImplementation) Region() string {
 }
 func (c *gceCloudImplementation) Project() string {
 	return c.project
+}
+
+func (c *gceCloudImplementation) Zones() ([]string, error)  {
+
+	var zones []string
+	// TODO: Only zones in api.Cluster object, if we have one?
+	gceZones, err := c.Compute().Zones.List(c.Project()).Do()
+	if err != nil {
+		return nil, fmt.Errorf("error listing zones: %v", err)
+	}
+	for _, gceZone := range gceZones.Items {
+		u, err := ParseGoogleCloudURL(gceZone.Region)
+		if err != nil {
+			return nil, err
+		}
+		if u.Name != c.Region() {
+			continue
+		}
+		zones = append(zones, gceZone.Name)
+	}
+	if len(zones) == 0 {
+		return nil, fmt.Errorf("unable to determine zones in region %q", c.Region)
+	}
+
+	glog.Infof("Scanning zones: %v", zones)
+	return zones, nil
 }
 
 func (c *gceCloudImplementation) DNS() (dnsprovider.Interface, error) {

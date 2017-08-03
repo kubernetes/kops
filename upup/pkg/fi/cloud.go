@@ -28,6 +28,9 @@ type Cloud interface {
 
 	// FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil)
 	FindVPCInfo(id string) (*VPCInfo, error)
+
+	DeleteInstance(id *string) error
+	DeleteGroup(name string, template string) error
 }
 
 type VPCInfo struct {
