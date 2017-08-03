@@ -22,8 +22,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blang/semver"
-	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
@@ -54,22 +52,26 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
-const DefaultMaxTaskDuration = 10 * time.Minute
+const (
+	DefaultMaxTaskDuration = 10 * time.Minute
+	starline               = "*********************************************************************************\n"
+)
 
-const starline = "*********************************************************************************\n"
-
-// AlphaAllowDO is a feature flag that gates DigitalOcean support while it is alpha
-var AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
-
-// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
-var AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
-
-// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
-var AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
-
-var CloudupModels = []string{"config", "proto", "cloudup"}
+var (
+	// AlphaAllowDO is a feature flag that gates DigitalOcean support while it is alpha
+	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
+	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
+	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
+	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
+	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
+	// CloudupModels a list of supported models
+	CloudupModels = []string{"config", "proto", "cloudup"}
+)
 
 type ApplyClusterCmd struct {
 	Cluster *kops.Cluster
@@ -275,9 +277,6 @@ func (c *ApplyClusterCmd) Run() error {
 		"keypair":     &fitasks.Keypair{},
 		"secret":      &fitasks.Secret{},
 		"managedFile": &fitasks.ManagedFile{},
-
-		// DNS
-		//"dnsZone": &dnstasks.DNSZone{},
 	})
 
 	cloud, err := BuildCloud(cluster)
@@ -376,10 +375,6 @@ func (c *ApplyClusterCmd) Run() error {
 				// Autoscaling
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
 				"launchConfiguration": &awstasks.LaunchConfiguration{},
-
-				//// Route53
-				//"dnsName": &awstasks.DNSName{},
-				//"dnsZone": &awstasks.DNSZone{},
 			})
 
 			if len(sshPublicKeys) == 0 {
@@ -554,7 +549,8 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	// RenderNodeUpConfig returns the NodeUp config, in YAML format
-	renderNodeUpConfig := func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error) {
+	// @@NOTE
+	renderNodeUpConfig := func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
 		if ig == nil {
 			return nil, fmt.Errorf("instanceGroup cannot be nil")
 		}
@@ -569,17 +565,14 @@ func (c *ApplyClusterCmd) Run() error {
 			return nil, err
 		}
 
-		config := &nodeup.NodeUpConfig{}
+		config := &nodeup.Config{}
 		for _, tag := range nodeUpTags.List() {
 			config.Tags = append(config.Tags, tag)
 		}
 
 		config.Assets = c.Assets
-
 		config.ClusterName = cluster.ObjectMeta.Name
-
 		config.ConfigBase = fi.String(configBase.Path())
-
 		config.InstanceGroupName = ig.ObjectMeta.Name
 
 		var images []*nodeup.Image

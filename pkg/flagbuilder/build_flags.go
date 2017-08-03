@@ -20,12 +20,13 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strconv"
 	"strings"
 
-	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"strconv"
+
+	"github.com/golang/glog"
 )
 
 // BuildFlags builds flag arguments based on "flag" tags on the structure
@@ -98,9 +99,9 @@ func BuildFlags(options interface{}) (string, error) {
 					flags = append(flags, flag)
 				}
 				return utils.SkipReflection
-			} else {
-				return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
 			}
+
+			return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
 		}
 
 		if val.Kind() == reflect.Slice {
@@ -121,9 +122,9 @@ func BuildFlags(options interface{}) (string, error) {
 					}
 				}
 				return utils.SkipReflection
-			} else {
-				return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
 			}
+
+			return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", val.Interface(), path, val.Interface())
 		}
 
 		var flag string
