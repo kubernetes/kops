@@ -46,7 +46,7 @@ import (
 const MaxTaskDuration = 365 * 24 * time.Hour
 
 type NodeUpCommand struct {
-	config         *nodeup.NodeUpConfig
+	config         *nodeup.Config
 	cluster        *api.Cluster
 	instanceGroup  *api.InstanceGroup
 	ConfigLocation string
@@ -346,13 +346,20 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error reading local hostname from AWS metadata: %v", err)
 	}
-	v := strings.TrimSpace(string(vBytes))
-	if v == "" {
+
+	// The local-hostname gets it's hostname from the AWS DHCP Option Set, which
+	// may provide multiple hostnames separated by spaces. For now just choose
+	// the first one as the hostname.
+	domains := strings.Fields(string(vBytes))
+	if len(domains) == 0 {
 		glog.Warningf("Local hostname from AWS metadata service was empty")
+		return "", nil
 	} else {
-		glog.Infof("Using hostname from AWS metadata service: %s", v)
+		domain := domains[0]
+		glog.Infof("Using hostname from AWS metadata service: %s", domain)
+
+		return domain, nil
 	}
-	return v, nil
 }
 
 // evaluateDockerSpec selects the first supported storage mode, if it is a list

@@ -45,6 +45,13 @@ func (o *IAMRolePolicy) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &IAMRolePolicy{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *IAMRolePolicy) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &IAMRolePolicy{}
 
 // GetName returns the Name of the object, implementing fi.HasName

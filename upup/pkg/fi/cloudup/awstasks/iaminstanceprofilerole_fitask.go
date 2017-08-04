@@ -45,6 +45,13 @@ func (o *IAMInstanceProfileRole) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &IAMInstanceProfileRole{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *IAMInstanceProfileRole) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &IAMInstanceProfileRole{}
 
 // GetName returns the Name of the object, implementing fi.HasName

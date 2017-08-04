@@ -176,6 +176,10 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					return fmt.Errorf("error querying cluster %q: %v", clusterName, err)
 				}
 
+				if cluster == nil {
+					return fmt.Errorf("cluster %q not found", clusterName)
+				}
+
 				_, err = clientset.InstanceGroupsFor(cluster).Create(v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {

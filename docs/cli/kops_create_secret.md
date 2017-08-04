@@ -16,6 +16,9 @@ Create a secret
   # Create an new ssh public key called admin.
   kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
   --name k8s-cluster.example.com --state s3://example.com
+  
+  kops create secret dockerconfig -f ~/.docker/config.json \
+  --name k8s-cluster.example.com --state s3://example.com
 ```
 
 ### Options inherited from parent commands
@@ -36,5 +39,6 @@ Create a secret
 ### SEE ALSO
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 * [kops create secret ca-cert](kops_create_secret_ca-cert.md)	 - Add intermediate ca cert and private key.
+* [kops create secret dockerconfig](kops_create_secret_dockerconfig.md)	 - Create a docker config.
 * [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create a ssh public key.
 

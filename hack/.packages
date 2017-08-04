@@ -34,6 +34,7 @@ k8s.io/kops/pkg/apis/nodeup
 k8s.io/kops/pkg/apiserver
 k8s.io/kops/pkg/apiserver/cmd/server
 k8s.io/kops/pkg/apiserver/registry/cluster
+k8s.io/kops/pkg/apiserver/registry/instancegroup
 k8s.io/kops/pkg/assets
 k8s.io/kops/pkg/client/clientset_generated/clientset
 k8s.io/kops/pkg/client/clientset_generated/clientset/fake
@@ -70,6 +71,7 @@ k8s.io/kops/pkg/model/gcemodel
 k8s.io/kops/pkg/model/iam
 k8s.io/kops/pkg/model/resources
 k8s.io/kops/pkg/model/vspheremodel
+k8s.io/kops/pkg/openapi
 k8s.io/kops/pkg/pretty
 k8s.io/kops/pkg/resources
 k8s.io/kops/pkg/resources/digitalocean
@@ -103,6 +105,7 @@ k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
 k8s.io/kops/upup/pkg/fi/cloudup/terraform
 k8s.io/kops/upup/pkg/fi/cloudup/vsphere
 k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks
+k8s.io/kops/upup/pkg/fi/dockertasks
 k8s.io/kops/upup/pkg/fi/fitasks
 k8s.io/kops/upup/pkg/fi/k8sapi
 k8s.io/kops/upup/pkg/fi/loader

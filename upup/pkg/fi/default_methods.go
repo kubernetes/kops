@@ -27,6 +27,15 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 	var a Task
 	var err error
 
+	var lifecycle *Lifecycle
+	if hl, ok := e.(HasLifecycle); ok {
+		lifecycle = hl.GetLifecycle()
+	}
+
+	if lifecycle != nil && *lifecycle == LifecycleIgnore {
+		return nil
+	}
+
 	checkExisting := c.CheckExisting
 	if hce, ok := e.(HasCheckExisting); ok {
 		checkExisting = hce.CheckExisting(c)

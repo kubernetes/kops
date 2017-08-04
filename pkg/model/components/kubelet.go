@@ -180,5 +180,12 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
+	// Specify our pause image
+	image := "gcr.io/google_containers/pause-amd64:3.0"
+	if image, err = b.Context.AssetBuilder.RemapImage(image); err != nil {
+		return err
+	}
+	clusterSpec.Kubelet.PodInfraContainerImage = image
+
 	return nil
 }

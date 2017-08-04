@@ -65,6 +65,8 @@ type UpdateClusterOptions struct {
 	SSHPublicKey    string
 	MaxTaskDuration time.Duration
 	CreateKubecfg   bool
+
+	Phase string
 }
 
 func (o *UpdateClusterOptions) InitDefaults() {
@@ -107,6 +109,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
+	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run")
 	return cmd
 }
 
@@ -172,6 +175,20 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
 	}
 
+	var phase cloudup.Phase
+	if c.Phase != "" {
+		switch strings.ToLower(c.Phase) {
+		case "iam":
+			phase = cloudup.PhaseIAM
+		case "network":
+			phase = cloudup.PhaseNetwork
+		case "cluster":
+			phase = cloudup.PhaseCluster
+		default:
+			return fmt.Errorf("unknown phase %q", c.Phase)
+		}
+	}
+
 	var instanceGroups []*kops.InstanceGroup
 	{
 		list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
@@ -192,6 +209,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		DryRun:          isDryrun,
 		MaxTaskDuration: c.MaxTaskDuration,
 		InstanceGroups:  instanceGroups,
+		Phase:           phase,
 	}
 
 	err = applyCmd.Run()

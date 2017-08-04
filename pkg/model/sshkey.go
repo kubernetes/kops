@@ -24,6 +24,7 @@ import (
 // SSHKeyModelBuilder configures SSH objects
 type SSHKeyModelBuilder struct {
 	*KopsModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &SSHKeyModelBuilder{}
@@ -35,6 +36,7 @@ func (b *SSHKeyModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 	t := &awstasks.SSHKey{
 		Name:      s(name),
+		Lifecycle: b.Lifecycle,
 		PublicKey: fi.WrapResource(fi.NewStringResource(string(b.SSHPublicKeys[0]))),
 	}
 	c.AddTask(t)
