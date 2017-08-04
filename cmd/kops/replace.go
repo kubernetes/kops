@@ -42,8 +42,8 @@ var (
 		# Replace a cluster specification using a file
 		kops replace -f my-cluster.yaml
 
-		# Note, if the resource does not exist the command will error, use --create to provision resource
-		kops replace -f my-cluster.yaml --create
+		# Note, if the resource does not exist the command will error, use --force to provision resource
+		kops replace -f my-cluster.yaml --force
 		`))
 
 	replaceShort = i18n.T(`Replace cluster resources.`)
@@ -54,7 +54,7 @@ type replaceOptions struct {
 	// a list of files containing resources
 	resource.FilenameOptions
 	// create any resources not found - we limit to instance groups only for now
-	createNotFound bool
+	force bool
 }
 
 // NewCmdReplace returns a new replace command
@@ -76,7 +76,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "A list of one or more files separated by a comma.")
-	cmd.Flags().BoolVarP(&options.createNotFound, "create", "c", false, "Create any resources which are not found (defaults only to instancegroups for now)")
+	cmd.Flags().BoolVarP(&options.force, "force", "", false, "Force any changes, which will also create any non-existing respurce (defaults to instancegroups only)")
 	cmd.MarkFlagRequired("filename")
 
 	return cmd
@@ -132,7 +132,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				if cluster == nil {
 					return fmt.Errorf("cluster %q not found", clusterName)
 				}
-				// @check if the instancegroup exists already
+				// check if the instancegroup exists already
 				igName := v.ObjectMeta.Name
 				ig, err := clientset.InstanceGroupsFor(cluster).Get(igName, metav1.GetOptions{})
 				if err != nil {
@@ -140,8 +140,8 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				}
 				switch ig {
 				case nil:
-					if !c.createNotFound {
-						return fmt.Errorf("instanceGroup: %v does not exist (try adding --create flag)", igName)
+					if !c.force {
+						return fmt.Errorf("instanceGroup: %v does not exist (try adding --force flag)", igName)
 					}
 					glog.Infof("instanceGroup: %v was not found, creating resource now", igName)
 					_, err = clientset.InstanceGroupsFor(cluster).Create(v)
