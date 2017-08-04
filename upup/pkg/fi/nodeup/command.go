@@ -25,6 +25,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/golang/glog"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
@@ -54,7 +56,7 @@ type NodeUpCommand struct {
 	ModelDir       vfs.Path
 	Target         string
 	cluster        *api.Cluster
-	config         *nodeup.NodeUpConfig
+	config         *nodeup.Config
 	instanceGroup  *api.InstanceGroup
 }
 
