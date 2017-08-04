@@ -20,6 +20,15 @@ To change the SSH public key on an existing cluster:
 * `kops update cluster --yes` to reconfigure the auto-scaling groups
 * `kops rolling-update cluster --name <clustername> --yes` to immediately roll all the machines so they have the new key (optional)
 
+## Docker Configuration
+
+If you are using a private registry such as quay.io, you may be familiar with the inconvenience of managing the `imagePullSecrets` for each namespace. It can also be a pain to use [Kops Hooks](cluster_spec.md#hooks) with private images. To configure docker on all nodes with access to one or more private registries:
+
+* `kops create secret --name <clustername> dockerconfig -f ~/.docker/config.json`
+* `kops rolling-update cluster --name <clustername> --yes` to immediately roll all the machines so they have the new key (optional)
+
+This stores the [config.json](https://docs.docker.com/engine/reference/commandline/login/) in `/root/.docker/config.json` on all nodes (include masters) so that both Kubernetes and system containers may use registries defined in it.
+
 ## IAM roles
 
 All Pods running on your cluster have access to underlying instance IAM role.
