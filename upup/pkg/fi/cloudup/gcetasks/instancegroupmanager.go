@@ -45,9 +45,9 @@ func (e *InstanceGroupManager) CompareWithID() *string {
 }
 
 func (e *InstanceGroupManager) Find(c *fi.Context) (*InstanceGroupManager, error) {
-	cloud := c.Cloud.(*gce.GCECloud)
+	cloud := c.Cloud.(gce.GCECloud)
 
-	r, err := cloud.Compute.InstanceGroupManagers.Get(cloud.Project, *e.Zone, *e.Name).Do()
+	r, err := cloud.Compute().InstanceGroupManagers.Get(cloud.Project(), *e.Zone, *e.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -81,7 +81,8 @@ func (_ *InstanceGroupManager) CheckChanges(a, e, changes *InstanceGroupManager)
 }
 
 func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *InstanceGroupManager) error {
-	project := t.Cloud.Project
+	cloud := t.Cloud
+	project := cloud.Project()
 
 	instanceTemplateURL, err := e.InstanceTemplate.URL(project)
 	if err != nil {
@@ -102,12 +103,12 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 
 	if a == nil {
 		//for {
-		op, err := t.Cloud.Compute.InstanceGroupManagers.Insert(t.Cloud.Project, *e.Zone, i).Do()
+		op, err := cloud.Compute().InstanceGroupManagers.Insert(cloud.Project(), *e.Zone, i).Do()
 		if err != nil {
 			return fmt.Errorf("error creating InstanceGroupManager: %v", err)
 		}
 
-		if err := t.Cloud.WaitForOp(op); err != nil {
+		if err := cloud.WaitForOp(op); err != nil {
 			return fmt.Errorf("error creating InstanceGroupManager: %v", err)
 		}
 	} else {
@@ -115,12 +116,12 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 			request := &compute.InstanceGroupManagersSetTargetPoolsRequest{
 				TargetPools: i.TargetPools,
 			}
-			op, err := t.Cloud.Compute.InstanceGroupManagers.SetTargetPools(t.Cloud.Project, *e.Zone, i.Name, request).Do()
+			op, err := cloud.Compute().InstanceGroupManagers.SetTargetPools(cloud.Project(), *e.Zone, i.Name, request).Do()
 			if err != nil {
 				return fmt.Errorf("error updating TargetPools for InstanceGroupManager: %v", err)
 			}
 
-			if err := t.Cloud.WaitForOp(op); err != nil {
+			if err := cloud.WaitForOp(op); err != nil {
 				return fmt.Errorf("error updating TargetPools for InstanceGroupManager: %v", err)
 			}
 
@@ -131,12 +132,12 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 			request := &compute.InstanceGroupManagersSetInstanceTemplateRequest{
 				InstanceTemplate: instanceTemplateURL,
 			}
-			op, err := t.Cloud.Compute.InstanceGroupManagers.SetInstanceTemplate(t.Cloud.Project, *e.Zone, i.Name, request).Do()
+			op, err := cloud.Compute().InstanceGroupManagers.SetInstanceTemplate(cloud.Project(), *e.Zone, i.Name, request).Do()
 			if err != nil {
 				return fmt.Errorf("error updating InstanceTemplate for InstanceGroupManager: %v", err)
 			}
 
-			if err := t.Cloud.WaitForOp(op); err != nil {
+			if err := cloud.WaitForOp(op); err != nil {
 				return fmt.Errorf("error updating InstanceTemplate for InstanceGroupManager: %v", err)
 			}
 

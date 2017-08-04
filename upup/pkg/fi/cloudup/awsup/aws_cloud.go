@@ -18,6 +18,9 @@ package awsup
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -31,13 +34,13 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
+
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
-	"strings"
-	"time"
 )
 
 // By default, aws-sdk-go only retries 3 times, which doesn't give
@@ -200,6 +203,49 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 		Values: awsValues,
 	}
 	return filter
+}
+
+func (c *awsCloudImplementation) DeleteGroup(name string, template string) error {
+
+	// Delete ASG
+	{
+		glog.V(2).Infof("Deleting autoscaling group %q", name)
+		request := &autoscaling.DeleteAutoScalingGroupInput{
+			AutoScalingGroupName: aws.String(name),
+			ForceDelete:          aws.Bool(true),
+		}
+		_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
+		if err != nil {
+			return fmt.Errorf("error deleting autoscaling group %q: %v", name, err)
+		}
+	}
+
+	// Delete LaunchConfig
+	{
+		glog.V(2).Infof("Deleting autoscaling launch configuration %q", template)
+		request := &autoscaling.DeleteLaunchConfigurationInput{
+			LaunchConfigurationName: aws.String(template),
+		}
+		_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
+		if err != nil {
+			return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", template, err)
+		}
+	}
+
+	return nil
+}
+
+func (c *awsCloudImplementation) DeleteInstance(id *string) error {
+	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+		InstanceId:                     id,
+		ShouldDecrementDesiredCapacity: aws.Bool(false),
+	}
+
+	if _, err := c.Autoscaling().TerminateInstanceInAutoScalingGroup(request); err != nil {
+		return fmt.Errorf("error deleting instance %q: %v", id, err)
+	}
+
+	return nil
 }
 
 func (c *awsCloudImplementation) Tags() map[string]string {
@@ -833,4 +879,170 @@ func (c *awsCloudImplementation) zonesWithInstanceType(instanceType string) (set
 	}
 
 	return zones, nil
+}
+
+func (c *awsCloudImplementation) FindCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+	var groups map[string]*fi.CloudGroup
+	asgs, err := c.FindAutoscalingGroups()
+	if err != nil {
+		return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
+	}
+
+	for _, asg := range asgs {
+		name := aws.StringValue(asg.AutoScalingGroupName)
+		var instancegroup *kops.InstanceGroup
+		for _, g := range instancegroups {
+			var asgName string
+			switch g.Spec.Role {
+			case kops.InstanceGroupRoleMaster:
+				asgName = g.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
+			case kops.InstanceGroupRoleNode:
+				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
+			case kops.InstanceGroupRoleBastion:
+				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
+			default:
+				glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+				continue
+			}
+
+			if name == asgName {
+				if instancegroup != nil {
+					return nil, fmt.Errorf("Found multiple instance groups matching ASG %q", asgName)
+				}
+				instancegroup = g
+			}
+		}
+		if instancegroup == nil {
+			if warnUnmatched {
+				glog.Warningf("Found ASG with no corresponding instance group %q", name)
+			}
+			continue
+		}
+
+		groups[instancegroup.ObjectMeta.Name] = c.awsBuildCloudInstanceGroup(instancegroup, asg, nodeMap)
+	}
+
+	return groups, nil
+
+}
+
+func (c *awsCloudImplementation) awsBuildCloudInstanceGroup(ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) *fi.CloudGroup {
+
+	n := &fi.CloudGroup{
+		GroupName:         aws.StringValue(g.AutoScalingGroupName),
+		InstanceGroup:     ig,
+		GroupTemplateName: aws.StringValue(g.LaunchConfigurationName),
+	}
+
+	readyLaunchConfigurationName := aws.StringValue(g.LaunchConfigurationName)
+
+	for _, i := range g.Instances {
+		c := &fi.CloudGroupInstance{
+			ID: i.InstanceId,
+		}
+
+		node := nodeMap[aws.StringValue(i.InstanceId)]
+		if node != nil {
+			c.Node = node
+		}
+
+		if readyLaunchConfigurationName == aws.StringValue(i.LaunchConfigurationName) {
+			n.Ready = append(n.Ready, c)
+		} else {
+			n.NeedUpdate = append(n.NeedUpdate, c)
+		}
+	}
+
+	if len(n.NeedUpdate) == 0 {
+		n.Status = "Ready"
+	} else {
+		n.Status = "NeedsUpdate"
+	}
+
+	return n
+}
+
+// FIXME move out of resources
+
+// FindAutoscalingGroups finds autoscaling groups matching the specified tags
+// This isn't entirely trivial because autoscaling doesn't let us filter with as much precision as we would like
+func (c *awsCloudImplementation) FindAutoscalingGroups() ([]*autoscaling.Group, error) {
+	var asgs []*autoscaling.Group
+	glog.V(2).Infof("Listing all Autoscaling groups matching cluster tags")
+	tags := c.Tags()
+	var asgNames []*string
+	{
+		var asFilters []*autoscaling.Filter
+		for _, v := range tags {
+			// Not an exact match, but likely the best we can do
+			asFilters = append(asFilters, &autoscaling.Filter{
+				Name:   aws.String("value"),
+				Values: []*string{aws.String(v)},
+			})
+		}
+		request := &autoscaling.DescribeTagsInput{
+			Filters: asFilters,
+		}
+
+		err := c.Autoscaling().DescribeTagsPages(request, func(p *autoscaling.DescribeTagsOutput, lastPage bool) bool {
+			for _, t := range p.Tags {
+				switch *t.ResourceType {
+				case "auto-scaling-group":
+					asgNames = append(asgNames, t.ResourceId)
+				default:
+					glog.Warningf("Unknown resource type: %v", *t.ResourceType)
+
+				}
+			}
+			return true
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error listing autoscaling cluster tags: %v", err)
+		}
+	}
+
+	if len(asgNames) != 0 {
+		request := &autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: asgNames,
+		}
+		err := c.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
+			for _, asg := range p.AutoScalingGroups {
+				if !MatchesAsgTags(tags, asg.Tags) {
+					// We used an inexact filter above
+					continue
+				}
+				// Check for "Delete in progress" (the only use of .Status)
+				if asg.Status != nil {
+					glog.Warningf("Skipping ASG %v (which matches tags): %v", *asg.AutoScalingGroupARN, *asg.Status)
+					continue
+				}
+				asgs = append(asgs, asg)
+			}
+			return true
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
+		}
+
+	}
+
+	return asgs, nil
+}
+
+func MatchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
+	for k, v := range tags {
+		found := false
+		for _, a := range actual {
+			if aws.StringValue(a.Key) == k {
+				if aws.StringValue(a.Value) == v {
+					found = true
+					break
+				}
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }

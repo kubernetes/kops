@@ -44,10 +44,11 @@ func (e *ForwardingRule) CompareWithID() *string {
 }
 
 func (e *ForwardingRule) Find(c *fi.Context) (*ForwardingRule, error) {
-	cloud := c.Cloud.(*gce.GCECloud)
+	cloud := c.Cloud.(gce.GCECloud)
 	name := fi.StringValue(e.Name)
+	project := cloud.Project()
 
-	r, err := cloud.Compute.ForwardingRules.Get(cloud.Project, cloud.Region, name).Do()
+	r, err := cloud.Compute().ForwardingRules.Get(project, cloud.Region(), name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -119,9 +120,10 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 	}
 
 	if a == nil {
+		cloud := t.Cloud
 		glog.V(4).Infof("Creating ForwardingRule %q", o.Name)
 
-		_, err := t.Cloud.Compute.ForwardingRules.Insert(t.Cloud.Project, t.Cloud.Region, o).Do()
+		_, err := cloud.Compute().ForwardingRules.Insert(cloud.Project(), cloud.Region(), o).Do()
 		if err != nil {
 			return fmt.Errorf("error creating ForwardingRule %q: %v", o.Name, err)
 		}
