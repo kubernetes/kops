@@ -118,9 +118,11 @@ spec:
       hostNetwork: true
       serviceAccountName: calico
       tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
       - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
+      - effect: NoSchedule
         operator: Exists
       containers:
         # Runs calico/node container on each Kubernetes node.  This
