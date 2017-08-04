@@ -22,6 +22,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/vmware/govmomi"
@@ -32,13 +36,11 @@ import (
 	"github.com/vmware/govmomi/vim25/mo"
 	"github.com/vmware/govmomi/vim25/soap"
 	"github.com/vmware/govmomi/vim25/types"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
-	"net/url"
-	"os"
-	"strings"
 )
 
 // VSphereCloud represents a vSphere cloud instance.
@@ -119,6 +121,10 @@ func (c *VSphereCloud) DNS() (dnsprovider.Interface, error) {
 
 	return provider, nil
 
+}
+
+func (c *VSphereCloud) FindCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+	return nil, fmt.Errorf("not implemented yet")
 }
 
 func (c *VSphereCloud) DeleteGroup(name string, template string) error {

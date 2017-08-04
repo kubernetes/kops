@@ -148,8 +148,7 @@ func (d *clusterDiscoveryGCE) FindInstanceTemplates() ([]*compute.InstanceTempla
 
 // FindInstanceTemplates finds all instance templates that are associated with the current cluster
 // It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
-func FindInstanceTemplates(c gce.GCECloud, clusterName string) ( []*compute.InstanceTemplate, error) {
-
+func FindInstanceTemplates(c gce.GCECloud, clusterName string) ([]*compute.InstanceTemplate, error) {
 
 	findClusterName := strings.TrimSpace(clusterName)
 

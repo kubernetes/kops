@@ -18,12 +18,15 @@ package gce
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/storage/v1"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -129,7 +132,7 @@ func (c *gceCloudImplementation) Project() string {
 	return c.project
 }
 
-func (c *gceCloudImplementation) Zones() ([]string, error)  {
+func (c *gceCloudImplementation) Zones() ([]string, error) {
 
 	var zones []string
 	// TODO: Only zones in api.Cluster object, if we have one?
@@ -208,4 +211,169 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 	}
 
 	return ingresses, nil
+}
+
+func (c *gceCloudImplementation) FindCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+	var groups map[string]*fi.CloudGroup
+	ctx := context.Background()
+
+	instanceTemplates := make(map[string]*compute.InstanceTemplate)
+	{
+		templates, err := c.FindInstanceTemplates(cluster.ObjectMeta.Name)
+		if err != nil {
+			return nil, err
+		}
+		for _, t := range templates {
+			instanceTemplates[t.SelfLink] = t
+		}
+	}
+
+	var migs []*compute.InstanceGroupManager
+
+	// TODO we need to iterate through the instance groups rather can mig
+	zones, err := c.Zones()
+	if err != nil {
+		return nil, err
+	}
+	for _, zoneName := range zones {
+		err := c.Compute().InstanceGroupManagers.List(c.Project(), zoneName).Pages(ctx, func(page *compute.InstanceGroupManagerList) error {
+			for _, mig := range page.Items {
+				instanceTemplate := instanceTemplates[mig.InstanceTemplate]
+				if instanceTemplate == nil {
+					glog.V(2).Infof("Ignoring MIG with unmanaged InstanceTemplate: %s", mig.InstanceTemplate)
+					continue
+				}
+
+				migs = append(migs, mig)
+			}
+			return nil
+		})
+
+		if err != nil {
+			return nil, fmt.Errorf("error listing InstanceGroupManagers: %v", err)
+		}
+	}
+
+	for _, mig := range migs {
+		name := mig.Name
+		var instancegroup *kops.InstanceGroup
+		for _, g := range instancegroups {
+			var asgName string
+			switch g.Spec.Role {
+			case kops.InstanceGroupRoleMaster:
+				asgName = g.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
+			case kops.InstanceGroupRoleNode:
+				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
+			case kops.InstanceGroupRoleBastion:
+				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
+			default:
+				glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+				continue
+			}
+
+			if name == asgName {
+				if instancegroup != nil {
+					return nil, fmt.Errorf("Found multiple instance groups matching ASG %q", asgName)
+				}
+				instancegroup = g
+			}
+		}
+		if instancegroup == nil {
+			if warnUnmatched {
+				glog.Warningf("Found ASG with no corresponding instance group %q", name)
+			}
+			continue
+		}
+		groups[instancegroup.ObjectMeta.Name] = c.gceBuildCloudInstanceGroup(instancegroup, mig, nodeMap)
+	}
+	return groups, nil
+}
+
+func (c *gceCloudImplementation) gceBuildCloudInstanceGroup(ig *kops.InstanceGroup, g *compute.InstanceGroupManager, nodeMap map[string]*v1.Node) *fi.CloudGroup {
+	n := &fi.CloudGroup{
+		GroupName:         g.Name,
+		InstanceGroup:     ig,
+		GroupTemplateName: g.InstanceTemplate,
+	}
+
+	// TODO FIXME
+	//readyLaunchConfigurationName := g.InstanceTemplate
+	// This call is not paginated
+	instances, _ := c.Compute().InstanceGroupManagers.ListManagedInstances(c.Project(), c.Region(), g.Name).Do()
+	/*
+		if err != nil {
+			return fmt.Errorf("error listing ManagedInstances in %s: %v", igm.Name, err)
+		}*/
+
+	for _, i := range instances.ManagedInstances {
+		name := LastComponent(i.Instance)
+
+		c := &fi.CloudGroupInstance{
+			// FIXME
+			//ID: c.Zone() + "/" + name,
+			ID: aws.String(name),
+		}
+
+		// FIXME not sure if this will work :)
+		node := nodeMap[i.Instance]
+		if node != nil {
+			c.Node = node
+		}
+
+		n.NeedUpdate = append(n.NeedUpdate, c)
+
+		/* not certain how to do this
+		if readyLaunchConfigurationName == aws.StringValue(i.InstanceTemplate) {
+			n.Ready = append(n.Ready, c)
+		} else {
+			n.NeedUpdate = append(n.NeedUpdate, c)
+		}*/
+	}
+
+	if len(n.NeedUpdate) == 0 {
+		n.Status = "Ready"
+	} else {
+		n.Status = "NeedsUpdate"
+	}
+
+	return n
+}
+
+// FindInstanceTemplates finds all instance templates that are associated with the current cluster
+// It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
+func (c *gceCloudImplementation) FindInstanceTemplates(clusterName string) ([]*compute.InstanceTemplate, error) {
+
+	findClusterName := strings.TrimSpace(clusterName)
+
+	var matches []*compute.InstanceTemplate
+
+	ctx := context.Background()
+
+	err := c.Compute().InstanceTemplates.List(c.Project()).Pages(ctx, func(page *compute.InstanceTemplateList) error {
+		for _, t := range page.Items {
+			match := false
+			for _, item := range t.Properties.Metadata.Items {
+				if item.Key == "cluster-name" {
+					if strings.TrimSpace(item.Value) == findClusterName {
+						match = true
+					} else {
+						match = false
+						break
+					}
+				}
+			}
+
+			if !match {
+				continue
+			}
+
+			matches = append(matches, t)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing instance groups: %v", err)
+	}
+
+	return matches, nil
 }

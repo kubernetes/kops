@@ -18,6 +18,7 @@ package awsup
 
 import (
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -27,6 +28,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -150,6 +152,10 @@ func (c *MockAWSCloud) DeleteGroup(name string, template string) error {
 func (c *MockAWSCloud) DeleteInstance(id *string) error {
 	// TODO implement
 	return nil
+}
+
+func (c *MockAWSCloud) FindCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+	return nil, fmt.Errorf("not implemented yet")
 }
 
 func (c *MockAWSCloud) ResolveImage(name string) (*ec2.Image, error) {

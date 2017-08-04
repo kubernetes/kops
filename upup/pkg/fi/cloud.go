@@ -17,7 +17,9 @@ limitations under the License.
 package fi
 
 import (
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
+
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
@@ -31,6 +33,7 @@ type Cloud interface {
 
 	DeleteInstance(id *string) error
 	DeleteGroup(name string, template string) error
+	FindCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*CloudGroup, error)
 }
 
 type VPCInfo struct {
@@ -45,6 +48,24 @@ type SubnetInfo struct {
 	ID   string
 	Zone string
 	CIDR string
+}
+
+// CloudInstanceGroup is the AWS ASG backing an InstanceGroup.
+type CloudGroup struct {
+	InstanceGroup     *kops.InstanceGroup
+	GroupName         string
+	GroupTemplateName string
+	Status            string
+	Ready             []*CloudGroupInstance
+	NeedUpdate        []*CloudGroupInstance
+	MinSize           int
+	MaxSize           int
+}
+
+// CloudInstanceGroupInstance describes an instance in an autoscaling group.
+type CloudGroupInstance struct {
+	ID   *string
+	Node *v1.Node
 }
 
 // zonesToCloud allows us to infer from certain well-known zones to a cloud

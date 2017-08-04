@@ -28,9 +28,9 @@ import (
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/cloudmock/aws/mockautoscaling"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
-
 
 // FIXME - update interface
 
@@ -100,8 +100,8 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 	setUpCloud(c)
 
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
-	groups := make(map[string]*CloudInstanceGroup)
-	groups["node-1"] = &CloudInstanceGroup{
+	groups := make(map[string]*fi.CloudGroup)
+	groups["node-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[0].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -112,7 +112,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("node-1a"),
 				Node: &v1.Node{},
@@ -122,7 +122,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Node: &v1.Node{},
 			},
 		},
-		NeedUpdate: []*CloudInstanceGroupInstance{
+		NeedUpdate: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("node-1a"),
 				Node: &v1.Node{},
@@ -134,7 +134,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		},
 	}
 
-	groups["node-2"] = &CloudInstanceGroup{
+	groups["node-2"] = &fi.CloudGroup{
 		GroupName: aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
@@ -144,7 +144,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("node-2a"),
 				Node: &v1.Node{},
@@ -154,7 +154,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Node: &v1.Node{},
 			},
 		},
-		NeedUpdate: []*CloudInstanceGroupInstance{
+		NeedUpdate: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("node-2a"),
 				Node: &v1.Node{},
@@ -166,7 +166,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		},
 	}
 
-	groups["master-1"] = &CloudInstanceGroup{
+	groups["master-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[2].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -177,13 +177,13 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleMaster,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("master-1a"),
 				Node: &v1.Node{},
 			},
 		},
-		NeedUpdate: []*CloudInstanceGroupInstance{
+		NeedUpdate: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("master-1a"),
 				Node: &v1.Node{},
@@ -191,7 +191,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		},
 	}
 
-	groups["bastion-1"] = &CloudInstanceGroup{
+	groups["bastion-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[3].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -202,13 +202,13 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleBastion,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("bastion-1a"),
 				Node: &v1.Node{},
 			},
 		},
-		NeedUpdate: []*CloudInstanceGroupInstance{
+		NeedUpdate: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("bastion-1a"),
 				Node: &v1.Node{},
@@ -250,7 +250,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
 
 	groups := make(map[string]*CloudInstanceGroup)
-	groups["node-1"] = &CloudInstanceGroup{
+	groups["node-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[0].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -261,7 +261,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("node-1a"),
 				Node: &v1.Node{},
@@ -273,7 +273,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		},
 	}
 
-	groups["node-2"] = &CloudInstanceGroup{
+	groups["node-2"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[1].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -284,7 +284,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("node-2a"),
 				Node: &v1.Node{},
@@ -296,7 +296,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		},
 	}
 
-	groups["master-1"] = &CloudInstanceGroup{
+	groups["master-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[2].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -307,7 +307,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleMaster,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("master-1a"),
 				Node: &v1.Node{},
@@ -315,7 +315,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		},
 	}
 
-	groups["bastion-1"] = &CloudInstanceGroup{
+	groups["bastion-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[3].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -326,7 +326,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleBastion,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("bastion-1a"),
 				Node: &v1.Node{},
@@ -396,7 +396,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
 
 	groups := make(map[string]*CloudInstanceGroup)
-	groups["node-1"] = &CloudInstanceGroup{
+	groups["node-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[0].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -407,7 +407,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("node-1a"),
 				Node: &v1.Node{},
@@ -419,7 +419,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		},
 	}
 
-	groups["node-2"] = &CloudInstanceGroup{
+	groups["node-2"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[1].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -430,7 +430,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("node-2a"),
 				Node: &v1.Node{},
@@ -442,7 +442,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		},
 	}
 
-	groups["master-1"] = &CloudInstanceGroup{
+	groups["master-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[2].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -453,7 +453,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleMaster,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("master-1a"),
 				Node: &v1.Node{},
@@ -461,7 +461,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		},
 	}
 
-	groups["bastion-1"] = &CloudInstanceGroup{
+	groups["bastion-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[3].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -472,7 +472,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleBastion,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("bastion-1a"),
 				Node: &v1.Node{},
@@ -575,7 +575,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
 
 	groups := make(map[string]*CloudInstanceGroup)
-	groups["node-1"] = &CloudInstanceGroup{
+	groups["node-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[0].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -586,7 +586,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 				Role: "Unknown",
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("node-1a"),
 				Node: &v1.Node{},
@@ -598,7 +598,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		},
 	}
 
-	groups["node-2"] = &CloudInstanceGroup{
+	groups["node-2"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[1].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -609,7 +609,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("node-2a"),
 				Node: &v1.Node{},
@@ -621,7 +621,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		},
 	}
 
-	groups["master-1"] = &CloudInstanceGroup{
+	groups["master-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[2].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -632,7 +632,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleMaster,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("master-1a"),
 				Node: &v1.Node{},
@@ -640,7 +640,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		},
 	}
 
-	groups["bastion-1"] = &CloudInstanceGroup{
+	groups["bastion-1"] = &fi.CloudGroup{
 		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
 		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[3].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
@@ -651,7 +651,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleBastion,
 			},
 		},
-		Ready: []*CloudInstanceGroupInstance{
+		Ready: []*fi.CloudGroupInstance{
 			{
 				ID:   aws.String("bastion-1a"),
 				Node: &v1.Node{},
