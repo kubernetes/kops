@@ -158,7 +158,7 @@ type KubeProxyConfig struct {
 	// Master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
 	// FeatureGates is a series of key pairs used to switch on features for the proxy
-	FeatureGates []string `json:"feature-gates" flag:"feature-gates"`
+	FeatureGates map[string]string `json:"featureGates" flag:"feature-gates"`
 }
 
 // KubeAPIServerConfig defines the configuration for the kube api
