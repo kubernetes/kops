@@ -20,7 +20,6 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
@@ -84,16 +83,11 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 		}
 
 		// @check if the directory structure exist or create it
-		if err := os.MkdirAll(filepath.Dir(asset.Path), 0755); err != nil {
-			return fmt.Errorf("Failed on file asset: %s, unable to ensure directory: %s, error: %q", asset.Name,
-				filepath.Dir(asset.Path), err)
-		}
-
-		// @check the file permissions
-		perms := asset.Mode
-		if !strings.HasPrefix(perms, "0") {
-			perms = fmt.Sprintf("%d%s", 0, perms)
-		}
+		c.AddTask(&nodetasks.File{
+			Path: filepath.Dir(asset.Path),
+			Type: nodetasks.FileType_Directory,
+			Mode: s("0755"),
+		})
 
 		var resource fi.Resource
 		var err error
@@ -105,6 +99,12 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 			}
 		default:
 			resource = fi.NewStringResource(content)
+		}
+
+		// @check the file permissions
+		perms := asset.Mode
+		if !strings.HasPrefix(perms, "0") {
+			perms = fmt.Sprintf("%d%s", 0, perms)
 		}
 
 		c.AddTask(&nodetasks.File{
