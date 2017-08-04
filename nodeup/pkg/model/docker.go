@@ -477,6 +477,10 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 		Path:     "/etc/systemd/system/docker.service.d/10-kops.conf",
 		Contents: fi.NewStringResource(contents),
 		Type:     nodetasks.FileType_File,
+		OnChangeExecute: [][]string{
+			{"systemctl", "daemon-reload"},
+			{"systemctl", "restart", "docker.service"},
+		},
 	}
 	c.AddTask(t)
 
