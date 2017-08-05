@@ -17,8 +17,10 @@ limitations under the License.
 package simple
 
 import (
+	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/validation"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/util/pkg/vfs"
 	"net/url"
@@ -33,7 +35,7 @@ type Clientset interface {
 	CreateCluster(cluster *kops.Cluster) (*kops.Cluster, error)
 
 	// UpdateCluster updates a cluster
-	UpdateCluster(cluster *kops.Cluster) (*kops.Cluster, error)
+	UpdateCluster(cluster *kops.Cluster, status *kops.ClusterStatus) (*kops.Cluster, error)
 
 	// ListClusters returns all clusters
 	ListClusters(options metav1.ListOptions) (*kops.ClusterList, error)
@@ -73,7 +75,16 @@ func (c *RESTClientset) CreateCluster(cluster *kops.Cluster) (*kops.Cluster, err
 }
 
 // UpdateCluster implements the UpdateCluster method of Clientset for a kubernetes-API state store
-func (c *RESTClientset) UpdateCluster(cluster *kops.Cluster) (*kops.Cluster, error) {
+func (c *RESTClientset) UpdateCluster(cluster *kops.Cluster, status *kops.ClusterStatus) (*kops.Cluster, error) {
+	glog.Warningf("validating cluster update client side; needs to move to server")
+	old, err := c.GetCluster(cluster.Name)
+	if err != nil {
+		return nil, err
+	}
+	if err := validation.ValidateClusterUpdate(cluster, status, old).ToAggregate(); err != nil {
+		return nil, err
+	}
+
 	namespace := restNamespaceForClusterName(cluster.Name)
 	return c.KopsClient.Clusters(namespace).Update(cluster)
 }
