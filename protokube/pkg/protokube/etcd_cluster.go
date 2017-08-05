@@ -28,17 +28,8 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/protokube/pkg/etcd"
 )
-
-// EtcdClusterSpec is configuration for the etcd cluster
-type EtcdClusterSpec struct {
-	// ClusterKey is the initial cluster key
-	ClusterKey string `json:"clusterKey,omitempty"`
-	// NodeName is my nodename in the cluster
-	NodeName string `json:"nodeName,omitempty"`
-	// NodeNames is a collection of node members in the cluster
-	NodeNames []string `json:"nodeNames,omitempty"`
-}
 
 // EtcdCluster is the configuration for the etcd cluster
 type EtcdCluster struct {
@@ -67,7 +58,7 @@ type EtcdCluster struct {
 	// ProxyMode indicates we are running in proxy mode
 	ProxyMode bool
 	// Spec is the specification found from the volumes
-	Spec *EtcdClusterSpec
+	Spec *etcd.EtcdClusterSpec
 	// VolumeMountPath is the mount path
 	VolumeMountPath string
 	// TLSCA is the path to a client ca for etcd clients
@@ -94,12 +85,12 @@ type EtcdNode struct {
 type EtcdController struct {
 	kubeBoot   *KubeBoot
 	volume     *Volume
-	volumeSpec *EtcdClusterSpec
+	volumeSpec *etcd.EtcdClusterSpec
 	cluster    *EtcdCluster
 }
 
 // newEtcdController creates and returns a new etcd controller
-func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*EtcdController, error) {
+func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *etcd.EtcdClusterSpec) (*EtcdController, error) {
 	k := &EtcdController{
 		kubeBoot: kubeBoot,
 	}
@@ -285,10 +276,6 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 	}
 
 	return nil
-}
-
-func (e *EtcdClusterSpec) String() string {
-	return DebugString(e)
 }
 
 // isTLS indicates the etcd cluster should be configured to use tls
