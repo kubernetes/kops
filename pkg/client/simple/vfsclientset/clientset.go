@@ -40,8 +40,8 @@ func (c *VFSClientset) GetCluster(name string) (*kops.Cluster, error) {
 }
 
 // UpdateCluster implements the UpdateCluster method of simple.Clientset for a VFS-backed state store
-func (c *VFSClientset) UpdateCluster(cluster *kops.Cluster) (*kops.Cluster, error) {
-	return c.clusters().Update(cluster)
+func (c *VFSClientset) UpdateCluster(cluster *kops.Cluster, status *kops.ClusterStatus) (*kops.Cluster, error) {
+	return c.clusters().Update(cluster, status)
 }
 
 // CreateCluster implements the CreateCluster method of simple.Clientset for a VFS-backed state store

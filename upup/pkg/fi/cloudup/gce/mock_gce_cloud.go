@@ -89,6 +89,11 @@ func (c *mockGCECloud) WaitForOp(op *compute.Operation) error {
 	return fmt.Errorf("mockGCECloud::WaitForOp not implemented")
 }
 
+// FindClusterStatus implements GCECloud::FindClusterStatus
+func (c *mockGCECloud) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
+	return nil, fmt.Errorf("mockGCECloud::FindClusterStatus not implemented")
+}
+
 // GetApiIngressStatus implements GCECloud::GetApiIngressStatus
 func (c *mockGCECloud) GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error) {
 	return nil, fmt.Errorf("mockGCECloud::GetApiIngressStatus not implemented")
