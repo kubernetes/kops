@@ -1,56 +1,3 @@
-apiVersion: extensions/v1beta1
-kind: Deployment
-metadata:
-  name: cluster-autoscaler
-  namespace: kube-system
-  labels:
-    k8s-addon: cluster-autoscaler.addons.k8s.io
-    k8s-app: cluster-autoscaler
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      k8s-app: cluster-autoscaler
-  template:
-    metadata:
-      labels:
-        k8s-addon: cluster-autoscaler.addons.k8s.io
-        k8s-app: cluster-autoscaler
-      annotations:
-         # For 1.6, we keep the old tolerations in case of a downgrade to 1.5
-        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"dedicated", "value":"master"}]'
-    spec:
-      serviceAccountName: cluster-autoscaler
-      containers:
-        - name: cluster-autoscaler
-          image: {{IMAGE}}
-          resources:
-            limits:
-              cpu: 100m
-              memory: 300Mi
-            requests:
-              cpu: 100m
-              memory: 300Mi
-          command:
-            - ./cluster-autoscaler
-            - --cloud-provider={{CLOUD_PROVIDER}}
-            - --nodes={{MIN_NODES}}:{{MAX_NODES}}:{{GROUP_NAME}}
-          env:
-            - name: AWS_REGION
-              value: {{AWS_REGION}}
-          volumeMounts:
-            - name: ssl-certs
-              mountPath: {{SSL_CERT_PATH}}
-              readOnly: true
-      volumes:
-        - name: ssl-certs
-          hostPath:
-            path: {{SSL_CERT_PATH}}
-      nodeSelector:
-        node-role.kubernetes.io/master: ""
-      tolerations:
-        - key: "node-role.kubernetes.io/master"
-          effect: NoSchedule
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -112,7 +59,9 @@ rules:
   verbs:
   - watch
   - list
+
 ---
+
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: Role
 metadata:
@@ -138,7 +87,9 @@ rules:
   - delete
   - get
   - update
+
 ---
+
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
@@ -154,7 +105,9 @@ subjects:
   - kind: ServiceAccount
     name: cluster-autoscaler
     namespace: kube-system
+
 ---
+
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: RoleBinding
 metadata:
@@ -171,3 +124,59 @@ subjects:
   - kind: ServiceAccount
     name: cluster-autoscaler
     namespace: kube-system
+
+---
+
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+  labels:
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    k8s-app: cluster-autoscaler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: cluster-autoscaler
+  template:
+    metadata:
+      labels:
+        k8s-addon: cluster-autoscaler.addons.k8s.io
+        k8s-app: cluster-autoscaler
+      annotations:
+         # For 1.6, we keep the old tolerations in case of a downgrade to 1.5
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"dedicated", "value":"master"}]'
+    spec:
+      serviceAccountName: cluster-autoscaler
+      containers:
+        - name: cluster-autoscaler
+          image: {{IMAGE}}
+          resources:
+            limits:
+              cpu: 100m
+              memory: 300Mi
+            requests:
+              cpu: 100m
+              memory: 300Mi
+          command:
+            - ./cluster-autoscaler
+            - --cloud-provider={{CLOUD_PROVIDER}}
+            - --nodes={{MIN_NODES}}:{{MAX_NODES}}:{{GROUP_NAME}}
+          env:
+            - name: AWS_REGION
+              value: {{AWS_REGION}}
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: {{SSL_CERT_PATH}}
+              readOnly: true
+      volumes:
+        - name: ssl-certs
+          hostPath:
+            path: {{SSL_CERT_PATH}}
+      nodeSelector:
+        node-role.kubernetes.io/master: ""
+      tolerations:
+        - key: "node-role.kubernetes.io/master"
+          effect: NoSchedule
