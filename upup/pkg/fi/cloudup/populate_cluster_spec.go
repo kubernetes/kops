@@ -96,8 +96,7 @@ func PopulateClusterSpec(cluster *api.Cluster, assetBuilder *assets.AssetBuilder
 // @kris-nova
 //
 func (c *populateClusterSpec) run() error {
-	err := validation.ValidateCluster(c.InputCluster, false)
-	if err != nil {
+	if err := validation.ValidateCluster(c.InputCluster, false); err != nil {
 		return err
 	}
 
@@ -106,7 +105,7 @@ func (c *populateClusterSpec) run() error {
 
 	utils.JsonMergeStruct(cluster, c.InputCluster)
 
-	err = c.assignSubnets(cluster)
+	err := c.assignSubnets(cluster)
 	if err != nil {
 		return err
 	}
@@ -326,8 +325,7 @@ func (c *populateClusterSpec) run() error {
 	fullCluster.Spec = *completed
 	tf.cluster = fullCluster
 
-	err = validation.ValidateCluster(fullCluster, true)
-	if err != nil {
+	if err := validation.ValidateCluster(fullCluster, true); err != nil {
 		return fmt.Errorf("Completed cluster failed validation: %v", err)
 	}
 
