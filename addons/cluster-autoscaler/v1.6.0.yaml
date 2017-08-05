@@ -23,6 +23,13 @@ rules:
   - endpoints
   verbs:
   - create
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - pods/status
+  verbs:
+  - update
 - apiGroups:
   - ""
   resources:
