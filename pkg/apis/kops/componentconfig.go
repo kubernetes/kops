@@ -183,6 +183,12 @@ type KubeAPIServerConfig struct {
 	EtcdServers []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
 	// EtcdServersOverrides is per-resource etcd servers overrides, comma separated. The individual override format: group/resource#servers, where servers are http://ip:port, semicolon separated
 	EtcdServersOverrides []string `json:"etcdServersOverrides,omitempty" flag:"etcd-servers-overrides"`
+	// EtcdCAFile is the path to a ca certificate
+	EtcdCAFile string `json:"etcdCaFile,omitempty" flag:"etcd-cafile"`
+	// EtcdCertFile is the path to a certificate
+	EtcdCertFile string `json:"etcdCertFile,omitempty" flag:"etcd-certfile"`
+	// EtcdKeyFile is the path to a private key
+	EtcdKeyFile string `json:"etcdKeyFile,omitempty" flag:"etcd-keyfile"`
 	// TODO: Remove unused BasicAuthFile
 	BasicAuthFile string `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
 	// TODO: Remove unused ClientCAFile

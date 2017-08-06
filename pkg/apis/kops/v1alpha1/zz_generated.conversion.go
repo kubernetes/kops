@@ -948,6 +948,7 @@ func Convert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfig, o
 
 func autoConvert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.EnableEtcdTLS = in.EnableEtcdTLS
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*kops.EtcdMemberSpec, len(*in))
@@ -970,6 +971,7 @@ func Convert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpe
 
 func autoConvert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(in *kops.EtcdClusterSpec, out *EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.EnableEtcdTLS = in.EnableEtcdTLS
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*EtcdMemberSpec, len(*in))
@@ -1371,6 +1373,9 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.EtcdServers = in.EtcdServers
 	out.EtcdServersOverrides = in.EtcdServersOverrides
+	out.EtcdCAFile = in.EtcdCAFile
+	out.EtcdCertFile = in.EtcdCertFile
+	out.EtcdKeyFile = in.EtcdKeyFile
 	out.BasicAuthFile = in.BasicAuthFile
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
@@ -1416,6 +1421,9 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
 	out.EtcdServers = in.EtcdServers
 	out.EtcdServersOverrides = in.EtcdServersOverrides
+	out.EtcdCAFile = in.EtcdCAFile
+	out.EtcdCertFile = in.EtcdCertFile
+	out.EtcdKeyFile = in.EtcdKeyFile
 	out.BasicAuthFile = in.BasicAuthFile
 	out.ClientCAFile = in.ClientCAFile
 	out.TLSCertFile = in.TLSCertFile
