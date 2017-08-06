@@ -110,8 +110,6 @@ type ClusterSpec struct {
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 	// Additional policies to add for roles
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
-	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
-	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 	// Component configurations
@@ -238,6 +236,8 @@ const (
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
 	Name string `json:"name,omitempty"`
+	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
+	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
 }

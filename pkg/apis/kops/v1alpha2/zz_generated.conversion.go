@@ -562,7 +562,6 @@ func autoConvert_v1alpha2_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
 	out.AdditionalPolicies = in.AdditionalPolicies
-	out.EnableEtcdTLS = in.EnableEtcdTLS
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
 		*out = make([]*kops.EtcdClusterSpec, len(*in))
@@ -763,7 +762,6 @@ func autoConvert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, 
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
 	out.AdditionalPolicies = in.AdditionalPolicies
-	out.EnableEtcdTLS = in.EnableEtcdTLS
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
 		*out = make([]*EtcdClusterSpec, len(*in))
@@ -939,8 +937,8 @@ func Convert_v1alpha2_ClusterSubnetSpec_To_kops_ClusterSubnetSpec(in *ClusterSub
 
 func autoConvert_kops_ClusterSubnetSpec_To_v1alpha2_ClusterSubnetSpec(in *kops.ClusterSubnetSpec, out *ClusterSubnetSpec, s conversion.Scope) error {
 	out.Name = in.Name
-	out.Zone = in.Zone
 	out.CIDR = in.CIDR
+	out.Zone = in.Zone
 	out.ProviderID = in.ProviderID
 	out.Egress = in.Egress
 	out.Type = SubnetType(in.Type)
@@ -1038,6 +1036,7 @@ func Convert_kops_DockerConfig_To_v1alpha2_DockerConfig(in *kops.DockerConfig, o
 
 func autoConvert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.EnableEtcdTLS = in.EnableEtcdTLS
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*kops.EtcdMemberSpec, len(*in))
@@ -1060,6 +1059,7 @@ func Convert_v1alpha2_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpe
 
 func autoConvert_kops_EtcdClusterSpec_To_v1alpha2_EtcdClusterSpec(in *kops.EtcdClusterSpec, out *EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
+	out.EnableEtcdTLS = in.EnableEtcdTLS
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*EtcdMemberSpec, len(*in))

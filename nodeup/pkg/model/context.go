@@ -178,6 +178,18 @@ func (c *NodeupModelContext) IsKubernetesGTE(version string) bool {
 	return util.IsKubernetesGTE(version, c.KubernetesVersion)
 }
 
+// UseEtcdTLS checks if the etcd cluster has TLS enabled bool
+func (c *NodeupModelContext) UseEtcdTLS() bool {
+	// @note: because we enforce that 'both' have to be enabled for TLS we only need to check one here.
+	for _, x := range c.Cluster.Spec.EtcdClusters {
+		if x.EnableEtcdTLS {
+			return true
+		}
+	}
+
+	return false
+}
+
 // UsesCNI checks if the cluster has CNI configured
 func (c *NodeupModelContext) UsesCNI() bool {
 	networking := c.Cluster.Spec.Networking
