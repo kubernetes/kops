@@ -67,7 +67,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 
 		// retrieve the etcd peer certificates and private keys from the keystore
-		if t.Cluster.Spec.EnableEtcdTLS {
+		if t.UseEtcdTLS() {
 			for _, x := range []string{"etcd", "etcd-client"} {
 				if err := t.buildCeritificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
 					return err
@@ -201,7 +201,6 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		LogLevel:      fi.Int32(4),
 		Master:        b(t.IsMaster),
 	}
-	useTLS := t.Cluster.Spec.EnableEtcdTLS
 
 	// initialize rbac on Kubernetes >= 1.6 and master
 	if k8sVersion.Major == 1 && k8sVersion.Minor >= 6 {
@@ -209,7 +208,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	}
 
 	// check if we are using tls and add the options to protokube
-	if useTLS {
+	if t.UseEtcdTLS() {
 		f.PeerTLSCaFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
 		f.PeerTLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
 		f.PeerTLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))

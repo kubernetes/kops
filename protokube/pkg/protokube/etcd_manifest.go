@@ -54,7 +54,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 					v1.ResourceCPU: c.CPURequest,
 				},
 			},
-			Command: []string{"/bin/sh", "-c", "/usr/local/bin/etcd 2>&1 | /usr/bin/tee /var/log/etcd.log"},
+			Command: []string{"/bin/sh", "-c", "/usr/local/bin/etcd 2>&1 | /bin/tee /var/log/etcd.log"},
 		}
 		// build the the environment variables for etcd service
 		container.Env = buildEtcdEnvironmentOptions(c)
