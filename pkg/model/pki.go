@@ -78,10 +78,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	// @question i think we should use another KeyStore for this, perhaps registering a EtcdKeyStore given
 	// that mutual tls used to verify between the peers we don't want certificates for kubernetes able to act as a peer.
 	// For clients assuming we are using etcdv3 is can switch on user authentication and map the common names for auth.
-	if b.Cluster.Spec.EnableEtcdTLS {
-		alternativeNames := []string{
-			fmt.Sprintf("*.internal.%s", b.ClusterName()),
-			"localhost", "127.0.0.1"}
+	if b.UseEtcdTLS() {
+		alternativeNames := []string{fmt.Sprintf("*.internal.%s", b.ClusterName()), "localhost", "127.0.0.1"}
 		{
 			// @question should wildcard's be here instead of generating per node. If we ever provide the
 			// ability to resize the master, this will become a blocker

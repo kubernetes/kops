@@ -32,7 +32,7 @@ spec:
   - command:
     - /bin/sh
     - -c
-    - /usr/local/bin/etcd 2>&1 | /usr/bin/tee /var/log/etcd.log
+    - /usr/local/bin/etcd 2>&1 | /bin/tee /var/log/etcd.log
     env:
     - name: ETCD_NAME
       value: node0
