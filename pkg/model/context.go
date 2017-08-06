@@ -271,6 +271,17 @@ func (m *KopsModelContext) UsePrivateDNS() bool {
 	return false
 }
 
+// UseEtcdTLS checks to see if etcd tls is enabled
+func (c *KopsModelContext) UseEtcdTLS() bool {
+	for _, x := range c.Cluster.Spec.EtcdClusters {
+		if x.EnableEtcdTLS {
+			return true
+		}
+	}
+
+	return false
+}
+
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
 func (c *KopsModelContext) KubernetesVersion() (semver.Version, error) {
 	// TODO: Remove copy-pasting c.f. https://github.com/kubernetes/kops/blob/master/pkg/model/components/context.go#L32
