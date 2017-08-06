@@ -3,7 +3,7 @@ clusterName: etcd-main
 clusterToken: token-main
 cpuRequest: "200m"
 dataDirName: data-main
-logFile: /var/log/main.log
+logFile: /var/log/etcd.log
 peerPort: 2380
 podName: etcd-server-main
 volumeMountPath: /mnt/main
@@ -30,7 +30,9 @@ metadata:
 spec:
   containers:
   - command:
-    - /usr/local/bin/etcd
+    - /bin/sh
+    - -c
+    - /usr/local/bin/etcd 2>&1 | /usr/bin/tee /var/log/etcd.log
     env:
     - name: ETCD_NAME
       value: node0
@@ -73,9 +75,14 @@ spec:
     volumeMounts:
     - mountPath: /var/etcd/data-main
       name: varetcdata
+    - mountPath: /var/log/etcd.log
+      name: varlogetcd
   hostNetwork: true
   volumes:
   - hostPath:
       path: /mnt/main/var/etcd/data-main
     name: varetcdata
+  - hostPath:
+      path: /var/log/etcd.log
+    name: varlogetcd
 status: {}

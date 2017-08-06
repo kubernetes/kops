@@ -74,17 +74,16 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// @check if we need to generate certificates for etcd peers certificates from a different CA
+	// check if we need to generate certificates for etcd peers certificates from a different CA?
 	// @question i think we should use another KeyStore for this, perhaps registering a EtcdKeyStore given
-	// that mutual tls used to verify between the peers we don't was
-	// For clients assuming we are using etcdv3 is can switch on user authentication and map the common names for auth
+	// that mutual tls used to verify between the peers we don't want certificates for kubernetes able to act as a peer.
+	// For clients assuming we are using etcdv3 is can switch on user authentication and map the common names for auth.
 	if b.Cluster.Spec.EnableEtcdTLS {
 		alternativeNames := []string{
 			fmt.Sprintf("*.internal.%s", b.ClusterName()),
-			fmt.Sprintf("*.internal.%s", b.Cluster.Spec.DNSZone),
 			"localhost", "127.0.0.1"}
 		{
-			// @question should wildcard here instead of generating per node. If we ever provide the
+			// @question should wildcard's be here instead of generating per node. If we ever provide the
 			// ability to resize the master, this will become a blocker
 			c.AddTask(&fitasks.Keypair{
 				AlternateNames: alternativeNames,
@@ -94,7 +93,6 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Type:           "server",
 			})
 		}
-		// @TODO when we move to etcdv3 we should generate a client cert for Calico as well
 		{
 			c.AddTask(&fitasks.Keypair{
 				Name:      fi.String("etcd-client"),

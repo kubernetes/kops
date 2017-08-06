@@ -187,7 +187,7 @@ type KubeAPIServerConfig struct {
 	EtcdCAFile string `json:"etcdCaFile,omitempty" flag:"etcd-cafile"`
 	// EtcdCertFile is the path to a certificate
 	EtcdCertFile string `json:"etcdCertFile,omitempty" flag:"etcd-certfile"`
-	// EtcdKeyFile is the path to a orivate key
+	// EtcdKeyFile is the path to a private key
 	EtcdKeyFile string `json:"etcdKeyFile,omitempty" flag:"etcd-keyfile"`
 	// TODO: Remove unused BasicAuthFile
 	BasicAuthFile string `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
