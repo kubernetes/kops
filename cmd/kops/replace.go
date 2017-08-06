@@ -35,9 +35,12 @@ import (
 
 var (
 	replace_long = templates.LongDesc(i18n.T(`
-		Replace a resource specification by filename or stdin.`))
+		DEPRECATED - Replace a resource specification by filename or stdin.`))
 
 	replace_example = templates.Examples(i18n.T(`
+		# THIS COMMAND HAS BEEN DEPRECATED.
+		# Please use kops apply instead.
+		
 		# Replace a cluster specification using a file
 		kops replace -f my-cluster.yaml
 		`))
@@ -53,7 +56,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ReplaceOptions{}
 
 	cmd := &cobra.Command{
-		Use:     "replace -f FILENAME",
+		Use:     "replace -f FILENAME (DEPRECATED in favor of apply)",
 		Short:   replace_short,
 		Long:    replace_long,
 		Example: replace_example,
@@ -67,10 +70,15 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "A list of one or more files separated by a comma.")
-	cmd.MarkFlagRequired("filename")
+	ConfigureReplaceCmd(cmd, options)
 
 	return cmd
+}
+
+func ConfigureReplaceCmd(cmd *cobra.Command, options *ReplaceOptions) {
+	// Shared with the apply command
+	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "A list of one or more files separated by a comma.")
+	cmd.MarkFlagRequired("filename")
 }
 
 func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *ReplaceOptions) error {

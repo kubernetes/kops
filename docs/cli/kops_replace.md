@@ -8,15 +8,18 @@ Replace cluster resources.
 ### Synopsis
 
 
-Replace a resource specification by filename or stdin.
+DEPRECATED - Replace a resource specification by filename or stdin.
 
 ```
-kops replace -f FILENAME
+kops replace -f FILENAME (DEPRECATED in favor of apply)
 ```
 
 ### Examples
 
 ```
+  # THIS COMMAND HAS BEEN DEPRECATED.
+  # Please use kops apply instead.
+  
   # Replace a cluster specification using a file
   kops replace -f my-cluster.yaml
 ```
