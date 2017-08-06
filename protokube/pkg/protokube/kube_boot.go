@@ -34,6 +34,8 @@ var (
 
 // KubeBoot is the options for the protokube service
 type KubeBoot struct {
+	// Channels is a list of channel to apply
+	Channels []string
 	// InitializeRBAC should be set to true if we should create the core RBAC roles
 	InitializeRBAC bool
 	// InternalDNSSuffix is the dns zone we are living in
@@ -59,9 +61,11 @@ type KubeBoot struct {
 	// PeerCert is the path to a peer certificate for etcd
 	PeerCert string
 	// PeerKey is the path to a peer private key for etcd
-	PeerKey         string
-	Channels        []string
-	Kubernetes      *KubernetesContext
+	PeerKey string
+	// Kubernetes is the context methods for kubernetes
+	Kubernetes *KubernetesContext
+	// Master indicates we are a master node
+	Master          bool
 	volumeMounter   *VolumeMountController
 	etcdControllers map[string]*EtcdController
 }
@@ -84,38 +88,43 @@ func (k *KubeBoot) RunSyncLoop() {
 }
 
 func (k *KubeBoot) syncOnce() error {
-	// attempt to mount the volumes
-	volumes, err := k.volumeMounter.mountMasterVolumes()
-	if err != nil {
-		return err
-	}
-	for _, v := range volumes {
-		for _, etcdSpec := range v.Info.EtcdClusters {
-			key := etcdSpec.ClusterKey + "::" + etcdSpec.NodeName
-			etcdController := k.etcdControllers[key]
-			if etcdController == nil {
-				glog.Infof("Found etcd cluster spec on volume %q: %v", v.ID, etcdSpec)
-				etcdController, err := newEtcdController(k, v, etcdSpec)
-				if err != nil {
-					glog.Warningf("error building etcd controller: %v", err)
-				} else {
-					k.etcdControllers[key] = etcdController
-					go etcdController.RunSyncLoop()
+	if k.Master {
+		// attempt to mount the volumes
+		volumes, err := k.volumeMounter.mountMasterVolumes()
+		if err != nil {
+			return err
+		}
+
+		for _, v := range volumes {
+			for _, etcdSpec := range v.Info.EtcdClusters {
+				key := etcdSpec.ClusterKey + "::" + etcdSpec.NodeName
+				etcdController := k.etcdControllers[key]
+				if etcdController == nil {
+					glog.Infof("Found etcd cluster spec on volume %q: %v", v.ID, etcdSpec)
+					etcdController, err := newEtcdController(k, v, etcdSpec)
+					if err != nil {
+						glog.Warningf("error building etcd controller: %v", err)
+					} else {
+						k.etcdControllers[key] = etcdController
+						go etcdController.RunSyncLoop()
+					}
 				}
 			}
 		}
+	} else {
+		glog.V(4).Infof("Not in role master; won't scan for volumes")
 	}
-	// apply the kubernetes taints?
-	if k.ApplyTaints {
+
+	if k.Master && k.ApplyTaints {
 		if err := applyMasterTaints(k.Kubernetes); err != nil {
 			glog.Warningf("error updating master taints: %v", err)
 		}
 	}
 
 	if k.InitializeRBAC {
-		// @TODO: Idempotency
+		// @TODO: Idempotency: good question; not sure this should ever be done on the node though
 		if err := applyRBAC(k.Kubernetes); err != nil {
-			glog.Warningf("error initializing RBAC: %v", err)
+			glog.Warningf("error initializing rbac: %v", err)
 		}
 	}
 

@@ -60,16 +60,14 @@ func main() {
 // run is responsible for running the protokube service controller
 func run() error {
 	var zones []string
-	var applyTaints, initializeRBAC, containerized bool
+	var applyTaints, initializeRBAC, containerized, master bool
 	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen string
 	var flagChannels, tlsCert, tlsKey, tlsCA, peerCert, peerKey, peerCA, etcdImageSource string
 
 	flag.BoolVar(&applyTaints, "apply-taints", applyTaints, "Apply taints to nodes based on the role")
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
 	flag.BoolVar(&initializeRBAC, "initialize-rbac", initializeRBAC, "Set if we should initialize RBAC")
-	flag.StringVar(&tlsCA, "tls-ca", tlsCA, "Path to a file containing the ca for client certificates")
-	flag.StringVar(&tlsCert, "tls-cert", tlsCert, "Path to a file containing the certificate for etcd server")
-	flag.StringVar(&tlsKey, "tls-key", tlsKey, "Path to a file containing the key certificate for etcd server")
+	flag.BoolVar(&master, "master", master, "Whether or not this node is a master")
 	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,gce)")
 	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
 	flag.StringVar(&dnsInternalSuffix, "dns-internal-suffix", dnsInternalSuffix, "DNS suffix for internal domain names")
@@ -79,6 +77,9 @@ func run() error {
 	flag.StringVar(&peerCA, "peer-ca", peerCA, "Path to a file containing the peer ca in PEM format")
 	flag.StringVar(&peerCert, "peer-cert", peerCert, "Path to a file containing the peer certificate")
 	flag.StringVar(&peerKey, "peer-key", peerKey, "Path to a file containing the private key for the peers")
+	flag.StringVar(&tlsCA, "tls-ca", tlsCA, "Path to a file containing the ca for client certificates")
+	flag.StringVar(&tlsCert, "tls-cert", tlsCert, "Path to a file containing the certificate for etcd server")
+	flag.StringVar(&tlsKey, "tls-key", tlsKey, "Path to a file containing the private key for etcd server")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
 	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, coredns)")
 	flags.StringVar(&etcdImageSource, "etcd-image-source", etcdImageSource, "Etcd Source Container Registry")
@@ -284,19 +285,20 @@ func run() error {
 	k := &protokube.KubeBoot{
 		ApplyTaints:       applyTaints,
 		Channels:          channels,
-		TLSCA:             tlsCA,
-		TLSCert:           tlsCert,
-		TLSKey:            tlsKey,
 		DNS:               dnsProvider,
 		EtcdImageSource:   etcdImageSource,
 		InitializeRBAC:    initializeRBAC,
 		InternalDNSSuffix: dnsInternalSuffix,
 		InternalIP:        internalIP,
 		Kubernetes:        protokube.NewKubernetesContext(),
+		Master:            master,
 		ModelDir:          modelDir,
 		PeerCA:            peerCA,
 		PeerCert:          peerCert,
 		PeerKey:           peerKey,
+		TLSCA:             tlsCA,
+		TLSCert:           tlsCert,
+		TLSKey:            tlsKey,
 	}
 
 	k.Init(volumes)

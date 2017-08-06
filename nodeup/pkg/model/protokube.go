@@ -45,34 +45,38 @@ var _ fi.ModelBuilder = &ProtokubeBuilder{}
 
 // Build is responsible for generating the options for protokube
 func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
-	// @check if protokube; we have decided to disable this by default (https://github.com/kubernetes/kops/pull/3091)
-	if !t.IsMaster {
+	useGossip := dns.IsGossipHostname(t.Cluster.Spec.MasterInternalName)
+
+	// check is not a master and we are not using gossip (https://github.com/kubernetes/kops/pull/3091)
+	if !t.IsMaster && !useGossip {
 		glog.V(2).Infof("skipping the provisioning of protokube on the nodes")
 		return nil
 	}
 
-	kubeconfig, err := t.buildPKIKubeconfig("kops")
-	if err != nil {
-		return err
-	}
-
-	c.AddTask(&nodetasks.File{
-		Path:     "/var/lib/kops/kubeconfig",
-		Contents: fi.NewStringResource(kubeconfig),
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0400"),
-	})
-
-	// retrieve the etcd peer certificates and private keys from the keystore
-	if t.Cluster.Spec.EnableEtcdTLS {
-		for _, x := range []string{"etcd", "etcd-client"} {
-			if err = t.buildCeritificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
-				return err
-			}
+	if t.IsMaster {
+		kubeconfig, err := t.buildPKIKubeconfig("kops")
+		if err != nil {
+			return err
 		}
-		for _, x := range []string{"etcd", "etcd-client"} {
-			if err = t.buildPrivateTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
-				return err
+
+		c.AddTask(&nodetasks.File{
+			Path:     "/var/lib/kops/kubeconfig",
+			Contents: fi.NewStringResource(kubeconfig),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0400"),
+		})
+
+		// retrieve the etcd peer certificates and private keys from the keystore
+		if t.Cluster.Spec.EnableEtcdTLS {
+			for _, x := range []string{"etcd", "etcd-client"} {
+				if err := t.buildCeritificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
+					return err
+				}
+			}
+			for _, x := range []string{"etcd", "etcd-client"} {
+				if err := t.buildPrivateTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -179,6 +183,7 @@ type ProtokubeFlags struct {
 	DNSServer         *string  `json:"dns-server,omitempty" flag:"dns-server"`
 	InitializeRBAC    *bool    `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
 	LogLevel          *int32   `json:"logLevel,omitempty" flag:"v"`
+	Master            *bool    `json:"master,omitempty" flag:"master"`
 	PeerTLSCaFile     *string  `json:"peer-ca,omitempty" flag:"peer-ca"`
 	PeerTLSCertFile   *string  `json:"peer-cert,omitempty" flag:"peer-cert"`
 	PeerTLSKeyFile    *string  `json:"peer-key,omitempty" flag:"peer-key"`
@@ -194,6 +199,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		Channels:      t.NodeupConfig.Channels,
 		Containerized: fi.Bool(true),
 		LogLevel:      fi.Int32(4),
+		Master:        b(t.IsMaster),
 	}
 	useTLS := t.Cluster.Spec.EnableEtcdTLS
 
@@ -202,7 +208,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		f.InitializeRBAC = fi.Bool(true)
 	}
 
-	// @check if we are using tls and add the options
+	// check if we are using tls and add the options to protokube
 	if useTLS {
 		f.PeerTLSCaFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
 		f.PeerTLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))

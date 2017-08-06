@@ -54,7 +54,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 					v1.ResourceCPU: c.CPURequest,
 				},
 			},
-			Command: []string{"/usr/local/bin/etcd"},
+			Command: []string{"/bin/sh", "-c", "/usr/local/bin/etcd 2>&1 | /usr/bin/tee /var/log/etcd.log"},
 		}
 		// build the the environment variables for etcd service
 		container.Env = buildEtcdEnvironmentOptions(c)
@@ -92,6 +92,12 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 			MountPath: "/var/etcd/" + c.DataDirName,
 			ReadOnly:  false,
 		})
+		container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
+			Name:      "varlogetcd",
+			MountPath: "/var/log/etcd.log",
+			ReadOnly:  false,
+		})
+		// add the host path mount to the pod spec
 		pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
 			Name: "varetcdata",
 			VolumeSource: v1.VolumeSource{
@@ -100,9 +106,17 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 				},
 			},
 		})
+		pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
+			Name: "varlogetcd",
+			VolumeSource: v1.VolumeSource{
+				HostPath: &v1.HostPathVolumeSource{
+					Path: c.LogFile,
+				},
+			},
+		})
 
-		// @check if tls is enabled and mount the directory - it might be worth concidering
-		// if we you use our own directory in /srv i.e /srv/etcd
+		// @check if tls is enabled and mount the directory. It might be worth considering
+		// if we you use our own directory in /srv i.e /srv/etcd rather than the default /src/kubernetes
 		if c.isTLS() {
 			for _, dirname := range buildCertificateDirectories(c) {
 				normalized := strings.Replace(dirname, "/", "", -1)
