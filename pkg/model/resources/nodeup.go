@@ -35,6 +35,8 @@ set -o errexit
 set -o nounset
 set -o pipefail
 
+echo "fingerprint: {{ Fingerprint }}"
+
 NODEUP_URL={{ NodeUpSource }}
 NODEUP_HASH={{ NodeUpSourceHash }}
 

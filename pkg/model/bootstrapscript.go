@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"encoding/base64"
 	"fmt"
 	"os"
 	"text/template"
@@ -32,6 +33,7 @@ type BootstrapScript struct {
 	NodeUpSource        string
 	NodeUpSourceHash    string
 	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.Config, error)
+	FingerprintBuilder  func(ig *kops.InstanceGroup) ([]byte, error)
 }
 
 func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHolder, error) {
@@ -79,6 +81,15 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup) (*fi.ResourceHo
 					os.Getenv("AWS_REGION"))
 			}
 			return ""
+		},
+
+		"Fingerprint": func() (string, error) {
+			fingerprint, err := b.FingerprintBuilder(ig)
+			if err != nil {
+				return "", err
+			}
+
+			return base64.StdEncoding.EncodeToString(fingerprint), nil
 		},
 	}
 
