@@ -72,15 +72,13 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// @check if we are using secure client certificates for kubelet and grab the certificates
-	{
-		if b.UseSecureKubelet() {
-			name := "kubelet-api"
-			if err := buildCertificateRequest(c, b.NodeupModelContext, name, ""); err != nil {
-				return err
-			}
-			if err := buildPrivateKeyRequest(c, b.NodeupModelContext, name, ""); err != nil {
-				return err
-			}
+	if b.UseSecureKubelet() {
+		name := "kubelet-api"
+		if err := buildCertificateRequest(c, b.NodeupModelContext, name, ""); err != nil {
+			return err
+		}
+		if err := buildPrivateKeyRequest(c, b.NodeupModelContext, name, ""); err != nil {
+			return err
 		}
 	}
 
@@ -164,10 +162,10 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		kubeAPIServer.EtcdServers = []string{"https://127.0.0.1:4001"}
 		kubeAPIServer.EtcdServersOverrides = []string{"/events#https://127.0.0.1:4002"}
 	}
-   
-        // @check if we are using secure kubelet client certificates
+
+	// @check if we are using secure kubelet client certificates
 	if b.UseSecureKubelet() {
-		// @note we are making assumption we are using the one's created by the pki model, not custom defined ones
+		// @note we are making assumption were using the ones created by the pki model, not custom defined ones
 		kubeAPIServer.KubeletClientCertificate = filepath.Join(b.PathSrvKubernetes(), "kubelet-api.pem")
 		kubeAPIServer.KubeletClientKey = filepath.Join(b.PathSrvKubernetes(), "kubelet-api-key.pem")
 	}

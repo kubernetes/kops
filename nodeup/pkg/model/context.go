@@ -206,20 +206,20 @@ func (c *NodeupModelContext) UseSecureKubelet() bool {
 	cluster := &c.Cluster.Spec // just to shorten the typing
 	group := &c.InstanceGroup.Spec
 
+	// @check on the InstanceGroup itself
+	if group.Kubelet != nil && group.Kubelet.AnonymousAuth != nil && *group.Kubelet.AnonymousAuth == false {
+		return true
+	}
+
 	// @check if we have anything specific to master kubelet
 	if c.IsMaster {
-		if cluster.MasterKubelet != nil && cluster.MasterKubelet.AnonymousAuth != nil && *cluster.MasterKubelet.AnonymousAuth == true {
+		if cluster.MasterKubelet != nil && cluster.MasterKubelet.AnonymousAuth != nil && *cluster.MasterKubelet.AnonymousAuth == false {
 			return true
 		}
 	}
 
 	// @check the default settings for master and kubelet
 	if cluster.Kubelet != nil && cluster.Kubelet.AnonymousAuth != nil && *cluster.Kubelet.AnonymousAuth == false {
-		return true
-	}
-
-	// @check on the InstanceGroup itself
-	if group.Kubelet != nil && group.Kubelet.AnonymousAuth != nil && *group.Kubelet.AnonymousAuth == false {
 		return true
 	}
 

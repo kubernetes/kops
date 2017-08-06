@@ -26,7 +26,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
-        "github.com/golang/glog"
+	"github.com/golang/glog"
 )
 
 // s is a helper that builds a *string from a string value
