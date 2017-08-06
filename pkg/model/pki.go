@@ -17,6 +17,8 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+
 	"k8s.io/apiserver/pkg/authentication/user"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
@@ -30,65 +32,76 @@ type PKIModelBuilder struct {
 
 var _ fi.ModelBuilder = &PKIModelBuilder{}
 
+// Build is responsible for generating the pki assets for the cluster
 func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
-		// Keypair used by the kubelet
 		t := &fitasks.Keypair{
 			Name:      fi.String("kubelet"),
 			Lifecycle: b.Lifecycle,
-
-			Subject: "o=" + user.NodesGroup + ",cn=kubelet",
-			Type:    "client",
+			Subject:   "o=" + user.NodesGroup + ",cn=kubelet",
+			Type:      "client",
 		}
 		c.AddTask(t)
 	}
 
 	{
-		// Secret used by the kubelet
-		// TODO: Can this be removed... at least from 1.6 on?
-		t := &fitasks.Secret{
-			Name:      fi.String("kubelet"),
-			Lifecycle: b.Lifecycle,
-		}
-		c.AddTask(t)
-	}
-
-	{
-		// Keypair used by the kube-scheduler
 		t := &fitasks.Keypair{
 			Name:      fi.String("kube-scheduler"),
 			Lifecycle: b.Lifecycle,
-
-			Subject: "cn=" + user.KubeScheduler,
-			Type:    "client",
+			Subject:   "cn=" + user.KubeScheduler,
+			Type:      "client",
 		}
 		c.AddTask(t)
 	}
 
 	{
-		// Secret used by the kube-scheduler
-		// TODO: Can this be removed... at least from 1.6 on?
-		t := &fitasks.Secret{
-			Name:      fi.String("system:scheduler"),
-			Lifecycle: b.Lifecycle,
-		}
-		c.AddTask(t)
-	}
-
-	{
-		// Keypair used by the kube-proxy
 		t := &fitasks.Keypair{
 			Name:      fi.String("kube-proxy"),
 			Lifecycle: b.Lifecycle,
-
-			Subject: "cn=" + user.KubeProxy,
-			Type:    "client",
+			Subject:   "cn=" + user.KubeProxy,
+			Type:      "client",
 		}
 		c.AddTask(t)
 	}
 
+	{
+		t := &fitasks.Keypair{
+			Name:      fi.String("kube-controller-manager"),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=" + user.KubeControllerManager,
+			Type:      "client",
+		}
+		c.AddTask(t)
+	}
+
+	// check if we need to generate certificates for etcd peers certificates from a different CA?
+	// @question i think we should use another KeyStore for this, perhaps registering a EtcdKeyStore given
+	// that mutual tls used to verify between the peers we don't want certificates for kubernetes able to act as a peer.
+	// For clients assuming we are using etcdv3 is can switch on user authentication and map the common names for auth.
+	if b.UseEtcdTLS() {
+		alternativeNames := []string{fmt.Sprintf("*.internal.%s", b.ClusterName()), "localhost", "127.0.0.1"}
+		{
+			// @question should wildcard's be here instead of generating per node. If we ever provide the
+			// ability to resize the master, this will become a blocker
+			c.AddTask(&fitasks.Keypair{
+				AlternateNames: alternativeNames,
+				Lifecycle:      b.Lifecycle,
+				Name:           fi.String("etcd"),
+				Subject:        "cn=etcd",
+				Type:           "server",
+			})
+		}
+		{
+			c.AddTask(&fitasks.Keypair{
+				Name:      fi.String("etcd-client"),
+				Lifecycle: b.Lifecycle,
+				Subject:   "cn=etcd-client",
+				Type:      "client",
+			})
+		}
+	}
+
 	if b.KopsModelContext.Cluster.Spec.Networking.Kuberouter != nil {
-		// Keypair used by the kube-router
 		t := &fitasks.Keypair{
 			Name:    fi.String("kube-router"),
 			Subject: "cn=" + "system:kube-router",
@@ -98,64 +111,26 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		// Secret used by the kube-proxy
-		// TODO: Can this be removed... at least from 1.6 on?
-		t := &fitasks.Secret{
-			Name:      fi.String("kube-proxy"),
-			Lifecycle: b.Lifecycle,
-		}
-		c.AddTask(t)
-	}
-
-	{
-		// Keypair used by the kube-controller-manager
-		t := &fitasks.Keypair{
-			Name:      fi.String("kube-controller-manager"),
-			Lifecycle: b.Lifecycle,
-
-			Subject: "cn=" + user.KubeControllerManager,
-			Type:    "client",
-		}
-		c.AddTask(t)
-	}
-
-	{
-		// Secret used by the kube-controller-manager
-		// TODO: Can this be removed... at least from 1.6 on?
-		t := &fitasks.Secret{
-			Name:      fi.String("system:controller_manager"),
-			Lifecycle: b.Lifecycle,
-		}
-		c.AddTask(t)
-	}
-
-	{
-		// Keypair used for admin kubecfg
 		t := &fitasks.Keypair{
 			Name:      fi.String("kubecfg"),
 			Lifecycle: b.Lifecycle,
-
-			Subject: "o=" + user.SystemPrivilegedGroup + ",cn=kubecfg",
-			Type:    "client",
+			Subject:   "o=" + user.SystemPrivilegedGroup + ",cn=kubecfg",
+			Type:      "client",
 		}
 		c.AddTask(t)
 	}
 
 	{
-		// Keypair used by kops / protokube
 		t := &fitasks.Keypair{
 			Name:      fi.String("kops"),
 			Lifecycle: b.Lifecycle,
-
-			Subject: "o=" + user.SystemPrivilegedGroup + ",cn=kops",
-			Type:    "client",
+			Subject:   "o=" + user.SystemPrivilegedGroup + ",cn=kops",
+			Type:      "client",
 		}
 		c.AddTask(t)
 	}
 
 	{
-		// TLS certificate used for apiserver
-
 		// A few names used from inside the cluster, which all resolve the same based on our default suffixes
 		alternateNames := []string{
 			"kubernetes",
@@ -181,9 +156,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		alternateNames = append(alternateNames, "127.0.0.1")
 
 		t := &fitasks.Keypair{
-			Name:      fi.String("master"),
-			Lifecycle: b.Lifecycle,
-
+			Name:           fi.String("master"),
+			Lifecycle:      b.Lifecycle,
 			Subject:        "cn=kubernetes-master",
 			Type:           "server",
 			AlternateNames: alternateNames,
@@ -191,53 +165,13 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	{
-		// Secret used by logging (?)
-		// TODO: Can this be removed... at least from 1.6 on?
-		t := &fitasks.Secret{
-			Name:      fi.String("system:logging"),
-			Lifecycle: b.Lifecycle,
-		}
-		c.AddTask(t)
-	}
+	// @@ The following are deprecated for > 1.6 and should be dropped at the appropreciate time
+	deprecated := []string{
+		"kubelet", "kube-proxy", "system:scheduler", "system:controller_manager",
+		"system:logging", "system:monitoring", "system:dns", "kube", "admin"}
 
-	{
-		// Secret used by monitoring (?)
-		// TODO: Can this be removed... at least from 1.6 on?
-		t := &fitasks.Secret{
-			Name:      fi.String("system:monitoring"),
-			Lifecycle: b.Lifecycle,
-		}
-		c.AddTask(t)
-	}
-
-	{
-		// Secret used by dns (?)
-		// TODO: Can this be removed... at least from 1.6 on?
-		t := &fitasks.Secret{
-			Name:      fi.String("system:dns"),
-			Lifecycle: b.Lifecycle,
-		}
-		c.AddTask(t)
-	}
-
-	{
-		// Secret used by kube (?)
-		// TODO: Can this be removed... at least from 1.6 on? Although one of kube/admin is the primary token auth
-		t := &fitasks.Secret{
-			Name:      fi.String("kube"),
-			Lifecycle: b.Lifecycle,
-		}
-		c.AddTask(t)
-	}
-
-	{
-		// Secret used by admin (?)
-		// TODO: Can this be removed... at least from 1.6 on? Although one of kube/admin is the primary token auth
-		t := &fitasks.Secret{
-			Name:      fi.String("admin"),
-			Lifecycle: b.Lifecycle,
-		}
+	for _, x := range deprecated {
+		t := &fitasks.Secret{Name: fi.String(x), Lifecycle: b.Lifecycle}
 		c.AddTask(t)
 	}
 

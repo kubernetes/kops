@@ -20,10 +20,11 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
+
+	"github.com/golang/glog"
 )
 
 type Protocol int
@@ -134,9 +135,9 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 		if b.Cluster.Spec.Networking.Calico != nil {
 			// Calico needs to access etcd
 			// TODO: Remove, replace with etcd in calico manifest
+			// https://coreos.com/etcd/docs/latest/v2/configuration.html
 			glog.Warningf("Opening etcd port on masters for access from the nodes, for calico.  This is unsafe in untrusted environments.")
 			tcpPorts = append(tcpPorts, 4001)
-
 			tcpPorts = append(tcpPorts, 179)
 			protocols = append(protocols, ProtocolIPIP)
 		}
