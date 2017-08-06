@@ -71,19 +71,21 @@ spec:
       hostNetwork: true
       serviceAccountName: canal
       tolerations:
-        # Allow the pod to run on the master.  This is required for
-        # the master to communicate with pods.
-        - key: node-role.kubernetes.io/master
-          effect: NoSchedule
         # Mark the pod as a critical add-on for rescheduling.
         - key: "CriticalAddonsOnly"
           operator: "Exists"
+        - effect: NoExecute
+          operator: Exists
+        # Allow the pod to run on all nodes.  This is required
+        # for cluster communication
+        - effect: NoSchedule
+          operator: Exists
       containers:
         # Runs calico/node container on each Kubernetes node.  This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v1.2.1
+          image: quay.io/calico/node:v1.3.0
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -130,7 +132,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v1.8.3
+          image: quay.io/calico/cni:v1.9.1
           command: ["/install-cni.sh"]
           env:
             # The CNI network config to install on each node.
