@@ -261,23 +261,27 @@ type EtcdMemberSpec struct {
 type SubnetType string
 
 const (
-	SubnetTypePublic  SubnetType = "Public"
+	// SubnetTypePublic means the subnet is public
+	SubnetTypePublic SubnetType = "Public"
+	// SubnetTypePrivate means the subnet has no public address or is natted
 	SubnetTypePrivate SubnetType = "Private"
+	// SubnetTypeUtility mean the subnet is used for utility services, such as the bastion
 	SubnetTypeUtility SubnetType = "Utility"
 )
 
+// ClusterSubnetSpec defines a subnet
 type ClusterSubnetSpec struct {
+	// Name is the name of the subnet
 	Name string `json:"name,omitempty"`
-
-	Zone string `json:"zone,omitempty"`
-
+	// CIDR is the network cidr of the subnet
 	CIDR string `json:"cidr,omitempty"`
-
+	// Zone is the zone the subnet resides
+	Zone string `json:"zone,omitempty"`
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
-
+	// Egress
 	Egress string `json:"egress,omitempty"`
-
+	// Type define which one if the internal types (public, utility, private) the network is
 	Type SubnetType `json:"type,omitempty"`
 }
 

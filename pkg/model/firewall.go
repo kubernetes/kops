@@ -134,7 +134,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 
 		if b.Cluster.Spec.Networking.Calico != nil {
 			// Calico needs to access etcd
-			// TODO: Remove, replace with etcd in calico manifest: note this port is deprecated and we should use the 2379
+			// TODO: Remove, replace with etcd in calico manifest
 			// https://coreos.com/etcd/docs/latest/v2/configuration.html
 			glog.Warningf("Opening etcd port on masters for access from the nodes, for calico.  This is unsafe in untrusted environments.")
 			tcpPorts = append(tcpPorts, 4001)

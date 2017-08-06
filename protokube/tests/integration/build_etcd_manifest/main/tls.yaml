@@ -6,7 +6,7 @@ clusterName: etcd-main
 clusterToken: token-main
 cpuRequest: "200m"
 dataDirName: data-main
-logFile: /var/log/main.log
+logFile: /var/log/etcd.log
 peerCA: /srv/kubernetes/ca.crt
 peerCert: /srv/kubernetes/etcd.pem
 peerKey: /srv/kubernetes/etcd-key.pem
@@ -36,7 +36,9 @@ metadata:
 spec:
   containers:
   - command:
-    - /usr/local/bin/etcd
+    - /bin/sh
+    - -c
+    - /usr/local/bin/etcd 2>&1 | /usr/bin/tee /var/log/etcd.log
     env:
     - name: ETCD_NAME
       value: node0
@@ -89,6 +91,8 @@ spec:
     volumeMounts:
     - mountPath: /var/etcd/data-main
       name: varetcdata
+    - mountPath: /var/log/etcd.log
+      name: varlogetcd
     - mountPath: /srv/kubernetes
       name: srvkubernetes
       readOnly: true
@@ -97,6 +101,9 @@ spec:
   - hostPath:
       path: /mnt/main/var/etcd/data-main
     name: varetcdata
+  - hostPath:
+      path: /var/log/etcd.log
+    name: varlogetcd
   - hostPath:
       path: /srv/kubernetes
     name: srvkubernetes
