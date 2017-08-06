@@ -42,7 +42,7 @@ Kubernetes has a number of authentication mechanisms:
 
 ## Kubelet API
 
-By default AnonymousAuth on the kubelet is off and so communication between kube-apiserver and kubelet api is not authenticated. In order to switch on authentication;
+By default AnonymousAuth on the kubelet is 'on' and so communication between kube-apiserver and kubelet api is not authenticated. In order to switch on authentication;
 
 ```YAML
 # In the cluster spec
@@ -51,7 +51,7 @@ spec:
     anonymousAuth: false
 ```
 
-**Note** on a existing cluster with 'anonymousAuth' unset you would need to first roll out the masters and then update the pools. 
+**Note** on a existing cluster with 'anonymousAuth' unset you would need to first roll out the masters and then update the node instance groups.
 
 ### API Bearer Token
 

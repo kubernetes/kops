@@ -44,7 +44,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(t)
 	}
-        {
+	{
 		// Generate a kubelet client certificate for api to speak securely to kubelets. This change was first
 		// introduced in https://github.com/kubernetes/kops/pull/2831 where server.cert/key were used. With kubernetes >= 1.7
 		// the certificate usage is being checked (obviously the above was server not client certificate) and so now fails
