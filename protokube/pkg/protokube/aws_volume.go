@@ -39,13 +39,14 @@ var devices = []string{"/dev/xvdu", "/dev/xvdv", "/dev/xvdx", "/dev/xvdx", "/dev
 
 // AWSVolumes defines the aws volume implementation
 type AWSVolumes struct {
+	mutex sync.Mutex
+
 	clusterTag string
 	deviceMap  map[string]string
 	ec2        *ec2.EC2
 	instanceId string
 	internalIP net.IP
 	metadata   *ec2metadata.EC2Metadata
-	mutex      sync.Mutex
 	zone       string
 }
 
