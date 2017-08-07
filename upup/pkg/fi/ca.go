@@ -31,8 +31,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/kops/util/pkg/vfs"
+	"github.com/golang/glog"
 )
 
 const CertificateId_CA = "ca"
