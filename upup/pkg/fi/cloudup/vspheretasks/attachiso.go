@@ -91,7 +91,8 @@ func (_ *AttachISO) CheckChanges(a, e, changes *AttachISO) error {
 
 // RenderVSphere executes the actual task logic, for vSphere cloud.
 func (_ *AttachISO) RenderVSphere(t *vsphere.VSphereAPITarget, a, e, changes *AttachISO) error {
-	startupScript, err := changes.BootstrapScript.ResourceNodeUp(changes.IG)
+	// TODO #3071 .. need to replace the nil for http proxy support
+	startupScript, err := changes.BootstrapScript.ResourceNodeUp(changes.IG, nil)
 	if err != nil {
 		return fmt.Errorf("error on resource nodeup: %v", err)
 	}
