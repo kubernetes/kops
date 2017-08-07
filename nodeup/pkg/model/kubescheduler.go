@@ -140,6 +140,7 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 			InitialDelaySeconds: 15,
 			TimeoutSeconds:      15,
 		},
+		Env: getProxyEnvVars(b.Cluster.Spec.EgressProxy),
 	}
 
 	addHostPathMapping(pod, container, "varlibkubescheduler", "/var/lib/kube-scheduler")

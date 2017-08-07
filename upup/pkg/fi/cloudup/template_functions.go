@@ -31,6 +31,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"text/template"
 
@@ -102,6 +103,8 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["Region"] = func() string {
 		return tf.region
 	}
+
+	dest["ProxyEnv"] = tf.ProxyEnv
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
@@ -196,4 +199,29 @@ func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
 	argv = append(argv, "--source=ingress")
 
 	return argv, nil
+}
+
+func (tf *TemplateFunctions) ProxyEnv() map[string]string {
+	envs := map[string]string{}
+	proxies := tf.cluster.Spec.EgressProxy
+	if proxies == nil {
+		return envs
+	}
+	httpProxy := proxies.HTTPProxy
+	if httpProxy.Host != "" {
+		var portSuffix string
+		if httpProxy.Port != 0 {
+			portSuffix = ":" + strconv.Itoa(httpProxy.Port)
+		} else {
+			portSuffix = ""
+		}
+		url := "http://" + httpProxy.Host + portSuffix
+		envs["http_proxy"] = url
+		envs["https_proxy"] = url
+	}
+	if proxies.ProxyExcludes != "" {
+		envs["no_proxy"] = proxies.ProxyExcludes
+		envs["NO_PROXY"] = proxies.ProxyExcludes
+	}
+	return envs
 }
