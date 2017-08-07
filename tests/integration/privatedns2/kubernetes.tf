@@ -184,7 +184,7 @@ resource "aws_elb" "api-privatedns2-example-com" {
   subnets         = ["${aws_subnet.utility-us-test-1a-privatedns2-example-com.id}"]
 
   health_check = {
-    target              = "TCP:443"
+    target              = "SSL:443"
     healthy_threshold   = 2
     unhealthy_threshold = 2
     interval            = 10
