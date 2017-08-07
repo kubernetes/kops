@@ -116,7 +116,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			// Configure fast-recovery health-checks
 			HealthCheck: &awstasks.LoadBalancerHealthCheck{
-				Target:             s("TCP:443"),
+				Target:             s("SSL:443"),
 				Timeout:            i64(5),
 				Interval:           i64(10),
 				HealthyThreshold:   i64(2),
