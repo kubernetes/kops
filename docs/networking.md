@@ -135,6 +135,8 @@ $ kops create cluster \
 
 The above will deploy a daemonset installation which requires K8s 1.4.x or above.
 ##### Enable Kubernetes Data Store for Calico
+NOTE: This is only supported for NEW clusters, switching this on a live cluster is not supported and not recommended.
+
 By default Calico uses etcd directly for all of it's state. This has the unfortunate side-effect of requiring all nodes to have access to etcd directly which is a security problem. Unfortunately because calico-node runs with `hostNetwork: true`, there's no clean way of using Network Policy to restrict this to specific pods / namespaces. A solution for this is to have calico-node speak directly to the Kubernetes API server and use Third Party Resources to store it's state. 
 
 To enable the Kubernetes Data Store for Calico, you must edit the cluster spec that Kops produces after running `kops create cluster ...`
@@ -151,10 +153,10 @@ You will need to change that block, and add an additional field, to look like th
 ```
   networking:
     calico:
-      kubernetesDataStore: true
+      datastore: kubernetes
 ```
 
-This `kubernetesDataStore` field can also be defined within a cluster specification file, and the entire cluster can be created by running:
+This `datastore` field can also be defined within a cluster specification file, and the entire cluster can be created by running:
 `kops create -f k8s-cluster.example.com.yaml`
 
 ##### Enable Cross-Subnet mode in Calico (AWS only)

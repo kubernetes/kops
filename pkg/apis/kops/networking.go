@@ -64,8 +64,8 @@ type FlannelNetworkingSpec struct {
 
 // Calico declares that we want Calico networking
 type CalicoNetworkingSpec struct {
-	CrossSubnet         bool `json:"crossSubnet,omitempty"`         // Enables Calico's cross-subnet mode when set to true
-	KubernetesDataStore bool `json:"kubernetesDataStore,omitempty"` // Enables Calico's kubernetes data storage (rather than direct etcd)
+	CrossSubnet bool   `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
+	Datastore   string `json:"datastore,omitempty"`   // Enables Calico's kubernetes data storage (rather than direct etcd)
 }
 
 // Canal declares that we want Canal networking

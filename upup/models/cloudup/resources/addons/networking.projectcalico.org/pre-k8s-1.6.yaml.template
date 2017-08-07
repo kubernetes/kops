@@ -99,7 +99,7 @@ spec:
             - name: IP
               value: ""
             - name: DATASTORE_TYPE
-              value: "{{- if (.Networking.Calico.KubernetesDataStore) -}}kubernetes{{- else -}}etcdv2{{- end -}}"
+              value: "{{ .Networking.Calico.Datastore }}"
           securityContext:
             privileged: true
           volumeMounts:

@@ -132,7 +132,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 			udpPorts = append(udpPorts, 8285)
 		}
 
-		if b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.KubernetesDataStore != true {
+		if b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.Datastore == "etcd" {
 			// Calico needs to access etcd
 			// TODO: Remove, replace with etcd in calico manifest
 			// https://coreos.com/etcd/docs/latest/v2/configuration.html
@@ -197,7 +197,7 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 	udpRanges := []portRange{{From: 1, To: 65535}}
 	protocols := []Protocol{}
 
-	if b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.KubernetesDataStore != true {
+	if b.Cluster.Spec.Networking.Calico != nil && b.Cluster.Spec.Networking.Calico.Datastore == "etcd" {
 		// Calico needs to access etcd
 		// TODO: Remove, replace with etcd in calico manifest
 		glog.Warningf("Opening etcd port on masters for access from the nodes, for calico.  This is unsafe in untrusted environments.")

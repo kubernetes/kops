@@ -37,58 +37,145 @@ data:
     }
 
 ---
-
-kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
-metadata:
-  name: calico
-  labels:
-    role.kubernetes.io/networking: "1"
-rules:
-- apiGroups:
-  - ""
-  resources:
-  - pods
-  - namespaces
-  - nodes
-  verbs:
-  - get
-  - list
-  - watch
-- apiGroups:
-  - extensions
-  resources:
-  - networkpolicies
-  verbs:
-  - get
-  - list
-  - watch
-
----
-
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: calico
-  namespace: kube-system
   labels:
     role.kubernetes.io/networking: "1"
+  namespace: kube-system
+  name: calico-node
 ---
-
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    role.kubernetes.io/networking: "1"
+  namespace: kube-system
+  name: calico-policy-controller
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: calico-policy-controller
+  namespace: kube-system
+rules:
+  - apiGroups:
+    - ""
+    - extensions
+    resources:
+      - pods
+      - namespaces
+      - networkpolicies
+    verbs:
+      - watch
+      - list
+---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
-  name: calico
-  labels:
-    role.kubernetes.io/networking: "1"
+  name: calico-policy-controller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: calico
+  name: calico-policy-controller
 subjects:
 - kind: ServiceAccount
-  name: calico
+  name: calico-policy-controller
   namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: calico-node
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: calico-node
+subjects:
+- kind: ServiceAccount
+  name: calico-node
+  namespace: kube-system
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: calico-node
+  namespace: kube-system
+rules:
+  - apiGroups: [""]
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: [""]
+    resources:
+      - pods/status
+    verbs:
+      - update
+  - apiGroups: [""]
+    resources:
+      - pods
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: [""]
+    resources:
+      - nodes
+    verbs:
+      - get
+      - list
+      - update
+      - watch
+  - apiGroups: ["extensions"]
+    resources:
+      - thirdpartyresources
+    verbs:
+      - create
+      - get
+      - list
+      - watch
+  - apiGroups: ["extensions"]
+    resources:
+      - networkpolicies
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["projectcalico.org"]
+    resources:
+      - globalbgppeers
+    verbs:
+      - get
+      - list
+  - apiGroups: ["projectcalico.org"]
+    resources:
+      - globalconfigs
+      - globalbgpconfigs
+    verbs:
+      - create
+      - get
+      - list
+      - update
+      - watch
+  - apiGroups: ["projectcalico.org"]
+    resources:
+      - ippools
+    verbs:
+      - create
+      - get
+      - list
+      - update
+      - watch
+  - apiGroups: ["alpha.projectcalico.org"]
+    resources:
+      - systemnetworkpolicies
+    verbs:
+      - get
+      - list
+      - watch
 
 ---
 
@@ -116,7 +203,7 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       hostNetwork: true
-      serviceAccountName: calico
+      serviceAccountName: calico-node
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
@@ -129,7 +216,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v1.2.1
+          image: calico/node:v2.4.0
           resources:
             requests:
               cpu: 10m
@@ -158,7 +245,7 @@ spec:
             - name: IP
               value: ""
             - name: DATASTORE_TYPE
-              value: "{{- if (.Networking.Calico.KubernetesDataStore) -}}kubernetes{{- else -}}etcdv2{{- end -}}"
+              value: "{{ .Networking.Calico.Datastore }}"
           securityContext:
             privileged: true
           volumeMounts:
@@ -171,7 +258,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v1.8.3
+          image: calico/cni:v1.10.0
           resources:
             requests:
               cpu: 10m
@@ -239,7 +326,7 @@ spec:
       # The policy controller must run in the host network namespace so that
       # it isn't governed by policy that would prevent it from working.
       hostNetwork: true
-      serviceAccountName: calico
+      serviceAccountName: calico-policy-controller
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -247,7 +334,7 @@ spec:
         operator: Exists
       containers:
         - name: calico-policy-controller
-          image: calico/kube-policy-controller:v0.6.0
+          image: calico/kube-policy-controller:v0.7.0
           resources:
             requests:
               cpu: 10m

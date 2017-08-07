@@ -1680,7 +1680,7 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 								Format: "",
 							},
 						},
-						"kubernetesDataStore": {
+						"Datastore": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Enables Calico's cross-subnet mode when set to true",
 								Type:        []string{"boolean"},
@@ -4042,10 +4042,10 @@ func GetOpenAPIDefinitions(ref openapi.ReferenceCallback) map[string]openapi.Ope
 								Format: "",
 							},
 						},
-						"kubernetesDataStore": {
+						"Datstore": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Enables Calico's cross-subnet mode when set to true",
-								Type:        []string{"boolean"},
+								Description: "Specifies the datastore driver for Calico",
+								Type:        []string{"string"},
 								Format:      "",
 							},
 						},
