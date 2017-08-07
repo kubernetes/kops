@@ -32,7 +32,6 @@ import (
 	"time"
 
 	"k8s.io/kops/util/pkg/vfs"
-
 	"github.com/golang/glog"
 )
 
@@ -409,6 +408,16 @@ func parsePEMPrivateKey(pemData []byte) (crypto.PrivateKey, error) {
 
 		pemData = rest
 	}
+}
+
+// LoadPEMPrivateKey public
+func LoadPEMPrivateKey(pemData []byte) (*PrivateKey, error) {
+	pemKey, err := parsePEMPrivateKey(pemData)
+	if err != nil {
+		return nil, fmt.Errorf("failed ot load pem: %v", err)
+	}
+	key := PrivateKey{Key: pemKey}
+	return &key, nil
 }
 
 type CertificatePool struct {
