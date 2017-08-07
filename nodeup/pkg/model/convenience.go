@@ -16,7 +16,14 @@ limitations under the License.
 
 package model
 
-import "k8s.io/kops/upup/pkg/fi"
+import (
+	"strconv"
+
+	"github.com/golang/glog"
+	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
+)
 
 // s is a helper that builds a *string from a string value
 func s(v string) *string {
@@ -26,6 +33,33 @@ func s(v string) *string {
 // i64 is a helper that builds a *int64 from an int64 value
 func i64(v int64) *int64 {
 	return fi.Int64(v)
+}
+
+func getProxyEnvVars(proxies *kops.EgressProxySpec) []v1.EnvVar {
+	if proxies == nil {
+		glog.V(8).Info("proxies is == nil, returning empty list")
+		return []v1.EnvVar{}
+	}
+
+	if proxies.HTTPProxy.Host == "" {
+		glog.Warning("EgressProxy set but no proxy host provided")
+	}
+
+	var httpProxyURL string
+	if proxies.HTTPProxy.Port == 0 {
+		httpProxyURL = "http://" + proxies.HTTPProxy.Host
+	} else {
+		httpProxyURL = "http://" + proxies.HTTPProxy.Host + ":" + strconv.Itoa(proxies.HTTPProxy.Port)
+	}
+
+	noProxy := proxies.ProxyExcludes
+
+	return []v1.EnvVar{
+		{Name: "http_proxy", Value: httpProxyURL},
+		{Name: "https_proxy", Value: httpProxyURL},
+		{Name: "NO_PROXY", Value: noProxy},
+		{Name: "no_proxy", Value: noProxy},
+	}
 }
 
 // b returns a pointer to a boolean
