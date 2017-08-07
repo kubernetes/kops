@@ -428,7 +428,7 @@ func getRecords(c *godo.Client, zoneName string) ([]godo.DomainRecord, error) {
 	return records, nil
 }
 
-// createRecord creates a record given an assoicated zone and a godo.DomainRecordEditRequest
+// createRecord creates a record given an associated zone and a godo.DomainRecordEditRequest
 func createRecord(c *godo.Client, zoneName string, createRequest *godo.DomainRecordEditRequest) error {
 	_, resp, err := c.Domains.CreateRecord(context.TODO(), zoneName, createRequest)
 	if err != nil {
