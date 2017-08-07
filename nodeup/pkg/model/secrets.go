@@ -32,7 +32,7 @@ type SecretBuilder struct {
 
 var _ fi.ModelBuilder = &SecretBuilder{}
 
-// Build is responisble for pulling down the secrets
+// Build is responsible for pulling down the secrets
 func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.KeyStore == nil {
 		return fmt.Errorf("KeyStore not set")
