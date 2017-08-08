@@ -8,7 +8,7 @@ Delete instancegroup
 ### Synopsis
 
 
-Delete an instancegroup configuration.  kops has the concept of "instance groups", which are a group of similar virutal machines. On AWS, they map to an AutoScalingGroup. An ig work either as a Kubernetes master or a node.
+Delete an instancegroup configuration.  kops has the concept of "instance groups", which are a group of similar virtual machines. On AWS, they map to an AutoScalingGroup. An ig work either as a Kubernetes master or a node.
 
 ```
 kops delete instancegroup
