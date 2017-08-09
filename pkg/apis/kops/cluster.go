@@ -234,14 +234,23 @@ const (
 	EtcdStorageTypeV3 EtcdStorageType = "etcd3"
 )
 
+var (
+	// EtcdStorageTypes is a list of accepted storage types
+	EtcdStorageTypes = []EtcdStorageType{EtcdStorageTypeV2, EtcdStorageTypeV3}
+)
+
 // EtcdClusterSpec is the etcd cluster specification
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
 	Name string `json:"name,omitempty"`
-	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
-	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
 	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
+	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
+	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
+	// StorageType indicates the storage type of the cluster v2 or v3
+	StorageType EtcdStorageType `json:"storageType,omitempty"`
+	// Version is the version of etcd to run
+	Version string `json:"version,omitempty"`
 }
 
 // EtcdMemberSpec is a specification for a etcd member
