@@ -44,6 +44,27 @@ func b(v bool) *bool {
 	return fi.Bool(v)
 }
 
+// containsRole checks if a collection roles contains role v
+func containsRole(v kops.InstanceGroupRole, list []kops.InstanceGroupRole) bool {
+	for _, x := range list {
+		if v == x {
+			return true
+		}
+	}
+
+	return false
+}
+
+// buildDockerEnvironmentVars just converts a series of keypairs to docker environment variables switches
+func buildDockerEnvironmentVars(env map[string]string) []string {
+	var list []string
+	for k, v := range env {
+		list = append(list, []string{"-e", fmt.Sprintf("%s=%s", k, v)}...)
+	}
+
+	return list
+}
+
 func getProxyEnvVars(proxies *kops.EgressProxySpec) []v1.EnvVar {
 	if proxies == nil {
 		glog.V(8).Info("proxies is == nil, returning empty list")
