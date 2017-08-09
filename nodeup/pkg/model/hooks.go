@@ -41,18 +41,19 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 	// we keep a list of hooks name so we can allow local instanceGroup hooks override the cluster ones
 	hookNames := make(map[string]bool, 0)
 	for i, spec := range []*[]kops.HookSpec{&h.InstanceGroup.Spec.Hooks, &h.Cluster.Spec.Hooks} {
-		for _, hook := range *spec {
+		for j, hook := range *spec {
 			isInstanceGroup := i == 0
-			// filter out on master and node flags if required
-			if (hook.MasterOnly && !h.IsMaster) || (hook.NodeOnly && h.IsMaster) {
+			// filter roles if required
+			if len(hook.Roles) > 0 && !containsRole(h.InstanceGroup.Spec.Role, hook.Roles) {
 				continue
 			}
+
 			// i dont want to effect those whom are already using the hooks, so i'm gonna try an keep the name for now
 			// i.e. use the default naming convention - kops-hook-<index>, only those using the Name or hooks in IG should alter
 			var name string
 			switch hook.Name {
 			case "":
-				name = fmt.Sprintf("kops-hook-%d", i)
+				name = fmt.Sprintf("kops-hook-%d", j)
 				if isInstanceGroup {
 					name = fmt.Sprintf("%s-ig", name)
 				}
@@ -140,22 +141,22 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 
 // buildDockerService is responsible for generating a docker exec unit file
 func (h *HookBuilder) buildDockerService(unit *systemd.Manifest, hook *kops.HookSpec) error {
-	// the docker command line
 	dockerArgs := []string{
-		"/usr/bin/docker",
-		"run",
+		"/usr/bin/docker", "run",
 		"-v", "/:/rootfs/",
 		"-v", "/var/run/dbus:/var/run/dbus",
 		"-v", "/run/systemd:/run/systemd",
 		"--net=host",
 		"--privileged",
-		hook.ExecContainer.Image,
 	}
+	dockerArgs = append(dockerArgs, buildDockerEnvironmentVars(hook.ExecContainer.Environment)...)
+	dockerArgs = append(dockerArgs, hook.ExecContainer.Image)
 	dockerArgs = append(dockerArgs, hook.ExecContainer.Command...)
 
 	dockerRunCommand := systemd.EscapeCommand(dockerArgs)
 	dockerPullCommand := systemd.EscapeCommand([]string{"/usr/bin/docker", "pull", hook.ExecContainer.Image})
 
+	unit.Set("Unit", "Requires", "docker.service")
 	unit.Set("Service", "ExecStartPre", dockerPullCommand)
 	unit.Set("Service", "ExecStart", dockerRunCommand)
 	unit.Set("Service", "Type", "oneshot")
