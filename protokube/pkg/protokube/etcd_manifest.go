@@ -33,22 +33,11 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 	pod.Name = c.PodName
 	pod.Namespace = "kube-system"
 	pod.Labels = map[string]string{"k8s-app": c.PodName}
-
-	etcdImage := "/etcd:2.2.1"
-	etcdRegistry := "gcr.io/google_containers"
-
-	// @check if the container is being overloaded via flags
-	if c.ImageSource == "" {
-		etcdImage = etcdRegistry + etcdImage
-	} else {
-		etcdImage = strings.TrimSuffix(c.ImageSource, "/") + etcdImage
-	}
-
 	pod.Spec.HostNetwork = true
 	{
 		container := v1.Container{
 			Name:  "etcd-container",
-			Image: etcdImage,
+			Image: c.ImageSource,
 			Resources: v1.ResourceRequirements{
 				Requests: v1.ResourceList{
 					v1.ResourceCPU: c.CPURequest,
