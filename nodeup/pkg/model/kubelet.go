@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -40,7 +41,7 @@ type KubeletBuilder struct {
 
 var _ fi.ModelBuilder = &KubeletBuilder{}
 
-// Build is responsible for generating the kubelet config
+// Build is responsible for building the kubelet configuration
 func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	kubeletConfig, err := b.buildKubeletConfig()
 	if err != nil {
@@ -268,6 +269,12 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		utils.JsonMergeStruct(c, b.Cluster.Spec.MasterKubelet)
 	} else {
 		utils.JsonMergeStruct(c, b.Cluster.Spec.Kubelet)
+	}
+
+	// @check if we are using secure kubelet <-> api settings
+	if b.UseSecureKubelet() {
+		// @TODO these filenames need to be a constant somewhere
+		c.ClientCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
 	}
 
 	if b.InstanceGroup.Spec.Kubelet != nil {

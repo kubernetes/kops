@@ -32,18 +32,29 @@ type PKIModelBuilder struct {
 
 var _ fi.ModelBuilder = &PKIModelBuilder{}
 
-// Build is responsible for generating the pki assets for the cluster
+// Build is responsible for generating the various pki assets
 func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &fitasks.Keypair{
 			Name:      fi.String("kubelet"),
 			Lifecycle: b.Lifecycle,
-			Subject:   "o=" + user.NodesGroup + ",cn=kubelet",
-			Type:      "client",
+
+			Subject: "o=" + user.NodesGroup + ",cn=kubelet",
+			Type:    "client",
 		}
 		c.AddTask(t)
 	}
-
+	{
+		// Generate a kubelet client certificate for api to speak securely to kubelets. This change was first
+		// introduced in https://github.com/kubernetes/kops/pull/2831 where server.cert/key were used. With kubernetes >= 1.7
+		// the certificate usage is being checked (obviously the above was server not client certificate) and so now fails
+		c.AddTask(&fitasks.Keypair{
+			Name:      fi.String("kubelet-api"),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=kubelet-api",
+			Type:      "client",
+		})
+	}
 	{
 		t := &fitasks.Keypair{
 			Name:      fi.String("kube-scheduler"),
