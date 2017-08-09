@@ -135,10 +135,6 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 func validateHook(v *kops.HookSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if !v.Disabled && v.MasterOnly && v.NodeOnly {
-		allErrs = append(allErrs, field.Invalid(fieldPath, v.MasterOnly, "you cannot have both masterOnly and nodeOnly set true"))
-	}
-
 	if !v.Disabled && v.ExecContainer == nil && v.Manifest == "" {
 		allErrs = append(allErrs, field.Required(fieldPath, "you must set either manifest or execContainer for a hook"))
 	}

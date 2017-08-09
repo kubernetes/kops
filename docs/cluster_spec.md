@@ -200,19 +200,24 @@ spec:
     - some_service.service
     requires:
     - docker.service
-    execContainer:
+      execContainer:
       image: kopeio/nvidia-bootstrap:1.6
+      # these are added as -e to the docker environment
+      environment:
+        AWS_REGION: eu-west-1
+        SOME_VAR: SOME_VALUE
 
   # or a raw systemd unit
   hooks:
   - name: iptable-restore.service
-    masterOnly: true|false # only run this on masters
-    nodeOnly: true|false   # only run this on compute nodes
+    roles:
+    - Node
+    - Master
     before:
     - kubelet.service
     manifest: |
       [Service]
-      EnvironmentFile=/etc/enviroment
+      EnvironmentFile=/etc/environment
       # do some stuff
 
   # or disable a systemd unit
