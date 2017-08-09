@@ -18,6 +18,7 @@ package components
 
 import (
 	"fmt"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -30,6 +31,7 @@ type DockerOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &DockerOptionsBuilder{}
 
+// BuildOptions is responsible for filling in the default setting for docker daemon
 func (b *DockerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 

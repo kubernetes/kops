@@ -21,12 +21,13 @@ import (
 	"net"
 	"strings"
 
-	"github.com/blang/semver"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
+
+	"github.com/blang/semver"
 )
 
 // legacy contains validation functions that don't match the apimachinery style
@@ -45,14 +46,13 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 	// KubernetesVersion
 	if c.Spec.KubernetesVersion == "" {
 		return field.Required(specField.Child("KubernetesVersion"), "")
-	} else {
-		sv, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion)
-		if err != nil {
-			return field.Invalid(specField.Child("KubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version")
-		}
-
-		kubernetesRelease = semver.Version{Major: sv.Major, Minor: sv.Minor}
 	}
+
+	sv, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion)
+	if err != nil {
+		return field.Invalid(specField.Child("KubernetesVersion"), c.Spec.KubernetesVersion, "unable to determine kubernetes version")
+	}
+	kubernetesRelease = semver.Version{Major: sv.Major, Minor: sv.Minor}
 
 	if c.ObjectMeta.Name == "" {
 		return field.Required(field.NewPath("Name"), "Cluster Name is required (e.g. --name=mycluster.myzone.com)")
@@ -373,33 +373,16 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 		if len(c.Spec.EtcdClusters) == 0 {
 			return field.Required(specField.Child("EtcdClusters"), "")
 		}
-		var usingTLS int
-		for _, etcd := range c.Spec.EtcdClusters {
-			if etcd.Name == "" {
-				return fmt.Errorf("EtcdCluster did not have name")
-			}
-			if len(etcd.Members) == 0 {
-				return fmt.Errorf("No members defined in etcd cluster %q", etcd.Name)
-			}
-			if (len(etcd.Members) % 2) == 0 {
-				// Not technically a requirement, but doesn't really make sense to allow
-				return fmt.Errorf("There should be an odd number of master-zones, for etcd's quorum.  Hint: Use --zones and --master-zones to declare node zones and master zones separately.")
-			}
-			if etcd.EnableEtcdTLS {
-				usingTLS++
-			}
-			for _, m := range etcd.Members {
-				if m.Name == "" {
-					return fmt.Errorf("EtcdMember did not have Name in cluster %q", etcd.Name)
-				}
-				if fi.StringValue(m.InstanceGroup) == "" {
-					return fmt.Errorf("EtcdMember did not have InstanceGroup in cluster %q", etcd.Name)
-				}
+		for _, x := range c.Spec.EtcdClusters {
+			if err := validateEtcdClusterSpec(x); err != nil {
+				return err
 			}
 		}
-		// check both clusters are using tls if one us enabled
-		if usingTLS > 0 && usingTLS != len(c.Spec.EtcdClusters) {
-			return fmt.Errorf("Both etcd clusters must have TLS enabled or none at all")
+		if err := validateEtcdTLS(c.Spec.EtcdClusters); err != nil {
+			return err
+		}
+		if err := validateEtcdStorage(c.Spec.EtcdClusters); err != nil {
+			return err
 		}
 	}
 
@@ -411,6 +394,98 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 
 	if errs := newValidateCluster(c); len(errs) != 0 {
 		return errs[0]
+	}
+
+	return nil
+}
+
+// validateEtcdTLS checks the TLS settings for etcd are valid
+func validateEtcdTLS(specs []*kops.EtcdClusterSpec) error {
+	var usingTLS int
+	for _, x := range specs {
+		if x.EnableEtcdTLS {
+			usingTLS++
+		}
+	}
+	// check both clusters are using tls if one us enabled
+	if usingTLS > 0 && usingTLS != len(specs) {
+		return fmt.Errorf("Both etcd clusters must have TLS enabled or none at all")
+	}
+
+	return nil
+}
+
+// validateEtcdStorage is responsible for checks the storage type and version is identical
+func validateEtcdStorage(specs []*kops.EtcdClusterSpec) error {
+	storage := specs[0].StorageType
+	for _, x := range specs {
+		if x.StorageType != "" && x.StorageType != storage {
+			return fmt.Errorf("cluster: %q, has a different storage type: %q, both must be the same", x.Name, x.StorageType)
+		}
+	}
+	version := specs[0].Version
+	for _, x := range specs {
+		if x.Version != "" && x.Version != version {
+			return fmt.Errorf("cluster: %q, has a different storage versions: %q, both must be the same", x.Name, x.Version)
+		}
+	}
+
+	return nil
+}
+
+// validateEtcdClusterSpec is responsible for validating the etcd cluster spec
+func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec) error {
+	if spec.Name == "" {
+		return fmt.Errorf("EtcdCluster did not have name")
+	}
+	if len(spec.Members) == 0 {
+		return fmt.Errorf("No members defined in spec cluster %q", spec.Name)
+	}
+	if (len(spec.Members) % 2) == 0 {
+		// Not technically a requirement, but doesn't really make sense to allow
+		return fmt.Errorf("should be an odd number of master-zones for quorum. Use --zones and --master-zones to declare node zones and master zones separately")
+	}
+	// @check if the storage is specified, thats is valid
+	if err := validateEtcdStorageType(spec.StorageType); err != nil {
+		return fmt.Errorf("invalid storage type: %q for cluster: %q", spec.StorageType, spec.Name)
+	}
+	if spec.Version != "" {
+		if _, err := semver.Parse(spec.Version); err != nil {
+			return fmt.Errorf("the storage version: %q for cluster: %q is invalid", spec.Version, spec.Name)
+		}
+	}
+
+	for _, m := range spec.Members {
+		if err := validateEtcdMemberSpec(m); err != nil {
+			return fmt.Errorf("member in cluster: %q invalid, error: %q", spec.Name, err)
+		}
+	}
+
+	return nil
+}
+
+// validateEtcdStorageType is responsible for validating the storage type for etcd cluster
+func validateEtcdStorageType(stype kops.EtcdStorageType) error {
+	if stype == "" {
+		return nil
+	}
+	for _, x := range kops.EtcdStorageTypes {
+		if stype == x {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("unknow storage type: %q", stype)
+}
+
+// validateEtcdMemberSpec is responsible for validate the cluster member
+func validateEtcdMemberSpec(spec *kops.EtcdMemberSpec) error {
+	if spec.Name == "" {
+		return fmt.Errorf("does not have a name")
+	}
+
+	if fi.StringValue(spec.InstanceGroup) == "" {
+		return fmt.Errorf("does not have a instance group")
 	}
 
 	return nil

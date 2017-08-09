@@ -18,6 +18,7 @@ package components
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
@@ -32,12 +33,12 @@ type KubeAPIServerOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &KubeAPIServerOptionsBuilder{}
 
+// BuildOptions is resposible for filling in the default settings for the kube apiserver
 func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	if clusterSpec.KubeAPIServer == nil {
 		clusterSpec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 	}
-
 	c := clusterSpec.KubeAPIServer
 
 	if c.APIServerCount == nil {
@@ -48,21 +49,18 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.APIServerCount = fi.Int32(int32(count))
 	}
 
+	// @question: should the question every be able to set this?
 	if c.StorageBackend == nil {
-		// For the moment, we continue to use etcd2
-		c.StorageBackend = fi.String("etcd2")
+		switch UseEtcdV3(clusterSpec) {
+		case true:
+			c.StorageBackend = fi.String(string(kops.EtcdStorageTypeV3))
+		default:
+			c.StorageBackend = fi.String(string(kops.EtcdStorageTypeV2))
+		}
 	}
 
 	if c.KubeletPreferredAddressTypes == nil {
 		if b.IsKubernetesGTE("1.5") {
-			// Default precedence
-			//options.KubeAPIServer.KubeletPreferredAddressTypes = []string {
-			//	string(api.NodeHostName),
-			//	string(api.NodeInternalIP),
-			//	string(api.NodeExternalIP),
-			//	string(api.NodeLegacyHostIP),
-			//}
-
 			// We prioritize the internal IP above the hostname
 			c.KubeletPreferredAddressTypes = []string{
 				string(v1.NodeInternalIP),

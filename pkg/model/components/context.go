@@ -19,16 +19,18 @@ package components
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"math/big"
+	"net"
+	"strings"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
-	"math/big"
-	"net"
-	"strings"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
 // OptionsContext is the context object for options builders
@@ -63,6 +65,20 @@ func KubernetesVersion(clusterSpec *kops.ClusterSpec) (*semver.Version, error) {
 	}
 
 	return sv, nil
+}
+
+// UseEtcdV3 checks to see if etcd v3 is enabled.
+// @question: I kinda feel like this functionality should be on the kops.CluserSpec itself, though I don't
+// know how to do this without duplicating methods and how it effects the versions v1, v2 etc
+func UseEtcdV3(spec *kops.ClusterSpec) bool {
+	// validation ensure the etcd must be both one or the other
+	for _, x := range spec.EtcdClusters {
+		if x.StorageType == kops.EtcdStorageTypeV3 {
+			return true
+		}
+	}
+
+	return false
 }
 
 // UsesKubenet returns true if our networking is derived from kubenet
