@@ -37,11 +37,6 @@ type NetworkModelBuilder struct {
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	kubernetesVersion, err := b.KubernetesVersion()
-	if err != nil {
-		return err
-	}
-
 	sharedVPC := b.Cluster.SharedVPC()
 	vpcName := b.ClusterName()
 
@@ -57,10 +52,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tags:             tags,
 		}
 
-		if sharedVPC && VersionGTE(kubernetesVersion, 1, 5) {
+		if sharedVPC && b.IsKubernetesGTE("1.5") {
 			// If we're running k8s 1.5, and we have e.g.  --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP,LegacyHostIP
 			// then we don't need EnableDNSHostnames any more
-			glog.V(4).Infof("Kubernetes version %q; skipping EnableDNSHostnames requirement on VPC", kubernetesVersion)
+			glog.V(4).Infof("Kubernetes version %q; skipping EnableDNSHostnames requirement on VPC", b.KubernetesVersion())
 		} else {
 			// In theory we don't need to enable it for >= 1.5,
 			// but seems safer to stick with existing behaviour
@@ -71,6 +66,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if b.Cluster.Spec.NetworkID != "" {
 			t.ID = s(b.Cluster.Spec.NetworkID)
 		}
+
 		if b.Cluster.Spec.NetworkCIDR != "" {
 			t.CIDR = s(b.Cluster.Spec.NetworkCIDR)
 		}
