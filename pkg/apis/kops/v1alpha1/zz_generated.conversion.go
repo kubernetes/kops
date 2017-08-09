@@ -997,6 +997,7 @@ func Convert_kops_EgressProxySpec_To_v1alpha1_EgressProxySpec(in *kops.EgressPro
 func autoConvert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpec, out *kops.EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	out.EnableEtcdTLS = in.EnableEtcdTLS
+	out.StorageType = kops.EtcdStorageType(in.StorageType)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*kops.EtcdMemberSpec, len(*in))
@@ -1020,6 +1021,7 @@ func Convert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdClusterSpe
 func autoConvert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(in *kops.EtcdClusterSpec, out *EtcdClusterSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	out.EnableEtcdTLS = in.EnableEtcdTLS
+	out.StorageType = EtcdStorageType(in.StorageType)
 	if in.Members != nil {
 		in, out := &in.Members, &out.Members
 		*out = make([]*EtcdMemberSpec, len(*in))

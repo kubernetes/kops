@@ -272,24 +272,49 @@ type KubeDNSConfig struct {
 	ServerIP string `json:"serverIP,omitempty"`
 }
 
+// EtcdStorageType defined the etcd storage backend
+type EtcdStorageType string
+
+const (
+	// EtcdStorageTypeV2 is the old v2 storage
+	EtcdStorageTypeV2 EtcdStorageType = "etcd2"
+	// EtcdStorageTypeV3 is the new v3 storage
+	EtcdStorageTypeV3 EtcdStorageType = "etcd3"
+)
+
+var (
+	// EtcdStorageTypes is a list of accepted storage types
+	EtcdStorageTypes = []EtcdStorageType{EtcdStorageTypeV2, EtcdStorageTypeV3}
+)
+
+// EtcdClusterSpec is the etcd cluster specification
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
 	Name string `json:"name,omitempty"`
+	// Members stores the configurations for each member of the cluster (including the data volume)
+	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
 	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
-	// EtcdMember stores the configurations for each member of the cluster (including the data volume)
-	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
+	// StorageType indicates the storage type of the cluster v2 or v3
+	StorageType EtcdStorageType `json:"storageType,omitempty"`
+	// Version is the version of etcd to run
+	Version string `json:"version,omitempty"`
 }
 
+// EtcdMemberSpec is a specification for a etcd member
 type EtcdMemberSpec struct {
 	// Name is the name of the member within the etcd cluster
-	Name          string  `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
+	// InstanceGroup is the instanceGroup this volume is associated
 	InstanceGroup *string `json:"instanceGroup,omitempty"`
-
-	VolumeType      *string `json:"volumeType,omitempty"`
-	VolumeSize      *int32  `json:"volumeSize,omitempty"`
-	KmsKeyId        *string `json:"kmsKeyId,omitempty"`
-	EncryptedVolume *bool   `json:"encryptedVolume,omitempty"`
+	// VolumeType is the underlining cloud storage class
+	VolumeType *string `json:"volumeType,omitempty"`
+	// VolumeSize is the underlining cloud volume size
+	VolumeSize *int32 `json:"volumeSize,omitempty"`
+	// KmsKeyId is a AWS KMS ID used to encrypt the volume
+	KmsKeyId *string `json:"kmsKeyId,omitempty"`
+	// EncryptedVolume indicates you want to encrypt the volume
+	EncryptedVolume *bool `json:"encryptedVolume,omitempty"`
 }
 
 // SubnetType string describes subnet types (public, private, utility)
