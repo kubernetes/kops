@@ -126,8 +126,6 @@ func TestS3PolicyGeneration(t *testing.T) {
 						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/instancegroup/*",
 						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/pki/issued/*",
 						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/pki/ssh/*",
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/pki/private/ca/*",
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/pki/private/master/*",
 						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/pki/private/kube-proxy/*",
 						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/pki/private/kubelet/*",
 						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/secrets/*",

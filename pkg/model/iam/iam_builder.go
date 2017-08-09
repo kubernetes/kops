@@ -314,8 +314,6 @@ func addS3Permissions(p *IAMPolicy, iamPrefix string, s3Path *vfs.S3Path, role a
 				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/instancegroup/*"}, ""),
 				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/issued/*"}, ""),
 				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/ssh/*"}, ""),
-				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/private/ca/*"}, ""),
-				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/private/master/*"}, ""),
 				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/private/kube-proxy/*"}, ""),
 				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/private/kubelet/*"}, ""),
 				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/secrets/*"}, ""),
