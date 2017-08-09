@@ -24,6 +24,29 @@ import (
 	"strings"
 )
 
+type subnetInfo struct {
+	main ec2.Subnet
+}
+
+func (m *MockEC2) FindSubnet(id string) *ec2.Subnet {
+	subnet := m.subnets[id]
+	if subnet == nil {
+		return nil
+	}
+
+	copy := subnet.main
+	copy.Tags = m.getTags(ec2.ResourceTypeSubnet, id)
+	return &copy
+}
+
+func (m *MockEC2) SubnetIds() []string {
+	var ids []string
+	for id := range m.subnets {
+		ids = append(ids, id)
+	}
+	return ids
+}
+
 func (m *MockEC2) CreateSubnetRequest(*ec2.CreateSubnetInput) (*request.Request, *ec2.CreateSubnetOutput) {
 	panic("Not implemented")
 	return nil, nil
@@ -40,7 +63,14 @@ func (m *MockEC2) CreateSubnet(request *ec2.CreateSubnetInput) (*ec2.CreateSubne
 		VpcId:     request.VpcId,
 		CidrBlock: request.CidrBlock,
 	}
-	m.Subnets = append(m.Subnets, subnet)
+
+	if m.subnets == nil {
+		m.subnets = make(map[string]*subnetInfo)
+	}
+	m.subnets[*subnet.SubnetId] = &subnetInfo{
+		main: *subnet,
+	}
+
 	response := &ec2.CreateSubnetOutput{
 		Subnet: subnet,
 	}
@@ -57,7 +87,7 @@ func (m *MockEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) (*ec2.Descr
 
 	var subnets []*ec2.Subnet
 
-	for _, subnet := range m.Subnets {
+	for id, subnet := range m.subnets {
 		allFiltersMatch := true
 		for _, filter := range request.Filters {
 			match := false
@@ -65,7 +95,7 @@ func (m *MockEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) (*ec2.Descr
 
 			default:
 				if strings.HasPrefix(*filter.Name, "tag:") {
-					match = m.hasTag(ec2.ResourceTypeSubnet, *subnet.SubnetId, filter)
+					match = m.hasTag(ec2.ResourceTypeSubnet, *subnet.main.SubnetId, filter)
 				} else {
 					return nil, fmt.Errorf("unknown filter name: %q", *filter.Name)
 				}
@@ -81,8 +111,8 @@ func (m *MockEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) (*ec2.Descr
 			continue
 		}
 
-		copy := *subnet
-		copy.Tags = m.getTags(ec2.ResourceTypeSubnet, *subnet.SubnetId)
+		copy := subnet.main
+		copy.Tags = m.getTags(ec2.ResourceTypeSubnet, id)
 		subnets = append(subnets, &copy)
 	}
 
