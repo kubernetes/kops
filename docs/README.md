@@ -97,7 +97,7 @@
 ## Development
 
 * [Developing using Docker](development/Docker.md)
-* [Development with vSphere](development/vsphere-dev.md)
+* [Development with vSphere](vsphere-dev.md)
 * [Documentation Guidelines](development/documentation.md)
 * [E2E testing with `kops` clusters](development/testing.md)
 * [Example on how to add a feature](development/adding_a_feature.md)
