@@ -27,7 +27,8 @@ import (
 	"net/url"
 )
 
-const DefaultChannelBase = "https://raw.githubusercontent.com/kubernetes/kops/master/channels/"
+var DefaultChannelBase = "https://raw.githubusercontent.com/kubernetes/kops/master/channels/"
+
 const DefaultChannel = "stable"
 const AlphaChannel = "alpha"
 
