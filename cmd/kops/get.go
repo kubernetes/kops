@@ -138,6 +138,9 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 	args := make([]string, 0)
 
 	clusters, err := buildClusters(args, clusterList)
+	if err != nil {
+		return fmt.Errorf("error on buildClusters(): %v", err)
+	}
 
 	ig, err := client.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
