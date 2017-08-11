@@ -19,6 +19,7 @@ package dockertasks
 import (
 	"bufio"
 	"fmt"
+
 	"github.com/docker/engine-api/client"
 	"github.com/docker/engine-api/types"
 	"github.com/golang/glog"
@@ -32,10 +33,26 @@ type dockerAPI struct {
 
 // newDockerAPI builds a dockerAPI object, for talking to docker via the API
 func newDockerAPI() (*dockerAPI, error) {
+	glog.V(4).Infof("docker creating api client")
 	c, err := client.NewEnvClient()
 	if err != nil {
 		return nil, fmt.Errorf("error building docker client: %v", err)
 	}
+
+	if c == nil {
+		return nil, fmt.Errorf("error building docker client, client returned is nil")
+	}
+
+	// Test the client
+	ctx := context.Background()
+	_, err = c.Info(ctx)
+	if err != nil {
+		// TODO check if /var/run/docker.sock exists and create a connection using that
+		glog.Errorf("Unable to create docker client please set DOCKER_HOST to unix socket or tcp socket")
+		glog.Errorf("Standard DOCKER_HOST values can be %q and defaults to %q", "unix:///var/run/docker.sock", client.DefaultDockerHost)
+		return nil, fmt.Errorf("error building docker client, unable to make info call: %v", err)
+	}
+
 	return &dockerAPI{
 		client: c,
 	}, nil
