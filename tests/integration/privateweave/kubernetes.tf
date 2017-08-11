@@ -184,7 +184,7 @@ resource "aws_elb" "api-privateweave-example-com" {
   subnets         = ["${aws_subnet.utility-us-test-1a-privateweave-example-com.id}"]
 
   health_check = {
-    target              = "TCP:443"
+    target              = "SSL:443"
     healthy_threshold   = 2
     unhealthy_threshold = 2
     interval            = 10
