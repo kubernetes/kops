@@ -399,6 +399,30 @@ func ValidateCluster(c *kops.Cluster, strict bool) error {
 	return nil
 }
 
+// validateEtcdClusterSpec is responsible for validating the etcd cluster spec
+func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec) error {
+	if spec.Name == "" {
+		return fmt.Errorf("EtcdCluster did not have name")
+	}
+	if len(spec.Members) == 0 {
+		return fmt.Errorf("No members defined in spec cluster %q", spec.Name)
+	}
+	if (len(spec.Members) % 2) == 0 {
+		// Not technically a requirement, but doesn't really make sense to allow
+		return fmt.Errorf("Should be an odd number of master-zones for quorum. Use --zones and --master-zones to declare node zones and master zones separately")
+	}
+	if err := validateEtcdVersion(spec); err != nil {
+		return err
+	}
+	for _, m := range spec.Members {
+		if err := validateEtcdMemberSpec(m); err != nil {
+			return fmt.Errorf("Member in cluster: %q invalid, error: %q", spec.Name, err)
+		}
+	}
+
+	return nil
+}
+
 // validateEtcdTLS checks the TLS settings for etcd are valid
 func validateEtcdTLS(specs []*kops.EtcdClusterSpec) error {
 	var usingTLS int
@@ -415,14 +439,8 @@ func validateEtcdTLS(specs []*kops.EtcdClusterSpec) error {
 	return nil
 }
 
-// validateEtcdStorage is responsible for checks the storage type and version is identical
+// validateEtcdStorage is responsible for checks version are identical
 func validateEtcdStorage(specs []*kops.EtcdClusterSpec) error {
-	storage := specs[0].StorageType
-	for _, x := range specs {
-		if x.StorageType != "" && x.StorageType != storage {
-			return fmt.Errorf("cluster: %q, has a different storage type: %q, both must be the same", x.Name, x.StorageType)
-		}
-	}
 	version := specs[0].Version
 	for _, x := range specs {
 		if x.Version != "" && x.Version != version {
@@ -433,49 +451,25 @@ func validateEtcdStorage(specs []*kops.EtcdClusterSpec) error {
 	return nil
 }
 
-// validateEtcdClusterSpec is responsible for validating the etcd cluster spec
-func validateEtcdClusterSpec(spec *kops.EtcdClusterSpec) error {
-	if spec.Name == "" {
-		return fmt.Errorf("EtcdCluster did not have name")
-	}
-	if len(spec.Members) == 0 {
-		return fmt.Errorf("No members defined in spec cluster %q", spec.Name)
-	}
-	if (len(spec.Members) % 2) == 0 {
-		// Not technically a requirement, but doesn't really make sense to allow
-		return fmt.Errorf("should be an odd number of master-zones for quorum. Use --zones and --master-zones to declare node zones and master zones separately")
-	}
+// validateEtcdVersion is responsible for validating the storage version of etcd
+// @TODO semvar package doesn't appear to ignore a 'v' in v1.1.1 should could be a problem later down the line
+func validateEtcdVersion(spec *kops.EtcdClusterSpec) error {
 	// @check if the storage is specified, thats is valid
-	if err := validateEtcdStorageType(spec.StorageType); err != nil {
-		return fmt.Errorf("invalid storage type: %q for cluster: %q", spec.StorageType, spec.Name)
-	}
-	if spec.Version != "" {
-		if _, err := semver.Parse(spec.Version); err != nil {
-			return fmt.Errorf("the storage version: %q for cluster: %q is invalid", spec.Version, spec.Name)
-		}
+	if spec.Version == "" {
+		return nil // as it will be filled in by default for us
 	}
 
-	for _, m := range spec.Members {
-		if err := validateEtcdMemberSpec(m); err != nil {
-			return fmt.Errorf("member in cluster: %q invalid, error: %q", spec.Name, err)
-		}
+	sem, err := semver.Parse(strings.TrimPrefix(spec.Version, "v"))
+	if err != nil {
+		return fmt.Errorf("the storage version: %q for cluster: %q is invalid", spec.Version, spec.Name)
 	}
 
-	return nil
-}
-
-// validateEtcdStorageType is responsible for validating the storage type for etcd cluster
-func validateEtcdStorageType(stype kops.EtcdStorageType) error {
-	if stype == "" {
+	// we only support v3 and v2 for now
+	if sem.Major == 3 || sem.Major == 2 {
 		return nil
 	}
-	for _, x := range kops.EtcdStorageTypes {
-		if stype == x {
-			return nil
-		}
-	}
 
-	return fmt.Errorf("unknow storage type: %q", stype)
+	return fmt.Errorf("unsupported storage version: %q, we only support major versions 2 and 3", spec.Version)
 }
 
 // validateEtcdMemberSpec is responsible for validate the cluster member

@@ -18,12 +18,15 @@ package components
 
 import (
 	"fmt"
+	"strings"
 
-	"github.com/golang/glog"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
 // KubeAPIServerOptionsBuilder adds options for the apiserver to the model
@@ -51,12 +54,13 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// @question: should the question every be able to set this?
 	if c.StorageBackend == nil {
-		switch UseEtcdV3(clusterSpec) {
-		case true:
-			c.StorageBackend = fi.String(string(kops.EtcdStorageTypeV3))
-		default:
-			c.StorageBackend = fi.String(string(kops.EtcdStorageTypeV2))
+		// @note: we can use the first version as we enforce both running the same versions.
+		// albeit feels a little wierd to do this
+		sem, err := semver.Parse(strings.TrimPrefix(clusterSpec.EtcdClusters[0].Version, "v"))
+		if err != nil {
+			return err
 		}
+		c.StorageBackend = fi.String(fmt.Sprintf("etcd%d", sem.Major))
 	}
 
 	if c.KubeletPreferredAddressTypes == nil {
@@ -104,6 +108,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	return nil
 }
 
+// buildAPIServerCount calculates the count of the api servers, essentuially the number of node marked as Master role
 func (b *KubeAPIServerOptionsBuilder) buildAPIServerCount(clusterSpec *kops.ClusterSpec) int {
 	// The --apiserver-count flag is (generally agreed) to be something we need to get rid of in k8s
 
