@@ -22,7 +22,10 @@ import (
 
 	"github.com/digitalocean/godo"
 	"golang.org/x/oauth2"
+
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources/digitalocean/dns"
+	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
@@ -43,13 +46,17 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 type Cloud struct {
 	client *godo.Client
 
+	dns dnsprovider.Interface
+
 	Region string
 	tags   map[string]string
 }
 
+var _ fi.Cloud = &Cloud{}
+
 // NewCloud returns a Cloud, expecting the env var DO_ACCESS_TOKEN
 // NewCloud will return an err if DO_ACCESS_TOKEN is not defined
-func NewCloud() (*Cloud, error) {
+func NewCloud(region string) (*Cloud, error) {
 	accessToken := os.Getenv("DO_ACCESS_TOKEN")
 	if accessToken == "" {
 		return nil, errors.New("DO_ACCESS_TOKEN is required")
@@ -64,11 +71,22 @@ func NewCloud() (*Cloud, error) {
 
 	return &Cloud{
 		client: client,
+		dns:    dns.NewProvider(client),
+		Region: region,
 	}, nil
+}
+
+// ProviderID returns the kops api identifier for DigitalOcean cloud provider
+func (c *Cloud) ProviderID() kops.CloudProviderID {
+	return kops.CloudProviderDO
 }
 
 // DNS returns a DO implementation for dnsprovider.Interface
 func (c *Cloud) DNS() (dnsprovider.Interface, error) {
-	provider := dns.NewProvider(c.client)
-	return provider, nil
+	return c.dns, nil
+}
+
+// FindVPCInfo is not implemented, it's only here to satisfy the fi.Cloud interface
+func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
+	return nil, errors.New("not implemented")
 }
