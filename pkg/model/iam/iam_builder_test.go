@@ -219,3 +219,123 @@ func TestS3PolicyGeneration(t *testing.T) {
 		}
 	}
 }
+
+func TestEC2PolicyGeneration(t *testing.T) {
+	wildcard := stringorslice.Slice([]string{"*"})
+	clusterName := "my-cluster.k8s.local"
+	defaultEC2Statements := []*IAMStatement{
+		{
+			Effect:   IAMStatementEffectAllow,
+			Action:   stringorslice.Slice([]string{"ec2:Describe*"}),
+			Resource: wildcard,
+		},
+	}
+
+	grid := []struct {
+		Role      kops.InstanceGroupRole
+		LegacyIAM bool
+		IAMPolicy IAMPolicy
+	}{
+		{
+			Role:      "Node",
+			LegacyIAM: false,
+			IAMPolicy: IAMPolicy{
+				Statement: defaultEC2Statements,
+			},
+		},
+		{
+			Role:      "Node",
+			LegacyIAM: true,
+			IAMPolicy: IAMPolicy{
+				Statement: defaultEC2Statements,
+			},
+		},
+		{
+			Role:      "Master",
+			LegacyIAM: false,
+			IAMPolicy: IAMPolicy{
+				Statement: append(
+					defaultEC2Statements,
+					&IAMStatement{
+						Effect: IAMStatementEffectAllow,
+						Action: stringorslice.Slice([]string{
+							"ec2:CreateRoute",
+							"ec2:CreateTags",
+							"ec2:CreateVolume",
+							"ec2:DeleteVolume",
+							"ec2:ModifyInstanceAttribute",
+						}),
+						Resource: wildcard,
+					},
+					&IAMStatement{
+						Effect:   IAMStatementEffectAllow,
+						Action:   stringorslice.Slice([]string{"ec2:*"}),
+						Resource: wildcard,
+						Condition: Condition{
+							"StringEquals": map[string]string{
+								"ec2:ResourceTag/KubernetesCluster": clusterName,
+							},
+						},
+					},
+				),
+			},
+		},
+		{
+			Role:      "Master",
+			LegacyIAM: true,
+			IAMPolicy: IAMPolicy{
+				Statement: append(
+					defaultEC2Statements,
+					&IAMStatement{
+						Effect:   IAMStatementEffectAllow,
+						Action:   stringorslice.Slice([]string{"ec2:*"}),
+						Resource: wildcard,
+					},
+				),
+			},
+		},
+		{
+			Role:      "Bastion",
+			LegacyIAM: false,
+			IAMPolicy: IAMPolicy{
+				Statement: nil,
+			},
+		},
+		{
+			Role:      "Bastion",
+			LegacyIAM: true,
+			IAMPolicy: IAMPolicy{
+				Statement: nil,
+			},
+		},
+	}
+
+	for i, x := range grid {
+		ip := &IAMPolicy{}
+		b := IAMPolicyBuilder{
+			Role:    x.Role,
+			Cluster: &kops.Cluster{},
+		}
+		b.Cluster.SetName(clusterName)
+
+		addEC2Permissions(ip, "arn:aws", &b, wildcard, x.LegacyIAM)
+
+		expectedPolicy, err := x.IAMPolicy.AsJSON()
+		if err != nil {
+			t.Errorf("case %d failed to convert expected IAM Policy to JSON. Error: %q", i, err)
+			continue
+		}
+		actualPolicy, err := ip.AsJSON()
+		if err != nil {
+			t.Errorf("case %d failed to convert generated IAM Policy to JSON. Error: %q", i, err)
+			continue
+		}
+
+		if expectedPolicy != actualPolicy {
+			diffString := diff.FormatDiff(expectedPolicy, actualPolicy)
+			t.Logf("diff:\n%s\n", diffString)
+			t.Errorf("case %d failed, policy output differed from expected.", i)
+			continue
+		}
+	}
+}
