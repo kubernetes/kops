@@ -412,8 +412,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Canal != nil {
 		key := "networking.projectcalico.org.canal"
-		// Locking canal addon version to 1.3 (same as Calico node). Best to maintain lockstep for sanity
-		version := "1.3"
+		// Locking canal addon version to 2.4.1 (same as Calico node). Best to maintain lockstep for sanity
+		version := "2.4.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
