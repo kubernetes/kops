@@ -17,12 +17,16 @@ limitations under the License.
 package model
 
 import (
+	"fmt"
+	"path/filepath"
 	"strconv"
 
-	"github.com/golang/glog"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+
+	"github.com/golang/glog"
 )
 
 // s is a helper that builds a *string from a string value
@@ -33,6 +37,11 @@ func s(v string) *string {
 // i64 is a helper that builds a *int64 from an int64 value
 func i64(v int64) *int64 {
 	return fi.Int64(v)
+}
+
+// b returns a pointer to a boolean
+func b(v bool) *bool {
+	return fi.Bool(v)
 }
 
 func getProxyEnvVars(proxies *kops.EgressProxySpec) []v1.EnvVar {
@@ -62,7 +71,54 @@ func getProxyEnvVars(proxies *kops.EgressProxySpec) []v1.EnvVar {
 	}
 }
 
-// b returns a pointer to a boolean
-func b(v bool) *bool {
-	return fi.Bool(v)
+// buildCertificateRequest retrieves the certificate from a keystore
+func buildCertificateRequest(c *fi.ModelBuilderContext, b *NodeupModelContext, name, path string) error {
+	cert, err := b.KeyStore.Cert(name)
+	if err != nil {
+		return err
+	}
+
+	serialized, err := cert.AsString()
+	if err != nil {
+		return err
+	}
+
+	location := filepath.Join(b.PathSrvKubernetes(), fmt.Sprintf("%s.pem", name))
+	if path != "" {
+		location = path
+	}
+
+	c.AddTask(&nodetasks.File{
+		Path:     location,
+		Contents: fi.NewStringResource(serialized),
+		Type:     nodetasks.FileType_File,
+	})
+
+	return nil
+}
+
+// buildPrivateKeyRequest retrieves a private key from the store
+func buildPrivateKeyRequest(c *fi.ModelBuilderContext, b *NodeupModelContext, name, path string) error {
+	k, err := b.KeyStore.PrivateKey(name)
+	if err != nil {
+		return err
+	}
+
+	serialized, err := k.AsString()
+	if err != nil {
+		return err
+	}
+
+	location := filepath.Join(b.PathSrvKubernetes(), fmt.Sprintf("%s-key.pem", name))
+	if path != "" {
+		location = path
+	}
+
+	c.AddTask(&nodetasks.File{
+		Path:     location,
+		Contents: fi.NewStringResource(serialized),
+		Type:     nodetasks.FileType_File,
+	})
+
+	return nil
 }
