@@ -27,7 +27,7 @@ import (
 
 var (
 	update_long = templates.LongDesc(i18n.T(`
-	Creates or updates cloud resources to match cluster spec.
+	Creates or updates cloud resources to match cluster desired configuration.
 	`))
 
 	update_example = templates.Examples(i18n.T(`
