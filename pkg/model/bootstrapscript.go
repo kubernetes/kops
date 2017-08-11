@@ -24,6 +24,8 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/ghodss/yaml"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/model/resources"
@@ -37,7 +39,9 @@ type BootstrapScript struct {
 	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.Config, error)
 }
 
-func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, ps *kops.EgressProxySpec) (*fi.ResourceHolder, error) {
+// ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
+// template file, substituting in specific env vars & cluster spec configuration
+func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.ClusterSpec) (*fi.ResourceHolder, error) {
 	if ig.Spec.Role == kops.InstanceGroupRoleBastion {
 		// Bastions are just bare machines (currently), used as SSH jump-hosts
 		return nil, nil
@@ -77,7 +81,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, ps *kops.Egress
 		},
 
 		"ProxyEnv": func() string {
-			return b.createProxyEnv(ps)
+			return b.createProxyEnv(cs.EgressProxy)
 		},
 		"AWS_REGION": func() string {
 			if os.Getenv("AWS_REGION") != "" {
@@ -85,6 +89,40 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, ps *kops.Egress
 					os.Getenv("AWS_REGION"))
 			}
 			return ""
+		},
+
+		"ClusterSpec": func() (string, error) {
+			spec := make(map[string]interface{})
+			spec["cloudConfig"] = cs.CloudConfig
+			spec["docker"] = cs.Docker
+			spec["kubelet"] = cs.Kubelet
+			spec["kubeProxy"] = cs.KubeProxy
+
+			if ig.IsMaster() {
+				spec["kubeAPIServer"] = cs.KubeAPIServer
+				spec["kubeControllerManager"] = cs.KubeControllerManager
+				spec["kubeScheduler"] = cs.KubeScheduler
+				spec["masterKubelet"] = cs.MasterKubelet
+			}
+
+			content, err := yaml.Marshal(spec)
+			if err != nil {
+				return "", fmt.Errorf("error converting cluster spec to yaml for inclusion within bootstrap script: %v", err)
+			}
+			return string(content), nil
+		},
+
+		"IGSpec": func() (string, error) {
+			spec := make(map[string]interface{})
+			spec["kubelet"] = ig.Spec.Kubelet
+			spec["nodeLabels"] = ig.Spec.NodeLabels
+			spec["taints"] = ig.Spec.Taints
+
+			content, err := yaml.Marshal(spec)
+			if err != nil {
+				return "", fmt.Errorf("error converting instancegroup spec to yaml for inclusion within bootstrap script: %v", err)
+			}
+			return string(content), nil
 		},
 	}
 
@@ -99,22 +137,22 @@ func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {
 	var buffer bytes.Buffer
 
 	if ps != nil && ps.HTTPProxy.Host != "" {
-		var httpProxyUrl string
+		var httpProxyURL string
 
 		// TODO double check that all the code does this
 		// TODO move this into a validate so we can enforce the string syntax
 		if !strings.HasPrefix(ps.HTTPProxy.Host, "http://") {
-			httpProxyUrl = "http://"
+			httpProxyURL = "http://"
 		}
 
 		if ps.HTTPProxy.Port != 0 {
-			httpProxyUrl += ps.HTTPProxy.Host + ":" + strconv.Itoa(ps.HTTPProxy.Port)
+			httpProxyURL += ps.HTTPProxy.Host + ":" + strconv.Itoa(ps.HTTPProxy.Port)
 		} else {
-			httpProxyUrl += ps.HTTPProxy.Host
+			httpProxyURL += ps.HTTPProxy.Host
 		}
 
 		// Set base env variables
-		buffer.WriteString("export http_proxy=" + httpProxyUrl + "\n")
+		buffer.WriteString("export http_proxy=" + httpProxyURL + "\n")
 		buffer.WriteString("export https_proxy=${http_proxy}\n")
 		buffer.WriteString("export no_proxy=" + ps.ProxyExcludes + "\n")
 		buffer.WriteString("export NO_PROXY=${no_proxy}\n")
