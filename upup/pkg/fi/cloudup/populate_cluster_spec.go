@@ -290,8 +290,8 @@ func (c *populateClusterSpec) run() error {
 		switch m {
 		case "config":
 			// Note: DefaultOptionsBuilder comes first
-			codeModels = append(codeModels, &components.EtcdOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.DefaultsOptionsBuilder{Context: optionsContext})
+			codeModels = append(codeModels, &components.EtcdOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.KubeAPIServerOptionsBuilder{OptionsContext: optionsContext})
 			codeModels = append(codeModels, &components.DockerOptionsBuilder{Context: optionsContext})
 			codeModels = append(codeModels, &components.NetworkingOptionsBuilder{Context: optionsContext})

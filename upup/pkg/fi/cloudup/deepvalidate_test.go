@@ -140,7 +140,7 @@ func TestDeepValidate_EvenEtcdClusterSize(t *testing.T) {
 	groups = append(groups, buildMinimalMasterInstanceGroup("subnet-us-mock-1a", "subnet-us-mock-1b", "subnet-us-mock-1c", "subnet-us-mock-1d"))
 	groups = append(groups, buildMinimalNodeInstanceGroup("subnet-us-mock-1a"))
 
-	expectErrorFromDeepValidate(t, c, groups, "should be an odd number of master-zones for quorum. Use --zones and --master-zones to declare node zones and master zones separately")
+	expectErrorFromDeepValidate(t, c, groups, "Should be an odd number of master-zones for quorum. Use --zones and --master-zones to declare node zones and master zones separately")
 }
 
 func expectErrorFromDeepValidate(t *testing.T, c *api.Cluster, groups []*api.InstanceGroup, message string) {
