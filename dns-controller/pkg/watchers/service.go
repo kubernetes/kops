@@ -18,33 +18,37 @@ package watchers
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
+	"k8s.io/kops/dns-controller/pkg/dns"
+	"k8s.io/kops/dns-controller/pkg/util"
+
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/kops/dns-controller/pkg/dns"
-	"k8s.io/kops/dns-controller/pkg/util"
-	"strings"
-	"time"
 )
 
 // ServiceController watches for services with dns annotations
 type ServiceController struct {
 	util.Stoppable
-	kubeClient kubernetes.Interface
-	scope      dns.Scope
+	client    kubernetes.Interface
+	namespace string
+	scope     dns.Scope
 }
 
-// newServiceController creates a serviceController
-func NewServiceController(kubeClient kubernetes.Interface, dns dns.Context) (*ServiceController, error) {
+// NewServiceController creates a ServiceController
+func NewServiceController(client kubernetes.Interface, dns dns.Context, namespace string) (*ServiceController, error) {
 	scope, err := dns.CreateScope("service")
 	if err != nil {
 		return nil, fmt.Errorf("error building dns scope: %v", err)
 	}
 	c := &ServiceController{
-		kubeClient: kubeClient,
-		scope:      scope,
+		client:    client,
+		namespace: namespace,
+		scope:     scope,
 	}
 
 	return c, nil
@@ -65,7 +69,7 @@ func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
 		var listOpts metav1.ListOptions
 		glog.V(4).Infof("querying without label filter")
-		serviceList, err := c.kubeClient.CoreV1().Services("").List(listOpts)
+		serviceList, err := c.client.CoreV1().Services(c.namespace).List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing services: %v", err)
 		}
@@ -78,7 +82,7 @@ func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 
 		listOpts.Watch = true
 		listOpts.ResourceVersion = serviceList.ResourceVersion
-		watcher, err := c.kubeClient.CoreV1().Services("").Watch(listOpts)
+		watcher, err := c.client.CoreV1().Services(c.namespace).Watch(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error watching services: %v", err)
 		}
@@ -127,8 +131,8 @@ func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 	var records []dns.Record
 
-	specExternal := service.Annotations[AnnotationNameDnsExternal]
-	specInternal := service.Annotations[AnnotationNameDnsInternal]
+	specExternal := service.Annotations[AnnotationNameDNSExternal]
+	specInternal := service.Annotations[AnnotationNameDNSInternal]
 	if len(specExternal) != 0 || len(specInternal) != 0 {
 		var ingresses []dns.Record
 
@@ -193,7 +197,7 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 			}
 		}
 	} else {
-		glog.V(8).Infof("Service %s/%s did not have %s annotation", service.Namespace, service.Name, AnnotationNameDnsExternal)
+		glog.V(8).Infof("Service %s/%s did not have %s annotation", service.Namespace, service.Name, AnnotationNameDNSExternal)
 	}
 
 	c.scope.Replace(service.Namespace+"/"+service.Name, records)
