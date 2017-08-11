@@ -231,26 +231,7 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 		}
 
 		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
-			// Note that the config store may itself be a subdirectory of a bucket
-			iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
-			iamS3Path = strings.TrimSuffix(iamS3Path, "/")
-
-			p.Statement = append(p.Statement, &IAMStatement{
-				Effect: IAMStatementEffectAllow,
-				Action: stringorslice.Slice([]string{"s3:*"}),
-				Resource: stringorslice.Of(
-					iamPrefix+":s3:::"+iamS3Path,
-					iamPrefix+":s3:::"+iamS3Path+"/*",
-				),
-			})
-
-			p.Statement = append(p.Statement, &IAMStatement{
-				Effect: IAMStatementEffectAllow,
-				Action: stringorslice.Of("s3:GetBucketLocation", "s3:ListBucket"),
-				Resource: stringorslice.Slice([]string{
-					iamPrefix + ":s3:::" + s3Path.Bucket(),
-				}),
-			})
+			addS3Permissions(p, iamPrefix, s3Path, b.Role)
 		} else if _, ok := vfsPath.(*vfs.MemFSPath); ok {
 			// Tests -ignore - nothing we can do in terms of IAM policy
 			glog.Warningf("ignoring memfs path %q for IAM policy builder", vfsPath)
@@ -290,6 +271,57 @@ func addRoute53ListHostedZonesPermission(p *IAMPolicy) {
 		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
 		Resource: wildcard,
 	})
+}
+
+// addS3Permissions updates the IAM Policy with statements granting tailored
+// access to S3 assets, depending on the instance role
+func addS3Permissions(p *IAMPolicy, iamPrefix string, s3Path *vfs.S3Path, role api.InstanceGroupRole) {
+	// Note that the config store may itself be a subdirectory of a bucket
+	iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
+	iamS3Path = strings.TrimSuffix(iamS3Path, "/")
+
+	p.Statement = append(p.Statement, &IAMStatement{
+		Effect: IAMStatementEffectAllow,
+		Action: stringorslice.Of("s3:GetBucketLocation", "s3:ListBucket"),
+		Resource: stringorslice.Slice([]string{
+			strings.Join([]string{iamPrefix, ":s3:::", s3Path.Bucket()}, ""),
+		}),
+	})
+
+	p.Statement = append(p.Statement, &IAMStatement{
+		Effect: IAMStatementEffectAllow,
+		Action: stringorslice.Slice([]string{"s3:List*"}),
+		Resource: stringorslice.Of(
+			strings.Join([]string{iamPrefix, ":s3:::", iamS3Path}, ""),
+			strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/*"}, ""),
+		),
+	})
+
+	if role == api.InstanceGroupRoleMaster {
+		p.Statement = append(p.Statement, &IAMStatement{
+			Effect: IAMStatementEffectAllow,
+			Action: stringorslice.Slice([]string{"s3:Get*"}),
+			Resource: stringorslice.Of(
+				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/*"}, ""),
+			),
+		})
+	} else if role == api.InstanceGroupRoleNode {
+		p.Statement = append(p.Statement, &IAMStatement{
+			Effect: IAMStatementEffectAllow,
+			Action: stringorslice.Slice([]string{"s3:Get*"}),
+			Resource: stringorslice.Of(
+				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/addons/*"}, ""),
+				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/instancegroup/*"}, ""),
+				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/issued/*"}, ""),
+				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/ssh/*"}, ""),
+				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/private/kube-proxy/*"}, ""),
+				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/private/kubelet/*"}, ""),
+				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/secrets/*"}, ""),
+				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/cluster.spec"}, ""),
+				strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/config"}, ""),
+			),
+		})
+	}
 }
 
 // IAMPrefix returns the prefix for AWS ARNs in the current region, for use with IAM

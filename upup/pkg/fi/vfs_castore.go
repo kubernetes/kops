@@ -24,14 +24,16 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
-	"github.com/golang/glog"
-	"golang.org/x/crypto/ssh"
-	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
+	"golang.org/x/crypto/ssh"
+
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type VFSCAStore struct {
@@ -300,19 +302,11 @@ func (c *VFSCAStore) FindKeypair(id string) (*Certificate, *PrivateKey, error) {
 func (c *VFSCAStore) FindCert(id string) (*Certificate, error) {
 	var certs *certificates
 
-	if id == CertificateId_CA {
-		caCertificates, _, err := c.readCAKeypairs()
-		if err != nil {
-			return nil, err
-		}
-		certs = caCertificates
-	} else {
-		var err error
-		p := c.buildCertificatePoolPath(id)
-		certs, err = c.loadCertificates(p)
-		if err != nil {
-			return nil, err
-		}
+	var err error
+	p := c.buildCertificatePoolPath(id)
+	certs, err = c.loadCertificates(p)
+	if err != nil {
+		return nil, fmt.Errorf("error in 'FindCert' attempting to load cert %q: %v", id, err)
 	}
 
 	var cert *Certificate
@@ -326,19 +320,11 @@ func (c *VFSCAStore) FindCert(id string) (*Certificate, error) {
 func (c *VFSCAStore) FindCertificatePool(id string) (*CertificatePool, error) {
 	var certs *certificates
 
-	if id == CertificateId_CA {
-		caCertificates, _, err := c.readCAKeypairs()
-		if err != nil {
-			return nil, err
-		}
-		certs = caCertificates
-	} else {
-		var err error
-		p := c.buildCertificatePoolPath(id)
-		certs, err = c.loadCertificates(p)
-		if err != nil {
-			return nil, err
-		}
+	var err error
+	p := c.buildCertificatePoolPath(id)
+	certs, err = c.loadCertificates(p)
+	if err != nil {
+		return nil, fmt.Errorf("error in 'FindCertificatePool' attempting to load cert %q: %v", id, err)
 	}
 
 	pool := &CertificatePool{}
