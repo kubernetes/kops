@@ -327,21 +327,6 @@ type KubeDNSConfig struct {
 	ServerIP string `json:"serverIP,omitempty"`
 }
 
-// EtcdStorageType defined the etcd storage backend
-type EtcdStorageType string
-
-const (
-	// EtcdStorageTypeV2 is the old v2 storage
-	EtcdStorageTypeV2 EtcdStorageType = "etcd2"
-	// EtcdStorageTypeV3 is the new v3 storage
-	EtcdStorageTypeV3 EtcdStorageType = "etcd3"
-)
-
-var (
-	// EtcdStorageTypes is a list of accepted storage types
-	EtcdStorageTypes = []EtcdStorageType{EtcdStorageTypeV2, EtcdStorageTypeV3}
-)
-
 // EtcdClusterSpec is the etcd cluster specification
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
@@ -350,9 +335,7 @@ type EtcdClusterSpec struct {
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
 	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
-	// StorageType indicates the storage type of the cluster v2 or v3
-	StorageType EtcdStorageType `json:"storageType,omitempty"`
-	// Version is the version of etcd to run
+	// Version is the version of etcd to run i.e. 2.1.2, 3.0.17 etcd
 	Version string `json:"version,omitempty"`
 }
 

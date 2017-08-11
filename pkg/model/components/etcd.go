@@ -34,16 +34,10 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 
 	// @check the version are set and if not preset the defaults
 	for _, x := range spec.EtcdClusters {
-		if x.StorageType == "" {
-			x.StorageType = kops.EtcdStorageTypeV2
-		}
+		// @TODO if nothing is set, set the defaults. At a late date once we have a way of detecting a 'new' cluster
+		// we can default all clusters to v3
 		if x.Version == "" {
-			switch UseEtcdV3(spec) {
-			case true:
-				x.Version = "3.0.17"
-			default:
-				x.Version = "2.2.1"
-			}
+			x.Version = "2.2.1"
 		}
 	}
 

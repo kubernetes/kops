@@ -181,7 +181,7 @@ type ProtokubeFlags struct {
 	DNSInternalSuffix *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
 	DNSProvider       *string  `json:"dnsProvider,omitempty" flag:"dns"`
 	DNSServer         *string  `json:"dns-server,omitempty" flag:"dns-server"`
-	Image             *string  `json:"image,omitempty" flag:"image"`
+	EtcdImage         *string  `json:"etcd-image,omitempty" flag:"etcd-image"`
 	InitializeRBAC    *bool    `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
 	LogLevel          *int32   `json:"logLevel,omitempty" flag:"v"`
 	Master            *bool    `json:"master,omitempty" flag:"master"`
@@ -203,7 +203,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	f := &ProtokubeFlags{
 		Channels:      t.NodeupConfig.Channels,
 		Containerized: fi.Bool(true),
-		Image:         s(fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)),
+		EtcdImage:     s(fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)),
 		LogLevel:      fi.Int32(4),
 		Master:        b(t.IsMaster),
 	}
