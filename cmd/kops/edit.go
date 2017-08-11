@@ -27,7 +27,7 @@ import (
 
 var (
 	edit_long = templates.LongDesc(i18n.T(`Edit a resource configuration.
-	This command changes the cloud specification in the registry.
+	This command changes the desired configuration in the registry.
 
     	To set your preferred editor, you can define the EDITOR environment variable.
     	When you have done this, kops will use the editor that you have set.
