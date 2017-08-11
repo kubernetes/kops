@@ -52,10 +52,13 @@ type IAMStatementEffect string
 const IAMStatementEffectAllow IAMStatementEffect = "Allow"
 const IAMStatementEffectDeny IAMStatementEffect = "Deny"
 
+type Condition map[string]interface{}
+
 type IAMStatement struct {
-	Effect   IAMStatementEffect
-	Action   stringorslice.StringOrSlice
-	Resource stringorslice.StringOrSlice
+	Effect    IAMStatementEffect
+	Action    stringorslice.StringOrSlice
+	Resource  stringorslice.StringOrSlice
+	Condition Condition `json:",omitempty"`
 }
 
 func (l *IAMStatement) Equal(r *IAMStatement) bool {
@@ -106,14 +109,7 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 		return p, nil
 	}
 
-	if b.Role == api.InstanceGroupRoleNode {
-		p.Statement = append(p.Statement, &IAMStatement{
-			Effect:   IAMStatementEffectAllow,
-			Action:   stringorslice.Slice([]string{"ec2:Describe*"}),
-			Resource: wildcard,
-		})
-
-	}
+	addEC2Permissions(p, iamPrefix, b, wildcard, legacyIAM)
 
 	{
 		// We provide ECR access on the nodes (naturally), but we also provide access on the master.
@@ -135,12 +131,6 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 	}
 
 	if b.Role == api.InstanceGroupRoleMaster {
-		p.Statement = append(p.Statement, &IAMStatement{
-			Effect:   IAMStatementEffectAllow,
-			Action:   stringorslice.Slice([]string{"ec2:*"}),
-			Resource: wildcard,
-		})
-
 		p.Statement = append(p.Statement, &IAMStatement{
 			Effect:   IAMStatementEffectAllow,
 			Action:   stringorslice.Slice([]string{"elasticloadbalancing:*"}),
@@ -249,6 +239,54 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 	}
 
 	return p, nil
+}
+
+// addEC2Permissions updates the IAM Policy with statements granting tailored
+// access to EC2 resources, depending on the instance role
+func addEC2Permissions(p *IAMPolicy, iamPrefix string, b *IAMPolicyBuilder, wildcard stringorslice.StringOrSlice, legacyIAM bool) {
+	if (b.Role == api.InstanceGroupRoleNode) || (b.Role == api.InstanceGroupRoleMaster) {
+		p.Statement = append(p.Statement, &IAMStatement{
+			Effect:   IAMStatementEffectAllow,
+			Action:   stringorslice.Slice([]string{"ec2:Describe*"}),
+			Resource: wildcard,
+		})
+	}
+
+	if b.Role == api.InstanceGroupRoleMaster {
+		if legacyIAM {
+			p.Statement = append(p.Statement,
+				&IAMStatement{
+					Effect:   IAMStatementEffectAllow,
+					Action:   stringorslice.Slice([]string{"ec2:*"}),
+					Resource: wildcard,
+				},
+			)
+		} else {
+			p.Statement = append(p.Statement,
+				&IAMStatement{
+					Effect: IAMStatementEffectAllow,
+					Action: stringorslice.Slice([]string{
+						"ec2:CreateRoute",
+						"ec2:CreateTags",
+						"ec2:CreateVolume",
+						"ec2:DeleteVolume",
+						"ec2:ModifyInstanceAttribute",
+					}),
+					Resource: wildcard,
+				},
+				&IAMStatement{
+					Effect:   IAMStatementEffectAllow,
+					Action:   stringorslice.Slice([]string{"ec2:*"}),
+					Resource: wildcard,
+					Condition: Condition{
+						"StringEquals": map[string]string{
+							"ec2:ResourceTag/KubernetesCluster": b.Cluster.GetName(),
+						},
+					},
+				},
+			)
+		}
+	}
 }
 
 func addRoute53Permissions(p *IAMPolicy, hostedZoneID string) {
