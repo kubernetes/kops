@@ -687,8 +687,14 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			jumboFrameMTUSize := int32(8912)
 			cluster.Spec.Networking.Weave.MTU = &jumboFrameMTUSize
 		}
-	case "flannel":
-		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{}
+	case "flannel", "flannel-vxlan":
+		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
+			Backend: "vxlan",
+		}
+	case "flannel-udp":
+		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
+			Backend: "udp",
+		}
 	case "calico":
 		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{}
 	case "canal":

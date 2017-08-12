@@ -39,6 +39,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
@@ -109,6 +110,15 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	}
 
 	dest["ProxyEnv"] = tf.ProxyEnv
+
+	if tf.cluster.Spec.Networking != nil && tf.cluster.Spec.Networking.Flannel != nil {
+		flannelBackendType := tf.cluster.Spec.Networking.Flannel.Backend
+		if flannelBackendType == "" {
+			glog.Warningf("Defaulting flannel backend to udp (not a recommended configuration)")
+			flannelBackendType = "udp"
+		}
+		dest["FlannelBackendType"] = func() string { return flannelBackendType }
+	}
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
