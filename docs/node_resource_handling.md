@@ -16,9 +16,9 @@ resources, you might end up with a very unstable cluster.
 Each node in a cluster has resources available to it and pods scheduled to run
 on the node may or may not have resource requests or limits set on them.
 Kubernetes schedules pods on nodes that have resources that satisfy the pod's
-specified requirements. As a result, pods are sort of [bin-packed][4] onto the
-nodes in a best effort attempt to utilize as much of the resources available
-with as few nodes as possible.
+specified requirements. Broadly, pods are [bin-packed][4] onto the nodes in a
+best effort attempt to utilize as much of the resources available with as few
+nodes as possible.
 
 ```
       Node Capacity
