@@ -181,6 +181,7 @@ type ProtokubeFlags struct {
 	DNSInternalSuffix *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
 	DNSProvider       *string  `json:"dnsProvider,omitempty" flag:"dns"`
 	DNSServer         *string  `json:"dns-server,omitempty" flag:"dns-server"`
+	EtcdImage         *string  `json:"etcd-image,omitempty" flag:"etcd-image"`
 	InitializeRBAC    *bool    `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
 	LogLevel          *int32   `json:"logLevel,omitempty" flag:"v"`
 	Master            *bool    `json:"master,omitempty" flag:"master"`
@@ -195,9 +196,14 @@ type ProtokubeFlags struct {
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
 func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeFlags {
+	// @todo: i think we should allow the user to override the source of the image, but for now
+	// lets keep that for another PR and allow the version change
+	imageVersion := t.Cluster.Spec.EtcdClusters[0].Version
+
 	f := &ProtokubeFlags{
 		Channels:      t.NodeupConfig.Channels,
 		Containerized: fi.Bool(true),
+		EtcdImage:     s(fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)),
 		LogLevel:      fi.Int32(4),
 		Master:        b(t.IsMaster),
 	}
