@@ -259,6 +259,7 @@ spec:
   - name: iptable-restore
     path: /var/lib/iptables/rules-save
     mode: 0440
+    roles: [Master,Node,Bastion] # a list of roles to apply the asset to, zero defaults to all
     content: |
       some file content
 
