@@ -3,6 +3,7 @@ clusterName: etcd-main
 clusterToken: token-main
 cpuRequest: "200m"
 dataDirName: data-main
+imageSource: gcr.io/google_containers/etcd:2.2.1
 logFile: /var/log/etcd.log
 peerPort: 2380
 podName: etcd-server-main
