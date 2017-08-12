@@ -184,6 +184,8 @@ type FileAssetSpec struct {
 	Path string `json:"path,omitempty"`
 	// Mode is unix filemode for the file - defaults to 0400
 	Mode string `json:"mode,omitempty"`
+	// Roles is a list of roles the file asset should be applied, defaults to all
+	Roles []InstanceGroupRole `json:"roles,omitempty"`
 	// Content is the contents of the file
 	Content string `json:"content,omitempty"`
 	// Templated indicates the content is templated

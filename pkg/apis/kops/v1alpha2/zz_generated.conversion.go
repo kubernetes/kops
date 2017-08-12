@@ -1324,6 +1324,15 @@ func autoConvert_v1alpha2_FileAssetSpec_To_kops_FileAssetSpec(in *FileAssetSpec,
 	out.Name = in.Name
 	out.Path = in.Path
 	out.Mode = in.Mode
+	if in.Roles != nil {
+		in, out := &in.Roles, &out.Roles
+		*out = make([]kops.InstanceGroupRole, len(*in))
+		for i := range *in {
+			(*out)[i] = kops.InstanceGroupRole((*in)[i])
+		}
+	} else {
+		out.Roles = nil
+	}
 	out.Content = in.Content
 	out.Templated = in.Templated
 	out.IsBase64 = in.IsBase64
@@ -1339,6 +1348,15 @@ func autoConvert_kops_FileAssetSpec_To_v1alpha2_FileAssetSpec(in *kops.FileAsset
 	out.Name = in.Name
 	out.Path = in.Path
 	out.Mode = in.Mode
+	if in.Roles != nil {
+		in, out := &in.Roles, &out.Roles
+		*out = make([]InstanceGroupRole, len(*in))
+		for i := range *in {
+			(*out)[i] = InstanceGroupRole((*in)[i])
+		}
+	} else {
+		out.Roles = nil
+	}
 	out.Content = in.Content
 	out.Templated = in.Templated
 	out.IsBase64 = in.IsBase64
