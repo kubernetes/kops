@@ -62,7 +62,22 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 		if err := validateFileAsset(asset); err != nil {
 			return fmt.Errorf("The file asset is invalid, name: %s, error: %q", asset.Name, err)
 		}
-		// @check if the file has already been done
+		// @check if the file asset applys to us. If no roles applied we assume its applied to all roles
+		// @todo: use the containsRole when the hooks PR is merged
+		if len(asset.Roles) > 0 {
+			var found bool
+			for _, x := range asset.Roles {
+				if f.InstanceGroup.Spec.Role == x {
+					found = true
+					break
+				}
+			}
+			if !found {
+				continue
+			}
+		}
+
+		// @check if the file has already been done and skip
 		if _, found := tracker[asset.Path]; found {
 			continue
 		}
