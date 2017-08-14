@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
+	"k8s.io/kops/pkg/diff"
 )
 
 func Test_ProxyFunc(t *testing.T) {
@@ -57,20 +58,53 @@ func TestBootstrapUserData(t *testing.T) {
 	cs := []struct {
 		Role             kops.InstanceGroupRole
 		ExpectedFilePath string
+		HookSpecRoles    []kops.InstanceGroupRole
 	}{
 		{
 			Role:             "Master",
 			ExpectedFilePath: "tests/data/bootstrapscript_0.txt",
+			HookSpecRoles:    []kops.InstanceGroupRole{""},
+		},
+		{
+			Role:             "Master",
+			ExpectedFilePath: "tests/data/bootstrapscript_0.txt",
+			HookSpecRoles:    []kops.InstanceGroupRole{"Node"},
+		},
+		{
+			Role:             "Master",
+			ExpectedFilePath: "tests/data/bootstrapscript_1.txt",
+			HookSpecRoles:    []kops.InstanceGroupRole{"Master"},
+		},
+		{
+			Role:             "Master",
+			ExpectedFilePath: "tests/data/bootstrapscript_2.txt",
+			HookSpecRoles:    []kops.InstanceGroupRole{"Master", "Node"},
 		},
 		{
 			Role:             "Node",
-			ExpectedFilePath: "tests/data/bootstrapscript_1.txt",
+			ExpectedFilePath: "tests/data/bootstrapscript_3.txt",
+			HookSpecRoles:    []kops.InstanceGroupRole{""},
+		},
+		{
+			Role:             "Node",
+			ExpectedFilePath: "tests/data/bootstrapscript_4.txt",
+			HookSpecRoles:    []kops.InstanceGroupRole{"Node"},
+		},
+		{
+			Role:             "Node",
+			ExpectedFilePath: "tests/data/bootstrapscript_3.txt",
+			HookSpecRoles:    []kops.InstanceGroupRole{"Master"},
+		},
+		{
+			Role:             "Node",
+			ExpectedFilePath: "tests/data/bootstrapscript_5.txt",
+			HookSpecRoles:    []kops.InstanceGroupRole{"Master", "Node"},
 		},
 	}
 
 	for i, x := range cs {
-		spec := makeTestCluster().Spec
-		group := makeTestInstanceGroup(x.Role)
+		spec := makeTestCluster(x.HookSpecRoles).Spec
+		group := makeTestInstanceGroup(x.Role, x.HookSpecRoles)
 
 		renderNodeUpConfig := func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
 			return &nodeup.Config{}, nil
@@ -100,12 +134,14 @@ func TestBootstrapUserData(t *testing.T) {
 		}
 
 		if actual != string(expectedBytes) {
-			t.Errorf("case %d, expected: %s. got: %s", i, string(expectedBytes), actual)
+			diffString := diff.FormatDiff(string(expectedBytes), actual)
+			t.Errorf("case %d failed, actual output differed from expected.", i)
+			t.Logf("diff:\n%s\n", diffString)
 		}
 	}
 }
 
-func makeTestCluster() *kops.Cluster {
+func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole) *kops.Cluster {
 	return &kops.Cluster{
 		Spec: kops.ClusterSpec{
 			CloudProvider:     "aws",
@@ -159,11 +195,24 @@ func makeTestCluster() *kops.Cluster {
 					Port: 80,
 				},
 			},
+			Hooks: []kops.HookSpec{
+				{
+					ExecContainer: &kops.ExecContainerAction{
+						Command: []string{
+							"sh",
+							"-c",
+							"chroot /rootfs apt-get update && chroot /rootfs apt-get install -y ceph-common",
+						},
+						Image: "busybox",
+					},
+					Roles: hookSpecRoles,
+				},
+			},
 		},
 	}
 }
 
-func makeTestInstanceGroup(role kops.InstanceGroupRole) *kops.InstanceGroup {
+func makeTestInstanceGroup(role kops.InstanceGroupRole, hookSpecRoles []kops.InstanceGroupRole) *kops.InstanceGroup {
 	return &kops.InstanceGroup{
 		Spec: kops.InstanceGroupSpec{
 			Kubelet: &kops.KubeletConfigSpec{
@@ -177,6 +226,20 @@ func makeTestInstanceGroup(role kops.InstanceGroupRole) *kops.InstanceGroup {
 			Taints: []string{
 				"key1=value1:NoSchedule",
 				"key2=value2:NoExecute",
+			},
+			Hooks: []kops.HookSpec{
+				{
+					Name: "disable-update-engine.service",
+					Before: []string{
+						"update-engine.service",
+						"kubelet.service",
+					},
+					Manifest: "Type=oneshot\nExecStart=/usr/bin/systemctl stop update-engine.service",
+					Roles:    hookSpecRoles,
+				}, {
+					Name:     "apply-to-all.service",
+					Manifest: "Type=oneshot\nExecStart=/usr/bin/systemctl start apply-to-all.service",
+				},
 			},
 		},
 	}
