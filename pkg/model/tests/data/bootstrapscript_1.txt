@@ -149,16 +149,47 @@ cloudConfig:
   nodeTags: something
 docker:
   logLevel: INFO
+hooks:
+- execContainer:
+    command:
+    - sh
+    - -c
+    - chroot /rootfs apt-get update && chroot /rootfs apt-get install -y ceph-common
+    image: busybox
+  roles:
+  - Master
+kubeAPIServer:
+  image: CoreOS
+kubeControllerManager:
+  cloudProvider: aws
 kubeProxy:
   cpuRequest: 30m
   featureGates:
     AdvancedAuditing: "true"
+kubeScheduler:
+  image: SomeImage
 kubelet:
   kubeconfigPath: /etc/kubernetes/config.txt
+masterKubelet:
+  kubeconfigPath: /etc/kubernetes/config.cfg
 
 __EOF_CLUSTER_SPEC
 
 cat > ig_spec.yaml << __EOF_IG_SPEC
+hooks:
+- before:
+  - update-engine.service
+  - kubelet.service
+  manifest: |-
+    Type=oneshot
+    ExecStart=/usr/bin/systemctl stop update-engine.service
+  name: disable-update-engine.service
+  roles:
+  - Master
+- manifest: |-
+    Type=oneshot
+    ExecStart=/usr/bin/systemctl start apply-to-all.service
+  name: apply-to-all.service
 kubelet:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
 nodeLabels:
