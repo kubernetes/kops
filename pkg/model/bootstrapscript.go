@@ -105,6 +105,11 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 				spec["masterKubelet"] = cs.MasterKubelet
 			}
 
+			hooks := b.getRelevantHooks(cs.Hooks, ig.Spec.Role)
+			if len(hooks) > 0 {
+				spec["hooks"] = hooks
+			}
+
 			content, err := yaml.Marshal(spec)
 			if err != nil {
 				return "", fmt.Errorf("error converting cluster spec to yaml for inclusion within bootstrap script: %v", err)
@@ -117,6 +122,10 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 			spec["kubelet"] = ig.Spec.Kubelet
 			spec["nodeLabels"] = ig.Spec.NodeLabels
 			spec["taints"] = ig.Spec.Taints
+			hooks := b.getRelevantHooks(ig.Spec.Hooks, ig.Spec.Role)
+			if len(hooks) > 0 {
+				spec["hooks"] = hooks
+			}
 
 			content, err := yaml.Marshal(spec)
 			if err != nil {
@@ -131,6 +140,24 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 		return nil, err
 	}
 	return fi.WrapResource(templateResource), nil
+}
+
+// getRelevantHooks returns a list of hooks to be applied to the instance group
+func (b *BootstrapScript) getRelevantHooks(hooks []kops.HookSpec, role kops.InstanceGroupRole) []kops.HookSpec {
+	relevantHooks := []kops.HookSpec{}
+	for _, hook := range hooks {
+		if len(hook.Roles) == 0 {
+			relevantHooks = append(relevantHooks, hook)
+			continue
+		}
+		for _, hookRole := range hook.Roles {
+			if role == hookRole {
+				relevantHooks = append(relevantHooks, hook)
+				break
+			}
+		}
+	}
+	return relevantHooks
 }
 
 func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {
