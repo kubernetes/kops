@@ -53,6 +53,6 @@ The Kubernetes team does not condone any statements by speakers contrary to thes
 team reserves the right to deny entrance and/or eject from an event (without refund) any individual found to
 be engaging in discriminatory or offensive speech or actions.
 
-Please bring any concerns to to the immediate attention of Kubernetes event staff
+Please bring any concerns to the immediate attention of Kubernetes event staff
 
 
