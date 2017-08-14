@@ -1065,6 +1065,7 @@ func autoConvert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in *kops.EtcdMem
 func autoConvert_v1alpha1_ExecContainerAction_To_kops_ExecContainerAction(in *ExecContainerAction, out *kops.ExecContainerAction, s conversion.Scope) error {
 	out.Image = in.Image
 	out.Command = in.Command
+	out.Environment = in.Environment
 	return nil
 }
 
@@ -1076,6 +1077,7 @@ func Convert_v1alpha1_ExecContainerAction_To_kops_ExecContainerAction(in *ExecCo
 func autoConvert_kops_ExecContainerAction_To_v1alpha1_ExecContainerAction(in *kops.ExecContainerAction, out *ExecContainerAction, s conversion.Scope) error {
 	out.Image = in.Image
 	out.Command = in.Command
+	out.Environment = in.Environment
 	return nil
 }
 
@@ -1235,6 +1237,19 @@ func Convert_kops_HTTPProxy_To_v1alpha1_HTTPProxy(in *kops.HTTPProxy, out *HTTPP
 }
 
 func autoConvert_v1alpha1_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Disabled = in.Disabled
+	if in.Roles != nil {
+		in, out := &in.Roles, &out.Roles
+		*out = make([]kops.InstanceGroupRole, len(*in))
+		for i := range *in {
+			(*out)[i] = kops.InstanceGroupRole((*in)[i])
+		}
+	} else {
+		out.Roles = nil
+	}
+	out.Requires = in.Requires
+	out.Before = in.Before
 	if in.ExecContainer != nil {
 		in, out := &in.ExecContainer, &out.ExecContainer
 		*out = new(kops.ExecContainerAction)
@@ -1244,6 +1259,7 @@ func autoConvert_v1alpha1_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.Hook
 	} else {
 		out.ExecContainer = nil
 	}
+	out.Manifest = in.Manifest
 	return nil
 }
 
@@ -1253,6 +1269,19 @@ func Convert_v1alpha1_HookSpec_To_kops_HookSpec(in *HookSpec, out *kops.HookSpec
 }
 
 func autoConvert_kops_HookSpec_To_v1alpha1_HookSpec(in *kops.HookSpec, out *HookSpec, s conversion.Scope) error {
+	out.Name = in.Name
+	out.Disabled = in.Disabled
+	if in.Roles != nil {
+		in, out := &in.Roles, &out.Roles
+		*out = make([]InstanceGroupRole, len(*in))
+		for i := range *in {
+			(*out)[i] = InstanceGroupRole((*in)[i])
+		}
+	} else {
+		out.Roles = nil
+	}
+	out.Requires = in.Requires
+	out.Before = in.Before
 	if in.ExecContainer != nil {
 		in, out := &in.ExecContainer, &out.ExecContainer
 		*out = new(ExecContainerAction)
@@ -1262,6 +1291,7 @@ func autoConvert_kops_HookSpec_To_v1alpha1_HookSpec(in *kops.HookSpec, out *Hook
 	} else {
 		out.ExecContainer = nil
 	}
+	out.Manifest = in.Manifest
 	return nil
 }
 
@@ -1348,7 +1378,17 @@ func autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.RootVolumeType = in.RootVolumeType
 	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeOptimization = in.RootVolumeOptimization
-	// WARNING: in.Zones requires manual conversion: does not exist in peer-type
+	if in.Hooks != nil {
+		in, out := &in.Hooks, &out.Hooks
+		*out = make([]kops.HookSpec, len(*in))
+		for i := range *in {
+			if err := Convert_v1alpha1_HookSpec_To_kops_HookSpec(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Hooks = nil
+	}
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
@@ -1365,6 +1405,7 @@ func autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 		out.Kubelet = nil
 	}
 	out.Taints = in.Taints
+	// WARNING: in.Zones requires manual conversion: does not exist in peer-type
 	return nil
 }
 
@@ -1379,6 +1420,17 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in *kops.I
 	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeOptimization = in.RootVolumeOptimization
 	// WARNING: in.Subnets requires manual conversion: does not exist in peer-type
+	if in.Hooks != nil {
+		in, out := &in.Hooks, &out.Hooks
+		*out = make([]HookSpec, len(*in))
+		for i := range *in {
+			if err := Convert_kops_HookSpec_To_v1alpha1_HookSpec(&(*in)[i], &(*out)[i], s); err != nil {
+				return err
+			}
+		}
+	} else {
+		out.Hooks = nil
+	}
 	out.MaxPrice = in.MaxPrice
 	out.AssociatePublicIP = in.AssociatePublicIP
 	out.AdditionalSecurityGroups = in.AdditionalSecurityGroups
