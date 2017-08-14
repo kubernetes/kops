@@ -21,7 +21,7 @@ This commands validates the following components:
   # Validate a cluster.
   # This command uses the currently selected kops cluster as
   # set by the kubectl config.
-  kubernetes validate cluster
+  kops validate cluster
 ```
 
 ### Options inherited from parent commands
