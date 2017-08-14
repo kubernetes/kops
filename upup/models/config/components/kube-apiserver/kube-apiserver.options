@@ -6,6 +6,6 @@ KubeAPIServer:
   EtcdServersOverrides:
   - /events#http://127.0.0.1:4002
   ServiceClusterIPRange: {{ .ServiceClusterIPRange }}
-  LogLevel: 2
+  LogLevel: 0
   AllowPrivileged: true
   Image: {{ Image "kube-apiserver" }}
