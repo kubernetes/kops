@@ -150,15 +150,32 @@ type Assets struct {
 	FileRepository    *string `json:"fileRepository,omitempty"`
 }
 
+// HookSpec is a definition hook
 type HookSpec struct {
+	// Name is an optional name for the hook, otherwise the name is kops-hook-<index>
+	Name string `json:"name,omitempty"`
+	// Disabled indicates if you want the unit switched off
+	Disabled bool `json:"disabled,omitempty"`
+	// Roles is an optional list of roles the hook should be rolled out to, defaults to all
+	Roles []InstanceGroupRole `json:"roles,omitempty"`
+	// Requires is a series of systemd units the action requires
+	Requires []string `json:"requires,omitempty"`
+	// Before is a series of systemd units which this hook must run before
+	Before []string `json:"before,omitempty"`
+	// ExecContainer is the image itself
 	ExecContainer *ExecContainerAction `json:"execContainer,omitempty"`
+	// Manifest is a raw systemd unit file
+	Manifest string `json:"manifest,omitempty"`
 }
 
+// ExecContainerAction defines an hood action
 type ExecContainerAction struct {
-	// Docker image name.
+	// Image is the docker image
 	Image string `json:"image,omitempty" `
-
+	// Command is the command supplied to the above image
 	Command []string `json:"command,omitempty"`
+	// Environment is a map of environment variables added to the hook
+	Environment map[string]string `json:"environment,omitempty"`
 }
 
 type AuthenticationSpec struct {
