@@ -18,6 +18,9 @@ package awsup
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -31,13 +34,12 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
-	"strings"
-	"time"
 )
 
 // By default, aws-sdk-go only retries 3 times, which doesn't give
@@ -99,6 +101,9 @@ type AWSCloud interface {
 
 	// CreateELBTags will add tags to the specified loadBalancer, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 	CreateELBTags(loadBalancerName string, tags map[string]string) error
+
+	// DeleteTags will delete tags from the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
+	DeleteTags(id string, tags map[string]string) error
 
 	// DescribeInstance is a helper that queries for the specified instance by id
 	DescribeInstance(instanceID string) (*ec2.Instance, error)
@@ -343,6 +348,10 @@ func createTags(c AWSCloud, resourceId string, tags map[string]string) error {
 
 // DeleteTags will remove tags from the specified resource, retrying up to MaxCreateTagsAttempts times if it hits an eventual-consistency type error
 func (c *awsCloudImplementation) DeleteTags(resourceId string, tags map[string]string) error {
+	return deleteTags(c, resourceId, tags)
+}
+
+func deleteTags(c AWSCloud, resourceId string, tags map[string]string) error {
 	if len(tags) == 0 {
 		return nil
 	}
