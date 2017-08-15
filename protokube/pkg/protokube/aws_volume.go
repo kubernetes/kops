@@ -164,66 +164,7 @@ func newEc2Filter(name string, value string) *ec2.Filter {
 func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, error) {
 	var volumes []*Volume
 	err := a.ec2.DescribeVolumesPages(request, func(p *ec2.DescribeVolumesOutput, lastPage bool) (shouldContinue bool) {
-		for _, v := range p.Volumes {
-			volumeID := aws.StringValue(v.VolumeId)
-			vol := &Volume{
-				ID: volumeID,
-				Info: VolumeInfo{
-					Description: volumeID,
-				},
-			}
-			state := aws.StringValue(v.State)
-
-			vol.Status = state
-
-			for _, attachment := range v.Attachments {
-				vol.AttachedTo = aws.StringValue(attachment.InstanceId)
-				if aws.StringValue(attachment.InstanceId) == a.instanceId {
-					vol.LocalDevice = aws.StringValue(attachment.Device)
-				}
-			}
-
-			skipVolume := false
-
-			for _, tag := range v.Tags {
-				k := aws.StringValue(tag.Key)
-				v := aws.StringValue(tag.Value)
-
-				switch k {
-				case awsup.TagClusterName, "Name":
-					{
-						// Ignore
-					}
-				//case TagNameMasterId:
-				//	id, err := strconv.Atoi(v)
-				//	if err != nil {
-				//		glog.Warningf("error parsing master-id tag on volume %q %s=%s; skipping volume", volumeID, k, v)
-				//		skipVolume = true
-				//	} else {
-				//		vol.Info.MasterID = id
-				//	}
-				default:
-					if strings.HasPrefix(k, awsup.TagNameEtcdClusterPrefix) {
-						etcdClusterName := strings.TrimPrefix(k, awsup.TagNameEtcdClusterPrefix)
-						spec, err := ParseEtcdClusterSpec(etcdClusterName, v)
-						if err != nil {
-							// Fail safe
-							glog.Warningf("error parsing etcd cluster tag %q on volume %q; skipping volume: %v", v, volumeID, err)
-							skipVolume = true
-						}
-						vol.Info.EtcdClusters = append(vol.Info.EtcdClusters, spec)
-					} else if strings.HasPrefix(k, awsup.TagNameRolePrefix) {
-						// Ignore
-					} else {
-						glog.Warningf("unknown tag on volume %q: %s=%s", volumeID, k, v)
-					}
-				}
-			}
-
-			if !skipVolume {
-				volumes = append(volumes, vol)
-			}
-		}
+		volumes = a.findEctdVolumes(p, volumes)
 		return true
 	})
 
@@ -231,6 +172,75 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 		return nil, fmt.Errorf("error querying for EC2 volumes: %v", err)
 	}
 	return volumes, nil
+}
+
+func (a *AWSVolumes) findEctdVolumes(p *ec2.DescribeVolumesOutput, volumes []*Volume) []*Volume {
+	for _, v := range p.Volumes {
+
+		volumeID := aws.StringValue(v.VolumeId)
+		vol := &Volume{
+			ID: volumeID,
+			Info: VolumeInfo{
+				Description: volumeID,
+			},
+		}
+		state := aws.StringValue(v.State)
+
+		vol.Status = state
+
+		for _, attachment := range v.Attachments {
+			vol.AttachedTo = aws.StringValue(attachment.InstanceId)
+			if aws.StringValue(attachment.InstanceId) == a.instanceId {
+				vol.LocalDevice = aws.StringValue(attachment.Device)
+			}
+		}
+
+		// skip all volumes only set to false if we find correct etcd tags
+		skipVolume := true
+
+		// looking for correct etcd tags
+		for _, tag := range v.Tags {
+			k := aws.StringValue(tag.Key)
+			v := aws.StringValue(tag.Value)
+
+			switch k {
+			case awsup.TagClusterName, "Name":
+				{
+					// Ignore
+					glog.V(8).Infof("Ignoring tag: %q", k)
+				}
+			default:
+				if strings.HasPrefix(k, awsup.TagNameEtcdClusterPrefix) {
+					etcdClusterName := strings.TrimPrefix(k, awsup.TagNameEtcdClusterPrefix)
+					spec, err := ParseEtcdClusterSpec(etcdClusterName, v)
+					if err != nil {
+						// Fail safe
+						glog.Warningf("error parsing etcd cluster tag %q on volume %q; skipping volume: %v", v, volumeID, err)
+					} else {
+						glog.V(8).Infof("adding volume etcd cluster: %q, volume id: %q", spec.ClusterKey, volumeID)
+						// found etcd volume and adding the drive
+						vol.Info.EtcdClusters = append(vol.Info.EtcdClusters, spec)
+						skipVolume = false
+						break
+					}
+				} else if strings.HasPrefix(k, awsup.TagNameRolePrefix) {
+					// Ignore
+					glog.V(8).Infof("Ignoring tag: %q", k)
+				} else {
+					glog.Warningf("unknown tag on volume %q: %s=%s", volumeID, k, v)
+				}
+			}
+		}
+
+		if skipVolume {
+			glog.Infof("Skipping volume id:%q", vol.ID)
+		} else {
+			glog.Infof("Adding volume id:%q", vol.ID)
+			volumes = append(volumes, vol)
+		}
+	}
+
+	return volumes
 }
 
 //func (a *AWSVolumes) FindMountedVolumes() ([]*Volume, error) {
@@ -319,6 +329,7 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) error {
 	}
 
 	// Wait (forever) for volume to attach or reach a failure-to-attach condition
+	// FIXME we need to have this timeout. As an error can cause an infinite loop.
 	for {
 		request := &ec2.DescribeVolumesInput{
 			VolumeIds: []*string{&volumeID},
