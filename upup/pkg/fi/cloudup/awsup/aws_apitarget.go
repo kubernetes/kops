@@ -18,11 +18,12 @@ package awsup
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/golang/glog"
+
 	"k8s.io/kops/upup/pkg/fi"
-	"time"
 )
 
 type AWSAPITarget struct {
@@ -47,6 +48,10 @@ func (t *AWSAPITarget) Finish(taskMap map[string]fi.Task) error {
 
 func (t *AWSAPITarget) AddAWSTags(id string, expected map[string]string) error {
 	return t.Cloud.AddAWSTags(id, expected)
+}
+
+func (t *AWSAPITarget) DeleteTags(id string, tags map[string]string) error {
+	return t.Cloud.DeleteTags(id, tags)
 }
 
 func (t *AWSAPITarget) AddELBTags(loadBalancerName string, expected map[string]string) error {

@@ -149,7 +149,31 @@ func (_ *EBSVolume) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *EBSVolume) e
 		e.ID = response.VolumeId
 	}
 
-	return t.AddAWSTags(*e.ID, e.Tags)
+	if err := t.AddAWSTags(*e.ID, e.Tags); err != nil {
+		return fmt.Errorf("error adding AWS Tags to EBS Volume: %v", err)
+	}
+
+	if a != nil && len(a.Tags) > 0 {
+		tagsToDelete := e.getEBSVolumeTagsToDelete(a.Tags)
+		if len(tagsToDelete) > 0 {
+			return t.DeleteTags(*e.ID, tagsToDelete)
+		}
+	}
+
+	return nil
+}
+
+// getEBSVolumeTagsToDelete loops through the currently set tags and builds
+// a list of tags to be deleted from the EBS Volume
+func (e *EBSVolume) getEBSVolumeTagsToDelete(currentTags map[string]string) map[string]string {
+	tagsToDelete := map[string]string{}
+	for k, v := range currentTags {
+		if _, ok := e.Tags[k]; !ok {
+			tagsToDelete[k] = v
+		}
+	}
+
+	return tagsToDelete
 }
 
 type terraformVolume struct {

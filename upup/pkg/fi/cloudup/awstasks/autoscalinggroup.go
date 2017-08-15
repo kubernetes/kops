@@ -222,10 +222,16 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 			changes.Subnets = nil
 		}
 
-		var tagsRequest *autoscaling.CreateOrUpdateTagsInput
+		var updateTagsRequest *autoscaling.CreateOrUpdateTagsInput
+		var deleteTagsRequest *autoscaling.DeleteTagsInput
 		if changes.Tags != nil {
-			tagsRequest = &autoscaling.CreateOrUpdateTagsInput{}
-			tagsRequest.Tags = tags
+			updateTagsRequest = &autoscaling.CreateOrUpdateTagsInput{Tags: tags}
+
+			if a != nil && len(a.Tags) > 0 {
+				deleteTagsRequest = &autoscaling.DeleteTagsInput{}
+				deleteTagsRequest.Tags = e.getASGTagsToDelete(a.Tags)
+			}
+
 			changes.Tags = nil
 		}
 
@@ -236,15 +242,19 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 
 		glog.V(2).Infof("Updating autoscaling group %s", *e.Name)
 
-		_, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request)
-		if err != nil {
+		if _, err := t.Cloud.Autoscaling().UpdateAutoScalingGroup(request); err != nil {
 			return fmt.Errorf("error updating AutoscalingGroup: %v", err)
 		}
 
-		if tagsRequest != nil {
-			_, err := t.Cloud.Autoscaling().CreateOrUpdateTags(tagsRequest)
-			if err != nil {
+		if updateTagsRequest != nil {
+			if _, err := t.Cloud.Autoscaling().CreateOrUpdateTags(updateTagsRequest); err != nil {
 				return fmt.Errorf("error updating AutoscalingGroup tags: %v", err)
+			}
+		}
+
+		if deleteTagsRequest != nil && len(deleteTagsRequest.Tags) > 0 {
+			if _, err := t.Cloud.Autoscaling().DeleteTags(deleteTagsRequest); err != nil {
+				return fmt.Errorf("error deleting old AutoscalingGroup tags: %v", err)
 			}
 		}
 	}
@@ -252,6 +262,24 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 	// TODO: Use PropagateAtLaunch = false for tagging?
 
 	return nil // We have
+}
+
+// getASGTagsToDelete loops through the currently set tags and builds a list of
+// tags to be deleted from the Autoscaling Group
+func (e *AutoscalingGroup) getASGTagsToDelete(currentTags map[string]string) []*autoscaling.Tag {
+	tagsToDelete := []*autoscaling.Tag{}
+
+	for k, v := range currentTags {
+		if _, ok := e.Tags[k]; !ok {
+			tagsToDelete = append(tagsToDelete, &autoscaling.Tag{
+				Key:          aws.String(k),
+				Value:        aws.String(v),
+				ResourceId:   e.Name,
+				ResourceType: aws.String("auto-scaling-group"),
+			})
+		}
+	}
+	return tagsToDelete
 }
 
 type terraformASGTag struct {
