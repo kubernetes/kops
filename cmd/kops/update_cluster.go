@@ -166,7 +166,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 		err = keyStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, authorized)
 		if err != nil {
-			return fmt.Errorf("error addding SSH public key: %v", err)
+			return fmt.Errorf("error adding SSH public key: %v", err)
 		}
 
 		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
