@@ -41,7 +41,7 @@ type ClusterList struct {
 
 // ClusterSpec defines the configuration for a cluster
 type ClusterSpec struct {
-	// The Channel we are following
+	// Channel we are following
 	Channel string `json:"channel,omitempty"`
 	// ConfigBase is the path where we store configuration for the cluster
 	// This might be different that the location when the cluster spec itself is stored,
@@ -165,9 +165,12 @@ type FileAssetSpec struct {
 	IsBase64 bool `json:"isBase64,omitempty"`
 }
 
+// Assets defined the privately hosted assets
 type Assets struct {
+	// ContainerRegistry is a url for to a docker registry
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
-	FileRepository    *string `json:"fileRepository,omitempty"`
+	// FileRepository is the url for a private file serving repository
+	FileRepository *string `json:"fileRepository,omitempty"`
 }
 
 // IAMSpec adds control over the IAM security policies applied to resources
