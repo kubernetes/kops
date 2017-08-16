@@ -18,14 +18,17 @@ package model
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/pkg/api/v1"
+	"strings"
+
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 // KubeProxyBuilder installs kube-proxy
@@ -35,6 +38,8 @@ type KubeProxyBuilder struct {
 
 var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
 
+// Build is responsible for building the kube-proxy manifest
+// @TODO we should probaby change this to a daemonset in the future and follow the kubeadm path
 func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.IsMaster {
 		// If this is a master that is not isolated, run it as a normal node also (start kube-proxy etc)
@@ -56,44 +61,40 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error marshalling manifest to yaml: %v", err)
 		}
 
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     "/etc/kubernetes/manifests/kube-proxy.manifest",
 			Contents: fi.NewBytesResource(manifest),
 			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
+		})
 	}
 
-	// Add kubeconfig
 	{
 		kubeconfig, err := b.buildPKIKubeconfig("kube-proxy")
 		if err != nil {
 			return err
 		}
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kube-proxy/kubeconfig",
 			Contents: fi.NewStringResource(kubeconfig),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
-		}
-		c.AddTask(t)
+		})
 	}
 
-	// Touch log file, so that docker doesn't create a directory instead
 	{
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:        "/var/log/kube-proxy.log",
 			Contents:    fi.NewStringResource(""),
 			Type:        nodetasks.FileType_File,
 			Mode:        s("0400"),
 			IfNotExists: true,
-		}
-		c.AddTask(t)
+		})
 	}
 
 	return nil
 }
 
+// buildPod is responsble constructing the pod spec
 func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	c := b.Cluster.Spec.KubeProxy
 	if c == nil {
@@ -120,37 +121,32 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		return nil, fmt.Errorf("Error parsing CPURequest=%q", c.CPURequest)
 	}
 
-	flags, err := flagbuilder.BuildFlags(c)
+	flags, err := flagbuilder.BuildFlagsList(c)
 	if err != nil {
 		return nil, fmt.Errorf("error building kubeproxy flags: %v", err)
 	}
-
 	image := c.Image
-	cmd := "echo -998 > /proc/$$$/oom_score_adj && kube-proxy --kubeconfig=/var/lib/kube-proxy/kubeconfig --conntrack-max-per-core=131072 --resource-container=\"\" "
-	cmd += flags
 
-	// cmd += " 1>>/var/log/kube-proxy.log 2>&1"
-	cmd += " 2>&1 | /usr/bin/tee /var/log/kube-proxy.log"
-
-	glog.V(2).Infof("built kube-proxy command: %s", cmd)
-
-	command := []string{
-		"/bin/sh", "-c",
-		cmd,
-	}
+	flags = append(flags, []string{
+		"--conntrack-max-per-core=131072",
+		"--kubeconfig=/var/lib/kube-proxy/kubeconfig",
+		"--oom-score-adj=-998",
+		`--resource-container=""`}...)
 
 	container := &v1.Container{
-		Name:            "kube-proxy",
-		Image:           image,
-		ImagePullPolicy: v1.PullIfNotPresent,
-		Command:         command,
-		SecurityContext: &v1.SecurityContext{
-			Privileged: fi.Bool(true),
+		Name:  "kube-proxy",
+		Image: image,
+		Command: []string{
+			"/bin/sh", "-c",
+			"/usr/local/bin/kube-proxy " + strings.Join(sortedStrings(flags), " ") + " 2>&1 | /usr/bin/tee -a /var/log/kube-proxy.log",
 		},
 		Resources: v1.ResourceRequirements{
 			Requests: v1.ResourceList{
 				"cpu": cpuRequest,
 			},
+		},
+		SecurityContext: &v1.SecurityContext{
+			Privileged: fi.Bool(true),
 		},
 	}
 
@@ -158,7 +154,6 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "kube-proxy",
 			Namespace: "kube-system",
-
 			Labels: map[string]string{
 				"k8s-app": "kube-proxy",
 				"tier":    "node",
@@ -179,12 +174,8 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	{
-		// Map /var/log to host
-		varlog := addHostPathMapping(pod, container, "varlog", "/var/log")
-		varlog.ReadOnly = false
-
-		// Map kubeconfig from host
 		addHostPathMapping(pod, container, "kubeconfig", "/var/lib/kube-proxy/kubeconfig")
+		addHostPathMapping(pod, container, "logfile", "/var/log/kube-proxy.log").ReadOnly = false
 
 		// Map SSL certs from host: /usr/share/ca-certificates -> /etc/ssl/certs
 		sslCertsHost := addHostPathMapping(pod, container, "ssl-certs-hosts", "/usr/share/ca-certificates")

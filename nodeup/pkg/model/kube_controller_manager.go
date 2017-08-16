@@ -21,13 +21,14 @@ import (
 	"path/filepath"
 	"strings"
 
+	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/kops/pkg/flagbuilder"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 // KubeControllerManagerBuilder install kube-controller-manager (just the manifest at the moment)
@@ -37,13 +38,14 @@ type KubeControllerManagerBuilder struct {
 
 var _ fi.ModelBuilder = &KubeControllerManagerBuilder{}
 
+// Build is responsible for configuring the kube-controller-manager
 func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
 	}
 
 	// If we're using the CertificateSigner, include the CA Key
-	// TODO: use a per-machine key?  use KMS?
+	// @TODO: use a per-machine key?  use KMS?
 	if b.useCertificateSigner() {
 		ca, err := b.KeyStore.PrivateKey(fi.CertificateId_CA, false)
 		if err != nil {
@@ -55,12 +57,11 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     filepath.Join(b.PathSrvKubernetes(), "ca.key"),
 			Contents: fi.NewStringResource(serialized),
 			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
+		})
 	}
 
 	{
@@ -82,33 +83,29 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// Add kubeconfig
 	{
-		// TODO: Change kubeconfig to be https
-
-		kubeconfig, err := b.buildPKIKubeconfig("kube-controller-manager")
-		if err != nil {
-			return err
-		}
-		t := &nodetasks.File{
-			Path:     "/var/lib/kube-controller-manager/kubeconfig",
-			Contents: fi.NewStringResource(kubeconfig),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0400"),
-		}
-		c.AddTask(t)
-	}
-
-	// Touch log file, so that docker doesn't create a directory instead
-	{
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:        "/var/log/kube-controller-manager.log",
 			Contents:    fi.NewStringResource(""),
 			Type:        nodetasks.FileType_File,
 			Mode:        s("0400"),
 			IfNotExists: true,
+		})
+	}
+
+	// Add kubeconfig
+	{
+		// @TODO: Change kubeconfig to be https
+		kubeconfig, err := b.buildPKIKubeconfig("kube-controller-manager")
+		if err != nil {
+			return err
 		}
-		c.AddTask(t)
+		c.AddTask(&nodetasks.File{
+			Path:     "/var/lib/kube-controller-manager/kubeconfig",
+			Contents: fi.NewStringResource(kubeconfig),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0400"),
+		})
 	}
 
 	return nil
@@ -121,32 +118,27 @@ func (b *KubeControllerManagerBuilder) useCertificateSigner() bool {
 
 func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	kcm := b.Cluster.Spec.KubeControllerManager
-
 	kcm.RootCAFile = filepath.Join(b.PathSrvKubernetes(), "ca.crt")
-
 	kcm.ServiceAccountPrivateKeyFile = filepath.Join(b.PathSrvKubernetes(), "server.key")
 
-	flags, err := flagbuilder.BuildFlags(kcm)
+	flags, err := flagbuilder.BuildFlagsList(kcm)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-controller-manager flags: %v", err)
 	}
 
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
-		flags += " --cloud-config=" + CloudConfigFilePath
+		flags = append(flags, "--cloud-config="+CloudConfigFilePath)
 	}
 
 	// Add kubeconfig flag
-	flags += " --kubeconfig=" + "/var/lib/kube-controller-manager/kubeconfig"
+	flags = append(flags, "--kubeconfig="+"/var/lib/kube-controller-manager/kubeconfig")
 
 	// Configure CA certificate to be used to sign keys, if we are using CSRs
 	if b.useCertificateSigner() {
-		flags += " --cluster-signing-cert-file=" + filepath.Join(b.PathSrvKubernetes(), "ca.crt")
-		flags += " --cluster-signing-key-file=" + filepath.Join(b.PathSrvKubernetes(), "ca.key")
-	}
-
-	redirectCommand := []string{
-		"/bin/sh", "-c", "/usr/local/bin/kube-controller-manager " + flags + " 1>>/var/log/kube-controller-manager.log 2>&1",
+		flags = append(flags, []string{
+			"--cluster-signing-cert-file=" + filepath.Join(b.PathSrvKubernetes(), "ca.crt"),
+			"--cluster-signing-key-file=" + filepath.Join(b.PathSrvKubernetes(), "ca.key")}...)
 	}
 
 	pod := &v1.Pod{
@@ -169,12 +161,11 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-controller-manager",
 		Image: b.Cluster.Spec.KubeControllerManager.Image,
-		Resources: v1.ResourceRequirements{
-			Requests: v1.ResourceList{
-				v1.ResourceCPU: resource.MustParse("100m"),
-			},
+		Command: []string{
+			"/bin/sh", "-c",
+			"/usr/local/bin/kube-controller-manager " + strings.Join(sortedStrings(flags), " ") + " 2>&1 | /bin/tee -a /var/log/kube-controller-manager.log",
 		},
-		Command: redirectCommand,
+		Env: getProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
 				HTTPGet: &v1.HTTPGetAction{
@@ -186,12 +177,15 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 			InitialDelaySeconds: 15,
 			TimeoutSeconds:      15,
 		},
-		Env: getProxyEnvVars(b.Cluster.Spec.EgressProxy),
+		Resources: v1.ResourceRequirements{
+			Requests: v1.ResourceList{
+				v1.ResourceCPU: resource.MustParse("100m"),
+			},
+		},
 	}
 
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
-
 		addHostPathMapping(pod, container, name, path)
 	}
 

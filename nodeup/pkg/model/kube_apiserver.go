@@ -21,15 +21,16 @@ import (
 	"path/filepath"
 	"strings"
 
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/client-go/pkg/api/v1"
 )
 
 const PathAuthnConfig = "/etc/kubernetes/authn.config"
@@ -47,8 +48,7 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return nil
 	}
 
-	err := b.writeAuthenticationConfig(c)
-	if err != nil {
+	if err := b.writeAuthenticationConfig(c); err != nil {
 		return err
 	}
 
@@ -80,12 +80,11 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error marshalling manifest to yaml: %v", err)
 		}
 
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     "/etc/kubernetes/manifests/kube-apiserver.manifest",
 			Contents: fi.NewBytesResource(manifest),
 			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
+		})
 	}
 
 	// @check if we are using secure client certificates for kubelet and grab the certificates
@@ -99,17 +98,13 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	// Touch log file, so that docker doesn't create a directory instead
-	{
-		t := &nodetasks.File{
-			Path:        "/var/log/kube-apiserver.log",
-			Contents:    fi.NewStringResource(""),
-			Type:        nodetasks.FileType_File,
-			Mode:        s("0400"),
-			IfNotExists: true,
-		}
-		c.AddTask(t)
-	}
+	c.AddTask(&nodetasks.File{
+		Path:        "/var/log/kube-apiserver.log",
+		Contents:    fi.NewStringResource(""),
+		Type:        nodetasks.FileType_File,
+		Mode:        s("0400"),
+		IfNotExists: true,
+	})
 
 	return nil
 }
@@ -150,12 +145,11 @@ func (b *KubeAPIServerBuilder) writeAuthenticationConfig(c *fi.ModelBuilderConte
 			return fmt.Errorf("error marshalling authentication config to yaml: %v", err)
 		}
 
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     PathAuthnConfig,
 			Contents: fi.NewBytesResource(manifest),
 			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
+		})
 
 		return nil
 	}
@@ -195,18 +189,14 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	// build the kube-apiserver flags for the service
-	flags, err := flagbuilder.BuildFlags(b.Cluster.Spec.KubeAPIServer)
+	flags, err := flagbuilder.BuildFlagsList(b.Cluster.Spec.KubeAPIServer)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-apiserver flags: %v", err)
 	}
 
-	// Add cloud config file if needed
+	// add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
-		flags += " --cloud-config=" + CloudConfigFilePath
-	}
-
-	redirectCommand := []string{
-		"/bin/sh", "-c", "/usr/local/bin/kube-apiserver " + flags + " 1>>/var/log/kube-apiserver.log 2>&1",
+		flags = append(flags, fmt.Sprintf("--cloud-config=%s", CloudConfigFilePath))
 	}
 
 	pod := &v1.Pod{
@@ -242,12 +232,11 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-apiserver",
 		Image: b.Cluster.Spec.KubeAPIServer.Image,
-		Resources: v1.ResourceRequirements{
-			Requests: v1.ResourceList{
-				v1.ResourceCPU: resource.MustParse("150m"),
-			},
+		Command: []string{
+			"/bin/sh", "-c",
+			"/usr/local/bin/kube-apiserver " + strings.Join(sortedStrings(flags), " ") + " 2>&1 | /bin/tee -a /var/log/kube-apiserver.log",
 		},
-		Command: redirectCommand,
+		Env: getProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
 				HTTPGet: probeAction,
@@ -267,13 +256,19 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 				HostPort:      8080,
 			},
 		},
-		Env: getProxyEnvVars(b.Cluster.Spec.EgressProxy),
+		Resources: v1.ResourceRequirements{
+			Requests: v1.ResourceList{
+				v1.ResourceCPU: resource.MustParse("150m"),
+			},
+		},
 	}
 
 	for _, path := range b.SSLHostPaths() {
 		name := strings.Replace(path, "/", "", -1)
 		addHostPathMapping(pod, container, name, path)
 	}
+
+	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log").ReadOnly = false
 
 	// Add cloud config file if needed
 	if b.Cluster.Spec.CloudConfig != nil {
@@ -289,8 +284,6 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	if pathSrvSshproxy != "" {
 		addHostPathMapping(pod, container, "srvsshproxy", pathSrvSshproxy)
 	}
-
-	addHostPathMapping(pod, container, "logfile", "/var/log/kube-apiserver.log").ReadOnly = false
 
 	auditLogPath := b.Cluster.Spec.KubeAPIServer.AuditLogPath
 	if auditLogPath != nil {
@@ -312,30 +305,12 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	return pod, nil
 }
 
-func addHostPathMapping(pod *v1.Pod, container *v1.Container, name string, path string) *v1.VolumeMount {
-	pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
-		Name: name,
-		VolumeSource: v1.VolumeSource{
-			HostPath: &v1.HostPathVolumeSource{
-				Path: path,
-			},
-		},
-	})
-
-	container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
-		Name:      name,
-		MountPath: path,
-		ReadOnly:  true,
-	})
-
-	return &container.VolumeMounts[len(container.VolumeMounts)-1]
-}
-
 func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	annotations := make(map[string]string)
 	annotations["dns.alpha.kubernetes.io/internal"] = b.Cluster.Spec.MasterInternalName
 	if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.DNS != nil {
 		annotations["dns.alpha.kubernetes.io/external"] = b.Cluster.Spec.MasterPublicName
 	}
+
 	return annotations
 }
