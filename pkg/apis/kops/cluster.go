@@ -144,6 +144,9 @@ type ClusterSpec struct {
 	// This API component is under construction, will remove this comment
 	// once this API is fully functional.
 	Assets *Assets `json:"assets,omitempty"`
+
+	// IAM field adds control over the IAM security policies applied to resources
+	IAM *IAMSpec `json:"iam,omitempty"`
 }
 
 // FileAssetSpec defines the structure for a file asset
@@ -163,6 +166,11 @@ type FileAssetSpec struct {
 type Assets struct {
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
 	FileRepository    *string `json:"fileRepository,omitempty"`
+}
+
+// IAMSpec adds control over the IAM security policies applied to resources
+type IAMSpec struct {
+	Strict bool `json:"strict"`
 }
 
 // HookSpec is a definition hook
