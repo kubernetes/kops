@@ -307,7 +307,7 @@ More information about some of the elements in the `ClusterSpec` is available in
 - [Ectd Encryption](etcd_backup.md)
 - [GPU](gpu.md) setup
 - [IAM Roles](iam_roles.md) - adding additional IAM roles.
-- [Labels](lables.md)
+- [Labels](labels.md)
 - [Run In Existing VPC](run_in_existing_vpc.md)
 
 To access the full configuration that a `kops` installation is running execute:
