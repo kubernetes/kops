@@ -115,7 +115,7 @@ func up() error {
 		}
 		err = keyStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, pubKey)
 		if err != nil {
-			return fmt.Errorf("error addding SSH public key: %v", err)
+			return fmt.Errorf("error adding SSH public key: %v", err)
 		}
 	}
 
