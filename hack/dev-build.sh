@@ -33,7 +33,7 @@
 # KOPS_STATE_STORE="s3://my-dev-s3-state" \
 # CLUSTER_NAME="fullcluster.name.mydomain.io" \
 # NODEUP_BUCKET="s3-devel-bucket-name-store-nodeup" \
-# IMAGE="kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21" \
+# IMAGE="kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02" \
 # ./dev-build.sh
 # 
 # # TLDR;
