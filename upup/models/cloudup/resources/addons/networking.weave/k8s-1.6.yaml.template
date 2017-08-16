@@ -69,6 +69,7 @@ spec:
         - name: weave
           command:
             - /home/weave/launch.sh
+            - --log-level=warning
           env:
             - name: HOSTNAME
               valueFrom:
