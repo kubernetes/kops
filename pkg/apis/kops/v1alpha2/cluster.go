@@ -175,11 +175,19 @@ type ClusterSpec struct {
 
 	// Alternative locations for files and containers
 	Assets *Assets `json:"assets,omitempty"`
+
+	// IAM field adds control over the IAM security policies applied to resources
+	IAM *IAMSpec `json:"iam,omitempty"`
 }
 
 type Assets struct {
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
 	FileRepository    *string `json:"fileRepository,omitempty"`
+}
+
+// IAMSpec adds control over the IAM security policies applied to resources
+type IAMSpec struct {
+	Strict bool `json:"strict"`
 }
 
 // HookSpec is a definition hook
