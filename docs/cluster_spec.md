@@ -46,7 +46,7 @@ spec:
     - 12.34.56.78/32
 ```
 
-### apiAccess
+### kubernetesApiAccess
 
 This array configures the CIDRs that are able to access the kubernetes API. On AWS this is manifested as inbound security group rules on the ELB or master security groups.
 
@@ -54,7 +54,7 @@ Use this key to restrict cluster access to an office ip address range, for examp
 
 ```yaml
 spec:
-  apiAccess:
+  kubernetesApiAccess:
     - 12.34.56.78/32
 ```
 
