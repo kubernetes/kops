@@ -101,7 +101,7 @@ ssh admin@<master_ip>
 
 The bastion is accessed via an AWS ELB. The ELB is required to gain secure access into the private network and connect the user to the ASG that the bastion lives in. Kops will by default set the bastion ELB idle timeout to 5 minutes. This is important for SSH connections to the bastion that you plan to keep open.
 
-You can increase the ELB idle timeout by editing the main cluster config `kops edit cluster $NAME` and modifyng the following block
+You can increase the ELB idle timeout by editing the main cluster config `kops edit cluster $NAME` and modifying the following block
 
 ```yaml
 spec:
