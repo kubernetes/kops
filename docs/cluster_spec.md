@@ -313,3 +313,13 @@ spec:
   cloudConfig:
     elbSecurityGroup: sg-123445678
 ```
+
+### sshKeyName
+
+In some cases, it may be desirable to use an existing AWS SSH key instead of allowing kops to create a new one.
+Providing the name of a key already in AWS is an alternative to `--ssh-public-key`.
+
+```yaml
+spec:
+  sshKeyName: myexistingkey
+```

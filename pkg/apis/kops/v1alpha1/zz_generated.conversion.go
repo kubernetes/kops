@@ -562,6 +562,7 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.EgressProxy = nil
 	}
+	out.SSHKeyName = in.SSHKeyName
 	if in.EtcdClusters != nil {
 		in, out := &in.EtcdClusters, &out.EtcdClusters
 		*out = make([]*kops.EtcdClusterSpec, len(*in))
@@ -770,6 +771,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.EgressProxy = nil
 	}
+	out.SSHKeyName = in.SSHKeyName
 	// WARNING: in.KubernetesAPIAccess requires manual conversion: does not exist in peer-type
 	out.IsolateMasters = in.IsolateMasters
 	out.UpdatePolicy = in.UpdatePolicy
