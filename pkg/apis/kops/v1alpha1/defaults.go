@@ -74,5 +74,12 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		// Before the Authorization field was introduced, the behaviour was alwaysAllow
 		obj.Authorization.AlwaysAllow = &AlwaysAllowAuthorizationSpec{}
 	}
-
+	if obj.Networking != nil {
+		if obj.Networking.Weave != nil {
+			if obj.Networking.Weave.loglevel == "" {
+				// Populate with legacy default value; new clusters will be created with vxlan by create cluster
+				obj.Networking.Weave.loglevel = "info"
+			}
+		}
+	}
 }

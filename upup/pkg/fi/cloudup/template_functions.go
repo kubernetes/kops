@@ -105,6 +105,15 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	}
 
 	dest["ProxyEnv"] = tf.ProxyEnv
+
+	if tf.cluster.Spec.Networking != nil && tf.cluster.Spec.Networking.Weave != nil {
+		WeaveLogLevel := tf.cluster.Spec.Networking.Weave.loglevel
+		if WeaveLogLevel == "" {
+			glog.Warningf("Defaulting Weave Log Level to info")
+			WeaveLogLevel = "info"
+		}
+		dest["WeaveLogLevel"] = func() string { return WeaveLogLevel }
+	}
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer

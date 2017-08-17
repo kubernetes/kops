@@ -17,11 +17,12 @@ limitations under the License.
 package validation
 
 import (
+	"testing"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
-	"testing"
 )
 
 func Test_Validate_DNS(t *testing.T) {
@@ -161,5 +162,53 @@ func Test_Validate_DockerConfig_Storage(t *testing.T) {
 		if errs[0].Field != "docker.storage" || errs[0].Type != field.ErrorTypeNotSupported {
 			t.Fatalf("Not the expected error validating DockerConfig %q", errs)
 		}
+	}
+}
+
+func Test_Validate_Networking_Weave(t *testing.T) {
+
+	grid := []struct {
+		Input          kops.WeaveNetworkingSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.WeaveNetworkingSpec{
+				loglevel: "info",
+			},
+		},
+		{
+			Input: kops.WeaveNetworkingSpec{
+				loglevel: "debug",
+			},
+		},
+		{
+			Input: kops.WeaveNetworkingSpec{
+				loglevel: "warning",
+			},
+		},
+		{
+			Input: kops.WeaveNetworkingSpec{
+				loglevel: "error",
+			},
+		},
+		{
+			Input: kops.WeaveNetworkingSpec{
+				loglevel: "",
+			},
+			ExpectedErrors: []string{"Required value::Networking.Weave.loglevel"},
+		},
+		{
+			Input: kops.WeaveNetworkingSpec{
+				loglevel: "nope",
+			},
+			ExpectedErrors: []string{"Unsupported value::Networking.Weave.loglevel"},
+		},
+	}
+	for _, g := range grid {
+		networking := &kops.NetworkingSpec{}
+		networking.Weave = &g.Input
+
+		errs := validateNetworking(networking, field.NewPath("Networking"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}
 }
