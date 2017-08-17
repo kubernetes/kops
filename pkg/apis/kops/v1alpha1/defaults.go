@@ -75,4 +75,10 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Authorization.AlwaysAllow = &AlwaysAllowAuthorizationSpec{}
 	}
 
+	if obj.Networking.Calico != nil {
+		if obj.Networking.Calico.Datastore == "" {
+			obj.Networking.Calico.Datastore = "etcd"
+		}
+	}
+
 }

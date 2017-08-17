@@ -409,6 +409,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 			})
 			manifests[key+"-"+id] = "addons/" + location
 		}
+
 	}
 
 	if b.cluster.Spec.Networking.Canal != nil {

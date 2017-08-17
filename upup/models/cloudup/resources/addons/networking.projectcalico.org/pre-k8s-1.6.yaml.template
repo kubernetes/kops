@@ -98,6 +98,8 @@ spec:
             # Auto-detect the BGP IP address.
             - name: IP
               value: ""
+            - name: DATASTORE_TYPE
+              value: "{{ .Networking.Calico.Datastore }}"
           securityContext:
             privileged: true
           volumeMounts:

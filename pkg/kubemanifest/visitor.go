@@ -101,7 +101,7 @@ func visit(visitor Visitor, data interface{}, path []string, mutator func(interf
 		}
 
 	default:
-		return fmt.Errorf("unhandled type in manifest: %T", data)
+		return fmt.Errorf("unhandled type in manifest at path: %s, %T", path, data)
 	}
 
 	return nil
