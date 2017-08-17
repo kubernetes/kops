@@ -8,7 +8,7 @@ Output shell completion code for the given shell (bash or zsh).
 ### Synopsis
 
 
-Output shell completion code for the specified shell (bash or zsh). The shell code must be evalutated to provide interactive completion of kops commands.  This can be done by sourcing it from the .bash _profile. 
+Output shell completion code for the specified shell (bash or zsh). The shell code must be evaluated to provide interactive completion of kops commands.  This can be done by sourcing it from the .bash _profile. 
 
 Note: this requires the bash-completion framework, which is not installed by default on Mac. Once installed, bash completion must be evaluated.  This can be done by adding the following line to the .bash profile 
 
