@@ -108,13 +108,11 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 
 func TestValidateFull_Default_Validates(t *testing.T) {
 	c := buildDefaultCluster(t)
-	err := validation.ValidateCluster(c, false)
-	if err != nil {
+	if err := validation.ValidateCluster(c, false); err != nil {
 		glog.Infof("Cluster: %v", c)
 		t.Fatalf("Validate gave unexpected error (strict=false): %v", err)
 	}
-	err = validation.ValidateCluster(c, true)
-	if err != nil {
+	if err := validation.ValidateCluster(c, true); err != nil {
 		t.Fatalf("Validate gave unexpected error (strict=true): %v", err)
 	}
 }
