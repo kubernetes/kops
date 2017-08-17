@@ -113,6 +113,16 @@ spec:
     weave:
       mtu: 8912
 ```
+### Configuring Weave Log Level
+
+The Weave log level is INFO by default. It is configurable by editing the cluster and setting `loglevel` option in the weave configuration. Possible options are info, warning, error, debug
+
+```
+spec:
+  networking:
+    weave:
+      loglevel: warning
+```
 
 
 ### Calico Example for CNI and Network Policy
