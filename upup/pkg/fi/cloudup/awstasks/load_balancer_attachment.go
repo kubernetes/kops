@@ -84,6 +84,7 @@ func (e *LoadBalancerAttachment) Find(c *fi.Context) (*LoadBalancerAttachment, e
 
 			// Prevent spurious changes
 			actual.Name = e.Name // ELB attachments don't have tags
+			actual.Lifecycle = e.Lifecycle
 
 			return actual, nil
 		}
