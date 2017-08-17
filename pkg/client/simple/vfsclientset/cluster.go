@@ -90,8 +90,7 @@ func (c *ClusterVFS) List(options metav1.ListOptions) (*api.ClusterList, error) 
 }
 
 func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
-	err := validation.ValidateCluster(c, false)
-	if err != nil {
+	if err := validation.ValidateCluster(c, false); err != nil {
 		return nil, err
 	}
 
@@ -104,8 +103,7 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 		return nil, fmt.Errorf("clusterName is required")
 	}
 
-	err = r.writeConfig(r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionCreate)
-	if err != nil {
+	if err := r.writeConfig(r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionCreate); err != nil {
 		if os.IsExist(err) {
 			return nil, err
 		}
@@ -126,8 +124,7 @@ func (r *ClusterVFS) Update(c *api.Cluster) (*api.Cluster, error) {
 		return nil, fmt.Errorf("clusterName is required")
 	}
 
-	err = r.writeConfig(r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionOnlyIfExists)
-	if err != nil {
+	if err := r.writeConfig(r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionOnlyIfExists); err != nil {
 		if os.IsNotExist(err) {
 			return nil, err
 		}
