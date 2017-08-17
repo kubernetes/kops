@@ -39,6 +39,7 @@ func (b *PackagesBuilder) Build(c *fi.ModelBuilderContext) error {
 	} else if b.Distribution.IsRHELFamily() {
 		c.AddTask(&nodetasks.Package{Name: "ebtables"})
 		c.AddTask(&nodetasks.Package{Name: "ethtool"})
+		c.AddTask(&nodetasks.Package{Name: "socat"})
 	} else {
 		// Hopefully it's already installed
 		glog.Infof("ebtables package not known for distro %q", b.Distribution)
