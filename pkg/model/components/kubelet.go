@@ -17,11 +17,12 @@ limitations under the License.
 package components
 
 import (
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
-	"strings"
 )
 
 // KubeletOptionsBuilder adds options for kubelets
@@ -55,7 +56,7 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec.Kubelet.EnableDebuggingHandlers = fi.Bool(true)
 	clusterSpec.Kubelet.PodManifestPath = "/etc/kubernetes/manifests"
 	clusterSpec.Kubelet.AllowPrivileged = fi.Bool(true)
-	clusterSpec.Kubelet.LogLevel = fi.Int32(2)
+	clusterSpec.Kubelet.LogLevel = fi.Int32(0)
 	clusterSpec.Kubelet.ClusterDNS = ip.String()
 	clusterSpec.Kubelet.ClusterDomain = clusterSpec.ClusterDNSDomain
 	clusterSpec.Kubelet.NonMasqueradeCIDR = clusterSpec.NonMasqueradeCIDR
