@@ -12,9 +12,8 @@ data:
                           http://etcd-{{ $member.Name }}.internal.{{ ClusterName }}:4001
                       {{- end }}"
 
-  # True enables BGP networking, false tells Calico to enforce
-  # policy only, using native networking.
-  enable_bgp: "true"
+  # Configure the Calico backend to use.
+  calico_backend: "bird"
 
   # The CNI network configuration to install on each node.
   cni_network_config: |-
@@ -129,7 +128,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: calico/node:v1.2.1
+          image: quay.io/calico/node:v2.4.0
           resources:
             requests:
               cpu: 10m
@@ -141,16 +140,19 @@ spec:
                   name: calico-config
                   key: etcd_endpoints
             # Enable BGP.  Disable to enforce policy only.
-            - name: CALICO_NETWORKING
+            - name: CALICO_NETWORKING_BACKEND
               valueFrom:
                 configMapKeyRef:
                   name: calico-config
-                  key: enable_bgp
+                  key: calico_backend
             # Configure the IP Pool from which Pod IPs will be chosen.
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ .KubeControllerManager.ClusterCIDR }}"
             - name: CALICO_IPV4POOL_IPIP
               value: "{{- if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}cross-subnet{{- else -}}always{{- end -}}"
+            # Cluster type to identify the deployment type
+            - name: CLUSTER_TYPE
+              value: "kops,bgp"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
@@ -169,7 +171,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: calico/cni:v1.8.3
+          image: quay.io/calico/cni:v1.10.0
           resources:
             requests:
               cpu: 10m
@@ -245,7 +247,7 @@ spec:
         operator: Exists
       containers:
         - name: calico-policy-controller
-          image: calico/kube-policy-controller:v0.6.0
+          image: quay.io/calico/kube-policy-controller:v0.7.0
           resources:
             requests:
               cpu: 10m
