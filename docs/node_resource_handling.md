@@ -101,7 +101,7 @@ But, it seems fitting to recommend the following:
    your application's resource profile during idle time too closely.
 2. Always set limits – so that your application doesn't hog all the memory on a
    node during a spike.
-3. Don't set your limits for imcompressible resources too high - at the end of
+3. Don't set your limits for incompressible resources too high - at the end of
    the day, the Kubernetes scheduler schedules based on resource requests which
    match what's available on the node. During a spike, your pod technically will
    try to access resources outside what it's guaranteed to have access to. As
