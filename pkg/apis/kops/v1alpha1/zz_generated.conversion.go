@@ -532,10 +532,9 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.FileAssets != nil {
 		in, out := &in.FileAssets, &out.FileAssets
-		*out = make([]*kops.FileAssetSpec, len(*in))
+		*out = make([]kops.FileAssetSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_v1alpha1_FileAssetSpec_To_kops_FileAssetSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -747,10 +746,9 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	out.AdditionalPolicies = in.AdditionalPolicies
 	if in.FileAssets != nil {
 		in, out := &in.FileAssets, &out.FileAssets
-		*out = make([]*FileAssetSpec, len(*in))
+		*out = make([]FileAssetSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_kops_FileAssetSpec_To_v1alpha1_FileAssetSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -1225,7 +1223,6 @@ func Convert_kops_FederationSpec_To_v1alpha1_FederationSpec(in *kops.FederationS
 func autoConvert_v1alpha1_FileAssetSpec_To_kops_FileAssetSpec(in *FileAssetSpec, out *kops.FileAssetSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	out.Path = in.Path
-	out.Mode = in.Mode
 	if in.Roles != nil {
 		in, out := &in.Roles, &out.Roles
 		*out = make([]kops.InstanceGroupRole, len(*in))
@@ -1236,7 +1233,6 @@ func autoConvert_v1alpha1_FileAssetSpec_To_kops_FileAssetSpec(in *FileAssetSpec,
 		out.Roles = nil
 	}
 	out.Content = in.Content
-	out.Templated = in.Templated
 	out.IsBase64 = in.IsBase64
 	return nil
 }
@@ -1249,7 +1245,6 @@ func Convert_v1alpha1_FileAssetSpec_To_kops_FileAssetSpec(in *FileAssetSpec, out
 func autoConvert_kops_FileAssetSpec_To_v1alpha1_FileAssetSpec(in *kops.FileAssetSpec, out *FileAssetSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	out.Path = in.Path
-	out.Mode = in.Mode
 	if in.Roles != nil {
 		in, out := &in.Roles, &out.Roles
 		*out = make([]InstanceGroupRole, len(*in))
@@ -1260,7 +1255,6 @@ func autoConvert_kops_FileAssetSpec_To_v1alpha1_FileAssetSpec(in *kops.FileAsset
 		out.Roles = nil
 	}
 	out.Content = in.Content
-	out.Templated = in.Templated
 	out.IsBase64 = in.IsBase64
 	return nil
 }
@@ -1470,10 +1464,9 @@ func autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 	out.NodeLabels = in.NodeLabels
 	if in.FileAssets != nil {
 		in, out := &in.FileAssets, &out.FileAssets
-		*out = make([]*kops.FileAssetSpec, len(*in))
+		*out = make([]kops.FileAssetSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_v1alpha1_FileAssetSpec_To_kops_FileAssetSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
@@ -1524,10 +1517,9 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in *kops.I
 	out.NodeLabels = in.NodeLabels
 	if in.FileAssets != nil {
 		in, out := &in.FileAssets, &out.FileAssets
-		*out = make([]*FileAssetSpec, len(*in))
+		*out = make([]FileAssetSpec, len(*in))
 		for i := range *in {
-			// TODO: Inefficient conversion - can we improve it?
-			if err := s.Convert(&(*in)[i], &(*out)[i], 0); err != nil {
+			if err := Convert_kops_FileAssetSpec_To_v1alpha1_FileAssetSpec(&(*in)[i], &(*out)[i], s); err != nil {
 				return err
 			}
 		}
