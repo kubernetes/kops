@@ -135,7 +135,7 @@ type ClusterSpec struct {
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 
 	// A collection of files assets for deployed cluster wide
-	FileAssets []*FileAssetSpec `json:"fileAssets,omitempty"`
+	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
 
 	//HairpinMode                   string `json:",omitempty"`
 	//
@@ -260,14 +260,10 @@ type FileAssetSpec struct {
 	Name string `json:"name,omitempty"`
 	// Path is the location this file should reside
 	Path string `json:"path,omitempty"`
-	// Mode is unix filemode for the file - defaults to 0400
-	Mode string `json:"mode,omitempty"`
 	// Roles is a list of roles the file asset should be applied, defaults to all
 	Roles []InstanceGroupRole `json:"roles,omitempty"`
 	// Content is the contents of the file
 	Content string `json:"content,omitempty"`
-	// Templated indicates the content is templated
-	Templated bool `json:"templated,omitempty"`
 	// IsBase64 indicates the contents is base64 encoded
 	IsBase64 bool `json:"isBase64,omitempty"`
 }

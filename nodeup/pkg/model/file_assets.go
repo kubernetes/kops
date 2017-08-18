@@ -18,16 +18,19 @@ package model
 
 import (
 	"encoding/base64"
-	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
 	"text/template"
 
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+)
+
+const (
+	// FileAssetsDefaultPath is the default location for assets which have no path
+	FileAssetsDefaultPath string = "/srv/kubernetes/assets"
 )
 
 // FileAssetsBuilder configures the hooks
@@ -41,6 +44,12 @@ var _ fi.ModelBuilder = &FileAssetsBuilder{}
 func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 	// used to keep track of previous file, so a instanceGroup can override a cluster wide one
 	tracker := make(map[string]bool, 0)
+	// ensure the default path exists
+	c.AddTask(&nodetasks.File{
+		Path: FileAssetsDefaultPath,
+		Type: nodetasks.FileType_Directory,
+		Mode: s("0755"),
+	})
 	// do we have any instanceGroup file assets
 	if f.InstanceGroup.Spec.FileAssets != nil {
 		if err := f.buildFileAssets(c, f.InstanceGroup.Spec.FileAssets, tracker); err != nil {
@@ -57,36 +66,23 @@ func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 }
 
 // buildFileAssets is responsible for rendering the file assets to disk
-func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []*kops.FileAssetSpec, tracker map[string]bool) error {
+func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []kops.FileAssetSpec, tracker map[string]bool) error {
 	for _, asset := range assets {
-		if err := validateFileAsset(asset); err != nil {
-			return fmt.Errorf("The file asset is invalid, name: %s, error: %q", asset.Name, err)
-		}
 		// @check if the file asset applys to us. If no roles applied we assume its applied to all roles
-		// @todo: use the containsRole when the hooks PR is merged
-		if len(asset.Roles) > 0 {
-			var found bool
-			for _, x := range asset.Roles {
-				if f.InstanceGroup.Spec.Role == x {
-					found = true
-					break
-				}
-			}
-			if !found {
-				continue
-			}
-		}
-
-		// @check if the file has already been done and skip
-		if _, found := tracker[asset.Path]; found {
+		if len(asset.Roles) > 0 && !containsRole(f.InstanceGroup.Spec.Role, asset.Roles) {
 			continue
 		}
-		tracker[asset.Path] = true // update the tracker
-
-		// fill in the defaults for the file perms
-		if asset.Mode == "" {
-			asset.Mode = "0400"
+		// @check if e have a path and if not use the default path
+		assetPath := asset.Path
+		if assetPath == "" {
+			assetPath = fmt.Sprintf("%s/%s", FileAssetsDefaultPath, asset.Name)
 		}
+		// @check if the file has already been done and skip
+		if _, found := tracker[assetPath]; found {
+			continue
+		}
+		tracker[assetPath] = true // update the tracker
+
 		// @check is the contents requires decoding
 		content := asset.Content
 		if asset.IsBase64 {
@@ -99,33 +95,15 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 
 		// @check if the directory structure exist or create it
 		c.AddTask(&nodetasks.File{
-			Path: filepath.Dir(asset.Path),
+			Path: filepath.Dir(assetPath),
 			Type: nodetasks.FileType_Directory,
 			Mode: s("0755"),
 		})
 
-		var resource fi.Resource
-		var err error
-		switch asset.Templated {
-		case true:
-			resource, err = f.getRenderedResource(content)
-			if err != nil {
-				return fmt.Errorf("Failed on file assets: %s, build rendered resource, error: %q", asset.Name, err)
-			}
-		default:
-			resource = fi.NewStringResource(content)
-		}
-
-		// @check the file permissions
-		perms := asset.Mode
-		if !strings.HasPrefix(perms, "0") {
-			perms = fmt.Sprintf("%d%s", 0, perms)
-		}
-
 		c.AddTask(&nodetasks.File{
-			Contents: resource,
-			Mode:     s(perms),
-			Path:     asset.Path,
+			Contents: fi.NewStringResource(content),
+			Mode:     s("0440"),
+			Path:     assetPath,
 			Type:     nodetasks.FileType_File,
 		})
 	}
@@ -137,33 +115,4 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 var templateFuncs = template.FuncMap{
 	"split": strings.Split,
 	"join":  strings.Join,
-}
-
-// getRenderedResource is responsible for rendering the content if templated
-func (f *FileAssetsBuilder) getRenderedResource(content string) (fi.Resource, error) {
-	context := map[string]interface{}{
-		"Cluster":       f.Cluster.Spec,
-		"InstanceGroup": f.InstanceGroup.Spec,
-		"Master":        fmt.Sprintf("%t", f.IsMaster),
-		"Name":          f.InstanceGroup.Name,
-	}
-
-	resource, err := model.NewTemplateResource("FileAsset", content, templateFuncs, context)
-	if err != nil {
-		return nil, err
-	}
-
-	return resource, nil
-}
-
-// validateFileAsset performs some basic validation on the asset
-func validateFileAsset(asset *kops.FileAssetSpec) error {
-	if asset.Path == "" {
-		return errors.New("does not have a path")
-	}
-	if asset.Content == "" {
-		return errors.New("does not have any contents")
-	}
-
-	return nil
 }
