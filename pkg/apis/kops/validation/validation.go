@@ -19,7 +19,6 @@ package validation
 import (
 	"fmt"
 	"net"
-	"strconv"
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/validation"
@@ -63,7 +62,7 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 
 	if spec.FileAssets != nil {
 		for i, x := range spec.FileAssets {
-			allErrs = append(allErrs, validateFileAssetSpec(x, fieldPath.Child("fileAssets").Index(i))...)
+			allErrs = append(allErrs, validateFileAssetSpec(&x, fieldPath.Child("fileAssets").Index(i))...)
 		}
 	}
 
@@ -146,21 +145,8 @@ func validateFileAssetSpec(v *kops.FileAssetSpec, fieldPath *field.Path) field.E
 	if v.Name == "" {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), ""))
 	}
-	if v.Path == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("Path"), ""))
-	}
 	if v.Content == "" {
 		allErrs = append(allErrs, field.Required(fieldPath.Child("Content"), ""))
-	}
-	if v.Mode != "" {
-		perms := v.Mode
-		if !strings.HasPrefix(perms, "0") {
-			allErrs = append(allErrs, field.Invalid(fieldPath, v.Mode, "the file mode is invalid, should start with a 0 i.e. 0400"))
-			perms = fmt.Sprintf("%d%s", 0, perms)
-		}
-		if _, err := strconv.ParseUint(perms, 0, 32); err != nil {
-			allErrs = append(allErrs, field.Invalid(fieldPath, v.Mode, "the file mode is invalid, cannot convert mode"))
-		}
 	}
 
 	return allErrs

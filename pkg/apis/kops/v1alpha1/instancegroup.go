@@ -78,7 +78,7 @@ type InstanceGroupSpec struct {
 	// NodeLabels indicates the kubernetes labels for nodes in this group
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
 	// A collection of files assets for deployed cluster wide
-	FileAssets []*FileAssetSpec `json:"fileAssets,omitempty"`
+	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
 	// Describes the tenancy of the instance group. Can be either default or dedicated.
 	// Currently only applies to AWS.
 	Tenancy string `json:"tenancy,omitempty"`
