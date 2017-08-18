@@ -138,7 +138,7 @@ type ClusterSpec struct {
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 
 	// A collection of files assets for deployed cluster wide
-	FileAssets []*FileAssetSpec `json:"fileAssets,omitempty"`
+	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
 
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
@@ -156,24 +156,18 @@ type ClusterSpec struct {
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
-
 	// API field controls how the API is exposed outside the cluster
 	API *AccessSpec `json:"api,omitempty"`
-
 	// Authentication field controls how the cluster is configured for authentication
 	Authentication *AuthenticationSpec `json:"authentication,omitempty"`
-
 	// Authorization field controls how the cluster is configured for authorization
 	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
-
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
 
 	// Tags for AWS resources
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
-
 	// Hooks for custom actions e.g. on first installation
 	Hooks []HookSpec `json:"hooks,omitempty"`
-
 	// Alternative locations for files and containers
 	Assets *Assets `json:"assets,omitempty"`
 }
@@ -184,14 +178,10 @@ type FileAssetSpec struct {
 	Name string `json:"name,omitempty"`
 	// Path is the location this file should reside
 	Path string `json:"path,omitempty"`
-	// Mode is unix filemode for the file - defaults to 0400
-	Mode string `json:"mode,omitempty"`
 	// Roles is a list of roles the file asset should be applied, defaults to all
 	Roles []InstanceGroupRole `json:"roles,omitempty"`
 	// Content is the contents of the file
 	Content string `json:"content,omitempty"`
-	// Templated indicates the content is templated
-	Templated bool `json:"templated,omitempty"`
 	// IsBase64 indicates the contents is base64 encoded
 	IsBase64 bool `json:"isBase64,omitempty"`
 }

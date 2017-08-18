@@ -251,38 +251,17 @@ spec:
 
 ### fileAssets
 
-FileAssets permit you to place inline file content into the cluster and instanceGroup specification, which can be consumed on the nodes
+FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's desiginated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
 
 ```yaml
 spec:
   fileAssets:
   - name: iptable-restore
+    # Note if not path is specificied the default path it /srv/kubernetes/assets/<name>
     path: /var/lib/iptables/rules-save
-    mode: 0440
     roles: [Master,Node,Bastion] # a list of roles to apply the asset to, zero defaults to all
     content: |
       some file content
-
-  # you can also template the file, the Cluster, InstanceGroup is passed to the template context,
-  - name: iptable-restore
-    path: /var/lib/iptables/rules-save
-    templated: true
-    mode: 0440
-    content: |
-      some file content
-      *filter
-      :INPUT ACCEPT [0:0]
-      -A INPUT -p tcp -m state -s {{ .Cluster.NonMasqueradeCIDR }} --dport 22 --state NEW -j REJECT
-      :FORWARD ACCEPT [0:0]
-      -A FORWARD -i docker0 -p tcp -m tcp -d 169.254.169.254/32 --dport 80 -m state --state NEW -j REJECT
-      -A FORWARD -i docker0 -p tcp -m tcp --dport 2379 -m state --state NEW -j REJECT
-      -A FORWARD -i docker0 -p tcp -m tcp -d {{ .Cluster.NetworkCIDR }} --dport 22 -m state --state NEW -j REJECT
-      -A FORWARD -i docker0 -p tcp -m tcp -d {{ .Cluster.NetworkCIDR }} --dport 10250 -m state --state NEW -j REJECT
-      {{ if .Master "true" }}
-      # add something for the master nodes etc
-      {{- end }}
-      :OUTPUT ACCEPT [0:0]
-      COMMIT
 ```
 
 
