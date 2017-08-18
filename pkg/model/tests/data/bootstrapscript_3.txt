@@ -149,20 +149,12 @@ cloudConfig:
   nodeTags: something
 docker:
   logLevel: INFO
-kubeAPIServer:
-  image: CoreOS
-kubeControllerManager:
-  cloudProvider: aws
 kubeProxy:
   cpuRequest: 30m
   featureGates:
     AdvancedAuditing: "true"
-kubeScheduler:
-  image: SomeImage
 kubelet:
   kubeconfigPath: /etc/kubernetes/config.txt
-masterKubelet:
-  kubeconfigPath: /etc/kubernetes/config.cfg
 
 __EOF_CLUSTER_SPEC
 
