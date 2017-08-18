@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
@@ -204,17 +205,21 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 			glog.Warningf("No matching images specified in channel; cannot prompt for upgrade")
 		} else {
 			for _, ig := range instanceGroups {
-				if ig.Spec.Image != image.Name {
-					target := ig
-					actions = append(actions, &upgradeAction{
-						Item:     "InstanceGroup/" + target.ObjectMeta.Name,
-						Property: "Image",
-						Old:      target.Spec.Image,
-						New:      image.Name,
-						apply: func() {
-							target.Spec.Image = image.Name
-						},
-					})
+				if strings.Contains(ig.Spec.Image, "kope.io") {
+					if ig.Spec.Image != image.Name {
+						target := ig
+						actions = append(actions, &upgradeAction{
+							Item:     "InstanceGroup/" + target.ObjectMeta.Name,
+							Property: "Image",
+							Old:      target.Spec.Image,
+							New:      image.Name,
+							apply: func() {
+								target.Spec.Image = image.Name
+							},
+						})
+					}
+				} else {
+					glog.Infof("Custom image (%s) has been provided for Instance Group %q; not updating image", ig.Spec.Image, ig.GetName())
 				}
 			}
 		}
