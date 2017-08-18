@@ -17,6 +17,7 @@ limitations under the License.
 package model
 
 import (
+	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
@@ -30,6 +31,11 @@ type SSHKeyModelBuilder struct {
 var _ fi.ModelBuilder = &SSHKeyModelBuilder{}
 
 func (b *SSHKeyModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	if len(b.SSHPublicKeys) == 0 {
+		glog.Warningf("Building cluster without an SSH key; SSH access will not be possible")
+		return nil
+	}
+
 	name, err := b.SSHKeyName()
 	if err != nil {
 		return err

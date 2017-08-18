@@ -379,13 +379,14 @@ func (c *ApplyClusterCmd) Run() error {
 				"launchConfiguration": &awstasks.LaunchConfiguration{},
 			})
 
+			// TODO: We need to figure out how to safely skip this check when users really don't want an SSH key
 			if len(sshPublicKeys) == 0 {
 				return fmt.Errorf("SSH public key must be specified when running with AWS (create with `kops create secret --name %s sshpublickey admin -i ~/.ssh/id_rsa.pub`)", cluster.ObjectMeta.Name)
 			}
 
 			modelContext.SSHPublicKeys = sshPublicKeys
 
-			if len(sshPublicKeys) != 1 {
+			if len(sshPublicKeys) > 1 {
 				return fmt.Errorf("Exactly one 'admin' SSH public key can be specified when running with AWS; please delete a key using `kops delete secret`")
 			}
 
