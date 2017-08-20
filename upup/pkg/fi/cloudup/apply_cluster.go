@@ -46,6 +46,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
+	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -335,7 +336,9 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 
 			// this is a no-op for now, add tasks to this list as more DO support is added
-			l.AddTypes(map[string]interface{}{})
+			l.AddTypes(map[string]interface{}{
+				"volume": &dotasks.Volume{},
+			})
 		}
 	case kops.CloudProviderAWS:
 		{
@@ -513,6 +516,10 @@ func (c *ApplyClusterCmd) Run() error {
 
 				l.Builders = append(l.Builders,
 					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
+				)
+			case kops.CloudProviderDO:
+				l.Builders = append(l.Builders,
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 				)
 
 			case kops.CloudProviderGCE:
