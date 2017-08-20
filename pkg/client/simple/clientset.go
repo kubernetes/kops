@@ -26,11 +26,14 @@ import (
 )
 
 type Clientset interface {
-	// ClustersFor returns the ClusterInterface bound to the namespace for a particular Cluster
-	ClustersFor(cluster *kops.Cluster) kopsinternalversion.ClusterInterface
-
 	// GetCluster reads a cluster by name
 	GetCluster(name string) (*kops.Cluster, error)
+
+	// CreateCluster creates a cluster
+	CreateCluster(cluster *kops.Cluster) (*kops.Cluster, error)
+
+	// UpdateCluster updates a cluster
+	UpdateCluster(cluster *kops.Cluster) (*kops.Cluster, error)
 
 	// ListClusters returns all clusters
 	ListClusters(options metav1.ListOptions) (*kops.ClusterList, error)
@@ -57,14 +60,19 @@ type RESTClientset struct {
 	KopsClient kopsinternalversion.KopsInterface
 }
 
-func (c *RESTClientset) ClustersFor(cluster *kops.Cluster) kopsinternalversion.ClusterInterface {
-	namespace := restNamespaceForClusterName(cluster.Name)
-	return c.KopsClient.Clusters(namespace)
-}
-
 func (c *RESTClientset) GetCluster(name string) (*kops.Cluster, error) {
 	namespace := restNamespaceForClusterName(name)
 	return c.KopsClient.Clusters(namespace).Get(name, metav1.GetOptions{})
+}
+
+func (c *RESTClientset) CreateCluster(cluster *kops.Cluster) (*kops.Cluster, error) {
+	namespace := restNamespaceForClusterName(cluster.Name)
+	return c.KopsClient.Clusters(namespace).Create(cluster)
+}
+
+func (c *RESTClientset) UpdateCluster(cluster *kops.Cluster) (*kops.Cluster, error) {
+	namespace := restNamespaceForClusterName(cluster.Name)
+	return c.KopsClient.Clusters(namespace).Update(cluster)
 }
 
 func (c *RESTClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {

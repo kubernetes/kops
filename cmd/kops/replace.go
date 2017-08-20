@@ -115,7 +115,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				}
 
 			case *kopsapi.Cluster:
-				_, err = clientset.ClustersFor(v).Update(v)
+				_, err = clientset.UpdateCluster(v)
 				if err != nil {
 					return fmt.Errorf("error replacing cluster: %v", err)
 				}
