@@ -30,12 +30,8 @@ package cloudup
 import (
 	"encoding/base64"
 	"fmt"
-
-	"github.com/golang/glog"
-
 	"os"
 	"strconv"
-
 	"strings"
 	"text/template"
 
@@ -44,9 +40,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
-
 	"k8s.io/kops/upup/pkg/fi"
-
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 

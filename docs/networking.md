@@ -32,7 +32,7 @@ Several different providers are currently built into kops:
 
 * [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
 * [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
-* [flannel](https://github.com/coreos/flannel)
+* [flannel](https://github.com/coreos/flannel) - use `--networking flannel-vxlan` (recommended) or `--networking flannel-udp` (legacy).  `--networking flannel` now selects `flannel-vxlan`.
 * [kopeio-vxlan](https://github.com/kopeio/networking)
 * [kube-router](./networking.md#kube-router-example-for-cni-ipvs-based-service-proxy-and-network-policy-enforcer)
 * [weave](https://github.com/weaveworks/weave-kube)

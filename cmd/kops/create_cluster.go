@@ -248,7 +248,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel, calico, canal, kube-router.")
+	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -692,6 +692,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			Backend: "vxlan",
 		}
 	case "flannel-udp":
+		glog.Warningf("flannel UDP mode is not recommended; consider flannel-vxlan instead")
 		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
 			Backend: "udp",
 		}
