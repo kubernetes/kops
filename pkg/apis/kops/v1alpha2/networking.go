@@ -60,7 +60,7 @@ type WeaveNetworkingSpec struct {
 
 // Flannel declares that we want Flannel networking
 type FlannelNetworkingSpec struct {
-	// Backend is the backend overlay type we want to use
+	// Backend is the backend overlay type we want to use (vxlan or udp)
 	Backend string `json:"backend,omitempty"`
 }
 
