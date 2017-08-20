@@ -147,7 +147,7 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	c.channel = channel
 
-	assetBuilder := assets.NewAssetBuilder()
+	assetBuilder := assets.NewAssetBuilder(c.Cluster.Spec.Assets)
 	err = c.upgradeSpecs(assetBuilder)
 	if err != nil {
 		return err

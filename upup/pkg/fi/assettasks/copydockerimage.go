@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package dockertasks
+package assettasks
 
 import (
 	"fmt"
@@ -30,6 +30,7 @@ type CopyDockerImage struct {
 	Name        *string
 	SourceImage *string
 	TargetImage *string
+	Lifecycle   *fi.Lifecycle
 }
 
 var _ fi.CompareWithID = &CopyDockerImage{}
