@@ -30,16 +30,20 @@ type VFSClientset struct {
 
 var _ simple.Clientset = &VFSClientset{}
 
-func (c *VFSClientset) ClustersFor(cluster *kops.Cluster) kopsinternalversion.ClusterInterface {
-	return c.clusters()
-}
-
 func (c *VFSClientset) clusters() *ClusterVFS {
 	return newClusterVFS(c.basePath)
 }
 
 func (c *VFSClientset) GetCluster(name string) (*kops.Cluster, error) {
 	return c.clusters().Get(name, metav1.GetOptions{})
+}
+
+func (c *VFSClientset) UpdateCluster(cluster *kops.Cluster) (*kops.Cluster, error) {
+	return c.clusters().Update(cluster)
+}
+
+func (c *VFSClientset) CreateCluster(cluster *kops.Cluster) (*kops.Cluster, error) {
+	return c.clusters().Create(cluster)
 }
 
 func (c *VFSClientset) ListClusters(options metav1.ListOptions) (*kops.ClusterList, error) {

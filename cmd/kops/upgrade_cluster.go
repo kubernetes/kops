@@ -301,7 +301,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		}
 
 		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.ClustersFor(cluster).Update(cluster)
+		_, err = clientset.UpdateCluster(cluster)
 		if err != nil {
 			return err
 		}

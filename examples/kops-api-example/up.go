@@ -67,7 +67,7 @@ func up() error {
 		return err
 	}
 
-	_, err := clientset.ClustersFor(cluster).Create(cluster)
+	_, err := clientset.CreateCluster(cluster)
 	if err != nil {
 		return err
 	}
