@@ -151,6 +151,10 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.HostnameOverride = "@aws"
 	}
 
+	if cloudProvider == kops.CloudProviderDO {
+		clusterSpec.Kubelet.CloudProvider = "external"
+	}
+
 	if cloudProvider == kops.CloudProviderGCE {
 		clusterSpec.Kubelet.CloudProvider = "gce"
 		clusterSpec.Kubelet.HairpinMode = "promiscuous-bridge"
