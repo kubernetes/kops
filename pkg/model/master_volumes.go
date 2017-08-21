@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
@@ -88,6 +89,8 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 			switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
 			case kops.CloudProviderAWS:
 				b.addAWSVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+			case kops.CloudProviderDO:
+				b.addDOVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
 			case kops.CloudProviderGCE:
 				b.addGCEVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
 			case kops.CloudProviderVSphere:
@@ -132,6 +135,17 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 		KmsKeyId:         m.KmsKeyId,
 		Encrypted:        fi.Bool(encrypted),
 		Tags:             tags,
+	}
+
+	c.AddTask(t)
+}
+
+func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+	t := &dotasks.Volume{
+		Name:      s(name),
+		Lifecycle: b.Lifecycle,
+		SizeGB:    fi.Int64(int64(volumeSize)),
+		Region:    s(subnet.Zone),
 	}
 
 	c.AddTask(t)
