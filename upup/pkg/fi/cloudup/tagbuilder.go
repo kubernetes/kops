@@ -66,6 +66,10 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		{
 			tags.Insert("_aws")
 		}
+	case "digitalocean":
+		{
+			tags.Insert("_do")
+		}
 	case "vsphere":
 		{
 			tags.Insert("_vsphere")
@@ -146,6 +150,9 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 	}
 	if clusterTags.Has("_aws") {
 		tags.Insert("_aws")
+	}
+	if clusterTags.Has("_do") {
+		tags.Insert("_do")
 	}
 
 	return tags, nil
