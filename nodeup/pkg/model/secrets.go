@@ -116,6 +116,43 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	if b.IsKubernetesGTE("1.7") {
+
+		cert, err := b.KeyStore.Cert("apiserver-proxy-client")
+		if err != nil {
+			return fmt.Errorf("apiserver proxy client cert lookup failed: %v", err.Error())
+		}
+
+		serialized, err := cert.AsString()
+		if err != nil {
+			return err
+		}
+
+		t := &nodetasks.File{
+			Path:     filepath.Join(b.PathSrvKubernetes(), "proxy-client.cert"),
+			Contents: fi.NewStringResource(serialized),
+			Type:     nodetasks.FileType_File,
+		}
+		c.AddTask(t)
+
+		key, err := b.KeyStore.PrivateKey("apiserver-proxy-client")
+		if err != nil {
+			return fmt.Errorf("apiserver proxy client private key lookup failed: %v", err.Error())
+		}
+
+		serialized, err = key.AsString()
+		if err != nil {
+			return err
+		}
+
+		t = &nodetasks.File{
+			Path:     filepath.Join(b.PathSrvKubernetes(), "proxy-client.key"),
+			Contents: fi.NewStringResource(serialized),
+			Type:     nodetasks.FileType_File,
+		}
+		c.AddTask(t)
+	}
+
 	if b.SecretStore != nil {
 		key := "kube"
 		token, err := b.SecretStore.FindSecret(key)
