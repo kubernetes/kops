@@ -44,7 +44,7 @@ func (t *TokenSource) Token() (*oauth2.Token, error) {
 
 // Cloud exposes all the interfaces required to operate on DigitalOcean resources
 type Cloud struct {
-	client *godo.Client
+	Client *godo.Client
 
 	dns dnsprovider.Interface
 
@@ -70,7 +70,7 @@ func NewCloud(region string) (*Cloud, error) {
 	client := godo.NewClient(oauthClient)
 
 	return &Cloud{
-		client: client,
+		Client: client,
 		dns:    dns.NewProvider(client),
 		Region: region,
 	}, nil
@@ -84,6 +84,11 @@ func (c *Cloud) ProviderID() kops.CloudProviderID {
 // DNS returns a DO implementation for dnsprovider.Interface
 func (c *Cloud) DNS() (dnsprovider.Interface, error) {
 	return c.dns, nil
+}
+
+// Volume returns an implementation of godo.StorageService
+func (c *Cloud) Volumes() godo.StorageService {
+	return c.Client.Storage
 }
 
 // FindVPCInfo is not implemented, it's only here to satisfy the fi.Cloud interface
