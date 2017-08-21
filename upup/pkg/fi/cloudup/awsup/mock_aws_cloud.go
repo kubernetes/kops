@@ -109,6 +109,10 @@ func (c *MockAWSCloud) AddAWSTags(id string, expected map[string]string) error {
 	return addAWSTags(c, id, expected)
 }
 
+func (c *MockAWSCloud) DeleteTags(id string, tags map[string]string) error {
+	return deleteTags(c, id, tags)
+}
+
 func (c *MockAWSCloud) BuildTags(name *string) map[string]string {
 	return buildTags(c.tags, name)
 }
