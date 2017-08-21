@@ -52,12 +52,6 @@ func (k *VolumeMountController) mountMasterVolumes() ([]*Volume, error) {
 	}
 
 	for _, v := range attached {
-		// Do not ever try to mount root devices
-		if v.LocalDevice == "/dev/sda1" || v.LocalDevice == "/dev/xvda" {
-			glog.Warningf("local device: %q, volume id: %q is being skipped and will not mounted, since it is a root volume", v.LocalDevice, v.ID)
-			continue
-		}
-
 		existing := k.mounted[v.ID]
 		if existing != nil {
 			continue
@@ -99,11 +93,6 @@ func (k *VolumeMountController) mountMasterVolumes() ([]*Volume, error) {
 }
 
 func (k *VolumeMountController) safeFormatAndMount(device string, mountpoint string, fstype string) error {
-	// Do not attempt to mount root volumes ever
-	if device == "/dev/sda1" || device == "/dev/xvda" {
-		glog.Warningf("volume: %q is being skipped and will not be formatted and mounted, since it is a root volume", device)
-		return nil
-	}
 	// Wait for the device to show up
 	for {
 		_, err := os.Stat(pathFor(device))
@@ -196,6 +185,10 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 	var tryAttach []*Volume
 	var attached []*Volume
 	for _, v := range volumes {
+		if doNotMountVolume(v) {
+			continue
+		}
+
 		if v.AttachedTo == "" {
 			tryAttach = append(tryAttach, v)
 		}
@@ -254,6 +247,15 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 
 	glog.V(2).Infof("Currently attached volumes: %v", attached)
 	return attached, nil
+}
+
+// doNotMountVolume tests that the volume has an Etcd Cluster associated
+func doNotMountVolume(v *Volume) bool {
+	if len(v.Info.EtcdClusters) == 0 {
+		glog.Warningf("Local device: %q, volume id: %q is being skipped and will not mounted, since it does not have a etcd cluster", v.LocalDevice, v.ID)
+		return true
+	}
+	return false
 }
 
 // ByEtcdClusterName sorts volumes so that we mount in a consistent order,
