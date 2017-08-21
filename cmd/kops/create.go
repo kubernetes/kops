@@ -194,7 +194,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
 				}
 
-			case *kopsapi.Secret:
+			case *kopsapi.SSHSecret:
 				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
