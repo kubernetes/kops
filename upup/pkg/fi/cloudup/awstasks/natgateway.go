@@ -109,6 +109,7 @@ func (e *NatGateway) Find(c *fi.Context) (*NatGateway, error) {
 
 	// NATGateways don't have a Name (no tags), so we set the name to avoid spurious changes
 	actual.Name = e.Name
+	actual.Lifecycle = e.Lifecycle
 
 	actual.AssociatedRouteTable = e.AssociatedRouteTable
 
