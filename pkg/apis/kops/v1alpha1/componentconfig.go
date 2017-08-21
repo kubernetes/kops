@@ -228,6 +228,10 @@ type KubeAPIServerConfig struct {
 	OIDCClientID *string `json:"oidcClientID,omitempty" flag:"oidc-client-id"`
 	// If set, the OpenID server's certificate will be verified by one of the authorities in the oidc-ca-file
 	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
+	// The apiserver's client certificate used for outbound requests.
+	ProxyClientCertFile *string `json:"proxyClientCertFile,omitempty" flag:"proxy-client-cert-file"`
+	// The apiserver's client key used for outbound requests.
+	ProxyClientKeyFile *string `json:"proxyClientKeyFile,omitempty" flag:"proxy-client-key-file"`
 	// If set, all requests coming to the apiserver will be logged to this file.
 	AuditLogPath *string `json:"auditLogPath,omitempty" flag:"audit-log-path"`
 	// The maximum number of days to retain old audit log files based on the timestamp encoded in their filename.

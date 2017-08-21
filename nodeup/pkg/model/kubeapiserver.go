@@ -170,6 +170,13 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 		kubeAPIServer.KubeletClientKey = filepath.Join(b.PathSrvKubernetes(), "kubelet-api-key.pem")
 	}
 
+	if b.IsKubernetesGTE("1.7") {
+		certPath := filepath.Join(b.PathSrvKubernetes(), "proxy-client.cert")
+		kubeAPIServer.ProxyClientCertFile = &certPath
+		keyPath := filepath.Join(b.PathSrvKubernetes(), "proxy-client.key")
+		kubeAPIServer.ProxyClientKeyFile = &keyPath
+	}
+
 	// build the kube-apiserver flags for the service
 	flags, err := flagbuilder.BuildFlags(b.Cluster.Spec.KubeAPIServer)
 	if err != nil {

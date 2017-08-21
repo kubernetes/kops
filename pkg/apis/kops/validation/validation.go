@@ -66,6 +66,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		}
 	}
 
+	if spec.KubeAPIServer != nil {
+		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, fieldPath.Child("kubeAPIServer"))...)
+	}
+
 	return allErrs
 }
 
@@ -171,6 +175,21 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 
 	if v.Image == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("Image"), "Image must be specified"))
+	}
+
+	return allErrs
+}
+
+func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) field.ErrorList {
+
+	allErrs := field.ErrorList{}
+
+	proxyClientCertIsNil := v.ProxyClientCertFile == nil
+	proxyClientKeyIsNil := v.ProxyClientKeyFile == nil
+
+	if (proxyClientCertIsNil && !proxyClientKeyIsNil) || (!proxyClientCertIsNil && proxyClientKeyIsNil) {
+		flds := [2]*string{v.ProxyClientCertFile, v.ProxyClientKeyFile}
+		allErrs = append(allErrs, field.Invalid(fldPath, flds, "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)"))
 	}
 
 	return allErrs
