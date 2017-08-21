@@ -26,15 +26,15 @@ example:
 
 ### adding secret from file
 
-Secret spec
+SSHSecret spec
 ```
 apiVersion: kops/v1alpha2
-kind: Secret
+kind: SSHSecret
 metadata:
   labels:
     kops.k8s.io/cluster: dev.k8s.example.com
 spec:
-  name: "admin"
+  username: "admin"
   sshPublicKey: ""
 ```
 
