@@ -66,8 +66,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&InstanceGroupList{},
 		&Federation{},
 		&FederationList{},
-		&Secret{},
-		&SecretList{},
+		&SSHSecret{},
+		&SSHSecretList{},
 	)
 	//metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
