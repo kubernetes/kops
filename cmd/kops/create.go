@@ -199,8 +199,8 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
 				}
-				if v.Spec.Name == "" {
-					return fmt.Errorf("spec.name is required")
+				if v.Spec.Username == "" {
+					return fmt.Errorf("spec.username is required")
 				}
 				if v.Spec.SshPublicKey == "" {
 					return fmt.Errorf("spec.sshPublicKey is required")
@@ -217,11 +217,11 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				}
 
 				sshKeyArr := []byte(v.Spec.SshPublicKey)
-				err = keyStore.AddSSHPublicKey(v.Spec.Name, sshKeyArr)
+				err = keyStore.AddSSHPublicKey(v.Spec.Username, sshKeyArr)
 				if err != nil {
 					return err
 				} else {
-					fmt.Fprintf(&sb, "Added Secret ssh key\n")
+					fmt.Fprintf(&sb, "Added SSHSecret ssh key\n")
 				}
 
 			default:
