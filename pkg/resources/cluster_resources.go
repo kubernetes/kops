@@ -69,6 +69,8 @@ func (c *ClusterResources) ListResources() (map[string]*ResourceTracker, error) 
 	switch c.Cloud.ProviderID() {
 	case kops.CloudProviderAWS:
 		return c.listResourcesAWS()
+	case kops.CloudProviderDO:
+		return c.listResourcesDO()
 	case kops.CloudProviderGCE:
 		return c.listResourcesGCE()
 	case kops.CloudProviderVSphere:
