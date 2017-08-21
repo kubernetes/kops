@@ -22,22 +22,22 @@ import (
 
 // +genclient=true
 
-// Secret represent a set of kops secrets
-type Secret struct {
+// SSHSecret represent a set of kops secrets
+type SSHSecret struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec SecretSpec `json:"spec,omitempty"`
+	Spec SSHSecretSpec `json:"spec,omitempty"`
 }
 
-type SecretSpec struct {
+type SSHSecretSpec struct {
 	SshPublicKey string `json:"sshPublicKey,omitempty"`
 	Name         string `json:"name,omitempty"`
 }
 
-type SecretList struct {
+type SSHSecretList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Items []Secret `json:"items"`
+	Items []SSHSecret `json:"items"`
 }
