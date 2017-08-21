@@ -28,7 +28,7 @@ type KopsV1alpha1Interface interface {
 	ClustersGetter
 	FederationsGetter
 	InstanceGroupsGetter
-	SecretsGetter
+	SSHSecretsGetter
 }
 
 // KopsV1alpha1Client is used to interact with features provided by the kops group.
@@ -48,8 +48,8 @@ func (c *KopsV1alpha1Client) InstanceGroups(namespace string) InstanceGroupInter
 	return newInstanceGroups(c, namespace)
 }
 
-func (c *KopsV1alpha1Client) Secrets(namespace string) SecretInterface {
-	return newSecrets(c, namespace)
+func (c *KopsV1alpha1Client) SSHSecrets(namespace string) SSHSecretInterface {
+	return newSSHSecrets(c, namespace)
 }
 
 // NewForConfig creates a new KopsV1alpha1Client for the given config.
