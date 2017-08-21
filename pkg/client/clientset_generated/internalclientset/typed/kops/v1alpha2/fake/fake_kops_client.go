@@ -38,6 +38,10 @@ func (c *FakeKopsV1alpha2) InstanceGroups(namespace string) v1alpha2.InstanceGro
 	return &FakeInstanceGroups{c, namespace}
 }
 
+func (c *FakeKopsV1alpha2) SSHSecrets(namespace string) v1alpha2.SSHSecretInterface {
+	return &FakeSSHSecrets{c, namespace}
+}
+
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
 func (c *FakeKopsV1alpha2) RESTClient() rest.Interface {
