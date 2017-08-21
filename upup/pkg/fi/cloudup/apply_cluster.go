@@ -335,7 +335,6 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("DigitalOcean support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowDO to enable it")
 			}
 
-			// this is a no-op for now, add tasks to this list as more DO support is added
 			l.AddTypes(map[string]interface{}{
 				"volume": &dotasks.Volume{},
 			})
@@ -659,7 +658,8 @@ func (c *ApplyClusterCmd) Run() error {
 			BootstrapScript: bootstrapScriptBuilder,
 			Lifecycle:       clusterLifecycle,
 		})
-
+	case kops.CloudProviderDO:
+		// DigitalOcean tasks will go here
 	case kops.CloudProviderGCE:
 		{
 			gceModelContext := &gcemodel.GCEModelContext{

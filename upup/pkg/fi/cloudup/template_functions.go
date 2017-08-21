@@ -141,6 +141,10 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 		}
 	case kops.CloudProviderGCE:
 		argv = append(argv, "--dns=google-clouddns")
+	case kops.CloudProviderDO:
+		// this is not supported yet, here so we can successfully create clusters
+		// this will be supported for digitalocean in the future
+		argv = append(argv, "--dns=digitalocean")
 	case kops.CloudProviderVSphere:
 		argv = append(argv, "--dns=coredns")
 		argv = append(argv, "--dns-server="+*tf.cluster.Spec.CloudConfig.VSphereCoreDNSServer)
