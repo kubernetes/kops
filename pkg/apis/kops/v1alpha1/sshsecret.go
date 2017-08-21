@@ -32,7 +32,7 @@ type SSHSecret struct {
 
 type SSHSecretSpec struct {
 	SshPublicKey string `json:"sshPublicKey,omitempty"`
-	Name         string `json:"name,omitempty"`
+	Username     string `json:"username,omitempty"`
 }
 
 type SSHSecretList struct {

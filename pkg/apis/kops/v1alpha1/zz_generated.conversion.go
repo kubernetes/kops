@@ -2098,7 +2098,7 @@ func Convert_kops_SSHSecretList_To_v1alpha1_SSHSecretList(in *kops.SSHSecretList
 
 func autoConvert_v1alpha1_SSHSecretSpec_To_kops_SSHSecretSpec(in *SSHSecretSpec, out *kops.SSHSecretSpec, s conversion.Scope) error {
 	out.SshPublicKey = in.SshPublicKey
-	out.Name = in.Name
+	out.Username = in.Username
 	return nil
 }
 
@@ -2109,7 +2109,7 @@ func Convert_v1alpha1_SSHSecretSpec_To_kops_SSHSecretSpec(in *SSHSecretSpec, out
 
 func autoConvert_kops_SSHSecretSpec_To_v1alpha1_SSHSecretSpec(in *kops.SSHSecretSpec, out *SSHSecretSpec, s conversion.Scope) error {
 	out.SshPublicKey = in.SshPublicKey
-	out.Name = in.Name
+	out.Username = in.Username
 	return nil
 }
 
