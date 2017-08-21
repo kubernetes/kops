@@ -17,11 +17,12 @@ limitations under the License.
 package validation
 
 import (
+	"testing"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
-	"testing"
 )
 
 func Test_Validate_DNS(t *testing.T) {
@@ -138,6 +139,37 @@ func TestValidateSubnets(t *testing.T) {
 	}
 	for _, g := range grid {
 		errs := validateSubnets(g.Input, field.NewPath("Subnets"))
+
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
+
+func TestValidateKubeAPIServer(t *testing.T) {
+	str := "foobar"
+
+	grid := []struct {
+		Input          kops.KubeAPIServerConfig
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.KubeAPIServerConfig{
+				ProxyClientCertFile: &str,
+			},
+			ExpectedErrors: []string{
+				"Invalid value::KubeAPIServer",
+			},
+		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				ProxyClientKeyFile: &str,
+			},
+			ExpectedErrors: []string{
+				"Invalid value::KubeAPIServer",
+			},
+		},
+	}
+	for _, g := range grid {
+		errs := validateKubeAPIServer(&g.Input, field.NewPath("KubeAPIServer"))
 
 		testErrors(t, g.Input, errs, g.ExpectedErrors)
 	}

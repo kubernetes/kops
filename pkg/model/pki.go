@@ -133,6 +133,16 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	{
 		t := &fitasks.Keypair{
+			Name:      fi.String("apiserver-proxy-client"),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=apiserver-proxy-client",
+			Type:      "client",
+		}
+		c.AddTask(t)
+	}
+
+	{
+		t := &fitasks.Keypair{
 			Name:      fi.String("kops"),
 			Lifecycle: b.Lifecycle,
 			Subject:   "o=" + user.SystemPrivilegedGroup + ",cn=kops",
