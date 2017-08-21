@@ -17,12 +17,13 @@ limitations under the License.
 package kops
 
 import (
+	"os"
+
 	"k8s.io/apimachinery/pkg/apimachinery/announced"
 	"k8s.io/apimachinery/pkg/apimachinery/registered"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"os"
 )
 
 var (
@@ -65,6 +66,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&InstanceGroupList{},
 		&Federation{},
 		&FederationList{},
+		&SSHSecret{},
+		&SSHSecretList{},
 	)
 	//metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
@@ -77,5 +80,8 @@ func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
 func (obj *Federation) GetObjectKind() schema.ObjectKind {
+	return &obj.TypeMeta
+}
+func (obj *SSHSecret) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
