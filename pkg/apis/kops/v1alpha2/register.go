@@ -71,7 +71,7 @@ func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 func (obj *Federation) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
-func (obj *Secret) GetObjectKind() schema.ObjectKind {
+func (obj *SSHSecret) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
 func addConversionFuncs(scheme *runtime.Scheme) error {
