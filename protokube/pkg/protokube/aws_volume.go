@@ -183,6 +183,13 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 				}
 			}
 
+			// never mount root volumes
+			// these are volumes that aws sets aside for root volumes mount points
+			if vol.LocalDevice == "/dev/sda1" || vol.LocalDevice == "/dev/xvda" {
+				glog.Warningf("Not mounting: %q, since it is a root volume", vol.LocalDevice)
+				continue
+			}
+
 			skipVolume := false
 
 			for _, tag := range v.Tags {
