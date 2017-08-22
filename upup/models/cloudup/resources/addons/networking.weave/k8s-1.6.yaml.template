@@ -69,6 +69,7 @@ spec:
         - name: weave
           command:
             - /home/weave/launch.sh
+            {{- if WeaveLogLevel }}- --log-level={{ WeaveLogLevel }}{{- end }}
           env:
             - name: HOSTNAME
               valueFrom:
@@ -111,6 +112,10 @@ spec:
             - name: lib-modules
               mountPath: /lib/modules
         - name: weave-npc
+          {{- if .Networking.Weave.loglevel }}
+          args:
+            - --log-level={{ WeaveLogLevel }}
+          {{- end }}
           env:
             - name: HOSTNAME
               valueFrom:

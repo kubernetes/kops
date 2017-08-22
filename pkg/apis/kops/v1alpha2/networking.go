@@ -55,7 +55,8 @@ type KopeioNetworkingSpec struct {
 
 // Weave declares that we want Weave networking
 type WeaveNetworkingSpec struct {
-	MTU *int32 `json:"mtu,omitempty"`
+	MTU      *int32 `json:"mtu,omitempty"`
+	loglevel string `json:"loglevel,omitempty"`
 }
 
 // Flannel declares that we want Flannel networking

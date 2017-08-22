@@ -60,6 +60,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		allErrs = append(allErrs, validateHook(&spec.Hooks[i], fieldPath.Child("hooks").Index(i))...)
 	}
 
+	if spec.Networking != nil {
+		allErrs = append(allErrs, validateNetworking(spec.Networking, fieldPath.Child("networking"))...)
+	}
+
 	return allErrs
 }
 
@@ -151,6 +155,28 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 
 	if v.Image == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("Image"), "Image must be specified"))
+	}
+
+	return allErrs
+}
+
+func validateNetworking(v *kops.NetworkingSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if v.Weave != nil {
+		allErrs = append(allErrs, validateNetworkingWeave(v.Weave, fldPath.Child("Weave"))...)
+	}
+	return allErrs
+}
+
+func validateNetworkingWeave(v *kops.WeaveNetworkingSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	switch v.loglevel {
+	case "debug", "info", "warning", "error":
+		// OK
+	default:
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("loglevel"), v.Weave, []string{"debug", "info", "warning", "error"}))
 	}
 
 	return allErrs
