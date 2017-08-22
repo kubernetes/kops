@@ -1,4 +1,4 @@
-load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
@@ -9,13 +9,9 @@ go_library(
         "//pkg/apis/kops:go_default_library",
         "//pkg/featureflag:go_default_library",
         "//pkg/kubemanifest:go_default_library",
+        "//pkg/values:go_default_library",
+        "//util/pkg/hashing:go_default_library",
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
     ],
-)
-
-go_test(
-    name = "go_default_test",
-    srcs = ["builder_test.go"],
-    importpath = "k8s.io/kops/pkg/assets",
-    library = ":go_default_library",
-    deps = ["//pkg/apis/kops:go_default_library"],
 )

@@ -44,6 +44,11 @@ type S3Path struct {
 var _ Path = &S3Path{}
 var _ HasHash = &S3Path{}
 
+// S3Acl is an ACL implementation for objects on S3
+type S3Acl struct {
+	RequestACL *string
+}
+
 func newS3Path(s3Context *S3Context, bucket string, key string) *S3Path {
 	bucket = strings.TrimSuffix(bucket, "/")
 	key = strings.TrimPrefix(key, "/")
@@ -126,6 +131,12 @@ func (p *S3Path) WriteFile(data []byte, aclObj ACL) error {
 	if acl != "" {
 		glog.Infof("Using KOPS_STATE_S3_ACL=%s", acl)
 		request.ACL = aws.String(acl)
+	} else if aclObj != nil {
+		s3Acl, ok := aclObj.(*S3Acl)
+		if !ok {
+			return fmt.Errorf("write to %s with ACL of unexpected type %T", p, aclObj)
+		}
+		request.ACL = s3Acl.RequestACL
 	}
 
 	// We don't need Content-MD5: https://github.com/aws/aws-sdk-go/issues/208

@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/golang/glog"
@@ -36,26 +37,53 @@ type CopyFile struct {
 	Name       *string
 	SourceFile *string
 	TargetFile *string
-	// @justinsb not sure I like this but the problem is knowing if the sha is a file or a string
-	// so I did a location or a sha.  We have both SHAs in remote file locations, and SHAs in strings
-	SourceShaLocation *string
-	SourceSha         *string
-	TargetSha         *string
-	Lifecycle         *fi.Lifecycle
+	SHA        *string
+	Lifecycle  *fi.Lifecycle
 }
 
 var _ fi.CompareWithID = &CopyFile{}
 
 func (e *CopyFile) CompareWithID() *string {
+	// or should this be the SHA?
 	return e.Name
 }
 
+// Find attempts to find a file.
 func (e *CopyFile) Find(c *fi.Context) (*CopyFile, error) {
-	// TODO do a head call on the file??
+
+	targetSHAFile := fi.StringValue(e.TargetFile) + ".sha1"
+	targetSHABytes, err := vfs.Context.ReadFile(targetSHAFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			glog.V(4).Infof("unable to download: %q, assuming target file is not present, and if not present may not be an error: %v",
+				targetSHAFile, err)
+			return nil, nil
+		} else {
+			glog.V(4).Infof("unable to download: %q, %v", targetSHAFile, err)
+			// TODO should we throw err here?
+			return nil, nil
+		}
+	}
+
+	targetSHA := string(targetSHABytes)
+	if strings.TrimSpace(targetSHA) == strings.TrimSpace(fi.StringValue(e.SHA)) {
+		actual := &CopyFile{
+			Name:       e.Name,
+			TargetFile: e.TargetFile,
+			SHA:        e.SHA,
+			SourceFile: e.SourceFile,
+			Lifecycle:  e.Lifecycle,
+		}
+		glog.V(8).Infof("found matching target sha1 for file: %q", fi.StringValue(e.TargetFile))
+		return actual, nil
+	}
+
+	glog.V(8).Infof("did not find same file, found mismatching target sha1 for file: %q", fi.StringValue(e.TargetFile))
 	return nil, nil
 
 }
 
+// Run is the default run method.
 func (e *CopyFile) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
@@ -77,86 +105,78 @@ func (_ *CopyFile) Render(c *fi.Context, a, e, changes *CopyFile) error {
 
 	source := fi.StringValue(e.SourceFile)
 	target := fi.StringValue(e.TargetFile)
-	sourceSha := fi.StringValue(e.SourceSha)
-	sourceSHALocation := fi.StringValue(e.SourceShaLocation)
+	sourceSha := fi.StringValue(e.SHA)
 
-	glog.Infof("copying bits from %q to %q", source, target)
+	glog.V(2).Infof("copying bits from %q to %q", source, target)
 
-	if err := transferFile(c, source, target, sourceSha, sourceSHALocation); err != nil {
+	if err := transferFile(c, source, target, sourceSha); err != nil {
 		return fmt.Errorf("unable to transfer %q to %q: %v", source, target, err)
 	}
 
 	return nil
 }
 
-func transferFile(c *fi.Context, source string, target string, sourceSHA string, sourceSHALocation string) error {
+// transferFile downloads a file from the source location, validates the file matches the SHA,
+// and uploads the file to the target location.
+func transferFile(c *fi.Context, source string, target string, sha string) error {
+
+	// TODO drop file to disk, as vfs reads file into memory.  We load kubelet into memory for instance.
+	// TODO in s3 can we do a copy file ... would need to test
+
 	data, err := vfs.Context.ReadFile(source)
 	if err != nil {
-		return fmt.Errorf("Error unable to read path %q: %v", source, err)
+		if os.IsNotExist(err) {
+			return fmt.Errorf("file not found %q: %v", source, err)
+		}
+
+		return fmt.Errorf("error downloading file %q: %v", source, err)
 	}
 
-	uploadVFS, err := buildVFSPath(target)
+	objectStore, err := buildVFSPath(target)
 	if err != nil {
 		return err
 	}
 
-	// Test the file matches the sourceSha
-	{
-		var sha string
-		if sourceSHA != "" {
-			sha = sourceSHA
-		} else if sourceSHALocation != "" {
-			shaBytes, err := vfs.Context.ReadFile(sourceSHALocation)
-			if err != nil {
-				return fmt.Errorf("Error unable to read path %q: %v", source, err)
-			}
-			sha = string(shaBytes)
-		}
-
-		if sha != "" {
-
-			trimmedSHA := strings.TrimSpace(sha)
-
-			in := bytes.NewReader(data)
-			dataHash, err := hashing.HashAlgorithmSHA1.Hash(in)
-			if err != nil {
-				return fmt.Errorf("unable to hash sha from data: %v", err)
-			}
-
-			shaHash, err := hashing.FromString(trimmedSHA)
-			if err != nil {
-				return fmt.Errorf("unable to hash sha: %q, %v", sha, err)
-			}
-
-			if !shaHash.Equal(dataHash) {
-				return fmt.Errorf("SHAs are not matching for %q", dataHash.String())
-			}
-
-			shaVFS, err := buildVFSPath(target + ".sha1")
-			if err != nil {
-				return err
-			}
-
-			b := bytes.NewBufferString(sha)
-			if err := writeFile(c, shaVFS, b.Bytes()); err != nil {
-				return fmt.Errorf("Error uploading file %q: %v", shaVFS, err)
-			}
-		}
+	uploadVFS, err := vfs.Context.BuildVfsPath(objectStore)
+	if err != nil {
+		return fmt.Errorf("error building path %q: %v", objectStore, err)
 	}
 
+	shaTarget := objectStore + ".sha1"
+	shaVFS, err := vfs.Context.BuildVfsPath(shaTarget)
+	if err != nil {
+		return fmt.Errorf("error building path %q: %v", shaTarget, err)
+	}
+
+	in := bytes.NewReader(data)
+	dataHash, err := hashing.HashAlgorithmSHA1.Hash(in)
+	if err != nil {
+		return fmt.Errorf("unable to parse sha from file %q downloaded: %v", sha, err)
+	}
+
+	shaHash, err := hashing.FromString(strings.TrimSpace(sha))
+	if err != nil {
+		return fmt.Errorf("unable to hash sha: %q, %v", sha, err)
+	}
+
+	if !shaHash.Equal(dataHash) {
+		return fmt.Errorf("the sha value in %q does not match %q calculated value %q", shaTarget, source, dataHash.String())
+	}
+
+	glog.Infof("uploading %q to %q", source, objectStore)
 	if err := writeFile(c, uploadVFS, data); err != nil {
-		return fmt.Errorf("Error uploading file %q: %v", uploadVFS, err)
+		return err
+	}
+
+	b := []byte(shaHash.Hex())
+	if err := writeFile(c, shaVFS, b); err != nil {
+		return err
 	}
 
 	return nil
 }
 
-func writeFile(c *fi.Context, vfsPath string, data []byte) error {
-	glog.V(2).Infof("uploading to %q", vfsPath)
-	p, err := vfs.Context.BuildVfsPath(vfsPath)
-	if err != nil {
-		return fmt.Errorf("error building path %q: %v", vfsPath, err)
-	}
+func writeFile(c *fi.Context, p vfs.Path, data []byte) error {
 
 	acl, err := acls.GetACL(p, c.Cluster)
 	if err != nil {
@@ -164,14 +184,14 @@ func writeFile(c *fi.Context, vfsPath string, data []byte) error {
 	}
 
 	if err = p.WriteFile(data, acl); err != nil {
-		return fmt.Errorf("error writing path %q: %v", vfsPath, err)
+		return fmt.Errorf("error writing path %v: %v", p, err)
 	}
-
-	glog.V(2).Infof("upload complete: %q", vfsPath)
 
 	return nil
 }
 
+// buildVFSPath task a recognizable https url and transforms that URL into the equivalent url with the the object
+// store prefix.
 func buildVFSPath(target string) (string, error) {
 	if !strings.Contains(target, "://") || strings.HasPrefix(target, "memfs://") {
 		return target, nil
@@ -179,28 +199,25 @@ func buildVFSPath(target string) (string, error) {
 
 	u, err := url.Parse(target)
 	if err != nil {
-		return "", fmt.Errorf("unable to parse: %q", target)
+		return "", fmt.Errorf("unable to parse url: %q", target)
 	}
 
 	var vfsPath string
 
-	// remove the filename from the end of the path
-	//pathSlice := strings.Split(u.Path, "/")
-	//pathSlice = pathSlice[:len(pathSlice)-1]
-	//path := strings.Join(pathSlice, "/")
-
-	// TODO I am not a huge fan of this, but it would work
-	// TODO @justinsb should we require an URL?
+	// These matches only cover a subset of the URLs that you can use, but I am uncertain how to cover more of the possible
+	// options.
+	// This code parses the HOST and determines to use s3 or gs.
+	// URLs.  For instance you can have the bucket name in the s3 url hostname.
+	// We are translating known https urls such as https://s3.amazonaws.com/example-kops to vfs path like
+	// s3://example-kops
 	if u.Host == "s3.amazonaws.com" {
 		vfsPath = "s3:/" + u.Path
 	} else if u.Host == "storage.googleapis.com" {
 		vfsPath = "gs:/" + u.Path
-	}
-
-	if vfsPath == "" {
+	} else {
 		glog.Errorf("unable to determine vfs path s3, google storage, and file paths are supported")
-		glog.Errorf("for s3 use s3.amazonaws.com and for google storage use storage.googleapis.com hostnames.")
-		return "", fmt.Errorf("unable to determine vfs for %q:", target)
+		glog.Errorf("URLs starting with https://s3.amazonaws.com and http://storage.googleapis.com are transformed into s3 and gs URLs")
+		return "", fmt.Errorf("unable to determine vfs type for %q", target)
 	}
 
 	return vfsPath, nil
