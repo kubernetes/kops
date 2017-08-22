@@ -147,6 +147,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	baseURL := clusterSpec.KubernetesVersion
 	baseURL = strings.TrimSuffix(baseURL, "/")
 
+	// TODO path.Join here?
 	tagURL := baseURL + "/bin/linux/amd64/" + component + ".docker_tag"
 	glog.V(2).Infof("Downloading docker tag for %s from: %s", component, tagURL)
 

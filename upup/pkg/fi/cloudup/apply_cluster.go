@@ -18,7 +18,9 @@ package cloudup
 
 import (
 	"fmt"
+	"net/url"
 	"os"
+	"path"
 	"strings"
 	"time"
 
@@ -59,7 +61,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
-	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -88,6 +89,9 @@ type ApplyClusterCmd struct {
 
 	// NodeUpSource is the location from which we download nodeup
 	NodeUpSource string
+
+	// NodeUpHash is the sha hash
+	NodeUpHash string
 
 	// Models is a list of cloudup models to apply
 	Models []string
@@ -153,7 +157,51 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	c.channel = channel
 
-	assetBuilder := assets.NewAssetBuilder(c.Cluster.Spec.Assets)
+	stageAssetsLifecycle := fi.LifecycleSync
+	securityLifecycle := fi.LifecycleSync
+	networkLifecycle := fi.LifecycleSync
+	clusterLifecycle := fi.LifecycleSync
+
+	switch c.Phase {
+	case Phase(""):
+		// Everything ... the default
+
+		// until we implement finding assets we need to to Ignore them
+		stageAssetsLifecycle = fi.LifecycleIgnore
+	case PhaseStageAssets:
+		networkLifecycle = fi.LifecycleIgnore
+		securityLifecycle = fi.LifecycleIgnore
+		clusterLifecycle = fi.LifecycleIgnore
+
+	case PhaseNetwork:
+		stageAssetsLifecycle = fi.LifecycleIgnore
+		securityLifecycle = fi.LifecycleIgnore
+		clusterLifecycle = fi.LifecycleIgnore
+
+	case PhaseSecurity:
+		stageAssetsLifecycle = fi.LifecycleIgnore
+		networkLifecycle = fi.LifecycleIgnore
+		clusterLifecycle = fi.LifecycleIgnore
+
+	case PhaseCluster:
+		if c.TargetName == TargetDryRun {
+			stageAssetsLifecycle = fi.LifecycleIgnore
+			securityLifecycle = fi.LifecycleExistsAndWarnIfChanges
+			networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
+		} else {
+			stageAssetsLifecycle = fi.LifecycleIgnore
+			networkLifecycle = fi.LifecycleExistsAndValidates
+			securityLifecycle = fi.LifecycleExistsAndValidates
+		}
+
+	default:
+		return fmt.Errorf("unknown phase %q", c.Phase)
+	}
+
+	// This is kinda a hack.  Need to move phases out of fi.  If we use Phase here we introduce a circular
+	// go dependency.
+	phase := string(c.Phase)
+	assetBuilder := assets.NewAssetBuilder(c.Cluster.Spec.Assets, phase)
 	err = c.upgradeSpecs(assetBuilder)
 	if err != nil {
 		return err
@@ -216,77 +264,15 @@ func (c *ApplyClusterCmd) Run() error {
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
 
-	if len(c.Assets) == 0 {
-		var baseURL string
-		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
-			baseURL = cluster.Spec.KubernetesVersion
-		} else {
-			baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + cluster.Spec.KubernetesVersion
-		}
-		baseURL = strings.TrimSuffix(baseURL, "/")
-
-		{
-			defaultKubeletAsset := baseURL + "/bin/linux/amd64/kubelet"
-			glog.V(2).Infof("Adding default kubelet release asset: %s", defaultKubeletAsset)
-
-			hash, err := findHash(defaultKubeletAsset)
-			if err != nil {
-				return err
-			}
-			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultKubeletAsset)
-		}
-
-		{
-			defaultKubectlAsset := baseURL + "/bin/linux/amd64/kubectl"
-			glog.V(2).Infof("Adding default kubectl release asset: %s", defaultKubectlAsset)
-
-			hash, err := findHash(defaultKubectlAsset)
-			if err != nil {
-				return err
-			}
-			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultKubectlAsset)
-		}
-
-		if usesCNI(cluster) {
-			cniAsset, cniAssetHashString, err := findCNIAssets(cluster)
-
-			if err != nil {
-				return err
-			}
-
-			if cniAssetHashString == "" {
-				glog.Warningf("cniAssetHashString is empty, using cniAsset directly: %s", cniAsset)
-				c.Assets = append(c.Assets, cniAsset)
-			} else {
-				c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset)
-			}
-		}
-
-		if needsStaticUtils(cluster, c.InstanceGroups) {
-			utilsLocation := BaseUrl() + "linux/amd64/utils.tar.gz"
-			glog.V(4).Infof("Using default utils.tar.gz location: %q", utilsLocation)
-
-			hash, err := findHash(utilsLocation)
-			if err != nil {
-				return err
-			}
-			c.Assets = append(c.Assets, hash.Hex()+"@"+utilsLocation)
-		}
-
-		if needsKubernetesManifests(cluster, c.InstanceGroups) {
-			defaultManifestsAsset := baseURL + "/kubernetes-manifests.tar.gz"
-			glog.V(2).Infof("Adding default kubernetes manifests asset: %s", defaultManifestsAsset)
-
-			hash, err := findHash(defaultManifestsAsset)
-			if err != nil {
-				return err
-			}
-			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultManifestsAsset)
-		}
+	if err := c.addFileAssets(assetBuilder); err != nil {
+		return err
 	}
 
-	if c.NodeUpSource == "" {
-		c.NodeUpSource = NodeUpLocation()
+	// Only setup transfer of kops assets if using a FileRepository
+	if c.Cluster.Spec.Assets != nil && c.Cluster.Spec.Assets.FileRepository != nil {
+		if err := SetKopsAssetsLocations(assetBuilder); err != nil {
+			return err
+		}
 	}
 
 	checkExisting := true
@@ -472,44 +458,6 @@ func (c *ApplyClusterCmd) Run() error {
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
-	stageAssetsLifecycle := fi.LifecycleSync
-	securityLifecycle := fi.LifecycleSync
-	networkLifecycle := fi.LifecycleSync
-	clusterLifecycle := fi.LifecycleSync
-
-	switch c.Phase {
-	case Phase(""):
-	// Everything ... the default
-	case PhaseStageAssets:
-		networkLifecycle = fi.LifecycleIgnore
-		securityLifecycle = fi.LifecycleIgnore
-		clusterLifecycle = fi.LifecycleIgnore
-
-	case PhaseNetwork:
-		stageAssetsLifecycle = fi.LifecycleIgnore
-		securityLifecycle = fi.LifecycleIgnore
-		clusterLifecycle = fi.LifecycleIgnore
-
-	case PhaseSecurity:
-		stageAssetsLifecycle = fi.LifecycleIgnore
-		networkLifecycle = fi.LifecycleIgnore
-		clusterLifecycle = fi.LifecycleIgnore
-
-	case PhaseCluster:
-		if c.TargetName == TargetDryRun {
-			stageAssetsLifecycle = fi.LifecycleExistsAndWarnIfChanges
-			securityLifecycle = fi.LifecycleExistsAndWarnIfChanges
-			networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
-		} else {
-			stageAssetsLifecycle = fi.LifecycleIgnore
-			networkLifecycle = fi.LifecycleExistsAndValidates
-			securityLifecycle = fi.LifecycleExistsAndValidates
-		}
-
-	default:
-		return fmt.Errorf("unknown phase %q", c.Phase)
-	}
-
 	var fileModels []string
 	for _, m := range c.Models {
 		switch m {
@@ -638,25 +586,27 @@ func (c *ApplyClusterCmd) Run() error {
 		var images []*nodeup.Image
 
 		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
-			baseURL := cluster.Spec.KubernetesVersion
-			baseURL = strings.TrimSuffix(baseURL, "/")
-
-			// TODO: pull kube-dns image
 			// When using a custom version, we want to preload the images over http
 			components := []string{"kube-proxy"}
 			if role == kops.InstanceGroupRoleMaster {
 				components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
 			}
-			for _, component := range components {
-				imagePath := baseURL + "/bin/linux/amd64/" + component + ".tar"
-				glog.Infof("Adding docker image: %s", imagePath)
 
-				hash, err := findHash(imagePath)
+			for _, component := range components {
+				baseURL, err := url.Parse(cluster.Spec.KubernetesVersion)
 				if err != nil {
 					return nil, err
 				}
+
+				baseURL.Path = path.Join(baseURL.Path, "/bin/linux/amd64/", component+".tar")
+
+				u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+				if err != nil {
+					return nil, err
+				}
+
 				image := &nodeup.Image{
-					Source: imagePath,
+					Source: u.String(),
 					Hash:   hash.Hex(),
 				}
 				images = append(images, image)
@@ -664,16 +614,14 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 
 		{
-			location := ProtokubeImageSource()
-
-			hash, err := findHash(location)
+			location, hash, err := ProtokubeImageSource(assetBuilder)
 			if err != nil {
 				return nil, err
 			}
 
 			config.ProtokubeImage = &nodeup.Image{
 				Name:   kopsbase.DefaultProtokubeImageName(),
-				Source: location,
+				Source: location.String(),
 				Hash:   hash.Hex(),
 			}
 		}
@@ -686,7 +634,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	bootstrapScriptBuilder := &model.BootstrapScript{
 		NodeUpConfigBuilder: renderNodeUpConfig,
-		NodeUpSourceHash:    "",
+		NodeUpSourceHash:    c.NodeUpHash,
 		NodeUpSource:        c.NodeUpSource,
 	}
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -872,22 +820,6 @@ func (c *ApplyClusterCmd) Run() error {
 	return nil
 }
 
-func findHash(url string) (*hashing.Hash, error) {
-	for _, ext := range []string{".sha1"} {
-		hashURL := url + ext
-		b, err := vfs.Context.ReadFile(hashURL)
-		if err != nil {
-			glog.Infof("error reading hash file %q: %v", hashURL, err)
-			continue
-		}
-		hashString := strings.TrimSpace(string(b))
-		glog.V(2).Infof("Found hash %q for %q", hashString, url)
-
-		return hashing.FromString(hashString)
-	}
-	return nil, fmt.Errorf("cannot determine hash for %v (have you specified a valid KubernetesVersion?)", url)
-}
-
 // upgradeSpecs ensures that fields are fully populated / defaulted
 func (c *ApplyClusterCmd) upgradeSpecs(assetBuilder *assets.AssetBuilder) error {
 	fullCluster, err := PopulateClusterSpec(c.Clientset, c.Cluster, assetBuilder)
@@ -1036,6 +968,78 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 	return nil
 }
 
+// addFileAssets adds the file assets within the assetBuilder
+func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error {
+
+	var baseURL string
+	var err error
+	if components.IsBaseURL(c.Cluster.Spec.KubernetesVersion) {
+		baseURL = c.Cluster.Spec.KubernetesVersion
+	} else {
+		baseURL = "https://storage.googleapis.com/kubernetes-release/release/v" + c.Cluster.Spec.KubernetesVersion
+	}
+
+	k8sAssetsNames := []string{
+		"/bin/linux/amd64/kubelet",
+		"/bin/linux/amd64/kubectl",
+	}
+	if needsKubernetesManifests(c.Cluster, c.InstanceGroups) {
+		k8sAssetsNames = append(k8sAssetsNames, "/kubernetes-manifests.tar.gz")
+	}
+
+	for _, a := range k8sAssetsNames {
+		k, err := url.Parse(baseURL)
+		if err != nil {
+			return err
+		}
+		k.Path = path.Join(k.Path, a)
+
+		u, hash, err := assetBuilder.RemapFileAndSHA(k)
+		if err != nil {
+			return err
+		}
+		c.Assets = append(c.Assets, hash.Hex()+"@"+u.String())
+	}
+
+	if usesCNI(c.Cluster) {
+		cniAsset, cniAssetHashString, err := findCNIAssets(c.Cluster, assetBuilder)
+		if err != nil {
+			return err
+		}
+
+		c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset.String())
+	}
+
+	// TODO figure out if we can only do this for CoreOS only and GCE Container OS
+	// TODO It is very difficult to pre-determine what OS an ami is, and if that OS needs socat
+	// At this time we just copy the socat binary to all distros.  Most distros will be there own
+	// socat binary.  Container operating systems like CoreOS need to have socat added to them.
+	{
+		utilsLocation, hash, err := KopsFileUrl("linux/amd64/utils.tar.gz", assetBuilder)
+		if err != nil {
+			return err
+		}
+		c.Assets = append(c.Assets, hash.Hex()+"@"+utilsLocation.String())
+	}
+
+	n, hash, err := NodeUpLocation(assetBuilder)
+	if err != nil {
+		return err
+	}
+	c.NodeUpSource = n.String()
+	c.NodeUpHash = hash.Hex()
+
+	// Explicitly add the protokube image,
+	// otherwise when the Target is DryRun this asset is not added
+	// Is there a better way to call this?
+	_, _, err = ProtokubeImageSource(assetBuilder)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // buildPermalink returns a link to our "permalink docs", to further explain an error message
 func buildPermalink(key, anchor string) string {
 	url := "https://github.com/kubernetes/kops/blob/master/permalinks/" + key + ".md"
@@ -1053,13 +1057,6 @@ func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
 	return kops.LoadChannel(channelLocation)
 }
 
-// needsStaticUtils checks if we need our static utils on this OS.
-// This is only needed currently on CoreOS, but we don't have a nice way to detect it yet
-func needsStaticUtils(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
-	// TODO: Do real detection of CoreOS (but this has to work with AMI names, and maybe even forked AMIs)
-	return true
-}
-
 // needsKubernetesManifests checks if we need kubernetes manifests
 // This is only needed currently on ContainerOS i.e. GCE, but we don't have a nice way to detect it yet
 func needsKubernetesManifests(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
@@ -1070,8 +1067,4 @@ func needsKubernetesManifests(c *kops.Cluster, instanceGroups []*kops.InstanceGr
 	default:
 		return false
 	}
-}
-
-func lifecyclePointer(v fi.Lifecycle) *fi.Lifecycle {
-	return &v
 }

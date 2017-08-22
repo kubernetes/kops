@@ -19,7 +19,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
   set -o pipefail
 
   NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.7.0/linux/amd64/nodeup
-  NODEUP_HASH=
+  NODEUP_HASH=2a7b5fdd443e7c91c0af84593e2111c1a4105b79
 
 
 
@@ -289,7 +289,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
   set -o pipefail
 
   NODEUP_URL=https://kubeupv2.s3.amazonaws.com/kops/1.7.0/linux/amd64/nodeup
-  NODEUP_HASH=
+  NODEUP_HASH=2a7b5fdd443e7c91c0af84593e2111c1a4105b79
 
 
 
