@@ -97,12 +97,12 @@ func TestS3PolicyGeneration(t *testing.T) {
 
 	grid := []struct {
 		Role      kops.InstanceGroupRole
-		StrictIAM bool
+		LegacyIAM bool
 		IAMPolicy IAMPolicy
 	}{
 		{
 			Role:      "Master",
-			StrictIAM: true,
+			LegacyIAM: false,
 			IAMPolicy: IAMPolicy{
 				Statement: append(defaultS3Statements, &IAMStatement{
 					Effect: IAMStatementEffectAllow,
@@ -117,7 +117,7 @@ func TestS3PolicyGeneration(t *testing.T) {
 		},
 		{
 			Role:      "Master",
-			StrictIAM: false,
+			LegacyIAM: true,
 			IAMPolicy: IAMPolicy{
 				Statement: append(defaultS3Statements, &IAMStatement{
 					Effect: IAMStatementEffectAllow,
@@ -132,7 +132,7 @@ func TestS3PolicyGeneration(t *testing.T) {
 		},
 		{
 			Role:      "Node",
-			StrictIAM: true,
+			LegacyIAM: false,
 			IAMPolicy: IAMPolicy{
 				Statement: append(defaultS3Statements, &IAMStatement{
 					Effect: IAMStatementEffectAllow,
@@ -155,7 +155,7 @@ func TestS3PolicyGeneration(t *testing.T) {
 		},
 		{
 			Role:      "Node",
-			StrictIAM: false,
+			LegacyIAM: true,
 			IAMPolicy: IAMPolicy{
 				Statement: append(defaultS3Statements, &IAMStatement{
 					Effect: IAMStatementEffectAllow,
@@ -170,14 +170,14 @@ func TestS3PolicyGeneration(t *testing.T) {
 		},
 		{
 			Role:      "Bastion",
-			StrictIAM: true,
+			LegacyIAM: false,
 			IAMPolicy: IAMPolicy{
 				Statement: defaultS3Statements,
 			},
 		},
 		{
 			Role:      "Bastion",
-			StrictIAM: false,
+			LegacyIAM: true,
 			IAMPolicy: IAMPolicy{
 				Statement: defaultS3Statements,
 			},
@@ -198,7 +198,7 @@ func TestS3PolicyGeneration(t *testing.T) {
 			continue
 		}
 
-		addS3Permissions(ip, "arn:aws", s3Path, x.Role, x.StrictIAM)
+		addS3Permissions(ip, "arn:aws", s3Path, x.Role, x.LegacyIAM)
 
 		expectedPolicy, err := x.IAMPolicy.AsJSON()
 		if err != nil {
