@@ -170,7 +170,7 @@ type Assets struct {
 
 // IAMSpec adds control over the IAM security policies applied to resources
 type IAMSpec struct {
-	Strict bool `json:"strict"`
+	Legacy bool `json:"legacy"`
 }
 
 // HookSpec is a definition hook
@@ -194,7 +194,7 @@ type HookSpec struct {
 // ExecContainerAction defines an hood action
 type ExecContainerAction struct {
 	// Image is the docker image
-	Image string `json:"image,omitempty" `
+	Image string `json:"image,omitempty"`
 	// Command is the command supplied to the above image
 	Command []string `json:"command,omitempty"`
 	// Environment is a map of environment variables added to the hook

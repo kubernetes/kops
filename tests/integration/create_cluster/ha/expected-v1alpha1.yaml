@@ -30,6 +30,8 @@ spec:
     - name: c
       zone: us-test-1c
     name: events
+  iam:
+    legacy: false
   kubernetesVersion: v1.6.0-alpha.3
   masterPublicName: api.ha.example.com
   networkCIDR: 172.20.0.0/16

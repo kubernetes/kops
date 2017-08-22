@@ -196,7 +196,7 @@ type Assets struct {
 
 // IAMSpec adds control over the IAM security policies applied to resources
 type IAMSpec struct {
-	Strict bool `json:"strict"`
+	Legacy bool `json:"legacy"`
 }
 
 // HookSpec is a definition hook

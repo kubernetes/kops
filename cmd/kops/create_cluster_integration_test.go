@@ -18,17 +18,19 @@ package main
 
 import (
 	"bytes"
-	"github.com/golang/glog"
 	"io/ioutil"
+	"path"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/golang/glog"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/testutils"
-	"path"
-	"strings"
-	"testing"
-	"time"
 )
 
 var MagicTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
@@ -182,7 +184,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 		diffString := diff.FormatDiff(expectedYAML, actualYAML)
 		t.Logf("diff:\n%s\n", diffString)
 
-		t.Fatalf("YAML differed from expected")
+		t.Fatalf("YAML differed from expected (%s)", path.Join(srcDir, expectedClusterPath))
 	}
 
 }
