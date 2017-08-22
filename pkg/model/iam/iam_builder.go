@@ -84,9 +84,10 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 	wildcard := stringorslice.Slice([]string{"*"})
 	iamPrefix := b.IAMPrefix()
 
-	strictIAM := false
+	// The Legacy IAM setting deploys an open policy (prior to the hardening PRs)
+	legacyIAM := false
 	if b.Cluster.Spec.IAM != nil {
-		strictIAM = b.Cluster.Spec.IAM.Strict
+		legacyIAM = b.Cluster.Spec.IAM.Legacy
 	}
 
 	p := &IAMPolicy{
@@ -237,7 +238,7 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 		}
 
 		if s3Path, ok := vfsPath.(*vfs.S3Path); ok {
-			addS3Permissions(p, iamPrefix, s3Path, b.Role, strictIAM)
+			addS3Permissions(p, iamPrefix, s3Path, b.Role, legacyIAM)
 		} else if _, ok := vfsPath.(*vfs.MemFSPath); ok {
 			// Tests -ignore - nothing we can do in terms of IAM policy
 			glog.Warningf("ignoring memfs path %q for IAM policy builder", vfsPath)
@@ -281,7 +282,7 @@ func addRoute53ListHostedZonesPermission(p *IAMPolicy) {
 
 // addS3Permissions updates the IAM Policy with statements granting tailored
 // access to S3 assets, depending on the instance role
-func addS3Permissions(p *IAMPolicy, iamPrefix string, s3Path *vfs.S3Path, role api.InstanceGroupRole, strictIAM bool) {
+func addS3Permissions(p *IAMPolicy, iamPrefix string, s3Path *vfs.S3Path, role api.InstanceGroupRole, legacyIAM bool) {
 	// Note that the config store may itself be a subdirectory of a bucket
 	iamS3Path := s3Path.Bucket() + "/" + s3Path.Key()
 	iamS3Path = strings.TrimSuffix(iamS3Path, "/")
@@ -303,7 +304,17 @@ func addS3Permissions(p *IAMPolicy, iamPrefix string, s3Path *vfs.S3Path, role a
 		),
 	})
 
-	if strictIAM {
+	if legacyIAM {
+		if role == api.InstanceGroupRoleMaster || role == api.InstanceGroupRoleNode {
+			p.Statement = append(p.Statement, &IAMStatement{
+				Effect: IAMStatementEffectAllow,
+				Action: stringorslice.Slice([]string{"s3:*"}),
+				Resource: stringorslice.Of(
+					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/*"}, ""),
+				),
+			})
+		}
+	} else {
 		if role == api.InstanceGroupRoleMaster {
 			p.Statement = append(p.Statement, &IAMStatement{
 				Effect: IAMStatementEffectAllow,
@@ -326,16 +337,6 @@ func addS3Permissions(p *IAMPolicy, iamPrefix string, s3Path *vfs.S3Path, role a
 					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/secrets/*"}, ""),
 					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/cluster.spec"}, ""),
 					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/config"}, ""),
-				),
-			})
-		}
-	} else {
-		if role == api.InstanceGroupRoleMaster || role == api.InstanceGroupRoleNode {
-			p.Statement = append(p.Statement, &IAMStatement{
-				Effect: IAMStatementEffectAllow,
-				Action: stringorslice.Slice([]string{"s3:*"}),
-				Resource: stringorslice.Of(
-					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/*"}, ""),
 				),
 			})
 		}
