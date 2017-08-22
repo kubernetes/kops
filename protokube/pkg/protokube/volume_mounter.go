@@ -185,6 +185,10 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 	var tryAttach []*Volume
 	var attached []*Volume
 	for _, v := range volumes {
+		if doNotMountVolume(v) {
+			continue
+		}
+
 		if v.AttachedTo == "" {
 			tryAttach = append(tryAttach, v)
 		}
@@ -243,6 +247,15 @@ func (k *VolumeMountController) attachMasterVolumes() ([]*Volume, error) {
 
 	glog.V(2).Infof("Currently attached volumes: %v", attached)
 	return attached, nil
+}
+
+// doNotMountVolume tests that the volume has an Etcd Cluster associated
+func doNotMountVolume(v *Volume) bool {
+	if len(v.Info.EtcdClusters) == 0 {
+		glog.Warningf("Local device: %q, volume id: %q is being skipped and will not mounted, since it does not have a etcd cluster", v.LocalDevice, v.ID)
+		return true
+	}
+	return false
 }
 
 // ByEtcdClusterName sorts volumes so that we mount in a consistent order,
