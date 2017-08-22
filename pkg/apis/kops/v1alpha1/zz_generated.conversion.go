@@ -1518,6 +1518,8 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.OIDCIssuerURL = in.OIDCIssuerURL
 	out.OIDCClientID = in.OIDCClientID
 	out.OIDCCAFile = in.OIDCCAFile
+	out.ProxyClientCertFile = in.ProxyClientCertFile
+	out.ProxyClientKeyFile = in.ProxyClientKeyFile
 	out.AuditLogPath = in.AuditLogPath
 	out.AuditLogMaxAge = in.AuditLogMaxAge
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
@@ -1566,6 +1568,8 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.OIDCIssuerURL = in.OIDCIssuerURL
 	out.OIDCClientID = in.OIDCClientID
 	out.OIDCCAFile = in.OIDCCAFile
+	out.ProxyClientCertFile = in.ProxyClientCertFile
+	out.ProxyClientKeyFile = in.ProxyClientKeyFile
 	out.AuditLogPath = in.AuditLogPath
 	out.AuditLogMaxAge = in.AuditLogMaxAge
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
