@@ -57,3 +57,42 @@ func Test_VolumeSort_ByEtcdClusterName(t *testing.T) {
 	}
 
 }
+
+func Test_Mount_Volumes(t *testing.T) {
+	grid := []struct {
+		volume      *Volume
+		doNotMount  bool
+		description string
+	}{
+		{
+			&Volume{
+				LocalDevice: "/dev/xvda",
+			},
+			true,
+			"xda without a etcd cluster, do not mount",
+		},
+		{
+			&Volume{
+				LocalDevice: "/dev/xvdb",
+				Info: VolumeInfo{
+					EtcdClusters: []*EtcdClusterSpec{
+						{
+							ClusterKey: "foo",
+							NodeName:   "bar",
+						},
+					},
+				},
+			},
+			true,
+			"xdb with a etcd cluster, mount",
+		},
+	}
+
+	for _, g := range grid {
+		d := doNotMountVolume(g.volume)
+		if d && !g.doNotMount {
+			t.Fatalf("volume mount should not have mounted: %s, description: %s", g.volume.LocalDevice, g.description)
+		}
+	}
+
+}
