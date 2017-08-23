@@ -38,18 +38,15 @@ const FileType_Directory = "directory"
 const FileType_File = "file"
 
 type File struct {
-	Path     string      `json:"path,omitempty"`
-	Contents fi.Resource `json:"contents,omitempty"`
-
-	Mode        *string `json:"mode,omitempty"`
-	IfNotExists bool    `json:"ifNotExists,omitempty"`
-
-	OnChangeExecute [][]string `json:"onChangeExecute,omitempty"`
-
-	Symlink *string `json:"symlink,omitempty"`
-	Owner   *string `json:"owner,omitempty"`
-	Group   *string `json:"group,omitempty"`
-	Type    string  `json:"type"`
+	Contents        fi.Resource `json:"contents,omitempty"`
+	Group           *string     `json:"group,omitempty"`
+	IfNotExists     bool        `json:"ifNotExists,omitempty"`
+	Mode            *string     `json:"mode,omitempty"`
+	OnChangeExecute [][]string  `json:"onChangeExecute,omitempty"`
+	Owner           *string     `json:"owner,omitempty"`
+	Path            string      `json:"path,omitempty"`
+	Symlink         *string     `json:"symlink,omitempty"`
+	Type            string      `json:"type"`
 }
 
 var _ fi.Task = &File{}
