@@ -36,6 +36,8 @@ spec:
     - instanceGroup: master-us-test-1a-3
       name: a-3
     name: events
+  iam:
+    legacy: false
   kubernetesApiAccess:
   - 0.0.0.0/0
   kubernetesVersion: v1.4.8
