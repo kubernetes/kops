@@ -143,6 +143,9 @@ type ClusterSpec struct {
 	// This API component is under construction, will remove this comment
 	// once this API is fully functional.
 	Assets *Assets `json:"assets,omitempty"`
+
+	// IAM field adds control over the IAM security policies applied to resources
+	IAM *IAMSpec `json:"iam,omitempty"`
 }
 
 // FileAssetSpec defines the structure for a file asset
@@ -162,6 +165,11 @@ type FileAssetSpec struct {
 type Assets struct {
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
 	FileRepository    *string `json:"fileRepository,omitempty"`
+}
+
+// IAMSpec adds control over the IAM security policies applied to resources
+type IAMSpec struct {
+	Legacy bool `json:"legacy"`
 }
 
 // HookSpec is a definition hook
@@ -185,7 +193,7 @@ type HookSpec struct {
 // ExecContainerAction defines an hood action
 type ExecContainerAction struct {
 	// Image is the docker image
-	Image string `json:"image,omitempty" `
+	Image string `json:"image,omitempty"`
 	// Command is the command supplied to the above image
 	Command []string `json:"command,omitempty"`
 	// Environment is a map of environment variables added to the hook

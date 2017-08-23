@@ -75,4 +75,10 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		obj.Authorization.AlwaysAllow = &AlwaysAllowAuthorizationSpec{}
 	}
 
+	if obj.IAM == nil {
+		obj.IAM = &IAMSpec{
+			Legacy: true,
+		}
+	}
+
 }
