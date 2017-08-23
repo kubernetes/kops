@@ -141,6 +141,14 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 }
 
 func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+	// required that names start with a lower case and only contains letters, numbers and hyphens
+	name = "kops-" + strings.Replace(name, ".", "-", -1)
+
+	// DO has a 64 character limit for volume names
+	if len(name) >= 64 {
+		name = name[:64]
+	}
+
 	t := &dotasks.Volume{
 		Name:      s(name),
 		Lifecycle: b.Lifecycle,
