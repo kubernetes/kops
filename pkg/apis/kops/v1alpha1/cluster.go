@@ -241,6 +241,8 @@ type ClusterSpec struct {
 	// Authorization field controls how the cluster is configured for authorization
 	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
 
+	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
+	
 	// Tags for AWS instance groups
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
 

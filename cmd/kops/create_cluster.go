@@ -97,6 +97,9 @@ type CreateClusterOptions struct {
 	// Specify tags for AWS instance groups
 	CloudLabels string
 
+	// Specify labels for Kubernetes nodes
+	NodeLabels string
+
 	// Egress configuration - FOR TESTING ONLY
 	Egress string
 
@@ -278,6 +281,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	// Allow custom tags from the CLI
 	cmd.Flags().StringVar(&options.CloudLabels, "cloud-labels", options.CloudLabels, "A list of KV pairs used to tag all instance groups in AWS (eg \"Owner=John Doe,Team=Some Team\").")
 
+	// Allow custom node labels from the CLI
+	cmd.Flags().StringVar(&options.NodeLabels, "node-labels", options.NodeLabels, "A list of KV pairs used to label all Kubernetes nodes (eg \"x=1,y=2\").")
+
 	// Master and Node Tenancy
 	cmd.Flags().StringVar(&options.MasterTenancy, "master-tenancy", options.MasterTenancy, "The tenancy of the master group on AWS. Can either be default or dedicated.")
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
@@ -411,6 +417,12 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("error parsing global cloud labels: %v", err)
 	}
 	cluster.Spec.CloudLabels = cloudLabels
+
+	nodeLabels, err := parseNodeLabels(c.NodeLabels)
+	if err != nil {
+		return fmt.Errorf("error parsing node labels: %v", err)
+	}
+	cluster.Spec.NodeLabels = nodeLabels
 
 	// Build the master subnets
 	// The master zones is the default set of zones unless explicitly set
@@ -1027,6 +1039,32 @@ func parseCloudLabels(s string) (map[string]string, error) {
 	kvPairs, err := r.ReadAll()
 	if err != nil {
 		return nil, fmt.Errorf("One or more key=value pairs are malformed:\n%s\n:%v", records, err)
+	}
+
+	m := make(map[string]string, len(kvPairs))
+	for _, pair := range kvPairs {
+		m[pair[0]] = pair[1]
+	}
+	return m, nil
+}
+
+// parseNodeLabels takes a CSV list of key=value records and parses them into a map. Nested '='s are supported via
+// quoted strings (eg `foo="bar=baz"` parses to map[string]string{"foo":"bar=baz"}. Nested commas are not supported.
+func parseNodeLabels(s string) (map[string]string, error) {
+	// Replace commas with newlines to allow a single pass with csv.Reader.
+	// We can't use csv.Reader for the initial split because it would see each key=value record as a single field
+	// and significantly complicates using quoted fields as keys or values.
+	records := strings.Replace(s, ",", "\n", -1)
+
+	// Let the CSV library do the heavy-lifting in handling nested ='s
+	r := csv.NewReader(strings.NewReader(records))
+	r.Comma = '='
+	r.FieldsPerRecord = 2
+	r.LazyQuotes = false
+	r.TrimLeadingSpace = true
+	kvPairs, err := r.ReadAll()
+	if err != nil {
+		return nil, fmt.Errorf("One or more key=value pairs is malformed:\n%s\n:%v", records, err)
 	}
 
 	m := make(map[string]string, len(kvPairs))
