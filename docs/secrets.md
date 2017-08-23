@@ -33,5 +33,5 @@ metadata:
   labels:
     kops.k8s.io/cluster: dev.k8s.example.com
 spec:
-  PublicKey: "ssh-rsa AAAAB3NzaC1 dev@devbox"
+  publicKey: "ssh-rsa AAAAB3NzaC1 dev@devbox"
 ```
