@@ -17,8 +17,10 @@ limitations under the License.
 package validation
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
 	"testing"
+
+	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func TestValidateInstanceGroupSpec(t *testing.T) {
@@ -57,9 +59,23 @@ func TestValidateInstanceGroupSpec(t *testing.T) {
 			},
 			ExpectedErrors: []string{"Invalid value::spec.additionalSecurityGroups[0]"},
 		},
+		{
+			Input: kops.InstanceGroupSpec{
+				MachineType: "t2.micro",
+			},
+		},
+		{
+			Input: kops.InstanceGroupSpec{
+				MachineType: "t2.invalidType",
+			},
+			ExpectedErrors: []string{"Invalid value::test-nodes.spec.machineType"},
+		},
 	}
 	for _, g := range grid {
 		ig := &kops.InstanceGroup{
+			ObjectMeta: v1.ObjectMeta{
+				Name: "test-nodes",
+			},
 			Spec: g.Input,
 		}
 		errs := awsValidateInstanceGroup(ig)
