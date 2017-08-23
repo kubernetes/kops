@@ -33,14 +33,17 @@ import (
 const (
 	defaultNodeMachineTypeGCE     = "n1-standard-2"
 	defaultNodeMachineTypeVSphere = "vsphere_node"
+	defaultNodeMachineTypeDO      = "2gb"
 
 	defaultBastionMachineTypeGCE     = "f1-micro"
 	defaultBastionMachineTypeVSphere = "vsphere_bastion"
 
 	defaultMasterMachineTypeGCE     = "n1-standard-1"
 	defaultMasterMachineTypeVSphere = "vsphere_master"
+	defaultMasterMachineTypeDO      = "2gb"
 
 	defaultVSphereNodeImage = "kops_ubuntu_16_04.ova"
+	defaultDONodeImage      = "coreos-stable"
 )
 
 var awsDedicatedInstanceExceptions = map[string]bool{
@@ -177,6 +180,16 @@ func defaultMachineType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, 
 			return defaultBastionMachineTypeGCE, nil
 		}
 
+	case kops.CloudProviderDO:
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleMaster:
+			return defaultMasterMachineTypeDO, nil
+
+		case kops.InstanceGroupRoleNode:
+			return defaultNodeMachineTypeDO, nil
+
+		}
+
 	case kops.CloudProviderVSphere:
 		switch ig.Spec.Role {
 		case kops.InstanceGroupRoleMaster:
@@ -211,9 +224,15 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
 				return image.Name
 			}
 		}
-	} else if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderVSphere {
+	}
+
+	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kops.CloudProviderDO:
+		return defaultDONodeImage
+	case kops.CloudProviderVSphere:
 		return defaultVSphereNodeImage
 	}
+
 	glog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
 	return ""
 }
