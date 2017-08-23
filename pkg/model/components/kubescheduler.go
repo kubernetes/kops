@@ -43,7 +43,7 @@ func (b *KubeSchedulerOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 
 	if config.Image == "" {
-		image, err := Image("kube-scheduler", clusterSpec)
+		image, err := Image("kube-scheduler", clusterSpec, b.AssetBuilder)
 		if err != nil {
 			return err
 		}

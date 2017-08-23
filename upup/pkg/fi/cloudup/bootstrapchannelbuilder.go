@@ -39,6 +39,7 @@ type BootstrapChannelBuilder struct {
 var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
 
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
+
 	addons, manifests, err := b.buildManifest()
 	if err != nil {
 		return err

@@ -121,6 +121,7 @@ func (_ *CopyDockerImage) Render(c *fi.Context, a, e, changes *CopyDockerImage) 
 	cli, err := newDockerCLI()
 	if err != nil {
 		return err
+
 	}
 
 	source := fi.StringValue(e.SourceImage)
@@ -134,7 +135,7 @@ func (_ *CopyDockerImage) Render(c *fi.Context, a, e, changes *CopyDockerImage) 
 	}
 	sourceImage, err := api.findImage(source)
 	if err != nil {
-		return err
+		return fmt.Errorf("error finding image %q: %v", source, err)
 	}
 	if sourceImage == nil {
 		return fmt.Errorf("source image %q not found", source)
