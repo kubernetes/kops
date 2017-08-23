@@ -58,7 +58,10 @@ func NewAWSVolumes() (*AWSVolumes, error) {
 		deviceMap: make(map[string]string),
 	}
 
-	s := session.New()
+	s, err := session.NewSession()
+	if err != nil {
+		return nil, fmt.Errorf("error starting new AWS session: %v", err)
+	}
 	s.Handlers.Send.PushFront(func(r *request.Request) {
 		// Log requests
 		glog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation.Name)
