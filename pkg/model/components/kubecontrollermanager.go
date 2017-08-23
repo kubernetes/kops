@@ -142,7 +142,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.ConfigureCloudRoutes = fi.Bool(true)
 	} else if networking.External != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil {
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external

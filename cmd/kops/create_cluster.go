@@ -251,7 +251,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router.")
+	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -709,6 +709,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
 	case "kube-router":
 		cluster.Spec.Networking.Kuberouter = &api.KuberouterNetworkingSpec{}
+	case "romana":
+		cluster.Spec.Networking.Romana = &api.RomanaNetworkingSpec{}
 	default:
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
@@ -746,7 +748,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	case api.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
-			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan (or kopeio)', '--networking weave', '--networking flannel', '--networking calico', '--networking canal', '--networking kube-router' are supported for private topologies", c.Networking)
+			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan (or kopeio)', '--networking weave', '--networking flannel', '--networking calico', '--networking canal', '--networking kube-router', '--networking romana' are supported for private topologies", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{
 			Masters: api.TopologyPrivate,
@@ -992,7 +994,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 func supportsPrivateTopology(n *api.NetworkingSpec) bool {
 
-	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Flannel != nil || n.Calico != nil || n.Canal != nil || n.Kuberouter != nil {
+	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Flannel != nil || n.Calico != nil || n.Canal != nil || n.Kuberouter != nil || n.Romana != nil {
 		return true
 	}
 	return false

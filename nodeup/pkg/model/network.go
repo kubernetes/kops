@@ -40,7 +40,7 @@ func (b *NetworkBuilder) Build(c *fi.ModelBuilderContext) error {
 	} else if networking.External != nil {
 		// external is based on kubenet
 		assetNames = append(assetNames, "bridge", "host-local", "loopback")
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil {
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil {
 		assetNames = append(assetNames, "bridge", "host-local", "loopback", "ptp")
 		// Do we need tuning?
 
