@@ -25,14 +25,13 @@ example:
 `kops delete secret sshpublickey admin`
 
 
-### adding secret from spec file
+### adding ssh credential from spec file
 ```bash
 apiVersion: kops/v1alpha2
-kind: SSHSecret
+kind: SSHCredential
 metadata:
   labels:
     kops.k8s.io/cluster: dev.k8s.example.com
 spec:
-  username: "admin"
-  sshPublicKey: "ssh-rsa AAAAB3NzaC1 dev@devbox"
+  PublicKey: "ssh-rsa AAAAB3NzaC1 dev@devbox"
 ```
