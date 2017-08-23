@@ -108,9 +108,8 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 	}
 
-	registryMirror := os.Getenv("DEV_KOPS_REGISTRY_MIRROR")
-	registryMirror = strings.TrimSuffix(registryMirror, "/")
-	if registryMirror != "" {
+	if a.AssetsLocation != nil && a.AssetsLocation.ContainerRegistry != nil {
+		registryMirror := *a.AssetsLocation.ContainerRegistry
 		normalized := image
 
 		// Remove the 'standard' kubernetes image prefix, just for sanity

@@ -8,4 +8,3 @@ KubeAPIServer:
   ServiceClusterIPRange: {{ .ServiceClusterIPRange }}
   LogLevel: 2
   AllowPrivileged: true
-  Image: {{ Image "kube-apiserver" }}
