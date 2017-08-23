@@ -22,4 +22,4 @@ type FederationExpansion interface{}
 
 type InstanceGroupExpansion interface{}
 
-type SSHSecretExpansion interface{}
+type SSHCredentialExpansion interface{}
