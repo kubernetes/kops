@@ -18,6 +18,7 @@ package components
 
 import (
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
 
@@ -47,7 +48,7 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 		config.CPURequest = "100m"
 	}
 
-	image, err := Image("kube-proxy", clusterSpec)
+	image, err := assets.Image("kube-proxy", clusterSpec)
 	if err != nil {
 		return err
 	}
