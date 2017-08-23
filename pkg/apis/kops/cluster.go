@@ -76,7 +76,6 @@ type ClusterSpec struct {
 	KeyStore string `json:"keyStore,omitempty"`
 	// ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroups etc) is stored
 	ConfigStore string `json:"configStore,omitempty"`
-
 	// DNSZone is the DNS zone we should use when configuring DNS
 	// This is because some clouds let us define a managed zone foo.bar, and then have
 	// kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone.
@@ -113,6 +112,8 @@ type ClusterSpec struct {
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
 	// Additional policies to add for roles
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
+	// A collection of files assets for deployed cluster wide
+	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 	// Component configurations
@@ -128,7 +129,6 @@ type ClusterSpec struct {
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
-
 	// API field controls how the API is exposed outside the cluster
 	API *AccessSpec `json:"api,omitempty"`
 	// Authentication field controls how the cluster is configured for authentication
@@ -143,6 +143,20 @@ type ClusterSpec struct {
 	// This API component is under construction, will remove this comment
 	// once this API is fully functional.
 	Assets *Assets `json:"assets,omitempty"`
+}
+
+// FileAssetSpec defines the structure for a file asset
+type FileAssetSpec struct {
+	// Name is a shortened reference to the asset
+	Name string `json:"name,omitempty"`
+	// Path is the location this file should reside
+	Path string `json:"path,omitempty"`
+	// Roles is a list of roles the file asset should be applied, defaults to all
+	Roles []InstanceGroupRole `json:"roles,omitempty"`
+	// Content is the contents of the file
+	Content string `json:"content,omitempty"`
+	// IsBase64 indicates the contents is base64 encoded
+	IsBase64 bool `json:"isBase64,omitempty"`
 }
 
 type Assets struct {

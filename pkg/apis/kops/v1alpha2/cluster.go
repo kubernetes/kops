@@ -52,10 +52,6 @@ type ClusterSpec struct {
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 
-	//
-	//// The Node initializer technique to use: cloudinit or nodeup
-	//NodeInit                      string `json:",omitempty"`
-
 	// Configuration of subnets we are targeting
 	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
 
@@ -141,6 +137,9 @@ type ClusterSpec struct {
 	// Additional policies to add for roles
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 
+	// A collection of files assets for deployed cluster wide
+	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
+
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 
@@ -157,24 +156,32 @@ type ClusterSpec struct {
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
-
 	// API field controls how the API is exposed outside the cluster
 	API *AccessSpec `json:"api,omitempty"`
-
 	// Authentication field controls how the cluster is configured for authentication
 	Authentication *AuthenticationSpec `json:"authentication,omitempty"`
-
 	// Authorization field controls how the cluster is configured for authorization
 	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
-
 	// Tags for AWS resources
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
-
 	// Hooks for custom actions e.g. on first installation
 	Hooks []HookSpec `json:"hooks,omitempty"`
-
 	// Alternative locations for files and containers
 	Assets *Assets `json:"assets,omitempty"`
+}
+
+// FileAssetSpec defines the structure for a file asset
+type FileAssetSpec struct {
+	// Name is a shortened reference to the asset
+	Name string `json:"name,omitempty"`
+	// Path is the location this file should reside
+	Path string `json:"path,omitempty"`
+	// Roles is a list of roles the file asset should be applied, defaults to all
+	Roles []InstanceGroupRole `json:"roles,omitempty"`
+	// Content is the contents of the file
+	Content string `json:"content,omitempty"`
+	// IsBase64 indicates the contents is base64 encoded
+	IsBase64 bool `json:"isBase64,omitempty"`
 }
 
 type Assets struct {

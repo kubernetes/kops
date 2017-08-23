@@ -249,6 +249,22 @@ spec:
       image: busybox
 ```
 
+### fileAssets
+
+FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's desiginated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
+
+```yaml
+spec:
+  fileAssets:
+  - name: iptable-restore
+    # Note if not path is specificied the default path it /srv/kubernetes/assets/<name>
+    path: /var/lib/iptables/rules-save
+    roles: [Master,Node,Bastion] # a list of roles to apply the asset to, zero defaults to all
+    content: |
+      some file content
+```
+
+
 ### cloudConfig
 
 If you are using aws as `cloudProvider`, you can disable authorization of ELB security group to Kubernetes Nodes security group. In other words, it will not add security group rule.
