@@ -18,28 +18,34 @@ package kops
 
 // DockerConfig is the configuration for docker
 type DockerConfig struct {
-	Bridge   *string `json:"bridge,omitempty" flag:"bridge"`
-	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
-	IPTables *bool   `json:"ipTables,omitempty" flag:"iptables"`
-	IPMasq   *bool   `json:"ipMasq,omitempty" flag:"ip-masq"`
-
-	LogDriver string   `json:"logDriver,omitempty" flag:"log-driver"`
-	LogOpt    []string `json:"logOpt,omitempty" flag:"log-opt,repeat"`
-
-	// Storage maps to the docker storage flag
-	// But nodeup will also process a comma-separate list, selecting the first supported option
-	Storage *string `json:"storage,omitempty" flag:"storage-driver"`
-
-	InsecureRegistry *string `json:"insecureRegistry,omitempty" flag:"insecure-registry"`
-
-	// Set mirrors for dockerd, benefiting cluster provisioning and image pulling
-	RegistryMirrors []string `json:"registryMirrors,omitempty" flag:"registry-mirror,repeat"`
-	MTU             *int32   `json:"mtu,omitempty" flag:"mtu"`
-
-	// The bridge cidr (--bip) flag
+	// AuthorizationPlugins is a list of authorization plugins
+	AuthorizationPlugins []string `json:"authorizationPlugins,omitempty" flag:"authorization-plugin,repeat"`
+	// Bridge is the network interface containers should bind onto
+	Bridge *string `json:"bridge,omitempty" flag:"bridge"`
+	// BridgeIP is a specific IP address and netmask for the docker0 bridge, using standard CIDR notation
 	BridgeIP *string `json:"bridgeIP,omitempty" flag:"bip"`
-
-	// The version of docker to install
-	// Be careful if changing this; not all docker versions are validated, and they will break in bad ways.
+	// DefaultUlimit is the ulimits for containers
+	DefaultUlimit []string `json:"defaultUlimit,omitempty" flag:"default-ulimit,repeat"`
+	// IPMasq enables ip masquerading for containers
+	IPMasq *bool `json:"ipMasq,omitempty" flag:"ip-masq"`
+	// IPtables enables addition of iptables rules
+	IPTables *bool `json:"ipTables,omitempty" flag:"iptables"`
+	// InsecureRegistry enable insecure registry communication @question according to dockers this a list??
+	InsecureRegistry *string `json:"insecureRegistry,omitempty" flag:"insecure-registry"`
+	// LogDriver is the defailt driver for container logs (default "json-file")
+	LogDriver string `json:"logDriver,omitempty" flag:"log-driver"`
+	// LogLevel is the logging level ("debug", "info", "warn", "error", "fatal") (default "info")
+	LogLevel *string `json:"logLevel,omitempty" flag:"log-level"`
+	// Logopt is a series of options given to the log driver options for containers
+	LogOpt []string `json:"logOpt,omitempty" flag:"log-opt,repeat"`
+	// MTU is the containers network MTU
+	MTU *int32 `json:"mtu,omitempty" flag:"mtu"`
+	// RegistryMirrors is a referred list of docker registry mirror
+	RegistryMirrors []string `json:"registryMirrors,omitempty" flag:"registry-mirror,repeat"`
+	// Storage is the docker storage driver to use
+	Storage *string `json:"storage,omitempty" flag:"storage-driver"`
+	// StorageOpts is a series of options passed to the storage driver
+	StorageOpts []string `json:"storageOpts,omitempty" flag:"storage-opt,repeat"`
+	// Version is consumed by the nodeup and used to pick the docker version
 	Version *string `json:"version,omitempty"`
 }

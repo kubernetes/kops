@@ -967,19 +967,22 @@ func Convert_kops_DNSSpec_To_v1alpha1_DNSSpec(in *kops.DNSSpec, out *DNSSpec, s 
 }
 
 func autoConvert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, out *kops.DockerConfig, s conversion.Scope) error {
+	out.AuthorizationPlugins = in.AuthorizationPlugins
 	out.Bridge = in.Bridge
-	out.LogLevel = in.LogLevel
-	out.IPTables = in.IPTables
+	out.BridgeIP = in.BridgeIP
+	out.DefaultUlimit = in.DefaultUlimit
 	out.IPMasq = in.IPMasq
+	out.IPTables = in.IPTables
+	out.InsecureRegistry = in.InsecureRegistry
 	if err := v1.Convert_Pointer_string_To_string(&in.LogDriver, &out.LogDriver, s); err != nil {
 		return err
 	}
+	out.LogLevel = in.LogLevel
 	out.LogOpt = in.LogOpt
-	out.Storage = in.Storage
-	out.InsecureRegistry = in.InsecureRegistry
-	out.RegistryMirrors = in.RegistryMirrors
 	out.MTU = in.MTU
-	out.BridgeIP = in.BridgeIP
+	out.RegistryMirrors = in.RegistryMirrors
+	out.Storage = in.Storage
+	out.StorageOpts = in.StorageOpts
 	out.Version = in.Version
 	return nil
 }
@@ -990,19 +993,22 @@ func Convert_v1alpha1_DockerConfig_To_kops_DockerConfig(in *DockerConfig, out *k
 }
 
 func autoConvert_kops_DockerConfig_To_v1alpha1_DockerConfig(in *kops.DockerConfig, out *DockerConfig, s conversion.Scope) error {
+	out.AuthorizationPlugins = in.AuthorizationPlugins
 	out.Bridge = in.Bridge
-	out.LogLevel = in.LogLevel
-	out.IPTables = in.IPTables
+	out.BridgeIP = in.BridgeIP
+	out.DefaultUlimit = in.DefaultUlimit
 	out.IPMasq = in.IPMasq
+	out.IPTables = in.IPTables
+	out.InsecureRegistry = in.InsecureRegistry
 	if err := v1.Convert_string_To_Pointer_string(&in.LogDriver, &out.LogDriver, s); err != nil {
 		return err
 	}
+	out.LogLevel = in.LogLevel
 	out.LogOpt = in.LogOpt
-	out.Storage = in.Storage
-	out.InsecureRegistry = in.InsecureRegistry
-	out.RegistryMirrors = in.RegistryMirrors
 	out.MTU = in.MTU
-	out.BridgeIP = in.BridgeIP
+	out.RegistryMirrors = in.RegistryMirrors
+	out.Storage = in.Storage
+	out.StorageOpts = in.StorageOpts
 	out.Version = in.Version
 	return nil
 }
