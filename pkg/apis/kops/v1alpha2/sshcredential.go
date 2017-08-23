@@ -31,7 +31,7 @@ type SSHCredential struct {
 }
 
 type SSHCredentialSpec struct {
-	PublicKey string `json:"PublicKey,omitempty"`
+	PublicKey string `json:"publicKey,omitempty"`
 }
 
 type SSHCredentialList struct {
