@@ -194,16 +194,13 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
 				}
 
-			case *kopsapi.SSHSecret:
+			case *kopsapi.SSHCredential:
 				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
 				if clusterName == "" {
 					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
 				}
-				if v.Spec.Username == "" {
-					return fmt.Errorf("spec.username is required")
-				}
-				if v.Spec.SshPublicKey == "" {
-					return fmt.Errorf("spec.sshPublicKey is required")
+				if v.Spec.PublicKey == "" {
+					return fmt.Errorf("spec.PublicKey is required")
 				}
 
 				cluster, err := clientset.GetCluster(clusterName)
@@ -216,12 +213,12 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					return err
 				}
 
-				sshKeyArr := []byte(v.Spec.SshPublicKey)
-				err = keyStore.AddSSHPublicKey(v.Spec.Username, sshKeyArr)
+				sshKeyArr := []byte(v.Spec.PublicKey)
+				err = keyStore.AddSSHPublicKey("admin", sshKeyArr)
 				if err != nil {
 					return err
 				} else {
-					fmt.Fprintf(&sb, "Added SSHSecret ssh key\n")
+					fmt.Fprintf(&sb, "Added ssh creadential\n")
 				}
 
 			default:

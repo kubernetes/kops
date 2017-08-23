@@ -53,8 +53,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&InstanceGroupList{},
 		&Federation{},
 		&FederationList{},
-		&SSHSecret{},
-		&SSHSecretList{},
+		&SSHCredential{},
+		&SSHCredentialList{},
 	)
 
 	metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
@@ -71,7 +71,7 @@ func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 func (obj *Federation) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
-func (obj *SSHSecret) GetObjectKind() schema.ObjectKind {
+func (obj *SSHCredential) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
 

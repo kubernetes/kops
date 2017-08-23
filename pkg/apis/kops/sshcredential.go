@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha2
+package kops
 
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,22 +22,21 @@ import (
 
 // +genclient=true
 
-// SSHSecret represent a set of kops secrets
-type SSHSecret struct {
+// SSHCredential represent a set of kops secrets
+type SSHCredential struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec SSHSecretSpec `json:"spec,omitempty"`
+	Spec SSHCredentialSpec `json:"spec,omitempty"`
 }
 
-type SSHSecretSpec struct {
-	SshPublicKey string `json:"sshPublicKey,omitempty"`
-	Username     string `json:"username,omitempty"`
+type SSHCredentialSpec struct {
+	PublicKey string `json:"PublicKey,omitempty"`
 }
 
-type SSHSecretList struct {
+type SSHCredentialList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
 
-	Items []SSHSecret `json:"items"`
+	Items []SSHCredential `json:"items"`
 }
