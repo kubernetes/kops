@@ -16,10 +16,15 @@ limitations under the License.
 
 package cloudup
 
+import "k8s.io/apimachinery/pkg/util/sets"
+
 type Phase string
 
 const (
-	PhaseIAM     Phase = "iam"
-	PhaseNetwork Phase = "network"
-	PhaseCluster Phase = "cluster"
+	PhaseIAM         Phase = "iam"
+	PhaseNetwork     Phase = "network"
+	PhaseCluster     Phase = "cluster"
+	PhaseStageAssets Phase = "assets"
 )
+
+var Phases = sets.NewString(string(PhaseIAM), string(PhaseNetwork), string(PhaseCluster), string(PhaseStageAssets))

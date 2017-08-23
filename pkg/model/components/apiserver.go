@@ -94,6 +94,12 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("RBAC")
 	}
 
+	image, err := Image("kube-apiserver", clusterSpec, b.AssetBuilder)
+	if err != nil {
+		return err
+	}
+	c.Image = image
+
 	c.SecurePort = 443
 
 	// We disable the insecure port from 1.6 onwards

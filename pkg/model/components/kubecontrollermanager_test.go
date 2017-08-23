@@ -19,6 +19,7 @@ package components
 import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/assets"
 	"testing"
 	"time"
 )
@@ -41,13 +42,16 @@ func buildCluster() *api.Cluster {
 
 func Test_Build_KCM_Builder_Lower_Version(t *testing.T) {
 	versions := []string{"v1.4.0", "v1.4.7", "v1.5.0"}
+	b := assets.NewAssetBuilder(nil)
 
 	for _, v := range versions {
 
 		c := buildCluster()
 
 		kcm := &KubeControllerManagerOptionsBuilder{
-			Context: &OptionsContext{},
+			Context: &OptionsContext{
+				AssetBuilder: b,
+			},
 		}
 
 		spec := c.Spec
@@ -68,13 +72,16 @@ func Test_Build_KCM_Builder_Lower_Version(t *testing.T) {
 
 func Test_Build_KCM_Builder_High_Enough_Version(t *testing.T) {
 	versions := []string{"v1.4.8", "v1.5.2", "v1.9.0", "v2.4.0"}
+	b := assets.NewAssetBuilder(nil)
 	for _, v := range versions {
 
 		c := buildCluster()
 		c.Spec.KubernetesVersion = v
 
 		kcm := &KubeControllerManagerOptionsBuilder{
-			Context: &OptionsContext{},
+			Context: &OptionsContext{
+				AssetBuilder: b,
+			},
 		}
 
 		spec := c.Spec
@@ -96,8 +103,11 @@ func Test_Build_KCM_Builder_Change_Duration(t *testing.T) {
 	c := buildCluster()
 	c.Spec.KubernetesVersion = "v1.5.2"
 
+	b := assets.NewAssetBuilder(nil)
 	kcm := &KubeControllerManagerOptionsBuilder{
-		Context: &OptionsContext{},
+		Context: &OptionsContext{
+			AssetBuilder: b,
+		},
 	}
 
 	spec := c.Spec
