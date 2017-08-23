@@ -38,8 +38,8 @@ func (c *FakeKopsV1alpha1) InstanceGroups(namespace string) v1alpha1.InstanceGro
 	return &FakeInstanceGroups{c, namespace}
 }
 
-func (c *FakeKopsV1alpha1) SSHSecrets(namespace string) v1alpha1.SSHSecretInterface {
-	return &FakeSSHSecrets{c, namespace}
+func (c *FakeKopsV1alpha1) SSHCredentials(namespace string) v1alpha1.SSHCredentialInterface {
+	return &FakeSSHCredentials{c, namespace}
 }
 
 // RESTClient returns a RESTClient that is used to communicate
