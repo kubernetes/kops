@@ -168,22 +168,46 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 
 		requestLogger := newRequestLogger(2)
 
-		c.cf = cloudformation.New(session.New(), config)
+		sess, err := session.NewSession()
+		if err != nil {
+			return &awsCloudImplementation{}, err
+		}
+		c.cf = cloudformation.New(sess, config)
 		c.cf.Handlers.Send.PushFront(requestLogger)
 
-		c.ec2 = ec2.New(session.New(), config)
+		sess, err = session.NewSession()
+		if err != nil {
+			return &awsCloudImplementation{}, err
+		}
+		c.ec2 = ec2.New(sess, config)
 		c.ec2.Handlers.Send.PushFront(requestLogger)
 
-		c.iam = iam.New(session.New(), config)
+		sess, err = session.NewSession()
+		if err != nil {
+			return &awsCloudImplementation{}, err
+		}
+		c.iam = iam.New(sess, config)
 		c.iam.Handlers.Send.PushFront(requestLogger)
 
-		c.elb = elb.New(session.New(), config)
+		sess, err = session.NewSession()
+		if err != nil {
+			return &awsCloudImplementation{}, err
+		}
+		c.elb = elb.New(sess, config)
 		c.elb.Handlers.Send.PushFront(requestLogger)
 
-		c.autoscaling = autoscaling.New(session.New(), config)
+		sess, err = session.NewSession()
+		if err != nil {
+			return &awsCloudImplementation{}, err
+		}
+		c.autoscaling = autoscaling.New(sess, config)
 		c.autoscaling.Handlers.Send.PushFront(requestLogger)
 
-		c.route53 = route53.New(session.New(), config)
+		sess, err = session.NewSession()
+		if err != nil {
+			return &awsCloudImplementation{}, err
+		}
+		c.route53 = route53.New(sess, config)
 		c.route53.Handlers.Send.PushFront(requestLogger)
 
 		awsCloudInstances[region] = c
