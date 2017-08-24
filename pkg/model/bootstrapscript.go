@@ -139,6 +139,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 	if err != nil {
 		return nil, err
 	}
+
 	return fi.WrapResource(templateResource), nil
 }
 
