@@ -142,6 +142,10 @@ type KubeletConfigSpec struct {
 	SystemReservedCgroup string `json:"systemReservedCgroup,omitempty" flag:"system-reserved-cgroup"`
 	// Enforce Allocatable across pods whenever the overall usage across all pods exceeds Allocatable.
 	EnforceNodeAllocatable string `json:"enforceNodeAllocatable,omitempty" flag:"enforce-node-allocatable"`
+	// RuntimeRequestTimeout is timeout for runtime requests on - pull, logs, exec and attach
+	RuntimeRequestTimeout *metav1.Duration `json:"runtimeRequestTimeout,omitempty" flag:"runtime-request-timeout"`
+	// VolumeStatsAggPeriod is the interval for kubelet to calculate and cache the volume disk usage for all pods and volumes
+	VolumeStatsAggPeriod *metav1.Duration `json:"volumeStatsAggPeriod,omitempty" flag:"volume-stats-agg-period"`
 }
 
 // KubeProxyConfig defined the configuration for a proxy
