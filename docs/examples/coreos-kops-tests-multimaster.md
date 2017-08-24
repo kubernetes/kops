@@ -143,7 +143,7 @@ aws ec2 describe-images --region=us-east-1 --owner=595879546273 \
 +----+--------------------------------------------+
 ```
 
-Then, our image for CoreOS, in "AMI" format is "ami-32705b49", or in owner/name format "595879546273/CoreOS-stable-1409.8.0-hvm". Note that KOPS default image is a debian-jessie based one (more specifically: "kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02" at the moment we are writing this document).
+Then, our image for CoreOS, in "AMI" format is "ami-32705b49", or in owner/name format "595879546273/CoreOS-stable-1409.8.0-hvm". Note that KOPS default image is a debian-jessie based one (more specifically: "kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-07-28" at the moment we are writing this document).
 
 **NOTE:** Always obtain the latest image before deploying KOPS. CoreOS updates it's AWS image very often. Don't rely on the versions included on this document. Always check first !
 
