@@ -60,36 +60,43 @@ type RESTClientset struct {
 	KopsClient kopsinternalversion.KopsInterface
 }
 
+// GetCluster implements the GetCluster method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) GetCluster(name string) (*kops.Cluster, error) {
 	namespace := restNamespaceForClusterName(name)
 	return c.KopsClient.Clusters(namespace).Get(name, metav1.GetOptions{})
 }
 
+// CreateCluster implements the CreateCluster method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) CreateCluster(cluster *kops.Cluster) (*kops.Cluster, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
 	return c.KopsClient.Clusters(namespace).Create(cluster)
 }
 
+// UpdateCluster implements the UpdateCluster method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) UpdateCluster(cluster *kops.Cluster) (*kops.Cluster, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
 	return c.KopsClient.Clusters(namespace).Update(cluster)
 }
 
+// ConfigBaseFor implements the ConfigBaseFor method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
 	// URL for clusters looks like  https://<server>/apis/kops/v1alpha2/namespaces/<cluster>/clusters/<cluster>
 	// We probably want to add a subresource for full resources
 	return vfs.Context.BuildVfsPath(c.BaseURL.String())
 }
 
+// ListClusters implements the ListClusters method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) ListClusters(options metav1.ListOptions) (*kops.ClusterList, error) {
 	return c.KopsClient.Clusters(metav1.NamespaceAll).List(options)
 }
 
+// InstanceGroupsFor implements the InstanceGroupsFor method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) InstanceGroupsFor(cluster *kops.Cluster) kopsinternalversion.InstanceGroupInterface {
 	namespace := restNamespaceForClusterName(cluster.Name)
 	return c.KopsClient.InstanceGroups(namespace)
 }
 
+// FederationsFor implements the FederationsFor method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) FederationsFor(federation *kops.Federation) kopsinternalversion.FederationInterface {
 	// Unsure if this should be namespaced or not - probably, so that we can RBAC it...
 	panic("Federations are curently not supported by the server API")
@@ -97,10 +104,12 @@ func (c *RESTClientset) FederationsFor(federation *kops.Federation) kopsinternal
 	//return c.KopsClient.Federations(namespace)
 }
 
+// ListFederations implements the ListFederations method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) ListFederations(options metav1.ListOptions) (*kops.FederationList, error) {
 	return c.KopsClient.Federations(metav1.NamespaceAll).List(options)
 }
 
+// GetFederation implements the GetFederation method of Clientset for a kubernetes-API state store
 func (c *RESTClientset) GetFederation(name string) (*kops.Federation, error) {
 	namespace := restNamespaceForFederationName(name)
 	return c.KopsClient.Federations(namespace).Get(name, metav1.GetOptions{})
