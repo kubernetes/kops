@@ -20,14 +20,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/blang/semver"
-	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
 // DockerBuilder install docker (just the packages at the moment)
@@ -293,7 +294,10 @@ func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro 
 	return true
 }
 
+// Build is responsible for configuring the docker daemon
 func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
+
+	// @check: neither coreos or containeros need provision docker.service, just the docker daemon options
 	switch b.Distribution {
 	case distros.DistributionCoreOS:
 		glog.Infof("Detected CoreOS; won't install Docker")
@@ -466,6 +470,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 	return service
 }
 
+// buildContainerOSConfigurationDropIn is responsible for configuring the docker daemon options
 func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderContext) error {
 	lines := []string{
 		"[Service]",
@@ -473,7 +478,7 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 	}
 	contents := strings.Join(lines, "\n")
 
-	t := &nodetasks.File{
+	c.AddTask(&nodetasks.File{
 		Path:     "/etc/systemd/system/docker.service.d/10-kops.conf",
 		Contents: fi.NewStringResource(contents),
 		Type:     nodetasks.FileType_File,
@@ -481,8 +486,7 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 			{"systemctl", "daemon-reload"},
 			{"systemctl", "restart", "docker.service"},
 		},
-	}
-	c.AddTask(t)
+	})
 
 	if err := b.buildSysconfig(c); err != nil {
 		return err
@@ -491,6 +495,7 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 	return nil
 }
 
+// buildSysconfig is responsible for extracting the docker configuration and writing the sysconfig file
 func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 	flagsString, err := flagbuilder.BuildFlags(b.Cluster.Spec.Docker)
 	if err != nil {
@@ -503,12 +508,11 @@ func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 	}
 	contents := strings.Join(lines, "\n")
 
-	t := &nodetasks.File{
+	c.AddTask(&nodetasks.File{
 		Path:     "/etc/sysconfig/docker",
 		Contents: fi.NewStringResource(contents),
 		Type:     nodetasks.FileType_File,
-	}
-	c.AddTask(t)
+	})
 
 	return nil
 }
