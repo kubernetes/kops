@@ -325,7 +325,8 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 			t.Fatalf("unexpected files.  actual=%q, expected=%q", actualFilenames, expectedFilenames)
 		}
 
-		actualCF, err := ioutil.ReadFile(path.Join(h.TempDir, "out", "kubernetes.json"))
+		actualPath := path.Join(h.TempDir, "out", "kubernetes.json")
+		actualCF, err := ioutil.ReadFile(actualPath)
 		if err != nil {
 			t.Fatalf("unexpected error reading actual cloudformation output: %v", err)
 		}
@@ -339,6 +340,12 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 		if actualCFTrimmed != expectedCFTrimmed {
 			diffString := diff.FormatDiff(expectedCFTrimmed, actualCFTrimmed)
 			t.Logf("diff:\n%s\n", diffString)
+
+			if os.Getenv("KEEP_TEMP_DIR") == "" {
+				t.Logf("(hint: setting KEEP_TEMP_DIR will preserve test output")
+			} else {
+				t.Logf("actual terraform output in %s", actualPath)
+			}
 
 			t.Fatalf("cloudformation output differed from expected")
 		}
