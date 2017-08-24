@@ -8,13 +8,13 @@
 ## Overview
 
 * [Getting started on AWS](aws.md)
-* [Command-line interface](#commandline-interface)
+* [Command-line interface](#command-line-interface)
 * [Inspection](#inspection)
 * [`kops` design documents](#kops-design-documents)
 * [Networking](#networking)
 * [Operations](#operations)
 * [Security](#security)
-* [Workflows](#workflows)
+* [Development](#development)
 
 
 ## Command-line interface
