@@ -141,15 +141,15 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-cat > cluster_spec.yaml << __EOF_CLUSTER_SPEC
+cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
 {{ ClusterSpec }}
 __EOF_CLUSTER_SPEC
 
-cat > ig_spec.yaml << __EOF_IG_SPEC
+cat > ig_spec.yaml << '__EOF_IG_SPEC'
 {{ IGSpec }}
 __EOF_IG_SPEC
 
-cat > kube_env.yaml << __EOF_KUBE_ENV
+cat > kube_env.yaml << '__EOF_KUBE_ENV'
 {{ KubeEnv }}
 __EOF_KUBE_ENV
 
