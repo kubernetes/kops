@@ -237,7 +237,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		}
 
 		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.ClustersFor(newCluster).Update(newCluster)
+		_, err = clientset.UpdateCluster(newCluster)
 		if err != nil {
 			return preservedFile(err, file, out)
 		}
