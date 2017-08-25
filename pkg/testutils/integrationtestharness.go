@@ -24,15 +24,21 @@ import (
 	"io/ioutil"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cloudmock/aws/mockroute53"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/util/pkg/vfs"
 	"os"
+	"path"
+	"path/filepath"
 	"testing"
 )
 
 type IntegrationTestHarness struct {
 	TempDir string
 	T       *testing.T
+
+	// The original kops DefaultChannelBase value, restored on Close
+	originalDefaultChannelBase string
 }
 
 func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
@@ -44,6 +50,17 @@ func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
 	h.TempDir = tempDir
 
 	vfs.Context.ResetMemfsContext(true)
+
+	// Replace the default channel path with a local filesystem path, so we don't try to retrieve it from a server
+	{
+		channelPath, err := filepath.Abs(path.Join("../../channels/"))
+		if err != nil {
+			t.Fatalf("error resolving stable channel path: %v", err)
+		}
+		channelPath += "/"
+		h.originalDefaultChannelBase = kops.DefaultChannelBase
+		kops.DefaultChannelBase = "file://" + channelPath
+	}
 
 	return h
 }
@@ -58,6 +75,10 @@ func (h *IntegrationTestHarness) Close() {
 				h.T.Fatalf("failed to remove temp dir %q: %v", h.TempDir, err)
 			}
 		}
+	}
+
+	if h.originalDefaultChannelBase != "" {
+		kops.DefaultChannelBase = h.originalDefaultChannelBase
 	}
 }
 
