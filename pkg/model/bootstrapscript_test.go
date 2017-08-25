@@ -48,7 +48,6 @@ func Test_ProxyFunc(t *testing.T) {
 	ps.ProxyExcludes = "www.google.com,www.kubernetes.io"
 
 	script = b.createProxyEnv(ps)
-	t.Logf(script)
 	if !strings.Contains(script, "export no_proxy="+ps.ProxyExcludes) {
 		t.Fatalf("script not setting no_proxy properly")
 	}
