@@ -30,26 +30,36 @@ type VFSClientset struct {
 
 var _ simple.Clientset = &VFSClientset{}
 
-func (c *VFSClientset) ClustersFor(cluster *kops.Cluster) kopsinternalversion.ClusterInterface {
-	return c.clusters()
-}
-
 func (c *VFSClientset) clusters() *ClusterVFS {
 	return newClusterVFS(c.basePath)
 }
 
+// GetCluster implements the GetCluster method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) GetCluster(name string) (*kops.Cluster, error) {
 	return c.clusters().Get(name, metav1.GetOptions{})
 }
 
+// UpdateCluster implements the UpdateCluster method of simple.Clientset for a VFS-backed state store
+func (c *VFSClientset) UpdateCluster(cluster *kops.Cluster) (*kops.Cluster, error) {
+	return c.clusters().Update(cluster)
+}
+
+// CreateCluster implements the CreateCluster method of simple.Clientset for a VFS-backed state store
+func (c *VFSClientset) CreateCluster(cluster *kops.Cluster) (*kops.Cluster, error) {
+	return c.clusters().Create(cluster)
+}
+
+// ListClusters implements the ListClusters method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) ListClusters(options metav1.ListOptions) (*kops.ClusterList, error) {
 	return c.clusters().List(options)
 }
 
+// ConfigBaseFor implements the ConfigBaseFor method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
 	return c.clusters().configBase(cluster.Name)
 }
 
+// InstanceGroupsFor implements the InstanceGroupsFor method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) InstanceGroupsFor(cluster *kops.Cluster) kopsinternalversion.InstanceGroupInterface {
 	clusterName := cluster.Name
 	return newInstanceGroupVFS(c, clusterName)
@@ -59,14 +69,17 @@ func (c *VFSClientset) federations() kopsinternalversion.FederationInterface {
 	return newFederationVFS(c)
 }
 
+// FederationsFor implements the FederationsFor method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) FederationsFor(federation *kops.Federation) kopsinternalversion.FederationInterface {
 	return c.federations()
 }
 
+// ListFederations implements the ListFederations method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) ListFederations(options metav1.ListOptions) (*kops.FederationList, error) {
 	return c.federations().List(options)
 }
 
+// GetFederation implements the GetFederation method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) GetFederation(name string) (*kops.Federation, error) {
 	return c.federations().Get(name, metav1.GetOptions{})
 }
