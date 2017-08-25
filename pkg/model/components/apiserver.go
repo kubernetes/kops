@@ -100,7 +100,55 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 	c.Image = image
 
+	c.LogLevel = 2
+	c.CloudProvider = clusterSpec.CloudProvider
 	c.SecurePort = 443
+	c.Address = "127.0.0.1"
+	c.AllowPrivileged = fi.Bool(true)
+	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
+
+	if b.IsKubernetesGTE("1.3") && b.IsKubernetesLT("1.4") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"ResourceQuota",
+		}
+	}
+	if b.IsKubernetesGTE("1.4") && b.IsKubernetesLT("1.5") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"ResourceQuota",
+		}
+	}
+	if b.IsKubernetesGTE("1.5") && b.IsKubernetesLT("1.6") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"ResourceQuota",
+		}
+		c.AnonymousAuth = fi.Bool(false)
+	}
+	if b.IsKubernetesGTE("1.6") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"DefaultTolerationSeconds",
+			"ResourceQuota",
+		}
+		c.AnonymousAuth = fi.Bool(false)
+	}
 
 	// We disable the insecure port from 1.6 onwards
 	if b.IsKubernetesGTE("1.6") {
