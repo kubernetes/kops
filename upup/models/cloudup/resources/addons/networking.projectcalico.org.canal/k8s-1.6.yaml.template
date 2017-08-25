@@ -119,7 +119,7 @@ spec:
                   fieldPath: spec.nodeName
             # Set Felix endpoint to host default action to ACCEPT.
             - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
-              value: "ACCEPT"
+              value: "{{- or .Networking.Canal.DefaultEndpointToHostAction "ACCEPT" }}"
           securityContext:
             privileged: true
           resources:
