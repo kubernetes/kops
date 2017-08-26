@@ -45,7 +45,7 @@ func ValidateRegion(region string) error {
 		config := aws.NewConfig().WithRegion(awsRegion)
 		config = config.WithCredentialsChainVerboseErrors(true)
 
-		sess, err := session.NewSession()
+		sess, err := session.NewSession(config)
 		if err != nil {
 			return fmt.Errorf("Error starting a new AWS session: %v", err)
 		}
