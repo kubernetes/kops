@@ -42,7 +42,7 @@ import (
 )
 
 var (
-	rollingupdate_long = templates.LongDesc(i18n.T(`
+	rollingupdate_long = pretty.LongDesc(i18n.T(`
 	This command updates a kubernetes cluster to match the cloud, and kops specifications.
 
 	To perform rolling update, you need to update the cloud resources first with "kops update cluster"
