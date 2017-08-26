@@ -22,4 +22,6 @@ type FederationExpansion interface{}
 
 type InstanceGroupExpansion interface{}
 
+type KeysetExpansion interface{}
+
 type SSHCredentialExpansion interface{}
