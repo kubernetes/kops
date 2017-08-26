@@ -65,8 +65,11 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 			}
 		}
 
-		session := session.New()
-		s3Client = s3.New(session, config)
+		sess, err := session.NewSession()
+		if err != nil {
+			return nil, fmt.Errorf("error starting new AWS session:%v", err)
+		}
+		s3Client = s3.New(sess, config)
 		s.clients[region] = s3Client
 	}
 
