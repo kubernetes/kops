@@ -28,6 +28,7 @@ type KopsV1alpha2Interface interface {
 	ClustersGetter
 	FederationsGetter
 	InstanceGroupsGetter
+	KeysetsGetter
 	SSHCredentialsGetter
 }
 
@@ -46,6 +47,10 @@ func (c *KopsV1alpha2Client) Federations(namespace string) FederationInterface {
 
 func (c *KopsV1alpha2Client) InstanceGroups(namespace string) InstanceGroupInterface {
 	return newInstanceGroups(c, namespace)
+}
+
+func (c *KopsV1alpha2Client) Keysets(namespace string) KeysetInterface {
+	return newKeysets(c, namespace)
 }
 
 func (c *KopsV1alpha2Client) SSHCredentials(namespace string) SSHCredentialInterface {
