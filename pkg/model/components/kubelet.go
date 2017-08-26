@@ -114,16 +114,25 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	if kubernetesVersion.Major == 1 && kubernetesVersion.Minor <= 5 {
-		clusterSpec.Kubelet.APIServers = "https://" + clusterSpec.MasterInternalName
-		clusterSpec.MasterKubelet.APIServers = "http://127.0.0.1:8080"
-	} else if kubernetesVersion.Major == 1 { // for 1.6+ use kubeconfig instead of api-servers
+	if b.Context.IsKubernetesGTE("1.8") {
+		// for 1.8+ we use bootstrap kubeconfig
+		const bootstrapKubeconfigPath = "/var/lib/kubelet/bootstrap-kubeconfig"
+		clusterSpec.Kubelet.BootstrapKubeconfig = bootstrapKubeconfigPath
+		clusterSpec.Kubelet.RequireKubeconfig = fi.Bool(true)
+
+		clusterSpec.MasterKubelet.BootstrapKubeconfig = bootstrapKubeconfigPath
+		clusterSpec.MasterKubelet.RequireKubeconfig = fi.Bool(true)
+	} else if b.Context.IsKubernetesGTE("1.6") {
+		// for 1.6+ use kubeconfig instead of api-servers
 		const kubeconfigPath = "/var/lib/kubelet/kubeconfig"
 		clusterSpec.Kubelet.KubeconfigPath = kubeconfigPath
 		clusterSpec.Kubelet.RequireKubeconfig = fi.Bool(true)
 
 		clusterSpec.MasterKubelet.KubeconfigPath = kubeconfigPath
 		clusterSpec.MasterKubelet.RequireKubeconfig = fi.Bool(true)
+	} else {
+		clusterSpec.Kubelet.APIServers = "https://" + clusterSpec.MasterInternalName
+		clusterSpec.MasterKubelet.APIServers = "http://127.0.0.1:8080"
 	}
 
 	// IsolateMasters enables the legacy behaviour, where master pods on a separate network

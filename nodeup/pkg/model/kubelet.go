@@ -79,19 +79,29 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	{
-		// @TODO Change kubeconfig to be https
+	if b.IsKubernetesGTE("1.8") {
+		// Use bootstrap kubeconfig
 		kubeconfig, err := b.buildPKIKubeconfig("kubelet")
 		if err != nil {
 			return err
 		}
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
+			Path:     "/var/lib/kubelet/bootstrap-kubeconfig",
+			Contents: fi.NewStringResource(kubeconfig),
+			Type:     nodetasks.FileType_File,
+			Mode:     s("0400"),
+		})
+	} else {
+		kubeconfig, err := b.buildPKIKubeconfig("kubelet")
+		if err != nil {
+			return err
+		}
+		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kubelet/kubeconfig",
 			Contents: fi.NewStringResource(kubeconfig),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
-		}
-		c.AddTask(t)
+		})
 	}
 
 	if b.UsesCNI() {
