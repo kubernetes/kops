@@ -58,7 +58,10 @@ func NewAWSVolumes() (*AWSVolumes, error) {
 		deviceMap: make(map[string]string),
 	}
 
-	s, err := session.NewSession()
+	config := aws.NewConfig()
+	config = config.WithCredentialsChainVerboseErrors(true)
+
+	s, err := session.NewSession(config)
 	if err != nil {
 		return nil, fmt.Errorf("error starting new AWS session: %v", err)
 	}
@@ -66,9 +69,6 @@ func NewAWSVolumes() (*AWSVolumes, error) {
 		// Log requests
 		glog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation.Name)
 	})
-
-	config := aws.NewConfig()
-	config = config.WithCredentialsChainVerboseErrors(true)
 
 	a.metadata = ec2metadata.New(s, config)
 

@@ -65,9 +65,9 @@ func (s *S3Context) getClient(region string) (*s3.S3, error) {
 			}
 		}
 
-		sess, err := session.NewSession()
+		sess, err := session.NewSession(config)
 		if err != nil {
-			return nil, fmt.Errorf("error starting new AWS session:%v", err)
+			return nil, fmt.Errorf("error starting new AWS session: %v", err)
 		}
 		s3Client = s3.New(sess, config)
 		s.clients[region] = s3Client
@@ -92,6 +92,7 @@ func getCustomS3Config(endpoint string, region string) (*aws.Config, error) {
 		Region:           aws.String(region),
 		S3ForcePathStyle: aws.Bool(true),
 	}
+	s3Config = s3Config.WithCredentialsChainVerboseErrors(true)
 
 	return s3Config, nil
 }
@@ -181,7 +182,10 @@ out the first result.
 See also: https://docs.aws.amazon.com/goto/WebAPI/s3-2006-03-01/GetBucketLocationRequest
 */
 func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput) (*s3.GetBucketLocationOutput, error) {
-	session, _ := session.NewSession(&aws.Config{Region: region})
+	config := &aws.Config{Region: region}
+	config = config.WithCredentialsChainVerboseErrors(true)
+
+	session, _ := session.NewSession(config)
 
 	regions, err := ec2.New(session).DescribeRegions(nil)
 	if err != nil {
