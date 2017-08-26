@@ -167,6 +167,16 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
+	// Check Canal Networking Spec if used
+	if c.Spec.Networking.Canal != nil {
+		action := c.Spec.Networking.Canal.DefaultEndpointToHostAction
+		switch action {
+		case "", "ACCEPT", "DROP", "RETURN":
+		default:
+			return field.Invalid(fieldSpec.Child("Networking", "Canal", "DefaultEndpointToHostAction"), action, fmt.Sprintf("Unsupported value: %s, supports ACCEPT, DROP or RETURN", action))
+		}
+	}
+
 	// Check ClusterCIDR
 	if c.Spec.KubeControllerManager != nil {
 		var clusterCIDR *net.IPNet
