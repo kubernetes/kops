@@ -38,6 +38,10 @@ func (c *FakeKops) InstanceGroups(namespace string) internalversion.InstanceGrou
 	return &FakeInstanceGroups{c, namespace}
 }
 
+func (c *FakeKops) Keysets(namespace string) internalversion.KeysetInterface {
+	return &FakeKeysets{c, namespace}
+}
+
 func (c *FakeKops) SSHCredentials(namespace string) internalversion.SSHCredentialInterface {
 	return &FakeSSHCredentials{c, namespace}
 }

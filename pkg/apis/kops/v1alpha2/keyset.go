@@ -25,8 +25,8 @@ type KeysetType string
 
 const (
 	// TODO: Move CA to use these values
-	SecretTypeKeypair      KeysetType = "Keypair"
-	SecretTypeSecret       KeysetType = "Secret"
+	SecretTypeKeypair KeysetType = "Keypair"
+	SecretTypeSecret  KeysetType = "Secret"
 )
 
 // +genclient=true
