@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"path"
 	"path/filepath"
-
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -30,6 +29,12 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"github.com/blang/semver"
+	"github.com/golang/glog"
+	"k8s.io/kops/pkg/pki"
+	"time"
 )
 
 // containerizedMounterHome is the path where we install the containerized mounter (on ContainerOS)
@@ -47,14 +52,6 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 	kubeletConfig, err := b.buildKubeletConfig()
 	if err != nil {
 		return fmt.Errorf("error building kubelet config: %v", err)
-	}
-
-	{
-		t, err := b.buildSystemdEnvironmentFile(kubeletConfig)
-		if err != nil {
-			return err
-		}
-		c.AddTask(t)
 	}
 
 	{
@@ -81,16 +78,36 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.IsKubernetesGTE("1.8") {
 		// Use bootstrap kubeconfig
-		kubeconfig, err := b.buildPKIKubeconfig("kubelet")
-		if err != nil {
-			return err
+
+		if b.IsMaster {
+			// On the master, there's an issue currently in kubelet with bootstrapping: we can't do the CSR dance through the API until the API is up,
+			// and kubelet waits to start even static pods until it has a certificate, but kube-apiserver is a static pod.
+			// Instead we manually build the kubelet cert directly
+
+			kubeconfig, err := b.buildMasterKubeletKubeconfig()
+			if err != nil {
+				return err
+			}
+
+			c.AddTask(&nodetasks.File{
+				Path:     "/var/lib/kubelet/kubeconfig",
+				Contents: fi.NewStringResource(kubeconfig),
+				Type:     nodetasks.FileType_File,
+				Mode:     s("0400"),
+			})
+		} else {
+			kubeconfig, err := b.buildPKIKubeconfig("kubelet")
+			if err != nil {
+				return err
+			}
+
+			c.AddTask(&nodetasks.File{
+				Path:     "/var/lib/kubelet/bootstrap-kubeconfig",
+				Contents: fi.NewStringResource(kubeconfig),
+				Type:     nodetasks.FileType_File,
+				Mode:     s("0400"),
+			})
 		}
-		c.AddTask(&nodetasks.File{
-			Path:     "/var/lib/kubelet/bootstrap-kubeconfig",
-			Contents: fi.NewStringResource(kubeconfig),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0400"),
-		})
 	} else {
 		kubeconfig, err := b.buildPKIKubeconfig("kubelet")
 		if err != nil {
@@ -102,6 +119,36 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
 		})
+	}
+
+	// Set up path to kubeconfig that we built
+	if b.IsKubernetesGTE("1.6") {
+		const kubeconfigPath = "/var/lib/kubelet/kubeconfig"
+		const bootstrapKubeconfigPath = "/var/lib/kubelet/bootstrap-kubeconfig"
+
+		if b.IsKubernetesGTE("1.8") {
+			// for 1.8+ we use bootstrap kubeconfig
+			if b.IsMaster {
+				// bootstrap kubeconfig on the master for 1.8, because of the circular dependency:
+				// kubelet needs certificate, certificate comes from API, API is run by kubelet
+				kubeletConfig.BootstrapKubeconfig = ""
+				kubeletConfig.KubeconfigPath = kubeconfigPath
+			} else {
+				kubeletConfig.BootstrapKubeconfig = bootstrapKubeconfigPath
+				kubeletConfig.KubeconfigPath = ""
+			}
+		} else {
+			kubeletConfig.BootstrapKubeconfig = ""
+			kubeletConfig.KubeconfigPath = kubeconfigPath
+		}
+		kubeletConfig.RequireKubeconfig = fi.Bool(true)
+	} else {
+		// for <= 1.5 we didn't use kubeconfig
+		if b.IsMaster {
+			kubeletConfig.APIServers = "http://127.0.0.1:8080"
+		} else {
+			kubeletConfig.APIServers = "https://" + b.Cluster.Spec.MasterInternalName
+		}
 	}
 
 	if b.UsesCNI() {
@@ -118,6 +165,14 @@ func (b *KubeletBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if err := b.addContainerizedMounter(c); err != nil {
 		return err
+	}
+
+	{
+		t, err := b.buildSystemdEnvironmentFile(kubeletConfig)
+		if err != nil {
+			return err
+		}
+		c.AddTask(t)
 	}
 
 	c.AddTask(b.buildSystemdService())
@@ -434,4 +489,58 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 	}
 
 	return c, nil
+}
+
+func (b *KubeletBuilder) buildMasterKubeletKubeconfig() (string, error) {
+	nodeName := b.NodeName()
+
+	caCertificate, err := b.KeyStore.Cert(fi.CertificateId_CA)
+	if err != nil {
+		return "", fmt.Errorf("error fetching CA certificate from keystore: %v", err)
+	}
+	caKey, err := b.KeyStore.PrivateKey(fi.CertificateId_CA)
+	if err != nil {
+		return "", fmt.Errorf("error fetching CA certificate from keystore: %v", err)
+	}
+
+	privateKey, err := pki.GeneratePrivateKey()
+	if err != nil {
+		return "", err
+	}
+
+	template := &x509.Certificate{
+		BasicConstraintsValid: true,
+		IsCA: false,
+	}
+
+	template.Subject = pkix.Name{
+		CommonName:   fmt.Sprintf("system:node:%s", nodeName),
+		Organization: []string{"system:nodes"},
+	}
+
+	// https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+	//
+	// Digital signature allows the certificate to be used to verify
+	// digital signatures used during TLS negotiation.
+	template.KeyUsage = template.KeyUsage | x509.KeyUsageDigitalSignature
+
+	// KeyEncipherment allows the cert/key pair to be used to encrypt
+	// keys, including the symmetric keys negotiated during TLS setup
+	// and used for data transfer.
+	template.KeyUsage = template.KeyUsage | x509.KeyUsageKeyEncipherment
+
+	// ClientAuth allows the cert to be used by a TLS client to
+	// authenticate itself to the TLS server.
+	template.ExtKeyUsage = append(template.ExtKeyUsage, x509.ExtKeyUsageClientAuth)
+
+	t := time.Now().UnixNano()
+	template.SerialNumber = pki.BuildPKISerial(t)
+
+	certificate, err := pki.SignNewCertificate(privateKey, template, caCertificate.Certificate, caKey)
+	if err != nil {
+		return "", fmt.Errorf("error signing certificate for master kubelet: %v", err)
+	}
+
+	kubeconfig, err := b.buildKubeconfigFromClientCertificate("kubelet", caCertificate, certificate, privateKey)
+	return kubeconfig, err
 }
