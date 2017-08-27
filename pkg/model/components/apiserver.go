@@ -100,7 +100,69 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 	c.Image = image
 
+	switch kops.CloudProviderID(clusterSpec.CloudProvider) {
+	case kops.CloudProviderAWS:
+		c.CloudProvider = "aws"
+	case kops.CloudProviderGCE:
+		c.CloudProvider = "gce"
+	case kops.CloudProviderDO:
+		c.CloudProvider = "external"
+	case kops.CloudProviderVSphere:
+		c.CloudProvider = "vsphere"
+	default:
+		return fmt.Errorf("unknown cloud provider %q", clusterSpec.CloudProvider)
+	}
+
+	c.LogLevel = 2
 	c.SecurePort = 443
+	c.Address = "127.0.0.1"
+	c.AllowPrivileged = fi.Bool(true)
+	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
+	c.EtcdServers = []string{"http://127.0.0.1:4001"}
+	c.EtcdServersOverrides = []string{"/events#http://127.0.0.1:4002"}
+
+	if b.IsKubernetesGTE("1.3") && b.IsKubernetesLT("1.4") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"ResourceQuota",
+		}
+	}
+	if b.IsKubernetesGTE("1.4") && b.IsKubernetesLT("1.5") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"ResourceQuota",
+		}
+	}
+	if b.IsKubernetesGTE("1.5") && b.IsKubernetesLT("1.6") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"ResourceQuota",
+		}
+		c.AnonymousAuth = fi.Bool(false)
+	}
+	if b.IsKubernetesGTE("1.6") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"DefaultTolerationSeconds",
+			"ResourceQuota",
+		}
+		c.AnonymousAuth = fi.Bool(false)
+	}
 
 	// We disable the insecure port from 1.6 onwards
 	if b.IsKubernetesGTE("1.6") {
