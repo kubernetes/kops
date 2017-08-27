@@ -24,6 +24,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"math/big"
 	"time"
@@ -49,7 +50,7 @@ func NewKubernetesKeystore(client kubernetes.Interface, namespace string) fi.Key
 	return c
 }
 
-func (c *KubernetesKeystore) issueCert(id string, serial *big.Int, privateKey *fi.PrivateKey, template *x509.Certificate) (*fi.Certificate, error) {
+func (c *KubernetesKeystore) issueCert(id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
 	glog.Infof("Issuing new certificate: %q", id)
 
 	template.SerialNumber = serial
@@ -63,7 +64,7 @@ func (c *KubernetesKeystore) issueCert(id string, serial *big.Int, privateKey *f
 		return nil, fmt.Errorf("CA keypair was not found; cannot issue certificates")
 	}
 
-	cert, err := fi.SignNewCertificate(privateKey, template, caCert.Certificate, caKey)
+	cert, err := pki.SignNewCertificate(privateKey, template, caCert.Certificate, caKey)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +88,7 @@ func (c *KubernetesKeystore) findSecret(id string) (*v1.Secret, error) {
 	return secret, nil
 }
 
-func (c *KubernetesKeystore) FindKeypair(id string) (*fi.Certificate, *fi.PrivateKey, error) {
+func (c *KubernetesKeystore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, error) {
 	secret, err := c.findSecret(id)
 	if err != nil {
 		return nil, nil, err
@@ -105,9 +106,9 @@ func (c *KubernetesKeystore) FindKeypair(id string) (*fi.Certificate, *fi.Privat
 	return keypair.Certificate, keypair.PrivateKey, nil
 }
 
-func (c *KubernetesKeystore) CreateKeypair(id string, template *x509.Certificate, privateKey *fi.PrivateKey) (*fi.Certificate, error) {
+func (c *KubernetesKeystore) CreateKeypair(id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
 	t := time.Now().UnixNano()
-	serial := fi.BuildPKISerial(t)
+	serial := pki.BuildPKISerial(t)
 
 	cert, err := c.issueCert(id, serial, privateKey, template)
 	if err != nil {
@@ -117,7 +118,7 @@ func (c *KubernetesKeystore) CreateKeypair(id string, template *x509.Certificate
 	return cert, nil
 }
 
-func (c *KubernetesKeystore) StoreKeypair(id string, cert *fi.Certificate, privateKey *fi.PrivateKey) error {
+func (c *KubernetesKeystore) StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
 	keypair := &KeypairSecret{
 		Namespace:   c.namespace,
 		Name:        id,
