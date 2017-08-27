@@ -329,14 +329,14 @@ func addS3Permissions(p *IAMPolicy, iamPrefix string, s3Path *vfs.S3Path, role a
 				Action: stringorslice.Slice([]string{"s3:Get*"}),
 				Resource: stringorslice.Of(
 					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/addons/*"}, ""),
-					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/instancegroup/*"}, ""),
-					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/issued/*"}, ""),
-					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/ssh/*"}, ""),
-					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/private/kube-proxy/*"}, ""),
-					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/private/kubelet/*"}, ""),
-					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/secrets/*"}, ""),
 					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/cluster.spec"}, ""),
 					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/config"}, ""),
+					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/instancegroup/*"}, ""),
+					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/issued/*"}, ""),
+					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/private/kube-proxy/*"}, ""),
+					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/private/kubelet/*"}, ""),
+					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/pki/ssh/*"}, ""),
+					strings.Join([]string{iamPrefix, ":s3:::", iamS3Path, "/secrets/dockerconfig"}, ""),
 				),
 			})
 		}
