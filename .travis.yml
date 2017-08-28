@@ -1,4 +1,7 @@
 language: go
+sudo: required
+dist: trusty
+
 go:
   - 1.8
   - 1.9
@@ -7,7 +10,7 @@ go:
 go_import_path: k8s.io/kops
 
 script:
-  - make ci
+  - make -j2 ci
 
 git:
   submodules: false
