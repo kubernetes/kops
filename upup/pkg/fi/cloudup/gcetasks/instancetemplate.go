@@ -67,9 +67,9 @@ func (e *InstanceTemplate) CompareWithID() *string {
 }
 
 func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
-	cloud := c.Cloud.(*gce.GCECloud)
+	cloud := c.Cloud.(gce.GCECloud)
 
-	response, err := cloud.Compute.InstanceTemplates.List(cloud.Project).Do()
+	response, err := cloud.Compute().InstanceTemplates.List(cloud.Project()).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -77,7 +77,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		return nil, fmt.Errorf("error listing InstanceTemplates: %v", err)
 	}
 
-	expected, err := e.mapToGCE(cloud.Project)
+	expected, err := e.mapToGCE(cloud.Project())
 	if err != nil {
 		return nil, err
 	}
@@ -101,7 +101,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		actual.MachineType = fi.String(lastComponent(p.MachineType))
 		actual.CanIPForward = &p.CanIpForward
 
-		bootDiskImage, err := ShortenImageURL(cloud.Project, p.Disks[0].InitializeParams.SourceImage)
+		bootDiskImage, err := ShortenImageURL(cloud.Project(), p.Disks[0].InitializeParams.SourceImage)
 		if err != nil {
 			return nil, fmt.Errorf("error parsing source image URL: %v", err)
 		}
@@ -342,7 +342,7 @@ func (e *InstanceTemplate) URL(project string) (string, error) {
 }
 
 func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *InstanceTemplate) error {
-	project := t.Cloud.Project
+	project := t.Cloud.Project()
 
 	i, err := e.mapToGCE(project)
 	if err != nil {
@@ -356,7 +356,7 @@ func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instanc
 		e.ID = &name
 		i.Name = name
 
-		op, err := t.Cloud.Compute.InstanceTemplates.Insert(t.Cloud.Project, i).Do()
+		op, err := t.Cloud.Compute().InstanceTemplates.Insert(t.Cloud.Project(), i).Do()
 		if err != nil {
 			return fmt.Errorf("error creating InstanceTemplate: %v", err)
 		}
