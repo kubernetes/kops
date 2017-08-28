@@ -40,9 +40,9 @@ func (e *Network) CompareWithID() *string {
 }
 
 func (e *Network) Find(c *fi.Context) (*Network, error) {
-	cloud := c.Cloud.(*gce.GCECloud)
+	cloud := c.Cloud.(gce.GCECloud)
 
-	r, err := cloud.Compute.Networks.Get(cloud.Project, *e.Name).Do()
+	r, err := cloud.Compute().Networks.Get(cloud.Project(), *e.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -54,8 +54,8 @@ func (e *Network) Find(c *fi.Context) (*Network, error) {
 	actual.Name = &r.Name
 	actual.CIDR = &r.IPv4Range
 
-	if r.SelfLink != e.URL(cloud.Project) {
-		glog.Warningf("SelfLink did not match URL: %q vs %q", r.SelfLink, e.URL(cloud.Project))
+	if r.SelfLink != e.URL(cloud.Project()) {
+		glog.Warningf("SelfLink did not match URL: %q vs %q", r.SelfLink, e.URL(cloud.Project()))
 	}
 
 	return actual, nil
@@ -98,7 +98,7 @@ func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
 
 			Name: *e.Name,
 		}
-		_, err := t.Cloud.Compute.Networks.Insert(t.Cloud.Project, network).Do()
+		_, err := t.Cloud.Compute().Networks.Insert(t.Cloud.Project(), network).Do()
 		if err != nil {
 			return fmt.Errorf("error creating Network: %v", err)
 		}
