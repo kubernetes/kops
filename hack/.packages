@@ -100,6 +100,7 @@ k8s.io/kops/upup/pkg/fi/assettasks
 k8s.io/kops/upup/pkg/fi/cloudup
 k8s.io/kops/upup/pkg/fi/cloudup/awstasks
 k8s.io/kops/upup/pkg/fi/cloudup/awsup
+k8s.io/kops/upup/pkg/fi/cloudup/baremetal
 k8s.io/kops/upup/pkg/fi/cloudup/cloudformation
 k8s.io/kops/upup/pkg/fi/cloudup/dnstasks
 k8s.io/kops/upup/pkg/fi/cloudup/do
