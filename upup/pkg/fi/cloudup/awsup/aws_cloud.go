@@ -168,42 +168,42 @@ func NewAWSCloud(region string, tags map[string]string) (AWSCloud, error) {
 
 		requestLogger := newRequestLogger(2)
 
-		sess, err := session.NewSession()
+		sess, err := session.NewSession(config)
 		if err != nil {
 			return c, err
 		}
 		c.cf = cloudformation.New(sess, config)
 		c.cf.Handlers.Send.PushFront(requestLogger)
 
-		sess, err = session.NewSession()
+		sess, err = session.NewSession(config)
 		if err != nil {
 			return c, err
 		}
 		c.ec2 = ec2.New(sess, config)
 		c.ec2.Handlers.Send.PushFront(requestLogger)
 
-		sess, err = session.NewSession()
+		sess, err = session.NewSession(config)
 		if err != nil {
 			return c, err
 		}
 		c.iam = iam.New(sess, config)
 		c.iam.Handlers.Send.PushFront(requestLogger)
 
-		sess, err = session.NewSession()
+		sess, err = session.NewSession(config)
 		if err != nil {
 			return c, err
 		}
 		c.elb = elb.New(sess, config)
 		c.elb.Handlers.Send.PushFront(requestLogger)
 
-		sess, err = session.NewSession()
+		sess, err = session.NewSession(config)
 		if err != nil {
 			return c, err
 		}
 		c.autoscaling = autoscaling.New(sess, config)
 		c.autoscaling.Handlers.Send.PushFront(requestLogger)
 
-		sess, err = session.NewSession()
+		sess, err = session.NewSession(config)
 		if err != nil {
 			return c, err
 		}
