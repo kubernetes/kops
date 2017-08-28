@@ -79,6 +79,10 @@ func IsKubernetesGTE(version string, k8sVersion semver.Version) bool {
 		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 6)
 	case "1.7":
 		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 7)
+	case "1.8":
+		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 8)
+	case "1.9":
+		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 9)
 	default:
 		panic(fmt.Sprintf("IsKubernetesGTE not supported with version %q", version))
 	}
