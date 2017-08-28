@@ -45,9 +45,9 @@ func (e *FirewallRule) CompareWithID() *string {
 }
 
 func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
-	cloud := c.Cloud.(*gce.GCECloud)
+	cloud := c.Cloud.(gce.GCECloud)
 
-	r, err := cloud.Compute.Firewalls.Get(cloud.Project, *e.Name).Do()
+	r, err := cloud.Compute().Firewalls.Get(cloud.Project(), *e.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -132,18 +132,19 @@ func (e *FirewallRule) mapToGCE(project string) (*compute.Firewall, error) {
 }
 
 func (_ *FirewallRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *FirewallRule) error {
-	firewall, err := e.mapToGCE(t.Cloud.Project)
+	cloud := t.Cloud
+	firewall, err := e.mapToGCE(cloud.Project())
 	if err != nil {
 		return err
 	}
 
 	if a == nil {
-		_, err := t.Cloud.Compute.Firewalls.Insert(t.Cloud.Project, firewall).Do()
+		_, err := t.Cloud.Compute().Firewalls.Insert(t.Cloud.Project(), firewall).Do()
 		if err != nil {
 			return fmt.Errorf("error creating FirewallRule: %v", err)
 		}
 	} else {
-		_, err := t.Cloud.Compute.Firewalls.Update(t.Cloud.Project, *e.Name, firewall).Do()
+		_, err := t.Cloud.Compute().Firewalls.Update(t.Cloud.Project(), *e.Name, firewall).Do()
 		if err != nil {
 			return fmt.Errorf("error creating FirewallRule: %v", err)
 		}
