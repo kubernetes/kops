@@ -70,7 +70,27 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
-	if len(c.Spec.Subnets) == 0 {
+	if c.Spec.CloudProvider == "" {
+		return field.Required(fieldSpec.Child("CloudProvider"), "")
+	}
+
+	requiresSubnets := true
+	requiresNetworkCIDR := true
+	switch kops.CloudProviderID(c.Spec.CloudProvider) {
+	case kops.CloudProviderBareMetal:
+		requiresSubnets = false
+		requiresNetworkCIDR = false
+
+	case kops.CloudProviderDO:
+	case kops.CloudProviderAWS:
+	case kops.CloudProviderGCE:
+	case kops.CloudProviderVSphere:
+
+	default:
+		return field.Invalid(fieldSpec.Child("CloudProvider"), c.Spec.CloudProvider, "CloudProvider not recognized")
+	}
+
+	if requiresSubnets && len(c.Spec.Subnets) == 0 {
 		// TODO: Auto choose zones from region?
 		return field.Required(fieldSpec.Child("Subnets"), "must configure at least one Subnet (use --zones)")
 	}
@@ -105,11 +125,14 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	{
 		networkCIDRString := c.Spec.NetworkCIDR
 		if networkCIDRString == "" {
-			return field.Required(fieldSpec.Child("NetworkCIDR"), "Cluster did not have NetworkCIDR set")
-		}
-		_, networkCIDR, err = net.ParseCIDR(networkCIDRString)
-		if err != nil {
-			return field.Invalid(fieldSpec.Child("NetworkCIDR"), networkCIDRString, fmt.Sprintf("Cluster had an invalid NetworkCIDR"))
+			if requiresNetworkCIDR {
+				return field.Required(fieldSpec.Child("NetworkCIDR"), "Cluster did not have NetworkCIDR set")
+			}
+		} else {
+			_, networkCIDR, err = net.ParseCIDR(networkCIDRString)
+			if err != nil {
+				return field.Invalid(fieldSpec.Child("NetworkCIDR"), networkCIDRString, fmt.Sprintf("Cluster had an invalid NetworkCIDR"))
+			}
 		}
 	}
 
@@ -125,7 +148,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, "Cluster had an invalid NonMasqueradeCIDR")
 		}
 
-		if subnetsOverlap(nonMasqueradeCIDR, networkCIDR) {
+		if networkCIDR != nil && subnetsOverlap(nonMasqueradeCIDR, networkCIDR) {
 			return field.Invalid(fieldSpec.Child("NonMasqueradeCIDR"), nonMasqueradeCIDRString, fmt.Sprintf("NonMasqueradeCIDR %q cannot overlap with NetworkCIDR %q", nonMasqueradeCIDRString, c.Spec.NetworkCIDR))
 		}
 
@@ -260,7 +283,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 					return field.Invalid(fieldSubnet.Child("CIDR"), s.CIDR, "Subnet had an invalid CIDR")
 				}
 
-				if !isSubnet(networkCIDR, subnetCIDR) {
+				if networkCIDR != nil && !isSubnet(networkCIDR, subnetCIDR) {
 					return field.Invalid(fieldSubnet.Child("CIDR"), s.CIDR, fmt.Sprintf("Subnet %q had a CIDR %q that was not a subnet of the NetworkCIDR %q", s.Name, s.CIDR, c.Spec.NetworkCIDR))
 				}
 			}
