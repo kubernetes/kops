@@ -22,7 +22,7 @@ LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
-PACKAGES:=$(shell go list ./... | egrep -v "\/vendor\/|\/cloudmock\/|\/kops\/federation\/model")
+PACKAGES:=$(shell go list ./... | egrep -v "\/vendor\/|\/cloudmock\/")
 #
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -154,6 +154,10 @@ hooks: # Install Git hooks
 
 .PHONY: test
 test: # Run tests locally
+	go test $(PACKAGES) -args -v=1 -logtostderr
+
+.PHONY: test-travis
+test-travis: codegen
 	go test $(PACKAGES) -args -v=1 -logtostderr
 
 .PHONY: crossbuild-nodeup
@@ -404,7 +408,7 @@ govet:
 # Continuous integration targets
 
 .PHONY: lint
-lint: staticcheck unused simple
+lint: staticcheck unused simple | codegen
 
 .PHONY: simple
 simple:
@@ -456,7 +460,7 @@ verify-gendocs: kops
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-boilerplate nodeup-gocode test examples lint | verify-gendocs verify-packages
+ci: govet verify-gofmt verify-boilerplate nodeup-gocode test-travis examples lint | verify-gendocs verify-packages
 	echo "Done!"
 
 # --------------------------------------------------
