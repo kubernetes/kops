@@ -322,3 +322,18 @@
 [submodule "_vendor/github.com/tent/http-link-go"]
 	path = _vendor/github.com/tent/http-link-go
 	url = https://github.com/tent/http-link-go.git
+[submodule "_vendor/github.com/Masterminds/semver"]
+	path = _vendor/github.com/Masterminds/semver
+	url = https://github.com/Masterminds/semver.git
+[submodule "_vendor/github.com/huandu/xstrings"]
+	path = _vendor/github.com/huandu/xstrings
+	url = https://github.com/huandu/xstrings.git
+[submodule "_vendor/github.com/satori/go.uuid"]
+	path = _vendor/github.com/satori/go.uuid
+	url = https://github.com/satori/go.uuid.git
+[submodule "_vendor/github.com/Masterminds/sprig"]
+	path = _vendor/github.com/Masterminds/sprig
+	url = https://github.com/Masterminds/sprig.git
+[submodule "_vendor/github.com/aokoli/goutils"]
+	path = _vendor/github.com/aokoli/goutils
+	url = https://github.com/aokoli/goutils.git
