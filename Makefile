@@ -22,7 +22,8 @@ LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
-
+PACKAGES:=$(shell go list ./... | egrep -v "\/vendor\/|\/cloudmock\/")
+#
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
@@ -107,6 +108,7 @@ help: # Show this help
 	echo ''; \
 	} 1>&2; \
 
+
 kops: kops-gobindata # Install kops
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
@@ -152,16 +154,11 @@ hooks: # Install Git hooks
 
 .PHONY: test
 test: # Run tests locally
-	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
-	go test k8s.io/kops/nodeup/pkg/... -args -v=1 -logtostderr
-	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
-	go test k8s.io/kops/nodeup/pkg/... -args -v=1 -logtostderr
-	go test k8s.io/kops/protokube/... -args -v=1 -logtostderr
-	go test k8s.io/kops/dns-controller/pkg/... -args -v=1 -logtostderr
-	go test k8s.io/kops/cmd/... -args -v=1 -logtostderr
-	go test k8s.io/kops/channels/... -args -v=1 -logtostderr
-	go test k8s.io/kops/util/... -args -v=1 -logtostderr
-	go test k8s.io/kops/tests/... -args -v=1 -logtostderr
+	go test $(PACKAGES) -args -v=1 -logtostderr
+
+.PHONY: test-travis
+test-travis: codegen
+	go test $(PACKAGES) -args -v=1 -logtostderr
 
 .PHONY: crossbuild-nodeup
 crossbuild-nodeup:
@@ -405,22 +402,44 @@ verify-goimports:
 
 .PHONY: govet
 govet:
-	go vet \
-	  k8s.io/kops/cmd/... \
-	  k8s.io/kops/pkg/... \
-	  k8s.io/kops/channels/... \
-	  k8s.io/kops/examples/... \
-	  k8s.io/kops/federation/... \
-	  k8s.io/kops/nodeup/... \
-	  k8s.io/kops/util/... \
-	  k8s.io/kops/upup/... \
-	  k8s.io/kops/protokube/... \
-	  k8s.io/kops/dns-controller/... \
-	  k8s.io/kops/tests/...
-
+	go vet $(PACKAGES)
 
 # --------------------------------------------------
 # Continuous integration targets
+
+
+.PHONY: ci-setup
+ci-setup: simple-setup staticcheck-setup unused-setup codegen
+
+.PHONY: lint
+lint: staticcheck unused simple
+
+.PHONY: simple-setup
+simple-setup:
+	go get honnef.co/go/tools/cmd/gosimple
+
+.PHONY: simple
+simple:
+	@echo "** linting with 'simple'"
+	-gosimple $(PACKAGES)
+
+.PHONY: staticcheck-setup
+staticcheck-setup:
+	go get honnef.co/go/tools/cmd/staticcheck
+
+.PHONY: staticcheck
+staticcheck:
+	@echo "** linting with 'staticcheck'"
+	-staticcheck $(PACKAGES)
+
+.PHONY: unused-setup
+unused-setup:
+	go get honnef.co/go/tools/cmd/unused
+
+.PHONY: unused
+unused:
+	@echo "** linting with 'unused'"
+	-unused $(PACKAGES)
 
 .PHONY: verify-boilerplate
 verify-boilerplate:
@@ -454,7 +473,7 @@ verify-gendocs: kops
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-boilerplate nodeup-gocode examples test | verify-gendocs verify-packages
+ci: govet verify-gofmt verify-boilerplate nodeup-gocode test examples lint | verify-gendocs verify-packages
 	echo "Done!"
 
 # --------------------------------------------------
