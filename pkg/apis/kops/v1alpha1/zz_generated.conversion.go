@@ -1912,6 +1912,7 @@ func autoConvert_v1alpha1_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.CloudProvider = in.CloudProvider
 	out.KubeletCgroups = in.KubeletCgroups
 	out.RuntimeCgroups = in.RuntimeCgroups
+	out.ReadOnlyPort = in.ReadOnlyPort
 	out.SystemCgroups = in.SystemCgroups
 	out.CgroupRoot = in.CgroupRoot
 	out.ConfigureCBR0 = in.ConfigureCBR0
@@ -1972,6 +1973,7 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha1_KubeletConfigSpec(in *kops.K
 	out.CloudProvider = in.CloudProvider
 	out.KubeletCgroups = in.KubeletCgroups
 	out.RuntimeCgroups = in.RuntimeCgroups
+	out.ReadOnlyPort = in.ReadOnlyPort
 	out.SystemCgroups = in.SystemCgroups
 	out.CgroupRoot = in.CgroupRoot
 	out.ConfigureCBR0 = in.ConfigureCBR0
