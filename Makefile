@@ -22,7 +22,7 @@ LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
-PACKAGES:=$(shell go list ./... | egrep -v "\/vendor\/|\/cloudmock\/")
+PACKAGES:=$(shell go list ./... | egrep -v "\/vendor\/|\/cloudmock\/|\/kops\/federation\/model")
 #
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -456,7 +456,7 @@ verify-gendocs: kops
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-boilerplate nodeup-gocode | codegen verify-gendocs test examples verify-packages lint
+ci: govet verify-gofmt verify-boilerplate nodeup-gocode test examples lint | verify-gendocs verify-packages
 	echo "Done!"
 
 # --------------------------------------------------
