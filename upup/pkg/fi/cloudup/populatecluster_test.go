@@ -55,6 +55,8 @@ func buildMinimalCluster() *api.Cluster {
 	// TODO: Mock cloudprovider
 	c.Spec.DNSZone = "test.com"
 
+	c.Spec.Networking = &api.NetworkingSpec{}
+
 	return c
 }
 
