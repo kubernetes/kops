@@ -185,7 +185,10 @@ func bruteforceBucketLocation(region *string, request *s3.GetBucketLocationInput
 	config := &aws.Config{Region: region}
 	config = config.WithCredentialsChainVerboseErrors(true)
 
-	session, _ := session.NewSession(config)
+	session, err := session.NewSession(config)
+	if err != nil {
+		return nil, fmt.Errorf("error creating aws session: %v", err)
+	}
 
 	regions, err := ec2.New(session).DescribeRegions(nil)
 	if err != nil {
