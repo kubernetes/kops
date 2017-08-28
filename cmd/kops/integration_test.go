@@ -21,7 +21,10 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
+	"encoding/base64"
+	"encoding/json"
 	"encoding/pem"
+	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -31,11 +34,13 @@ import (
 	"testing"
 	"time"
 
-	"golang.org/x/crypto/ssh"
-
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/jsonutils"
 	"k8s.io/kops/pkg/testutils"
+
+	"github.com/ghodss/yaml"
+	"golang.org/x/crypto/ssh"
 )
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -335,6 +340,39 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 			t.Fatalf("unexpected error reading expected cloudformation output: %v", err)
 		}
 
+		// Expand out the UserData base64 blob, as otherwise testing is painful
+		extracted := make(map[string]string)
+		var buf bytes.Buffer
+		out := jsonutils.NewJSONStreamWriter(&buf)
+		in := json.NewDecoder(bytes.NewReader(actualCF))
+		for {
+			token, err := in.Token()
+			if err != nil {
+				if err == io.EOF {
+					break
+				} else {
+					t.Fatalf("unexpected error parsing cloudformation output: %v", err)
+				}
+			}
+
+			if strings.HasSuffix(out.Path(), ".UserData") {
+				if s, ok := token.(string); ok {
+					vBytes, err := base64.StdEncoding.DecodeString(s)
+					if err != nil {
+						t.Fatalf("error decoding UserData: %v", err)
+					} else {
+						extracted[out.Path()] = string(vBytes)
+						token = json.Token("extracted")
+					}
+				}
+			}
+
+			if err := out.WriteToken(token); err != nil {
+				t.Fatalf("error writing json: %v", err)
+			}
+		}
+		actualCF = buf.Bytes()
+
 		expectedCFTrimmed := strings.TrimSpace(string(expectedCF))
 		actualCFTrimmed := strings.TrimSpace(string(actualCF))
 		if actualCFTrimmed != expectedCFTrimmed {
@@ -347,6 +385,23 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 				t.Logf("actual terraform output in %s", actualPath)
 			}
 
+			t.Fatalf("cloudformation output differed from expected")
+		}
+
+		actualExtracted, err := yaml.Marshal(extracted)
+		if err != nil {
+			t.Fatalf("unexpected error serializing extracted values: %v", err)
+		}
+		expectedExtracted, err := ioutil.ReadFile(path.Join(srcDir, expectedCfPath+".extracted.yaml"))
+		if err != nil {
+			t.Fatalf("unexpected error reading expected extracted cloudformation output: %v", err)
+		}
+
+		actualExtractedTrimmed := strings.TrimSpace(string(actualExtracted))
+		expectedExtractedTrimmed := strings.TrimSpace(string(expectedExtracted))
+		if actualExtractedTrimmed != expectedExtractedTrimmed {
+			diffString := diff.FormatDiff(actualExtractedTrimmed, expectedExtractedTrimmed)
+			t.Logf("diff:\n%s\n", diffString)
 			t.Fatalf("cloudformation output differed from expected")
 		}
 	}
