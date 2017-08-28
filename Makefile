@@ -407,25 +407,38 @@ govet:
 # --------------------------------------------------
 # Continuous integration targets
 
+
+.PHONY: ci-setup
+ci-setup: simple-setup staticcheck-setup unused-setup codegen
+
 .PHONY: lint
-lint: staticcheck unused simple | codegen
+lint: staticcheck unused simple
+
+.PHONY: simple-setup
+simple-setup:
+	go get honnef.co/go/tools/cmd/gosimple
 
 .PHONY: simple
 simple:
 	@echo "** linting with 'simple'"
-	go get honnef.co/go/tools/cmd/gosimple
 	-gosimple $(PACKAGES)
+
+.PHONY: staticcheck-setup
+staticcheck-setup:
+	go get honnef.co/go/tools/cmd/staticcheck
 
 .PHONY: staticcheck
 staticcheck:
 	@echo "** linting with 'staticcheck'"
-	go get honnef.co/go/tools/cmd/staticcheck
 	-staticcheck $(PACKAGES)
+
+.PHONY: unused-setup
+unused-setup:
+	go get honnef.co/go/tools/cmd/unused
 
 .PHONY: unused
 unused:
 	@echo "** linting with 'unused'"
-	go get honnef.co/go/tools/cmd/unused
 	-unused $(PACKAGES)
 
 .PHONY: verify-boilerplate
@@ -460,7 +473,7 @@ verify-gendocs: kops
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-boilerplate nodeup-gocode test-travis examples lint | verify-gendocs verify-packages
+ci: govet verify-gofmt verify-boilerplate nodeup-gocode test examples lint | verify-gendocs verify-packages
 	echo "Done!"
 
 # --------------------------------------------------
