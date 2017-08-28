@@ -121,6 +121,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	c.EtcdServers = []string{"http://127.0.0.1:4001"}
 	c.EtcdServersOverrides = []string{"/events#http://127.0.0.1:4002"}
 
+	// TODO: We can probably rewrite these more clearly in descending order
 	if b.IsKubernetesGTE("1.3") && b.IsKubernetesLT("1.4") {
 		c.AdmissionControl = []string{
 			"NamespaceLifecycle",
@@ -149,9 +150,8 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 			"DefaultStorageClass",
 			"ResourceQuota",
 		}
-		c.AnonymousAuth = fi.Bool(false)
 	}
-	if b.IsKubernetesGTE("1.6") {
+	if b.IsKubernetesGTE("1.6") && b.IsKubernetesLT("1.7") {
 		c.AdmissionControl = []string{
 			"NamespaceLifecycle",
 			"LimitRanger",
@@ -161,6 +161,37 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 			"DefaultTolerationSeconds",
 			"ResourceQuota",
 		}
+	}
+	if b.IsKubernetesGTE("1.7") && b.IsKubernetesLT("1.8") {
+		c.AdmissionControl = []string{
+			"Initializers",
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"DefaultTolerationSeconds",
+			"NodeRestriction",
+			"ResourceQuota",
+		}
+	}
+	if b.IsKubernetesGTE("1.8") {
+		c.AdmissionControl = []string{
+			"Initializers",
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"DefaultTolerationSeconds",
+			"NodeRestriction",
+			"Priority",
+			"ResourceQuota",
+		}
+	}
+
+	// We make sure to disable AnonymousAuth from when it was introduced
+	if b.IsKubernetesGTE("1.5") {
 		c.AnonymousAuth = fi.Bool(false)
 	}
 
