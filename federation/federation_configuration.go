@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/federation/targets/kubernetestarget"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 )
@@ -275,7 +276,7 @@ func (o *FederationConfiguration) EnsureConfiguration(c *fi.Context) error {
 	return nil
 }
 
-func (o *FederationConfiguration) ensureSecretKubeconfig(c *fi.Context, caCert *fi.Certificate, user kubeconfig.KubectlUser) error {
+func (o *FederationConfiguration) ensureSecretKubeconfig(c *fi.Context, caCert *pki.Certificate, user kubeconfig.KubectlUser) error {
 	k8s := c.Target.(*kubernetestarget.KubernetesTarget).KubernetesClient
 
 	_, err := mutateSecret(k8s, o.Namespace, o.KubeconfigSecretName, func(s *v1.Secret) (*v1.Secret, error) {
