@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/k8sapi"
@@ -398,7 +399,7 @@ func (o *ApplyFederationOperation) ensureFederationNamespace(k8s federation_clie
 	})
 }
 
-func EnsureCASecret(keystore fi.Keystore) (*fi.Certificate, *fi.PrivateKey, error) {
+func EnsureCASecret(keystore fi.Keystore) (*pki.Certificate, *pki.PrivateKey, error) {
 	id := fi.CertificateId_CA
 	caCert, caPrivateKey, err := keystore.FindKeypair(id)
 	if err != nil {
@@ -411,9 +412,9 @@ func EnsureCASecret(keystore fi.Keystore) (*fi.Certificate, *fi.PrivateKey, erro
 			return nil, nil, fmt.Errorf("error generating RSA private key: %v", err)
 		}
 
-		caPrivateKey = &fi.PrivateKey{Key: caRsaKey}
+		caPrivateKey = &pki.PrivateKey{Key: caRsaKey}
 
-		caCert, err = fi.SignNewCertificate(caPrivateKey, template, nil, nil)
+		caCert, err = pki.SignNewCertificate(caPrivateKey, template, nil, nil)
 		if err != nil {
 			return nil, nil, err
 		}
