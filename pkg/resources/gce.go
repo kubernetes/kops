@@ -45,9 +45,9 @@ const (
 )
 
 func (c *ClusterResources) listResourcesGCE() (map[string]*ResourceTracker, error) {
-	gceCloud := c.Cloud.(*gce.GCECloud)
+	gceCloud := c.Cloud.(gce.GCECloud)
 	if c.Region == "" {
-		c.Region = gceCloud.Region
+		c.Region = gceCloud.Region()
 	}
 
 	resources := make(map[string]*ResourceTracker)
@@ -60,7 +60,7 @@ func (c *ClusterResources) listResourcesGCE() (map[string]*ResourceTracker, erro
 
 	{
 		// TODO: Only zones in api.Cluster object, if we have one?
-		gceZones, err := d.gceCloud.Compute.Zones.List(d.gceCloud.Project).Do()
+		gceZones, err := d.gceCloud.Compute().Zones.List(d.gceCloud.Project()).Do()
 		if err != nil {
 			return nil, fmt.Errorf("error listing zones: %v", err)
 		}
@@ -123,7 +123,7 @@ func (c *ClusterResources) listResourcesGCE() (map[string]*ResourceTracker, erro
 
 type clusterDiscoveryGCE struct {
 	cloud       fi.Cloud
-	gceCloud    *gce.GCECloud
+	gceCloud    gce.GCECloud
 	clusterName string
 
 	instanceTemplates []*compute.InstanceTemplate
@@ -147,7 +147,7 @@ func (d *clusterDiscoveryGCE) findInstanceTemplates() ([]*compute.InstanceTempla
 
 	ctx := context.Background()
 
-	err := c.Compute.InstanceTemplates.List(c.Project).Pages(ctx, func(page *compute.InstanceTemplateList) error {
+	err := c.Compute().InstanceTemplates.List(c.Project()).Pages(ctx, func(page *compute.InstanceTemplateList) error {
 		for _, t := range page.Items {
 			match := false
 			for _, item := range t.Properties.Metadata.Items {
@@ -202,7 +202,7 @@ func (d *clusterDiscoveryGCE) listGCEInstanceTemplates() ([]*ResourceTracker, er
 }
 
 func deleteGCEInstanceTemplate(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*gce.GCECloud)
+	c := cloud.(gce.GCECloud)
 	t := r.obj.(*compute.InstanceTemplate)
 
 	glog.V(2).Infof("Deleting GCE InstanceTemplate %s", t.SelfLink)
@@ -211,7 +211,7 @@ func deleteGCEInstanceTemplate(cloud fi.Cloud, r *ResourceTracker) error {
 		return err
 	}
 
-	op, err := c.Compute.InstanceTemplates.Delete(u.Project, u.Name).Do()
+	op, err := c.Compute().InstanceTemplates.Delete(u.Project, u.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			glog.Infof("instancetemplate not found, assuming deleted: %q", t.SelfLink)
@@ -225,7 +225,7 @@ func deleteGCEInstanceTemplate(cloud fi.Cloud, r *ResourceTracker) error {
 
 func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*ResourceTracker, error) {
 	c := d.gceCloud
-	project := c.Project
+	project := c.Project()
 
 	var trackers []*ResourceTracker
 
@@ -243,7 +243,7 @@ func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*Resour
 	ctx := context.Background()
 
 	for _, zoneName := range d.zones {
-		err := c.Compute.InstanceGroupManagers.List(project, zoneName).Pages(ctx, func(page *compute.InstanceGroupManagerList) error {
+		err := c.Compute().InstanceGroupManagers.List(project, zoneName).Pages(ctx, func(page *compute.InstanceGroupManagerList) error {
 			for _, mig := range page.Items {
 				instanceTemplate := instanceTemplates[mig.InstanceTemplate]
 				if instanceTemplate == nil {
@@ -282,7 +282,7 @@ func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*Resour
 }
 
 func deleteInstanceGroupManager(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*gce.GCECloud)
+	c := cloud.(gce.GCECloud)
 	t := r.obj.(*compute.InstanceGroupManager)
 
 	glog.V(2).Infof("Deleting GCE InstanceGroupManager %s", t.SelfLink)
@@ -293,7 +293,7 @@ func deleteInstanceGroupManager(cloud fi.Cloud, r *ResourceTracker) error {
 
 	//glog.Infof("MIG: %s", fi.DebugAsJsonString(t))
 
-	op, err := c.Compute.InstanceGroupManagers.Delete(u.Project, u.Zone, u.Name).Do()
+	op, err := c.Compute().InstanceGroupManagers.Delete(u.Project, u.Zone, u.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			glog.Infof("InstanceGroupManager not found, assuming deleted: %q", t.SelfLink)
@@ -307,14 +307,14 @@ func deleteInstanceGroupManager(cloud fi.Cloud, r *ResourceTracker) error {
 
 func (d *clusterDiscoveryGCE) listManagedInstances(igm *compute.InstanceGroupManager) ([]*ResourceTracker, error) {
 	c := d.gceCloud
-	project := c.Project
+	project := c.Project()
 
 	var trackers []*ResourceTracker
 
 	zoneName := gce.LastComponent(igm.Zone)
 
 	// This call is not paginated
-	instances, err := c.Compute.InstanceGroupManagers.ListManagedInstances(project, zoneName, igm.Name).Do()
+	instances, err := c.Compute().InstanceGroupManagers.ListManagedInstances(project, zoneName, igm.Name).Do()
 	if err != nil {
 		return nil, fmt.Errorf("error listing ManagedInstances in %s: %v", igm.Name, err)
 	}
@@ -351,7 +351,7 @@ func (d *clusterDiscoveryGCE) findGCEDisks() ([]*compute.Disk, error) {
 
 	// TODO: Push down tag filter?
 
-	err := c.Compute.Disks.AggregatedList(c.Project).Pages(ctx, func(page *compute.DiskAggregatedList) error {
+	err := c.Compute().Disks.AggregatedList(c.Project()).Pages(ctx, func(page *compute.DiskAggregatedList) error {
 		for _, list := range page.Items {
 			for _, d := range list.Disks {
 				match := false
@@ -411,7 +411,7 @@ func (d *clusterDiscoveryGCE) listGCEDisks() ([]*ResourceTracker, error) {
 }
 
 func deleteGCEDisk(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*gce.GCECloud)
+	c := cloud.(gce.GCECloud)
 	t := r.obj.(*compute.Disk)
 
 	glog.V(2).Infof("Deleting GCE Disk %s", t.SelfLink)
@@ -420,7 +420,7 @@ func deleteGCEDisk(cloud fi.Cloud, r *ResourceTracker) error {
 		return err
 	}
 
-	op, err := c.Compute.Disks.Delete(u.Project, u.Zone, u.Name).Do()
+	op, err := c.Compute().Disks.Delete(u.Project, u.Zone, u.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			glog.Infof("disk not found, assuming deleted: %q", t.SelfLink)
@@ -439,7 +439,7 @@ func (d *clusterDiscoveryGCE) listTargetPools() ([]*ResourceTracker, error) {
 
 	ctx := context.Background()
 
-	err := c.Compute.TargetPools.List(c.Project, c.Region).Pages(ctx, func(page *compute.TargetPoolList) error {
+	err := c.Compute().TargetPools.List(c.Project(), c.Region()).Pages(ctx, func(page *compute.TargetPoolList) error {
 		for _, tp := range page.Items {
 			if !d.matchesClusterName(tp.Name) {
 				continue
@@ -467,7 +467,7 @@ func (d *clusterDiscoveryGCE) listTargetPools() ([]*ResourceTracker, error) {
 }
 
 func deleteTargetPool(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*gce.GCECloud)
+	c := cloud.(gce.GCECloud)
 	t := r.obj.(*compute.TargetPool)
 
 	glog.V(2).Infof("Deleting GCE TargetPool %s", t.SelfLink)
@@ -478,7 +478,7 @@ func deleteTargetPool(cloud fi.Cloud, r *ResourceTracker) error {
 
 	glog.Infof("TargetPool: %s", fi.DebugAsJsonString(t))
 
-	op, err := c.Compute.TargetPools.Delete(u.Project, u.Region, u.Name).Do()
+	op, err := c.Compute().TargetPools.Delete(u.Project, u.Region, u.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			glog.Infof("TargetPool not found, assuming deleted: %q", t.SelfLink)
@@ -497,7 +497,7 @@ func (d *clusterDiscoveryGCE) listForwardingRules() ([]*ResourceTracker, error) 
 
 	ctx := context.Background()
 
-	err := c.Compute.ForwardingRules.List(c.Project, c.Region).Pages(ctx, func(page *compute.ForwardingRuleList) error {
+	err := c.Compute().ForwardingRules.List(c.Project(), c.Region()).Pages(ctx, func(page *compute.ForwardingRuleList) error {
 		for _, fr := range page.Items {
 			if !d.matchesClusterName(fr.Name) {
 				continue
@@ -532,7 +532,7 @@ func (d *clusterDiscoveryGCE) listForwardingRules() ([]*ResourceTracker, error) 
 }
 
 func deleteForwardingRule(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*gce.GCECloud)
+	c := cloud.(gce.GCECloud)
 	t := r.obj.(*compute.ForwardingRule)
 
 	glog.V(2).Infof("Deleting GCE ForwardingRule %s", t.SelfLink)
@@ -541,7 +541,7 @@ func deleteForwardingRule(cloud fi.Cloud, r *ResourceTracker) error {
 		return err
 	}
 
-	op, err := c.Compute.ForwardingRules.Delete(u.Project, u.Region, u.Name).Do()
+	op, err := c.Compute().ForwardingRules.Delete(u.Project, u.Region, u.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			glog.Infof("ForwardingRule not found, assuming deleted: %q", t.SelfLink)
@@ -554,7 +554,7 @@ func deleteForwardingRule(cloud fi.Cloud, r *ResourceTracker) error {
 }
 
 func deleteManagedInstance(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*gce.GCECloud)
+	c := cloud.(gce.GCECloud)
 	selfLink := r.obj.(string)
 
 	glog.V(2).Infof("Deleting GCE Instance %s", selfLink)
@@ -563,7 +563,7 @@ func deleteManagedInstance(cloud fi.Cloud, r *ResourceTracker) error {
 		return err
 	}
 
-	op, err := c.Compute.Instances.Delete(u.Project, u.Zone, u.Name).Do()
+	op, err := c.Compute().Instances.Delete(u.Project, u.Zone, u.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			glog.Infof("Instance not found, assuming deleted: %q", selfLink)
@@ -592,7 +592,7 @@ func (d *clusterDiscoveryGCE) listRoutes(resources map[string]*ResourceTracker) 
 	ctx := context.Background()
 
 	// TODO: Push-down prefix?
-	err := c.Compute.Routes.List(c.Project).Pages(ctx, func(page *compute.RouteList) error {
+	err := c.Compute().Routes.List(c.Project()).Pages(ctx, func(page *compute.RouteList) error {
 		for _, r := range page.Items {
 			if !strings.HasPrefix(r.Name, prefix) {
 				continue
@@ -646,7 +646,7 @@ func (d *clusterDiscoveryGCE) listRoutes(resources map[string]*ResourceTracker) 
 }
 
 func deleteRoute(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*gce.GCECloud)
+	c := cloud.(gce.GCECloud)
 	t := r.obj.(*compute.Route)
 
 	glog.V(2).Infof("Deleting GCE Route %s", t.SelfLink)
@@ -655,7 +655,7 @@ func deleteRoute(cloud fi.Cloud, r *ResourceTracker) error {
 		return err
 	}
 
-	op, err := c.Compute.Routes.Delete(u.Project, u.Name).Do()
+	op, err := c.Compute().Routes.Delete(u.Project, u.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			glog.Infof("Route not found, assuming deleted: %q", t.SelfLink)
@@ -674,7 +674,7 @@ func (d *clusterDiscoveryGCE) listAddresses() ([]*ResourceTracker, error) {
 
 	ctx := context.Background()
 
-	err := c.Compute.Addresses.List(c.Project, c.Region).Pages(ctx, func(page *compute.AddressList) error {
+	err := c.Compute().Addresses.List(c.Project(), c.Region()).Pages(ctx, func(page *compute.AddressList) error {
 		for _, a := range page.Items {
 			if !d.matchesClusterName(a.Name) {
 				glog.V(8).Infof("Skipping Address with name %q", a.Name)
@@ -702,7 +702,7 @@ func (d *clusterDiscoveryGCE) listAddresses() ([]*ResourceTracker, error) {
 }
 
 func deleteAddress(cloud fi.Cloud, r *ResourceTracker) error {
-	c := cloud.(*gce.GCECloud)
+	c := cloud.(gce.GCECloud)
 	t := r.obj.(*compute.Address)
 
 	glog.V(2).Infof("Deleting GCE Address %s", t.SelfLink)
@@ -711,7 +711,7 @@ func deleteAddress(cloud fi.Cloud, r *ResourceTracker) error {
 		return err
 	}
 
-	op, err := c.Compute.Addresses.Delete(u.Project, u.Region, u.Name).Do()
+	op, err := c.Compute().Addresses.Delete(u.Project, u.Region, u.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			glog.Infof("Address not found, assuming deleted: %q", t.SelfLink)

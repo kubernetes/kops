@@ -21,12 +21,12 @@ import (
 )
 
 type GCEAPITarget struct {
-	Cloud *GCECloud
+	Cloud GCECloud
 }
 
 var _ fi.Target = &GCEAPITarget{}
 
-func NewGCEAPITarget(cloud *GCECloud) *GCEAPITarget {
+func NewGCEAPITarget(cloud GCECloud) *GCEAPITarget {
 	return &GCEAPITarget{
 		Cloud: cloud,
 	}

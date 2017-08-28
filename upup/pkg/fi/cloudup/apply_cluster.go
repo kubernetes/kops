@@ -310,9 +310,9 @@ func (c *ApplyClusterCmd) Run() error {
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderGCE:
 		{
-			gceCloud := cloud.(*gce.GCECloud)
-			region = gceCloud.Region
-			project = gceCloud.Project
+			gceCloud := cloud.(gce.GCECloud)
+			region = gceCloud.Region()
+			project = gceCloud.Project()
 
 			if !AlphaAllowGCE.Enabled() {
 				return fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
@@ -706,7 +706,7 @@ func (c *ApplyClusterCmd) Run() error {
 	case TargetDirect:
 		switch cluster.Spec.CloudProvider {
 		case "gce":
-			target = gce.NewGCEAPITarget(cloud.(*gce.GCECloud))
+			target = gce.NewGCEAPITarget(cloud.(gce.GCECloud))
 		case "aws":
 			target = awsup.NewAWSAPITarget(cloud.(awsup.AWSCloud))
 		case "digitalocean":
