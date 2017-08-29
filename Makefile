@@ -23,7 +23,6 @@ GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
 BINDATA_PATH=.build/go-bindata
-NODEUP_PATH=.build/nodeup
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -84,7 +83,7 @@ endif
 
 .PHONY: clean
 clean:
-	git ls-files -z -o | xargs -0 rm -rf
+	git ls-files -z -o | xargs -0 rm -rfv
 
 .PHONY: help
 help: # Show this help
