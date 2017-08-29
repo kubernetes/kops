@@ -14,16 +14,24 @@ Ps: Steps below assume a recent version of Terraform. There's a workaround for a
 
 #### Set up remote state
 
-You could keep your Terraform state locally, but we **strongly recommend** saving it on S3 with versioning turned on on that bucket. Configure a remote S3 store like so:
+You could keep your Terraform state locally, but we **strongly recommend** saving it on S3 with versioning turned on on that bucket. Configure a remote S3 store with a setting like below:
 
 ```
-$ terraform remote config \
-  -backend=s3 \
-  -backend-config="bucket=mycompany.terraform>" \
-  -backend-config="key=infrastructure.tfstate" \
-  -backend-config="region=us-east-1"
+terraform {
+  backend "s3" {
+    bucket = "mybucket"
+    key    = "path/to/my/key"
+    region = "us-east-1"
+  }
+}
 ```
 
+Then run:
+
+```
+$ terraform init
+```
+to set up s3 backend.
 Learn more [about Terraform state here](https://www.terraform.io/docs/state/remote.html).
 
 #### Initialize/create a cluster

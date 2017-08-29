@@ -1,41 +1,60 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: weave-net
+  labels:
+    name: weave-net
+    role.kubernetes.io/networking: "1"
+  namespace: kube-system
+---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
   name: weave-net
-  namespace: kube-system
   labels:
     name: weave-net
     role.kubernetes.io/networking: "1"
+  namespace: kube-system
 spec:
   template:
     metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/tolerations: >-
+          [{"key":"dedicated","operator":"Equal","value":"master","effect":"NoSchedule"}]
       labels:
         name: weave-net
         role.kubernetes.io/networking: "1"
-      annotations:
-        scheduler.alpha.kubernetes.io/tolerations: |
-          [
-            {
-              "key": "dedicated",
-              "operator": "Equal",
-              "value": "master",
-              "effect": "NoSchedule"
-            }
-          ]
     spec:
-      hostNetwork: true
-      hostPID: true
       containers:
         - name: weave
-          image: weaveworks/weave-kube:1.9.8
           command:
             - /home/weave/launch.sh
+          env:
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: spec.nodeName
+            - name: IPALLOC_RANGE
+              value: {{ .KubeControllerManager.ClusterCIDR }}
+            {{- if .Networking.Weave.MTU }}
+            - name: WEAVE_MTU
+              value: "{{ .Networking.Weave.MTU }}"
+            {{- end }}
+          image: 'weaveworks/weave-kube:2.0.1'
           livenessProbe:
-            initialDelaySeconds: 30
             httpGet:
               host: 127.0.0.1
               path: /status
               port: 6784
+            initialDelaySeconds: 30
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 100m
+              memory: 200Mi
           securityContext:
             privileged: true
           volumeMounts:
@@ -51,41 +70,33 @@ spec:
               mountPath: /host/var/lib/dbus
             - name: lib-modules
               mountPath: /lib/modules
-          resources:
-            requests:
-              cpu: 100m
-              memory: 200Mi
-            limits:
-              cpu: 100m
-              memory: 200Mi
-          env:
-            - name: IPALLOC_RANGE
-              value: {{ .KubeControllerManager.ClusterCIDR }}
-            {{- if .Networking.Weave.MTU }}
-            - name: WEAVE_MTU
-              value: "{{ .Networking.Weave.MTU }}"
-            {{- end }}
         - name: weave-npc
-          image: weaveworks/weave-npc:1.9.8
-          resources:
-            requests:
-              cpu: 100m
-              memory: 200Mi
-            limits:
-              cpu: 100m
-              memory: 200Mi
           env:
             - name: HOSTNAME
               valueFrom:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
+          image: 'weaveworks/weave-npc:2.0.1'
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 100m
+              memory: 200Mi
           securityContext:
             privileged: true
+      hostNetwork: true
+      hostPID: true
       restartPolicy: Always
+      securityContext:
+        seLinuxOptions: {}
+      serviceAccountName: weave-net
       volumes:
         - name: weavedb
-          emptyDir: {}
+          hostPath:
+            path: /var/lib/weave
         - name: cni-bin
           hostPath:
             path: /opt

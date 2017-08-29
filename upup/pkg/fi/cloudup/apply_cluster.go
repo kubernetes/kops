@@ -22,8 +22,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/blang/semver"
-	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
@@ -40,12 +38,15 @@ import (
 	"k8s.io/kops/pkg/model/components"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/vspheremodel"
+	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
+	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
@@ -54,19 +55,26 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
-const DefaultMaxTaskDuration = 10 * time.Minute
+const (
+	DefaultMaxTaskDuration = 10 * time.Minute
+	starline               = "*********************************************************************************\n"
+)
 
-const starline = "*********************************************************************************\n"
-
-// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
-var AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
-
-// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
-var AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
-
-var CloudupModels = []string{"config", "proto", "cloudup"}
+var (
+	// AlphaAllowDO is a feature flag that gates DigitalOcean support while it is alpha
+	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
+	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
+	AlphaAllowGCE = featureflag.New("AlphaAllowGCE", featureflag.Bool(false))
+	// AlphaAllowVsphere is a feature flag that gates vsphere support while it is alpha
+	AlphaAllowVsphere = featureflag.New("AlphaAllowVsphere", featureflag.Bool(false))
+	// CloudupModels a list of supported models
+	CloudupModels = []string{"config", "proto", "cloudup"}
+)
 
 type ApplyClusterCmd struct {
 	Cluster *kops.Cluster
@@ -103,6 +111,9 @@ type ApplyClusterCmd struct {
 
 	// The channel we are using
 	channel *kops.Channel
+
+	// Phase can be set to a Phase to run the specific subset of tasks, if we don't want to run everything
+	Phase Phase
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -137,7 +148,8 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	c.channel = channel
 
-	err = c.upgradeSpecs()
+	assetBuilder := assets.NewAssetBuilder(c.Cluster.Spec.Assets)
+	err = c.upgradeSpecs(assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -268,9 +280,6 @@ func (c *ApplyClusterCmd) Run() error {
 		"keypair":     &fitasks.Keypair{},
 		"secret":      &fitasks.Secret{},
 		"managedFile": &fitasks.ManagedFile{},
-
-		// DNS
-		//"dnsZone": &dnstasks.DNSZone{},
 	})
 
 	cloud, err := BuildCloud(cluster)
@@ -301,9 +310,9 @@ func (c *ApplyClusterCmd) Run() error {
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderGCE:
 		{
-			gceCloud := cloud.(*gce.GCECloud)
-			region = gceCloud.Region
-			project = gceCloud.Project
+			gceCloud := cloud.(gce.GCECloud)
+			region = gceCloud.Region()
+			project = gceCloud.Project()
 
 			if !AlphaAllowGCE.Enabled() {
 				return fmt.Errorf("GCE support is currently alpha, and is feature-gated.  export KOPS_FEATURE_FLAGS=AlphaAllowGCE")
@@ -320,6 +329,16 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 		}
 
+	case kops.CloudProviderDO:
+		{
+			if !AlphaAllowDO.Enabled() {
+				return fmt.Errorf("DigitalOcean support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowDO to enable it")
+			}
+
+			l.AddTypes(map[string]interface{}{
+				"volume": &dotasks.Volume{},
+			})
+		}
 	case kops.CloudProviderAWS:
 		{
 			awsCloud := cloud.(awsup.AWSCloud)
@@ -360,10 +379,6 @@ func (c *ApplyClusterCmd) Run() error {
 				// Autoscaling
 				"autoscalingGroup":    &awstasks.AutoscalingGroup{},
 				"launchConfiguration": &awstasks.LaunchConfiguration{},
-
-				//// Route53
-				//"dnsName": &awstasks.DNSName{},
-				//"dnsZone": &awstasks.DNSZone{},
 			})
 
 			if len(sshPublicKeys) == 0 {
@@ -426,7 +441,43 @@ func (c *ApplyClusterCmd) Run() error {
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
-	assetBuilder := assets.NewAssetBuilder()
+	iamLifecycle := lifecyclePointer(fi.LifecycleSync)
+	networkLifecycle := lifecyclePointer(fi.LifecycleSync)
+	clusterLifecycle := lifecyclePointer(fi.LifecycleSync)
+	stageAssetsLifecycle := lifecyclePointer(fi.LifecycleSync)
+
+	switch c.Phase {
+	case Phase(""):
+	// Everything ... the default
+	case PhaseStageAssets:
+		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleSync)
+		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+
+	case PhaseIAM:
+		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+
+	case PhaseNetwork:
+		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+
+	case PhaseCluster:
+		if c.TargetName == TargetDryRun {
+			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+		} else {
+			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		}
+	default:
+		return fmt.Errorf("unknown phase %q", c.Phase)
+	}
 
 	var fileModels []string
 	for _, m := range c.Models {
@@ -444,9 +495,11 @@ func (c *ApplyClusterCmd) Run() error {
 			l.Builders = append(l.Builders,
 				&BootstrapChannelBuilder{
 					cluster:      cluster,
+					Lifecycle:    clusterLifecycle,
 					templates:    templates,
 					assetBuilder: assetBuilder,
 				},
+				&model.PKIModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 			)
 
 			switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -456,17 +509,26 @@ func (c *ApplyClusterCmd) Run() error {
 				}
 
 				l.Builders = append(l.Builders,
-					&model.PKIModelBuilder{KopsModelContext: modelContext},
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 
-					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext},
-					&model.BastionModelBuilder{KopsModelContext: modelContext},
-					&model.DNSModelBuilder{KopsModelContext: modelContext},
-					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext},
-					&model.FirewallModelBuilder{KopsModelContext: modelContext},
-					&model.IAMModelBuilder{KopsModelContext: modelContext},
-					&model.NetworkModelBuilder{KopsModelContext: modelContext},
-					&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
+					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: networkLifecycle},
+					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
+					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
+					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
+				)
+
+				l.Builders = append(l.Builders,
+					&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
+				)
+
+				l.Builders = append(l.Builders,
+					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
+				)
+			case kops.CloudProviderDO:
+				l.Builders = append(l.Builders,
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 				)
 
 			case kops.CloudProviderGCE:
@@ -475,21 +537,16 @@ func (c *ApplyClusterCmd) Run() error {
 				}
 
 				l.Builders = append(l.Builders,
-					&model.PKIModelBuilder{KopsModelContext: modelContext},
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 
-					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext},
-					//&model.BastionModelBuilder{KopsModelContext: modelContext},
-					//&model.DNSModelBuilder{KopsModelContext: modelContext},
-					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext},
-					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext},
-					//&model.IAMModelBuilder{KopsModelContext: modelContext},
-					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext},
-					//&model.SSHKeyModelBuilder{KopsModelContext: modelContext},
+					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
+					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
+					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
+					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
 				)
+
 			case kops.CloudProviderVSphere:
-				l.Builders = append(l.Builders,
-					&model.PKIModelBuilder{KopsModelContext: modelContext})
+				// No special settings (yet!)
 
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
@@ -510,7 +567,8 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 
 	// RenderNodeUpConfig returns the NodeUp config, in YAML format
-	renderNodeUpConfig := func(ig *kops.InstanceGroup) (*nodeup.NodeUpConfig, error) {
+	// @@NOTE
+	renderNodeUpConfig := func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
 		if ig == nil {
 			return nil, fmt.Errorf("instanceGroup cannot be nil")
 		}
@@ -525,17 +583,14 @@ func (c *ApplyClusterCmd) Run() error {
 			return nil, err
 		}
 
-		config := &nodeup.NodeUpConfig{}
+		config := &nodeup.Config{}
 		for _, tag := range nodeUpTags.List() {
 			config.Tags = append(config.Tags, tag)
 		}
 
 		config.Assets = c.Assets
-
 		config.ClusterName = cluster.ObjectMeta.Name
-
 		config.ConfigBase = fi.String(configBase.Path())
-
 		config.InstanceGroupName = ig.ObjectMeta.Name
 
 		var images []*nodeup.Image
@@ -601,8 +656,10 @@ func (c *ApplyClusterCmd) Run() error {
 		l.Builders = append(l.Builders, &awsmodel.AutoscalingGroupModelBuilder{
 			AWSModelContext: awsModelContext,
 			BootstrapScript: bootstrapScriptBuilder,
+			Lifecycle:       clusterLifecycle,
 		})
-
+	case kops.CloudProviderDO:
+		// DigitalOcean tasks will go here
 	case kops.CloudProviderGCE:
 		{
 			gceModelContext := &gcemodel.GCEModelContext{
@@ -612,6 +669,7 @@ func (c *ApplyClusterCmd) Run() error {
 			l.Builders = append(l.Builders, &gcemodel.AutoscalingGroupModelBuilder{
 				GCEModelContext: gceModelContext,
 				BootstrapScript: bootstrapScriptBuilder,
+				Lifecycle:       clusterLifecycle,
 			})
 		}
 	case kops.CloudProviderVSphere:
@@ -623,6 +681,7 @@ func (c *ApplyClusterCmd) Run() error {
 			l.Builders = append(l.Builders, &vspheremodel.AutoscalingGroupModelBuilder{
 				VSphereModelContext: vsphereModelContext,
 				BootstrapScript:     bootstrapScriptBuilder,
+				Lifecycle:           clusterLifecycle,
 			})
 		}
 
@@ -630,29 +689,11 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
 
-	//// TotalNodeCount computes the total count of nodes
-	//l.TemplateFunctions["TotalNodeCount"] = func() (int, error) {
-	//	count := 0
-	//	for _, group := range c.InstanceGroups {
-	//		if group.IsMaster() {
-	//			continue
-	//		}
-	//		if group.Spec.MaxSize != nil {
-	//			count += *group.Spec.MaxSize
-	//		} else if group.Spec.MinSize != nil {
-	//			count += *group.Spec.MinSize
-	//		} else {
-	//			// Guestimate
-	//			count += 5
-	//		}
-	//	}
-	//	return count, nil
-	//}
 	l.TemplateFunctions["Masters"] = tf.modelContext.MasterInstanceGroups
 
 	tf.AddTo(l.TemplateFunctions)
 
-	taskMap, err := l.BuildTasks(modelStore, fileModels)
+	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, stageAssetsLifecycle)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
@@ -665,9 +706,11 @@ func (c *ApplyClusterCmd) Run() error {
 	case TargetDirect:
 		switch cluster.Spec.CloudProvider {
 		case "gce":
-			target = gce.NewGCEAPITarget(cloud.(*gce.GCECloud))
+			target = gce.NewGCEAPITarget(cloud.(gce.GCECloud))
 		case "aws":
 			target = awsup.NewAWSAPITarget(cloud.(awsup.AWSCloud))
+		case "digitalocean":
+			target = do.NewDOAPITarget(cloud.(*digitalocean.Cloud))
 		case "vsphere":
 			target = vsphere.NewVSphereAPITarget(cloud.(*vsphere.VSphereCloud))
 		default:
@@ -779,13 +822,8 @@ func findHash(url string) (*hashing.Hash, error) {
 }
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
-func (c *ApplyClusterCmd) upgradeSpecs() error {
-	//err := c.Cluster.PerformAssignments()
-	//if err != nil {
-	//	return fmt.Errorf("error populating configuration: %v", err)
-	//}
-
-	fullCluster, err := PopulateClusterSpec(c.Cluster)
+func (c *ApplyClusterCmd) upgradeSpecs(assetBuilder *assets.AssetBuilder) error {
+	fullCluster, err := PopulateClusterSpec(c.Cluster, assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -953,4 +991,8 @@ func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
 func needsStaticUtils(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
 	// TODO: Do real detection of CoreOS (but this has to work with AMI names, and maybe even forked AMIs)
 	return true
+}
+
+func lifecyclePointer(v fi.Lifecycle) *fi.Lifecycle {
+	return &v
 }

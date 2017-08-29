@@ -19,11 +19,13 @@ package fitasks
 import (
 	"crypto/x509"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi"
 	"net"
 	"sort"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 var wellKnownCertificateTypes = map[string]string{
@@ -34,6 +36,7 @@ var wellKnownCertificateTypes = map[string]string{
 //go:generate fitask -type=Keypair
 type Keypair struct {
 	Name               *string
+	Lifecycle          *fi.Lifecycle
 	Subject            string    `json:"subject"`
 	Type               string    `json:"type"`
 	AlternateNames     []string  `json:"alternateNames"`
@@ -80,6 +83,9 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		AlternateNames: alternateNames,
 		Type:           buildTypeDescription(cert.Certificate),
 	}
+
+	// Avoid spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }
@@ -172,7 +178,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		// if we change keys we often have to regenerate e.g. the service accounts
 		// TODO: Eventually rotate keys / don't always reuse?
 		if privateKey == nil {
-			privateKey, err = fi.GeneratePrivateKey()
+			privateKey, err = pki.GeneratePrivateKey()
 			if err != nil {
 				return err
 			}

@@ -18,15 +18,17 @@ package model
 
 import (
 	"fmt"
-	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"strings"
+
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"strings"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
 // DockerBuilder install docker (just the packages at the moment)
@@ -239,7 +241,8 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.12.6-0~ubuntu-xenial",
 		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~ubuntu-xenial_amd64.deb",
 		Hash:          "fffc22da4ad5b20715bbb6c485b2d2bb7e84fd33",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		// Depends: iptables, init-system-helpers (>= 1.18~), lsb-base (>= 4.1+Debian11ubuntu7), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
 	},
 
 	// 1.12.6 - Centos / Rhel7 (two packages)
@@ -291,14 +294,23 @@ func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro 
 	return true
 }
 
+// Build is responsible for configuring the docker daemon
 func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
+
+	// @check: neither coreos or containeros need provision docker.service, just the docker daemon options
 	switch b.Distribution {
 	case distros.DistributionCoreOS:
 		glog.Infof("Detected CoreOS; won't install Docker")
+		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
+			return err
+		}
 		return nil
 
 	case distros.DistributionContainerOS:
 		glog.Infof("Detected ContainerOS; won't install Docker")
+		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -458,6 +470,32 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 	return service
 }
 
+// buildContainerOSConfigurationDropIn is responsible for configuring the docker daemon options
+func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderContext) error {
+	lines := []string{
+		"[Service]",
+		"EnvironmentFile=/etc/sysconfig/docker",
+	}
+	contents := strings.Join(lines, "\n")
+
+	c.AddTask(&nodetasks.File{
+		Path:     "/etc/systemd/system/docker.service.d/10-kops.conf",
+		Contents: fi.NewStringResource(contents),
+		Type:     nodetasks.FileType_File,
+		OnChangeExecute: [][]string{
+			{"systemctl", "daemon-reload"},
+			{"systemctl", "restart", "docker.service"},
+		},
+	})
+
+	if err := b.buildSysconfig(c); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// buildSysconfig is responsible for extracting the docker configuration and writing the sysconfig file
 func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 	flagsString, err := flagbuilder.BuildFlags(b.Cluster.Spec.Docker)
 	if err != nil {
@@ -470,12 +508,11 @@ func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 	}
 	contents := strings.Join(lines, "\n")
 
-	t := &nodetasks.File{
+	c.AddTask(&nodetasks.File{
 		Path:     "/etc/sysconfig/docker",
 		Contents: fi.NewStringResource(contents),
 		Type:     nodetasks.FileType_File,
-	}
-	c.AddTask(t)
+	})
 
 	return nil
 }

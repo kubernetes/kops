@@ -17,37 +17,67 @@ limitations under the License.
 package assets
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/pkg/kubemanifest"
+	"net/url"
 	"os"
 	"strings"
+
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/featureflag"
+	"k8s.io/kops/pkg/kubemanifest"
 )
+
+// RewriteManifests controls whether we rewrite manifests
+// Because manifest rewriting converts everything to and from YAML, we normalize everything by doing so
+var RewriteManifests = featureflag.New("RewriteManifests", featureflag.Bool(true))
 
 // AssetBuilder discovers and remaps assets
 type AssetBuilder struct {
-	Assets []*Asset
+	ContainerAssets []*ContainerAsset
+	FileAssets      []*FileAsset
+	AssetsLocation  *kops.Assets
 }
 
-type Asset struct {
-	Origin string
-	Mirror string
+type ContainerAsset struct {
+	// DockerImage will be the name of the docker image we should run, if this is a docker image
+	DockerImage string
+
+	// CanonicalLocation will be the source location of the image, if we should copy it to the actual location
+	CanonicalLocation string
 }
 
-func NewAssetBuilder() *AssetBuilder {
-	return &AssetBuilder{}
+type FileAsset struct {
+	// File will be the name of the file we should use
+	File string
+
+	// CanonicalLocation will be the source location of the file, if we should copy it to the actual location
+	CanonicalLocation string
 }
 
+func NewAssetBuilder(assets *kops.Assets) *AssetBuilder {
+	return &AssetBuilder{
+		AssetsLocation: assets,
+	}
+}
+
+// RemapManifest transforms a kubernetes manifest.
+// Whenever we are building a Task that includes a manifest, we should pass it through RemapManifest first.
+// This will:
+// * rewrite the images if they are being redirected to a mirror, and ensure the image is uploaded
 func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
+	if !RewriteManifests.Enabled() {
+		return data, nil
+	}
 	manifests, err := kubemanifest.LoadManifestsFrom(data)
 	if err != nil {
 		return nil, err
 	}
 
-	var yamlSep = []byte("\n\n---\n\n")
-	var remappedManifest []byte
+	var yamlSeparator = []byte("\n---\n\n")
+	var remappedManifests [][]byte
 	for _, manifest := range manifests {
-		err := manifest.RemapImages(a.remapImage)
+		err := manifest.RemapImages(a.RemapImage)
 		if err != nil {
 			return nil, fmt.Errorf("error remapping images: %v", err)
 		}
@@ -56,18 +86,16 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 			return nil, fmt.Errorf("error re-marshalling manifest: %v", err)
 		}
 
-		glog.V(10).Infof("manifest: %v", string(y))
-		remappedManifest = append(remappedManifest, y...)
-		remappedManifest = append(remappedManifest, yamlSep...)
+		remappedManifests = append(remappedManifests, y)
 	}
 
-	return remappedManifest, nil
+	return bytes.Join(remappedManifests, yamlSeparator), nil
 }
 
-func (a *AssetBuilder) remapImage(image string) (string, error) {
-	asset := &Asset{}
+func (a *AssetBuilder) RemapImage(image string) (string, error) {
+	asset := &ContainerAsset{}
 
-	asset.Origin = image
+	asset.DockerImage = image
 
 	if strings.HasPrefix(image, "kope/dns-controller:") {
 		// To use user-defined DNS Controller:
@@ -80,9 +108,51 @@ func (a *AssetBuilder) remapImage(image string) (string, error) {
 		}
 	}
 
-	asset.Mirror = image
+	if a.AssetsLocation != nil && a.AssetsLocation.ContainerRegistry != nil {
+		registryMirror := *a.AssetsLocation.ContainerRegistry
+		normalized := image
 
-	a.Assets = append(a.Assets, asset)
+		// Remove the 'standard' kubernetes image prefix, just for sanity
+		normalized = strings.TrimPrefix(normalized, "gcr.io/google_containers/")
+
+		// We can't nest arbitrarily
+		// Some risk of collisions, but also -- and __ in the names appear to be blocked by docker hub
+		normalized = strings.Replace(normalized, "/", "-", -1)
+		asset.DockerImage = registryMirror + "/" + normalized
+
+		asset.CanonicalLocation = image
+
+		// Run the new image
+		image = asset.DockerImage
+	}
+
+	a.ContainerAssets = append(a.ContainerAssets, asset)
 
 	return image, nil
+}
+
+// RemapFile sets a new url location for the file, if a AssetsLocation is defined.
+func (a AssetBuilder) RemapFile(file string) (string, error) {
+	if file == "" {
+		return "", fmt.Errorf("unable to remap an empty string")
+	}
+
+	fileAsset := &FileAsset{
+		File:              file,
+		CanonicalLocation: file,
+	}
+
+	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
+		fileURL, err := url.Parse(file)
+		if err != nil {
+			return "", fmt.Errorf("unable to parse file url %q: %v", file, err)
+		}
+
+		fileRepo := strings.TrimSuffix(*a.AssetsLocation.FileRepository, "/")
+		fileAsset.File = fileRepo + fileURL.Path
+	}
+
+	a.FileAssets = append(a.FileAssets, fileAsset)
+
+	return fileAsset.File, nil
 }

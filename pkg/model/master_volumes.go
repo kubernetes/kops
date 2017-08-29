@@ -18,14 +18,16 @@ package model
 
 import (
 	"fmt"
+	"sort"
+	"strings"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
-	"sort"
-	"strings"
 )
 
 const (
@@ -37,6 +39,7 @@ const (
 // MasterVolumeBuilder builds master EBS volumes
 type MasterVolumeBuilder struct {
 	*KopsModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &MasterVolumeBuilder{}
@@ -86,6 +89,8 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 			switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
 			case kops.CloudProviderAWS:
 				b.addAWSVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+			case kops.CloudProviderDO:
+				b.addDOVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
 			case kops.CloudProviderGCE:
 				b.addGCEVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
 			case kops.CloudProviderVSphere:
@@ -121,13 +126,34 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	encrypted := fi.BoolValue(m.EncryptedVolume)
 
 	t := &awstasks.EBSVolume{
-		Name:             s(name),
+		Name:      s(name),
+		Lifecycle: b.Lifecycle,
+
 		AvailabilityZone: s(subnet.Zone),
 		SizeGB:           fi.Int64(int64(volumeSize)),
 		VolumeType:       s(volumeType),
 		KmsKeyId:         m.KmsKeyId,
 		Encrypted:        fi.Bool(encrypted),
 		Tags:             tags,
+	}
+
+	c.AddTask(t)
+}
+
+func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+	// required that names start with a lower case and only contains letters, numbers and hyphens
+	name = "kops-" + strings.Replace(name, ".", "-", -1)
+
+	// DO has a 64 character limit for volume names
+	if len(name) >= 64 {
+		name = name[:64]
+	}
+
+	t := &dotasks.Volume{
+		Name:      s(name),
+		Lifecycle: b.Lifecycle,
+		SizeGB:    fi.Int64(int64(volumeSize)),
+		Region:    s(subnet.Zone),
 	}
 
 	c.AddTask(t)
@@ -164,7 +190,9 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 	name = strings.Replace(name, ".", "-", -1)
 
 	t := &gcetasks.Disk{
-		Name:       s(name),
+		Name:      s(name),
+		Lifecycle: b.Lifecycle,
+
 		Zone:       s(subnet.Zone),
 		SizeGB:     fi.Int64(int64(volumeSize)),
 		VolumeType: s(volumeType),

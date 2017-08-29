@@ -27,6 +27,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/vfs"
@@ -44,15 +45,18 @@ var (
 	create_long = templates.LongDesc(i18n.T(`
 		Create a resource:` + validResources +
 		`
-	Create a cluster, instancegroup or secret using command line flags or
-	YAML cluster spec. Clusters and instancegroups can be created using the YAML
-	cluster spec.
+	Create a cluster, instancegroup or secret using command line parameters
+	or YAML configuration specification files.
+	(Note: secrets cannot be created from YAML config files yet).
 	`))
 
 	create_example = templates.Examples(i18n.T(`
 
-	# Create a cluster using a cluser spec file
+	# Create a cluster from the configuration specification in a YAML file
 	kops create -f my-cluster.yaml
+
+	# Create secret from secret spec file 
+	kops create -f secret.yaml
 
 	# Create a cluster in AWS
 	kops create cluster --name=kubernetes-cluster.example.com \
@@ -155,7 +159,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				if err != nil {
 					return fmt.Errorf("error populating configuration: %v", err)
 				}
-				_, err = clientset.ClustersFor(v).Create(v)
+				_, err = clientset.CreateCluster(v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
@@ -176,6 +180,10 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					return fmt.Errorf("error querying cluster %q: %v", clusterName, err)
 				}
 
+				if cluster == nil {
+					return fmt.Errorf("cluster %q not found", clusterName)
+				}
+
 				_, err = clientset.InstanceGroupsFor(cluster).Create(v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
@@ -184,6 +192,33 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					return fmt.Errorf("error creating instanceGroup: %v", err)
 				} else {
 					fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
+				}
+
+			case *kopsapi.SSHCredential:
+				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
+				if clusterName == "" {
+					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
+				}
+				if v.Spec.PublicKey == "" {
+					return fmt.Errorf("spec.PublicKey is required")
+				}
+
+				cluster, err := clientset.GetCluster(clusterName)
+				if err != nil {
+					return err
+				}
+
+				keyStore, err := registry.KeyStore(cluster)
+				if err != nil {
+					return err
+				}
+
+				sshKeyArr := []byte(v.Spec.PublicKey)
+				err = keyStore.AddSSHPublicKey("admin", sshKeyArr)
+				if err != nil {
+					return err
+				} else {
+					fmt.Fprintf(&sb, "Added ssh creadential\n")
 				}
 
 			default:

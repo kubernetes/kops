@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
@@ -37,7 +38,7 @@ import (
 var (
 	edit_instancegroup_long = templates.LongDesc(i18n.T(`Edit a cluster configuration.
 
-	This command changes the instancegroup cloud specification in the registry.
+	This command changes the instancegroup desired configuration in the registry.
 
     	To set your preferred editor, you can define the EDITOR environment variable.
     	When you have done this, kops will use the editor that you have set.
@@ -45,7 +46,7 @@ var (
 	kops edit does not update the cloud resources, to apply the changes use "kops update cluster".`))
 
 	edit_instancegroup_example = templates.Examples(i18n.T(`
-	# Edit a instancegroup configuration.
+	# Edit an instancegroup desired configuration.
 	kops edit ig --name k8s-cluster.example.com node --state=s3://kops-state-1234
 	`))
 
@@ -166,7 +167,8 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return fmt.Errorf("error populating configuration: %v", err)
 	}
 
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster)
+	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets)
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
 	if err != nil {
 		return err
 	}

@@ -1,15 +1,18 @@
 spec:
   images:
     # We put the "legacy" version first, for kops versions that don't support versions ( < 1.5.0 )
-    - name: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-05-02
+    - name: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
       providerID: aws
       kubernetesVersion: ">=1.4.0 <1.5.0"
-    - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-05-02
+    - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-07-28
       providerID: aws
       kubernetesVersion: ">=1.5.0 <1.6.0"
-    - name: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-05-02
+    - name: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-07-28
       providerID: aws
-      kubernetesVersion: ">=1.6.0"
+      kubernetesVersion: ">=1.6.0 <1.7.0"
+    - name: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
+      providerID: aws
+      kubernetesVersion: ">=1.7.0"
     - providerID: gce
       name: "cos-cloud/cos-stable-57-9202-64-0"
   cluster:
@@ -17,8 +20,11 @@ spec:
     networking:
       kubenet: {}
   kubernetesVersions:
+  - range: ">=1.7.0"
+    recommendedVersion: 1.7.4
+    requiredVersion: 1.7.0
   - range: ">=1.6.0"
-    recommendedVersion: 1.6.6
+    recommendedVersion: 1.6.7
     requiredVersion: 1.6.0
   - range: ">=1.5.0"
     recommendedVersion: 1.5.7
@@ -28,13 +34,13 @@ spec:
     requiredVersion: 1.4.2
   kopsVersions:
   - range: ">=1.7.0-alpha.1"
-    #recommendedVersion: 1.6.0
-    #requiredVersion: 1.6.0
-    kubernetesVersion: 1.7.0
+    recommendedVersion: 1.7.0
+    #requiredVersion: 1.7.0
+    kubernetesVersion: 1.7.4
   - range: ">=1.6.0-alpha.1"
     #recommendedVersion: 1.6.0
     #requiredVersion: 1.6.0
-    kubernetesVersion: 1.6.6
+    kubernetesVersion: 1.6.7
   - range: ">=1.5.0-alpha1"
     recommendedVersion: 1.5.1
     #requiredVersion: 1.5.1

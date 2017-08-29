@@ -19,7 +19,6 @@ package main
 import (
 	"io/ioutil"
 	"path"
-	"strconv"
 	"strings"
 	"testing"
 
@@ -31,54 +30,47 @@ import (
 )
 
 func TestBuildEtcdManifest(t *testing.T) {
-	runTest(t, "main")
+	cs := []struct {
+		TestFile string
+	}{
+		{TestFile: "non_tls.yaml"},
+		{TestFile: "tls.yaml"},
+	}
+	for i, x := range cs {
+		cluster, expected := loadTestIntegration(t, path.Join("main", x.TestFile))
+		definition := protokube.BuildEtcdManifest(cluster)
+		generated, err := protokube.ToVersionedYaml(definition)
+		if err != nil {
+			t.Errorf("case %d, unable to convert to yaml, error: %v", i, err)
+			continue
+		}
+		rendered := strings.TrimSpace(string(generated))
+		expected = strings.TrimSpace(expected)
+
+		if rendered != expected {
+			diffString := diff.FormatDiff(expected, string(rendered))
+			t.Logf("diff:\n%s\n", diffString)
+			t.Errorf("case %d, failed, manifest differed from expected", i)
+		}
+	}
 }
 
-func runTest(t *testing.T, srcDir string) {
-	sourcePath := path.Join(srcDir, "cluster.yaml")
-	sourceBytes, err := ioutil.ReadFile(sourcePath)
+// loadTestIntegration is responsible for loading the integration files
+func loadTestIntegration(t *testing.T, path string) (*protokube.EtcdCluster, string) {
+	content, err := ioutil.ReadFile(path)
 	if err != nil {
-		t.Fatalf("unexpected error reading sourcePath %q: %v", sourcePath, err)
+		t.Fatalf("unable to read in the integretion file: %s, error: %v", path, err)
 	}
-
-	expectedPath := path.Join(srcDir, "manifest.yaml")
-	expectedBytes, err := ioutil.ReadFile(expectedPath)
-	if err != nil {
-		t.Fatalf("unexpected error reading expectedPath %q: %v", expectedPath, err)
+	documents := strings.Split(string(content), "---")
+	if len(documents) != 2 {
+		t.Fatalf("unable to find both documents in the integration file: %s, error %v:", path, err)
 	}
-
+	// read the specifiction into a etcd spec
 	cluster := &protokube.EtcdCluster{}
-	err = kops.ParseRawYaml(sourceBytes, cluster)
+	err = kops.ParseRawYaml([]byte(documents[0]), cluster)
 	if err != nil {
-		t.Fatalf("error parsing options yaml: %v", err)
+		t.Fatalf("error parsing etcd specification in file: %s, error: %v", path, err)
 	}
 
-	cluster.Me = &protokube.EtcdNode{
-		Name:         "node0",
-		InternalName: "node0" + ".internal",
-	}
-
-	for i := 0; i <= 2; i++ {
-		node := &protokube.EtcdNode{
-			Name:         "node" + strconv.Itoa(i),
-			InternalName: "node" + strconv.Itoa(i) + ".internal",
-		}
-		cluster.Nodes = append(cluster.Nodes, node)
-	}
-
-	pod := protokube.BuildEtcdManifest(cluster)
-	actual, err := protokube.ToVersionedYaml(pod)
-	if err != nil {
-		t.Fatalf("error marshalling to yaml: %v", err)
-	}
-
-	actualString := strings.TrimSpace(string(actual))
-	expectedString := strings.TrimSpace(string(expectedBytes))
-
-	if actualString != expectedString {
-		diffString := diff.FormatDiff(expectedString, actualString)
-		t.Logf("diff:\n%s\n", diffString)
-
-		t.Fatalf("manifest differed from expected")
-	}
+	return cluster, documents[1]
 }

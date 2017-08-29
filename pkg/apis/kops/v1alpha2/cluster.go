@@ -52,10 +52,6 @@ type ClusterSpec struct {
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 
-	//
-	//// The Node initializer technique to use: cloudinit or nodeup
-	//NodeInit                      string `json:",omitempty"`
-
 	// Configuration of subnets we are targeting
 	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
 
@@ -116,6 +112,9 @@ type ClusterSpec struct {
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
 	SSHAccess []string `json:"sshAccess,omitempty"`
 
+	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
+	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
+
 	// KubernetesAPIAccess determines the permitted access to the API endpoints (master HTTPS)
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
 	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
@@ -138,6 +137,9 @@ type ClusterSpec struct {
 	// Additional policies to add for roles
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
 
+	// A collection of files assets for deployed cluster wide
+	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
+
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 
@@ -154,32 +156,73 @@ type ClusterSpec struct {
 	ExternalDNS           *ExternalDNSConfig           `json:"externalDns,omitempty"`
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
-
 	// API field controls how the API is exposed outside the cluster
 	API *AccessSpec `json:"api,omitempty"`
-
 	// Authentication field controls how the cluster is configured for authentication
 	Authentication *AuthenticationSpec `json:"authentication,omitempty"`
-
 	// Authorization field controls how the cluster is configured for authorization
 	Authorization *AuthorizationSpec `json:"authorization,omitempty"`
-
 	// Tags for AWS resources
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
-
 	// Hooks for custom actions e.g. on first installation
 	Hooks []HookSpec `json:"hooks,omitempty"`
+	// Alternative locations for files and containers
+	Assets *Assets `json:"assets,omitempty"`
+
+	// IAM field adds control over the IAM security policies applied to resources
+	IAM *IAMSpec `json:"iam,omitempty"`
 }
 
+// FileAssetSpec defines the structure for a file asset
+type FileAssetSpec struct {
+	// Name is a shortened reference to the asset
+	Name string `json:"name,omitempty"`
+	// Path is the location this file should reside
+	Path string `json:"path,omitempty"`
+	// Roles is a list of roles the file asset should be applied, defaults to all
+	Roles []InstanceGroupRole `json:"roles,omitempty"`
+	// Content is the contents of the file
+	Content string `json:"content,omitempty"`
+	// IsBase64 indicates the contents is base64 encoded
+	IsBase64 bool `json:"isBase64,omitempty"`
+}
+
+type Assets struct {
+	ContainerRegistry *string `json:"containerRegistry,omitempty"`
+	FileRepository    *string `json:"fileRepository,omitempty"`
+}
+
+// IAMSpec adds control over the IAM security policies applied to resources
+type IAMSpec struct {
+	Legacy bool `json:"legacy"`
+}
+
+// HookSpec is a definition hook
 type HookSpec struct {
+	// Name is an optional name for the hook, otherwise the name is kops-hook-<index>
+	Name string `json:"name,omitempty"`
+	// Disabled indicates if you want the unit switched off
+	Disabled bool `json:"disabled,omitempty"`
+	// Roles is an optional list of roles the hook should be rolled out to, defaults to all
+	Roles []InstanceGroupRole `json:"roles,omitempty"`
+	// Requires is a series of systemd units the action requires
+	Requires []string `json:"requires,omitempty"`
+	// Before is a series of systemd units which this hook must run before
+	Before []string `json:"before,omitempty"`
+	// ExecContainer is the image itself
 	ExecContainer *ExecContainerAction `json:"execContainer,omitempty"`
+	// Manifest is a raw systemd unit file
+	Manifest string `json:"manifest,omitempty"`
 }
 
+// ExecContainerAction defines an hood action
 type ExecContainerAction struct {
-	// Docker image name.
+	// Image is the docker image
 	Image string `json:"image,omitempty" `
-
+	// Command is the command supplied to the above image
 	Command []string `json:"command,omitempty"`
+	// Environment is a map of environment variables added to the hook
+	Environment map[string]string `json:"environment,omitempty"`
 }
 
 type AuthenticationSpec struct {
@@ -246,23 +289,32 @@ type ExternalDNSConfig struct {
 	WatchIngress *bool `json:"watchIngress,omitempty"`
 }
 
+// EtcdClusterSpec is the etcd cluster specification
 type EtcdClusterSpec struct {
 	// Name is the name of the etcd cluster (main, events etc)
 	Name string `json:"name,omitempty"`
-
-	// EtcdMember stores the configurations for each member of the cluster (including the data volume)
+	// Members stores the configurations for each member of the cluster (including the data volume)
 	Members []*EtcdMemberSpec `json:"etcdMembers,omitempty"`
+	// EnableEtcdTLS indicates the etcd service should use TLS between peers and clients
+	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
+	// Version is the version of etcd to run i.e. 2.1.2, 3.0.17 etcd
+	Version string `json:"version,omitempty"`
 }
 
+// EtcdMemberSpec is a specification for a etcd member
 type EtcdMemberSpec struct {
 	// Name is the name of the member within the etcd cluster
-	Name          string  `json:"name,omitempty"`
+	Name string `json:"name,omitempty"`
+	// InstanceGroup is the instanceGroup this volume is associated
 	InstanceGroup *string `json:"instanceGroup,omitempty"`
-
-	VolumeType      *string `json:"volumeType,omitempty"`
-	VolumeSize      *int32  `json:"volumeSize,omitempty"`
-	KmsKeyId        *string `json:"kmsKeyId,omitempty"`
-	EncryptedVolume *bool   `json:"encryptedVolume,omitempty"`
+	// VolumeType is the underlining cloud storage class
+	VolumeType *string `json:"volumeType,omitempty"`
+	// VolumeSize is the underlining cloud volume size
+	VolumeSize *int32 `json:"volumeSize,omitempty"`
+	// KmsKeyId is a AWS KMS ID used to encrypt the volume
+	KmsKeyId *string `json:"kmsKeyId,omitempty"`
+	// EncryptedVolume indicates you want to encrypt the volume
+	EncryptedVolume *bool `json:"encryptedVolume,omitempty"`
 }
 
 // SubnetType string describes subnet types (public, private, utility)
@@ -287,4 +339,18 @@ type ClusterSubnetSpec struct {
 	Egress string `json:"egress,omitempty"`
 
 	Type SubnetType `json:"type,omitempty"`
+}
+
+type EgressProxySpec struct {
+	HTTPProxy     HTTPProxy `json:"httpProxy,omitempty"`
+	ProxyExcludes string    `json:"excludes,omitempty"`
+}
+
+type HTTPProxy struct {
+	Host string `json:"host,omitempty"`
+	Port int    `json:"port,omitempty"`
+
+	// TODO #3070
+	// User     string `json:"user,omitempty"`
+	// Password string `json:"password,omitempty"`
 }

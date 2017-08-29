@@ -28,6 +28,7 @@ type KopsV1alpha1Interface interface {
 	ClustersGetter
 	FederationsGetter
 	InstanceGroupsGetter
+	SSHCredentialsGetter
 }
 
 // KopsV1alpha1Client is used to interact with features provided by the kops group.
@@ -45,6 +46,10 @@ func (c *KopsV1alpha1Client) Federations(namespace string) FederationInterface {
 
 func (c *KopsV1alpha1Client) InstanceGroups(namespace string) InstanceGroupInterface {
 	return newInstanceGroups(c, namespace)
+}
+
+func (c *KopsV1alpha1Client) SSHCredentials(namespace string) SSHCredentialInterface {
+	return newSSHCredentials(c, namespace)
 }
 
 // NewForConfig creates a new KopsV1alpha1Client for the given config.

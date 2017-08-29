@@ -34,7 +34,7 @@ Several different providers are currently built into kops:
 * [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
 * [flannel](https://github.com/coreos/flannel)
 * [kopeio-vxlan](https://github.com/kopeio/networking)
-* [kube-router](https://github.com/cloudnativelabs/kube-router)
+* [kube-router](./networking.md#kube-router-example-for-cni-ipvs-based-service-proxy-and-network-policy-enforcer)
 * [weave](https://github.com/weaveworks/weave-kube)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
@@ -254,11 +254,9 @@ $ kops create cluster \
   --name myclustername.mydns.io
 ```
 
-Currently kube-router supports 1.6 and above. Please note that kube-router will also provide service proxy, so kube-proxy will not be deployed in to the cluster. Kube-router used node routing stack for cross node pod-to-pod connectivity with out any encapsulation. In the case of AWS, EC2 instances have source/destination checks enabled by default. So please ensure to turn off source-destination checks on the AWS EC2 instances by running below command.
+Currently kube-router supports 1.6 and above. Please note that kube-router will also provide service proxy, so kube-proxy will not be deployed in to the cluster.
 
-```
-aws ec2 modify-instance-attribute --instance-id <ec2 instance id> --no-source-dest-check
-```
+No additional configurations are required to be done by user. Kube-router automatically disables source-destination check on all AWS EC2 instances. For the traffic within a subnet there is no overlay or tunneling used. For cross-subnet pod traffic ip-ip tunneling is used implicitly and no configuration is required. 
 
 ### Validating CNI Installation
 

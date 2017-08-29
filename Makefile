@@ -19,7 +19,7 @@ S3_BUCKET?=s3://must-override/
 GCS_LOCATION?=gs://must-override
 GCS_URL=$(GCS_LOCATION:gs://%=https://storage.googleapis.com/%)
 LATEST_FILE?=latest-ci.txt
-GOPATH_1ST=$(shell echo ${GOPATH} | cut -d : -f 1)
+GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
 
@@ -27,10 +27,10 @@ GOVERSION=1.8.3
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.7.0
+DNS_CONTROLLER_TAG=1.7.1
 
-KOPS_RELEASE_VERSION = 1.7.0-alpha.1
-KOPS_CI_VERSION      = 1.7.0-alpha.2
+KOPS_RELEASE_VERSION = 1.7.1-beta.1
+KOPS_CI_VERSION      = 1.7.1-beta.2
 
 # kops install location
 KOPS                 = ${GOPATH_1ST}/bin/kops
@@ -60,6 +60,7 @@ endif
 # + is valid in semver, but not in docker tags. Fixup CI versions.
 # Note that this mirrors the logic in DefaultProtokubeImageName
 PROTOKUBE_TAG := $(subst +,-,${VERSION})
+KOPS_SERVER_TAG := $(subst +,-,${VERSION})
 
 # Go exports:
 
@@ -135,6 +136,8 @@ codegen: kops-gobindata
 	go install k8s.io/kops/upup/tools/generators/...
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/awstasks
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
+	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/cloudup/dotasks
+	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/assettasks
 	PATH=${GOPATH_1ST}/bin:${PATH} go generate k8s.io/kops/upup/pkg/fi/fitasks
 
 .PHONY: protobuf
@@ -158,6 +161,7 @@ test: # Run tests locally
 	go test k8s.io/kops/cmd/... -args -v=1 -logtostderr
 	go test k8s.io/kops/channels/... -args -v=1 -logtostderr
 	go test k8s.io/kops/util/... -args -v=1 -logtostderr
+	go test k8s.io/kops/tests/... -args -v=1 -logtostderr
 
 .PHONY: crossbuild-nodeup
 crossbuild-nodeup:
@@ -247,7 +251,22 @@ gcs-publish-ci: gcs-upload
 .PHONY: gen-cli-docs
 gen-cli-docs: kops # Regenerate CLI docs
 	KOPS_STATE_STORE= \
+	KOPS_FEATURE_FLAGS= \
 	${KOPS} genhelpdocs --out docs/cli
+
+.PHONY: gen-api-docs
+gen-api-docs:
+	# Follow procedure in docs/apireference/README.md
+	# Install the apiserver-builder commands
+	go get -u github.com/kubernetes-incubator/apiserver-builder/cmd/...
+	# Install the reference docs commands (apiserver-builder commands invoke these)
+	go get -u github.com/kubernetes-incubator/reference-docs/gen-apidocs/...
+	# Install the code generation commands (apiserver-builder commands invoke these)
+	go install k8s.io/kubernetes/cmd/libs/go2idl/openapi-gen
+	# Update the `pkg/openapi/openapi_generated.go`
+	${GOPATH}/bin/apiserver-boot build generated --generator openapi --copyright hack/boilerplate/boilerplate.go.txt
+	go install k8s.io/kops/cmd/kops-server
+	${GOPATH}/bin/apiserver-boot build docs --disable-delegated-auth=false --output-dir docs/apireference --server kops-server
 
 .PHONY: push
 # Will always push a linux-based build up to the server
@@ -498,7 +517,7 @@ kops-server-build:
 	docker pull golang:${GOVERSION}
 	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile kops-server-docker-compile
 	docker cp kops-server-build-${UNIQUE}:/go/.build .
-	docker build -t ${DOCKER_REGISTRY}/kops-server:latest -f images/kops-server/Dockerfile .
+	docker build -t ${DOCKER_REGISTRY}/kops-server:${KOPS_SERVER_TAG} -f images/kops-server/Dockerfile .
 
 .PHONY: kops-server-push
 kops-server-push: kops-server-build

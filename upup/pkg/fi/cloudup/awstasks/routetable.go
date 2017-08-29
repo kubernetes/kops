@@ -29,9 +29,11 @@ import (
 
 //go:generate fitask -type=RouteTable
 type RouteTable struct {
-	Name *string
-	ID   *string
-	VPC  *VPC
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
+	ID  *string
+	VPC *VPC
 }
 
 var _ fi.CompareWithID = &RouteTable{}
@@ -58,6 +60,9 @@ func (e *RouteTable) Find(c *fi.Context) (*RouteTable, error) {
 	}
 	glog.V(2).Infof("found matching RouteTable %q", *actual.ID)
 	e.ID = actual.ID
+
+	// Prevent spurious changes
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

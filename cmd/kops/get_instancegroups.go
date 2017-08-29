@@ -22,8 +22,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -40,8 +41,12 @@ var (
 	# Get all instancegroups in a state store
 	kops get ig
 
-	# Get a cluster
-	kops get ig --name k8s-cluster.example.com nodes`))
+	# Get a cluster's instancegroup
+	kops get ig --name k8s-cluster.example.com nodes
+
+	# Save a cluster's instancegroups desired configuration to YAML file
+	kops get ig --name k8s-cluster.example.com -o yaml > instancegroups-desired-config.yaml
+	`))
 
 	get_instancegroups_short = i18n.T(`Get one or many instancegroups`)
 )
@@ -88,6 +93,10 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 	cluster, err := clientset.GetCluster(clusterName)
 	if err != nil {
 		return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
+	}
+
+	if cluster == nil {
+		return fmt.Errorf("cluster %q was not found", clusterName)
 	}
 
 	list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})

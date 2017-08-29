@@ -50,7 +50,7 @@ var (
 	`))
 
 	update_cluster_example = templates.Examples(i18n.T(`
-	# After cluster has been editted or upgraded, configure it with:
+	# After cluster has been edited or upgraded, configure it with:
 	kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
 	`))
 
@@ -65,6 +65,8 @@ type UpdateClusterOptions struct {
 	SSHPublicKey    string
 	MaxTaskDuration time.Duration
 	CreateKubecfg   bool
+
+	Phase string
 }
 
 func (o *UpdateClusterOptions) InitDefaults() {
@@ -107,6 +109,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
+	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ","))
 	return cmd
 }
 
@@ -166,10 +169,26 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 		err = keyStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, authorized)
 		if err != nil {
-			return fmt.Errorf("error addding SSH public key: %v", err)
+			return fmt.Errorf("error adding SSH public key: %v", err)
 		}
 
 		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
+	}
+
+	var phase cloudup.Phase
+	if c.Phase != "" {
+		switch strings.ToLower(c.Phase) {
+		case string(cloudup.PhaseStageAssets):
+			phase = cloudup.PhaseStageAssets
+		case string(cloudup.PhaseIAM):
+			phase = cloudup.PhaseIAM
+		case string(cloudup.PhaseNetwork):
+			phase = cloudup.PhaseNetwork
+		case string(cloudup.PhaseCluster):
+			phase = cloudup.PhaseCluster
+		default:
+			return fmt.Errorf("unknown phase %q, available phases: %s", c.Phase, strings.Join(cloudup.Phases.List(), ","))
+		}
 	}
 
 	var instanceGroups []*kops.InstanceGroup
@@ -192,6 +211,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		DryRun:          isDryrun,
 		MaxTaskDuration: c.MaxTaskDuration,
 		InstanceGroups:  instanceGroups,
+		Phase:           phase,
 	}
 
 	err = applyCmd.Run()
