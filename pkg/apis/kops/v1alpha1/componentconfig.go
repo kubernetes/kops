@@ -58,6 +58,8 @@ type KubeletConfigSpec struct {
 	KubeletCgroups string `json:"kubeletCgroups,omitempty" flag:"kubelet-cgroups"`
 	// Cgroups that container runtime is expected to be isolated in.
 	RuntimeCgroups string `json:"runtimeCgroups,omitempty" flag:"runtime-cgroups"`
+	// ReadOnlyPort is the port used by the kubelet api for read-only access (default 10255)
+	ReadOnlyPort *int32 `json:"readOnlyPort,omitempty" flag:"read-only-port"`
 	// SystemCgroups is absolute name of cgroups in which to place
 	// all non-kernel processes that are not already in a container. Empty
 	// for no container. Rolling back the flag requires a reboot.
