@@ -420,7 +420,7 @@ topology](topology.md) in AWS.
 
 There's an incredible team behind Kops and we encourage you to reach out to the
 community on the Kubernetes
-Slack(https://github.com/kubernetes/community#slack-chat).  Bring your
+Slack(http://slack.k8s.io/).  Bring your
 questions, comments, and requests and meet the people behind the project!
 
 ## Legal
