@@ -22,6 +22,7 @@ LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
+BINDATA=${GOPATH_1ST}/src/k8s.io/kops/.build/go-bindata
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -33,7 +34,7 @@ KOPS_RELEASE_VERSION = 1.7.1-beta.1
 KOPS_CI_VERSION      = 1.7.1-beta.2
 
 # kops install location
-KOPS                 = ${GOPATH_1ST}/bin/kops
+KOPS                 = .build/kops
 # kops source root directory (without trailing /)
 KOPS_ROOT           ?= $(patsubst %/,%,$(abspath $(dir $(firstword $(MAKEFILE_LIST)))))
 
@@ -80,6 +81,10 @@ ifndef SHASUMCMD
   $(error "Neither sha1sum nor shasum command is available")
 endif
 
+.PHONY: superclean
+superclean: # Deletes all files not checked in to git repository
+	git ls-files -z -o | xargs -0 rm -rfv
+
 .PHONY: help
 help: # Show this help
 	@{ \
@@ -107,17 +112,28 @@ help: # Show this help
 	echo ''; \
 	} 1>&2; \
 
-kops: kops-gobindata # Install kops
-	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
-.PHONY: gobindata-tools
-gobindata-tool:
-	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
+$(KOPS): federation/model/bindata.go upup/models/bindata.go
+	go build ${EXTRA_BUILDFLAGS} -o $@ -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/
+	cp $(KOPS) ${GOPATH_1ST}/bin
+
+.PHONY: kops
+kops: $(KOPS)
+
+.PHONY: gobindata-tool
+gobindata-tool: $(BINDATA)
+
+$(BINDATA):
+	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
 
 .PHONY: kops-gobindata
-kops-gobindata: gobindata-tool
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o federation/model/bindata.go -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
+kops-gobindata: federation/model/bindata.go upup/models/bindata.go
+
+federation/model/bindata.go: $(BINDATA)
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${BINDATA} -o federation/model/bindata.go -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
+
+upup/models/bindata.go: $(BINDATA)
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${BINDATA} -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
@@ -164,7 +180,9 @@ test: # Run tests locally
 	go test k8s.io/kops/tests/... -args -v=1 -logtostderr
 
 .PHONY: crossbuild-nodeup
-crossbuild-nodeup:
+crossbuild-nodeup: .build/dist/linux/amd64/nodeup
+
+.build/dist/linux/amd64/nodeup: federation/model/bindata.go upup/models/bindata.go
 	mkdir -p .build/dist/
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/nodeup -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 
@@ -175,9 +193,14 @@ crossbuild-nodeup-in-docker:
 	docker cp nodeup-build-${UNIQUE}:/go/.build .
 
 .PHONY: crossbuild
-crossbuild:
-	mkdir -p .build/dist/
+crossbuild: .build/dist/darwin/amd64/kops .build/dist/linux/amd64/kops
+
+.build/dist/darwin/amd64/kops: federation/model/bindata.go upup/models/bindata.go
+	mkdir -p .build/dist/darwin/amd64
 	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+
+.build/dist/linux/amd64/kops: federation/model/bindata.go upup/models/bindata.go
+	mkdir -p .build/dist/linux/amd64
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
 .PHONY: crossbuild-in-docker
@@ -482,7 +505,7 @@ release-github:
 # API / embedding examples
 
 .PHONY: examples
-examples: # Install kops API example
+examples: federation/model/bindata.go upup/models/bindata.go # Install kops API example 
 	go install k8s.io/kops/examples/kops-api-example/...
 
 # -----------------------------------------------------
