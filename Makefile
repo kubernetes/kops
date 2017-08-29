@@ -505,7 +505,7 @@ release-github:
 # API / embedding examples
 
 .PHONY: examples
-examples: # Install kops API example
+examples: federation/model/bindata.go upup/models/bindata.go # Install kops API example 
 	go install k8s.io/kops/examples/kops-api-example/...
 
 # -----------------------------------------------------
