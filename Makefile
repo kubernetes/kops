@@ -111,6 +111,8 @@ help: # Show this help
 	echo ''; \
 	} 1>&2; \
 
+
+.PHONY: kops
 kops: kops-gobindata # Install kops
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
@@ -119,9 +121,13 @@ gobindata-tool:
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
 
 .PHONY: kops-gobindata
-kops-gobindata: gobindata-tool
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+kops-gobindata: federation/model/bindata.go upup/models/bindata.go
+
+federation/model/bindata.go:
 	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o federation/model/bindata.go -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
+
+upup/models/bindata.go:
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
