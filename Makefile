@@ -80,6 +80,10 @@ ifndef SHASUMCMD
   $(error "Neither sha1sum nor shasum command is available")
 endif
 
+.PHONY: clean
+clean:
+	git ls-files -z -o | xargs -0 rm -rf
+
 .PHONY: help
 help: # Show this help
 	@{ \
