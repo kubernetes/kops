@@ -411,6 +411,7 @@ type ClusterZoneSpec struct {
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
 
+	// Egress defines the method of traffic egress for this subnet
 	Egress string `json:"egress,omitempty"`
 }
 
