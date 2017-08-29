@@ -174,7 +174,7 @@ test: # Run tests locally
 	go test k8s.io/kops/tests/... -args -v=1 -logtostderr
 
 .PHONY: crossbuild-nodeup
-crossbuild-nodeup:
+crossbuild-nodeup: kops-gobindata
 	mkdir -p .build/dist/
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/nodeup -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 
