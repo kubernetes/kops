@@ -34,6 +34,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
@@ -72,6 +73,7 @@ type CreateClusterOptions struct {
 	NetworkCIDR          string
 	DNSZone              string
 	AdminAccess          []string
+	SSHAccess            []string
 	Networking           string
 	NodeSecurityGroups   []string
 	MasterSecurityGroups []string
@@ -136,10 +138,10 @@ func (o *CreateClusterOptions) InitDefaults() {
 var (
 	create_cluster_long = templates.LongDesc(i18n.T(`
 	Create a kubernetes cluster using command line flags.
-	This command creates cloud based resources such as networks and virtual machine. Once
+	This command creates cloud based resources such as networks and virtual machines. Once
 	the infrastructure is in place Kubernetes is installed on the virtual machines.
 
-	These operations are done in parrellel and rely on eventual consitency.
+	These operations are done in parallel and rely on eventual consistency.
 	`))
 
 	create_cluster_example = templates.Examples(i18n.T(`
@@ -250,7 +252,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
-	cmd.Flags().StringSliceVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict access to admin endpoints (SSH, HTTPS) to this CIDR.  If not set, access will not be restricted by IP.")
+	cmd.Flags().StringSliceVar(&options.AdminAccess, "admin-access", options.AdminAccess, "Restrict API access to this CIDR.  If not set, access will not be restricted by IP.")
+	cmd.Flags().StringSliceVar(&options.SSHAccess, "ssh-access", options.SSHAccess, "Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])")
 
 	// TODO: Can we deprecate this flag - it is awkward?
 	cmd.Flags().BoolVar(&associatePublicIP, "associate-public-ip", false, "Specify --associate-public-ip=[true|false] to enable/disable association of public IP for master ASG and nodes. Default is 'true'.")
@@ -830,6 +833,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
+	cluster.Spec.IAM = &api.IAMSpec{
+		Legacy: false,
+	}
+
 	sshPublicKeys := make(map[string][]byte)
 	if c.SSHPublicKey != "" {
 		c.SSHPublicKey = utils.ExpandPath(c.SSHPublicKey)
@@ -843,8 +850,14 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	if len(c.AdminAccess) != 0 {
-		cluster.Spec.SSHAccess = c.AdminAccess
+		if len(c.SSHAccess) != 0 {
+			cluster.Spec.SSHAccess = c.SSHAccess
+		} else {
+			cluster.Spec.SSHAccess = c.AdminAccess
+		}
 		cluster.Spec.KubernetesAPIAccess = c.AdminAccess
+	} else if len(c.AdminAccess) == 0 {
+		cluster.Spec.SSHAccess = c.SSHAccess
 	}
 
 	err = cloudup.PerformAssignments(cluster)
@@ -862,7 +875,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
-	fullCluster, err := cloudup.PopulateClusterSpec(cluster)
+	assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets)
+	fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -900,7 +914,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	for k, data := range sshPublicKeys {
 		err = keyStore.AddSSHPublicKey(k, data)
 		if err != nil {
-			return fmt.Errorf("error addding SSH public key: %v", err)
+			return fmt.Errorf("error adding SSH public key: %v", err)
 		}
 	}
 

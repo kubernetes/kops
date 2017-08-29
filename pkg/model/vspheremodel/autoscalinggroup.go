@@ -19,11 +19,12 @@ package vspheremodel
 // autoscalinggroup is a model for vSphere cloud. It's responsible for building tasks, necessary for kubernetes cluster deployment.
 
 import (
+	"strconv"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
-	"strconv"
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
@@ -31,6 +32,7 @@ type AutoscalingGroupModelBuilder struct {
 	*VSphereModelContext
 
 	BootstrapScript *model.BootstrapScript
+	Lifecycle       *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
@@ -60,7 +62,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				VM:              createVmTask,
 				IG:              ig,
 				BootstrapScript: b.BootstrapScript,
-				EtcdClusters:    b.Cluster.Spec.EtcdClusters,
+				Spec:            &b.Cluster.Spec,
 			}
 
 			c.AddTask(attachISOTask)

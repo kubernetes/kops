@@ -25,7 +25,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
@@ -40,22 +39,26 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
+
+	"github.com/golang/glog"
 )
 
 // We should probably retry for a long time - there is not really any great fallback
 const MaxTaskDuration = 365 * 24 * time.Hour
 
+// NodeUpCommand the configiruation for nodeup
 type NodeUpCommand struct {
-	config         *nodeup.NodeUpConfig
-	cluster        *api.Cluster
-	instanceGroup  *api.InstanceGroup
-	ConfigLocation string
-	ModelDir       vfs.Path
 	CacheDir       string
-	Target         string
+	ConfigLocation string
 	FSRoot         string
+	ModelDir       vfs.Path
+	Target         string
+	cluster        *api.Cluster
+	config         *nodeup.Config
+	instanceGroup  *api.InstanceGroup
 }
 
+// Run is responsible for perform the nodeup process
 func (c *NodeUpCommand) Run(out io.Writer) error {
 	if c.FSRoot == "" {
 		return fmt.Errorf("FSRoot is required")
@@ -144,8 +147,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			return fmt.Errorf("error loading InstanceGroup %q: %v", instanceGroupLocation, err)
 		}
 
-		err = utils.YamlUnmarshal(b, c.instanceGroup)
-		if err != nil {
+		if err = utils.YamlUnmarshal(b, c.instanceGroup); err != nil {
 			return fmt.Errorf("error parsing InstanceGroup %q: %v", instanceGroupLocation, err)
 		}
 	} else {
@@ -156,26 +158,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	if err != nil {
 		return err
 	}
-
-	//if c.Config.ConfigurationStore != "" {
-	//	// TODO: If we ever delete local files, we need to filter so we only copy
-	//	// certain directories (i.e. not secrets / keys), because dest is a parent dir!
-	//	p, err := c.buildPath(c.Config.ConfigurationStore)
-	//	if err != nil {
-	//		return fmt.Errorf("error building config store: %v", err)
-	//	}
-	//
-	//	dest := vfs.NewFSPath("/etc/kubernetes")
-	//	scanner := vfs.NewVFSScan(p)
-	//	err = vfs.SyncDir(scanner, dest)
-	//	if err != nil {
-	//		return fmt.Errorf("error copying config store: %v", err)
-	//	}
-	//
-	//	c.Config.Tags = append(c.Config.Tags, "_config_store")
-	//} else {
-	//	c.Config.Tags = append(c.Config.Tags, "_not_config_store")
-	//}
 
 	distribution, err := distros.FindDistribution(c.FSRoot)
 	if err != nil {
@@ -202,17 +184,16 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	}
 
 	modelContext := &model.NodeupModelContext{
-		NodeupConfig:  c.config,
-		Cluster:       c.cluster,
-		Distribution:  distribution,
-		Architecture:  model.ArchitectureAmd64,
-		InstanceGroup: c.instanceGroup,
-		IsMaster:      nodeTags.Has(TagMaster),
-		Assets:        assetStore,
-		KeyStore:      tf.keyStore,
-		SecretStore:   tf.secretStore,
-
+		Architecture:      model.ArchitectureAmd64,
+		Assets:            assetStore,
+		Cluster:           c.cluster,
+		Distribution:      distribution,
+		InstanceGroup:     c.instanceGroup,
+		IsMaster:          nodeTags.Has(TagMaster),
+		KeyStore:          tf.keyStore,
 		KubernetesVersion: *k8sVersion,
+		NodeupConfig:      c.config,
+		SecretStore:       tf.secretStore,
 	}
 
 	loader := NewLoader(c.config, c.cluster, assetStore, nodeTags)
@@ -220,6 +201,8 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	loader.Builders = append(loader.Builders, &model.DockerBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.ProtokubeBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.CloudConfigBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.FileAssetsBuilder{NodeupModelContext: modelContext})
+	loader.Builders = append(loader.Builders, &model.HookBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubeletBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.KubectlBuilder{NodeupModelContext: modelContext})
 	loader.Builders = append(loader.Builders, &model.EtcdBuilder{NodeupModelContext: modelContext})
@@ -237,7 +220,6 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 	} else {
 		loader.Builders = append(loader.Builders, &model.KubeRouterBuilder{NodeupModelContext: modelContext})
 	}
-	loader.Builders = append(loader.Builders, &model.HookBuilder{NodeupModelContext: modelContext})
 
 	tf.populate(loader.TemplateFunctions)
 
@@ -272,7 +254,7 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 			Tags:     nodeTags,
 		}
 	case "dryrun":
-		assetBuilder := assets.NewAssetBuilder()
+		assetBuilder := assets.NewAssetBuilder(c.cluster.Spec.Assets)
 		target = fi.NewDryRunTarget(assetBuilder, out)
 	case "cloudinit":
 		checkExisting = false
@@ -313,6 +295,13 @@ func evaluateSpec(c *api.Cluster) error {
 		return err
 	}
 
+	if c.Spec.KubeProxy != nil {
+		c.Spec.KubeProxy.HostnameOverride, err = evaluateHostnameOverride(c.Spec.KubeProxy.HostnameOverride)
+		if err != nil {
+			return err
+		}
+	}
+
 	if c.Spec.Docker != nil {
 		err = evaluateDockerSpecStorage(c.Spec.Docker)
 		if err != nil {
@@ -339,13 +328,20 @@ func evaluateHostnameOverride(hostnameOverride string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error reading local hostname from AWS metadata: %v", err)
 	}
-	v := strings.TrimSpace(string(vBytes))
-	if v == "" {
+
+	// The local-hostname gets it's hostname from the AWS DHCP Option Set, which
+	// may provide multiple hostnames separated by spaces. For now just choose
+	// the first one as the hostname.
+	domains := strings.Fields(string(vBytes))
+	if len(domains) == 0 {
 		glog.Warningf("Local hostname from AWS metadata service was empty")
+		return "", nil
 	} else {
-		glog.Infof("Using hostname from AWS metadata service: %s", v)
+		domain := domains[0]
+		glog.Infof("Using hostname from AWS metadata service: %s", domain)
+
+		return domain, nil
 	}
-	return v, nil
 }
 
 // evaluateDockerSpec selects the first supported storage mode, if it is a list
@@ -368,8 +364,7 @@ func evaluateDockerSpecStorage(spec *api.DockerConfig) error {
 				// overlay -> overlay
 				// aufs -> aufs
 				module := fs
-				err := modprobe(fs)
-				if err != nil {
+				if err = modprobe(fs); err != nil {
 					glog.Warningf("error running `modprobe %q`: %v", module, err)
 				}
 			}

@@ -65,10 +65,8 @@ func (c *IngressController) Run() {
 func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
 		var listOpts metav1.ListOptions
-		glog.Warningf("querying without label filter")
-		//listOpts.LabelSelector = labels.Everything()
-		glog.Warningf("querying without field filter")
-		//listOpts.FieldSelector = fields.Everything()
+		glog.V(4).Infof("querying without label filter")
+
 		ingressList, err := c.kubeClient.ExtensionsV1beta1().Ingresses("").List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing ingresss: %v", err)
@@ -80,10 +78,6 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 		}
 		c.scope.MarkReady()
 
-		glog.Warningf("querying without label filter")
-		//listOpts.LabelSelector = labels.Everything()
-		glog.Warningf("querying without field filter")
-		//listOpts.FieldSelector = fields.Everything()
 		listOpts.Watch = true
 		listOpts.ResourceVersion = ingressList.ResourceVersion
 		watcher, err := c.kubeClient.ExtensionsV1beta1().Ingresses("").Watch(listOpts)

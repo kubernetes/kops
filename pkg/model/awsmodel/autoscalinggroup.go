@@ -18,7 +18,9 @@ package awsmodel
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
@@ -30,6 +32,7 @@ const (
 	DefaultVolumeSizeMaster  = 64
 	DefaultVolumeSizeBastion = 32
 	DefaultVolumeType        = "gp2"
+	DefaultVolumeIops        = 100
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
@@ -37,6 +40,7 @@ type AutoscalingGroupModelBuilder struct {
 	*AWSModelContext
 
 	BootstrapScript *model.BootstrapScript
+	Lifecycle       *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
@@ -62,12 +66,20 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 			}
 			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
-			if volumeType == "" {
+			volumeIops := fi.Int32Value(ig.Spec.RootVolumeIops)
+
+			switch volumeType {
+			case "io1":
+				if volumeIops == 0 {
+					volumeIops = DefaultVolumeIops
+				}
+			default:
 				volumeType = DefaultVolumeType
 			}
 
 			t := &awstasks.LaunchConfiguration{
-				Name: s(name),
+				Name:      s(name),
+				Lifecycle: b.Lifecycle,
 
 				SecurityGroups: []*awstasks.SecurityGroup{
 					b.LinkToSecurityGroup(ig.Spec.Role),
@@ -79,6 +91,10 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				RootVolumeSize:         i64(int64(volumeSize)),
 				RootVolumeType:         s(volumeType),
 				RootVolumeOptimization: ig.Spec.RootVolumeOptimization,
+			}
+
+			if volumeType == "io1" {
+				t.RootVolumeIops = i64(int64(volumeIops))
 			}
 
 			if ig.Spec.Tenancy != "" {
@@ -103,7 +119,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				return err
 			}
 
-			if t.UserData, err = b.BootstrapScript.ResourceNodeUp(ig); err != nil {
+			if t.UserData, err = b.BootstrapScript.ResourceNodeUp(ig, &b.Cluster.Spec); err != nil {
 				return err
 			}
 
@@ -163,7 +179,8 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// AutoscalingGroup
 		{
 			t := &awstasks.AutoscalingGroup{
-				Name: s(name),
+				Name:      s(name),
+				Lifecycle: b.Lifecycle,
 
 				LaunchConfiguration: launchConfiguration,
 			}

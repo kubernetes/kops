@@ -45,6 +45,13 @@ func (o *Secret) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &Secret{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *Secret) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &Secret{}
 
 // GetName returns the Name of the object, implementing fi.HasName

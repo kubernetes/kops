@@ -32,6 +32,10 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
+
+	"os"
+	"strconv"
+
 	"strings"
 	"text/template"
 
@@ -39,8 +43,9 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
-	"k8s.io/kops/pkg/model/components"
+
 	"k8s.io/kops/upup/pkg/fi"
+
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
@@ -77,8 +82,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 
 	dest["HasTag"] = tf.HasTag
 
-	dest["Image"] = tf.Image
-
 	dest["WithDefaultBool"] = func(v *bool, defaultValue bool) bool {
 		if v != nil {
 			return *v
@@ -104,16 +107,13 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	dest["Region"] = func() string {
 		return tf.region
 	}
+
+	dest["ProxyEnv"] = tf.ProxyEnv
 }
 
 // SharedVPC is a simple helper function which makes the templates for a shared VPC clearer
 func (tf *TemplateFunctions) SharedVPC() bool {
 	return tf.cluster.SharedVPC()
-}
-
-// Image returns the docker image name for the specified component
-func (tf *TemplateFunctions) Image(component string) (string, error) {
-	return components.Image(component, &tf.cluster.Spec)
 }
 
 // HasTag returns true if the specified tag is set
@@ -156,9 +156,17 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 
 	switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
-		argv = append(argv, "--dns=aws-route53")
+		if strings.HasPrefix(os.Getenv("AWS_REGION"), "cn-") {
+			argv = append(argv, "--dns=gossip")
+		} else {
+			argv = append(argv, "--dns=aws-route53")
+		}
 	case kops.CloudProviderGCE:
 		argv = append(argv, "--dns=google-clouddns")
+	case kops.CloudProviderDO:
+		// this is not supported yet, here so we can successfully create clusters
+		// this will be supported for digitalocean in the future
+		argv = append(argv, "--dns=digitalocean")
 	case kops.CloudProviderVSphere:
 		argv = append(argv, "--dns=coredns")
 		argv = append(argv, "--dns-server="+*tf.cluster.Spec.CloudConfig.VSphereCoreDNSServer)
@@ -209,4 +217,29 @@ func (tf *TemplateFunctions) ExternalDnsArgv() ([]string, error) {
 	argv = append(argv, "--source=ingress")
 
 	return argv, nil
+}
+
+func (tf *TemplateFunctions) ProxyEnv() map[string]string {
+	envs := map[string]string{}
+	proxies := tf.cluster.Spec.EgressProxy
+	if proxies == nil {
+		return envs
+	}
+	httpProxy := proxies.HTTPProxy
+	if httpProxy.Host != "" {
+		var portSuffix string
+		if httpProxy.Port != 0 {
+			portSuffix = ":" + strconv.Itoa(httpProxy.Port)
+		} else {
+			portSuffix = ""
+		}
+		url := "http://" + httpProxy.Host + portSuffix
+		envs["http_proxy"] = url
+		envs["https_proxy"] = url
+	}
+	if proxies.ProxyExcludes != "" {
+		envs["no_proxy"] = proxies.ProxyExcludes
+		envs["NO_PROXY"] = proxies.ProxyExcludes
+	}
+	return envs
 }

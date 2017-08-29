@@ -83,7 +83,7 @@ export AWS_SECRET_ACCESS_KEY=<secret key>
 Note: If you are using Kops 1.6.2 or later, then DNS configuration is 
 optional. Instead, a gossip-based cluster can be easily created. The 
 only requirement to trigger this is to have the cluster name end with 
-`k8s.local`. If a gossip-based cluster is created then you can skip 
+`.k8s.local`. If a gossip-based cluster is created then you can skip 
 this section.
 
 In order to build a Kubernetes cluster with `kops`, we need to prepare
@@ -192,7 +192,7 @@ for some of these instructions.
 ID=$(uuidgen) && aws route53 create-hosted-zone --name subdomain.example.com --caller-reference $ID | jq .DelegationSet.NameServers
 ```
 
-* You will now go to your registrars page and log in. You will need to create a
+* You will now go to your registrar's page and log in. You will need to create a
   new **SUBDOMAIN**, and use the 4 NS records received from the above command for the new
   **SUBDOMAIN**. This **MUST** be done in order to use your cluster. Do **NOT**
   change your top level NS record, or you might take your site offline.
@@ -210,6 +210,12 @@ guide to include:
 
 ```
 kops create cluster --dns private $NAME
+```
+
+If you have a mix of public and private zones, you will also need to include the `--dns-zone` argument with the hosted zone id you wish to deploy in:
+
+```
+kops create cluster --dns private --dns-zone ZABCDEFG $NAME
 ```
 
 ## Testing your DNS setup
@@ -282,7 +288,7 @@ documentation](http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#
 
 ## Prepare local environment
 
-We're ready to start creating our first cluster!  Let's first setup a few
+We're ready to start creating our first cluster!  Let's first set up a few
 environment variables to make this process easier.
 
 ```bash
@@ -311,7 +317,7 @@ aws ec2 describe-availability-zones --region us-west-2
 
 Below is a create cluster command.  We'll use the most basic example possible,
 with more verbose examples in [advanced creation](advanced_create.md).  The
-below command will generate a cluster configuration, but not start building it.
+below command will generate a cluster configuration, but not start building it. Make sure that you have generated SSH key pair before creating the cluster.
 
 ```bash
 kops create cluster \

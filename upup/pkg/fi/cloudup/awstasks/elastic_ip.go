@@ -35,7 +35,9 @@ import (
 // Elastic IP
 // Representation the EIP AWS task
 type ElasticIP struct {
-	Name     *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	ID       *string
 	PublicIP *string
 
@@ -162,6 +164,9 @@ func (e *ElasticIP) find(cloud awsup.AWSCloud) (*ElasticIP, error) {
 		actual.Name = e.Name
 
 		e.ID = actual.ID
+
+		// Avoid spurious changes
+		actual.Lifecycle = e.Lifecycle
 
 		return actual, nil
 	}

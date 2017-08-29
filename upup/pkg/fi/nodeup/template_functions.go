@@ -27,6 +27,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
@@ -36,7 +37,7 @@ const TagMaster = "_kubernetes_master"
 
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
-	nodeupConfig *nodeup.NodeUpConfig
+	nodeupConfig *nodeup.Config
 
 	// cluster is populated with the current cluster
 	cluster *api.Cluster
@@ -52,7 +53,7 @@ type templateFunctions struct {
 }
 
 // newTemplateFunctions is the constructor for templateFunctions
-func newTemplateFunctions(nodeupConfig *nodeup.NodeUpConfig, cluster *api.Cluster, instanceGroup *api.InstanceGroup, tags sets.String) (*templateFunctions, error) {
+func newTemplateFunctions(nodeupConfig *nodeup.Config, cluster *api.Cluster, instanceGroup *api.InstanceGroup, tags sets.String) (*templateFunctions, error) {
 	t := &templateFunctions{
 		nodeupConfig:  nodeupConfig,
 		cluster:       cluster,
@@ -122,17 +123,17 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 }
 
 // CACertificate returns the primary CA certificate for the cluster
-func (t *templateFunctions) CACertificate() (*fi.Certificate, error) {
+func (t *templateFunctions) CACertificate() (*pki.Certificate, error) {
 	return t.keyStore.Cert(fi.CertificateId_CA)
 }
 
 // PrivateKey returns the specified private key
-func (t *templateFunctions) PrivateKey(id string) (*fi.PrivateKey, error) {
+func (t *templateFunctions) PrivateKey(id string) (*pki.PrivateKey, error) {
 	return t.keyStore.PrivateKey(id)
 }
 
 // Certificate returns the specified private key
-func (t *templateFunctions) Certificate(id string) (*fi.Certificate, error) {
+func (t *templateFunctions) Certificate(id string) (*pki.Certificate, error) {
 	return t.keyStore.Cert(id)
 }
 

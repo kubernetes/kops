@@ -20,91 +20,76 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/spf13/pflag"
 	"io"
+	"net"
+	"os"
+	"path"
+	"strings"
+
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	"k8s.io/kops/protokube/pkg/gossip/mesh"
 	"k8s.io/kops/protokube/pkg/protokube"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	"net"
-	"os"
-	"path"
-	"strings"
-
 	// Load DNS plugins
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
+
+	"github.com/golang/glog"
+	"github.com/spf13/pflag"
 )
 
 var (
 	flags = pflag.NewFlagSet("", pflag.ExitOnError)
-
-	// value overwritten during build. This can be used to resolve issues.
+	// BuildVersion is overwritten during build. This can be used to resolve issues.
 	BuildVersion = "0.1"
 )
 
 func main() {
 	fmt.Printf("protokube version %s\n", BuildVersion)
 
-	err := run()
-	if err != nil {
+	if err := run(); err != nil {
 		glog.Errorf("Error: %v", err)
 		os.Exit(1)
 	}
 	os.Exit(0)
 }
 
+// run is responsible for running the protokube service controller
 func run() error {
-	dnsProviderId := "aws-route53"
-	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns, coredns)")
-
 	var zones []string
-	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
+	var applyTaints, initializeRBAC, containerized, master bool
+	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen string
+	var flagChannels, tlsCert, tlsKey, tlsCA, peerCert, peerKey, peerCA, etcdImageSource string
 
-	master := false
-	flag.BoolVar(&master, "master", master, "Act as master")
-
-	applyTaints := false
 	flag.BoolVar(&applyTaints, "apply-taints", applyTaints, "Apply taints to nodes based on the role")
-
-	initializeRBAC := false
-	flag.BoolVar(&initializeRBAC, "initialize-rbac", initializeRBAC, "Set if we should initialize RBAC")
-
-	containerized := false
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
-
-	cloud := "aws"
-	flag.StringVar(&cloud, "cloud", cloud, "CloudProvider we are using (aws,gce)")
-
-	dnsInternalSuffix := ""
-	flag.StringVar(&dnsInternalSuffix, "dns-internal-suffix", dnsInternalSuffix, "DNS suffix for internal domain names")
-
-	clusterID := ""
+	flag.BoolVar(&initializeRBAC, "initialize-rbac", initializeRBAC, "Set if we should initialize RBAC")
+	flag.BoolVar(&master, "master", master, "Whether or not this node is a master")
+	flag.StringVar(&cloud, "cloud", "aws", "CloudProvider we are using (aws,gce)")
 	flag.StringVar(&clusterID, "cluster-id", clusterID, "Cluster ID")
-
-	dnsServer := ""
+	flag.StringVar(&dnsInternalSuffix, "dns-internal-suffix", dnsInternalSuffix, "DNS suffix for internal domain names")
 	flag.StringVar(&dnsServer, "dns-server", dnsServer, "DNS Server")
-
-	flagChannels := ""
 	flag.StringVar(&flagChannels, "channels", flagChannels, "channels to install")
-
-	gossipListen := "0.0.0.0:3999"
-	flag.StringVar(&gossipListen, "gossip-listen", gossipListen, "address:port on which to bind for gossip")
-
-	var gossipSecret string
+	flag.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3999", "address:port on which to bind for gossip")
+	flag.StringVar(&peerCA, "peer-ca", peerCA, "Path to a file containing the peer ca in PEM format")
+	flag.StringVar(&peerCert, "peer-cert", peerCert, "Path to a file containing the peer certificate")
+	flag.StringVar(&peerKey, "peer-key", peerKey, "Path to a file containing the private key for the peers")
+	flag.StringVar(&tlsCA, "tls-ca", tlsCA, "Path to a file containing the ca for client certificates")
+	flag.StringVar(&tlsCert, "tls-cert", tlsCert, "Path to a file containing the certificate for etcd server")
+	flag.StringVar(&tlsKey, "tls-key", tlsKey, "Path to a file containing the private key for etcd server")
+	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
+	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, coredns)")
+	flags.StringVar(&etcdImageSource, "etcd-image", "gcr.io/google_containers/etcd:2.2.1", "Etcd Source Container Registry")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
 
 	flag.Set("logtostderr", "true")
-
 	flags.AddGoFlagSet(flag.CommandLine)
-
 	flags.Parse(os.Args)
 
 	var volumes protokube.Volumes
@@ -133,8 +118,6 @@ func run() error {
 
 		volumes = gceVolumes
 
-		//gceProject = gceVolumes.Project()
-
 		if clusterID == "" {
 			clusterID = gceVolumes.ClusterID()
 		}
@@ -162,9 +145,8 @@ func run() error {
 	if clusterID == "" {
 		if clusterID == "" {
 			return fmt.Errorf("cluster-id is required (cannot be determined from cloud)")
-		} else {
-			glog.Infof("Setting cluster-id from cloud: %s", clusterID)
 		}
+		glog.Infof("Setting cluster-id from cloud: %s", clusterID)
 	}
 
 	if internalIP == nil {
@@ -183,23 +165,17 @@ func run() error {
 		dnsInternalSuffix = "." + dnsInternalSuffix
 	}
 
-	// Get internal IP from cloud, to avoid problems if we're in a container
-	// TODO: Just run with --net=host ??
-	//internalIP, err := findInternalIP()
-	//if err != nil {
-	//	glog.Errorf("Error finding internal IP: %q", err)
-	//	os.Exit(1)
-	//}
-
 	rootfs := "/"
 	if containerized {
 		rootfs = "/rootfs/"
 	}
+
 	protokube.RootFS = rootfs
 	protokube.Containerized = containerized
 
 	var dnsProvider protokube.DNSProvider
-	if dnsProviderId == "gossip" {
+
+	if dnsProviderID == "gossip" {
 		dnsTarget := &gossipdns.HostsFile{
 			Path: path.Join(rootfs, "etc/hosts"),
 		}
@@ -259,7 +235,7 @@ func run() error {
 		var dnsController *dns.DNSController
 		{
 			var file io.Reader
-			if dnsProviderId == k8scoredns.ProviderName {
+			if dnsProviderID == k8scoredns.ProviderName {
 				var lines []string
 				lines = append(lines, "etcd-endpoints = "+dnsServer)
 				lines = append(lines, "zones = "+zones[0])
@@ -267,12 +243,12 @@ func run() error {
 				file = bytes.NewReader([]byte(config))
 			}
 
-			dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, file)
+			dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderID, file)
 			if err != nil {
-				return fmt.Errorf("Error initializing DNS provider %q: %v", dnsProviderId, err)
+				return fmt.Errorf("Error initializing DNS provider %q: %v", dnsProviderID, err)
 			}
 			if dnsProvider == nil {
-				return fmt.Errorf("DNS provider %q could not be initialized", dnsProviderId)
+				return fmt.Errorf("DNS provider %q could not be initialized", dnsProviderID)
 			}
 
 			zoneRules, err := dns.ParseZoneRules(zones)
@@ -299,7 +275,6 @@ func run() error {
 			DNSController: dnsController,
 		}
 	}
-
 	modelDir := "model/etcd"
 
 	var channels []string
@@ -308,22 +283,24 @@ func run() error {
 	}
 
 	k := &protokube.KubeBoot{
-		Master:            master,
 		ApplyTaints:       applyTaints,
+		Channels:          channels,
+		DNS:               dnsProvider,
+		EtcdImageSource:   etcdImageSource,
+		InitializeRBAC:    initializeRBAC,
 		InternalDNSSuffix: dnsInternalSuffix,
 		InternalIP:        internalIP,
-		//MasterID          : fromVolume
-		//EtcdClusters   : fromVolume
-
-		InitializeRBAC: initializeRBAC,
-
-		ModelDir: modelDir,
-		DNS:      dnsProvider,
-
-		Channels: channels,
-
-		Kubernetes: protokube.NewKubernetesContext(),
+		Kubernetes:        protokube.NewKubernetesContext(),
+		Master:            master,
+		ModelDir:          modelDir,
+		PeerCA:            peerCA,
+		PeerCert:          peerCert,
+		PeerKey:           peerKey,
+		TLSCA:             tlsCA,
+		TLSCert:           tlsCert,
+		TLSKey:            tlsKey,
 	}
+
 	k.Init(volumes)
 
 	if dnsProvider != nil {

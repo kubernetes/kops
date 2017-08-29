@@ -58,7 +58,7 @@ type CompletionOptions struct {
 var (
 	completion_long = templates.LongDesc(i18n.T(`
 	Output shell completion code for the specified shell (bash or zsh).
-	The shell code must be evalutated to provide interactive
+	The shell code must be evaluated to provide interactive
 	completion of kops commands.  This can be done by sourcing it from
 	the .bash_profile.
 

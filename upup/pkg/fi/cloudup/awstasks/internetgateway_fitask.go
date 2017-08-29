@@ -45,6 +45,13 @@ func (o *InternetGateway) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &InternetGateway{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *InternetGateway) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &InternetGateway{}
 
 // GetName returns the Name of the object, implementing fi.HasName

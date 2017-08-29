@@ -18,11 +18,15 @@ package components
 
 import (
 	"fmt"
-	"github.com/golang/glog"
+	"strings"
+
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
 // KubeAPIServerOptionsBuilder adds options for the apiserver to the model
@@ -32,12 +36,12 @@ type KubeAPIServerOptionsBuilder struct {
 
 var _ loader.OptionsBuilder = &KubeAPIServerOptionsBuilder{}
 
+// BuildOptions is resposible for filling in the default settings for the kube apiserver
 func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	clusterSpec := o.(*kops.ClusterSpec)
 	if clusterSpec.KubeAPIServer == nil {
 		clusterSpec.KubeAPIServer = &kops.KubeAPIServerConfig{}
 	}
-
 	c := clusterSpec.KubeAPIServer
 
 	if c.APIServerCount == nil {
@@ -48,21 +52,19 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.APIServerCount = fi.Int32(int32(count))
 	}
 
+	// @question: should the question every be able to set this?
 	if c.StorageBackend == nil {
-		// For the moment, we continue to use etcd2
-		c.StorageBackend = fi.String("etcd2")
+		// @note: we can use the first version as we enforce both running the same versions.
+		// albeit feels a little wierd to do this
+		sem, err := semver.Parse(strings.TrimPrefix(clusterSpec.EtcdClusters[0].Version, "v"))
+		if err != nil {
+			return err
+		}
+		c.StorageBackend = fi.String(fmt.Sprintf("etcd%d", sem.Major))
 	}
 
 	if c.KubeletPreferredAddressTypes == nil {
 		if b.IsKubernetesGTE("1.5") {
-			// Default precedence
-			//options.KubeAPIServer.KubeletPreferredAddressTypes = []string {
-			//	string(api.NodeHostName),
-			//	string(api.NodeInternalIP),
-			//	string(api.NodeExternalIP),
-			//	string(api.NodeLegacyHostIP),
-			//}
-
 			// We prioritize the internal IP above the hostname
 			c.KubeletPreferredAddressTypes = []string{
 				string(v1.NodeInternalIP),
@@ -92,7 +94,106 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.KubeAPIServer.AuthorizationMode = fi.String("RBAC")
 	}
 
+	image, err := Image("kube-apiserver", clusterSpec, b.AssetBuilder)
+	if err != nil {
+		return err
+	}
+	c.Image = image
+
+	switch kops.CloudProviderID(clusterSpec.CloudProvider) {
+	case kops.CloudProviderAWS:
+		c.CloudProvider = "aws"
+	case kops.CloudProviderGCE:
+		c.CloudProvider = "gce"
+	case kops.CloudProviderDO:
+		c.CloudProvider = "external"
+	case kops.CloudProviderVSphere:
+		c.CloudProvider = "vsphere"
+	default:
+		return fmt.Errorf("unknown cloud provider %q", clusterSpec.CloudProvider)
+	}
+
+	c.LogLevel = 2
 	c.SecurePort = 443
+	c.Address = "127.0.0.1"
+	c.AllowPrivileged = fi.Bool(true)
+	c.ServiceClusterIPRange = clusterSpec.ServiceClusterIPRange
+	c.EtcdServers = []string{"http://127.0.0.1:4001"}
+	c.EtcdServersOverrides = []string{"/events#http://127.0.0.1:4002"}
+
+	// TODO: We can probably rewrite these more clearly in descending order
+	if b.IsKubernetesGTE("1.3") && b.IsKubernetesLT("1.4") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"ResourceQuota",
+		}
+	}
+	if b.IsKubernetesGTE("1.4") && b.IsKubernetesLT("1.5") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"ResourceQuota",
+		}
+	}
+	if b.IsKubernetesGTE("1.5") && b.IsKubernetesLT("1.6") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"ResourceQuota",
+		}
+	}
+	if b.IsKubernetesGTE("1.6") && b.IsKubernetesLT("1.7") {
+		c.AdmissionControl = []string{
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"DefaultTolerationSeconds",
+			"ResourceQuota",
+		}
+	}
+	if b.IsKubernetesGTE("1.7") && b.IsKubernetesLT("1.8") {
+		c.AdmissionControl = []string{
+			"Initializers",
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"DefaultTolerationSeconds",
+			"NodeRestriction",
+			"ResourceQuota",
+		}
+	}
+	if b.IsKubernetesGTE("1.8") {
+		c.AdmissionControl = []string{
+			"Initializers",
+			"NamespaceLifecycle",
+			"LimitRanger",
+			"ServiceAccount",
+			"PersistentVolumeLabel",
+			"DefaultStorageClass",
+			"DefaultTolerationSeconds",
+			"NodeRestriction",
+			"Priority",
+			"ResourceQuota",
+		}
+	}
+
+	// We make sure to disable AnonymousAuth from when it was introduced
+	if b.IsKubernetesGTE("1.5") {
+		c.AnonymousAuth = fi.Bool(false)
+	}
 
 	// We disable the insecure port from 1.6 onwards
 	if b.IsKubernetesGTE("1.6") {
@@ -106,6 +207,7 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 	return nil
 }
 
+// buildAPIServerCount calculates the count of the api servers, essentuially the number of node marked as Master role
 func (b *KubeAPIServerOptionsBuilder) buildAPIServerCount(clusterSpec *kops.ClusterSpec) int {
 	// The --apiserver-count flag is (generally agreed) to be something we need to get rid of in k8s
 

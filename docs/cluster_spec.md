@@ -46,7 +46,7 @@ spec:
     - 12.34.56.78/32
 ```
 
-### apiAccess
+### kubernetesApiAccess
 
 This array configures the CIDRs that are able to access the kubernetes API. On AWS this is manifested as inbound security group rules on the ELB or master security groups.
 
@@ -54,7 +54,7 @@ Use this key to restrict cluster access to an office ip address range, for examp
 
 ```yaml
 spec:
-  apiAccess:
+  kubernetesApiAccess:
     - 12.34.56.78/32
 ```
 
@@ -168,6 +168,27 @@ spec:
 
 Will result in the flag `--feature-gates=ExperimentalCriticalPodAnnotation=true,AllowExtTrafficLocalEndpoints=false`
 
+####  Compute Resources Reservation
+
+```yaml
+spec:
+  kubelet:
+    kubeReserved:
+        cpu: "100m"
+        memory: "100Mi"
+        storage: "1Gi"
+    kubeReservedCgroup: "/kube-reserved"
+    systemReserved:
+        cpu: "100m"
+        memory: "100Mi"
+        storage: "1Gi"
+    systemReservedCgroup: "/system-reserved"
+    enforceNodeAllocatable: "pods,system-reserved,kube-reserved"
+```
+
+Will result in the flag `--kube-reserved=cpu=100m,memory=100Mi,storage=1Gi --kube-reserved-cgroup=/kube-reserved --system-reserved=cpu=100mi,memory=100Mi,storage=1Gi --system-reserved-cgroup=/system-reserved --enforce-node-allocatable=pods,system-reserved,kube-reserved`
+
+Learn [more about reserving compute resources](https://kubernetes.io/docs/tasks/administer-cluster/reserve-compute-resources/).
 
 ### networkID
 
@@ -182,14 +203,49 @@ More information about running in an existing VPC is [here](run_in_existing_vpc.
 
 ### hooks
 
-Hooks allow the execution of a container before the installation of Kubneretes on every node in a cluster.  For intance you can install nvidia drivers for using GPUs.
+Hooks allow for the execution of an action before the installation of Kubernetes on every node in a cluster.  For instance you can install nvidia drivers for using GPUs. This hooks can be in the form on docker images or manifest files (systemd units). Hooks can be place in either then cluster spec, meaning the will be globally deployed, or they can be placed into the instanceGroup specification. Note, service names on the instanceGroup which overlap with the cluster spec take precedence and ignore the cluster spec definition, i.e. if you have a unit file 'myunit.service' in cluster and then one in the instanceGroup, only the instanceGroup is applied.
 
 ```
 spec:
   # many sections removed
   hooks:
-  - execContainer:
+  - before:
+    - some_service.service
+    requires:
+    - docker.service
+      execContainer:
       image: kopeio/nvidia-bootstrap:1.6
+      # these are added as -e to the docker environment
+      environment:
+        AWS_REGION: eu-west-1
+        SOME_VAR: SOME_VALUE
+
+  # or a raw systemd unit
+  hooks:
+  - name: iptable-restore.service
+    roles:
+    - Node
+    - Master
+    before:
+    - kubelet.service
+    manifest: |
+      [Service]
+      EnvironmentFile=/etc/environment
+      # do some stuff
+
+  # or disable a systemd unit
+  hooks:
+  - name: update-engine.service
+    disable: true
+
+  # or you could wrap this into a full unit
+  hooks:
+  - name: disable-update-engine.service
+    before:
+    - update-engine.service
+    manifest: |
+      Type=oneshot
+      ExecStart=/usr/bin/systemctl stop update-engine.service
 ```
 
 Install Ceph
@@ -205,6 +261,22 @@ spec:
       - chroot /rootfs apt-get update && chroot /rootfs apt-get install -y ceph-common
       image: busybox
 ```
+
+### fileAssets
+
+FileAssets is an alpha feature which permits you to place inline file content into the cluster and instanceGroup specification. It's desiginated as alpha as you can probably do this via kubernetes daemonsets as an alternative.
+
+```yaml
+spec:
+  fileAssets:
+  - name: iptable-restore
+    # Note if not path is specificied the default path it /srv/kubernetes/assets/<name>
+    path: /var/lib/iptables/rules-save
+    roles: [Master,Node,Bastion] # a list of roles to apply the asset to, zero defaults to all
+    content: |
+      some file content
+```
+
 
 ### cloudConfig
 

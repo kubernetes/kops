@@ -67,8 +67,12 @@ type CalicoNetworkingSpec struct {
 	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
 }
 
-// Canal declares that we want Canal networking
+// CanalNetworkingSpec declares that we want Canal networking
 type CanalNetworkingSpec struct {
+	// DefaultEndpointToHostAction allows users to configure the default behaviour
+	// for traffic between pod to host after calico rules have been processed.
+	// Default: ACCEPT (other options: DROP, RETURN)
+	DefaultEndpointToHostAction string `json:"defaultEndpointToHostAction,omitempty"`
 }
 
 // Kuberouter declares that we want Kube-router networking

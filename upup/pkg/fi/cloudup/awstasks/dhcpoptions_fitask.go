@@ -45,6 +45,13 @@ func (o *DHCPOptions) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+var _ fi.HasLifecycle = &DHCPOptions{}
+
+// GetLifecycle returns the Lifecycle of the object, implementing fi.HasLifecycle
+func (o *DHCPOptions) GetLifecycle() *fi.Lifecycle {
+	return o.Lifecycle
+}
+
 var _ fi.HasName = &DHCPOptions{}
 
 // GetName returns the Name of the object, implementing fi.HasName

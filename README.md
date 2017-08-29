@@ -13,7 +13,7 @@ The easiest way to get a production grade Kubernetes cluster up and running.
 
 We like to think of it as `kubectl` for clusters.
 
-`kops` helps you create, destroy, upgrade and maintain production-grade, highly available, Kubernetes clusters from the command line.  AWS (Amazon Web Services) is currently officially supported, with GCE and VMware vSphere in alpha and other platforms planned.
+`kops` helps you create, destroy, upgrade and maintain production-grade, highly available, Kubernetes clusters from the command line. AWS (Amazon Web Services) is currently officially supported, with GCE and VMware vSphere in alpha and other platforms planned.
 
 
 ## Can I see it in action?
@@ -79,7 +79,7 @@ information on changes between releases.
 
 ## Getting involved and contributing!
 
-Are you interested in contributing to kops? We, the maintainers and community, would love your suggestions, contributions, and help! We have a quick-start guide on [adding a feature](/docs/development/adding_a_feature.md).  Also, the maintainers can be contacted at any time to learn more about how to get involved.
+Are you interested in contributing to kops? We, the maintainers and community, would love your suggestions, contributions, and help! We have a quick-start guide on [adding a feature](/docs/development/adding_a_feature.md). Also, the maintainers can be contacted at any time to learn more about how to get involved.
 
 In the interest of getting more new folks involved with kops, we are starting to tag issues with `good-starter-issue`. These are typically issues that have smaller scope but are good ways to start to get acquainted with the codebase.
 
@@ -92,10 +92,10 @@ What this means:
 __Issues__
 * Help read and triage issues, assist when possible.
 * Point out issues that are duplicates, out of date, etc.
-  - Even if you don't have tagging permissions, make a note and tag maintainers. (`/close`,`/dupe #127`)
+  - Even if you don't have tagging permissions, make a note and tag maintainers (`/close`,`/dupe #127`).
 
 __Pull Requests__
-* Read and review the code. Leave comments, questions, and critiques (`/lgtm` )
+* Read and review the code. Leave comments, questions, and critiques (`/lgtm` ).
 * Download, compile, and run the code and make sure the tests pass (make test).
   - Also verify that the new feature seems sane, follows best architectural patterns, and includes tests.
 
@@ -111,7 +111,7 @@ __Pull Requests__
 
 ## Office Hours
 
-Kops maintainers set aside one hour every other week for **public** office hours. Office hours are hosted on a [zoom video chat](https://zoom.us/my/k8ssigaws) on Fridays at [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12), on odd week numbered weeks.  We strive to get to know and help developers either working on `kops` or interested in getting to know more about the project.
+Kops maintainers set aside one hour every other week for **public** office hours. Office hours are hosted on a [zoom video chat](https://zoom.us/my/k8ssigaws) on Fridays at [5 pm UTC/12 noon ET/9 am US Pacific](http://www.worldtimebuddy.com/?pl=1&lid=100,5,8,12), on odd week numbered weeks. We strive to get to know and help developers either working on `kops` or interested in getting to know more about the project.
 
 
 ### Open Office Hours Topics
@@ -136,7 +136,7 @@ You can check your week number using:
 date +%V
 ```
 
-The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community#slack-chat) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you!
+The maintainers and other community members are generally available on the [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media) in [#kops](https://kubernetes.slack.com/messages/kops/), so come find and chat with us about how kops can be better for you!
 
 
 ## GitHub Issues
@@ -147,17 +147,17 @@ If you think you have found a bug please follow the instructions below.
 
 - Please spend a small amount of time giving due diligence to the issue tracker. Your issue might be a duplicate.
 - Set `-v 10` command line option and save the log output. Please paste this into your issue.
-- Note the version of kops you are running (from `kops version`), and the command line options you are using
-- Open a [new issue](https://github.com/kubernetes/kops/issues/new)
+- Note the version of kops you are running (from `kops version`), and the command line options you are using.
+- Open a [new issue](https://github.com/kubernetes/kops/issues/new).
 - Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
-- Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community#slack-chat)
+- Feel free to reach out to the kops community on [kubernetes slack](https://github.com/kubernetes/community/blob/master/communication.md#social-media).
 
 
 ### Features
 
 We also use the issue tracker to track features. If you have an idea for a feature, or think you can help kops become even more awesome follow the steps below.
 
-- Open a [new issue](https://github.com/kubernetes/kops/issues/new)
+- Open a [new issue](https://github.com/kubernetes/kops/issues/new).
 - Remember users might be searching for your issue in the future, so please give it a meaningful title to helps others.
 - Clearly define the use case, using concrete examples. EG: I type `this` and kops does `that`.
 - Some of our larger features will require some design. If you would like to include a technical design for your feature please include it in the issue.

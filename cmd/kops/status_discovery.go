@@ -39,7 +39,7 @@ func (s *cloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) (
 		return nil, err
 	}
 
-	if gceCloud, ok := cloud.(*gce.GCECloud); ok {
+	if gceCloud, ok := cloud.(gce.GCECloud); ok {
 		return gceCloud.GetApiIngressStatus(cluster)
 	}
 

@@ -18,9 +18,8 @@ package awstasks
 
 import (
 	"fmt"
-
+	"sort"
 	"strconv"
-
 	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -32,7 +31,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"sort"
 )
 
 // LoadBalancer manages an ELB.  We find the existing ELB using the Name tag.
@@ -41,7 +39,8 @@ import (
 type LoadBalancer struct {
 	// We use the Name tag to find the existing ELB, because we are (more or less) unrestricted when
 	// it comes to tag values, but the LoadBalancerName is length limited
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	// LoadBalancerName is the name in ELB, possibly different from our name
 	// (ELB is restricted as to names, so we have limited choices!)
@@ -285,6 +284,7 @@ func (e *LoadBalancer) Find(c *fi.Context) (*LoadBalancer, error) {
 	actual.DNSName = lb.DNSName
 	actual.HostedZoneId = lb.CanonicalHostedZoneNameID
 	actual.Scheme = lb.Scheme
+	actual.Lifecycle = e.Lifecycle
 
 	for _, subnet := range lb.Subnets {
 		actual.Subnets = append(actual.Subnets, &Subnet{ID: subnet})

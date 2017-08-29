@@ -19,15 +19,18 @@ package components
 import (
 	"encoding/binary"
 	"fmt"
-	"github.com/blang/semver"
-	"github.com/golang/glog"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"net"
 	"strings"
+
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/util/pkg/vfs"
+
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 )
 
 // OptionsContext is the context object for options builders
@@ -35,6 +38,8 @@ type OptionsContext struct {
 	ClusterName string
 
 	KubernetesVersion semver.Version
+
+	AssetBuilder *assets.AssetBuilder
 }
 
 func (c *OptionsContext) IsKubernetesGTE(version string) bool {
@@ -119,14 +124,24 @@ func IsBaseURL(kubernetesVersion string) bool {
 }
 
 // Image returns the docker image name for the specified component
-func Image(component string, clusterSpec *kops.ClusterSpec) (string, error) {
+func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *assets.AssetBuilder) (string, error) {
+	if assetsBuilder == nil {
+		return "", fmt.Errorf("unable to parse assets as assetBuilder is not defined")
+	}
+	// TODO remove this, as it is an addon now
 	if component == "kube-dns" {
 		// TODO: Once we are shipping different versions, start to use them
 		return "gcr.io/google_containers/kubedns-amd64:1.3", nil
 	}
 
 	if !IsBaseURL(clusterSpec.KubernetesVersion) {
-		return "gcr.io/google_containers/" + component + ":" + "v" + clusterSpec.KubernetesVersion, nil
+		image := "gcr.io/google_containers/" + component + ":" + "v" + clusterSpec.KubernetesVersion
+
+		image, err := assetsBuilder.RemapImage(image)
+		if err != nil {
+			return "", fmt.Errorf("unable to remap container %q: %v", image, err)
+		}
+		return image, nil
 	}
 
 	baseURL := clusterSpec.KubernetesVersion

@@ -31,28 +31,20 @@ import (
 
 // Default Machine types for various types of instance group machine
 const (
-	defaultNodeMachineTypeAWS     = "t2.medium"
 	defaultNodeMachineTypeGCE     = "n1-standard-2"
 	defaultNodeMachineTypeVSphere = "vsphere_node"
+	defaultNodeMachineTypeDO      = "2gb"
 
-	defaultBastionMachineTypeAWS     = "t2.micro"
 	defaultBastionMachineTypeGCE     = "f1-micro"
 	defaultBastionMachineTypeVSphere = "vsphere_bastion"
 
 	defaultMasterMachineTypeGCE     = "n1-standard-1"
-	defaultMasterMachineTypeAWS     = "m3.medium"
 	defaultMasterMachineTypeVSphere = "vsphere_master"
+	defaultMasterMachineTypeDO      = "2gb"
 
 	defaultVSphereNodeImage = "kops_ubuntu_16_04.ova"
+	defaultDONodeImage      = "coreos-stable"
 )
-
-var masterMachineTypeExceptions = map[string]string{
-	// Some regions do not (currently) support the m3 family; the c4 large is the cheapest non-burstable instance
-	"us-east-2":      "c4.large",
-	"ca-central-1":   "c4.large",
-	"eu-west-2":      "c4.large",
-	"ap-northeast-2": "c4.large",
-}
 
 var awsDedicatedInstanceExceptions = map[string]bool{
 	"t2.nano":   true,
@@ -77,7 +69,11 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	// TODO: Clean up
 	if ig.IsMaster() {
 		if ig.Spec.MachineType == "" {
-			ig.Spec.MachineType = defaultMasterMachineType(cluster)
+			ig.Spec.MachineType, err = defaultMachineType(cluster, ig)
+			if err != nil {
+				return nil, fmt.Errorf("error assigning default machine type for masters: %v", err)
+			}
+
 		}
 		if ig.Spec.MinSize == nil {
 			ig.Spec.MinSize = fi.Int32(1)
@@ -87,7 +83,10 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 	} else if ig.Spec.Role == kops.InstanceGroupRoleBastion {
 		if ig.Spec.MachineType == "" {
-			ig.Spec.MachineType = defaultBastionMachineType(cluster)
+			ig.Spec.MachineType, err = defaultMachineType(cluster, ig)
+			if err != nil {
+				return nil, fmt.Errorf("error assigning default machine type for bastions: %v", err)
+			}
 		}
 		if ig.Spec.MinSize == nil {
 			ig.Spec.MinSize = fi.Int32(1)
@@ -97,7 +96,10 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 		}
 	} else {
 		if ig.Spec.MachineType == "" {
-			ig.Spec.MachineType = defaultNodeMachineType(cluster)
+			ig.Spec.MachineType, err = defaultMachineType(cluster, ig)
+			if err != nil {
+				return nil, fmt.Errorf("error assigning default machine type for nodes: %v", err)
+			}
 		}
 		if ig.Spec.MinSize == nil {
 			ig.Spec.MinSize = fi.Int32(2)
@@ -151,88 +153,58 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 	return ig, nil
 }
 
-// defaultNodeMachineType returns the default MachineType for nodes, based on the cloudprovider
-func defaultNodeMachineType(cluster *kops.Cluster) string {
+// defaultMachineType returns the default MachineType for the instance group, based on the cloudprovider
+func defaultMachineType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error) {
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
-		return defaultNodeMachineTypeAWS
-	case kops.CloudProviderGCE:
-		return defaultNodeMachineTypeGCE
-	case kops.CloudProviderVSphere:
-		return defaultNodeMachineTypeVSphere
-	default:
-		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
-		return ""
-	}
-}
-
-// defaultMasterMachineType returns the default MachineType for masters, based on the cloudprovider
-func defaultMasterMachineType(cluster *kops.Cluster) string {
-	// TODO: We used to have logic like the following...
-	//	{{ if gt .TotalNodeCount 500 }}
-	//	MasterMachineType: n1-standard-32
-	//	{{ else if gt .TotalNodeCount 250 }}
-	//MasterMachineType: n1-standard-16
-	//{{ else if gt .TotalNodeCount 100 }}
-	//MasterMachineType: n1-standard-8
-	//{{ else if gt .TotalNodeCount 10 }}
-	//MasterMachineType: n1-standard-4
-	//{{ else if gt .TotalNodeCount 5 }}
-	//MasterMachineType: n1-standard-2
-	//{{ else }}
-	//MasterMachineType: n1-standard-1
-	//{{ end }}
-	//
-	//{{ if gt TotalNodeCount 500 }}
-	//MasterMachineType: c4.8xlarge
-	//{{ else if gt TotalNodeCount 250 }}
-	//MasterMachineType: c4.4xlarge
-	//{{ else if gt TotalNodeCount 100 }}
-	//MasterMachineType: m3.2xlarge
-	//{{ else if gt TotalNodeCount 10 }}
-	//MasterMachineType: m3.xlarge
-	//{{ else if gt TotalNodeCount 5 }}
-	//MasterMachineType: m3.large
-	//{{ else }}
-	//MasterMachineType: m3.medium
-	//{{ end }}
-
-	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
-	case kops.CloudProviderAWS:
-		region, err := awsup.FindRegion(cluster)
+		cloud, err := BuildCloud(cluster)
 		if err != nil {
-			glog.Warningf("cannot determine region from cluster zones: %v", err)
+			return "", fmt.Errorf("error building cloud for AWS cluster: %v", err)
 		}
-		// Check for special-cases
-		masterMachineType := masterMachineTypeExceptions[region]
-		if masterMachineType != "" {
-			glog.Warningf("%q instance is not available in region %q, will set master to %q instead", defaultMasterMachineTypeAWS, region, masterMachineType)
-			return masterMachineType
-		}
-		return defaultMasterMachineTypeAWS
-	case kops.CloudProviderGCE:
-		return defaultMasterMachineTypeGCE
-	case kops.CloudProviderVSphere:
-		return defaultMasterMachineTypeVSphere
-	default:
-		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
-		return ""
-	}
-}
 
-// defaultBastionMachineType returns the default MachineType for bastions, based on the cloudprovider
-func defaultBastionMachineType(cluster *kops.Cluster) string {
-	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
-	case kops.CloudProviderAWS:
-		return defaultBastionMachineTypeAWS
+		instanceType, err := cloud.(awsup.AWSCloud).DefaultInstanceType(cluster, ig)
+		if err != nil {
+			return "", fmt.Errorf("error finding default machine type: %v", err)
+		}
+		return instanceType, nil
+
 	case kops.CloudProviderGCE:
-		return defaultBastionMachineTypeGCE
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleMaster:
+			return defaultMasterMachineTypeGCE, nil
+
+		case kops.InstanceGroupRoleNode:
+			return defaultNodeMachineTypeGCE, nil
+
+		case kops.InstanceGroupRoleBastion:
+			return defaultBastionMachineTypeGCE, nil
+		}
+
+	case kops.CloudProviderDO:
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleMaster:
+			return defaultMasterMachineTypeDO, nil
+
+		case kops.InstanceGroupRoleNode:
+			return defaultNodeMachineTypeDO, nil
+
+		}
+
 	case kops.CloudProviderVSphere:
-		return defaultBastionMachineTypeVSphere
-	default:
-		glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q", cluster.Spec.CloudProvider)
-		return ""
+		switch ig.Spec.Role {
+		case kops.InstanceGroupRoleMaster:
+			return defaultMasterMachineTypeVSphere, nil
+
+		case kops.InstanceGroupRoleNode:
+			return defaultNodeMachineTypeVSphere, nil
+
+		case kops.InstanceGroupRoleBastion:
+			return defaultBastionMachineTypeVSphere, nil
+		}
 	}
+
+	glog.V(2).Infof("Cannot set default MachineType for CloudProvider=%q, Role=%q", cluster.Spec.CloudProvider, ig.Spec.Role)
+	return "", nil
 }
 
 // defaultImage returns the default Image, based on the cloudprovider
@@ -252,9 +224,15 @@ func defaultImage(cluster *kops.Cluster, channel *kops.Channel) string {
 				return image.Name
 			}
 		}
-	} else if kops.CloudProviderID(cluster.Spec.CloudProvider) == kops.CloudProviderVSphere {
+	}
+
+	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kops.CloudProviderDO:
+		return defaultDONodeImage
+	case kops.CloudProviderVSphere:
 		return defaultVSphereNodeImage
 	}
+
 	glog.Infof("Cannot set default Image for CloudProvider=%q", cluster.Spec.CloudProvider)
 	return ""
 }

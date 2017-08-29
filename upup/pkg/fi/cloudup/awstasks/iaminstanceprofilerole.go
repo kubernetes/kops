@@ -31,7 +31,9 @@ import (
 
 //go:generate fitask -type=IAMInstanceProfileRole
 type IAMInstanceProfileRole struct {
-	Name            *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	InstanceProfile *IAMInstanceProfile
 	Role            *IAMRole
 }
@@ -69,6 +71,7 @@ func (e *IAMInstanceProfileRole) Find(c *fi.Context) (*IAMInstanceProfileRole, e
 
 		// Prevent spurious changes
 		actual.Name = e.Name
+		actual.Lifecycle = e.Lifecycle
 
 		return actual, nil
 	}

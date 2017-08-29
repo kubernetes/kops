@@ -47,7 +47,7 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 		config.CPURequest = "100m"
 	}
 
-	image, err := Image("kube-proxy", clusterSpec)
+	image, err := Image("kube-proxy", clusterSpec, b.Context.AssetBuilder)
 	if err != nil {
 		return err
 	}
@@ -63,6 +63,13 @@ func (b *KubeProxyOptionsBuilder) BuildOptions(o interface{}) error {
 		if clusterSpec.KubeControllerManager != nil {
 			config.ClusterCIDR = clusterSpec.KubeControllerManager.ClusterCIDR
 		}
+	}
+
+	// Set the kube-proxy hostname-override (actually the NodeName), to avoid #2915 et al
+	cloudProvider := kops.CloudProviderID(clusterSpec.CloudProvider)
+	if cloudProvider == kops.CloudProviderAWS {
+		// Use the hostname from the AWS metadata service
+		config.HostnameOverride = "@aws"
 	}
 
 	return nil

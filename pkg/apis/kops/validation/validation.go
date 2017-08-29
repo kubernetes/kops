@@ -18,12 +18,13 @@ package validation
 
 import (
 	"fmt"
+	"net"
+	"strings"
+
 	"k8s.io/apimachinery/pkg/api/validation"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
-	"net"
-	"strings"
 )
 
 var validDockerConfigStorageValues = []string{"aufs", "btrfs", "devicemapper", "overlay", "overlay2", "zfs"}
@@ -56,7 +57,17 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 	}
 
 	for i := range spec.Hooks {
-		allErrs = append(allErrs, validateHook(&spec.Hooks[i], fieldPath.Child("hooks").Index(i))...)
+		allErrs = append(allErrs, validateHookSpec(&spec.Hooks[i], fieldPath.Child("hooks").Index(i))...)
+	}
+
+	if spec.FileAssets != nil {
+		for i, x := range spec.FileAssets {
+			allErrs = append(allErrs, validateFileAssetSpec(&x, fieldPath.Child("fileAssets").Index(i))...)
+		}
+	}
+
+	if spec.KubeAPIServer != nil {
+		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, fieldPath.Child("kubeAPIServer"))...)
 	}
 
 	return allErrs
@@ -131,16 +142,31 @@ func validateSubnet(subnet *kops.ClusterSubnetSpec, fieldPath *field.Path) field
 	return allErrs
 }
 
-func validateHook(v *kops.HookSpec, fldPath *field.Path) field.ErrorList {
+// validateFileAssetSpec is responsible for checking a FileAssetSpec is ok
+func validateFileAssetSpec(v *kops.FileAssetSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	if v.ExecContainer == nil {
-		allErrs = append(allErrs, field.Required(fldPath, "An action is required"))
+	if v.Name == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("Name"), ""))
+	}
+	if v.Content == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("Content"), ""))
 	}
 
-	if v.ExecContainer != nil {
-		allErrs = append(allErrs, validateExecContainerAction(v.ExecContainer, fldPath.Child("ExecContainer"))...)
+	return allErrs
+}
+
+func validateHookSpec(v *kops.HookSpec, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if !v.Disabled && v.ExecContainer == nil && v.Manifest == "" {
+		allErrs = append(allErrs, field.Required(fieldPath, "you must set either manifest or execContainer for a hook"))
 	}
+
+	if !v.Disabled && v.ExecContainer != nil {
+		allErrs = append(allErrs, validateExecContainerAction(v.ExecContainer, fieldPath.Child("ExecContainer"))...)
+	}
+
 	return allErrs
 }
 
@@ -149,6 +175,21 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 
 	if v.Image == "" {
 		allErrs = append(allErrs, field.Required(fldPath.Child("Image"), "Image must be specified"))
+	}
+
+	return allErrs
+}
+
+func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) field.ErrorList {
+
+	allErrs := field.ErrorList{}
+
+	proxyClientCertIsNil := v.ProxyClientCertFile == nil
+	proxyClientKeyIsNil := v.ProxyClientKeyFile == nil
+
+	if (proxyClientCertIsNil && !proxyClientKeyIsNil) || (!proxyClientCertIsNil && proxyClientKeyIsNil) {
+		flds := [2]*string{v.ProxyClientCertFile, v.ProxyClientKeyFile}
+		allErrs = append(allErrs, field.Invalid(fldPath, flds, "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)"))
 	}
 
 	return allErrs

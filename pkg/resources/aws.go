@@ -31,6 +31,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
@@ -105,12 +106,14 @@ func (c *ClusterResources) listResourcesAWS() (map[string]*ResourceTracker, erro
 				if vpcID == "" || igwID == "" {
 					continue
 				}
-				if resources["vpc:"+vpcID] != nil && resources["internet-gateway:"+igwID] == nil {
+				vpc := resources["vpc:"+vpcID]
+				if vpc != nil && resources["internet-gateway:"+igwID] == nil {
 					resources["internet-gateway:"+igwID] = &ResourceTracker{
 						Name:    FindName(igw.Tags),
 						ID:      igwID,
 						Type:    "internet-gateway",
 						deleter: DeleteInternetGateway,
+						Shared:  vpc.Shared, // Shared iff the VPC is shared
 					}
 				}
 			}
@@ -143,13 +146,13 @@ func (c *ClusterResources) listResourcesAWS() (map[string]*ResourceTracker, erro
 
 	{
 		// We delete a NAT gateway if it is linked to our route table
-		routeTableIds := sets.NewString()
-		for k := range resources {
-			if !strings.HasPrefix(k, ec2.ResourceTypeRouteTable+":") {
+		routeTableIds := make(map[string]*ResourceTracker)
+		for _, resource := range resources {
+			if resource.Type != ec2.ResourceTypeRouteTable {
 				continue
 			}
-			id := strings.TrimPrefix(k, ec2.ResourceTypeRouteTable+":")
-			routeTableIds.Insert(id)
+			id := resource.ID
+			routeTableIds[id] = resource
 		}
 		natGateways, err := FindNatGateways(cloud, routeTableIds)
 		if err != nil {
@@ -829,13 +832,19 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 
 	var trackers []*ResourceTracker
 	elasticIPs := sets.NewString()
-	ngws := sets.NewString()
+	ownedElasticIPs := sets.NewString()
+	natGatewayIds := sets.NewString()
+	ownedNatGatewayIds := sets.NewString()
 	for _, subnet := range subnets {
+		subnetID := aws.StringValue(subnet.SubnetId)
+
+		shared := HasSharedTag("subnet:"+subnetID, subnet.Tags, clusterName)
 		tracker := &ResourceTracker{
 			Name:    FindName(subnet.Tags),
-			ID:      aws.StringValue(subnet.SubnetId),
+			ID:      subnetID,
 			Type:    "subnet",
 			deleter: DeleteSubnet,
+			Shared:  shared,
 		}
 		tracker.blocks = append(tracker.blocks, "vpc:"+aws.StringValue(subnet.VpcId))
 		trackers = append(trackers, tracker)
@@ -847,12 +856,20 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 				eip := aws.StringValue(tag.Value)
 				if eip != "" {
 					elasticIPs.Insert(eip)
+					// A shared subnet means the EIP is not owned
+					if !shared {
+						ownedElasticIPs.Insert(eip)
+					}
 				}
 			}
 			if name == "AssociatedNatgateway" {
 				ngwID := aws.StringValue(tag.Value)
 				if ngwID != "" {
-					ngws.Insert(ngwID)
+					natGatewayIds.Insert(ngwID)
+					// A shared subnet means the NAT gateway is not owned
+					if !shared {
+						ownedNatGatewayIds.Insert(ngwID)
+					}
 				}
 			}
 		}
@@ -878,6 +895,7 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 				ID:      aws.StringValue(address.AllocationId),
 				Type:    TypeElasticIp,
 				deleter: DeleteElasticIP,
+				Shared:  !ownedElasticIPs.Has(ip),
 			}
 			trackers = append(trackers, tracker)
 		}
@@ -886,11 +904,13 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 	// Associated Nat Gateways
 	// Note: we must not delete any shared NAT Gateways here.
 	// Since we don't have tagging on the NGWs, we have to read the route tables
-	if ngws.Len() != 0 {
+	if natGatewayIds.Len() != 0 {
 
 		rtRequest := &ec2.DescribeRouteTablesInput{}
 		rtResponse, err := c.EC2().DescribeRouteTables(rtRequest)
-
+		if err != nil {
+			return nil, fmt.Errorf("error describing RouteTables: %v", err)
+		}
 		// sharedNgwIds is the set of IDs for shared NGWs, that we should not delete
 		sharedNgwIds := sets.NewString()
 		{
@@ -916,20 +936,16 @@ func ListSubnets(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error)
 
 		for _, ngw := range response.NatGateways {
 			id := aws.StringValue(ngw.NatGatewayId)
-			if !ngws.Has(id) {
-				continue
-			}
-			if sharedNgwIds.Has(id) {
-				// If we find this NGW in our list of shared NGWs, skip it (don't delete!)
-				glog.V(2).Infof("Won't delete shared NAT gateway %q", id)
+			if !natGatewayIds.Has(id) {
 				continue
 			}
 
 			tracker := &ResourceTracker{
 				Name:    id,
-				ID:      aws.StringValue(ngw.NatGatewayId),
+				ID:      id,
 				Type:    TypeNatGateway,
 				deleter: DeleteNatGateway,
+				Shared:  sharedNgwIds.Has(id) || !ownedNatGatewayIds.Has(id),
 			}
 
 			// The NAT gateway blocks deletion of any associated Elastic IPs
@@ -1300,13 +1316,16 @@ func ListVPCs(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
 
 	var trackers []*ResourceTracker
 	for _, v := range vpcs {
+		vpcID := aws.StringValue(v.VpcId)
+
 		tracker := &ResourceTracker{
 			Name:    FindName(v.Tags),
-			ID:      aws.StringValue(v.VpcId),
+			ID:      vpcID,
 			Type:    ec2.ResourceTypeVpc,
 			deleter: DeleteVPC,
 			Dumper:  DumpVPC,
 			obj:     v,
+			Shared:  HasSharedTag(ec2.ResourceTypeVpc+":"+vpcID, v.Tags, clusterName),
 		}
 
 		var blocks []string
@@ -1422,26 +1441,34 @@ func FindAutoScalingLaunchConfigurations(cloud fi.Cloud, securityGroups sets.Str
 	return trackers, nil
 }
 
-func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTracker, error) {
-	if len(routeTableIds) == 0 {
+func FindNatGateways(cloud fi.Cloud, routeTables map[string]*ResourceTracker) ([]*ResourceTracker, error) {
+	if len(routeTables) == 0 {
 		return nil, nil
 	}
 
 	c := cloud.(awsup.AWSCloud)
 
 	natGatewayIds := sets.NewString()
+	ownedNatGatewayIds := sets.NewString()
 	{
 		request := &ec2.DescribeRouteTablesInput{}
-		for routeTableId := range routeTableIds {
-			request.RouteTableIds = append(request.RouteTableIds, aws.String(routeTableId))
+		for _, routeTable := range routeTables {
+			request.RouteTableIds = append(request.RouteTableIds, aws.String(routeTable.ID))
 		}
 		response, err := c.EC2().DescribeRouteTables(request)
 		if err != nil {
 			return nil, fmt.Errorf("error from DescribeRouteTables: %v", err)
 		}
-		shared := false
 		for _, rt := range response.RouteTables {
-			shared = false
+			routeTableID := aws.StringValue(rt.RouteTableId)
+			resource := routeTables[routeTableID]
+			if resource == nil {
+				// We somehow got a route table that we didn't ask for
+				glog.Warningf("unable to find resource for route table %s", routeTableID)
+				continue
+			}
+
+			shared := resource.Shared
 			for _, t := range rt.Tags {
 				k := *t.Key
 				// v := *t.Value
@@ -1449,11 +1476,12 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 					shared = true
 				}
 			}
-			if shared == false {
-				for _, route := range rt.Routes {
-					if route.NatGatewayId != nil {
-						natGatewayIds.Insert(*route.NatGatewayId)
-						glog.Infof("inserting %s to be deleted\n", *route.NatGatewayId)
+
+			for _, route := range rt.Routes {
+				if route.NatGatewayId != nil {
+					natGatewayIds.Insert(*route.NatGatewayId)
+					if !shared {
+						ownedNatGatewayIds.Insert(*route.NatGatewayId)
 					}
 				}
 			}
@@ -1476,11 +1504,13 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 		}
 
 		for _, t := range response.NatGateways {
+			natGatewayId := aws.StringValue(t.NatGatewayId)
 			ngwTracker := &ResourceTracker{
-				Name:    aws.StringValue(t.NatGatewayId),
-				ID:      aws.StringValue(t.NatGatewayId),
+				Name:    natGatewayId,
+				ID:      natGatewayId,
 				Type:    TypeNatGateway,
 				deleter: DeleteNatGateway,
+				Shared:  !ownedNatGatewayIds.Has(natGatewayId),
 			}
 			trackers = append(trackers, ngwTracker)
 
@@ -1500,6 +1530,7 @@ func FindNatGateways(cloud fi.Cloud, routeTableIds sets.String) ([]*ResourceTrac
 						ID:      aws.StringValue(address.AllocationId),
 						Type:    TypeElasticIp,
 						deleter: DeleteElasticIP,
+						Shared:  !ownedNatGatewayIds.Has(natGatewayId),
 					}
 					trackers = append(trackers, eipTracker)
 
@@ -1768,6 +1799,12 @@ func deleteRoute53Records(cloud fi.Cloud, zone *route53.HostedZone, trackers []*
 }
 
 func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker, error) {
+	var trackers []*ResourceTracker
+
+	if dns.IsGossipHostname(clusterName) {
+		return trackers, nil
+	}
+
 	c := cloud.(awsup.AWSCloud)
 
 	// Normalize cluster name, with leading "."
@@ -1794,8 +1831,6 @@ func ListRoute53Records(cloud fi.Cloud, clusterName string) ([]*ResourceTracker,
 			return nil, fmt.Errorf("error querying for route53 zones: %v", err)
 		}
 	}
-
-	var trackers []*ResourceTracker
 
 	for i := range zones {
 		// Be super careful because we close over this later (in groupDeleter)
@@ -2046,4 +2081,35 @@ func FindELBName(tags []*elb.Tag) string {
 		return name
 	}
 	return ""
+}
+
+// HasSharedTag looks for the shared tag indicating that the cluster does not own the resource
+func HasSharedTag(description string, tags []*ec2.Tag, clusterName string) bool {
+	tagKey := "kubernetes.io/cluster/" + clusterName
+
+	var found *ec2.Tag
+	for _, tag := range tags {
+		if aws.StringValue(tag.Key) != tagKey {
+			continue
+		}
+
+		found = tag
+	}
+
+	if found == nil {
+		glog.Warningf("(new) cluster tag not found on %s", description)
+		return false
+	}
+
+	tagValue := aws.StringValue(found.Value)
+	switch tagValue {
+	case "owned":
+		return false
+	case "shared":
+		return true
+
+	default:
+		glog.Warningf("unknown cluster tag on %s: %q=%q", description, tagKey, tagValue)
+		return false
+	}
 }
