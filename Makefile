@@ -22,7 +22,7 @@ LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
-BINDATA_PATH=.build/go-bindata
+BINDATA=.build/go-bindata
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -81,8 +81,8 @@ ifndef SHASUMCMD
   $(error "Neither sha1sum nor shasum command is available")
 endif
 
-.PHONY: clean
-clean:
+.PHONY: superclean
+superclean: # Deletes all files not checked in to git repository
 	git ls-files -z -o | xargs -0 rm -rfv
 
 .PHONY: help
@@ -121,19 +121,19 @@ $(KOPS): federation/model/bindata.go upup/models/bindata.go
 kops: $(KOPS)
 
 .PHONY: gobindata-tool
-gobindata-tool: $(BINDATA_PATH)
+gobindata-tool: $(BINDATA)
 
-$(BINDATA_PATH):
+$(BINDATA):
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
 
 .PHONY: kops-gobindata
 kops-gobindata: federation/model/bindata.go upup/models/bindata.go
 
-federation/model/bindata.go: $(BINDATA_PATH)
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${BINDATA_PATH} -o federation/model/bindata.go -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
+federation/model/bindata.go: $(BINDATA)
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${BINDATA} -o federation/model/bindata.go -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
 
-upup/models/bindata.go: $(BINDATA_PATH)
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${BINDATA_PATH} -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+upup/models/bindata.go: $(BINDATA)
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${BINDATA} -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
