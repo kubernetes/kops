@@ -39,7 +39,7 @@ type clusterStrategy struct {
 var Strategy = clusterStrategy{kops.Scheme, names.SimpleNameGenerator}
 
 func (clusterStrategy) NamespaceScoped() bool {
-	return false
+	return true
 }
 
 func (clusterStrategy) PrepareForCreate(ctx genericapirequest.Context, obj runtime.Object) {

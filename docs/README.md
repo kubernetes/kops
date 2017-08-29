@@ -8,13 +8,13 @@
 ## Overview
 
 * [Getting started on AWS](aws.md)
-* [Command-line interface](#commandline-interface)
+* [Command-line interface](#command-line-interface)
 * [Inspection](#inspection)
 * [`kops` design documents](#kops-design-documents)
 * [Networking](#networking)
 * [Operations](#operations)
 * [Security](#security)
-* [Workflows](#workflows)
+* [Development](#development)
 
 
 ## Command-line interface
@@ -103,11 +103,10 @@
 * [Example on how to add a feature](development/adding_a_feature.md)
 * [Hack Directory](development/hack.md)
 * [How to update `kops` API](development/api_updates.md)
-* [Low level description on how kops works](how_it_works.md)
+* [Low level description on how kops works](development/how_it_works.md)
 * [Notes on Gossip design](development/gossip.md)
 * [Notes on master instance sizing](development/instancesizes.md)
 * [Our release process](development/release.md)
 * [Releasing with Homebrew](development/homebrew.md)
 * [Rolling Update Diagrams](development/rolling_update.md)
 * [Updating Go Dependencies](development/dependencies.md)
-

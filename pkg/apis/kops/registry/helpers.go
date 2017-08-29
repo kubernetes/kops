@@ -37,7 +37,7 @@ func CreateClusterConfig(clientset simple.Clientset, cluster *api.Cluster, group
 		}
 	}
 
-	_, err := clientset.ClustersFor(cluster).Create(cluster)
+	_, err := clientset.CreateCluster(cluster)
 	if err != nil {
 		return err
 	}

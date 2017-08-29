@@ -18,10 +18,11 @@ package model
 
 import (
 	"fmt"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"path/filepath"
 	"strings"
+
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 // SecretBuilder writes secrets
@@ -31,11 +32,13 @@ type SecretBuilder struct {
 
 var _ fi.ModelBuilder = &SecretBuilder{}
 
+// Build is responsible for pulling down the secrets
 func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	if b.KeyStore == nil {
 		return fmt.Errorf("KeyStore not set")
 	}
 
+	// retrieve the platform ca
 	{
 		ca, err := b.KeyStore.CertificatePool(fi.CertificateId_CA)
 		if err != nil {
@@ -53,6 +56,26 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:     nodetasks.FileType_File,
 		}
 		c.AddTask(t)
+	}
+
+	if b.SecretStore != nil {
+		key := "dockerconfig"
+		dockercfg, _ := b.SecretStore.Secret(key)
+		if dockercfg != nil {
+			contents := string(dockercfg.Data)
+			t := &nodetasks.File{
+				Path:     filepath.Join("root", ".docker", "config.json"),
+				Contents: fi.NewStringResource(contents),
+				Type:     nodetasks.FileType_File,
+				Mode:     s("0600"),
+			}
+			c.AddTask(t)
+		}
+	}
+
+	// if we are not a master we can stop here
+	if !b.IsMaster {
+		return nil
 	}
 
 	{
@@ -73,6 +96,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(t)
 	}
+
 	{
 		k, err := b.KeyStore.PrivateKey("master")
 		if err != nil {
@@ -86,6 +110,43 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		t := &nodetasks.File{
 			Path:     filepath.Join(b.PathSrvKubernetes(), "server.key"),
+			Contents: fi.NewStringResource(serialized),
+			Type:     nodetasks.FileType_File,
+		}
+		c.AddTask(t)
+	}
+
+	if b.IsKubernetesGTE("1.7") {
+
+		cert, err := b.KeyStore.Cert("apiserver-proxy-client")
+		if err != nil {
+			return fmt.Errorf("apiserver proxy client cert lookup failed: %v", err.Error())
+		}
+
+		serialized, err := cert.AsString()
+		if err != nil {
+			return err
+		}
+
+		t := &nodetasks.File{
+			Path:     filepath.Join(b.PathSrvKubernetes(), "proxy-client.cert"),
+			Contents: fi.NewStringResource(serialized),
+			Type:     nodetasks.FileType_File,
+		}
+		c.AddTask(t)
+
+		key, err := b.KeyStore.PrivateKey("apiserver-proxy-client")
+		if err != nil {
+			return fmt.Errorf("apiserver proxy client private key lookup failed: %v", err.Error())
+		}
+
+		serialized, err = key.AsString()
+		if err != nil {
+			return err
+		}
+
+		t = &nodetasks.File{
+			Path:     filepath.Join(b.PathSrvKubernetes(), "proxy-client.key"),
 			Contents: fi.NewStringResource(serialized),
 			Type:     nodetasks.FileType_File,
 		}
@@ -120,18 +181,12 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		var lines []string
 		for id, token := range allTokens {
+			if id == "dockerconfig" {
+				continue
+			}
 			lines = append(lines, token+","+id+","+id)
 		}
 		csv := strings.Join(lines, "\n")
-
-		// TODO: If we want to use tokens with RBAC, we need to add the roles
-		// cluster/gce/gci/configure-helper.sh has this:
-		//replace_prefixed_line "${known_tokens_csv}" "${KUBE_BEARER_TOKEN},"             "admin,admin,system:masters"
-		//replace_prefixed_line "${known_tokens_csv}" "${KUBE_CONTROLLER_MANAGER_TOKEN}," "system:kube-controller-manager,uid:system:kube-controller-manager"
-		//replace_prefixed_line "${known_tokens_csv}" "${KUBE_SCHEDULER_TOKEN},"          "system:kube-scheduler,uid:system:kube-scheduler"
-		//replace_prefixed_line "${known_tokens_csv}" "${KUBELET_TOKEN},"                 "kubelet,uid:kubelet,system:nodes"
-		//replace_prefixed_line "${known_tokens_csv}" "${KUBE_PROXY_TOKEN},"              "system:kube-proxy,uid:kube_proxy"
-		//replace_prefixed_line "${known_tokens_csv}" "${NODE_PROBLEM_DETECTOR_TOKEN},"   "system:node-problem-detector,uid:node-problem-detector"
 
 		t := &nodetasks.File{
 			Path:     filepath.Join(b.PathSrvKubernetes(), "known_tokens.csv"),

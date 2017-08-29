@@ -31,6 +31,9 @@ type ResourceTracker struct {
 	Type string
 	ID   string
 
+	// If true, this resource is not owned by the cluster
+	Shared bool
+
 	blocks  []string
 	blocked []string
 	done    bool
@@ -66,6 +69,8 @@ func (c *ClusterResources) ListResources() (map[string]*ResourceTracker, error) 
 	switch c.Cloud.ProviderID() {
 	case kops.CloudProviderAWS:
 		return c.listResourcesAWS()
+	case kops.CloudProviderDO:
+		return c.listResourcesDO()
 	case kops.CloudProviderGCE:
 		return c.listResourcesGCE()
 	case kops.CloudProviderVSphere:

@@ -77,7 +77,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v1.2.1
+          image: quay.io/calico/node:v2.4.1
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -94,6 +94,9 @@ spec:
             # Don't enable BGP.
             - name: CALICO_NETWORKING_BACKEND
               value: "none"
+            # Cluster type to identify the deployment type
+            - name: CLUSTER_TYPE
+              value: "kops,canal"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
@@ -108,7 +111,7 @@ spec:
                   fieldPath: spec.nodeName
             # Set Felix endpoint to host default action to ACCEPT.
             - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
-              value: "ACCEPT"
+              value: "{{- or .Networking.Canal.DefaultEndpointToHostAction "ACCEPT" }}"
           securityContext:
             privileged: true
           resources:
@@ -124,7 +127,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v1.8.3
+          image: quay.io/calico/cni:v1.10.0
           command: ["/install-cni.sh"]
           env:
             # The CNI network config to install on each node.
@@ -145,7 +148,7 @@ spec:
         # This container runs flannel using the kube-subnet-mgr backend
         # for allocating subnets.
         - name: kube-flannel
-          image: quay.io/coreos/flannel:v0.7.1
+          image: quay.io/coreos/flannel:v0.8.0
           command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
           securityContext:
             privileged: true

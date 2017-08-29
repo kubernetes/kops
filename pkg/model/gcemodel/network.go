@@ -24,14 +24,16 @@ import (
 // NetworkModelBuilder configures network objects
 type NetworkModelBuilder struct {
 	*GCEModelContext
+	Lifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	network := &gcetasks.Network{
-		Name: s("default"),
-		CIDR: s(b.Cluster.Spec.NetworkCIDR), // Default: s("10.240.0.0/16"),
+		Name:      s("default"),
+		Lifecycle: b.Lifecycle,
+		CIDR:      s(b.Cluster.Spec.NetworkCIDR), // Default: s("10.240.0.0/16"),
 	}
 	c.AddTask(network)
 

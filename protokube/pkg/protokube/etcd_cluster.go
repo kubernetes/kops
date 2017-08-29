@@ -19,79 +19,109 @@ package protokube
 import (
 	"bytes"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/apimachinery/pkg/api/resource"
 	"os"
 	"path"
 	"strings"
 	"time"
+
+	"k8s.io/apimachinery/pkg/api/resource"
+
+	"github.com/golang/glog"
 )
 
+// EtcdClusterSpec is configuration for the etcd cluster
 type EtcdClusterSpec struct {
+	// ClusterKey is the initial cluster key
 	ClusterKey string `json:"clusterKey,omitempty"`
-
-	NodeName  string   `json:"nodeName,omitempty"`
+	// NodeName is my nodename in the cluster
+	NodeName string `json:"nodeName,omitempty"`
+	// NodeNames is a collection of node members in the cluster
 	NodeNames []string `json:"nodeNames,omitempty"`
 }
 
-func (e *EtcdClusterSpec) String() string {
-	return DebugString(e)
-}
-
+// EtcdCluster is the configuration for the etcd cluster
 type EtcdCluster struct {
-	PeerPort     int
-	ClientPort   int
-	LogFile      string
-	DataDirName  string
-	ClusterName  string
+	// ClientPort is the incoming ports for client
+	ClientPort int
+	// ClusterName is the cluster name
+	ClusterName string
+	// ClusterToken is the cluster token
 	ClusterToken string
-	Me           *EtcdNode
-	Nodes        []*EtcdNode
-	PodName      string
-	CPURequest   resource.Quantity
-
+	// CPURequest is the pod limits
+	CPURequest resource.Quantity
+	// DataDirName is the path to the data directory
+	DataDirName string
+	// ImageSource is the docker image to use
+	ImageSource string
+	// LogFile is the location of the logfile
+	LogFile string
+	// Me represents myself
+	Me *EtcdNode
+	// Nodes is a list of nodes in the cluster
+	Nodes []*EtcdNode
+	// PeerPort is the port for peers to connect
+	PeerPort int
+	// PodName is the name given to the pod
+	PodName string
+	// ProxyMode indicates we are running in proxy mode
+	ProxyMode bool
+	// Spec is the specification found from the volumes
 	Spec *EtcdClusterSpec
-
+	// VolumeMountPath is the mount path
 	VolumeMountPath string
+	// TLSCA is the path to a client ca for etcd clients
+	TLSCA string
+	// TLSCert is the path to a client certificate for etcd
+	TLSCert string
+	// TLSKey is the path to a client private key for etcd
+	TLSKey string
+	// PeerCA is the path to a peer ca for etcd
+	PeerCA string
+	// PeerCert is the path to a peer ca for etcd
+	PeerCert string
+	// PeerKey is the path to a peer ca for etcd
+	PeerKey string
 }
 
-func (e *EtcdCluster) String() string {
-	return DebugString(e)
-}
-
+// EtcdNode is a definition for the etcd node
 type EtcdNode struct {
 	Name         string
 	InternalName string
 }
 
-func (e *EtcdNode) String() string {
-	return DebugString(e)
-}
-
+// EtcdController defines the etcd controller
 type EtcdController struct {
-	kubeBoot *KubeBoot
-
+	kubeBoot   *KubeBoot
 	volume     *Volume
 	volumeSpec *EtcdClusterSpec
 	cluster    *EtcdCluster
 }
 
+// newEtcdController creates and returns a new etcd controller
 func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*EtcdController, error) {
 	k := &EtcdController{
 		kubeBoot: kubeBoot,
 	}
 
-	cluster := &EtcdCluster{}
-	cluster.Spec = spec
-	cluster.VolumeMountPath = v.Mountpoint
-
-	cluster.ClusterName = "etcd-" + spec.ClusterKey
-	cluster.DataDirName = "data-" + spec.ClusterKey
-	cluster.PodName = "etcd-server-" + spec.ClusterKey
-	cluster.CPURequest = resource.MustParse("100m")
-	cluster.ClientPort = 4001
-	cluster.PeerPort = 2380
+	cluster := &EtcdCluster{
+		// @TODO we need to deprecate this port and use 2379, but that would be a breaking change
+		ClientPort:      4001,
+		ClusterName:     "etcd-" + spec.ClusterKey,
+		CPURequest:      resource.MustParse("200m"),
+		DataDirName:     "data-" + spec.ClusterKey,
+		ImageSource:     kubeBoot.EtcdImageSource,
+		TLSCA:           kubeBoot.TLSCA,
+		TLSCert:         kubeBoot.TLSCert,
+		TLSKey:          kubeBoot.TLSKey,
+		PeerCA:          kubeBoot.PeerCA,
+		PeerCert:        kubeBoot.PeerCert,
+		PeerKey:         kubeBoot.PeerKey,
+		PeerPort:        2380,
+		PodName:         "etcd-server-" + spec.ClusterKey,
+		Spec:            spec,
+		VolumeMountPath: v.Mountpoint,
+	}
 
 	// We used to build this through text files ... it turns out to just be more complicated than code!
 	switch spec.ClusterKey {
@@ -100,14 +130,11 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*E
 		cluster.DataDirName = "data"
 		cluster.PodName = "etcd-server"
 		cluster.CPURequest = resource.MustParse("200m")
-
 	case "events":
 		cluster.ClientPort = 4002
 		cluster.PeerPort = 2381
-
 	default:
-		return nil, fmt.Errorf("unknown Etcd ClusterKey %q", spec.ClusterKey)
-
+		return nil, fmt.Errorf("unknown etcd cluster key %q", spec.ClusterKey)
 	}
 
 	k.cluster = cluster
@@ -115,10 +142,10 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *EtcdClusterSpec) (*E
 	return k, nil
 }
 
+// RunSyncLoop is responsible for managing the etcd sign loop
 func (k *EtcdController) RunSyncLoop() {
 	for {
-		err := k.syncOnce()
-		if err != nil {
+		if err := k.syncOnce(); err != nil {
 			glog.Warningf("error during attempt to bootstrap (will sleep and retry): %v", err)
 		}
 
@@ -144,7 +171,7 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 		c.PodName = c.ClusterName
 	}
 
-	err := touchFile(PathFor(c.LogFile))
+	err := touchFile(pathFor(c.LogFile))
 	if err != nil {
 		return fmt.Errorf("error touching log-file %q: %v", c.LogFile, err)
 	}
@@ -163,12 +190,9 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 			InternalName: fqdn,
 		}
 		nodes = append(nodes, node)
-
 		if nodeName == c.Spec.NodeName {
 			c.Me = node
-
-			err := k.CreateInternalDNSNameRecord(fqdn)
-			if err != nil {
+			if err = k.CreateInternalDNSNameRecord(fqdn); err != nil {
 				return fmt.Errorf("error mapping internal dns name for %q: %v", name, err)
 			}
 		}
@@ -198,7 +222,7 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 	writeManifest := true
 	{
 		// See if the manifest has changed
-		existingManifest, err := ioutil.ReadFile(PathFor(manifestTarget))
+		existingManifest, err := ioutil.ReadFile(pathFor(manifestTarget))
 		if err != nil {
 			if !os.IsNotExist(err) {
 				return fmt.Errorf("error reading manifest file %q: %v", manifestTarget, err)
@@ -213,14 +237,14 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 	createSymlink := true
 	{
 		// See if the symlink is correct
-		stat, err := os.Lstat(PathFor(manifestSource))
+		stat, err := os.Lstat(pathFor(manifestSource))
 		if err != nil {
 			if !os.IsNotExist(err) {
 				return fmt.Errorf("error reading manifest symlink %q: %v", manifestSource, err)
 			}
 		} else if (stat.Mode() & os.ModeSymlink) != 0 {
 			// It's a symlink, make sure the target matches
-			target, err := os.Readlink(PathFor(manifestSource))
+			target, err := os.Readlink(pathFor(manifestSource))
 			if err != nil {
 				return fmt.Errorf("error reading manifest symlink %q: %v", manifestSource, err)
 			}
@@ -236,23 +260,23 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 	}
 
 	if createSymlink || writeManifest {
-		err = os.Remove(PathFor(manifestSource))
+		err = os.Remove(pathFor(manifestSource))
 		if err != nil && !os.IsNotExist(err) {
 			return fmt.Errorf("error removing etcd manifest symlink (for strict creation) %q: %v", manifestSource, err)
 		}
 
-		err = os.MkdirAll(PathFor(manifestTargetDir), 0755)
+		err = os.MkdirAll(pathFor(manifestTargetDir), 0755)
 		if err != nil {
 			return fmt.Errorf("error creating directories for etcd manifest %q: %v", manifestTargetDir, err)
 		}
 
-		err = ioutil.WriteFile(PathFor(manifestTarget), manifest, 0644)
+		err = ioutil.WriteFile(pathFor(manifestTarget), manifest, 0644)
 		if err != nil {
 			return fmt.Errorf("error writing etcd manifest %q: %v", manifestTarget, err)
 		}
 
-		// Note: no PathFor on the target, because it's a symlink and we want it to evaluate on the host
-		err = os.Symlink(manifestTarget, PathFor(manifestSource))
+		// Note: no pathFor on the target, because it's a symlink and we want it to evaluate on the host
+		err = os.Symlink(manifestTarget, pathFor(manifestSource))
 		if err != nil {
 			return fmt.Errorf("error creating etcd manifest symlink %q -> %q: %v", manifestSource, manifestTarget, err)
 		}
@@ -263,23 +287,20 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 	return nil
 }
 
-func touchFile(p string) error {
-	_, err := os.Lstat(p)
-	if err == nil {
-		return nil
-	}
+func (e *EtcdClusterSpec) String() string {
+	return DebugString(e)
+}
 
-	if !os.IsNotExist(err) {
-		return fmt.Errorf("error getting state of file %q: %v", p, err)
-	}
+// isTLS indicates the etcd cluster should be configured to use tls
+func (c *EtcdCluster) isTLS() bool {
+	return notEmpty(c.TLSCert) && notEmpty(c.TLSKey)
+}
 
-	f, err := os.Create(p)
-	if err != nil {
-		return fmt.Errorf("error touching file %q: %v", p, err)
-	}
-	err = f.Close()
-	if err != nil {
-		return fmt.Errorf("error closing touched file %q: %v", p, err)
-	}
-	return nil
+// String returns the debug string
+func (c *EtcdCluster) String() string {
+	return DebugString(c)
+}
+
+func (e *EtcdNode) String() string {
+	return DebugString(e)
 }

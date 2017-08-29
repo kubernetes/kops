@@ -79,6 +79,8 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 	"eu-west-1c": kops.CloudProviderAWS,
 	"eu-west-1d": kops.CloudProviderAWS,
 	"eu-west-1e": kops.CloudProviderAWS,
+	"eu-west-2a": kops.CloudProviderAWS,
+	"eu-west-2b": kops.CloudProviderAWS,
 
 	"eu-central-1a": kops.CloudProviderAWS,
 	"eu-central-1b": kops.CloudProviderAWS,
@@ -163,6 +165,26 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 	"us-west1-b": kops.CloudProviderGCE,
 	"us-west1-c": kops.CloudProviderGCE,
 	"us-west1-d": kops.CloudProviderGCE,
+
+	"nyc1": kops.CloudProviderDO,
+	"nyc2": kops.CloudProviderDO,
+	"nyc3": kops.CloudProviderDO,
+
+	"sfo1": kops.CloudProviderDO,
+	"sfo2": kops.CloudProviderDO,
+
+	"ams2": kops.CloudProviderDO,
+	"ams3": kops.CloudProviderDO,
+
+	"tor1": kops.CloudProviderDO,
+
+	"sgp1": kops.CloudProviderDO,
+
+	"lon1": kops.CloudProviderDO,
+
+	"fra1": kops.CloudProviderDO,
+
+	"blr1": kops.CloudProviderDO,
 }
 
 // GuessCloudForZone tries to infer the cloudprovider from the zone name

@@ -28,11 +28,13 @@ import (
 //go:generate fitask -type=Address
 type Address struct {
 	Name      *string
+	Lifecycle *fi.Lifecycle
+
 	IPAddress *string
 }
 
 func (e *Address) Find(c *fi.Context) (*Address, error) {
-	actual, err := e.find(c.Cloud.(*gce.GCECloud))
+	actual, err := e.find(c.Cloud.(gce.GCECloud))
 	if actual != nil && err == nil {
 		if e.IPAddress == nil {
 			e.IPAddress = actual.IPAddress
@@ -41,9 +43,9 @@ func (e *Address) Find(c *fi.Context) (*Address, error) {
 	return actual, err
 }
 
-func findAddressByIP(cloud *gce.GCECloud, ip string) (*Address, error) {
+func findAddressByIP(cloud gce.GCECloud, ip string) (*Address, error) {
 	// Technically this is a regex, but it doesn't matter...
-	r, err := cloud.Compute.Addresses.List(cloud.Project, cloud.Region).Filter("address eq " + ip).Do()
+	r, err := cloud.Compute().Addresses.List(cloud.Project(), cloud.Region()).Filter("address eq " + ip).Do()
 	if err != nil {
 		return nil, fmt.Errorf("error listing IPAddresss: %v", err)
 	}
@@ -62,8 +64,8 @@ func findAddressByIP(cloud *gce.GCECloud, ip string) (*Address, error) {
 	return actual, nil
 }
 
-func (e *Address) find(cloud *gce.GCECloud) (*Address, error) {
-	r, err := cloud.Compute.Addresses.Get(cloud.Project, cloud.Region, *e.Name).Do()
+func (e *Address) find(cloud gce.GCECloud) (*Address, error) {
+	r, err := cloud.Compute().Addresses.Get(cloud.Project(), cloud.Region(), *e.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -82,7 +84,7 @@ func (e *Address) find(cloud *gce.GCECloud) (*Address, error) {
 var _ fi.HasAddress = &Address{}
 
 func (e *Address) FindIPAddress(context *fi.Context) (*string, error) {
-	actual, err := e.find(context.Cloud.(*gce.GCECloud))
+	actual, err := e.find(context.Cloud.(gce.GCECloud))
 	if err != nil {
 		return nil, fmt.Errorf("error querying for IPAddress: %v", err)
 	}
@@ -108,22 +110,23 @@ func (_ *Address) CheckChanges(a, e, changes *Address) error {
 	return nil
 }
 
-func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
+func (_ *Address) RenderGCE(t gce.GCEAPITarget, a, e, changes *Address) error {
+	cloud := t.Cloud
 	addr := &compute.Address{
 		Name:    *e.Name,
 		Address: fi.StringValue(e.IPAddress),
-		Region:  t.Cloud.Region,
+		Region:  cloud.Region(),
 	}
 
 	if a == nil {
 		glog.Infof("GCE creating address: %q", addr.Name)
 
-		op, err := t.Cloud.Compute.Addresses.Insert(t.Cloud.Project, t.Cloud.Region, addr).Do()
+		op, err := cloud.Compute().Addresses.Insert(cloud.Project(), cloud.Region(), addr).Do()
 		if err != nil {
 			return fmt.Errorf("error creating IPAddress: %v", err)
 		}
 
-		if err := t.Cloud.WaitForOp(op); err != nil {
+		if err := cloud.WaitForOp(op); err != nil {
 			return fmt.Errorf("error waiting for IPAddress: %v", err)
 		}
 	} else {

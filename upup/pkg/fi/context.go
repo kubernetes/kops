@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
@@ -98,7 +99,61 @@ func (c *Context) NewTempDir(prefix string) (string, error) {
 
 var typeContextPtr = reflect.TypeOf((*Context)(nil))
 
+// Render dispatches the creation of an object to the appropriate handler defined on the Task,
+// it is typically called after we have checked the existing state of the Task and determined that is different
+// from the desired state.
 func (c *Context) Render(a, e, changes Task) error {
+	var lifecycle *Lifecycle
+	if hl, ok := e.(HasLifecycle); ok {
+		lifecycle = hl.GetLifecycle()
+	}
+
+	if lifecycle != nil {
+		if reflect.ValueOf(a).IsNil() {
+
+			switch *lifecycle {
+			case LifecycleExistsAndValidates:
+				return fmt.Errorf("Lifecycle set to ExistsAndValidates, but object was not found")
+			case LifecycleExistsAndWarnIfChanges:
+				return fmt.Errorf("Lifecycle set to ExistsAndWarnIfChanges, but object was not found")
+			}
+		} else {
+			switch *lifecycle {
+			case LifecycleExistsAndValidates, LifecycleExistsAndWarnIfChanges:
+				out := os.Stderr
+				changeList, err := buildChangeList(a, e, changes)
+				if err != nil {
+					return err
+				}
+
+				b := &bytes.Buffer{}
+				taskName := getTaskName(e)
+				fmt.Fprintf(b, "Object from different phase did not match, problems possible:\n")
+				fmt.Fprintf(b, "  %s/%s\n", taskName, "?")
+				for _, change := range changeList {
+					lines := strings.Split(change.Description, "\n")
+					if len(lines) == 1 {
+						fmt.Fprintf(b, "  \t%-20s\t%s\n", change.FieldName, change.Description)
+					} else {
+						fmt.Fprintf(b, "  \t%-20s\n", change.FieldName)
+						for _, line := range lines {
+							fmt.Fprintf(b, "  \t%-20s\t%s\n", "", line)
+						}
+					}
+				}
+				fmt.Fprintf(b, "\n")
+				b.WriteTo(out)
+
+				if *lifecycle == LifecycleExistsAndValidates {
+					return fmt.Errorf("Lifecycle set to ExistsAndValidates, but object did not match")
+				} else {
+					// Warn, but then we continue
+					return nil
+				}
+			}
+		}
+	}
+
 	if _, ok := c.Target.(*DryRunTarget); ok {
 		return c.Target.(*DryRunTarget).Render(a, e, changes)
 	}

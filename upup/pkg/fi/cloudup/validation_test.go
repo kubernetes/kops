@@ -22,6 +22,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"strings"
@@ -60,7 +61,8 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 		}
 	}
 
-	fullSpec, err := PopulateClusterSpec(c)
+	assetBuilder := assets.NewAssetBuilder(nil)
+	fullSpec, err := PopulateClusterSpec(c, assetBuilder)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec: %v", err)
 	}
@@ -106,13 +108,11 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 
 func TestValidateFull_Default_Validates(t *testing.T) {
 	c := buildDefaultCluster(t)
-	err := validation.ValidateCluster(c, false)
-	if err != nil {
+	if err := validation.ValidateCluster(c, false); err != nil {
 		glog.Infof("Cluster: %v", c)
 		t.Fatalf("Validate gave unexpected error (strict=false): %v", err)
 	}
-	err = validation.ValidateCluster(c, true)
-	if err != nil {
+	if err := validation.ValidateCluster(c, true); err != nil {
 		t.Fatalf("Validate gave unexpected error (strict=true): %v", err)
 	}
 }

@@ -31,6 +31,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/edit"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
@@ -44,7 +45,7 @@ type EditClusterOptions struct {
 var (
 	edit_cluster_long = templates.LongDesc(i18n.T(`Edit a cluster configuration.
 
-	This command changes the cluster cloud specification in the registry.
+	This command changes the desired cluster configuration in the registry.
 
     	To set your preferred editor, you can define the EDITOR environment variable.
     	When you have done this, kops will use the editor that you have set.
@@ -209,7 +210,8 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			return preservedFile(fmt.Errorf("error populating configuration: %v", err), file, out)
 		}
 
-		fullCluster, err := cloudup.PopulateClusterSpec(newCluster)
+		assetBuilder := assets.NewAssetBuilder(newCluster.Spec.Assets)
+		fullCluster, err := cloudup.PopulateClusterSpec(newCluster, assetBuilder)
 		if err != nil {
 			results = editResults{
 				file: file,
@@ -235,7 +237,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 		}
 
 		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.ClustersFor(newCluster).Update(newCluster)
+		_, err = clientset.UpdateCluster(newCluster)
 		if err != nil {
 			return preservedFile(err, file, out)
 		}

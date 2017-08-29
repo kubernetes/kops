@@ -105,7 +105,7 @@ func getDevice(mountPoint string) (string, error) {
 		}
 
 		if Containerized {
-			mountPoint = PathFor(mountPoint)
+			mountPoint = pathFor(mountPoint)
 		}
 		lines := strings.Split(string(out), "\n")
 		for _, line := range lines {
@@ -122,7 +122,7 @@ func getDevice(mountPoint string) (string, error) {
 }
 
 func getVolMetadata() ([]vsphere.VolumeMetadata, error) {
-	rawData, err := ioutil.ReadFile(PathFor(VolumeMetaDataFile))
+	rawData, err := ioutil.ReadFile(pathFor(VolumeMetaDataFile))
 
 	if err != nil {
 		return nil, err

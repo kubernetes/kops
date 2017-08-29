@@ -27,7 +27,7 @@ import (
 
 var (
 	edit_long = templates.LongDesc(i18n.T(`Edit a resource configuration.
-	This command changes the cloud specification in the registry.
+	This command changes the desired configuration in the registry.
 
     	To set your preferred editor, you can define the EDITOR environment variable.
     	When you have done this, kops will use the editor that you have set.
@@ -43,7 +43,7 @@ var (
 	kops edit ig --name k8s-cluster.example.com \
 	  --state=s3://kops-state-1234 nodes
 
-	# Edit a cluster dederation configuration.
+	# Edit a cluster federation configuration.
 	kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
 	`))
 )

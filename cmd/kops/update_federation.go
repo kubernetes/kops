@@ -33,7 +33,7 @@ var (
 	`))
 
 	update_federation_example = templates.Examples(i18n.T(`
-	# After cluster has been editted or upgraded, configure it with:
+	# After cluster has been edited or upgraded, configure it with:
 	kops update federation k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
 	`))
 

@@ -65,27 +65,19 @@ func (c *NodeController) Run() {
 func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
 		var listOpts metav1.ListOptions
+		glog.V(4).Infof("querying without field filter")
 
 		// Note we need to watch all the nodes, to set up alias targets
-		//listOpts.LabelSelector = labels.Everything()
-		glog.Warningf("querying without field filter")
-		//listOpts.FieldSelector = fields.Everything()
-
 		nodeList, err := c.kubeClient.CoreV1().Nodes().List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing nodes: %v", err)
 		}
 		for i := range nodeList.Items {
 			node := &nodeList.Items[i]
-			glog.Infof("node: %v", node.Name)
+			glog.V(4).Infof("node: %v", node.Name)
 			c.updateNodeRecords(node)
 		}
 		c.scope.MarkReady()
-
-		// Note we need to watch all the nodes, to set up alias targets
-		//listOpts.LabelSelector = labels.Everything()
-		glog.Warningf("querying without field filter")
-		//listOpts.FieldSelector = fields.Everything()
 
 		listOpts.Watch = true
 		listOpts.ResourceVersion = nodeList.ResourceVersion

@@ -18,55 +18,57 @@ package protokube
 
 import (
 	"fmt"
+	"net"
+	"strings"
+	"sync"
+	"time"
+
+	"k8s.io/kops/protokube/pkg/gossip"
+	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
-	"k8s.io/kops/protokube/pkg/gossip"
-	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"net"
-	"strings"
-	"sync"
-	"time"
 )
-
-//const TagNameMasterId = "k8s.io/master/id"
-
-//const DefaultAttachDevice = "/dev/xvdb"
 
 var devices = []string{"/dev/xvdu", "/dev/xvdv", "/dev/xvdx", "/dev/xvdx", "/dev/xvdy", "/dev/xvdz"}
 
+// AWSVolumes defines the aws volume implementation
 type AWSVolumes struct {
-	ec2      *ec2.EC2
-	metadata *ec2metadata.EC2Metadata
+	mutex sync.Mutex
 
-	zone       string
 	clusterTag string
+	deviceMap  map[string]string
+	ec2        *ec2.EC2
 	instanceId string
 	internalIP net.IP
-
-	mutex     sync.Mutex
-	deviceMap map[string]string
+	metadata   *ec2metadata.EC2Metadata
+	zone       string
 }
 
 var _ Volumes = &AWSVolumes{}
 
+// NewAWSVolumes returns a new aws volume provider
 func NewAWSVolumes() (*AWSVolumes, error) {
 	a := &AWSVolumes{
 		deviceMap: make(map[string]string),
 	}
 
-	s := session.New()
+	config := aws.NewConfig()
+	config = config.WithCredentialsChainVerboseErrors(true)
+
+	s, err := session.NewSession(config)
+	if err != nil {
+		return nil, fmt.Errorf("error starting new AWS session: %v", err)
+	}
 	s.Handlers.Send.PushFront(func(r *request.Request) {
 		// Log requests
 		glog.V(4).Infof("AWS API Request: %s/%s", r.ClientInfo.ServiceName, r.Operation.Name)
 	})
-
-	config := aws.NewConfig()
-	config = config.WithCredentialsChainVerboseErrors(true)
 
 	a.metadata = ec2metadata.New(s, config)
 
@@ -182,6 +184,13 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 				if aws.StringValue(attachment.InstanceId) == a.instanceId {
 					vol.LocalDevice = aws.StringValue(attachment.Device)
 				}
+			}
+
+			// never mount root volumes
+			// these are volumes that aws sets aside for root volumes mount points
+			if vol.LocalDevice == "/dev/sda1" || vol.LocalDevice == "/dev/xvda" {
+				glog.Warningf("Not mounting: %q, since it is a root volume", vol.LocalDevice)
+				continue
 			}
 
 			skipVolume := false

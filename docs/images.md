@@ -94,7 +94,7 @@ Be aware of the following limitations:
 
 ## CoreOS
 
-CoreOS support is highly experimental.  Please report any issues.
+CoreOS has been tested enough to be considered ready for production with kops, but if you encounter any problem please report it to us.
 
 The following steps are known:
 
@@ -105,6 +105,15 @@ aws ec2 describe-images --region=us-east-1 --owner=595879546273 \
     --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}'
 ```
 
-* You can specify the name using the `coreos.com` owner alias, for example `coreos.com/CoreOS-stable-1353.8.0-hvm`
+Also, you can obtain the "AMI ID" from CoreOS web page too. They publish their AMI's using a json file at [https://coreos.com/dist/aws/aws-stable.json](https://coreos.com/dist/aws/aws-stable.json). Using some scripting and a "json" parser (like jq) you can obtain the AMI ID from a specific availability zone:
 
-> Note: SSH username will be `core`
+```
+curl -s https://coreos.com/dist/aws/aws-stable.json|sed -r 's/-/_/g'|jq '.us_east_1.hvm'|sed -r 's/_/-/g'
+"ami-32705b49"
+```
+
+* You can specify the name using the `coreos.com` owner alias, for example `coreos.com/CoreOS-stable-1409.8.0-hvm` or leave it at `595879546273/CoreOS-stable-1409.8.0-hvm` if you prefer to do so.
+
+As part of our documentation, you will find a practical exercise using CoreOS with KOPS. See the file ["coreos-kops-tests-multimaster.md"](https://github.com/kubernetes/kops/blob/master/docs/examples/coreos-kops-tests-multimaster.md) in the "examples" directory. This exercise covers not only using kops with CoreOS, but also a practical view of KOPS with a multi-master kubernetes setup.
+
+> Note: SSH username for CoreOS based instances will be `core`

@@ -18,6 +18,7 @@ package gcemodel
 
 import (
 	"fmt"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
@@ -35,6 +36,7 @@ type AutoscalingGroupModelBuilder struct {
 	*GCEModelContext
 
 	BootstrapScript *model.BootstrapScript
+	Lifecycle       *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
@@ -43,7 +45,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, ig := range b.InstanceGroups {
 		name := b.SafeObjectName(ig.ObjectMeta.Name)
 
-		startupScript, err := b.BootstrapScript.ResourceNodeUp(ig)
+		startupScript, err := b.BootstrapScript.ResourceNodeUp(ig, &b.Cluster.Spec)
 		if err != nil {
 			return err
 		}
@@ -62,6 +64,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			t := &gcetasks.InstanceTemplate{
 				Name:           s(name),
+				Lifecycle:      b.Lifecycle,
 				Network:        b.LinkToNetwork(),
 				MachineType:    s(ig.Spec.MachineType),
 				BootDiskType:   s(volumeType),
@@ -160,6 +163,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			t := &gcetasks.InstanceGroupManager{
 				Name:             s(name),
+				Lifecycle:        b.Lifecycle,
 				Zone:             s(zone),
 				TargetSize:       fi.Int64(int64(targetSize)),
 				BaseInstanceName: s(ig.ObjectMeta.Name),

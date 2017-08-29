@@ -4,22 +4,42 @@ metadata:
   labels:
     k8s-app: kubernetes-dashboard
     k8s-addon: kubernetes-dashboard.addons.k8s.io
-    k8s-app: kubernetes-dashboard
   name: kubernetes-dashboard
   namespace: kube-system
----  
+
+---
+
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernetes-dashboard
+  labels:
+    k8s-addon: kubernetes-dashboard.addons.k8s.io
+    k8s-app: kubernetes-dashboard
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: kubernetes-dashboard
+  namespace: kube-system
+
+---
+
 kind: Deployment
 apiVersion: extensions/v1beta1
 metadata:
-  name: kubernetes-dashboard
-  namespace: kube-system
   labels:
     k8s-addon: kubernetes-dashboard.addons.k8s.io
     k8s-app: kubernetes-dashboard
     version: v1.6.1
-    kubernetes.io/cluster-service: "true"
+    kubernetes.io/cluster-service: "true" 
+  name: kubernetes-dashboard
+  namespace: kube-system
 spec:
   replicas: 1
+  revisionHistoryLimit: 10
   selector:
     matchLabels:
       k8s-app: kubernetes-dashboard
@@ -37,6 +57,9 @@ spec:
       containers:
       - name: kubernetes-dashboard
         image: gcr.io/google_containers/kubernetes-dashboard-amd64:v1.6.1
+        ports:
+        - containerPort: 9090
+          protocol: TCP
         resources:
           # keep request = limit to keep this container in guaranteed class
           limits:
@@ -45,8 +68,11 @@ spec:
           requests:
             cpu: 100m
             memory: 50Mi
-        ports:
-        - containerPort: 9090
+        args:
+          # Uncomment the following line to manually specify Kubernetes API server Host
+          # If not specified, Dashboard will attempt to auto discover the API server and connect
+          # to it. Uncomment only if the default does not work.
+          # - --apiserver-host=http://my-address:port
         livenessProbe:
           httpGet:
             path: /
@@ -54,20 +80,25 @@ spec:
           initialDelaySeconds: 30
           timeoutSeconds: 30
       serviceAccountName: kubernetes-dashboard
+      # Comment the following tolerations if Dashboard must not be deployed on master
+      tolerations:
+      - key: node-role.kubernetes.io/master
+        effect: NoSchedule
+
 ---
 
-apiVersion: v1
 kind: Service
+apiVersion: v1
 metadata:
-  name: kubernetes-dashboard
-  namespace: kube-system
   labels:
     k8s-addon: kubernetes-dashboard.addons.k8s.io
     k8s-app: kubernetes-dashboard
     kubernetes.io/cluster-service: "true"
+  name: kubernetes-dashboard
+  namespace: kube-system
 spec:
-  selector:
-    k8s-app: kubernetes-dashboard
   ports:
   - port: 80
     targetPort: 9090
+  selector:
+    k8s-app: kubernetes-dashboard

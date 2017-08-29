@@ -31,6 +31,7 @@ import (
 
 type BootstrapChannelBuilder struct {
 	cluster      *kops.Cluster
+	Lifecycle    *fi.Lifecycle
 	templates    *templates.Templates
 	assetBuilder *assets.AssetBuilder
 }
@@ -38,6 +39,7 @@ type BootstrapChannelBuilder struct {
 var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
 
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
+
 	addons, manifests, err := b.buildManifest()
 	if err != nil {
 		return err
@@ -53,7 +55,9 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 	tasks := c.Tasks
 
 	tasks[name] = &fitasks.ManagedFile{
-		Name:     fi.String(name),
+		Name:      fi.String(name),
+		Lifecycle: b.Lifecycle,
+
 		Location: fi.String("addons/bootstrap-channel.yaml"),
 		Contents: fi.WrapResource(fi.NewBytesResource(addonsYAML)),
 	}
@@ -77,7 +81,9 @@ func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		tasks[name] = &fitasks.ManagedFile{
-			Name:     fi.String(name),
+			Name:      fi.String(name),
+			Lifecycle: b.Lifecycle,
+
 			Location: fi.String(manifest),
 			Contents: fi.WrapResource(fi.NewBytesResource(manifestBytes)),
 		}
@@ -160,7 +166,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "dns-controller.addons.k8s.io"
-		version := "1.7.0"
+		version := "1.7.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -300,8 +306,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
 
-		// 1.9.8-kops.2 = 1.9.8 plus IPALLOC_RANGE and WEAVE_MTU
-		version := "1.9.8-kops.2"
+		version := "2.0.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -373,8 +378,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Calico != nil {
 		key := "networking.projectcalico.org"
-		// 2.1.2-kops.1 = 2.1.1 with CIDR change
-		version := "2.1.2-kops.1"
+		version := "2.4.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -409,7 +413,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Canal != nil {
 		key := "networking.projectcalico.org.canal"
-		version := "1.1"
+		// Locking canal addon version to 2.4.1 (same as Calico node). Best to maintain lockstep for sanity
+		version := "2.4.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"

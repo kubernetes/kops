@@ -128,7 +128,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 
 	defaultStateStore := os.Getenv("KOPS_STATE_STORE")
 	if strings.HasSuffix(defaultStateStore, "/") {
-		strings.TrimSuffix(defaultStateStore, "/")
+		defaultStateStore = strings.TrimSuffix(defaultStateStore, "/")
 	}
 	cmd.PersistentFlags().StringVarP(&rootCommand.RegistryPath, "state", "", defaultStateStore, "Location of state storage")
 

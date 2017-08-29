@@ -22,11 +22,7 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"encoding/pem"
-	"golang.org/x/crypto/ssh"
 	"io/ioutil"
-	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/diff"
-	"k8s.io/kops/pkg/testutils"
 	"os"
 	"path"
 	"reflect"
@@ -34,6 +30,12 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"golang.org/x/crypto/ssh"
+
+	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/testutils"
 )
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
@@ -103,6 +105,16 @@ func TestPrivateDns1(t *testing.T) {
 // TestPrivateDns runs the test on a configuration with private topology, private dns, extant vpc
 func TestPrivateDns2(t *testing.T) {
 	runTest(t, "privatedns2.example.com", "../../tests/integration/privatedns2", "v1alpha2", true, 1)
+}
+
+// TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
+func TestSharedSubnet(t *testing.T) {
+	runTest(t, "sharedsubnet.example.com", "../../tests/integration/shared_subnet", "v1alpha2", false, 1)
+}
+
+// TestSharedVPC runs the test on a configuration with a shared VPC
+func TestSharedVPC(t *testing.T) {
+	runTest(t, "sharedvpc.example.com", "../../tests/integration/shared_vpc", "v1alpha2", false, 1)
 }
 
 func runTest(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int) {
@@ -313,7 +325,8 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 			t.Fatalf("unexpected files.  actual=%q, expected=%q", actualFilenames, expectedFilenames)
 		}
 
-		actualCF, err := ioutil.ReadFile(path.Join(h.TempDir, "out", "kubernetes.json"))
+		actualPath := path.Join(h.TempDir, "out", "kubernetes.json")
+		actualCF, err := ioutil.ReadFile(actualPath)
 		if err != nil {
 			t.Fatalf("unexpected error reading actual cloudformation output: %v", err)
 		}
@@ -322,9 +335,17 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 			t.Fatalf("unexpected error reading expected cloudformation output: %v", err)
 		}
 
-		if !bytes.Equal(actualCF, expectedCF) {
-			diffString := diff.FormatDiff(string(expectedCF), string(actualCF))
+		expectedCFTrimmed := strings.TrimSpace(string(expectedCF))
+		actualCFTrimmed := strings.TrimSpace(string(actualCF))
+		if actualCFTrimmed != expectedCFTrimmed {
+			diffString := diff.FormatDiff(expectedCFTrimmed, actualCFTrimmed)
 			t.Logf("diff:\n%s\n", diffString)
+
+			if os.Getenv("KEEP_TEMP_DIR") == "" {
+				t.Logf("(hint: setting KEEP_TEMP_DIR will preserve test output")
+			} else {
+				t.Logf("actual terraform output in %s", actualPath)
+			}
 
 			t.Fatalf("cloudformation output differed from expected")
 		}

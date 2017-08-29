@@ -19,6 +19,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
@@ -28,6 +29,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/tables"
@@ -203,17 +205,21 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 			glog.Warningf("No matching images specified in channel; cannot prompt for upgrade")
 		} else {
 			for _, ig := range instanceGroups {
-				if ig.Spec.Image != image.Name {
-					target := ig
-					actions = append(actions, &upgradeAction{
-						Item:     "InstanceGroup/" + target.ObjectMeta.Name,
-						Property: "Image",
-						Old:      target.Spec.Image,
-						New:      image.Name,
-						apply: func() {
-							target.Spec.Image = image.Name
-						},
-					})
+				if strings.Contains(ig.Spec.Image, "kope.io") {
+					if ig.Spec.Image != image.Name {
+						target := ig
+						actions = append(actions, &upgradeAction{
+							Item:     "InstanceGroup/" + target.ObjectMeta.Name,
+							Property: "Image",
+							Old:      target.Spec.Image,
+							New:      image.Name,
+							apply: func() {
+								target.Spec.Image = image.Name
+							},
+						})
+					}
+				} else {
+					glog.Infof("Custom image (%s) has been provided for Instance Group %q; not updating image", ig.Spec.Image, ig.GetName())
 				}
 			}
 		}
@@ -283,7 +289,8 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 			return fmt.Errorf("error populating configuration: %v", err)
 		}
 
-		fullCluster, err := cloudup.PopulateClusterSpec(cluster)
+		assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets)
+		fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
 		if err != nil {
 			return err
 		}
@@ -294,7 +301,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		}
 
 		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.ClustersFor(cluster).Update(cluster)
+		_, err = clientset.UpdateCluster(cluster)
 		if err != nil {
 			return err
 		}

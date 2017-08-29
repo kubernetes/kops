@@ -40,7 +40,8 @@ import (
 
 //go:generate fitask -type=SSHKey
 type SSHKey struct {
-	Name *string
+	Name      *string
+	Lifecycle *fi.Lifecycle
 
 	PublicKey *fi.ResourceHolder
 
@@ -96,6 +97,7 @@ func (e *SSHKey) find(cloud awsup.AWSCloud) (*SSHKey, error) {
 	} else {
 		glog.V(2).Infof("Computed SSH key fingerprint mismatch: %q %q", fi.StringValue(e.KeyFingerprint), fi.StringValue(actual.KeyFingerprint))
 	}
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }
@@ -108,6 +110,9 @@ func parseSSHPublicKey(publicKey string) (ssh.PublicKey, error) {
 	}
 
 	sshPublicKeyBytes, err := base64.StdEncoding.DecodeString(tokens[1])
+	if err != nil {
+		return nil, fmt.Errorf("error decoding SSH public key: %q err: %s", publicKey, err)
+	}
 	if len(tokens) < 2 {
 		return nil, fmt.Errorf("error decoding SSH public key: %q", publicKey)
 	}

@@ -27,7 +27,8 @@ import (
 	"net/url"
 )
 
-const DefaultChannelBase = "https://raw.githubusercontent.com/kubernetes/kops/master/channels/"
+var DefaultChannelBase = "https://raw.githubusercontent.com/kubernetes/kops/master/channels/"
+
 const DefaultChannel = "stable"
 const AlphaChannel = "alpha"
 
@@ -244,6 +245,7 @@ type CloudProviderID string
 
 const CloudProviderAWS CloudProviderID = "aws"
 const CloudProviderGCE CloudProviderID = "gce"
+const CloudProviderDO CloudProviderID = "digitalocean"
 const CloudProviderVSphere CloudProviderID = "vsphere"
 
 // FindImage returns the image for the cloudprovider, or nil if none found

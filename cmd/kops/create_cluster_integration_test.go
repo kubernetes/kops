@@ -18,17 +18,19 @@ package main
 
 import (
 	"bytes"
-	"github.com/golang/glog"
 	"io/ioutil"
+	"path"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/golang/glog"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/testutils"
-	"path"
-	"strings"
-	"testing"
-	"time"
 )
 
 var MagicTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
@@ -39,6 +41,11 @@ func TestCreateClusterMinimal(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal", "v1alpha2")
 }
 
+// TestCreateClusterMinimal runs kops create cluster, with a grab-bag of edge cases
+func TestCreateClusterComplex(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/complex", "v1alpha2")
+}
+
 // TestCreateClusterHA runs kops create cluster ha.example.com --zones us-test-1a,us-test-1b,us-test-1c --master-zones us-test-1a,us-test-1b,us-test-1c
 func TestCreateClusterHA(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha1")
@@ -47,7 +54,7 @@ func TestCreateClusterHA(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_encrypt", "v1alpha2")
 }
 
-// TestCreateClusterHASharedZones tests kops create cluster when the master count is bigger than the numebr of zones
+// TestCreateClusterHASharedZones tests kops create cluster when the master count is bigger than the number of zones
 func TestCreateClusterHASharedZones(t *testing.T) {
 	// Cannot be expressed in v1alpha1 API:	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha2")
@@ -177,7 +184,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 		diffString := diff.FormatDiff(expectedYAML, actualYAML)
 		t.Logf("diff:\n%s\n", diffString)
 
-		t.Fatalf("YAML differed from expected")
+		t.Fatalf("YAML differed from expected (%s)", path.Join(srcDir, expectedClusterPath))
 	}
 
 }

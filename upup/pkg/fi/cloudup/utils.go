@@ -22,6 +22,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -105,6 +106,19 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 				return nil, err
 			}
 			cloud = vsphereCloud
+		}
+	case "digitalocean":
+		{
+			// for development purposes we're going to assume
+			// single region setups for DO. Reconsider this logic
+			// when setting up multi-region kubernetes clusters on DO
+			region := cluster.Spec.Subnets[0].Zone
+			doCloud, err := do.NewDOCloud(region)
+			if err != nil {
+				return nil, fmt.Errorf("error initializin digitalocean cloud!")
+			}
+
+			cloud = doCloud
 		}
 
 	default:

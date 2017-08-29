@@ -68,6 +68,7 @@ The default volume size for Masters is 64 GB, while the default volume size for 
 The procedure to resize the root volume works the same way:
 
 * Edit the instance group, set `rootVolumeSize` and/or `rootVolumeType` to the desired values: `kops edit ig nodes`
+* If `rootVolumeType` is set to `io1` then you can define the number of Iops by specifing `rootVolumeIops` (defaults to 100 if not defined)
 * Preview changes: `kops update cluster <clustername>`
 * Apply changes: `kops update cluster <clustername> --yes`
 * Rolling update to update existing instances: `kops rolling-update cluster --yes`
@@ -85,6 +86,22 @@ spec:
   role: Node
   rootVolumeSize: 200
   rootVolumeType: gp2
+```
+
+For example, to set up a 200GB io1 root volume with 200 provisioned Iops, your InstanceGroup spec might look like:
+
+```
+metadata:
+  creationTimestamp: "2016-07-11T04:14:00Z"
+  name: nodes
+spec:
+  machineType: t2.medium
+  maxSize: 2
+  minSize: 2
+  role: Node
+  rootVolumeSize: 200
+  rootVolumeType: io1
+  rootProvisionedIops: 200
 ```
 
 ## Creating a new instance group
