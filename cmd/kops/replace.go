@@ -51,7 +51,7 @@ var (
 
 // replaceOptions is the options for the command
 type replaceOptions struct {
-	// a list of files containing resources
+	// FilenameOptions is a list of files containing resources
 	resource.FilenameOptions
 	// create any resources not found - we limit to instance groups only for now
 	force bool
