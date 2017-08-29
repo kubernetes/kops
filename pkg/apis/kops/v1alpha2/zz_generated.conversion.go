@@ -2053,6 +2053,8 @@ func autoConvert_v1alpha2_KubeletConfigSpec_To_kops_KubeletConfigSpec(in *Kubele
 	out.SystemReserved = in.SystemReserved
 	out.SystemReservedCgroup = in.SystemReservedCgroup
 	out.EnforceNodeAllocatable = in.EnforceNodeAllocatable
+	out.RuntimeRequestTimeout = in.RuntimeRequestTimeout
+	out.VolumeStatsAggPeriod = in.VolumeStatsAggPeriod
 	return nil
 }
 
@@ -2114,6 +2116,8 @@ func autoConvert_kops_KubeletConfigSpec_To_v1alpha2_KubeletConfigSpec(in *kops.K
 	out.SystemReserved = in.SystemReserved
 	out.SystemReservedCgroup = in.SystemReservedCgroup
 	out.EnforceNodeAllocatable = in.EnforceNodeAllocatable
+	out.RuntimeRequestTimeout = in.RuntimeRequestTimeout
+	out.VolumeStatsAggPeriod = in.VolumeStatsAggPeriod
 	return nil
 }
 
