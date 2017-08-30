@@ -82,4 +82,9 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 			}
 		}
 	}
+	if obj.IAM == nil {
+	        obj.IAM = &IAMSpec{
+			Legacy: true,
+		}
+	}
 }
