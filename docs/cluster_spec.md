@@ -130,6 +130,19 @@ spec:
 
 Will result in the flag `--runtime-config=batch/v2alpha1=true,apps/v1alpha1=true`. Note that `kube-apiserver` accepts `true` as a value for switch-like flags.
 
+### externalDns
+
+This block contains configuration options for your `external-DNS` provider.
+The current external-DNS provider is the kops `dns-controller`, which can set up DNS records for Kubernetes resources.
+`dns-controller` is scheduled to be phased out and replaced with `external-dns`.
+
+```yaml
+spec:
+  watchIngress: true
+```
+
+Default _kops_ behavior is false. `watchIngress: true` uses the default _dns-controller_ behavior which is to watch the ingress controller for changes. Set this option at risk of interrupting Service updates in some cases.
+
 ### kubelet
 
 This block contains configurations for `kubelet`.  See https://kubernetes.io/docs/admin/kubelet/
