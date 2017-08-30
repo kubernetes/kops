@@ -231,6 +231,7 @@ type ClusterSpec struct {
 	Kubelet               *KubeletConfigSpec           `json:"kubelet,omitempty"`
 	MasterKubelet         *KubeletConfigSpec           `json:"masterKubelet,omitempty"`
 	CloudConfig           *CloudConfiguration          `json:"cloudConfig,omitempty"`
+	ExternalDNS           *ExternalDNSConfig           `json:"externalDns,omitempty"`
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
@@ -367,6 +368,10 @@ type KubeDNSConfig struct {
 	Replicas int    `json:"replicas,omitempty"`
 	Domain   string `json:"domain,omitempty"`
 	ServerIP string `json:"serverIP,omitempty"`
+}
+
+type ExternalDNSConfig struct {
+	WatchIngress *bool `json:"watchIngress,omitempty"`
 }
 
 // EtcdClusterSpec is the etcd cluster specification
