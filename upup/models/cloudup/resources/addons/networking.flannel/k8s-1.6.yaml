@@ -96,8 +96,7 @@ spec:
         beta.kubernetes.io/arch: amd64
       serviceAccountName: flannel
       tolerations:
-      - effect: NoSchedule
-        key: node-role.kubernetes.io/master
+      - operator: Exists
       containers:
       - name: kube-flannel
         image: quay.io/coreos/flannel:v0.7.1
