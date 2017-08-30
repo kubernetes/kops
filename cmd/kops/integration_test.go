@@ -97,12 +97,12 @@ func TestPrivateKopeio(t *testing.T) {
 	runTest(t, "privatekopeio.example.com", "../../tests/integration/privatekopeio", "v1alpha2", true, 1)
 }
 
-// TestPrivateDns runs the test on a configuration with private topology, private dns
+// TestPrivateDns1 runs the test on a configuration with private topology, private dns
 func TestPrivateDns1(t *testing.T) {
 	runTest(t, "privatedns1.example.com", "../../tests/integration/privatedns1", "v1alpha2", true, 1)
 }
 
-// TestPrivateDns runs the test on a configuration with private topology, private dns, extant vpc
+// TestPrivateDns2 runs the test on a configuration with private topology, private dns, extant vpc
 func TestPrivateDns2(t *testing.T) {
 	runTest(t, "privatedns2.example.com", "../../tests/integration/privatedns2", "v1alpha2", true, 1)
 }
