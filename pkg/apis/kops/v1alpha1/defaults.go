@@ -76,9 +76,9 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 	}
 	
 	if obj.IAM == nil {
-	        obj.IAM = &IAMSpec{
-			Legacy: true,
-		}
+	  obj.IAM = &IAMSpec{
+	    legacy: true,
+	  }
 	}
 	
 	if obj.Networking != nil {
