@@ -30,8 +30,12 @@ package cloudup
 import (
 	"encoding/base64"
 	"fmt"
+
+	"github.com/golang/glog"
+
 	"os"
 	"strconv"
+
 	"strings"
 	"text/template"
 
@@ -39,6 +43,9 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
+
+	"k8s.io/kops/upup/pkg/fi"
+
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
@@ -125,12 +132,27 @@ func (tf *TemplateFunctions) GetInstanceGroup(name string) (*kops.InstanceGroup,
 	return nil, fmt.Errorf("InstanceGroup %q not found", name)
 }
 
+// DnsControllerArgv returns the args to the DNS controller
 func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	var argv []string
 
 	argv = append(argv, "/usr/bin/dns-controller")
 
-	argv = append(argv, "--watch-ingress=false")
+	externalDns := tf.cluster.Spec.ExternalDNS
+	if externalDns == nil {
+		externalDns = &kops.ExternalDNSConfig{}
+		argv = append(argv, "--watch-ingress=false")
+		glog.Infoln("watch-ingress=false set on DNSController")
+	} else {
+		watchIngress := fi.BoolValue(externalDns.WatchIngress)
+		if watchIngress {
+			glog.Warningln("--watch-ingress=true set on DNSController. ")
+			glog.Warningln("this may cause problems with previously defined services: https://github.com/kubernetes/kops/issues/2496")
+		} else {
+			argv = append(argv, "--watch-ingress=false")
+		}
+	}
+	// argv = append(argv, "--watch-ingress=false")
 
 	switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
