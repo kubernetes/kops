@@ -56,7 +56,7 @@ var (
 	create_ig_short = i18n.T(`Create an instancegroup.`)
 )
 
-//  NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
+// NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
 func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateInstanceGroupOptions{
 		Role: string(api.InstanceGroupRoleNode),

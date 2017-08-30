@@ -80,7 +80,7 @@ var (
 	rollingupdate_short = i18n.T(`Rolling update a cluster.`)
 )
 
-// Command Object for a Rolling Update.
+// RollingUpdateOptions is the command Object for a Rolling Update.
 type RollingUpdateOptions struct {
 	Yes       bool
 	Force     bool
