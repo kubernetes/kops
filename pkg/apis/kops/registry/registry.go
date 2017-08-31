@@ -39,6 +39,9 @@ func DeleteAllClusterState(basePath vfs.Path) error {
 	}
 
 	for _, path := range paths {
+		if path.Base() == basePath.Base() {
+			continue
+		}
 		relativePath, err := vfs.RelativePath(basePath, path)
 		if err != nil {
 			return err
