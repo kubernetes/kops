@@ -149,16 +149,15 @@ cloudConfig:
   nodeTags: something
 docker:
   logLevel: INFO
+fileAssets:
+- content: 4/KwQntXJBIluh/8K2f+zWTQdhM= (fingerprint)
+  name: iptables-restore
+  path: /var/lib/iptables/rules-save
 hooks:
 - execContainer:
     command:
-    - sh
-    - -c
-    - chroot /rootfs apt-get update && chroot /rootfs apt-get install -y ceph-common
+    - ChIIt0bv6sTY/wwaEWTBNaObBgM= (fingerprint)
     image: busybox
-  roles:
-  - Master
-  - Node
 kubeProxy:
   cpuRequest: 30m
   featureGates:
@@ -169,20 +168,20 @@ kubelet:
 __EOF_CLUSTER_SPEC
 
 cat > ig_spec.yaml << '__EOF_IG_SPEC'
+fileAssets:
+- content: 4/KwQntXJBIluh/8K2f+zWTQdhM= (fingerprint)
+  name: iptables-restore
+  path: /var/lib/iptables/rules-save
+- content: tre8+iQw12cCsccJY3cQk4HQV3g= (fingerprint)
+  name: tokens
+  path: /kube/tokens.csv
 hooks:
 - before:
   - update-engine.service
   - kubelet.service
-  manifest: |-
-    Type=oneshot
-    ExecStart=/usr/bin/systemctl stop update-engine.service
+  manifest: LSdpmOQebIkYoG0lRv8AUHCBIyg= (fingerprint)
   name: disable-update-engine.service
-  roles:
-  - Master
-  - Node
-- manifest: |-
-    Type=oneshot
-    ExecStart=/usr/bin/systemctl start apply-to-all.service
+- manifest: FdicqEXLciSI1yRjQxsrye3QivU= (fingerprint)
   name: apply-to-all.service
 kubelet:
   kubeconfigPath: /etc/kubernetes/igconfig.txt
