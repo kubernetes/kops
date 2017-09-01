@@ -80,10 +80,10 @@ export AWS_SECRET_ACCESS_KEY=<secret key>
 
 ## Configure DNS
 
-Note: If you are using Kops 1.6.2 or later, then DNS configuration is 
-optional. Instead, a gossip-based cluster can be easily created. The 
-only requirement to trigger this is to have the cluster name end with 
-`.k8s.local`. If a gossip-based cluster is created then you can skip 
+Note: If you are using Kops 1.6.2 or later, then DNS configuration is
+optional. Instead, a gossip-based cluster can be easily created. The
+only requirement to trigger this is to have the cluster name end with
+`.k8s.local`. If a gossip-based cluster is created then you can skip
 this section.
 
 In order to build a Kubernetes cluster with `kops`, we need to prepare
@@ -316,8 +316,9 @@ aws ec2 describe-availability-zones --region us-west-2
 ```
 
 Below is a create cluster command.  We'll use the most basic example possible,
-with more verbose examples in [advanced creation](advanced_create.md).  The
-below command will generate a cluster configuration, but not start building it. Make sure that you have generated SSH key pair before creating the cluster.
+with more verbose examples in [high availability](high_availability.md#advanced-example).
+The below command will generate a cluster configuration, but not start building
+it. Make sure that you have generated SSH key pair before creating the cluster.
 
 ```bash
 kops create cluster \
