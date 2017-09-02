@@ -14,18 +14,29 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package resources
+package tracker
 
 import (
-	"k8s.io/kops/pkg/resources/digitalocean"
-	"k8s.io/kops/pkg/resources/tracker"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
-func (c *ClusterResources) listResourcesDO() (map[string]*tracker.Resource, error) {
-	r := digitalocean.Resources{
-		Cloud:       c.Cloud,
-		ClusterName: c.ClusterName,
-	}
+type Resource struct {
+	Name string
+	Type string
+	ID   string
 
-	return r.ListResources()
+	// If true, this resource is not owned by the cluster
+	Shared bool
+
+	Blocks  []string
+	Blocked []string
+	Done    bool
+
+	Deleter      func(cloud fi.Cloud, tracker *Resource) error
+	GroupKey     string
+	GroupDeleter func(cloud fi.Cloud, trackers []*Resource) error
+
+	Dumper func(r *Resource) (interface{}, error)
+
+	Obj interface{}
 }
