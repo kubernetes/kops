@@ -23,36 +23,16 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/resources/tracker"
 	"k8s.io/kops/upup/pkg/fi"
 )
-
-type ResourceTracker struct {
-	Name string
-	Type string
-	ID   string
-
-	// If true, this resource is not owned by the cluster
-	Shared bool
-
-	blocks  []string
-	blocked []string
-	done    bool
-
-	deleter      func(cloud fi.Cloud, tracker *ResourceTracker) error
-	groupKey     string
-	groupDeleter func(cloud fi.Cloud, trackers []*ResourceTracker) error
-
-	Dumper func(r *ResourceTracker) (interface{}, error)
-
-	obj interface{}
-}
 
 var _ Resources = &ClusterResources{}
 
 // Resources is a representation of a cluster with abilities to ListResources and DeleteResources
 type Resources interface {
-	ListResources() (map[string]*ResourceTracker, error)
-	DeleteResources(resources map[string]*ResourceTracker) error
+	ListResources() (map[string]*tracker.Resource, error)
+	DeleteResources(resources map[string]*tracker.Resource) error
 }
 
 // ClusterResources is an implementation of Resources
@@ -65,7 +45,7 @@ type ClusterResources struct {
 	Region      string
 }
 
-func (c *ClusterResources) ListResources() (map[string]*ResourceTracker, error) {
+func (c *ClusterResources) ListResources() (map[string]*tracker.Resource, error) {
 	switch c.Cloud.ProviderID() {
 	case kops.CloudProviderAWS:
 		return c.listResourcesAWS()
@@ -80,23 +60,23 @@ func (c *ClusterResources) ListResources() (map[string]*ResourceTracker, error) 
 	}
 }
 
-func (c *ClusterResources) DeleteResources(resources map[string]*ResourceTracker) error {
+func (c *ClusterResources) DeleteResources(resources map[string]*tracker.Resource) error {
 	depMap := make(map[string][]string)
 
-	done := make(map[string]*ResourceTracker)
+	done := make(map[string]*tracker.Resource)
 
 	var mutex sync.Mutex
 
 	for k, t := range resources {
-		for _, block := range t.blocks {
+		for _, block := range t.Blocks {
 			depMap[block] = append(depMap[block], k)
 		}
 
-		for _, blocked := range t.blocked {
+		for _, blocked := range t.Blocked {
 			depMap[k] = append(depMap[k], blocked)
 		}
 
-		if t.done {
+		if t.Done {
 			done[k] = t
 		}
 	}
@@ -110,10 +90,10 @@ func (c *ClusterResources) DeleteResources(resources map[string]*ResourceTracker
 	for {
 		// TODO: Some form of default ordering based on types?
 
-		failed := make(map[string]*ResourceTracker)
+		failed := make(map[string]*tracker.Resource)
 
 		for {
-			phase := make(map[string]*ResourceTracker)
+			phase := make(map[string]*tracker.Resource)
 
 			for k, r := range resources {
 				if _, d := done[k]; d {
@@ -143,9 +123,9 @@ func (c *ClusterResources) DeleteResources(resources map[string]*ResourceTracker
 				break
 			}
 
-			groups := make(map[string][]*ResourceTracker)
+			groups := make(map[string][]*tracker.Resource)
 			for k, t := range phase {
-				groupKey := t.groupKey
+				groupKey := t.GroupKey
 				if groupKey == "" {
 					groupKey = "_" + k
 				}
@@ -156,7 +136,7 @@ func (c *ClusterResources) DeleteResources(resources map[string]*ResourceTracker
 			for _, trackers := range groups {
 				wg.Add(1)
 
-				go func(trackers []*ResourceTracker) {
+				go func(trackers []*tracker.Resource) {
 					mutex.Lock()
 					for _, t := range trackers {
 						k := t.Type + ":" + t.ID
@@ -169,13 +149,13 @@ func (c *ClusterResources) DeleteResources(resources map[string]*ResourceTracker
 					human := trackers[0].Type + ":" + trackers[0].ID
 
 					var err error
-					if trackers[0].groupDeleter != nil {
-						err = trackers[0].groupDeleter(c.Cloud, trackers)
+					if trackers[0].GroupDeleter != nil {
+						err = trackers[0].GroupDeleter(c.Cloud, trackers)
 					} else {
 						if len(trackers) != 1 {
 							glog.Fatalf("found group without groupKey")
 						}
-						err = trackers[0].deleter(c.Cloud, trackers[0])
+						err = trackers[0].Deleter(c.Cloud, trackers[0])
 					}
 					if err != nil {
 						mutex.Lock()
