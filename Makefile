@@ -22,6 +22,8 @@ LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
+BINDATA_TARGETS=upup/models/bindata.go federation/model/bindata.go
+BUILD=${GOPATH_1ST}/src/k8s.io/kops/.build
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -106,6 +108,10 @@ help: # Show this help
 	| sed 's/^/    /'               `: indent`; \
 	echo ''; \
 	} 1>&2; \
+
+clean: # Remove build directory and bindata-generated files
+	if test -e ${BUILD}; then rm -rf ${BUILD}; fi
+	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm $$t; fi; done 
 
 kops: kops-gobindata # Install kops
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
