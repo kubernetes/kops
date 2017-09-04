@@ -79,6 +79,9 @@ type CreateClusterOptions struct {
 	MasterSecurityGroups []string
 	AssociatePublicIP    *bool
 
+	// Overrides allows settings values direct in the spec
+	Overrides []string
+
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
 
@@ -283,6 +286,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
 	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
+
+	if featureflag.SpecOverrideFlag.Enabled() {
+		cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
+	}
 
 	if featureflag.VSphereCloudProvider.Enabled() {
 		// vSphere flags
@@ -860,6 +867,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.SSHAccess = c.SSHAccess
 	}
 
+	if err := setOverrides(c.Overrides, cluster, instanceGroups); err != nil {
+		return err
+	}
+
 	err = cloudup.PerformAssignments(cluster)
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
@@ -1038,4 +1049,23 @@ func parseCloudLabels(s string) (map[string]string, error) {
 		m[pair[0]] = pair[1]
 	}
 	return m, nil
+}
+
+// setOverrides sets override values in the spec
+func setOverrides(overrides []string, cluster *api.Cluster, instanceGroups []*api.InstanceGroup) error {
+	for _, override := range overrides {
+		kv := strings.SplitN(override, "=", 2)
+		if len(kv) != 2 {
+			return fmt.Errorf("unhandled override: %q", override)
+		}
+
+		// For now we have hard-code the values we want to support; we'll get test coverage and then do this properly...
+		switch kv[0] {
+		case "cluster.spec.nodePortAccess":
+			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
+		default:
+			return fmt.Errorf("unhandled override: %q", override)
+		}
+	}
+	return nil
 }

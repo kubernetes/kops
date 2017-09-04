@@ -27,9 +27,12 @@ spec:
   networkCIDR: 172.20.0.0/16
   networking:
     kubenet: {}
+  nodePortAccess:
+  - 1.2.3.4/32
+  - 10.20.30.0/24
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
-    - 0.0.0.0/0
+  - 0.0.0.0/0
   topology:
     masters: public
     nodes: public
