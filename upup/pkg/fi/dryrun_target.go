@@ -372,7 +372,7 @@ func getTaskName(t Task) string {
 	return s
 }
 
-// asString returns a human-readable string representation of the passed value
+// ValueAsString returns a human-readable string representation of the passed value
 func ValueAsString(value reflect.Value) string {
 	b := &bytes.Buffer{}
 
