@@ -257,8 +257,12 @@ We recommend keeping the creation of this bucket confined to us-east-1,
 otherwise more work will be required.
 
 ```bash
-aws s3api create-bucket --bucket prefix-example-com-state-store --region us-east-1
+aws s3api create-bucket \
+    --bucket prefix-example-com-state-store \
+    --region us-east-1
 ```
+
+Note: S3 requires `--create-bucket-configuration LocationConstraint=<region>` for regions other than `us-east-1`.
 
 Note: We **STRONGLY** recommend versioning your S3 bucket in case you ever need
 to revert or recover a previous state store.
