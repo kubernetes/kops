@@ -14,18 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package resources
+package digitalocean
 
 import (
-	"k8s.io/kops/pkg/resources/digitalocean"
 	"k8s.io/kops/pkg/resources/tracker"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
-func (c *ClusterResources) listResourcesDO() (map[string]*tracker.Resource, error) {
-	r := digitalocean.Resources{
-		Cloud:       c.Cloud,
-		ClusterName: c.ClusterName,
-	}
+type Resources struct {
+	Cloud       fi.Cloud
+	ClusterName string
+}
 
-	return r.ListResources()
+// ListResources fetches all digitalocean resources into tracker.Resources
+func (r *Resources) ListResources() (map[string]*tracker.Resource, error) {
+	return nil, nil
+}
+
+// DeleteResources deletes all resources passed in the form in tracker.Resources
+func (r *Resources) DeleteResources(resources map[string]*tracker.Resource) error {
+	return nil
 }
