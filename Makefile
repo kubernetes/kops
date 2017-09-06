@@ -22,6 +22,8 @@ LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
+BINDATA_TARGETS=upup/models/bindata.go federation/model/bindata.go
+BUILD=${GOPATH_1ST}/src/k8s.io/kops/.build
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -107,6 +109,11 @@ help: # Show this help
 	echo ''; \
 	} 1>&2; \
 
+.PHONY: clean
+clean: # Remove build directory and bindata-generated files
+	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -f $$t; fi; done 
+	if test -e ${BUILD}; then rm -rf ${BUILD}; fi
+
 kops: kops-gobindata # Install kops
 	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
 
@@ -115,9 +122,13 @@ gobindata-tool:
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
 
 .PHONY: kops-gobindata
-kops-gobindata: gobindata-tool
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o upup/models/bindata.go -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o federation/model/bindata.go -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
+kops-gobindata: gobindata-tool ${BINDATA_TARGETS}
+
+upup/models/bindata.go:
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o $@ -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+
+federation/model/bindata.go:
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o $@ -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
