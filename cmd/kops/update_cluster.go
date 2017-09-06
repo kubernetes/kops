@@ -270,6 +270,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 			if firstRun {
 				fmt.Fprintf(sb, "Run these commands to apply the configuration:\n")
 				fmt.Fprintf(sb, "   cd %s\n", c.OutDir)
+				fmt.Fprintf(sb, "   terraform init\n")
 				fmt.Fprintf(sb, "   terraform plan\n")
 				fmt.Fprintf(sb, "   terraform apply\n")
 				fmt.Fprintf(sb, "\n")
