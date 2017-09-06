@@ -162,11 +162,13 @@ Will result in the flag `--resolv-conf=` being built.
 spec:
   kubelet:
     featureGates:
-      ExperimentalCriticalPodAnnotation: "true"
+      Accelerators: "true"
       AllowExtTrafficLocalEndpoints: "false"
 ```
 
-Will result in the flag `--feature-gates=ExperimentalCriticalPodAnnotation=true,AllowExtTrafficLocalEndpoints=false`
+Will result in the flag `--feature-gates=Accelerators=true,AllowExtTrafficLocalEndpoints=false`
+
+NOTE: Feature gate `ExperimentalCriticalPodAnnotation` is enabled by default because some critical components like `kube-proxy` depend on its presence.
 
 ####  Compute Resources Reservation
 
