@@ -68,6 +68,15 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 	}
 
+	c.AddTask(&gcetasks.FirewallRule{
+		Name:         s(b.SafeObjectName("nodeport-external-to-node")),
+		Lifecycle:    b.Lifecycle,
+		TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+		Allowed:      []string{"tcp:30000-32767,udp:30000-32767"},
+		SourceRanges: b.Cluster.Spec.NodePortAccess,
+		Network:      b.LinkToNetwork(),
+	})
+
 	if !b.UseLoadBalancerForAPI() {
 		// Configuration for the master, when not using a Loadbalancer (ELB)
 		// We expect that either the IP address is published, or DNS is set up to point to the IPs
