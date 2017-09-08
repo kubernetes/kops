@@ -128,6 +128,16 @@ spec:
       apps/v1alpha1: "true"
 ```
 
+#### serviceNodePortRange
+
+This value is passed as `--service-node-port-range` for `kube-apiserver`.
+
+```yaml
+spec:
+  kubeAPIServer:
+    serviceNodePortRange: 30000-33000
+```
+
 Will result in the flag `--runtime-config=batch/v2alpha1=true,apps/v1alpha1=true`. Note that `kube-apiserver` accepts `true` as a value for switch-like flags.
 
 ### externalDns
