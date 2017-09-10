@@ -24,6 +24,8 @@ UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
 BINDATA_TARGETS=upup/models/bindata.go federation/model/bindata.go
 BUILD=${GOPATH_1ST}/src/k8s.io/kops/.build
+UID:=$(shell id -u)
+GID:=$(shell id -g)
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -312,7 +314,7 @@ protokube-builder-image:
 
 .PHONY: protokube-build-in-docker
 protokube-build-in-docker: protokube-builder-image
-	docker run -t -e VERSION=${VERSION} -v `pwd`:/src protokube-builder /onbuild.sh
+	docker run -t -e VERSION=${VERSION} -e HOST_UID=${UID} -e HOST_GID=${GID} -v `pwd`:/src protokube-builder /onbuild.sh
 
 .PHONY: protokube-image
 protokube-image: protokube-build-in-docker
@@ -357,7 +359,7 @@ dns-controller-builder-image:
 
 .PHONY: dns-controller-build-in-docker
 dns-controller-build-in-docker: dns-controller-builder-image
-	docker run -t -v `pwd`:/src dns-controller-builder /onbuild.sh
+	docker run -t -e HOST_UID=${UID} -e HOST_GID=${GID} -v `pwd`:/src dns-controller-builder /onbuild.sh
 
 .PHONY: dns-controller-image
 dns-controller-image: dns-controller-build-in-docker
