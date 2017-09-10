@@ -245,6 +245,7 @@ func (b *IAMPolicyBuilder) BuildAWSIAMPolicy() (*IAMPolicy, error) {
 // access to EC2 resources, depending on the instance role
 func addEC2Permissions(p *IAMPolicy, iamPrefix string, b *IAMPolicyBuilder, wildcard stringorslice.StringOrSlice, legacyIAM bool) {
 	if (b.Role == api.InstanceGroupRoleNode) || (b.Role == api.InstanceGroupRoleMaster) {
+		// Describe* calls don't support any additional IAM restrictions
 		p.Statement = append(p.Statement, &IAMStatement{
 			Effect:   IAMStatementEffectAllow,
 			Action:   stringorslice.Slice([]string{"ec2:Describe*"}),
@@ -262,11 +263,34 @@ func addEC2Permissions(p *IAMPolicy, iamPrefix string, b *IAMPolicyBuilder, wild
 				},
 			)
 		} else {
+			// The non-Describe* ec2 calls support different types of filtering:
+			// http://docs.aws.amazon.com/AWSEC2/latest/APIReference/ec2-api-permissions.html
+			// We try to lock down the permissions here in non-legacy mode,
+			// but there are still some improvements possible
+
+			// AttachVolume - supports filtering on tags
+			// DetachVolume - supports filtering on tags
+			// CreateVolume - supports filtering on tags, but we need to switch to pass tags to CreateVolume
+			// DeleteVolume - supports filtering on tags
+
+			// CreateSecurityGroup - no filtering
+			// DeleteSecurityGroup - supports filtering on VPC & tags
+			// AuthorizeSecurityGroupIngress - supports filtering on VPC & tags
+			// RevokeSecurityGroupIngress - supports filtering on VPC & tags
+
+			// CreateTags - supports filtering on existing tags.  Also supports filtering on VPC for some resources (e.g. security groups)
+
+			// CreateRoute - supports no filtering
+			// DeleteRoute - supports filtering on tags (of the route table) and of the VPC
+
+			// ModifyInstanceAttribute - supports no filtering
+
 			p.Statement = append(p.Statement,
 				&IAMStatement{
 					Effect: IAMStatementEffectAllow,
 					Action: stringorslice.Slice([]string{
 						"ec2:CreateRoute",
+						"ec2:CreateSecurityGroup",
 						"ec2:CreateTags",
 						"ec2:CreateVolume",
 						"ec2:DeleteVolume",
