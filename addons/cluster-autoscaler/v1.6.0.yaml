@@ -66,6 +66,13 @@ rules:
   verbs:
   - watch
   - list
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - watch
+  - list
 
 ---
 
