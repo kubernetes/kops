@@ -13,11 +13,11 @@ brew update && brew install --HEAD kops
 ```
 go get -d k8s.io/kops
 cd ${GOPATH}/src/k8s.io/kops/
-git checkout release
+git checkout release-1.7
 make
 ```
 
-* The `release` branch is where releases are taken from.  This is the stable code branch.
+* The `release-1.7` branch is where the latest release is from.  This is the stable code branch.
 * The `master` branch  _should_ also be functional, but is where active development happens, so may be less stable.
 
 ## Cross Compiling
