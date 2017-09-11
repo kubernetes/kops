@@ -260,6 +260,7 @@ func TestEC2PolicyGeneration(t *testing.T) {
 						Effect: IAMStatementEffectAllow,
 						Action: stringorslice.Slice([]string{
 							"ec2:CreateRoute",
+							"ec2:CreateSecurityGroup",
 							"ec2:CreateTags",
 							"ec2:CreateVolume",
 							"ec2:DeleteVolume",
