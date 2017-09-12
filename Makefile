@@ -370,7 +370,7 @@ nodeup-dist:
 	mkdir -p ${DIST}
 	docker pull golang:${GOVERSION} # Keep golang image up to date
 	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
-	docker cp nodeup-build-${UNIQUE}:/go/bin/nodeup .build/dist/
+	docker cp nodeup-build-${UNIQUE}:/go/src/k8s.io/kops/.build/local/nodeup .build/dist/
 	(${SHASUMCMD} .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
 
 .PHONY: dns-controller-gocode
