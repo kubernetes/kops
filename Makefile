@@ -212,9 +212,9 @@ crossbuild: ${DIST}/darwin/amd64/kops ${DIST}/linux/amd64/kops
 .PHONY: crossbuild-in-docker
 crossbuild-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run -it --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile crossbuild
+	docker run --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile crossbuild
 	docker start kops-build-${UNIQUE}
-	docker exec -it kops-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
+	docker exec kops-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
 	docker cp kops-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
 	docker kill kops-build-${UNIQUE}
 	docker rm kops-build-${UNIQUE}
