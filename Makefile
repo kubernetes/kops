@@ -27,6 +27,7 @@ BINDATA_TARGETS=upup/models/bindata.go federation/model/bindata.go
 ARTIFACTS=$(BUILD)/artifacts
 DIST=$(BUILD)/dist
 GOBINDATA=$(LOCAL)/go-bindata
+NODEUP=$(LOCAL)/nodeup
 UID:=$(shell id -u)
 GID:=$(shell id -g)
 TESTABLE_PACKAGES:=$(shell go list ./... | egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor")
@@ -127,6 +128,7 @@ clean: # Remove build directory and bindata-generated files
 .PHONY: install
 install: ${KOPS}
 	cp ${KOPS} ${GOPATH_1ST}/bin
+	cp ${NODEUP} ${GOPATH_1ST}/bin
 
 .PHONY: kops
 kops: ${KOPS}
@@ -357,9 +359,11 @@ protokube-push: protokube-image
 .PHONY: nodeup
 nodeup: nodeup-dist
 
+${NODEUP}: ${BINDATA_TARGETS}
+	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" -o $@ k8s.io/kops/cmd/nodeup
+
 .PHONY: nodeup-gocode
-nodeup-gocode: kops-gobindata
-	go install ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
+nodeup-gocode: ${NODEUP}
 
 .PHONY: nodeup-dist
 nodeup-dist:
