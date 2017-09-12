@@ -183,7 +183,7 @@ hooks: # Install Git hooks
 
 .PHONY: test
 test: ${BINDATA_TARGETS}  # Run tests locally
-	go test ${TESTABLE_PACKAGES} -v -logtostderr
+	for t in ${TESTABLE_PACKAGES}; do go test -v  $$t 2>&1; done 
 
 ${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
