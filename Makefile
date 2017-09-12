@@ -12,7 +12,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-all: kops
 
 DOCKER_REGISTRY?=gcr.io/must-override
 S3_BUCKET?=s3://must-override/
@@ -22,10 +21,15 @@ LATEST_FILE?=latest-ci.txt
 GOPATH_1ST=$(shell go env | grep GOPATH | cut -f 2 -d \")
 UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
+BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
+LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go federation/model/bindata.go
-BUILD=${GOPATH_1ST}/src/k8s.io/kops/.build
+ARTIFACTS=$(BUILD)/artifacts
+DIST=$(BUILD)/dist
+GOBINDATA=$(LOCAL)/go-bindata
 UID:=$(shell id -u)
 GID:=$(shell id -g)
+TESTABLE_PACKAGES:=$(shell go list ./... | egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor")
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -36,8 +40,9 @@ DNS_CONTROLLER_TAG=1.7.1
 KOPS_RELEASE_VERSION = 1.7.1-beta.2
 KOPS_CI_VERSION      = 1.7.1-beta.3
 
-# kops install location
-KOPS                 = ${GOPATH_1ST}/bin/kops
+# kops local location
+KOPS                 = ${LOCAL}/kops
+
 # kops source root directory (without trailing /)
 KOPS_ROOT           ?= $(patsubst %/,%,$(abspath $(dir $(firstword $(MAKEFILE_LIST)))))
 
@@ -84,6 +89,9 @@ ifndef SHASUMCMD
   $(error "Neither sha1sum nor shasum command is available")
 endif
 
+.PHONY: all
+all: ${KOPS}
+
 .PHONY: help
 help: # Show this help
 	@{ \
@@ -113,24 +121,34 @@ help: # Show this help
 
 .PHONY: clean
 clean: # Remove build directory and bindata-generated files
-	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -f $$t; fi; done 
-	if test -e ${BUILD}; then rm -rf ${BUILD}; fi
+	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -fv $$t; fi; done 
+	if test -e ${BUILD}; then rm -rfv ${BUILD}; fi
 
-kops: kops-gobindata # Install kops
-	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/...
+.PHONY: install
+install: ${KOPS}
+	cp ${KOPS} ${GOPATH_1ST}/bin
 
-.PHONY: gobindata-tools
-gobindata-tool:
-	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o ${GOPATH_1ST}/bin/go-bindata k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
+.PHONY: kops
+kops: ${KOPS}
+
+${KOPS}: ${BINDATA_TARGETS}
+	go build ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
+
+${GOBINDATA}:
+	mkdir -p ${LOCAL}
+	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
+
+.PHONY: gobindata-tool
+gobindata-tool: ${GOBINDATA}
 
 .PHONY: kops-gobindata
 kops-gobindata: gobindata-tool ${BINDATA_TARGETS}
 
-upup/models/bindata.go:
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o $@ -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
+upup/models/bindata.go: ${GOBINDATA}
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
 
-federation/model/bindata.go:
-	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOPATH_1ST}/bin/go-bindata -o $@ -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
+federation/model/bindata.go: ${GOBINDATA}
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
@@ -164,22 +182,15 @@ hooks: # Install Git hooks
 	cp hack/pre-commit.sh .git/hooks/pre-commit
 
 .PHONY: test
-test: # Run tests locally
-	go test k8s.io/kops/pkg/... -args -v=1 -logtostderr
-	go test k8s.io/kops/nodeup/pkg/... -args -v=1 -logtostderr
-	go test k8s.io/kops/upup/pkg/... -args -v=1 -logtostderr
-	go test k8s.io/kops/nodeup/pkg/... -args -v=1 -logtostderr
-	go test k8s.io/kops/protokube/... -args -v=1 -logtostderr
-	go test k8s.io/kops/dns-controller/pkg/... -args -v=1 -logtostderr
-	go test k8s.io/kops/cmd/... -args -v=1 -logtostderr
-	go test k8s.io/kops/channels/... -args -v=1 -logtostderr
-	go test k8s.io/kops/util/... -args -v=1 -logtostderr
-	go test k8s.io/kops/tests/... -args -v=1 -logtostderr
+test: ${BINDATA_TARGETS}  # Run tests locally
+	go test ${TESTABLE_PACKAGES} -v -logtostderr
+
+${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
+	mkdir -p ${DIST}
+	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 
 .PHONY: crossbuild-nodeup
-crossbuild-nodeup:
-	mkdir -p .build/dist/
-	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/nodeup -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
+crossbuild-nodeup: ${DIST}/linux/amd64/nodeup
 
 .PHONY: crossbuild-nodeup-in-docker
 crossbuild-nodeup-in-docker:
@@ -187,17 +198,26 @@ crossbuild-nodeup-in-docker:
 	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile crossbuild-nodeup
 	docker cp nodeup-build-${UNIQUE}:/go/.build .
 
+${DIST}/darwin/amd64/kops: ${BINDATA_TARGETS}
+	mkdir -p ${DIST}
+	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+
+${DIST}/linux/amd64/kops: ${BINDATA_TARGETS}
+	mkdir -p ${DIST}
+	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+
 .PHONY: crossbuild
-crossbuild:
-	mkdir -p .build/dist/
-	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/darwin/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
-	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+crossbuild: ${DIST}/darwin/amd64/kops ${DIST}/linux/amd64/kops
 
 .PHONY: crossbuild-in-docker
 crossbuild-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile crossbuild
-	docker cp kops-build-${UNIQUE}:/go/.build .
+	docker run -it --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile crossbuild
+	docker start kops-build-${UNIQUE}
+	docker exec -it kops-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
+	docker cp kops-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
+	docker kill kops-build-${UNIQUE}
+	docker rm kops-build-${UNIQUE}
 
 .PHONY: kops-dist
 kops-dist: crossbuild-in-docker
@@ -343,9 +363,9 @@ nodeup-gocode: kops-gobindata
 
 .PHONY: nodeup-dist
 nodeup-dist:
+	mkdir -p ${DIST}
 	docker pull golang:${GOVERSION} # Keep golang image up to date
 	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
-	mkdir -p .build/dist
 	docker cp nodeup-build-${UNIQUE}:/go/bin/nodeup .build/dist/
 	(${SHASUMCMD} .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
 
@@ -418,19 +438,7 @@ verify-goimports:
 
 .PHONY: govet
 govet:
-	go vet \
-	  k8s.io/kops/cmd/... \
-	  k8s.io/kops/pkg/... \
-	  k8s.io/kops/channels/... \
-	  k8s.io/kops/examples/... \
-	  k8s.io/kops/federation/... \
-	  k8s.io/kops/nodeup/... \
-	  k8s.io/kops/util/... \
-	  k8s.io/kops/upup/... \
-	  k8s.io/kops/protokube/... \
-	  k8s.io/kops/dns-controller/... \
-	  k8s.io/kops/tests/...
-
+	go vet ${TESTABLE_PACKAGES}
 
 # --------------------------------------------------
 # Continuous integration targets
@@ -444,7 +452,7 @@ verify-gofmt:
 	hack/verify-gofmt.sh
 
 .PHONY: verify-packages
-verify-packages:
+verify-packages: ${BINDATA_TARGETS}
 	hack/verify-packages.sh
 
 .PHONY: verify-gendocs
@@ -495,7 +503,7 @@ release-github:
 # API / embedding examples
 
 .PHONY: examples
-examples: # Install kops API example
+examples: ${BINDATA_TARGETS} # Install kops API example
 	go install k8s.io/kops/examples/kops-api-example/...
 
 # -----------------------------------------------------
