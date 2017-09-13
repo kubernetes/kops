@@ -195,3 +195,41 @@ func Test_Validate_DockerConfig_Storage(t *testing.T) {
 		}
 	}
 }
+
+func Test_Validate_Networking_Flannel(t *testing.T) {
+
+	grid := []struct {
+		Input          kops.FlannelNetworkingSpec
+		ExpectedErrors []string
+	}{
+		{
+			Input: kops.FlannelNetworkingSpec{
+				Backend: "udp",
+			},
+		},
+		{
+			Input: kops.FlannelNetworkingSpec{
+				Backend: "vxlan",
+			},
+		},
+		{
+			Input: kops.FlannelNetworkingSpec{
+				Backend: "",
+			},
+			ExpectedErrors: []string{"Required value::Networking.Flannel.Backend"},
+		},
+		{
+			Input: kops.FlannelNetworkingSpec{
+				Backend: "nope",
+			},
+			ExpectedErrors: []string{"Unsupported value::Networking.Flannel.Backend"},
+		},
+	}
+	for _, g := range grid {
+		networking := &kops.NetworkingSpec{}
+		networking.Flannel = &g.Input
+
+		errs := validateNetworking(networking, field.NewPath("Networking"))
+		testErrors(t, g.Input, errs, g.ExpectedErrors)
+	}
+}
