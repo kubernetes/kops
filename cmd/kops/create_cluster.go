@@ -110,6 +110,9 @@ type CreateClusterOptions struct {
 	// Specify API loadbalancer as public or internal
 	APILoadBalancerType string
 
+	// Allow custom public master name
+	MasterPublicName string
+
 	// vSphere options
 	VSphereServer        string
 	VSphereDatacenter    string
@@ -286,6 +289,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
 	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
+
+	// Allow custom public master name
+	cmd.Flags().StringVar(&options.MasterPublicName, "master-public-name", options.MasterPublicName, "Sets the public master public name")
 
 	if featureflag.SpecOverrideFlag.Enabled() {
 		cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
@@ -808,6 +814,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
 	default:
 		return fmt.Errorf("unknown DNSType: %q", c.DNSType)
+	}
+
+	if c.MasterPublicName != "" {
+		cluster.Spec.MasterPublicName = c.MasterPublicName
 	}
 
 	// Populate the API access, so that it can be discoverable
