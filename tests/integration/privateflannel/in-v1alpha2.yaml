@@ -23,7 +23,8 @@ spec:
   masterPublicName: api.privateflannel.example.com
   networkCIDR: 172.20.0.0/16
   networking:
-    flannel: {}
+    flannel:
+      backend: vxlan
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
   - 0.0.0.0/0
