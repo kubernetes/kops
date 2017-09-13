@@ -81,4 +81,13 @@ func SetDefaults_ClusterSpec(obj *ClusterSpec) {
 		}
 	}
 
+	if obj.Networking != nil {
+		if obj.Networking.Flannel != nil {
+			if obj.Networking.Flannel.Backend == "" {
+				// Populate with legacy default value; new clusters will be created with vxlan by create cluster
+				obj.Networking.Flannel.Backend = "udp"
+			}
+		}
+	}
+
 }

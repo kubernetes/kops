@@ -1447,6 +1447,7 @@ func Convert_kops_FileAssetSpec_To_v1alpha2_FileAssetSpec(in *kops.FileAssetSpec
 }
 
 func autoConvert_v1alpha2_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(in *FlannelNetworkingSpec, out *kops.FlannelNetworkingSpec, s conversion.Scope) error {
+	out.Backend = in.Backend
 	return nil
 }
 
@@ -1456,6 +1457,7 @@ func Convert_v1alpha2_FlannelNetworkingSpec_To_kops_FlannelNetworkingSpec(in *Fl
 }
 
 func autoConvert_kops_FlannelNetworkingSpec_To_v1alpha2_FlannelNetworkingSpec(in *kops.FlannelNetworkingSpec, out *FlannelNetworkingSpec, s conversion.Scope) error {
+	out.Backend = in.Backend
 	return nil
 }
 

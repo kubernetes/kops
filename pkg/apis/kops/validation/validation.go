@@ -75,6 +75,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, fieldPath.Child("kubeAPIServer"))...)
 	}
 
+	if spec.Networking != nil {
+		allErrs = append(allErrs, validateNetworking(spec.Networking, fieldPath.Child("networking"))...)
+	}
+
 	return allErrs
 }
 
@@ -186,7 +190,6 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 }
 
 func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) field.ErrorList {
-
 	allErrs := field.ErrorList{}
 
 	proxyClientCertIsNil := v.ProxyClientCertFile == nil
@@ -195,6 +198,30 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) fie
 	if (proxyClientCertIsNil && !proxyClientKeyIsNil) || (!proxyClientCertIsNil && proxyClientKeyIsNil) {
 		flds := [2]*string{v.ProxyClientCertFile, v.ProxyClientKeyFile}
 		allErrs = append(allErrs, field.Invalid(fldPath, flds, "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)"))
+	}
+
+	return allErrs
+}
+
+func validateNetworking(v *kops.NetworkingSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if v.Flannel != nil {
+		allErrs = append(allErrs, validateNetworkingFlannel(v.Flannel, fldPath.Child("Flannel"))...)
+	}
+	return allErrs
+}
+
+func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	switch v.Backend {
+	case "":
+		allErrs = append(allErrs, field.Required(fldPath.Child("Backend"), "Flannel backend must be specified"))
+	case "udp", "vxlan":
+		// OK
+	default:
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("Backend"), v.Backend, []string{"udp", "vxlan"}))
 	}
 
 	return allErrs
