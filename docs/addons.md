@@ -57,7 +57,7 @@ Monitoring supports the horizontal pod autoscaler.
 
 Install using:
 ```
-kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/monitoring-standalone/v1.6.0.yaml
+kubectl create -f https://raw.githubusercontent.com/kubernetes/kops/master/addons/monitoring-standalone/v1.7.0.yaml
 ```
 
 
