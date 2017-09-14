@@ -55,6 +55,7 @@ func (c *VFSSecretStore) FindSecret(id string) (*fi.Secret, error) {
 	return s, nil
 }
 
+// DeleteSecret implements fi.SecretStore DeleteSecret
 func (c *VFSSecretStore) DeleteSecret(item *fi.KeystoreItem) error {
 	switch item.Type {
 	case fi.SecretTypeSecret:

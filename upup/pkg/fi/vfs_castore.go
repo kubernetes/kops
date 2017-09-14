@@ -761,11 +761,11 @@ func (c *VFSCAStore) DeleteSecret(item *KeystoreItem) error {
 		}
 		p := c.buildCertificatePath(item.Name, version)
 		if err := p.Remove(); err != nil {
-			return err
+			return fmt.Errorf("error deleting certificate: %v", err)
 		}
 		p = c.buildPrivateKeyPath(item.Name, version)
 		if err := p.Remove(); err != nil {
-			return err
+			return fmt.Errorf("error deleting private key: %v", err)
 		}
 		return nil
 
