@@ -77,7 +77,7 @@ func UsesKubenet(clusterSpec *kops.ClusterSpec) (bool, error) {
 	} else if networking.External != nil {
 		// external is based on kubenet
 		return true, nil
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil {
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil {
 		return false, nil
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external
