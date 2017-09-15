@@ -374,6 +374,8 @@ func (c *Cluster) FillDefaults() error {
 		// OK
 	} else if c.Spec.Networking.Kuberouter != nil {
 		// OK
+	} else if c.Spec.Networking.Romana != nil {
+		// OK
 	} else {
 		// No networking model selected; choose Kubenet
 		c.Spec.Networking.Kubenet = &KubenetNetworkingSpec{}
