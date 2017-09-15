@@ -18,6 +18,8 @@ package model
 
 import (
 	"bytes"
+	"crypto/sha1"
+	"encoding/base64"
 	"fmt"
 	"os"
 	"strconv"
@@ -105,9 +107,20 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 				spec["masterKubelet"] = cs.MasterKubelet
 			}
 
-			hooks := b.getRelevantHooks(cs.Hooks, ig.Spec.Role)
+			hooks, err := b.getRelevantHooks(cs.Hooks, ig.Spec.Role)
+			if err != nil {
+				return "", err
+			}
 			if len(hooks) > 0 {
 				spec["hooks"] = hooks
+			}
+
+			fileAssets, err := b.getRelevantFileAssets(cs.FileAssets, ig.Spec.Role)
+			if err != nil {
+				return "", err
+			}
+			if len(fileAssets) > 0 {
+				spec["fileAssets"] = fileAssets
 			}
 
 			content, err := yaml.Marshal(spec)
@@ -122,9 +135,21 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 			spec["kubelet"] = ig.Spec.Kubelet
 			spec["nodeLabels"] = ig.Spec.NodeLabels
 			spec["taints"] = ig.Spec.Taints
-			hooks := b.getRelevantHooks(ig.Spec.Hooks, ig.Spec.Role)
+
+			hooks, err := b.getRelevantHooks(ig.Spec.Hooks, ig.Spec.Role)
+			if err != nil {
+				return "", err
+			}
 			if len(hooks) > 0 {
 				spec["hooks"] = hooks
+			}
+
+			fileAssets, err := b.getRelevantFileAssets(ig.Spec.FileAssets, ig.Spec.Role)
+			if err != nil {
+				return "", err
+			}
+			if len(fileAssets) > 0 {
+				spec["fileAssets"] = fileAssets
 			}
 
 			content, err := yaml.Marshal(spec)
@@ -143,10 +168,11 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 	return fi.WrapResource(templateResource), nil
 }
 
-// getRelevantHooks returns a list of hooks to be applied to the instance group
-func (b *BootstrapScript) getRelevantHooks(hooks []kops.HookSpec, role kops.InstanceGroupRole) []kops.HookSpec {
+// getRelevantHooks returns a list of hooks to be applied to the instance group,
+// with the Manifest and ExecContainer Commands fingerprinted to reduce size
+func (b *BootstrapScript) getRelevantHooks(allHooks []kops.HookSpec, role kops.InstanceGroupRole) ([]kops.HookSpec, error) {
 	relevantHooks := []kops.HookSpec{}
-	for _, hook := range hooks {
+	for _, hook := range allHooks {
 		if len(hook.Roles) == 0 {
 			relevantHooks = append(relevantHooks, hook)
 			continue
@@ -158,7 +184,84 @@ func (b *BootstrapScript) getRelevantHooks(hooks []kops.HookSpec, role kops.Inst
 			}
 		}
 	}
-	return relevantHooks
+
+	hooks := []kops.HookSpec{}
+	if len(relevantHooks) > 0 {
+		for _, hook := range relevantHooks {
+			if hook.Manifest != "" {
+				manifestFingerprint, err := b.computeFingerprint(hook.Manifest)
+				if err != nil {
+					return nil, err
+				}
+				hook.Manifest = manifestFingerprint + " (fingerprint)"
+			}
+
+			if hook.ExecContainer != nil && hook.ExecContainer.Command != nil {
+				execContainerCommandFingerprint, err := b.computeFingerprint(hook.ExecContainer.Command)
+				if err != nil {
+					return nil, err
+				}
+				hook.ExecContainer.Command = []string{execContainerCommandFingerprint + " (fingerprint)"}
+			}
+
+			hook.Roles = nil
+			hooks = append(hooks, hook)
+		}
+	}
+
+	return hooks, nil
+}
+
+// getRelevantFileAssets returns a list of file assets to be applied to the
+// instance group, with the Content fingerprinted to reduce size
+func (b *BootstrapScript) getRelevantFileAssets(allFileAssets []kops.FileAssetSpec, role kops.InstanceGroupRole) ([]kops.FileAssetSpec, error) {
+	relevantFileAssets := []kops.FileAssetSpec{}
+	for _, fileAsset := range allFileAssets {
+		if len(fileAsset.Roles) == 0 {
+			relevantFileAssets = append(relevantFileAssets, fileAsset)
+			continue
+		}
+		for _, fileAssetRole := range fileAsset.Roles {
+			if role == fileAssetRole {
+				relevantFileAssets = append(relevantFileAssets, fileAsset)
+				break
+			}
+		}
+	}
+
+	fileAssets := []kops.FileAssetSpec{}
+	if len(relevantFileAssets) > 0 {
+		for _, fileAsset := range relevantFileAssets {
+			if fileAsset.Content != "" {
+				contentFingerprint, err := b.computeFingerprint(fileAsset.Content)
+				if err != nil {
+					return nil, err
+				}
+				fileAsset.Content = contentFingerprint + " (fingerprint)"
+			}
+
+			fileAsset.Roles = nil
+			fileAssets = append(fileAssets, fileAsset)
+		}
+	}
+
+	return fileAssets, nil
+}
+
+// computeFingerprint takes an object and returns a base64 encoded fingerprint
+func (b *BootstrapScript) computeFingerprint(obj interface{}) (string, error) {
+	hasher := sha1.New()
+
+	data, err := kops.ToRawYaml(obj)
+	if err != nil {
+		return "", err
+	}
+
+	if _, err := hasher.Write(data); err != nil {
+		return "", fmt.Errorf("error computing fingerprint hash: %v", err)
+	}
+
+	return base64.StdEncoding.EncodeToString(hasher.Sum(nil)), nil
 }
 
 func (b *BootstrapScript) createProxyEnv(ps *kops.EgressProxySpec) string {
