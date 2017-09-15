@@ -17,6 +17,7 @@ limitations under the License.
 package gcemodel
 
 import (
+	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -68,11 +69,17 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		})
 	}
 
+	// NodePort access
+	nodePortRange, err := b.NodePortRange()
+	if err != nil {
+		return err
+	}
+	nodePortRangeString := nodePortRange.String()
 	c.AddTask(&gcetasks.FirewallRule{
 		Name:         s(b.SafeObjectName("nodeport-external-to-node")),
 		Lifecycle:    b.Lifecycle,
 		TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-		Allowed:      []string{"tcp:30000-32767,udp:30000-32767"},
+		Allowed:      []string{fmt.Sprintf("tcp:%s,udp:%s", nodePortRangeString, nodePortRangeString)},
 		SourceRanges: b.Cluster.Spec.NodePortAccess,
 		Network:      b.LinkToNetwork(),
 	})
