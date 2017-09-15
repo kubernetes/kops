@@ -29,8 +29,8 @@ mkdir -p /src/.build/artifacts/
 cp /go/bin/protokube /src/.build/artifacts/
 
 # Applying channels calls out to the channels tool
-make channels-gocode
-cp /go/bin/channels /src/.build/artifacts/
+make channels
+cp /src/.build/local/channels /src/.build/artifacts/
 
 # channels uses protokube
 cd /src/.build/artifacts/
