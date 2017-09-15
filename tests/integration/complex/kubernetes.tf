@@ -365,7 +365,7 @@ resource "aws_security_group_rule" "node-to-master-udp-1-65535" {
 resource "aws_security_group_rule" "nodeport-tcp-external-to-node-1-2-3-4--32" {
   type              = "ingress"
   security_group_id = "${aws_security_group.nodes-complex-example-com.id}"
-  from_port         = 30000
+  from_port         = 28000
   to_port           = 32767
   protocol          = "tcp"
   cidr_blocks       = ["1.2.3.4/32"]
@@ -374,7 +374,7 @@ resource "aws_security_group_rule" "nodeport-tcp-external-to-node-1-2-3-4--32" {
 resource "aws_security_group_rule" "nodeport-tcp-external-to-node-10-20-30-0--24" {
   type              = "ingress"
   security_group_id = "${aws_security_group.nodes-complex-example-com.id}"
-  from_port         = 30000
+  from_port         = 28000
   to_port           = 32767
   protocol          = "tcp"
   cidr_blocks       = ["10.20.30.0/24"]
@@ -383,7 +383,7 @@ resource "aws_security_group_rule" "nodeport-tcp-external-to-node-10-20-30-0--24
 resource "aws_security_group_rule" "nodeport-udp-external-to-node-1-2-3-4--32" {
   type              = "ingress"
   security_group_id = "${aws_security_group.nodes-complex-example-com.id}"
-  from_port         = 30000
+  from_port         = 28000
   to_port           = 32767
   protocol          = "udp"
   cidr_blocks       = ["1.2.3.4/32"]
@@ -392,7 +392,7 @@ resource "aws_security_group_rule" "nodeport-udp-external-to-node-1-2-3-4--32" {
 resource "aws_security_group_rule" "nodeport-udp-external-to-node-10-20-30-0--24" {
   type              = "ingress"
   security_group_id = "${aws_security_group.nodes-complex-example-com.id}"
-  from_port         = 30000
+  from_port         = 28000
   to_port           = 32767
   protocol          = "udp"
   cidr_blocks       = ["10.20.30.0/24"]
