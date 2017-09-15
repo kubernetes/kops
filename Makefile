@@ -26,6 +26,7 @@ LOCAL=$(BUILD)/local
 BINDATA_TARGETS=upup/models/bindata.go federation/model/bindata.go
 ARTIFACTS=$(BUILD)/artifacts
 DIST=$(BUILD)/dist
+IMAGES=$(DIST)/images
 GOBINDATA=$(LOCAL)/go-bindata
 NODEUP=$(LOCAL)/nodeup
 UID:=$(shell id -u)
@@ -223,9 +224,9 @@ crossbuild-in-docker:
 
 .PHONY: kops-dist
 kops-dist: crossbuild-in-docker
-	mkdir -p .build/dist/
-	(${SHASUMCMD} .build/dist/darwin/amd64/kops | cut -d' ' -f1) > .build/dist/darwin/amd64/kops.sha1
-	(${SHASUMCMD} .build/dist/linux/amd64/kops | cut -d' ' -f1) > .build/dist/linux/amd64/kops.sha1
+	mkdir -p ${DIST}
+	(${SHASUMCMD} ${DIST}/darwin/amd64/kops | cut -d' ' -f1) > ${DIST}/darwin/amd64/kops.sha1
+	(${SHASUMCMD} ${DIST}/linux/amd64/kops | cut -d' ' -f1) > ${DIST}/linux/amd64/kops.sha1
 
 .PHONY: version-dist
 version-dist: nodeup-dist kops-dist protokube-export utils-dist
@@ -234,16 +235,16 @@ version-dist: nodeup-dist kops-dist protokube-export utils-dist
 	mkdir -p .build/upload/kops/${VERSION}/darwin/amd64/
 	mkdir -p .build/upload/kops/${VERSION}/images/
 	mkdir -p .build/upload/utils/${VERSION}/linux/amd64/
-	cp .build/dist/nodeup .build/upload/kops/${VERSION}/linux/amd64/nodeup
-	cp .build/dist/nodeup.sha1 .build/upload/kops/${VERSION}/linux/amd64/nodeup.sha1
-	cp .build/dist/images/protokube.tar.gz .build/upload/kops/${VERSION}/images/protokube.tar.gz
-	cp .build/dist/images/protokube.tar.gz.sha1 .build/upload/kops/${VERSION}/images/protokube.tar.gz.sha1
-	cp .build/dist/linux/amd64/kops .build/upload/kops/${VERSION}/linux/amd64/kops
-	cp .build/dist/linux/amd64/kops.sha1 .build/upload/kops/${VERSION}/linux/amd64/kops.sha1
-	cp .build/dist/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
-	cp .build/dist/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
-	cp .build/dist/linux/amd64/utils.tar.gz .build/upload/kops/${VERSION}/linux/amd64/utils.tar.gz
-	cp .build/dist/linux/amd64/utils.tar.gz.sha1 .build/upload/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
+	cp ${DIST}/nodeup .build/upload/kops/${VERSION}/linux/amd64/nodeup
+	cp ${DIST}/nodeup.sha1 .build/upload/kops/${VERSION}/linux/amd64/nodeup.sha1
+	cp ${IMAGES}/protokube.tar.gz .build/upload/kops/${VERSION}/images/protokube.tar.gz
+	cp ${IMAGES}/protokube.tar.gz.sha1 .build/upload/kops/${VERSION}/images/protokube.tar.gz.sha1
+	cp ${DIST}/linux/amd64/kops .build/upload/kops/${VERSION}/linux/amd64/kops
+	cp ${DIST}/linux/amd64/kops.sha1 .build/upload/kops/${VERSION}/linux/amd64/kops.sha1
+	cp ${DIST}/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
+	cp ${DIST}/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
+	cp ${DIST}/linux/amd64/utils.tar.gz .build/upload/kops/${VERSION}/linux/amd64/utils.tar.gz
+	cp ${DIST}/linux/amd64/utils.tar.gz.sha1 .build/upload/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
 
 .PHONY: vsphere-version-dist
 vsphere-version-dist: nodeup-dist protokube-export
@@ -252,17 +253,17 @@ vsphere-version-dist: nodeup-dist protokube-export
 	mkdir -p .build/upload/kops/${VERSION}/darwin/amd64/
 	mkdir -p .build/upload/kops/${VERSION}/images/
 	mkdir -p .build/upload/utils/${VERSION}/linux/amd64/
-	cp .build/dist/nodeup .build/upload/kops/${VERSION}/linux/amd64/nodeup
-	cp .build/dist/nodeup.sha1 .build/upload/kops/${VERSION}/linux/amd64/nodeup.sha1
-	cp .build/dist/images/protokube.tar.gz .build/upload/kops/${VERSION}/images/protokube.tar.gz
-	cp .build/dist/images/protokube.tar.gz.sha1 .build/upload/kops/${VERSION}/images/protokube.tar.gz.sha1
+	cp ${DIST}/nodeup .build/upload/kops/${VERSION}/linux/amd64/nodeup
+	cp ${DIST}/nodeup.sha1 .build/upload/kops/${VERSION}/linux/amd64/nodeup.sha1
+	cp ${IMAGES}/protokube.tar.gz .build/upload/kops/${VERSION}/images/protokube.tar.gz
+	cp ${IMAGES}/protokube.tar.gz.sha1 .build/upload/kops/${VERSION}/images/protokube.tar.gz.sha1
 	scp -r .build/dist/nodeup* ${TARGET}:${TARGET_PATH}/nodeup
 	scp -r .build/dist/images/protokube.tar.gz* ${TARGET}:${TARGET_PATH}/protokube/
 	make kops-dist
-	cp .build/dist/linux/amd64/kops .build/upload/kops/${VERSION}/linux/amd64/kops
-	cp .build/dist/linux/amd64/kops.sha1 .build/upload/kops/${VERSION}/linux/amd64/kops.sha1
-	cp .build/dist/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
-	cp .build/dist/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
+	cp ${DIST}/linux/amd64/kops .build/upload/kops/${VERSION}/linux/amd64/kops
+	cp ${DIST}/linux/amd64/kops.sha1 .build/upload/kops/${VERSION}/linux/amd64/kops.sha1
+	cp ${DIST}/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
+	cp ${DIST}/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
 
 .PHONY: upload
 upload: kops version-dist # Upload kops to S3
@@ -344,10 +345,10 @@ protokube-image: protokube-build-in-docker
 
 .PHONY: protokube-export
 protokube-export: protokube-image
-	mkdir -p .build/dist/images
-	docker save protokube:${PROTOKUBE_TAG} > .build/dist/images/protokube.tar
-	gzip --force --best .build/dist/images/protokube.tar
-	(${SHASUMCMD} .build/dist/images/protokube.tar.gz | cut -d' ' -f1) > .build/dist/images/protokube.tar.gz.sha1
+	mkdir -p ${IMAGES}
+	docker save protokube:${PROTOKUBE_TAG} > ${IMAGES}/protokube.tar
+	gzip --force --best ${IMAGES}/protokube.tar
+	(${SHASUMCMD} ${IMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${IMAGES}/protokube.tar.gz.sha1
 
 # protokube-push is no longer used (we upload a docker image tar file to S3 instead),
 # but we're keeping it around in case it is useful for development etc
@@ -398,7 +399,7 @@ dns-controller-push: dns-controller-image
 .PHONY: utils-dist
 utils-dist:
 	docker build -t utils-builder images/utils-builder
-	mkdir -p .build/dist/linux/amd64/
+	mkdir -p ${DIST}/linux/amd64/
 	docker run -v `pwd`/.build/dist/linux/amd64/:/dist utils-builder /extract.sh
 
 # --------------------------------------------------
@@ -533,7 +534,7 @@ apimachinery:
 
 .PHONY: kops-server-docker-compile
 kops-server-docker-compile:
-	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o .build/dist/linux/amd64/kops-server -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops-server.Version=${VERSION} -X k8s.io/kops-server.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops-server
+	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o ${DIST}/linux/amd64/kops-server -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops-server.Version=${VERSION} -X k8s.io/kops-server.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops-server
 
 .PHONY: kops-server-build
 kops-server-build:
