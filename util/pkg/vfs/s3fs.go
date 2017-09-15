@@ -76,6 +76,8 @@ func (p *S3Path) Remove() error {
 		return err
 	}
 
+	glog.V(8).Infof("removing file %s", p)
+
 	request := &s3.DeleteObjectInput{}
 	request.Bucket = aws.String(p.bucket)
 	request.Key = aws.String(p.key)

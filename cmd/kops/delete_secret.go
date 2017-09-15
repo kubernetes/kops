@@ -18,7 +18,6 @@ package main
 
 import (
 	"fmt"
-
 	"io"
 
 	"github.com/spf13/cobra"
@@ -128,7 +127,12 @@ func RunDeleteSecret(f *util.Factory, out io.Writer, options *DeleteSecretOption
 		return fmt.Errorf("found multiple matching secrets; specify the id of the key")
 	}
 
-	err = keyStore.DeleteSecret(secrets[0])
+	switch secrets[0].Type {
+	case fi.SecretTypeSecret:
+		err = secretStore.DeleteSecret(secrets[0])
+	default:
+		err = keyStore.DeleteSecret(secrets[0])
+	}
 	if err != nil {
 		return fmt.Errorf("error deleting secret: %v", err)
 	}
