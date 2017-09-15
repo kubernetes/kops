@@ -1941,6 +1941,7 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.Address = in.Address
 	out.AdmissionControl = in.AdmissionControl
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
+	out.ServiceNodePortRange = in.ServiceNodePortRange
 	out.EtcdServers = in.EtcdServers
 	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.EtcdCAFile = in.EtcdCAFile
@@ -1991,6 +1992,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.Address = in.Address
 	out.AdmissionControl = in.AdmissionControl
 	out.ServiceClusterIPRange = in.ServiceClusterIPRange
+	out.ServiceNodePortRange = in.ServiceNodePortRange
 	out.EtcdServers = in.EtcdServers
 	out.EtcdServersOverrides = in.EtcdServersOverrides
 	out.EtcdCAFile = in.EtcdCAFile
