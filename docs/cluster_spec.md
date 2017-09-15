@@ -246,7 +246,7 @@ spec:
   # or disable a systemd unit
   hooks:
   - name: update-engine.service
-    disable: true
+    disabled: true
 
   # or you could wrap this into a full unit
   hooks:
