@@ -29,6 +29,7 @@ DIST=$(BUILD)/dist
 IMAGES=$(DIST)/images
 GOBINDATA=$(LOCAL)/go-bindata
 NODEUP=$(LOCAL)/nodeup
+UPLOAD=$(BUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
 TESTABLE_PACKAGES:=$(shell go list ./... | egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor")
@@ -230,49 +231,49 @@ kops-dist: crossbuild-in-docker
 
 .PHONY: version-dist
 version-dist: nodeup-dist kops-dist protokube-export utils-dist
-	rm -rf .build/upload
-	mkdir -p .build/upload/kops/${VERSION}/linux/amd64/
-	mkdir -p .build/upload/kops/${VERSION}/darwin/amd64/
-	mkdir -p .build/upload/kops/${VERSION}/images/
-	mkdir -p .build/upload/utils/${VERSION}/linux/amd64/
-	cp ${DIST}/nodeup .build/upload/kops/${VERSION}/linux/amd64/nodeup
-	cp ${DIST}/nodeup.sha1 .build/upload/kops/${VERSION}/linux/amd64/nodeup.sha1
-	cp ${IMAGES}/protokube.tar.gz .build/upload/kops/${VERSION}/images/protokube.tar.gz
-	cp ${IMAGES}/protokube.tar.gz.sha1 .build/upload/kops/${VERSION}/images/protokube.tar.gz.sha1
-	cp ${DIST}/linux/amd64/kops .build/upload/kops/${VERSION}/linux/amd64/kops
-	cp ${DIST}/linux/amd64/kops.sha1 .build/upload/kops/${VERSION}/linux/amd64/kops.sha1
-	cp ${DIST}/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
-	cp ${DIST}/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
-	cp ${DIST}/linux/amd64/utils.tar.gz .build/upload/kops/${VERSION}/linux/amd64/utils.tar.gz
-	cp ${DIST}/linux/amd64/utils.tar.gz.sha1 .build/upload/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
+	rm -rf ${UPLOAD}
+	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/amd64/
+	mkdir -p ${UPLOAD}/kops/${VERSION}/darwin/amd64/
+	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
+	mkdir -p ${UPLOAD}/utils/${VERSION}/linux/amd64/
+	cp ${DIST}/nodeup ${UPLOAD}/kops/${VERSION}/linux/amd64/nodeup
+	cp ${DIST}/nodeup.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha1
+	cp ${IMAGES}/protokube.tar.gz ${UPLOAD}/kops/${VERSION}/images/protokube.tar.gz
+	cp ${IMAGES}/protokube.tar.gz.sha1 ${UPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha1
+	cp ${DIST}/linux/amd64/kops ${UPLOAD}/kops/${VERSION}/linux/amd64/kops
+	cp ${DIST}/linux/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/kops.sha1
+	cp ${DIST}/darwin/amd64/kops ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops
+	cp ${DIST}/darwin/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
+	cp ${DIST}/linux/amd64/utils.tar.gz ${UPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz
+	cp ${DIST}/linux/amd64/utils.tar.gz.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/utils.tar.gz.sha1
 
 .PHONY: vsphere-version-dist
 vsphere-version-dist: nodeup-dist protokube-export
-	rm -rf .build/upload
-	mkdir -p .build/upload/kops/${VERSION}/linux/amd64/
-	mkdir -p .build/upload/kops/${VERSION}/darwin/amd64/
-	mkdir -p .build/upload/kops/${VERSION}/images/
-	mkdir -p .build/upload/utils/${VERSION}/linux/amd64/
-	cp ${DIST}/nodeup .build/upload/kops/${VERSION}/linux/amd64/nodeup
-	cp ${DIST}/nodeup.sha1 .build/upload/kops/${VERSION}/linux/amd64/nodeup.sha1
-	cp ${IMAGES}/protokube.tar.gz .build/upload/kops/${VERSION}/images/protokube.tar.gz
-	cp ${IMAGES}/protokube.tar.gz.sha1 .build/upload/kops/${VERSION}/images/protokube.tar.gz.sha1
+	rm -rf ${UPLOAD}
+	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/amd64/
+	mkdir -p ${UPLOAD}/kops/${VERSION}/darwin/amd64/
+	mkdir -p ${UPLOAD}/kops/${VERSION}/images/
+	mkdir -p ${UPLOAD}/utils/${VERSION}/linux/amd64/
+	cp ${DIST}/nodeup ${UPLOAD}/kops/${VERSION}/linux/amd64/nodeup
+	cp ${DIST}/nodeup.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/nodeup.sha1
+	cp ${IMAGES}/protokube.tar.gz ${UPLOAD}/kops/${VERSION}/images/protokube.tar.gz
+	cp ${IMAGES}/protokube.tar.gz.sha1 ${UPLOAD}/kops/${VERSION}/images/protokube.tar.gz.sha1
 	scp -r .build/dist/nodeup* ${TARGET}:${TARGET_PATH}/nodeup
 	scp -r .build/dist/images/protokube.tar.gz* ${TARGET}:${TARGET_PATH}/protokube/
 	make kops-dist
-	cp ${DIST}/linux/amd64/kops .build/upload/kops/${VERSION}/linux/amd64/kops
-	cp ${DIST}/linux/amd64/kops.sha1 .build/upload/kops/${VERSION}/linux/amd64/kops.sha1
-	cp ${DIST}/darwin/amd64/kops .build/upload/kops/${VERSION}/darwin/amd64/kops
-	cp ${DIST}/darwin/amd64/kops.sha1 .build/upload/kops/${VERSION}/darwin/amd64/kops.sha1
+	cp ${DIST}/linux/amd64/kops ${UPLOAD}/kops/${VERSION}/linux/amd64/kops
+	cp ${DIST}/linux/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/kops.sha1
+	cp ${DIST}/darwin/amd64/kops ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops
+	cp ${DIST}/darwin/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
 
 .PHONY: upload
 upload: kops version-dist # Upload kops to S3
-	aws s3 sync --acl public-read .build/upload/ ${S3_BUCKET}
+	aws s3 sync --acl public-read ${UPLOAD}/ ${S3_BUCKET}
 
 .PHONY: gcs-upload
 gcs-upload: version-dist # Upload kops to GCS
 	@echo "== Uploading kops =="
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r .build/upload/kops/* ${GCS_LOCATION}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" -m cp -n -r ${UPLOAD}/kops/* ${GCS_LOCATION}
 
 # In CI testing, always upload the CI version.
 .PHONY: gcs-publish-ci
@@ -281,8 +282,8 @@ gcs-publish-ci: PROTOKUBE_TAG := $(subst +,-,${VERSION})
 gcs-publish-ci: gcs-upload
 	echo "VERSION: ${VERSION}"
 	echo "PROTOKUBE_TAG: ${PROTOKUBE_TAG}"
-	echo "${GCS_URL}/${VERSION}" > .build/upload/${LATEST_FILE}
-	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp .build/upload/${LATEST_FILE} ${GCS_LOCATION}
+	echo "${GCS_URL}/${VERSION}" > ${UPLOAD}/${LATEST_FILE}
+	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
 
 .PHONY: gen-cli-docs
 gen-cli-docs: kops # Regenerate CLI docs
