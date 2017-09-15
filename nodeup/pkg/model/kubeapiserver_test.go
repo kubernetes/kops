@@ -50,6 +50,12 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 			},
 			"--insecure-port=8080 --secure-port=0",
 		},
+		{
+			kops.KubeAPIServerConfig{
+				ServiceNodePortRange: "30000-33000",
+			},
+			"--insecure-port=0 --secure-port=0 --service-node-port-range=30000-33000",
+		},
 	}
 
 	for _, g := range grid {
