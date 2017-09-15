@@ -28,6 +28,7 @@ ARTIFACTS=$(BUILD)/artifacts
 DIST=$(BUILD)/dist
 IMAGES=$(DIST)/images
 GOBINDATA=$(LOCAL)/go-bindata
+CHANNELS=$(LOCAL)/channels
 NODEUP=$(LOCAL)/nodeup
 UPLOAD=$(BUILD)/upload
 UID:=$(shell id -u)
@@ -93,7 +94,7 @@ ifndef SHASUMCMD
 endif
 
 .PHONY: all
-all: ${KOPS} ${NODEUP}
+all: ${KOPS} ${NODEUP} ${CHANNELS}
 
 .PHONY: help
 help: # Show this help
@@ -128,9 +129,10 @@ clean: # Remove build directory and bindata-generated files
 	if test -e ${BUILD}; then rm -rfv ${BUILD}; fi
 
 .PHONY: install
-install: ${KOPS} ${NODEUP}
+install: all
 	cp ${KOPS} ${GOPATH_1ST}/bin
 	cp ${NODEUP} ${GOPATH_1ST}/bin
+	cp ${CHANNELS} ${GOPATH_1ST}/bin
 
 .PHONY: kops
 kops: ${KOPS}
@@ -487,11 +489,10 @@ ci: govet verify-gofmt verify-boilerplate nodeup examples test | verify-gendocs 
 # channel tool
 
 .PHONY: channels
-channels: channels-gocode
+channels: ${CHANNELS}
 
-.PHONY: channels-gocode
-channels-gocode:
-	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
+${CHANNELS}:
+	go build ${EXTRA_BUILDFLAGS} -o $@ -ldflags "-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
 
 # --------------------------------------------------
 # release tasks
