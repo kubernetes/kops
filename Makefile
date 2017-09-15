@@ -91,7 +91,7 @@ ifndef SHASUMCMD
 endif
 
 .PHONY: all
-all: ${KOPS}
+all: ${KOPS} ${NODEUP}
 
 .PHONY: help
 help: # Show this help
@@ -126,7 +126,7 @@ clean: # Remove build directory and bindata-generated files
 	if test -e ${BUILD}; then rm -rfv ${BUILD}; fi
 
 .PHONY: install
-install: ${KOPS}
+install: ${KOPS} ${NODEUP}
 	cp ${KOPS} ${GOPATH_1ST}/bin
 	cp ${NODEUP} ${GOPATH_1ST}/bin
 
@@ -357,19 +357,18 @@ protokube-push: protokube-image
 	docker push ${DOCKER_REGISTRY}/protokube:${PROTOKUBE_TAG}
 
 .PHONY: nodeup
-nodeup: nodeup-dist
+nodeup: ${NODEUP}
 
 ${NODEUP}: ${BINDATA_TARGETS}
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" -o $@ k8s.io/kops/cmd/nodeup
-
-.PHONY: nodeup-gocode
-nodeup-gocode: ${NODEUP}
 
 .PHONY: nodeup-dist
 nodeup-dist:
 	mkdir -p ${DIST}
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup-gocode
+	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup
+	docker start nodeup-build-${UNIQUE}
+	docker exec nodeup-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
 	docker cp nodeup-build-${UNIQUE}:/go/src/k8s.io/kops/.build/local/nodeup .build/dist/
 	(${SHASUMCMD} .build/dist/nodeup | cut -d' ' -f1) > .build/dist/nodeup.sha1
 
@@ -479,7 +478,7 @@ verify-gendocs: kops
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
 .PHONY: ci
-ci: govet verify-gofmt verify-boilerplate nodeup-gocode examples test | verify-gendocs verify-packages
+ci: govet verify-gofmt verify-boilerplate nodeup examples test | verify-gendocs verify-packages
 	echo "Done!"
 
 # --------------------------------------------------
