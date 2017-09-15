@@ -756,6 +756,21 @@ func (c *VFSCAStore) DeleteSecret(item *KeystoreItem) error {
 		p := c.buildSSHPublicKeyPath(item.Name, item.Id)
 		return p.Remove()
 
+	case SecretTypeKeypair:
+		version, ok := big.NewInt(0).SetString(item.Id, 10)
+		if !ok {
+			return fmt.Errorf("keypair had non-integer version: %q", item.Id)
+		}
+		p := c.buildCertificatePath(item.Name, version)
+		if err := p.Remove(); err != nil {
+			return fmt.Errorf("error deleting certificate: %v", err)
+		}
+		p = c.buildPrivateKeyPath(item.Name, version)
+		if err := p.Remove(); err != nil {
+			return fmt.Errorf("error deleting private key: %v", err)
+		}
+		return nil
+
 	default:
 		// Primarily because we need to make sure users can recreate them!
 		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Type)

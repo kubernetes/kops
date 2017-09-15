@@ -38,8 +38,8 @@ func NewVFSSecretStore(basedir vfs.Path) fi.SecretStore {
 	return c
 }
 
-func (s *VFSSecretStore) VFSPath() vfs.Path {
-	return s.basedir
+func (c *VFSSecretStore) VFSPath() vfs.Path {
+	return c.basedir
 }
 
 func (c *VFSSecretStore) buildSecretPath(id string) vfs.Path {
@@ -53,6 +53,18 @@ func (c *VFSSecretStore) FindSecret(id string) (*fi.Secret, error) {
 		return nil, err
 	}
 	return s, nil
+}
+
+// DeleteSecret implements fi.SecretStore DeleteSecret
+func (c *VFSSecretStore) DeleteSecret(item *fi.KeystoreItem) error {
+	switch item.Type {
+	case fi.SecretTypeSecret:
+		p := c.buildSecretPath(item.Name)
+		return p.Remove()
+
+	default:
+		return fmt.Errorf("deletion of secretstore items of type %v not (yet) supported", item.Type)
+	}
 }
 
 func (c *VFSSecretStore) ListSecrets() ([]string, error) {
