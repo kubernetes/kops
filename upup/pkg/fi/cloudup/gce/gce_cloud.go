@@ -57,7 +57,14 @@ func (c *gceCloudImplementation) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderGCE
 }
 
+var gceCloudInstances map[string]GCECloud = make(map[string]GCECloud)
+
 func NewGCECloud(region string, project string, labels map[string]string) (GCECloud, error) {
+	i := gceCloudInstances[region+"::"+project]
+	if i != nil {
+		return i.(gceCloudInternal).WithLabels(labels), nil
+	}
+
 	c := &gceCloudImplementation{region: region, project: project}
 
 	ctx := context.Background()
@@ -78,9 +85,23 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	}
 	c.storage = storageService
 
-	c.labels = labels
+	gceCloudInstances[region+"::"+project] = c
 
-	return c, nil
+	return c.WithLabels(labels), nil
+}
+
+// gceCloudInternal is an interface for private functions for a gceCloudImplemention or mockGCECloud
+type gceCloudInternal interface {
+	// WithLabels returns a copy of the GCECloud, bound to the specified labels
+	WithLabels(labels map[string]string) GCECloud
+}
+
+// WithLabels returns a copy of the GCECloud, bound to the specified labels
+func (c *gceCloudImplementation) WithLabels(labels map[string]string) GCECloud {
+	i := &gceCloudImplementation{}
+	*i = *c
+	i.labels = labels
+	return i
 }
 
 // Compute returns private struct element compute.
