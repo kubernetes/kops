@@ -464,20 +464,15 @@ verify-packages: ${BINDATA_TARGETS}
 
 .PHONY: verify-gendocs
 verify-gendocs: kops
-	TMP_DOCS="$$(mktemp -d)"; \
+	@TMP_DOCS="$$(mktemp -d)"; \
+	'${KOPS}' genhelpdocs --out "$$TMP_DOCS"; \
 	\
-	if ! command -v '$(KOPS)' 1>/dev/null 2>&1; then \
-	    echo "kops must be installed. Please run make. Aborting." 1>&2; \
-	    exit 1; \
-	fi; \
-	\
-	'$(KOPS)' genhelpdocs --out "$$TMP_DOCS"; \
-	\
-	if ! diff -r "$$TMP_DOCS" '$(KOPS_ROOT)/docs/cli'; then \
+	if ! diff -r "$$TMP_DOCS" '${KOPS_ROOT}/docs/cli'; then \
 	     echo "Please run make gen-cli-docs." 1>&2; \
 	     exit 1; \
 	fi
-
+	@echo "cli docs up-to-date"
+#
 # verify-gendocs will call kops target
 # verify-package has to be after verify-gendoc, because with .gitignore for federation bindata
 # it bombs in travis. verify-gendoc generates the bindata file.
