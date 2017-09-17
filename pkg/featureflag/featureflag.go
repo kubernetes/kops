@@ -52,6 +52,9 @@ var VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
 
 var EnableExternalDNS = New("EnableExternalDNS", Bool(false))
 
+//EnableExternalCloudControllerManager, toggles the use of cloud-controller-manager introduced in v1.7
+var EnableExternalCloudControllerManager = New("EnableExternalCloudController", Bool(false))
+
 // SpecOverrideFlag allows setting spec values on create
 var SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))
 

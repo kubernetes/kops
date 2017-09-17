@@ -103,6 +103,9 @@ type CreateClusterOptions struct {
 	// Egress configuration - FOR TESTING ONLY
 	Egress string
 
+	// EnableExternalCloudController toggles the use of the new Cloud Controller Manager (introduced in v1.7 of k8s)
+	EnableExternalCloudController bool
+
 	// Specify tenancy (default or dedicated) for masters and nodes
 	MasterTenancy string
 	NodeTenancy   string
@@ -136,6 +139,7 @@ func (o *CreateClusterOptions) InitDefaults() {
 	o.AdminAccess = []string{"0.0.0.0/0"}
 
 	o.Authorization = AuthorizationFlagAlwaysAllow
+	o.EnableExternalCloudController = false
 }
 
 var (
@@ -299,6 +303,11 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		cmd.Flags().StringVar(&options.VSphereCoreDNSServer, "vsphere-coredns-server", options.VSphereCoreDNSServer, "vsphere-coredns-server is required for vSphere.")
 		cmd.Flags().StringVar(&options.VSphereDatastore, "vsphere-datastore", options.VSphereDatastore, "vsphere-datastore is required for vSphere.  Set a valid datastore in which to store dynamic provision volumes.")
 	}
+
+	if featureflag.EnableExternalCloudController.Enabled() {
+		cmd.Flags().BoolVar(&options.EnableExternalCloudController, "enable-external-cloud-controller", options.EnableExternalCloudController, "toggles the use of the cloud-controller-manager intoriduced in v1.7 of k8s (default false)")
+	}
+
 	return cmd
 }
 
@@ -368,6 +377,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 	cluster.Spec.Channel = c.Channel
+
+	if c.EnableExternalCloudController {
+		cluster.Spec.CloudControllerManager = &api.CloudControllerManagerConfig{}
+	}
 
 	configBase, err := clientset.ConfigBaseFor(cluster)
 	if err != nil {

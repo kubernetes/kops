@@ -295,6 +295,30 @@ type KubeControllerManagerConfig struct {
 	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
 }
 
+type CloudControllerManagerConfig struct {
+	// Master is the url for the kube api master.
+	Master string `json:"master, omitempty" flag:"master"`
+	// LogLevel is the verbosity of the logs.
+	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
+	// Image is the OCI image of the cloud controller manager.
+	Image string `json:"image,omitempty"`
+	// CloudProvider is the provider for cloud services.
+	CloudProvider string `json:"cloudProvider,omitempty" flag:"cloud-provider"`
+	// ClusterName is the instance prefix for the cluster.
+	ClusterName string `json:"clusterName,omitempty" flag:"cluster-name"`
+	// ClusterCIDR is CIDR Range for Pods in cluster.
+	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
+	// AllocateNodeCIDRs enables CIDRs for Pods to be allocated and, if
+	// ConfigureCloudRoutes is true, to be set on the cloud provider.
+	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty" flag:"allocate-node-cidrs"`
+	// ConfigureCloudRoutes enables CIDRs allocated with to be configured on the cloud provider.
+	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
+	// LeaderElection defines the configuration of leader election client.
+	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
+	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.
+	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
+}
+
 // KubeSchedulerConfig is the configuration for the kube-scheduler
 type KubeSchedulerConfig struct {
 	// Master is a url to the kube master
