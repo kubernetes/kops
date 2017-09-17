@@ -42,8 +42,40 @@ func (c *VFSSecretStore) VFSPath() vfs.Path {
 	return c.basedir
 }
 
+func (c *VFSSecretStore) MirrorTo(basedir vfs.Path) error {
+	if basedir.Path() == c.basedir.Path() {
+		return nil
+	}
+	glog.V(2).Infof("Mirroring secret store from %q to %q", c.basedir, basedir)
+
+	return vfs.CopyTree(c.basedir, basedir)
+	//
+	//files, err := c.basedir.ReadDir()
+	//if err != nil {
+	//	return fmt.Errorf("error listing secrets directory: %v", err)
+	//}
+	//
+	//for _, f := range files {
+	//	data, err := f.ReadFile()
+	//	if err != nil {
+	//		return fmt.Errorf("error reading secret file %q: %v", f.Path(), err)
+	//	}
+	//
+	//	name := f.Base()
+	//	p := BuildVfsSecretPath(basedir, name)
+	//	if err := p.WriteFile(data); err != nil {
+	//		return fmt.Errorf("error writing secret to %q: %v", p, err)
+	//	}
+	//}
+	//return nil
+}
+
+func BuildVfsSecretPath(basedir vfs.Path, name string) vfs.Path {
+	return basedir.Join(name)
+}
+
 func (c *VFSSecretStore) buildSecretPath(name string) vfs.Path {
-	return c.basedir.Join(name)
+	return BuildVfsSecretPath(c.basedir, name)
 }
 
 func (c *VFSSecretStore) FindSecret(id string) (*fi.Secret, error) {

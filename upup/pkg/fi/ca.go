@@ -51,8 +51,16 @@ type Keystore interface {
 
 	CreateKeypair(name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error)
 
-	// Store the keypair
+	// StoreKeypair writes the keypair to the store
 	StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
+
+	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
+	MirrorTo(basedir vfs.Path) error
+}
+
+// HasVFSPath is implemented by keystore & other stores that use a VFS path as their backing store
+type HasVFSPath interface {
+	VFSPath() vfs.Path
 }
 
 type CAStore interface {
@@ -70,8 +78,8 @@ type CAStore interface {
 	// List will list all the items, but will not fetch the data
 	List() ([]*KeystoreItem, error)
 
-	// VFSPath returns the path where the CAStore is stored
-	VFSPath() vfs.Path
+	//// VFSPath returns the path where the CAStore is stored
+	//VFSPath() vfs.Path
 
 	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
 	AddCert(name string, cert *pki.Certificate) error

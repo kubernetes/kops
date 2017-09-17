@@ -414,7 +414,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	//b.Context = "aws_" + instancePrefix
 
-	keyStore, err := registry.KeyStore(cluster)
+	keyStore, err := x.Clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}

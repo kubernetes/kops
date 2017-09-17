@@ -27,7 +27,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/vfs"
@@ -208,7 +207,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					return err
 				}
 
-				keyStore, err := registry.KeyStore(cluster)
+				keyStore, err := clientset.KeyStore(cluster)
 				if err != nil {
 					return err
 				}

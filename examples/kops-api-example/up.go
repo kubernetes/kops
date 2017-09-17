@@ -20,7 +20,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -101,7 +100,7 @@ func up() error {
 		}
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}

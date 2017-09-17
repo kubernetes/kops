@@ -26,6 +26,7 @@ import (
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"time"
 )
@@ -144,4 +145,8 @@ func (c *KubernetesKeystore) StoreKeypair(id string, cert *pki.Certificate, priv
 	}
 
 	return err
+}
+
+func (c *KubernetesKeystore) MirrorTo(dest vfs.Path) error {
+	return fmt.Errorf("KubernetesKeystore does not implement MirrorTo")
 }
