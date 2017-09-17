@@ -404,6 +404,16 @@ func (c *VFSCAStore) List() ([]*KeystoreItem, error) {
 	return items, nil
 }
 
+// MirrorTo will copy keys to a vfs.Path, which is often easier for a machine to read
+func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
+	if basedir.Path() == c.basedir.Path() {
+		return nil
+	}
+	glog.V(2).Infof("Mirroring key store from %q to %q", c.basedir, basedir)
+
+	return vfs.CopyTree(c.basedir, basedir)
+}
+
 func (c *VFSCAStore) IssueCert(id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
 	glog.Infof("Issuing new certificate: %q", id)
 

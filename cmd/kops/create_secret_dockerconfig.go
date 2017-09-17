@@ -25,7 +25,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/util/i18n"
@@ -97,7 +96,12 @@ func RunCreateSecretDockerConfig(f *util.Factory, out io.Writer, options *Create
 		return err
 	}
 
-	secretStore, err := registry.SecretStore(cluster)
+	clientset, err := f.Clientset()
+	if err != nil {
+		return err
+	}
+
+	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
 		return err
 	}
