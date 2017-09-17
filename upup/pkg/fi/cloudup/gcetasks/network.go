@@ -58,6 +58,9 @@ func (e *Network) Find(c *fi.Context) (*Network, error) {
 		glog.Warningf("SelfLink did not match URL: %q vs %q", r.SelfLink, e.URL(cloud.Project()))
 	}
 
+	// Ignore "system" fields
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 
