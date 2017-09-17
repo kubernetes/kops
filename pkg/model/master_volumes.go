@@ -21,6 +21,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -95,6 +96,8 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				b.addGCEVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
 			case kops.CloudProviderVSphere:
 				b.addVSphereVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+			case kops.CloudProviderBareMetal:
+				glog.Fatalf("BareMetal not implemented")
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.CloudProvider)
 			}

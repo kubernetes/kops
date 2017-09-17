@@ -67,6 +67,8 @@ const (
 )
 
 var (
+	// AlphaAllowBareMetal is a feature flag that gates BareMetal support while it is alpha
+	AlphaAllowBareMetal = featureflag.New("AlphaAllowBareMetal", featureflag.Bool(false))
 	// AlphaAllowDO is a feature flag that gates DigitalOcean support while it is alpha
 	AlphaAllowDO = featureflag.New("AlphaAllowDO", featureflag.Bool(false))
 	// AlphaAllowGCE is a feature flag that gates GCE support while it is alpha
@@ -407,6 +409,15 @@ func (c *ApplyClusterCmd) Run() error {
 			l.AddTypes(map[string]interface{}{
 				"instance": &vspheretasks.VirtualMachine{},
 			})
+		}
+
+	case kops.CloudProviderBareMetal:
+		{
+			if !AlphaAllowBareMetal.Enabled() {
+				return fmt.Errorf("BareMetal support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowBareMetal to enable it")
+			}
+
+			// No additional tasks (yet)
 		}
 
 	default:
