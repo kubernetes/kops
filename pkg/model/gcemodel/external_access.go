@@ -17,7 +17,6 @@ limitations under the License.
 package gcemodel
 
 import (
-	"fmt"
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -70,19 +69,30 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	// NodePort access
-	nodePortRange, err := b.NodePortRange()
-	if err != nil {
-		return err
+	{
+		nodePortRange, err := b.NodePortRange()
+		if err != nil {
+			return err
+		}
+		nodePortRangeString := nodePortRange.String()
+		t := &gcetasks.FirewallRule{
+			Name:       s(b.SafeObjectName("nodeport-external-to-node")),
+			Lifecycle:  b.Lifecycle,
+			TargetTags: []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
+			Allowed: []string{
+				"tcp:" + nodePortRangeString,
+				"udp:" + nodePortRangeString,
+			},
+			SourceRanges: b.Cluster.Spec.NodePortAccess,
+			Network:      b.LinkToNetwork(),
+		}
+		if len(t.SourceRanges) == 0 {
+			// Empty SourceRanges is interpreted as 0.0.0.0/0 if tags are empty, so we set a SourceTag
+			// This is already covered by the normal node-to-node rules, but avoids opening the NodePort range
+			t.SourceTags = []string{b.GCETagForRole(kops.InstanceGroupRoleNode)}
+		}
+		c.AddTask(t)
 	}
-	nodePortRangeString := nodePortRange.String()
-	c.AddTask(&gcetasks.FirewallRule{
-		Name:         s(b.SafeObjectName("nodeport-external-to-node")),
-		Lifecycle:    b.Lifecycle,
-		TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleNode)},
-		Allowed:      []string{fmt.Sprintf("tcp:%s,udp:%s", nodePortRangeString, nodePortRangeString)},
-		SourceRanges: b.Cluster.Spec.NodePortAccess,
-		Network:      b.LinkToNetwork(),
-	})
 
 	if !b.UseLoadBalancerForAPI() {
 		// Configuration for the master, when not using a Loadbalancer (ELB)
