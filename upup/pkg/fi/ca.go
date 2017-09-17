@@ -59,10 +59,10 @@ type CAStore interface {
 	Keystore
 
 	// Cert returns the primary specified certificate
-	Cert(name string) (*pki.Certificate, error)
+	Cert(name string, createIfMissing bool) (*pki.Certificate, error)
 	// CertificatePool returns all active certificates with the specified id
-	CertificatePool(name string) (*CertificatePool, error)
-	PrivateKey(name string) (*pki.PrivateKey, error)
+	CertificatePool(name string, createIfMissing bool) (*CertificatePool, error)
+	PrivateKey(name string, createIfMissing bool) (*pki.PrivateKey, error)
 
 	FindCert(name string) (*pki.Certificate, error)
 	FindPrivateKey(name string) (*pki.PrivateKey, error)
