@@ -222,16 +222,17 @@ type ClusterSpec struct {
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 
 	// Component configurations
-	Docker                *DockerConfig                `json:"docker,omitempty"`
-	KubeDNS               *KubeDNSConfig               `json:"kubeDNS,omitempty"`
-	KubeAPIServer         *KubeAPIServerConfig         `json:"kubeAPIServer,omitempty"`
-	KubeControllerManager *KubeControllerManagerConfig `json:"kubeControllerManager,omitempty"`
-	KubeScheduler         *KubeSchedulerConfig         `json:"kubeScheduler,omitempty"`
-	KubeProxy             *KubeProxyConfig             `json:"kubeProxy,omitempty"`
-	Kubelet               *KubeletConfigSpec           `json:"kubelet,omitempty"`
-	MasterKubelet         *KubeletConfigSpec           `json:"masterKubelet,omitempty"`
-	CloudConfig           *CloudConfiguration          `json:"cloudConfig,omitempty"`
-	ExternalDNS           *ExternalDNSConfig           `json:"externalDns,omitempty"`
+	Docker                 *DockerConfig                 `json:"docker,omitempty"`
+	KubeDNS                *KubeDNSConfig                `json:"kubeDNS,omitempty"`
+	KubeAPIServer          *KubeAPIServerConfig          `json:"kubeAPIServer,omitempty"`
+	KubeControllerManager  *KubeControllerManagerConfig  `json:"kubeControllerManager,omitempty"`
+	CloudControllerManager *CloudControllerManagerConfig `json:"cloudControllerManager,omitempty"`
+	KubeScheduler          *KubeSchedulerConfig          `json:"kubeScheduler,omitempty"`
+	KubeProxy              *KubeProxyConfig              `json:"kubeProxy,omitempty"`
+	Kubelet                *KubeletConfigSpec            `json:"kubelet,omitempty"`
+	MasterKubelet          *KubeletConfigSpec            `json:"masterKubelet,omitempty"`
+	CloudConfig            *CloudConfiguration           `json:"cloudConfig,omitempty"`
+	ExternalDNS            *ExternalDNSConfig            `json:"externalDns,omitempty"`
 
 	// Networking configuration
 	Networking *NetworkingSpec `json:"networking,omitempty"`
