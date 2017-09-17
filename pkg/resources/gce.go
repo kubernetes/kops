@@ -25,7 +25,6 @@ import (
 	compute "google.golang.org/api/compute/v0.beta"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/resources/tracker"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -735,24 +734,26 @@ func (d *clusterDiscoveryGCE) matchesClusterName(name string) bool {
 }
 
 func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*tracker.Resource, error) {
-	if dns.IsGossipHostname(d.clusterName) {
-		return nil, nil
-	}
-
-	zone, err := d.findDNSZone()
-	if err != nil {
-		return nil, err
-	}
-
-	return []*tracker.Resource{
-		{
-			Name:    zone.Name(),
-			ID:      zone.Name(),
-			Type:    "DNS Zone",
-			Deleter: d.deleteDNSZone,
-			Obj:     zone,
-		},
-	}, nil
+	// We never delete the hosted zone, because it is usually shared and we don't create it
+	return nil, nil
+	// TODO: When shared resource PR lands, reintroduce
+	//if dns.IsGossipHostname(d.clusterName) {
+	//	return nil, nil
+	//}
+	//zone, err := d.findDNSZone()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//return []*tracker.Resource{
+	//	{
+	//		Name:    zone.Name(),
+	//		ID:      zone.Name(),
+	//		Type:    "DNS Zone",
+	//		Deleter: d.deleteDNSZone,
+	//		Obj:     zone,
+	//	},
+	//}, nil
 }
 
 func (d *clusterDiscoveryGCE) findDNSZone() (dnsprovider.Zone, error) {
