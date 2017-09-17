@@ -33,7 +33,6 @@ import (
 	"k8s.io/kops/federation/targets/kubernetestarget"
 	"k8s.io/kops/federation/tasks"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/pki"
@@ -177,7 +176,7 @@ func (o *ApplyFederationOperation) Run() error {
 			ClusterName:       clusterName,
 			ApiserverHostname: cluster.Spec.MasterPublicName,
 		}
-		err = a.Run(cluster)
+		err = a.Run(o.KopsClient, cluster)
 		if err != nil {
 			return err
 		}
@@ -195,7 +194,7 @@ func (o *ApplyFederationOperation) Run() error {
 // Builds a fi.Context applying to the federation namespace in the specified cluster
 // Note that this operates inside the cluster, for example the KeyStore is backed by secrets in the namespace
 func (o *ApplyFederationOperation) federationContextForCluster(cluster *kopsapi.Cluster) (*fi.Context, error) {
-	clusterKeystore, err := registry.KeyStore(cluster)
+	clusterKeystore, err := o.KopsClient.KeyStore(cluster)
 	if err != nil {
 		return nil, err
 	}

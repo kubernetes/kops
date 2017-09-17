@@ -18,6 +18,7 @@ package fi
 
 import (
 	"bytes"
+	"crypto/md5"
 	crypto_rand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -610,15 +611,83 @@ func (c *ClientsetCAStore) DeleteSecret(item *KeystoreItem) error {
 	case SecretTypeKeypair:
 		client := c.clientset.Keysets(c.namespace)
 		return DeleteKeysetItem(client, item.Name, kops.SecretTypeKeypair, item.Id)
-
 	default:
 		// Primarily because we need to make sure users can recreate them!
 		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Type)
 	}
 }
 
-// VFSPath implements CAStore::VFSPath
-func (c *ClientsetCAStore) VFSPath() vfs.Path {
-	// We will implement mirroring instead
-	panic("ClientsetCAStore::VFSPath not implemented")
+func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
+	list, err := c.clientset.Keysets(c.namespace).List(v1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("error listing keysets: %v", err)
+	}
+
+	for i := range list.Items {
+		keyset := &list.Items[i]
+
+		if keyset.Spec.Type == kops.SecretTypeSecret {
+			continue
+		}
+
+		primary := FindPrimary(keyset)
+		if primary == nil {
+			glog.Warningf("skipping keyset with no primary data: %s", keyset.Name)
+			continue
+		}
+
+		switch keyset.Spec.Type {
+		case kops.SecretTypeKeypair:
+			for i := range keyset.Spec.Keys {
+				item := &keyset.Spec.Keys[i]
+				{
+					p := basedir.Join("issued", keyset.Name, item.Id+".crt")
+					err = p.WriteFile(item.PublicMaterial)
+					if err != nil {
+						return fmt.Errorf("error writing %q: %v", p, err)
+					}
+				}
+				{
+					p := basedir.Join("private", keyset.Name, item.Id+".key")
+					err = p.WriteFile(item.PrivateMaterial)
+					if err != nil {
+						return fmt.Errorf("error writing %q: %v", p, err)
+					}
+				}
+			}
+
+		default:
+			glog.Warningf("Ignoring unknown secret type: %q", keyset.Spec.Type)
+		}
+	}
+
+	sshCredentials, err := c.clientset.SSHCredentials(c.namespace).List(v1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("error listing SSHCredentials: %v", err)
+	}
+
+	for i := range sshCredentials.Items {
+		sshCredential := &sshCredentials.Items[i]
+
+		sshPublicKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(sshCredential.Spec.PublicKey))
+		if err != nil {
+			return fmt.Errorf("error parsing SSH public key %q: %v", sshCredential.Name, err)
+		}
+
+		// compute fingerprint to serve as id
+		h := md5.New()
+		_, err = h.Write(sshPublicKey.Marshal())
+		if err != nil {
+			return fmt.Errorf("error fingerprinting SSH public key: %v", err)
+		}
+		id := formatFingerprint(h.Sum(nil))
+
+		p := basedir.Join("ssh", "public", sshCredential.Name, id)
+		err = p.WriteFile([]byte(sshCredential.Spec.PublicKey))
+		if err != nil {
+			return fmt.Errorf("error writing %q: %v", p, err)
+		}
+	}
+
+	return nil
 }

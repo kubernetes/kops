@@ -17,6 +17,7 @@ limitations under the License.
 package secrets
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -49,6 +50,44 @@ func NewClientsetSecretStore(clientset kopsinternalversion.KopsInterface, namesp
 		namespace: namespace,
 	}
 	return c
+}
+
+func (c *ClientsetSecretStore) MirrorTo(basedir vfs.Path) error {
+	list, err := c.clientset.Keysets(c.namespace).List(v1.ListOptions{})
+	if err != nil {
+		return fmt.Errorf("error listing keysets: %v", err)
+	}
+
+	for i := range list.Items {
+		keyset := &list.Items[i]
+
+		if keyset.Spec.Type != kops.SecretTypeSecret {
+			continue
+		}
+
+		primary := fi.FindPrimary(keyset)
+		if primary == nil {
+			glog.Warningf("skipping secret with no primary data: %s", keyset.Name)
+			continue
+		}
+
+		name := strings.TrimPrefix(keyset.Name, NamePrefix)
+		p := BuildVfsSecretPath(basedir, name)
+
+		s := &fi.Secret{
+			Data: primary.PrivateMaterial,
+		}
+		data, err := json.Marshal(s)
+		if err != nil {
+			return fmt.Errorf("error serializing secret: %v", err)
+		}
+
+		if err := p.WriteFile(data); err != nil {
+			return fmt.Errorf("error writing secret to %q: %v", p, err)
+		}
+	}
+
+	return nil
 }
 
 // FindSecret implements fi.SecretStore::FindSecret
@@ -176,11 +215,4 @@ func (c *ClientsetSecretStore) createSecret(s *fi.Secret, name string) (*kops.Ke
 	})
 
 	return c.clientset.Keysets(c.namespace).Create(keyset)
-}
-
-// VFSPath implements fi.SecretStore::VFSPath
-func (c *ClientsetSecretStore) VFSPath() vfs.Path {
-	// We will implement mirroring instead
-	glog.Fatalf("ClientsetSecretStore::VFSPath not implemented")
-	return nil
 }

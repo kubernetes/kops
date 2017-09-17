@@ -28,12 +28,34 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type InstanceGroupVFS struct {
 	commonVFS
 
 	clusterName string
+}
+
+type InstanceGroupMirror interface {
+	WriteMirror(ig *kops.InstanceGroup) error
+}
+
+var _ InstanceGroupMirror = &InstanceGroupVFS{}
+
+func NewInstanceGroupMirror(clusterName string, configBase vfs.Path) InstanceGroupMirror {
+	kind := "InstanceGroup"
+
+	r := &InstanceGroupVFS{
+		clusterName: clusterName,
+	}
+	r.init(kind, configBase.Join("instancegroup"), StoreVersion)
+	defaultReadVersion := v1alpha1.SchemeGroupVersion.WithKind(kind)
+	r.defaultReadVersion = &defaultReadVersion
+	r.validate = func(o runtime.Object) error {
+		return validation.ValidateInstanceGroup(o.(*kops.InstanceGroup))
+	}
+	return r
 }
 
 func newInstanceGroupVFS(c *VFSClientset, clusterName string) *InstanceGroupVFS {
@@ -110,6 +132,15 @@ func (c *InstanceGroupVFS) Update(g *api.InstanceGroup) (*api.InstanceGroup, err
 		return nil, err
 	}
 	return g, nil
+}
+
+func (c *InstanceGroupVFS) WriteMirror(g *api.InstanceGroup) error {
+	err := c.writeConfig(c.basePath.Join(g.Name), g)
+	if err != nil {
+		return fmt.Errorf("error writing %s: %v", c.kind, err)
+	}
+
+	return nil
 }
 
 func (c *InstanceGroupVFS) Delete(name string, options *metav1.DeleteOptions) error {
