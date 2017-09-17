@@ -42,8 +42,8 @@ func (c *VFSSecretStore) VFSPath() vfs.Path {
 	return c.basedir
 }
 
-func (c *VFSSecretStore) buildSecretPath(id string) vfs.Path {
-	return c.basedir.Join(id)
+func (c *VFSSecretStore) buildSecretPath(name string) vfs.Path {
+	return c.basedir.Join(name)
 }
 
 func (c *VFSSecretStore) FindSecret(id string) (*fi.Secret, error) {
