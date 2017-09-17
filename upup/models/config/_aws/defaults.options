@@ -1,3 +1,0 @@
-MasterVolumeType: gp2
-
-# We just always use a t2.medium by default for the nodes
