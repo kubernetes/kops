@@ -30,6 +30,7 @@ IMAGES=$(DIST)/images
 GOBINDATA=$(LOCAL)/go-bindata
 CHANNELS=$(LOCAL)/channels
 NODEUP=$(LOCAL)/nodeup
+PROTOKUBE=$(LOCAL)/protokube
 UPLOAD=$(BUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
@@ -94,7 +95,7 @@ ifndef SHASUMCMD
 endif
 
 .PHONY: all
-all: ${KOPS} ${NODEUP} ${CHANNELS}
+all: ${KOPS} ${NODEUP} ${CHANNELS} ${PROTOKUBE}
 
 .PHONY: help
 help: # Show this help
@@ -133,6 +134,7 @@ install: all
 	cp ${KOPS} ${GOPATH_1ST}/bin
 	cp ${NODEUP} ${GOPATH_1ST}/bin
 	cp ${CHANNELS} ${GOPATH_1ST}/bin
+	cp ${PROTOKUBE} ${GOPATH_1ST}/bin
 
 .PHONY: kops
 kops: ${KOPS}
@@ -330,9 +332,11 @@ push-gce-run: push
 push-aws-run: push
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
-.PHONY: protokube-gocode
-protokube-gocode:
-	go install -tags 'peer_name_alternative peer_name_hash' k8s.io/kops/protokube/cmd/protokube
+${PROTOKUBE}:
+	go build -tags 'peer_name_alternative peer_name_hash' -o $@  k8s.io/kops/protokube/cmd/protokube
+
+.PHONY: protokube
+protokube: ${PROTOKUBE}
 
 .PHONY: protokube-builder-image
 protokube-builder-image:
