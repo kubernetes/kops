@@ -34,6 +34,7 @@ import (
 // NamePrefix is a prefix we use to avoid collisions with other keysets
 const NamePrefix = "token-"
 
+// ClientsetSecretStore is a SecretStore backed by Keyset objects in an API server
 type ClientsetSecretStore struct {
 	namespace string
 	clientset kopsinternalversion.KopsInterface
@@ -160,7 +161,7 @@ func parseSecret(keyset *kops.Keyset) (*fi.Secret, error) {
 	return s, nil
 }
 
-// createSecret writes the secret, but only if it does not exists
+// createSecret writes the secret, but only if it does not exist
 func (c *ClientsetSecretStore) createSecret(s *fi.Secret, name string) (*kops.Keyset, error) {
 	keyset := &kops.Keyset{}
 	keyset.Name = NamePrefix + name

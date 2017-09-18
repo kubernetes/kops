@@ -22,6 +22,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
+	"math/big"
+	"sync"
+	"time"
+
 	"github.com/golang/glog"
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -30,11 +34,9 @@ import (
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/util/pkg/vfs"
-	"math/big"
-	"sync"
-	"time"
 )
 
+// ClientsetCAStore is a CAStore implementation that stores keypairs in Keyset on a API server
 type ClientsetCAStore struct {
 	namespace string
 	clientset kopsinternalversion.KopsInterface
@@ -93,30 +95,15 @@ func (c *ClientsetCAStore) generateCACertificate() (*keyset, error) {
 
 	caPrivateKey := &pki.PrivateKey{Key: caRsaKey}
 
+	t := time.Now().UnixNano()
+	template.SerialNumber = pki.BuildPKISerial(t)
+
 	caCertificate, err := pki.SignNewCertificate(caPrivateKey, template, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	t := time.Now().UnixNano()
-	serial := pki.BuildPKISerial(t)
-	id := serial.String()
-
-	err = c.storeKeypair(CertificateId_CA, id, caCertificate, caPrivateKey)
-	if err != nil {
-		return nil, err
-	}
-
-	// Make double-sure it round-trips
-	keyset, err := c.loadKeyset(CertificateId_CA)
-	if err != nil {
-		return nil, err
-	}
-	if keyset == nil || keyset.primary == nil || keyset.primary.id != id {
-		return nil, fmt.Errorf("failed to round-trip CA keyset")
-	}
-
-	return keyset, nil
+	return c.storeAndVerifyKeypair(CertificateId_CA, caCertificate, caPrivateKey)
 }
 
 // keyset is a parsed Keyset
@@ -349,34 +336,41 @@ func (c *ClientsetCAStore) IssueCert(name string, serial *big.Int, privateKey *p
 		return nil, err
 	}
 
-	err = c.StoreKeypair(name, cert, privateKey)
-	if err != nil {
+	if _, err := c.storeAndVerifyKeypair(name, cert, privateKey); err != nil {
+		return nil, err
+	}
+
+	return cert, nil
+}
+
+// storeAndVerifyKeypair writes the keypair, also re-reading it to double-check it
+func (c *ClientsetCAStore) storeAndVerifyKeypair(name string, cert *pki.Certificate, privateKey *pki.PrivateKey) (*keyset, error) {
+	id := cert.Certificate.SerialNumber.String()
+	if err := c.storeKeypair(name, id, cert, privateKey); err != nil {
 		return nil, err
 	}
 
 	// Make double-sure it round-trips
 	keyset, err := c.loadKeyset(name)
 	if err != nil {
-		return nil, fmt.Errorf("error fetching issued certificate: %v", err)
+		return nil, fmt.Errorf("error fetching stored certificate: %v", err)
 	}
 
 	if keyset == nil {
-		return nil, fmt.Errorf("issued certificate not found: %v", err)
+		return nil, fmt.Errorf("stored certificate not found: %v", err)
 	}
 	if keyset.primary == nil {
-		return nil, fmt.Errorf("issued certificate did not have data: %v", err)
+		return nil, fmt.Errorf("stored certificate did not have data: %v", err)
 	}
-	if keyset.primary.id != serial.String() {
-		return nil, fmt.Errorf("issued certificate changed concurrently (id mismatch)")
+	if keyset.primary.id != id {
+		return nil, fmt.Errorf("stored certificate changed concurrently (id mismatch)")
 	}
-	return keyset.primary.certificate, nil
+	return keyset, nil
 }
 
 // StoreKeypair implements CAStore::StoreKeypair
 func (c *ClientsetCAStore) StoreKeypair(name string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
-	serial := cert.Certificate.SerialNumber
-
-	return c.storeKeypair(name, serial.String(), cert, privateKey)
+	return c.storeKeypair(name, cert.Certificate.SerialNumber.String(), cert, privateKey)
 }
 
 // AddCert implements CAStore::AddCert
