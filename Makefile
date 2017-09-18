@@ -94,7 +94,7 @@ ifndef SHASUMCMD
 endif
 
 .PHONY: all
-all: ${KOPS} ${NODEUP} ${CHANNELS}
+all: kops-dev
 
 .PHONY: help
 help: # Show this help
@@ -135,11 +135,16 @@ install: all
 	cp ${CHANNELS} ${GOPATH_1ST}/bin
 
 .PHONY: kops
-kops: ${KOPS}
+kops: kops-dev
 
 ${KOPS}: ${BINDATA_TARGETS}
 	go build ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
 
+.PHONY: kops-dev
+kops-dev: ${BINDATA_TARGETS}
+	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/
+
+.PHONY: ${GOBINDATA}
 ${GOBINDATA}:
 	mkdir -p ${LOCAL}
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
@@ -269,7 +274,7 @@ vsphere-version-dist: nodeup-dist protokube-export
 	cp ${DIST}/darwin/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
 
 .PHONY: upload
-upload: kops version-dist # Upload kops to S3
+upload: version-dist # Upload kops to S3
 	aws s3 sync --acl public-read ${UPLOAD}/ ${S3_BUCKET}
 
 .PHONY: gcs-upload
@@ -288,7 +293,7 @@ gcs-publish-ci: gcs-upload
 	gsutil -h "Cache-Control:private, max-age=0, no-transform" cp ${UPLOAD}/${LATEST_FILE} ${GCS_LOCATION}
 
 .PHONY: gen-cli-docs
-gen-cli-docs: kops # Regenerate CLI docs
+gen-cli-docs: ${KOPS} # Regenerate CLI docs
 	KOPS_STATE_STORE= \
 	KOPS_FEATURE_FLAGS= \
 	${KOPS} genhelpdocs --out docs/cli
@@ -463,7 +468,7 @@ verify-packages: ${BINDATA_TARGETS}
 	hack/verify-packages.sh
 
 .PHONY: verify-gendocs
-verify-gendocs: kops
+verify-gendocs: ${KOPS}
 	@TMP_DOCS="$$(mktemp -d)"; \
 	'${KOPS}' genhelpdocs --out "$$TMP_DOCS"; \
 	\
