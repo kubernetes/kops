@@ -161,6 +161,9 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 			e.ID = actual.ID
 		}
 
+		// System fields
+		actual.Lifecycle = e.Lifecycle
+
 		return actual, nil
 	}
 

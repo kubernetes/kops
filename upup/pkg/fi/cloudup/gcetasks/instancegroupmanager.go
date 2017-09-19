@@ -69,6 +69,9 @@ func (e *InstanceGroupManager) Find(c *fi.Context) (*InstanceGroupManager, error
 	}
 	// TODO: Sort by name
 
+	// Ignore "system" fields
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 

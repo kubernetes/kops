@@ -63,6 +63,9 @@ func (e *Disk) Find(c *fi.Context) (*Disk, error) {
 
 	actual.Labels = r.Labels
 
+	// Ignore "system" fields
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 
