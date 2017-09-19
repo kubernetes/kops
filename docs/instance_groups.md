@@ -101,7 +101,7 @@ spec:
   role: Node
   rootVolumeSize: 200
   rootVolumeType: io1
-  rootProvisionedIops: 200
+  rootVolumeIops: 200
 ```
 
 ## Creating a new instance group
