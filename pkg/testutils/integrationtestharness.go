@@ -26,6 +26,7 @@ import (
 	"k8s.io/kops/cloudmock/aws/mockroute53"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
 	"os"
 	"path"
@@ -128,4 +129,9 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 		OwnerId:        aws.String(awsup.WellKnownAccountKopeio),
 		RootDeviceName: aws.String("/dev/xvda"),
 	})
+}
+
+// SetupMockGCE configures a mock GCE cloud provider
+func (h *IntegrationTestHarness) SetupMockGCE() {
+	gce.InstallMockGCECloud("us-test1", "testproject")
 }

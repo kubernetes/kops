@@ -59,6 +59,11 @@ func TestCreateClusterHA(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_encrypt", "v1alpha2")
 }
 
+// TestCreateClusterHAGCE runs kops create cluster ha-gce.example.com --cloud gce --zones us-test1-a,us-test1-b,us-test1-c --master-zones us-test1-a,us-test1-b,us-test1-c
+func TestCreateClusterHAGCE(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_gce", "v1alpha2")
+}
+
 // TestCreateClusterHASharedZones tests kops create cluster when the master count is bigger than the number of zones
 func TestCreateClusterHASharedZones(t *testing.T) {
 	// Cannot be expressed in v1alpha1 API:	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_shared_zones", "v1alpha1")
@@ -90,6 +95,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	defer h.Close()
 
 	h.SetupMockAWS()
+	h.SetupMockGCE()
 
 	publicKeyPath := path.Join(h.TempDir, "id_rsa.pub")
 	privateKeyPath := path.Join(h.TempDir, "id_rsa")
