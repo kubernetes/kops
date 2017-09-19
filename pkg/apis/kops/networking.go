@@ -28,6 +28,7 @@ type NetworkingSpec struct {
 	Calico     *CalicoNetworkingSpec     `json:"calico,omitempty"`
 	Canal      *CanalNetworkingSpec      `json:"canal,omitempty"`
 	Kuberouter *KuberouterNetworkingSpec `json:"kuberouter,omitempty"`
+	Romana     *RomanaNetworkingSpec     `json:"romana,omitempty"`
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
@@ -60,6 +61,8 @@ type WeaveNetworkingSpec struct {
 
 // Flannel declares that we want Flannel networking
 type FlannelNetworkingSpec struct {
+	// Backend is the backend overlay type we want to use (vxlan or udp)
+	Backend string `json:"backend,omitempty"`
 }
 
 // Calico declares that we want Calico networking
@@ -77,4 +80,12 @@ type CanalNetworkingSpec struct {
 
 // Kuberouter declares that we want Kube-router networking
 type KuberouterNetworkingSpec struct {
+}
+
+// Romana declares that we want Romana networking
+type RomanaNetworkingSpec struct {
+	// DaemonServiceIP is the Kubernetes Service IP for the romana-daemon pod
+	DaemonServiceIP string `json:"daemonServiceIP,omitempty"`
+	// EtcdServiceIP is the Kubernetes Service IP for the etcd backend used by Romana
+	EtcdServiceIP string `json:"etcdServiceIP,omitempty"`
 }

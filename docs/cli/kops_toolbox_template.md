@@ -20,17 +20,19 @@ kops toolbox template
   # generate cluster.yaml from template and input values
   
   kops toolbox template \
-  --values values.yaml \
-  --template cluster.tmpl.yaml \
+  --values values.yaml --values=another.yaml \
+  --snippets file_or_directory --snippets=another.dir \
+  --template file_or_directory --template=directory  \
   --output cluster.yaml
 ```
 
 ### Options
 
 ```
-      --output string     Path to output file, default: cluster.yaml
-      --template string   Path to template file, default: cluster.tmpl.yaml
-      --values string     Path to values yaml file, default: values.yaml
+      --output string          Path to output file, otherwise defaults to stdout
+      --snippets stringSlice   Path to directory containing snippets used for templating
+      --template stringSlice   Path to template file or directory of templates to render
+      --values stringSlice     Path to a configuration file containing values to include in template
 ```
 
 ### Options inherited from parent commands

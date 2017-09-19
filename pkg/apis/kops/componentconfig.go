@@ -185,6 +185,8 @@ type KubeAPIServerConfig struct {
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
 	// ServiceClusterIPRange is the service address range
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
+	// Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format. Eg. 30000-33000
+	ServiceNodePortRange string `json:"serviceNodePortRange,omitempty" flag:"service-node-port-range"`
 	// EtcdServers is a list of the etcd service to connect
 	EtcdServers []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
 	// EtcdServersOverrides is per-resource etcd servers overrides, comma separated. The individual override format: group/resource#servers, where servers are http://ip:port, semicolon separated

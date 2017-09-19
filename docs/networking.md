@@ -32,9 +32,10 @@ Several different providers are currently built into kops:
 
 * [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
 * [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
-* [flannel](https://github.com/coreos/flannel)
+* [flannel](https://github.com/coreos/flannel) - use `--networking flannel-vxlan` (recommended) or `--networking flannel-udp` (legacy).  `--networking flannel` now selects `flannel-vxlan`.
 * [kopeio-vxlan](https://github.com/kopeio/networking)
 * [kube-router](./networking.md#kube-router-example-for-cni-ipvs-based-service-proxy-and-network-policy-enforcer)
+* [romana](https://github.com/romana/romana)
 * [weave](https://github.com/weaveworks/weave-kube)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
@@ -257,6 +258,44 @@ $ kops create cluster \
 Currently kube-router supports 1.6 and above. Please note that kube-router will also provide service proxy, so kube-proxy will not be deployed in to the cluster.
 
 No additional configurations are required to be done by user. Kube-router automatically disables source-destination check on all AWS EC2 instances. For the traffic within a subnet there is no overlay or tunneling used. For cross-subnet pod traffic ip-ip tunneling is used implicitly and no configuration is required. 
+
+### Romana Example for CNI
+
+#### Installing Romana on a new Cluster
+
+The following command sets up a cluster with Romana as the CNI.
+
+**NOTE** This currently deploys v2.0 Preview 2, and will be updated when the 2.0 release is completed.
+
+```console
+$ export $ZONES=mylistofzones
+$ kops create cluster \
+  --zones $ZONES \
+  --master-zones $ZONES \
+  --master-size m4.large \
+  --node-size m4.large \
+  --networking romana \
+  --yes \
+  --name myclustername.mydns.io
+```
+
+Currently Romana supports Kubernetes 1.6 and above.
+
+#### Getting help with Romana
+
+For problems with deploying Romana please post an issue to Github:
+
+- [Romana Issues](https://github.com/romana/romana/issues)
+
+You can also contact the Romana team on Slack
+
+- [Romana Slack](https://romana.slack.com) (invite required - email [info@romana.io](mailto:info@romana.io))
+
+#### Romana Backend
+
+Romana uses the cluster's etcd as a backend for storing information about routes, hosts, host-groups and IP allocations.
+This does not affect normal etcd operations or require special treatment when upgrading etcd.
+The etcd port (4001) is opened between masters and nodes when using this networking option.
 
 ### Validating CNI Installation
 

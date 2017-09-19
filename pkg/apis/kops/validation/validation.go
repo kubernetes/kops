@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"k8s.io/apimachinery/pkg/api/validation"
+	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
@@ -51,9 +52,14 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("sshAccess").Index(i))...)
 	}
 
-	// AdminAccess
+	// KubernetesAPIAccess
 	for i, cidr := range spec.KubernetesAPIAccess {
 		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("kubernetesAPIAccess").Index(i))...)
+	}
+
+	// NodePortAccess
+	for i, cidr := range spec.NodePortAccess {
+		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("nodePortAccess").Index(i))...)
 	}
 
 	for i := range spec.Hooks {
@@ -68,6 +74,10 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 
 	if spec.KubeAPIServer != nil {
 		allErrs = append(allErrs, validateKubeAPIServer(spec.KubeAPIServer, fieldPath.Child("kubeAPIServer"))...)
+	}
+
+	if spec.Networking != nil {
+		allErrs = append(allErrs, validateNetworking(spec.Networking, fieldPath.Child("networking"))...)
 	}
 
 	return allErrs
@@ -181,7 +191,6 @@ func validateExecContainerAction(v *kops.ExecContainerAction, fldPath *field.Pat
 }
 
 func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) field.ErrorList {
-
 	allErrs := field.ErrorList{}
 
 	proxyClientCertIsNil := v.ProxyClientCertFile == nil
@@ -190,6 +199,38 @@ func validateKubeAPIServer(v *kops.KubeAPIServerConfig, fldPath *field.Path) fie
 	if (proxyClientCertIsNil && !proxyClientKeyIsNil) || (!proxyClientCertIsNil && proxyClientKeyIsNil) {
 		flds := [2]*string{v.ProxyClientCertFile, v.ProxyClientKeyFile}
 		allErrs = append(allErrs, field.Invalid(fldPath, flds, "ProxyClientCertFile and ProxyClientKeyFile must both be specified (or not all)"))
+	}
+
+	if v.ServiceNodePortRange != "" {
+		pr := &utilnet.PortRange{}
+		err := pr.Set(v.ServiceNodePortRange)
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath, v.ServiceNodePortRange, err.Error()))
+		}
+	}
+
+	return allErrs
+}
+
+func validateNetworking(v *kops.NetworkingSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	if v.Flannel != nil {
+		allErrs = append(allErrs, validateNetworkingFlannel(v.Flannel, fldPath.Child("Flannel"))...)
+	}
+	return allErrs
+}
+
+func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	switch v.Backend {
+	case "":
+		allErrs = append(allErrs, field.Required(fldPath.Child("Backend"), "Flannel backend must be specified"))
+	case "udp", "vxlan":
+		// OK
+	default:
+		allErrs = append(allErrs, field.NotSupported(fldPath.Child("Backend"), v.Backend, []string{"udp", "vxlan"}))
 	}
 
 	return allErrs

@@ -16,6 +16,16 @@ limitations under the License.
 
 package resources
 
-func (c *ClusterResources) listResourcesDO() (map[string]*ResourceTracker, error) {
-	return nil, nil
+import (
+	"k8s.io/kops/pkg/resources/digitalocean"
+	"k8s.io/kops/pkg/resources/tracker"
+)
+
+func (c *ClusterResources) listResourcesDO() (map[string]*tracker.Resource, error) {
+	r := digitalocean.Resources{
+		Cloud:       c.Cloud,
+		ClusterName: c.ClusterName,
+	}
+
+	return r.ListResources()
 }

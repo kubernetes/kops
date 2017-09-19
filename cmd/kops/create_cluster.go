@@ -79,6 +79,9 @@ type CreateClusterOptions struct {
 	MasterSecurityGroups []string
 	AssociatePublicIP    *bool
 
+	// Overrides allows settings values direct in the spec
+	Overrides []string
+
 	// Channel is the location of the api.Channel to use for our defaults
 	Channel string
 
@@ -248,7 +251,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Image, "image", options.Image, "Image to use for all instances.")
 
-	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel, calico, canal, kube-router.")
+	cmd.Flags().StringVar(&options.Networking, "networking", "kubenet", "Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana.")
 
 	cmd.Flags().StringVar(&options.DNSZone, "dns-zone", options.DNSZone, "DNS hosted zone to use (defaults to longest matching zone)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
@@ -283,6 +286,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
 	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
+
+	if featureflag.SpecOverrideFlag.Enabled() {
+		cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
+	}
 
 	if featureflag.VSphereCloudProvider.Enabled() {
 		// vSphere flags
@@ -687,14 +694,23 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			jumboFrameMTUSize := int32(8912)
 			cluster.Spec.Networking.Weave.MTU = &jumboFrameMTUSize
 		}
-	case "flannel":
-		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{}
+	case "flannel", "flannel-vxlan":
+		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
+			Backend: "vxlan",
+		}
+	case "flannel-udp":
+		glog.Warningf("flannel UDP mode is not recommended; consider flannel-vxlan instead")
+		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
+			Backend: "udp",
+		}
 	case "calico":
 		cluster.Spec.Networking.Calico = &api.CalicoNetworkingSpec{}
 	case "canal":
 		cluster.Spec.Networking.Canal = &api.CanalNetworkingSpec{}
 	case "kube-router":
 		cluster.Spec.Networking.Kuberouter = &api.KuberouterNetworkingSpec{}
+	case "romana":
+		cluster.Spec.Networking.Romana = &api.RomanaNetworkingSpec{}
 	default:
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
@@ -732,7 +748,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	case api.TopologyPrivate:
 		if !supportsPrivateTopology(cluster.Spec.Networking) {
-			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan (or kopeio)', '--networking weave', '--networking flannel', '--networking calico', '--networking canal', '--networking kube-router' are supported for private topologies", c.Networking)
+			return fmt.Errorf("Invalid networking option %s. Currently only '--networking kopeio-vxlan (or kopeio)', '--networking weave', '--networking flannel', '--networking calico', '--networking canal', '--networking kube-router', '--networking romana' are supported for private topologies", c.Networking)
 		}
 		cluster.Spec.Topology = &api.TopologySpec{
 			Masters: api.TopologyPrivate,
@@ -860,6 +876,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.SSHAccess = c.SSHAccess
 	}
 
+	if err := setOverrides(c.Overrides, cluster, instanceGroups); err != nil {
+		return err
+	}
+
 	err = cloudup.PerformAssignments(cluster)
 	if err != nil {
 		return fmt.Errorf("error populating configuration: %v", err)
@@ -974,7 +994,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 func supportsPrivateTopology(n *api.NetworkingSpec) bool {
 
-	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Flannel != nil || n.Calico != nil || n.Canal != nil || n.Kuberouter != nil {
+	if n.CNI != nil || n.Kopeio != nil || n.Weave != nil || n.Flannel != nil || n.Calico != nil || n.Canal != nil || n.Kuberouter != nil || n.Romana != nil {
 		return true
 	}
 	return false
@@ -1038,4 +1058,23 @@ func parseCloudLabels(s string) (map[string]string, error) {
 		m[pair[0]] = pair[1]
 	}
 	return m, nil
+}
+
+// setOverrides sets override values in the spec
+func setOverrides(overrides []string, cluster *api.Cluster, instanceGroups []*api.InstanceGroup) error {
+	for _, override := range overrides {
+		kv := strings.SplitN(override, "=", 2)
+		if len(kv) != 2 {
+			return fmt.Errorf("unhandled override: %q", override)
+		}
+
+		// For now we have hard-code the values we want to support; we'll get test coverage and then do this properly...
+		switch kv[0] {
+		case "cluster.spec.nodePortAccess":
+			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
+		default:
+			return fmt.Errorf("unhandled override: %q", override)
+		}
+	}
+	return nil
 }

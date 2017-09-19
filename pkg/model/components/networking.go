@@ -47,7 +47,7 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 	if networking == nil {
 		return fmt.Errorf("networking not set")
 	}
-	if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil {
+	if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil {
 		options.Kubelet.NetworkPluginName = "cni"
 
 		if k8sVersion.Major == 1 && k8sVersion.Minor <= 4 {
@@ -67,6 +67,19 @@ func (b *NetworkingOptionsBuilder) BuildOptions(o interface{}) error {
 		} else {
 			return fmt.Errorf("classic networking not supported after 1.4")
 		}
+	}
+
+	if networking.Romana != nil {
+		daemonIP, err := WellKnownServiceIP(clusterSpec, 99)
+		if err != nil {
+			return err
+		}
+		networking.Romana.DaemonServiceIP = daemonIP.String()
+		etcdIP, err := WellKnownServiceIP(clusterSpec, 88)
+		if err != nil {
+			return err
+		}
+		networking.Romana.EtcdServiceIP = etcdIP.String()
 	}
 
 	return nil

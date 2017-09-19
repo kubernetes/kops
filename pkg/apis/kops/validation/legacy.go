@@ -426,6 +426,12 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
+	if kubernetesRelease.LT(semver.MustParse("1.6.0")) {
+		if c.Spec.Networking != nil && c.Spec.Networking.Romana != nil {
+			return field.Invalid(fieldSpec.Child("Networking"), "romana", "romana networking is not supported with kubernetes versions 1.5 or lower")
+		}
+	}
+
 	if errs := newValidateCluster(c); len(errs) != 0 {
 		return errs[0]
 	}

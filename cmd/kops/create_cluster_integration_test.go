@@ -41,6 +41,11 @@ func TestCreateClusterMinimal(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/minimal", "v1alpha2")
 }
 
+// TestCreateClusterOverride tests the override flag
+func TestCreateClusterOverride(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/overrides", "v1alpha2")
+}
+
 // TestCreateClusterComplex runs kops create cluster, with a grab-bag of edge cases
 func TestCreateClusterComplex(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/complex", "v1alpha2")
