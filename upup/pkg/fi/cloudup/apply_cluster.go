@@ -58,6 +58,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 )
 
 const (
@@ -548,6 +549,9 @@ func (c *ApplyClusterCmd) Run() error {
 			case kops.CloudProviderVSphere:
 				// No special settings (yet!)
 
+			case kops.CloudProviderBareMetal:
+				// No special settings (yet!)
+
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 			}
@@ -685,6 +689,9 @@ func (c *ApplyClusterCmd) Run() error {
 			})
 		}
 
+	case kops.CloudProviderBareMetal:
+		// BareMetal tasks will go here
+
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
@@ -704,15 +711,17 @@ func (c *ApplyClusterCmd) Run() error {
 
 	switch c.TargetName {
 	case TargetDirect:
-		switch cluster.Spec.CloudProvider {
-		case "gce":
+		switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+		case kops.CloudProviderGCE:
 			target = gce.NewGCEAPITarget(cloud.(gce.GCECloud))
-		case "aws":
+		case kops.CloudProviderAWS:
 			target = awsup.NewAWSAPITarget(cloud.(awsup.AWSCloud))
-		case "digitalocean":
+		case kops.CloudProviderDO:
 			target = do.NewDOAPITarget(cloud.(*digitalocean.Cloud))
-		case "vsphere":
+		case kops.CloudProviderVSphere:
 			target = vsphere.NewVSphereAPITarget(cloud.(*vsphere.VSphereCloud))
+		case kops.CloudProviderBareMetal:
+			target = baremetal.NewTarget(cloud.(*baremetal.Cloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}
