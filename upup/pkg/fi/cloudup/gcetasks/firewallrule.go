@@ -65,6 +65,9 @@ func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
 		actual.Allowed = append(actual.Allowed, serializeFirewallAllowed(a))
 	}
 
+	// Ignore "system" fields
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 
