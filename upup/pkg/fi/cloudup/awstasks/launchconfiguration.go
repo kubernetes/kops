@@ -111,15 +111,16 @@ func (e *LaunchConfiguration) Find(c *fi.Context) (*LaunchConfiguration, error) 
 	glog.V(2).Infof("found existing AutoscalingLaunchConfiguration: %q", *lc.LaunchConfigurationName)
 
 	actual := &LaunchConfiguration{
-		Name:               e.Name,
-		ID:                 lc.LaunchConfigurationName,
-		ImageID:            lc.ImageId,
-		InstanceType:       lc.InstanceType,
-		SSHKey:             &SSHKey{Name: lc.KeyName},
-		AssociatePublicIP:  lc.AssociatePublicIpAddress,
-		IAMInstanceProfile: &IAMInstanceProfile{Name: lc.IamInstanceProfile},
-		SpotPrice:          aws.StringValue(lc.SpotPrice),
-		Tenancy:            lc.PlacementTenancy,
+		Name:                   e.Name,
+		ID:                     lc.LaunchConfigurationName,
+		ImageID:                lc.ImageId,
+		InstanceType:           lc.InstanceType,
+		SSHKey:                 &SSHKey{Name: lc.KeyName},
+		AssociatePublicIP:      lc.AssociatePublicIpAddress,
+		IAMInstanceProfile:     &IAMInstanceProfile{Name: lc.IamInstanceProfile},
+		SpotPrice:              aws.StringValue(lc.SpotPrice),
+		Tenancy:                lc.PlacementTenancy,
+		RootVolumeOptimization: lc.EbsOptimized,
 	}
 
 	securityGroups := []*SecurityGroup{}

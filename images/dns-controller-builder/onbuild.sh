@@ -26,3 +26,5 @@ make dns-controller-gocode
 
 mkdir -p /src/.build/artifacts/
 cp /go/bin/dns-controller /src/.build/artifacts/
+
+chown -R $HOST_UID:$HOST_GID /src/.build/artifacts

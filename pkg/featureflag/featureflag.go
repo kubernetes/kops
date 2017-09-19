@@ -52,6 +52,9 @@ var VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
 
 var EnableExternalDNS = New("EnableExternalDNS", Bool(false))
 
+// SpecOverrideFlag allows setting spec values on create
+var SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))
+
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex
 

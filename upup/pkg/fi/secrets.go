@@ -27,6 +27,8 @@ import (
 type SecretStore interface {
 	// Get a secret.  Returns an error if not found
 	Secret(id string) (*Secret, error)
+	// DeleteSecret deletes the specified secret
+	DeleteSecret(item *KeystoreItem) error
 	// Find a secret, if exists.  Returns nil,nil if not found
 	FindSecret(id string) (*Secret, error)
 	// Create or replace a secret

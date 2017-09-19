@@ -634,20 +634,22 @@ func formatFingerprint(data []byte) string {
 }
 
 func insertFingerprintColons(id string) string {
-	var buf bytes.Buffer
+	remaining := id
 
+	var buf bytes.Buffer
 	for {
-		if id == "" {
+		if remaining == "" {
 			break
 		}
 		if buf.Len() != 0 {
 			buf.WriteString(":")
 		}
-		if len(id) < 2 {
-			buf.WriteString(id)
+		if len(remaining) < 2 {
+			glog.Warningf("unexpected format for SSH public key id: %q", id)
+			buf.WriteString(remaining)
 		} else {
-			buf.WriteString(id[0:2])
-			id = id[2:]
+			buf.WriteString(remaining[0:2])
+			remaining = remaining[2:]
 		}
 	}
 	return buf.String()
@@ -753,6 +755,21 @@ func (c *VFSCAStore) DeleteSecret(item *KeystoreItem) error {
 	case SecretTypeSSHPublicKey:
 		p := c.buildSSHPublicKeyPath(item.Name, item.Id)
 		return p.Remove()
+
+	case SecretTypeKeypair:
+		version, ok := big.NewInt(0).SetString(item.Id, 10)
+		if !ok {
+			return fmt.Errorf("keypair had non-integer version: %q", item.Id)
+		}
+		p := c.buildCertificatePath(item.Name, version)
+		if err := p.Remove(); err != nil {
+			return fmt.Errorf("error deleting certificate: %v", err)
+		}
+		p = c.buildPrivateKeyPath(item.Name, version)
+		if err := p.Remove(); err != nil {
+			return fmt.Errorf("error deleting private key: %v", err)
+		}
+		return nil
 
 	default:
 		// Primarily because we need to make sure users can recreate them!

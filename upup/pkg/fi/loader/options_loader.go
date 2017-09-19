@@ -20,13 +20,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"os"
 	"reflect"
 	"sort"
 	"strings"
 	"text/template"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 const maxIterations = 10
@@ -108,7 +109,7 @@ func (l *OptionsLoader) iterate(userConfig interface{}, current interface{}) (in
 
 		yamlBytes := buffer.Bytes()
 
-		jsonBytes, err := utils.YamlToJson(yamlBytes)
+		jsonBytes, err := utils.YAMLToJSON(yamlBytes)
 		if err != nil {
 			// TODO: It would be nice if yaml returned us the line number here
 			glog.Infof("error parsing yaml.  yaml follows:")

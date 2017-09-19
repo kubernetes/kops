@@ -22,6 +22,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
@@ -119,6 +120,21 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 
 			cloud = doCloud
+		}
+
+	case string(kops.CloudProviderBareMetal):
+		{
+			// TODO: Allow dns provider to be specified
+			dns, err := dnsprovider.GetDnsProvider(route53.ProviderName, nil)
+			if err != nil {
+				return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
+			}
+
+			baremetalCloud, err := baremetal.NewCloud(dns)
+			if err != nil {
+				return nil, err
+			}
+			cloud = baremetalCloud
 		}
 
 	default:

@@ -21,15 +21,20 @@ spec:
     - instanceGroup: master-us-test-1a
       name: us-test-1a
     name: events
+  kubeAPIServer:
+    serviceNodePortRange: 28000-32767
   kubernetesVersion: v1.4.6
   masterInternalName: api.internal.complex.example.com
   masterPublicName: api.complex.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     kubenet: {}
+  nodePortAccess:
+  - 1.2.3.4/32
+  - 10.20.30.0/24
   nonMasqueradeCIDR: 100.64.0.0/10
   sshAccess:
-    - 0.0.0.0/0
+  - 0.0.0.0/0
   topology:
     masters: public
     nodes: public
