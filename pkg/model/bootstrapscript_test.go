@@ -55,55 +55,64 @@ func Test_ProxyFunc(t *testing.T) {
 
 func TestBootstrapUserData(t *testing.T) {
 	cs := []struct {
-		Role             kops.InstanceGroupRole
-		ExpectedFilePath string
-		HookSpecRoles    []kops.InstanceGroupRole
+		Role               kops.InstanceGroupRole
+		ExpectedFilePath   string
+		HookSpecRoles      []kops.InstanceGroupRole
+		FileAssetSpecRoles []kops.InstanceGroupRole
 	}{
 		{
-			Role:             "Master",
-			ExpectedFilePath: "tests/data/bootstrapscript_0.txt",
-			HookSpecRoles:    []kops.InstanceGroupRole{""},
+			Role:               "Master",
+			ExpectedFilePath:   "tests/data/bootstrapscript_0.txt",
+			HookSpecRoles:      []kops.InstanceGroupRole{""},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{""},
 		},
 		{
-			Role:             "Master",
-			ExpectedFilePath: "tests/data/bootstrapscript_0.txt",
-			HookSpecRoles:    []kops.InstanceGroupRole{"Node"},
+			Role:               "Master",
+			ExpectedFilePath:   "tests/data/bootstrapscript_0.txt",
+			HookSpecRoles:      []kops.InstanceGroupRole{"Node"},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{"Node"},
 		},
 		{
-			Role:             "Master",
-			ExpectedFilePath: "tests/data/bootstrapscript_1.txt",
-			HookSpecRoles:    []kops.InstanceGroupRole{"Master"},
+			Role:               "Master",
+			ExpectedFilePath:   "tests/data/bootstrapscript_1.txt",
+			HookSpecRoles:      []kops.InstanceGroupRole{"Master"},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master"},
 		},
 		{
-			Role:             "Master",
-			ExpectedFilePath: "tests/data/bootstrapscript_2.txt",
-			HookSpecRoles:    []kops.InstanceGroupRole{"Master", "Node"},
+			Role:               "Master",
+			ExpectedFilePath:   "tests/data/bootstrapscript_2.txt",
+			HookSpecRoles:      []kops.InstanceGroupRole{"Master", "Node"},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master", "Node"},
 		},
 		{
-			Role:             "Node",
-			ExpectedFilePath: "tests/data/bootstrapscript_3.txt",
-			HookSpecRoles:    []kops.InstanceGroupRole{""},
+			Role:               "Node",
+			ExpectedFilePath:   "tests/data/bootstrapscript_3.txt",
+			HookSpecRoles:      []kops.InstanceGroupRole{""},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{""},
 		},
 		{
-			Role:             "Node",
-			ExpectedFilePath: "tests/data/bootstrapscript_4.txt",
-			HookSpecRoles:    []kops.InstanceGroupRole{"Node"},
+			Role:               "Node",
+			ExpectedFilePath:   "tests/data/bootstrapscript_4.txt",
+			HookSpecRoles:      []kops.InstanceGroupRole{"Node"},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{"Node"},
 		},
 		{
-			Role:             "Node",
-			ExpectedFilePath: "tests/data/bootstrapscript_3.txt",
-			HookSpecRoles:    []kops.InstanceGroupRole{"Master"},
+			Role:               "Node",
+			ExpectedFilePath:   "tests/data/bootstrapscript_3.txt",
+			HookSpecRoles:      []kops.InstanceGroupRole{"Master"},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master"},
 		},
 		{
-			Role:             "Node",
-			ExpectedFilePath: "tests/data/bootstrapscript_5.txt",
-			HookSpecRoles:    []kops.InstanceGroupRole{"Master", "Node"},
+			Role:               "Node",
+			ExpectedFilePath:   "tests/data/bootstrapscript_5.txt",
+			HookSpecRoles:      []kops.InstanceGroupRole{"Master", "Node"},
+			FileAssetSpecRoles: []kops.InstanceGroupRole{"Master", "Node"},
 		},
 	}
 
 	for i, x := range cs {
-		spec := makeTestCluster(x.HookSpecRoles).Spec
-		group := makeTestInstanceGroup(x.Role, x.HookSpecRoles)
+		spec := makeTestCluster(x.HookSpecRoles, x.FileAssetSpecRoles).Spec
+		group := makeTestInstanceGroup(x.Role, x.HookSpecRoles, x.FileAssetSpecRoles)
 
 		renderNodeUpConfig := func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
 			return &nodeup.Config{}, nil
@@ -134,13 +143,13 @@ func TestBootstrapUserData(t *testing.T) {
 
 		if actual != string(expectedBytes) {
 			diffString := diff.FormatDiff(string(expectedBytes), actual)
-			t.Errorf("case %d failed, actual output differed from expected.", i)
+			t.Errorf("case %d failed, actual output differed from expected (%s).", i, x.ExpectedFilePath)
 			t.Logf("diff:\n%s\n", diffString)
 		}
 	}
 }
 
-func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole) *kops.Cluster {
+func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles []kops.InstanceGroupRole) *kops.Cluster {
 	return &kops.Cluster{
 		Spec: kops.ClusterSpec{
 			CloudProvider:     "aws",
@@ -207,11 +216,19 @@ func makeTestCluster(hookSpecRoles []kops.InstanceGroupRole) *kops.Cluster {
 					Roles: hookSpecRoles,
 				},
 			},
+			FileAssets: []kops.FileAssetSpec{
+				{
+					Name:    "iptables-restore",
+					Path:    "/var/lib/iptables/rules-save",
+					Content: "blah blah",
+					Roles:   fileAssetSpecRoles,
+				},
+			},
 		},
 	}
 }
 
-func makeTestInstanceGroup(role kops.InstanceGroupRole, hookSpecRoles []kops.InstanceGroupRole) *kops.InstanceGroup {
+func makeTestInstanceGroup(role kops.InstanceGroupRole, hookSpecRoles []kops.InstanceGroupRole, fileAssetSpecRoles []kops.InstanceGroupRole) *kops.InstanceGroup {
 	return &kops.InstanceGroup{
 		Spec: kops.InstanceGroupSpec{
 			Kubelet: &kops.KubeletConfigSpec{
@@ -238,6 +255,19 @@ func makeTestInstanceGroup(role kops.InstanceGroupRole, hookSpecRoles []kops.Ins
 				}, {
 					Name:     "apply-to-all.service",
 					Manifest: "Type=oneshot\nExecStart=/usr/bin/systemctl start apply-to-all.service",
+				},
+			},
+			FileAssets: []kops.FileAssetSpec{
+				{
+					Name:    "iptables-restore",
+					Path:    "/var/lib/iptables/rules-save",
+					Content: "blah blah",
+					Roles:   fileAssetSpecRoles,
+				},
+				{
+					Name:    "tokens",
+					Path:    "/kube/tokens.csv",
+					Content: "user,token",
 				},
 			},
 		},

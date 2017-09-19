@@ -62,6 +62,7 @@ k8s.io/kops/pkg/edit
 k8s.io/kops/pkg/featureflag
 k8s.io/kops/pkg/flagbuilder
 k8s.io/kops/pkg/instancegroups
+k8s.io/kops/pkg/jsonutils
 k8s.io/kops/pkg/kubeconfig
 k8s.io/kops/pkg/kubemanifest
 k8s.io/kops/pkg/model
@@ -77,10 +78,12 @@ k8s.io/kops/pkg/pretty
 k8s.io/kops/pkg/resources
 k8s.io/kops/pkg/resources/digitalocean
 k8s.io/kops/pkg/resources/digitalocean/dns
+k8s.io/kops/pkg/resources/tracker
 k8s.io/kops/pkg/systemd
 k8s.io/kops/pkg/templates
 k8s.io/kops/pkg/testutils
 k8s.io/kops/pkg/util/stringorslice
+k8s.io/kops/pkg/util/templater
 k8s.io/kops/pkg/validation
 k8s.io/kops/protokube/cmd/protokube
 k8s.io/kops/protokube/pkg/gossip
@@ -100,6 +103,7 @@ k8s.io/kops/upup/pkg/fi/assettasks
 k8s.io/kops/upup/pkg/fi/cloudup
 k8s.io/kops/upup/pkg/fi/cloudup/awstasks
 k8s.io/kops/upup/pkg/fi/cloudup/awsup
+k8s.io/kops/upup/pkg/fi/cloudup/baremetal
 k8s.io/kops/upup/pkg/fi/cloudup/cloudformation
 k8s.io/kops/upup/pkg/fi/cloudup/dnstasks
 k8s.io/kops/upup/pkg/fi/cloudup/do

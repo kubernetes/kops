@@ -71,6 +71,32 @@ func (b *ExternalAccessModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	for _, nodePortAccess := range b.Cluster.Spec.NodePortAccess {
+		nodePortRange, err := b.NodePortRange()
+		if err != nil {
+			return err
+		}
+
+		c.AddTask(&awstasks.SecurityGroupRule{
+			Name:          s("nodeport-tcp-external-to-node-" + nodePortAccess),
+			Lifecycle:     b.Lifecycle,
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			Protocol:      s("tcp"),
+			FromPort:      i64(int64(nodePortRange.Base)),
+			ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
+			CIDR:          s(nodePortAccess),
+		})
+		c.AddTask(&awstasks.SecurityGroupRule{
+			Name:          s("nodeport-udp-external-to-node-" + nodePortAccess),
+			Lifecycle:     b.Lifecycle,
+			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			Protocol:      s("udp"),
+			FromPort:      i64(int64(nodePortRange.Base)),
+			ToPort:        i64(int64(nodePortRange.Base + nodePortRange.Size - 1)),
+			CIDR:          s(nodePortAccess),
+		})
+	}
+
 	if !b.UseLoadBalancerForAPI() {
 		// Configuration for the master, when not using a Loadbalancer (ELB)
 		// We expect that either the IP address is published, or DNS is set up to point to the IPs

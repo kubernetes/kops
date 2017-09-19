@@ -25,6 +25,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
@@ -313,4 +314,20 @@ func VersionGTE(version semver.Version, major uint64, minor uint64) bool {
 
 func (c *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {
 	return components.WellKnownServiceIP(&c.Cluster.Spec, id)
+}
+
+// NodePortRange returns the range of ports allocated to NodePorts
+func (c *KopsModelContext) NodePortRange() (utilnet.PortRange, error) {
+	// defaultServiceNodePortRange is the default port range for NodePort services.
+	defaultServiceNodePortRange := utilnet.PortRange{Base: 30000, Size: 2768}
+
+	kubeApiServer := c.Cluster.Spec.KubeAPIServer
+	if kubeApiServer != nil && kubeApiServer.ServiceNodePortRange != "" {
+		err := defaultServiceNodePortRange.Set(kubeApiServer.ServiceNodePortRange)
+		if err != nil {
+			return utilnet.PortRange{}, fmt.Errorf("error parsing ServiceNodePortRange %q", kubeApiServer.ServiceNodePortRange)
+		}
+	}
+
+	return defaultServiceNodePortRange, nil
 }

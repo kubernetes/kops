@@ -110,7 +110,7 @@ func (_ *Address) CheckChanges(a, e, changes *Address) error {
 	return nil
 }
 
-func (_ *Address) RenderGCE(t gce.GCEAPITarget, a, e, changes *Address) error {
+func (_ *Address) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Address) error {
 	cloud := t.Cloud
 	addr := &compute.Address{
 		Name:    *e.Name,

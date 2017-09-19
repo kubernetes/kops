@@ -17,132 +17,187 @@ limitations under the License.
 package main
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"text/template"
+	"os"
+	"path/filepath"
 
-	yaml "gopkg.in/yaml.v2"
+	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/util/templater"
+	"k8s.io/kops/upup/pkg/fi/utils"
 
 	"github.com/spf13/cobra"
-	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/util/i18n"
 )
 
 var (
-	toolbox_templating_long = templates.LongDesc(i18n.T(`
+	toolboxTemplatingLong = templates.LongDesc(i18n.T(`
 	Generate cluster.yaml from values input yaml file and apply template.
 	`))
 
-	toolbox_templating_example = templates.Examples(i18n.T(`
+	toolboxTemplatingExample = templates.Examples(i18n.T(`
 	# generate cluster.yaml from template and input values
 
 	kops toolbox template \
-		--values values.yaml \
-		--template cluster.tmpl.yaml \
+		--values values.yaml --values=another.yaml \
+		--snippets file_or_directory --snippets=another.dir \
+		--template file_or_directory --template=directory  \
 		--output cluster.yaml
 	`))
 
-	toolbox_templating_short = i18n.T(`Generate cluster.yaml from template`)
+	toolboxTemplatingShort = i18n.T(`Generate cluster.yaml from template`)
 )
 
-type ToolboxTemplateOption struct {
-	ClusterName  string
-	ValuesFile   string
-	TemplateFile string
-	OutPutFile   string
+// the options for the command
+type toolboxTemplateOption struct {
+	clusterName  string
+	configPath   []string
+	outputPath   string
+	snippetsPath []string
+	templatePath []string
 }
 
+// NewCmdToolboxTemplate returns a new templating command
 func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
-	options := &ToolboxTemplateOption{}
+	options := &toolboxTemplateOption{}
 
 	cmd := &cobra.Command{
 		Use:     "template",
-		Short:   toolbox_templating_short,
-		Long:    toolbox_templating_long,
-		Example: toolbox_templating_example,
+		Short:   toolboxTemplatingShort,
+		Long:    toolboxTemplatingLong,
+		Example: toolboxTemplatingExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := rootCommand.ProcessArgs(args)
-			if err != nil {
+			if err := rootCommand.ProcessArgs(args); err != nil {
 				exitWithError(err)
 			}
+			options.clusterName = rootCommand.ClusterName()
 
-			options.ClusterName = rootCommand.ClusterName()
-
-			err = RunToolBoxTemplate(f, out, options)
-			if err != nil {
+			if err := runToolBoxTemplate(f, out, options); err != nil {
 				exitWithError(err)
 			}
 		},
 	}
 
-	cmd.Flags().StringVar(&options.ValuesFile, "values", options.ValuesFile, "Path to values yaml file, default: values.yaml")
-	cmd.Flags().StringVar(&options.TemplateFile, "template", options.TemplateFile, "Path to template file, default: cluster.tmpl.yaml")
-	cmd.Flags().StringVar(&options.OutPutFile, "output", options.OutPutFile, "Path to output file, default: cluster.yaml")
+	cmd.Flags().StringSliceVar(&options.configPath, "values", options.configPath, "Path to a configuration file containing values to include in template")
+	cmd.Flags().StringSliceVar(&options.templatePath, "template", options.templatePath, "Path to template file or directory of templates to render")
+	cmd.Flags().StringSliceVar(&options.snippetsPath, "snippets", options.snippetsPath, "Path to directory containing snippets used for templating")
+	cmd.Flags().StringVar(&options.outputPath, "output", options.outputPath, "Path to output file, otherwise defaults to stdout")
 
 	return cmd
 }
 
-func RunToolBoxTemplate(f *util.Factory, out io.Writer, options *ToolboxTemplateOption) error {
-	if options.ValuesFile == "" {
-		options.ValuesFile = "values.yaml"
+// runToolBoxTemplate is the action for the command
+func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplateOption) error {
+	// @step: read in the configuration if any
+	context := make(map[string]interface{}, 0)
+	for _, x := range options.configPath {
+		list, err := expandFiles(utils.ExpandPath(x))
+		if err != nil {
+			return err
+		}
+		for _, j := range list {
+			content, err := ioutil.ReadFile(j)
+			if err != nil {
+				return fmt.Errorf("unable to configuration file: %s, error: %s", j, err)
+			}
+
+			ctx := make(map[string]interface{}, 0)
+			if err := utils.YamlUnmarshal(content, &ctx); err != nil {
+				return fmt.Errorf("unable decode the configuration file: %s, error: %v", j, err)
+			}
+			// @step: merge the maps together
+			for k, v := range ctx {
+				context[k] = v
+			}
+		}
 	}
-	if options.TemplateFile == "" {
-		options.TemplateFile = "cluster.tmpl.yaml"
-	}
-	if options.OutPutFile == "" {
-		options.OutPutFile = "cluster.yaml"
+	context["clusterName"] = options.clusterName
+
+	// @step: expand the list of templates into a list of files to render
+	var templates []string
+	for _, x := range options.templatePath {
+		list, err := expandFiles(utils.ExpandPath(x))
+		if err != nil {
+			return fmt.Errorf("unable to expand the template: %s, error: %s", x, err)
+		}
+		templates = append(templates, list...)
 	}
 
-	options.ValuesFile = utils.ExpandPath(options.ValuesFile)
-	options.TemplateFile = utils.ExpandPath(options.TemplateFile)
-	options.OutPutFile = utils.ExpandPath(options.OutPutFile)
+	snippets := make(map[string]string, 0)
+	for _, x := range options.snippetsPath {
+		list, err := expandFiles(utils.ExpandPath(x))
+		if err != nil {
+			return fmt.Errorf("unable to expand the snippets: %s, error: %s", x, err)
+		}
 
-	err := ExecTemplate(options, out)
-	if err != nil {
-		exitWithError(err)
+		for _, j := range list {
+			content, err := ioutil.ReadFile(j)
+			if err != nil {
+				return fmt.Errorf("unable to read snippet: %s, error: %s", j, err)
+			}
+			snippets[j] = string(content)
+		}
+	}
+
+	// @step: get the output io.Writer
+	writer := out
+	if options.outputPath != "" {
+		w, err := os.OpenFile(utils.ExpandPath(options.outputPath), os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0660)
+		if err != nil {
+			return fmt.Errorf("unable to open file: %s, error: %v", options.outputPath, err)
+		}
+		writer = w
+	}
+
+	// @step: render each of the template and write to location
+	r := templater.NewTemplater()
+	size := len(templates) - 1
+	for i, x := range templates {
+		content, err := ioutil.ReadFile(x)
+		if err != nil {
+			return fmt.Errorf("unable to read template: %s, error: %s", x, err)
+		}
+
+		rendered, err := r.Render(string(content), context, snippets)
+		if err != nil {
+			return fmt.Errorf("unable to render template: %s, error: %s", x, err)
+		}
+		io.WriteString(writer, rendered)
+
+		// @check if we should need to add document separator
+		if i < size {
+			io.WriteString(writer, "---\n")
+		}
 	}
 
 	return nil
 }
 
-func ExecTemplate(options *ToolboxTemplateOption, out io.Writer) error {
-	valuesByteArr, err := ioutil.ReadFile(options.ValuesFile)
+// expandFiles is responsible for resolving any references to directories
+func expandFiles(path string) ([]string, error) {
+	// @check if the the path is a directory, if not we can return straight away
+	stat, err := os.Stat(path)
 	if err != nil {
-		return fmt.Errorf("failed to read values file: %v :%v", options.ValuesFile, err)
+		return nil, err
+	}
+	// @check if no a directory and return as is
+	if !stat.IsDir() {
+		return []string{path}, nil
+	}
+	// @step: iterate the directory and get all the files
+	var list []string
+	if err := filepath.Walk(path, func(path string, f os.FileInfo, err error) error {
+		if f.IsDir() {
+			return nil
+		}
+		list = append(list, path)
+
+		return nil
+	}); err != nil {
+		return nil, err
 	}
 
-	tmpl, err := template.ParseFiles(options.TemplateFile)
-	if err != nil {
-		return fmt.Errorf("failed to read template file: %v :%v", options.TemplateFile, err)
-	}
-
-	var values map[string]interface{}
-	err = yaml.Unmarshal(valuesByteArr, &values)
-	if err != nil {
-		return fmt.Errorf("failed to unmarshal valuesfile: %v :%v", options.ValuesFile, err)
-	}
-
-	var buff bytes.Buffer
-	writer := bufio.NewWriter(&buff)
-
-	err = tmpl.Execute(writer, values)
-	if err != nil {
-		return fmt.Errorf("failed to execute template: %v", err)
-	}
-
-	err = writer.Flush()
-	if err != nil {
-		exitWithError(err)
-	}
-
-	err = ioutil.WriteFile(options.OutPutFile, buff.Bytes(), 0644)
-	if err != nil {
-		exitWithError(err)
-	}
-	return nil
+	return list, nil
 }

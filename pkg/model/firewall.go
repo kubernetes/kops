@@ -129,7 +129,14 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 		}
 
 		if b.Cluster.Spec.Networking.Flannel != nil {
-			udpPorts = append(udpPorts, 8285)
+			switch b.Cluster.Spec.Networking.Flannel.Backend {
+			case "", "udp":
+				udpPorts = append(udpPorts, 8285)
+			case "vxlan":
+				udpPorts = append(udpPorts, 8472)
+			default:
+				glog.Warningf("unknown flannel networking backend %q", b.Cluster.Spec.Networking.Flannel.Backend)
+			}
 		}
 
 		if b.Cluster.Spec.Networking.Calico != nil {
@@ -140,6 +147,13 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 			tcpPorts = append(tcpPorts, 4001)
 			tcpPorts = append(tcpPorts, 179)
 			protocols = append(protocols, ProtocolIPIP)
+		}
+
+		if b.Cluster.Spec.Networking.Romana != nil {
+			// Romana needs to access etcd
+			glog.Warningf("Opening etcd port on masters for access from the nodes, for romana.  This is unsafe in untrusted environments.")
+			tcpPorts = append(tcpPorts, 4001)
+			tcpPorts = append(tcpPorts, 9600)
 		}
 	}
 
@@ -201,6 +215,13 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 		// Calico needs to access etcd
 		// TODO: Remove, replace with etcd in calico manifest
 		glog.Warningf("Opening etcd port on masters for access from the nodes, for calico.  This is unsafe in untrusted environments.")
+		tcpRanges = []portRange{{From: 1, To: 4001}, {From: 4003, To: 65535}}
+		protocols = append(protocols, ProtocolIPIP)
+	}
+
+	if b.Cluster.Spec.Networking.Romana != nil {
+		// Romana needs to access etcd
+		glog.Warningf("Opening etcd port on masters for access from the nodes, for romana.  This is unsafe in untrusted environments.")
 		tcpRanges = []portRange{{From: 1, To: 4001}, {From: 4003, To: 65535}}
 		protocols = append(protocols, ProtocolIPIP)
 	}

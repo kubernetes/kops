@@ -213,7 +213,7 @@ func (p *GSPath) ReadTree() ([]Path, error) {
 		if isGCSNotFound(err) {
 			return nil, os.ErrNotExist
 		}
-		return nil, fmt.Errorf("error listing %s: %v", p, err)
+		return nil, fmt.Errorf("error listing tree %s: %v", p, err)
 	}
 	return paths, nil
 }

@@ -24,12 +24,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
+	"k8s.io/kops/pkg/resources/tracker"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 func TestAddUntaggedRouteTables(t *testing.T) {
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	resources := make(map[string]*ResourceTracker)
+	resources := make(map[string]*tracker.Resource)
 
 	clusterName := "me.example.com"
 
@@ -71,7 +72,7 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 		RouteTableId: aws.String("rt-5555"),
 	})
 
-	resources["vpc:vpc-1234"] = &ResourceTracker{}
+	resources["vpc:vpc-1234"] = &tracker.Resource{}
 
 	err := addUntaggedRouteTables(cloud, clusterName, resources)
 	if err != nil {
