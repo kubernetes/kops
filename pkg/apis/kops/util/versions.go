@@ -65,25 +65,10 @@ func ParseKubernetesVersion(version string) (*semver.Version, error) {
 // TODO: Convert to our own KubernetesVersion type?
 
 func IsKubernetesGTE(version string, k8sVersion semver.Version) bool {
-	// The string-arg is a little annoying, but simplifies the calling code!
-	switch version {
-	case "1.2":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 2)
-	case "1.3":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 3)
-	case "1.4":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 4)
-	case "1.5":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 5)
-	case "1.6":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 6)
-	case "1.7":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 7)
-	case "1.8":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 8)
-	case "1.9":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 9)
-	default:
-		panic(fmt.Sprintf("IsKubernetesGTE not supported with version %q", version))
+	parsedVersion, err := ParseKubernetesVersion(version)
+	if err != nil {
+		panic(fmt.Sprintf("Error parsing version %s: %v", version, err))
 	}
+
+	return k8sVersion.GTE(*parsedVersion)
 }

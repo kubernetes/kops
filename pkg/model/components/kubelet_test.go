@@ -23,36 +23,79 @@ import (
 	"k8s.io/kops/pkg/assets"
 )
 
-func buildOptions() (*kops.ClusterSpec, error) {
+func buildSpec() *kops.ClusterSpec {
 	spec := kops.ClusterSpec{
 		KubernetesVersion:     "1.6.2",
 		ServiceClusterIPRange: "10.10.0.0/16",
+		Kubelet:               &kops.KubeletConfigSpec{},
 	}
 
+	return &spec
+}
+
+func buildOptions(spec *kops.ClusterSpec) error {
 	ab := assets.NewAssetBuilder(nil)
+
+	ver, err := KubernetesVersion(spec)
+	if err != nil {
+		return err
+	}
 
 	builder := KubeletOptionsBuilder{
 		Context: &OptionsContext{
-			AssetBuilder: ab,
+			AssetBuilder:      ab,
+			KubernetesVersion: *ver,
 		},
 	}
 
-	err := builder.BuildOptions(&spec)
+	err = builder.BuildOptions(spec)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return &spec, nil
+	return nil
 }
 
 func TestFeatureGates(t *testing.T) {
-	spec, err := buildOptions()
+	spec := buildSpec()
+	err := buildOptions(spec)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	gates := spec.Kubelet.FeatureGates
 	if gates["ExperimentalCriticalPodAnnotation"] != "true" {
-		t.Errorf("ExperimentalCriticalPodAnnotation feature gate should be enabled")
+		t.Errorf("ExperimentalCriticalPodAnnotation feature gate should be enabled by default")
+	}
+}
+
+func TestFeatureGatesKubernetesVersion(t *testing.T) {
+	spec := buildSpec()
+	spec.KubernetesVersion = "1.4.0"
+	err := buildOptions(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	gates := spec.Kubelet.FeatureGates
+	if _, found := gates["ExperimentalCriticalPodAnnotation"]; found {
+		t.Errorf("ExperimentalCriticalPodAnnotation feature gate should not be added on Kubernetes < 1.5.2")
+	}
+}
+
+func TestFeatureGatesOverride(t *testing.T) {
+	spec := buildSpec()
+	spec.Kubelet.FeatureGates = map[string]string{
+		"ExperimentalCriticalPodAnnotation": "false",
+	}
+
+	err := buildOptions(spec)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	gates := spec.Kubelet.FeatureGates
+	if gates["ExperimentalCriticalPodAnnotation"] != "false" {
+		t.Errorf("ExperimentalCriticalPodAnnotation feature should be disalbled")
 	}
 }

@@ -192,8 +192,14 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 	}
 	clusterSpec.Kubelet.PodInfraContainerImage = image
 
-	clusterSpec.Kubelet.FeatureGates = make(map[string]string)
-	clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"] = "true"
+	if clusterSpec.Kubelet.FeatureGates == nil {
+		clusterSpec.Kubelet.FeatureGates = make(map[string]string)
+	}
+	if _, found := clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"]; !found {
+		if b.Context.IsKubernetesGTE("1.5.2") {
+			clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"] = "true"
+		}
+	}
 
 	return nil
 }
