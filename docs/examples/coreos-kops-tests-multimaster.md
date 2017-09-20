@@ -12,7 +12,7 @@ The exercise described on this document will focus on the following goals:
 
 ## PRE-FLIGHT CHECK:
 
-Before rushing in to replicate this exercise, please ensure your basic environment is correctly setup. See the [KOPS AWS tutorial for more information](https://github.com/kubernetes/kops/blob/master/docs/aws.md). 
+Before rushing in to replicate this exercise, please ensure your basic environment is correctly setup. See the [KOPS AWS tutorial for more information](https://github.com/kubernetes/kops/blob/master/docs/aws.md).
 
 Ensure that the following points are covered and working in your environment:
 
@@ -50,7 +50,7 @@ export AWS_PROFILE=name_of_your_profile
 Create a bucket (if you don't already have one) for your cluster state:
 
 ```bash
-aws s3api create-bucket --bucket my-kops-s3-bucket-for-cluster-state --region us-east-1
+aws s3 mb s3://my-kops-s3-bucket-for-cluster-state --region us-east-1
 ```
 
 Then export the name of your cluster along with the "S3" URL of your bucket:
@@ -135,7 +135,7 @@ aws ec2 describe-images --region=us-east-1 --owner=595879546273 \
     --query 'sort_by(Images,&CreationDate)[-1].{id:ImageLocation}' \
 	--output table
 
-	
+
 ---------------------------------------------------
 |                 DescribeImages                  |
 +----+--------------------------------------------+
@@ -289,7 +289,7 @@ curl http://54.210.119.98
 curl http://34.200.247.63
 <html><body><h1>It works!</h1></body></html>
 
-``` 
+```
 
 **NOTE:** If you are replicating this exercise in a production environment, use a "real" load balancer in order to expose your replicated services. We are here just testing things so we really don't care right now about that, but, if you are doing this for a "real" production environment, either use an AWS ELB service, or an nginx ingress controller as described in our documentation: [NGINX Based ingress controller](https://github.com/kubernetes/kops/tree/master/addons/ingress-nginx).
 
