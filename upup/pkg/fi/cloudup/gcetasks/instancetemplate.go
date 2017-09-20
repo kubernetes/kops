@@ -230,6 +230,7 @@ func (e *InstanceTemplate) mapToGCE(project string) (*compute.InstanceTemplate, 
 
 	var networkInterfaces []*compute.NetworkInterface
 	ni := &compute.NetworkInterface{
+		Kind: "compute#networkInterface",
 		AccessConfigs: []*compute.AccessConfig{{
 			Kind: "compute#accessConfig",
 			//NatIP: *e.IPAddress.Address,
