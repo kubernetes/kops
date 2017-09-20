@@ -198,6 +198,13 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		default:
 			return field.Invalid(fieldSpec.Child("Networking", "Canal", "DefaultEndpointToHostAction"), action, fmt.Sprintf("Unsupported value: %s, supports ACCEPT, DROP or RETURN", action))
 		}
+
+		chainInsertMode := c.Spec.Networking.Canal.ChainInsertMode
+		switch chainInsertMode {
+		case "", "insert", "append":
+		default:
+			return field.Invalid(fieldSpec.Child("Networking", "Canal", "ChainInsertMode"), action, fmt.Sprintf("Unsupported value: %s, supports 'insert' or 'append'", chainInsertMode))
+		}
 	}
 
 	// Check ClusterCIDR
