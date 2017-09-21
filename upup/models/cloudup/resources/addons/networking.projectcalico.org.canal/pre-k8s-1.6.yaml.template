@@ -112,6 +112,21 @@ spec:
             # Set Felix endpoint to host default action to ACCEPT.
             - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
               value: "{{- or .Networking.Canal.DefaultEndpointToHostAction "ACCEPT" }}"
+            # Controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom
+            - name: FELIX_CHAININSERTMODE
+              value: "{{- or .Networking.Canal.ChainInsertMode "insert" }}"
+            # Set to enable the experimental Prometheus metrics server
+            - name: FELIX_PROMETHEUSMETRICSENABLED
+              value: "{{- or .Networking.Canal.PrometheusMetricsEnabled "false" }}"
+            # TCP port that the Prometheus metrics server should bind to
+            - name: FELIX_PROMETHEUSMETRICSPORT
+              value: "{{- or .Networking.Canal.PrometheusMetricsPort "9091" }}"
+            # Enable Prometheus Go runtime metrics collection
+            - name: FELIX_PROMETHEUSGOMETRICSENABLED
+              value: "{{- or .Networking.Canal.PrometheusGoMetricsEnabled "true" }}"
+            # Enable Prometheus process metrics collection
+            - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
+              value: "{{- or .Networking.Canal.PrometheusProcessMetricsEnabled "true" }}"
           securityContext:
             privileged: true
           resources:
