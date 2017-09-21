@@ -214,7 +214,7 @@ func Test_Validate_Networking_Flannel(t *testing.T) {
 			Input: kops.FlannelNetworkingSpec{
 				Backend: "host-gw",
 			},
-		},		
+		},
 		{
 			Input: kops.FlannelNetworkingSpec{
 				Backend: "udp",
