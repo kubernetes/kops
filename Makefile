@@ -34,8 +34,8 @@ PROTOKUBE=$(LOCAL)/protokube
 UPLOAD=$(BUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
-TESTABLE_PACKAGES:=$(shell go list ./... | egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor")
 SOURCES:=$(shell find . -name "*.go")
+TESTABLE_PACKAGES:=$(cat hack/.packages | egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor")
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))

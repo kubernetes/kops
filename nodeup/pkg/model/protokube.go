@@ -331,7 +331,7 @@ func (t *ProtokubeBuilder) writeProxyEnvVars(buffer *bytes.Buffer) {
 
 // buildCertificateTask is responsible for build a certificate request task
 func (t *ProtokubeBuilder) buildCeritificateTask(c *fi.ModelBuilderContext, name, filename string) error {
-	cert, err := t.KeyStore.Cert(name)
+	cert, err := t.KeyStore.Cert(name, false)
 	if err != nil {
 		return err
 	}
@@ -353,7 +353,7 @@ func (t *ProtokubeBuilder) buildCeritificateTask(c *fi.ModelBuilderContext, name
 
 // buildPrivateKeyTask is responsible for build a certificate request task
 func (t *ProtokubeBuilder) buildPrivateTask(c *fi.ModelBuilderContext, name, filename string) error {
-	cert, err := t.KeyStore.PrivateKey(name)
+	cert, err := t.KeyStore.PrivateKey(name, false)
 	if err != nil {
 		return err
 	}

@@ -181,8 +181,6 @@ func (c *populateClusterSpec) run() error {
 	if err != nil {
 		return err
 	}
-	// Always assume a dry run during this phase
-	keyStore.(*fi.VFSCAStore).DryRun = true
 
 	secretStore, err := registry.SecretStore(cluster)
 	if err != nil {

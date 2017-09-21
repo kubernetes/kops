@@ -40,7 +40,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// retrieve the platform ca
 	{
-		ca, err := b.KeyStore.CertificatePool(fi.CertificateId_CA)
+		ca, err := b.KeyStore.CertificatePool(fi.CertificateId_CA, false)
 		if err != nil {
 			return err
 		}
@@ -79,7 +79,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		cert, err := b.KeyStore.Cert("master")
+		cert, err := b.KeyStore.Cert("master", false)
 		if err != nil {
 			return err
 		}
@@ -98,7 +98,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		k, err := b.KeyStore.PrivateKey("master")
+		k, err := b.KeyStore.PrivateKey("master", false)
 		if err != nil {
 			return err
 		}
@@ -118,7 +118,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.IsKubernetesGTE("1.7") {
 
-		cert, err := b.KeyStore.Cert("apiserver-proxy-client")
+		cert, err := b.KeyStore.Cert("apiserver-proxy-client", false)
 		if err != nil {
 			return fmt.Errorf("apiserver proxy client cert lookup failed: %v", err.Error())
 		}
@@ -135,7 +135,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(t)
 
-		key, err := b.KeyStore.PrivateKey("apiserver-proxy-client")
+		key, err := b.KeyStore.PrivateKey("apiserver-proxy-client", false)
 		if err != nil {
 			return fmt.Errorf("apiserver proxy client private key lookup failed: %v", err.Error())
 		}
