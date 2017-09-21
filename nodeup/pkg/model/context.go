@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"path/filepath"
 
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
@@ -69,6 +70,11 @@ func (c *NodeupModelContext) PathSrvKubernetes() string {
 	default:
 		return "/srv/kubernetes"
 	}
+}
+
+// FileAssetsDefaultPath is the default location for assets which have no path
+func (c *NodeupModelContext) FileAssetsDefaultPath() string {
+	return filepath.Join(c.PathSrvKubernetes(), "assets")
 }
 
 // PathSrvSshproxy returns the path for the SSL proxy
