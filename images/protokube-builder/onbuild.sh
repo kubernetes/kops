@@ -23,10 +23,10 @@ ln -s /src/ /go/src/k8s.io/kops
 ls -lR  /go/src/k8s.io/kops/protokube/cmd/
 
 cd /go/src/k8s.io/kops/
-make protokube-gocode
+make protokube
 
 mkdir -p /src/.build/artifacts/
-cp /go/bin/protokube /src/.build/artifacts/
+cp /src/.build/local/protokube /src/.build/artifacts/protokube
 
 # Applying channels calls out to the channels tool
 make channels
