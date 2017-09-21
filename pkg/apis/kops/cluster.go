@@ -96,6 +96,8 @@ type ClusterSpec struct {
 	NodePortAccess []string `json:"nodePortAccess,omitempty"`
 	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
 	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
+	// SSHKeyName specifies a preexisting SSH key to use
+	SSHKeyName string `json:"sshKeyName,omitempty"`
 
 	// KubernetesAPIAccess is a list of the CIDRs that can access the Kubernetes API endpoint (master HTTPS)
 	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
