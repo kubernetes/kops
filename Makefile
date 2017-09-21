@@ -456,7 +456,7 @@ verify-goimports:
 	hack/verify-goimports
 
 .PHONY: govet
-govet:
+govet: ${BINDATA_TARGETS}
 	go vet ${TESTABLE_PACKAGES}
 
 # --------------------------------------------------
