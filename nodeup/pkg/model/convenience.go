@@ -94,7 +94,7 @@ func getProxyEnvVars(proxies *kops.EgressProxySpec) []v1.EnvVar {
 
 // buildCertificateRequest retrieves the certificate from a keystore
 func buildCertificateRequest(c *fi.ModelBuilderContext, b *NodeupModelContext, name, path string) error {
-	cert, err := b.KeyStore.Cert(name)
+	cert, err := b.KeyStore.Cert(name, false)
 	if err != nil {
 		return err
 	}
@@ -120,7 +120,7 @@ func buildCertificateRequest(c *fi.ModelBuilderContext, b *NodeupModelContext, n
 
 // buildPrivateKeyRequest retrieves a private key from the store
 func buildPrivateKeyRequest(c *fi.ModelBuilderContext, b *NodeupModelContext, name, path string) error {
-	k, err := b.KeyStore.PrivateKey(name)
+	k, err := b.KeyStore.PrivateKey(name, false)
 	if err != nil {
 		return err
 	}

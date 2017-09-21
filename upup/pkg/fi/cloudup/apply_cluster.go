@@ -192,7 +192,6 @@ func (c *ApplyClusterCmd) Run() error {
 	if err != nil {
 		return err
 	}
-	keyStore.(*fi.VFSCAStore).DryRun = c.DryRun
 
 	secretStore, err := registry.SecretStore(cluster)
 	if err != nil {
