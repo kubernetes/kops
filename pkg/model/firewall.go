@@ -130,6 +130,8 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 
 		if b.Cluster.Spec.Networking.Flannel != nil {
 			switch b.Cluster.Spec.Networking.Flannel.Backend {
+			case "host-gw":
+
 			case "", "udp":
 				udpPorts = append(udpPorts, 8285)
 			case "vxlan":

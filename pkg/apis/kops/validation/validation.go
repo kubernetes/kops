@@ -227,7 +227,7 @@ func validateNetworkingFlannel(v *kops.FlannelNetworkingSpec, fldPath *field.Pat
 	switch v.Backend {
 	case "":
 		allErrs = append(allErrs, field.Required(fldPath.Child("Backend"), "Flannel backend must be specified"))
-	case "udp", "vxlan":
+	case "udp", "vxlan", "host-gw":
 		// OK
 	default:
 		allErrs = append(allErrs, field.NotSupported(fldPath.Child("Backend"), v.Backend, []string{"udp", "vxlan"}))

@@ -698,6 +698,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
 			Backend: "vxlan",
 		}
+	case "flannel-host-gw":
+		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
+			Backend: "host-gw",
+		}
 	case "flannel-udp":
 		glog.Warningf("flannel UDP mode is not recommended; consider flannel-vxlan instead")
 		cluster.Spec.Networking.Flannel = &api.FlannelNetworkingSpec{
