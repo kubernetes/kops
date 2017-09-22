@@ -10,7 +10,7 @@
 
 `kops describe secret`
 
-### create secret 
+### create secret
 
 `kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub`
 
@@ -24,6 +24,7 @@ The ID form can be used when there are multiple matching keys.
 example:
 `kops delete secret sshpublickey admin`
 
+Note: it is currently not possible to delete secrets from the keystore that have the type "Secret"
 
 ### adding ssh credential from spec file
 ```bash
@@ -35,3 +36,12 @@ metadata:
 spec:
   publicKey: "ssh-rsa AAAAB3NzaC1 dev@devbox"
 ```
+
+## Workaround for changing secrets with type "Secret"
+As it is currently not possible to modify or delete + create secrets of type "Secret" with the CLI you have to modify them directly in the kops s3 bucket.
+
+They are stored /clustername/secrets/ and contain the secret as a base64 encoded string. To change the secret base64 encode it with:
+
+```echo -n 'MY_SECRET' | base64```
+
+and replace it in the "Data" field of the file. Verifiy your change with get secrets and perform a rolling update of the cluster.
