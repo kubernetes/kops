@@ -18,21 +18,31 @@ data:
   # The CNI network configuration to install on each node.
   cni_network_config: |-
     {
-        "name": "k8s-pod-network",
-        "type": "calico",
-        "etcd_endpoints": "__ETCD_ENDPOINTS__",
-        "log_level": "info",
-        "ipam": {
+      "name": "k8s-pod-network",
+      "cniVersion": "0.3.0",
+      "plugins": [
+        {
+          "type": "calico",
+          "etcd_endpoints": "__ETCD_ENDPOINTS__",
+          "log_level": "info",
+          "ipam": {
             "type": "calico-ipam"
-        },
-        "policy": {
+          },
+          "policy": {
             "type": "k8s",
-             "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
-             "k8s_auth_token": "__SERVICEACCOUNT_TOKEN__"
-        },
-        "kubernetes": {
+            "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
+            "k8s_auth_token": "__SERVICEACCOUNT_TOKEN__"
+          },
+          "kubernetes": {
             "kubeconfig": "/etc/cni/net.d/__KUBECONFIG_FILENAME__"
+          }
+        },
+        {
+          "type": "portmap",
+          "snat": true,
+          "capabilities": {"portMappings": true}
         }
+      ]
     }
 
 ---
@@ -128,7 +138,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v2.4.0
+          image: quay.io/calico/node:v2.4.1
           resources:
             requests:
               cpu: 10m
@@ -178,6 +188,9 @@ spec:
           imagePullPolicy: Always
           command: ["/install-cni.sh"]
           env:
+            # The name of calico config file
+            - name: CNI_CONF_NAME
+              value: 10-calico.conflist
             # The location of the Calico etcd cluster.
             - name: ETCD_ENDPOINTS
               valueFrom:
