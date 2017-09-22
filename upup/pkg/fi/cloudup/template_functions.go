@@ -35,13 +35,14 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type TemplateFunctions struct {
@@ -74,7 +75,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	}
 
 	dest["ClusterName"] = tf.modelContext.ClusterName
-
 	dest["HasTag"] = tf.HasTag
 
 	dest["WithDefaultBool"] = func(v *bool, defaultValue bool) bool {
@@ -85,20 +85,16 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	}
 
 	dest["GetInstanceGroup"] = tf.GetInstanceGroup
-
 	dest["CloudTags"] = tf.modelContext.CloudTagsForInstanceGroup
-
 	dest["KubeDNS"] = func() *kops.KubeDNSConfig {
 		return tf.cluster.Spec.KubeDNS
 	}
 
 	dest["DnsControllerArgv"] = tf.DnsControllerArgv
-
 	dest["ExternalDnsArgv"] = tf.ExternalDnsArgv
 
 	// TODO: Only for GCE?
 	dest["EncodeGCELabel"] = gce.EncodeGCELabel
-
 	dest["Region"] = func() string {
 		return tf.region
 	}
@@ -142,21 +138,27 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 
 	argv = append(argv, "/usr/bin/dns-controller")
 
-	externalDns := tf.cluster.Spec.ExternalDNS
-	if externalDns == nil {
-		externalDns = &kops.ExternalDNSConfig{}
-		argv = append(argv, "--watch-ingress=false")
-		glog.Infoln("watch-ingress=false set on DNSController")
+	// @check if the dns controller has custom configuration
+	if tf.cluster.Spec.ExternalDNS == nil {
+		argv = append(argv, []string{"--watch-ingress=false"}...)
+
+		glog.Infoln("watch-ingress=false set on dns-controller")
 	} else {
-		watchIngress := fi.BoolValue(externalDns.WatchIngress)
+		// @check if the watch ingress is set
+		var watchIngress bool
+		if tf.cluster.Spec.ExternalDNS.WatchIngress != nil {
+			watchIngress = fi.BoolValue(tf.cluster.Spec.ExternalDNS.WatchIngress)
+		}
+
 		if watchIngress {
-			glog.Warningln("--watch-ingress=true set on DNSController. ")
+			glog.Warningln("--watch-ingress=true set on dns-controller")
 			glog.Warningln("this may cause problems with previously defined services: https://github.com/kubernetes/kops/issues/2496")
-		} else {
-			argv = append(argv, "--watch-ingress=false")
+		}
+		argv = append(argv, fmt.Sprintf("--watch-ingress=%t", watchIngress))
+		if tf.cluster.Spec.ExternalDNS.WatchNamespace != "" {
+			argv = append(argv, fmt.Sprintf("--watch-namespace=%q", tf.cluster.Spec.ExternalDNS.WatchNamespace))
 		}
 	}
-	// argv = append(argv, "--watch-ingress=false")
 
 	if dns.IsGossipHostname(tf.cluster.Spec.MasterInternalName) {
 		argv = append(argv, "--dns=gossip")
@@ -196,7 +198,6 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	}
 	// permit wildcard updates
 	argv = append(argv, "--zone=*/*")
-
 	// Verbose, but not crazy logging
 	argv = append(argv, "-v=2")
 

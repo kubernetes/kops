@@ -21,11 +21,11 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/pkg/apis/extensions/v1beta1"
+
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/util"
 )
@@ -33,19 +33,21 @@ import (
 // IngressController watches for Ingress objects with dns labels
 type IngressController struct {
 	util.Stoppable
-	kubeClient kubernetes.Interface
-	scope      dns.Scope
+	client    kubernetes.Interface
+	namespace string
+	scope     dns.Scope
 }
 
-// newIngressController creates a ingressController
-func NewIngressController(kubeClient kubernetes.Interface, dns dns.Context) (*IngressController, error) {
+// NewIngressController creates a IngressController
+func NewIngressController(client kubernetes.Interface, dns dns.Context, namespace string) (*IngressController, error) {
 	scope, err := dns.CreateScope("ingress")
 	if err != nil {
 		return nil, fmt.Errorf("error building dns scope: %v", err)
 	}
 	c := &IngressController{
-		kubeClient: kubeClient,
-		scope:      scope,
+		client:    client,
+		namespace: namespace,
+		scope:     scope,
 	}
 
 	return c, nil
@@ -67,7 +69,7 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 		var listOpts metav1.ListOptions
 		glog.V(4).Infof("querying without label filter")
 
-		ingressList, err := c.kubeClient.ExtensionsV1beta1().Ingresses("").List(listOpts)
+		ingressList, err := c.client.ExtensionsV1beta1().Ingresses(c.namespace).List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing ingresss: %v", err)
 		}
@@ -80,7 +82,7 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 
 		listOpts.Watch = true
 		listOpts.ResourceVersion = ingressList.ResourceVersion
-		watcher, err := c.kubeClient.ExtensionsV1beta1().Ingresses("").Watch(listOpts)
+		watcher, err := c.client.ExtensionsV1beta1().Ingresses(c.namespace).Watch(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error watching ingresss: %v", err)
 		}
