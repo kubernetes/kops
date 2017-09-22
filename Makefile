@@ -30,10 +30,13 @@ IMAGES=$(DIST)/images
 GOBINDATA=$(LOCAL)/go-bindata
 CHANNELS=$(LOCAL)/channels
 NODEUP=$(LOCAL)/nodeup
+PROTOKUBE=$(LOCAL)/protokube
 UPLOAD=$(BUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
-TESTABLE_PACKAGES:=$(cat hack/.packages | egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor")
+TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages) 
+
+SOURCES:=$(shell find . -name "*.go")
 
 # See http://stackoverflow.com/questions/18136918/how-to-get-current-relative-directory-of-your-makefile
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
@@ -93,8 +96,21 @@ ifndef SHASUMCMD
   $(error "Neither sha1sum nor shasum command is available")
 endif
 
+.PHONY: kops-install # Install kops to local $GOPATH/bin
+kops-install: ${KOPS}
+	cp ${KOPS} ${GOPATH_1ST}/bin
+
+.PHONY: channels-install # Install channels to local $GOPATH/bin
+channels-install: ${CHANNELS}
+	cp ${CHANNELS} ${GOPATH_1ST}/bin
+
+.PHONY: all-install # Install all kops project binaries
+all-install: all kops-install channels-install
+	cp ${NODEUP} ${GOPATH_1ST}/bin
+	cp ${PROTOKUBE} ${GOPATH_1ST}/bin
+
 .PHONY: all
-all: kops-dev
+all: ${KOPS} ${PROTOKUBE} ${NODEUP} ${CHANNELS}
 
 .PHONY: help
 help: # Show this help
@@ -128,23 +144,12 @@ clean: # Remove build directory and bindata-generated files
 	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -fv $$t; fi; done 
 	if test -e ${BUILD}; then rm -rfv ${BUILD}; fi
 
-.PHONY: install
-install: all
-	cp ${KOPS} ${GOPATH_1ST}/bin
-	cp ${NODEUP} ${GOPATH_1ST}/bin
-	cp ${CHANNELS} ${GOPATH_1ST}/bin
-
 .PHONY: kops
-kops: kops-dev
+kops: ${KOPS}
 
-${KOPS}: ${BINDATA_TARGETS}
+${KOPS}: ${BINDATA_TARGETS} ${SOURCES}
 	go build ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
 
-.PHONY: kops-dev
-kops-dev: ${BINDATA_TARGETS}
-	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/
-
-.PHONY: ${GOBINDATA}
 ${GOBINDATA}:
 	mkdir -p ${LOCAL}
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
@@ -335,9 +340,11 @@ push-gce-run: push
 push-aws-run: push
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
-.PHONY: protokube-gocode
-protokube-gocode:
-	go install -tags 'peer_name_alternative peer_name_hash' k8s.io/kops/protokube/cmd/protokube
+${PROTOKUBE}: ${SOURCES}
+	go build -o $@ -tags 'peer_name_alternative peer_name_hash' k8s.io/kops/protokube/cmd/protokube
+
+.PHONY: protokube
+protokube: ${PROTOKUBE}
 
 .PHONY: protokube-builder-image
 protokube-builder-image:
@@ -368,7 +375,7 @@ protokube-push: protokube-image
 .PHONY: nodeup
 nodeup: ${NODEUP}
 
-${NODEUP}: ${BINDATA_TARGETS}
+${NODEUP}: ${BINDATA_TARGETS} ${SOURCES}
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" -o $@ k8s.io/kops/cmd/nodeup
 
 .PHONY: nodeup-dist
@@ -449,7 +456,7 @@ verify-goimports:
 	hack/verify-goimports
 
 .PHONY: govet
-govet:
+govet: ${BINDATA_TARGETS}
 	go vet ${TESTABLE_PACKAGES}
 
 # --------------------------------------------------
@@ -491,7 +498,7 @@ ci: govet verify-gofmt verify-boilerplate nodeup examples test | verify-gendocs 
 .PHONY: channels
 channels: ${CHANNELS}
 
-${CHANNELS}:
+${CHANNELS}: ${SOURCES}
 	go build ${EXTRA_BUILDFLAGS} -o $@ -ldflags "-X k8s.io/kops.Version=${VERSION} ${EXTRA_LDFLAGS}" k8s.io/kops/channels/cmd/channels
 
 # --------------------------------------------------
