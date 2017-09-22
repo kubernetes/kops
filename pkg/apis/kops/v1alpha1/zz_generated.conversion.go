@@ -743,6 +743,7 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 	} else {
 		out.IAM = nil
 	}
+	out.EncryptionConfig = in.EncryptionConfig
 	return nil
 }
 
@@ -968,6 +969,7 @@ func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, 
 	} else {
 		out.IAM = nil
 	}
+	out.EncryptionConfig = in.EncryptionConfig
 	return nil
 }
 
@@ -1730,6 +1732,7 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
+	out.ExperimentalEncryptionProviderConfig = in.ExperimentalEncryptionProviderConfig
 	return nil
 }
 
@@ -1781,6 +1784,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
+	out.ExperimentalEncryptionProviderConfig = in.ExperimentalEncryptionProviderConfig
 	return nil
 }
 
