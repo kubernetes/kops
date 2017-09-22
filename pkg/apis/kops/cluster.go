@@ -98,7 +98,6 @@ type ClusterSpec struct {
 	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
 	// SSHKeyName specifies a preexisting SSH key to use
 	SSHKeyName string `json:"sshKeyName,omitempty"`
-
 	// KubernetesAPIAccess is a list of the CIDRs that can access the Kubernetes API endpoint (master HTTPS)
 	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
 	// IsolatesMasters determines whether we should lock down masters so that they are not on the pod network.
@@ -268,8 +267,12 @@ type KubeDNSConfig struct {
 	ServerIP string `json:"serverIP,omitempty"`
 }
 
+// ExternalDNSConfig are options of the dns-controller
 type ExternalDNSConfig struct {
+	// WatchIngress indicates you want the dns-controller to watch and create dns entries for ingress resources
 	WatchIngress *bool `json:"watchIngress,omitempty"`
+	// WatchNamespace is namespace to watch, detaults to all (use to control whom can creates dns entries)
+	WatchNamespace string `json:"watchNamespace,omitempty"`
 }
 
 // EtcdClusterSpec is the etcd cluster specification
