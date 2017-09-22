@@ -176,6 +176,8 @@ type ClusterSpec struct {
 
 	// IAM field adds control over the IAM security policies applied to resources
 	IAM *IAMSpec `json:"iam,omitempty"`
+	// EncryptionConfig holds the encryption config
+	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
 }
 
 // FileAssetSpec defines the structure for a file asset

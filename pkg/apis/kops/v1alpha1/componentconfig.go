@@ -256,6 +256,8 @@ type KubeAPIServerConfig struct {
 	AuthorizationMode *string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
 	// AuthorizationRBACSuperUser is the name of the superuser for default rbac
 	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
+	// ExperimentalEncryptionProviderConfig enables encryption at rest for secrets.
+	ExperimentalEncryptionProviderConfig *string `json:"experimentalEncryptionProviderConfig,omitempty" flag:"experimental-encryption-provider-config"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
