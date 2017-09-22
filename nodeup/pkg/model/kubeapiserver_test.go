@@ -17,9 +17,11 @@ limitations under the License.
 package model
 
 import (
+	"testing"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
-	"testing"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func Test_KubeAPIServer_BuildFlags(t *testing.T) {
@@ -55,6 +57,12 @@ func Test_KubeAPIServer_BuildFlags(t *testing.T) {
 				ServiceNodePortRange: "30000-33000",
 			},
 			"--insecure-port=0 --secure-port=0 --service-node-port-range=30000-33000",
+		},
+		{
+			kops.KubeAPIServerConfig{
+				ExperimentalEncryptionProviderConfig: fi.String("/srv/kubernetes/encryptionconfig.yaml"),
+			},
+			"--experimental-encryption-provider-config=/srv/kubernetes/encryptionconfig.yaml --insecure-port=0 --secure-port=0",
 		},
 	}
 
