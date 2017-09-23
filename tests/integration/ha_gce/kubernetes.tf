@@ -478,8 +478,8 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
 }
 
 resource "google_compute_network" "default" {
-  name       = "default"
-  ipv4_range = "172.20.0.0/16"
+  name                    = "default"
+  auto_create_subnetworks = true
 }
 
 terraform = {
