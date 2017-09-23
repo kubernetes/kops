@@ -76,14 +76,24 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 
 	requiresSubnets := true
 	requiresNetworkCIDR := true
+	requiresSubnetCIDR := true
 	switch kops.CloudProviderID(c.Spec.CloudProvider) {
 	case kops.CloudProviderBareMetal:
 		requiresSubnets = false
 		requiresNetworkCIDR = false
+		if c.Spec.NetworkCIDR != "" {
+			return field.Invalid(fieldSpec.Child("NetworkCIDR"), c.Spec.NetworkCIDR, "NetworkCIDR should not be set on bare metal")
+		}
+
+	case kops.CloudProviderGCE:
+		requiresNetworkCIDR = false
+		if c.Spec.NetworkCIDR != "" {
+			return field.Invalid(fieldSpec.Child("NetworkCIDR"), c.Spec.NetworkCIDR, "NetworkCIDR should not be set on GCE")
+		}
+		requiresSubnetCIDR = false
 
 	case kops.CloudProviderDO:
 	case kops.CloudProviderAWS:
-	case kops.CloudProviderGCE:
 	case kops.CloudProviderVSphere:
 
 	default:
@@ -123,15 +133,14 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	// Check NetworkCIDR
 	var networkCIDR *net.IPNet
 	{
-		networkCIDRString := c.Spec.NetworkCIDR
-		if networkCIDRString == "" {
+		if c.Spec.NetworkCIDR == "" {
 			if requiresNetworkCIDR {
 				return field.Required(fieldSpec.Child("NetworkCIDR"), "Cluster did not have NetworkCIDR set")
 			}
 		} else {
-			_, networkCIDR, err = net.ParseCIDR(networkCIDRString)
+			_, networkCIDR, err = net.ParseCIDR(c.Spec.NetworkCIDR)
 			if err != nil {
-				return field.Invalid(fieldSpec.Child("NetworkCIDR"), networkCIDRString, fmt.Sprintf("Cluster had an invalid NetworkCIDR"))
+				return field.Invalid(fieldSpec.Child("NetworkCIDR"), c.Spec.NetworkCIDR, fmt.Sprintf("Cluster had an invalid NetworkCIDR"))
 			}
 		}
 	}
@@ -293,7 +302,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		for i, s := range c.Spec.Subnets {
 			fieldSubnet := fieldSpec.Child("Subnets").Index(i)
 			if s.CIDR == "" {
-				if strict {
+				if requiresSubnetCIDR && strict {
 					return field.Required(fieldSubnet.Child("CIDR"), "Subnet did not have a CIDR set")
 				}
 			} else {
