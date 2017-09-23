@@ -52,6 +52,23 @@ func (b *KubeAPIServerBuilder) Build(c *fi.ModelBuilderContext) error {
 		return err
 	}
 
+	if b.Cluster.Spec.EncryptionConfig != nil {
+		if *b.Cluster.Spec.EncryptionConfig && b.IsKubernetesGTE("1.7") {
+			b.Cluster.Spec.KubeAPIServer.ExperimentalEncryptionProviderConfig = fi.String(filepath.Join(b.PathSrvKubernetes(), "encryptionconfig.yaml"))
+			key := "encryptionconfig"
+			encryptioncfg, _ := b.SecretStore.Secret(key)
+			if encryptioncfg != nil {
+				contents := string(encryptioncfg.Data)
+				t := &nodetasks.File{
+					Path:     *b.Cluster.Spec.KubeAPIServer.ExperimentalEncryptionProviderConfig,
+					Contents: fi.NewStringResource(contents),
+					Mode:     fi.String("600"),
+					Type:     nodetasks.FileType_File,
+				}
+				c.AddTask(t)
+			}
+		}
+	}
 	{
 		pod, err := b.buildPod()
 		if err != nil {
