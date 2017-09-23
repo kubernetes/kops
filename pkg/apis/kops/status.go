@@ -16,11 +16,37 @@ limitations under the License.
 
 package kops
 
-import "github.com/golang/glog"
+import (
+	"github.com/golang/glog"
+)
 
 // StatusStore abstracts the key status functions; and lets us introduce status gradually
 type StatusStore interface {
+	// FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
+	FindClusterStatus(cluster *Cluster) (*ClusterStatus, error)
+
 	GetApiIngressStatus(cluster *Cluster) ([]ApiIngressStatus, error)
+}
+
+type ClusterStatus struct {
+	// EtcdClusters stores the status for each cluster
+	EtcdClusters []EtcdClusterStatus `json:"etcdClusters,omitempty"`
+}
+
+// EtcdStatus represents the status of etcd: because etcd only allows limited reconfiguration, we have to block changes once etcd has been initialized.
+type EtcdClusterStatus struct {
+	// Name is the name of the etcd cluster (main, events etc)
+	Name string `json:"name,omitempty"`
+	// EtcdMember stores the configurations for each member of the cluster (including the data volume)
+	Members []*EtcdMemberStatus `json:"etcdMembers,omitempty"`
+}
+
+type EtcdMemberStatus struct {
+	// Name is the name of the member within the etcd cluster
+	Name string `json:"name,omitempty"`
+
+	// volumeId is the id of the cloud volume (e.g. the AWS volume id)
+	VolumeId string `json:"volumeId,omitempty"`
 }
 
 // ApiIngress represents the status of an ingress point:
@@ -43,6 +69,12 @@ type NoopStatusStore struct {
 }
 
 var _ StatusStore = &NoopStatusStore{}
+
+// FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
+func (s *NoopStatusStore) FindClusterStatus(cluster *Cluster) (*ClusterStatus, error) {
+	glog.Warningf("FindClusterStatus called on NoopStore")
+	return nil, nil
+}
 
 func (s *NoopStatusStore) GetApiIngressStatus(cluster *Cluster) ([]ApiIngressStatus, error) {
 	glog.Warningf("GetApiIngressStatus called on NoopStore")

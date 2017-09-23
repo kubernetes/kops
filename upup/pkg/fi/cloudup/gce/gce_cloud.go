@@ -39,6 +39,9 @@ type GCECloud interface {
 	WaitForOp(op *compute.Operation) error
 	GetApiIngressStatus(cluster *kops.Cluster) ([]kops.ApiIngressStatus, error)
 	Labels() map[string]string
+
+	// FindClusterStatus gets the status of the cluster as it exists in GCE, inferred from volumes
+	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 }
 
 type gceCloudImplementation struct {

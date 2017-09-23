@@ -111,15 +111,19 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 	return c, nil
 }
 
-func (r *ClusterVFS) Update(c *api.Cluster) (*api.Cluster, error) {
-	err := validation.ValidateCluster(c, false)
+func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Cluster, error) {
+	clusterName := c.ObjectMeta.Name
+	if clusterName == "" {
+		return nil, field.Required(field.NewPath("Name"), "clusterName is required")
+	}
+
+	old, err := r.Get(clusterName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	clusterName := c.ObjectMeta.Name
-	if clusterName == "" {
-		return nil, field.Required(field.NewPath("Name"), "clusterName is required")
+	if err := validation.ValidateClusterUpdate(c, status, old).ToAggregate(); err != nil {
+		return nil, err
 	}
 
 	if err := r.writeConfig(r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionOnlyIfExists); err != nil {

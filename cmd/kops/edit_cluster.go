@@ -236,8 +236,15 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			return preservedFile(err, file, out)
 		}
 
+		// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
+		statusDiscovery := &cloudDiscoveryStatusStore{}
+		status, err := statusDiscovery.FindClusterStatus(oldCluster)
+		if err != nil {
+			return err
+		}
+
 		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.UpdateCluster(newCluster)
+		_, err = clientset.UpdateCluster(newCluster, status)
 		if err != nil {
 			return preservedFile(err, file, out)
 		}

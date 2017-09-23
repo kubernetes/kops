@@ -33,6 +33,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/protokube/pkg/etcd"
 )
 
 var devices = []string{"/dev/xvdu", "/dev/xvdv", "/dev/xvdx", "/dev/xvdx", "/dev/xvdy", "/dev/xvdz"}
@@ -215,7 +216,7 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 				default:
 					if strings.HasPrefix(k, awsup.TagNameEtcdClusterPrefix) {
 						etcdClusterName := strings.TrimPrefix(k, awsup.TagNameEtcdClusterPrefix)
-						spec, err := ParseEtcdClusterSpec(etcdClusterName, v)
+						spec, err := etcd.ParseEtcdClusterSpec(etcdClusterName, v)
 						if err != nil {
 							// Fail safe
 							glog.Warningf("error parsing etcd cluster tag %q on volume %q; skipping volume: %v", v, volumeID, err)

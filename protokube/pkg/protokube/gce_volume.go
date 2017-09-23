@@ -26,6 +26,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
+	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipgce "k8s.io/kops/protokube/pkg/gossip/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
@@ -208,7 +209,7 @@ func (v *GCEVolumes) buildGCEVolume(d *compute.Disk) (*Volume, error) {
 				if err != nil {
 					return nil, fmt.Errorf("Error decoding GCE label: %s=%q", k, v)
 				}
-				spec, err := ParseEtcdClusterSpec(etcdClusterName, value)
+				spec, err := etcd.ParseEtcdClusterSpec(etcdClusterName, value)
 				if err != nil {
 					return nil, fmt.Errorf("error parsing etcd cluster label %q on volume %q: %v", value, volumeName, err)
 				}
