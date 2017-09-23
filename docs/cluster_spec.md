@@ -213,7 +213,7 @@ More information about running in an existing VPC is [here](run_in_existing_vpc.
 
 ### hooks
 
-Hooks allow for the execution of an action before the installation of Kubernetes on every node in a cluster.  For instance you can install nvidia drivers for using GPUs. This hooks can be in the form on docker images or manifest files (systemd units). Hooks can be place in either then cluster spec, meaning the will be globally deployed, or they can be placed into the instanceGroup specification. Note, service names on the instanceGroup which overlap with the cluster spec take precedence and ignore the cluster spec definition, i.e. if you have a unit file 'myunit.service' in cluster and then one in the instanceGroup, only the instanceGroup is applied.
+Hooks allow for the execution of an action before the installation of Kubernetes on every node in a cluster.  For instance you can install Nvidia drivers for using GPUs. This hooks can be in the form of Docker images or manifest files (systemd units). Hooks can be placed in either the cluster spec, meaning they will be globally deployed, or they can be placed into the instanceGroup specification. Note: service names on the instanceGroup which overlap with the cluster spec take precedence and ignore the cluster spec definition, i.e. if you have a unit file 'myunit.service' in cluster and then one in the instanceGroup, only the instanceGroup is applied.
 
 ```
 spec:
