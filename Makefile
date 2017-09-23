@@ -97,8 +97,8 @@ ifndef SHASUMCMD
 endif
 
 .PHONY: kops-install # Install kops to local $GOPATH/bin
-kops-install: ${KOPS}
-	cp ${KOPS} ${GOPATH_1ST}/bin
+kops-install: gobindata-tool ${BINDATA_TARGETS}
+	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/
 
 .PHONY: channels-install # Install channels to local $GOPATH/bin
 channels-install: ${CHANNELS}
