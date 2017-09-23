@@ -17,6 +17,7 @@ limitations under the License.
 package gce
 
 import (
+	"fmt"
 	"google.golang.org/api/googleapi"
 	"strings"
 )
@@ -60,7 +61,7 @@ func SafeObjectName(name string, clusterName string) string {
 	return SafeClusterName(gceName)
 }
 
-// Returns the last component of a URL, i.e. anything after the last slash
+// LastComponent returns the last component of a URL, i.e. anything after the last slash
 // If there is no slash, returns the whole string
 func LastComponent(s string) string {
 	lastSlash := strings.LastIndex(s, "/")
@@ -68,4 +69,14 @@ func LastComponent(s string) string {
 		s = s[lastSlash+1:]
 	}
 	return s
+}
+
+// ZoneToRegion maps a GCE zone name to a GCE region name, returning an error if it cannot be mapped
+func ZoneToRegion(zone string) (string, error) {
+	tokens := strings.Split(zone, "-")
+	if len(tokens) <= 2 {
+		return "", fmt.Errorf("invalid GCE Zone: %v", zone)
+	}
+	region := tokens[0] + "-" + tokens[1]
+	return region, nil
 }

@@ -197,7 +197,9 @@ func clusterOutputTable(clusters []*api.Cluster, out io.Writer) error {
 	t.AddColumn("ZONES", func(c *api.Cluster) string {
 		zones := sets.NewString()
 		for _, s := range c.Spec.Subnets {
-			zones.Insert(s.Zone)
+			if s.Zone != "" {
+				zones.Insert(s.Zone)
+			}
 		}
 		return strings.Join(zones.List(), ",")
 	})
