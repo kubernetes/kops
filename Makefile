@@ -160,10 +160,12 @@ gobindata-tool: ${GOBINDATA}
 .PHONY: kops-gobindata
 kops-gobindata: gobindata-tool ${BINDATA_TARGETS}
 
-upup/models/bindata.go: ${GOBINDATA}
+UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/ | egrep -v "upup/models/bindata.go")
+upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
 	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
 
-federation/model/bindata.go: ${GOBINDATA}
+FEDERATION_MODELS_BINDATA_SOURCES:=$(shell find federation/model/ | egrep -v "federation/model/bindata.go")
+federation/model/bindata.go: ${GOBINDATA} ${FEDERATION_MODELS_BINDATA_SOURCES}
 	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
 
 # Build in a docker container with golang 1.X
