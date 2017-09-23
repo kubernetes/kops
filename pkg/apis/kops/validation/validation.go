@@ -39,6 +39,15 @@ func ValidateDockerConfig(config *kops.DockerConfig, fldPath *field.Path) field.
 func newValidateCluster(cluster *kops.Cluster) field.ErrorList {
 	allErrs := validation.ValidateObjectMeta(&cluster.ObjectMeta, false, validation.NameIsDNSSubdomain, field.NewPath("metadata"))
 	allErrs = append(allErrs, validateClusterSpec(&cluster.Spec, field.NewPath("spec"))...)
+
+	// Additional cloud-specific validation rules
+	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kops.CloudProviderAWS:
+		allErrs = append(allErrs, awsValidateCluster(cluster)...)
+	case kops.CloudProviderGCE:
+		allErrs = append(allErrs, gceValidateCluster(cluster)...)
+	}
+
 	return allErrs
 }
 

@@ -1063,6 +1063,7 @@ func Convert_kops_ClusterSpec_To_v1alpha2_ClusterSpec(in *kops.ClusterSpec, out 
 func autoConvert_v1alpha2_ClusterSubnetSpec_To_kops_ClusterSubnetSpec(in *ClusterSubnetSpec, out *kops.ClusterSubnetSpec, s conversion.Scope) error {
 	out.Name = in.Name
 	out.Zone = in.Zone
+	out.Region = in.Region
 	out.CIDR = in.CIDR
 	out.ProviderID = in.ProviderID
 	out.Egress = in.Egress
@@ -1079,6 +1080,7 @@ func autoConvert_kops_ClusterSubnetSpec_To_v1alpha2_ClusterSubnetSpec(in *kops.C
 	out.Name = in.Name
 	out.CIDR = in.CIDR
 	out.Zone = in.Zone
+	out.Region = in.Region
 	out.ProviderID = in.ProviderID
 	out.Egress = in.Egress
 	out.Type = SubnetType(in.Type)

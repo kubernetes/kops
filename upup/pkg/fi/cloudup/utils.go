@@ -40,20 +40,13 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderGCE:
 		{
-			nodeZones := make(map[string]bool)
 			for _, subnet := range cluster.Spec.Subnets {
-				nodeZones[subnet.Zone] = true
-
-				tokens := strings.Split(subnet.Zone, "-")
-				if len(tokens) <= 2 {
-					return nil, fmt.Errorf("Invalid GCE Zone: %v", subnet.Zone)
+				if subnet.Region != "" {
+					region = subnet.Region
 				}
-				zoneRegion := tokens[0] + "-" + tokens[1]
-				if region != "" && zoneRegion != region {
-					return nil, fmt.Errorf("Clusters cannot span multiple regions (found zone %q, but region is %q)", subnet.Zone, region)
-				}
-
-				region = zoneRegion
+			}
+			if region == "" {
+				return nil, fmt.Errorf("on GCE, subnets must include Regions")
 			}
 
 			project = cluster.Spec.Project
