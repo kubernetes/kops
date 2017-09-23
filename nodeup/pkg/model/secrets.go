@@ -181,7 +181,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		var lines []string
 		for id, token := range allTokens {
-			if id == "dockerconfig" {
+			if id == "dockerconfig" || id == "encryptionconfig" {
 				continue
 			}
 			lines = append(lines, token+","+id+","+id)
