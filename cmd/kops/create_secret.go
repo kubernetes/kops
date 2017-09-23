@@ -36,6 +36,9 @@ var (
 
 	kops create secret dockerconfig -f ~/.docker/config.json \
 		--name k8s-cluster.example.com --state s3://example.com
+
+	kops create secret encryptionconfig -f ~/.encryptionconfig.yaml \
+		--name k8s-cluster.example.com --state s3://example.com
 	`))
 
 	create_secret_short = i18n.T(`Create a secret.`)
@@ -52,6 +55,7 @@ func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
 	// create subcommands
 	cmd.AddCommand(NewCmdCreateSecretPublicKey(f, out))
 	cmd.AddCommand(NewCmdCreateSecretDockerConfig(f, out))
+	cmd.AddCommand(NewCmdCreateSecretEncryptionConfig(f, out))
 
 	return cmd
 }
