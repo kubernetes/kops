@@ -115,9 +115,18 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				}
 
 			case *kopsapi.Cluster:
-				_, err = clientset.UpdateCluster(v)
-				if err != nil {
-					return fmt.Errorf("error replacing cluster: %v", err)
+				{
+					// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
+					statusDiscovery := &cloudDiscoveryStatusStore{}
+					status, err := statusDiscovery.FindClusterStatus(v)
+					if err != nil {
+						return err
+					}
+
+					_, err = clientset.UpdateCluster(v, status)
+					if err != nil {
+						return fmt.Errorf("error replacing cluster: %v", err)
+					}
 				}
 
 			case *kopsapi.InstanceGroup:

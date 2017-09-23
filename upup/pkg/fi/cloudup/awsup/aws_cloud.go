@@ -125,6 +125,9 @@ type AWSCloud interface {
 
 	// DefaultInstanceType determines a suitable instance type for the specified instance group
 	DefaultInstanceType(cluster *kops.Cluster, ig *kops.InstanceGroup) (string, error)
+
+	// FindClusterStatus gets the status of the cluster as it exists in AWS, inferred from volumes
+	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 }
 
 type awsCloudImplementation struct {
