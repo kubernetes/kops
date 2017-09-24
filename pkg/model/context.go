@@ -27,6 +27,7 @@ import (
 	"github.com/golang/glog"
 	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
@@ -132,13 +133,12 @@ func (m *KopsModelContext) FindInstanceGroup(name string) *kops.InstanceGroup {
 
 // FindSubnet returns the subnet with the matching Name (or nil if not found)
 func (m *KopsModelContext) FindSubnet(name string) *kops.ClusterSubnetSpec {
-	for i := range m.Cluster.Spec.Subnets {
-		s := &m.Cluster.Spec.Subnets[i]
-		if s.Name == name {
-			return s
-		}
-	}
-	return nil
+	return model.FindSubnet(m.Cluster, name)
+}
+
+// FindZonesForInstanceGroup finds the zones for an InstanceGroup
+func (m *KopsModelContext) FindZonesForInstanceGroup(ig *kops.InstanceGroup) ([]string, error) {
+	return model.FindZonesForInstanceGroup(m.Cluster, ig)
 }
 
 // MasterInstanceGroups returns InstanceGroups with the master role

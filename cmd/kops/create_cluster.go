@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
@@ -410,6 +411,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
+	zoneToSubnetMap := make(map[string]*api.ClusterSubnetSpec)
 	if len(c.Zones) == 0 {
 		return fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
 	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
@@ -423,24 +425,31 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			// We create default subnets named the same as the regions
 			subnetName := region
 
-			if findSubnet(cluster, subnetName) == nil {
-				cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
+			subnet := model.FindSubnet(cluster, subnetName)
+			if subnet == nil {
+				subnet = &api.ClusterSubnetSpec{
 					Name:   subnetName,
 					Region: region,
-				})
+				}
+				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 			}
+			zoneToSubnetMap[zoneName] = subnet
 		}
 	} else {
 		for _, zoneName := range allZones.List() {
 			// We create default subnets named the same as the zones
 			subnetName := zoneName
-			if findSubnet(cluster, subnetName) == nil {
-				cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
+
+			subnet := model.FindSubnet(cluster, subnetName)
+			if subnet == nil {
+				subnet = &api.ClusterSubnetSpec{
 					Name:   subnetName,
 					Zone:   subnetName,
 					Egress: c.Egress,
-				})
+				}
+				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 			}
+			zoneToSubnetMap[zoneName] = subnet
 		}
 	}
 
@@ -497,22 +506,14 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			g.Spec.MaxSize = fi.Int32(1)
 			g.ObjectMeta.Name = "master-" + name
 
+			subnet := zoneToSubnetMap[zone]
+			if subnet == nil {
+				glog.Fatalf("subnet not found in zoneToSubnetMap")
+			}
+
+			g.Spec.Subnets = []string{subnet.Name}
 			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
-				region, err := gce.ZoneToRegion(zone)
-				if err != nil {
-					return err
-				}
-				subnet := findSubnet(cluster, region)
-				if subnet == nil {
-					return fmt.Errorf("cannot find subnet for master zone %q (region %q)", zone, region)
-				}
-				g.Spec.Subnets = []string{subnet.Name}
-			} else {
-				subnet := findSubnet(cluster, zone)
-				if subnet == nil {
-					return fmt.Errorf("cannot find subnet for master zone %q", zone)
-				}
-				g.Spec.Subnets = []string{subnet.Name}
+				g.Spec.Zones = []string{zone}
 			}
 
 			instanceGroups = append(instanceGroups, g)
@@ -524,20 +525,16 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		masterAZs := sets.NewString()
 		duplicateAZs := false
 		for _, ig := range masters {
-			if len(ig.Spec.Subnets) != 1 {
-				return fmt.Errorf("unexpected subnets for master instance group %q (expected exactly only, found %d)", ig.ObjectMeta.Name, len(ig.Spec.Subnets))
+			zones, err := model.FindZonesForInstanceGroup(cluster, ig)
+			if err != nil {
+				return err
 			}
-			for _, subnetName := range ig.Spec.Subnets {
-				subnet := findSubnet(cluster, subnetName)
-				if subnet == nil {
-					return fmt.Errorf("cannot find subnet %q (declared in instance group %q, not found in cluster)", subnetName, ig.ObjectMeta.Name)
-				}
-
-				if masterAZs.Has(subnet.Zone) {
+			for _, zone := range zones {
+				if masterAZs.Has(zone) {
 					duplicateAZs = true
 				}
 
-				masterAZs.Insert(subnet.Zone)
+				masterAZs.Insert(zone)
 			}
 		}
 
@@ -577,8 +574,22 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	if len(nodes) == 0 {
 		g := &api.InstanceGroup{}
 		g.Spec.Role = api.InstanceGroupRoleNode
-
 		g.ObjectMeta.Name = "nodes"
+
+		subnetNames := sets.NewString()
+		for _, zone := range c.Zones {
+			subnet := zoneToSubnetMap[zone]
+			if subnet == nil {
+				glog.Fatalf("subnet not found in zoneToSubnetMap")
+			}
+			subnetNames.Insert(subnet.Name)
+		}
+		g.Spec.Subnets = subnetNames.List()
+
+		if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+			g.Spec.Zones = c.Zones
+		}
+
 		instanceGroups = append(instanceGroups, g)
 		nodes = append(nodes, g)
 	}
@@ -1024,15 +1035,6 @@ func supportsPrivateTopology(n *api.NetworkingSpec) bool {
 		return true
 	}
 	return false
-}
-
-func findSubnet(c *api.Cluster, subnetName string) *api.ClusterSubnetSpec {
-	for i := range c.Spec.Subnets {
-		if c.Spec.Subnets[i].Name == subnetName {
-			return &c.Spec.Subnets[i]
-		}
-	}
-	return nil
 }
 
 func trimCommonPrefix(names []string) []string {
