@@ -56,24 +56,27 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		return nil, fmt.Errorf("no networking mode set")
 	}
 
-	switch cluster.Spec.CloudProvider {
-	case "gce":
+	switch api.CloudProviderID(cluster.Spec.CloudProvider) {
+	case api.CloudProviderGCE:
 		{
 			tags.Insert("_gce")
 		}
 
-	case "aws":
+	case api.CloudProviderAWS:
 		{
 			tags.Insert("_aws")
 		}
-	case "digitalocean":
+	case api.CloudProviderDO:
 		{
 			tags.Insert("_do")
 		}
-	case "vsphere":
+	case api.CloudProviderVSphere:
 		{
 			tags.Insert("_vsphere")
 		}
+
+	case api.CloudProviderBareMetal:
+		// No tags
 
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)

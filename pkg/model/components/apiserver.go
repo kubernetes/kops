@@ -109,8 +109,10 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		c.CloudProvider = "external"
 	case kops.CloudProviderVSphere:
 		c.CloudProvider = "vsphere"
+	case kops.CloudProviderBareMetal:
+		// for baremetal, we don't specify a cloudprovider to apiserver
 	default:
-		return fmt.Errorf("unknown cloud provider %q", clusterSpec.CloudProvider)
+		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
 	}
 
 	c.LogLevel = 2
