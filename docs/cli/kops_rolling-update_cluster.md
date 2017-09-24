@@ -10,14 +10,20 @@ Rolling update a cluster.
 
 This command updates a kubernetes cluster to match the cloud, and kops specifications.
 
-To perform rolling update, you need to update the cloud resources first with "kops update cluster"
+To perform rolling update, you need to update the cloud resources first with the command
+`kops update cluster`.
 
-Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply"
-prior to running "kops rolling-update cluster"
+If rolling-update does not report that the cluster needs to be rolled you can force the cluster to be
+rolled with the force flag.  Rolling update drains and validates the cluster by default.  A cluster is
+deemed validated when all required nodes are running, and all pods in the kube-system namespace are operational.
+When a node is deleted rolling-update sleeps the interval for the node type, and the tries for the same period
+of time for the cluster to be validated.  For instance setting --master-interval=3m causes rolling-update
+to wait for 3m after a master is rolled, and another 3m for the cluster to stabilize and pass
+validation.
 
-Use `export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"` to use beta code that drains the nodes
-and validates the cluster.  New flags for Drain and Validation operations will be shown when
-the environment variable is set.
+Note: terraform users will need run the following commands all from the same directory
+`kops update cluster --target=terraform`then
+`terraform plan` then `terraform apply`prior to running`kops rolling-update cluster`.
 
 ```
 kops rolling-update cluster
@@ -26,22 +32,33 @@ kops rolling-update cluster
 ### Examples
 
 ```
-  # Roll the currently selected kops cluster
+  # Preview a rolling-update
+  kops rolling-update cluster
+  
+  # Roll the currently selected kops cluster with defaults.
+  # Nodes will be drained and the cluster will be validated between node replacement
   kops rolling-update cluster --yes
   
   # Roll the k8s-cluster.example.com kops cluster
-  # use the new drain an validate functionality
-  export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+  # do not fail if the cluster does not validate
+  # wait 8 min to create new node, and at least 8 min
+  # to validate the cluster.
   kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false" \
   --master-interval=8m \
   --node-interval=8m
   
+  # Roll the k8s-cluster.example.com kops cluster
+  # do not validate the cluster because of the cloudonly flag.
+  # Force the entire cluster to roll, even if rolling update
+  # reports that the cluster does not need to be rolled.
+  kops rolling-update cluster k8s-cluster.example.com --yes \
+  --cloudonly \
+  --force
   
   # Roll the k8s-cluster.example.com kops cluster
   # only roll the node instancegroup
   # use the new drain an validate functionality
-  export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
   kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false" \
   --node-interval 8m \
@@ -53,14 +70,12 @@ kops rolling-update cluster
 ```
       --bastion-interval duration    Time to wait between restarting bastions (default 5m0s)
       --cloudonly                    Perform rolling update without confirming progress with k8s
-      --drain-interval duration      The duration that a rolling-update will wait after the node is drained. (default 1m30s)
       --fail-on-drain-error          The rolling-update will fail if draining a node fails. (default true)
       --fail-on-validate-error       The rolling-update will fail if the cluster fails to validate. (default true)
       --force                        Force rolling update, even if no changes
       --instance-group stringSlice   List of instance groups to update (defaults to all if not specified)
       --master-interval duration     Time to wait between restarting masters (default 5m0s)
-      --node-interval duration       Time to wait between restarting nodes (default 2m0s)
-      --validate-retries int         The number of times that a node will be validated.  Between validation kops sleeps the master-interval/2 or node-interval/2 duration. (default 8)
+      --node-interval duration       Time to wait between restarting nodes (default 4m0s)
       --yes                          perform rolling update without confirmation
 ```
 
