@@ -44,7 +44,6 @@ type RollingUpdateCluster struct {
 	FailOnValidate   bool
 	CloudOnly        bool
 	ClusterName      string
-	ValidateRetries  int
 	DrainInterval    time.Duration
 }
 
@@ -171,6 +170,6 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 		}
 	}
 
-	glog.Infof("Rolling update completed!")
+	glog.Infof("Rolling update completed for cluster %q!", c.ClusterName)
 	return nil
 }
