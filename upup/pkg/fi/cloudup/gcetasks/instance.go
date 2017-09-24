@@ -447,7 +447,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 
 	tf.AddNetworks(e.Network, e.Subnet, i.NetworkInterfaces)
 
-	tf.AddMetadata(i.Metadata)
+	tf.AddMetadata(t, i.Name, i.Metadata)
 
 	// Using metadata_startup_script is now mandatory (?)
 	{
