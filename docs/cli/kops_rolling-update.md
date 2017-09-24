@@ -13,7 +13,7 @@ This command updates a kubernetes cluster to match the cloud, and kops specifica
 To perform rolling update, you need to update the cloud resources first with "kops update cluster"
 
 Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply"
-prior to running "kops rolling-update cluster"
+prior to running "kops rolling-update cluster". As of version 0.9, Terraform requires an explicit `terraform init` to initilialise the AWS provider before running the aforementioned `terraform plan` and `terraform apply`.
 
 Use `export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"` to use beta code that drains the nodes
 and validates the cluster.  New flags for Drain and Validation operations will be shown when
@@ -24,7 +24,7 @@ the environment variable is set.
 ```
   # Roll the currently selected kops cluster
   kops rolling-update cluster --yes
-  
+
   # Roll the k8s-cluster.example.com kops cluster
   # use the new drain an validate functionality
   export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
@@ -32,8 +32,8 @@ the environment variable is set.
   --fail-on-validate-error="false" \
   --master-interval=8m \
   --node-interval=8m
-  
-  
+
+
   # Roll the k8s-cluster.example.com kops cluster
   # only roll the node instancegroup
   # use the new drain an validate functionality
@@ -62,4 +62,3 @@ the environment variable is set.
 ### SEE ALSO
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops rolling-update cluster](kops_rolling-update_cluster.md)	 - Rolling update a cluster.
-

@@ -2,6 +2,8 @@
 
 Kops can generate Terraform configurations, and then you can apply them using the `terraform plan` and `terraform apply` tools. This is very handy if you are already using Terraform, or if you want to check in the Terraform output into version control.
 
+*NOTE:* As of version 0.9, Terraform requires an explicit `terraform init` to initilialise the AWS provider before running the aforementioned `terraform plan` and `terraform apply`.
+
 The gist of it is that, instead of letting kops apply the changes, you tell kops what you want, and then kops spits out what it wants done into a `.tf` file. **_You_** are then responsible for turning those plans into reality.
 
 The Terraform output should be reasonably stable (i.e. the text files should only change where something has actually changed - items should appear in the same order etc). This is extremely useful when using version control as you can diff your changes easily.
