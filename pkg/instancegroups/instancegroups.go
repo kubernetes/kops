@@ -297,9 +297,10 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 
 			glog.Infof("Validating the cluster.")
 
-			if err = n.ValidateClusterWithRetries(rollingUpdateData, instanceGroupList, t); err != nil {
+			if err = n.ValidateClusterWithDuration(rollingUpdateData, instanceGroupList, t); err != nil {
 
 				if rollingUpdateData.FailOnValidate {
+					glog.Errorf("Cluster did not validate within the set duration of %q, you can retry, and maybe extend the duration", t)
 					return fmt.Errorf("error validating cluster after removing a node: %v", err)
 				}
 
@@ -311,25 +312,43 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 	return nil
 }
 
-// ValidateClusterWithRetries runs our validation methods on the K8s Cluster x times and then fails.
-func (n *CloudInstanceGroup) ValidateClusterWithRetries(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, t time.Duration) (err error) {
-
-	// TODO - We are going to need to improve Validate to allow for more than one node, not master
-	// TODO - going down at a time.
-	for i := 0; i <= rollingUpdateData.ValidateRetries; i++ {
-
-		if _, err = validation.ValidateCluster(rollingUpdateData.ClusterName, instanceGroupList, rollingUpdateData.K8sClient); err != nil {
-			glog.Infof("Cluster did not validate, and waiting longer: %v.", err)
-			time.Sleep(t / 2)
-		} else {
-			glog.Infof("Cluster validated.")
-			return nil
-		}
-
+// ValidateClusterWithDuration runs validation.ValidateCluster until either we get positive result or the timeout expires
+func (n *CloudInstanceGroup) ValidateClusterWithDuration(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, duration time.Duration) error {
+	// TODO should we expose this to the UI?
+	tickDuration := 30 * time.Second
+	// Try to validate cluster at least once, this will handle durations that are lower
+	// than our tick time
+	if n.tryValidateCluster(rollingUpdateData, instanceGroupList, duration, tickDuration) {
+		return nil
 	}
 
-	// for loop is done, and did not end when the cluster validated
-	return fmt.Errorf("cluster validation failed: %v", err)
+	timeout := time.After(duration)
+	tick := time.Tick(tickDuration)
+	// Keep trying until we're timed out or got a result or got an error
+	for {
+		select {
+		case <-timeout:
+			// Got a timeout fail with a timeout error
+			return fmt.Errorf("cluster did not validate within a duation of %q", duration)
+		case <-tick:
+			// Got a tick, validate cluster
+			if n.tryValidateCluster(rollingUpdateData, instanceGroupList, duration, tickDuration) {
+				return nil
+			}
+			// ValidateCluster didn't work yet, so let's try again
+			// this will exit up to the for loop
+		}
+	}
+}
+
+func (n *CloudInstanceGroup) tryValidateCluster(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, duration time.Duration, tickDuration time.Duration) bool {
+	if _, err := validation.ValidateCluster(rollingUpdateData.ClusterName, instanceGroupList, rollingUpdateData.K8sClient); err != nil {
+		glog.Infof("Cluster did not validate, will try again in %q util duration %q expires: %v.", tickDuration, duration, err)
+		return false
+	} else {
+		glog.Infof("Cluster validated.")
+		return true
+	}
 }
 
 // ValidateCluster runs our validation methods on the K8s Cluster.
