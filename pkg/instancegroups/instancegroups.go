@@ -94,41 +94,7 @@ func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroup
 	return groups, nil
 }
 
-// DeleteInstanceGroup removes the cloud resources for an InstanceGroup
-type DeleteInstanceGroup struct {
-	Cluster   *api.Cluster
-	Cloud     fi.Cloud
-	Clientset simple.Clientset
-}
 
-func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
-	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
-	if err != nil {
-		return fmt.Errorf("error finding CloudInstanceGroups: %v", err)
-	}
-	cig := groups[group.ObjectMeta.Name]
-	if cig == nil {
-		glog.Warningf("AutoScalingGroup %q not found in cloud - skipping delete", group.ObjectMeta.Name)
-	} else {
-		if len(groups) != 1 {
-			return fmt.Errorf("Multiple InstanceGroup resources found in cloud")
-		}
-
-		glog.Infof("Deleting AutoScalingGroup %q", group.ObjectMeta.Name)
-
-		err = cig.Delete(c.Cloud)
-		if err != nil {
-			return fmt.Errorf("error deleting cloud resources for InstanceGroup: %v", err)
-		}
-	}
-
-	err = c.Clientset.InstanceGroupsFor(c.Cluster).Delete(group.ObjectMeta.Name, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 // CloudInstanceGroup is the AWS ASG backing an InstanceGroup.
 type CloudInstanceGroup struct {
