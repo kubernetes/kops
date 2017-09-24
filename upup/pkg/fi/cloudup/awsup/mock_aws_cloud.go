@@ -27,6 +27,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -71,6 +72,20 @@ type MockCloud struct {
 	MockCloudFormation *cloudformation.CloudFormation
 	MockEC2            ec2iface.EC2API
 	MockRoute53        route53iface.Route53API
+}
+
+func (c *MockAWSCloud) DeleteGroup(name string, template string) error {
+	// TODO implement
+	return nil
+}
+
+func (c *MockAWSCloud) DeleteInstance(id *string) error {
+	// TODO implement
+	return nil
+}
+
+func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+	return nil, fmt.Errorf("not implemented yet")
 }
 
 func (c *MockCloud) ProviderID() kops.CloudProviderID {
