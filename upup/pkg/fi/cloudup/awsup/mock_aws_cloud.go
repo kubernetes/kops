@@ -74,7 +74,7 @@ type MockCloud struct {
 }
 
 func (c *MockCloud) ProviderID() kops.CloudProviderID {
-	return "mock"
+	return kops.CloudProviderAWS
 }
 
 func (c *MockCloud) DNS() (dnsprovider.Interface, error) {
