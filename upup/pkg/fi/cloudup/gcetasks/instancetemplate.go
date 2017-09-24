@@ -381,15 +381,15 @@ type terraformInstanceTemplate struct {
 }
 
 type terraformInstanceCommon struct {
-	CanIPForward          bool                         `json:"can_ip_forward"`
-	MachineType           string                       `json:"machine_type,omitempty"`
-	ServiceAccount        *terraformServiceAccount     `json:"service_account,omitempty"`
-	Scheduling            *terraformScheduling         `json:"scheduling,omitempty"`
-	Disks                 []*terraformAttachedDisk     `json:"disk,omitempty"`
-	NetworkInterfaces     []*terraformNetworkInterface `json:"network_interface,omitempty"`
-	Metadata              map[string]string            `json:"metadata,omitempty"`
-	MetadataStartupScript string                       `json:"metadata_startup_script,omitempty"`
-	Tags                  []string                     `json:"tags,omitempty"`
+	CanIPForward          bool                          `json:"can_ip_forward"`
+	MachineType           string                        `json:"machine_type,omitempty"`
+	ServiceAccount        *terraformServiceAccount      `json:"service_account,omitempty"`
+	Scheduling            *terraformScheduling          `json:"scheduling,omitempty"`
+	Disks                 []*terraformAttachedDisk      `json:"disk,omitempty"`
+	NetworkInterfaces     []*terraformNetworkInterface  `json:"network_interface,omitempty"`
+	Metadata              map[string]*terraform.Literal `json:"metadata,omitempty"`
+	MetadataStartupScript *terraform.Literal            `json:"metadata_startup_script,omitempty"`
+	Tags                  []string                      `json:"tags,omitempty"`
 
 	// Only for instances:
 	Zone string `json:"zone,omitempty"`
@@ -467,17 +467,23 @@ func (t *terraformInstanceCommon) AddNetworks(network *Network, subnet *Subnet, 
 	}
 }
 
-func (t *terraformInstanceCommon) AddMetadata(metadata *compute.Metadata) {
+func (t *terraformInstanceCommon) AddMetadata(target *terraform.TerraformTarget, name string, metadata *compute.Metadata) error {
 	if metadata != nil {
 		if t.Metadata == nil {
-			t.Metadata = make(map[string]string)
+			t.Metadata = make(map[string]*terraform.Literal)
 		}
 		for _, g := range metadata.Items {
-			value := g.Value
-			tfValue := strings.Replace(value, "${", "$${", -1)
-			t.Metadata[g.Key] = tfValue
+			v := fi.NewStringResource(g.Value)
+			tfResource, err := target.AddFile("google_compute_instance_template", name, "metadata_"+g.Key, v)
+			if err != nil {
+				return err
+			}
+
+			t.Metadata[g.Key] = tfResource
 		}
 	}
+
+	return nil
 }
 
 func (t *terraformInstanceCommon) AddServiceAccounts(serviceAccounts []*compute.ServiceAccount) {
@@ -498,6 +504,8 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	if err != nil {
 		return err
 	}
+
+	name := fi.StringValue(e.Name)
 
 	tf := &terraformInstanceTemplate{
 		NamePrefix: fi.StringValue(e.Name),
@@ -529,7 +537,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 	tf.AddNetworks(e.Network, e.Subnet, i.Properties.NetworkInterfaces)
 
-	tf.AddMetadata(i.Properties.Metadata)
+	tf.AddMetadata(t, name, i.Properties.Metadata)
 
 	if i.Properties.Scheduling != nil {
 		tf.Scheduling = &terraformScheduling{
@@ -539,7 +547,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 		}
 	}
 
-	return t.RenderResource("google_compute_instance_template", i.Name, tf)
+	return t.RenderResource("google_compute_instance_template", name, tf)
 }
 
 func (i *InstanceTemplate) TerraformLink() *terraform.Literal {
