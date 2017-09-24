@@ -37,8 +37,8 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 	region := ""
 	project := ""
 
-	switch cluster.Spec.CloudProvider {
-	case "gce":
+	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kops.CloudProviderGCE:
 		{
 			nodeZones := make(map[string]bool)
 			for _, subnet := range cluster.Spec.Subnets {
@@ -71,7 +71,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			cloud = gceCloud
 		}
 
-	case "aws":
+	case kops.CloudProviderAWS:
 		{
 			region, err := awsup.FindRegion(cluster)
 			if err != nil {
@@ -100,7 +100,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 			cloud = awsCloud
 		}
-	case "vsphere":
+	case kops.CloudProviderVSphere:
 		{
 			vsphereCloud, err := vsphere.NewVSphereCloud(&cluster.Spec)
 			if err != nil {
@@ -108,7 +108,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 			cloud = vsphereCloud
 		}
-	case "digitalocean":
+	case kops.CloudProviderDO:
 		{
 			// for development purposes we're going to assume
 			// single region setups for DO. Reconsider this logic
@@ -122,7 +122,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			cloud = doCloud
 		}
 
-	case string(kops.CloudProviderBareMetal):
+	case kops.CloudProviderBareMetal:
 		{
 			// TODO: Allow dns provider to be specified
 			dns, err := dnsprovider.GetDnsProvider(route53.ProviderName, nil)
