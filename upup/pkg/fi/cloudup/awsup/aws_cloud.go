@@ -237,17 +237,99 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 
 // DeleteGroup deletes an aws autoscaling group
 func (c *awsCloudImplementation) DeleteGroup(name string, template string) error {
-	return fmt.Errorf("not implemented yet")
+
+	// Delete ASG
+	{
+		glog.V(2).Infof("Deleting autoscaling group %q", name)
+		request := &autoscaling.DeleteAutoScalingGroupInput{
+			AutoScalingGroupName: aws.String(name),
+			ForceDelete:          aws.Bool(true),
+		}
+		_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
+		if err != nil {
+			return fmt.Errorf("error deleting autoscaling group %q: %v", name, err)
+		}
+	}
+
+	// Delete LaunchConfig
+	{
+		glog.V(2).Infof("Deleting autoscaling launch configuration %q", template)
+		request := &autoscaling.DeleteLaunchConfigurationInput{
+			LaunchConfigurationName: aws.String(template),
+		}
+		_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
+		if err != nil {
+			return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", template, err)
+		}
+	}
+
+	glog.V(8).Infof("deleted aws autoscaling group: %q", name)
+
+	return nil
 }
 
 // DeleteInstance deletes an aws instance
 func (c *awsCloudImplementation) DeleteInstance(id *string) error {
-	return fmt.Errorf("not implemented yet")
+	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
+		InstanceId:                     id,
+		ShouldDecrementDesiredCapacity: aws.Bool(false),
+	}
+
+	if _, err := c.Autoscaling().TerminateInstanceInAutoScalingGroup(request); err != nil {
+		return fmt.Errorf("error deleting instance %q: %v", id, err)
+	}
+
+	glog.V(8).Infof("deleted aws ec2 instance %q", aws.StringValue(id))
+
+	return nil
 }
+
+// TODO not used yet, as this requires a major refactor of rolling-update code, slowly but surely
 
 // GetCloudGroups returns a groups of instanaces that back a kops instance groups
 func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
-	return nil, fmt.Errorf("not implemented yet")
+	var groups map[string]*fi.CloudGroup
+	asgs, err := c.FindAutoscalingGroups()
+	if err != nil {
+		return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
+	}
+
+	for _, asg := range asgs {
+		name := aws.StringValue(asg.AutoScalingGroupName)
+		var instancegroup *kops.InstanceGroup
+		for _, g := range instancegroups {
+			var asgName string
+			switch g.Spec.Role {
+			case kops.InstanceGroupRoleMaster:
+				asgName = g.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
+			case kops.InstanceGroupRoleNode:
+				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
+			case kops.InstanceGroupRoleBastion:
+				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
+			default:
+				glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
+				continue
+			}
+
+			if name == asgName {
+				if instancegroup != nil {
+					return nil, fmt.Errorf("Found multiple instance groups matching ASG %q", asgName)
+				}
+				instancegroup = g
+			}
+		}
+		if instancegroup == nil {
+			if warnUnmatched {
+				glog.Warningf("Found ASG with no corresponding instance group %q", name)
+			}
+			continue
+		}
+
+		groups[instancegroup.ObjectMeta.Name] = c.awsBuildCloudInstanceGroup(instancegroup, asg, nodeMap)
+	}
+
+	return groups, nil
+
 }
 
 // TODO move out of resources
