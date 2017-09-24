@@ -36,6 +36,7 @@ import (
 	"github.com/golang/glog"
 
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -232,6 +233,143 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 		Values: awsValues,
 	}
 	return filter
+}
+
+// DeleteGroup deletes an aws autoscaling group
+func (c *awsCloudImplementation) DeleteGroup(name string, template string) error {
+	return fmt.Errorf("not implemented yet")
+}
+
+// DeleteInstance deletes an aws instance
+func (c *awsCloudImplementation) DeleteInstance(id *string) error {
+	return fmt.Errorf("not implemented yet")
+}
+
+// GetCloudGroups returns a groups of instanaces that back a kops instance groups
+func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+	return nil, fmt.Errorf("not implemented yet")
+}
+
+// TODO move out of resources
+
+// FindAutoscalingGroups finds autoscaling groups matching the specified tags
+// This isn't entirely trivial because autoscaling doesn't let us filter with as much precision as we would like
+func (c *awsCloudImplementation) FindAutoscalingGroups() ([]*autoscaling.Group, error) {
+	var asgs []*autoscaling.Group
+	glog.V(2).Infof("Listing all Autoscaling groups matching cluster tags")
+	tags := c.Tags()
+	var asgNames []*string
+	{
+		var asFilters []*autoscaling.Filter
+		for _, v := range tags {
+			// Not an exact match, but likely the best we can do
+			asFilters = append(asFilters, &autoscaling.Filter{
+				Name:   aws.String("value"),
+				Values: []*string{aws.String(v)},
+			})
+		}
+		request := &autoscaling.DescribeTagsInput{
+			Filters: asFilters,
+		}
+
+		err := c.Autoscaling().DescribeTagsPages(request, func(p *autoscaling.DescribeTagsOutput, lastPage bool) bool {
+			for _, t := range p.Tags {
+				switch *t.ResourceType {
+				case "auto-scaling-group":
+					asgNames = append(asgNames, t.ResourceId)
+				default:
+					glog.Warningf("Unknown resource type: %v", *t.ResourceType)
+
+				}
+			}
+			return true
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error listing autoscaling cluster tags: %v", err)
+		}
+	}
+
+	if len(asgNames) != 0 {
+		request := &autoscaling.DescribeAutoScalingGroupsInput{
+			AutoScalingGroupNames: asgNames,
+		}
+		err := c.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
+			for _, asg := range p.AutoScalingGroups {
+				if !MatchesAsgTags(tags, asg.Tags) {
+					// We used an inexact filter above
+					continue
+				}
+				// Check for "Delete in progress" (the only use of .Status)
+				if asg.Status != nil {
+					glog.Warningf("Skipping ASG %v (which matches tags): %v", *asg.AutoScalingGroupARN, *asg.Status)
+					continue
+				}
+				asgs = append(asgs, asg)
+			}
+			return true
+		})
+		if err != nil {
+			return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
+		}
+
+	}
+
+	return asgs, nil
+}
+
+// MatchesAsgTags is used to filter an asg by tags
+func MatchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
+	for k, v := range tags {
+		found := false
+		for _, a := range actual {
+			if aws.StringValue(a.Key) == k {
+				if aws.StringValue(a.Value) == v {
+					found = true
+					break
+				}
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
+}
+
+func (c *awsCloudImplementation) awsBuildCloudInstanceGroup(ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) *fi.CloudGroup {
+
+	n := &fi.CloudGroup{
+		GroupName:         aws.StringValue(g.AutoScalingGroupName),
+		InstanceGroup:     ig,
+		GroupTemplateName: aws.StringValue(g.LaunchConfigurationName),
+	}
+
+	readyLaunchConfigurationName := aws.StringValue(g.LaunchConfigurationName)
+
+	for _, i := range g.Instances {
+		c := &fi.CloudGroupInstance{
+			ID: i.InstanceId,
+		}
+
+		node := nodeMap[aws.StringValue(i.InstanceId)]
+		if node != nil {
+			c.Node = node
+		}
+
+		if readyLaunchConfigurationName == aws.StringValue(i.LaunchConfigurationName) {
+			n.Ready = append(n.Ready, c)
+		} else {
+			n.NeedUpdate = append(n.NeedUpdate, c)
+		}
+	}
+
+	if len(n.NeedUpdate) == 0 {
+		n.Status = "Ready"
+	} else {
+		n.Status = "NeedsUpdate"
+	}
+
+	return n
 }
 
 func (c *awsCloudImplementation) Tags() map[string]string {
