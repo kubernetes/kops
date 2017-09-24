@@ -50,6 +50,10 @@ output "vpc_id" {
   value = "${aws_vpc.privatekopeio-example-com.id}"
 }
 
+provider "aws" {
+  region = "us-test-1"
+}
+
 resource "aws_autoscaling_attachment" "bastion-privatekopeio-example-com" {
   elb                    = "${aws_elb.bastion-privatekopeio-example-com.id}"
   autoscaling_group_name = "${aws_autoscaling_group.bastion-privatekopeio-example-com.id}"

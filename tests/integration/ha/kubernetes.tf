@@ -38,6 +38,10 @@ output "vpc_id" {
   value = "${aws_vpc.ha-example-com.id}"
 }
 
+provider "aws" {
+  region = "us-test-1"
+}
+
 resource "aws_autoscaling_group" "master-us-test-1a-masters-ha-example-com" {
   name                 = "master-us-test-1a.masters.ha.example.com"
   launch_configuration = "${aws_launch_configuration.master-us-test-1a-masters-ha-example-com.id}"
