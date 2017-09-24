@@ -142,7 +142,7 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	if tf.cluster.Spec.ExternalDNS == nil {
 		argv = append(argv, []string{"--watch-ingress=false"}...)
 
-		glog.Infoln("watch-ingress=false set on dns-controller")
+		glog.V(4).Infof("watch-ingress=false set on dns-controller")
 	} else {
 		// @check if the watch ingress is set
 		var watchIngress bool
