@@ -44,7 +44,6 @@ type RollingUpdateCluster struct {
 	FailOnValidate   bool
 	CloudOnly        bool
 	ClusterName      string
-	ValidateRetries  int
 	DrainInterval    time.Duration
 }
 
