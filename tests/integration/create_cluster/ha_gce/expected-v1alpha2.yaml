@@ -67,6 +67,8 @@ spec:
   role: Master
   subnets:
   - us-test1
+  zones:
+  - us-test1-a
 
 ---
 
@@ -85,6 +87,8 @@ spec:
   role: Master
   subnets:
   - us-test1
+  zones:
+  - us-test1-b
 
 ---
 
@@ -103,6 +107,8 @@ spec:
   role: Master
   subnets:
   - us-test1
+  zones:
+  - us-test1-c
 
 ---
 
@@ -121,3 +127,7 @@ spec:
   role: Node
   subnets:
   - us-test1
+  zones:
+  - us-test1-a
+  - us-test1-b
+  - us-test1-c
