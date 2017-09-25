@@ -83,3 +83,25 @@ func Test_IsKubernetesGTEWithoutPatch(t *testing.T) {
 		}
 	}
 }
+
+func Test_IsKubernetesGTEWithPre(t *testing.T) {
+	grid := map[string]bool{
+		"1.6.1":         true,
+		"1.6":           true,
+		"1.6.0-alpha.1": true,
+		"1.6.0-beta":    true,
+		"1.5.9-alpha.1": false,
+	}
+
+	for v, expected := range grid {
+		currentVersion, err := ParseKubernetesVersion(v)
+		if err != nil {
+			t.Fatalf("Error parsing version: %v", err)
+		}
+
+		actual := IsKubernetesGTE("1.6", *currentVersion)
+		if actual != expected {
+			t.Errorf("expected %s to be >= than %s", "1.6", currentVersion)
+		}
+	}
+}
