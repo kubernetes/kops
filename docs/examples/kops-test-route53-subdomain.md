@@ -1,8 +1,8 @@
 # USING KOPS WITH A ROUTE53 BASED SUBDOMAIN AND SCALING UP THE CLUSTER
 
-## WHAT WE WANT TO ACOMPLISH HERE ?.
+## WHAT WE WANT TO ACOMPLISH HERE/
 
-The exercise described on this document will focus on the following goals:
+The exercise described in this document will focus on the following goals:
 
 - Demonstrate how to use a production-setup with 3 masters and two workers in different availability zones.
 - Ensure our masters are deployed on 3 different AWS availability zones.
@@ -13,25 +13,8 @@ The exercise described on this document will focus on the following goals:
 
 ## PRE-FLIGHT CHECK:
 
-Before rushing in to replicate this exercise, please ensure your basic environment is correctly setup. See the [KOPS AWS tutorial for more information](https://github.com/kubernetes/kops/blob/master/docs/aws.md). 
+Please follow our [basic-requirements document](basic-requirements.md) that is common for all our exercises. Ensure the basic requirements are covered before continuing.
 
-Ensure that the following points are covered and working in your environment:
-
-- "jq" utility installed (this is available on most linux distributions). If you are running on Centos, you'll need to add "epel" repository with `yum -y install epel-release` then install jq with `yum -y install jq`.
-- "dig" utility installed (this is also available on most linux distributions). We'll need "dig" in order to tests our DNS subdomain. On "centos/rhel" distros, this utility is part of the "bind-utils" package.
-- AWS cli fully configured (aws account already with proper permissions/roles needed for kops). Depending on your distro, you can setup directly from packages, or if you want the most updated version, use "pip" and install awscli by issuing a "pip install awscli" command. Your choice !.
-- Local ssh key ready on ~/.ssh/id_rsa / id_rsa.pub. You can generate it using "ssh-keygen" command: `ssh-keygen -t rsa -f ~/.ssh/id_rsa -P ""`
-- Region set to us-east-1 (az's: us-east-1a, us-east-1b, us-east-1c, us-east-1d and us-east-1e). For this exercise we'll deploy our cluster on US-EAST-1. For real HA at kubernetes master level, you need 3 masters. If you want to ensure that each master is deployed on a different availability zone, then a region with "at least" 3 availabity zones is required here. You can still deploy a multi-master kubenetes setup on regions with just 2 az's, but this mean that two masters will be deployed on a single az, and of this az goes offline then you'll lose two master !. If possible, always pick a region with at least 3 different availability zones for real H.A. You always can check amazon regions and az's on the link: [AWS Global Infrastructure](https://aws.amazon.com/about-aws/global-infrastructure/)
-- kubectl and kops installed. For this last part, you can do this with using following commnads (do this as root please). Next commands asume you are running a amd64/x86_64 linux distro:
-
-```bash
-cd ~
-curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-wget https://github.com/kubernetes/kops/releases/download/1.7.0/kops-linux-amd64
-chmod 755 kubectl kops-linux-amd64
-mv kops-linux-amd64 kops
-mv kubectl kops  /usr/local/bin
-```
 
 ## DNS Setup - AWS Route53
 
@@ -46,7 +29,7 @@ For our setup we already have a hosted DNS domain in AWS:
 |+---------------------------------------+-----------------------------+--------------+-------------------------+|
 ||            CallerReference            |             Id              |    Name      | ResourceRecordSetCount  ||
 |+---------------------------------------+-----------------------------+--------------+-------------------------+|
-||  C0461665-01D8-463B-BF2D-62F1747A16DB |  /hostedzone/ZTKK4EXR1EWR5  |  kopeio.org. |  2                      ||
+||  C0461665-01D8-463B-BF2D-62F1747A16DB |  /hostedzone/ZTKK4EXR1EWR5  |  example.org. |  2                      ||
 |+---------------------------------------+-----------------------------+--------------+-------------------------+|
 |||                                                   Config                                                   |||
 ||+-------------------------------------------------------------------+----------------------------------------+||
@@ -54,14 +37,14 @@ For our setup we already have a hosted DNS domain in AWS:
 ||+-------------------------------------------------------------------+----------------------------------------+||
 ```
 
-We can also check our that our domain is reacheable from the Internet using "dig":
+We can also check our that our domain is reacheable from the Internet using "dig". You can use other "dns" tools too, but we recommend to use dig (available on all modern linux distributions and other unix-like operating systems. Normally, dig is part of bind-tools and other bind-related packages):
 
 ```bash
-dig +short kopeio.org soa
+dig +short example.org soa
 
 ns-656.awsdns-18.net. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400
 
-dig +short kopeio.org ns
+dig +short example.org ns
 
 ns-1056.awsdns-04.org.
 ns-656.awsdns-18.net.
@@ -69,7 +52,7 @@ ns-9.awsdns-01.com.
 ns-1642.awsdns-13.co.uk.
 ```
 
-If both the "soa" and "ns" queries anwers OK, and with the data pointing to amazon, we are set and we can continue. Please always check that your router53 hosted DNS zone is working before doing anything else !.
+If both the "soa" and "ns" queries anwers OK, and with the data pointing to amazon, we are set and we can continue. Please always check that your Route53 hosted DNS zone is working before doing anything else.
 
 Now, let's create a subdomain that we'll use for our cluster:
 
@@ -81,7 +64,7 @@ ae852c68-78b3-41af-85ee-997fc470fd1c
 aws route53 \
 create-hosted-zone \
 --output=json \
---name kopsclustertest.kopeio.org \
+--name kopsclustertest.example.org \
 --caller-reference $ID | \
 jq .DelegationSet.NameServers
 
@@ -107,13 +90,13 @@ Note that the last command (`aws route53 create-hosted-zone`) will output your n
 We need the zone parent ID too. We can obtain it with the following command:
 
 ```bash
-aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="kopeio.org.") | .Id' | cut -d/ -f3|cut -d\" -f1
+aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="example.org.") | .Id' | cut -d/ -f3|cut -d\" -f1
 ```
 
 It's a good idea if we export this ID as a shell variable by using the following command:
 
 ```bash
-export parentzoneid=`aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="kopeio.org.") | .Id' | cut -d/ -f3|cut -d\" -f1`
+export parentzoneid=`aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="example.org.") | .Id' | cut -d/ -f3|cut -d\" -f1`
 ```
 
 Let's check the var:
@@ -126,14 +109,14 @@ ZTKK4EXR1EWR5
 With the name servers obtained above, we need to construct a "json" file that we'll pass to amazon for our subdomain:
 
 ```bash
-cat<<EOF >~/kopsclustertest.kopeio.org.json
+cat<<EOF >~/kopsclustertest.example.org.json
 {
   "Comment": "Create a subdomain NS record in the parent domain",
   "Changes": [
     {
       "Action": "CREATE",
       "ResourceRecordSet": {
-        "Name": "kopsclustertest.kopeio.org",
+        "Name": "kopsclustertest.example.org",
         "Type": "NS",
         "TTL": 300,
         "ResourceRecords": [
@@ -166,7 +149,7 @@ With the json file ready, and the parent zone ID exported in the "$parentzoneid"
 aws route53 change-resource-record-sets \
 --output=table \
 --hosted-zone-id $parentzoneid \
---change-batch file://~/kopsclustertest.kopeio.org.json
+--change-batch file://~/kopsclustertest.example.org.json
 ```
 
 The output of the last command will be something like:
@@ -188,7 +171,7 @@ Finally, check your records with the following command:
 ```bash
 aws route53 list-resource-record-sets \
 --output=table \
---hosted-zone-id `aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="kopsclustertest.kopeio.org.") | .Id' | cut -d/ -f3|cut -d\" -f1`
+--hosted-zone-id `aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="kopsclustertest.example.org.") | .Id' | cut -d/ -f3|cut -d\" -f1`
 ```
 
 The last command will output the following info:
@@ -201,7 +184,7 @@ The last command will output the following info:
 |+----------------------------------------------------+----------------+-------------+|
 ||                        Name                        |      TTL       |    Type     ||
 |+----------------------------------------------------+----------------+-------------+|
-||  kopsclustertest.kopeio.org.                       |  172800        |  NS         ||
+||  kopsclustertest.example.org.                       |  172800        |  NS         ||
 |+----------------------------------------------------+----------------+-------------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -216,7 +199,7 @@ The last command will output the following info:
 |+-------------------------------------------------------+------------+--------------+|
 ||                         Name                          |    TTL     |    Type      ||
 |+-------------------------------------------------------+------------+--------------+|
-||  kopsclustertest.kopeio.org.                          |  900       |  SOA         ||
+||  kopsclustertest.example.org.                          |  900       |  SOA         ||
 |+-------------------------------------------------------+------------+--------------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -229,11 +212,11 @@ The last command will output the following info:
 Also, do a "dig" test in order to check the zone availability on the Internet:
 
 ```bash
-dig +short kopsclustertest.kopeio.org soa
+dig +short kopsclustertest.example.org soa
 
 ns-1383.awsdns-44.org. awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400
 
-dig +short kopsclustertest.kopeio.org ns
+dig +short kopsclustertest.example.org ns
 
 ns-1383.awsdns-44.org.
 ns-829.awsdns-39.net.
@@ -246,7 +229,7 @@ If both your SOA and NS records are there, then your subdomain is ready to be us
 
 ## AWS/KOPS ENVIRONMENT INFORMATION SETUP:
 
-First, using some scripting and asuming you already configured your "aws" environment on your linux system, use the following commands in order to export your AWS access/secret (this will work if you are using the default profile):
+First, using some scripting and assuming you already configured your "aws" environment on your linux system, use the following commands in order to export your AWS access/secret (this will work if you are using the default profile):
 
 ```bash
 export AWS_ACCESS_KEY_ID=`grep aws_access_key_id ~/.aws/credentials|awk '{print $3}'`
@@ -269,16 +252,16 @@ aws s3api create-bucket --bucket my-kops-s3-bucket-for-cluster-state --region us
 Then export the name of your cluster along with the "S3" URL of your bucket. Add your cluster name to the full subdomain:
 
 ```bash
-export NAME=mycluster01.kopsclustertest.kopeio.org
+export NAME=mycluster01.kopsclustertest.example.org
 export KOPS_STATE_STORE=s3://my-kops-s3-bucket-for-cluster-state
 ```
 
 Some things to note from here:
 
-- "NAME" will be an environment variable that we'll use from now in order to refer to our cluster name. For this practical exercise, our cluster name is "mycluster01.kopsclustertest.kopeio.org".
+- "NAME" will be an environment variable that we'll use from now in order to refer to our cluster name. For this practical exercise, our cluster name will be "mycluster01.kopsclustertest.example.org".
 
 
-## KOPS PRIVATE CLUSTER CREATION:
+## KOPS CLUSTER CREATION:
 
 Let's first create our cluster ensuring a multi-master setup with 3 masters in a multi-az setup, two worker nodes also in a multi-az setup, and using both private networking and a bastion server:
 
@@ -295,11 +278,12 @@ ${NAME}
 
 A few things to note here:
 
-- The environment variable ${NAME} was previously exported with our cluster name: mycluster01.kopsclustertest.kopeio.org.
+- The environment variable ${NAME} was previously exported with our cluster name: mycluster01.kopsclustertest.example.org.
 - "--cloud=aws": As kops grows and begin to support more clouds, we need to tell the command to use the specific cloud we want for our deployment. In this case: amazon web services (aws).
 - For true HA at the master level, we need to pick a region with at least 3 availability zones. For this practical exercise, we are using "us-east-1" AWS region which contains 5 availability zones (az's for short): us-east-1a, us-east-1b, us-east-1c, us-east-1d and us-east-1e.
 - The "--master-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce that we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters).
 - We are including the arguments "--node-size" and "master-size" to specify the "instance types" for both our masters and worker nodes.
+- Because we are just doing a simple LAB, we are using "t2.micro" machines. Please DONT USE t2.micro on real production systems. Start with "t2.medium" as a minimun realistic/workable machine type.
 
 With those points clarified, let's deploy our cluster:
 
@@ -320,30 +304,30 @@ I0906 09:42:13.398070   13538 vfs_castore.go:422] Issuing new certificate: "kube
 I0906 09:42:13.636134   13538 vfs_castore.go:422] Issuing new certificate: "kubecfg"
 I0906 09:42:14.684945   13538 executor.go:91] Tasks: 38 done / 75 total; 14 can run
 I0906 09:42:15.997588   13538 executor.go:91] Tasks: 52 done / 75 total; 19 can run
-I0906 09:42:17.855959   13538 launchconfiguration.go:327] waiting for IAM instance profile "masters.mycluster01.kopsclustertest.kopeio.org" to be ready
-I0906 09:42:17.932515   13538 launchconfiguration.go:327] waiting for IAM instance profile "nodes.mycluster01.kopsclustertest.kopeio.org" to be ready
-I0906 09:42:18.602180   13538 launchconfiguration.go:327] waiting for IAM instance profile "masters.mycluster01.kopsclustertest.kopeio.org" to be ready
-I0906 09:42:18.682038   13538 launchconfiguration.go:327] waiting for IAM instance profile "masters.mycluster01.kopsclustertest.kopeio.org" to be ready
+I0906 09:42:17.855959   13538 launchconfiguration.go:327] waiting for IAM instance profile "masters.mycluster01.kopsclustertest.example.org" to be ready
+I0906 09:42:17.932515   13538 launchconfiguration.go:327] waiting for IAM instance profile "nodes.mycluster01.kopsclustertest.example.org" to be ready
+I0906 09:42:18.602180   13538 launchconfiguration.go:327] waiting for IAM instance profile "masters.mycluster01.kopsclustertest.example.org" to be ready
+I0906 09:42:18.682038   13538 launchconfiguration.go:327] waiting for IAM instance profile "masters.mycluster01.kopsclustertest.example.org" to be ready
 I0906 09:42:29.215995   13538 executor.go:91] Tasks: 71 done / 75 total; 4 can run
 I0906 09:42:30.073417   13538 executor.go:91] Tasks: 75 done / 75 total; 0 can run
 I0906 09:42:30.073471   13538 dns.go:152] Pre-creating DNS records
 I0906 09:42:32.403909   13538 update_cluster.go:247] Exporting kubecfg for cluster
-Kops has set your kubectl context to mycluster01.kopsclustertest.kopeio.org
+Kops has set your kubectl context to mycluster01.kopsclustertest.example.org
 
 Cluster is starting.  It should be ready in a few minutes.
 
 Suggestions:
  * validate cluster: kops validate cluster
  * list nodes: kubectl get nodes --show-labels
- * ssh to the master: ssh -i ~/.ssh/id_rsa admin@api.mycluster01.kopsclustertest.kopeio.org
+ * ssh to the master: ssh -i ~/.ssh/id_rsa admin@api.mycluster01.kopsclustertest.example.org
 The admin user is specific to Debian. If not using Debian please use the appropriate user based on your OS.
  * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md
 ```
 
-Note that KOPS will create a DNS record for your API: api.mycluster01.kopsclustertest.kopeio.org. You can check this record with the following "dig" command:
+Note that KOPS will create a DNS record for your API: api.mycluster01.kopsclustertest.example.org. You can check this record with the following "dig" command:
 
 ```bash
-dig +short api.mycluster01.kopsclustertest.kopeio.org A
+dig +short api.mycluster01.kopsclustertest.example.org A
 34.228.219.212
 34.206.72.126
 54.83.144.111
@@ -356,9 +340,9 @@ After about 10~15 minutes (depending on how fast or how slow are amazon services
 ```bash
 kops validate cluster
 
-Using cluster from kubectl context: mycluster01.kopsclustertest.kopeio.org
+Using cluster from kubectl context: mycluster01.kopsclustertest.example.org
 
-Validating cluster mycluster01.kopsclustertest.kopeio.org
+Validating cluster mycluster01.kopsclustertest.example.org
 
 INSTANCE GROUPS
 NAME                    ROLE    MACHINETYPE     MIN     MAX     SUBNETS
@@ -375,7 +359,7 @@ ip-172-20-43-160.ec2.internal   node    True
 ip-172-20-64-116.ec2.internal   master  True
 ip-172-20-68-15.ec2.internal    node    True
 
-Your cluster mycluster01.kopsclustertest.kopeio.org is ready
+Your cluster mycluster01.kopsclustertest.example.org is ready
 
 ```
 
@@ -395,7 +379,7 @@ ip-172-20-68-15.ec2.internal    Ready     5m        v1.7.2
 Let's try to send a command to our masters using "ssh":
 
 ```bash
-ssh -i ~/.ssh/id_rsa admin@api.mycluster01.kopsclustertest.kopeio.org "ec2metadata --public-ipv4"
+ssh -i ~/.ssh/id_rsa admin@api.mycluster01.kopsclustertest.example.org "ec2metadata --public-ipv4"
 34.206.72.126
 ```
 
@@ -408,7 +392,7 @@ Let's do a fast review (using aws cli tools) of the resource records created by 
 ```bash
 aws route53 list-resource-record-sets \
 --output=table \
---hosted-zone-id `aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="kopsclustertest.kopeio.org.") | .Id' | cut -d/ -f3|cut -d\" -f1`
+--hosted-zone-id `aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="kopsclustertest.example.org.") | .Id' | cut -d/ -f3|cut -d\" -f1`
 ```
 
 The output:
@@ -421,7 +405,7 @@ The output:
 |+----------------------------------------------------+----------------+-------------+|
 ||                        Name                        |      TTL       |    Type     ||
 |+----------------------------------------------------+----------------+-------------+|
-||  kopsclustertest.kopeio.org.                       |  172800        |  NS         ||
+||  kopsclustertest.example.org.                       |  172800        |  NS         ||
 |+----------------------------------------------------+----------------+-------------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -436,7 +420,7 @@ The output:
 |+-------------------------------------------------------+------------+--------------+|
 ||                         Name                          |    TTL     |    Type      ||
 |+-------------------------------------------------------+------------+--------------+|
-||  kopsclustertest.kopeio.org.                          |  900       |  SOA         ||
+||  kopsclustertest.example.org.                          |  900       |  SOA         ||
 |+-------------------------------------------------------+------------+--------------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -448,7 +432,7 @@ The output:
 |+--------------------------------------------------------------+---------+----------+|
 ||                             Name                             |   TTL   |  Type    ||
 |+--------------------------------------------------------------+---------+----------+|
-||  api.mycluster01.kopsclustertest.kopeio.org.                 |  60     |  A       ||
+||  api.mycluster01.kopsclustertest.example.org.                 |  60     |  A       ||
 |+--------------------------------------------------------------+---------+----------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -462,7 +446,7 @@ The output:
 |+-----------------------------------------------------------------+-------+---------+|
 ||                              Name                               |  TTL  |  Type   ||
 |+-----------------------------------------------------------------+-------+---------+|
-||  api.internal.mycluster01.kopsclustertest.kopeio.org.           |  60   |  A      ||
+||  api.internal.mycluster01.kopsclustertest.example.org.           |  60   |  A      ||
 |+-----------------------------------------------------------------+-------+---------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -476,7 +460,7 @@ The output:
 |+------------------------------------------------------------------+-------+--------+|
 ||                               Name                               |  TTL  | Type   ||
 |+------------------------------------------------------------------+-------+--------+|
-||  etcd-a.internal.mycluster01.kopsclustertest.kopeio.org.         |  60   |  A     ||
+||  etcd-a.internal.mycluster01.kopsclustertest.example.org.         |  60   |  A     ||
 |+------------------------------------------------------------------+-------+--------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -488,7 +472,7 @@ The output:
 |+------------------------------------------------------------------+-------+--------+|
 ||                               Name                               |  TTL  | Type   ||
 |+------------------------------------------------------------------+-------+--------+|
-||  etcd-b.internal.mycluster01.kopsclustertest.kopeio.org.         |  60   |  A     ||
+||  etcd-b.internal.mycluster01.kopsclustertest.example.org.         |  60   |  A     ||
 |+------------------------------------------------------------------+-------+--------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -500,7 +484,7 @@ The output:
 |+------------------------------------------------------------------+-------+--------+|
 ||                               Name                               |  TTL  | Type   ||
 |+------------------------------------------------------------------+-------+--------+|
-||  etcd-c.internal.mycluster01.kopsclustertest.kopeio.org.         |  60   |  A     ||
+||  etcd-c.internal.mycluster01.kopsclustertest.example.org.         |  60   |  A     ||
 |+------------------------------------------------------------------+-------+--------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -512,7 +496,7 @@ The output:
 |+-------------------------------------------------------------------+------+--------+|
 ||                               Name                                | TTL  | Type   ||
 |+-------------------------------------------------------------------+------+--------+|
-||  etcd-events-a.internal.mycluster01.kopsclustertest.kopeio.org.   |  60  |  A     ||
+||  etcd-events-a.internal.mycluster01.kopsclustertest.example.org.   |  60  |  A     ||
 |+-------------------------------------------------------------------+------+--------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -524,7 +508,7 @@ The output:
 |+-------------------------------------------------------------------+------+--------+|
 ||                               Name                                | TTL  | Type   ||
 |+-------------------------------------------------------------------+------+--------+|
-||  etcd-events-b.internal.mycluster01.kopsclustertest.kopeio.org.   |  60  |  A     ||
+||  etcd-events-b.internal.mycluster01.kopsclustertest.example.org.   |  60  |  A     ||
 |+-------------------------------------------------------------------+------+--------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -536,7 +520,7 @@ The output:
 |+-------------------------------------------------------------------+------+--------+|
 ||                               Name                                | TTL  | Type   ||
 |+-------------------------------------------------------------------+------+--------+|
-||  etcd-events-c.internal.mycluster01.kopsclustertest.kopeio.org.   |  60  |  A     ||
+||  etcd-events-c.internal.mycluster01.kopsclustertest.example.org.   |  60  |  A     ||
 |+-------------------------------------------------------------------+------+--------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -549,7 +533,7 @@ The output:
 Maybe with json output and some "jq" parsing:
 
 ```bash
-aws route53 list-resource-record-sets --output=json --hosted-zone-id `aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="kopsclustertest.kopeio.org.") | .Id' | cut -d/ -f3|cut -d\" -f1`|jq .ResourceRecordSets[]
+aws route53 list-resource-record-sets --output=json --hosted-zone-id `aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="kopsclustertest.example.org.") | .Id' | cut -d/ -f3|cut -d\" -f1`|jq .ResourceRecordSets[]
 ```
 
 Output:
@@ -557,7 +541,7 @@ Output:
 ```
 {
   "TTL": 172800,
-  "Name": "kopsclustertest.kopeio.org.",
+  "Name": "kopsclustertest.example.org.",
   "Type": "NS",
   "ResourceRecords": [
     {
@@ -576,7 +560,7 @@ Output:
 }
 {
   "TTL": 900,
-  "Name": "kopsclustertest.kopeio.org.",
+  "Name": "kopsclustertest.example.org.",
   "Type": "SOA",
   "ResourceRecords": [
     {
@@ -586,7 +570,7 @@ Output:
 }
 {
   "TTL": 60,
-  "Name": "api.mycluster01.kopsclustertest.kopeio.org.",
+  "Name": "api.mycluster01.kopsclustertest.example.org.",
   "Type": "A",
   "ResourceRecords": [
     {
@@ -602,7 +586,7 @@ Output:
 }
 {
   "TTL": 60,
-  "Name": "api.internal.mycluster01.kopsclustertest.kopeio.org.",
+  "Name": "api.internal.mycluster01.kopsclustertest.example.org.",
   "Type": "A",
   "ResourceRecords": [
     {
@@ -618,7 +602,7 @@ Output:
 }
 {
   "TTL": 60,
-  "Name": "etcd-a.internal.mycluster01.kopsclustertest.kopeio.org.",
+  "Name": "etcd-a.internal.mycluster01.kopsclustertest.example.org.",
   "Type": "A",
   "ResourceRecords": [
     {
@@ -628,7 +612,7 @@ Output:
 }
 {
   "TTL": 60,
-  "Name": "etcd-b.internal.mycluster01.kopsclustertest.kopeio.org.",
+  "Name": "etcd-b.internal.mycluster01.kopsclustertest.example.org.",
   "Type": "A",
   "ResourceRecords": [
     {
@@ -638,7 +622,7 @@ Output:
 }
 {
   "TTL": 60,
-  "Name": "etcd-c.internal.mycluster01.kopsclustertest.kopeio.org.",
+  "Name": "etcd-c.internal.mycluster01.kopsclustertest.example.org.",
   "Type": "A",
   "ResourceRecords": [
     {
@@ -648,7 +632,7 @@ Output:
 }
 {
   "TTL": 60,
-  "Name": "etcd-events-a.internal.mycluster01.kopsclustertest.kopeio.org.",
+  "Name": "etcd-events-a.internal.mycluster01.kopsclustertest.example.org.",
   "Type": "A",
   "ResourceRecords": [
     {
@@ -658,7 +642,7 @@ Output:
 }
 {
   "TTL": 60,
-  "Name": "etcd-events-b.internal.mycluster01.kopsclustertest.kopeio.org.",
+  "Name": "etcd-events-b.internal.mycluster01.kopsclustertest.example.org.",
   "Type": "A",
   "ResourceRecords": [
     {
@@ -668,7 +652,7 @@ Output:
 }
 {
   "TTL": 60,
-  "Name": "etcd-events-c.internal.mycluster01.kopsclustertest.kopeio.org.",
+  "Name": "etcd-events-c.internal.mycluster01.kopsclustertest.example.org.",
   "Type": "A",
   "ResourceRecords": [
     {
@@ -684,7 +668,7 @@ Let's see the following scenario: Our load is increasing and we need to add two 
 
 ```bash
 kops get instancegroups
-Using cluster from kubectl context: mycluster01.kopsclustertest.kopeio.org
+Using cluster from kubectl context: mycluster01.kopsclustertest.example.org
 
 NAME                    ROLE    MACHINETYPE     MIN     MAX     SUBNETS
 master-us-east-1a       Master  t2.micro        1       1       us-east-1a
@@ -707,7 +691,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-09-06T13:40:39Z
   labels:
-    kops.k8s.io/cluster: mycluster01.kopsclustertest.kopeio.org
+    kops.k8s.io/cluster: mycluster01.kopsclustertest.example.org
   name: nodes
 spec:
   image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
@@ -729,7 +713,7 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-09-06T13:40:39Z
   labels:
-    kops.k8s.io/cluster: mycluster01.kopsclustertest.kopeio.org
+    kops.k8s.io/cluster: mycluster01.kopsclustertest.example.org
   name: nodes
 spec:
   image: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
@@ -758,7 +742,7 @@ I0906 10:16:33.592807   13607 executor.go:91] Tasks: 52 done / 75 total; 19 can 
 I0906 10:16:35.009432   13607 executor.go:91] Tasks: 71 done / 75 total; 4 can run
 I0906 10:16:35.320078   13607 executor.go:91] Tasks: 75 done / 75 total; 0 can run
 Will modify resources:
-  AutoscalingGroup/nodes.mycluster01.kopsclustertest.kopeio.org
+  AutoscalingGroup/nodes.mycluster01.kopsclustertest.example.org
         MinSize                  2 -> 3
         MaxSize                  2 -> 3
 
@@ -776,9 +760,9 @@ Go for another coffee (or maybe a tee) and after some minutes check your cluster
 ```bash
 kops validate cluster
 
-Using cluster from kubectl context: mycluster01.kopsclustertest.kopeio.org
+Using cluster from kubectl context: mycluster01.kopsclustertest.example.org
 
-Validating cluster mycluster01.kopsclustertest.kopeio.org
+Validating cluster mycluster01.kopsclustertest.example.org
 
 INSTANCE GROUPS
 NAME                    ROLE    MACHINETYPE     MIN     MAX     SUBNETS
@@ -796,7 +780,7 @@ ip-172-20-43-160.ec2.internal   node    True
 ip-172-20-64-116.ec2.internal   master  True
 ip-172-20-68-15.ec2.internal    node    True
 
-Your cluster mycluster01.kopsclustertest.kopeio.org is ready
+Your cluster mycluster01.kopsclustertest.example.org is ready
 
 ```
 
@@ -817,9 +801,9 @@ kops delete cluster ${NAME} --yes
 After a short while, you'll see the following message:
 
 ```
-Deleted kubectl config for mycluster01.kopsclustertest.kopeio.org
+Deleted kubectl config for mycluster01.kopsclustertest.example.org
 
-Deleted cluster: "mycluster01.kopsclustertest.kopeio.org"
+Deleted cluster: "mycluster01.kopsclustertest.example.org"
 ```
 
 Now, let's check our DNS records:
@@ -827,7 +811,7 @@ Now, let's check our DNS records:
 ```bash
 aws route53 list-resource-record-sets \
 --output=table \
---hosted-zone-id `aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="kopsclustertest.kopeio.org.") | .Id' | cut -d/ -f3|cut -d\" -f1`
+--hosted-zone-id `aws route53 --output=json list-hosted-zones | jq '.HostedZones[] | select(.Name=="kopsclustertest.example.org.") | .Id' | cut -d/ -f3|cut -d\" -f1`
 ```
 
 The output:
@@ -840,7 +824,7 @@ The output:
 |+----------------------------------------------------+----------------+-------------+|
 ||                        Name                        |      TTL       |    Type     ||
 |+----------------------------------------------------+----------------+-------------+|
-||  kopsclustertest.kopeio.org.                       |  172800        |  NS         ||
+||  kopsclustertest.example.org.                       |  172800        |  NS         ||
 |+----------------------------------------------------+----------------+-------------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
@@ -855,7 +839,7 @@ The output:
 |+-------------------------------------------------------+------------+--------------+|
 ||                         Name                          |    TTL     |    Type      ||
 |+-------------------------------------------------------+------------+--------------+|
-||  kopsclustertest.kopeio.org.                          |  900       |  SOA         ||
+||  kopsclustertest.example.org.                          |  900       |  SOA         ||
 |+-------------------------------------------------------+------------+--------------+|
 |||                                 ResourceRecords                                 |||
 ||+---------------------------------------------------------------------------------+||
