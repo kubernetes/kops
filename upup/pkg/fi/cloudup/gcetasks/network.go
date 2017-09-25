@@ -116,7 +116,7 @@ func (_ *Network) CheckChanges(a, e, changes *Network) error {
 
 func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
 	if a == nil {
-		glog.V(2).Infof("Creating Network with CIDR: %q", *e.CIDR)
+		glog.V(2).Infof("Creating Network with CIDR: %q", fi.StringValue(e.CIDR))
 
 		network := &compute.Network{
 			Name: *e.Name,
