@@ -38,6 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
@@ -286,9 +287,11 @@ func (c *awsCloudImplementation) DeleteInstance(id *string) error {
 
 // TODO not used yet, as this requires a major refactor of rolling-update code, slowly but surely
 
-// GetCloudGroups returns a groups of instanaces that back a kops instance groups
-func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
-	var groups map[string]*fi.CloudGroup
+// GetCloudGroups returns a groups of instances that back a kops instance groups
+func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	nodeMap := cloudinstances.GetNodeMap(nodes)
+
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	asgs, err := c.FindAutoscalingGroups()
 	if err != nil {
 		return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
@@ -296,27 +299,9 @@ func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 
 	for _, asg := range asgs {
 		name := aws.StringValue(asg.AutoScalingGroupName)
-		var instancegroup *kops.InstanceGroup
-		for _, g := range instancegroups {
-			var asgName string
-			switch g.Spec.Role {
-			case kops.InstanceGroupRoleMaster:
-				asgName = g.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
-			case kops.InstanceGroupRoleNode:
-				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
-			case kops.InstanceGroupRoleBastion:
-				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
-			default:
-				glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
-				continue
-			}
-
-			if name == asgName {
-				if instancegroup != nil {
-					return nil, fmt.Errorf("Found multiple instance groups matching ASG %q", asgName)
-				}
-				instancegroup = g
-			}
+		instancegroup, err := cloudinstances.GetInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
+		if err != nil {
+			return nil, fmt.Errorf("error getting instance group for ASG %q", name)
 		}
 		if instancegroup == nil {
 			if warnUnmatched {
@@ -325,7 +310,10 @@ func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 			continue
 		}
 
-		groups[instancegroup.ObjectMeta.Name] = c.awsBuildCloudInstanceGroup(instancegroup, asg, nodeMap)
+		groups[instancegroup.ObjectMeta.Name], err = c.awsBuildCloudInstanceGroup(instancegroup, asg, nodeMap)
+		if err != nil {
+			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
+		}
 	}
 
 	return groups, nil
@@ -418,40 +406,23 @@ func MatchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription
 	return true
 }
 
-func (c *awsCloudImplementation) awsBuildCloudInstanceGroup(ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) *fi.CloudGroup {
-
-	n := &fi.CloudGroup{
-		GroupName:         aws.StringValue(g.AutoScalingGroupName),
-		InstanceGroup:     ig,
-		GroupTemplateName: aws.StringValue(g.LaunchConfigurationName),
+func (c *awsCloudImplementation) awsBuildCloudInstanceGroup(ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+	newLaunchConfigName := aws.StringValue(g.LaunchConfigurationName)
+	n, err := cloudinstances.NewCloudInstanceGroup(aws.StringValue(g.AutoScalingGroupName), newLaunchConfigName, ig, int(aws.Int64Value(g.MinSize)), int(aws.Int64Value(g.MaxSize)))
+	if err != nil {
+		return nil, fmt.Errorf("error creating cloud instance group: %v", err)
 	}
-
-	readyLaunchConfigurationName := aws.StringValue(g.LaunchConfigurationName)
 
 	for _, i := range g.Instances {
-		c := &fi.CloudGroupInstance{
-			ID: i.InstanceId,
-		}
-
-		node := nodeMap[aws.StringValue(i.InstanceId)]
-		if node != nil {
-			c.Node = node
-		}
-
-		if readyLaunchConfigurationName == aws.StringValue(i.LaunchConfigurationName) {
-			n.Ready = append(n.Ready, c)
-		} else {
-			n.NeedUpdate = append(n.NeedUpdate, c)
+		err = n.NewCloudInstanceMember(i.InstanceId, newLaunchConfigName, aws.StringValue(i.LaunchConfigurationName), nodeMap)
+		if err != nil {
+			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
 	}
 
-	if len(n.NeedUpdate) == 0 {
-		n.Status = "Ready"
-	} else {
-		n.Status = "NeedsUpdate"
-	}
+	n.MarkIsReady()
 
-	return n
+	return n, nil
 }
 
 func (c *awsCloudImplementation) Tags() map[string]string {
