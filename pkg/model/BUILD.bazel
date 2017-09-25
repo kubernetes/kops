@@ -30,6 +30,7 @@ go_library(
         "//pkg/model/components:go_default_library",
         "//pkg/model/iam:go_default_library",
         "//pkg/model/resources:go_default_library",
+        "//pkg/model/shared:go_default_library",
         "//pkg/tokens:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awstasks:go_default_library",
