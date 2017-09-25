@@ -86,6 +86,11 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 			MountPath: "/var/log/etcd.log",
 			ReadOnly:  false,
 		})
+		container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
+			Name:      "hosts",
+			MountPath: "/etc/hosts",
+			ReadOnly:  true,
+		})
 		// add the host path mount to the pod spec
 		pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
 			Name: "varetcdata",
@@ -103,7 +108,14 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 				},
 			},
 		})
-
+		pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
+			Name: "hosts",
+			VolumeSource: v1.VolumeSource{
+				HostPath: &v1.HostPathVolumeSource{
+					Path: "/etc/hosts",
+				},
+			},
+		})
 		// @check if tls is enabled and mount the directory. It might be worth considering
 		// if we you use our own directory in /srv i.e /srv/etcd rather than the default /src/kubernetes
 		if c.isTLS() {
