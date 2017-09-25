@@ -78,6 +78,9 @@ spec:
       name: varetcdata
     - mountPath: /var/log/etcd.log
       name: varlogetcd
+    - mountPath: /etc/hosts
+      name: hosts
+      readOnly: true
   hostNetwork: true
   volumes:
   - hostPath:
@@ -86,4 +89,7 @@ spec:
   - hostPath:
       path: /var/log/etcd.log
     name: varlogetcd
+  - hostPath:
+      path: /etc/hosts
+    name: hosts
 status: {}
