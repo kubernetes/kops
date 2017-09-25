@@ -1,0 +1,91 @@
+apiVersion: kops/v1alpha2
+kind: Cluster
+metadata:
+  creationTimestamp: 2017-09-25T19:37:59Z
+  name: sec-groups.example.com
+spec:
+  api:
+    dns: {}
+  authorization:
+    alwaysAllow: {}
+  channel: stable
+  cloudProvider: aws
+  configBase: memfs://clusters.example.com/sec-groups.example.com
+  etcdClusters:
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: d
+    name: main
+  - etcdMembers:
+    - instanceGroup: master-us-test-1a
+      name: d
+    name: events
+  iam:
+    legacy: false
+  kubernetesApiAccess:
+  - 0.0.0.0/0
+  kubernetesVersion: 1.7.5
+  masterInternalName: api.internal.sec-groups.example.com
+  masterPublicName: api.sec-groups.example.com
+  networkCIDR: 172.20.0.0/16
+  networkID: vpc-0301e07b
+  networking:
+    weave:
+      mtu: 8912
+  nonMasqueradeCIDR: 100.64.0.0/10
+  securityGroups:
+    masterGroups:
+      - sg-c4d4a3b7
+      - sg-c4d4a3b8
+    nodeGroups:
+      - sg-15eb9c66
+  sshAccess:
+  - 0.0.0.0/0
+  subnets:
+  - cidr: 172.20.32.0/19
+    name: us-test-1a
+    type: Public
+    zone: us-test-1a
+  topology:
+    dns:
+      type: Public
+    masters: public
+    nodes: public
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: 2017-09-25T19:37:59Z
+  labels:
+    kops.k8s.io/cluster: sec-groups.example.com
+  name: master-us-test-1a
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m4.large
+  maxPrice: "0.4"
+  maxSize: 1
+  minSize: 1
+  role: Master
+  subnets:
+  - us-test-1a
+
+---
+
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  creationTimestamp: 2017-09-25T19:37:59Z
+  labels:
+    kops.k8s.io/cluster: sec-groups.example.com
+  name: nodes
+spec:
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
+  machineType: m4.large
+  maxPrice: "0.4"
+  maxSize: 1
+  minSize: 1
+  role: Node
+  subnets:
+  - us-test-1a
