@@ -32,28 +32,32 @@ type DeleteInstanceGroup struct {
 	Clientset simple.Clientset
 }
 
-func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
-	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
+// DeleteInstanceGroup deletes a cloud instance group
+func (d *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
+
+	groups, err := d.Cloud.GetCloudGroups(d.Cluster, []*api.InstanceGroup{group}, false, nil)
 	if err != nil {
 		return fmt.Errorf("error finding CloudInstanceGroups: %v", err)
 	}
+
+	// TODO should we drain nodes and validate the cluster?
 	cig := groups[group.ObjectMeta.Name]
 	if cig == nil {
 		glog.Warningf("AutoScalingGroup %q not found in cloud - skipping delete", group.ObjectMeta.Name)
 	} else {
 		if len(groups) != 1 {
-			return fmt.Errorf("Multiple InstanceGroup resources found in cloud")
+			return fmt.Errorf("multiple InstanceGroup resources found in cloud")
 		}
 
 		glog.Infof("Deleting AutoScalingGroup %q", group.ObjectMeta.Name)
 
-		err = cig.Delete(c.Cloud)
+		err = d.Cloud.DeleteGroup(cig.GroupName, cig.GroupTemplateName)
 		if err != nil {
 			return fmt.Errorf("error deleting cloud resources for InstanceGroup: %v", err)
 		}
 	}
 
-	err = c.Clientset.InstanceGroupsFor(c.Cluster).Delete(group.ObjectMeta.Name, nil)
+	err = d.Clientset.InstanceGroupsFor(d.Cluster).Delete(group.ObjectMeta.Name, nil)
 	if err != nil {
 		return err
 	}

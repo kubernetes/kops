@@ -31,6 +31,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
@@ -116,7 +117,7 @@ func (c *MockAWSCloud) DeleteInstance(id *string) error {
 	return nil
 }
 
-func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	return nil, fmt.Errorf("not implemented yet")
 }
 
