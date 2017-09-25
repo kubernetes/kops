@@ -1,8 +1,8 @@
 # USING KOPS WITH PRIVATE NETWORKING AND A BASTION HOST IN A HIGLY-AVAILABLE SETUP
 
-## WHAT WE WANT TO ACOMPLISH HERE ?.
+## WHAT WE WANT TO ACOMPLISH HERE?
 
-The exercise described on this document will focus on the following goals:
+The exercise described in this document will focus on the following goals:
 
 - Demonstrate how to use a production-setup with 3 masters and two workers in different availability zones.
 - Demonstrate how to use a private networking setup with a bastion host.
@@ -13,28 +13,12 @@ The exercise described on this document will focus on the following goals:
 
 ## PRE-FLIGHT CHECK:
 
-Before rushing in to replicate this exercise, please ensure your basic environment is correctly setup. See the [KOPS AWS tutorial for more information](https://github.com/kubernetes/kops/blob/master/docs/aws.md). 
-
-Ensure that the following points are covered and working in your environment:
-
-- AWS cli fully configured (aws account already with proper permissions/roles needed for kops). Depending on your distro, you can setup directly from packages, or if you want the most updated version, use "pip" and install awscli by issuing a "pip install awscli" command. Your choice !.
-- Local ssh key ready on ~/.ssh/id_rsa / id_rsa.pub. You can generate it using "ssh-keygen" command: `ssh-keygen -t rsa -f ~/.ssh/id_rsa -P ""`
-- Region set to us-east-1 (az's: us-east-1a, us-east-1b, us-east-1c, us-east-1d and us-east-1e). For this exercise we'll deploy our cluster on US-EAST-1. For real HA at kubernetes master level, you need 3 masters. If you want to ensure that each master is deployed on a different availability zone, then a region with "at least" 3 availabity zones is required here. You can still deploy a multi-master kubenetes setup on regions with just 2 az's, but this mean that two masters will be deployed on a single az, and of this az goes offline then you'll lose two master !. If possible, always pick a region with at least 3 different availability zones for real H.A. You always can check amazon regions and az's on the link: [AWS Global Infrastructure](https://aws.amazon.com/about-aws/global-infrastructure/)
-- kubectl and kops installed. For this last part, you can do this with using following commnads (do this as root please). Next commands asume you are running a amd64/x86_64 linux distro:
-
-```bash
-cd ~
-curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-wget https://github.com/kubernetes/kops/releases/download/1.7.0/kops-linux-amd64
-chmod 755 kubectl kops-linux-amd64
-mv kops-linux-amd64 kops
-mv kubectl kops  /usr/local/bin
-```
+Please follow our [basic-requirements document](basic-requirements.md) that is common for all our exercises. Ensure the basic requirements are covered before continuing.
 
 
 ## AWS/KOPS ENVIRONMENT SETUP:
 
-First, using some scripting and asuming you already configured your "aws" environment on your linux system, use the following commands in order to export your AWS access/secret (this will work if you are using the default profile):
+First, using some scripting and assuming you already configured your "aws" environment on your linux system, use the following commands in order to export your AWS access/secret (this will work if you are using the default profile):
 
 ```bash
 export AWS_ACCESS_KEY_ID=`grep aws_access_key_id ~/.aws/credentials|awk '{print $3}'`
@@ -88,10 +72,11 @@ A few things to note here:
 
 - The environment variable ${NAME} was previously exported with our cluster name: privatekopscluster.k8s.local.
 - "--cloud=aws": As kops grows and begin to support more clouds, we need to tell the command to use the specific cloud we want for our deployment. In this case: amazon web services (aws).
-- For true HA at the master level, we need to pick a region with at least 3 availability zones. For this practical exercise, we are using "us-east-1" AWS region which contains 5 availability zones (az's for short): us-east-1a, us-east-1b, us-east-1c, us-east-1d and us-east-1e.
-- The "--master-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce that we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters).
+- For true HA (high availability) at the master level, we need to pick a region with 3 availability zones. For this practical exercise, we are using "us-east-1" AWS region which contains 5 availability zones (az's for short): us-east-1a, us-east-1b, us-east-1c, us-east-1d and us-east-1e. We used "us-east-1a,us-east-1b,us-east-1c" for our masters.
+- The "--master-zones=us-east-1a,us-east-1b,us-east-1c" KOPS argument will actually enforce we want 3 masters here. "--node-count=2" only applies to the worker nodes (not the masters). Again, real "HA" on Kubernetes control plane requires 3 masters.
 - The "--topology private" argument will ensure that all our instances will have private IP's and no public IP's from amazon.
 - We are including the arguments "--node-size" and "master-size" to specify the "instance types" for both our masters and worker nodes.
+- Because we are just doing a simple LAB, we are using "t2.micro" machines. Please DONT USE t2.micro on real production systems. Start with "t2.medium" as a minimun realistic/workable machine type.
 - And finally, the "--networking kopeio-vxlan" argument. With the private networking model, we need to tell kops which networking subsystem to use. More information about kops supported networking models can be obtained from the [KOPS Kubernetes Networking Documentation](https://github.com/kubernetes/kops/blob/master/docs/networking.md). For this exercise we'll use "kopeio-vxlan" (or "kopeio" for short).
 
 **NOTE**: You can add the "--bastion" argument here if you are not using "gossip dns" and create the bastion from start, but if you are using "gossip-dns" this will make this cluster to fail (this is a bug we are correcting now). For the moment don't use "--bastion" when using gossip DNS. We'll show you how to get around this by first creating the private cluster, then creation the bastion instance group once the cluster is running.
@@ -324,7 +309,7 @@ Your cluster privatekopscluster.k8s.local is ready
 
 ## MAKING THE BASTION LAYER "HIGLY AVAILABLE".
 
-If for any reason "godzilla" decides to destroy the amazon AZ that contains our bastion, we'll basically be unable to enter to our instances. Let's add some H.A. to our bastion layer and force amazon to deploy additional bastion instances on other availability zones.
+If for any reason any "legendary monster from the comics" decides to destroy the amazon AZ that contains our bastion, we'll basically be unable to enter to our instances. Let's add some H.A. to our bastion layer and force amazon to deploy additional bastion instances on other availability zones.
 
 First, let's edit our "bastions" instance group:
 
