@@ -18,11 +18,13 @@ package gce
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/storage/v1"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	dnsproviderclouddns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
@@ -51,21 +53,21 @@ func buildMockGCECloud(region string, project string) *mockGCECloud {
 }
 
 // GetCloudGroups is not implemented yet
-func (c *mockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+func (c *mockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	glog.V(8).Infof("mockGCECloud cloud provider GetCloudGroups not implemented yet")
-	return nil, fmt.Errorf("mockGCECloud cloud provider does not support getting cloud groups at this time.")
+	return nil, fmt.Errorf("mockGCECloud cloud provider does not support getting cloud groups at this time")
 }
 
 // DeleteGroup is not implemented yet
 func (c *mockGCECloud) DeleteGroup(name string, template string) error {
 	glog.V(8).Infof("mockGCECloud cloud provider DeleteGroup not implemented yet")
-	return fmt.Errorf("mockGCECloud cloud provider does not support deleting cloud groups at this time.")
+	return fmt.Errorf("mockGCECloud cloud provider does not support deleting cloud groups at this time")
 }
 
 // DeleteInstance is not implemented yet
 func (c *mockGCECloud) DeleteInstance(id *string) error {
 	glog.V(8).Infof("mockGCECloud cloud provider DeleteInstance not implemented yet")
-	return fmt.Errorf("mockGCECloud cloud provider does not support deleting cloud instances at this time.")
+	return fmt.Errorf("mockGCECloud cloud provider does not support deleting cloud instances at this time")
 }
 
 // Zones is not implemented yet

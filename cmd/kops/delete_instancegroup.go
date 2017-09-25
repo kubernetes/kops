@@ -109,7 +109,11 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
+// RunDeleteInstanceGroup runs the deletion of an instance group
 func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInstanceGroupOptions) error {
+
+	// TODO make this drain and validate the ig?
+	// TODO implement drain and validate logic
 	groupName := options.GroupName
 	if groupName == "" {
 		return fmt.Errorf("GroupName is required")

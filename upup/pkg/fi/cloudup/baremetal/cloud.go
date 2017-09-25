@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
@@ -51,21 +52,21 @@ func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 
 // GetCloudGroups is not implemented yet, that needs to return the instances and groups that back a kops cluster.
 // Baremetal may not support this.
-func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	glog.V(8).Infof("baremetal cloud GetCloudGroups not implemented yet")
-	return nil, fmt.Errorf("baremetal provider does not support getting cloud groups at this time.")
+	return nil, fmt.Errorf("baremetal provider does not support getting cloud groups at this time")
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
 // Baremetal may not support this.
 func (c *Cloud) DeleteGroup(name string, template string) error {
 	glog.V(8).Infof("digitalocean cloud provider DeleteGroup not implemented yet")
-	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud groups at this time.")
+	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud groups at this time")
 }
 
 //DeleteInstance is not implemented yet, is func needs to delete a DO instance.
 //Baremetal may not support this.
 func (c *Cloud) DeleteInstance(id *string) error {
 	glog.V(8).Infof("baremetal cloud provider DeleteInstance not implemented yet")
-	return fmt.Errorf("baremetal cloud provider does not support deleting cloud instances at this time.")
+	return fmt.Errorf("baremetal cloud provider does not support deleting cloud instances at this time")
 }

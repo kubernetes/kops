@@ -27,6 +27,7 @@ import (
 	"google.golang.org/api/storage/v1"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
@@ -220,19 +221,19 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 // DeleteGroup deletes a cloud of instances controlled by an Instance Group Manager
 func (c *gceCloudImplementation) DeleteGroup(name string, template string) error {
 	glog.V(8).Infof("gce cloud provider DeleteGroup not implemented yet")
-	return fmt.Errorf("gce cloud provider does not support deleting cloud groups at this time.")
+	return fmt.Errorf("gce cloud provider does not support deleting cloud groups at this time")
 }
 
 // DeleteInstance deletes a GCE instance
 func (c *gceCloudImplementation) DeleteInstance(id *string) error {
 	glog.V(8).Infof("gce cloud provider DeleteInstance not implemented yet")
-	return fmt.Errorf("gce cloud provider does not support deleting cloud instances at this time.")
+	return fmt.Errorf("gce cloud provider does not support deleting cloud instances at this time")
 }
 
 // GetCloudGroups returns a map of CloudGroup that backs a list of instance groups
-func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	glog.V(8).Infof("gce cloud provider GetCloudGroups not implemented yet")
-	return nil, fmt.Errorf("gce cloud provider does not support getting cloud groups at this time.")
+	return nil, fmt.Errorf("gce cloud provider does not support getting cloud groups at this time")
 }
 
 // FindInstanceTemplates finds all instance templates that are associated with the current cluster

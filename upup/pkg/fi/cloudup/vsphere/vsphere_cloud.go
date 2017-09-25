@@ -22,6 +22,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"net/url"
+	"os"
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/pkg/errors"
 	"github.com/vmware/govmomi"
@@ -34,12 +38,10 @@ import (
 	"github.com/vmware/govmomi/vim25/types"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
-	"net/url"
-	"os"
-	"strings"
 )
 
 // VSphereCloud represents a vSphere cloud instance.
@@ -105,9 +107,9 @@ func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
 }
 
 // GetCloudGroups is not implemented yet, that needs to return the instances and groups that back a kops cluster.
-func (c *VSphereCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+func (c *VSphereCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	glog.V(8).Infof("vSphere cloud provider GetCloudGroups not implemented yet")
-	return nil, fmt.Errorf("vSphere cloud provider does not support getting cloud groups at this time.")
+	return nil, fmt.Errorf("vSphere cloud provider does not support getting cloud groups at this time")
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a vSphere instance group.
