@@ -97,8 +97,8 @@ ifndef SHASUMCMD
 endif
 
 .PHONY: kops-install # Install kops to local $GOPATH/bin
-kops-install: gobindata-tool ${BINDATA_TARGETS}
-	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" k8s.io/kops/cmd/kops/
+kops-install: ${BINDATA_TARGETS}
+	go install ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}"  k8s.io/kops/cmd/kops/
 
 .PHONY: channels-install # Install channels to local $GOPATH/bin
 channels-install: ${CHANNELS}
@@ -160,12 +160,10 @@ gobindata-tool: ${GOBINDATA}
 .PHONY: kops-gobindata
 kops-gobindata: gobindata-tool ${BINDATA_TARGETS}
 
-UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/ | egrep -v "upup/models/bindata.go")
-upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
+upup/models/bindata.go: ${GOBINDATA}
 	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
 
-FEDERATION_MODELS_BINDATA_SOURCES:=$(shell find federation/model/ | egrep -v "federation/model/bindata.go")
-federation/model/bindata.go: ${GOBINDATA} ${FEDERATION_MODELS_BINDATA_SOURCES}
+federation/model/bindata.go: ${GOBINDATA}
 	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
 
 # Build in a docker container with golang 1.X
