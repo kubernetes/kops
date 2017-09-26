@@ -61,8 +61,9 @@ type ClusterSpec struct {
 	MasterPublicName string `json:"masterPublicName,omitempty"`
 	// MasterInternalName is the internal DNS name for the master nodes
 	MasterInternalName string `json:"masterInternalName,omitempty"`
-	// The CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
+	// NetworkCIDR is the CIDR used for the AWS VPC Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s network
+	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
 	NetworkCIDR string `json:"networkCIDR,omitempty"`
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
 	NetworkID string `json:"networkID,omitempty"`
@@ -324,8 +325,10 @@ type ClusterSubnetSpec struct {
 	Name string `json:"name,omitempty"`
 	// CIDR is the network cidr of the subnet
 	CIDR string `json:"cidr,omitempty"`
-	// Zone is the zone the subnet resides
+	// Zone is the zone the subnet is in, set for subnets that are zonally scoped
 	Zone string `json:"zone,omitempty"`
+	// Region is the region the subnet is in, set for subnets that are regionally scoped
+	Region string `json:"region,omitempty"`
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
 	// Egress defines the method of traffic egress for this subnet

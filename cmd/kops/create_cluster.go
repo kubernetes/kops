@@ -39,6 +39,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/util/i18n"
@@ -387,16 +388,53 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("unknown authorization mode %q", c.Authorization)
 	}
 
-	if len(c.Zones) != 0 {
-		existingSubnets := make(map[string]*api.ClusterSubnetSpec)
-		for i := range cluster.Spec.Subnets {
-			subnet := &cluster.Spec.Subnets[i]
-			existingSubnets[subnet.Name] = subnet
+	if c.Cloud != "" {
+		cluster.Spec.CloudProvider = c.Cloud
+	}
+
+	allZones := sets.NewString()
+	allZones.Insert(c.Zones...)
+	allZones.Insert(c.MasterZones...)
+
+	if cluster.Spec.CloudProvider == "" {
+		for _, zone := range allZones.List() {
+			cloud, known := fi.GuessCloudForZone(zone)
+			if known {
+				glog.Infof("Inferred --cloud=%s from zone %q", cloud, zone)
+				cluster.Spec.CloudProvider = string(cloud)
+				break
+			}
 		}
-		for _, zoneName := range c.Zones {
+		if cluster.Spec.CloudProvider == "" {
+			return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
+		}
+	}
+
+	if len(c.Zones) == 0 {
+		return fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
+	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+		// On GCE, subnets are regional - we create one per region, not per zone
+		for _, zoneName := range allZones.List() {
+			region, err := gce.ZoneToRegion(zoneName)
+			if err != nil {
+				return err
+			}
+
+			// We create default subnets named the same as the regions
+			subnetName := region
+
+			if findSubnet(cluster, subnetName) == nil {
+				cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
+					Name:   subnetName,
+					Region: region,
+				})
+			}
+		}
+	} else {
+		for _, zoneName := range allZones.List() {
 			// We create default subnets named the same as the zones
 			subnetName := zoneName
-			if existingSubnets[subnetName] == nil {
+			if findSubnet(cluster, subnetName) == nil {
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, api.ClusterSubnetSpec{
 					Name:   subnetName,
 					Zone:   subnetName,
@@ -404,10 +442,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				})
 			}
 		}
-	}
-
-	if len(cluster.Spec.Subnets) == 0 {
-		return fmt.Errorf("must specify at least one zone for the cluster (use --zones)")
 	}
 
 	var masters []*api.InstanceGroup
@@ -424,20 +458,11 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	// The master count is the number of master zones unless explicitly set
 	// We then round-robin around the zones
 	if len(masters) == 0 {
-		var masterSubnets []*api.ClusterSubnetSpec
 		masterCount := c.MasterCount
-		if len(c.MasterZones) != 0 {
-			for _, subnetName := range c.MasterZones {
-				subnet := findSubnet(cluster, subnetName)
-				if subnet == nil {
-					// Should have been caught already
-					return fmt.Errorf("master-zone %q not included in zones", subnetName)
-				}
-				masterSubnets = append(masterSubnets, subnet)
-			}
-
-			if c.MasterCount != 0 && c.MasterCount < int32(len(masterSubnets)) {
-				return fmt.Errorf("specified %d master zones, but also requested %d masters.  If specifying both, the count should match.", len(masterSubnets), c.MasterCount)
+		masterZones := c.MasterZones
+		if len(masterZones) != 0 {
+			if c.MasterCount != 0 && c.MasterCount < int32(len(c.MasterZones)) {
+				return fmt.Errorf("specified %d master zones, but also requested %d masters.  If specifying both, the count should match.", len(masterZones), c.MasterCount)
 			}
 
 			if masterCount == 0 {
@@ -445,9 +470,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				masterCount = int32(len(c.MasterZones))
 			}
 		} else {
-			for i := range cluster.Spec.Subnets {
-				masterSubnets = append(masterSubnets, &cluster.Spec.Subnets[i])
-			}
+			// masterZones not set; default to same as node Zones
+			masterZones = c.Zones
 
 			if masterCount == 0 {
 				// If master count is not specified, default to 1
@@ -455,24 +479,42 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 		}
 
-		if len(masterSubnets) == 0 {
+		if len(masterZones) == 0 {
 			// Should be unreachable
-			return fmt.Errorf("cannot determine master subnets")
+			return fmt.Errorf("cannot determine master zones")
 		}
 
 		for i := 0; i < int(masterCount); i++ {
-			subnet := masterSubnets[i%len(masterSubnets)]
-			name := subnet.Name
-			if int(masterCount) > len(masterSubnets) {
-				name += "-" + strconv.Itoa(1+(i/len(masterSubnets)))
+			zone := masterZones[i%len(masterZones)]
+			name := zone
+			if int(masterCount) > len(masterZones) {
+				name += "-" + strconv.Itoa(1+(i/len(masterZones)))
 			}
 
 			g := &api.InstanceGroup{}
 			g.Spec.Role = api.InstanceGroupRoleMaster
-			g.Spec.Subnets = []string{subnet.Name}
 			g.Spec.MinSize = fi.Int32(1)
 			g.Spec.MaxSize = fi.Int32(1)
 			g.ObjectMeta.Name = "master-" + name
+
+			if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderGCE {
+				region, err := gce.ZoneToRegion(zone)
+				if err != nil {
+					return err
+				}
+				subnet := findSubnet(cluster, region)
+				if subnet == nil {
+					return fmt.Errorf("cannot find subnet for master zone %q (region %q)", zone, region)
+				}
+				g.Spec.Subnets = []string{subnet.Name}
+			} else {
+				subnet := findSubnet(cluster, zone)
+				if subnet == nil {
+					return fmt.Errorf("cannot find subnet for master zone %q", zone)
+				}
+				g.Spec.Subnets = []string{subnet.Name}
+			}
+
 			instanceGroups = append(instanceGroups, g)
 			masters = append(masters, g)
 		}
@@ -613,8 +655,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	if c.Cloud != "" {
-		cluster.Spec.CloudProvider = c.Cloud
-
 		if c.Cloud == "vsphere" {
 			if !featureflag.VSphereCloudProvider.Enabled() {
 				return fmt.Errorf("Feature flag VSphereCloudProvider is not set. Cloud vSphere will not be supported.")
@@ -657,20 +697,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 	if c.KubernetesVersion != "" {
 		cluster.Spec.KubernetesVersion = c.KubernetesVersion
-	}
-
-	if cluster.Spec.CloudProvider == "" {
-		for _, subnet := range cluster.Spec.Subnets {
-			cloud, known := fi.GuessCloudForZone(subnet.Zone)
-			if known {
-				glog.Infof("Inferred --cloud=%s from zone %q", cloud, subnet.Zone)
-				cluster.Spec.CloudProvider = string(cloud)
-				break
-			}
-		}
-		if cluster.Spec.CloudProvider == "" {
-			return fmt.Errorf("unable to infer CloudProvider from Zones (is there a typo in --zones?)")
-		}
 	}
 
 	cluster.Spec.Networking = &api.NetworkingSpec{}
