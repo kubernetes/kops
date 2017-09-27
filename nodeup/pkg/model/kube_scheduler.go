@@ -18,13 +18,16 @@ package model
 
 import (
 	"fmt"
+	"strings"
+
+	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
+
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/v1"
-	"k8s.io/kops/pkg/flagbuilder"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 // KubeSchedulerBuilder install kube-scheduler
@@ -34,6 +37,7 @@ type KubeSchedulerBuilder struct {
 
 var _ fi.ModelBuilder = &KubeSchedulerBuilder{}
 
+// Build is responsible for building the manifest for the kube-scheduler
 func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
@@ -50,58 +54,50 @@ func (b *KubeSchedulerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error marshalling pod to yaml: %v", err)
 		}
 
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:     "/etc/kubernetes/manifests/kube-scheduler.manifest",
 			Contents: fi.NewBytesResource(manifest),
 			Type:     nodetasks.FileType_File,
-		}
-		c.AddTask(t)
+		})
 	}
 
-	// Add kubeconfig
 	{
 		kubeconfig, err := b.buildPKIKubeconfig("kube-scheduler")
 		if err != nil {
 			return err
 		}
-		t := &nodetasks.File{
+
+		c.AddTask(&nodetasks.File{
 			Path:     "/var/lib/kube-scheduler/kubeconfig",
 			Contents: fi.NewStringResource(kubeconfig),
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0400"),
-		}
-		c.AddTask(t)
+		})
 	}
 
-	// Touch log file, so that docker doesn't create a directory instead
 	{
-		t := &nodetasks.File{
+		c.AddTask(&nodetasks.File{
 			Path:        "/var/log/kube-scheduler.log",
 			Contents:    fi.NewStringResource(""),
 			Type:        nodetasks.FileType_File,
 			Mode:        s("0400"),
 			IfNotExists: true,
-		}
-		c.AddTask(t)
+		})
 	}
 
 	return nil
 }
 
+// buildPod is responsible for constructing the pod specification
 func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 	c := b.Cluster.Spec.KubeScheduler
 
-	flags, err := flagbuilder.BuildFlags(c)
+	flags, err := flagbuilder.BuildFlagsList(c)
 	if err != nil {
 		return nil, fmt.Errorf("error building kube-scheduler flags: %v", err)
 	}
-
 	// Add kubeconfig flag
-	flags += " --kubeconfig=" + "/var/lib/kube-scheduler/kubeconfig"
-
-	redirectCommand := []string{
-		"/bin/sh", "-c", "/usr/local/bin/kube-scheduler " + flags + " 1>>/var/log/kube-scheduler.log 2>&1",
-	}
+	flags = append(flags, "--kubeconfig="+"/var/lib/kube-scheduler/kubeconfig")
 
 	pod := &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
@@ -123,12 +119,11 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 	container := &v1.Container{
 		Name:  "kube-scheduler",
 		Image: c.Image,
-		Resources: v1.ResourceRequirements{
-			Requests: v1.ResourceList{
-				v1.ResourceCPU: resource.MustParse("100m"),
-			},
+		Command: []string{
+			"/bin/sh", "-c",
+			"/usr/local/bin/kube-scheduler " + strings.Join(sortedStrings(flags), " ") + " 2>&1 | /bin/tee -a /var/log/kube-scheduler.log",
 		},
-		Command: redirectCommand,
+		Env: getProxyEnvVars(b.Cluster.Spec.EgressProxy),
 		LivenessProbe: &v1.Probe{
 			Handler: v1.Handler{
 				HTTPGet: &v1.HTTPGetAction{
@@ -140,11 +135,13 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 			InitialDelaySeconds: 15,
 			TimeoutSeconds:      15,
 		},
-		Env: getProxyEnvVars(b.Cluster.Spec.EgressProxy),
+		Resources: v1.ResourceRequirements{
+			Requests: v1.ResourceList{
+				v1.ResourceCPU: resource.MustParse("100m"),
+			},
+		},
 	}
-
 	addHostPathMapping(pod, container, "varlibkubescheduler", "/var/lib/kube-scheduler")
-
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log").ReadOnly = false
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)

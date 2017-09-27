@@ -61,8 +61,7 @@ type ClusterSpec struct {
 	MasterPublicName string `json:"masterPublicName,omitempty"`
 	// MasterInternalName is the internal DNS name for the master nodes
 	MasterInternalName string `json:"masterInternalName,omitempty"`
-	// The CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
-	// This is a real CIDR, not the internal k8s network
+	// NetworkCIDR is used by the AWS VPC / GCE Network, or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network
 	NetworkCIDR string `json:"networkCIDR,omitempty"`
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
 	NetworkID string `json:"networkID,omitempty"`
@@ -144,11 +143,8 @@ type ClusterSpec struct {
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
 	// Hooks for custom actions e.g. on first installation
 	Hooks []HookSpec `json:"hooks,omitempty"`
-	// Alternative locations for files and containers
-	// This API component is under construction, will remove this comment
-	// once this API is fully functional.
+	// Assets is alternative locations for files and containers; the API under construction, will remove this comment once this API is fully functional.
 	Assets *Assets `json:"assets,omitempty"`
-
 	// IAM field adds control over the IAM security policies applied to resources
 	IAM *IAMSpec `json:"iam,omitempty"`
 	// EncryptionConfig controls if encryption is enabled
@@ -169,9 +165,12 @@ type FileAssetSpec struct {
 	IsBase64 bool `json:"isBase64,omitempty"`
 }
 
+// Assets defined the privately hosted assets
 type Assets struct {
+	// ContainerRegistry is a url for to a docker registry
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
-	FileRepository    *string `json:"fileRepository,omitempty"`
+	// FileRepository is the url for a private file serving repository
+	FileRepository *string `json:"fileRepository,omitempty"`
 }
 
 // IAMSpec adds control over the IAM security policies applied to resources
