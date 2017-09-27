@@ -73,6 +73,9 @@ func (e *ForwardingRule) Find(c *fi.Context) (*ForwardingRule, error) {
 		actual.IPAddress = address
 	}
 
+	// Ignore "system" fields
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 
