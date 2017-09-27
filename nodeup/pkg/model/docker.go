@@ -281,6 +281,127 @@ var dockerVersions = []dockerVersion{
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.6-1.el7.centos.noarch.rpm",
 		Hash:          "9a6ee0d631ca911b6927450a3c396e9a5be75047",
 	},
+
+	// 1.13.1 - k8s 1.8
+
+	// 1.13.1 - Jessie
+	{
+		DockerVersion: "1.13.1",
+		Name:          "docker-engine",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "1.13.1-0~debian-jessie",
+		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~debian-jessie_amd64.deb",
+		Hash:          "1d3370549e32ea13b2755b2db8dbc82b2b787ece",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
+	},
+
+	// 1.13.1 - Jessie on ARM
+	{
+		DockerVersion: "1.13.1",
+		Name:          "docker-engine",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureArm},
+		Version:       "1.13.1-0~debian-jessie",
+		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~debian-jessie_armhf.deb",
+		Hash:          "a3f252c5fbb2d3266be611bee50e1f331ff8d05f",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 1.13.1 - Xenial
+	{
+		DockerVersion: "1.13.1",
+		Name:          "docker-engine",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "1.13.1-0~ubuntu-xenial",
+		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~ubuntu-xenial_amd64.deb",
+		Hash:          "d12cbd686f44536c679a03cf0137df163f0bba5f",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		// Depends: iptables, init-system-helpers (>= 1.18~), lsb-base (>= 4.1+Debian11ubuntu7), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
+	},
+
+	// 1.13.1 - Centos / Rhel7 (two packages)
+	{
+		DockerVersion: "1.13.1",
+		Name:          "docker-engine",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "1.13.1",
+		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.13.1-1.el7.centos.x86_64.rpm",
+		Hash:          "b18f7fd8057665e7d2871d29640e214173f70fe1",
+		Dependencies:  []string{"libtool-ltdl", "libseccomp"},
+	},
+	{
+		DockerVersion: "1.13.1",
+		Name:          "docker-engine-selinux",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "1.13.1",
+		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.13.1-1.el7.centos.noarch.rpm",
+		Hash:          "948c518a610af631fa98aa32d9bcd43e9ddd5ebc",
+	},
+
+	// 17.03.2 - k8s 1.8
+
+	// 17.03.2 - Jessie
+	{
+		DockerVersion: "17.03.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.03.2~ce-0~debian-jessie",
+		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-jessie_amd64.deb",
+		Hash:          "a7ac54aaa7d33122ca5f7a2df817cbefb5cdbfc7",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 17.03.2 - Jessie on ARM
+	{
+		DockerVersion: "17.03.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureArm},
+		Version:       "17.03.2~ce-0~debian-jessie",
+		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/armhf/docker-ce_17.03.2~ce-0~debian-jessie_armhf.deb",
+		Hash:          "71e425b83ce0ef49d6298d61e61c4efbc76b9c65",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 17.03.2 - Xenial
+	{
+		DockerVersion: "17.03.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.03.2~ce-0~ubuntu-xenial",
+		Source:        "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.2~ce-0~ubuntu-xenial_amd64.deb",
+		Hash:          "4dcee1a05ec592e8a76e53e5b464ea43085a2849",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 17.03.2 - Centos / Rhel7 (two packages)
+	{
+		DockerVersion: "17.03.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.03.2.ce",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm",
+		Hash:          "494ca888f5b1553f93b9d9a5dad4a67f76cf9eb5",
+		Dependencies:  []string{"libtool-ltdl", "libseccomp"},
+	},
+	{
+		DockerVersion: "17.03.2",
+		Name:          "docker-ce-selinux",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.03.2.ce",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm",
+		Hash:          "4659c937b66519c88ef2a82a906bb156db29d191",
+	},
 }
 
 func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro distros.Distribution) bool {
