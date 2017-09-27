@@ -29,6 +29,7 @@ type Cluster struct {
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
 
+// ClusterList is a list of clusters
 type ClusterList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
@@ -36,52 +37,42 @@ type ClusterList struct {
 	Items []Cluster `json:"items"`
 }
 
+// ClusterSpec defines the configuration for a cluster
 type ClusterSpec struct {
 	// The Channel we are following
 	Channel string `json:"channel,omitempty"`
-
 	// ConfigBase is the path where we store configuration for the cluster
 	// This might be different that the location when the cluster spec itself is stored,
 	// both because this must be accessible to the cluster,
 	// and because it might be on a different cloud or storage system (etcd vs S3)
 	ConfigBase string `json:"configBase,omitempty"`
-
 	// The CloudProvider to use (aws or gce)
 	CloudProvider string `json:"cloudProvider,omitempty"`
-
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
-
 	// Configuration of subnets we are targeting
 	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
-
 	// Project is the cloud project we should use, required on GCE
 	Project string `json:"project,omitempty"`
-
 	// MasterPublicName is the external DNS name for the master nodes
 	MasterPublicName string `json:"masterPublicName,omitempty"`
 	// MasterInternalName is the internal DNS name for the master nodes
 	MasterInternalName string `json:"masterInternalName,omitempty"`
-
 	// The CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s network
 	NetworkCIDR string `json:"networkCIDR,omitempty"`
-
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
 	NetworkID string `json:"networkID,omitempty"`
-
 	// Topology defines the type of network topology to use on the cluster - default public
 	// This is heavily weighted towards AWS for the time being, but should also be agnostic enough
 	// to port out to GCE later if needed
 	Topology *TopologySpec `json:"topology,omitempty"`
-
 	// SecretStore is the VFS path to where secrets are stored
 	SecretStore string `json:"secretStore,omitempty"`
 	// KeyStore is the VFS path to where SSL keys and certificates are stored
 	KeyStore string `json:"keyStore,omitempty"`
 	// ConfigStore is the VFS path to where the configuration (Cluster, InstanceGroups etc) is stored
 	ConfigStore string `json:"configStore,omitempty"`
-
 	// DNSZone is the DNS zone we should use when configuring DNS
 	// This is because some clouds let us define a managed zone foo.bar, and then have
 	// kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone.
@@ -89,41 +80,26 @@ type ClusterSpec struct {
 	// Note that DNSZone can either by the host name of the zone (containing dots),
 	// or can be an identifier for the zone.
 	DNSZone string `json:"dnsZone,omitempty"`
-
 	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)
 	ClusterDNSDomain string `json:"clusterDNSDomain,omitempty"`
-
-	//InstancePrefix                string `json:",omitempty"`
-
-	// ClusterName is a unique identifier for the cluster, and currently must be a DNS name
-	//ClusterName       string `json:",omitempty"`
-
-	//ClusterIPRange                string `json:",omitempty"`
-
 	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty"`
 	//MasterIPRange                 string `json:",omitempty"`
-
 	// NonMasqueradeCIDR is the CIDR for the internal k8s network (on which pods & services live)
 	// It cannot overlap ServiceClusterIPRange
 	NonMasqueradeCIDR string `json:"nonMasqueradeCIDR,omitempty"`
-
 	// SSHAccess determines the permitted access to SSH
+	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
 	SSHAccess []string `json:"sshAccess,omitempty"`
-
 	// NodePortAccess is a list of the CIDRs that can access the node ports range (30000-32767).
 	NodePortAccess []string `json:"nodePortAccess,omitempty"`
-
 	// HTTPProxy defines connection information to support use of a private cluster behind an forward HTTP Proxy
 	EgressProxy *EgressProxySpec `json:"egressProxy,omitempty"`
-
 	// SSHKeyName specifies a preexisting SSH key to use
 	SSHKeyName string `json:"sshKeyName,omitempty"`
-
 	// KubernetesAPIAccess determines the permitted access to the API endpoints (master HTTPS)
 	// Currently only a single CIDR is supported (though a richer grammar could be added in future)
 	KubernetesAPIAccess []string `json:"kubernetesApiAccess,omitempty"`
-
 	// IsolatesMasters determines whether we should lock down masters so that they are not on the pod network.
 	// true is the kube-up behaviour, but it is very surprising: it means that daemonsets only work on the master
 	// if they have hostNetwork=true.
@@ -132,19 +108,15 @@ type ClusterSpec struct {
 	//  * run kube-proxy on the master
 	//  * enable debugging handlers on the master, so kubectl logs works
 	IsolateMasters *bool `json:"isolateMasters,omitempty"`
-
 	// UpdatePolicy determines the policy for applying upgrades automatically.
 	// Valid values:
 	//   'external' do not apply updates automatically - they are applied manually or by an external system
 	//   missing: default policy (currently OS security upgrades that do not require a reboot)
 	UpdatePolicy *string `json:"updatePolicy,omitempty"`
-
 	// Additional policies to add for roles
 	AdditionalPolicies *map[string]string `json:"additionalPolicies,omitempty"`
-
 	// A collection of files assets for deployed cluster wide
 	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
-
 	// EtcdClusters stores the configuration for each cluster
 	EtcdClusters []*EtcdClusterSpec `json:"etcdClusters,omitempty"`
 
@@ -174,7 +146,6 @@ type ClusterSpec struct {
 	Hooks []HookSpec `json:"hooks,omitempty"`
 	// Alternative locations for files and containers
 	Assets *Assets `json:"assets,omitempty"`
-
 	// IAM field adds control over the IAM security policies applied to resources
 	IAM *IAMSpec `json:"iam,omitempty"`
 	// EncryptionConfig holds the encryption config
@@ -195,9 +166,12 @@ type FileAssetSpec struct {
 	IsBase64 bool `json:"isBase64,omitempty"`
 }
 
+// Assets defined the privately hosted assets
 type Assets struct {
+	// ContainerRegistry is a url for to a docker registry
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
-	FileRepository    *string `json:"fileRepository,omitempty"`
+	// FileRepository is the url for a private file serving repository
+	FileRepository *string `json:"fileRepository,omitempty"`
 }
 
 // IAMSpec adds control over the IAM security policies applied to resources
