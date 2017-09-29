@@ -45,6 +45,9 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 DNS_CONTROLLER_TAG=1.7.1
 
 KOPS_RELEASE_VERSION = 1.8.0-alpha.1
+# This is the previously released version used for integration testing, so that we do not get kops
+# upgrade messages
+KOPS_RELEASE_TEST_VERSION = 1.7.0
 KOPS_CI_VERSION      = 1.8.0-alpha.2
 
 # kops local location
@@ -201,7 +204,7 @@ hooks: # Install Git hooks
 
 .PHONY: test
 test: ${BINDATA_TARGETS}  # Run tests locally
-	go test -v ${TESTABLE_PACKAGES}
+	go test -ldflags "-X k8s.io/kops/cmd/kops.TestVersion=${KOPS_RELEASE_TEST_VERSION} ${EXTRA_LDFLAGS}"  -v ${TESTABLE_PACKAGES}
 
 ${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
