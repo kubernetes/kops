@@ -67,9 +67,9 @@ type InstanceGroupSpec struct {
 	// Image is the instance instance (ami etc) we should use
 	Image string `json:"image,omitempty"`
 	// MinSize is the minimum size of the pool
-	MinSize *int32 `json:"minSize,omitempty"`
+	MinSize *int32 `json:"minSize,omitempty"` // TODO change var type to int64 to folow  aws-sdk/asg/Group
 	// MaxSize is the maximum size of the pool
-	MaxSize *int32 `json:"maxSize,omitempty"`
+	MaxSize *int32 `json:"maxSize,omitempty"` // TODO change var type to int64 to folow  aws-sdk/asg/Group
 	// MachineType is the instance class
 	MachineType string `json:"machineType,omitempty"`
 	// RootVolumeSize is the size of the EBS root volume to use, in GB

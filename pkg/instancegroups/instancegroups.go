@@ -473,7 +473,7 @@ func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
 type ScaleInstanceGroup struct {
 	Cluster         *api.Cluster
 	Cloud           fi.Cloud
-	DesiredReplicas *int64
+	DesiredReplicas int64
 
 	Clientset simple.Clientset
 }
@@ -483,21 +483,38 @@ func (c *ScaleInstanceGroup) ScaleInstanceGroup(group *api.InstanceGroup) error 
 	cig := groups[group.ObjectMeta.Name]
 
 	if cig == nil {
-		glog.Warningf("AutoScalingGroup %q not found in cloud - skipping scaling", group.ObjectMeta.Name)
-	} else {
-		if len(groups) != 1 {
-			return fmt.Errorf("Multiple InstanceGroup resources found in cloud")
-		}
+		return fmt.Errorf("AutoScalingGroup %q not found in cloud - skipping scaling", group.ObjectMeta.Name)
+	}
 
-		glog.Infof("Scaling autoscaling group %q from %v to %#v", group.ObjectMeta.Name, cig.asg.MaxSize, c.DesiredReplicas)
+	if len(groups) != 1 {
+		return fmt.Errorf("Multiple InstanceGroup resources found in cloud")
+	}
 
-		cig.asg.MaxSize = c.DesiredReplicas
-		cig.asg.DesiredCapacity = c.DesiredReplicas
+	cig.asg.DesiredCapacity = &c.DesiredReplicas
+	glog.Infof("Scaling InstanceGroup %q instances size to: %v", group.ObjectMeta.Name, c.DesiredReplicas)
 
-		err = cig.Scale(c.Cloud)
-		if err != nil {
-			return fmt.Errorf("error scaling InstanceGroup: %v", err)
-		}
+	// decrease max cluster size
+	if c.DesiredReplicas < *cig.asg.MinSize {
+		glog.Infof("Changing min instances from %v to %v", *cig.asg.MinSize, c.DesiredReplicas)
+		cig.asg.MinSize = &c.DesiredReplicas
+		group.Spec.MinSize = fi.Int32(int32(c.DesiredReplicas))
+	}
+
+	// increasing max cluster size
+	if c.DesiredReplicas > *cig.asg.MaxSize {
+		glog.Infof("Changing max instances from %v to %v", *cig.asg.MaxSize, c.DesiredReplicas)
+		cig.asg.MaxSize = &c.DesiredReplicas
+		group.Spec.MaxSize = fi.Int32(int32(c.DesiredReplicas))
+	}
+
+	err = cig.Scale(c.Cloud)
+	if err != nil {
+		return fmt.Errorf("error scaling InstanceGroup: %v", err)
+	}
+
+	_, err = c.Clientset.InstanceGroupsFor(c.Cluster).Update(group)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -513,6 +530,7 @@ func (g *CloudInstanceGroup) Scale(cloud fi.Cloud) error {
 			AutoScalingGroupName: g.asg.AutoScalingGroupName,
 			DesiredCapacity:      g.asg.DesiredCapacity,
 			MaxSize:              g.asg.MaxSize,
+			MinSize:              g.asg.MinSize,
 		}
 		_, err := c.Autoscaling().UpdateAutoScalingGroup(request)
 
@@ -520,7 +538,6 @@ func (g *CloudInstanceGroup) Scale(cloud fi.Cloud) error {
 			return fmt.Errorf("error scaling autoscaling group %q: %v", asgName, err)
 		}
 
-		// TODO it's important to wait to this command apply or just print a message to the user is enough?
 	}
 
 	return nil

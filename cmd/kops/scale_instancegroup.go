@@ -19,7 +19,9 @@ package main
 import (
 	"fmt"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
@@ -31,6 +33,11 @@ type ScaleIgCmd struct {
 	Replicas int64
 }
 
+const (
+	defReplicas = -1
+)
+
+// TODO add ability to add-nodes rather than scale
 var (
 	//TODO add comments
 	scale_instancegroup_long = templates.LongDesc(i18n.T(`
@@ -71,7 +78,7 @@ func init() {
 		},
 	}
 
-	cmd.Flags().Int64Var(&scaleIg.Replicas, "replicas", 0, i18n.T("The new desired number of replicas. Required."))
+	cmd.Flags().Int64Var(&scaleIg.Replicas, "replicas", defReplicas, i18n.T("The new desired number of replicas. Required."))
 
 	scaleCmd.AddCommand(cmd)
 }
@@ -84,16 +91,20 @@ func (c *ScaleIgCmd) Run(args []string) error {
 		return err
 	}
 
+	if groupName == "" {
+		return fmt.Errorf("name is required")
+	}
+
+	if c.Replicas == defReplicas {
+		return fmt.Errorf("argument --replicas is required")
+	}
+
 	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	if groupName == "" {
-		return fmt.Errorf("name is required")
-	}
-
-	igGroup, err := clientset.InstanceGroups(cluster.ObjectMeta.Name).Get(groupName)
+	igGroup, err := clientset.InstanceGroupsFor(cluster).Get(groupName, metav1.GetOptions{})
 	if err != nil {
 		return fmt.Errorf("error reading InstanceGroup %q: %v", groupName, err)
 	}
@@ -101,22 +112,19 @@ func (c *ScaleIgCmd) Run(args []string) error {
 		return fmt.Errorf("InstanceGroup %q not found", groupName)
 	}
 
-	_, err = clientset.InstanceGroups(cluster.ObjectMeta.Name).Update(igGroup)
-	if err != nil {
-		return err
-	}
-
 	cloud, err := cloudup.BuildCloud(cluster)
 	if err != nil {
 		return err
 	}
 
-	s := &instancegroups.ScaleInstanceGroup{Cluster: cluster, Cloud: cloud, DesiredReplicas: &c.Replicas}
-	err = s.ScaleInstanceGroup(igGroup)
+	s := &instancegroups.ScaleInstanceGroup{Cluster: cluster, Cloud: cloud,
+		Clientset: clientset, DesiredReplicas: c.Replicas}
 
-	if err != nil {
+	if err = s.ScaleInstanceGroup(igGroup); err != nil {
 		return err
 	}
+
+	glog.Infof("Successful scaled! It will take few minutes to complete this operation...")
 
 	return nil
 }

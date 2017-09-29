@@ -17,14 +17,15 @@ limitations under the License.
 package simple
 
 import (
+	"net/url"
+	"strings"
+
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/util/pkg/vfs"
-	"net/url"
-	"strings"
 )
 
 type Clientset interface {

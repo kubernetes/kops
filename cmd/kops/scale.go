@@ -24,10 +24,11 @@ import (
 
 var (
 	//TODO add comments
-	scale_long = templates.LongDesc(i18n.T(`long description of scale
+	scale_long = templates.LongDesc(i18n.T(`Scale resources in/out
 	`))
 
-	scale_example = templates.Examples(i18n.T(`example of scale
+	scale_example = templates.Examples(i18n.T(`kops scale ig --name $NAME nodes --replicas=2
+kops scale ig --name $NAME nodes --replicas=0
 	`))
 )
 
