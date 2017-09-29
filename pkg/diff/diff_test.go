@@ -163,7 +163,6 @@ F`
 		// We do need to cleanup, as otherwise we get some spurious changes on complex diffs
 		diffs = dmp.DiffCleanupSemantic(diffs)
 
-		t.Logf("diffs %v", diffs)
 	}
 
 	actual := FormatDiff(l, r)

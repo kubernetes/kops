@@ -17,7 +17,6 @@ limitations under the License.
 package fi
 
 import (
-	"fmt"
 	"math/big"
 	"math/rand"
 	"testing"
@@ -35,7 +34,6 @@ func TestBigInt_Format(t *testing.T) {
 		s1 := r.String()
 		s2 := r.Text(10)
 
-		fmt.Printf("%s\n", s1)
 		if s1 != s2 {
 			t.Fatalf("%s not the same as %s", s1, s2)
 		}
