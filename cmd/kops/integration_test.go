@@ -73,7 +73,7 @@ func TestComplex(t *testing.T) {
 func TestMinimalCloudformation(t *testing.T) {
 	//runTestCloudformation(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha0", false)
 	//runTestCloudformation(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha1", false)
-	runTestCloudformation(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha2", false)
+	runTestCloudformation(t, "minimal.example.com", "../../tests/integration/cloudformation", "v1alpha2", false)
 }
 
 // TestMinimal_141 runs the test on a configuration from 1.4.1 release
