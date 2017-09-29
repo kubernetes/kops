@@ -24,7 +24,7 @@ spec:
     name: events
   iam:
     legacy: true
-  kubernetesVersion: v1.4.6
+  kubernetesVersion: v1.4.12
   masterInternalName: api.internal.minimal.example.com
   masterPublicName: api.minimal.example.com
   networkCIDR: 172.20.0.0/16
