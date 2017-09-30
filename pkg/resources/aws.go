@@ -232,71 +232,6 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 	return nil
 }
 
-// FindAutoscalingGroups finds autoscaling groups matching the specified tags
-// This isn't entirely trivial because autoscaling doesn't let us filter with as much precision as we would like
-func FindAutoscalingGroups(cloud awsup.AWSCloud, tags map[string]string) ([]*autoscaling.Group, error) {
-	var asgs []*autoscaling.Group
-
-	glog.V(2).Infof("Listing all Autoscaling groups matching cluster tags")
-	var asgNames []*string
-	{
-		var asFilters []*autoscaling.Filter
-		for _, v := range tags {
-			// Not an exact match, but likely the best we can do
-			asFilters = append(asFilters, &autoscaling.Filter{
-				Name:   aws.String("value"),
-				Values: []*string{aws.String(v)},
-			})
-		}
-		request := &autoscaling.DescribeTagsInput{
-			Filters: asFilters,
-		}
-
-		err := cloud.Autoscaling().DescribeTagsPages(request, func(p *autoscaling.DescribeTagsOutput, lastPage bool) bool {
-			for _, t := range p.Tags {
-				switch *t.ResourceType {
-				case "auto-scaling-group":
-					asgNames = append(asgNames, t.ResourceId)
-				default:
-					glog.Warningf("Unknown resource type: %v", *t.ResourceType)
-
-				}
-			}
-			return true
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error listing autoscaling cluster tags: %v", err)
-		}
-	}
-
-	if len(asgNames) != 0 {
-		request := &autoscaling.DescribeAutoScalingGroupsInput{
-			AutoScalingGroupNames: asgNames,
-		}
-		err := cloud.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
-			for _, asg := range p.AutoScalingGroups {
-				if !MatchesAsgTags(tags, asg.Tags) {
-					// We used an inexact filter above
-					continue
-				}
-				// Check for "Delete in progress" (the only use of .Status)
-				if asg.Status != nil {
-					glog.Warningf("Skipping ASG %v (which matches tags): %v", *asg.AutoScalingGroupARN, *asg.Status)
-					continue
-				}
-				asgs = append(asgs, asg)
-			}
-			return true
-		})
-		if err != nil {
-			return nil, fmt.Errorf("error listing autoscaling groups: %v", err)
-		}
-
-	}
-
-	return asgs, nil
-}
-
 // FindAutoscalingLaunchConfiguration finds an AWS launch configuration given its name
 func FindAutoscalingLaunchConfiguration(cloud awsup.AWSCloud, name string) (*autoscaling.LaunchConfiguration, error) {
 	glog.V(2).Infof("Retrieving Autoscaling LaunchConfigurations %q", name)
@@ -323,24 +258,6 @@ func FindAutoscalingLaunchConfiguration(cloud awsup.AWSCloud, name string) (*aut
 		return nil, fmt.Errorf("Found multiple LaunchConfigurations with name %q", name)
 	}
 	return results[0], nil
-}
-
-func MatchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
-	for k, v := range tags {
-		found := false
-		for _, a := range actual {
-			if aws.StringValue(a.Key) == k {
-				if aws.StringValue(a.Value) == v {
-					found = true
-					break
-				}
-			}
-		}
-		if !found {
-			return false
-		}
-	}
-	return true
 }
 
 func matchesElbTags(tags map[string]string, actual []*elb.Tag) bool {
@@ -1365,7 +1282,7 @@ func ListAutoScalingGroups(cloud fi.Cloud, clusterName string) ([]*tracker.Resou
 
 	tags := c.Tags()
 
-	asgs, err := FindAutoscalingGroups(c, tags)
+	asgs, err := awsup.FindAutoscalingGroups(c, tags)
 	if err != nil {
 		return nil, err
 	}
