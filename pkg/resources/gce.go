@@ -130,58 +130,10 @@ type clusterDiscoveryGCE struct {
 	zones             []string
 }
 
-// findInstanceTemplates finds all instance templates that are associated with the current cluster
-// It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
-func (d *clusterDiscoveryGCE) findInstanceTemplates() ([]*compute.InstanceTemplate, error) {
-	if d.instanceTemplates != nil {
-		return d.instanceTemplates, nil
-	}
-
-	c := d.gceCloud
-
-	//clusterTag := gce.SafeClusterName(strings.TrimSpace(d.clusterName))
-
-	findClusterName := strings.TrimSpace(d.clusterName)
-
-	var matches []*compute.InstanceTemplate
-
-	ctx := context.Background()
-
-	err := c.Compute().InstanceTemplates.List(c.Project()).Pages(ctx, func(page *compute.InstanceTemplateList) error {
-		for _, t := range page.Items {
-			match := false
-			for _, item := range t.Properties.Metadata.Items {
-				if item.Key == "cluster-name" {
-					if strings.TrimSpace(item.Value) == findClusterName {
-						match = true
-					} else {
-						match = false
-						break
-					}
-				}
-			}
-
-			if !match {
-				continue
-			}
-
-			matches = append(matches, t)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error listing instance groups: %v", err)
-	}
-
-	d.instanceTemplates = matches
-
-	return matches, nil
-}
-
 func (d *clusterDiscoveryGCE) listGCEInstanceTemplates() ([]*tracker.Resource, error) {
 	var resourceTrackers []*tracker.Resource
 
-	templates, err := d.findInstanceTemplates()
+	templates, err := d.gceCloud.FindInstanceTemplates(d.clusterName)
 	if err != nil {
 		return nil, err
 	}
@@ -231,7 +183,7 @@ func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*tracke
 
 	instanceTemplates := make(map[string]*compute.InstanceTemplate)
 	{
-		templates, err := d.findInstanceTemplates()
+		templates, err := d.gceCloud.FindInstanceTemplates(d.clusterName)
 		if err != nil {
 			return nil, err
 		}
