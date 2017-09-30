@@ -343,7 +343,7 @@ resource "google_compute_instance_template" "master-us-test1-a-ha-gce-example-co
     source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
     mode         = "READ_WRITE"
     disk_type    = "pd-standard"
-    disk_size_gb = 100
+    disk_size_gb = 64
   }
 
   network_interface = {
@@ -382,7 +382,7 @@ resource "google_compute_instance_template" "master-us-test1-b-ha-gce-example-co
     source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
     mode         = "READ_WRITE"
     disk_type    = "pd-standard"
-    disk_size_gb = 100
+    disk_size_gb = 64
   }
 
   network_interface = {
@@ -421,7 +421,7 @@ resource "google_compute_instance_template" "master-us-test1-c-ha-gce-example-co
     source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
     mode         = "READ_WRITE"
     disk_type    = "pd-standard"
-    disk_size_gb = 100
+    disk_size_gb = 64
   }
 
   network_interface = {
@@ -460,7 +460,7 @@ resource "google_compute_instance_template" "nodes-ha-gce-example-com" {
     source_image = "https://www.googleapis.com/compute/v1/projects/cos-cloud/global/images/cos-stable-57-9202-64-0"
     mode         = "READ_WRITE"
     disk_type    = "pd-standard"
-    disk_size_gb = 100
+    disk_size_gb = 128
   }
 
   network_interface = {
