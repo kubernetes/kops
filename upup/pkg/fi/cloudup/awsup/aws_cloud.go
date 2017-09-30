@@ -429,8 +429,6 @@ func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscali
 		}
 	}
 
-	n.MarkIsReady()
-
 	return n, nil
 }
 
