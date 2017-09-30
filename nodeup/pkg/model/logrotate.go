@@ -35,17 +35,14 @@ type LogrotateBuilder struct {
 var _ fi.ModelBuilder = &LogrotateBuilder{}
 
 func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Distribution == distros.DistributionCoreOS {
-		glog.Infof("Detected CoreOS; won't install logrotate")
-		return nil
-	}
-
 	if b.Distribution == distros.DistributionContainerOS {
 		glog.Infof("Detected ContainerOS; won't install logrotate")
 		return nil
+	} else if b.Distribution == distros.DistributionCoreOS {
+		glog.Infof("Detected CoreOS; won't install logrotate")
+	} else {
+		c.AddTask(&nodetasks.Package{Name: "logrotate"})
 	}
-
-	c.AddTask(&nodetasks.Package{Name: "logrotate"})
 
 	k8sVersion, err := util.ParseKubernetesVersion(b.Cluster.Spec.KubernetesVersion)
 	if err != nil || k8sVersion == nil {
