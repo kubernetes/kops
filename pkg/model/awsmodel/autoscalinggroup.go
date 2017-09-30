@@ -44,15 +44,19 @@ type AutoscalingGroupModelBuilder struct {
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	var err error
 	for _, ig := range b.InstanceGroups {
 		name := b.AutoscalingGroupName(ig)
 
 		// LaunchConfiguration
 		var launchConfiguration *awstasks.LaunchConfiguration
 		{
-			volumeSize, err := defaults.FindDefaultVolumeSize(fi.Int32Value(ig.Spec.RootVolumeSize), ig.Spec.Role)
-			if err != nil {
-				return fmt.Errorf("this case should not get hit, kops.Role not found %s", ig.Spec.Role)
+			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
+			if volumeSize == 0 {
+				volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+				if err != nil {
+					return err
+				}
 			}
 			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
 			volumeIops := fi.Int32Value(ig.Spec.RootVolumeIops)
