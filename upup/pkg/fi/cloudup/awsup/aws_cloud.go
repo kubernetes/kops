@@ -303,7 +303,7 @@ func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.In
 	nodeMap := cloudinstances.GetNodeMap(nodes)
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	asgs, err := c.FindAutoscalingGroups()
+	asgs, err := FindAutoscalingGroups(c, c.Tags())
 	if err != nil {
 		return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
 	}
@@ -321,7 +321,7 @@ func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.In
 			continue
 		}
 
-		groups[instancegroup.ObjectMeta.Name], err = c.awsBuildCloudInstanceGroup(instancegroup, asg, nodeMap)
+		groups[instancegroup.ObjectMeta.Name], err = awsBuildCloudInstanceGroup(c, instancegroup, asg, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
 		}
@@ -331,14 +331,12 @@ func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.In
 
 }
 
-// TODO move out of resources
-
 // FindAutoscalingGroups finds autoscaling groups matching the specified tags
 // This isn't entirely trivial because autoscaling doesn't let us filter with as much precision as we would like
-func (c *awsCloudImplementation) FindAutoscalingGroups() ([]*autoscaling.Group, error) {
+func FindAutoscalingGroups(c AWSCloud, tags map[string]string) ([]*autoscaling.Group, error) {
 	var asgs []*autoscaling.Group
+
 	glog.V(2).Infof("Listing all Autoscaling groups matching cluster tags")
-	tags := c.Tags()
 	var asgNames []*string
 	{
 		var asFilters []*autoscaling.Filter
@@ -376,7 +374,7 @@ func (c *awsCloudImplementation) FindAutoscalingGroups() ([]*autoscaling.Group, 
 		}
 		err := c.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
 			for _, asg := range p.AutoScalingGroups {
-				if !MatchesAsgTags(tags, asg.Tags) {
+				if !matchesAsgTags(tags, asg.Tags) {
 					// We used an inexact filter above
 					continue
 				}
@@ -398,8 +396,8 @@ func (c *awsCloudImplementation) FindAutoscalingGroups() ([]*autoscaling.Group, 
 	return asgs, nil
 }
 
-// MatchesAsgTags is used to filter an asg by tags
-func MatchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
+// matchesAsgTags is used to filter an asg by tags
+func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
@@ -417,7 +415,7 @@ func MatchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription
 	return true
 }
 
-func (c *awsCloudImplementation) awsBuildCloudInstanceGroup(ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
 	newLaunchConfigName := aws.StringValue(g.LaunchConfigurationName)
 	n, err := cloudinstances.NewCloudInstanceGroup(aws.StringValue(g.AutoScalingGroupName), newLaunchConfigName, ig, int(aws.Int64Value(g.MinSize)), int(aws.Int64Value(g.MaxSize)))
 	if err != nil {
