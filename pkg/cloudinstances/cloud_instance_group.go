@@ -29,14 +29,14 @@ type CloudInstanceGroup struct {
 	InstanceGroup     *api.InstanceGroup
 	GroupName         string
 	GroupTemplateName string
-	Ready             []*CloudInstanceMember
-	NeedUpdate        []*CloudInstanceMember
+	Ready             []*CloudInstanceGroupMember
+	NeedUpdate        []*CloudInstanceGroupMember
 	MinSize           int
 	MaxSize           int
 }
 
-// CloudInstanceGroupInstance describes an instances in a CloudInstanceGroup group.
-type CloudInstanceMember struct {
+// CloudInstanceGroupMember describes an instance in a CloudInstanceGroup group.
+type CloudInstanceGroupMember struct {
 	ID   *string
 	Node *v1.Node
 }
@@ -71,12 +71,12 @@ func NewCloudInstanceGroup(groupName string, groupTemplateName string, ig *api.I
 	return cg, nil
 }
 
-// NewCloudInstanceMember creates a new CloudInstanceGroupMember
-func (c *CloudInstanceGroup) NewCloudInstanceMember(instanceId *string, newGroupName string, currentGroupName string, nodeMap map[string]*v1.Node) error {
+// NewCloudInstanceGroupMember creates a new CloudInstanceGroupMember
+func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId *string, newGroupName string, currentGroupName string, nodeMap map[string]*v1.Node) error {
 	if instanceId == nil {
 		return fmt.Errorf("instance id for cloud instance member cannot be nil")
 	}
-	cm := &CloudInstanceMember{
+	cm := &CloudInstanceGroupMember{
 		ID: instanceId,
 	}
 	id := *instanceId

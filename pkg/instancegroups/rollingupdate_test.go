@@ -110,7 +110,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("node-1a"),
 				Node: &v1.Node{},
@@ -120,7 +120,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Node: &v1.Node{},
 			},
 		},
-		NeedUpdate: []*cloudinstances.CloudInstanceMember{
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("node-1a"),
 				Node: &v1.Node{},
@@ -143,7 +143,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("node-2a"),
 				Node: &v1.Node{},
@@ -153,7 +153,7 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Node: &v1.Node{},
 			},
 		},
-		NeedUpdate: []*cloudinstances.CloudInstanceMember{
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("node-2a"),
 				Node: &v1.Node{},
@@ -176,13 +176,13 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleMaster,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("master-1a"),
 				Node: &v1.Node{},
 			},
 		},
-		NeedUpdate: []*cloudinstances.CloudInstanceMember{
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("master-1a"),
 				Node: &v1.Node{},
@@ -201,13 +201,13 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleBastion,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("bastion-1a"),
 				Node: &v1.Node{},
 			},
 		},
-		NeedUpdate: []*cloudinstances.CloudInstanceMember{
+		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("bastion-1a"),
 				Node: &v1.Node{},
@@ -260,7 +260,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("node-1a"),
 				Node: &v1.Node{},
@@ -283,7 +283,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("node-2a"),
 				Node: &v1.Node{},
@@ -306,7 +306,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleMaster,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("master-1a"),
 				Node: &v1.Node{},
@@ -325,7 +325,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleBastion,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("bastion-1a"),
 				Node: &v1.Node{},
@@ -406,7 +406,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("node-1a"),
 				Node: &v1.Node{},
@@ -429,7 +429,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("node-2a"),
 				Node: &v1.Node{},
@@ -452,7 +452,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleMaster,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("master-1a"),
 				Node: &v1.Node{},
@@ -471,7 +471,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleBastion,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("bastion-1a"),
 				Node: &v1.Node{},
@@ -585,7 +585,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 				Role: "Unknown",
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("node-1a"),
 				Node: &v1.Node{},
@@ -608,7 +608,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleNode,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("node-2a"),
 				Node: &v1.Node{},
@@ -631,7 +631,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleMaster,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("master-1a"),
 				Node: &v1.Node{},
@@ -650,7 +650,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 				Role: kopsapi.InstanceGroupRoleBastion,
 			},
 		},
-		Ready: []*cloudinstances.CloudInstanceMember{
+		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
 				ID:   aws.String("bastion-1a"),
 				Node: &v1.Node{},
