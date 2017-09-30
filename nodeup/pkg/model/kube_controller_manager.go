@@ -149,6 +149,9 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "kube-controller-manager",
 			Namespace: "kube-system",
+			Annotations: map[string]string{
+				"scheduler.alpha.kubernetes.io/critical-pod": "",
+			},
 			Labels: map[string]string{
 				"k8s-app": "kube-controller-manager",
 			},

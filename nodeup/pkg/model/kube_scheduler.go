@@ -110,6 +110,9 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 			Labels: map[string]string{
 				"k8s-app": "kube-scheduler",
 			},
+			Annotations: map[string]string{
+				"scheduler.alpha.kubernetes.io/critical-pod": "",
+			},
 		},
 		Spec: v1.PodSpec{
 			HostNetwork: true,
