@@ -47,6 +47,10 @@ type GCECloud interface {
 	// FindClusterStatus gets the status of the cluster as it exists in GCE, inferred from volumes
 	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 
+	// FindInstanceTemplates finds all instance templates that are associated with the current cluster
+	// It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
+	FindInstanceTemplates(clusterName string) ([]*compute.InstanceTemplate, error)
+
 	Zones() ([]string, error)
 }
 
@@ -239,11 +243,8 @@ func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 // FindInstanceTemplates finds all instance templates that are associated with the current cluster
 // It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
 func (c *gceCloudImplementation) FindInstanceTemplates(clusterName string) ([]*compute.InstanceTemplate, error) {
-
 	findClusterName := strings.TrimSpace(clusterName)
-
 	var matches []*compute.InstanceTemplate
-
 	ctx := context.Background()
 
 	err := c.Compute().InstanceTemplates.List(c.Project()).Pages(ctx, func(page *compute.InstanceTemplateList) error {
