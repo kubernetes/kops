@@ -238,7 +238,10 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 
 // DeleteGroup deletes an aws autoscaling group
 func (c *awsCloudImplementation) DeleteGroup(name string, template string) error {
+	return deleteGroup(c, name, template)
+}
 
+func deleteGroup(c AWSCloud, name string, template string) error {
 	// Delete ASG
 	{
 		glog.V(2).Infof("Deleting autoscaling group %q", name)
@@ -271,6 +274,10 @@ func (c *awsCloudImplementation) DeleteGroup(name string, template string) error
 
 // DeleteInstance deletes an aws instance
 func (c *awsCloudImplementation) DeleteInstance(id *string) error {
+	return deleteInstance(c, id)
+}
+
+func deleteInstance(c AWSCloud, id *string) error {
 	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
 		InstanceId:                     id,
 		ShouldDecrementDesiredCapacity: aws.Bool(false),
@@ -289,6 +296,10 @@ func (c *awsCloudImplementation) DeleteInstance(id *string) error {
 
 // GetCloudGroups returns a groups of instances that back a kops instance groups
 func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+}
+
+func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	nodeMap := cloudinstances.GetNodeMap(nodes)
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
