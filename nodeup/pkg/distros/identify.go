@@ -48,6 +48,8 @@ func FindDistribution(rootfs string) (Distribution, error) {
 		debianVersion := strings.TrimSpace(string(debianVersionBytes))
 		if strings.HasPrefix(debianVersion, "8.") {
 			return DistributionJessie, nil
+		} else if strings.HasPrefix(debianVersion, "9.") {
+			return DistributionDebian9, nil
 		} else {
 			return "", fmt.Errorf("unhandled debian version %q", debianVersion)
 		}
