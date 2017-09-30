@@ -79,6 +79,9 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	switch kops.CloudProviderID(c.Spec.CloudProvider) {
 	case kops.CloudProviderBareMetal:
 		requiresSubnets = false
+		if c.Spec.NetworkCIDR != "" {
+			return field.Invalid(fieldSpec.Child("NetworkCIDR"), c.Spec.NetworkCIDR, "NetworkCIDR should not be set on bare metal")
+		}
 		requiresNetworkCIDR = false
 
 	case kops.CloudProviderDO:
