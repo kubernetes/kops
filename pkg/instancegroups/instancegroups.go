@@ -213,7 +213,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 		return fmt.Errorf("rollingUpdate is missing the InstanceGroupList")
 	}
 
-	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
+	c := rollingUpdateData.Cloud
 
 	update := n.NeedUpdate
 	if rollingUpdateData.Force {
@@ -249,8 +249,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 		}
 
 		if isBastion {
-
-			if err = n.DeleteAWSInstance(u, instanceId, nodeName, c); err != nil {
+			if err = n.DeleteInstance(u, instanceId, nodeName, c); err != nil {
 				glog.Errorf("Error deleting aws instance %q: %v", instanceId, err)
 				return err
 			}
@@ -280,7 +279,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 			}
 		}
 
-		if err = n.DeleteAWSInstance(u, instanceId, nodeName, c); err != nil {
+		if err = n.DeleteInstance(u, instanceId, nodeName, c); err != nil {
 			glog.Errorf("Error deleting aws instance %q, node %q: %v", instanceId, nodeName, err)
 			return err
 		}
@@ -362,21 +361,16 @@ func (n *CloudInstanceGroup) ValidateCluster(rollingUpdateData *RollingUpdateClu
 
 }
 
-// DeleteAWSInstance deletes an EC2 AWS Instance.
-func (n *CloudInstanceGroup) DeleteAWSInstance(u *CloudInstanceGroupInstance, instanceId string, nodeName string, c awsup.AWSCloud) error {
+// DeleteInstance deletes an Cloud Instance.
+func (n *CloudInstanceGroup) DeleteInstance(u *CloudInstanceGroupInstance, instanceId string, nodeName string, c fi.Cloud) error {
 
 	if nodeName != "" {
 		glog.Infof("Stopping instance %q, node %q, in AWS ASG %q.", instanceId, nodeName, n.ASGName)
 	} else {
-		glog.Infof("Stopping instance %q, in AWS ASG %q.", instanceId, n.ASGName)
+		glog.Infof("Stopping instance %q, in AWS ASG %q.", instanceId, n.asg.AutoScalingGroupName)
 	}
 
-	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-		InstanceId:                     u.ASGInstance.InstanceId,
-		ShouldDecrementDesiredCapacity: aws.Bool(false),
-	}
-
-	if _, err := c.Autoscaling().TerminateInstanceInAutoScalingGroup(request); err != nil {
+	if err := c.DeleteInstance(u.ASGInstance.InstanceId); err != nil {
 		if nodeName != "" {
 			return fmt.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
 		}
@@ -434,37 +428,9 @@ func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpd
 	return nil
 }
 
+// Delete and CloudInstanceGroups
 func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
-	c := cloud.(awsup.AWSCloud)
 
-	// TODO: Graceful?
-
-	// Delete ASG
-	{
-		asgName := aws.StringValue(g.asg.AutoScalingGroupName)
-		glog.V(2).Infof("Deleting autoscaling group %q", asgName)
-		request := &autoscaling.DeleteAutoScalingGroupInput{
-			AutoScalingGroupName: g.asg.AutoScalingGroupName,
-			ForceDelete:          aws.Bool(true),
-		}
-		_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
-		if err != nil {
-			return fmt.Errorf("error deleting autoscaling group %q: %v", asgName, err)
-		}
-	}
-
-	// Delete LaunchConfig
-	{
-		lcName := aws.StringValue(g.asg.LaunchConfigurationName)
-		glog.V(2).Infof("Deleting autoscaling launch configuration %q", lcName)
-		request := &autoscaling.DeleteLaunchConfigurationInput{
-			LaunchConfigurationName: g.asg.LaunchConfigurationName,
-		}
-		_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
-		if err != nil {
-			return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", lcName, err)
-		}
-	}
-
-	return nil
+	// TODO: Leaving func in place in order to cordon nd drain nodes
+	return cloud.DeleteGroup(*g.asg.AutoScalingGroupName, *g.asg.LaunchConfigurationName)
 }

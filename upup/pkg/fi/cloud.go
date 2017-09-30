@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
@@ -28,6 +29,15 @@ type Cloud interface {
 
 	// FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil)
 	FindVPCInfo(id string) (*VPCInfo, error)
+
+	// DeleteInstance deletes a cloud instance
+	DeleteInstance(id *string) error
+
+	// DeleteGroup delete a group of cloud instances
+	DeleteGroup(name string, template string) error
+
+	// GetCloudGroups returns a map of cloud instances that back a kops cluster
+	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*CloudGroup, error)
 }
 
 type VPCInfo struct {
@@ -42,6 +52,24 @@ type SubnetInfo struct {
 	ID   string
 	Zone string
 	CIDR string
+}
+
+// CloudInstanceGroup is the cloud backing of InstanceGroup.
+type CloudGroup struct {
+	InstanceGroup     *kops.InstanceGroup
+	GroupName         string
+	GroupTemplateName string
+	Status            string
+	Ready             []*CloudGroupInstance
+	NeedUpdate        []*CloudGroupInstance
+	MinSize           int
+	MaxSize           int
+}
+
+// CloudInstanceGroupInstance describes an instance in an autoscaling group.
+type CloudGroupInstance struct {
+	ID   *string
+	Node *v1.Node
 }
 
 // zonesToCloud allows us to infer from certain well-known zones to a cloud

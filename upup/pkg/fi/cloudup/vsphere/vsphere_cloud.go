@@ -32,6 +32,7 @@ import (
 	"github.com/vmware/govmomi/vim25/mo"
 	"github.com/vmware/govmomi/vim25/soap"
 	"github.com/vmware/govmomi/vim25/types"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -101,6 +102,24 @@ func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
 	spec.CloudConfig.VSpherePassword = fi.String(password)
 	glog.V(2).Infof("Created vSphere Cloud successfully: %+v", vsphereCloud)
 	return vsphereCloud, nil
+}
+
+// GetCloudGroups is not implemented yet, that needs to return the instances and groups that back a kops cluster.
+func (c *VSphereCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+	glog.V(8).Infof("vSphere cloud provider GetCloudGroups not implemented yet")
+	return nil, fmt.Errorf("vSphere cloud provider does not support getting cloud groups at this time.")
+}
+
+// DeleteGroup is not implemented yet, is a func that needs to delete a vSphere instance group.
+func (c *VSphereCloud) DeleteGroup(name string, template string) error {
+	glog.V(8).Infof("vSphere cloud provider DeleteGroup not implemented yet")
+	return fmt.Errorf("vSphere cloud provider does not support deleting cloud groups at this time.")
+}
+
+// DeleteInstance is not implemented yet, is func needs to delete a vSphereCloud instance.
+func (c *VSphereCloud) DeleteInstance(id *string) error {
+	glog.V(8).Infof("vSphere cloud provider DeleteInstance not implemented yet")
+	return fmt.Errorf("vSphere cloud provider does not support deleting cloud instances at this time.")
 }
 
 // DNS returns dnsprovider interface for this vSphere cloud.

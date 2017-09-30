@@ -18,11 +18,14 @@ package gce
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/storage/v1"
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -42,6 +45,12 @@ type GCECloud interface {
 
 	// FindClusterStatus gets the status of the cluster as it exists in GCE, inferred from volumes
 	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
+
+	// FindInstanceTemplates finds all instance templates that are associated with the current cluster
+	// It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
+	FindInstanceTemplates(clusterName string) ([]*compute.InstanceTemplate, error)
+
+	Zones() ([]string, error)
 }
 
 type gceCloudImplementation struct {
@@ -149,6 +158,36 @@ func (c *gceCloudImplementation) Labels() map[string]string {
 	return tags
 }
 
+// TODO refactor this out of resources
+// this is needed for delete groups and other new methods
+
+// Zones returns the zones in a region
+func (c *gceCloudImplementation) Zones() ([]string, error) {
+
+	var zones []string
+	// TODO: Only zones in api.Cluster object, if we have one?
+	gceZones, err := c.Compute().Zones.List(c.Project()).Do()
+	if err != nil {
+		return nil, fmt.Errorf("error listing zones: %v", err)
+	}
+	for _, gceZone := range gceZones.Items {
+		u, err := ParseGoogleCloudURL(gceZone.Region)
+		if err != nil {
+			return nil, err
+		}
+		if u.Name != c.Region() {
+			continue
+		}
+		zones = append(zones, gceZone.Name)
+	}
+	if len(zones) == 0 {
+		return nil, fmt.Errorf("unable to determine zones in region %q", c.Region())
+	}
+
+	glog.Infof("Scanning zones: %v", zones)
+	return zones, nil
+}
+
 func (c *gceCloudImplementation) WaitForOp(op *compute.Operation) error {
 	return WaitForOp(c.compute, op)
 }
@@ -180,4 +219,58 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 	}
 
 	return ingresses, nil
+}
+
+// DeleteGroup deletes a cloud of instances controlled by an Instance Group Manager
+func (c *gceCloudImplementation) DeleteGroup(name string, template string) error {
+	glog.V(8).Infof("gce cloud provider DeleteGroup not implemented yet")
+	return fmt.Errorf("gce cloud provider does not support deleting cloud groups at this time.")
+}
+
+// DeleteInstance deletes a GCE instance
+func (c *gceCloudImplementation) DeleteInstance(id *string) error {
+	glog.V(8).Infof("gce cloud provider DeleteInstance not implemented yet")
+	return fmt.Errorf("gce cloud provider does not support deleting cloud instances at this time.")
+}
+
+// GetCloudGroups returns a map of CloudGroup that backs a list of instance groups
+func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodeMap map[string]*v1.Node) (map[string]*fi.CloudGroup, error) {
+	glog.V(8).Infof("gce cloud provider GetCloudGroups not implemented yet")
+	return nil, fmt.Errorf("gce cloud provider does not support getting cloud groups at this time.")
+}
+
+// FindInstanceTemplates finds all instance templates that are associated with the current cluster
+// It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
+func (c *gceCloudImplementation) FindInstanceTemplates(clusterName string) ([]*compute.InstanceTemplate, error) {
+	findClusterName := strings.TrimSpace(clusterName)
+	var matches []*compute.InstanceTemplate
+	ctx := context.Background()
+
+	err := c.Compute().InstanceTemplates.List(c.Project()).Pages(ctx, func(page *compute.InstanceTemplateList) error {
+		for _, t := range page.Items {
+			match := false
+			for _, item := range t.Properties.Metadata.Items {
+				if item.Key == "cluster-name" {
+					if strings.TrimSpace(item.Value) == findClusterName {
+						match = true
+					} else {
+						match = false
+						break
+					}
+				}
+			}
+
+			if !match {
+				continue
+			}
+
+			matches = append(matches, t)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error listing instance groups: %v", err)
+	}
+
+	return matches, nil
 }
