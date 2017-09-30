@@ -271,6 +271,17 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 			c.Assets = append(c.Assets, hash.Hex()+"@"+utilsLocation)
 		}
+
+		if needsKubernetesManifests(cluster, c.InstanceGroups) {
+			defaultManifestsAsset := baseURL + "/kubernetes-manifests.tar.gz"
+			glog.V(2).Infof("Adding default kubernetes manifests asset: %s", defaultManifestsAsset)
+
+			hash, err := findHash(defaultManifestsAsset)
+			if err != nil {
+				return err
+			}
+			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultManifestsAsset)
+		}
 	}
 
 	if c.NodeUpSource == "" {
@@ -1020,6 +1031,18 @@ func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
 func needsStaticUtils(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
 	// TODO: Do real detection of CoreOS (but this has to work with AMI names, and maybe even forked AMIs)
 	return true
+}
+
+// needsKubernetesManifests checks if we need kubernetes manifests
+// This is only needed currently on ContainerOS i.e. GCE, but we don't have a nice way to detect it yet
+func needsKubernetesManifests(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
+	// TODO: Do real detection of ContainerOS (but this has to work with AMI names, and maybe even forked AMIs)
+	switch kops.CloudProviderID(c.Spec.CloudProvider) {
+	case kops.CloudProviderGCE:
+		return true
+	default:
+		return false
+	}
 }
 
 func lifecyclePointer(v fi.Lifecycle) *fi.Lifecycle {

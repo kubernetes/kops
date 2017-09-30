@@ -76,13 +76,14 @@ func NewFileTask(name string, src fi.Resource, destPath string, meta string) (*F
 
 var _ fi.HasDependencies = &File{}
 
-func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+// GetDependencies implements HasDependencies::GetDependencies
+func (e *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	var deps []fi.Task
-	if f.Owner != nil {
-		ownerTask := tasks["user/"+*f.Owner]
+	if e.Owner != nil {
+		ownerTask := tasks["user/"+*e.Owner]
 		if ownerTask == nil {
 			// The user might be a pre-existing user (e.g. admin)
-			glog.Warningf("Unable to find task %q", "user/"+*f.Owner)
+			glog.Warningf("Unable to find task %q", "user/"+*e.Owner)
 		} else {
 			deps = append(deps, ownerTask)
 		}
@@ -97,26 +98,9 @@ func (f *File) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 		}
 	}
 
-	// Files depend on parent directories
-	for _, v := range tasks {
-		dir, ok := v.(*File)
-		if !ok {
-			continue
-		}
-		if dir.Type == FileType_Directory {
-			dirPath := dir.Path
-			if !strings.HasSuffix(dirPath, "/") {
-				dirPath += "/"
-			}
-
-			if f.Path == dirPath {
-				continue
-			}
-
-			if strings.HasPrefix(f.Path, dirPath) {
-				deps = append(deps, v)
-			}
-		}
+	// Requires parent directories to be created
+	for _, v := range findCreatesDirParents(e.Path, tasks) {
+		deps = append(deps, v)
 	}
 
 	return deps
@@ -134,6 +118,16 @@ func (f *File) SetName(name string) {
 
 func (f *File) String() string {
 	return fmt.Sprintf("File: %q", f.Path)
+}
+
+var _ CreatesDir = &File{}
+
+// Dir implements CreatesDir::Dir
+func (f *File) Dir() string {
+	if f.Type != FileType_Directory {
+		return ""
+	}
+	return f.Path
 }
 
 func findFile(p string) (*File, error) {
