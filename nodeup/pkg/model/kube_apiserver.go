@@ -311,6 +311,7 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.DNS != nil {
 		annotations["dns.alpha.kubernetes.io/external"] = b.Cluster.Spec.MasterPublicName
 	}
+	annotations["scheduler.alpha.kubernetes.io/critical-pod"] = ""
 
 	return annotations
 }
