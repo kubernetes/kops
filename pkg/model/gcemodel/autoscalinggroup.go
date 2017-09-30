@@ -22,12 +22,12 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
 
 const (
-	DefaultVolumeSize = 100
 	DefaultVolumeType = "pd-standard"
 )
 
@@ -54,8 +54,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		var instanceTemplate *gcetasks.InstanceTemplate
 		{
 			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
-			if volumeSize == 0 {
-				volumeSize = DefaultVolumeSize
+			volumeSize, err := defaults.FindDefaultVolumeSize(fi.Int32Value(ig.Spec.RootVolumeSize), ig.Spec.Role)
+			if err != nil {
+				return fmt.Errorf("this case should not get hit, kops.Role not found %s", ig.Spec.Role)
 			}
 			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
 			if volumeType == "" {
