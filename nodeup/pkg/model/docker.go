@@ -50,6 +50,8 @@ type dockerVersion struct {
 	Architectures []Architecture
 }
 
+// DefaultDockerVersion is the (legacy) docker version we use if one is not specified in the manifest.
+// We don't change this with each version of kops, we expect newer versions of kops to populate the field.
 const DefaultDockerVersion = "1.12.3"
 
 var dockerVersions = []dockerVersion{
@@ -217,6 +219,20 @@ var dockerVersions = []dockerVersion{
 		Hash:          "1a8b0c4e3386e12964676a126d284cebf599cc8e",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
+	},
+
+	// 1.12.6 - Debian9 (stretch)
+	{
+		DockerVersion: "1.12.6",
+		Name:          "docker-engine",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "1.12.6-0~debian-stretch",
+		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~debian-stretch_amd64.deb",
+		Hash:          "18bb7d024658f27a1221eae4de78d792bf00611b",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl", "libseccomp2"},
+		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
 	},
 
