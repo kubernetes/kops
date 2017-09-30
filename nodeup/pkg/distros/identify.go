@@ -37,7 +37,7 @@ func FindDistribution(rootfs string) (Distribution, error) {
 				return DistributionXenial, nil
 			}
 		}
-		glog.Warningf("unhandled lsb-release info %q", string(lsbRelease))
+		glog.Infof("could not determine OS from lsb-release info %q", string(lsbRelease))
 	} else if !os.IsNotExist(err) {
 		glog.Warningf("error reading /etc/lsb-release: %v", err)
 	}
