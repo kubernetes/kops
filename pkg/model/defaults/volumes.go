@@ -28,20 +28,16 @@ const (
 	DefaultVolumeSizeBastion = 32
 )
 
-// FindDefaultVolumeSize returns the default volume size based on role.
-func FindDefaultVolumeSize(volumeSize int32, role kops.InstanceGroupRole) (int32, error) {
-	if volumeSize == 0 {
-		switch role {
-		case kops.InstanceGroupRoleMaster:
-			volumeSize = DefaultVolumeSizeMaster
-		case kops.InstanceGroupRoleNode:
-			volumeSize = DefaultVolumeSizeNode
-		case kops.InstanceGroupRoleBastion:
-			volumeSize = DefaultVolumeSizeBastion
-		default:
-			return -1, fmt.Errorf("this case should not get hit, kops.Role not found %s", role)
-		}
+// DefaultInstanceGroupVolumeSize returns the default volume size for nodes in an InstanceGroup with the specified role
+func DefaultInstanceGroupVolumeSize(role kops.InstanceGroupRole) (int32, error) {
+	switch role {
+	case kops.InstanceGroupRoleMaster:
+		return DefaultVolumeSizeMaster, nil
+	case kops.InstanceGroupRoleNode:
+		return DefaultVolumeSizeNode, nil
+	case kops.InstanceGroupRoleBastion:
+		return DefaultVolumeSizeBastion, nil
+	default:
+		return -1, fmt.Errorf("unknown InstanceGroup Role %s", role)
 	}
-
-	return volumeSize, nil
 }
