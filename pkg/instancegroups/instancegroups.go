@@ -21,175 +21,48 @@ import (
 	"os"
 	"time"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/client-go/pkg/api/v1"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 
-// FindCloudInstanceGroups joins data from the cloud and the instance groups into a map that can be used for updates.
-func FindCloudInstanceGroups(cloud fi.Cloud, cluster *api.Cluster, instancegroups []*api.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*CloudInstanceGroup, error) {
-	awsCloud := cloud.(awsup.AWSCloud)
+// RollingUpdateInstanceGroup is the AWS ASG backing an InstanceGroup.
+type RollingUpdateInstanceGroup struct {
+	// Cloud is the kops cloud provider
+	Cloud fi.Cloud
+	// CloudGroup is the kops cloud provider groups
+	CloudGroup *cloudinstances.CloudInstanceGroup
 
-	groups := make(map[string]*CloudInstanceGroup)
-
-	tags := awsCloud.Tags()
-
-	asgs, err := resources.FindAutoscalingGroups(awsCloud, tags)
-	if err != nil {
-		return nil, err
-	}
-
-	nodeMap := make(map[string]*v1.Node)
-	for i := range nodes {
-		node := &nodes[i]
-		awsID := node.Spec.ExternalID
-		nodeMap[awsID] = node
-	}
-
-	for _, asg := range asgs {
-		name := aws.StringValue(asg.AutoScalingGroupName)
-		var instancegroup *api.InstanceGroup
-		for _, g := range instancegroups {
-			var asgName string
-			switch g.Spec.Role {
-			case api.InstanceGroupRoleMaster:
-				asgName = g.ObjectMeta.Name + ".masters." + cluster.ObjectMeta.Name
-			case api.InstanceGroupRoleNode:
-				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
-			case api.InstanceGroupRoleBastion:
-				asgName = g.ObjectMeta.Name + "." + cluster.ObjectMeta.Name
-			default:
-				glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
-				continue
-			}
-
-			if name == asgName {
-				if instancegroup != nil {
-					return nil, fmt.Errorf("Found multiple instance groups matching ASG %q", asgName)
-				}
-				instancegroup = g
-			}
-		}
-		if instancegroup == nil {
-			if warnUnmatched {
-				glog.Warningf("Found ASG with no corresponding instance group %q", name)
-			}
-			continue
-		}
-		group := buildCloudInstanceGroup(instancegroup, asg, nodeMap)
-		groups[instancegroup.ObjectMeta.Name] = group
-	}
-
-	return groups, nil
+	// TODO should remove the need to have rollingupdate struct and add:
+	// TODO - the kubernetes client
+	// TODO - the cluster name
+	// TODO - the client config
+	// TODO - fail on validate
+	// TODO - fail on drain
+	// TODO - cloudonly
 }
 
-// DeleteInstanceGroup removes the cloud resources for an InstanceGroup
-type DeleteInstanceGroup struct {
-	Cluster   *api.Cluster
-	Cloud     fi.Cloud
-	Clientset simple.Clientset
-}
-
-func (c *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
-	groups, err := FindCloudInstanceGroups(c.Cloud, c.Cluster, []*api.InstanceGroup{group}, false, nil)
-	if err != nil {
-		return fmt.Errorf("error finding CloudInstanceGroups: %v", err)
+// NewRollingUpdateInstanceGroup create a new struct
+func NewRollingUpdateInstanceGroup(cloud fi.Cloud, cloudGroup *cloudinstances.CloudInstanceGroup) (*RollingUpdateInstanceGroup, error) {
+	if cloud == nil {
+		return nil, fmt.Errorf("cloud provider is required")
 	}
-	cig := groups[group.ObjectMeta.Name]
-	if cig == nil {
-		glog.Warningf("AutoScalingGroup %q not found in cloud - skipping delete", group.ObjectMeta.Name)
-	} else {
-		if len(groups) != 1 {
-			return fmt.Errorf("Multiple InstanceGroup resources found in cloud")
-		}
-
-		glog.Infof("Deleting AutoScalingGroup %q", group.ObjectMeta.Name)
-
-		err = cig.Delete(c.Cloud)
-		if err != nil {
-			return fmt.Errorf("error deleting cloud resources for InstanceGroup: %v", err)
-		}
+	if cloudGroup == nil {
+		return nil, fmt.Errorf("cloud group is required")
 	}
 
-	err = c.Clientset.InstanceGroupsFor(c.Cluster).Delete(group.ObjectMeta.Name, nil)
-	if err != nil {
-		return err
-	}
+	// TODO check more values in cloudGroup that they are set properly
 
-	return nil
-}
-
-// CloudInstanceGroup is the AWS ASG backing an InstanceGroup.
-type CloudInstanceGroup struct {
-	InstanceGroup *api.InstanceGroup
-	ASGName       string
-	Status        string
-	Ready         []*CloudInstanceGroupInstance
-	NeedUpdate    []*CloudInstanceGroupInstance
-
-	asg *autoscaling.Group
-}
-
-func buildCloudInstanceGroup(ig *api.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) *CloudInstanceGroup {
-	n := &CloudInstanceGroup{
-		ASGName:       aws.StringValue(g.AutoScalingGroupName),
-		InstanceGroup: ig,
-		asg:           g,
-	}
-
-	readyLaunchConfigurationName := aws.StringValue(g.LaunchConfigurationName)
-
-	for _, i := range g.Instances {
-		c := &CloudInstanceGroupInstance{ASGInstance: i}
-
-		node := nodeMap[aws.StringValue(i.InstanceId)]
-		if node != nil {
-			c.Node = node
-		}
-
-		if readyLaunchConfigurationName == aws.StringValue(i.LaunchConfigurationName) {
-			n.Ready = append(n.Ready, c)
-		} else {
-			n.NeedUpdate = append(n.NeedUpdate, c)
-		}
-	}
-
-	if len(n.NeedUpdate) == 0 {
-		n.Status = "Ready"
-	} else {
-		n.Status = "NeedsUpdate"
-	}
-
-	return n
-}
-
-// CloudInstanceGroupInstance describes an instance in an autoscaling group.
-type CloudInstanceGroupInstance struct {
-	ASGInstance *autoscaling.Instance
-	Node        *v1.Node
-}
-
-func (n *CloudInstanceGroup) String() string {
-	return "CloudInstanceGroup:" + n.ASGName
-}
-
-func (c *CloudInstanceGroup) MinSize() int {
-	return int(aws.Int64Value(c.asg.MinSize))
-}
-
-func (c *CloudInstanceGroup) MaxSize() int {
-	return int(aws.Int64Value(c.asg.MaxSize))
+	return &RollingUpdateInstanceGroup{
+		Cloud:      cloud,
+		CloudGroup: cloudGroup,
+	}, nil
 }
 
 // TODO: Temporarily increase size of ASG?
@@ -197,7 +70,7 @@ func (c *CloudInstanceGroup) MaxSize() int {
 // TODO: Batch termination, like a rolling-update
 
 // RollingUpdate performs a rolling update on a list of ec2 instances.
-func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, isBastion bool, t time.Duration) (err error) {
+func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, isBastion bool, t time.Duration) (err error) {
 
 	// we should not get here, but hey I am going to check.
 	if rollingUpdateData == nil {
@@ -213,11 +86,9 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 		return fmt.Errorf("rollingUpdate is missing the InstanceGroupList")
 	}
 
-	c := rollingUpdateData.Cloud.(awsup.AWSCloud)
-
-	update := n.NeedUpdate
+	update := r.CloudGroup.NeedUpdate
 	if rollingUpdateData.Force {
-		update = append(update, n.Ready...)
+		update = append(update, r.CloudGroup.Ready...)
 	}
 
 	if len(update) == 0 {
@@ -229,7 +100,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 	} else if rollingUpdateData.CloudOnly {
 		glog.V(3).Info("Not validating cluster as validation is turned off via the cloud-only flag.")
 	} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-		if err = n.ValidateCluster(rollingUpdateData, instanceGroupList); err != nil {
+		if err = r.ValidateCluster(rollingUpdateData, instanceGroupList); err != nil {
 			if rollingUpdateData.FailOnValidate {
 				return fmt.Errorf("error validating cluster: %v", err)
 			} else {
@@ -241,7 +112,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 
 	for _, u := range update {
 
-		instanceId := aws.StringValue(u.ASGInstance.InstanceId)
+		instanceId := fi.StringValue(u.ID)
 
 		nodeName := ""
 		if u.Node != nil {
@@ -249,8 +120,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 		}
 
 		if isBastion {
-
-			if err = n.DeleteAWSInstance(u, instanceId, nodeName, c); err != nil {
+			if err = r.DeleteInstance(u); err != nil {
 				glog.Errorf("Error deleting aws instance %q: %v", instanceId, err)
 				return err
 			}
@@ -268,9 +138,9 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 			if u.Node != nil {
 				glog.Infof("Draining the node: %q.", nodeName)
 
-				if err = n.DrainNode(u, rollingUpdateData); err != nil {
+				if err = r.DrainNode(u, rollingUpdateData); err != nil {
 					if rollingUpdateData.FailOnDrainError {
-						return fmt.Errorf("Failed to drain node %q: %v", nodeName, err)
+						return fmt.Errorf("failed to drain node %q: %v", nodeName, err)
 					} else {
 						glog.Infof("Ignoring error draining node %q: %v", nodeName, err)
 					}
@@ -280,7 +150,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 			}
 		}
 
-		if err = n.DeleteAWSInstance(u, instanceId, nodeName, c); err != nil {
+		if err = r.DeleteInstance(u); err != nil {
 			glog.Errorf("Error deleting aws instance %q, node %q: %v", instanceId, nodeName, err)
 			return err
 		}
@@ -297,7 +167,7 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 
 			glog.Infof("Validating the cluster.")
 
-			if err = n.ValidateClusterWithDuration(rollingUpdateData, instanceGroupList, t); err != nil {
+			if err = r.ValidateClusterWithDuration(rollingUpdateData, instanceGroupList, t); err != nil {
 
 				if rollingUpdateData.FailOnValidate {
 					glog.Errorf("Cluster did not validate within the set duration of %q, you can retry, and maybe extend the duration", t)
@@ -313,12 +183,12 @@ func (n *CloudInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateClust
 }
 
 // ValidateClusterWithDuration runs validation.ValidateCluster until either we get positive result or the timeout expires
-func (n *CloudInstanceGroup) ValidateClusterWithDuration(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, duration time.Duration) error {
+func (r *RollingUpdateInstanceGroup) ValidateClusterWithDuration(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, duration time.Duration) error {
 	// TODO should we expose this to the UI?
 	tickDuration := 30 * time.Second
 	// Try to validate cluster at least once, this will handle durations that are lower
 	// than our tick time
-	if n.tryValidateCluster(rollingUpdateData, instanceGroupList, duration, tickDuration) {
+	if r.tryValidateCluster(rollingUpdateData, instanceGroupList, duration, tickDuration) {
 		return nil
 	}
 
@@ -332,7 +202,7 @@ func (n *CloudInstanceGroup) ValidateClusterWithDuration(rollingUpdateData *Roll
 			return fmt.Errorf("cluster did not validate within a duation of %q", duration)
 		case <-tick:
 			// Got a tick, validate cluster
-			if n.tryValidateCluster(rollingUpdateData, instanceGroupList, duration, tickDuration) {
+			if r.tryValidateCluster(rollingUpdateData, instanceGroupList, duration, tickDuration) {
 				return nil
 			}
 			// ValidateCluster didn't work yet, so let's try again
@@ -341,7 +211,7 @@ func (n *CloudInstanceGroup) ValidateClusterWithDuration(rollingUpdateData *Roll
 	}
 }
 
-func (n *CloudInstanceGroup) tryValidateCluster(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, duration time.Duration, tickDuration time.Duration) bool {
+func (r *RollingUpdateInstanceGroup) tryValidateCluster(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, duration time.Duration, tickDuration time.Duration) bool {
 	if _, err := validation.ValidateCluster(rollingUpdateData.ClusterName, instanceGroupList, rollingUpdateData.K8sClient); err != nil {
 		glog.Infof("Cluster did not validate, will try again in %q util duration %q expires: %v.", tickDuration, duration, err)
 		return false
@@ -352,7 +222,7 @@ func (n *CloudInstanceGroup) tryValidateCluster(rollingUpdateData *RollingUpdate
 }
 
 // ValidateCluster runs our validation methods on the K8s Cluster.
-func (n *CloudInstanceGroup) ValidateCluster(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList) error {
+func (r *RollingUpdateInstanceGroup) ValidateCluster(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList) error {
 
 	if _, err := validation.ValidateCluster(rollingUpdateData.ClusterName, instanceGroupList, rollingUpdateData.K8sClient); err != nil {
 		return fmt.Errorf("cluster %q did not pass validation: %v", rollingUpdateData.ClusterName, err)
@@ -362,25 +232,22 @@ func (n *CloudInstanceGroup) ValidateCluster(rollingUpdateData *RollingUpdateClu
 
 }
 
-// DeleteAWSInstance deletes an EC2 AWS Instance.
-func (n *CloudInstanceGroup) DeleteAWSInstance(u *CloudInstanceGroupInstance, instanceId string, nodeName string, c awsup.AWSCloud) error {
+// DeleteInstance deletes an Cloud Instance.
+func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInstanceMember) error {
 
-	if nodeName != "" {
-		glog.Infof("Stopping instance %q, node %q, in AWS ASG %q.", instanceId, nodeName, n.ASGName)
+	id := fi.StringValue(u.ID)
+
+	if u.Node != nil {
+		glog.Infof("Stopping instance %q, node %q, in group %q.", id, u.Node.Name, r.CloudGroup.GroupName)
 	} else {
-		glog.Infof("Stopping instance %q, in AWS ASG %q.", instanceId, n.ASGName)
+		glog.Infof("Stopping instance %q, in group %q.", fi.StringValue(u.ID), r.CloudGroup.GroupName)
 	}
 
-	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-		InstanceId:                     u.ASGInstance.InstanceId,
-		ShouldDecrementDesiredCapacity: aws.Bool(false),
-	}
-
-	if _, err := c.Autoscaling().TerminateInstanceInAutoScalingGroup(request); err != nil {
-		if nodeName != "" {
-			return fmt.Errorf("error deleting instance %q, node %q: %v", instanceId, nodeName, err)
+	if err := r.Cloud.DeleteInstance(u.ID); err != nil {
+		if u.Node.Name != "" {
+			return fmt.Errorf("error deleting instance %q, node %q: %v", id, u.Node.Name, err)
 		}
-		return fmt.Errorf("error deleting instance %q: %v", instanceId, err)
+		return fmt.Errorf("error deleting instance %q: %v", id, err)
 	}
 
 	return nil
@@ -388,9 +255,13 @@ func (n *CloudInstanceGroup) DeleteAWSInstance(u *CloudInstanceGroupInstance, in
 }
 
 // DrainNode drains a K8s node.
-func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpdateData *RollingUpdateCluster) error {
+func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceMember, rollingUpdateData *RollingUpdateCluster) error {
 	if rollingUpdateData.ClientConfig == nil {
-		return fmt.Errorf("ClientConfig not set")
+		return fmt.Errorf("clientConfig not set")
+	}
+
+	if u.Node.Name == "" {
+		return fmt.Errorf("node name not set")
 	}
 	f := cmdutil.NewFactory(rollingUpdateData.ClientConfig)
 
@@ -434,37 +305,17 @@ func (n *CloudInstanceGroup) DrainNode(u *CloudInstanceGroupInstance, rollingUpd
 	return nil
 }
 
-func (g *CloudInstanceGroup) Delete(cloud fi.Cloud) error {
-	c := cloud.(awsup.AWSCloud)
-
-	// TODO: Graceful?
-
-	// Delete ASG
-	{
-		asgName := aws.StringValue(g.asg.AutoScalingGroupName)
-		glog.V(2).Infof("Deleting autoscaling group %q", asgName)
-		request := &autoscaling.DeleteAutoScalingGroupInput{
-			AutoScalingGroupName: g.asg.AutoScalingGroupName,
-			ForceDelete:          aws.Bool(true),
-		}
-		_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
-		if err != nil {
-			return fmt.Errorf("error deleting autoscaling group %q: %v", asgName, err)
-		}
+// Delete and CloudInstanceGroups
+func (r *RollingUpdateInstanceGroup) Delete() error {
+	if r.CloudGroup == nil {
+		return fmt.Errorf("group has to be set")
 	}
-
-	// Delete LaunchConfig
-	{
-		lcName := aws.StringValue(g.asg.LaunchConfigurationName)
-		glog.V(2).Infof("Deleting autoscaling launch configuration %q", lcName)
-		request := &autoscaling.DeleteLaunchConfigurationInput{
-			LaunchConfigurationName: g.asg.LaunchConfigurationName,
-		}
-		_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
-		if err != nil {
-			return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", lcName, err)
-		}
+	if r.CloudGroup.GroupName == "" {
+		return fmt.Errorf("group name has to be set")
 	}
-
-	return nil
+	if r.CloudGroup.GroupTemplateName == "" {
+		return fmt.Errorf("group template name has to be set")
+	}
+	// TODO: Leaving func in place in order to cordon nd drain nodes
+	return r.Cloud.DeleteGroup(r.CloudGroup.GroupName, r.CloudGroup.GroupTemplateName)
 }
