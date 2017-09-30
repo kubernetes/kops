@@ -233,7 +233,7 @@ func (r *RollingUpdateInstanceGroup) ValidateCluster(rollingUpdateData *RollingU
 }
 
 // DeleteInstance deletes an Cloud Instance.
-func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInstanceMember) error {
+func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInstanceGroupMember) error {
 
 	id := fi.StringValue(u.ID)
 
@@ -255,7 +255,7 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 }
 
 // DrainNode drains a K8s node.
-func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceMember, rollingUpdateData *RollingUpdateCluster) error {
+func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGroupMember, rollingUpdateData *RollingUpdateCluster) error {
 	if rollingUpdateData.ClientConfig == nil {
 		return fmt.Errorf("clientConfig not set")
 	}

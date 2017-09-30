@@ -423,7 +423,7 @@ func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscali
 	}
 
 	for _, i := range g.Instances {
-		err = n.NewCloudInstanceMember(i.InstanceId, newLaunchConfigName, aws.StringValue(i.LaunchConfigurationName), nodeMap)
+		err = n.NewCloudInstanceGroupMember(i.InstanceId, newLaunchConfigName, aws.StringValue(i.LaunchConfigurationName), nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
