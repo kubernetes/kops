@@ -31,6 +31,7 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/pkg/pretty"
@@ -274,32 +275,32 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return err
 	}
 
-	groups, err := instancegroups.FindCloudInstanceGroups(cloud, cluster, instanceGroups, warnUnmatched, nodes)
+	groups, err := cloud.GetCloudGroups(cluster, instanceGroups, warnUnmatched, nodes)
 	if err != nil {
 		return err
 	}
 
 	{
 		t := &tables.Table{}
-		t.AddColumn("NAME", func(r *instancegroups.CloudInstanceGroup) string {
+		t.AddColumn("NAME", func(r *cloudinstances.CloudInstanceGroup) string {
 			return r.InstanceGroup.ObjectMeta.Name
 		})
-		t.AddColumn("STATUS", func(r *instancegroups.CloudInstanceGroup) string {
+		t.AddColumn("STATUS", func(r *cloudinstances.CloudInstanceGroup) string {
 			return r.Status
 		})
-		t.AddColumn("NEEDUPDATE", func(r *instancegroups.CloudInstanceGroup) string {
+		t.AddColumn("NEEDUPDATE", func(r *cloudinstances.CloudInstanceGroup) string {
 			return strconv.Itoa(len(r.NeedUpdate))
 		})
-		t.AddColumn("READY", func(r *instancegroups.CloudInstanceGroup) string {
+		t.AddColumn("READY", func(r *cloudinstances.CloudInstanceGroup) string {
 			return strconv.Itoa(len(r.Ready))
 		})
-		t.AddColumn("MIN", func(r *instancegroups.CloudInstanceGroup) string {
-			return strconv.Itoa(r.MinSize())
+		t.AddColumn("MIN", func(r *cloudinstances.CloudInstanceGroup) string {
+			return strconv.Itoa(r.MinSize)
 		})
-		t.AddColumn("MAX", func(r *instancegroups.CloudInstanceGroup) string {
-			return strconv.Itoa(r.MaxSize())
+		t.AddColumn("MAX", func(r *cloudinstances.CloudInstanceGroup) string {
+			return strconv.Itoa(r.MaxSize)
 		})
-		t.AddColumn("NODES", func(r *instancegroups.CloudInstanceGroup) string {
+		t.AddColumn("NODES", func(r *cloudinstances.CloudInstanceGroup) string {
 			var nodes []*v1.Node
 			for _, i := range r.Ready {
 				if i.Node != nil {
@@ -313,7 +314,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			}
 			return strconv.Itoa(len(nodes))
 		})
-		var l []*instancegroups.CloudInstanceGroup
+		var l []*cloudinstances.CloudInstanceGroup
 		for _, v := range groups {
 			l = append(l, v)
 		}
