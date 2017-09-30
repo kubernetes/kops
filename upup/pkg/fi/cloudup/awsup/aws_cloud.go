@@ -557,13 +557,13 @@ func buildFilters(commonTags map[string]string, name *string) []*ec2.Filter {
 }
 
 // DescribeInstance is a helper that queries for the specified instance by id
-func (t *awsCloudImplementation) DescribeInstance(instanceID string) (*ec2.Instance, error) {
+func (c *awsCloudImplementation) DescribeInstance(instanceID string) (*ec2.Instance, error) {
 	glog.V(2).Infof("Calling DescribeInstances for instance %q", instanceID)
 	request := &ec2.DescribeInstancesInput{
 		InstanceIds: []*string{&instanceID},
 	}
 
-	response, err := t.EC2().DescribeInstances(request)
+	response, err := c.EC2().DescribeInstances(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing Instances: %v", err)
 	}
@@ -588,13 +588,13 @@ func (t *awsCloudImplementation) DescribeInstance(instanceID string) (*ec2.Insta
 }
 
 // DescribeVPC is a helper that queries for the specified vpc by id
-func (t *awsCloudImplementation) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
+func (c *awsCloudImplementation) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
 	glog.V(2).Infof("Calling DescribeVPC for VPC %q", vpcID)
 	request := &ec2.DescribeVpcsInput{
 		VpcIds: []*string{&vpcID},
 	}
 
-	response, err := t.EC2().DescribeVpcs(request)
+	response, err := c.EC2().DescribeVpcs(request)
 	if err != nil {
 		return nil, fmt.Errorf("error listing VPCs: %v", err)
 	}
