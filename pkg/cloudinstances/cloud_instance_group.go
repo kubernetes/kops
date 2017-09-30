@@ -29,7 +29,6 @@ type CloudInstanceGroup struct {
 	InstanceGroup     *api.InstanceGroup
 	GroupName         string
 	GroupTemplateName string
-	Status            string
 	Ready             []*CloudInstanceMember
 	NeedUpdate        []*CloudInstanceMember
 	MinSize           int
@@ -97,12 +96,12 @@ func (c *CloudInstanceGroup) NewCloudInstanceMember(instanceId *string, newGroup
 	return nil
 }
 
-// MarkIsReady sets the CloudInstanceGroup status for Ready or NeedsUpdate
-func (c *CloudInstanceGroup) MarkIsReady() {
+// Status returns a human-readable Status indicating whether an update is needed
+func (c *CloudInstanceGroup) Status() string {
 	if len(c.NeedUpdate) == 0 {
-		c.Status = "Ready"
+		return "Ready"
 	} else {
-		c.Status = "NeedsUpdate"
+		return "NeedsUpdate"
 	}
 }
 
