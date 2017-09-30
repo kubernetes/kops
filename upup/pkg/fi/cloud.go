@@ -17,7 +17,9 @@ limitations under the License.
 package fi
 
 import (
+	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
@@ -28,6 +30,15 @@ type Cloud interface {
 
 	// FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil)
 	FindVPCInfo(id string) (*VPCInfo, error)
+
+	// DeleteInstance deletes a cloud instance
+	DeleteInstance(id *string) error
+
+	// DeleteGroup delete a group of cloud instances
+	DeleteGroup(name string, template string) error
+
+	// GetCloudGroups returns a map of cloud instances that back a kops cluster
+	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 }
 
 type VPCInfo struct {
