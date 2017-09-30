@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kops/pkg/kubemanifest"
 )
 
 // KubeProxyBuilder installs kube-proxy
@@ -158,14 +159,6 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 				"k8s-app": "kube-proxy",
 				"tier":    "node",
 			},
-			Annotations: map[string]string{
-				// This annotation ensures that kube-proxy does not get evicted if the node
-				// supports critical pod annotation based priority scheme.
-				// Note that kube-proxy runs as a static pod so this annotation does NOT have
-				// any effect on rescheduler (default scheduler and rescheduler are not
-				// involved in scheduling kube-proxy).
-				"scheduler.alpha.kubernetes.io/critical-pod": "",
-			},
 		},
 		Spec: v1.PodSpec{
 			HostNetwork: true,
@@ -209,6 +202,13 @@ func (b *KubeProxyBuilder) buildPod() (*v1.Pod, error) {
 	//		Template: template,
 	//	},
 	//}
+
+	// This annotation ensures that kube-proxy does not get evicted if the node
+	// supports critical pod annotation based priority scheme.
+	// Note that kube-proxy runs as a static pod so this annotation does NOT have
+	// any effect on rescheduler (default scheduler and rescheduler are not
+	// involved in scheduling kube-proxy).
+	kubemanifest.MarkPodAsCritical(pod)
 
 	return pod, nil
 }
