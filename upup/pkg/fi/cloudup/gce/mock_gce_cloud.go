@@ -58,6 +58,13 @@ func (c *mockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*k
 	return nil, fmt.Errorf("mockGCECloud cloud provider does not support getting cloud groups at this time")
 }
 
+// FindInstanceTemplates finds all instance templates that are associated with the current cluster
+// It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
+func (c *mockGCECloud) FindInstanceTemplates(clusterName string) ([]*compute.InstanceTemplate, error) {
+	glog.V(8).Infof("mockGCECloud cloud provider FindInstanceTemplates not implemented yet")
+	return nil, fmt.Errorf("mockGCECloud cloud provider does not support finding instance templates at this time")
+}
+
 // DeleteGroup is not implemented yet
 func (c *mockGCECloud) DeleteGroup(name string, template string) error {
 	glog.V(8).Infof("mockGCECloud cloud provider DeleteGroup not implemented yet")
