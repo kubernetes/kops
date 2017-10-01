@@ -1619,7 +1619,7 @@ func autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *Instan
 		out.Kubelet = nil
 	}
 	out.Taints = in.Taints
-	// WARNING: in.Zones requires manual conversion: does not exist in peer-type
+	out.Zones = in.Zones
 	return nil
 }
 
@@ -1634,6 +1634,7 @@ func autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in *kops.I
 	out.RootVolumeIops = in.RootVolumeIops
 	out.RootVolumeOptimization = in.RootVolumeOptimization
 	// WARNING: in.Subnets requires manual conversion: does not exist in peer-type
+	out.Zones = in.Zones
 	if in.Hooks != nil {
 		in, out := &in.Hooks, &out.Hooks
 		*out = make([]HookSpec, len(*in))

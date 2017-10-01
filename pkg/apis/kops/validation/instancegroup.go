@@ -56,15 +56,15 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 	return nil
 }
 
-// CrossValidate performs validation of the instance group, including that it is consistent with the Cluster
-// It calls Validate, so all that validation is included.
+// CrossValidateInstanceGroup performs validation of the instance group, including that it is consistent with the Cluster
+// It calls ValidateInstanceGroup, so all that validation is included.
 func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, strict bool) error {
 	err := ValidateInstanceGroup(g)
 	if err != nil {
 		return err
 	}
 
-	// Check that instance groups are defined in valid zones
+	// Check that instance groups are defined in subnets that are defined in the cluster
 	{
 		clusterSubnets := make(map[string]*kops.ClusterSubnetSpec)
 		for i := range cluster.Spec.Subnets {

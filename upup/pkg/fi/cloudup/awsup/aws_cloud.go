@@ -38,6 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -1010,19 +1011,11 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 	}
 
 	// Find the AZs the InstanceGroup targets
-	igZones := sets.NewString()
-	for _, subnetName := range ig.Spec.Subnets {
-		var subnet *kops.ClusterSubnetSpec
-		for i := range cluster.Spec.Subnets {
-			if cluster.Spec.Subnets[i].Name == subnetName {
-				subnet = &cluster.Spec.Subnets[i]
-			}
-		}
-		if subnet == nil {
-			return "", fmt.Errorf("subnet %q is not defined in cluster", subnetName)
-		}
-		igZones.Insert(subnet.Zone)
+	igZones, err := model.FindZonesForInstanceGroup(cluster, ig)
+	if err != nil {
+		return "", err
 	}
+	igZonesSet := sets.NewString(igZones...)
 
 	// TODO: Validate that instance type exists in all AZs, but skip AZs that don't support any VPC stuff
 	for _, instanceType := range candidates {
@@ -1030,7 +1023,7 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 		if err != nil {
 			return "", err
 		}
-		if zones.IsSuperset(igZones) {
+		if zones.IsSuperset(igZonesSet) {
 			return instanceType, nil
 		} else {
 			glog.V(2).Infof("can't use instance type %q, available in zones %v but need %v", instanceType, zones, igZones)
