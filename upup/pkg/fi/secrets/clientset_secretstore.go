@@ -67,8 +67,7 @@ func (c *ClientsetSecretStore) MirrorTo(basedir vfs.Path) error {
 
 		primary := fi.FindPrimary(keyset)
 		if primary == nil {
-			glog.Warningf("skipping secret with no primary data: %s", keyset.Name)
-			continue
+			return fmt.Errorf("found secret with no primary data: %s", keyset.Name)
 		}
 
 		name := strings.TrimPrefix(keyset.Name, NamePrefix)

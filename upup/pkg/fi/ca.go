@@ -78,9 +78,6 @@ type CAStore interface {
 	// List will list all the items, but will not fetch the data
 	List() ([]*KeystoreItem, error)
 
-	//// VFSPath returns the path where the CAStore is stored
-	//VFSPath() vfs.Path
-
 	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
 	AddCert(name string, cert *pki.Certificate) error
 

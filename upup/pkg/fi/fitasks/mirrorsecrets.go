@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ limitations under the License.
 package fitasks
 
 import (
+	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -42,15 +43,19 @@ func (e *MirrorSecrets) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 	return deps
 }
 
+// Find implements fi.Task::Find
 func (e *MirrorSecrets) Find(c *fi.Context) (*MirrorSecrets, error) {
-	// TODO:
+	// TODO: implement Find so that we aren't always mirroring
+	glog.V(2).Infof("MirrorSecrets::Find not implemented; always copying (inefficient)")
 	return nil, nil
 }
 
+// Run implemements fi.Task::Run
 func (e *MirrorSecrets) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
+// CheckChanges implements fi.Task::CheckChanges
 func (s *MirrorSecrets) CheckChanges(a, e, changes *MirrorSecrets) error {
 	if a != nil {
 		if changes.Name != nil {
@@ -60,6 +65,7 @@ func (s *MirrorSecrets) CheckChanges(a, e, changes *MirrorSecrets) error {
 	return nil
 }
 
+// Render implements fi.Task::Render
 func (_ *MirrorSecrets) Render(c *fi.Context, a, e, changes *MirrorSecrets) error {
 	secrets := c.SecretStore
 
