@@ -70,7 +70,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 		Example:    delete_example,
 		SuggestFor: []string{"rm"},
 		Run: func(cmd *cobra.Command, args []string) {
-			if cmdutil.IsFilenameEmpty(options.Filenames) {
+			if cmdutil.IsFilenameSliceEmpty(options.Filenames) {
 				cmd.Help()
 				return
 			}

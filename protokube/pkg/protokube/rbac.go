@@ -19,10 +19,10 @@ package protokube
 import (
 	"fmt"
 
+	"k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
 	rbac "k8s.io/client-go/pkg/apis/rbac/v1beta1"
 
 	"github.com/golang/glog"
