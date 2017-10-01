@@ -58,6 +58,41 @@ func newSSHCredentials(c *KopsV1alpha2Client, namespace string) *sSHCredentials 
 	}
 }
 
+// Get takes name of the sSHCredential, and returns the corresponding sSHCredential object, and an error if there is any.
+func (c *sSHCredentials) Get(name string, options v1.GetOptions) (result *v1alpha2.SSHCredential, err error) {
+	result = &v1alpha2.SSHCredential{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("sshcredentials").
+		Name(name).
+		VersionedParams(&options, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// List takes label and field selectors, and returns the list of SSHCredentials that match those selectors.
+func (c *sSHCredentials) List(opts v1.ListOptions) (result *v1alpha2.SSHCredentialList, err error) {
+	result = &v1alpha2.SSHCredentialList{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("sshcredentials").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// Watch returns a watch.Interface that watches the requested sSHCredentials.
+func (c *sSHCredentials) Watch(opts v1.ListOptions) (watch.Interface, error) {
+	opts.Watch = true
+	return c.client.Get().
+		Namespace(c.ns).
+		Resource("sshcredentials").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Watch()
+}
+
 // Create takes the representation of a sSHCredential and creates it.  Returns the server's representation of the sSHCredential, and an error, if there is any.
 func (c *sSHCredentials) Create(sSHCredential *v1alpha2.SSHCredential) (result *v1alpha2.SSHCredential, err error) {
 	result = &v1alpha2.SSHCredential{}
@@ -103,41 +138,6 @@ func (c *sSHCredentials) DeleteCollection(options *v1.DeleteOptions, listOptions
 		Body(options).
 		Do().
 		Error()
-}
-
-// Get takes name of the sSHCredential, and returns the corresponding sSHCredential object, and an error if there is any.
-func (c *sSHCredentials) Get(name string, options v1.GetOptions) (result *v1alpha2.SSHCredential, err error) {
-	result = &v1alpha2.SSHCredential{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("sshcredentials").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of SSHCredentials that match those selectors.
-func (c *sSHCredentials) List(opts v1.ListOptions) (result *v1alpha2.SSHCredentialList, err error) {
-	result = &v1alpha2.SSHCredentialList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("sshcredentials").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested sSHCredentials.
-func (c *sSHCredentials) Watch(opts v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("sshcredentials").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
 }
 
 // Patch applies the patch and returns the patched sSHCredential.

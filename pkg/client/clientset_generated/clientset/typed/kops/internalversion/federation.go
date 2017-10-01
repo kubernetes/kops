@@ -58,6 +58,41 @@ func newFederations(c *KopsClient, namespace string) *federations {
 	}
 }
 
+// Get takes name of the federation, and returns the corresponding federation object, and an error if there is any.
+func (c *federations) Get(name string, options v1.GetOptions) (result *kops.Federation, err error) {
+	result = &kops.Federation{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("federations").
+		Name(name).
+		VersionedParams(&options, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// List takes label and field selectors, and returns the list of Federations that match those selectors.
+func (c *federations) List(opts v1.ListOptions) (result *kops.FederationList, err error) {
+	result = &kops.FederationList{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("federations").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// Watch returns a watch.Interface that watches the requested federations.
+func (c *federations) Watch(opts v1.ListOptions) (watch.Interface, error) {
+	opts.Watch = true
+	return c.client.Get().
+		Namespace(c.ns).
+		Resource("federations").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Watch()
+}
+
 // Create takes the representation of a federation and creates it.  Returns the server's representation of the federation, and an error, if there is any.
 func (c *federations) Create(federation *kops.Federation) (result *kops.Federation, err error) {
 	result = &kops.Federation{}
@@ -103,41 +138,6 @@ func (c *federations) DeleteCollection(options *v1.DeleteOptions, listOptions v1
 		Body(options).
 		Do().
 		Error()
-}
-
-// Get takes name of the federation, and returns the corresponding federation object, and an error if there is any.
-func (c *federations) Get(name string, options v1.GetOptions) (result *kops.Federation, err error) {
-	result = &kops.Federation{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("federations").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of Federations that match those selectors.
-func (c *federations) List(opts v1.ListOptions) (result *kops.FederationList, err error) {
-	result = &kops.FederationList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("federations").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested federations.
-func (c *federations) Watch(opts v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("federations").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
 }
 
 // Patch applies the patch and returns the patched federation.
