@@ -22,11 +22,11 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	utilfeature "k8s.io/apiserver/pkg/util/feature"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/apis/componentconfig"
+	"k8s.io/kubernetes/pkg/kubelet/apis/kubeletconfig"
 	"k8s.io/kubernetes/test/e2e/framework"
 )
 
@@ -36,7 +36,7 @@ type podEvictSpec struct {
 }
 
 const (
-	totalEvict = 3
+	totalEvict = 7
 )
 
 // Eviction Policy is described here:
@@ -47,15 +47,18 @@ var _ = framework.KubeDescribe("LocalStorageCapacityIsolationEviction [Slow] [Se
 	f := framework.NewDefaultFramework("localstorage-eviction-test")
 
 	emptyDirVolumeName := "volume-emptydir-pod"
+	gitRepoVolumeName := "volume-gitrepo-pod"
+	configMapVolumeName := "volume-configmap-pod"
+	downwardAPIVolumeName := "volume-downwardapi-pod"
 	podTestSpecs := []podEvictSpec{
-		{evicted: true, // This pod should be evicted because emptyDir (defualt storage type) usage violation
+		{evicted: true, // This pod should be evicted because emptyDir (default storage type) usage violation
 			pod: v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{Name: "emptydir-hog-pod"},
 				Spec: v1.PodSpec{
 					RestartPolicy: v1.RestartPolicyNever,
 					Containers: []v1.Container{
 						{
-							Image: "gcr.io/google_containers/busybox:1.24",
+							Image: busyboxImage,
 							Name:  "container-emptydir-hog-pod",
 							Command: []string{
 								"sh",
@@ -75,7 +78,7 @@ var _ = framework.KubeDescribe("LocalStorageCapacityIsolationEviction [Slow] [Se
 							Name: emptyDirVolumeName,
 							VolumeSource: v1.VolumeSource{
 								EmptyDir: &v1.EmptyDirVolumeSource{
-									SizeLimit: *resource.NewQuantity(int64(1000), resource.BinarySI),
+									SizeLimit: resource.NewQuantity(int64(1000), resource.BinarySI),
 								},
 							},
 						},
@@ -91,7 +94,7 @@ var _ = framework.KubeDescribe("LocalStorageCapacityIsolationEviction [Slow] [Se
 					RestartPolicy: v1.RestartPolicyNever,
 					Containers: []v1.Container{
 						{
-							Image: "gcr.io/google_containers/busybox:1.24",
+							Image: busyboxImage,
 							Name:  "container-emptydir-memory-pod",
 							Command: []string{
 								"sh",
@@ -112,7 +115,7 @@ var _ = framework.KubeDescribe("LocalStorageCapacityIsolationEviction [Slow] [Se
 							VolumeSource: v1.VolumeSource{
 								EmptyDir: &v1.EmptyDirVolumeSource{
 									Medium:    "Memory",
-									SizeLimit: *resource.NewQuantity(int64(10000), resource.BinarySI),
+									SizeLimit: resource.NewQuantity(int64(10000), resource.BinarySI),
 								},
 							},
 						},
@@ -128,7 +131,7 @@ var _ = framework.KubeDescribe("LocalStorageCapacityIsolationEviction [Slow] [Se
 					RestartPolicy: v1.RestartPolicyNever,
 					Containers: []v1.Container{
 						{
-							Image: "gcr.io/google_containers/busybox:1.24",
+							Image: busyboxImage,
 							Name:  "container-emptydir-hog-pod",
 							Command: []string{
 								"sh",
@@ -148,7 +151,7 @@ var _ = framework.KubeDescribe("LocalStorageCapacityIsolationEviction [Slow] [Se
 							Name: emptyDirVolumeName,
 							VolumeSource: v1.VolumeSource{
 								EmptyDir: &v1.EmptyDirVolumeSource{
-									SizeLimit: *resource.NewQuantity(int64(100000), resource.BinarySI),
+									SizeLimit: resource.NewQuantity(int64(100000), resource.BinarySI),
 								},
 							},
 						},
@@ -157,14 +160,14 @@ var _ = framework.KubeDescribe("LocalStorageCapacityIsolationEviction [Slow] [Se
 			},
 		},
 
-		{evicted: true, // This pod should be evicted because container overlay usage violation
+		{evicted: true, // This pod should be evicted because container ephemeral storage usage violation
 			pod: v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{Name: "container-hog-pod"},
 				Spec: v1.PodSpec{
 					RestartPolicy: v1.RestartPolicyNever,
 					Containers: []v1.Container{
 						{
-							Image: "gcr.io/google_containers/busybox:1.24",
+							Image: busyboxImage,
 							Name:  "container-hog-pod",
 							Command: []string{
 								"sh",
@@ -173,9 +176,181 @@ var _ = framework.KubeDescribe("LocalStorageCapacityIsolationEviction [Slow] [Se
 							},
 							Resources: v1.ResourceRequirements{
 								Limits: v1.ResourceList{
-									v1.ResourceStorageOverlay: *resource.NewMilliQuantity(
+									v1.ResourceEphemeralStorage: *resource.NewMilliQuantity(
 										int64(40000),
 										resource.BinarySI),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+
+		{evicted: true, // This pod should be evicted because pod ephemeral storage usage violation
+			pod: v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{Name: "emptydir-container-hog-pod"},
+				Spec: v1.PodSpec{
+					RestartPolicy: v1.RestartPolicyNever,
+					Containers: []v1.Container{
+						{
+							Image: "gcr.io/google_containers/busybox:1.24",
+							Name:  "emptydir-container-hog-pod",
+							Command: []string{
+								"sh",
+								"-c",
+								"sleep 5; dd if=/dev/urandom of=target-file of=/cache/target-file bs=50000 count=1; while true; do sleep 5; done",
+							},
+							Resources: v1.ResourceRequirements{
+								Limits: v1.ResourceList{
+									v1.ResourceEphemeralStorage: *resource.NewMilliQuantity(
+										int64(40000),
+										resource.BinarySI),
+								},
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      emptyDirVolumeName,
+									MountPath: "/cache",
+								},
+							},
+						},
+					},
+					Volumes: []v1.Volume{
+						{
+							Name: emptyDirVolumeName,
+							VolumeSource: v1.VolumeSource{
+								EmptyDir: &v1.EmptyDirVolumeSource{
+									SizeLimit: resource.NewQuantity(int64(100000), resource.BinarySI),
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+
+		{evicted: true, // This pod should be evicted because pod ephemeral storage usage violation
+			pod: v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{Name: "downward-api-container-hog-pod"},
+				Spec: v1.PodSpec{
+					RestartPolicy: v1.RestartPolicyNever,
+					Containers: []v1.Container{
+						{
+							Image: "gcr.io/google_containers/busybox:1.24",
+							Name:  "downward-api-container-hog-pod",
+							Command: []string{
+								"sh",
+								"-c",
+								"sleep 5; dd if=/dev/urandom of=target-file of=/cache/target-file bs=50000 count=1; while true; do sleep 5; done",
+							},
+							Resources: v1.ResourceRequirements{
+								Limits: v1.ResourceList{
+									v1.ResourceEphemeralStorage: *resource.NewMilliQuantity(
+										int64(40000),
+										resource.BinarySI),
+								},
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      downwardAPIVolumeName,
+									MountPath: "/cache",
+								},
+							},
+						},
+					},
+					Volumes: []v1.Volume{
+						{
+							Name: downwardAPIVolumeName,
+							VolumeSource: v1.VolumeSource{
+								DownwardAPI: &v1.DownwardAPIVolumeSource{},
+							},
+						},
+					},
+				},
+			},
+		},
+
+		{evicted: true, // This pod should be evicted because pod ephemeral storage usage violation
+			pod: v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{Name: "configmap-container-hog-pod"},
+				Spec: v1.PodSpec{
+					RestartPolicy: v1.RestartPolicyNever,
+					Containers: []v1.Container{
+						{
+							Image: "gcr.io/google_containers/busybox:1.24",
+							Name:  "configmap-container-hog-pod",
+							Command: []string{
+								"sh",
+								"-c",
+								"sleep 5; dd if=/dev/urandom of=target-file of=/cache/target-file bs=50000 count=1; while true; do sleep 5; done",
+							},
+							Resources: v1.ResourceRequirements{
+								Limits: v1.ResourceList{
+									v1.ResourceEphemeralStorage: *resource.NewMilliQuantity(
+										int64(40000),
+										resource.BinarySI),
+								},
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      configMapVolumeName,
+									MountPath: "/cache",
+								},
+							},
+						},
+					},
+					Volumes: []v1.Volume{
+						{
+							Name: configMapVolumeName,
+							VolumeSource: v1.VolumeSource{
+								ConfigMap: &v1.ConfigMapVolumeSource{
+									LocalObjectReference: v1.LocalObjectReference{
+										Name: "my-cfgmap",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+
+		{evicted: true, // This pod should be evicted because pod ephemeral storage usage violation
+			pod: v1.Pod{
+				ObjectMeta: metav1.ObjectMeta{Name: "gitrepo-container-hog-pod"},
+				Spec: v1.PodSpec{
+					RestartPolicy: v1.RestartPolicyNever,
+					Containers: []v1.Container{
+						{
+							Image: "gcr.io/google_containers/busybox:1.24",
+							Name:  "gitrepo-container-hog-pod",
+							Command: []string{
+								"sh",
+								"-c",
+								"sleep 5; dd if=/dev/urandom of=target-file of=/cache/target-file bs=50000 count=1; while true; do sleep 5; done",
+							},
+							Resources: v1.ResourceRequirements{
+								Limits: v1.ResourceList{
+									v1.ResourceEphemeralStorage: *resource.NewMilliQuantity(
+										int64(40000),
+										resource.BinarySI),
+								},
+							},
+							VolumeMounts: []v1.VolumeMount{
+								{
+									Name:      gitRepoVolumeName,
+									MountPath: "/cache",
+								},
+							},
+						},
+					},
+					Volumes: []v1.Volume{
+						{
+							Name: gitRepoVolumeName,
+							VolumeSource: v1.VolumeSource{
+								GitRepo: &v1.GitRepoVolumeSource{
+									Repository: "my-repo",
 								},
 							},
 						},
@@ -186,9 +361,9 @@ var _ = framework.KubeDescribe("LocalStorageCapacityIsolationEviction [Slow] [Se
 	}
 
 	evictionTestTimeout := 10 * time.Minute
-	testCondition := "EmptyDir/ContainerOverlay usage limit violation"
+	testCondition := "PodLocalEphemeralStorage/ContainerLocalEphemeralStorage usage limit violation"
 	Context(fmt.Sprintf("EmptyDirEviction when we run containers that should cause %s", testCondition), func() {
-		tempSetCurrentKubeletConfig(f, func(initialConfig *componentconfig.KubeletConfiguration) {
+		tempSetCurrentKubeletConfig(f, func(initialConfig *kubeletconfig.KubeletConfiguration) {
 			initialConfig.FeatureGates += ", LocalStorageCapacityIsolation=true"
 		})
 		err := utilfeature.DefaultFeatureGate.Set("LocalStorageCapacityIsolation=true")

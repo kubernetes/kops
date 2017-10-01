@@ -30,7 +30,7 @@ func (p *fieldsPrinter) kv(pfx string, kv *spb.KeyValue) {
 	fmt.Printf("\"%sModRevision\" : %d\n", pfx, kv.ModRevision)
 	fmt.Printf("\"%sVersion\" : %d\n", pfx, kv.Version)
 	fmt.Printf("\"%sValue\" : %q\n", pfx, string(kv.Value))
-	fmt.Printf("\"%sLease\" : %d\n", pfx, string(kv.Lease))
+	fmt.Printf("\"%sLease\" : %d\n", pfx, kv.Lease)
 }
 
 func (p *fieldsPrinter) hdr(h *pb.ResponseHeader) {
@@ -90,6 +90,22 @@ func (p *fieldsPrinter) Watch(resp v3.WatchResponse) {
 		}
 		p.kv("", e.Kv)
 	}
+}
+
+func (p *fieldsPrinter) Grant(r v3.LeaseGrantResponse) {
+	p.hdr(r.ResponseHeader)
+	fmt.Println(`"ID" :`, r.ID)
+	fmt.Println(`"TTL" :`, r.TTL)
+}
+
+func (p *fieldsPrinter) Revoke(id v3.LeaseID, r v3.LeaseRevokeResponse) {
+	p.hdr(r.Header)
+}
+
+func (p *fieldsPrinter) KeepAlive(r v3.LeaseKeepAliveResponse) {
+	p.hdr(r.ResponseHeader)
+	fmt.Println(`"ID" :`, r.ID)
+	fmt.Println(`"TTL" :`, r.TTL)
 }
 
 func (p *fieldsPrinter) TimeToLive(r v3.LeaseTimeToLiveResponse, keys bool) {

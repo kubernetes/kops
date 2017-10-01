@@ -26,6 +26,8 @@ type blobUploadState struct {
 
 type hmacKey string
 
+var errInvalidSecret = fmt.Errorf("invalid secret")
+
 // unpackUploadState unpacks and validates the blob upload state from the
 // token, using the hmacKey secret.
 func (secret hmacKey) unpackUploadState(token string) (blobUploadState, error) {
@@ -38,7 +40,7 @@ func (secret hmacKey) unpackUploadState(token string) (blobUploadState, error) {
 	mac := hmac.New(sha256.New, []byte(secret))
 
 	if len(tokenBytes) < mac.Size() {
-		return state, fmt.Errorf("Invalid token")
+		return state, errInvalidSecret
 	}
 
 	macBytes := tokenBytes[:mac.Size()]
@@ -46,7 +48,7 @@ func (secret hmacKey) unpackUploadState(token string) (blobUploadState, error) {
 
 	mac.Write(messageBytes)
 	if !hmac.Equal(mac.Sum(nil), macBytes) {
-		return state, fmt.Errorf("Invalid token")
+		return state, errInvalidSecret
 	}
 
 	if err := json.Unmarshal(messageBytes, &state); err != nil {

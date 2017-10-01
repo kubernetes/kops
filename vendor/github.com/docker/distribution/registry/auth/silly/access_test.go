@@ -16,7 +16,7 @@ func TestSillyAccessController(t *testing.T) {
 	}
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		ctx := context.WithValue(nil, "http.request", r)
+		ctx := context.WithRequest(context.Background(), r)
 		authCtx, err := ac.Authorized(ctx)
 		if err != nil {
 			switch err := err.(type) {

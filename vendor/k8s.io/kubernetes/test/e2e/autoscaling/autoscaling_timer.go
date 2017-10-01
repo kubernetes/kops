@@ -20,8 +20,8 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/test/e2e/common"
 	"k8s.io/kubernetes/test/e2e/framework"
 
@@ -29,10 +29,10 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = framework.KubeDescribe("[Feature:ClusterSizeAutoscalingScaleUp] [Slow] Autoscaling", func() {
+var _ = SIGDescribe("[Feature:ClusterSizeAutoscalingScaleUp] [Slow] Autoscaling", func() {
 	f := framework.NewDefaultFramework("autoscaling")
 
-	framework.KubeDescribe("Autoscaling a service", func() {
+	SIGDescribe("Autoscaling a service", func() {
 		BeforeEach(func() {
 			// Check if Cloud Autoscaler is enabled by trying to get its ConfigMap.
 			_, err := f.ClientSet.CoreV1().ConfigMaps("kube-system").Get("cluster-autoscaler-status", metav1.GetOptions{})
@@ -70,7 +70,7 @@ var _ = framework.KubeDescribe("[Feature:ClusterSizeAutoscalingScaleUp] [Slow] A
 			AfterEach(func() {
 				// Scale down back to only 'nodesNum' nodes, as expected at the start of the test.
 				framework.ExpectNoError(framework.ResizeGroup(nodeGroupName, nodesNum))
-				framework.ExpectNoError(framework.WaitForClusterSize(f.ClientSet, nodesNum, 15*time.Minute))
+				framework.ExpectNoError(framework.WaitForReadyNodes(f.ClientSet, nodesNum, 15*time.Minute))
 			})
 
 			Measure("takes less than 15 minutes", func(b Benchmarker) {
@@ -79,17 +79,17 @@ var _ = framework.KubeDescribe("[Feature:ClusterSizeAutoscalingScaleUp] [Slow] A
 
 				// Calculate the CPU request of the service.
 				// This test expects that 8 pods will not fit in 'nodesNum' nodes, but will fit in >='nodesNum'+1 nodes.
-				// Make it so that 'nodesNum' pods fit perfectly per node (in practice other things take space, so less than that will fit).
-				nodeCpus := nodes.Items[0].Status.Capacity[v1.ResourceCPU]
+				// Make it so that 'nodesNum' pods fit perfectly per node.
+				nodeCpus := nodes.Items[0].Status.Allocatable[v1.ResourceCPU]
 				nodeCpuMillis := (&nodeCpus).MilliValue()
 				cpuRequestMillis := int64(nodeCpuMillis / nodesNum)
 
 				// Start the service we want to scale and wait for it to be up and running.
-				nodeMemoryBytes := nodes.Items[0].Status.Capacity[v1.ResourceMemory]
+				nodeMemoryBytes := nodes.Items[0].Status.Allocatable[v1.ResourceMemory]
 				nodeMemoryMB := (&nodeMemoryBytes).Value() / 1024 / 1024
-				memRequestMB := nodeMemoryMB / 10 // Ensure each pod takes not more than 10% of node's total memory.
+				memRequestMB := nodeMemoryMB / 10 // Ensure each pod takes not more than 10% of node's allocatable memory.
 				replicas := 1
-				resourceConsumer := common.NewDynamicResourceConsumer("resource-consumer", common.KindDeployment, replicas, 0, 0, 0, cpuRequestMillis, memRequestMB, f)
+				resourceConsumer := common.NewDynamicResourceConsumer("resource-consumer", f.Namespace.Name, common.KindDeployment, replicas, 0, 0, 0, cpuRequestMillis, memRequestMB, f.ClientSet, f.InternalClientset)
 				defer resourceConsumer.CleanUp()
 				resourceConsumer.WaitForReplicas(replicas, 1*time.Minute) // Should finish ~immediately, so 1 minute is more than enough.
 

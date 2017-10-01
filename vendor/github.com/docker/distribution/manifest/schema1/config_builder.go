@@ -9,11 +9,10 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
+	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/libtrust"
-
-	"github.com/docker/distribution/digest"
-	"github.com/docker/distribution/manifest"
+	"github.com/opencontainers/go-digest"
 )
 
 type diffID digest.Digest
@@ -95,7 +94,7 @@ func (mb *configManifestBuilder) Build(ctx context.Context) (m distribution.Mani
 	}
 
 	if len(img.RootFS.DiffIDs) != len(mb.descriptors) {
-		return nil, errors.New("number of descriptors and number of layers in rootfs must match")
+		return nil, fmt.Errorf("number of descriptors and number of layers in rootfs must match: len(%v) != len(%v)", img.RootFS.DiffIDs, mb.descriptors)
 	}
 
 	// Generate IDs for each layer
@@ -110,7 +109,8 @@ func (mb *configManifestBuilder) Build(ctx context.Context) (m distribution.Mani
 		ContainerConfig struct {
 			Cmd []string
 		} `json:"container_config,omitempty"`
-		ThrowAway bool `json:"throwaway,omitempty"`
+		Author    string `json:"author,omitempty"`
+		ThrowAway bool   `json:"throwaway,omitempty"`
 	}
 
 	fsLayerList := make([]FSLayer, len(img.History))
@@ -145,6 +145,7 @@ func (mb *configManifestBuilder) Build(ctx context.Context) (m distribution.Mani
 			Parent:  parent,
 			Comment: h.Comment,
 			Created: h.Created,
+			Author:  h.Author,
 		}
 		v1Compatibility.ContainerConfig.Cmd = []string{img.History[i].CreatedBy}
 		if h.EmptyLayer {
@@ -239,8 +240,13 @@ func (mb *configManifestBuilder) emptyTar(ctx context.Context) (digest.Digest, e
 
 // AppendReference adds a reference to the current ManifestBuilder
 func (mb *configManifestBuilder) AppendReference(d distribution.Describable) error {
-	// todo: verification here?
-	mb.descriptors = append(mb.descriptors, d.Descriptor())
+	descriptor := d.Descriptor()
+
+	if err := descriptor.Digest.Validate(); err != nil {
+		return err
+	}
+
+	mb.descriptors = append(mb.descriptors, descriptor)
 	return nil
 }
 

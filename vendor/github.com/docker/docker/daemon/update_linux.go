@@ -3,23 +3,30 @@
 package daemon
 
 import (
+	"time"
+
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/libcontainerd"
-	"github.com/docker/engine-api/types/container"
 )
 
 func toContainerdResources(resources container.Resources) libcontainerd.Resources {
 	var r libcontainerd.Resources
-	r.BlkioWeight = uint32(resources.BlkioWeight)
-	r.CpuShares = uint32(resources.CPUShares)
-	r.CpuPeriod = uint32(resources.CPUPeriod)
-	r.CpuQuota = uint32(resources.CPUQuota)
+	r.BlkioWeight = uint64(resources.BlkioWeight)
+	r.CpuShares = uint64(resources.CPUShares)
+	if resources.NanoCPUs != 0 {
+		r.CpuPeriod = uint64(100 * time.Millisecond / time.Microsecond)
+		r.CpuQuota = uint64(resources.NanoCPUs) * r.CpuPeriod / 1e9
+	} else {
+		r.CpuPeriod = uint64(resources.CPUPeriod)
+		r.CpuQuota = uint64(resources.CPUQuota)
+	}
 	r.CpusetCpus = resources.CpusetCpus
 	r.CpusetMems = resources.CpusetMems
-	r.MemoryLimit = uint32(resources.Memory)
+	r.MemoryLimit = uint64(resources.Memory)
 	if resources.MemorySwap > 0 {
-		r.MemorySwap = uint32(resources.MemorySwap)
+		r.MemorySwap = uint64(resources.MemorySwap)
 	}
-	r.MemoryReservation = uint32(resources.MemoryReservation)
-	r.KernelMemoryLimit = uint32(resources.KernelMemory)
+	r.MemoryReservation = uint64(resources.MemoryReservation)
+	r.KernelMemoryLimit = uint64(resources.KernelMemory)
 	return r
 }

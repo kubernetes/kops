@@ -4,7 +4,7 @@ go_import_path: github.com/coreos/etcd
 sudo: false
 
 go:
-  - 1.7.5
+  - 1.8.3
 
 notifications:
   on_success: never
@@ -31,18 +31,6 @@ matrix:
     env: TARGET=386
   - go: tip
     env: TARGET=ppc64le
-
-addons:
-  apt:
-    packages:
-    - libpcap-dev
-    - libaspell-dev
-    - libhunspell-dev
-
-before_install:
- - go get -v github.com/chzchzchz/goword
- - go get -v honnef.co/go/simple/cmd/gosimple
- - go get -v honnef.co/go/unused/cmd/unused
 
 # disable godep restore override
 install:

@@ -32,7 +32,7 @@ func TestManifest(t *testing.T) {
 		Config: distribution.Descriptor{
 			Digest:    "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b",
 			Size:      985,
-			MediaType: MediaTypeConfig,
+			MediaType: MediaTypeImageConfig,
 		},
 		Layers: []distribution.Descriptor{
 			{
@@ -82,7 +82,7 @@ func TestManifest(t *testing.T) {
 	if target.Digest != "sha256:1a9ec845ee94c202b2d5da74a24f0ed2058318bfa9879fa541efaecba272e86b" {
 		t.Fatalf("unexpected digest in target: %s", target.Digest.String())
 	}
-	if target.MediaType != MediaTypeConfig {
+	if target.MediaType != MediaTypeImageConfig {
 		t.Fatalf("unexpected media type in target: %s", target.MediaType)
 	}
 	if target.Size != 985 {
@@ -90,16 +90,22 @@ func TestManifest(t *testing.T) {
 	}
 
 	references := deserialized.References()
-	if len(references) != 1 {
+	if len(references) != 2 {
 		t.Fatalf("unexpected number of references: %d", len(references))
 	}
-	if references[0].Digest != "sha256:62d8908bee94c202b2d35224a221aaa2058318bfa9879fa541efaecba272331b" {
+
+	if !reflect.DeepEqual(references[0], target) {
+		t.Fatalf("first reference should be target: %v != %v", references[0], target)
+	}
+
+	// Test the second reference
+	if references[1].Digest != "sha256:62d8908bee94c202b2d35224a221aaa2058318bfa9879fa541efaecba272331b" {
 		t.Fatalf("unexpected digest in reference: %s", references[0].Digest.String())
 	}
-	if references[0].MediaType != MediaTypeLayer {
+	if references[1].MediaType != MediaTypeLayer {
 		t.Fatalf("unexpected media type in reference: %s", references[0].MediaType)
 	}
-	if references[0].Size != 153263 {
+	if references[1].Size != 153263 {
 		t.Fatalf("unexpected size in reference: %d", references[0].Size)
 	}
 }

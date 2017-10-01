@@ -15,9 +15,10 @@ import (
 	"testing"
 	"time"
 
+	"gopkg.in/check.v1"
+
 	"github.com/docker/distribution/context"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	"gopkg.in/check.v1"
 )
 
 // Test hooks up gocheck into the "go test" runner.
@@ -717,6 +718,52 @@ func (suite *DriverSuite) TestDeleteFolder(c *check.C) {
 	c.Assert(strings.Contains(err.Error(), suite.Name()), check.Equals, true)
 }
 
+// TestDeleteOnlyDeletesSubpaths checks that deleting path A does not
+// delete path B when A is a prefix of B but B is not a subpath of A (so that
+// deleting "/a" does not delete "/ab").  This matters for services like S3 that
+// do not implement directories.
+func (suite *DriverSuite) TestDeleteOnlyDeletesSubpaths(c *check.C) {
+	dirname := randomPath(32)
+	filename := randomPath(32)
+	contents := randomContents(32)
+
+	defer suite.deletePath(c, firstPart(dirname))
+
+	err := suite.StorageDriver.PutContent(suite.ctx, path.Join(dirname, filename), contents)
+	c.Assert(err, check.IsNil)
+
+	err = suite.StorageDriver.PutContent(suite.ctx, path.Join(dirname, filename+"suffix"), contents)
+	c.Assert(err, check.IsNil)
+
+	err = suite.StorageDriver.PutContent(suite.ctx, path.Join(dirname, dirname, filename), contents)
+	c.Assert(err, check.IsNil)
+
+	err = suite.StorageDriver.PutContent(suite.ctx, path.Join(dirname, dirname+"suffix", filename), contents)
+	c.Assert(err, check.IsNil)
+
+	err = suite.StorageDriver.Delete(suite.ctx, path.Join(dirname, filename))
+	c.Assert(err, check.IsNil)
+
+	_, err = suite.StorageDriver.GetContent(suite.ctx, path.Join(dirname, filename))
+	c.Assert(err, check.NotNil)
+	c.Assert(err, check.FitsTypeOf, storagedriver.PathNotFoundError{})
+	c.Assert(strings.Contains(err.Error(), suite.Name()), check.Equals, true)
+
+	_, err = suite.StorageDriver.GetContent(suite.ctx, path.Join(dirname, filename+"suffix"))
+	c.Assert(err, check.IsNil)
+
+	err = suite.StorageDriver.Delete(suite.ctx, path.Join(dirname, dirname))
+	c.Assert(err, check.IsNil)
+
+	_, err = suite.StorageDriver.GetContent(suite.ctx, path.Join(dirname, dirname, filename))
+	c.Assert(err, check.NotNil)
+	c.Assert(err, check.FitsTypeOf, storagedriver.PathNotFoundError{})
+	c.Assert(strings.Contains(err.Error(), suite.Name()), check.Equals, true)
+
+	_, err = suite.StorageDriver.GetContent(suite.ctx, path.Join(dirname, dirname+"suffix", filename))
+	c.Assert(err, check.IsNil)
+}
+
 // TestStatCall runs verifies the implementation of the storagedriver's Stat call.
 func (suite *DriverSuite) TestStatCall(c *check.C) {
 	content := randomContents(4096)
@@ -1168,10 +1215,7 @@ func randomFilename(length int64) string {
 var randomBytes = make([]byte, 128<<20)
 
 func init() {
-	// increase the random bytes to the required maximum
-	for i := range randomBytes {
-		randomBytes[i] = byte(rand.Intn(2 << 8))
-	}
+	_, _ = rand.Read(randomBytes) // always returns len(randomBytes) and nil error
 }
 
 func randomContents(length int64) []byte {

@@ -15,16 +15,12 @@ function teardown() {
 
 @test "global --root" {
   # run busybox detached using $HELLO_BUNDLE for state
-  ROOT=$HELLO_BUNDLE runc run -d --console /dev/pts/ptmx test_dotbox
+  ROOT=$HELLO_BUNDLE runc run -d --console-socket $CONSOLE_SOCKET test_dotbox
   [ "$status" -eq 0 ]
 
   # run busybox detached in default root
-  runc run -d --console /dev/pts/ptmx test_busybox
+  runc run -d --console-socket $CONSOLE_SOCKET test_busybox
   [ "$status" -eq 0 ]
-
-  # check state of the busyboxes are only in their respective root path
-  wait_for_container 15 1 test_busybox
-  wait_for_container_inroot 15 1 test_dotbox $HELLO_BUNDLE
 
   runc state test_busybox
   [ "$status" -eq 0 ]

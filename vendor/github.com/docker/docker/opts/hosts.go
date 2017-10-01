@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	// DefaultHTTPPort Default HTTP Port used if only the protocol is provided to -H flag e.g. docker daemon -H tcp://
+	// DefaultHTTPPort Default HTTP Port used if only the protocol is provided to -H flag e.g. dockerd -H tcp://
 	// These are the IANA registered port numbers for use with Docker
 	// see http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?search=docker
 	DefaultHTTPPort = 2375 // Default HTTP Port
@@ -37,7 +37,7 @@ func ValidateHost(val string) (string, error) {
 		}
 	}
 	// Note: unlike most flag validators, we don't return the mutated value here
-	//       we need to know what the user entered later (using ParseHost) to adjust for tls
+	//       we need to know what the user entered later (using ParseHost) to adjust for TLS
 	return val, nil
 }
 
@@ -63,14 +63,14 @@ func ParseHost(defaultToTLS bool, val string) (string, error) {
 // parseDockerDaemonHost parses the specified address and returns an address that will be used as the host.
 // Depending of the address specified, this may return one of the global Default* strings defined in hosts.go.
 func parseDockerDaemonHost(addr string) (string, error) {
-	addrParts := strings.Split(addr, "://")
+	addrParts := strings.SplitN(addr, "://", 2)
 	if len(addrParts) == 1 && addrParts[0] != "" {
 		addrParts = []string{"tcp", addrParts[0]}
 	}
 
 	switch addrParts[0] {
 	case "tcp":
-		return parseTCPAddr(addrParts[1], DefaultTCPHost)
+		return ParseTCPAddr(addrParts[1], DefaultTCPHost)
 	case "unix":
 		return parseSimpleProtoAddr("unix", addrParts[1], DefaultUnixSocket)
 	case "npipe":
@@ -97,12 +97,12 @@ func parseSimpleProtoAddr(proto, addr, defaultAddr string) (string, error) {
 	return fmt.Sprintf("%s://%s", proto, addr), nil
 }
 
-// parseTCPAddr parses and validates that the specified address is a valid TCP
+// ParseTCPAddr parses and validates that the specified address is a valid TCP
 // address. It returns a formatted TCP address, either using the address parsed
 // from tryAddr, or the contents of defaultAddr if tryAddr is a blank string.
 // tryAddr is expected to have already been Trim()'d
 // defaultAddr must be in the full `tcp://host:port` form
-func parseTCPAddr(tryAddr string, defaultAddr string) (string, error) {
+func ParseTCPAddr(tryAddr string, defaultAddr string) (string, error) {
 	if tryAddr == "" || tryAddr == "tcp://" {
 		return defaultAddr, nil
 	}
@@ -127,8 +127,11 @@ func parseTCPAddr(tryAddr string, defaultAddr string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-
 	host, port, err := net.SplitHostPort(u.Host)
+	if err != nil {
+		// try port addition once
+		host, port, err = net.SplitHostPort(net.JoinHostPort(u.Host, defaultPort))
+	}
 	if err != nil {
 		return "", fmt.Errorf("Invalid bind address format: %s", tryAddr)
 	}
@@ -145,4 +148,18 @@ func parseTCPAddr(tryAddr string, defaultAddr string) (string, error) {
 	}
 
 	return fmt.Sprintf("tcp://%s%s", net.JoinHostPort(host, port), u.Path), nil
+}
+
+// ValidateExtraHost validates that the specified string is a valid extrahost and returns it.
+// ExtraHost is in the form of name:ip where the ip has to be a valid ip (IPv4 or IPv6).
+func ValidateExtraHost(val string) (string, error) {
+	// allow for IPv6 addresses in extra hosts by only splitting on first ":"
+	arr := strings.SplitN(val, ":", 2)
+	if len(arr) != 2 || len(arr[0]) == 0 {
+		return "", fmt.Errorf("bad format for add-host: %q", val)
+	}
+	if _, err := ValidateIPAddress(arr[1]); err != nil {
+		return "", fmt.Errorf("invalid IP address in add-host: %q", arr[1])
+	}
+	return val, nil
 }

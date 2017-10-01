@@ -7,20 +7,16 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/docker/docker/volume"
-	containertypes "github.com/docker/engine-api/types/container"
+	"github.com/docker/docker/api/types"
+	containertypes "github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/pkg/system"
 )
 
-// Container holds fields specific to the Windows implementation. See
-// CommonContainer for standard fields common to all containers.
-type Container struct {
-	CommonContainer
-
-	HostnamePath   string
-	HostsPath      string
-	ResolvConfPath string
-	// Fields below here are platform specific.
-}
+const (
+	containerSecretMountPath         = `C:\ProgramData\Docker\secrets`
+	containerInternalSecretMountPath = `C:\ProgramData\Docker\internal\secrets`
+	containerInternalConfigsDirPath  = `C:\ProgramData\Docker\internal\configs`
+)
 
 // ExitStatus provides exit reasons for a container.
 type ExitStatus struct {
@@ -28,13 +24,7 @@ type ExitStatus struct {
 	ExitCode int
 }
 
-// CreateDaemonEnvironment creates a new environment variable slice for this container.
-func (container *Container) CreateDaemonEnvironment(linkedEnv []string) []string {
-	// On Windows, nothing to link. Just return the container environment.
-	return container.Config.Env
-}
-
-// UnmountIpcMounts unmount Ipc related mounts.
+// UnmountIpcMounts unmounts Ipc related mounts.
 // This is a NOOP on windows.
 func (container *Container) UnmountIpcMounts(unmount func(pth string) error) {
 }
@@ -44,40 +34,141 @@ func (container *Container) IpcMounts() []Mount {
 	return nil
 }
 
-// UnmountVolumes explicitly unmounts volumes from the container.
-func (container *Container) UnmountVolumes(forceSyscall bool, volumeEventLog func(name, action string, attributes map[string]string)) error {
+// CreateSecretSymlinks creates symlinks to files in the secret mount.
+func (container *Container) CreateSecretSymlinks() error {
+	for _, r := range container.SecretReferences {
+		if r.File == nil {
+			continue
+		}
+		resolvedPath, _, err := container.ResolvePath(getSecretTargetPath(r))
+		if err != nil {
+			return err
+		}
+		if err := system.MkdirAll(filepath.Dir(resolvedPath), 0, ""); err != nil {
+			return err
+		}
+		if err := os.Symlink(filepath.Join(containerInternalSecretMountPath, r.SecretID), resolvedPath); err != nil {
+			return err
+		}
+	}
+
 	return nil
+}
+
+// SecretMounts returns the mount for the secret path.
+// All secrets are stored in a single mount on Windows. Target symlinks are
+// created for each secret, pointing to the files in this mount.
+func (container *Container) SecretMounts() []Mount {
+	var mounts []Mount
+	if len(container.SecretReferences) > 0 {
+		mounts = append(mounts, Mount{
+			Source:      container.SecretMountPath(),
+			Destination: containerInternalSecretMountPath,
+			Writable:    false,
+		})
+	}
+
+	return mounts
+}
+
+// UnmountSecrets unmounts the fs for secrets
+func (container *Container) UnmountSecrets() error {
+	return os.RemoveAll(container.SecretMountPath())
+}
+
+// CreateConfigSymlinks creates symlinks to files in the config mount.
+func (container *Container) CreateConfigSymlinks() error {
+	for _, configRef := range container.ConfigReferences {
+		if configRef.File == nil {
+			continue
+		}
+		resolvedPath, _, err := container.ResolvePath(configRef.File.Name)
+		if err != nil {
+			return err
+		}
+		if err := system.MkdirAll(filepath.Dir(resolvedPath), 0, ""); err != nil {
+			return err
+		}
+		if err := os.Symlink(filepath.Join(containerInternalConfigsDirPath, configRef.ConfigID), resolvedPath); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// ConfigMounts returns the mount for configs.
+// All configs are stored in a single mount on Windows. Target symlinks are
+// created for each config, pointing to the files in this mount.
+func (container *Container) ConfigMounts() []Mount {
+	var mounts []Mount
+	if len(container.ConfigReferences) > 0 {
+		mounts = append(mounts, Mount{
+			Source:      container.ConfigsDirPath(),
+			Destination: containerInternalConfigsDirPath,
+			Writable:    false,
+		})
+	}
+
+	return mounts
+}
+
+// DetachAndUnmount unmounts all volumes.
+// On Windows it only delegates to `UnmountVolumes` since there is nothing to
+// force unmount.
+func (container *Container) DetachAndUnmount(volumeEventLog func(name, action string, attributes map[string]string)) error {
+	return container.UnmountVolumes(volumeEventLog)
 }
 
 // TmpfsMounts returns the list of tmpfs mounts
-func (container *Container) TmpfsMounts() []Mount {
-	return nil
+func (container *Container) TmpfsMounts() ([]Mount, error) {
+	var mounts []Mount
+	return mounts, nil
 }
 
-// UpdateContainer updates configuration of a container
+// UpdateContainer updates configuration of a container. Callers must hold a Lock on the Container.
 func (container *Container) UpdateContainer(hostConfig *containertypes.HostConfig) error {
-	container.Lock()
-	defer container.Unlock()
 	resources := hostConfig.Resources
-	if resources.BlkioWeight != 0 || resources.CPUShares != 0 ||
-		resources.CPUPeriod != 0 || resources.CPUQuota != 0 ||
-		resources.CpusetCpus != "" || resources.CpusetMems != "" ||
-		resources.Memory != 0 || resources.MemorySwap != 0 ||
-		resources.MemoryReservation != 0 || resources.KernelMemory != 0 {
-		return fmt.Errorf("Resource updating isn't supported on Windows")
+	if resources.CPUShares != 0 ||
+		resources.Memory != 0 ||
+		resources.NanoCPUs != 0 ||
+		resources.CgroupParent != "" ||
+		resources.BlkioWeight != 0 ||
+		len(resources.BlkioWeightDevice) != 0 ||
+		len(resources.BlkioDeviceReadBps) != 0 ||
+		len(resources.BlkioDeviceWriteBps) != 0 ||
+		len(resources.BlkioDeviceReadIOps) != 0 ||
+		len(resources.BlkioDeviceWriteIOps) != 0 ||
+		resources.CPUPeriod != 0 ||
+		resources.CPUQuota != 0 ||
+		resources.CPURealtimePeriod != 0 ||
+		resources.CPURealtimeRuntime != 0 ||
+		resources.CpusetCpus != "" ||
+		resources.CpusetMems != "" ||
+		len(resources.Devices) != 0 ||
+		len(resources.DeviceCgroupRules) != 0 ||
+		resources.DiskQuota != 0 ||
+		resources.KernelMemory != 0 ||
+		resources.MemoryReservation != 0 ||
+		resources.MemorySwap != 0 ||
+		resources.MemorySwappiness != nil ||
+		resources.OomKillDisable != nil ||
+		resources.PidsLimit != 0 ||
+		len(resources.Ulimits) != 0 ||
+		resources.CPUCount != 0 ||
+		resources.CPUPercent != 0 ||
+		resources.IOMaximumIOps != 0 ||
+		resources.IOMaximumBandwidth != 0 {
+		return fmt.Errorf("resource updating isn't supported on Windows")
 	}
 	// update HostConfig of container
 	if hostConfig.RestartPolicy.Name != "" {
+		if container.HostConfig.AutoRemove && !hostConfig.RestartPolicy.IsNone() {
+			return fmt.Errorf("Restart policy cannot be updated because AutoRemove is enabled for the container")
+		}
 		container.HostConfig.RestartPolicy = hostConfig.RestartPolicy
 	}
 	return nil
-}
-
-// appendNetworkMounts appends any network mounts to the array of mount points passed in.
-// Windows does not support network mounts (not to be confused with SMB network mounts), so
-// this is a no-op.
-func appendNetworkMounts(container *Container, volumeMounts []volume.MountPoint) ([]volume.MountPoint, error) {
-	return volumeMounts, nil
 }
 
 // cleanResourcePath cleans a resource path by removing C:\ syntax, and prepares
@@ -97,9 +188,23 @@ func (container *Container) BuildHostnameFile() error {
 	return nil
 }
 
-// canMountFS determines if the file system for the container
-// can be mounted locally. In the case of Windows, this is not possible
-// for Hyper-V containers during WORKDIR execution for example.
-func (container *Container) canMountFS() bool {
-	return !containertypes.Isolation.IsHyperV(container.HostConfig.Isolation)
+// EnableServiceDiscoveryOnDefaultNetwork Enable service discovery on default network
+func (container *Container) EnableServiceDiscoveryOnDefaultNetwork() bool {
+	return true
+}
+
+// GetMountPoints gives a platform specific transformation to types.MountPoint. Callers must hold a Container lock.
+func (container *Container) GetMountPoints() []types.MountPoint {
+	mountPoints := make([]types.MountPoint, 0, len(container.MountPoints))
+	for _, m := range container.MountPoints {
+		mountPoints = append(mountPoints, types.MountPoint{
+			Type:        m.Type,
+			Name:        m.Name,
+			Source:      m.Path(),
+			Destination: m.Destination,
+			Driver:      m.Driver,
+			RW:          m.RW,
+		})
+	}
+	return mountPoints
 }

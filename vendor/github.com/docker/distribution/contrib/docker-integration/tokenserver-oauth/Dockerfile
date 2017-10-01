@@ -1,4 +1,4 @@
-FROM dmcgowan/token-server:oauth
+FROM dmcgowan/token-server@sha256:5a6f76d3086cdf63249c77b521108387b49d85a30c5e1c4fe82fdf5ae3b76ba7
 
 WORKDIR /
 

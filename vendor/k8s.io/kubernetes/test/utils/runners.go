@@ -23,6 +23,9 @@ import (
 	"sync"
 	"time"
 
+	batch "k8s.io/api/batch/v1"
+	"k8s.io/api/core/v1"
+	extensions "k8s.io/api/extensions/v1beta1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -34,14 +37,11 @@ import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/apimachinery/pkg/util/wait"
+	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/util/workqueue"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
 	batchinternal "k8s.io/kubernetes/pkg/apis/batch"
-	batch "k8s.io/kubernetes/pkg/apis/batch/v1"
 	extensionsinternal "k8s.io/kubernetes/pkg/apis/extensions"
-	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 
 	"github.com/golang/glog"
@@ -108,6 +108,7 @@ type RunObjectConfig interface {
 	SetClient(clientset.Interface)
 	SetInternalClient(internalclientset.Interface)
 	GetReplicas() int
+	GetLabelValue(string) (string, bool)
 }
 
 type RCConfig struct {
@@ -500,6 +501,11 @@ func (config *RCConfig) GetReplicas() int {
 	return config.Replicas
 }
 
+func (config *RCConfig) GetLabelValue(key string) (string, bool) {
+	value, found := config.Labels[key]
+	return value, found
+}
+
 func (config *RCConfig) create() error {
 	dnsDefault := v1.DNSDefault
 	if config.DNSPolicy == nil {
@@ -870,14 +876,7 @@ func (s *LabelNodePrepareStrategy) PreparePatch(*v1.Node) []byte {
 }
 
 func (s *LabelNodePrepareStrategy) CleanupNode(node *v1.Node) *v1.Node {
-	objCopy, err := api.Scheme.Copy(node)
-	if err != nil {
-		return &v1.Node{}
-	}
-	nodeCopy, ok := (objCopy).(*v1.Node)
-	if !ok {
-		return &v1.Node{}
-	}
+	nodeCopy := node.DeepCopy()
 	if node.Labels != nil && len(node.Labels[s.labelKey]) != 0 {
 		delete(nodeCopy.Labels, s.labelKey)
 	}
@@ -997,7 +996,7 @@ func makeCreatePod(client clientset.Interface, namespace string, podTemplate *v1
 	return fmt.Errorf("Terminal error while creating pod, won't retry: %v", err)
 }
 
-func createPod(client clientset.Interface, namespace string, podCount int, podTemplate *v1.Pod) error {
+func CreatePod(client clientset.Interface, namespace string, podCount int, podTemplate *v1.Pod) error {
 	var createError error
 	lock := sync.Mutex{}
 	createPodFunc := func(i int) {
@@ -1044,7 +1043,7 @@ func createController(client clientset.Interface, controllerName, namespace stri
 
 func NewCustomCreatePodStrategy(podTemplate *v1.Pod) TestPodCreateStrategy {
 	return func(client clientset.Interface, namespace string, podCount int) error {
-		return createPod(client, namespace, podCount, podTemplate)
+		return CreatePod(client, namespace, podCount, podTemplate)
 	}
 }
 
@@ -1070,7 +1069,7 @@ func NewSimpleWithControllerCreatePodStrategy(controllerName string) TestPodCrea
 		if err := createController(client, controllerName, namespace, podCount, basePod); err != nil {
 			return err
 		}
-		return createPod(client, namespace, podCount, basePod)
+		return CreatePod(client, namespace, podCount, basePod)
 	}
 }
 

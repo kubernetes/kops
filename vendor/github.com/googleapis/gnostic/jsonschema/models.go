@@ -22,7 +22,7 @@ package jsonschema
 // are not specified.
 type Schema struct {
 	Schema *string // $schema
-	Id     *string // id keyword used for $ref resolution scope
+	ID     *string // id keyword used for $ref resolution scope
 	Ref    *string // $ref, i.e. JSON Pointers
 
 	// http://json-schema.org/latest/json-schema-validation.html
@@ -82,11 +82,14 @@ type SchemaNumber struct {
 	Float   *float64
 }
 
+// NewSchemaNumberWithInteger creates and returns a new object
 func NewSchemaNumberWithInteger(i int64) *SchemaNumber {
 	result := &SchemaNumber{}
 	result.Integer = &i
 	return result
 }
+
+// NewSchemaNumberWithFloat creates and returns a new object
 func NewSchemaNumberWithFloat(f float64) *SchemaNumber {
 	result := &SchemaNumber{}
 	result.Float = &f
@@ -99,12 +102,14 @@ type SchemaOrBoolean struct {
 	Boolean *bool
 }
 
+// NewSchemaOrBooleanWithSchema creates and returns a new object
 func NewSchemaOrBooleanWithSchema(s *Schema) *SchemaOrBoolean {
 	result := &SchemaOrBoolean{}
 	result.Schema = s
 	return result
 }
 
+// NewSchemaOrBooleanWithBoolean creates and returns a new object
 func NewSchemaOrBooleanWithBoolean(b bool) *SchemaOrBoolean {
 	result := &SchemaOrBoolean{}
 	result.Boolean = &b
@@ -118,12 +123,14 @@ type StringOrStringArray struct {
 	StringArray *[]string
 }
 
+// NewStringOrStringArrayWithString creates and returns a new object
 func NewStringOrStringArrayWithString(s string) *StringOrStringArray {
 	result := &StringOrStringArray{}
 	result.String = &s
 	return result
 }
 
+// NewStringOrStringArrayWithStringArray creates and returns a new object
 func NewStringOrStringArrayWithStringArray(a []string) *StringOrStringArray {
 	result := &StringOrStringArray{}
 	result.StringArray = &a
@@ -144,12 +151,14 @@ type SchemaOrSchemaArray struct {
 	SchemaArray *[]*Schema
 }
 
+// NewSchemaOrSchemaArrayWithSchema creates and returns a new object
 func NewSchemaOrSchemaArrayWithSchema(s *Schema) *SchemaOrSchemaArray {
 	result := &SchemaOrSchemaArray{}
 	result.Schema = s
 	return result
 }
 
+// NewSchemaOrSchemaArrayWithSchemaArray creates and returns a new object
 func NewSchemaOrSchemaArrayWithSchemaArray(a []*Schema) *SchemaOrSchemaArray {
 	result := &SchemaOrSchemaArray{}
 	result.SchemaArray = &a
@@ -170,11 +179,12 @@ type NamedSchema struct {
 	Value *Schema
 }
 
+// NewNamedSchema creates and returns a new object
 func NewNamedSchema(name string, value *Schema) *NamedSchema {
 	return &NamedSchema{Name: name, Value: value}
 }
 
-// NamedSchemaOrSringArray is a name-value pair that is used
+// NamedSchemaOrStringArray is a name-value pair that is used
 // to emulate maps with ordered keys.
 type NamedSchemaOrStringArray struct {
 	Name  string
@@ -195,18 +205,22 @@ func namedSchemaArrayElementWithName(array *[]*NamedSchema, name string) *Schema
 	return nil
 }
 
+// PropertyWithName returns the selected element.
 func (s *Schema) PropertyWithName(name string) *Schema {
 	return namedSchemaArrayElementWithName(s.Properties, name)
 }
 
+// PatternPropertyWithName returns the selected element.
 func (s *Schema) PatternPropertyWithName(name string) *Schema {
 	return namedSchemaArrayElementWithName(s.PatternProperties, name)
 }
 
+// DefinitionWithName returns the selected element.
 func (s *Schema) DefinitionWithName(name string) *Schema {
 	return namedSchemaArrayElementWithName(s.Definitions, name)
 }
 
+// AddProperty adds a named property.
 func (s *Schema) AddProperty(name string, property *Schema) {
 	*s.Properties = append(*s.Properties, NewNamedSchema(name, property))
 }

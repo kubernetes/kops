@@ -196,7 +196,7 @@ type Order struct {
 	PlacedDate string `json:"placedDate,omitempty"`
 
 	// Promotions: The details of the merchant provided promotions applied
-	// to the order. More details about the program are  here.
+	// to the order. More details about the program are here.
 	Promotions []*OrderPromotion `json:"promotions,omitempty"`
 
 	// Refunds: Refunds for the order.
@@ -2207,7 +2207,7 @@ type TestOrder struct {
 	PredefinedDeliveryAddress string `json:"predefinedDeliveryAddress,omitempty"`
 
 	// Promotions: The details of the merchant provided promotions applied
-	// to the order. More details about the program are  here.
+	// to the order. More details about the program are here.
 	Promotions []*OrderPromotion `json:"promotions,omitempty"`
 
 	// ShippingCost: The total cost of shipping for all items.
