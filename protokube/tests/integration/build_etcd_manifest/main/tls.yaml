@@ -29,6 +29,8 @@ spec: {}
 apiVersion: v1
 kind: Pod
 metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
   creationTimestamp: null
   labels:
     k8s-app: etcd-server-main
@@ -101,6 +103,9 @@ spec:
       name: srvkubernetes
       readOnly: true
   hostNetwork: true
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
   volumes:
   - hostPath:
       path: /mnt/main/var/etcd/data-main

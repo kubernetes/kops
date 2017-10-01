@@ -31,6 +31,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kops/pkg/kubemanifest"
 )
 
 const PathAuthnConfig = "/etc/kubernetes/authn.config"
@@ -302,6 +303,8 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
 
+	kubemanifest.MarkPodAsCritical(pod)
+
 	return pod, nil
 }
 
@@ -311,7 +314,6 @@ func (b *KubeAPIServerBuilder) buildAnnotations() map[string]string {
 	if b.Cluster.Spec.API != nil && b.Cluster.Spec.API.DNS != nil {
 		annotations["dns.alpha.kubernetes.io/external"] = b.Cluster.Spec.MasterPublicName
 	}
-	annotations["scheduler.alpha.kubernetes.io/critical-pod"] = ""
 
 	return annotations
 }
