@@ -23,14 +23,12 @@ import (
 	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 
-	"github.com/blang/semver"
 	"github.com/golang/glog"
 )
 
@@ -259,11 +257,6 @@ const RoleLabelNode16 = "node-role.kubernetes.io/node"
 
 // buildKubeletConfigSpec returns the kubeletconfig for the specified instanceGroup
 func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, error) {
-	sv, err := util.ParseKubernetesVersion(b.Cluster.Spec.KubernetesVersion)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to lookup kubernetes version: %v", err)
-	}
-
 	// Merge KubeletConfig for NodeLabels
 	c := &kops.KubeletConfigSpec{}
 	if b.InstanceGroup.Spec.Role == kops.InstanceGroupRoleMaster {
@@ -303,10 +296,8 @@ func (b *KubeletBuilder) buildKubeletConfigSpec() (*kops.KubeletConfigSpec, erro
 		c.NodeLabels[k] = v
 	}
 
-	// --register-with-taints was available in the first 1.6.0 alpha, no need to rely on semver's pre/build ordering
-	sv.Pre = nil
-	sv.Build = nil
-	if sv.GTE(semver.Version{Major: 1, Minor: 6, Patch: 0, Pre: nil, Build: nil}) {
+	// Use --register-with-taints for k8s 1.6 and on
+	if b.IsKubernetesGTE("1.6") {
 		for _, t := range b.InstanceGroup.Spec.Taints {
 			c.Taints = append(c.Taints, t)
 		}
