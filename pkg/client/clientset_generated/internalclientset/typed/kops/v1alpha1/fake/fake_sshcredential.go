@@ -36,40 +36,7 @@ var sshcredentialsResource = schema.GroupVersionResource{Group: "kops", Version:
 
 var sshcredentialsKind = schema.GroupVersionKind{Group: "kops", Version: "v1alpha1", Kind: "SSHCredential"}
 
-func (c *FakeSSHCredentials) Create(sSHCredential *v1alpha1.SSHCredential) (result *v1alpha1.SSHCredential, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(sshcredentialsResource, c.ns, sSHCredential), &v1alpha1.SSHCredential{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.SSHCredential), err
-}
-
-func (c *FakeSSHCredentials) Update(sSHCredential *v1alpha1.SSHCredential) (result *v1alpha1.SSHCredential, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(sshcredentialsResource, c.ns, sSHCredential), &v1alpha1.SSHCredential{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.SSHCredential), err
-}
-
-func (c *FakeSSHCredentials) Delete(name string, options *v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(sshcredentialsResource, c.ns, name), &v1alpha1.SSHCredential{})
-
-	return err
-}
-
-func (c *FakeSSHCredentials) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(sshcredentialsResource, c.ns, listOptions)
-
-	_, err := c.Fake.Invokes(action, &v1alpha1.SSHCredentialList{})
-	return err
-}
-
+// Get takes name of the sSHCredential, and returns the corresponding sSHCredential object, and an error if there is any.
 func (c *FakeSSHCredentials) Get(name string, options v1.GetOptions) (result *v1alpha1.SSHCredential, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(sshcredentialsResource, c.ns, name), &v1alpha1.SSHCredential{})
@@ -80,6 +47,7 @@ func (c *FakeSSHCredentials) Get(name string, options v1.GetOptions) (result *v1
 	return obj.(*v1alpha1.SSHCredential), err
 }
 
+// List takes label and field selectors, and returns the list of SSHCredentials that match those selectors.
 func (c *FakeSSHCredentials) List(opts v1.ListOptions) (result *v1alpha1.SSHCredentialList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(sshcredentialsResource, sshcredentialsKind, c.ns, opts), &v1alpha1.SSHCredentialList{})
@@ -106,6 +74,44 @@ func (c *FakeSSHCredentials) Watch(opts v1.ListOptions) (watch.Interface, error)
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(sshcredentialsResource, c.ns, opts))
 
+}
+
+// Create takes the representation of a sSHCredential and creates it.  Returns the server's representation of the sSHCredential, and an error, if there is any.
+func (c *FakeSSHCredentials) Create(sSHCredential *v1alpha1.SSHCredential) (result *v1alpha1.SSHCredential, err error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewCreateAction(sshcredentialsResource, c.ns, sSHCredential), &v1alpha1.SSHCredential{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.SSHCredential), err
+}
+
+// Update takes the representation of a sSHCredential and updates it. Returns the server's representation of the sSHCredential, and an error, if there is any.
+func (c *FakeSSHCredentials) Update(sSHCredential *v1alpha1.SSHCredential) (result *v1alpha1.SSHCredential, err error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewUpdateAction(sshcredentialsResource, c.ns, sSHCredential), &v1alpha1.SSHCredential{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.SSHCredential), err
+}
+
+// Delete takes name of the sSHCredential and deletes it. Returns an error if one occurs.
+func (c *FakeSSHCredentials) Delete(name string, options *v1.DeleteOptions) error {
+	_, err := c.Fake.
+		Invokes(testing.NewDeleteAction(sshcredentialsResource, c.ns, name), &v1alpha1.SSHCredential{})
+
+	return err
+}
+
+// DeleteCollection deletes a collection of objects.
+func (c *FakeSSHCredentials) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(sshcredentialsResource, c.ns, listOptions)
+
+	_, err := c.Fake.Invokes(action, &v1alpha1.SSHCredentialList{})
+	return err
 }
 
 // Patch applies the patch and returns the patched sSHCredential.
