@@ -6,21 +6,7 @@ package colltab
 
 import (
 	"testing"
-
-	"golang.org/x/text/collate/colltab"
 )
-
-const (
-	defaultSecondary = 0x20
-)
-
-func makeCE(w []int) colltab.Elem {
-	ce, err := colltab.MakeElem(w[0], w[1], w[2], uint8(w[3]))
-	if err != nil {
-		panic(err)
-	}
-	return ce
-}
 
 func TestDoNorm(t *testing.T) {
 	const div = -1 // The insertion point of the next block.

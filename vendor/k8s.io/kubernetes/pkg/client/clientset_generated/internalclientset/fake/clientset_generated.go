@@ -47,6 +47,8 @@ import (
 	fakepolicyinternalversion "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/policy/internalversion/fake"
 	rbacinternalversion "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/rbac/internalversion"
 	fakerbacinternalversion "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/rbac/internalversion/fake"
+	schedulinginternalversion "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/scheduling/internalversion"
+	fakeschedulinginternalversion "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/scheduling/internalversion/fake"
 	settingsinternalversion "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/settings/internalversion"
 	fakesettingsinternalversion "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/settings/internalversion/fake"
 	storageinternalversion "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/storage/internalversion"
@@ -67,10 +69,9 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 
 	fakePtr := testing.Fake{}
 	fakePtr.AddReactor("*", "*", testing.ObjectReaction(o))
-
 	fakePtr.AddWatchReactor("*", testing.DefaultWatchReactor(watch.NewFake(), nil))
 
-	return &Clientset{fakePtr}
+	return &Clientset{fakePtr, &fakediscovery.FakeDiscovery{Fake: &fakePtr}}
 }
 
 // Clientset implements clientset.Interface. Meant to be embedded into a
@@ -78,10 +79,11 @@ func NewSimpleClientset(objects ...runtime.Object) *Clientset {
 // you want to test easier.
 type Clientset struct {
 	testing.Fake
+	discovery *fakediscovery.FakeDiscovery
 }
 
 func (c *Clientset) Discovery() discovery.DiscoveryInterface {
-	return &fakediscovery.FakeDiscovery{Fake: &c.Fake}
+	return c.discovery
 }
 
 var _ clientset.Interface = &Clientset{}
@@ -144,6 +146,11 @@ func (c *Clientset) Policy() policyinternalversion.PolicyInterface {
 // Rbac retrieves the RbacClient
 func (c *Clientset) Rbac() rbacinternalversion.RbacInterface {
 	return &fakerbacinternalversion.FakeRbac{Fake: &c.Fake}
+}
+
+// Scheduling retrieves the SchedulingClient
+func (c *Clientset) Scheduling() schedulinginternalversion.SchedulingInterface {
+	return &fakeschedulinginternalversion.FakeScheduling{Fake: &c.Fake}
 }
 
 // Settings retrieves the SettingsClient

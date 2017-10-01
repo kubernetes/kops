@@ -26,7 +26,7 @@ func TestRedisBlobDescriptorCacheProvider(t *testing.T) {
 
 	if redisAddr == "" {
 		// skip if still not set
-		t.Skip("please set -registry.storage.cache.redis to test layer info cache against redis")
+		t.Skip("please set -test.registry.storage.cache.redis.addr to test layer info cache against redis")
 	}
 
 	pool := &redis.Pool{
@@ -43,9 +43,11 @@ func TestRedisBlobDescriptorCacheProvider(t *testing.T) {
 	}
 
 	// Clear the database
-	if _, err := pool.Get().Do("FLUSHDB"); err != nil {
+	conn := pool.Get()
+	if _, err := conn.Do("FLUSHDB"); err != nil {
 		t.Fatalf("unexpected error flushing redis db: %v", err)
 	}
+	conn.Close()
 
 	cachecheck.CheckBlobDescriptorCache(t, NewRedisBlobDescriptorCacheProvider(pool))
 }

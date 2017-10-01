@@ -22,9 +22,13 @@ import (
 
 	"github.com/golang/glog"
 
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/kubernetes/pkg/api/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/tools/record"
+	"k8s.io/kubernetes/pkg/kubelet/events"
+	"k8s.io/kubernetes/pkg/util/keymutex"
 	"k8s.io/kubernetes/pkg/util/mount"
 	"k8s.io/kubernetes/pkg/util/strings"
 	"k8s.io/kubernetes/pkg/volume"
@@ -38,7 +42,9 @@ func ProbeVolumePlugins() []volume.VolumePlugin {
 }
 
 type localVolumePlugin struct {
-	host volume.VolumeHost
+	host        volume.VolumeHost
+	volumeLocks keymutex.KeyMutex
+	recorder    record.EventRecorder
 }
 
 var _ volume.VolumePlugin = &localVolumePlugin{}
@@ -50,6 +56,11 @@ const (
 
 func (plugin *localVolumePlugin) Init(host volume.VolumeHost) error {
 	plugin.host = host
+	plugin.volumeLocks = keymutex.NewKeyMutex()
+	eventBroadcaster := record.NewBroadcaster()
+	eventBroadcaster.StartLogging(glog.Infof)
+	recorder := eventBroadcaster.NewRecorder(scheme.Scheme, v1.EventSource{Component: "localvolume"})
+	plugin.recorder = recorder
 	return nil
 }
 
@@ -102,11 +113,13 @@ func (plugin *localVolumePlugin) NewMounter(spec *volume.Spec, pod *v1.Pod, _ vo
 
 	return &localVolumeMounter{
 		localVolume: &localVolume{
-			podUID:     pod.UID,
-			volName:    spec.Name(),
-			mounter:    plugin.host.GetMounter(),
-			plugin:     plugin,
-			globalPath: volumeSource.Path,
+			pod:             pod,
+			podUID:          pod.UID,
+			volName:         spec.Name(),
+			mounter:         plugin.host.GetMounter(plugin.GetPluginName()),
+			plugin:          plugin,
+			globalPath:      volumeSource.Path,
+			MetricsProvider: volume.NewMetricsStatFS(volumeSource.Path),
 		},
 		readOnly: readOnly,
 	}, nil
@@ -118,7 +131,7 @@ func (plugin *localVolumePlugin) NewUnmounter(volName string, podUID types.UID) 
 		localVolume: &localVolume{
 			podUID:  podUID,
 			volName: volName,
-			mounter: plugin.host.GetMounter(),
+			mounter: plugin.host.GetMounter(plugin.GetPluginName()),
 			plugin:  plugin,
 		},
 	}, nil
@@ -145,14 +158,14 @@ func (plugin *localVolumePlugin) ConstructVolumeSpec(volumeName, mountPath strin
 // The directory at the globalPath will be bind-mounted to the pod's directory
 type localVolume struct {
 	volName string
+	pod     *v1.Pod
 	podUID  types.UID
 	// Global path to the volume
 	globalPath string
 	// Mounter interface that provides system calls to mount the global path to the pod local path.
 	mounter mount.Interface
 	plugin  *localVolumePlugin
-	// TODO: add metrics
-	volume.MetricsNil
+	volume.MetricsProvider
 }
 
 func (l *localVolume) GetPath() string {
@@ -188,9 +201,11 @@ func (m *localVolumeMounter) SetUp(fsGroup *int64) error {
 
 // SetUpAt bind mounts the directory to the volume path and sets up volume ownership
 func (m *localVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
+	m.plugin.volumeLocks.LockKey(m.globalPath)
+	defer m.plugin.volumeLocks.UnlockKey(m.globalPath)
+
 	if m.globalPath == "" {
-		err := fmt.Errorf("LocalVolume volume %q path is empty", m.volName)
-		return err
+		return fmt.Errorf("LocalVolume volume %q path is empty", m.volName)
 	}
 
 	err := validation.ValidatePathNoBacksteps(m.globalPath)
@@ -198,14 +213,34 @@ func (m *localVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 		return fmt.Errorf("invalid path: %s %v", m.globalPath, err)
 	}
 
-	notMnt, err := m.mounter.IsLikelyNotMountPoint(dir)
+	notMnt, err := m.mounter.IsNotMountPoint(dir)
 	glog.V(4).Infof("LocalVolume mount setup: PodDir(%s) VolDir(%s) Mounted(%t) Error(%v), ReadOnly(%t)", dir, m.globalPath, !notMnt, err, m.readOnly)
 	if err != nil && !os.IsNotExist(err) {
 		glog.Errorf("cannot validate mount point: %s %v", dir, err)
 		return err
 	}
+
 	if !notMnt {
 		return nil
+	}
+	refs, err := mount.GetMountRefsByDev(m.mounter, m.globalPath)
+	if fsGroup != nil {
+		if err != nil {
+			glog.Errorf("cannot collect mounting information: %s %v", m.globalPath, err)
+			return err
+		}
+
+		if len(refs) > 0 {
+			fsGroupNew := int64(*fsGroup)
+			fsGroupSame, fsGroupOld, err := volume.IsSameFSGroup(m.globalPath, fsGroupNew)
+			if err != nil {
+				return fmt.Errorf("failed to check fsGroup for %s (%v)", m.globalPath, err)
+			}
+			if !fsGroupSame {
+				m.plugin.recorder.Eventf(m.pod, v1.EventTypeWarning, events.WarnAlreadyMountedVolume, "The requested fsGroup is %d, but the volume %s has GID %d. The volume may not be shareable.", fsGroupNew, m.volName, fsGroupOld)
+			}
+		}
+
 	}
 
 	if err := os.MkdirAll(dir, 0750); err != nil {
@@ -223,9 +258,9 @@ func (m *localVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 	err = m.mounter.Mount(m.globalPath, dir, "", options)
 	if err != nil {
 		glog.Errorf("Mount of volume %s failed: %v", dir, err)
-		notMnt, mntErr := m.mounter.IsLikelyNotMountPoint(dir)
+		notMnt, mntErr := m.mounter.IsNotMountPoint(dir)
 		if mntErr != nil {
-			glog.Errorf("IsLikelyNotMountPoint check failed: %v", mntErr)
+			glog.Errorf("IsNotMountPoint check failed: %v", mntErr)
 			return err
 		}
 		if !notMnt {
@@ -233,9 +268,9 @@ func (m *localVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 				glog.Errorf("Failed to unmount: %v", mntErr)
 				return err
 			}
-			notMnt, mntErr = m.mounter.IsLikelyNotMountPoint(dir)
+			notMnt, mntErr = m.mounter.IsNotMountPoint(dir)
 			if mntErr != nil {
-				glog.Errorf("IsLikelyNotMountPoint check failed: %v", mntErr)
+				glog.Errorf("IsNotMountPoint check failed: %v", mntErr)
 				return err
 			}
 			if !notMnt {
@@ -247,10 +282,11 @@ func (m *localVolumeMounter) SetUpAt(dir string, fsGroup *int64) error {
 		os.Remove(dir)
 		return err
 	}
-
 	if !m.readOnly {
-		// TODO: how to prevent multiple mounts with conflicting fsGroup?
-		return volume.SetVolumeOwnership(m, fsGroup)
+		// Volume owner will be written only once on the first volume mount
+		if len(refs) == 0 {
+			return volume.SetVolumeOwnership(m, fsGroup)
+		}
 	}
 	return nil
 }
@@ -269,5 +305,5 @@ func (u *localVolumeUnmounter) TearDown() error {
 // TearDownAt unmounts the bind mount
 func (u *localVolumeUnmounter) TearDownAt(dir string) error {
 	glog.V(4).Infof("Unmounting volume %q at path %q\n", u.volName, dir)
-	return util.UnmountPath(dir, u.mounter)
+	return util.UnmountMountPoint(dir, u.mounter, true) /* extensiveMountPointCheck = true */
 }

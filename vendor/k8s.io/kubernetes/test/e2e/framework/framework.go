@@ -19,31 +19,29 @@ package framework
 import (
 	"bufio"
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"os"
 	"path"
-	"reflect"
 	"strings"
 	"sync"
 	"time"
 
+	"k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/dynamic"
-	staging "k8s.io/client-go/kubernetes"
-	clientreporestclient "k8s.io/client-go/rest"
-	restclient "k8s.io/client-go/rest"
+	"k8s.io/client-go/informers"
+	clientset "k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+	aggregatorclient "k8s.io/kube-aggregator/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
-	"k8s.io/kubernetes/pkg/metrics"
+	"k8s.io/kubernetes/pkg/kubemark"
+	"k8s.io/kubernetes/test/e2e/framework/metrics"
 	testutils "k8s.io/kubernetes/test/utils"
 
 	. "github.com/onsi/ginkgo"
@@ -62,11 +60,11 @@ const (
 type Framework struct {
 	BaseName string
 
-	// ClientSet uses internal objects, you should use ClientSet where possible.
-	ClientSet clientset.Interface
+	ClientSet                        clientset.Interface
+	KubemarkExternalClusterClientSet clientset.Interface
 
 	InternalClientset *internalclientset.Clientset
-	StagingClient     *staging.Clientset
+	AggregatorClient  *aggregatorclient.Clientset
 	ClientPool        dynamic.ClientPool
 
 	SkipNamespaceCreation    bool            // Whether to skip creating a namespace
@@ -95,6 +93,11 @@ type Framework struct {
 	// Place where various additional data is stored during test run to be printed to ReportDir,
 	// or stdout if ReportDir is not set once test ends.
 	TestSummaries []TestDataSummary
+
+	kubemarkControllerCloseChannel chan struct{}
+
+	// Place to keep ClusterAutoscaler metrics from before test in order to compute delta.
+	clusterAutoscalerMetricsBeforeTest metrics.MetricsCollection
 }
 
 type TestDataSummary interface {
@@ -133,38 +136,6 @@ func NewFramework(baseName string, options FrameworkOptions, client clientset.In
 	return f
 }
 
-// getClientRepoConfig copies k8s.io/kubernetes/pkg/client/restclient.Config to
-// a k8s.io/client-go/pkg/client/restclient.Config. It's not a deep copy. Two
-// configs may share some common struct.
-func getClientRepoConfig(src *restclient.Config) (dst *clientreporestclient.Config) {
-	skippedFields := sets.NewString("Transport", "WrapTransport", "RateLimiter", "AuthConfigPersister")
-	dst = &clientreporestclient.Config{}
-	dst.Transport = src.Transport
-	dst.WrapTransport = src.WrapTransport
-	dst.RateLimiter = src.RateLimiter
-	dst.AuthConfigPersister = src.AuthConfigPersister
-	sv := reflect.ValueOf(src).Elem()
-	dv := reflect.ValueOf(dst).Elem()
-	for i := 0; i < sv.NumField(); i++ {
-		if skippedFields.Has(sv.Type().Field(i).Name) {
-			continue
-		}
-		sf := sv.Field(i).Interface()
-		data, err := json.Marshal(sf)
-		if err != nil {
-			Expect(err).NotTo(HaveOccurred())
-		}
-		if !dv.Field(i).CanAddr() {
-			Failf("unaddressable field: %v", dv.Type().Field(i).Name)
-		} else {
-			if err := json.Unmarshal(data, dv.Field(i).Addr().Interface()); err != nil {
-				Expect(err).NotTo(HaveOccurred())
-			}
-		}
-	}
-	return dst
-}
-
 // BeforeEach gets a client and makes a namespace.
 func (f *Framework) BeforeEach() {
 	// The fact that we need this feels like a bug in ginkgo.
@@ -186,10 +157,28 @@ func (f *Framework) BeforeEach() {
 		Expect(err).NotTo(HaveOccurred())
 		f.InternalClientset, err = internalclientset.NewForConfig(config)
 		Expect(err).NotTo(HaveOccurred())
-		clientRepoConfig := getClientRepoConfig(config)
-		f.StagingClient, err = staging.NewForConfig(clientRepoConfig)
+		f.AggregatorClient, err = aggregatorclient.NewForConfig(config)
 		Expect(err).NotTo(HaveOccurred())
 		f.ClientPool = dynamic.NewClientPool(config, api.Registry.RESTMapper(), dynamic.LegacyAPIPathResolverFunc)
+		if ProviderIs("kubemark") && TestContext.KubemarkExternalKubeConfig != "" && TestContext.CloudConfig.KubemarkController == nil {
+			externalConfig, err := clientcmd.BuildConfigFromFlags("", TestContext.KubemarkExternalKubeConfig)
+			externalConfig.QPS = f.Options.ClientQPS
+			externalConfig.Burst = f.Options.ClientBurst
+			Expect(err).NotTo(HaveOccurred())
+			externalClient, err := clientset.NewForConfig(externalConfig)
+			Expect(err).NotTo(HaveOccurred())
+			f.KubemarkExternalClusterClientSet = externalClient
+			f.kubemarkControllerCloseChannel = make(chan struct{})
+			externalInformerFactory := informers.NewSharedInformerFactory(externalClient, 0)
+			kubemarkInformerFactory := informers.NewSharedInformerFactory(f.ClientSet, 0)
+			kubemarkNodeInformer := kubemarkInformerFactory.Core().V1().Nodes()
+			go kubemarkNodeInformer.Informer().Run(f.kubemarkControllerCloseChannel)
+			TestContext.CloudConfig.KubemarkController, err = kubemark.NewKubemarkController(f.KubemarkExternalClusterClientSet, externalInformerFactory, f.ClientSet, kubemarkNodeInformer)
+			Expect(err).NotTo(HaveOccurred())
+			externalInformerFactory.Start(f.kubemarkControllerCloseChannel)
+			Expect(TestContext.CloudConfig.KubemarkController.WaitForCacheSync(f.kubemarkControllerCloseChannel)).To(BeTrue())
+			go TestContext.CloudConfig.KubemarkController.Run(f.kubemarkControllerCloseChannel)
+		}
 	}
 
 	if !f.SkipNamespaceCreation {
@@ -232,6 +221,22 @@ func (f *Framework) BeforeEach() {
 			f.logsSizeVerifier.Run()
 			f.logsSizeWaitGroup.Done()
 		}()
+	}
+
+	gatherMetricsAfterTest := TestContext.GatherMetricsAfterTest == "true" || TestContext.GatherMetricsAfterTest == "master"
+	if gatherMetricsAfterTest && TestContext.IncludeClusterAutoscalerMetrics {
+		grabber, err := metrics.NewMetricsGrabber(f.ClientSet, f.KubemarkExternalClusterClientSet, !ProviderIs("kubemark"), false, false, false, TestContext.IncludeClusterAutoscalerMetrics)
+		if err != nil {
+			Logf("Failed to create MetricsGrabber (skipping ClusterAutoscaler metrics gathering before test): %v", err)
+		} else {
+			f.clusterAutoscalerMetricsBeforeTest, err = grabber.Grab()
+			if err != nil {
+				Logf("MetricsGrabber failed to grab CA metrics before test (skipping metrics gathering): %v", err)
+			} else {
+				Logf("Gathered ClusterAutoscaler metrics before test")
+			}
+		}
+
 	}
 }
 
@@ -325,20 +330,25 @@ func (f *Framework) AfterEach() {
 		f.TestSummaries = append(f.TestSummaries, f.logsSizeVerifier.GetSummary())
 	}
 
-	if TestContext.GatherMetricsAfterTest {
+	if TestContext.GatherMetricsAfterTest != "false" {
 		By("Gathering metrics")
-		// Grab apiserver, scheduler, controller-manager metrics and nodes' kubelet metrics (for non-kubemark case).
-		grabber, err := metrics.NewMetricsGrabber(f.ClientSet, !ProviderIs("kubemark"), true, true, true)
+		// Grab apiserver, scheduler, controller-manager metrics and (optionally) nodes' kubelet metrics.
+		grabMetricsFromKubelets := TestContext.GatherMetricsAfterTest != "master" && !ProviderIs("kubemark")
+		grabber, err := metrics.NewMetricsGrabber(f.ClientSet, f.KubemarkExternalClusterClientSet, grabMetricsFromKubelets, true, true, true, TestContext.IncludeClusterAutoscalerMetrics)
 		if err != nil {
 			Logf("Failed to create MetricsGrabber (skipping metrics gathering): %v", err)
 		} else {
 			received, err := grabber.Grab()
 			if err != nil {
-				Logf("MetricsGrabber failed to grab metrics (skipping metrics gathering): %v", err)
-			} else {
-				f.TestSummaries = append(f.TestSummaries, (*MetricsForE2E)(&received))
+				Logf("MetricsGrabber failed to grab some of the metrics: %v", err)
 			}
+			(*MetricsForE2E)(&received).computeClusterAutoscalerMetricsDelta(f.clusterAutoscalerMetricsBeforeTest)
+			f.TestSummaries = append(f.TestSummaries, (*MetricsForE2E)(&received))
 		}
+	}
+
+	if TestContext.CloudConfig.KubemarkController != nil {
+		close(f.kubemarkControllerCloseChannel)
 	}
 
 	PrintSummaries(f.TestSummaries, f.BaseName)

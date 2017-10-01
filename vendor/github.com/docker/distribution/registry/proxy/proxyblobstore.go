@@ -9,9 +9,9 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/registry/proxy/scheduler"
+	"github.com/opencontainers/go-digest"
 )
 
 // todo(richardscothern): from cache control header or config file
@@ -54,6 +54,8 @@ func (pbs *proxyBlobStore) copyContent(ctx context.Context, dgst digest.Digest, 
 	if err != nil {
 		return distribution.Descriptor{}, err
 	}
+
+	defer remoteReader.Close()
 
 	_, err = io.CopyN(writer, remoteReader, desc.Size)
 	if err != nil {

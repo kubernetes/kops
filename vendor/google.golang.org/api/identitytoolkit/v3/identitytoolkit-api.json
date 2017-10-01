@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/yXklm7FmX0B5usOgdbt9pvbqhCA\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/lY4purhHKClSF7bHp4Xq20FjMmM\"",
  "discoveryVersion": "v1",
  "id": "identitytoolkit:v3",
  "name": "identitytoolkit",
  "canonicalName": "Identity Toolkit",
  "version": "v3",
- "revision": "20170413",
+ "revision": "20170803",
  "title": "Google Identity Toolkit API",
  "description": "Help the third party sites to implement federated login.",
  "ownerDomain": "google.com",
@@ -387,6 +387,13 @@
      "items": {
       "type": "string"
      }
+    },
+    "phoneNumber": {
+     "type": "array",
+     "description": "Privileged caller can query users by specified phone number.",
+     "items": {
+      "type": "string"
+     }
     }
    }
   },
@@ -559,6 +566,10 @@
      "type": "string",
      "description": "The new password of the user."
     },
+    "phoneNumber": {
+     "type": "string",
+     "description": "Privileged caller can update user with specified phone number."
+    },
     "photoUrl": {
      "type": "string",
      "description": "The photo url of the user."
@@ -724,6 +735,10 @@
     "password": {
      "type": "string",
      "description": "The new password of the user."
+    },
+    "phoneNumber": {
+     "type": "string",
+     "description": "Privileged caller can create user with specified phone number."
     },
     "photoUrl": {
      "type": "string",

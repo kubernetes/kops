@@ -2,7 +2,7 @@
 // The health package works expvar style. By importing the package the debug
 // server is getting a "/debug/health" endpoint that returns the current
 // status of the application.
-// If there are no errors, "/debug/health" will return a HTTP 200 status,
+// If there are no errors, "/debug/health" will return an HTTP 200 status,
 // together with an empty JSON reply "{}". If there are any checks
 // with errors, the JSON reply will include all the failed checks, and the
 // response will be have an HTTP 503 status.
@@ -24,7 +24,7 @@
 // "manual" checks that allow the service to quickly be brought in/out of
 // rotation.
 //
-//  import _ "github.com/docker/distribution/registry/health/api"
+//  import _ "github.com/docker/distribution/health/api"
 //
 //  # curl localhost:5001/debug/health
 //  {}
@@ -121,6 +121,12 @@
 //  # touch /tmp/disable
 //  # curl localhost:5001/debug/health
 //  {"fileChecker":"file exists"}
+//
+// FileChecker only accepts absolute or relative file path. It does not work
+// properly with tilde(~). You should make sure that the application has
+// proper permission(read and execute permission for directory along with
+// the specified file path). Otherwise, the FileChecker will report error
+// and file health check is not ok.
 //
 // You could also test the connectivity to a downstream service by using a
 // "HTTPChecker", but ensure that you only mark the test unhealthy if there

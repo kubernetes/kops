@@ -38,7 +38,7 @@ func handleRedirect(w http.ResponseWriter, r *http.Request) {
 The on responses, the provider can be used to verify ID Tokens.
 
 ```go
-var verifier = provider.Verifier()
+var verifier = provider.Verifier(&oidc.Config{ClientID: clientID})
 
 func handleOAuth2Callback(w http.ResponseWriter, r *http.Request) {
     // Verify state and errors.

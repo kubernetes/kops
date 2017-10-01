@@ -52,7 +52,7 @@ var (
 	serviceAccountKeyFile = flag.String("service_account_key_file", "", "Path to service account json key file")
 	oauthScope            = flag.String("oauth_scope", "", "The scope for OAuth2 tokens")
 	defaultServiceAccount = flag.String("default_service_account", "", "Email of GCE default service account")
-	serverHost            = flag.String("server_host", "127.0.0.1", "The server host name")
+	serverHost            = flag.String("server_host", "localhost", "The server host name")
 	serverPort            = flag.Int("server_port", 10000, "The server port number")
 	tlsServerName         = flag.String("server_host_override", "", "The server name use to verify the hostname returned by TLS handshake if it is not empty. Otherwise, --server_host is used.")
 	testCase              = flag.String("test_case", "large_unary",
@@ -71,7 +71,10 @@ var (
         oauth2_auth_token: large_unary with oauth2 token auth;
         cancel_after_begin: cancellation after metadata has been sent but before payloads are sent;
         cancel_after_first_response: cancellation after receiving 1st message from the server;
-        status_code_and_message: status code propagated back to client.`)
+        status_code_and_message: status code propagated back to client;
+        custom_metadata: server will echo custom metadata;
+        unimplemented_method: client attempts to call unimplemented method;
+        unimplemented_service: client attempts to call unimplemented service.`)
 
 	// The test CA root cert file
 	testCAFile = "testdata/ca.pem"
@@ -184,6 +187,15 @@ func main() {
 	case "status_code_and_message":
 		interop.DoStatusCodeAndMessage(tc)
 		grpclog.Println("StatusCodeAndMessage done")
+	case "custom_metadata":
+		interop.DoCustomMetadata(tc)
+		grpclog.Println("CustomMetadata done")
+	case "unimplemented_method":
+		interop.DoUnimplementedMethod(conn)
+		grpclog.Println("UnimplementedMethod done")
+	case "unimplemented_service":
+		interop.DoUnimplementedService(testpb.NewUnimplementedServiceClient(conn))
+		grpclog.Println("UnimplementedService done")
 	default:
 		grpclog.Fatal("Unsupported test case: ", *testCase)
 	}

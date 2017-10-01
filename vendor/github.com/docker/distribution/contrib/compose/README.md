@@ -123,13 +123,13 @@ to the 1.0 registry. Requests from newer clients will route to the 2.0 registry.
 
 4. Use `curl` to list the image in the registry.
 
-			$ curl -v -X GET http://localhost:32777/v2/registry1/tags/list
+			$ curl -v -X GET http://localhost:5000/v2/registry_one/tags/list
 			* Hostname was NOT found in DNS cache
 			*   Trying 127.0.0.1...
 			* Connected to localhost (127.0.0.1) port 32777 (#0)
 			> GET /v2/registry1/tags/list HTTP/1.1
 			> User-Agent: curl/7.36.0
-			> Host: localhost:32777
+			> Host: localhost:5000
 			> Accept: */*
 			> 
 			< HTTP/1.1 200 OK
@@ -138,7 +138,7 @@ to the 1.0 registry. Requests from newer clients will route to the 2.0 registry.
 			< Date: Tue, 14 Apr 2015 22:34:13 GMT
 			< Content-Length: 39
 			< 
-			{"name":"registry1","tags":["latest"]}
+			{"name":"registry_one","tags":["latest"]}
 			* Connection #0 to host localhost left intact
 		
 	This example refers to the specific port assigned to the 2.0 registry. You saw

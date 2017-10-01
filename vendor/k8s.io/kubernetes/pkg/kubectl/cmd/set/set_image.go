@@ -29,7 +29,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 // ImageOptions is the start of the data required to perform the operation.  As new fields are added, add them here instead of
@@ -62,7 +62,7 @@ type ImageOptions struct {
 
 var (
 	image_resources = `
-  	pod (po), replicationcontroller (rc), deployment (deploy), daemonset (ds), job, replicaset (rs)`
+  	pod (po), replicationcontroller (rc), deployment (deploy), daemonset (ds), replicaset (rs)`
 
 	image_long = templates.LongDesc(`
 		Update existing container image(s) of resources.
@@ -105,11 +105,12 @@ func NewCmdImage(f cmdutil.Factory, out, err io.Writer) *cobra.Command {
 	cmdutil.AddPrinterFlags(cmd)
 	usage := "identifying the resource to get from a server."
 	cmdutil.AddFilenameOptionFlags(cmd, &options.FilenameOptions, usage)
-	cmd.Flags().BoolVar(&options.All, "all", false, "select all resources in the namespace of the specified resource types")
-	cmd.Flags().StringVarP(&options.Selector, "selector", "l", "", "Selector (label query) to filter on, supports '=', '==', and '!='.")
+	cmd.Flags().BoolVar(&options.All, "all", false, "Select all resources, including uninitialized ones, in the namespace of the specified resource types")
+	cmd.Flags().StringVarP(&options.Selector, "selector", "l", "", "Selector (label query) to filter on, not including uninitialized ones, supports '=', '==', and '!='.(e.g. -l key1=value1,key2=value2)")
 	cmd.Flags().BoolVar(&options.Local, "local", false, "If true, set image will NOT contact api-server but run locally.")
 	cmdutil.AddRecordFlag(cmd)
 	cmdutil.AddDryRunFlag(cmd)
+	cmdutil.AddIncludeUninitializedFlag(cmd)
 	return cmd
 }
 
@@ -137,10 +138,12 @@ func (o *ImageOptions) Complete(f cmdutil.Factory, cmd *cobra.Command, args []st
 		return err
 	}
 
+	includeUninitialized := cmdutil.ShouldIncludeUninitialized(cmd, false)
 	builder := f.NewBuilder(!o.Local).
 		ContinueOnError().
 		NamespaceParam(cmdNamespace).DefaultNamespace().
 		FilenameParam(enforceNamespace, &o.FilenameOptions).
+		IncludeUninitialized(includeUninitialized).
 		Flatten()
 	if !o.Local {
 		builder = builder.
@@ -158,7 +161,7 @@ func (o *ImageOptions) Complete(f cmdutil.Factory, cmd *cobra.Command, args []st
 
 func (o *ImageOptions) Validate() error {
 	errors := []error{}
-	if len(o.Resources) < 1 && cmdutil.IsFilenameEmpty(o.Filenames) {
+	if len(o.Resources) < 1 && cmdutil.IsFilenameSliceEmpty(o.Filenames) {
 		errors = append(errors, fmt.Errorf("one or more resources must be specified as <resource> <name> or <resource>/<name>"))
 	}
 	if len(o.ContainerImages) < 1 {
@@ -196,9 +199,11 @@ func (o *ImageOptions) Run() error {
 								continue
 							}
 						}
-						spec.Containers[i].Image = resolved
-						// Perform updates
-						transformed = true
+						if spec.Containers[i].Image != resolved {
+							spec.Containers[i].Image = resolved
+							// Perform updates
+							transformed = true
+						}
 					}
 				}
 				// Add a new container if not found
@@ -209,7 +214,9 @@ func (o *ImageOptions) Run() error {
 			return nil
 		})
 		if transformed && err == nil {
-			return runtime.Encode(o.Encoder, info.Object)
+			// TODO: switch UpdatePodSpecForObject to work on v1.PodSpec, use info.VersionedObject, and avoid conversion completely
+			versionedEncoder := api.Codecs.EncoderForVersion(o.Encoder, info.Mapping.GroupVersionKind.GroupVersion())
+			return runtime.Encode(versionedEncoder, info.Object)
 		}
 		return nil, err
 	})
@@ -227,7 +234,10 @@ func (o *ImageOptions) Run() error {
 		}
 
 		if o.PrintObject != nil && (o.Local || o.DryRun) {
-			return o.PrintObject(o.Cmd, o.Local, o.Mapper, info.Object, o.Out)
+			if err := o.PrintObject(o.Cmd, o.Local, o.Mapper, info.Object, o.Out); err != nil {
+				return err
+			}
+			continue
 		}
 
 		// patch the change
@@ -250,7 +260,10 @@ func (o *ImageOptions) Run() error {
 		info.Refresh(obj, true)
 
 		if len(o.Output) > 0 {
-			return o.PrintObject(o.Cmd, o.Local, o.Mapper, obj, o.Out)
+			if err := o.PrintObject(o.Cmd, o.Local, o.Mapper, obj, o.Out); err != nil {
+				return err
+			}
+			continue
 		}
 		cmdutil.PrintSuccess(o.Mapper, o.ShortOutput, o.Out, info.Mapping.Resource, info.Name, o.DryRun, "image updated")
 	}

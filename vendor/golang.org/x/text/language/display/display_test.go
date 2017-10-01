@@ -10,6 +10,7 @@ import (
 	"testing"
 	"unicode"
 
+	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/language"
 )
 
@@ -37,14 +38,16 @@ func TestValues(t *testing.T) {
 	// checkDefined checks that a value exists in a Namer.
 	checkDefined := func(x interface{}, namers []testcase) {
 		for _, n := range namers {
-			if n.n.Name(x) == "" {
-				// As of version 28 there is no data for az-Arab in English,
-				// although there is useful data in other languages.
-				if x.(fmt.Stringer).String() == "az-Arab" {
-					continue
+			testtext.Run(t, fmt.Sprintf("%s.Name(%s)", n.kind, x), func(t *testing.T) {
+				if n.n.Name(x) == "" {
+					// As of version 28 there is no data for az-Arab in English,
+					// although there is useful data in other languages.
+					if x.(fmt.Stringer).String() == "az-Arab" {
+						return
+					}
+					t.Errorf("supported but no result")
 				}
-				t.Errorf("%s.Name(%s): supported but no result", n.kind, x)
-			}
+			})
 		}
 	}
 	// checkUnsupported checks that a value does not exist in a Namer.
@@ -325,7 +328,12 @@ func TestTag(t *testing.T) {
 	}{
 		{"agq", "sr", ""}, // sr is in Value.Languages(), but is not supported by agq.
 		{"nl", "nl", "Nederlands"},
-		{"nl", "nl-BE", "Vlaams"},
+		// CLDR 30 dropped Vlaams as the word for nl-BE. It is still called
+		// Flemish in English, though. TODO: check if this is a CLDR bug.
+		// {"nl", "nl-BE", "Vlaams"},
+		{"nl", "nl-BE", "Nederlands (België)"},
+		{"nl", "vls", "West-Vlaams"},
+		{"en", "nl-BE", "Flemish"},
 		{"en", "en", "English"},
 		{"en", "en-GB", "British English"},
 		{"en", "en-US", "American English"}, // American English in CLDR 24+
@@ -357,7 +365,7 @@ func TestTag(t *testing.T) {
 		// also give results more in line with the expectations if users
 		// explicitly use "sh".
 		{"sr-Latn", "sr-ME", "srpski (Crna Gora)"},
-		{"sr-Latn", "sr-Latn-ME", "Srpskohrvatski (Crna Gora)"},
+		{"sr-Latn", "sr-Latn-ME", "srpskohrvatski (Crna Gora)"},
 		// Double script and region
 		{"nl", "en-Cyrl-BE", "Engels (Cyrillisch, België)"},
 		// Canonical equivalents.
@@ -384,8 +392,14 @@ func TestLanguage(t *testing.T) {
 		name string
 	}{
 		{"agq", "sr", ""}, // sr is in Value.Languages(), but is not supported by agq.
+		// CLDR 30 dropped Vlaams as the word for nl-BE. It is still called
+		// Flemish in English, though. TODO: this is probably incorrect.
+		// West-Vlaams (vls) is not Vlaams. West-Vlaams could be considered its
+		// own language, whereas Vlaams is generally Dutch. So expect to have
+		// to change these tests back.
 		{"nl", "nl", "Nederlands"},
-		{"nl", "nl-BE", "Vlaams"},
+		{"nl", "vls", "West-Vlaams"},
+		{"nl", "nl-BE", "Nederlands"},
 		{"en", "pt", "Portuguese"},
 		{"en", "pt-PT", "European Portuguese"},
 		{"en", "pt-BR", "Brazilian Portuguese"},
@@ -418,15 +432,17 @@ func TestLanguage(t *testing.T) {
 		{"en", "sr-Latn-ME", "Serbo-Croatian"}, // See comments in TestTag.
 	}
 	for i, tt := range tests {
-		d := Languages(language.Raw.MustParse(tt.dict))
-		if n := d.Name(language.Raw.MustParse(tt.tag)); n != tt.name {
-			t.Errorf("%d:%s:%s: was %q; want %q", i, tt.dict, tt.tag, n, tt.name)
-		}
-		if len(tt.tag) <= 3 {
-			if n := d.Name(language.MustParseBase(tt.tag)); n != tt.name {
-				t.Errorf("%d:%s:base(%s): was %q; want %q", i, tt.dict, tt.tag, n, tt.name)
+		testtext.Run(t, tt.dict+"/"+tt.tag, func(t *testing.T) {
+			d := Languages(language.Raw.MustParse(tt.dict))
+			if n := d.Name(language.Raw.MustParse(tt.tag)); n != tt.name {
+				t.Errorf("%d:%s:%s: was %q; want %q", i, tt.dict, tt.tag, n, tt.name)
 			}
-		}
+			if len(tt.tag) <= 3 {
+				if n := d.Name(language.MustParseBase(tt.tag)); n != tt.name {
+					t.Errorf("%d:%s:base(%s): was %q; want %q", i, tt.dict, tt.tag, n, tt.name)
+				}
+			}
+		})
 	}
 }
 
@@ -440,7 +456,7 @@ func TestScript(t *testing.T) {
 		{"en", "Arab", "Arabic"},
 		{"en", "Zzzz", "Unknown Script"},
 		{"zh-Hant", "Hang", "韓文字"},
-		{"zh-Hant-HK", "Hang", "韓文字母"},
+		{"zh-Hant-HK", "Hang", "韓文字"},
 		{"zh", "Arab", "阿拉伯文"},
 		{"zh-Hans-HK", "Arab", "阿拉伯文"}, // same as zh
 		{"zh-Hant", "Arab", "阿拉伯文"},
@@ -516,7 +532,10 @@ func TestSelf(t *testing.T) {
 		name string
 	}{
 		{"nl", "Nederlands"},
-		{"nl-BE", "Vlaams"},
+		// CLDR 30 dropped Vlaams as the word for nl-BE. It is still called
+		// Flemish in English, though. TODO: check if this is a CLDR bug.
+		// {"nl-BE", "Vlaams"},
+		{"nl-BE", "Nederlands"},
 		{"en-GB", "British English"},
 		{lastLang2zu.String(), "isiZulu"},
 		{firstLang2aa.String(), ""},  // not defined
@@ -552,7 +571,7 @@ func TestSelf(t *testing.T) {
 		// Chinese. We can hardwire this case in the table generator or package
 		// code, but we first check if CLDR can be updated.
 		// {"sr-ME", "Srpski"}, // Is Srpskohrvatski
-		{"sr-Latn-ME", "Srpskohrvatski"},
+		{"sr-Latn-ME", "srpskohrvatski"},
 		{"sr-Cyrl-ME", "српски"},
 		{"sr-NL", "српски"},
 		// Canonical equivalents.
@@ -579,7 +598,7 @@ func TestDictionaryLang(t *testing.T) {
 	}{
 		{English, "en", "English"},
 		{Portuguese, "af", "africâner"},
-		{EuropeanPortuguese, "af", "africânder"},
+		{EuropeanPortuguese, "af", "africanês"},
 		{English, "nl-BE", "Flemish"},
 	}
 	for i, test := range tests {

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"reflect"
 	"strings"
@@ -19,6 +20,7 @@ func ExampleWithErrorUnlessOK() {
 	// Respond and leave the response body open (for a subsequent responder to close)
 	err := Respond(r,
 		WithErrorUnlessOK(),
+		ByDiscardingBody(),
 		ByClosingIfError())
 
 	if err == nil {
@@ -26,6 +28,7 @@ func ExampleWithErrorUnlessOK() {
 
 		// Complete handling the response and close the body
 		Respond(r,
+			ByDiscardingBody(),
 			ByClosing())
 	}
 	// Output: GET of https://microsoft.com/a/b/c/ returned HTTP 200
@@ -326,6 +329,63 @@ func TestByClosingIfErrorDoesNotClosesIfNoErrorOccurs(t *testing.T) {
 	if !r.Body.(*mocks.Body).IsOpen() {
 		t.Fatalf("autorest: ByClosingIfError closed the response body even though no error occurred")
 	}
+}
+
+func TestByDiscardingBody(t *testing.T) {
+	r := mocks.NewResponse()
+	err := Respond(r,
+		ByDiscardingBody())
+	if err != nil {
+		t.Fatalf("autorest: ByDiscardingBody failed (%v)", err)
+	}
+	buf, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		t.Fatalf("autorest: Reading result of ByDiscardingBody failed (%v)", err)
+	}
+
+	if len(buf) != 0 {
+		t.Logf("autorest: Body was not empty after calling ByDiscardingBody.")
+		t.Fail()
+	}
+}
+
+func TestByDiscardingBodyAcceptsNilResponse(t *testing.T) {
+	var e error
+
+	r := mocks.NewResponse()
+
+	Respond(r,
+		withErrorRespondDecorator(&e),
+		(func() RespondDecorator {
+			return func(r Responder) Responder {
+				return ResponderFunc(func(resp *http.Response) error {
+					resp.Body.Close()
+					r.Respond(nil)
+					return nil
+				})
+			}
+		})(),
+		ByDiscardingBody())
+}
+
+func TestByDiscardingBodyAcceptsNilBody(t *testing.T) {
+	var e error
+
+	r := mocks.NewResponse()
+
+	Respond(r,
+		withErrorRespondDecorator(&e),
+		(func() RespondDecorator {
+			return func(r Responder) Responder {
+				return ResponderFunc(func(resp *http.Response) error {
+					resp.Body.Close()
+					resp.Body = nil
+					r.Respond(resp)
+					return nil
+				})
+			}
+		})(),
+		ByDiscardingBody())
 }
 
 func TestByUnmarshallingJSON(t *testing.T) {

@@ -5,26 +5,26 @@ import (
 	"fmt"
 	"io"
 	"os/exec"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/docker/docker/pkg/integration/checker"
+	"github.com/docker/docker/integration-cli/cli"
+	icmd "github.com/docker/docker/pkg/testutil/cmd"
 	"github.com/go-check/check"
 )
 
 const attachWait = 5 * time.Second
 
 func (s *DockerSuite) TestAttachMultipleAndRestart(c *check.C) {
-	testRequires(c, DaemonIsLinux)
-
 	endGroup := &sync.WaitGroup{}
 	startGroup := &sync.WaitGroup{}
 	endGroup.Add(3)
 	startGroup.Add(3)
 
-	err := waitForContainer("attacher", "-d", "busybox", "/bin/sh", "-c", "while true; do sleep 1; echo hello; done")
-	c.Assert(err, check.IsNil)
+	cli.DockerCmd(c, "run", "--name", "attacher", "-d", "busybox", "/bin/sh", "-c", "while true; do sleep 1; echo hello; done")
+	cli.WaitRun(c, "attacher")
 
 	startDone := make(chan struct{})
 	endDone := make(chan struct{})
@@ -52,6 +52,7 @@ func (s *DockerSuite) TestAttachMultipleAndRestart(c *check.C) {
 			if err != nil {
 				c.Fatal(err)
 			}
+			defer out.Close()
 
 			if err := cmd.Start(); err != nil {
 				c.Fatal(err)
@@ -77,7 +78,7 @@ func (s *DockerSuite) TestAttachMultipleAndRestart(c *check.C) {
 		c.Fatalf("Attaches did not initialize properly")
 	}
 
-	dockerCmd(c, "kill", "attacher")
+	cli.DockerCmd(c, "kill", "attacher")
 
 	select {
 	case <-endDone:
@@ -87,6 +88,13 @@ func (s *DockerSuite) TestAttachMultipleAndRestart(c *check.C) {
 }
 
 func (s *DockerSuite) TestAttachTTYWithoutStdin(c *check.C) {
+	// TODO @jhowardmsft. Figure out how to get this running again reliable on Windows.
+	// It works by accident at the moment. Sometimes. I've gone back to v1.13.0 and see the same.
+	// On Windows, docker run -d -ti busybox causes the container to exit immediately.
+	// Obviously a year back when I updated the test, that was not the case. However,
+	// with this, and the test racing with the tear-down which panic's, sometimes CI
+	// will just fail and `MISS` all the other tests. For now, disabling it. Will
+	// open an issue to track re-enabling this and root-causing the problem.
 	testRequires(c, DaemonIsLinux)
 	out, _ := dockerCmd(c, "run", "-d", "-ti", "busybox")
 
@@ -103,7 +111,10 @@ func (s *DockerSuite) TestAttachTTYWithoutStdin(c *check.C) {
 			return
 		}
 
-		expected := "cannot enable tty mode"
+		expected := "the input device is not a TTY"
+		if runtime.GOOS == "windows" {
+			expected += ".  If you are using mintty, try prefixing the command with 'winpty'"
+		}
 		if out, _, err := runCommandWithOutput(cmd); err == nil {
 			done <- fmt.Errorf("attach should have failed")
 			return
@@ -152,11 +163,14 @@ func (s *DockerSuite) TestAttachDisconnect(c *check.C) {
 }
 
 func (s *DockerSuite) TestAttachPausedContainer(c *check.C) {
-	testRequires(c, DaemonIsLinux) // Containers cannot be paused on Windows
-	defer unpauseAllContainers()
-	dockerCmd(c, "run", "-d", "--name=test", "busybox", "top")
+	testRequires(c, IsPausable)
+	runSleepingContainer(c, "-d", "--name=test")
 	dockerCmd(c, "pause", "test")
-	out, _, err := dockerCmdWithError("attach", "test")
-	c.Assert(err, checker.NotNil, check.Commentf(out))
-	c.Assert(out, checker.Contains, "You cannot attach to a paused container, unpause it first")
+
+	result := dockerCmdWithResult("attach", "test")
+	c.Assert(result, icmd.Matches, icmd.Expected{
+		Error:    "exit status 1",
+		ExitCode: 1,
+		Err:      "You cannot attach to a paused container, unpause it first",
+	})
 }

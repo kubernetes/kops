@@ -21,7 +21,7 @@ func main() {
 	f := filepath.Join(wd, "default.json")
 
 	// write the default profile to the file
-	b, err := json.MarshalIndent(seccomp.DefaultProfile, "", "\t")
+	b, err := json.MarshalIndent(seccomp.DefaultProfile(), "", "\t")
 	if err != nil {
 		panic(err)
 	}
