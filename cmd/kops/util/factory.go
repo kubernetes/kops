@@ -29,6 +29,7 @@ import (
 	// Register our APIs
 	"github.com/golang/glog"
 	_ "k8s.io/kops/pkg/apis/kops/install"
+	"k8s.io/kops/pkg/client/simple/api"
 	"net/url"
 	"strings"
 )
@@ -74,6 +75,8 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 				return nil, fmt.Errorf("Invalid kops server url: %q", registryPath)
 			}
 
+			u.Scheme = "https"
+
 			config := &rest.Config{
 				Host: u.Scheme + "://" + u.Host,
 			}
@@ -86,7 +89,7 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 				return nil, fmt.Errorf("error building kops API client: %v", err)
 			}
 
-			f.clientset = &simple.RESTClientset{
+			f.clientset = &api.RESTClientset{
 				BaseURL: &url.URL{
 					Scheme: "k8s",
 					Host:   u.Host,
