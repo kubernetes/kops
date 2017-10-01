@@ -20,7 +20,6 @@ import (
 	"fmt"
 
 	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
@@ -78,47 +77,15 @@ type MockCloud struct {
 }
 
 func (c *MockAWSCloud) DeleteGroup(name string, template string) error {
-	// Delete ASG
-	{
-		request := &autoscaling.DeleteAutoScalingGroupInput{
-			AutoScalingGroupName: aws.String(name),
-			ForceDelete:          aws.Bool(true),
-		}
-		_, err := c.Autoscaling().DeleteAutoScalingGroup(request)
-		if err != nil {
-			return fmt.Errorf("error deleting autoscaling group %q: %v", name, err)
-		}
-	}
-
-	// Delete LaunchConfig
-	{
-		request := &autoscaling.DeleteLaunchConfigurationInput{
-			LaunchConfigurationName: aws.String(template),
-		}
-		_, err := c.Autoscaling().DeleteLaunchConfiguration(request)
-		if err != nil {
-			return fmt.Errorf("error deleting autoscaling launch configuration %q: %v", template, err)
-		}
-	}
-	// TODO implement
-	return nil
+	return deleteGroup(c, name, template)
 }
 
 func (c *MockAWSCloud) DeleteInstance(id *string) error {
-	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-		InstanceId:                     id,
-		ShouldDecrementDesiredCapacity: aws.Bool(false),
-	}
-
-	if _, err := c.Autoscaling().TerminateInstanceInAutoScalingGroup(request); err != nil {
-		return fmt.Errorf("error deleting instance %q: %v", id, err)
-	}
-
-	return nil
+	return deleteInstance(c, id)
 }
 
 func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return nil, fmt.Errorf("not implemented yet")
+	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
 func (c *MockCloud) ProviderID() kops.CloudProviderID {

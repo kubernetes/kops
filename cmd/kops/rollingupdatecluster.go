@@ -286,7 +286,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 			return r.InstanceGroup.ObjectMeta.Name
 		})
 		t.AddColumn("STATUS", func(r *cloudinstances.CloudInstanceGroup) string {
-			return r.Status
+			return r.Status()
 		})
 		t.AddColumn("NEEDUPDATE", func(r *cloudinstances.CloudInstanceGroup) string {
 			return strconv.Itoa(len(r.NeedUpdate))
