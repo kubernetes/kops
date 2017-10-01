@@ -632,8 +632,7 @@ func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
 
 		primary := FindPrimary(keyset)
 		if primary == nil {
-			glog.Warningf("skipping keyset with no primary data: %s", keyset.Name)
-			continue
+			return fmt.Errorf("found keyset with no primary data: %s", keyset.Name)
 		}
 
 		switch keyset.Spec.Type {
@@ -657,7 +656,7 @@ func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
 			}
 
 		default:
-			glog.Warningf("Ignoring unknown secret type: %q", keyset.Spec.Type)
+			return fmt.Errorf("Ignoring unknown secret type: %q", keyset.Spec.Type)
 		}
 	}
 

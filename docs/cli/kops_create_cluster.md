@@ -69,7 +69,6 @@ kops create cluster
       --channel string                       Channel for default versions and configuration to use (default "stable")
       --cloud string                         Cloud provider to use - gce, aws, vsphere
       --cloud-labels string                  A list of KV pairs used to tag all instance groups in AWS (eg "Owner=John Doe,Team=Some Team").
-      --config-base string                   The location where the cluster state files should be stored
       --dns string                           DNS hosted zone to use: public|private. Default is 'public'. (default "Public")
       --dns-zone string                      DNS hosted zone to use (defaults to longest matching zone)
       --encrypt-etcd-storage                 Generate key in aws kms and use it for encrypt etcd volumes
