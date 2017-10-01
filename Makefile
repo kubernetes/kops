@@ -434,6 +434,7 @@ copydeps:
 	ln -sf kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
 	ln -sf kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
 	ln -sf kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
+	ln -sf kubernetes/staging/src/k8s.io/code-generator vendor/k8s.io/code-generator
 	ln -sf kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
 
 .PHONY: gofmt
@@ -534,6 +535,9 @@ apimachinery:
 	sh -c hack/make-apimachinery.sh
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.conversion
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.conversion
+	${GOPATH}/bin/deepcopy-gen --input-dirs k8s.io/kops/pkg/apis/kops --v=0  --output-file-base=zz_generated.deepcopy
+	${GOPATH}/bin/deepcopy-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.deepcopy
+	${GOPATH}/bin/deepcopy-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.deepcopy
 	${GOPATH}/bin/defaulter-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.defaults
 	${GOPATH}/bin/defaulter-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.defaults
 	#go install github.com/ugorji/go/codec/codecgen
