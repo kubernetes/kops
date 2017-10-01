@@ -21,6 +21,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
 )
 
@@ -147,9 +148,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		for i, targetSize := range targetSizes {
 			zone := zones[i]
 
-			// TODO: Switch to regional managed instance group
-
-			name := b.SafeObjectName(zone + "." + ig.ObjectMeta.Name)
+			name := gce.NameForInstanceGroupManager(b.Cluster, ig, zone)
 
 			t := &gcetasks.InstanceGroupManager{
 				Name:             s(name),

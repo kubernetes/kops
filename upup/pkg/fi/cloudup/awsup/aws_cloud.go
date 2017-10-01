@@ -238,11 +238,16 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 }
 
 // DeleteGroup deletes an aws autoscaling group
-func (c *awsCloudImplementation) DeleteGroup(name string, template string) error {
-	return deleteGroup(c, name, template)
+func (c *awsCloudImplementation) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+	return deleteGroup(c, g)
 }
 
-func deleteGroup(c AWSCloud, name string, template string) error {
+func deleteGroup(c AWSCloud, g *cloudinstances.CloudInstanceGroup) error {
+	asg := g.Raw.(*autoscaling.Group)
+
+	name := aws.StringValue(asg.AutoScalingGroupName)
+	template := aws.StringValue(asg.LaunchConfigurationName)
+
 	// Delete ASG
 	{
 		glog.V(2).Infof("Deleting autoscaling group %q", name)
@@ -274,13 +279,18 @@ func deleteGroup(c AWSCloud, name string, template string) error {
 }
 
 // DeleteInstance deletes an aws instance
-func (c *awsCloudImplementation) DeleteInstance(id *string) error {
-	return deleteInstance(c, id)
+func (c *awsCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return deleteInstance(c, i)
 }
 
-func deleteInstance(c AWSCloud, id *string) error {
+func deleteInstance(c AWSCloud, i *cloudinstances.CloudInstanceGroupMember) error {
+	id := i.ID
+	if id == "" {
+		return fmt.Errorf("id was not set on CloudInstanceGroupMember: %v", i)
+	}
+
 	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
-		InstanceId:                     id,
+		InstanceId:                     aws.String(id),
 		ShouldDecrementDesiredCapacity: aws.Bool(false),
 	}
 
@@ -288,7 +298,7 @@ func deleteInstance(c AWSCloud, id *string) error {
 		return fmt.Errorf("error deleting instance %q: %v", id, err)
 	}
 
-	glog.V(8).Infof("deleted aws ec2 instance %q", aws.StringValue(id))
+	glog.V(8).Infof("deleted aws ec2 instance %q", id)
 
 	return nil
 }
@@ -311,7 +321,8 @@ func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.In
 
 	for _, asg := range asgs {
 		name := aws.StringValue(asg.AutoScalingGroupName)
-		instancegroup, err := cloudinstances.GetInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
+
+		instancegroup, err := matchInstanceGroup(name, cluster.ObjectMeta.Name, instancegroups)
 		if err != nil {
 			return nil, fmt.Errorf("error getting instance group for ASG %q", name)
 		}
@@ -418,19 +429,28 @@ func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription
 
 func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
 	newLaunchConfigName := aws.StringValue(g.LaunchConfigurationName)
-	n, err := cloudinstances.NewCloudInstanceGroup(aws.StringValue(g.AutoScalingGroupName), newLaunchConfigName, ig, int(aws.Int64Value(g.MinSize)), int(aws.Int64Value(g.MaxSize)))
-	if err != nil {
-		return nil, fmt.Errorf("error creating cloud instance group: %v", err)
+
+	cg := &cloudinstances.CloudInstanceGroup{
+		HumanName:     aws.StringValue(g.AutoScalingGroupName),
+		InstanceGroup: ig,
+		MinSize:       int(aws.Int64Value(g.MinSize)),
+		MaxSize:       int(aws.Int64Value(g.MaxSize)),
+		Raw:           g,
 	}
 
 	for _, i := range g.Instances {
-		err = n.NewCloudInstanceGroupMember(i.InstanceId, newLaunchConfigName, aws.StringValue(i.LaunchConfigurationName), nodeMap)
+		instanceId := aws.StringValue(i.InstanceId)
+		if instanceId == "" {
+			glog.Warningf("ignoring instance with no instance id: %s", i)
+			continue
+		}
+		err := cg.NewCloudInstanceGroupMember(instanceId, newLaunchConfigName, aws.StringValue(i.LaunchConfigurationName), nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
 	}
 
-	return n, nil
+	return cg, nil
 }
 
 func (c *awsCloudImplementation) Tags() map[string]string {
