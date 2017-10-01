@@ -29,6 +29,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kops/pkg/kubemanifest"
 )
 
 // KubeControllerManagerBuilder install kube-controller-manager (just the manifest at the moment)
@@ -149,9 +150,6 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "kube-controller-manager",
 			Namespace: "kube-system",
-			Annotations: map[string]string{
-				"scheduler.alpha.kubernetes.io/critical-pod": "",
-			},
 			Labels: map[string]string{
 				"k8s-app": "kube-controller-manager",
 			},
@@ -206,6 +204,8 @@ func (b *KubeControllerManagerBuilder) buildPod() (*v1.Pod, error) {
 	addHostPathMapping(pod, container, "varlibkcm", "/var/lib/kube-controller-manager")
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
+
+	kubemanifest.MarkPodAsCritical(pod)
 
 	return pod, nil
 }

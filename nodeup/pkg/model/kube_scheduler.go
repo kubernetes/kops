@@ -28,6 +28,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kops/pkg/kubemanifest"
 )
 
 // KubeSchedulerBuilder install kube-scheduler
@@ -110,9 +111,6 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 			Labels: map[string]string{
 				"k8s-app": "kube-scheduler",
 			},
-			Annotations: map[string]string{
-				"scheduler.alpha.kubernetes.io/critical-pod": "",
-			},
 		},
 		Spec: v1.PodSpec{
 			HostNetwork: true,
@@ -148,6 +146,8 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 	addHostPathMapping(pod, container, "logfile", "/var/log/kube-scheduler.log").ReadOnly = false
 
 	pod.Spec.Containers = append(pod.Spec.Containers, *container)
+
+	kubemanifest.MarkPodAsCritical(pod)
 
 	return pod, nil
 }
