@@ -149,7 +149,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 		if p.Metadata != nil {
 			actual.Metadata = make(map[string]*fi.ResourceHolder)
 			for _, meta := range p.Metadata.Items {
-				actual.Metadata[meta.Key] = fi.WrapResource(fi.NewStringResource(meta.Value))
+				actual.Metadata[meta.Key] = fi.WrapResource(fi.NewStringResource(fi.StringValue(meta.Value)))
 			}
 		}
 
@@ -190,13 +190,13 @@ func (e *InstanceTemplate) mapToGCE(project string) (*compute.InstanceTemplate, 
 
 	if fi.BoolValue(e.Preemptible) {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart:  false,
+			AutomaticRestart:  fi.Bool(false),
 			OnHostMaintenance: "TERMINATE",
 			Preemptible:       true,
 		}
 	} else {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart: true,
+			AutomaticRestart: fi.Bool(true),
 			// TODO: Migrate or terminate?
 			OnHostMaintenance: "MIGRATE",
 			Preemptible:       false,
@@ -265,7 +265,7 @@ func (e *InstanceTemplate) mapToGCE(project string) (*compute.InstanceTemplate, 
 		}
 		metadataItems = append(metadataItems, &compute.MetadataItems{
 			Key:   key,
-			Value: v,
+			Value: fi.String(v),
 		})
 	}
 
@@ -473,7 +473,7 @@ func (t *terraformInstanceCommon) AddMetadata(target *terraform.TerraformTarget,
 			t.Metadata = make(map[string]*terraform.Literal)
 		}
 		for _, g := range metadata.Items {
-			v := fi.NewStringResource(g.Value)
+			v := fi.NewStringResource(fi.StringValue(g.Value))
 			tfResource, err := target.AddFile("google_compute_instance_template", name, "metadata_"+g.Key, v)
 			if err != nil {
 				return err
@@ -541,7 +541,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 
 	if i.Properties.Scheduling != nil {
 		tf.Scheduling = &terraformScheduling{
-			AutomaticRestart:  i.Properties.Scheduling.AutomaticRestart,
+			AutomaticRestart:  fi.BoolValue(i.Properties.Scheduling.AutomaticRestart),
 			OnHostMaintenance: i.Properties.Scheduling.OnHostMaintenance,
 			Preemptible:       i.Properties.Scheduling.Preemptible,
 		}
