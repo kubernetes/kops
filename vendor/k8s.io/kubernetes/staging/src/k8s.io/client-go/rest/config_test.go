@@ -18,6 +18,7 @@ package rest
 
 import (
 	"io"
+	"net"
 	"net/http"
 	"path/filepath"
 	"reflect"
@@ -26,11 +27,11 @@ import (
 
 	fuzz "github.com/google/gofuzz"
 
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/util/diff"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/pkg/api/v1"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/client-go/util/flowcontrol"
 
@@ -236,6 +237,8 @@ func TestAnonymousConfig(t *testing.T) {
 		func(r *clientcmdapi.AuthProviderConfig, f fuzz.Continue) {
 			r.Config = map[string]string{}
 		},
+		// Dial does not require fuzzer
+		func(r *func(network, addr string) (net.Conn, error), f fuzz.Continue) {},
 	)
 	for i := 0; i < 20; i++ {
 		original := &Config{}
@@ -249,6 +252,7 @@ func TestAnonymousConfig(t *testing.T) {
 		expected.BearerToken = ""
 		expected.Username = ""
 		expected.Password = ""
+		expected.CacheDir = ""
 		expected.AuthProvider = nil
 		expected.AuthConfigPersister = nil
 		expected.TLSClientConfig.CertData = nil

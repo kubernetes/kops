@@ -7,10 +7,9 @@ import (
 	"github.com/docker/go-connections/tlsconfig"
 )
 
-func (s *Service) lookupV2Endpoints(hostname string) (endpoints []APIEndpoint, err error) {
-	var cfg = tlsconfig.ServerDefault
-	tlsConfig := &cfg
-	if hostname == DefaultNamespace || hostname == DefaultV1Registry.Host {
+func (s *DefaultService) lookupV2Endpoints(hostname string) (endpoints []APIEndpoint, err error) {
+	tlsConfig := tlsconfig.ServerDefault()
+	if hostname == DefaultNamespace || hostname == IndexHostname {
 		// v2 mirrors
 		for _, mirror := range s.config.Mirrors {
 			if !strings.HasPrefix(mirror, "http://") && !strings.HasPrefix(mirror, "https://") {
@@ -45,7 +44,9 @@ func (s *Service) lookupV2Endpoints(hostname string) (endpoints []APIEndpoint, e
 		return endpoints, nil
 	}
 
-	tlsConfig, err = s.TLSConfig(hostname)
+	ana := allowNondistributableArtifacts(s.config, hostname)
+
+	tlsConfig, err = s.tlsConfig(hostname)
 	if err != nil {
 		return nil, err
 	}
@@ -56,9 +57,10 @@ func (s *Service) lookupV2Endpoints(hostname string) (endpoints []APIEndpoint, e
 				Scheme: "https",
 				Host:   hostname,
 			},
-			Version:      APIVersion2,
-			TrimHostname: true,
-			TLSConfig:    tlsConfig,
+			Version: APIVersion2,
+			AllowNondistributableArtifacts: ana,
+			TrimHostname:                   true,
+			TLSConfig:                      tlsConfig,
 		},
 	}
 
@@ -68,8 +70,9 @@ func (s *Service) lookupV2Endpoints(hostname string) (endpoints []APIEndpoint, e
 				Scheme: "http",
 				Host:   hostname,
 			},
-			Version:      APIVersion2,
-			TrimHostname: true,
+			Version: APIVersion2,
+			AllowNondistributableArtifacts: ana,
+			TrimHostname:                   true,
 			// used to check if supposed to be secure via InsecureSkipVerify
 			TLSConfig: tlsConfig,
 		})

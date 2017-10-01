@@ -7,6 +7,8 @@ package utf32
 import (
 	"testing"
 
+	"golang.org/x/text/encoding"
+	"golang.org/x/text/encoding/internal/enctest"
 	"golang.org/x/text/transform"
 )
 
@@ -18,6 +20,42 @@ var (
 	utf32BEUB = UTF32(BigEndian, UseBOM)    // UTF-32 default
 	utf32BEEB = UTF32(BigEndian, ExpectBOM) // UTF-32 Expect
 )
+
+func TestBasics(t *testing.T) {
+	testCases := []struct {
+		e         encoding.Encoding
+		encPrefix string
+		encSuffix string
+		encoded   string
+		utf8      string
+	}{{
+		e:       utf32BEIB,
+		encoded: "\x00\x00\x00\x57\x00\x00\x00\xe4\x00\x01\xd5\x65",
+		utf8:    "\x57\u00e4\U0001d565",
+	}, {
+		e:         UTF32(BigEndian, ExpectBOM),
+		encPrefix: "\x00\x00\xfe\xff",
+		encoded:   "\x00\x00\x00\x57\x00\x00\x00\xe4\x00\x01\xd5\x65",
+		utf8:      "\x57\u00e4\U0001d565",
+	}, {
+		e:       UTF32(LittleEndian, IgnoreBOM),
+		encoded: "\x57\x00\x00\x00\xe4\x00\x00\x00\x65\xd5\x01\x00",
+		utf8:    "\x57\u00e4\U0001d565",
+	}, {
+		e:         UTF32(LittleEndian, ExpectBOM),
+		encPrefix: "\xff\xfe\x00\x00",
+		encoded:   "\x57\x00\x00\x00\xe4\x00\x00\x00\x65\xd5\x01\x00",
+		utf8:      "\x57\u00e4\U0001d565",
+	}}
+
+	for _, tc := range testCases {
+		enctest.TestEncoding(t, tc.e, tc.encoded, tc.utf8, tc.encPrefix, tc.encSuffix)
+	}
+}
+
+func TestFiles(t *testing.T) { enctest.TestFile(t, utf32BEIB) }
+
+func BenchmarkEncoding(b *testing.B) { enctest.Benchmark(b, utf32BEIB) }
 
 func TestUTF32(t *testing.T) {
 	testCases := []struct {

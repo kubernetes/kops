@@ -12,14 +12,13 @@ image="${base}:latest"
 # Login information, should match values in nginx/test.passwd
 user=${TEST_USER:-"testuser"}
 password=${TEST_PASSWORD:-"passpassword"}
-email="distribution@docker.com"
 
 function setup() {
 	tempImage $image
 }
 
 @test "Test valid certificates" {
-	docker_t tag -f $image $hostname:5440/$image
+	docker_t tag $image $hostname:5440/$image
 	run docker_t push $hostname:5440/$image
 	[ "$status" -eq 0 ]
 	has_digest "$output"
@@ -28,7 +27,7 @@ function setup() {
 @test "Test basic auth" {
 	basic_auth_version_check
 	login $hostname:5441
-	docker_t tag -f $image $hostname:5441/$image
+	docker_t tag $image $hostname:5441/$image
 	run docker_t push $hostname:5441/$image
 	[ "$status" -eq 0 ]
 	has_digest "$output"
@@ -60,14 +59,14 @@ function setup() {
 }
 
 @test "Test TLS client auth" {
-	docker_t tag -f $image $hostname:5442/$image
+	docker_t tag $image $hostname:5442/$image
 	run docker_t push $hostname:5442/$image
 	[ "$status" -eq 0 ]
 	has_digest "$output"
 }
 
 @test "Test TLS client with invalid certificate authority fails" {
-	docker_t tag -f $image $hostname:5443/$image
+	docker_t tag $image $hostname:5443/$image
 	run docker_t push $hostname:5443/$image
 	[ "$status" -ne 0 ]
 }
@@ -75,14 +74,14 @@ function setup() {
 @test "Test basic auth with TLS client auth" {
 	basic_auth_version_check
 	login $hostname:5444
-	docker_t tag -f $image $hostname:5444/$image
+	docker_t tag $image $hostname:5444/$image
 	run docker_t push $hostname:5444/$image
 	[ "$status" -eq 0 ]
 	has_digest "$output"
 }
 
 @test "Test unknown certificate authority fails" {
-	docker_t tag -f $image $hostname:5445/$image
+	docker_t tag $image $hostname:5445/$image
 	run docker_t push $hostname:5445/$image
 	[ "$status" -ne 0 ]
 }
@@ -90,19 +89,19 @@ function setup() {
 @test "Test basic auth with unknown certificate authority fails" {
 	run login $hostname:5446
 	[ "$status" -ne 0 ]
-	docker_t tag -f $image $hostname:5446/$image
+	docker_t tag $image $hostname:5446/$image
 	run docker_t push $hostname:5446/$image
 	[ "$status" -ne 0 ]
 }
 
 @test "Test TLS client auth to server with unknown certificate authority fails" {
-	docker_t tag -f $image $hostname:5447/$image
+	docker_t tag $image $hostname:5447/$image
 	run docker_t push $hostname:5447/$image
 	[ "$status" -ne 0 ]
 }
 
 @test "Test failure to connect to server fails to fallback to SSLv3" {
-	docker_t tag -f $image $hostname:5448/$image
+	docker_t tag $image $hostname:5448/$image
 	run docker_t push $hostname:5448/$image
 	[ "$status" -ne 0 ]
 }

@@ -8,10 +8,12 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"syscall"
 	"testing"
 
 	"github.com/docker/docker/pkg/system"
+	"golang.org/x/sys/unix"
 )
 
 func TestCanonicalTarNameForPath(t *testing.T) {
@@ -158,13 +160,13 @@ func TestTarWithBlockCharFifo(t *testing.T) {
 	if err := ioutil.WriteFile(filepath.Join(origin, "1"), []byte("hello world"), 0700); err != nil {
 		t.Fatal(err)
 	}
-	if err := system.Mknod(filepath.Join(origin, "2"), syscall.S_IFBLK, int(system.Mkdev(int64(12), int64(5)))); err != nil {
+	if err := system.Mknod(filepath.Join(origin, "2"), unix.S_IFBLK, int(system.Mkdev(int64(12), int64(5)))); err != nil {
 		t.Fatal(err)
 	}
-	if err := system.Mknod(filepath.Join(origin, "3"), syscall.S_IFCHR, int(system.Mkdev(int64(12), int64(5)))); err != nil {
+	if err := system.Mknod(filepath.Join(origin, "3"), unix.S_IFCHR, int(system.Mkdev(int64(12), int64(5)))); err != nil {
 		t.Fatal(err)
 	}
-	if err := system.Mknod(filepath.Join(origin, "4"), syscall.S_IFIFO, int(system.Mkdev(int64(12), int64(5)))); err != nil {
+	if err := system.Mknod(filepath.Join(origin, "4"), unix.S_IFIFO, int(system.Mkdev(int64(12), int64(5)))); err != nil {
 		t.Fatal(err)
 	}
 
@@ -203,6 +205,9 @@ func TestTarWithBlockCharFifo(t *testing.T) {
 
 // TestTarUntarWithXattr is Unix as Lsetxattr is not supported on Windows
 func TestTarUntarWithXattr(t *testing.T) {
+	if runtime.GOOS == "solaris" {
+		t.Skip()
+	}
 	origin, err := ioutil.TempDir("", "docker-test-untar-origin")
 	if err != nil {
 		t.Fatal(err)

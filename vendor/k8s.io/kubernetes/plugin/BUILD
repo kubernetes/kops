@@ -1,7 +1,5 @@
 package(default_visibility = ["//visibility:public"])
 
-licenses(["notice"])
-
 filegroup(
     name = "package-srcs",
     srcs = glob(["**"]),
@@ -19,6 +17,7 @@ filegroup(
         "//plugin/pkg/admission/antiaffinity:all-srcs",
         "//plugin/pkg/admission/defaulttolerationseconds:all-srcs",
         "//plugin/pkg/admission/deny:all-srcs",
+        "//plugin/pkg/admission/eventratelimit:all-srcs",
         "//plugin/pkg/admission/exec:all-srcs",
         "//plugin/pkg/admission/gc:all-srcs",
         "//plugin/pkg/admission/imagepolicy:all-srcs",
@@ -29,9 +28,11 @@ filegroup(
         "//plugin/pkg/admission/namespace/exists:all-srcs",
         "//plugin/pkg/admission/noderestriction:all-srcs",
         "//plugin/pkg/admission/persistentvolume/label:all-srcs",
+        "//plugin/pkg/admission/persistentvolume/resize:all-srcs",
         "//plugin/pkg/admission/podnodeselector:all-srcs",
         "//plugin/pkg/admission/podpreset:all-srcs",
         "//plugin/pkg/admission/podtolerationrestriction:all-srcs",
+        "//plugin/pkg/admission/priority:all-srcs",
         "//plugin/pkg/admission/resourcequota:all-srcs",
         "//plugin/pkg/admission/security:all-srcs",
         "//plugin/pkg/admission/securitycontext/scdeny:all-srcs",

@@ -16,6 +16,8 @@ limitations under the License.
 
 package wholepkg
 
+import "k8s.io/gengo/examples/deepcopy-gen/output_tests/otherpkg"
+
 // Trivial
 type Struct_Empty struct{}
 
@@ -127,4 +129,43 @@ type Struct_Everything struct {
 	SlicesField               Struct_Slices
 	SliceManualStructField    []ManualStruct
 	ManualSliceField          ManualSlice
+}
+
+// An Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/gengo/examples/deepcopy-gen/output_tests/otherpkg.Object
+type Struct_ExplicitObject struct {
+	x int
+}
+
+// An Object which is used a non-pointer
+// +k8s:deepcopy-gen:interfaces=k8s.io/gengo/examples/deepcopy-gen/output_tests/otherpkg.Object
+// +k8s:deepcopy-gen:nonpointer-interfaces=true
+type Struct_NonPointerExplicitObject struct {
+	x int
+}
+
+// +k8s:deepcopy-gen=false
+type Struct_TypeMeta struct {
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/gengo/examples/deepcopy-gen/output_tests/otherpkg.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/gengo/examples/deepcopy-gen/output_tests/otherpkg.List
+type Struct_ObjectAndList struct {
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/gengo/examples/deepcopy-gen/output_tests/otherpkg.Object
+// +k8s:deepcopy-gen:interfaces=k8s.io/gengo/examples/deepcopy-gen/output_tests/otherpkg.Object
+type Struct_ObjectAndObject struct {
+}
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/gengo/examples/deepcopy-gen/output_tests/wholepkg.Selector
+// +k8s:deepcopy-gen:interfaces=k8s.io/gengo/examples/deepcopy-gen/output_tests/otherpkg.Object
+type Struct_ExplicitSelectorExplicitObject struct {
+	Struct_TypeMeta
+}
+
+type Struct_Interfaces struct {
+	ObjectField    otherpkg.Object
+	NilObjectField otherpkg.Object
+	SelectorField  Selector
 }

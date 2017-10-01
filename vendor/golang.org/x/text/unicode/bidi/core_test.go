@@ -58,7 +58,7 @@ func TestBidiCore(t *testing.T) {
 			par := newParagraph(types, pairTypes, pairValues, lev)
 
 			if *testLevels {
-				levels := par.resultLevels
+				levels := par.getLevels([]int{len(types)})
 				for i, s := range wantLevels {
 					if s == "x" {
 						continue
@@ -150,7 +150,7 @@ func TestBidiCharacters(t *testing.T) {
 		}
 
 		if *testLevels {
-			gotLevels := getLevelStrings(types, par.resultLevels)
+			gotLevels := getLevelStrings(types, par.getLevels([]int{len(types)}))
 			if got, want := fmt.Sprint(gotLevels), fmt.Sprint(wantLevels); got != want {
 				t.Errorf("%04X %q:%d: got %v; want %v\nval: %x\npair: %v", runes, string(runes), parLevel, got, want, pairValues, pairTypes)
 			}

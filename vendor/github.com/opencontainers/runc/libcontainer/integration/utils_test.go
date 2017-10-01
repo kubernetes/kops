@@ -76,6 +76,17 @@ func newTestRoot() (string, error) {
 	return dir, nil
 }
 
+func newTestBundle() (string, error) {
+	dir, err := ioutil.TempDir("", "bundle")
+	if err != nil {
+		return "", err
+	}
+	if err := os.MkdirAll(dir, 0700); err != nil {
+		return "", err
+	}
+	return dir, nil
+}
+
 // newRootfs creates a new tmp directory and copies the busybox root filesystem
 func newRootfs() (string, error) {
 	dir, err := ioutil.TempDir("", "")

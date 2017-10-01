@@ -19,11 +19,12 @@ package qos
 import (
 	"testing"
 
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kubernetes/pkg/api"
 	"k8s.io/kubernetes/pkg/api/helper/qos"
-	"k8s.io/kubernetes/pkg/api/v1"
+	k8sv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 func TestGetPodQOS(t *testing.T) {
@@ -129,6 +130,12 @@ func TestGetPodQOS(t *testing.T) {
 			}),
 			expected: v1.PodQOSBurstable,
 		},
+		{
+			pod: newPod("burstable-hugepages", []v1.Container{
+				newContainer("burstable", addResource("hugepages-2Mi", "1Gi", getResourceList("0", "0")), addResource("hugepages-2Mi", "1Gi", getResourceList("0", "0"))),
+			}),
+			expected: v1.PodQOSBurstable,
+		},
 	}
 	for id, testCase := range testCases {
 		if actual := GetPodQOS(testCase.pod); testCase.expected != actual {
@@ -137,10 +144,10 @@ func TestGetPodQOS(t *testing.T) {
 
 		// Convert v1.Pod to api.Pod, and then check against `api.helper.GetPodQOS`.
 		pod := api.Pod{}
-		v1.Convert_v1_Pod_To_api_Pod(testCase.pod, &pod, nil)
+		k8sv1.Convert_v1_Pod_To_api_Pod(testCase.pod, &pod, nil)
 
 		if actual := qos.GetPodQOS(&pod); api.PodQOSClass(testCase.expected) != actual {
-			t.Errorf("[%d]: invalid qos pod %s, expected: %s, actual: %s", id, testCase.pod.Name, testCase.expected, actual)
+			t.Errorf("[%d]: conversion invalid qos pod %s, expected: %s, actual: %s", id, testCase.pod.Name, testCase.expected, actual)
 		}
 	}
 }

@@ -3,21 +3,24 @@ package main
 import (
 	"net/http"
 
-	"github.com/docker/docker/pkg/integration/checker"
-	"github.com/docker/engine-api/types"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/integration-cli/checker"
+	"github.com/docker/docker/integration-cli/request"
 	"github.com/go-check/check"
 )
 
 // Test case for #22244
-func (s *DockerSuite) TestAuthApi(c *check.C) {
+func (s *DockerSuite) TestAuthAPI(c *check.C) {
+	testRequires(c, Network)
 	config := types.AuthConfig{
 		Username: "no-user",
 		Password: "no-password",
 	}
 
-	expected := "Get https://registry-1.docker.io/v2/: unauthorized: incorrect username or password\n"
-	status, body, err := sockRequest("POST", "/auth", config)
+	expected := "Get https://registry-1.docker.io/v2/: unauthorized: incorrect username or password"
+	status, body, err := request.SockRequest("POST", "/auth", config, daemonHost())
 	c.Assert(err, check.IsNil)
 	c.Assert(status, check.Equals, http.StatusUnauthorized)
-	c.Assert(string(body), checker.Contains, expected, check.Commentf("Expected: %v, got: %v", expected, string(body)))
+	msg := getErrorMessage(c, body)
+	c.Assert(msg, checker.Contains, expected, check.Commentf("Expected: %v, got: %v", expected, msg))
 }

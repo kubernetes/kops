@@ -1,13 +1,14 @@
 package daemon
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"time"
 
-	"github.com/Sirupsen/logrus"
-	"github.com/docker/docker/container"
-	"github.com/docker/docker/errors"
+	"github.com/docker/docker/api/errors"
+	containerpkg "github.com/docker/docker/container"
+	"github.com/sirupsen/logrus"
 )
 
 // ContainerStop looks for the given container and terminates it,
@@ -16,7 +17,7 @@ import (
 // will wait for a graceful termination. An error is returned if the
 // container is not found, is already stopped, or if there is a
 // problem stopping the container.
-func (daemon *Daemon) ContainerStop(name string, seconds int) error {
+func (daemon *Daemon) ContainerStop(name string, seconds *int) error {
 	container, err := daemon.GetContainer(name)
 	if err != nil {
 		return err
@@ -25,7 +26,11 @@ func (daemon *Daemon) ContainerStop(name string, seconds int) error {
 		err := fmt.Errorf("Container %s is already stopped", name)
 		return errors.NewErrorWithStatusCode(err, http.StatusNotModified)
 	}
-	if err := daemon.containerStop(container, seconds); err != nil {
+	if seconds == nil {
+		stopTimeout := container.StopTimeout()
+		seconds = &stopTimeout
+	}
+	if err := daemon.containerStop(container, *seconds); err != nil {
 		return fmt.Errorf("Cannot stop container %s: %v", name, err)
 	}
 	return nil
@@ -36,26 +41,47 @@ func (daemon *Daemon) ContainerStop(name string, seconds int) error {
 // process to exit. If a negative duration is given, Stop will wait
 // for the initial signal forever. If the container is not running Stop returns
 // immediately.
-func (daemon *Daemon) containerStop(container *container.Container, seconds int) error {
+func (daemon *Daemon) containerStop(container *containerpkg.Container, seconds int) error {
 	if !container.IsRunning() {
 		return nil
 	}
 
+	daemon.stopHealthchecks(container)
+
 	stopSignal := container.StopSignal()
 	// 1. Send a stop signal
 	if err := daemon.killPossiblyDeadProcess(container, stopSignal); err != nil {
-		logrus.Infof("Failed to send signal %d to the process, force killing", stopSignal)
-		if err := daemon.killPossiblyDeadProcess(container, 9); err != nil {
-			return err
+		// While normally we might "return err" here we're not going to
+		// because if we can't stop the container by this point then
+		// it's probably because it's already stopped. Meaning, between
+		// the time of the IsRunning() call above and now it stopped.
+		// Also, since the err return will be environment specific we can't
+		// look for any particular (common) error that would indicate
+		// that the process is already dead vs something else going wrong.
+		// So, instead we'll give it up to 2 more seconds to complete and if
+		// by that time the container is still running, then the error
+		// we got is probably valid and so we force kill it.
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+
+		if status := <-container.Wait(ctx, containerpkg.WaitConditionNotRunning); status.Err() != nil {
+			logrus.Infof("Container failed to stop after sending signal %d to the process, force killing", stopSignal)
+			if err := daemon.killPossiblyDeadProcess(container, 9); err != nil {
+				return err
+			}
 		}
 	}
 
 	// 2. Wait for the process to exit on its own
-	if _, err := container.WaitStop(time.Duration(seconds) * time.Second); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(seconds)*time.Second)
+	defer cancel()
+
+	if status := <-container.Wait(ctx, containerpkg.WaitConditionNotRunning); status.Err() != nil {
 		logrus.Infof("Container %v failed to exit within %d seconds of signal %d - using the force", container.ID, seconds, stopSignal)
 		// 3. If it doesn't, then send SIGKILL
 		if err := daemon.Kill(container); err != nil {
-			container.WaitStop(-1 * time.Second)
+			// Wait without a timeout, ignore result.
+			_ = <-container.Wait(context.Background(), containerpkg.WaitConditionNotRunning)
 			logrus.Warn(err) // Don't return error because we only care that container is stopped, not what function stopped it
 		}
 	}

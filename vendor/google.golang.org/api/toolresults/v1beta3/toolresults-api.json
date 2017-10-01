@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/nQhQ0ficvWp-12GO3JqcmACC7lI\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/8gXIUZZwesYgPe_2keJ1iBogMwA\"",
  "discoveryVersion": "v1",
  "id": "toolresults:v1beta3",
  "name": "toolresults",
  "canonicalName": "Tool Results",
  "version": "v1beta3",
- "revision": "20170417",
+ "revision": "20170803",
  "title": "Cloud Tool Results API",
  "description": "Reads and publishes results from Firebase Test Lab.",
  "ownerDomain": "google.com",
@@ -77,10 +77,111 @@
   }
  },
  "schemas": {
+  "AndroidAppInfo": {
+   "id": "AndroidAppInfo",
+   "type": "object",
+   "description": "Android app information.",
+   "properties": {
+    "name": {
+     "type": "string",
+     "description": "The name of the app. Optional"
+    },
+    "packageName": {
+     "type": "string",
+     "description": "The package name of the app. Required."
+    },
+    "versionCode": {
+     "type": "string",
+     "description": "The internal version code of the app. Optional."
+    },
+    "versionName": {
+     "type": "string",
+     "description": "The version name of the app. Optional."
+    }
+   }
+  },
+  "AndroidInstrumentationTest": {
+   "id": "AndroidInstrumentationTest",
+   "type": "object",
+   "description": "A test of an Android application that can control an Android component independently of its normal lifecycle.\n\nSee  for more information on types of Android tests.",
+   "properties": {
+    "testPackageId": {
+     "type": "string",
+     "description": "The java package for the test to be executed. Required"
+    },
+    "testRunnerClass": {
+     "type": "string",
+     "description": "The InstrumentationTestRunner class. Required"
+    },
+    "testTargets": {
+     "type": "array",
+     "description": "Each target must be fully qualified with the package name or class name, in one of these formats: - \"package package_name\" - \"class package_name.class_name\" - \"class package_name.class_name#method_name\"\n\nIf empty, all targets in the module will be run.",
+     "items": {
+      "type": "string"
+     }
+    },
+    "useOrchestrator": {
+     "type": "boolean",
+     "description": "The flag indicates whether Android Test Orchestrator will be used to run test or not. Test orchestrator is used if either: - orchestrator_option field is USE_ORCHESTRATOR, and test runner is compatible with orchestrator. Or - orchestrator_option field is unspecified or ORCHESTRATOR_OPTION_UNSPECIFIED, and test runner is compatible with orchestrator."
+    }
+   }
+  },
+  "AndroidRoboTest": {
+   "id": "AndroidRoboTest",
+   "type": "object",
+   "description": "A test of an android application that explores the application on a virtual or physical Android device, finding culprits and crashes as it goes.",
+   "properties": {
+    "appInitialActivity": {
+     "type": "string",
+     "description": "The initial activity that should be used to start the app. Optional"
+    },
+    "bootstrapPackageId": {
+     "type": "string",
+     "description": "The java package for the bootstrap. Optional"
+    },
+    "bootstrapRunnerClass": {
+     "type": "string",
+     "description": "The runner class for the bootstrap. Optional"
+    },
+    "maxDepth": {
+     "type": "integer",
+     "description": "The max depth of the traversal stack Robo can explore. Optional",
+     "format": "int32"
+    },
+    "maxSteps": {
+     "type": "integer",
+     "description": "The max number of steps/actions Robo can execute. Default is no limit (0). Optional",
+     "format": "int32"
+    }
+   }
+  },
+  "AndroidTest": {
+   "id": "AndroidTest",
+   "type": "object",
+   "description": "An Android mobile test specification.",
+   "properties": {
+    "androidAppInfo": {
+     "$ref": "AndroidAppInfo",
+     "description": "Infomation about the application under test."
+    },
+    "androidInstrumentationTest": {
+     "$ref": "AndroidInstrumentationTest",
+     "description": "An Android instrumentation test."
+    },
+    "androidRoboTest": {
+     "$ref": "AndroidRoboTest",
+     "description": "An Android robo test."
+    },
+    "testTimeout": {
+     "$ref": "Duration",
+     "description": "Max time a test is allowed to run before it is automatically cancelled."
+    }
+   }
+  },
   "Any": {
    "id": "Any",
    "type": "object",
-   "description": "`Any` contains an arbitrary serialized protocol buffer message along with a URL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form of utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\nFoo foo = ...; Any any; any.PackFrom(foo); ... if (any.UnpackTo(&foo)) { ... }\n\nExample 2: Pack and unpack a message in Java.\n\nFoo foo = ...; Any any = Any.pack(foo); ... if (any.is(Foo.class)) { foo = any.unpack(Foo.class); }\n\nExample 3: Pack and unpack a message in Python.\n\nfoo = Foo(...) any = Any() any.Pack(foo) ... if any.Is(Foo.DESCRIPTOR): any.Unpack(foo) ...\n\nThe pack methods provided by protobuf library will by default use 'type.googleapis.com/full.type.name' as the type URL and the unpack methods only use the fully qualified type name after the last '/' in the type URL, for example \"foo.bar.com/x/y.z\" will yield type name \"y.z\".\n\n\n\nJSON ==== The JSON representation of an `Any` value uses the regular representation of the deserialized, embedded message, with an additional field `@type` which contains the type URL. Example:\n\npackage google.profile; message Person { string first_name = 1; string last_name = 2; }\n\n{ \"@type\": \"type.googleapis.com/google.profile.Person\", \"firstName\": , \"lastName\":  }\n\nIf the embedded message type is well-known and has a custom JSON representation, that representation will be embedded adding a field `value` which holds the custom JSON in addition to the `@type` field. Example (for message [google.protobuf.Duration][]):\n\n{ \"@type\": \"type.googleapis.com/google.protobuf.Duration\", \"value\": \"1.212s\" }",
+   "description": "`Any` contains an arbitrary serialized protocol buffer message along with a URL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form of utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\nFoo foo = ...; Any any; any.PackFrom(foo); ... if (any.UnpackTo(&foo)) { ... }\n\nExample 2: Pack and unpack a message in Java.\n\nFoo foo = ...; Any any = Any.pack(foo); ... if (any.is(Foo.class)) { foo = any.unpack(Foo.class); }\n\nExample 3: Pack and unpack a message in Python.\n\nfoo = Foo(...) any = Any() any.Pack(foo) ... if any.Is(Foo.DESCRIPTOR): any.Unpack(foo) ...\n\nExample 4: Pack and unpack a message in Go\n\nfoo := &pb.Foo{...} any, err := ptypes.MarshalAny(foo) ... foo := &pb.Foo{} if err := ptypes.UnmarshalAny(any, foo); err != nil { ... }\n\nThe pack methods provided by protobuf library will by default use 'type.googleapis.com/full.type.name' as the type URL and the unpack methods only use the fully qualified type name after the last '/' in the type URL, for example \"foo.bar.com/x/y.z\" will yield type name \"y.z\".\n\n\n\nJSON ==== The JSON representation of an `Any` value uses the regular representation of the deserialized, embedded message, with an additional field `@type` which contains the type URL. Example:\n\npackage google.profile; message Person { string first_name = 1; string last_name = 2; }\n\n{ \"@type\": \"type.googleapis.com/google.profile.Person\", \"firstName\": , \"lastName\":  }\n\nIf the embedded message type is well-known and has a custom JSON representation, that representation will be embedded adding a field `value` which holds the custom JSON in addition to the `@type` field. Example (for message [google.protobuf.Duration][]):\n\n{ \"@type\": \"type.googleapis.com/google.protobuf.Duration\", \"value\": \"1.212s\" }",
    "properties": {
     "typeUrl": {
      "type": "string",
@@ -90,6 +191,20 @@
      "type": "string",
      "description": "Must be a valid serialized protocol buffer of the above specified type.",
      "format": "byte"
+    }
+   }
+  },
+  "AppStartTime": {
+   "id": "AppStartTime",
+   "type": "object",
+   "properties": {
+    "fullyDrawnTime": {
+     "$ref": "Duration",
+     "description": "Optional. The time from app start to reaching the developer-reported \"fully drawn\" time. This is only stored if the app includes a call to Activity.reportFullyDrawn(). See https://developer.android.com/topic/performance/launch-time.html#time-full"
+    },
+    "initialDisplayTime": {
+     "$ref": "Duration",
+     "description": "The time from app start to the first displayed activity being drawn, as reported in Logcat. See https://developer.android.com/topic/performance/launch-time.html#time-initial"
     }
    }
   },
@@ -118,6 +233,7 @@
     "perfUnit": {
      "type": "string",
      "enum": [
+      "byte",
       "bytesPerSecond",
       "framesPerSecond",
       "kibibyte",
@@ -125,6 +241,7 @@
       "perfUnitUnspecified"
      ],
      "enumDescriptions": [
+      "",
       "",
       "",
       "",
@@ -251,6 +368,10 @@
      "$ref": "Outcome",
      "description": "Classify the result, for example into SUCCESS or FAILURE\n\n- In response: present if set by create/update request - In create/update request: optional"
     },
+    "specification": {
+     "$ref": "Specification",
+     "description": "Lightweight information about execution request.\n\n- In response: present if set by create - In create: optional - In update: optional"
+    },
     "state": {
      "type": "string",
      "description": "The initial state is IN_PROGRESS.\n\nThe only legal state transitions is from IN_PROGRESS to COMPLETE.\n\nA PRECONDITION_FAILED will be returned if an invalid transition is requested.\n\nThe state can only be set to COMPLETE once. A FAILED_PRECONDITION will be returned if the state is set to COMPLETE multiple times.\n\nIf the state is set to COMPLETE, all the in-progress steps within the execution will be set as COMPLETE. If the outcome of the step is not set, the outcome will be set to INCONCLUSIVE.\n\n- In response always set - In create/update request: optional",
@@ -269,7 +390,7 @@
     },
     "testExecutionMatrixId": {
      "type": "string",
-     "description": "TestExecution Matrix ID that the Test Service uses.\n\n- In response: present if set by create - In create: optional - In update: never set"
+     "description": "TestExecution Matrix ID that the TestExecutionService uses.\n\n- In response: present if set by create - In create: optional - In update: never set"
     }
    }
   },
@@ -543,6 +664,9 @@
    "type": "object",
    "description": "A summary of perf metrics collected and performance environment info",
    "properties": {
+    "appStartTime": {
+     "$ref": "AppStartTime"
+    },
     "executionId": {
      "type": "string",
      "description": "A tool results execution ID."
@@ -680,21 +804,40 @@
     }
    }
   },
+  "Specification": {
+   "id": "Specification",
+   "type": "object",
+   "description": "The details about how to run the execution.",
+   "properties": {
+    "androidTest": {
+     "$ref": "AndroidTest",
+     "description": "An Android mobile test execution specification."
+    }
+   }
+  },
   "StackTrace": {
    "id": "StackTrace",
    "type": "object",
    "description": "A stacktrace.",
    "properties": {
+    "clusterId": {
+     "type": "string",
+     "description": "Exception cluster ID"
+    },
     "exception": {
      "type": "string",
      "description": "The stack trace message.\n\nRequired"
+    },
+    "reportId": {
+     "type": "string",
+     "description": "Exception report ID"
     }
    }
   },
   "Status": {
    "id": "Status",
    "type": "object",
-   "description": "The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). The error model is designed to be:\n\n- Simple to use and understand for most users - Flexible enough to meet unexpected needs\n\n# Overview\n\nThe `Status` message contains three pieces of data: error code, error message, and error details. The error code should be an enum value of [google.rpc.Code][], but it may accept additional error codes if needed. The error message should be a developer-facing English message that helps developers *understand* and *resolve* the error. If a localized user-facing error message is needed, put the localized message in the error details or localize it in the client. The optional error details may contain arbitrary information about the error. There is a predefined set of error detail types in the package `google.rpc` which can be used for common error conditions.\n\n# Language mapping\n\nThe `Status` message is the logical representation of the error model, but it is not necessarily the actual wire format. When the `Status` message is exposed in different client libraries and different wire protocols, it can be mapped differently. For example, it will likely be mapped to some exceptions in Java, but more likely mapped to some error codes in C.\n\n# Other uses\n\nThe error model and the `Status` message can be used in a variety of environments, either with or without APIs, to provide a consistent developer experience across different environments.\n\nExample uses of this error model include:\n\n- Partial errors. If a service needs to return partial errors to the client, it may embed the `Status` in the normal response to indicate the partial errors.\n\n- Workflow errors. A typical workflow has multiple steps. Each step may have a `Status` message for error reporting purpose.\n\n- Batch operations. If a client uses batch request and batch response, the `Status` message should be used directly inside batch response, one for each error sub-response.\n\n- Asynchronous operations. If an API call embeds asynchronous operation results in its response, the status of those operations should be represented directly using the `Status` message.\n\n- Logging. If some API errors are stored in logs, the message `Status` could be used directly after any stripping needed for security/privacy reasons.",
+   "description": "The `Status` type defines a logical error model that is suitable for different programming environments, including REST APIs and RPC APIs. It is used by [gRPC](https://github.com/grpc). The error model is designed to be:\n\n- Simple to use and understand for most users - Flexible enough to meet unexpected needs\n\n# Overview\n\nThe `Status` message contains three pieces of data: error code, error message, and error details. The error code should be an enum value of [google.rpc.Code][], but it may accept additional error codes if needed. The error message should be a developer-facing English message that helps developers *understand* and *resolve* the error. If a localized user-facing error message is needed, put the localized message in the error details or localize it in the client. The optional error details may contain arbitrary information about the error. There is a predefined set of error detail types in the package `google.rpc` that can be used for common error conditions.\n\n# Language mapping\n\nThe `Status` message is the logical representation of the error model, but it is not necessarily the actual wire format. When the `Status` message is exposed in different client libraries and different wire protocols, it can be mapped differently. For example, it will likely be mapped to some exceptions in Java, but more likely mapped to some error codes in C.\n\n# Other uses\n\nThe error model and the `Status` message can be used in a variety of environments, either with or without APIs, to provide a consistent developer experience across different environments.\n\nExample uses of this error model include:\n\n- Partial errors. If a service needs to return partial errors to the client, it may embed the `Status` in the normal response to indicate the partial errors.\n\n- Workflow errors. A typical workflow has multiple steps. Each step may have a `Status` message for error reporting.\n\n- Batch operations. If a client uses batch request and batch response, the `Status` message should be used directly inside batch response, one for each error sub-response.\n\n- Asynchronous operations. If an API call embeds asynchronous operation results in its response, the status of those operations should be represented directly using the `Status` message.\n\n- Logging. If some API errors are stored in logs, the message `Status` could be used directly after any stripping needed for security/privacy reasons.",
    "properties": {
     "code": {
      "type": "integer",
@@ -703,7 +846,7 @@
     },
     "details": {
      "type": "array",
-     "description": "A list of messages that carry the error details. There will be a common set of message types for APIs to use.",
+     "description": "A list of messages that carry the error details. There is a common set of message types for APIs to use.",
      "items": {
       "$ref": "Any"
      }
@@ -1086,7 +1229,7 @@
      "id": "toolresults.projects.initializeSettings",
      "path": "{projectId}:initializeSettings",
      "httpMethod": "POST",
-     "description": "Creates resources for settings which have not yet been set.\n\nCurrently, this creates a single resource: a Google Cloud Storage bucket, to be used as the default bucket for this project. The bucket is created in the name of the user calling. Except in rare cases, calling this method in parallel from multiple clients will only create a single bucket. In order to avoid unnecessary storage charges, the bucket is configured to automatically delete objects older than 90 days.\n\nThe bucket is created with the project-private ACL: All project team members are given permissions to the bucket and objects created within it according to their roles. Project owners have owners rights, and so on. The default ACL on objects created in the bucket is project-private as well. See Google Cloud Storage documentation for more details.\n\nIf there is already a default bucket set and the project can access the bucket, this call does nothing. However, if the project doesn't have the permission to access the bucket or the bucket is deteleted, a new bucket will be created.\n\nMay return any canonical error codes, including the following:\n\n- PERMISSION_DENIED - if the user is not authorized to write to project - Any error code raised by Google Cloud Storage",
+     "description": "Creates resources for settings which have not yet been set.\n\nCurrently, this creates a single resource: a Google Cloud Storage bucket, to be used as the default bucket for this project. The bucket is created in an FTL-own storage project. Except for in rare cases, calling this method in parallel from multiple clients will only create a single bucket. In order to avoid unnecessary storage charges, the bucket is configured to automatically delete objects older than 90 days.\n\nThe bucket is created with the following permissions: - Owner access for owners of central storage project (FTL-owned) - Writer access for owners/editors of customer project - Reader access for viewers of customer project The default ACL on objects created in the bucket is: - Owner access for owners of central storage project - Reader access for owners/editors/viewers of customer project See Google Cloud Storage documentation for more details.\n\nIf there is already a default bucket set and the project can access the bucket, this call does nothing. However, if the project doesn't have the permission to access the bucket or the bucket is deleted, a new bucket will be created.\n\nMay return any canonical error codes, including the following:\n\n- PERMISSION_DENIED - if the user is not authorized to write to project - Any error code raised by Google Cloud Storage",
      "parameters": {
       "projectId": {
        "type": "string",

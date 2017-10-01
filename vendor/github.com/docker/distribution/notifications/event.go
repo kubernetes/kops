@@ -77,7 +77,7 @@ type Event struct {
 	Request RequestRecord `json:"request,omitempty"`
 
 	// Actor specifies the agent that initiated the event. For most
-	// situations, this could be from the authorizaton context of the request.
+	// situations, this could be from the authorization context of the request.
 	Actor ActorRecord `json:"actor,omitempty"`
 
 	// Source identifies the registry node that generated the event. Put
@@ -87,7 +87,7 @@ type Event struct {
 }
 
 // ActorRecord specifies the agent that initiated the event. For most
-// situations, this could be from the authorizaton context of the request.
+// situations, this could be from the authorization context of the request.
 // Data in this record can refer to both the initiating client and the
 // generating request.
 type ActorRecord struct {

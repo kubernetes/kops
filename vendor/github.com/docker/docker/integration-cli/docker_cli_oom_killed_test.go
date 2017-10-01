@@ -3,12 +3,12 @@
 package main
 
 import (
-	"github.com/docker/docker/pkg/integration/checker"
+	"github.com/docker/docker/integration-cli/checker"
 	"github.com/go-check/check"
 )
 
 func (s *DockerSuite) TestInspectOomKilledTrue(c *check.C) {
-	testRequires(c, DaemonIsLinux, memoryLimitSupport)
+	testRequires(c, DaemonIsLinux, memoryLimitSupport, swapMemorySupport)
 
 	name := "testoomkilled"
 	_, exitCode, _ := dockerCmdWithError("run", "--name", name, "--memory", "32MB", "busybox", "sh", "-c", "x=a; while true; do x=$x$x$x$x; done")
@@ -20,7 +20,7 @@ func (s *DockerSuite) TestInspectOomKilledTrue(c *check.C) {
 }
 
 func (s *DockerSuite) TestInspectOomKilledFalse(c *check.C) {
-	testRequires(c, DaemonIsLinux, memoryLimitSupport)
+	testRequires(c, DaemonIsLinux, memoryLimitSupport, swapMemorySupport)
 
 	name := "testoomkilled"
 	dockerCmd(c, "run", "--name", name, "--memory", "32MB", "busybox", "sh", "-c", "echo hello world")

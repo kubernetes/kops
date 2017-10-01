@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/Hgzlsu38y56tOKi_wO3_mjV37MM\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/O3yStPLO-_BtPqwnPm5OpyYaKQ4\"",
  "discoveryVersion": "v1",
  "id": "admin:directory_v1",
  "name": "admin",
  "canonicalName": "directory",
  "version": "directory_v1",
- "revision": "20170419",
+ "revision": "20170723",
  "title": "Admin Directory API",
  "description": "The Admin SDK Directory API lets you view and manage enterprise resources such as users and groups, administrative notifications, security features, and more.",
  "ownerDomain": "google.com",
@@ -576,6 +576,25 @@
     "nextPageToken": {
      "type": "string",
      "description": "Token used to access next page of this result."
+    }
+   }
+  },
+  "ChromeOsMoveDevicesToOu": {
+   "id": "ChromeOsMoveDevicesToOu",
+   "type": "object",
+   "description": "JSON request template for moving ChromeOs Device to given OU in Directory Devices API.",
+   "properties": {
+    "deviceIds": {
+     "type": "array",
+     "description": "ChromeOs Devices to be moved to OU",
+     "items": {
+      "type": "string"
+     },
+     "annotations": {
+      "required": [
+       "directory.chromeosdevices.moveDevicesToOu"
+      ]
+     }
     }
    }
   },
@@ -1868,11 +1887,17 @@
      "description": "Is mailbox setup (Read-only)",
      "readOnly": true
     },
+    "keywords": {
+     "type": "any"
+    },
     "kind": {
      "type": "string",
      "description": "Kind of resource this is.",
      "default": "admin#directory#user",
      "readOnly": true
+    },
+    "languages": {
+     "type": "any"
     },
     "lastLoginTime": {
      "type": "string",
@@ -2119,6 +2144,40 @@
     }
    }
   },
+  "UserKeyword": {
+   "id": "UserKeyword",
+   "type": "object",
+   "description": "JSON template for a keyword entry.",
+   "properties": {
+    "customType": {
+     "type": "string",
+     "description": "Custom Type."
+    },
+    "type": {
+     "type": "string",
+     "description": "Each entry can have a type which indicates standard type of that entry. For example, keyword could be of type occupation or outlook. In addition to the standard type, an entry can have a custom type and can give it any name. Such types should have the CUSTOM value as type and also have a customType value."
+    },
+    "value": {
+     "type": "string",
+     "description": "Keyword."
+    }
+   }
+  },
+  "UserLanguage": {
+   "id": "UserLanguage",
+   "type": "object",
+   "description": "JSON template for a language entry.",
+   "properties": {
+    "customLanguage": {
+     "type": "string",
+     "description": "Other language. User can provide own language name if there is no corresponding Google III language code. If this is set LanguageCode can't be set"
+    },
+    "languageCode": {
+     "type": "string",
+     "description": "Language Code. Should be used for storing Google III LanguageCode string representation for language. Illegal values cause SchemaException."
+    }
+   }
+  },
   "UserLocation": {
    "id": "UserLocation",
    "type": "object",
@@ -2126,7 +2185,7 @@
    "properties": {
     "area": {
      "type": "string",
-     "description": "Textual location. This is most useful for display purposes to concisely describe the location. E.g. \"Mountain View, CA\", \"Near Seattle\", \"US-NYC-9TH 9A209A\"."
+     "description": "Textual location. This is most useful for display purposes to concisely describe the location. For example, \"Mountain View, CA\", \"Near Seattle\", \"US-NYC-9TH 9A209A\"."
     },
     "buildingId": {
      "type": "string",
@@ -2146,7 +2205,7 @@
     },
     "floorSection": {
      "type": "string",
-     "description": "Floor Section. More specific location within the floor. E.g. if a floor is divided into sections \"A\", \"B\", and \"C\", this field would identify one of those values."
+     "description": "Floor section. More specific location within the floor. For example, if a floor is divided into sections \"A\", \"B\", and \"C\", this field would identify one of those values."
     },
     "type": {
      "type": "string",
@@ -2223,6 +2282,11 @@
     "domain": {
      "type": "string",
      "description": "The domain to which the organization belongs to."
+    },
+    "fullTimeEquivalent": {
+     "type": "integer",
+     "description": "The full-time equivalent percent within the organization (100000 = 100%).",
+     "format": "int32"
     },
     "location": {
      "type": "string",
@@ -2740,6 +2804,11 @@
        ],
        "location": "query"
       },
+      "orgUnitPath": {
+       "type": "string",
+       "description": "Full path of the organization unit or its Id",
+       "location": "query"
+      },
       "pageToken": {
        "type": "string",
        "description": "Token to specify next page in the list",
@@ -2786,6 +2855,36 @@
      "scopes": [
       "https://www.googleapis.com/auth/admin.directory.device.chromeos",
       "https://www.googleapis.com/auth/admin.directory.device.chromeos.readonly"
+     ]
+    },
+    "moveDevicesToOu": {
+     "id": "directory.chromeosdevices.moveDevicesToOu",
+     "path": "customer/{customerId}/devices/chromeos/moveDevicesToOu",
+     "httpMethod": "POST",
+     "description": "Move or insert multiple Chrome OS Devices to Organization Unit",
+     "parameters": {
+      "customerId": {
+       "type": "string",
+       "description": "Immutable ID of the G Suite account",
+       "required": true,
+       "location": "path"
+      },
+      "orgUnitPath": {
+       "type": "string",
+       "description": "Full path of the target organization unit or its Id",
+       "required": true,
+       "location": "query"
+      }
+     },
+     "parameterOrder": [
+      "customerId",
+      "orgUnitPath"
+     ],
+     "request": {
+      "$ref": "ChromeOsMoveDevicesToOu"
+     },
+     "scopes": [
+      "https://www.googleapis.com/auth/admin.directory.device.chromeos"
      ]
     },
     "patch": {

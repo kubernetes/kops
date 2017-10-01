@@ -35,9 +35,9 @@ In the start command above, "container1" is the name for the instance of the
 container that you are starting. The name you provide for the container instance
 must be unique on your host.
 
-An alternative for generating a customized spec config is to use "ocitools", the
-sub-command "ocitools generate" has lots of options that can be used to do any
-customizations as you want, see [ocitools](https://github.com/opencontainers/ocitools)
+An alternative for generating a customized spec config is to use "oci-runtime-tool", the
+sub-command "oci-runtime-tool generate" has lots of options that can be used to do any
+customizations as you want, see [runtime-tools](https://github.com/opencontainers/runtime-tools)
 to get more information.
 
 When starting a container through runc, runc needs root privilege. If not
@@ -45,5 +45,8 @@ already running as root, you can use sudo to give runc root privilege. For
 example: "sudo runc start container1" will give runc root privilege to start the
 container on your host.
 
+Alternatively, you can start a rootless container, which has the ability to run without root privileges. For this to work, the specification file needs to be adjusted accordingly. You can pass the parameter --rootless to this command to generate a proper rootless spec file.
+
 # OPTIONS
    --bundle value, -b value     path to the root of the bundle directory
+   --rootless                   generate a configuration for a rootless container

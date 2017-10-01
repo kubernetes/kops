@@ -29,13 +29,13 @@ import (
 	"reflect"
 	"testing"
 
+	extensionsv1 "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/admission"
 	"k8s.io/apiserver/pkg/authentication/user"
 	core "k8s.io/client-go/testing"
 	"k8s.io/kubernetes/pkg/api"
-	extensionsv1 "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 )
 
@@ -343,6 +343,7 @@ func newControllerWithTestServer(f func(w http.ResponseWriter, r *http.Request),
 	if err != nil {
 		return nil, err
 	}
+	defer file.Close()
 
 	controller, err := newAdmissionController(file)
 	if err != nil {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
+	"github.com/opencontainers/go-digest"
 )
 
 type mockBlobService struct {
@@ -166,7 +166,7 @@ func TestBuilder(t *testing.T) {
 	}
 
 	bs := &mockBlobService{descriptors: make(map[digest.Digest]distribution.Descriptor)}
-	builder := NewManifestBuilder(bs, imgJSON)
+	builder := NewManifestBuilder(bs, MediaTypeImageConfig, imgJSON)
 
 	for _, d := range descriptors {
 		if err := builder.AppendReference(d); err != nil {
@@ -195,7 +195,7 @@ func TestBuilder(t *testing.T) {
 	if target.Digest != configDigest {
 		t.Fatalf("unexpected digest in target: %s", target.Digest.String())
 	}
-	if target.MediaType != MediaTypeConfig {
+	if target.MediaType != MediaTypeImageConfig {
 		t.Fatalf("unexpected media type in target: %s", target.MediaType)
 	}
 	if target.Size != 3153 {
@@ -203,8 +203,8 @@ func TestBuilder(t *testing.T) {
 	}
 
 	references := manifest.References()
-
-	if !reflect.DeepEqual(references, descriptors) {
+	expected := append([]distribution.Descriptor{manifest.Target()}, descriptors...)
+	if !reflect.DeepEqual(references, expected) {
 		t.Fatal("References() does not match the descriptors added")
 	}
 }

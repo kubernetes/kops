@@ -84,7 +84,7 @@ func BenchmarkSecretboxRead_32_16384_Stale(b *testing.B) { benchmarkSecretboxRea
 func BenchmarkSecretboxWrite_32_1024(b *testing.B)  { benchmarkSecretboxWrite(b, 32, 1024) }
 func BenchmarkSecretboxWrite_32_16384(b *testing.B) { benchmarkSecretboxWrite(b, 32, 16384) }
 
-func benchmarkSecretboxRead(b *testing.B, keyLength int, valueLength int, stale bool) {
+func benchmarkSecretboxRead(b *testing.B, keyLength int, valueLength int, expectStale bool) {
 	p := value.NewPrefixTransformers(nil,
 		value.PrefixTransformer{Prefix: []byte("first:"), Transformer: NewSecretboxTransformer(key1)},
 		value.PrefixTransformer{Prefix: []byte("second:"), Transformer: NewSecretboxTransformer(key2)},
@@ -97,11 +97,11 @@ func benchmarkSecretboxRead(b *testing.B, keyLength int, valueLength int, stale 
 	if err != nil {
 		b.Fatal(err)
 	}
-	// reverse the key order if stale
-	if stale {
+	// reverse the key order if expecting stale
+	if expectStale {
 		p = value.NewPrefixTransformers(nil,
-			value.PrefixTransformer{Prefix: []byte("first:"), Transformer: NewSecretboxTransformer(key1)},
 			value.PrefixTransformer{Prefix: []byte("second:"), Transformer: NewSecretboxTransformer(key2)},
+			value.PrefixTransformer{Prefix: []byte("first:"), Transformer: NewSecretboxTransformer(key1)},
 		)
 	}
 
@@ -111,8 +111,8 @@ func benchmarkSecretboxRead(b *testing.B, keyLength int, valueLength int, stale 
 		if err != nil {
 			b.Fatal(err)
 		}
-		if stale {
-			b.Fatalf("unexpected data: %t %q", stale, from)
+		if expectStale != stale {
+			b.Fatalf("unexpected data: %q, expect stale %t but got %t", from, expectStale, stale)
 		}
 	}
 	b.StopTimer()
@@ -145,7 +145,7 @@ func TestRoundTrip(t *testing.T) {
 		context value.Context
 		t       value.Transformer
 	}{
-		{name: "GCM 16 byte key", t: NewSecretboxTransformer(key1)},
+		{name: "Secretbox 32 byte key", t: NewSecretboxTransformer(key1)},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

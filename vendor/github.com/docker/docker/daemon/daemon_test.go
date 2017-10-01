@@ -1,23 +1,22 @@
+// +build !solaris
+
 package daemon
 
 import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"reflect"
 	"testing"
-	"time"
 
+	containertypes "github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/container"
-	"github.com/docker/docker/pkg/discovery"
 	_ "github.com/docker/docker/pkg/discovery/memory"
-	"github.com/docker/docker/pkg/registrar"
+	"github.com/docker/docker/pkg/idtools"
 	"github.com/docker/docker/pkg/truncindex"
 	"github.com/docker/docker/volume"
 	volumedrivers "github.com/docker/docker/volume/drivers"
 	"github.com/docker/docker/volume/local"
 	"github.com/docker/docker/volume/store"
-	containertypes "github.com/docker/engine-api/types/container"
 	"github.com/docker/go-connections/nat"
 )
 
@@ -27,38 +26,28 @@ import (
 
 func TestGetContainer(t *testing.T) {
 	c1 := &container.Container{
-		CommonContainer: container.CommonContainer{
-			ID:   "5a4ff6a163ad4533d22d69a2b8960bf7fafdcba06e72d2febdba229008b0bf57",
-			Name: "tender_bardeen",
-		},
+		ID:   "5a4ff6a163ad4533d22d69a2b8960bf7fafdcba06e72d2febdba229008b0bf57",
+		Name: "tender_bardeen",
 	}
 
 	c2 := &container.Container{
-		CommonContainer: container.CommonContainer{
-			ID:   "3cdbd1aa394fd68559fd1441d6eff2ab7c1e6363582c82febfaa8045df3bd8de",
-			Name: "drunk_hawking",
-		},
+		ID:   "3cdbd1aa394fd68559fd1441d6eff2ab7c1e6363582c82febfaa8045df3bd8de",
+		Name: "drunk_hawking",
 	}
 
 	c3 := &container.Container{
-		CommonContainer: container.CommonContainer{
-			ID:   "3cdbd1aa394fd68559fd1441d6eff2abfafdcba06e72d2febdba229008b0bf57",
-			Name: "3cdbd1aa",
-		},
+		ID:   "3cdbd1aa394fd68559fd1441d6eff2abfafdcba06e72d2febdba229008b0bf57",
+		Name: "3cdbd1aa",
 	}
 
 	c4 := &container.Container{
-		CommonContainer: container.CommonContainer{
-			ID:   "75fb0b800922abdbef2d27e60abcdfaf7fb0698b2a96d22d3354da361a6ff4a5",
-			Name: "5a4ff6a163ad4533d22d69a2b8960bf7fafdcba06e72d2febdba229008b0bf57",
-		},
+		ID:   "75fb0b800922abdbef2d27e60abcdfaf7fb0698b2a96d22d3354da361a6ff4a5",
+		Name: "5a4ff6a163ad4533d22d69a2b8960bf7fafdcba06e72d2febdba229008b0bf57",
 	}
 
 	c5 := &container.Container{
-		CommonContainer: container.CommonContainer{
-			ID:   "d22d69a2b8960bf7fafdcba06e72d2febdba960bf7fafdcba06e72d2f9008b060b",
-			Name: "d22d69a2b896",
-		},
+		ID:   "d22d69a2b8960bf7fafdcba06e72d2febdba960bf7fafdcba06e72d2f9008b060b",
+		Name: "d22d69a2b896",
 	}
 
 	store := container.NewMemoryStore()
@@ -75,10 +64,15 @@ func TestGetContainer(t *testing.T) {
 	index.Add(c4.ID)
 	index.Add(c5.ID)
 
+	containersReplica, err := container.NewViewDB()
+	if err != nil {
+		t.Fatalf("could not create ViewDB: %v", err)
+	}
+
 	daemon := &Daemon{
-		containers: store,
-		idIndex:    index,
-		nameIndex:  registrar.NewRegistrar(),
+		containers:        store,
+		containersReplica: containersReplica,
+		idIndex:           index,
 	}
 
 	daemon.reserveName(c1.ID, c1.Name)
@@ -105,7 +99,7 @@ func TestGetContainer(t *testing.T) {
 	}
 
 	if container, _ := daemon.GetContainer("d22d69a2b896"); container != c5 {
-		t.Fatal("Should match a container where the provided prefix is an exact match to the it's name, and is also a prefix for it's ID")
+		t.Fatal("Should match a container where the provided prefix is an exact match to the its name, and is also a prefix for its ID")
 	}
 
 	if _, err := daemon.GetContainer("3cdbd1"); err == nil {
@@ -128,7 +122,7 @@ func initDaemonWithVolumeStore(tmp string) (*Daemon, error) {
 		return nil, err
 	}
 
-	volumesDriver, err := local.New(tmp, 0, 0)
+	volumesDriver, err := local.New(tmp, idtools.IDPair{UID: 0, GID: 0})
 	if err != nil {
 		return nil, err
 	}
@@ -184,7 +178,7 @@ func TestContainerInitDNS(t *testing.T) {
 "UpdateDns":false,"Volumes":{},"VolumesRW":{},"AppliedVolumesFrom":null}`
 
 	// Container struct only used to retrieve path to config file
-	container := &container.Container{CommonContainer: container.CommonContainer{Root: containerPath}}
+	container := &container.Container{Root: containerPath}
 	configPath, err := container.ConfigPath()
 	if err != nil {
 		t.Fatal(err)
@@ -309,224 +303,4 @@ func TestMerge(t *testing.T) {
 			t.Fatalf("Expected %q or %q or %q or %q, found %s", 0, 1111, 2222, 3333, portSpecs)
 		}
 	}
-}
-
-func TestDaemonReloadLabels(t *testing.T) {
-	daemon := &Daemon{}
-	daemon.configStore = &Config{
-		CommonConfig: CommonConfig{
-			Labels: []string{"foo:bar"},
-		},
-	}
-
-	valuesSets := make(map[string]interface{})
-	valuesSets["labels"] = "foo:baz"
-	newConfig := &Config{
-		CommonConfig: CommonConfig{
-			Labels:    []string{"foo:baz"},
-			valuesSet: valuesSets,
-		},
-	}
-
-	daemon.Reload(newConfig)
-	label := daemon.configStore.Labels[0]
-	if label != "foo:baz" {
-		t.Fatalf("Expected daemon label `foo:baz`, got %s", label)
-	}
-}
-
-func TestDaemonReloadNotAffectOthers(t *testing.T) {
-	daemon := &Daemon{}
-	daemon.configStore = &Config{
-		CommonConfig: CommonConfig{
-			Labels: []string{"foo:bar"},
-			Debug:  true,
-		},
-	}
-
-	valuesSets := make(map[string]interface{})
-	valuesSets["labels"] = "foo:baz"
-	newConfig := &Config{
-		CommonConfig: CommonConfig{
-			Labels:    []string{"foo:baz"},
-			valuesSet: valuesSets,
-		},
-	}
-
-	daemon.Reload(newConfig)
-	label := daemon.configStore.Labels[0]
-	if label != "foo:baz" {
-		t.Fatalf("Expected daemon label `foo:baz`, got %s", label)
-	}
-	debug := daemon.configStore.Debug
-	if !debug {
-		t.Fatalf("Expected debug 'enabled', got 'disabled'")
-	}
-}
-
-func TestDaemonDiscoveryReload(t *testing.T) {
-	daemon := &Daemon{}
-	daemon.configStore = &Config{
-		CommonConfig: CommonConfig{
-			ClusterStore:     "memory://127.0.0.1",
-			ClusterAdvertise: "127.0.0.1:3333",
-		},
-	}
-
-	if err := daemon.initDiscovery(daemon.configStore); err != nil {
-		t.Fatal(err)
-	}
-
-	expected := discovery.Entries{
-		&discovery.Entry{Host: "127.0.0.1", Port: "3333"},
-	}
-
-	select {
-	case <-time.After(10 * time.Second):
-		t.Fatal("timeout waiting for discovery")
-	case <-daemon.discoveryWatcher.ReadyCh():
-	}
-
-	stopCh := make(chan struct{})
-	defer close(stopCh)
-	ch, errCh := daemon.discoveryWatcher.Watch(stopCh)
-
-	select {
-	case <-time.After(1 * time.Second):
-		t.Fatal("failed to get discovery advertisements in time")
-	case e := <-ch:
-		if !reflect.DeepEqual(e, expected) {
-			t.Fatalf("expected %v, got %v\n", expected, e)
-		}
-	case e := <-errCh:
-		t.Fatal(e)
-	}
-
-	valuesSets := make(map[string]interface{})
-	valuesSets["cluster-store"] = "memory://127.0.0.1:2222"
-	valuesSets["cluster-advertise"] = "127.0.0.1:5555"
-	newConfig := &Config{
-		CommonConfig: CommonConfig{
-			ClusterStore:     "memory://127.0.0.1:2222",
-			ClusterAdvertise: "127.0.0.1:5555",
-			valuesSet:        valuesSets,
-		},
-	}
-
-	expected = discovery.Entries{
-		&discovery.Entry{Host: "127.0.0.1", Port: "5555"},
-	}
-
-	if err := daemon.Reload(newConfig); err != nil {
-		t.Fatal(err)
-	}
-
-	select {
-	case <-time.After(10 * time.Second):
-		t.Fatal("timeout waiting for discovery")
-	case <-daemon.discoveryWatcher.ReadyCh():
-	}
-
-	ch, errCh = daemon.discoveryWatcher.Watch(stopCh)
-
-	select {
-	case <-time.After(1 * time.Second):
-		t.Fatal("failed to get discovery advertisements in time")
-	case e := <-ch:
-		if !reflect.DeepEqual(e, expected) {
-			t.Fatalf("expected %v, got %v\n", expected, e)
-		}
-	case e := <-errCh:
-		t.Fatal(e)
-	}
-}
-
-func TestDaemonDiscoveryReloadFromEmptyDiscovery(t *testing.T) {
-	daemon := &Daemon{}
-	daemon.configStore = &Config{}
-
-	valuesSet := make(map[string]interface{})
-	valuesSet["cluster-store"] = "memory://127.0.0.1:2222"
-	valuesSet["cluster-advertise"] = "127.0.0.1:5555"
-	newConfig := &Config{
-		CommonConfig: CommonConfig{
-			ClusterStore:     "memory://127.0.0.1:2222",
-			ClusterAdvertise: "127.0.0.1:5555",
-			valuesSet:        valuesSet,
-		},
-	}
-
-	expected := discovery.Entries{
-		&discovery.Entry{Host: "127.0.0.1", Port: "5555"},
-	}
-
-	if err := daemon.Reload(newConfig); err != nil {
-		t.Fatal(err)
-	}
-
-	select {
-	case <-time.After(10 * time.Second):
-		t.Fatal("timeout waiting for discovery")
-	case <-daemon.discoveryWatcher.ReadyCh():
-	}
-
-	stopCh := make(chan struct{})
-	defer close(stopCh)
-	ch, errCh := daemon.discoveryWatcher.Watch(stopCh)
-
-	select {
-	case <-time.After(1 * time.Second):
-		t.Fatal("failed to get discovery advertisements in time")
-	case e := <-ch:
-		if !reflect.DeepEqual(e, expected) {
-			t.Fatalf("expected %v, got %v\n", expected, e)
-		}
-	case e := <-errCh:
-		t.Fatal(e)
-	}
-}
-
-func TestDaemonDiscoveryReloadOnlyClusterAdvertise(t *testing.T) {
-	daemon := &Daemon{}
-	daemon.configStore = &Config{
-		CommonConfig: CommonConfig{
-			ClusterStore: "memory://127.0.0.1",
-		},
-	}
-	valuesSets := make(map[string]interface{})
-	valuesSets["cluster-advertise"] = "127.0.0.1:5555"
-	newConfig := &Config{
-		CommonConfig: CommonConfig{
-			ClusterAdvertise: "127.0.0.1:5555",
-			valuesSet:        valuesSets,
-		},
-	}
-	expected := discovery.Entries{
-		&discovery.Entry{Host: "127.0.0.1", Port: "5555"},
-	}
-
-	if err := daemon.Reload(newConfig); err != nil {
-		t.Fatal(err)
-	}
-
-	select {
-	case <-daemon.discoveryWatcher.ReadyCh():
-	case <-time.After(10 * time.Second):
-		t.Fatal("Timeout waiting for discovery")
-	}
-	stopCh := make(chan struct{})
-	defer close(stopCh)
-	ch, errCh := daemon.discoveryWatcher.Watch(stopCh)
-
-	select {
-	case <-time.After(1 * time.Second):
-		t.Fatal("failed to get discovery advertisements in time")
-	case e := <-ch:
-		if !reflect.DeepEqual(e, expected) {
-			t.Fatalf("expected %v, got %v\n", expected, e)
-		}
-	case e := <-errCh:
-		t.Fatal(e)
-	}
-
 }
