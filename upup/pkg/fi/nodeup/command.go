@@ -25,11 +25,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
-	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
@@ -38,9 +39,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/util/pkg/vfs"
-
-	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 // MaxTaskDuration is the amount of time to keep trying for; we retry for a long time - there is not really any great fallback
@@ -178,22 +176,19 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 		return fmt.Errorf("error initializing: %v", err)
 	}
 
-	k8sVersion, err := util.ParseKubernetesVersion(c.cluster.Spec.KubernetesVersion)
-	if err != nil || k8sVersion == nil {
-		return fmt.Errorf("unable to parse KubernetesVersion %q", c.cluster.Spec.KubernetesVersion)
-	}
-
 	modelContext := &model.NodeupModelContext{
-		Architecture:      model.ArchitectureAmd64,
-		Assets:            assetStore,
-		Cluster:           c.cluster,
-		Distribution:      distribution,
-		InstanceGroup:     c.instanceGroup,
-		IsMaster:          nodeTags.Has(TagMaster),
-		KeyStore:          tf.keyStore,
-		KubernetesVersion: *k8sVersion,
-		NodeupConfig:      c.config,
-		SecretStore:       tf.secretStore,
+		Architecture:  model.ArchitectureAmd64,
+		Assets:        assetStore,
+		Cluster:       c.cluster,
+		Distribution:  distribution,
+		InstanceGroup: c.instanceGroup,
+		IsMaster:      nodeTags.Has(TagMaster),
+		KeyStore:      tf.keyStore,
+		NodeupConfig:  c.config,
+		SecretStore:   tf.secretStore,
+	}
+	if err := modelContext.Init(); err != nil {
+		return err
 	}
 
 	loader := NewLoader(c.config, c.cluster, assetStore, nodeTags)
