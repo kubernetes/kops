@@ -337,3 +337,24 @@
 [submodule "_vendor/github.com/aokoli/goutils"]
 	path = _vendor/github.com/aokoli/goutils
 	url = https://github.com/aokoli/goutils.git
+[submodule "_vendor/gopkg.in/warnings.v0"]
+	path = _vendor/gopkg.in/warnings.v0
+	url = https://github.com/go-warnings/warnings.git
+[submodule "_vendor/k8s.io/utils"]
+	path = _vendor/k8s.io/utils
+	url = https://github.com/kubernetes/utils.git
+[submodule "_vendor/github.com/gophercloud/gophercloud"]
+	path = _vendor/github.com/gophercloud/gophercloud
+	url = https://github.com/gophercloud/gophercloud.git
+[submodule "_vendor/github.com/json-iterator/go"]
+	path = _vendor/github.com/json-iterator/go
+	url = https://github.com/json-iterator/go.git
+[submodule "_vendor/github.com/mxk/go-flowrate"]
+	path = _vendor/github.com/mxk/go-flowrate
+	url = https://github.com/mxk/go-flowrate.git
+[submodule "_vendor/github.com/peterbourgon/diskv"]
+	path = _vendor/github.com/peterbourgon/diskv
+	url = https://github.com/peterbourgon/diskv.git
+[submodule "_vendor/github.com/gregjones/httpcache"]
+	path = _vendor/github.com/gregjones/httpcache
+	url = https://github.com/gregjones/httpcache.git
