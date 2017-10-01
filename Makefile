@@ -429,6 +429,8 @@ utils-dist:
 .PHONY: copydeps
 copydeps:
 	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
+	ln -sf kubernetes/staging/src/k8s.io/api vendor/k8s.io/api
+	ln -sf kubernetes/staging/src/k8s.io/apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
 	ln -sf kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
 	ln -sf kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
 	ln -sf kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go

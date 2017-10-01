@@ -252,7 +252,8 @@ func (c *gceCloudImplementation) FindInstanceTemplates(clusterName string) ([]*c
 			match := false
 			for _, item := range t.Properties.Metadata.Items {
 				if item.Key == "cluster-name" {
-					if strings.TrimSpace(item.Value) == findClusterName {
+					value := fi.StringValue(item.Value)
+					if strings.TrimSpace(value) == findClusterName {
 						match = true
 					} else {
 						match = false
