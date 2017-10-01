@@ -32,9 +32,8 @@ spec:
     legacy: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.7.5
+  kubernetesVersion: v1.8.0-beta.1
   masterPublicName: api.ha-gce.example.com
-  networkCIDR: 172.20.0.0/16
   networking:
     kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
@@ -42,18 +41,9 @@ spec:
   sshAccess:
   - 0.0.0.0/0
   subnets:
-  - cidr: 172.20.32.0/19
-    name: us-test1-a
+  - name: us-test1
+    region: us-test1
     type: Public
-    zone: us-test1-a
-  - cidr: 172.20.64.0/19
-    name: us-test1-b
-    type: Public
-    zone: us-test1-b
-  - cidr: 172.20.96.0/19
-    name: us-test1-c
-    type: Public
-    zone: us-test1-c
   topology:
     dns:
       type: Public
@@ -76,6 +66,8 @@ spec:
   minSize: 1
   role: Master
   subnets:
+  - us-test1
+  zones:
   - us-test1-a
 
 ---
@@ -94,6 +86,8 @@ spec:
   minSize: 1
   role: Master
   subnets:
+  - us-test1
+  zones:
   - us-test1-b
 
 ---
@@ -112,6 +106,8 @@ spec:
   minSize: 1
   role: Master
   subnets:
+  - us-test1
+  zones:
   - us-test1-c
 
 ---
@@ -130,6 +126,8 @@ spec:
   minSize: 2
   role: Node
   subnets:
+  - us-test1
+  zones:
   - us-test1-a
   - us-test1-b
   - us-test1-c

@@ -17,9 +17,6 @@ limitations under the License.
 package gcemodel
 
 import (
-	"fmt"
-
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/defaults"
@@ -56,7 +53,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
 			volumeSize, err := defaults.FindDefaultVolumeSize(fi.Int32Value(ig.Spec.RootVolumeSize), ig.Spec.Role)
 			if err != nil {
-				return fmt.Errorf("this case should not get hit, kops.Role not found %s", ig.Spec.Role)
+				return err
 			}
 			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
 			if volumeType == "" {
@@ -113,20 +110,12 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		// AutoscalingGroup
-		zones := sets.NewString()
-		for _, subnetName := range ig.Spec.Subnets {
-			subnet := b.FindSubnet(subnetName)
-			if subnet == nil {
-				return fmt.Errorf("subnet %q not found", subnetName)
-			}
-			if subnet.Zone == "" {
-				return fmt.Errorf("subnet %q has not Zone", subnetName)
-			}
-			zones.Insert(subnet.Zone)
+		zones, err := b.FindZonesForInstanceGroup(ig)
+		if err != nil {
+			return err
 		}
 
-		zoneList := zones.List()
-		targetSizes := make([]int, len(zoneList), len(zoneList))
+		targetSizes := make([]int, len(zones), len(zones))
 		totalSize := 0
 
 		// TODO: Duplicated from aws - move to defaults?
@@ -137,8 +126,8 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			minSize = 2
 		}
 
-		for i := range zoneList {
-			targetSizes[i] = minSize / zones.Len()
+		for i := range zones {
+			targetSizes[i] = minSize / len(zones)
 			totalSize += targetSizes[i]
 		}
 		i := 0
@@ -156,7 +145,7 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		for i, targetSize := range targetSizes {
-			zone := zoneList[i]
+			zone := zones[i]
 
 			// TODO: Switch to regional managed instance group
 

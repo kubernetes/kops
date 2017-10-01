@@ -82,6 +82,9 @@ type InstanceGroupSpec struct {
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
 	// Subnets is the names of the Subnets (as specified in the Cluster) where machines in this instance group should be placed
 	Subnets []string `json:"subnets,omitempty"`
+	// Zones is the names of the Zones where machines in this instance group should be placed
+	// This is needed for regional subnets (e.g. GCE), to restrict placement to particular zones
+	Zones []string `json:"zones,omitempty"`
 	// Hooks is a list of hooks for this instanceGroup, note: these can override the cluster wide ones if required
 	Hooks []HookSpec `json:"hooks,omitempty"`
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid
