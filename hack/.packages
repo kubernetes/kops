@@ -25,6 +25,7 @@ k8s.io/kops/nodeup/pkg/model
 k8s.io/kops/nodeup/pkg/model/resources
 k8s.io/kops/pkg/apis/kops
 k8s.io/kops/pkg/apis/kops/install
+k8s.io/kops/pkg/apis/kops/model
 k8s.io/kops/pkg/apis/kops/registry
 k8s.io/kops/pkg/apis/kops/util
 k8s.io/kops/pkg/apis/kops/v1alpha1
