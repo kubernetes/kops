@@ -229,7 +229,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
 
 	// Configuration / state location
-	cmd.Flags().StringVar(&options.ConfigBase, "config-base", options.ConfigBase, "The location where the cluster state files should be stored")
+	if featureflag.EnableSeparateConfigBase.Enabled() {
+		cmd.Flags().StringVar(&options.ConfigBase, "config-base", options.ConfigBase, "A cluster-readable location where we mirror configuration information, separate from the state store.  Allows for a state store that is not accessible from the cluster.")
+	}
 
 	cmd.Flags().StringVar(&options.Cloud, "cloud", options.Cloud, "Cloud provider to use - gce, aws, vsphere")
 
