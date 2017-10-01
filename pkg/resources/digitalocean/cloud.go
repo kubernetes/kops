@@ -88,13 +88,13 @@ func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.Ins
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
-func (c *Cloud) DeleteGroup(name string, template string) error {
+func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 	glog.V(8).Infof("digitalocean cloud provider DeleteGroup not implemented yet")
 	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud groups at this time")
 }
 
 // DeleteInstance is not implemented yet, is func needs to delete a DO instance.
-func (c *Cloud) DeleteInstance(id *string) error {
+func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
 	glog.V(8).Infof("digitalocean cloud provider DeleteInstance not implemented yet")
 	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud instances at this time")
 }
@@ -109,7 +109,7 @@ func (c *Cloud) DNS() (dnsprovider.Interface, error) {
 	return c.dns, nil
 }
 
-// Volume returns an implementation of godo.StorageService
+// Volumes returns an implementation of godo.StorageService
 func (c *Cloud) Volumes() godo.StorageService {
 	return c.Client.Storage
 }

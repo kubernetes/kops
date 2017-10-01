@@ -40,18 +40,17 @@ func (d *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) erro
 		return fmt.Errorf("error finding CloudInstanceGroups: %v", err)
 	}
 
-	// TODO should we drain nodes and validate the cluster?
-	cig := groups[group.ObjectMeta.Name]
-	if cig == nil {
-		glog.Warningf("AutoScalingGroup %q not found in cloud - skipping delete", group.ObjectMeta.Name)
-	} else {
-		if len(groups) != 1 {
-			return fmt.Errorf("multiple InstanceGroup resources found in cloud")
+	for _, g := range groups {
+		if g.InstanceGroup == nil || g.InstanceGroup.Name != group.Name {
+			return fmt.Errorf("found group with unexpected name: %v", g)
 		}
+	}
 
-		glog.Infof("Deleting AutoScalingGroup %q", group.ObjectMeta.Name)
+	// TODO should we drain nodes and validate the cluster?
+	for _, g := range groups {
+		glog.Infof("Deleting %q", group.ObjectMeta.Name)
 
-		err = d.Cloud.DeleteGroup(cig.GroupName, cig.GroupTemplateName)
+		err = d.Cloud.DeleteGroup(g)
 		if err != nil {
 			return fmt.Errorf("error deleting cloud resources for InstanceGroup: %v", err)
 		}

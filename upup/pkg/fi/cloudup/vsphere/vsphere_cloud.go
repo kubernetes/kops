@@ -113,13 +113,13 @@ func (c *VSphereCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*k
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a vSphere instance group.
-func (c *VSphereCloud) DeleteGroup(name string, template string) error {
+func (c *VSphereCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 	glog.V(8).Infof("vSphere cloud provider DeleteGroup not implemented yet")
 	return fmt.Errorf("vSphere cloud provider does not support deleting cloud groups at this time.")
 }
 
 // DeleteInstance is not implemented yet, is func needs to delete a vSphereCloud instance.
-func (c *VSphereCloud) DeleteInstance(id *string) error {
+func (c *VSphereCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
 	glog.V(8).Infof("vSphere cloud provider DeleteInstance not implemented yet")
 	return fmt.Errorf("vSphere cloud provider does not support deleting cloud instances at this time.")
 }
