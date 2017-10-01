@@ -25,10 +25,11 @@ import (
 	"text/template"
 
 	"github.com/golang/glog"
+	"k8s.io/api/core/v1"
+	k8sapiv1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/federation/model"
 	"k8s.io/kops/federation/targets/kubernetestarget"
 	"k8s.io/kops/federation/tasks"
@@ -40,7 +41,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/k8sapi"
 	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
-	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 type ApplyFederationOperation struct {
