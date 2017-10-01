@@ -45,7 +45,7 @@ func Install(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *r
 			},
 			// RootScopedKinds are resources that are not namespaced.
 			RootScopedKinds:            sets.NewString(),
-			ImportPrefix:               "k8s.io/kops/pkg/apis/kops",
+			//ImportPrefix:               "k8s.io/kops/pkg/apis/kops",
 			AddInternalObjectsToScheme: kops.AddToScheme,
 		},
 		announced.VersionToSchemeFunc{
