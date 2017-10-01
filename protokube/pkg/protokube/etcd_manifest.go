@@ -21,8 +21,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/kubemanifest"
 )
 
