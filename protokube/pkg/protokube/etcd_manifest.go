@@ -23,6 +23,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kops/pkg/kubemanifest"
 )
 
 // BuildEtcdManifest creates the pod spec, based on the etcd cluster
@@ -141,6 +142,8 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 
 		pod.Spec.Containers = append(pod.Spec.Containers, container)
 	}
+
+	kubemanifest.MarkPodAsCritical(pod)
 
 	return pod
 }
