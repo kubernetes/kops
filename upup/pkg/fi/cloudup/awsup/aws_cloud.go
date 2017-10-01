@@ -238,7 +238,10 @@ func NewEC2Filter(name string, values ...string) *ec2.Filter {
 
 // DeleteGroup deletes an aws autoscaling group
 func (c *awsCloudImplementation) DeleteGroup(name string, template string) error {
+	return deleteGroup(c, name, template)
+}
 
+func deleteGroup(c AWSCloud, name string, template string) error {
 	// Delete ASG
 	{
 		glog.V(2).Infof("Deleting autoscaling group %q", name)
@@ -271,6 +274,10 @@ func (c *awsCloudImplementation) DeleteGroup(name string, template string) error
 
 // DeleteInstance deletes an aws instance
 func (c *awsCloudImplementation) DeleteInstance(id *string) error {
+	return deleteInstance(c, id)
+}
+
+func deleteInstance(c AWSCloud, id *string) error {
 	request := &autoscaling.TerminateInstanceInAutoScalingGroupInput{
 		InstanceId:                     id,
 		ShouldDecrementDesiredCapacity: aws.Bool(false),
@@ -289,10 +296,14 @@ func (c *awsCloudImplementation) DeleteInstance(id *string) error {
 
 // GetCloudGroups returns a groups of instances that back a kops instance groups
 func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+}
+
+func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	nodeMap := cloudinstances.GetNodeMap(nodes)
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
-	asgs, err := c.FindAutoscalingGroups()
+	asgs, err := FindAutoscalingGroups(c, c.Tags())
 	if err != nil {
 		return nil, fmt.Errorf("unable to find autoscale groups: %v", err)
 	}
@@ -310,7 +321,7 @@ func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 			continue
 		}
 
-		groups[instancegroup.ObjectMeta.Name], err = c.awsBuildCloudInstanceGroup(instancegroup, asg, nodeMap)
+		groups[instancegroup.ObjectMeta.Name], err = awsBuildCloudInstanceGroup(c, instancegroup, asg, nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
 		}
@@ -320,14 +331,12 @@ func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 
 }
 
-// TODO move out of resources
-
 // FindAutoscalingGroups finds autoscaling groups matching the specified tags
 // This isn't entirely trivial because autoscaling doesn't let us filter with as much precision as we would like
-func (c *awsCloudImplementation) FindAutoscalingGroups() ([]*autoscaling.Group, error) {
+func FindAutoscalingGroups(c AWSCloud, tags map[string]string) ([]*autoscaling.Group, error) {
 	var asgs []*autoscaling.Group
+
 	glog.V(2).Infof("Listing all Autoscaling groups matching cluster tags")
-	tags := c.Tags()
 	var asgNames []*string
 	{
 		var asFilters []*autoscaling.Filter
@@ -365,7 +374,7 @@ func (c *awsCloudImplementation) FindAutoscalingGroups() ([]*autoscaling.Group, 
 		}
 		err := c.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) bool {
 			for _, asg := range p.AutoScalingGroups {
-				if !MatchesAsgTags(tags, asg.Tags) {
+				if !matchesAsgTags(tags, asg.Tags) {
 					// We used an inexact filter above
 					continue
 				}
@@ -387,8 +396,8 @@ func (c *awsCloudImplementation) FindAutoscalingGroups() ([]*autoscaling.Group, 
 	return asgs, nil
 }
 
-// MatchesAsgTags is used to filter an asg by tags
-func MatchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
+// matchesAsgTags is used to filter an asg by tags
+func matchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription) bool {
 	for k, v := range tags {
 		found := false
 		for _, a := range actual {
@@ -406,7 +415,7 @@ func MatchesAsgTags(tags map[string]string, actual []*autoscaling.TagDescription
 	return true
 }
 
-func (c *awsCloudImplementation) awsBuildCloudInstanceGroup(ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscaling.Group, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
 	newLaunchConfigName := aws.StringValue(g.LaunchConfigurationName)
 	n, err := cloudinstances.NewCloudInstanceGroup(aws.StringValue(g.AutoScalingGroupName), newLaunchConfigName, ig, int(aws.Int64Value(g.MinSize)), int(aws.Int64Value(g.MaxSize)))
 	if err != nil {
@@ -414,13 +423,11 @@ func (c *awsCloudImplementation) awsBuildCloudInstanceGroup(ig *kops.InstanceGro
 	}
 
 	for _, i := range g.Instances {
-		err = n.NewCloudInstanceMember(i.InstanceId, newLaunchConfigName, aws.StringValue(i.LaunchConfigurationName), nodeMap)
+		err = n.NewCloudInstanceGroupMember(i.InstanceId, newLaunchConfigName, aws.StringValue(i.LaunchConfigurationName), nodeMap)
 		if err != nil {
 			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
 		}
 	}
-
-	n.MarkIsReady()
 
 	return n, nil
 }
