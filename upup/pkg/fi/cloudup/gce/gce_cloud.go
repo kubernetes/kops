@@ -224,20 +224,168 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 
 // DeleteGroup deletes a cloud of instances controlled by an Instance Group Manager
 func (c *gceCloudImplementation) DeleteGroup(name string, template string) error {
-	glog.V(8).Infof("gce cloud provider DeleteGroup not implemented yet")
-	return fmt.Errorf("gce cloud provider does not support deleting cloud groups at this time")
+	glog.V(8).Infof("gce cloud provider DeleteGroup not tested yet")
+	// TODO we need to check for order and when we can delete these.
+	ctx := context.Background()
+	_, err := c.compute.InstanceGroupManagers.Delete(c.project, c.region, name).Context(ctx).Do()
+	if err != nil {
+		return fmt.Errorf("error deleting instance group manager: %v", err)
+	}
+
+	_, err = c.compute.InstanceTemplates.Delete(c.project, template).Context(ctx).Do()
+	if err != nil {
+		return fmt.Errorf("error deleting instance template: %v", err)
+	}
+
+	return nil
 }
 
 // DeleteInstance deletes a GCE instance
 func (c *gceCloudImplementation) DeleteInstance(id *string) error {
-	glog.V(8).Infof("gce cloud provider DeleteInstance not implemented yet")
-	return fmt.Errorf("gce cloud provider does not support deleting cloud instances at this time")
+	glog.V(8).Infof("gce cloud provider DeleteInstance not tested yet")
+	instanceId := fi.StringValue(id)
+	if instanceId == "" {
+		return fmt.Errorf("error deleting instance no id provided")
+	}
+
+	_, err := c.compute.Instances.Delete(c.project, c.region, instanceId).Do()
+	if err != nil {
+		// TODO should we check googleapi.IsNotModified
+		// to check whether the returned error was because
+		// http.StatusNotModified was returned.
+		// Not sure if it works here
+		return fmt.Errorf("error deleting instance: %v", err)
+	}
+	return nil
 }
 
 // GetCloudGroups returns a map of CloudGroup that backs a list of instance groups
 func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	glog.V(8).Infof("gce cloud provider GetCloudGroups not implemented yet")
-	return nil, fmt.Errorf("gce cloud provider does not support getting cloud groups at this time")
+	ctx := context.Background()
+	nodeMap := cloudinstances.GetNodeMap(nodes)
+	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
+
+	instanceTemplates := make(map[string]*compute.InstanceTemplate)
+	{
+		templates, err := c.FindInstanceTemplates(cluster.ObjectMeta.Name)
+		if err != nil {
+			return nil, err
+		}
+		for _, t := range templates {
+			instanceTemplates[t.SelfLink] = t
+		}
+	}
+
+	var migs []*compute.InstanceGroupManager
+
+	// With the zone changes I do not think we have to do this
+	zones, err := c.Zones()
+	if err != nil {
+		return nil, err
+	}
+	// I am not sure how and if we need to iterate through the zones now
+	// This needs to be fixed
+	err := c.Compute().InstanceGroupManagers.List(c.Project(), zoneName).Pages(ctx, func(page *compute.InstanceGroupManagerList) error {
+		for _, mig := range page.Items {
+			instanceTemplate := instanceTemplates[mig.InstanceTemplate]
+			if instanceTemplate == nil {
+				glog.V(2).Infof("Ignoring MIG with unmanaged InstanceTemplate: %s", mig.InstanceTemplate)
+				continue
+			}
+
+			migs = append(migs, mig)
+		}
+		return nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("error listing InstanceGroupManagers: %v", err)
+	}
+
+	for _, mig := range migs {
+		name := LastComponent(mig.Name)
+		glog.V(8).Infof("searching for %s", name)
+		var instancegroup *kops.InstanceGroup
+		// FIXME why can't we use the mig zone?
+		// TODO I think @justinsb's zone PR will help with this so we do not have
+		// to loop through the zones
+		var igZoneName string
+		// We do not need to loop through the zones.
+		for _, zoneName := range zones {
+			for _, g := range instancegroups {
+				// Why is gce group name so different from aws?
+				groupName := fmt.Sprintf("%s-%s-%s", zoneName, g.ObjectMeta.Name, cluster.ObjectMeta.Name)
+				groupName = strings.Replace(groupName, ".", "-", -1)
+				if name == groupName {
+					igZoneName = zoneName
+					if instancegroup != nil {
+						return nil, fmt.Errorf("found multiple instance groups matching cloud groups %q", groupName)
+					}
+					instancegroup = g
+				}
+			}
+
+			if instancegroup != nil {
+				break
+			}
+		}
+		if instancegroup == nil {
+			if warnUnmatched {
+				glog.Warningf("Found managed instance group with no corresponding instance group %q", name)
+			}
+			continue
+		}
+		groups[instancegroup.ObjectMeta.Name], err = c.gceBuildCloudInstanceGroup(instancegroup, mig, igZoneName, nodeMap)
+		if err != nil {
+			return nil, fmt.Errorf("error getting cloud instance group %q: %v", instancegroup.ObjectMeta.Name, err)
+		}
+	}
+	return groups, nil
+}
+
+func (c *gceCloudImplementation) gceBuildCloudInstanceGroup(ig *kops.InstanceGroup, g *compute.InstanceGroupManager, zoneName string, nodeMap map[string]*v1.Node) (*cloudinstances.CloudInstanceGroup, error) {
+	n, err := cloudinstances.NewCloudInstanceGroup(g.InstanceGroup, g.InstanceTemplate, ig, int(g.TargetSize), int(g.TargetSize))
+	if err != nil {
+		return nil, fmt.Errorf("error creating cloud instance group: %v", err)
+	}
+
+	instances, err := c.Compute().InstanceGroupManagers.ListManagedInstances(c.Project(), zoneName, g.Name).Do()
+	if err != nil {
+		return nil, fmt.Errorf("error listing ManagedInstances in %s: %v", g.Name, err)
+	}
+
+	for _, i := range instances.ManagedInstances {
+		name := LastComponent(i.Instance)
+		instance, err := c.Compute().Instances.Get(c.Project(), zoneName, name).Do()
+		if err != nil {
+			return nil, fmt.Errorf("error getting instance %s: %v", name, err)
+		}
+		if instance == nil {
+			return nil, fmt.Errorf("unable to get instance %q", name)
+		}
+
+		var instanceTemplate string
+		for _, item := range instance.Metadata.Items {
+			if item.Key == "instance-template" {
+				instanceTemplate = item.Value
+				break
+			}
+		}
+		if instanceTemplate == "" {
+			glog.Warningf("unable to get template name for instance: %q", name)
+		}
+		nodeId := fmt.Sprintf("%v", i.Id)
+		// nodeId is different between aws and gce, we need to make the mode more generic
+		// I had aws pass in the same name twice, and gce pass in the nodeid
+		err = n.NewCloudInstanceMember(&name, nodeId, g.InstanceTemplate, instanceTemplate, nodeMap)
+		if err != nil {
+			return nil, fmt.Errorf("error creating cloud instance group member: %v", err)
+		}
+	}
+
+	// FIXME this was changed n.MarkIsReady()
+	return n, nil
 }
 
 // FindInstanceTemplates finds all instance templates that are associated with the current cluster
@@ -275,3 +423,5 @@ func (c *gceCloudImplementation) FindInstanceTemplates(clusterName string) ([]*c
 
 	return matches, nil
 }
+
+
