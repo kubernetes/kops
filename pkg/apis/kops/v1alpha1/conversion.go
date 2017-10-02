@@ -241,6 +241,7 @@ func Convert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGr
 	}
 
 	out.Subnets = in.Zones
+	out.Zones = nil // Those zones are not the same as v1alpha1 zones
 
 	return nil
 }

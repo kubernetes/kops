@@ -27,9 +27,11 @@ import (
 	"github.com/golang/glog"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/testutils"
 )
 
@@ -152,7 +154,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	for _, cluster := range clusters.Items {
 		cluster.ObjectMeta.CreationTimestamp = MagicTimestamp
-		actualYAMLBytes, err := kops.ToVersionedYamlWithVersion(&cluster, version)
+		actualYAMLBytes, err := kopscodecs.ToVersionedYamlWithVersion(&cluster, schema.GroupVersion{Group: "kops", Version: version})
 		if err != nil {
 			t.Fatalf("unexpected error serializing cluster: %v", err)
 		}
@@ -171,7 +173,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	for _, ig := range instanceGroups.Items {
 		ig.ObjectMeta.CreationTimestamp = MagicTimestamp
 
-		actualYAMLBytes, err := kops.ToVersionedYamlWithVersion(&ig, version)
+		actualYAMLBytes, err := kopscodecs.ToVersionedYamlWithVersion(&ig, schema.GroupVersion{Group: "kops", Version: version})
 		if err != nil {
 			t.Fatalf("unexpected error serializing InstanceGroup: %v", err)
 		}
