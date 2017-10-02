@@ -7,11 +7,10 @@ go_library(
         "ginkgo.go",
         "server.go",
     ],
-    importpath = "github.com/kubernetes-incubator/apiserver-builder/pkg/test",
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/builders:go_default_library",
-        "//pkg/cmd/server:go_default_library",
+        "//vendor/github.com/kubernetes-incubator/apiserver-builder/pkg/builders:go_default_library",
+        "//vendor/github.com/kubernetes-incubator/apiserver-builder/pkg/cmd/server:go_default_library",
         "//vendor/github.com/onsi/ginkgo/config:go_default_library",
         "//vendor/github.com/onsi/ginkgo/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/openapi:go_default_library",
