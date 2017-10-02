@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
@@ -92,7 +93,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 
 func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 	// Codecs provides access to encoding and decoding for the scheme
-	codec := kopsapi.Codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
+	codec := kopscodecs.Codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
 	// We could have more than one cluster in a manifest so we are using a set
 	deletedClusters := sets.NewString()

@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
@@ -108,7 +109,7 @@ func RunEditFederation(f *util.Factory, cmd *cobra.Command, args []string, out i
 
 	ext := "yaml"
 
-	raw, err := kopsapi.ToVersionedYaml(old)
+	raw, err := kopscodecs.ToVersionedYaml(old)
 	if err != nil {
 		return err
 	}
@@ -129,7 +130,7 @@ func RunEditFederation(f *util.Factory, cmd *cobra.Command, args []string, out i
 		return nil
 	}
 
-	newObj, _, err := kopsapi.ParseVersionedYaml(edited)
+	newObj, _, err := kopscodecs.ParseVersionedYaml(edited)
 	if err != nil {
 		return fmt.Errorf("error parsing config: %v", err)
 	}

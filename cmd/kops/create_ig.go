@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
@@ -145,7 +146,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		edit = editor.NewDefaultEditor(editorEnvs)
 	)
 
-	raw, err := api.ToVersionedYaml(ig)
+	raw, err := kopscodecs.ToVersionedYaml(ig)
 	if err != nil {
 		return err
 	}
@@ -162,7 +163,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return fmt.Errorf("error launching editor: %v", err)
 	}
 
-	obj, _, err := api.ParseVersionedYaml(edited)
+	obj, _, err := kopscodecs.ParseVersionedYaml(edited)
 	if err != nil {
 		return fmt.Errorf("error parsing yaml: %v", err)
 	}

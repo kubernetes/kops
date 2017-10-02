@@ -20,19 +20,16 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apiserver/pkg/registry/generic"
 	genericregistry "k8s.io/apiserver/pkg/registry/generic/registry"
-
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apiserver/registry"
 )
 
-// rest implements a RESTStorage for kops InstanceGroups against etcd
-type REST struct {
-	*genericregistry.Store
-}
-
 // NewREST returns a RESTStorage object that will work against kops InstanceGroups.
-func NewREST(optsGetter generic.RESTOptionsGetter) *REST {
+func NewREST(scheme *runtime.Scheme, optsGetter generic.RESTOptionsGetter) (*registry.REST, error) {
+	strategy := NewStrategy(scheme)
+
 	store := &genericregistry.Store{
-		Copier: kops.Scheme,
+		Copier: scheme,
 		NewFunc: func() runtime.Object {
 			return &kops.InstanceGroup{}
 		},
@@ -42,16 +39,16 @@ func NewREST(optsGetter generic.RESTOptionsGetter) *REST {
 		ObjectNameFunc: func(obj runtime.Object) (string, error) {
 			return obj.(*kops.InstanceGroup).Name, nil
 		},
-		PredicateFunc:     MatchInstanceGroup,
-		QualifiedResource: kops.Resource("instancegroups"),
+		PredicateFunc:            MatchInstanceGroup,
+		DefaultQualifiedResource: kops.Resource("instancegroups"),
 
-		CreateStrategy: Strategy,
-		UpdateStrategy: Strategy,
-		DeleteStrategy: Strategy,
+		CreateStrategy: strategy,
+		UpdateStrategy: strategy,
+		DeleteStrategy: strategy,
 	}
 	options := &generic.StoreOptions{RESTOptions: optsGetter, AttrFunc: GetAttrs}
 	if err := store.CompleteWithOptions(options); err != nil {
-		panic(err) // TODO: Propagate error up
+		return nil, err
 	}
-	return &REST{store}
+	return &registry.REST{Store: store}, nil
 }

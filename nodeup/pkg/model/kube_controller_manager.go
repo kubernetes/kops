@@ -29,6 +29,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
 )
 
@@ -71,7 +72,7 @@ func (b *KubeControllerManagerBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error building kube-controller-manager pod: %v", err)
 		}
 
-		manifest, err := ToVersionedYaml(pod)
+		manifest, err := k8scodecs.ToVersionedYaml(pod)
 		if err != nil {
 			return fmt.Errorf("error marshalling pod to yaml: %v", err)
 		}

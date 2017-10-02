@@ -29,6 +29,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
@@ -119,7 +120,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 	)
 
 	ext := "yaml"
-	raw, err := api.ToVersionedYaml(oldGroup)
+	raw, err := kopscodecs.ToVersionedYaml(oldGroup)
 	if err != nil {
 		return err
 	}
@@ -140,7 +141,7 @@ func RunEditInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, ou
 		return nil
 	}
 
-	newObj, _, err := api.ParseVersionedYaml(edited)
+	newObj, _, err := kopscodecs.ParseVersionedYaml(edited)
 	if err != nil {
 		return fmt.Errorf("error parsing InstanceGroup: %v", err)
 	}

@@ -19,6 +19,7 @@ limitations under the License.
 package install
 
 import (
+	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/apimachinery/announced"
 	"k8s.io/apimachinery/pkg/apimachinery/registered"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -28,15 +29,15 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 )
 
-func init() {
-	if err := Install(kops.GroupFactoryRegistry, kops.Registry, kops.Scheme); err != nil {
-		panic(err)
-	}
-}
+//func init() {
+//	if err := Install(kops.GroupFactoryRegistry, kops.Registry, kops.Scheme); err != nil {
+//		panic(err)
+//	}
+//}
 
 // Install registers the API group and adds types to a scheme
-func Install(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *registered.APIRegistrationManager, scheme *runtime.Scheme) error {
-	return announced.NewGroupMetaFactory(
+func Install(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *registered.APIRegistrationManager, scheme *runtime.Scheme) {
+	err := announced.NewGroupMetaFactory(
 		&announced.GroupMetaFactoryArgs{
 			GroupName: kops.GroupName,
 			VersionPreferenceOrder: []string{
@@ -53,4 +54,7 @@ func Install(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *r
 			v1alpha2.SchemeGroupVersion.Version: v1alpha2.AddToScheme,
 		},
 	).Announce(groupFactoryRegistry).RegisterAndEnable(registry, scheme)
+	if err != nil {
+		glog.Fatalf("error registering kops schema: %v", err)
+	}
 }
