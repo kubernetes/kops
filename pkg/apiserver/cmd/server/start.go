@@ -27,16 +27,15 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/registry/generic"
 	genericapiserver "k8s.io/apiserver/pkg/server"
 	genericoptions "k8s.io/apiserver/pkg/server/options"
 	"k8s.io/apiserver/pkg/storage/storagebackend"
-	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/apiserver"
 	"k8s.io/kops/pkg/openapi"
-	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
 
 const defaultEtcdPathPrefix = "/registry/kops.kubernetes.io"
@@ -59,7 +58,7 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 	o := &KopsServerOptions{
 		Etcd: genericoptions.NewEtcdOptions(&storagebackend.Config{
 			Prefix: defaultEtcdPathPrefix,
-			Copier: kops.Scheme,
+			Copier: apiserver.Scheme,
 			Codec:  nil,
 		}),
 		SecureServing: genericoptions.NewSecureServingOptions(),
@@ -71,16 +70,23 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 		StdErr: err,
 	}
 	o.Etcd.StorageConfig.Type = storagebackend.StorageTypeETCD2
-	o.Etcd.StorageConfig.Codec = kops.Codecs.LegacyCodec(v1alpha2.SchemeGroupVersion)
+	o.Etcd.StorageConfig.Codec = apiserver.Codecs.LegacyCodec(v1alpha2.SchemeGroupVersion)
 	//o.SecureServing.ServingOptions.BindPort = 443
 
 	cmd := &cobra.Command{
 		Short: "Launch a kops API server",
 		Long:  "Launch a kops API server",
-		Run: func(c *cobra.Command, args []string) {
-			cmdutil.CheckErr(o.Complete())
-			cmdutil.CheckErr(o.Validate(args))
-			cmdutil.CheckErr(o.RunKopsServer())
+		RunE: func(c *cobra.Command, args []string) error {
+			if err := o.Complete(); err != nil {
+				return err
+			}
+			if err := o.Validate(args); err != nil {
+				return err
+			}
+			if err := o.RunKopsServer(); err != nil {
+				return err
+			}
+			return nil
 		},
 	}
 
@@ -98,20 +104,50 @@ func NewCommandStartKopsServer(out, err io.Writer) *cobra.Command {
 }
 
 func (o KopsServerOptions) Validate(args []string) error {
-	return nil
+	errors := []error{}
+	//errors = append(errors, o.RecommendedOptions.Validate()...)
+	//errors = append(errors, o.Admission.Validate()...)
+	return utilerrors.NewAggregate(errors)
 }
 
 func (o *KopsServerOptions) Complete() error {
 	return nil
 }
 
-func (o KopsServerOptions) RunKopsServer() error {
+func (o KopsServerOptions) Config() (*apiserver.Config, error) {
+	// // register admission plugins
+	//banflunder.Register(o.Admission.Plugins)
+	//
+	//// TODO have a "real" external address
+	//if err := o.RecommendedOptions.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost", nil, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
+	//	return nil, fmt.Errorf("error creating self-signed certificates: %v", err)
+	//}
+	//
+	//serverConfig := genericapiserver.NewRecommendedConfig(apiserver.Codecs)
+	//if err := o.RecommendedOptions.ApplyTo(serverConfig); err != nil {
+	//	return nil, err
+	//}
+	//
+	//client, err := clientset.NewForConfig(serverConfig.LoopbackClientConfig)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//informerFactory := informers.NewSharedInformerFactory(client, serverConfig.LoopbackClientConfig.Timeout)
+	//admissionInitializer, err := wardleinitializer.New(informerFactory)
+	//if err != nil {
+	//	return nil, err
+	//}
+	//
+	//if err := o.Admission.ApplyTo(&serverConfig.Config, serverConfig.SharedInformerFactory, admissionInitializer); err != nil {
+	//	return nil, err
+	//}
+
 	// TODO have a "real" external address
 	if err := o.SecureServing.MaybeDefaultWithSelfSignedCerts("localhost", nil, []net.IP{net.ParseIP("127.0.0.1")}); err != nil {
-		return fmt.Errorf("error creating self-signed certificates: %v", err)
+		return nil, fmt.Errorf("error creating self-signed certificates: %v", err)
 	}
 
-	serverConfig := genericapiserver.NewConfig(kops.Codecs)
+	serverConfig := genericapiserver.NewRecommendedConfig(apiserver.Codecs)
 	// 1.6: serverConfig := genericapiserver.NewConfig().WithSerializer(kops.Codecs)
 	//if err := o.RecommendedOptions.ApplyTo(serverConfig); err != nil {
 	//	return nil, err
@@ -119,12 +155,12 @@ func (o KopsServerOptions) RunKopsServer() error {
 
 	serverConfig.CorsAllowedOriginList = []string{".*"}
 
-	if err := o.Etcd.ApplyTo(serverConfig); err != nil {
-		return err
+	if err := o.Etcd.ApplyTo(&serverConfig.Config); err != nil {
+		return nil, err
 	}
 
-	if err := o.SecureServing.ApplyTo(serverConfig); err != nil {
-		return err
+	if err := o.SecureServing.ApplyTo(&serverConfig.Config); err != nil {
+		return nil, err
 	}
 	//if err := o.InsecureServing.ApplyTo(serverConfig); err != nil {
 	//      return err
@@ -138,15 +174,28 @@ func (o KopsServerOptions) RunKopsServer() error {
 	//               return err
 	//       }
 
-	config := apiserver.Config{
-		GenericConfig:     serverConfig,
-		RESTOptionsGetter: &restOptionsFactory{storageConfig: &o.Etcd.StorageConfig},
+	config := &apiserver.Config{
+		GenericConfig: serverConfig,
+		ExtraConfig:   apiserver.ExtraConfig{},
+	}
+	return config, nil
+}
+
+func (o KopsServerOptions) RunKopsServer() error {
+	config, err := o.Config()
+	if err != nil {
+		return err
 	}
 
+	//config := apiserver.Config{
+	//	GenericConfig:     serverConfig,
+	//	RESTOptionsGetter: &restOptionsFactory{storageConfig: &o.Etcd.StorageConfig},
+	//}
+
 	// Configure the openapi spec provided on /swagger.json
-	// TODO: Come up with a better titlie and a meaningful version
+	// TODO: Come up with a better title and a meaningful version
 	config.GenericConfig.OpenAPIConfig = genericapiserver.DefaultOpenAPIConfig(
-		openapi.GetOpenAPIDefinitions, kops.Scheme)
+		openapi.GetOpenAPIDefinitions, apiserver.Scheme)
 	config.GenericConfig.OpenAPIConfig.Info.Title = "Kops API"
 	config.GenericConfig.OpenAPIConfig.Info.Version = "0.1"
 
@@ -156,6 +205,11 @@ func (o KopsServerOptions) RunKopsServer() error {
 	}
 
 	srv := server.GenericAPIServer.PrepareRun()
+
+	//server.GenericAPIServer.AddPostStartHook("start-sample-server-informers", func(context genericapiserver.PostStartHookContext) error {
+	//	config.GenericConfig.SharedInformerFactory.Start(context.StopCh)
+	//	return nil
+	//})
 
 	// Just print the openapi spec and exit.  This is useful for
 	// updating the published openapi and generating documentation.

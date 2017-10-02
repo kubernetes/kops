@@ -28,6 +28,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
@@ -226,7 +227,7 @@ func marshalToWriter(obj runtime.Object, marshal marshalFunc, w io.Writer) error
 
 // obj must be a pointer to a marshalable object
 func marshalYaml(obj runtime.Object) ([]byte, error) {
-	y, err := api.ToVersionedYaml(obj)
+	y, err := kopscodecs.ToVersionedYaml(obj)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling yaml: %v", err)
 	}

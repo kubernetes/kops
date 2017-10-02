@@ -23,7 +23,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/utils"
-	"k8s.io/kubernetes/pkg/util/exec"
 	"k8s.io/kubernetes/pkg/util/mount"
 	"os"
 	"path/filepath"
@@ -121,7 +120,7 @@ func (_ *MountDiskTask) RenderLocal(t *local.LocalTarget, a, e, changes *MountDi
 	if changes.Mountpoint != "" {
 		glog.Infof("Mounting device %q on %q", e.Device, e.Mountpoint)
 
-		mounter := &mount.SafeFormatAndMount{Interface: mount.New(""), Runner: exec.New()}
+		mounter := &mount.SafeFormatAndMount{Interface: mount.New(""), Exec: mount.NewOsExec()}
 
 		fstype := ""
 		options := []string{}

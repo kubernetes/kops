@@ -311,12 +311,7 @@ gen-cli-docs: ${KOPS} # Regenerate CLI docs
 .PHONY: gen-api-docs
 gen-api-docs:
 	# Follow procedure in docs/apireference/README.md
-	# Install the apiserver-builder commands
-	go get -u github.com/kubernetes-incubator/apiserver-builder/cmd/...
-	# Install the reference docs commands (apiserver-builder commands invoke these)
-	go get -u github.com/kubernetes-incubator/reference-docs/gen-apidocs/...
-	# Install the code generation commands (apiserver-builder commands invoke these)
-	go install k8s.io/kubernetes/cmd/libs/go2idl/openapi-gen
+	hack/make-gendocs.sh
 	# Update the `pkg/openapi/openapi_generated.go`
 	${GOPATH}/bin/apiserver-boot build generated --generator openapi --copyright hack/boilerplate/boilerplate.go.txt
 	go install k8s.io/kops/cmd/kops-server
