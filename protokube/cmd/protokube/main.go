@@ -33,12 +33,11 @@ import (
 	"k8s.io/kops/protokube/pkg/protokube"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	// Load DNS plugins
+	"github.com/golang/glog"
+	"github.com/spf13/pflag"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
-
-	"github.com/golang/glog"
-	"github.com/spf13/pflag"
 )
 
 var (

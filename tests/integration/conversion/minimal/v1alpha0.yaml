@@ -1,6 +1,6 @@
 kind: Cluster
 metadata:
-  creationTimestamp: "2016-12-10T22:42:27Z"
+  creationTimestamp: 2016-12-10T22:42:27Z
   name: minimal.example.com
 spec:
   adminAccess:
@@ -40,7 +40,7 @@ spec:
 
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2016-12-10T22:42:28Z"
+  creationTimestamp: 2016-12-10T22:42:28Z
   name: nodes
   labels:
     kops.k8s.io/cluster: minimal.example.com
@@ -58,7 +58,7 @@ spec:
 
 kind: InstanceGroup
 metadata:
-  creationTimestamp: "2016-12-10T22:42:28Z"
+  creationTimestamp: 2016-12-10T22:42:28Z
   name: master-us-test-1a
   labels:
     kops.k8s.io/cluster: minimal.example.com
