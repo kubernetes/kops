@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "main_test.go",
+        "openshift_test.go",
+    ],
+    deps = [
+        "//vendor/k8s.io/apiserver/pkg/server:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/master:go_default_library",
+        "//vendor/k8s.io/kubernetes/test/integration/framework:go_default_library",
+    ],
+)

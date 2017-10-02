@@ -1,0 +1,11 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "sort_keys.go",
+        "util.go",
+    ],
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil:go_default_library"],
+)
