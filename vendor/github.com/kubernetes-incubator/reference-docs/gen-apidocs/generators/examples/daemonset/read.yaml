@@ -1,0 +1,4 @@
+name: daemonset-example
+namespace: default
+response: |
+

@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "in_cluster.go",
+        "local.go",
+        "local_aggregated.go",
+        "run.go",
+    ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/run",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cmd/apiserver-boot/boot/build:go_default_library",
+        "//cmd/apiserver-boot/boot/util:go_default_library",
+        "//cmd/vendor/github.com/spf13/cobra:go_default_library",
+        "//cmd/vendor/k8s.io/client-go/util/homedir:go_default_library",
+    ],
+)

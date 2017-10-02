@@ -1,0 +1,46 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "controller.go",
+        "zz_generated.api.register.go",
+    ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/example/pkg/controller/festival",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//example/pkg/apis/kingsport/v1:go_default_library",
+        "//example/pkg/client/listers_generated/kingsport/v1:go_default_library",
+        "//example/pkg/controller/sharedinformers:go_default_library",
+        "//pkg/builders:go_default_library",
+        "//pkg/controller:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/client-go/tools/cache:go_default_library",
+        "//vendor/k8s.io/client-go/util/workqueue:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_xtest",
+    srcs = [
+        "controller_test.go",
+        "festival_suite_test.go",
+    ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/example/pkg/controller/festival_test",
+    deps = [
+        ":go_default_library",
+        "//example/pkg/apis:go_default_library",
+        "//example/pkg/apis/kingsport/v1:go_default_library",
+        "//example/pkg/client/clientset_generated/clientset:go_default_library",
+        "//example/pkg/client/clientset_generated/clientset/typed/kingsport/v1:go_default_library",
+        "//example/pkg/controller/sharedinformers:go_default_library",
+        "//example/pkg/openapi:go_default_library",
+        "//pkg/test:go_default_library",
+        "//vendor/github.com/onsi/ginkgo:go_default_library",
+        "//vendor/github.com/onsi/gomega:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+    ],
+)
