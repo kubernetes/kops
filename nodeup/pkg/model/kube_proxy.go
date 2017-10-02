@@ -29,6 +29,7 @@ import (
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/pkg/kubemanifest"
 )
 
@@ -57,7 +58,7 @@ func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
 			return fmt.Errorf("error building kube-proxy manifest: %v", err)
 		}
 
-		manifest, err := ToVersionedYaml(pod)
+		manifest, err := k8scodecs.ToVersionedYaml(pod)
 		if err != nil {
 			return fmt.Errorf("error marshalling manifest to yaml: %v", err)
 		}

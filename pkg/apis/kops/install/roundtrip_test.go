@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors.
+Copyright 2017 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,33 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main
+package install
 
 import (
-	"flag"
-	"os"
-	"runtime"
+	"testing"
 
-	"github.com/golang/glog"
-	"k8s.io/apiserver/pkg/util/logs"
-	"k8s.io/kops/pkg/apiserver/cmd/server"
-	"math/rand"
-	"time"
+	roundtrip "k8s.io/apimachinery/pkg/api/testing/roundtrip"
 )
 
-func main() {
-	rand.Seed(time.Now().UTC().UnixNano())
-
-	logs.InitLogs()
-	defer logs.FlushLogs()
-
-	if len(os.Getenv("GOMAXPROCS")) == 0 {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	}
-
-	cmd := server.NewCommandStartKopsServer(os.Stdout, os.Stderr)
-	cmd.Flags().AddGoFlagSet(flag.CommandLine)
-	if err := cmd.Execute(); err != nil {
-		glog.Fatal(err)
-	}
+func TestRoundTripTypes(t *testing.T) {
+	roundtrip.RoundTripTestForAPIGroup(t, Install, nil)
 }
