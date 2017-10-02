@@ -29,12 +29,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 )
 
-//func init() {
-//	if err := Install(kops.GroupFactoryRegistry, kops.Registry, kops.Scheme); err != nil {
-//		panic(err)
-//	}
-//}
-
 // Install registers the API group and adds types to a scheme
 func Install(groupFactoryRegistry announced.APIGroupFactoryRegistry, registry *registered.APIRegistrationManager, scheme *runtime.Scheme) {
 	err := announced.NewGroupMetaFactory(

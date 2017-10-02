@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package k8scodecs
+package kopscodecs
 
 import (
 	"github.com/MakeNowJust/heredoc"
-	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/diff"
 	"strings"
 	"testing"
@@ -36,30 +36,23 @@ func TestToVersionedYaml(t *testing.T) {
 		expected string
 	}{
 		{
-			obj: &v1.Pod{
+			obj: &v1alpha2.Cluster{
 				ObjectMeta: metav1.ObjectMeta{
 					CreationTimestamp: testTimestamp,
 					Name:              "hello",
 				},
-				Spec: v1.PodSpec{
-					Containers: []v1.Container{
-						{
-							Name: "container1",
-						},
-					},
+				Spec: v1alpha2.ClusterSpec{
+					KubernetesVersion: "1.2.3",
 				},
 			},
 			expected: heredoc.Doc(`
-			apiVersion: v1
-			kind: Pod
+			apiVersion: kops/v1alpha2
+			kind: Cluster
 			metadata:
 			  creationTimestamp: 2017-01-01T00:00:00Z
 			  name: hello
 			spec:
-			  containers:
-			  - name: container1
-			    resources: {}
-			status: {}
+			  kubernetesVersion: 1.2.3
 			`),
 		},
 	}

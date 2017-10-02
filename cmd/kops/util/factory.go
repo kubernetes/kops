@@ -23,12 +23,9 @@ import (
 	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/util/pkg/vfs"
 
+	"github.com/golang/glog"
 	"k8s.io/client-go/rest"
 	kopsclient "k8s.io/kops/pkg/client/clientset_generated/clientset"
-
-	// Register our APIs
-	"github.com/golang/glog"
-	_ "k8s.io/kops/pkg/apis/kops/install"
 	"k8s.io/kops/pkg/client/simple/api"
 	"net/url"
 	"strings"
