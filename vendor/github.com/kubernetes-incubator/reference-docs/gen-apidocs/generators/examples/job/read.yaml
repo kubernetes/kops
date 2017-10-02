@@ -1,0 +1,59 @@
+name: example-job
+namespace: default
+response: |
+  {
+    "kind": "Job",
+    "apiVersion": "batch/v1",
+    "metadata": {
+      "name": "example-job",
+      "namespace": "default",
+      "selfLink": "/apis/batch/v1/namespaces/default/jobs/example-job",
+      "uid": "d93a3569-a2be-11e6-a008-fa043d458cc7",
+      "resourceVersion": "7482",
+      "creationTimestamp": "2016-11-04T18:45:25Z"
+    },
+    "spec": {
+      "parallelism": 1,
+      "completions": 1,
+      "selector": {
+        "matchLabels": {
+          "controller-uid": "d93a3569-a2be-11e6-a008-fa043d458cc7"
+        }
+      },
+      "template": {
+        "metadata": {
+          "name": "example-job",
+          "creationTimestamp": null,
+          "labels": {
+            "controller-uid": "d93a3569-a2be-11e6-a008-fa043d458cc7",
+            "job-name": "example-job"
+          }
+        },
+        "spec": {
+          "containers": [
+            {
+              "name": "pi",
+              "image": "perl",
+              "command": [
+                "perl",
+                "-Mbignum=bpi",
+                "-wle",
+                "print bpi(2000)"
+              ],
+              "resources": {},
+              "terminationMessagePath": "/dev/termination-log",
+              "imagePullPolicy": "Always"
+            }
+          ],
+          "restartPolicy": "Never",
+          "terminationGracePeriodSeconds": 30,
+          "dnsPolicy": "ClusterFirst",
+          "securityContext": {}
+        }
+      }
+    },
+    "status": {
+      "startTime": "2016-11-04T18:45:25Z",
+      "active": 1
+    }
+  }
