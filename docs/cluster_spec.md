@@ -34,6 +34,34 @@ spec:
       idleTimeoutSeconds: 300
 ```
 
+### etcdClusters v3 & tls
+
+Although kops doesn't presently default to etcd3, it is possible to turn on both v3 and TLS authentication for communication amongst cluster members. These options may be enabled via the cluster spec (manifests only i.e. no command line options as yet). An upfront warning; at present no upgrade path exists for migrating from v2 to v3 so **DO NOT** try to enable this on a v2 running cluster as it must be done on cluster creation. The below example snippet assumes a HA cluster of three masters.
+
+```yaml
+etcdClusters:
+- etcdMembers:
+  - instanceGroup: master0-az0
+    name: a-1
+  - instanceGroup: master1-az0
+    name: a-2
+  - instanceGroup: master0-az1
+    name: b-1
+  enableEtcdTLS: true
+  name: main
+  version: 3.0.17
+- etcdMembers:
+  - instanceGroup: master0-az0
+    name: a-1
+  - instanceGroup: master1-az0
+    name: a-2
+  - instanceGroup: master0-az1
+    name: b-1
+  enableEtcdTLS: true
+  name: events
+  version: 3.0.17
+```
+
 ### sshAccess
 
 This array configures the CIDRs that are able to ssh into nodes. On AWS this is manifested as inbound security group rules on the `nodes` and `master` security groups.
