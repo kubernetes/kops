@@ -1,0 +1,31 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "bidi.go",
+        "bracket.go",
+        "core.go",
+        "prop.go",
+        "tables.go",
+        "trieval.go",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "core_test.go",
+        "ranges_test.go",
+        "tables_test.go",
+    ],
+    library = ":go_default_library",
+    deps = [
+        "//vendor/golang.org/x/text/internal/gen:go_default_library",
+        "//vendor/golang.org/x/text/internal/testtext:go_default_library",
+        "//vendor/golang.org/x/text/internal/ucd:go_default_library",
+        "//vendor/golang.org/x/text/unicode/norm:go_default_library",
+        "//vendor/golang.org/x/text/unicode/rangetable:go_default_library",
+    ],
+)
