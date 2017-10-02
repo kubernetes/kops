@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "zz_generated.api.register.go",
+    ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/example/pkg/controller",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//example/pkg/controller/festival:go_default_library",
+        "//example/pkg/controller/poseidon:go_default_library",
+        "//example/pkg/controller/sharedinformers:go_default_library",
+        "//example/pkg/controller/university:go_default_library",
+        "//pkg/controller:go_default_library",
+        "//vendor/k8s.io/client-go/rest:go_default_library",
+    ],
+)
