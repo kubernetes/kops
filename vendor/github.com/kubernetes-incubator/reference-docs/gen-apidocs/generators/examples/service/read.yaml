@@ -1,0 +1,41 @@
+name: deployment-example
+namespace: default
+response: |
+  {
+    "kind": "Service",
+    "apiVersion": "v1",
+    "metadata": {
+      "name": "deployment-example",
+      "namespace": "default",
+      "selfLink": "/api/v1/namespaces/default/services/deployment-example",
+      "uid": "93e5c731-9d30-11e6-9c54-42010a800148",
+      "resourceVersion": "2205995",
+      "creationTimestamp": "2016-10-28T17:04:24Z"
+    },
+    "spec": {
+      "ports": [
+        {
+          "name": "http",
+          "protocol": "TCP",
+          "port": 80,
+          "targetPort": 8080,
+          "nodePort": 32417
+        }
+      ],
+      "selector": {
+        "app": "nginx"
+      },
+      "clusterIP": "10.183.250.161",
+      "type": "LoadBalancer",
+      "sessionAffinity": "None"
+    },
+    "status": {
+      "loadBalancer": {
+        "ingress": [
+          {
+            "ip": "104.198.186.106"
+          }
+        ]
+      }
+    }
+  }

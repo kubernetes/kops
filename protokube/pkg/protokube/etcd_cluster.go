@@ -25,9 +25,9 @@ import (
 	"strings"
 	"time"
 
-	"k8s.io/apimachinery/pkg/api/resource"
-
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/protokube/pkg/etcd"
 )
 
@@ -195,7 +195,7 @@ func (c *EtcdCluster) configure(k *KubeBoot) error {
 	}
 
 	pod := BuildEtcdManifest(c)
-	manifest, err := ToVersionedYaml(pod)
+	manifest, err := k8scodecs.ToVersionedYaml(pod)
 	if err != nil {
 		return fmt.Errorf("error marshalling pod to yaml: %v", err)
 	}

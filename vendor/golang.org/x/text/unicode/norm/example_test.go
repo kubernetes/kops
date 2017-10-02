@@ -10,7 +10,7 @@ import (
 	"golang.org/x/text/unicode/norm"
 )
 
-func ExampleNextBoundary() {
+func ExampleForm_NextBoundary() {
 	s := norm.NFD.String("Mêlée")
 
 	for i := 0; i < len(s); {

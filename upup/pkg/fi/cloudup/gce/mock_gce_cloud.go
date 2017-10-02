@@ -22,7 +22,7 @@ import (
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/storage/v1"
-	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"

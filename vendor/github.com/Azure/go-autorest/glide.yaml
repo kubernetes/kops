@@ -24,3 +24,5 @@ testImports:
   repo: https://github.com/stretchr/testify.git
   subpackages:
   - /require
+- package: github.com/Masterminds/semver
+  version: ~1.2.2

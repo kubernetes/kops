@@ -1,12 +1,14 @@
 package reference
 
 import (
+	_ "crypto/sha256"
+	_ "crypto/sha512"
 	"encoding/json"
 	"strconv"
 	"strings"
 	"testing"
 
-	"github.com/docker/distribution/digest"
+	"github.com/opencontainers/go-digest"
 )
 
 func TestReferenceParse(t *testing.T) {
@@ -19,8 +21,8 @@ func TestReferenceParse(t *testing.T) {
 		err error
 		// repository is the string representation for the reference
 		repository string
-		// hostname is the hostname expected in the reference
-		hostname string
+		// domain is the domain expected in the reference
+		domain string
 		// tag is the tag for the reference
 		tag string
 		// digest is the digest for the reference (enforces digest reference)
@@ -42,37 +44,37 @@ func TestReferenceParse(t *testing.T) {
 		},
 		{
 			input:      "test.com/repo:tag",
-			hostname:   "test.com",
+			domain:     "test.com",
 			repository: "test.com/repo",
 			tag:        "tag",
 		},
 		{
 			input:      "test:5000/repo",
-			hostname:   "test:5000",
+			domain:     "test:5000",
 			repository: "test:5000/repo",
 		},
 		{
 			input:      "test:5000/repo:tag",
-			hostname:   "test:5000",
+			domain:     "test:5000",
 			repository: "test:5000/repo",
 			tag:        "tag",
 		},
 		{
 			input:      "test:5000/repo@sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-			hostname:   "test:5000",
+			domain:     "test:5000",
 			repository: "test:5000/repo",
 			digest:     "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
 		},
 		{
 			input:      "test:5000/repo:tag@sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
-			hostname:   "test:5000",
+			domain:     "test:5000",
 			repository: "test:5000/repo",
 			tag:        "tag",
 			digest:     "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
 		},
 		{
 			input:      "test:5000/repo",
-			hostname:   "test:5000",
+			domain:     "test:5000",
 			repository: "test:5000/repo",
 		},
 		{
@@ -96,12 +98,31 @@ func TestReferenceParse(t *testing.T) {
 			err:   digest.ErrDigestUnsupported,
 		},
 		{
+			input: "Uppercase:tag",
+			err:   ErrNameContainsUppercase,
+		},
+		// FIXME "Uppercase" is incorrectly handled as a domain-name here, therefore passes.
+		// See https://github.com/docker/distribution/pull/1778, and https://github.com/docker/docker/pull/20175
+		//{
+		//	input: "Uppercase/lowercase:tag",
+		//	err:   ErrNameContainsUppercase,
+		//},
+		{
+			input: "test:5000/Uppercase/lowercase:tag",
+			err:   ErrNameContainsUppercase,
+		},
+		{
+			input:      "lowercase:Uppercase",
+			repository: "lowercase",
+			tag:        "Uppercase",
+		},
+		{
 			input: strings.Repeat("a/", 128) + "a:tag",
 			err:   ErrNameTooLong,
 		},
 		{
 			input:      strings.Repeat("a/", 127) + "a:tag-puts-this-over-max",
-			hostname:   "a",
+			domain:     "a",
 			repository: strings.Repeat("a/", 127) + "a",
 			tag:        "tag-puts-this-over-max",
 		},
@@ -111,30 +132,30 @@ func TestReferenceParse(t *testing.T) {
 		},
 		{
 			input:      "sub-dom1.foo.com/bar/baz/quux",
-			hostname:   "sub-dom1.foo.com",
+			domain:     "sub-dom1.foo.com",
 			repository: "sub-dom1.foo.com/bar/baz/quux",
 		},
 		{
 			input:      "sub-dom1.foo.com/bar/baz/quux:some-long-tag",
-			hostname:   "sub-dom1.foo.com",
+			domain:     "sub-dom1.foo.com",
 			repository: "sub-dom1.foo.com/bar/baz/quux",
 			tag:        "some-long-tag",
 		},
 		{
 			input:      "b.gcr.io/test.example.com/my-app:test.example.com",
-			hostname:   "b.gcr.io",
+			domain:     "b.gcr.io",
 			repository: "b.gcr.io/test.example.com/my-app",
 			tag:        "test.example.com",
 		},
 		{
 			input:      "xn--n3h.com/myimage:xn--n3h.com", // ☃.com in punycode
-			hostname:   "xn--n3h.com",
+			domain:     "xn--n3h.com",
 			repository: "xn--n3h.com/myimage",
 			tag:        "xn--n3h.com",
 		},
 		{
 			input:      "xn--7o8h.com/myimage:xn--7o8h.com@sha512:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", // 🐳.com in punycode
-			hostname:   "xn--7o8h.com",
+			domain:     "xn--7o8h.com",
 			repository: "xn--7o8h.com/myimage",
 			tag:        "xn--7o8h.com",
 			digest:     "sha512:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
@@ -146,7 +167,7 @@ func TestReferenceParse(t *testing.T) {
 		},
 		{
 			input:      "foo/foo_bar.com:8080",
-			hostname:   "foo",
+			domain:     "foo",
 			repository: "foo/foo_bar.com",
 			tag:        "8080",
 		},
@@ -177,11 +198,11 @@ func TestReferenceParse(t *testing.T) {
 			if named.Name() != testcase.repository {
 				failf("unexpected repository: got %q, expected %q", named.Name(), testcase.repository)
 			}
-			hostname, _ := SplitHostname(named)
-			if hostname != testcase.hostname {
-				failf("unexpected hostname: got %q, expected %q", hostname, testcase.hostname)
+			domain, _ := SplitHostname(named)
+			if domain != testcase.domain {
+				failf("unexpected domain: got %q, expected %q", domain, testcase.domain)
 			}
-		} else if testcase.repository != "" || testcase.hostname != "" {
+		} else if testcase.repository != "" || testcase.domain != "" {
 			failf("expected named type, got %T", repo)
 		}
 
@@ -261,39 +282,39 @@ func TestWithNameFailure(t *testing.T) {
 
 func TestSplitHostname(t *testing.T) {
 	testcases := []struct {
-		input    string
-		hostname string
-		name     string
+		input  string
+		domain string
+		name   string
 	}{
 		{
-			input:    "test.com/foo",
-			hostname: "test.com",
-			name:     "foo",
+			input:  "test.com/foo",
+			domain: "test.com",
+			name:   "foo",
 		},
 		{
-			input:    "test_com/foo",
-			hostname: "",
-			name:     "test_com/foo",
+			input:  "test_com/foo",
+			domain: "",
+			name:   "test_com/foo",
 		},
 		{
-			input:    "test:8080/foo",
-			hostname: "test:8080",
-			name:     "foo",
+			input:  "test:8080/foo",
+			domain: "test:8080",
+			name:   "foo",
 		},
 		{
-			input:    "test.com:8080/foo",
-			hostname: "test.com:8080",
-			name:     "foo",
+			input:  "test.com:8080/foo",
+			domain: "test.com:8080",
+			name:   "foo",
 		},
 		{
-			input:    "test-com:8080/foo",
-			hostname: "test-com:8080",
-			name:     "foo",
+			input:  "test-com:8080/foo",
+			domain: "test-com:8080",
+			name:   "foo",
 		},
 		{
-			input:    "xn--n3h.com:18080/foo",
-			hostname: "xn--n3h.com:18080",
-			name:     "foo",
+			input:  "xn--n3h.com:18080/foo",
+			domain: "xn--n3h.com:18080",
+			name:   "foo",
 		},
 	}
 	for _, testcase := range testcases {
@@ -306,9 +327,9 @@ func TestSplitHostname(t *testing.T) {
 		if err != nil {
 			failf("error parsing name: %s", err)
 		}
-		hostname, name := SplitHostname(named)
-		if hostname != testcase.hostname {
-			failf("unexpected hostname: got %q, expected %q", hostname, testcase.hostname)
+		domain, name := SplitHostname(named)
+		if domain != testcase.domain {
+			failf("unexpected domain: got %q, expected %q", domain, testcase.domain)
 		}
 		if name != testcase.name {
 			failf("unexpected name: got %q, expected %q", name, testcase.name)
@@ -448,6 +469,7 @@ func TestSerialization(t *testing.T) {
 func TestWithTag(t *testing.T) {
 	testcases := []struct {
 		name     string
+		digest   digest.Digest
 		tag      string
 		combined string
 	}{
@@ -471,6 +493,12 @@ func TestWithTag(t *testing.T) {
 			tag:      "TAG5",
 			combined: "test.com:8000/foo:TAG5",
 		},
+		{
+			name:     "test.com:8000/foo",
+			digest:   "sha256:1234567890098765432112345667890098765",
+			tag:      "TAG5",
+			combined: "test.com:8000/foo:TAG5@sha256:1234567890098765432112345667890098765",
+		},
 	}
 	for _, testcase := range testcases {
 		failf := func(format string, v ...interface{}) {
@@ -482,6 +510,14 @@ func TestWithTag(t *testing.T) {
 		if err != nil {
 			failf("error parsing name: %s", err)
 		}
+		if testcase.digest != "" {
+			canonical, err := WithDigest(named, testcase.digest)
+			if err != nil {
+				failf("error adding digest")
+			}
+			named = canonical
+		}
+
 		tagged, err := WithTag(named, testcase.tag)
 		if err != nil {
 			failf("WithTag failed: %s", err)
@@ -496,6 +532,7 @@ func TestWithDigest(t *testing.T) {
 	testcases := []struct {
 		name     string
 		digest   digest.Digest
+		tag      string
 		combined string
 	}{
 		{
@@ -513,6 +550,12 @@ func TestWithDigest(t *testing.T) {
 			digest:   "sha256:1234567890098765432112345667890098765",
 			combined: "test.com:8000/foo@sha256:1234567890098765432112345667890098765",
 		},
+		{
+			name:     "test.com:8000/foo",
+			digest:   "sha256:1234567890098765432112345667890098765",
+			tag:      "latest",
+			combined: "test.com:8000/foo:latest@sha256:1234567890098765432112345667890098765",
+		},
 	}
 	for _, testcase := range testcases {
 		failf := func(format string, v ...interface{}) {
@@ -524,12 +567,93 @@ func TestWithDigest(t *testing.T) {
 		if err != nil {
 			failf("error parsing name: %s", err)
 		}
+		if testcase.tag != "" {
+			tagged, err := WithTag(named, testcase.tag)
+			if err != nil {
+				failf("error adding tag")
+			}
+			named = tagged
+		}
 		digested, err := WithDigest(named, testcase.digest)
 		if err != nil {
 			failf("WithDigest failed: %s", err)
 		}
 		if digested.String() != testcase.combined {
 			failf("unexpected: got %q, expected %q", digested.String(), testcase.combined)
+		}
+	}
+}
+
+func TestParseNamed(t *testing.T) {
+	testcases := []struct {
+		input  string
+		domain string
+		name   string
+		err    error
+	}{
+		{
+			input:  "test.com/foo",
+			domain: "test.com",
+			name:   "foo",
+		},
+		{
+			input:  "test:8080/foo",
+			domain: "test:8080",
+			name:   "foo",
+		},
+		{
+			input: "test_com/foo",
+			err:   ErrNameNotCanonical,
+		},
+		{
+			input: "test.com",
+			err:   ErrNameNotCanonical,
+		},
+		{
+			input: "foo",
+			err:   ErrNameNotCanonical,
+		},
+		{
+			input: "library/foo",
+			err:   ErrNameNotCanonical,
+		},
+		{
+			input:  "docker.io/library/foo",
+			domain: "docker.io",
+			name:   "library/foo",
+		},
+		// Ambiguous case, parser will add "library/" to foo
+		{
+			input: "docker.io/foo",
+			err:   ErrNameNotCanonical,
+		},
+	}
+	for _, testcase := range testcases {
+		failf := func(format string, v ...interface{}) {
+			t.Logf(strconv.Quote(testcase.input)+": "+format, v...)
+			t.Fail()
+		}
+
+		named, err := ParseNamed(testcase.input)
+		if err != nil && testcase.err == nil {
+			failf("error parsing name: %s", err)
+			continue
+		} else if err == nil && testcase.err != nil {
+			failf("parsing succeded: expected error %v", testcase.err)
+			continue
+		} else if err != testcase.err {
+			failf("unexpected error %v, expected %v", err, testcase.err)
+			continue
+		} else if err != nil {
+			continue
+		}
+
+		domain, name := SplitHostname(named)
+		if domain != testcase.domain {
+			failf("unexpected domain: got %q, expected %q", domain, testcase.domain)
+		}
+		if name != testcase.name {
+			failf("unexpected name: got %q, expected %q", name, testcase.name)
 		}
 	}
 }

@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "zz_generated.api.register.go",
+    ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/example/pkg/apis",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//example/pkg/apis/innsmouth:go_default_library",
+        "//example/pkg/apis/innsmouth/v1:go_default_library",
+        "//example/pkg/apis/kingsport:go_default_library",
+        "//example/pkg/apis/kingsport/v1:go_default_library",
+        "//example/pkg/apis/miskatonic:go_default_library",
+        "//example/pkg/apis/miskatonic/v1beta1:go_default_library",
+        "//example/pkg/apis/olympus:go_default_library",
+        "//example/pkg/apis/olympus/v1beta1:go_default_library",
+        "//pkg/builders:go_default_library",
+    ],
+)

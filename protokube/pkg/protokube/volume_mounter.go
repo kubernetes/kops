@@ -22,11 +22,9 @@ import (
 	"sort"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/util/exec"
-	"k8s.io/kubernetes/pkg/util/mount"
-
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kubernetes/pkg/util/mount"
 )
 
 type VolumeMountController struct {
@@ -109,7 +107,7 @@ func (k *VolumeMountController) safeFormatAndMount(device string, mountpoint str
 
 	// If we are containerized, we still first SafeFormatAndMount in our namespace
 	// This is because SafeFormatAndMount doesn't seem to work in a container
-	safeFormatAndMount := &mount.SafeFormatAndMount{Interface: mount.New(""), Runner: exec.New()}
+	safeFormatAndMount := &mount.SafeFormatAndMount{Interface: mount.New(""), Exec: mount.NewOsExec()}
 
 	// Check if it is already mounted
 	mounts, err := safeFormatAndMount.List()

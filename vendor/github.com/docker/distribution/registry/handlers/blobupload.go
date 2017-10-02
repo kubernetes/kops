@@ -7,12 +7,12 @@ import (
 
 	"github.com/docker/distribution"
 	ctxu "github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/registry/api/errcode"
 	"github.com/docker/distribution/registry/api/v2"
 	"github.com/docker/distribution/registry/storage"
 	"github.com/gorilla/handlers"
+	"github.com/opencontainers/go-digest"
 )
 
 // blobUploadDispatcher constructs and returns the blob upload handler for the
@@ -77,7 +77,7 @@ func blobUploadDispatcher(ctx *Context, r *http.Request) http.Handler {
 
 		if size := upload.Size(); size != buh.State.Offset {
 			defer upload.Close()
-			ctxu.GetLogger(ctx).Infof("upload resumed at wrong offest: %d != %d", size, buh.State.Offset)
+			ctxu.GetLogger(ctx).Errorf("upload resumed at wrong offest: %d != %d", size, buh.State.Offset)
 			return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				buh.Errors = append(buh.Errors, v2.ErrorCodeBlobUploadInvalid.WithDetail(err))
 				upload.Cancel(buh)
@@ -134,7 +134,6 @@ func (buh *blobUploadHandler) StartBlobUpload(w http.ResponseWriter, r *http.Req
 	}
 
 	buh.Upload = upload
-	defer buh.Upload.Close()
 
 	if err := buh.blobUploadResponse(w, r, true); err != nil {
 		buh.Errors = append(buh.Errors, errcode.ErrorCodeUnknown.WithDetail(err))
@@ -180,8 +179,8 @@ func (buh *blobUploadHandler) PatchBlobData(w http.ResponseWriter, r *http.Reque
 
 	// TODO(dmcgowan): support Content-Range header to seek and write range
 
-	if err := copyFullPayload(w, r, buh.Upload, buh, "blob PATCH", &buh.Errors); err != nil {
-		// copyFullPayload reports the error if necessary
+	if err := copyFullPayload(w, r, buh.Upload, -1, buh, "blob PATCH"); err != nil {
+		buh.Errors = append(buh.Errors, errcode.ErrorCodeUnknown.WithDetail(err.Error()))
 		return
 	}
 
@@ -212,23 +211,20 @@ func (buh *blobUploadHandler) PutBlobUploadComplete(w http.ResponseWriter, r *ht
 		return
 	}
 
-	dgst, err := digest.ParseDigest(dgstStr)
+	dgst, err := digest.Parse(dgstStr)
 	if err != nil {
 		// no digest? return error, but allow retry.
 		buh.Errors = append(buh.Errors, v2.ErrorCodeDigestInvalid.WithDetail("digest parsing failed"))
 		return
 	}
 
-	if err := copyFullPayload(w, r, buh.Upload, buh, "blob PUT", &buh.Errors); err != nil {
-		// copyFullPayload reports the error if necessary
+	if err := copyFullPayload(w, r, buh.Upload, -1, buh, "blob PUT"); err != nil {
+		buh.Errors = append(buh.Errors, errcode.ErrorCodeUnknown.WithDetail(err.Error()))
 		return
 	}
 
-	size := buh.Upload.Size()
-
 	desc, err := buh.Upload.Commit(buh, distribution.Descriptor{
 		Digest: dgst,
-		Size:   size,
 
 		// TODO(stevvooe): This isn't wildly important yet, but we should
 		// really set the mediatype. For now, we can let the backend take care
@@ -239,6 +235,8 @@ func (buh *blobUploadHandler) PutBlobUploadComplete(w http.ResponseWriter, r *ht
 		switch err := err.(type) {
 		case distribution.ErrBlobInvalidDigest:
 			buh.Errors = append(buh.Errors, v2.ErrorCodeDigestInvalid.WithDetail(err))
+		case errcode.Error:
+			buh.Errors = append(buh.Errors, err)
 		default:
 			switch err {
 			case distribution.ErrAccessDenied:
@@ -248,7 +246,7 @@ func (buh *blobUploadHandler) PutBlobUploadComplete(w http.ResponseWriter, r *ht
 			case distribution.ErrBlobInvalidLength, distribution.ErrBlobDigestUnsupported:
 				buh.Errors = append(buh.Errors, v2.ErrorCodeBlobUploadInvalid.WithDetail(err))
 			default:
-				ctxu.GetLogger(buh).Errorf("unknown error completing upload: %#v", err)
+				ctxu.GetLogger(buh).Errorf("unknown error completing upload: %v", err)
 				buh.Errors = append(buh.Errors, errcode.ErrorCodeUnknown.WithDetail(err))
 			}
 
@@ -293,6 +291,7 @@ func (buh *blobUploadHandler) blobUploadResponse(w http.ResponseWriter, r *http.
 	// TODO(stevvooe): Need a better way to manage the upload state automatically.
 	buh.State.Name = buh.Repository.Named().Name()
 	buh.State.UUID = buh.Upload.ID()
+	buh.Upload.Close()
 	buh.State.Offset = buh.Upload.Size()
 	buh.State.StartedAt = buh.Upload.StartedAt()
 
@@ -330,12 +329,12 @@ func (buh *blobUploadHandler) blobUploadResponse(w http.ResponseWriter, r *http.
 // successful, the blob is linked into the blob store and 201 Created is
 // returned with the canonical url of the blob.
 func (buh *blobUploadHandler) createBlobMountOption(fromRepo, mountDigest string) (distribution.BlobCreateOption, error) {
-	dgst, err := digest.ParseDigest(mountDigest)
+	dgst, err := digest.Parse(mountDigest)
 	if err != nil {
 		return nil, err
 	}
 
-	ref, err := reference.ParseNamed(fromRepo)
+	ref, err := reference.WithName(fromRepo)
 	if err != nil {
 		return nil, err
 	}

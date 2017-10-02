@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "glide.go",
+        "init.go",
+        "repo.go",
+    ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/cmd/apiserver-boot/boot/init_repo",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//cmd/apiserver-boot/boot/util:go_default_library",
+        "//cmd/vendor/github.com/spf13/cobra:go_default_library",
+    ],
+)

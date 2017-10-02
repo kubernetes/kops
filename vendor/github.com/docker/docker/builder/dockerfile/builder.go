@@ -2,46 +2,166 @@ package dockerfile
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
-	"os"
+	"runtime"
 	"strings"
-	"sync"
+	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/backend"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/builder"
+	"github.com/docker/docker/builder/dockerfile/command"
 	"github.com/docker/docker/builder/dockerfile/parser"
+	"github.com/docker/docker/builder/fscache"
+	"github.com/docker/docker/builder/remotecontext"
+	"github.com/docker/docker/pkg/archive"
+	"github.com/docker/docker/pkg/chrootarchive"
+	"github.com/docker/docker/pkg/idtools"
+	"github.com/docker/docker/pkg/streamformatter"
 	"github.com/docker/docker/pkg/stringid"
-	"github.com/docker/docker/reference"
-	"github.com/docker/engine-api/types"
-	"github.com/docker/engine-api/types/container"
+	"github.com/docker/docker/pkg/system"
+	"github.com/moby/buildkit/session"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
+	"golang.org/x/sync/syncmap"
 )
 
 var validCommitCommands = map[string]bool{
-	"cmd":        true,
-	"entrypoint": true,
-	"env":        true,
-	"expose":     true,
-	"label":      true,
-	"onbuild":    true,
-	"user":       true,
-	"volume":     true,
-	"workdir":    true,
+	"cmd":         true,
+	"entrypoint":  true,
+	"healthcheck": true,
+	"env":         true,
+	"expose":      true,
+	"label":       true,
+	"onbuild":     true,
+	"user":        true,
+	"volume":      true,
+	"workdir":     true,
 }
 
-// BuiltinAllowedBuildArgs is list of built-in allowed build args
-var BuiltinAllowedBuildArgs = map[string]bool{
-	"HTTP_PROXY":  true,
-	"http_proxy":  true,
-	"HTTPS_PROXY": true,
-	"https_proxy": true,
-	"FTP_PROXY":   true,
-	"ftp_proxy":   true,
-	"NO_PROXY":    true,
-	"no_proxy":    true,
+// SessionGetter is object used to get access to a session by uuid
+type SessionGetter interface {
+	Get(ctx context.Context, uuid string) (session.Caller, error)
+}
+
+// BuildManager is shared across all Builder objects
+type BuildManager struct {
+	archiver  *archive.Archiver
+	backend   builder.Backend
+	pathCache pathCache // TODO: make this persistent
+	sg        SessionGetter
+	fsCache   *fscache.FSCache
+}
+
+// NewBuildManager creates a BuildManager
+func NewBuildManager(b builder.Backend, sg SessionGetter, fsCache *fscache.FSCache, idMappings *idtools.IDMappings) (*BuildManager, error) {
+	bm := &BuildManager{
+		backend:   b,
+		pathCache: &syncmap.Map{},
+		sg:        sg,
+		archiver:  chrootarchive.NewArchiver(idMappings),
+		fsCache:   fsCache,
+	}
+	if err := fsCache.RegisterTransport(remotecontext.ClientSessionRemote, NewClientSessionTransport()); err != nil {
+		return nil, err
+	}
+	return bm, nil
+}
+
+// Build starts a new build from a BuildConfig
+func (bm *BuildManager) Build(ctx context.Context, config backend.BuildConfig) (*builder.Result, error) {
+	buildsTriggered.Inc()
+	if config.Options.Dockerfile == "" {
+		config.Options.Dockerfile = builder.DefaultDockerfileName
+	}
+
+	source, dockerfile, err := remotecontext.Detect(config)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		if source != nil {
+			if err := source.Close(); err != nil {
+				logrus.Debugf("[BUILDER] failed to remove temporary context: %v", err)
+			}
+		}
+	}()
+
+	// TODO @jhowardmsft LCOW support - this will require rework to allow both linux and Windows simultaneously.
+	// This is an interim solution to hardcode to linux if LCOW is turned on.
+	if dockerfile.Platform == "" {
+		dockerfile.Platform = runtime.GOOS
+		if dockerfile.Platform == "windows" && system.LCOWSupported() {
+			dockerfile.Platform = "linux"
+		}
+	}
+
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	if src, err := bm.initializeClientSession(ctx, cancel, config.Options); err != nil {
+		return nil, err
+	} else if src != nil {
+		source = src
+	}
+
+	builderOptions := builderOptions{
+		Options:        config.Options,
+		ProgressWriter: config.ProgressWriter,
+		Backend:        bm.backend,
+		PathCache:      bm.pathCache,
+		Archiver:       bm.archiver,
+		Platform:       dockerfile.Platform,
+	}
+
+	return newBuilder(ctx, builderOptions).build(source, dockerfile)
+}
+
+func (bm *BuildManager) initializeClientSession(ctx context.Context, cancel func(), options *types.ImageBuildOptions) (builder.Source, error) {
+	if options.SessionID == "" || bm.sg == nil {
+		return nil, nil
+	}
+	logrus.Debug("client is session enabled")
+
+	ctx, cancelCtx := context.WithTimeout(ctx, sessionConnectTimeout)
+	defer cancelCtx()
+
+	c, err := bm.sg.Get(ctx, options.SessionID)
+	if err != nil {
+		return nil, err
+	}
+	go func() {
+		<-c.Context().Done()
+		cancel()
+	}()
+	if options.RemoteContext == remotecontext.ClientSessionRemote {
+		st := time.Now()
+		csi, err := NewClientSessionSourceIdentifier(ctx, bm.sg, options.SessionID)
+		if err != nil {
+			return nil, err
+		}
+		src, err := bm.fsCache.SyncFrom(ctx, csi)
+		if err != nil {
+			return nil, err
+		}
+		logrus.Debugf("sync-time: %v", time.Since(st))
+		return src, nil
+	}
+	return nil, nil
+}
+
+// builderOptions are the dependencies required by the builder
+type builderOptions struct {
+	Options        *types.ImageBuildOptions
+	Backend        builder.Backend
+	ProgressWriter backend.ProgressWriter
+	PathCache      pathCache
+	Archiver       *archive.Archiver
+	Platform       string
 }
 
 // Builder is a Dockerfile builder
@@ -51,238 +171,170 @@ type Builder struct {
 
 	Stdout io.Writer
 	Stderr io.Writer
+	Aux    *streamformatter.AuxFormatter
 	Output io.Writer
 
 	docker    builder.Backend
-	context   builder.Context
 	clientCtx context.Context
 
-	dockerfile       *parser.Node
-	runConfig        *container.Config // runconfig for cmd, run, entrypoint etc.
-	flags            *BFlags
-	tmpContainers    map[string]struct{}
-	image            string // imageID
-	noBaseImage      bool
-	maintainer       string
-	cmdSet           bool
+	archiver         *archive.Archiver
+	buildStages      *buildStages
 	disableCommit    bool
-	cacheBusted      bool
-	cancelled        chan struct{}
-	cancelOnce       sync.Once
-	allowedBuildArgs map[string]bool // list of build-time args that are allowed for expansion/substitution and passing to commands in 'run'.
+	buildArgs        *buildArgs
+	imageSources     *imageSources
+	pathCache        pathCache
+	containerManager *containerManager
+	imageProber      ImageProber
 
-	// TODO: remove once docker.Commit can receive a tag
-	id string
+	// TODO @jhowardmft LCOW Support. This will be moved to options at a later
+	// stage, however that cannot be done now as it affects the public API
+	// if it were.
+	platform string
 }
 
-// BuildManager implements builder.Backend and is shared across all Builder objects.
-type BuildManager struct {
-	backend builder.Backend
-}
-
-// NewBuildManager creates a BuildManager.
-func NewBuildManager(b builder.Backend) (bm *BuildManager) {
-	return &BuildManager{backend: b}
-}
-
-// NewBuilder creates a new Dockerfile builder from an optional dockerfile and a Config.
-// If dockerfile is nil, the Dockerfile specified by Config.DockerfileName,
-// will be read from the Context passed to Build().
-func NewBuilder(clientCtx context.Context, config *types.ImageBuildOptions, backend builder.Backend, context builder.Context, dockerfile io.ReadCloser) (b *Builder, err error) {
+// newBuilder creates a new Dockerfile builder from an optional dockerfile and a Options.
+// TODO @jhowardmsft LCOW support: Eventually platform can be moved into the builder
+// options, however, that would be an API change as it shares types.ImageBuildOptions.
+func newBuilder(clientCtx context.Context, options builderOptions) *Builder {
+	config := options.Options
 	if config == nil {
 		config = new(types.ImageBuildOptions)
 	}
-	if config.BuildArgs == nil {
-		config.BuildArgs = make(map[string]string)
+
+	// @jhowardmsft LCOW Support. For the time being, this is interim. Eventually
+	// will be moved to types.ImageBuildOptions, but it can't for now as that would
+	// be an API change.
+	if options.Platform == "" {
+		options.Platform = runtime.GOOS
 	}
-	b = &Builder{
+	if options.Platform == "windows" && system.LCOWSupported() {
+		options.Platform = "linux"
+	}
+
+	b := &Builder{
 		clientCtx:        clientCtx,
 		options:          config,
-		Stdout:           os.Stdout,
-		Stderr:           os.Stderr,
-		docker:           backend,
-		context:          context,
-		runConfig:        new(container.Config),
-		tmpContainers:    map[string]struct{}{},
-		cancelled:        make(chan struct{}),
-		id:               stringid.GenerateNonCryptoID(),
-		allowedBuildArgs: make(map[string]bool),
-	}
-	if dockerfile != nil {
-		b.dockerfile, err = parser.Parse(dockerfile)
-		if err != nil {
-			return nil, err
-		}
+		Stdout:           options.ProgressWriter.StdoutFormatter,
+		Stderr:           options.ProgressWriter.StderrFormatter,
+		Aux:              options.ProgressWriter.AuxFormatter,
+		Output:           options.ProgressWriter.Output,
+		docker:           options.Backend,
+		archiver:         options.Archiver,
+		buildArgs:        newBuildArgs(config.BuildArgs),
+		buildStages:      newBuildStages(),
+		imageSources:     newImageSources(clientCtx, options),
+		pathCache:        options.PathCache,
+		imageProber:      newImageProber(options.Backend, config.CacheFrom, options.Platform, config.NoCache),
+		containerManager: newContainerManager(options.Backend),
+		platform:         options.Platform,
 	}
 
-	return b, nil
+	return b
 }
 
-// sanitizeRepoAndTags parses the raw "t" parameter received from the client
-// to a slice of repoAndTag.
-// It also validates each repoName and tag.
-func sanitizeRepoAndTags(names []string) ([]reference.Named, error) {
-	var (
-		repoAndTags []reference.Named
-		// This map is used for deduplicating the "-t" parameter.
-		uniqNames = make(map[string]struct{})
-	)
-	for _, repo := range names {
-		if repo == "" {
-			continue
+// Build runs the Dockerfile builder by parsing the Dockerfile and executing
+// the instructions from the file.
+func (b *Builder) build(source builder.Source, dockerfile *parser.Result) (*builder.Result, error) {
+	defer b.imageSources.Unmount()
+
+	addNodesForLabelOption(dockerfile.AST, b.options.Labels)
+
+	if err := checkDispatchDockerfile(dockerfile.AST); err != nil {
+		buildsFailed.WithValues(metricsDockerfileSyntaxError).Inc()
+		return nil, err
+	}
+
+	dispatchState, err := b.dispatchDockerfileWithCancellation(dockerfile, source)
+	if err != nil {
+		return nil, err
+	}
+
+	if b.options.Target != "" && !dispatchState.isCurrentStage(b.options.Target) {
+		buildsFailed.WithValues(metricsBuildTargetNotReachableError).Inc()
+		return nil, errors.Errorf("failed to reach build target %s in Dockerfile", b.options.Target)
+	}
+
+	dockerfile.PrintWarnings(b.Stderr)
+	b.buildArgs.WarnOnUnusedBuildArgs(b.Stderr)
+
+	if dispatchState.imageID == "" {
+		buildsFailed.WithValues(metricsDockerfileEmptyError).Inc()
+		return nil, errors.New("No image was generated. Is your Dockerfile empty?")
+	}
+	return &builder.Result{ImageID: dispatchState.imageID, FromImage: dispatchState.baseImage}, nil
+}
+
+func emitImageID(aux *streamformatter.AuxFormatter, state *dispatchState) error {
+	if aux == nil || state.imageID == "" {
+		return nil
+	}
+	return aux.Emit(types.BuildResult{ID: state.imageID})
+}
+
+func (b *Builder) dispatchDockerfileWithCancellation(dockerfile *parser.Result, source builder.Source) (*dispatchState, error) {
+	shlex := NewShellLex(dockerfile.EscapeToken)
+	state := newDispatchState()
+	total := len(dockerfile.AST.Children)
+	var err error
+	for i, n := range dockerfile.AST.Children {
+		select {
+		case <-b.clientCtx.Done():
+			logrus.Debug("Builder: build cancelled!")
+			fmt.Fprint(b.Stdout, "Build cancelled")
+			buildsFailed.WithValues(metricsBuildCanceled).Inc()
+			return nil, errors.New("Build cancelled")
+		default:
+			// Not cancelled yet, keep going...
 		}
 
-		ref, err := reference.ParseNamed(repo)
-		if err != nil {
-			return nil, err
-		}
-
-		ref = reference.WithDefaultTag(ref)
-
-		if _, isCanonical := ref.(reference.Canonical); isCanonical {
-			return nil, errors.New("build tag cannot contain a digest")
-		}
-
-		if _, isTagged := ref.(reference.NamedTagged); !isTagged {
-			ref, err = reference.WithTag(ref, reference.DefaultTag)
-			if err != nil {
+		// If this is a FROM and we have a previous image then
+		// emit an aux message for that image since it is the
+		// end of the previous stage
+		if n.Value == command.From {
+			if err := emitImageID(b.Aux, state); err != nil {
 				return nil, err
 			}
 		}
 
-		nameWithTag := ref.String()
-
-		if _, exists := uniqNames[nameWithTag]; !exists {
-			uniqNames[nameWithTag] = struct{}{}
-			repoAndTags = append(repoAndTags, ref)
-		}
-	}
-	return repoAndTags, nil
-}
-
-// Build creates a NewBuilder, which builds the image.
-func (bm *BuildManager) Build(clientCtx context.Context, config *types.ImageBuildOptions, context builder.Context, stdout io.Writer, stderr io.Writer, out io.Writer, clientGone <-chan bool) (string, error) {
-	b, err := NewBuilder(clientCtx, config, bm.backend, context, nil)
-	if err != nil {
-		return "", err
-	}
-	img, err := b.build(config, context, stdout, stderr, out, clientGone)
-	return img, err
-
-}
-
-// build runs the Dockerfile builder from a context and a docker object that allows to make calls
-// to Docker.
-//
-// This will (barring errors):
-//
-// * read the dockerfile from context
-// * parse the dockerfile if not already parsed
-// * walk the AST and execute it by dispatching to handlers. If Remove
-//   or ForceRemove is set, additional cleanup around containers happens after
-//   processing.
-// * Tag image, if applicable.
-// * Print a happy message and return the image ID.
-//
-func (b *Builder) build(config *types.ImageBuildOptions, context builder.Context, stdout io.Writer, stderr io.Writer, out io.Writer, clientGone <-chan bool) (string, error) {
-	b.options = config
-	b.context = context
-	b.Stdout = stdout
-	b.Stderr = stderr
-	b.Output = out
-
-	// If Dockerfile was not parsed yet, extract it from the Context
-	if b.dockerfile == nil {
-		if err := b.readDockerfile(); err != nil {
-			return "", err
-		}
-	}
-
-	finished := make(chan struct{})
-	defer close(finished)
-	go func() {
-		select {
-		case <-finished:
-		case <-clientGone:
-			b.cancelOnce.Do(func() {
-				close(b.cancelled)
-			})
+		if n.Value == command.From && state.isCurrentStage(b.options.Target) {
+			break
 		}
 
-	}()
-
-	repoAndTags, err := sanitizeRepoAndTags(config.Tags)
-	if err != nil {
-		return "", err
-	}
-
-	if len(b.options.Labels) > 0 {
-		line := "LABEL "
-		for k, v := range b.options.Labels {
-			line += fmt.Sprintf("%q=%q ", k, v)
+		opts := dispatchOptions{
+			state:   state,
+			stepMsg: formatStep(i, total),
+			node:    n,
+			shlex:   shlex,
+			source:  source,
 		}
-		_, node, err := parser.ParseLine(line)
-		if err != nil {
-			return "", err
-		}
-		b.dockerfile.Children = append(b.dockerfile.Children, node)
-	}
-
-	var shortImgID string
-	for i, n := range b.dockerfile.Children {
-		select {
-		case <-b.cancelled:
-			logrus.Debug("Builder: build cancelled!")
-			fmt.Fprintf(b.Stdout, "Build cancelled")
-			return "", fmt.Errorf("Build cancelled")
-		default:
-			// Not cancelled yet, keep going...
-		}
-		if err := b.dispatch(i, n); err != nil {
+		if state, err = b.dispatch(opts); err != nil {
 			if b.options.ForceRemove {
-				b.clearTmp()
+				b.containerManager.RemoveAll(b.Stdout)
 			}
-			return "", err
+			return nil, err
 		}
 
-		shortImgID = stringid.TruncateID(b.image)
-		fmt.Fprintf(b.Stdout, " ---> %s\n", shortImgID)
+		fmt.Fprintf(b.Stdout, " ---> %s\n", stringid.TruncateID(state.imageID))
 		if b.options.Remove {
-			b.clearTmp()
+			b.containerManager.RemoveAll(b.Stdout)
 		}
 	}
 
-	// check if there are any leftover build-args that were passed but not
-	// consumed during build. Return an error, if there are any.
-	leftoverArgs := []string{}
-	for arg := range b.options.BuildArgs {
-		if !b.isBuildArgAllowed(arg) {
-			leftoverArgs = append(leftoverArgs, arg)
-		}
-	}
-	if len(leftoverArgs) > 0 {
-		return "", fmt.Errorf("One or more build-args %v were not consumed, failing build.", leftoverArgs)
+	// Emit a final aux message for the final image
+	if err := emitImageID(b.Aux, state); err != nil {
+		return nil, err
 	}
 
-	if b.image == "" {
-		return "", fmt.Errorf("No image was generated. Is your Dockerfile empty?")
-	}
-
-	for _, rt := range repoAndTags {
-		if err := b.docker.TagImage(rt, b.image); err != nil {
-			return "", err
-		}
-	}
-
-	fmt.Fprintf(b.Stdout, "Successfully built %s\n", shortImgID)
-	return b.image, nil
+	return state, nil
 }
 
-// Cancel cancels an ongoing Dockerfile build.
-func (b *Builder) Cancel() {
-	b.cancelOnce.Do(func() {
-		close(b.cancelled)
-	})
+func addNodesForLabelOption(dockerfile *parser.Node, labels map[string]string) {
+	if len(labels) == 0 {
+		return
+	}
+
+	node := parser.NodeFromLabels(labels)
+	dockerfile.Children = append(dockerfile.Children, node)
 }
 
 // BuildFromConfig builds directly from `changes`, treating it as if it were the contents of a Dockerfile
@@ -295,32 +347,74 @@ func (b *Builder) Cancel() {
 //
 // TODO: Remove?
 func BuildFromConfig(config *container.Config, changes []string) (*container.Config, error) {
-	ast, err := parser.Parse(bytes.NewBufferString(strings.Join(changes, "\n")))
+	if len(changes) == 0 {
+		return config, nil
+	}
+
+	b := newBuilder(context.Background(), builderOptions{
+		Options: &types.ImageBuildOptions{NoCache: true},
+	})
+
+	dockerfile, err := parser.Parse(bytes.NewBufferString(strings.Join(changes, "\n")))
 	if err != nil {
 		return nil, err
 	}
 
+	// TODO @jhowardmsft LCOW support. For now, if LCOW enabled, switch to linux.
+	// Also explicitly set the platform. Ultimately this will be in the builder
+	// options, but we can't do that yet as it would change the API.
+	if dockerfile.Platform == "" {
+		dockerfile.Platform = runtime.GOOS
+	}
+	if dockerfile.Platform == "windows" && system.LCOWSupported() {
+		dockerfile.Platform = "linux"
+	}
+	b.platform = dockerfile.Platform
+
 	// ensure that the commands are valid
-	for _, n := range ast.Children {
+	for _, n := range dockerfile.AST.Children {
 		if !validCommitCommands[n.Value] {
 			return nil, fmt.Errorf("%s is not a valid change command", n.Value)
 		}
 	}
 
-	b, err := NewBuilder(context.Background(), nil, nil, nil, nil)
-	if err != nil {
-		return nil, err
-	}
-	b.runConfig = config
 	b.Stdout = ioutil.Discard
 	b.Stderr = ioutil.Discard
 	b.disableCommit = true
 
+	if err := checkDispatchDockerfile(dockerfile.AST); err != nil {
+		return nil, err
+	}
+	dispatchState := newDispatchState()
+	dispatchState.runConfig = config
+	return dispatchFromDockerfile(b, dockerfile, dispatchState, nil)
+}
+
+func checkDispatchDockerfile(dockerfile *parser.Node) error {
+	for _, n := range dockerfile.Children {
+		if err := checkDispatch(n); err != nil {
+			return errors.Wrapf(err, "Dockerfile parse error line %d", n.StartLine)
+		}
+	}
+	return nil
+}
+
+func dispatchFromDockerfile(b *Builder, result *parser.Result, dispatchState *dispatchState, source builder.Source) (*container.Config, error) {
+	shlex := NewShellLex(result.EscapeToken)
+	ast := result.AST
+	total := len(ast.Children)
+
 	for i, n := range ast.Children {
-		if err := b.dispatch(i, n); err != nil {
+		opts := dispatchOptions{
+			state:   dispatchState,
+			stepMsg: formatStep(i, total),
+			node:    n,
+			shlex:   shlex,
+			source:  source,
+		}
+		if _, err := b.dispatch(opts); err != nil {
 			return nil, err
 		}
 	}
-
-	return b.runConfig, nil
+	return dispatchState.runConfig, nil
 }

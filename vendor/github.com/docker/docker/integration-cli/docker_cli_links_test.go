@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"regexp"
 	"strings"
 
-	"github.com/docker/docker/pkg/integration/checker"
+	"github.com/docker/docker/integration-cli/checker"
+	"github.com/docker/docker/pkg/testutil"
 	"github.com/docker/docker/runconfig"
 	"github.com/go-check/check"
 )
@@ -31,10 +33,33 @@ func (s *DockerSuite) TestLinksInvalidContainerTarget(c *check.C) {
 
 func (s *DockerSuite) TestLinksPingLinkedContainers(c *check.C) {
 	testRequires(c, DaemonIsLinux)
-	dockerCmd(c, "run", "-d", "--name", "container1", "--hostname", "fred", "busybox", "top")
-	dockerCmd(c, "run", "-d", "--name", "container2", "--hostname", "wilma", "busybox", "top")
+	// Test with the three different ways of specifying the default network on Linux
+	testLinkPingOnNetwork(c, "")
+	testLinkPingOnNetwork(c, "default")
+	testLinkPingOnNetwork(c, "bridge")
+}
 
-	runArgs := []string{"run", "--rm", "--link", "container1:alias1", "--link", "container2:alias2", "busybox", "sh", "-c"}
+func testLinkPingOnNetwork(c *check.C, network string) {
+	var postArgs []string
+	if network != "" {
+		postArgs = append(postArgs, []string{"--net", network}...)
+	}
+	postArgs = append(postArgs, []string{"busybox", "top"}...)
+	runArgs1 := append([]string{"run", "-d", "--name", "container1", "--hostname", "fred"}, postArgs...)
+	runArgs2 := append([]string{"run", "-d", "--name", "container2", "--hostname", "wilma"}, postArgs...)
+
+	// Run the two named containers
+	dockerCmd(c, runArgs1...)
+	dockerCmd(c, runArgs2...)
+
+	postArgs = []string{}
+	if network != "" {
+		postArgs = append(postArgs, []string{"--net", network}...)
+	}
+	postArgs = append(postArgs, []string{"busybox", "sh", "-c"}...)
+
+	// Format a run for a container which links to the other two
+	runArgs := append([]string{"run", "--rm", "--link", "container1:alias1", "--link", "container2:alias2"}, postArgs...)
 	pingCmd := "ping -c 1 %s -W 1 && ping -c 1 %s -W 1"
 
 	// test ping by alias, ping by name, and ping by hostname
@@ -45,6 +70,9 @@ func (s *DockerSuite) TestLinksPingLinkedContainers(c *check.C) {
 	// 3. Ping by hostname
 	dockerCmd(c, append(runArgs, fmt.Sprintf(pingCmd, "fred", "wilma"))...)
 
+	// Clean for next round
+	dockerCmd(c, "rm", "-f", "container1")
+	dockerCmd(c, "rm", "-f", "container2")
 }
 
 func (s *DockerSuite) TestLinksPingLinkedContainersAfterRename(c *check.C) {
@@ -71,10 +99,10 @@ func (s *DockerSuite) TestLinksInspectLinksStarted(c *check.C) {
 	dockerCmd(c, "run", "-d", "--name", "testinspectlink", "--link", "container1:alias1", "--link", "container2:alias2", "busybox", "top")
 	links := inspectFieldJSON(c, "testinspectlink", "HostConfig.Links")
 
-	err := unmarshalJSON([]byte(links), &result)
+	err := json.Unmarshal([]byte(links), &result)
 	c.Assert(err, checker.IsNil)
 
-	output := convertSliceOfStringsToMap(result)
+	output := testutil.ConvertSliceOfStringsToMap(result)
 
 	c.Assert(output, checker.DeepEquals, expected)
 }
@@ -90,10 +118,10 @@ func (s *DockerSuite) TestLinksInspectLinksStopped(c *check.C) {
 	dockerCmd(c, "run", "-d", "--name", "testinspectlink", "--link", "container1:alias1", "--link", "container2:alias2", "busybox", "true")
 	links := inspectFieldJSON(c, "testinspectlink", "HostConfig.Links")
 
-	err := unmarshalJSON([]byte(links), &result)
+	err := json.Unmarshal([]byte(links), &result)
 	c.Assert(err, checker.IsNil)
 
-	output := convertSliceOfStringsToMap(result)
+	output := testutil.ConvertSliceOfStringsToMap(result)
 
 	c.Assert(output, checker.DeepEquals, expected)
 }
@@ -118,11 +146,8 @@ func (s *DockerSuite) TestLinksHostsFilesInject(c *check.C) {
 
 	c.Assert(waitRun(idTwo), checker.IsNil)
 
-	contentOne, err := readContainerFileWithExec(idOne, "/etc/hosts")
-	c.Assert(err, checker.IsNil, check.Commentf("contentOne: %s", string(contentOne)))
-
-	contentTwo, err := readContainerFileWithExec(idTwo, "/etc/hosts")
-	c.Assert(err, checker.IsNil, check.Commentf("contentTwo: %s", string(contentTwo)))
+	readContainerFileWithExec(c, idOne, "/etc/hosts")
+	contentTwo := readContainerFileWithExec(c, idTwo, "/etc/hosts")
 	// Host is not present in updated hosts file
 	c.Assert(string(contentTwo), checker.Contains, "onetwo")
 }
@@ -135,8 +160,7 @@ func (s *DockerSuite) TestLinksUpdateOnRestart(c *check.C) {
 	id := strings.TrimSpace(string(out))
 
 	realIP := inspectField(c, "one", "NetworkSettings.Networks.bridge.IPAddress")
-	content, err := readContainerFileWithExec(id, "/etc/hosts")
-	c.Assert(err, checker.IsNil)
+	content := readContainerFileWithExec(c, id, "/etc/hosts")
 
 	getIP := func(hosts []byte, hostname string) string {
 		re := regexp.MustCompile(fmt.Sprintf(`(\S*)\t%s`, regexp.QuoteMeta(hostname)))
@@ -153,8 +177,7 @@ func (s *DockerSuite) TestLinksUpdateOnRestart(c *check.C) {
 	dockerCmd(c, "restart", "one")
 	realIP = inspectField(c, "one", "NetworkSettings.Networks.bridge.IPAddress")
 
-	content, err = readContainerFileWithExec(id, "/etc/hosts")
-	c.Assert(err, checker.IsNil, check.Commentf("content: %s", string(content)))
+	content = readContainerFileWithExec(c, id, "/etc/hosts")
 	ip = getIP(content, "one")
 	c.Assert(ip, checker.Equals, realIP)
 

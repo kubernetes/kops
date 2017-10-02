@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/ijeguRXyVpN9uEUSOI4kjLGOD9E\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/PSZLmkjt_9IWTJ6ZQ-VpYeFyZ2w\"",
  "discoveryVersion": "v1",
  "id": "fitness:v1",
  "name": "fitness",
  "version": "v1",
- "revision": "20161128",
+ "revision": "20170731",
  "title": "Fitness",
  "description": "Stores and accesses user data in the fitness store from apps on any platform.",
  "ownerDomain": "google.com",
@@ -503,7 +503,7 @@
     },
     "dataStreamId": {
      "type": "string",
-     "description": "A unique identifier for the data stream produced by this data source. The identifier includes:\n\n \n- The physical device's manufacturer, model, and serial number (UID). \n- The application's package name or name. Package name is used when the data source was created by an Android application. The developer project number is used when the data source was created by a REST client. \n- The data source's type. \n- The data source's stream name.  Note that not all attributes of the data source are used as part of the stream identifier. In particular, the version of the hardware/the application isn't used. This allows us to preserve the same stream through version updates. This also means that two DataSource objects may represent the same data stream even if they're not equal.\n\nThe exact format of the data stream ID created by an Android application is: type:dataType.name:application.packageName:device.manufacturer:device.model:device.uid:dataStreamName \n\nThe exact format of the data stream ID created by a REST client is: type:dataType.name:developer project number:device.manufacturer:device.model:device.uid:dataStreamName \n\nWhen any of the optional fields that comprise of the data stream ID are blank, they will be omitted from the data stream ID. The minnimum viable data stream ID would be: type:dataType.name:developer project number\n\nFinally, the developer project number is obfuscated when read by any REST or Android client that did not create the data source. Only the data source creator will see the developer project number in clear and normal form.",
+     "description": "A unique identifier for the data stream produced by this data source. The identifier includes:\n\n \n- The physical device's manufacturer, model, and serial number (UID). \n- The application's package name or name. Package name is used when the data source was created by an Android application. The developer project number is used when the data source was created by a REST client. \n- The data source's type. \n- The data source's stream name.  Note that not all attributes of the data source are used as part of the stream identifier. In particular, the version of the hardware/the application isn't used. This allows us to preserve the same stream through version updates. This also means that two DataSource objects may represent the same data stream even if they're not equal.\n\nThe exact format of the data stream ID created by an Android application is: type:dataType.name:application.packageName:device.manufacturer:device.model:device.uid:dataStreamName \n\nThe exact format of the data stream ID created by a REST client is: type:dataType.name:developer project number:device.manufacturer:device.model:device.uid:dataStreamName \n\nWhen any of the optional fields that comprise of the data stream ID are blank, they will be omitted from the data stream ID. The minimum viable data stream ID would be: type:dataType.name:developer project number\n\nFinally, the developer project number is obfuscated when read by any REST or Android client that did not create the data source. Only the data source creator will see the developer project number in clear and normal form.",
      "annotations": {
       "required": [
        "fitness.users.dataSources.update"

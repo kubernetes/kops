@@ -14,7 +14,7 @@ go get -u github.com/kubernetes-incubator/apiserver-builder/cmd/...
 go get -u github.com/kubernetes-incubator/reference-docs/gen-apidocs/...
 
 # Install the code generation commands (apiserver-builder commands invoke these)
-go install k8s.io/kubernetes/cmd/libs/go2idl/openapi-gen
+go install k8s.io/code-generator/cmd/openapi-gen
 ```
 
 ## Update the `pkg/openapi/openapi_generated.go`

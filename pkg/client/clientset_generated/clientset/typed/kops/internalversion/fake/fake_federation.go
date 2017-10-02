@@ -36,40 +36,7 @@ var federationsResource = schema.GroupVersionResource{Group: "kops", Version: ""
 
 var federationsKind = schema.GroupVersionKind{Group: "kops", Version: "", Kind: "Federation"}
 
-func (c *FakeFederations) Create(federation *kops.Federation) (result *kops.Federation, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(federationsResource, c.ns, federation), &kops.Federation{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*kops.Federation), err
-}
-
-func (c *FakeFederations) Update(federation *kops.Federation) (result *kops.Federation, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(federationsResource, c.ns, federation), &kops.Federation{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*kops.Federation), err
-}
-
-func (c *FakeFederations) Delete(name string, options *v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(federationsResource, c.ns, name), &kops.Federation{})
-
-	return err
-}
-
-func (c *FakeFederations) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(federationsResource, c.ns, listOptions)
-
-	_, err := c.Fake.Invokes(action, &kops.FederationList{})
-	return err
-}
-
+// Get takes name of the federation, and returns the corresponding federation object, and an error if there is any.
 func (c *FakeFederations) Get(name string, options v1.GetOptions) (result *kops.Federation, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(federationsResource, c.ns, name), &kops.Federation{})
@@ -80,6 +47,7 @@ func (c *FakeFederations) Get(name string, options v1.GetOptions) (result *kops.
 	return obj.(*kops.Federation), err
 }
 
+// List takes label and field selectors, and returns the list of Federations that match those selectors.
 func (c *FakeFederations) List(opts v1.ListOptions) (result *kops.FederationList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(federationsResource, federationsKind, c.ns, opts), &kops.FederationList{})
@@ -106,6 +74,44 @@ func (c *FakeFederations) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(federationsResource, c.ns, opts))
 
+}
+
+// Create takes the representation of a federation and creates it.  Returns the server's representation of the federation, and an error, if there is any.
+func (c *FakeFederations) Create(federation *kops.Federation) (result *kops.Federation, err error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewCreateAction(federationsResource, c.ns, federation), &kops.Federation{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*kops.Federation), err
+}
+
+// Update takes the representation of a federation and updates it. Returns the server's representation of the federation, and an error, if there is any.
+func (c *FakeFederations) Update(federation *kops.Federation) (result *kops.Federation, err error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewUpdateAction(federationsResource, c.ns, federation), &kops.Federation{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*kops.Federation), err
+}
+
+// Delete takes name of the federation and deletes it. Returns an error if one occurs.
+func (c *FakeFederations) Delete(name string, options *v1.DeleteOptions) error {
+	_, err := c.Fake.
+		Invokes(testing.NewDeleteAction(federationsResource, c.ns, name), &kops.Federation{})
+
+	return err
+}
+
+// DeleteCollection deletes a collection of objects.
+func (c *FakeFederations) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(federationsResource, c.ns, listOptions)
+
+	_, err := c.Fake.Invokes(action, &kops.FederationList{})
+	return err
 }
 
 // Patch applies the patch and returns the patched federation.

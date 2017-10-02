@@ -20,29 +20,30 @@ import (
 	"bytes"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 	"testing"
 	"time"
 
+	"k8s.io/api/core/v1"
+	"k8s.io/api/extensions/v1beta1"
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/kubernetes/federation/apis/federation"
-	fedfake "k8s.io/kubernetes/federation/client/clientset_generated/federation_internalclientset/fake"
+	versionedfake "k8s.io/client-go/kubernetes/fake"
+	federation "k8s.io/kubernetes/federation/apis/federation/v1beta1"
+	fedfake "k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset/fake"
 	"k8s.io/kubernetes/pkg/api"
-	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/pkg/apis/autoscaling"
 	"k8s.io/kubernetes/pkg/apis/extensions"
-	"k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
 	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/apis/storage"
-	versionedfake "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/fake"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	"k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/fake"
 	"k8s.io/kubernetes/pkg/printers"
-	"k8s.io/kubernetes/pkg/util"
+	utilpointer "k8s.io/kubernetes/pkg/util/pointer"
 )
 
 type describeClient struct {
@@ -171,15 +172,46 @@ func TestDescribeService(t *testing.T) {
 			Name:      "bar",
 			Namespace: "foo",
 		},
+		Spec: api.ServiceSpec{
+			Type: api.ServiceTypeLoadBalancer,
+			Ports: []api.ServicePort{{
+				Name:       "port-tcp",
+				Port:       8080,
+				Protocol:   api.ProtocolTCP,
+				TargetPort: intstr.FromInt(9527),
+				NodePort:   31111,
+			}},
+			Selector:              map[string]string{"blah": "heh"},
+			ClusterIP:             "1.2.3.4",
+			LoadBalancerIP:        "5.6.7.8",
+			SessionAffinity:       "None",
+			ExternalTrafficPolicy: "Local",
+			HealthCheckNodePort:   32222,
+		},
 	})
+	expectedElements := []string{
+		"Name", "bar",
+		"Namespace", "foo",
+		"Selector", "blah=heh",
+		"Type", "LoadBalancer",
+		"IP", "1.2.3.4",
+		"Port", "port-tcp", "8080/TCP",
+		"TargetPort", "9527/TCP",
+		"NodePort", "port-tcp", "31111/TCP",
+		"Session Affinity", "None",
+		"External Traffic Policy", "Local",
+		"HealthCheck NodePort", "32222",
+	}
 	c := &describeClient{T: t, Namespace: "foo", Interface: fake}
 	d := ServiceDescriber{c}
 	out, err := d.Describe("foo", "bar", printers.DescriberSettings{ShowEvents: true})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
-	if !strings.Contains(out, "Labels:") || !strings.Contains(out, "bar") {
-		t.Errorf("unexpected out: %s", out)
+	for _, expected := range expectedElements {
+		if !strings.Contains(out, expected) {
+			t.Errorf("expected to find %q in output: %q", expected, out)
+		}
 	}
 }
 
@@ -700,6 +732,14 @@ func TestPersistentVolumeDescriber(t *testing.T) {
 				},
 			},
 		},
+		"fc": {
+			ObjectMeta: metav1.ObjectMeta{Name: "bar"},
+			Spec: api.PersistentVolumeSpec{
+				PersistentVolumeSource: api.PersistentVolumeSource{
+					FC: &api.FCVolumeSource{},
+				},
+			},
+		},
 	}
 
 	for name, pv := range tests {
@@ -723,7 +763,7 @@ func TestDescribeDeployment(t *testing.T) {
 			Namespace: "foo",
 		},
 		Spec: v1beta1.DeploymentSpec{
-			Replicas: util.Int32Ptr(1),
+			Replicas: utilpointer.Int32Ptr(1),
 			Selector: &metav1.LabelSelector{},
 			Template: v1.PodTemplateSpec{
 				Spec: v1.PodSpec{
@@ -734,7 +774,7 @@ func TestDescribeDeployment(t *testing.T) {
 			},
 		},
 	})
-	d := DeploymentDescriber{fake, versionedFake}
+	d := DeploymentDescriber{fake, versionedFake.ExtensionsV1beta1()}
 	out, err := d.Describe("foo", "bar", printers.DescriberSettings{ShowEvents: true})
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
@@ -763,7 +803,7 @@ func TestDescribeCluster(t *testing.T) {
 		},
 		Status: federation.ClusterStatus{
 			Conditions: []federation.ClusterCondition{
-				{Type: federation.ClusterReady, Status: api.ConditionTrue},
+				{Type: federation.ClusterReady, Status: v1.ConditionTrue},
 			},
 		},
 	}
@@ -823,7 +863,10 @@ func TestDescribePodDisruptionBudget(t *testing.T) {
 	if err != nil {
 		t.Errorf("unexpected error: %v", err)
 	}
-	if !strings.Contains(out, "pdb1") {
+	if !strings.Contains(out, "pdb1") ||
+		!strings.Contains(out, "ns1") ||
+		!strings.Contains(out, "22") ||
+		!strings.Contains(out, "5") {
 		t.Errorf("unexpected out: %s", out)
 	}
 }
@@ -1221,10 +1264,10 @@ func TestDescribeEvents(t *testing.T) {
 					Namespace: "foo",
 				},
 				Spec: v1beta1.DeploymentSpec{
-					Replicas: util.Int32Ptr(1),
+					Replicas: utilpointer.Int32Ptr(1),
 					Selector: &metav1.LabelSelector{},
 				},
-			}),
+			}).ExtensionsV1beta1(),
 		},
 		"EndpointsDescriber": &EndpointsDescriber{
 			fake.NewSimpleClientset(&api.Endpoints{
@@ -1454,6 +1497,63 @@ URL:	http://localhost
 	}
 }
 
+func TestDescribePodSecurityPolicy(t *testing.T) {
+	expected := []string{
+		"Name:\\s*mypsp",
+		"Allow Privileged:\\s*false",
+		"Default Add Capabilities:\\s*<none>",
+		"Required Drop Capabilities:\\s*<none>",
+		"Allowed Capabilities:\\s*<none>",
+		"Allowed Volume Types:\\s*<none>",
+		"Allow Host Network:\\s*false",
+		"Allow Host Ports:\\s*<none>",
+		"Allow Host PID:\\s*false",
+		"Allow Host IPC:\\s*false",
+		"Read Only Root Filesystem:\\s*false",
+		"SELinux Context Strategy: RunAsAny",
+		"User:\\s*<none>",
+		"Role:\\s*<none>",
+		"Type:\\s*<none>",
+		"Level:\\s*<none>",
+		"Run As User Strategy: RunAsAny",
+		"FSGroup Strategy: RunAsAny",
+		"Supplemental Groups Strategy: RunAsAny",
+	}
+
+	fake := fake.NewSimpleClientset(&extensions.PodSecurityPolicy{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "mypsp",
+		},
+		Spec: extensions.PodSecurityPolicySpec{
+			SELinux: extensions.SELinuxStrategyOptions{
+				Rule: extensions.SELinuxStrategyRunAsAny,
+			},
+			RunAsUser: extensions.RunAsUserStrategyOptions{
+				Rule: extensions.RunAsUserStrategyRunAsAny,
+			},
+			FSGroup: extensions.FSGroupStrategyOptions{
+				Rule: extensions.FSGroupStrategyRunAsAny,
+			},
+			SupplementalGroups: extensions.SupplementalGroupsStrategyOptions{
+				Rule: extensions.SupplementalGroupsStrategyRunAsAny,
+			},
+		},
+	})
+
+	c := &describeClient{T: t, Namespace: "", Interface: fake}
+	d := PodSecurityPolicyDescriber{c}
+	out, err := d.Describe("", "mypsp", printers.DescriberSettings{})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	for _, item := range expected {
+		if matched, _ := regexp.MatchString(item, out); !matched {
+			t.Errorf("Expected to find %q in: %q", item, out)
+		}
+	}
+}
+
 func TestDescribeResourceQuota(t *testing.T) {
 	fake := fake.NewSimpleClientset(&api.ResourceQuota{
 		ObjectMeta: metav1.ObjectMeta{
@@ -1490,5 +1590,100 @@ func TestDescribeResourceQuota(t *testing.T) {
 		if !strings.Contains(out, expected) {
 			t.Errorf("expected to find %q in output: %q", expected, out)
 		}
+	}
+}
+
+// boolPtr returns a pointer to a bool
+func boolPtr(b bool) *bool {
+	o := b
+	return &o
+}
+
+func TestControllerRef(t *testing.T) {
+	f := fake.NewSimpleClientset(
+		&api.ReplicationController{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "bar",
+				Namespace: "foo",
+				UID:       "123456",
+			},
+			TypeMeta: metav1.TypeMeta{
+				Kind: "ReplicationController",
+			},
+			Spec: api.ReplicationControllerSpec{
+				Replicas: 1,
+				Selector: map[string]string{"abc": "xyz"},
+				Template: &api.PodTemplateSpec{
+					Spec: api.PodSpec{
+						Containers: []api.Container{
+							{Image: "mytest-image:latest"},
+						},
+					},
+				},
+			},
+		},
+		&api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:            "barpod",
+				Namespace:       "foo",
+				Labels:          map[string]string{"abc": "xyz"},
+				OwnerReferences: []metav1.OwnerReference{{Name: "bar", UID: "123456", Controller: boolPtr(true)}},
+			},
+			TypeMeta: metav1.TypeMeta{
+				Kind: "Pod",
+			},
+			Spec: api.PodSpec{
+				Containers: []api.Container{
+					{Image: "mytest-image:latest"},
+				},
+			},
+			Status: api.PodStatus{
+				Phase: api.PodRunning,
+			},
+		},
+		&api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "orphan",
+				Namespace: "foo",
+				Labels:    map[string]string{"abc": "xyz"},
+			},
+			TypeMeta: metav1.TypeMeta{
+				Kind: "Pod",
+			},
+			Spec: api.PodSpec{
+				Containers: []api.Container{
+					{Image: "mytest-image:latest"},
+				},
+			},
+			Status: api.PodStatus{
+				Phase: api.PodRunning,
+			},
+		},
+		&api.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:            "buzpod",
+				Namespace:       "foo",
+				Labels:          map[string]string{"abc": "xyz"},
+				OwnerReferences: []metav1.OwnerReference{{Name: "buz", UID: "654321", Controller: boolPtr(true)}},
+			},
+			TypeMeta: metav1.TypeMeta{
+				Kind: "Pod",
+			},
+			Spec: api.PodSpec{
+				Containers: []api.Container{
+					{Image: "mytest-image:latest"},
+				},
+			},
+			Status: api.PodStatus{
+				Phase: api.PodRunning,
+			},
+		})
+	d := ReplicationControllerDescriber{f}
+	out, err := d.Describe("foo", "bar", printers.DescriberSettings{ShowEvents: false})
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if !strings.Contains(out, "1 Running") {
+		t.Errorf("unexpected out: %s", out)
 	}
 }

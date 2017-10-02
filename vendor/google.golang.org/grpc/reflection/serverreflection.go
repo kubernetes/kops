@@ -119,11 +119,11 @@ func (s *serverReflectionServer) decodeFileDesc(enc []byte) (*dpb.FileDescriptor
 func decompress(b []byte) ([]byte, error) {
 	r, err := gzip.NewReader(bytes.NewReader(b))
 	if err != nil {
-		return nil, fmt.Errorf("bad gzipped descriptor: %v\n", err)
+		return nil, fmt.Errorf("bad gzipped descriptor: %v", err)
 	}
 	out, err := ioutil.ReadAll(r)
 	if err != nil {
-		return nil, fmt.Errorf("bad gzipped descriptor: %v\n", err)
+		return nil, fmt.Errorf("bad gzipped descriptor: %v", err)
 	}
 	return out, nil
 }
@@ -156,9 +156,7 @@ func (s *serverReflectionServer) fileDescContainingExtension(st reflect.Type, ex
 		return nil, fmt.Errorf("failed to find registered extension for extension number %v", ext)
 	}
 
-	extT := reflect.TypeOf(extDesc.ExtensionType).Elem()
-
-	return s.fileDescForType(extT)
+	return s.decodeFileDesc(proto.FileDescriptor(extDesc.Filename))
 }
 
 func (s *serverReflectionServer) allExtensionNumbersForType(st reflect.Type) ([]int32, error) {

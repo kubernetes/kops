@@ -552,6 +552,10 @@ type IdentitytoolkitRelyingpartyGetAccountInfoRequest struct {
 	// LocalId: The list of local ID's of the users to inquiry.
 	LocalId []string `json:"localId,omitempty"`
 
+	// PhoneNumber: Privileged caller can query users by specified phone
+	// number.
+	PhoneNumber []string `json:"phoneNumber,omitempty"`
+
 	// ForceSendFields is a list of field names (e.g.
 	// "DelegatedProjectNumber") to unconditionally include in API requests.
 	// By default, fields with empty values are omitted from API requests.
@@ -732,6 +736,10 @@ type IdentitytoolkitRelyingpartySetAccountInfoRequest struct {
 
 	// Password: The new password of the user.
 	Password string `json:"password,omitempty"`
+
+	// PhoneNumber: Privileged caller can update user with specified phone
+	// number.
+	PhoneNumber string `json:"phoneNumber,omitempty"`
 
 	// PhotoUrl: The photo url of the user.
 	PhotoUrl string `json:"photoUrl,omitempty"`
@@ -966,6 +974,10 @@ type IdentitytoolkitRelyingpartySignupNewUserRequest struct {
 
 	// Password: The new password of the user.
 	Password string `json:"password,omitempty"`
+
+	// PhoneNumber: Privileged caller can create user with specified phone
+	// number.
+	PhoneNumber string `json:"phoneNumber,omitempty"`
 
 	// PhotoUrl: The photo url of the user.
 	PhotoUrl string `json:"photoUrl,omitempty"`

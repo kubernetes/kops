@@ -20,7 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// +genclient=true
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Cluster is a specific cluster wrapper
 type Cluster struct {
@@ -30,6 +31,8 @@ type Cluster struct {
 	// Spec defines the behavior of a Cluster.
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ClusterList is a list of clusters
 type ClusterList struct {

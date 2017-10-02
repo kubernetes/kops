@@ -28,7 +28,8 @@ const LabelClusterName = "kops.k8s.io/cluster"
 // Deprecated - use the new labels & taints node-role.kubernetes.io/master and node-role.kubernetes.io/node
 const TaintNoScheduleMaster15 = "dedicated=master:NoSchedule"
 
-// +genclient=true
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
@@ -37,6 +38,8 @@ type InstanceGroup struct {
 
 	Spec InstanceGroupSpec `json:"spec,omitempty"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 type InstanceGroupList struct {
 	metav1.TypeMeta `json:",inline"`

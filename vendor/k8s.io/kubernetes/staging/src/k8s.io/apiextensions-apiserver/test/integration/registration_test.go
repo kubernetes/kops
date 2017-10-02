@@ -39,7 +39,7 @@ import (
 	"k8s.io/client-go/dynamic"
 )
 
-func instantiateCustomResource(t *testing.T, instanceToCreate *unstructured.Unstructured, client *dynamic.ResourceClient, definition *apiextensionsv1beta1.CustomResourceDefinition) (*unstructured.Unstructured, error) {
+func instantiateCustomResource(t *testing.T, instanceToCreate *unstructured.Unstructured, client dynamic.ResourceInterface, definition *apiextensionsv1beta1.CustomResourceDefinition) (*unstructured.Unstructured, error) {
 	createdInstance, err := client.Create(instanceToCreate)
 	if err != nil {
 		t.Logf("%#v", createdInstance)
@@ -66,7 +66,7 @@ func instantiateCustomResource(t *testing.T, instanceToCreate *unstructured.Unst
 	return createdInstance, nil
 }
 
-func NewNamespacedCustomResourceClient(ns string, client *dynamic.Client, definition *apiextensionsv1beta1.CustomResourceDefinition) *dynamic.ResourceClient {
+func NewNamespacedCustomResourceClient(ns string, client dynamic.Interface, definition *apiextensionsv1beta1.CustomResourceDefinition) dynamic.ResourceInterface {
 	return client.Resource(&metav1.APIResource{
 		Name:       definition.Spec.Names.Plural,
 		Namespaced: definition.Spec.Scope == apiextensionsv1beta1.NamespaceScoped,
@@ -389,7 +389,7 @@ func TestEtcdStorage(t *testing.T) {
 				Metadata: Metadata{
 					Name:      "noxus.mygroup.example.com",
 					Namespace: "",
-					SelfLink:  "/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/noxus.mygroup.example.com",
+					SelfLink:  "",
 				},
 			},
 		},
@@ -414,7 +414,7 @@ func TestEtcdStorage(t *testing.T) {
 				Metadata: Metadata{
 					Name:      "curlets.mygroup.example.com",
 					Namespace: "",
-					SelfLink:  "/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/curlets.mygroup.example.com",
+					SelfLink:  "",
 				},
 			},
 		},
@@ -457,7 +457,7 @@ func TestEtcdStorage(t *testing.T) {
 }
 
 func getPrefixFromConfig(t *testing.T, config *extensionsapiserver.Config) string {
-	extensionsOptionsGetter, ok := config.CRDRESTOptionsGetter.(extensionsapiserver.CRDRESTOptionsGetter)
+	extensionsOptionsGetter, ok := config.ExtraConfig.CRDRESTOptionsGetter.(extensionsapiserver.CRDRESTOptionsGetter)
 	if !ok {
 		t.Fatal("can't obtain etcd prefix: unable to cast config.CRDRESTOptionsGetter to extensionsapiserver.CRDRESTOptionsGetter")
 	}

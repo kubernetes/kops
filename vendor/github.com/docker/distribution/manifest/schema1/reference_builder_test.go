@@ -4,10 +4,10 @@ import (
 	"testing"
 
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/libtrust"
+	"github.com/opencontainers/go-digest"
 )
 
 func makeSignedManifest(t *testing.T, pk libtrust.PrivateKey, refs []Reference) *SignedManifest {
@@ -55,7 +55,7 @@ func TestReferenceBuilder(t *testing.T) {
 
 	handCrafted := makeSignedManifest(t, pk, []Reference{r1, r2})
 
-	ref, err := reference.ParseNamed(handCrafted.Manifest.Name)
+	ref, err := reference.WithName(handCrafted.Manifest.Name)
 	if err != nil {
 		t.Fatalf("could not parse reference: %v", err)
 	}

@@ -25,6 +25,7 @@ import (
 	"testing"
 	"time"
 
+	apiv1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -34,7 +35,6 @@ import (
 	"k8s.io/kubernetes/federation/pkg/federation-controller/util"
 	finalizersutil "k8s.io/kubernetes/federation/pkg/federation-controller/util/finalizers"
 	"k8s.io/kubernetes/pkg/api"
-	apiv1 "k8s.io/kubernetes/pkg/api/v1"
 
 	"github.com/golang/glog"
 	"github.com/stretchr/testify/assert"
@@ -445,4 +445,10 @@ func AssertHasFinalizer(t *testing.T, obj runtime.Object, finalizer string) {
 	hasFinalizer, err := finalizersutil.HasFinalizer(obj, finalizer)
 	require.Nil(t, err)
 	assert.True(t, hasFinalizer)
+}
+
+func NewInt32(val int32) *int32 {
+	p := new(int32)
+	*p = val
+	return p
 }

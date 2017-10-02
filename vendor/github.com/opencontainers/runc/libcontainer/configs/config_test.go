@@ -123,7 +123,7 @@ func TestFuncHookRun(t *testing.T) {
 		Version: "1",
 		ID:      "1",
 		Pid:     1,
-		Root:    "root",
+		Bundle:  "/bundle",
 	}
 
 	fHook := configs.NewFunctionHook(func(s configs.HookState) error {
@@ -141,7 +141,7 @@ func TestCommandHookRun(t *testing.T) {
 		Version: "1",
 		ID:      "1",
 		Pid:     1,
-		Root:    "root",
+		Bundle:  "/bundle",
 	}
 	timeout := time.Second
 
@@ -164,7 +164,7 @@ func TestCommandHookRunTimeout(t *testing.T) {
 		Version: "1",
 		ID:      "1",
 		Pid:     1,
-		Root:    "root",
+		Bundle:  "/bundle",
 	}
 	timeout := (10 * time.Millisecond)
 

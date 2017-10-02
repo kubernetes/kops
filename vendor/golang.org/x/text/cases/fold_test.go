@@ -10,15 +10,16 @@ import (
 	"golang.org/x/text/internal/testtext"
 )
 
+var foldTestCases = []string{
+	"βß\u13f8",        // "βssᏰ"
+	"ab\u13fc\uab7aꭰ", // abᏴᎪᎠ
+	"aﬃﬄaﬆ",           // affifflast
+	"Iİiı\u0345",      // ii̇iıι
+	"µµΜΜςσΣΣ",        // μμμμσσσσ
+}
+
 func TestFold(t *testing.T) {
-	testCases := []string{
-		"βß\u13f8",        // "βssᏰ"
-		"ab\u13fc\uab7aꭰ", // abᏴᎪᎠ
-		"aﬃﬄaﬆ",           // affifflast
-		"Iİiı\u0345",      // ii̇iıι
-		"µµΜΜςσΣΣ",        // μμμμσσσσ
-	}
-	for _, tc := range testCases {
+	for _, tc := range foldTestCases {
 		testEntry := func(name string, c Caser, m func(r rune) string) {
 			want := ""
 			for _, r := range tc {
@@ -48,6 +49,3 @@ func TestFold(t *testing.T) {
 		// })
 	}
 }
-
-func BenchmarkFullFold(b *testing.B)      { benchTransformer(b, Fold(), txtNonASCII) }
-func BenchmarkFullFoldASCII(b *testing.B) { benchTransformer(b, Fold(), txtASCII) }
