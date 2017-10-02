@@ -423,7 +423,7 @@ utils-dist:
 # See docs/development/dependencies.md
 .PHONY: copydeps
 copydeps:
-	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
+	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git --exclude BUILD --exclude BUILD.bazel
 	ln -sf kubernetes/staging/src/k8s.io/api vendor/k8s.io/api
 	ln -sf kubernetes/staging/src/k8s.io/apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
 	ln -sf kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
