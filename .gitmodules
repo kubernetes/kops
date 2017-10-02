@@ -358,3 +358,30 @@
 [submodule "_vendor/github.com/gregjones/httpcache"]
 	path = _vendor/github.com/gregjones/httpcache
 	url = https://github.com/gregjones/httpcache.git
+[submodule "_vendor/github.com/opencontainers/go-digest"]
+	path = _vendor/github.com/opencontainers/go-digest
+	url = https://github.com/opencontainers/go-digest.git
+[submodule "_vendor/k8s.io/kube-openapi"]
+	path = _vendor/k8s.io/kube-openapi
+	url = https://github.com/kubernetes/kube-openapi.git
+[submodule "_vendor/github.com/opencontainers/image-spec"]
+	path = _vendor/github.com/opencontainers/image-spec
+	url = https://github.com/opencontainers/image-spec.git
+[submodule "_vendor/github.com/google/btree"]
+	path = _vendor/github.com/google/btree
+	url = https://github.com/google/btree.git
+[submodule "_vendor/github.com/NYTimes/gziphandler"]
+	path = _vendor/github.com/NYTimes/gziphandler
+	url = https://github.com/NYTimes/gziphandler.git
+[submodule "_vendor/google.golang.org/genproto"]
+	path = _vendor/google.golang.org/genproto
+	url = https://github.com/google/go-genproto.git
+[submodule "_vendor/github.com/kubernetes-incubator/apiserver-builder"]
+	path = _vendor/github.com/kubernetes-incubator/apiserver-builder
+	url = https://github.com/kubernetes-incubator/apiserver-builder.git
+[submodule "_vendor/github.com/kubernetes-incubator/reference-docs"]
+	path = _vendor/github.com/kubernetes-incubator/reference-docs
+	url = https://github.com/kubernetes-incubator/reference-docs
+[submodule "_vendor/github.com/markbates/inflect"]
+	path = _vendor/github.com/markbates/inflect
+	url = https://github.com/markbates/inflect
