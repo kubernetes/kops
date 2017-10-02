@@ -6,14 +6,14 @@ import (
 	"encoding/json"
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/opencontainers/go-digest"
 )
 
 // manifestListHandler is a ManifestHandler that covers schema2 manifest lists.
 type manifestListHandler struct {
-	repository *repository
-	blobStore  *linkedBlobStore
+	repository distribution.Repository
+	blobStore  distribution.BlobStore
 	ctx        context.Context
 }
 
@@ -53,11 +53,6 @@ func (ms *manifestListHandler) Put(ctx context.Context, manifestList distributio
 		return "", err
 	}
 
-	// Link the revision into the repository.
-	if err := ms.blobStore.linkBlob(ctx, revision); err != nil {
-		return "", err
-	}
-
 	return revision.Digest, nil
 }
 
@@ -72,6 +67,7 @@ func (ms *manifestListHandler) verifyManifest(ctx context.Context, mnfst manifes
 		// This manifest service is different from the blob service
 		// returned by Blob. It uses a linked blob store to ensure that
 		// only manifests are accessible.
+
 		manifestService, err := ms.repository.Manifests(ctx)
 		if err != nil {
 			return err

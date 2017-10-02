@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // NOTE(stevvooe): This file contains definitions for several utility sinks.
@@ -151,7 +151,7 @@ func (eq *eventQueue) Write(events ...Event) error {
 	return nil
 }
 
-// Close shutsdown the event queue, flushing
+// Close shuts down the event queue, flushing
 func (eq *eventQueue) Close() error {
 	eq.mu.Lock()
 	defer eq.mu.Unlock()
@@ -208,6 +208,44 @@ func (eq *eventQueue) next() []Event {
 	eq.events.Remove(front)
 
 	return block
+}
+
+// ignoredMediaTypesSink discards events with ignored target media types and
+// passes the rest along.
+type ignoredMediaTypesSink struct {
+	Sink
+	ignored map[string]bool
+}
+
+func newIgnoredMediaTypesSink(sink Sink, ignored []string) Sink {
+	if len(ignored) == 0 {
+		return sink
+	}
+
+	ignoredMap := make(map[string]bool)
+	for _, mediaType := range ignored {
+		ignoredMap[mediaType] = true
+	}
+
+	return &ignoredMediaTypesSink{
+		Sink:    sink,
+		ignored: ignoredMap,
+	}
+}
+
+// Write discards events with ignored target media types and passes the rest
+// along.
+func (imts *ignoredMediaTypesSink) Write(events ...Event) error {
+	var kept []Event
+	for _, e := range events {
+		if !imts.ignored[e.Target.MediaType] {
+			kept = append(kept, e)
+		}
+	}
+	if len(kept) == 0 {
+		return nil
+	}
+	return imts.Sink.Write(kept...)
 }
 
 // retryingSink retries the write until success or an ErrSinkClosed is

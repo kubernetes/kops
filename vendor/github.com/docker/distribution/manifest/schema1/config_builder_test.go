@@ -9,9 +9,9 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/libtrust"
+	"github.com/opencontainers/go-digest"
 )
 
 type mockBlobService struct {
@@ -163,6 +163,7 @@ func TestConfigBuilder(t *testing.T) {
             "empty_layer": true
         },
         {
+            "author": "Alyssa P. Hacker \u003calyspdev@example.com\u003e",
             "created": "2015-11-04T23:06:32.083868454Z",
             "created_by": "/bin/sh -c dd if=/dev/zero of=/file bs=1024 count=1024"
         },
@@ -196,9 +197,13 @@ func TestConfigBuilder(t *testing.T) {
 
 	bs := &mockBlobService{descriptors: make(map[digest.Digest]distribution.Descriptor)}
 
-	ref, err := reference.ParseNamed("testrepo:testtag")
+	ref, err := reference.WithName("testrepo")
 	if err != nil {
 		t.Fatalf("could not parse reference: %v", err)
+	}
+	ref, err = reference.WithTag(ref, "testtag")
+	if err != nil {
+		t.Fatalf("could not add tag: %v", err)
 	}
 
 	builder := NewConfigManifestBuilder(bs, pk, ref, []byte(imgJSON))
@@ -252,8 +257,8 @@ func TestConfigBuilder(t *testing.T) {
 	}
 
 	expectedV1Compatibility := []string{
-		`{"architecture":"amd64","config":{"AttachStderr":false,"AttachStdin":false,"AttachStdout":false,"Cmd":["/bin/sh","-c","echo hi"],"Domainname":"","Entrypoint":null,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","derived=true","asdf=true"],"Hostname":"23304fc829f9","Image":"sha256:4ab15c48b859c2920dd5224f92aabcd39a52794c5b3cf088fb3bbb438756c246","Labels":{},"OnBuild":[],"OpenStdin":false,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"container":"e91032eb0403a61bfe085ff5a5a48e3659e5a6deae9f4d678daa2ae399d5a001","container_config":{"AttachStderr":false,"AttachStdin":false,"AttachStdout":false,"Cmd":["/bin/sh","-c","#(nop) CMD [\"/bin/sh\" \"-c\" \"echo hi\"]"],"Domainname":"","Entrypoint":null,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","derived=true","asdf=true"],"Hostname":"23304fc829f9","Image":"sha256:4ab15c48b859c2920dd5224f92aabcd39a52794c5b3cf088fb3bbb438756c246","Labels":{},"OnBuild":[],"OpenStdin":false,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"created":"2015-11-04T23:06:32.365666163Z","docker_version":"1.9.0-dev","id":"0850bfdeb7b060b1004a09099846c2f023a3f2ecbf33f56b4774384b00ce0323","os":"linux","parent":"74cf9c92699240efdba1903c2748ef57105d5bedc588084c4e88f3bb1c3ef0b0","throwaway":true}`,
-		`{"id":"74cf9c92699240efdba1903c2748ef57105d5bedc588084c4e88f3bb1c3ef0b0","parent":"178be37afc7c49e951abd75525dbe0871b62ad49402f037164ee6314f754599d","created":"2015-11-04T23:06:32.083868454Z","container_config":{"Cmd":["/bin/sh -c dd if=/dev/zero of=/file bs=1024 count=1024"]}}`,
+		`{"architecture":"amd64","config":{"AttachStderr":false,"AttachStdin":false,"AttachStdout":false,"Cmd":["/bin/sh","-c","echo hi"],"Domainname":"","Entrypoint":null,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","derived=true","asdf=true"],"Hostname":"23304fc829f9","Image":"sha256:4ab15c48b859c2920dd5224f92aabcd39a52794c5b3cf088fb3bbb438756c246","Labels":{},"OnBuild":[],"OpenStdin":false,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"container":"e91032eb0403a61bfe085ff5a5a48e3659e5a6deae9f4d678daa2ae399d5a001","container_config":{"AttachStderr":false,"AttachStdin":false,"AttachStdout":false,"Cmd":["/bin/sh","-c","#(nop) CMD [\"/bin/sh\" \"-c\" \"echo hi\"]"],"Domainname":"","Entrypoint":null,"Env":["PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","derived=true","asdf=true"],"Hostname":"23304fc829f9","Image":"sha256:4ab15c48b859c2920dd5224f92aabcd39a52794c5b3cf088fb3bbb438756c246","Labels":{},"OnBuild":[],"OpenStdin":false,"StdinOnce":false,"Tty":false,"User":"","Volumes":null,"WorkingDir":""},"created":"2015-11-04T23:06:32.365666163Z","docker_version":"1.9.0-dev","id":"69e5c1bfadad697fdb6db59f6326648fa119e0c031a0eda33b8cfadcab54ba7f","os":"linux","parent":"74cf9c92699240efdba1903c2748ef57105d5bedc588084c4e88f3bb1c3ef0b0","throwaway":true}`,
+		`{"id":"74cf9c92699240efdba1903c2748ef57105d5bedc588084c4e88f3bb1c3ef0b0","parent":"178be37afc7c49e951abd75525dbe0871b62ad49402f037164ee6314f754599d","created":"2015-11-04T23:06:32.083868454Z","container_config":{"Cmd":["/bin/sh -c dd if=/dev/zero of=/file bs=1024 count=1024"]},"author":"Alyssa P. Hacker \u003calyspdev@example.com\u003e"}`,
 		`{"id":"178be37afc7c49e951abd75525dbe0871b62ad49402f037164ee6314f754599d","parent":"b449305a55a283538c4574856a8b701f2a3d5ec08ef8aec47f385f20339a4866","created":"2015-11-04T23:06:31.192097572Z","container_config":{"Cmd":["/bin/sh -c #(nop) ENV asdf=true"]},"throwaway":true}`,
 		`{"id":"b449305a55a283538c4574856a8b701f2a3d5ec08ef8aec47f385f20339a4866","parent":"9e3447ca24cb96d86ebd5960cb34d1299b07e0a0e03801d90b9969a2c187dd6e","created":"2015-11-04T23:06:30.934316144Z","container_config":{"Cmd":["/bin/sh -c #(nop) ENV derived=true"]},"throwaway":true}`,
 		`{"id":"9e3447ca24cb96d86ebd5960cb34d1299b07e0a0e03801d90b9969a2c187dd6e","parent":"3690474eb5b4b26fdfbd89c6e159e8cc376ca76ef48032a30fa6aafd56337880","created":"2015-10-31T22:22:55.613815829Z","container_config":{"Cmd":["/bin/sh -c #(nop) CMD [\"sh\"]"]}}`,

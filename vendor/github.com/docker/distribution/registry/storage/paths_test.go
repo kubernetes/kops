@@ -3,7 +3,7 @@ package storage
 import (
 	"testing"
 
-	"github.com/docker/distribution/digest"
+	"github.com/opencontainers/go-digest"
 )
 
 func TestPathMapper(t *testing.T) {
@@ -25,21 +25,6 @@ func TestPathMapper(t *testing.T) {
 				revision: "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
 			},
 			expected: "/docker/registry/v2/repositories/foo/bar/_manifests/revisions/sha256/abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789/link",
-		},
-		{
-			spec: manifestSignatureLinkPathSpec{
-				name:      "foo/bar",
-				revision:  "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
-				signature: "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
-			},
-			expected: "/docker/registry/v2/repositories/foo/bar/_manifests/revisions/sha256/abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789/signatures/sha256/abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789/link",
-		},
-		{
-			spec: manifestSignaturesPathSpec{
-				name:     "foo/bar",
-				revision: "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
-			},
-			expected: "/docker/registry/v2/repositories/foo/bar/_manifests/revisions/sha256/abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789/signatures",
 		},
 		{
 			spec: manifestTagsPathSpec{
@@ -113,7 +98,7 @@ func TestPathMapper(t *testing.T) {
 	// Add a few test cases to ensure we cover some errors
 
 	// Specify a path that requires a revision and get a digest validation error.
-	badpath, err := pathFor(manifestSignaturesPathSpec{
+	badpath, err := pathFor(manifestRevisionPathSpec{
 		name: "foo/bar",
 	})
 

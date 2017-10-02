@@ -1,0 +1,5 @@
+note: Container Config to run nginx (must be embedded in a PodSpec to run).
+sample: |
+  name: nginx
+  # Run the nginx:1.10 image
+  image: nginx:1.10

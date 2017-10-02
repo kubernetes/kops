@@ -7,11 +7,16 @@
     },
     "host": "library-example.googleapis.com",
     
-    "x-samplecompanyone-book" : {"code": 123, "message": 999},
-    "x-samplecompanyone-shelve" : {"foo1": 123, "bar": 999},
+    "x-sampleone-book" : {"code": 123, "message": 999},
+    "x-sampleone-shelf" : {"foo1": 123, "bar": 999},
+
+    "x-sampleone-mysimplestring" : "hello world",
+    "x-sampleone-mysimpleint64" : 12345,
+    "x-sampleone-mysimplenumber" : 111.222,
+    "x-sampleone-mysimpleboolean" : true,
     
-    "x-samplecompanytwo-book" : {"code": 123, "message": 999},
-    "x-samplecompanytwo-shelve" : {"foo1": 123, "bar": 999},
+    "x-sampletwo-book" : {"code": 123, "message": 999},
+    "x-sampletwo-shelf" : {"foo1": 123, "bar": 999},
 
     "x-unhandled" : {"code": 123, "message": 999},
 

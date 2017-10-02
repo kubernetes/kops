@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-//go:generate go run gen.go gen_common.go gen_plural.go
+//go:generate go run gen.go gen_common.go
 
 // Package number contains tools and data for formatting numbers.
 package number
@@ -121,6 +121,15 @@ func (n Info) WriteDigit(dst []byte, asciiDigit rune) int {
 	return int(n.system.digitSize)
 }
 
+// AppendDigit appends the UTF-8 sequence for n corresponding to the given digit
+// to dst and reports the number of bytes written. dst must be large enough to
+// hold the rune (can be up to utf8.UTFMax bytes).
+func (n Info) AppendDigit(dst []byte, digit byte) []byte {
+	dst = append(dst, n.system.zero[:n.system.digitSize]...)
+	dst[len(dst)-1] += digit
+	return dst
+}
+
 // Digit returns the digit for the numbering system for the corresponding ASCII
 // value. For example, ni.Digit('3') could return '三'. Note that the argument
 // is the rune constant '3', which equals 51, not the integer constant 3.
@@ -136,7 +145,7 @@ func (n Info) Symbol(t SymbolType) string {
 	return symData.Elem(int(symIndex[n.symIndex][t]))
 }
 
-func formatForLang(t language.Tag, index []byte) *Format {
+func formatForLang(t language.Tag, index []byte) *Pattern {
 	for ; ; t = t.Parent() {
 		if x, ok := language.CompactIndex(t); ok {
 			return &formats[index[x]]

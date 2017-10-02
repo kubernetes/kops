@@ -5,8 +5,8 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/reference"
+	"github.com/opencontainers/go-digest"
 )
 
 // ManifestListener describes a set of methods for listening to events related to manifests.
@@ -78,7 +78,7 @@ func (msl *manifestServiceListener) Delete(ctx context.Context, dgst digest.Dige
 }
 
 func (msl *manifestServiceListener) Get(ctx context.Context, dgst digest.Digest, options ...distribution.ManifestServiceOption) (distribution.Manifest, error) {
-	sm, err := msl.ManifestService.Get(ctx, dgst)
+	sm, err := msl.ManifestService.Get(ctx, dgst, options...)
 	if err == nil {
 		if err := msl.parent.listener.ManifestPulled(msl.parent.Repository.Named(), sm, options...); err != nil {
 			context.GetLogger(ctx).Errorf("error dispatching manifest pull to listener: %v", err)

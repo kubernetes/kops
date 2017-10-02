@@ -29,7 +29,8 @@ const (
 	SecretTypeSecret  KeysetType = "Secret"
 )
 
-// +genclient=true
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Keyset is a set of system keypairs, or other secret material.
 // It is a set to support credential rotation etc.
@@ -39,6 +40,8 @@ type Keyset struct {
 
 	Spec KeysetSpec `json:"spec,omitempty"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // KeysetList is a list of Keysets
 type KeysetList struct {

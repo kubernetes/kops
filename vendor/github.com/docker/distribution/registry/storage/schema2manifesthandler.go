@@ -1,20 +1,30 @@
 package storage
 
 import (
-	"fmt"
-
 	"encoding/json"
+	"errors"
+	"fmt"
+	"net/url"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
+	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/opencontainers/go-digest"
+)
+
+var (
+	errUnexpectedURL = errors.New("unexpected URL on layer")
+	errMissingURL    = errors.New("missing URL on layer")
+	errInvalidURL    = errors.New("invalid URL on layer")
 )
 
 //schema2ManifestHandler is a ManifestHandler that covers schema2 manifests.
 type schema2ManifestHandler struct {
-	repository *repository
-	blobStore  *linkedBlobStore
-	ctx        context.Context
+	repository   distribution.Repository
+	blobStore    distribution.BlobStore
+	ctx          context.Context
+	manifestURLs manifestURLs
 }
 
 var _ ManifestHandler = &schema2ManifestHandler{}
@@ -53,11 +63,6 @@ func (ms *schema2ManifestHandler) Put(ctx context.Context, manifest distribution
 		return "", err
 	}
 
-	// Link the revision into the repository.
-	if err := ms.blobStore.linkBlob(ctx, revision); err != nil {
-		return "", err
-	}
-
 	return revision.Digest, nil
 }
 
@@ -67,30 +72,62 @@ func (ms *schema2ManifestHandler) Put(ctx context.Context, manifest distribution
 func (ms *schema2ManifestHandler) verifyManifest(ctx context.Context, mnfst schema2.DeserializedManifest, skipDependencyVerification bool) error {
 	var errs distribution.ErrManifestVerification
 
-	if !skipDependencyVerification {
-		target := mnfst.Target()
-		_, err := ms.repository.Blobs(ctx).Stat(ctx, target.Digest)
+	if skipDependencyVerification {
+		return nil
+	}
+
+	manifestService, err := ms.repository.Manifests(ctx)
+	if err != nil {
+		return err
+	}
+
+	blobsService := ms.repository.Blobs(ctx)
+
+	for _, descriptor := range mnfst.References() {
+		var err error
+
+		switch descriptor.MediaType {
+		case schema2.MediaTypeForeignLayer:
+			// Clients download this layer from an external URL, so do not check for
+			// its presense.
+			if len(descriptor.URLs) == 0 {
+				err = errMissingURL
+			}
+			allow := ms.manifestURLs.allow
+			deny := ms.manifestURLs.deny
+			for _, u := range descriptor.URLs {
+				var pu *url.URL
+				pu, err = url.Parse(u)
+				if err != nil || (pu.Scheme != "http" && pu.Scheme != "https") || pu.Fragment != "" || (allow != nil && !allow.MatchString(u)) || (deny != nil && deny.MatchString(u)) {
+					err = errInvalidURL
+					break
+				}
+			}
+		case schema2.MediaTypeManifest, schema1.MediaTypeManifest:
+			var exists bool
+			exists, err = manifestService.Exists(ctx, descriptor.Digest)
+			if err != nil || !exists {
+				err = distribution.ErrBlobUnknown // just coerce to unknown.
+			}
+
+			fallthrough // double check the blob store.
+		default:
+			// forward all else to blob storage
+			if len(descriptor.URLs) == 0 {
+				_, err = blobsService.Stat(ctx, descriptor.Digest)
+			}
+		}
+
 		if err != nil {
 			if err != distribution.ErrBlobUnknown {
 				errs = append(errs, err)
 			}
 
 			// On error here, we always append unknown blob errors.
-			errs = append(errs, distribution.ErrManifestBlobUnknown{Digest: target.Digest})
-		}
-
-		for _, fsLayer := range mnfst.References() {
-			_, err := ms.repository.Blobs(ctx).Stat(ctx, fsLayer.Digest)
-			if err != nil {
-				if err != distribution.ErrBlobUnknown {
-					errs = append(errs, err)
-				}
-
-				// On error here, we always append unknown blob errors.
-				errs = append(errs, distribution.ErrManifestBlobUnknown{Digest: fsLayer.Digest})
-			}
+			errs = append(errs, distribution.ErrManifestBlobUnknown{Digest: descriptor.Digest})
 		}
 	}
+
 	if len(errs) != 0 {
 		return errs
 	}

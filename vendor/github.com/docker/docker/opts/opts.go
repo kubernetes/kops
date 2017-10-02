@@ -3,8 +3,14 @@ package opts
 import (
 	"fmt"
 	"net"
+	"path"
 	"regexp"
 	"strings"
+
+	"github.com/docker/docker/api/types/swarm"
+	"github.com/docker/docker/daemon/cluster/convert"
+	units "github.com/docker/go-units"
+	"github.com/docker/swarmkit/api/genericresource"
 )
 
 var (
@@ -33,10 +39,13 @@ func NewListOptsRef(values *[]string, validator ValidatorFctType) *ListOpts {
 }
 
 func (opts *ListOpts) String() string {
-	return fmt.Sprintf("%v", []string((*opts.values)))
+	if len(*opts.values) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("%v", *opts.values)
 }
 
-// Set validates if needed the input value and add it to the
+// Set validates if needed the input value and adds it to the
 // internal slice.
 func (opts *ListOpts) Set(value string) error {
 	if opts.validator != nil {
@@ -100,6 +109,17 @@ func (opts *ListOpts) Len() int {
 	return len((*opts.values))
 }
 
+// Type returns a string name for this Option type
+func (opts *ListOpts) Type() string {
+	return "list"
+}
+
+// WithValidator returns the ListOpts with validator set.
+func (opts *ListOpts) WithValidator(validator ValidatorFctType) *ListOpts {
+	opts.validator = validator
+	return opts
+}
+
 // NamedOption is an interface that list and map options
 // with names implement.
 type NamedOption interface {
@@ -129,7 +149,7 @@ func (o *NamedListOpts) Name() string {
 	return o.name
 }
 
-//MapOpts holds a map of values and a validation function.
+// MapOpts holds a map of values and a validation function.
 type MapOpts struct {
 	values    map[string]string
 	validator ValidatorFctType
@@ -161,6 +181,11 @@ func (opts *MapOpts) GetAll() map[string]string {
 
 func (opts *MapOpts) String() string {
 	return fmt.Sprintf("%v", map[string]string((opts.values)))
+}
+
+// Type returns a string name for this Option type
+func (opts *MapOpts) Type() string {
+	return "map"
 }
 
 // NewMapOpts creates a new MapOpts with the specified map of values and a validator.
@@ -239,4 +264,83 @@ func ValidateLabel(val string) (string, error) {
 		return "", fmt.Errorf("bad attribute format: %s", val)
 	}
 	return val, nil
+}
+
+// ParseLink parses and validates the specified string as a link format (name:alias)
+func ParseLink(val string) (string, string, error) {
+	if val == "" {
+		return "", "", fmt.Errorf("empty string specified for links")
+	}
+	arr := strings.Split(val, ":")
+	if len(arr) > 2 {
+		return "", "", fmt.Errorf("bad format for links: %s", val)
+	}
+	if len(arr) == 1 {
+		return val, val, nil
+	}
+	// This is kept because we can actually get a HostConfig with links
+	// from an already created container and the format is not `foo:bar`
+	// but `/foo:/c1/bar`
+	if strings.HasPrefix(arr[0], "/") {
+		_, alias := path.Split(arr[1])
+		return arr[0][1:], alias, nil
+	}
+	return arr[0], arr[1], nil
+}
+
+// MemBytes is a type for human readable memory bytes (like 128M, 2g, etc)
+type MemBytes int64
+
+// String returns the string format of the human readable memory bytes
+func (m *MemBytes) String() string {
+	// NOTE: In spf13/pflag/flag.go, "0" is considered as "zero value" while "0 B" is not.
+	// We return "0" in case value is 0 here so that the default value is hidden.
+	// (Sometimes "default 0 B" is actually misleading)
+	if m.Value() != 0 {
+		return units.BytesSize(float64(m.Value()))
+	}
+	return "0"
+}
+
+// Set sets the value of the MemBytes by passing a string
+func (m *MemBytes) Set(value string) error {
+	val, err := units.RAMInBytes(value)
+	*m = MemBytes(val)
+	return err
+}
+
+// Type returns the type
+func (m *MemBytes) Type() string {
+	return "bytes"
+}
+
+// Value returns the value in int64
+func (m *MemBytes) Value() int64 {
+	return int64(*m)
+}
+
+// UnmarshalJSON is the customized unmarshaler for MemBytes
+func (m *MemBytes) UnmarshalJSON(s []byte) error {
+	if len(s) <= 2 || s[0] != '"' || s[len(s)-1] != '"' {
+		return fmt.Errorf("invalid size: %q", s)
+	}
+	val, err := units.RAMInBytes(string(s[1 : len(s)-1]))
+	*m = MemBytes(val)
+	return err
+}
+
+// ParseGenericResources parses and validates the specified string as a list of GenericResource
+func ParseGenericResources(value string) ([]swarm.GenericResource, error) {
+	if value == "" {
+		return nil, nil
+	}
+
+	resources, err := genericresource.Parse(value)
+	if err != nil {
+		return nil, err
+	}
+
+	obj := convert.GenericResourcesFromGRPC(resources)
+
+	return obj, nil
 }

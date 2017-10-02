@@ -36,6 +36,7 @@ func ExampleSendWithSender() {
 		DoRetryForAttempts(5, time.Duration(0)))
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 
 	// Output:
@@ -61,6 +62,7 @@ func ExampleDoRetryForAttempts() {
 		DoRetryForAttempts(5, time.Duration(0)))
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 
 	fmt.Printf("Retry stopped after %d attempts", client.Attempts())
@@ -78,6 +80,7 @@ func ExampleDoErrorIfStatusCode() {
 		DoRetryForAttempts(5, time.Duration(0)))
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 
 	fmt.Printf("Retry stopped after %d attempts with code %s", client.Attempts(), r.Status)
@@ -97,6 +100,7 @@ func TestSendWithSenderRunsDecoratorsInOrder(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 
 	if s != "abc" {
@@ -155,6 +159,7 @@ func TestAfterDelayWaits(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -194,6 +199,7 @@ func TestAfterDelayDoesNotWaitTooLong(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -212,8 +218,10 @@ func TestAsIs(t *testing.T) {
 	}
 
 	Respond(r1,
+		ByDiscardingBody(),
 		ByClosing())
 	Respond(r2,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -230,6 +238,7 @@ func TestDoCloseIfError(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -282,6 +291,7 @@ func TestDoErrorIfStatusCode(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -297,6 +307,7 @@ func TestDoErrorIfStatusCodeIgnoresStatusCodes(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -312,6 +323,7 @@ func TestDoErrorUnlessStatusCode(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -327,6 +339,7 @@ func TestDoErrorUnlessStatusCodeIgnoresStatusCodes(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -344,6 +357,7 @@ func TestDoRetryForAttemptsStopsAfterSuccess(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -359,6 +373,7 @@ func TestDoRetryForAttemptsStopsAfterAttempts(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 
 	if client.Attempts() != 5 {
@@ -381,6 +396,7 @@ func TestDoRetryForAttemptsReturnsResponse(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -398,6 +414,7 @@ func TestDoRetryForDurationStopsAfterSuccess(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -419,6 +436,7 @@ func TestDoRetryForDurationStopsAfterDuration(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -440,6 +458,7 @@ func TestDoRetryForDurationStopsWithinReason(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -459,6 +478,7 @@ func TestDoRetryForDurationReturnsResponse(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -512,6 +532,7 @@ func TestDoPollForStatusCodes_IgnoresUnspecifiedStatusCodes(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -527,6 +548,7 @@ func TestDoPollForStatusCodes_PollsForSpecifiedStatusCodes(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -547,6 +569,7 @@ func TestDoPollForStatusCodes_CanBeCanceled(t *testing.T) {
 		r, _ := SendWithSender(client, mocks.NewRequest(),
 			DoPollForStatusCodes(time.Millisecond, time.Millisecond, http.StatusAccepted))
 		Respond(r,
+			ByDiscardingBody(),
 			ByClosing())
 	}()
 	wg.Wait()
@@ -571,6 +594,7 @@ func TestDoPollForStatusCodes_ClosesAllNonreturnedResponseBodiesWhenPolling(t *t
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -586,6 +610,7 @@ func TestDoPollForStatusCodes_LeavesLastResponseBodyOpen(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -603,6 +628,7 @@ func TestDoPollForStatusCodes_StopsPollingAfterAnError(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -620,6 +646,7 @@ func TestDoPollForStatusCodes_ReturnsPollingError(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -636,6 +663,7 @@ func TestWithLogging_Logs(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -657,6 +685,7 @@ func TestWithLogging_HandlesMissingResponse(t *testing.T) {
 	}
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 }
 
@@ -670,6 +699,7 @@ func TestDoRetryForStatusCodesWithSuccess(t *testing.T) {
 	)
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 
 	if client.Attempts() != 3 {
@@ -686,6 +716,7 @@ func TestDoRetryForStatusCodesWithNoSuccess(t *testing.T) {
 		DoRetryForStatusCodes(2, time.Duration(2*time.Second), http.StatusGatewayTimeout),
 	)
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 
 	if client.Attempts() != 3 {
@@ -703,6 +734,7 @@ func TestDoRetryForStatusCodes_CodeNotInRetryList(t *testing.T) {
 	)
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 
 	if client.Attempts() != 1 || r.Status != "204 No Content" {
@@ -720,6 +752,7 @@ func TestDoRetryForStatusCodes_RequestBodyReadError(t *testing.T) {
 	)
 
 	Respond(r,
+		ByDiscardingBody(),
 		ByClosing())
 
 	if err == nil || client.Attempts() != 0 {

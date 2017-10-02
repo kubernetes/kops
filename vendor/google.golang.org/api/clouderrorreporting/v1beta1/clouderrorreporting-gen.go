@@ -146,10 +146,13 @@ type ErrorContext struct {
 	// For a logged exception this would be the source line where
 	// the
 	// exception is logged, usually close to the place where it was
-	// caught. This value is in contrast to
-	// `Exception.cause_location`,
-	// which describes the source line where the exception was thrown.
+	// caught.
 	ReportLocation *SourceLocation `json:"reportLocation,omitempty"`
+
+	// SourceReferences: Source code that was used to build the executable
+	// which has
+	// caused the given error message.
+	SourceReferences []*SourceReference `json:"sourceReferences,omitempty"`
 
 	// User: The user who caused or was affected by the crash.
 	// This can be a user ID, an email address, or an arbitrary token
@@ -698,6 +701,43 @@ type SourceLocation struct {
 
 func (s *SourceLocation) MarshalJSON() ([]byte, error) {
 	type noMethod SourceLocation
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// SourceReference: A reference to a particular snapshot of the source
+// tree used to build and
+// deploy an application.
+type SourceReference struct {
+	// Repository: Optional. A URI string identifying the
+	// repository.
+	// Example: "https://github.com/GoogleCloudPlatform/kubernetes.git"
+	Repository string `json:"repository,omitempty"`
+
+	// RevisionId: The canonical and persistent identifier of the deployed
+	// revision.
+	// Example (git): "0035781c50ec7aa23385dc841529ce8a4b70db1b"
+	RevisionId string `json:"revisionId,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "Repository") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "Repository") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SourceReference) MarshalJSON() ([]byte, error) {
+	type noMethod SourceReference
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }

@@ -1,4 +1,3 @@
-// +build experimental
 // +build !windows
 
 package main
@@ -15,6 +14,7 @@ import (
 
 	"github.com/docker/docker/daemon/graphdriver"
 	"github.com/docker/docker/daemon/graphdriver/vfs"
+	"github.com/docker/docker/integration-cli/daemon"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/plugins"
 	"github.com/go-check/check"
@@ -30,7 +30,7 @@ type DockerExternalGraphdriverSuite struct {
 	server  *httptest.Server
 	jserver *httptest.Server
 	ds      *DockerSuite
-	d       *Daemon
+	d       *daemon.Daemon
 	ec      map[string]*graphEventsCounter
 }
 
@@ -52,12 +52,20 @@ type graphEventsCounter struct {
 }
 
 func (s *DockerExternalGraphdriverSuite) SetUpTest(c *check.C) {
-	s.d = NewDaemon(c)
+	s.d = daemon.New(c, dockerBinary, dockerdBinary, daemon.Config{
+		Experimental: testEnv.ExperimentalDaemon(),
+	})
+}
+
+func (s *DockerExternalGraphdriverSuite) OnTimeout(c *check.C) {
+	s.d.DumpStackAndQuit()
 }
 
 func (s *DockerExternalGraphdriverSuite) TearDownTest(c *check.C) {
-	s.d.Stop()
-	s.ds.TearDownTest(c)
+	if s.d != nil {
+		s.d.Stop(c)
+		s.ds.TearDownTest(c)
+	}
 }
 
 func (s *DockerExternalGraphdriverSuite) SetUpSuite(c *check.C) {
@@ -77,7 +85,7 @@ func (s *DockerExternalGraphdriverSuite) setUpPluginViaJSONFile(c *check.C) {
 	mux := http.NewServeMux()
 	s.jserver = httptest.NewServer(mux)
 
-	p := plugins.Plugin{Name: "json-external-graph-driver", Addr: s.jserver.URL}
+	p := plugins.NewLocalPlugin("json-external-graph-driver", s.jserver.URL)
 	b, err := json.Marshal(p)
 	c.Assert(err, check.IsNil)
 
@@ -89,6 +97,7 @@ func (s *DockerExternalGraphdriverSuite) setUpPlugin(c *check.C, name string, ex
 		ID         string `json:",omitempty"`
 		Parent     string `json:",omitempty"`
 		MountLabel string `json:",omitempty"`
+		ReadOnly   bool   `json:",omitempty"`
 	}
 
 	type graphDriverResponse struct {
@@ -102,7 +111,7 @@ func (s *DockerExternalGraphdriverSuite) setUpPlugin(c *check.C, name string, ex
 	}
 
 	respond := func(w http.ResponseWriter, data interface{}) {
-		w.Header().Set("Content-Type", "appplication/vnd.docker.plugins.v1+json")
+		w.Header().Set("Content-Type", "application/vnd.docker.plugins.v1+json")
 		switch t := data.(type) {
 		case error:
 			fmt.Fprintln(w, fmt.Sprintf(`{"Err": %q}`, t.Error()))
@@ -138,6 +147,20 @@ func (s *DockerExternalGraphdriverSuite) setUpPlugin(c *check.C, name string, ex
 		respond(w, "{}")
 	})
 
+	mux.HandleFunc("/GraphDriver.CreateReadWrite", func(w http.ResponseWriter, r *http.Request) {
+		s.ec[ext].creations++
+
+		var req graphDriverRequest
+		if err := decReq(r.Body, &req, w); err != nil {
+			return
+		}
+		if err := driver.CreateReadWrite(req.ID, req.Parent, nil); err != nil {
+			respond(w, err)
+			return
+		}
+		respond(w, "{}")
+	})
+
 	mux.HandleFunc("/GraphDriver.Create", func(w http.ResponseWriter, r *http.Request) {
 		s.ec[ext].creations++
 
@@ -145,7 +168,7 @@ func (s *DockerExternalGraphdriverSuite) setUpPlugin(c *check.C, name string, ex
 		if err := decReq(r.Body, &req, w); err != nil {
 			return
 		}
-		if err := driver.Create(req.ID, req.Parent, ""); err != nil {
+		if err := driver.Create(req.ID, req.Parent, nil); err != nil {
 			respond(w, err)
 			return
 		}
@@ -272,7 +295,7 @@ func (s *DockerExternalGraphdriverSuite) setUpPlugin(c *check.C, name string, ex
 
 	mux.HandleFunc("/GraphDriver.ApplyDiff", func(w http.ResponseWriter, r *http.Request) {
 		s.ec[ext].applydiff++
-		var diff archive.Reader = r.Body
+		diff := r.Body
 		defer r.Body.Close()
 
 		id := r.URL.Query().Get("id")
@@ -323,28 +346,27 @@ func (s *DockerExternalGraphdriverSuite) TearDownSuite(c *check.C) {
 }
 
 func (s *DockerExternalGraphdriverSuite) TestExternalGraphDriver(c *check.C) {
+	testRequires(c, ExperimentalDaemon)
+
 	s.testExternalGraphDriver("test-external-graph-driver", "spec", c)
 	s.testExternalGraphDriver("json-external-graph-driver", "json", c)
 }
 
 func (s *DockerExternalGraphdriverSuite) testExternalGraphDriver(name string, ext string, c *check.C) {
-	if err := s.d.StartWithBusybox("-s", name); err != nil {
-		b, _ := ioutil.ReadFile(s.d.LogFileName())
-		c.Assert(err, check.IsNil, check.Commentf("\n%s", string(b)))
-	}
+	s.d.StartWithBusybox(c, "-s", name)
 
-	out, err := s.d.Cmd("run", "-d", "--name=graphtest", "busybox", "sh", "-c", "echo hello > /hello")
+	out, err := s.d.Cmd("run", "--name=graphtest", "busybox", "sh", "-c", "echo hello > /hello")
 	c.Assert(err, check.IsNil, check.Commentf(out))
 
-	err = s.d.Restart("-s", name)
+	s.d.Restart(c, "-s", name)
 
-	out, err = s.d.Cmd("inspect", "--format='{{.GraphDriver.Name}}'", "graphtest")
+	out, err = s.d.Cmd("inspect", "--format={{.GraphDriver.Name}}", "graphtest")
 	c.Assert(err, check.IsNil, check.Commentf(out))
 	c.Assert(strings.TrimSpace(out), check.Equals, name)
 
 	out, err = s.d.Cmd("diff", "graphtest")
 	c.Assert(err, check.IsNil, check.Commentf(out))
-	c.Assert(strings.Contains(out, "A /hello"), check.Equals, true)
+	c.Assert(strings.Contains(out, "A /hello"), check.Equals, true, check.Commentf("diff output: %s", out))
 
 	out, err = s.d.Cmd("rm", "-f", "graphtest")
 	c.Assert(err, check.IsNil, check.Commentf(out))
@@ -352,8 +374,7 @@ func (s *DockerExternalGraphdriverSuite) testExternalGraphDriver(name string, ex
 	out, err = s.d.Cmd("info")
 	c.Assert(err, check.IsNil, check.Commentf(out))
 
-	err = s.d.Stop()
-	c.Assert(err, check.IsNil)
+	s.d.Stop(c)
 
 	// Don't check s.ec.exists, because the daemon no longer calls the
 	// Exists function.
@@ -363,7 +384,7 @@ func (s *DockerExternalGraphdriverSuite) testExternalGraphDriver(name string, ex
 	c.Assert(s.ec[ext].removals >= 1, check.Equals, true)
 	c.Assert(s.ec[ext].gets >= 1, check.Equals, true)
 	c.Assert(s.ec[ext].puts >= 1, check.Equals, true)
-	c.Assert(s.ec[ext].stats, check.Equals, 3)
+	c.Assert(s.ec[ext].stats, check.Equals, 5)
 	c.Assert(s.ec[ext].cleanups, check.Equals, 2)
 	c.Assert(s.ec[ext].applydiff >= 1, check.Equals, true)
 	c.Assert(s.ec[ext].changes, check.Equals, 1)
@@ -373,8 +394,9 @@ func (s *DockerExternalGraphdriverSuite) testExternalGraphDriver(name string, ex
 }
 
 func (s *DockerExternalGraphdriverSuite) TestExternalGraphDriverPull(c *check.C) {
-	testRequires(c, Network)
-	c.Assert(s.d.Start(), check.IsNil)
+	testRequires(c, Network, ExperimentalDaemon)
+
+	s.d.Start(c)
 
 	out, err := s.d.Cmd("pull", "busybox:latest")
 	c.Assert(err, check.IsNil, check.Commentf(out))

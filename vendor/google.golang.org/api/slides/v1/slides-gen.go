@@ -2340,8 +2340,7 @@ func (s *LayoutPlaceholderIdMapping) MarshalJSON() ([]byte, error) {
 // LayoutProperties: The properties of Page are only
 // relevant for pages with page_type LAYOUT.
 type LayoutProperties struct {
-	// DisplayName: The human readable name of the layout in the
-	// presentation's locale.
+	// DisplayName: The human-readable name of the layout.
 	DisplayName string `json:"displayName,omitempty"`
 
 	// MasterObjectId: The object ID of the master that this layout is based
@@ -2713,6 +2712,35 @@ func (s *List) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// MasterProperties: The properties of Page that are only
+// relevant for pages with page_type MASTER.
+type MasterProperties struct {
+	// DisplayName: The human-readable name of the master.
+	DisplayName string `json:"displayName,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DisplayName") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DisplayName") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *MasterProperties) MarshalJSON() ([]byte, error) {
+	type noMethod MasterProperties
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // NestingLevel: Contains properties describing the look and feel of a
 // list bullet at a given
 // level of nesting.
@@ -2999,6 +3027,10 @@ type Page struct {
 	// LayoutProperties: Layout specific properties. Only set if page_type =
 	// LAYOUT.
 	LayoutProperties *LayoutProperties `json:"layoutProperties,omitempty"`
+
+	// MasterProperties: Master specific properties. Only set if page_type =
+	// MASTER.
+	MasterProperties *MasterProperties `json:"masterProperties,omitempty"`
 
 	// NotesProperties: Notes specific properties. Only set if page_type =
 	// NOTES.
@@ -3646,12 +3678,12 @@ func (s *Presentation) MarshalJSON() ([]byte, error) {
 type Range struct {
 	// EndIndex: The optional zero-based index of the end of the
 	// collection.
-	// Required for `SPECIFIC_RANGE` delete mode.
+	// Required for `FIXED_RANGE` ranges.
 	EndIndex int64 `json:"endIndex,omitempty"`
 
 	// StartIndex: The optional zero-based index of the beginning of the
 	// collection.
-	// Required for `SPECIFIC_RANGE` and `FROM_START_INDEX` ranges.
+	// Required for `FIXED_RANGE` and `FROM_START_INDEX` ranges.
 	StartIndex int64 `json:"startIndex,omitempty"`
 
 	// Type: The type of range.
@@ -3864,6 +3896,16 @@ type ReplaceAllShapesWithImageRequest struct {
 	// format.
 	ImageUrl string `json:"imageUrl,omitempty"`
 
+	// PageObjectIds: If non-empty, limits the matches to page elements only
+	// on the given pages.
+	//
+	// Returns a 400 bad request error if given the page object ID of
+	// a
+	// notes page or a
+	// notes master, or if a
+	// page with that object ID doesn't exist in the presentation.
+	PageObjectIds []string `json:"pageObjectIds,omitempty"`
+
 	// ReplaceMethod: The replace method.
 	//
 	// Possible values:
@@ -3967,6 +4009,16 @@ type ReplaceAllShapesWithSheetsChartRequest struct {
 	// see a link to the spreadsheet.
 	LinkingMode string `json:"linkingMode,omitempty"`
 
+	// PageObjectIds: If non-empty, limits the matches to page elements only
+	// on the given pages.
+	//
+	// Returns a 400 bad request error if given the page object ID of
+	// a
+	// notes page or a
+	// notes master, or if a
+	// page with that object ID doesn't exist in the presentation.
+	PageObjectIds []string `json:"pageObjectIds,omitempty"`
+
 	// SpreadsheetId: The ID of the Google Sheets spreadsheet that contains
 	// the chart.
 	SpreadsheetId string `json:"spreadsheetId,omitempty"`
@@ -4029,6 +4081,15 @@ func (s *ReplaceAllShapesWithSheetsChartResponse) MarshalJSON() ([]byte, error) 
 type ReplaceAllTextRequest struct {
 	// ContainsText: Finds text in a shape matching this substring.
 	ContainsText *SubstringMatchCriteria `json:"containsText,omitempty"`
+
+	// PageObjectIds: If non-empty, limits the matches to page elements only
+	// on the given pages.
+	//
+	// Returns a 400 bad request error if given the page object ID of
+	// a
+	// notes master,
+	// or if a page with that object ID doesn't exist in the presentation.
+	PageObjectIds []string `json:"pageObjectIds,omitempty"`
 
 	// ReplaceText: The text that will replace the matched text.
 	ReplaceText string `json:"replaceText,omitempty"`
@@ -5852,7 +5913,7 @@ type TextStyle struct {
 	// weights without breaking backwards compatibility. As such, when
 	// reading the
 	// style of a range of text, the value of
-	// `weighted_font_family.font_family`
+	// `weighted_font_family#font_family`
 	// will always be equal to that of `font_family`. However, when writing,
 	// if
 	// both fields are included in the field mask (either explicitly or
@@ -5861,33 +5922,32 @@ type TextStyle struct {
 	//
 	// * If `font_family` is set and `weighted_font_family` is not, the
 	// value of
-	//   `font_family` will be applied with weight `400` ("normal").
-	// * If both fields are set, the value of `font_family` must equal that
+	//   `font_family` is applied with weight `400` ("normal").
+	// * If both fields are set, the value of `font_family` must match that
 	// of
-	//   `weighted_font_family.font_family`. If so, the font family and
+	//   `weighted_font_family#font_family`. If so, the font family and
 	// weight of
-	//   `weighted_font_family` will be applied. Otherwise, a 400 bad
-	// request
-	//   error is returned.
+	//   `weighted_font_family` is applied. Otherwise, a 400 bad request
+	// error is
+	//   returned.
 	// * If `weighted_font_family` is set and `font_family` is not, the
 	// font
-	//   family and weight of `weighted_font_family` will be applied.
+	//   family and weight of `weighted_font_family` is applied.
 	// * If neither field is set, the font family and weight of the text
-	// will be
-	//   set to inherit from its parent. Note that these properties cannot
 	// inherit
-	//   separately from each other.
+	//   from the parent. Note that these properties cannot inherit
+	// separately
+	//   from each other.
 	//
 	// If an update request specifies values for both `weighted_font_family`
 	// and
-	// `bold`, the `weighted_font_family` will be applied first, then
-	// `bold`.
+	// `bold`, the `weighted_font_family` is applied first, then `bold`.
 	//
-	// If `weighted_font_family.weight` is not set, it will default to
+	// If `weighted_font_family#weight` is not set, it defaults to
 	// `400`.
 	//
 	// If `weighted_font_family` is set, then
-	// `weighted_font_family.font_family`
+	// `weighted_font_family#font_family`
 	// must also be set with a non-empty value. Otherwise, a 400 bad request
 	// error
 	// is returned.

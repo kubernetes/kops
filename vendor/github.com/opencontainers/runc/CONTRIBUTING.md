@@ -1,5 +1,12 @@
 ## Contribution Guidelines
 
+### Security issues
+
+If you are reporting a security issue, do not create an issue or file a pull
+request on GitHub. Instead, disclose the issue responsibly by sending an email
+to security@opencontainers.org (which is inhabited only by the maintainers of
+the various OCI projects).
+
 ### Pull requests are always welcome
 
 We are always thrilled to receive pull requests, and do our best to

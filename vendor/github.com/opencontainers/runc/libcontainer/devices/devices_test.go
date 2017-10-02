@@ -6,14 +6,16 @@ import (
 	"errors"
 	"os"
 	"testing"
+
+	"golang.org/x/sys/unix"
 )
 
 func TestDeviceFromPathLstatFailure(t *testing.T) {
 	testError := errors.New("test error")
 
-	// Override os.Lstat to inject error.
-	osLstat = func(path string) (os.FileInfo, error) {
-		return nil, testError
+	// Override unix.Lstat to inject error.
+	unixLstat = func(path string, stat *unix.Stat_t) error {
+		return testError
 	}
 
 	_, err := DeviceFromPath("", "")

@@ -36,40 +36,7 @@ var clustersResource = schema.GroupVersionResource{Group: "kops", Version: "v1al
 
 var clustersKind = schema.GroupVersionKind{Group: "kops", Version: "v1alpha1", Kind: "Cluster"}
 
-func (c *FakeClusters) Create(cluster *v1alpha1.Cluster) (result *v1alpha1.Cluster, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(clustersResource, c.ns, cluster), &v1alpha1.Cluster{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.Cluster), err
-}
-
-func (c *FakeClusters) Update(cluster *v1alpha1.Cluster) (result *v1alpha1.Cluster, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(clustersResource, c.ns, cluster), &v1alpha1.Cluster{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.Cluster), err
-}
-
-func (c *FakeClusters) Delete(name string, options *v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(clustersResource, c.ns, name), &v1alpha1.Cluster{})
-
-	return err
-}
-
-func (c *FakeClusters) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(clustersResource, c.ns, listOptions)
-
-	_, err := c.Fake.Invokes(action, &v1alpha1.ClusterList{})
-	return err
-}
-
+// Get takes name of the cluster, and returns the corresponding cluster object, and an error if there is any.
 func (c *FakeClusters) Get(name string, options v1.GetOptions) (result *v1alpha1.Cluster, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(clustersResource, c.ns, name), &v1alpha1.Cluster{})
@@ -80,6 +47,7 @@ func (c *FakeClusters) Get(name string, options v1.GetOptions) (result *v1alpha1
 	return obj.(*v1alpha1.Cluster), err
 }
 
+// List takes label and field selectors, and returns the list of Clusters that match those selectors.
 func (c *FakeClusters) List(opts v1.ListOptions) (result *v1alpha1.ClusterList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(clustersResource, clustersKind, c.ns, opts), &v1alpha1.ClusterList{})
@@ -106,6 +74,44 @@ func (c *FakeClusters) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(clustersResource, c.ns, opts))
 
+}
+
+// Create takes the representation of a cluster and creates it.  Returns the server's representation of the cluster, and an error, if there is any.
+func (c *FakeClusters) Create(cluster *v1alpha1.Cluster) (result *v1alpha1.Cluster, err error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewCreateAction(clustersResource, c.ns, cluster), &v1alpha1.Cluster{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.Cluster), err
+}
+
+// Update takes the representation of a cluster and updates it. Returns the server's representation of the cluster, and an error, if there is any.
+func (c *FakeClusters) Update(cluster *v1alpha1.Cluster) (result *v1alpha1.Cluster, err error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewUpdateAction(clustersResource, c.ns, cluster), &v1alpha1.Cluster{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha1.Cluster), err
+}
+
+// Delete takes name of the cluster and deletes it. Returns an error if one occurs.
+func (c *FakeClusters) Delete(name string, options *v1.DeleteOptions) error {
+	_, err := c.Fake.
+		Invokes(testing.NewDeleteAction(clustersResource, c.ns, name), &v1alpha1.Cluster{})
+
+	return err
+}
+
+// DeleteCollection deletes a collection of objects.
+func (c *FakeClusters) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(clustersResource, c.ns, listOptions)
+
+	_, err := c.Fake.Invokes(action, &v1alpha1.ClusterList{})
+	return err
 }
 
 // Patch applies the patch and returns the patched cluster.

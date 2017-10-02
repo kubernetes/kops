@@ -21,40 +21,27 @@ filegroup(
     tags = ["automanaged"],
 )
 
-docker_build(
-    name = "busybox",
-    debs = [
-        "@busybox_deb//file",
-    ],
-    symlinks = {
-        "/bin/sh": "/bin/busybox",
-        "/usr/bin/busybox": "/bin/busybox",
-        "/usr/sbin/busybox": "/bin/busybox",
-        "/sbin/busybox": "/bin/busybox",
-    },
-)
-
 # This list should roughly match kube::build::get_docker_wrapped_binaries()
 # in build/common.sh.
 DOCKERIZED_BINARIES = {
     "cloud-controller-manager": {
-        "base": ":busybox",
+        "base": "@official_busybox//image",
         "target": "//cmd/cloud-controller-manager:cloud-controller-manager",
     },
     "kube-apiserver": {
-        "base": ":busybox",
+        "base": "@official_busybox//image",
         "target": "//cmd/kube-apiserver:kube-apiserver",
     },
     "kube-controller-manager": {
-        "base": ":busybox",
+        "base": "@official_busybox//image",
         "target": "//cmd/kube-controller-manager:kube-controller-manager",
     },
     "kube-scheduler": {
-        "base": ":busybox",
+        "base": "@official_busybox//image",
         "target": "//plugin/cmd/kube-scheduler:kube-scheduler",
     },
     "kube-proxy": {
-        "base": "@debian-iptables-amd64//image:image.tar",
+        "base": "@debian-iptables-amd64//image",
         "target": "//cmd/kube-proxy:kube-proxy",
     },
 }
@@ -93,7 +80,7 @@ genrule(
     cmd = """
 grep ^STABLE_BUILD_SCM_REVISION bazel-out/stable-status.txt \
     | awk '{print $$2}' \
-    | sed -e 's/^v//' -e 's/[\+-]/_/g' \
+    | sed -e 's/^v//' -Ee 's/-([a-z]+)/~\\1/' -e 's/-/+/g' \
     >$@
 """,
     stamp = 1,
@@ -150,7 +137,6 @@ filegroup(
         "//cmd/genyaml",
         "//cmd/kubemark",  # TODO: server platforms only
         "//cmd/linkcheck",
-        "//cmd/mungedocs",
         "//federation/cmd/genfeddocs",
         "//test/e2e:e2e.test",
         "//test/e2e_node:e2e_node.test",  # TODO: server platforms only

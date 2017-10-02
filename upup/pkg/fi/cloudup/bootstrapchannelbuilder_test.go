@@ -25,14 +25,12 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/templates"
 	"k8s.io/kops/pkg/testutils"
 	"k8s.io/kops/upup/models"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
-
-	// Register our APIs
-	_ "k8s.io/kops/pkg/apis/kops/install"
 )
 
 func TestBootstrapChannelBuilder_BuildTasks(t *testing.T) {
@@ -54,7 +52,7 @@ func runChannelBuilderTest(t *testing.T, key string) {
 	if err != nil {
 		t.Fatalf("error reading cluster yaml file %q: %v", clusterYamlPath, err)
 	}
-	obj, _, err := api.ParseVersionedYaml(clusterYaml)
+	obj, _, err := kopscodecs.ParseVersionedYaml(clusterYaml)
 	if err != nil {
 		t.Fatalf("error parsing cluster yaml %q: %v", clusterYamlPath, err)
 	}

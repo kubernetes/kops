@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -203,7 +204,7 @@ func LoadModel(basedir string) (*NodeupModelContext, error) {
 	var instanceGroup *kops.InstanceGroup
 
 	// Codecs provides access to encoding and decoding for the scheme
-	codecs := kops.Codecs
+	codecs := kopscodecs.Codecs
 
 	codec := codecs.UniversalDecoder(kops.SchemeGroupVersion)
 

@@ -1,0 +1,58 @@
+categories:
+- name: GETTING STARTED
+  include: _getting_started.md
+  commands:
+  - run
+  - expose
+- name: APP MANAGEMENT
+  include: _app_management.md
+  commands:
+  - annotate
+  - autoscale
+  - convert
+  - create
+  - delete
+  - edit
+  - get
+  - label
+  - patch
+  - replace
+  - rolling-update
+  - rollout
+  - scale
+  - set
+- name: DECLARATIVE APP MANAGEMENT
+  commands:
+  - apply
+- name: WORKING WITH APPS
+  include: _working_with_apps.md
+  commands:
+  - attach
+  - auth
+  - cp
+  - describe
+  - exec
+  - logs
+  - port-forward
+  - proxy
+  - top
+- name: CLUSTER MANAGEMENT
+  commands:
+  - api-versions
+  - certificate
+  - cluster-info
+  - cordon
+  - drain
+  - taint
+  - uncordon
+- name: KUBECTL SETTINGS AND USAGE
+  commands:
+  - alpha
+  - completion
+  - config
+  - explain
+  - options
+  - version
+  - plugin
+- name: DEPRECATED COMMANDS
+  commands:
