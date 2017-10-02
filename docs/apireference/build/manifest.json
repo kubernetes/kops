@@ -26,6 +26,9 @@
       "filename": "_generated_alwaysallowauthorizationspec_v1alpha2_kops_definition.md"
     },
     {
+      "filename": "_generated_assets_v1alpha2_kops_definition.md"
+    },
+    {
       "filename": "_generated_authenticationspec_v1alpha2_kops_definition.md"
     },
     {
@@ -50,6 +53,9 @@
       "filename": "_generated_cloudconfiguration_v1alpha2_kops_definition.md"
     },
     {
+      "filename": "_generated_cloudcontrollermanagerconfig_v1alpha2_kops_definition.md"
+    },
+    {
       "filename": "_generated_clustersubnetspec_v1alpha2_kops_definition.md"
     },
     {
@@ -68,6 +74,9 @@
       "filename": "_generated_duration_v1_meta_definition.md"
     },
     {
+      "filename": "_generated_egressproxyspec_v1alpha2_kops_definition.md"
+    },
+    {
       "filename": "_generated_etcdclusterspec_v1alpha2_kops_definition.md"
     },
     {
@@ -77,7 +86,13 @@
       "filename": "_generated_execcontaineraction_v1alpha2_kops_definition.md"
     },
     {
+      "filename": "_generated_externaldnsconfig_v1alpha2_kops_definition.md"
+    },
+    {
       "filename": "_generated_externalnetworkingspec_v1alpha2_kops_definition.md"
+    },
+    {
+      "filename": "_generated_fileassetspec_v1alpha2_kops_definition.md"
     },
     {
       "filename": "_generated_flannelnetworkingspec_v1alpha2_kops_definition.md"
@@ -86,7 +101,13 @@
       "filename": "_generated_groupversionfordiscovery_v1_meta_definition.md"
     },
     {
+      "filename": "_generated_httpproxy_v1alpha2_kops_definition.md"
+    },
+    {
       "filename": "_generated_hookspec_v1alpha2_kops_definition.md"
+    },
+    {
+      "filename": "_generated_iamspec_v1alpha2_kops_definition.md"
     },
     {
       "filename": "_generated_initializer_v1_meta_definition.md"
@@ -150,6 +171,9 @@
     },
     {
       "filename": "_generated_rbacauthorizationspec_v1alpha2_kops_definition.md"
+    },
+    {
+      "filename": "_generated_romananetworkingspec_v1alpha2_kops_definition.md"
     },
     {
       "filename": "_generated_serveraddressbyclientcidr_v1_meta_definition.md"

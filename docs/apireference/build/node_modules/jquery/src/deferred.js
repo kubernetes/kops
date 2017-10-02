@@ -13,7 +13,7 @@ function Thrower( ex ) {
 	throw ex;
 }
 
-function adoptValue( value, resolve, reject, noValue ) {
+function adoptValue( value, resolve, reject ) {
 	var method;
 
 	try {
@@ -29,10 +29,9 @@ function adoptValue( value, resolve, reject, noValue ) {
 		// Other non-thenables
 		} else {
 
-			// Control `resolve` arguments by letting Array#slice cast boolean `noValue` to integer:
-			// * false: [ value ].slice( 0 ) => resolve( value )
-			// * true: [ value ].slice( 1 ) => resolve()
-			resolve.apply( undefined, [ value ].slice( noValue ) );
+			// Support: Android 4.0 only
+			// Strict mode functions invoked without .call/.apply get global-object context
+			resolve.call( undefined, value );
 		}
 
 	// For Promises/A+, convert exceptions into rejections
@@ -42,7 +41,7 @@ function adoptValue( value, resolve, reject, noValue ) {
 
 		// Support: Android 4.0 only
 		// Strict mode functions invoked without .call/.apply get global-object context
-		reject.apply( undefined, [ value ] );
+		reject.call( undefined, value );
 	}
 }
 
@@ -367,8 +366,7 @@ jQuery.extend( {
 
 		// Single- and empty arguments are adopted like Promise.resolve
 		if ( remaining <= 1 ) {
-			adoptValue( singleValue, master.done( updateFunc( i ) ).resolve, master.reject,
-				!remaining );
+			adoptValue( singleValue, master.done( updateFunc( i ) ).resolve, master.reject );
 
 			// Use .then() to unwrap secondary thenables (cf. gh-3000)
 			if ( master.state() === "pending" ||
