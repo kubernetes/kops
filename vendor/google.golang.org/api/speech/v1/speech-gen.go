@@ -319,6 +319,15 @@ func (s *RecognitionAudio) MarshalJSON() ([]byte, error) {
 // specifies how to process the
 // request.
 type RecognitionConfig struct {
+	// EnableWordTimeOffsets: *Optional* If `true`, the top result includes
+	// a list of words and
+	// the start and end time offsets (timestamps) for those words.
+	// If
+	// `false`, no word-level time offset information is returned. The
+	// default is
+	// `false`.
+	EnableWordTimeOffsets bool `json:"enableWordTimeOffsets,omitempty"`
+
 	// Encoding: *Required* Encoding of audio data sent in all
 	// `RecognitionAudio` messages.
 	//
@@ -415,20 +424,22 @@ type RecognitionConfig struct {
 	// speech recognition.
 	SpeechContexts []*SpeechContext `json:"speechContexts,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Encoding") to
-	// unconditionally include in API requests. By default, fields with
-	// empty values are omitted from API requests. However, any non-pointer,
-	// non-interface field appearing in ForceSendFields will be sent to the
-	// server regardless of whether the field is empty or not. This may be
-	// used to include empty fields in Patch requests.
+	// ForceSendFields is a list of field names (e.g.
+	// "EnableWordTimeOffsets") to unconditionally include in API requests.
+	// By default, fields with empty values are omitted from API requests.
+	// However, any non-pointer, non-interface field appearing in
+	// ForceSendFields will be sent to the server regardless of whether the
+	// field is empty or not. This may be used to include empty fields in
+	// Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Encoding") to include in
-	// API requests with the JSON null value. By default, fields with empty
-	// values are omitted from API requests. However, any field with an
-	// empty value appearing in NullFields will be sent to the server as
-	// null. It is an error if a field in this list has a non-empty value.
-	// This may be used to include null fields in Patch requests.
+	// NullFields is a list of field names (e.g. "EnableWordTimeOffsets") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
 	NullFields []string `json:"-"`
 }
 
@@ -561,9 +572,8 @@ type SpeechRecognitionAlternative struct {
 	// hypothesis, and
 	// only for `is_final=true` results. Clients should not rely on
 	// the
-	// `confidence` field as it is not guaranteed to be accurate, or even
-	// set, in
-	// any of the results.
+	// `confidence` field as it is not guaranteed to be accurate or
+	// consistent.
 	// The default of 0.0 is a sentinel value indicating `confidence` was
 	// not set.
 	Confidence float64 `json:"confidence,omitempty"`
@@ -571,6 +581,10 @@ type SpeechRecognitionAlternative struct {
 	// Transcript: *Output-only* Transcript text representing the words that
 	// the user spoke.
 	Transcript string `json:"transcript,omitempty"`
+
+	// Words: *Output-only* A list of word-specific information for each
+	// recognized word.
+	Words []*WordInfo `json:"words,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Confidence") to
 	// unconditionally include in API requests. By default, fields with
@@ -615,8 +629,8 @@ type SpeechRecognitionResult struct {
 	// Alternatives: *Output-only* May contain one or more recognition
 	// hypotheses (up to the
 	// maximum specified in `max_alternatives`).
-	// These alternatives are ordered in terms of accuracy, with the
-	// first/top
+	// These alternatives are ordered in terms of accuracy, with the top
+	// (first)
 	// alternative being the most probable, as ranked by the recognizer.
 	Alternatives []*SpeechRecognitionAlternative `json:"alternatives,omitempty"`
 
@@ -671,7 +685,7 @@ func (s *SpeechRecognitionResult) MarshalJSON() ([]byte, error) {
 // arbitrary
 // information about the error. There is a predefined set of error
 // detail types
-// in the package `google.rpc` which can be used for common error
+// in the package `google.rpc` that can be used for common error
 // conditions.
 //
 // # Language mapping
@@ -704,7 +718,7 @@ func (s *SpeechRecognitionResult) MarshalJSON() ([]byte, error) {
 //
 // - Workflow errors. A typical workflow has multiple steps. Each step
 // may
-//     have a `Status` message for error reporting purpose.
+//     have a `Status` message for error reporting.
 //
 // - Batch operations. If a client uses batch request and batch
 // response, the
@@ -727,9 +741,9 @@ type Status struct {
 	// google.rpc.Code.
 	Code int64 `json:"code,omitempty"`
 
-	// Details: A list of messages that carry the error details.  There will
-	// be a
-	// common set of message types for APIs to use.
+	// Details: A list of messages that carry the error details.  There is a
+	// common set of
+	// message types for APIs to use.
 	Details []googleapi.RawMessage `json:"details,omitempty"`
 
 	// Message: A developer-facing error message, which should be in
@@ -758,6 +772,59 @@ type Status struct {
 
 func (s *Status) MarshalJSON() ([]byte, error) {
 	type noMethod Status
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// WordInfo: Word-specific information for recognized words. Word
+// information is only
+// included in the response when certain request parameters are set,
+// such
+// as `enable_word_time_offsets`.
+type WordInfo struct {
+	// EndTime: *Output-only* Time offset relative to the beginning of the
+	// audio,
+	// and corresponding to the end of the spoken word.
+	// This field is only set if `enable_word_time_offsets=true` and only
+	// in the top hypothesis.
+	// This is an experimental feature and the accuracy of the time offset
+	// can
+	// vary.
+	EndTime string `json:"endTime,omitempty"`
+
+	// StartTime: *Output-only* Time offset relative to the beginning of the
+	// audio,
+	// and corresponding to the start of the spoken word.
+	// This field is only set if `enable_word_time_offsets=true` and only
+	// in the top hypothesis.
+	// This is an experimental feature and the accuracy of the time offset
+	// can
+	// vary.
+	StartTime string `json:"startTime,omitempty"`
+
+	// Word: *Output-only* The word corresponding to this set of
+	// information.
+	Word string `json:"word,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "EndTime") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "EndTime") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *WordInfo) MarshalJSON() ([]byte, error) {
+	type noMethod WordInfo
 	raw := noMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
@@ -1203,9 +1270,18 @@ type OperationsListCall struct {
 // server doesn't support this method, it returns
 // `UNIMPLEMENTED`.
 //
-// NOTE: the `name` binding below allows API services to override the
+// NOTE: the `name` binding allows API services to override the
 // binding
 // to use different resource name schemes, such as `users/*/operations`.
+// To
+// override the binding, API services can add a binding such
+// as
+// "/v1/{name=users/*}/operations" to their service configuration.
+// For backwards compatibility, the default name includes the
+// operations
+// collection id, however overriding users must ensure the name
+// binding
+// is the parent resource, without the operations collection id.
 func (r *OperationsService) List() *OperationsListCall {
 	c := &OperationsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
@@ -1218,8 +1294,8 @@ func (c *OperationsListCall) Filter(filter string) *OperationsListCall {
 	return c
 }
 
-// Name sets the optional parameter "name": The name of the operation
-// collection.
+// Name sets the optional parameter "name": The name of the operation's
+// parent resource.
 func (c *OperationsListCall) Name(name string) *OperationsListCall {
 	c.urlParams_.Set("name", name)
 	return c
@@ -1330,7 +1406,7 @@ func (c *OperationsListCall) Do(opts ...googleapi.CallOption) (*ListOperationsRe
 	}
 	return ret, nil
 	// {
-	//   "description": "Lists operations that match the specified filter in the request. If the\nserver doesn't support this method, it returns `UNIMPLEMENTED`.\n\nNOTE: the `name` binding below allows API services to override the binding\nto use different resource name schemes, such as `users/*/operations`.",
+	//   "description": "Lists operations that match the specified filter in the request. If the\nserver doesn't support this method, it returns `UNIMPLEMENTED`.\n\nNOTE: the `name` binding allows API services to override the binding\nto use different resource name schemes, such as `users/*/operations`. To\noverride the binding, API services can add a binding such as\n`\"/v1/{name=users/*}/operations\"` to their service configuration.\nFor backwards compatibility, the default name includes the operations\ncollection id, however overriding users must ensure the name binding\nis the parent resource, without the operations collection id.",
 	//   "flatPath": "v1/operations",
 	//   "httpMethod": "GET",
 	//   "id": "speech.operations.list",
@@ -1342,7 +1418,7 @@ func (c *OperationsListCall) Do(opts ...googleapi.CallOption) (*ListOperationsRe
 	//       "type": "string"
 	//     },
 	//     "name": {
-	//       "description": "The name of the operation collection.",
+	//       "description": "The name of the operation's parent resource.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },

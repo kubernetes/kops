@@ -3,7 +3,7 @@
 load helpers
 
 TEST_CGROUP_NAME="runc-cgroups-integration-test"
-CGROUP_MEMORY="${CGROUP_BASE_PATH}/${TEST_CGROUP_NAME}"
+CGROUP_MEMORY="${CGROUP_MEMORY_BASE_PATH}/${TEST_CGROUP_NAME}"
 
 function teardown() {
     rm -f $BATS_TMPDIR/runc-update-integration-test.json
@@ -28,7 +28,9 @@ function check_cgroup_value() {
 }
 
 @test "runc update --kernel-memory (initialized)" {
-    requires cgroups_kmem
+	# XXX: currently cgroups require root containers.
+    requires cgroups_kmem root
+
     # Add cgroup path
     sed -i 's/\("linux": {\)/\1\n    "cgroupsPath": "\/runc-cgroups-integration-test",/'  ${BUSYBOX_BUNDLE}/config.json
 
@@ -43,9 +45,8 @@ EOF
     sed -i "s/\(\"resources\": {\)/\1\n${DATA}/" ${BUSYBOX_BUNDLE}/config.json
 
     # run a detached busybox to work with
-    runc run -d --console /dev/pts/ptmx test_cgroups_kmem
+    runc run -d --console-socket $CONSOLE_SOCKET test_cgroups_kmem
     [ "$status" -eq 0 ]
-    wait_for_container 15 1 test_cgroups_kmem
 
     # update kernel memory limit
     runc update test_cgroups_kmem --kernel-memory 50331648
@@ -56,14 +57,15 @@ EOF
 }
 
 @test "runc update --kernel-memory (uninitialized)" {
-    requires cgroups_kmem
+	# XXX: currently cgroups require root containers.
+    requires cgroups_kmem root
+
     # Add cgroup path
     sed -i 's/\("linux": {\)/\1\n    "cgroupsPath": "\/runc-cgroups-integration-test",/'  ${BUSYBOX_BUNDLE}/config.json
 
     # run a detached busybox to work with
-    runc run -d --console /dev/pts/ptmx test_cgroups_kmem
+    runc run -d --console-socket $CONSOLE_SOCKET test_cgroups_kmem
     [ "$status" -eq 0 ]
-    wait_for_container 15 1 test_cgroups_kmem
 
     # update kernel memory limit
     runc update test_cgroups_kmem --kernel-memory 50331648

@@ -25,7 +25,7 @@ import (
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/storage/v1"
-	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
@@ -252,7 +252,8 @@ func (c *gceCloudImplementation) FindInstanceTemplates(clusterName string) ([]*c
 			match := false
 			for _, item := range t.Properties.Metadata.Items {
 				if item.Key == "cluster-name" {
-					if strings.TrimSpace(item.Value) == findClusterName {
+					value := fi.StringValue(item.Value)
+					if strings.TrimSpace(value) == findClusterName {
 						match = true
 					} else {
 						match = false

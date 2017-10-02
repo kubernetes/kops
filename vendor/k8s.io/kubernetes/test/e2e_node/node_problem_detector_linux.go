@@ -25,15 +25,15 @@ import (
 	"syscall"
 	"time"
 
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/uuid"
-	"k8s.io/kubernetes/pkg/api/v1"
+	clientset "k8s.io/client-go/kubernetes"
+	coreclientset "k8s.io/client-go/kubernetes/typed/core/v1"
 	nodeutil "k8s.io/kubernetes/pkg/api/v1/node"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	coreclientset "k8s.io/kubernetes/pkg/client/clientset_generated/clientset/typed/core/v1"
 	"k8s.io/kubernetes/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
@@ -161,6 +161,8 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 			})
 			Expect(err).NotTo(HaveOccurred())
 			By("Create the node problem detector")
+			hostPathType := new(v1.HostPathType)
+			*hostPathType = v1.HostPathType(string(v1.HostPathFileOrCreate))
 			f.PodClient().CreateSync(&v1.Pod{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: name,
@@ -186,7 +188,10 @@ var _ = framework.KubeDescribe("NodeProblemDetector", func() {
 						{
 							Name: localtimeVolume,
 							VolumeSource: v1.VolumeSource{
-								HostPath: &v1.HostPathVolumeSource{Path: etcLocaltime},
+								HostPath: &v1.HostPathVolumeSource{
+									Path: etcLocaltime,
+									Type: hostPathType,
+								},
 							},
 						},
 					},

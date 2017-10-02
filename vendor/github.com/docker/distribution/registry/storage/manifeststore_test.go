@@ -8,7 +8,6 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/reference"
@@ -17,6 +16,7 @@ import (
 	"github.com/docker/distribution/registry/storage/driver/inmemory"
 	"github.com/docker/distribution/testutil"
 	"github.com/docker/libtrust"
+	"github.com/opencontainers/go-digest"
 )
 
 type manifestStoreTestEnv struct {
@@ -52,26 +52,21 @@ func newManifestStoreTestEnv(t *testing.T, name reference.Named, tag string, opt
 }
 
 func TestManifestStorage(t *testing.T) {
-	testManifestStorage(t, BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()), EnableDelete, EnableRedirect)
-}
-
-func TestManifestStorageDisabledSignatures(t *testing.T) {
 	k, err := libtrust.GenerateECP256PrivateKey()
 	if err != nil {
 		t.Fatal(err)
 	}
-	testManifestStorage(t, BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()), EnableDelete, EnableRedirect, DisableSchema1Signatures, Schema1SigningKey(k))
+	testManifestStorage(t, BlobDescriptorCacheProvider(memory.NewInMemoryBlobDescriptorCacheProvider()), EnableDelete, EnableRedirect, Schema1SigningKey(k))
 }
 
 func testManifestStorage(t *testing.T, options ...RegistryOption) {
-	repoName, _ := reference.ParseNamed("foo/bar")
+	repoName, _ := reference.WithName("foo/bar")
 	env := newManifestStoreTestEnv(t, repoName, "thetag", options...)
 	ctx := context.Background()
 	ms, err := env.repository.Manifests(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	equalSignatures := env.registry.(*registry).schema1SignaturesEnabled
 
 	m := schema1.Manifest{
 		Versioned: manifest.Versioned{
@@ -175,12 +170,6 @@ func testManifestStorage(t *testing.T, options ...RegistryOption) {
 		t.Fatalf("fetched payload does not match original payload: %q != %q", fetchedManifest.Canonical, sm.Canonical)
 	}
 
-	if equalSignatures {
-		if !reflect.DeepEqual(fetchedManifest, sm) {
-			t.Fatalf("fetched manifest not equal: %#v != %#v", fetchedManifest.Manifest, sm.Manifest)
-		}
-	}
-
 	_, pl, err := fetchedManifest.Payload()
 	if err != nil {
 		t.Fatalf("error getting payload %#v", err)
@@ -221,12 +210,6 @@ func testManifestStorage(t *testing.T, options ...RegistryOption) {
 
 	if !bytes.Equal(byDigestManifest.Canonical, fetchedManifest.Canonical) {
 		t.Fatalf("fetched manifest not equal: %q != %q", byDigestManifest.Canonical, fetchedManifest.Canonical)
-	}
-
-	if equalSignatures {
-		if !reflect.DeepEqual(fetchedByDigest, fetchedManifest) {
-			t.Fatalf("fetched manifest not equal: %#v != %#v", fetchedByDigest, fetchedManifest)
-		}
 	}
 
 	sigs, err := fetchedJWS.Signatures()
@@ -285,17 +268,6 @@ func testManifestStorage(t *testing.T, options ...RegistryOption) {
 		t.Fatalf("unexpected error verifying manifest: %v", err)
 	}
 
-	// Assemble our payload and two signatures to get what we expect!
-	expectedJWS, err := libtrust.NewJSONSignature(payload, sigs[0], sigs2[0])
-	if err != nil {
-		t.Fatalf("unexpected error merging jws: %v", err)
-	}
-
-	expectedSigs, err := expectedJWS.Signatures()
-	if err != nil {
-		t.Fatalf("unexpected error getting expected signatures: %v", err)
-	}
-
 	_, pl, err = fetched.Payload()
 	if err != nil {
 		t.Fatalf("error getting payload %#v", err)
@@ -313,19 +285,6 @@ func testManifestStorage(t *testing.T, options ...RegistryOption) {
 
 	if !bytes.Equal(receivedPayload, payload) {
 		t.Fatalf("payloads are not equal")
-	}
-
-	if equalSignatures {
-		receivedSigs, err := receivedJWS.Signatures()
-		if err != nil {
-			t.Fatalf("error getting signatures: %v", err)
-		}
-
-		for i, sig := range receivedSigs {
-			if !bytes.Equal(sig, expectedSigs[i]) {
-				t.Fatalf("mismatched signatures from remote: %v != %v", string(sig), string(expectedSigs[i]))
-			}
-		}
 	}
 
 	// Test deleting manifests

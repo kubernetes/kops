@@ -13,14 +13,15 @@ import (
 
 func ExampleIndex() {
 	fmt.Println(ianaindex.MIME.Name(charmap.ISO8859_7))
-
 	fmt.Println(ianaindex.IANA.Name(charmap.ISO8859_7))
+	fmt.Println(ianaindex.MIB.Name(charmap.ISO8859_7))
 
-	e, _ := ianaindex.IANA.Get("cp437")
+	e, _ := ianaindex.IANA.Encoding("cp437")
 	fmt.Println(ianaindex.IANA.Name(e))
 
-	// TODO: Output:
-	// ISO-8859-7
-	// ISO8859_7:1987
-	// IBM437
+	// Output:
+	// ISO-8859-7 <nil>
+	// ISO_8859-7:1987 <nil>
+	// ISOLatinGreek <nil>
+	// IBM437 <nil>
 }

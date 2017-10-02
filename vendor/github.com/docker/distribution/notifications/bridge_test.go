@@ -4,12 +4,12 @@ import (
 	"testing"
 
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/registry/api/v2"
 	"github.com/docker/distribution/uuid"
 	"github.com/docker/libtrust"
+	"github.com/opencontainers/go-digest"
 )
 
 var (
@@ -43,7 +43,7 @@ func TestEventBridgeManifestPulled(t *testing.T) {
 		return nil
 	}))
 
-	repoRef, _ := reference.ParseNamed(repo)
+	repoRef, _ := reference.WithName(repo)
 	if err := l.ManifestPulled(repoRef, sm); err != nil {
 		t.Fatalf("unexpected error notifying manifest pull: %v", err)
 	}
@@ -56,7 +56,7 @@ func TestEventBridgeManifestPushed(t *testing.T) {
 		return nil
 	}))
 
-	repoRef, _ := reference.ParseNamed(repo)
+	repoRef, _ := reference.WithName(repo)
 	if err := l.ManifestPushed(repoRef, sm); err != nil {
 		t.Fatalf("unexpected error notifying manifest pull: %v", err)
 	}
@@ -72,7 +72,7 @@ func TestEventBridgeManifestPushedWithTag(t *testing.T) {
 		return nil
 	}))
 
-	repoRef, _ := reference.ParseNamed(repo)
+	repoRef, _ := reference.WithName(repo)
 	if err := l.ManifestPushed(repoRef, sm, distribution.WithTag(m.Tag)); err != nil {
 		t.Fatalf("unexpected error notifying manifest pull: %v", err)
 	}
@@ -88,7 +88,7 @@ func TestEventBridgeManifestPulledWithTag(t *testing.T) {
 		return nil
 	}))
 
-	repoRef, _ := reference.ParseNamed(repo)
+	repoRef, _ := reference.WithName(repo)
 	if err := l.ManifestPulled(repoRef, sm, distribution.WithTag(m.Tag)); err != nil {
 		t.Fatalf("unexpected error notifying manifest pull: %v", err)
 	}
@@ -100,7 +100,7 @@ func TestEventBridgeManifestDeleted(t *testing.T) {
 		return nil
 	}))
 
-	repoRef, _ := reference.ParseNamed(repo)
+	repoRef, _ := reference.WithName(repo)
 	if err := l.ManifestDeleted(repoRef, dgst); err != nil {
 		t.Fatalf("unexpected error notifying manifest pull: %v", err)
 	}
@@ -160,7 +160,7 @@ func checkCommonManifest(t *testing.T, action string, events ...Event) {
 		t.Fatalf("unexpected event action: %q != %q", event.Action, action)
 	}
 
-	repoRef, _ := reference.ParseNamed(repo)
+	repoRef, _ := reference.WithName(repo)
 	ref, _ := reference.WithDigest(repoRef, dgst)
 	u, err := ub.BuildManifestURL(ref)
 	if err != nil {

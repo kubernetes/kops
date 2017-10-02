@@ -38,7 +38,9 @@ type clusterStrategy struct {
 	names.NameGenerator
 }
 
-var Strategy = clusterStrategy{kops.Scheme, names.SimpleNameGenerator}
+func NewStrategy(typer runtime.ObjectTyper) clusterStrategy {
+	return clusterStrategy{typer, names.SimpleNameGenerator}
+}
 
 func (clusterStrategy) NamespaceScoped() bool {
 	return true

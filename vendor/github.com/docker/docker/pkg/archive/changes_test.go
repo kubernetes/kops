@@ -22,6 +22,10 @@ func max(x, y int) int {
 
 func copyDir(src, dst string) error {
 	cmd := exec.Command("cp", "-a", src, dst)
+	if runtime.GOOS == "solaris" {
+		cmd = exec.Command("gcp", "-a", src, dst)
+	}
+
 	if err := cmd.Run(); err != nil {
 		return err
 	}
@@ -98,10 +102,10 @@ func createSampleDir(t *testing.T, root string) {
 }
 
 func TestChangeString(t *testing.T) {
-	modifiyChange := Change{"change", ChangeModify}
-	toString := modifiyChange.String()
+	modifyChange := Change{"change", ChangeModify}
+	toString := modifyChange.String()
 	if toString != "C change" {
-		t.Fatalf("String() of a change with ChangeModifiy Kind should have been %s but was %s", "C change", toString)
+		t.Fatalf("String() of a change with ChangeModify Kind should have been %s but was %s", "C change", toString)
 	}
 	addChange := Change{"change", ChangeAdd}
 	toString = addChange.String()
@@ -252,12 +256,13 @@ func TestChangesWithChangesGH13590(t *testing.T) {
 	checkChanges(expectedChanges, changes, t)
 }
 
-// Create an directory, copy it, make sure we report no changes between the two
+// Create a directory, copy it, make sure we report no changes between the two
 func TestChangesDirsEmpty(t *testing.T) {
 	// TODO Windows. There may be a way of running this, but turning off for now
 	// as createSampleDir uses symlinks.
-	if runtime.GOOS == "windows" {
-		t.Skip("symlinks on Windows")
+	// TODO Should work for Solaris
+	if runtime.GOOS == "windows" || runtime.GOOS == "solaris" {
+		t.Skip("symlinks on Windows; gcp failure on Solaris")
 	}
 	src, err := ioutil.TempDir("", "docker-changes-test")
 	if err != nil {
@@ -364,8 +369,9 @@ func mutateSampleDir(t *testing.T, root string) {
 func TestChangesDirsMutated(t *testing.T) {
 	// TODO Windows. There may be a way of running this, but turning off for now
 	// as createSampleDir uses symlinks.
-	if runtime.GOOS == "windows" {
-		t.Skip("symlinks on Windows")
+	// TODO Should work for Solaris
+	if runtime.GOOS == "windows" || runtime.GOOS == "solaris" {
+		t.Skip("symlinks on Windows; gcp failures on Solaris")
 	}
 	src, err := ioutil.TempDir("", "docker-changes-test")
 	if err != nil {
@@ -425,8 +431,9 @@ func TestChangesDirsMutated(t *testing.T) {
 func TestApplyLayer(t *testing.T) {
 	// TODO Windows. There may be a way of running this, but turning off for now
 	// as createSampleDir uses symlinks.
-	if runtime.GOOS == "windows" {
-		t.Skip("symlinks on Windows")
+	// TODO Should work for Solaris
+	if runtime.GOOS == "windows" || runtime.GOOS == "solaris" {
+		t.Skip("symlinks on Windows; gcp failures on Solaris")
 	}
 	src, err := ioutil.TempDir("", "docker-changes-test")
 	if err != nil {

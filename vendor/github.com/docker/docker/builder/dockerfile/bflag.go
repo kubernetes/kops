@@ -29,12 +29,19 @@ type Flag struct {
 	Value    string
 }
 
-// NewBFlags return the new BFlags struct
+// NewBFlags returns the new BFlags struct
 func NewBFlags() *BFlags {
 	return &BFlags{
 		flags: make(map[string]*Flag),
 		used:  make(map[string]*Flag),
 	}
+}
+
+// NewBFlagsWithArgs returns the new BFlags struct with Args set to args
+func NewBFlagsWithArgs(args []string) *BFlags {
+	flags := NewBFlags()
+	flags.Args = args
+	return flags
 }
 
 // AddBool adds a bool flag to BFlags
@@ -167,7 +174,7 @@ func (bf *BFlags) Parse() error {
 			flag.Value = value
 
 		default:
-			panic(fmt.Errorf("No idea what kind of flag we have! Should never get here!"))
+			panic("No idea what kind of flag we have! Should never get here!")
 		}
 
 	}

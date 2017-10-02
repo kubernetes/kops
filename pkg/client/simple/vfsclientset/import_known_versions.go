@@ -19,14 +19,11 @@ package vfsclientset
 // These imports are the API groups the client will support.
 import (
 	"fmt"
-
-	"k8s.io/kops/pkg/apis/kops"
-
-	_ "k8s.io/kops/pkg/apis/kops/install"
+	"k8s.io/kops/pkg/kopscodecs"
 )
 
 func init() {
-	if missingVersions := kops.Registry.ValidateEnvRequestedVersions(); len(missingVersions) != 0 {
+	if missingVersions := kopscodecs.Registry.ValidateEnvRequestedVersions(); len(missingVersions) != 0 {
 		panic(fmt.Sprintf("KUBE_API_VERSIONS contains versions that are not installed: %q.", missingVersions))
 	}
 }

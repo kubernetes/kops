@@ -319,7 +319,7 @@ func TestReadFileInto(t *testing.T) {
 	res := &struct{ Section struct{ Name string } }{}
 	err := ReadFileInto(res, "testdata/gcfg_test.gcfg")
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err)
 	}
 	if "value" != res.Section.Name {
 		t.Errorf("got %q, wanted %q", res.Section.Name, "value")
@@ -330,9 +330,49 @@ func TestReadFileIntoUnicode(t *testing.T) {
 	res := &struct{ X甲 struct{ X乙 string } }{}
 	err := ReadFileInto(res, "testdata/gcfg_unicode_test.gcfg")
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Error(err)
 	}
 	if "丙" != res.X甲.X乙 {
 		t.Errorf("got %q, wanted %q", res.X甲.X乙, "丙")
+	}
+}
+
+func TestReadStringIntoSubsectDefaults(t *testing.T) {
+	type subsect struct {
+		Color       string
+		Orientation string
+	}
+	res := &struct {
+		Default_Profile subsect
+		Profile         map[string]*subsect
+	}{Default_Profile: subsect{Color: "green"}}
+	cfg := `
+	[profile "one"]
+	orientation = left`
+	err := ReadStringInto(res, cfg)
+	if err != nil {
+		t.Error(err)
+	}
+	if res.Profile["one"].Color != "green" {
+		t.Errorf("got %q; want %q", res.Profile["one"].Color, "green")
+	}
+}
+
+func TestReadStringIntoExtraData(t *testing.T) {
+	res := &struct {
+		Section struct {
+			Name string
+		}
+	}{}
+	cfg := `
+	[section]
+	name = value
+	name2 = value2`
+	err := FatalOnly(ReadStringInto(res, cfg))
+	if err != nil {
+		t.Error(err)
+	}
+	if res.Section.Name != "value" {
+		t.Errorf("res.Section.Name=%q; want %q", res.Section.Name, "value")
 	}
 }

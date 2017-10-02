@@ -36,7 +36,9 @@ type instanceGroupStrategy struct {
 	names.NameGenerator
 }
 
-var Strategy = instanceGroupStrategy{kops.Scheme, names.SimpleNameGenerator}
+func NewStrategy(typer runtime.ObjectTyper) instanceGroupStrategy {
+	return instanceGroupStrategy{typer, names.SimpleNameGenerator}
+}
 
 func (instanceGroupStrategy) NamespaceScoped() bool {
 	return true

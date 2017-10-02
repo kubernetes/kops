@@ -22,9 +22,9 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/api/v1"
 	stats "k8s.io/kubernetes/pkg/kubelet/apis/stats/v1alpha1"
 	"k8s.io/kubernetes/test/e2e/framework"
 
@@ -72,15 +72,10 @@ var _ = framework.KubeDescribe("Summary API", func() {
 
 			// Setup expectations.
 			const (
-				kb int64 = 1000
-				mb int64 = 1000 * kb
-				gb int64 = 1000 * mb
-				tb int64 = 1000 * gb
-
 				maxStartAge = time.Hour * 24 * 365 // 1 year
 				maxStatsAge = time.Minute
 			)
-			fsCapacityBounds := bounded(100*mb, 100*gb)
+			fsCapacityBounds := bounded(100*framework.Mb, 100*framework.Gb)
 			// Expectations for system containers.
 			sysContExpectations := func() types.GomegaMatcher {
 				return gstruct.MatchAllFields(gstruct.Fields{
@@ -95,16 +90,10 @@ var _ = framework.KubeDescribe("Summary API", func() {
 						"Time": recent(maxStatsAge),
 						// We don't limit system container memory.
 						"AvailableBytes":  BeNil(),
-						"UsageBytes":      bounded(1*mb, 10*gb),
-						"WorkingSetBytes": bounded(1*mb, 10*gb),
-						// today, this returns the value reported
-						// in /sys/fs/cgroup/memory.stat for rss
-						// this value should really return /sys/fs/cgroup/memory.stat total_rss
-						// as we really want the hierarchical value not the usage local to / cgroup.
-						// for now, i am updating the bounding box to the value as coded, but the
-						// value reported needs to change.
-						// rss only makes sense if you are leaf cgroup
-						"RSSBytes":        bounded(0, 1*gb),
+						"UsageBytes":      bounded(1*framework.Mb, 10*framework.Gb),
+						"WorkingSetBytes": bounded(1*framework.Mb, 10*framework.Gb),
+						// this now returns /sys/fs/cgroup/memory.stat total_rss
+						"RSSBytes":        bounded(1*framework.Mb, 1*framework.Gb),
 						"PageFaults":      bounded(1000, 1E9),
 						"MajorPageFaults": bounded(0, 100000),
 					}),
@@ -126,9 +115,9 @@ var _ = framework.KubeDescribe("Summary API", func() {
 					"Time": recent(maxStatsAge),
 					// We don't limit system container memory.
 					"AvailableBytes":  BeNil(),
-					"UsageBytes":      bounded(100*kb, 10*gb),
-					"WorkingSetBytes": bounded(100*kb, 10*gb),
-					"RSSBytes":        bounded(100*kb, 1*gb),
+					"UsageBytes":      bounded(100*framework.Kb, 10*framework.Gb),
+					"WorkingSetBytes": bounded(100*framework.Kb, 10*framework.Gb),
+					"RSSBytes":        bounded(100*framework.Kb, 1*framework.Gb),
 					"PageFaults":      bounded(1000, 1E9),
 					"MajorPageFaults": bounded(0, 100000),
 				})
@@ -149,10 +138,10 @@ var _ = framework.KubeDescribe("Summary API", func() {
 						}),
 						"Memory": ptrMatchAllFields(gstruct.Fields{
 							"Time":            recent(maxStatsAge),
-							"AvailableBytes":  bounded(10*kb, 10*mb),
-							"UsageBytes":      bounded(10*kb, 20*mb),
-							"WorkingSetBytes": bounded(10*kb, 20*mb),
-							"RSSBytes":        bounded(1*kb, mb),
+							"AvailableBytes":  bounded(1*framework.Kb, 10*framework.Mb),
+							"UsageBytes":      bounded(10*framework.Kb, 20*framework.Mb),
+							"WorkingSetBytes": bounded(10*framework.Kb, 20*framework.Mb),
+							"RSSBytes":        bounded(1*framework.Kb, framework.Mb),
 							"PageFaults":      bounded(100, 1000000),
 							"MajorPageFaults": bounded(0, 10),
 						}),
@@ -160,7 +149,7 @@ var _ = framework.KubeDescribe("Summary API", func() {
 							"Time":           recent(maxStatsAge),
 							"AvailableBytes": fsCapacityBounds,
 							"CapacityBytes":  fsCapacityBounds,
-							"UsedBytes":      bounded(kb, 10*mb),
+							"UsedBytes":      bounded(framework.Kb, 10*framework.Mb),
 							"InodesFree":     bounded(1E4, 1E8),
 							"Inodes":         bounded(1E4, 1E8),
 							"InodesUsed":     bounded(0, 1E8),
@@ -169,7 +158,7 @@ var _ = framework.KubeDescribe("Summary API", func() {
 							"Time":           recent(maxStatsAge),
 							"AvailableBytes": fsCapacityBounds,
 							"CapacityBytes":  fsCapacityBounds,
-							"UsedBytes":      bounded(kb, 10*mb),
+							"UsedBytes":      bounded(framework.Kb, 10*framework.Mb),
 							"InodesFree":     bounded(1E4, 1E8),
 							"Inodes":         bounded(1E4, 1E8),
 							"InodesUsed":     bounded(0, 1E8),
@@ -179,19 +168,20 @@ var _ = framework.KubeDescribe("Summary API", func() {
 				}),
 				"Network": ptrMatchAllFields(gstruct.Fields{
 					"Time":     recent(maxStatsAge),
-					"RxBytes":  bounded(10, 10*mb),
+					"RxBytes":  bounded(10, 10*framework.Mb),
 					"RxErrors": bounded(0, 1000),
-					"TxBytes":  bounded(10, 10*mb),
+					"TxBytes":  bounded(10, 10*framework.Mb),
 					"TxErrors": bounded(0, 1000),
 				}),
 				"VolumeStats": gstruct.MatchAllElements(summaryObjectID, gstruct.Elements{
 					"test-empty-dir": gstruct.MatchAllFields(gstruct.Fields{
-						"Name": Equal("test-empty-dir"),
+						"Name":   Equal("test-empty-dir"),
+						"PVCRef": BeNil(),
 						"FsStats": gstruct.MatchAllFields(gstruct.Fields{
 							"Time":           recent(maxStatsAge),
 							"AvailableBytes": fsCapacityBounds,
 							"CapacityBytes":  fsCapacityBounds,
-							"UsedBytes":      bounded(kb, 1*mb),
+							"UsedBytes":      bounded(framework.Kb, 1*framework.Mb),
 							"InodesFree":     bounded(1E4, 1E8),
 							"Inodes":         bounded(1E4, 1E8),
 							"InodesUsed":     bounded(0, 1E8),
@@ -211,26 +201,20 @@ var _ = framework.KubeDescribe("Summary API", func() {
 					}),
 					"Memory": ptrMatchAllFields(gstruct.Fields{
 						"Time":            recent(maxStatsAge),
-						"AvailableBytes":  bounded(100*mb, 100*gb),
-						"UsageBytes":      bounded(10*mb, 10*gb),
-						"WorkingSetBytes": bounded(10*mb, 10*gb),
-						// today, this returns the value reported
-						// in /sys/fs/cgroup/memory.stat for rss
-						// this value should really return /sys/fs/cgroup/memory.stat total_rss
-						// as we really want the hierarchical value not the usage local to / cgroup.
-						// for now, i am updating the bounding box to the value as coded, but the
-						// value reported needs to change.
-						// rss only makes sense if you are leaf cgroup
-						"RSSBytes":        bounded(0, 1*gb),
+						"AvailableBytes":  bounded(100*framework.Mb, 100*framework.Gb),
+						"UsageBytes":      bounded(10*framework.Mb, 10*framework.Gb),
+						"WorkingSetBytes": bounded(10*framework.Mb, 10*framework.Gb),
+						// this now returns /sys/fs/cgroup/memory.stat total_rss
+						"RSSBytes":        bounded(1*framework.Kb, 1*framework.Gb),
 						"PageFaults":      bounded(1000, 1E9),
 						"MajorPageFaults": bounded(0, 100000),
 					}),
 					// TODO(#28407): Handle non-eth0 network interface names.
 					"Network": Or(BeNil(), ptrMatchAllFields(gstruct.Fields{
 						"Time":     recent(maxStatsAge),
-						"RxBytes":  bounded(1*mb, 100*gb),
+						"RxBytes":  bounded(1*framework.Mb, 100*framework.Gb),
 						"RxErrors": bounded(0, 100000),
-						"TxBytes":  bounded(10*kb, 10*gb),
+						"TxBytes":  bounded(10*framework.Kb, 10*framework.Gb),
 						"TxErrors": bounded(0, 100000),
 					})),
 					"Fs": ptrMatchAllFields(gstruct.Fields{
@@ -238,7 +222,7 @@ var _ = framework.KubeDescribe("Summary API", func() {
 						"AvailableBytes": fsCapacityBounds,
 						"CapacityBytes":  fsCapacityBounds,
 						// we assume we are not running tests on machines < 10tb of disk
-						"UsedBytes":  bounded(kb, 10*tb),
+						"UsedBytes":  bounded(framework.Kb, 10*framework.Tb),
 						"InodesFree": bounded(1E4, 1E8),
 						"Inodes":     bounded(1E4, 1E8),
 						"InodesUsed": bounded(0, 1E8),
@@ -249,7 +233,7 @@ var _ = framework.KubeDescribe("Summary API", func() {
 							"AvailableBytes": fsCapacityBounds,
 							"CapacityBytes":  fsCapacityBounds,
 							// we assume we are not running tests on machines < 10tb of disk
-							"UsedBytes":  bounded(kb, 10*tb),
+							"UsedBytes":  bounded(framework.Kb, 10*framework.Tb),
 							"InodesFree": bounded(1E4, 1E8),
 							"Inodes":     bounded(1E4, 1E8),
 							"InodesUsed": bounded(0, 1E8),
@@ -284,7 +268,7 @@ func getSummaryTestPods(f *framework.Framework, numRestarts int32, names ...stri
 				Containers: []v1.Container{
 					{
 						Name:    "busybox-container",
-						Image:   "gcr.io/google_containers/busybox:1.24",
+						Image:   busyboxImage,
 						Command: getRestartingContainerCommand("/test-empty-dir-mnt", 0, numRestarts, "ping -c 1 google.com; echo 'hello world' >> /test-empty-dir-mnt/file;"),
 						Resources: v1.ResourceRequirements{
 							Limits: v1.ResourceList{

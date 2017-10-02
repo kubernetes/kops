@@ -23,20 +23,18 @@ addons:
     - unzip
 
 install: 
-  - go get github.com/googleapis/gnostic
-  - go get github.com/googleapis/gnostic/plugins/go/gnostic_go_sample
-  - go get github.com/googleapis/gnostic/extensions/sample/generated/openapi_extensions_samplecompanyone
-  - go get github.com/googleapis/gnostic/extensions/sample/generated/openapi_extensions_samplecompanytwo
   - ./.travis-install.sh
+  - export PATH=.:$HOME/local/bin:$PATH
+  - make
 
 script:
   - go test . -v
-  - pushd plugins/go/gnostic_go_generator/examples/v2.0/bookstore
+  - pushd plugins/gnostic-go-generator/examples/v2.0/bookstore
   - make test
   - popd
   - export PATH=.:$HOME/local/bin:$PATH
   - export LD_LIBRARY_PATH=$HOME/local/lib
-  - pushd plugins/swift/gnostic_swift_generator
+  - pushd plugins/gnostic-swift-generator
   - make
   - cd examples/bookstore
   - make

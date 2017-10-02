@@ -1019,6 +1019,35 @@ func (s *ChromeOsDevices) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// ChromeOsMoveDevicesToOu: JSON request template for moving ChromeOs
+// Device to given OU in Directory Devices API.
+type ChromeOsMoveDevicesToOu struct {
+	// DeviceIds: ChromeOs Devices to be moved to OU
+	DeviceIds []string `json:"deviceIds,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "DeviceIds") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "DeviceIds") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *ChromeOsMoveDevicesToOu) MarshalJSON() ([]byte, error) {
+	type noMethod ChromeOsMoveDevicesToOu
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Customer: JSON template for Customer Resource object in Directory
 // API.
 type Customer struct {
@@ -2652,8 +2681,12 @@ type User struct {
 	// IsMailboxSetup: Is mailbox setup (Read-only)
 	IsMailboxSetup bool `json:"isMailboxSetup,omitempty"`
 
+	Keywords interface{} `json:"keywords,omitempty"`
+
 	// Kind: Kind of resource this is.
 	Kind string `json:"kind,omitempty"`
+
+	Languages interface{} `json:"languages,omitempty"`
 
 	// LastLoginTime: User's last login time. (Read-only)
 	LastLoginTime string `json:"lastLoginTime,omitempty"`
@@ -2960,11 +2993,85 @@ func (s *UserIm) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// UserKeyword: JSON template for a keyword entry.
+type UserKeyword struct {
+	// CustomType: Custom Type.
+	CustomType string `json:"customType,omitempty"`
+
+	// Type: Each entry can have a type which indicates standard type of
+	// that entry. For example, keyword could be of type occupation or
+	// outlook. In addition to the standard type, an entry can have a custom
+	// type and can give it any name. Such types should have the CUSTOM
+	// value as type and also have a customType value.
+	Type string `json:"type,omitempty"`
+
+	// Value: Keyword.
+	Value string `json:"value,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CustomType") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CustomType") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *UserKeyword) MarshalJSON() ([]byte, error) {
+	type noMethod UserKeyword
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+// UserLanguage: JSON template for a language entry.
+type UserLanguage struct {
+	// CustomLanguage: Other language. User can provide own language name if
+	// there is no corresponding Google III language code. If this is set
+	// LanguageCode can't be set
+	CustomLanguage string `json:"customLanguage,omitempty"`
+
+	// LanguageCode: Language Code. Should be used for storing Google III
+	// LanguageCode string representation for language. Illegal values cause
+	// SchemaException.
+	LanguageCode string `json:"languageCode,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "CustomLanguage") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "CustomLanguage") to
+	// include in API requests with the JSON null value. By default, fields
+	// with empty values are omitted from API requests. However, any field
+	// with an empty value appearing in NullFields will be sent to the
+	// server as null. It is an error if a field in this list has a
+	// non-empty value. This may be used to include null fields in Patch
+	// requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *UserLanguage) MarshalJSON() ([]byte, error) {
+	type noMethod UserLanguage
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // UserLocation: JSON template for a location entry.
 type UserLocation struct {
 	// Area: Textual location. This is most useful for display purposes to
-	// concisely describe the location. E.g. "Mountain View, CA", "Near
-	// Seattle", "US-NYC-9TH 9A209A".
+	// concisely describe the location. For example, "Mountain View, CA",
+	// "Near Seattle", "US-NYC-9TH 9A209A".
 	Area string `json:"area,omitempty"`
 
 	// BuildingId: Building Identifier.
@@ -2979,9 +3086,9 @@ type UserLocation struct {
 	// FloorName: Floor name/number.
 	FloorName string `json:"floorName,omitempty"`
 
-	// FloorSection: Floor Section. More specific location within the floor.
-	// E.g. if a floor is divided into sections "A", "B", and "C", this
-	// field would identify one of those values.
+	// FloorSection: Floor section. More specific location within the floor.
+	// For example, if a floor is divided into sections "A", "B", and "C",
+	// this field would identify one of those values.
 	FloorSection string `json:"floorSection,omitempty"`
 
 	// Type: Each entry can have a type which indicates standard types of
@@ -3093,6 +3200,10 @@ type UserOrganization struct {
 
 	// Domain: The domain to which the organization belongs to.
 	Domain string `json:"domain,omitempty"`
+
+	// FullTimeEquivalent: The full-time equivalent percent within the
+	// organization (100000 = 100%).
+	FullTimeEquivalent int64 `json:"fullTimeEquivalent,omitempty"`
 
 	// Location: Location of the organization. This need not be fully
 	// qualified address.
@@ -4366,6 +4477,13 @@ func (c *ChromeosdevicesListCall) OrderBy(orderBy string) *ChromeosdevicesListCa
 	return c
 }
 
+// OrgUnitPath sets the optional parameter "orgUnitPath": Full path of
+// the organization unit or its Id
+func (c *ChromeosdevicesListCall) OrgUnitPath(orgUnitPath string) *ChromeosdevicesListCall {
+	c.urlParams_.Set("orgUnitPath", orgUnitPath)
+	return c
+}
+
 // PageToken sets the optional parameter "pageToken": Token to specify
 // next page in the list
 func (c *ChromeosdevicesListCall) PageToken(pageToken string) *ChromeosdevicesListCall {
@@ -4542,6 +4660,11 @@ func (c *ChromeosdevicesListCall) Do(opts ...googleapi.CallOption) (*ChromeOsDev
 	//       "location": "query",
 	//       "type": "string"
 	//     },
+	//     "orgUnitPath": {
+	//       "description": "Full path of the organization unit or its Id",
+	//       "location": "query",
+	//       "type": "string"
+	//     },
 	//     "pageToken": {
 	//       "description": "Token to specify next page in the list",
 	//       "location": "query",
@@ -4610,6 +4733,120 @@ func (c *ChromeosdevicesListCall) Pages(ctx context.Context, f func(*ChromeOsDev
 		}
 		c.PageToken(x.NextPageToken)
 	}
+}
+
+// method id "directory.chromeosdevices.moveDevicesToOu":
+
+type ChromeosdevicesMoveDevicesToOuCall struct {
+	s                       *Service
+	customerId              string
+	chromeosmovedevicestoou *ChromeOsMoveDevicesToOu
+	urlParams_              gensupport.URLParams
+	ctx_                    context.Context
+	header_                 http.Header
+}
+
+// MoveDevicesToOu: Move or insert multiple Chrome OS Devices to
+// Organization Unit
+func (r *ChromeosdevicesService) MoveDevicesToOu(customerId string, orgUnitPath string, chromeosmovedevicestoou *ChromeOsMoveDevicesToOu) *ChromeosdevicesMoveDevicesToOuCall {
+	c := &ChromeosdevicesMoveDevicesToOuCall{s: r.s, urlParams_: make(gensupport.URLParams)}
+	c.customerId = customerId
+	c.urlParams_.Set("orgUnitPath", orgUnitPath)
+	c.chromeosmovedevicestoou = chromeosmovedevicestoou
+	return c
+}
+
+// Fields allows partial responses to be retrieved. See
+// https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
+// for more information.
+func (c *ChromeosdevicesMoveDevicesToOuCall) Fields(s ...googleapi.Field) *ChromeosdevicesMoveDevicesToOuCall {
+	c.urlParams_.Set("fields", googleapi.CombineFields(s))
+	return c
+}
+
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
+func (c *ChromeosdevicesMoveDevicesToOuCall) Context(ctx context.Context) *ChromeosdevicesMoveDevicesToOuCall {
+	c.ctx_ = ctx
+	return c
+}
+
+// Header returns an http.Header that can be modified by the caller to
+// add HTTP headers to the request.
+func (c *ChromeosdevicesMoveDevicesToOuCall) Header() http.Header {
+	if c.header_ == nil {
+		c.header_ = make(http.Header)
+	}
+	return c.header_
+}
+
+func (c *ChromeosdevicesMoveDevicesToOuCall) doRequest(alt string) (*http.Response, error) {
+	reqHeaders := make(http.Header)
+	for k, v := range c.header_ {
+		reqHeaders[k] = v
+	}
+	reqHeaders.Set("User-Agent", c.s.userAgent())
+	var body io.Reader = nil
+	body, err := googleapi.WithoutDataWrapper.JSONReader(c.chromeosmovedevicestoou)
+	if err != nil {
+		return nil, err
+	}
+	reqHeaders.Set("Content-Type", "application/json")
+	c.urlParams_.Set("alt", alt)
+	urls := googleapi.ResolveRelative(c.s.BasePath, "customer/{customerId}/devices/chromeos/moveDevicesToOu")
+	urls += "?" + c.urlParams_.Encode()
+	req, _ := http.NewRequest("POST", urls, body)
+	req.Header = reqHeaders
+	googleapi.Expand(req.URL, map[string]string{
+		"customerId": c.customerId,
+	})
+	return gensupport.SendRequest(c.ctx_, c.s.client, req)
+}
+
+// Do executes the "directory.chromeosdevices.moveDevicesToOu" call.
+func (c *ChromeosdevicesMoveDevicesToOuCall) Do(opts ...googleapi.CallOption) error {
+	gensupport.SetOptions(c.urlParams_, opts...)
+	res, err := c.doRequest("json")
+	if err != nil {
+		return err
+	}
+	defer googleapi.CloseBody(res)
+	if err := googleapi.CheckResponse(res); err != nil {
+		return err
+	}
+	return nil
+	// {
+	//   "description": "Move or insert multiple Chrome OS Devices to Organization Unit",
+	//   "httpMethod": "POST",
+	//   "id": "directory.chromeosdevices.moveDevicesToOu",
+	//   "parameterOrder": [
+	//     "customerId",
+	//     "orgUnitPath"
+	//   ],
+	//   "parameters": {
+	//     "customerId": {
+	//       "description": "Immutable ID of the G Suite account",
+	//       "location": "path",
+	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "orgUnitPath": {
+	//       "description": "Full path of the target organization unit or its Id",
+	//       "location": "query",
+	//       "required": true,
+	//       "type": "string"
+	//     }
+	//   },
+	//   "path": "customer/{customerId}/devices/chromeos/moveDevicesToOu",
+	//   "request": {
+	//     "$ref": "ChromeOsMoveDevicesToOu"
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/admin.directory.device.chromeos"
+	//   ]
+	// }
+
 }
 
 // method id "directory.chromeosdevices.patch":

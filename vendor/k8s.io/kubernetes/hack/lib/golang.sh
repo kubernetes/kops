@@ -53,7 +53,12 @@ readonly KUBE_NODE_TARGETS=($(kube::golang::node_targets))
 readonly KUBE_NODE_BINARIES=("${KUBE_NODE_TARGETS[@]##*/}")
 readonly KUBE_NODE_BINARIES_WIN=("${KUBE_NODE_BINARIES[@]/%/.exe}")
 
-if [[ "${KUBE_FASTBUILD:-}" == "true" ]]; then
+if [[ -n "${KUBE_BUILD_PLATFORMS:-}" ]]; then
+  readonly KUBE_SERVER_PLATFORMS=(${KUBE_BUILD_PLATFORMS})
+  readonly KUBE_NODE_PLATFORMS=(${KUBE_BUILD_PLATFORMS})
+  readonly KUBE_TEST_PLATFORMS=(${KUBE_BUILD_PLATFORMS})
+  readonly KUBE_CLIENT_PLATFORMS=(${KUBE_BUILD_PLATFORMS})
+elif [[ "${KUBE_FASTBUILD:-}" == "true" ]]; then
   readonly KUBE_SERVER_PLATFORMS=(linux/amd64)
   readonly KUBE_NODE_PLATFORMS=(linux/amd64)
   if [[ "${KUBE_BUILDER_OS:-}" == "darwin"* ]]; then
@@ -107,6 +112,10 @@ else
   # Which platforms we should compile test targets for. Not all client platforms need these tests
   readonly KUBE_TEST_PLATFORMS=(
     linux/amd64
+    linux/arm
+    linux/arm64
+    linux/s390x
+    linux/ppc64le
     darwin/amd64
     windows/amd64
   )
@@ -129,7 +138,6 @@ kube::golang::test_targets() {
     cmd/genkubedocs
     cmd/genman
     cmd/genyaml
-    cmd/mungedocs
     cmd/genswaggertypedocs
     cmd/linkcheck
     federation/cmd/genfeddocs
@@ -329,11 +337,13 @@ EOF
 
   local go_version
   go_version=($(go version))
-  if [[ "${go_version[2]}" < "go1.6" && "${go_version[2]}" != "devel" ]]; then
+  local minimum_go_version
+  minimum_go_version=go1.8.3
+  if [[ "${go_version[2]}" < "${minimum_go_version}" && "${go_version[2]}" != "devel" ]]; then
     kube::log::usage_from_stdin <<EOF
 Detected go version: ${go_version[*]}.
-Kubernetes requires go version 1.6 or greater.
-Please install Go version 1.6 or later.
+Kubernetes requires ${minimum_go_version} or greater.
+Please install ${minimum_go_version} or later.
 EOF
     return 2
   fi
@@ -377,7 +387,7 @@ kube::golang::setup_env() {
   # Unset GOBIN in case it already exists in the current session.
   unset GOBIN
 
-  # This seems to matter to some tools (godep, ugorji, ginkgo...)
+  # This seems to matter to some tools (godep, ginkgo...)
   export GO15VENDOREXPERIMENT=1
 }
 
@@ -624,9 +634,9 @@ kube::golang::build_binaries() {
 
     # Use eval to preserve embedded quoted strings.
     local goflags goldflags gogcflags
-    eval "goflags=(${KUBE_GOFLAGS:-})"
-    goldflags="${KUBE_GOLDFLAGS:-} $(kube::version::ldflags)"
-    gogcflags="${KUBE_GOGCFLAGS:-}"
+    eval "goflags=(${GOFLAGS:-})"
+    goldflags="${GOLDFLAGS:-} $(kube::version::ldflags)"
+    gogcflags="${GOGCFLAGS:-}"
 
     local use_go_build
     local -a targets=()

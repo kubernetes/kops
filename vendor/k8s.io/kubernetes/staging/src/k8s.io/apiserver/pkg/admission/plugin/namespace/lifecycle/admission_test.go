@@ -21,6 +21,7 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -32,7 +33,6 @@ import (
 	informers "k8s.io/client-go/informers"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/fake"
-	"k8s.io/client-go/pkg/api/v1"
 	core "k8s.io/client-go/testing"
 )
 
@@ -135,6 +135,24 @@ func TestAdmissionNamespaceDoesNotExist(t *testing.T) {
 		}
 		t.Errorf("expected error returned from admission handler: %v", actions)
 	}
+
+	// verify create operations in the namespace cause an error
+	err = handler.Admit(admission.NewAttributesRecord(&pod, nil, v1.SchemeGroupVersion.WithKind("Pod").GroupKind().WithVersion("version"), pod.Namespace, pod.Name, v1.Resource("pods").WithVersion("version"), "", admission.Create, nil))
+	if err == nil {
+		t.Errorf("Expected error rejecting creates in a namespace when it is missing")
+	}
+
+	// verify update operations in the namespace cause an error
+	err = handler.Admit(admission.NewAttributesRecord(&pod, nil, v1.SchemeGroupVersion.WithKind("Pod").GroupKind().WithVersion("version"), pod.Namespace, pod.Name, v1.Resource("pods").WithVersion("version"), "", admission.Update, nil))
+	if err == nil {
+		t.Errorf("Expected error rejecting updates in a namespace when it is missing")
+	}
+
+	// verify delete operations in the namespace can proceed
+	err = handler.Admit(admission.NewAttributesRecord(nil, nil, v1.SchemeGroupVersion.WithKind("Pod").GroupKind().WithVersion("version"), pod.Namespace, pod.Name, v1.Resource("pods").WithVersion("version"), "", admission.Delete, nil))
+	if err != nil {
+		t.Errorf("Unexpected error returned from admission handler: %v", err)
+	}
 }
 
 // TestAdmissionNamespaceActive verifies a resource is admitted when the namespace is active.
@@ -233,7 +251,7 @@ func TestAdmissionNamespaceForceLiveLookup(t *testing.T) {
 	getCalls = 0
 
 	// verify delete of namespace can proceed
-	err = handler.Admit(admission.NewAttributesRecord(nil, nil, v1.SchemeGroupVersion.WithKind("Namespace").GroupKind().WithVersion("version"), "", namespace, v1.Resource("namespaces").WithVersion("version"), "", admission.Delete, nil))
+	err = handler.Admit(admission.NewAttributesRecord(nil, nil, v1.SchemeGroupVersion.WithKind("Namespace").GroupKind().WithVersion("version"), namespace, namespace, v1.Resource("namespaces").WithVersion("version"), "", admission.Delete, nil))
 	if err != nil {
 		t.Errorf("Expected namespace deletion to be allowed")
 	}
