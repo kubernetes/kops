@@ -1,0 +1,24 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "policy.go",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/v1/helper/qos:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["policy_test.go"],
+    library = ":go_default_library",
+    deps = [
+        "//vendor/k8s.io/api/core/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
+    ],
+)
