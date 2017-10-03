@@ -118,6 +118,9 @@ type ApplyClusterCmd struct {
 
 	// Phase can be set to a Phase to run the specific subset of tasks, if we don't want to run everything
 	Phase Phase
+
+	// PhaseValidationPolicy sets Lifecycle validation to loose or strict.
+	PhaseValidationPolicy fi.LifecycleValidationPolicy
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -482,6 +485,10 @@ func (c *ApplyClusterCmd) Run() error {
 	case PhaseCluster:
 		if c.TargetName == TargetDryRun {
 			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+		} else if c.PhaseValidationPolicy == fi.LifecycleValidationLoose {
+			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 		} else {
