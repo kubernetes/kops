@@ -60,6 +60,7 @@ go_test(
         "kube_apiserver_test.go",
         "kubelet_test.go",
     ],
+    data = glob(["tests/**"]),  #keep
     library = ":go_default_library",
     deps = [
         "//nodeup/pkg/distros:go_default_library",
