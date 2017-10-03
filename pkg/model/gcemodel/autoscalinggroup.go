@@ -51,9 +51,11 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		var instanceTemplate *gcetasks.InstanceTemplate
 		{
 			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
-			volumeSize, err := defaults.FindDefaultVolumeSize(fi.Int32Value(ig.Spec.RootVolumeSize), ig.Spec.Role)
-			if err != nil {
-				return err
+			if volumeSize == 0 {
+				volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+				if err != nil {
+					return err
+				}
 			}
 			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
 			if volumeType == "" {
