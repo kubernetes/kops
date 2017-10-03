@@ -115,6 +115,10 @@ go_binary(
     name = "kops",
     library = ":go_default_library",
     visibility = ["//visibility:public"],
+    x_defs = {
+        "k8s.io/kops.Version": "1.8.0-alpha.1",  # keep
+        "k8s.io/kops.GitVersion": "{BUILD_SCM_REVISION}",  # keep
+    },
 )
 
 go_test(
@@ -125,6 +129,10 @@ go_test(
         "createcluster_test.go",
         "delete_confirm_test.go",
         "integration_test.go",
+    ],
+    data = [
+        "//channels:channeldata",  # keep
+        "//tests/integration:exported_testdata",  # keep
     ],
     library = ":go_default_library",
     deps = [
