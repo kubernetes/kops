@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "mock.go",
+        "storagetests.go",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/google/cadvisor/info/v1:go_default_library",
+        "//vendor/github.com/google/cadvisor/storage:go_default_library",
+        "//vendor/github.com/stretchr/testify/mock:go_default_library",
+    ],
+)
