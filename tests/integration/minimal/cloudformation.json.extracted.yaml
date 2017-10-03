@@ -49,9 +49,23 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
       for url in "${urls[@]}"; do
         local file="${url##*/}"
         rm -f "${file}"
-        if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
-          echo "== Failed to download ${url}. Retrying. =="
-        elif [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
+
+        if [[ $(which curl) ]]; then
+          if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
+            echo "== Failed to curl ${url}. Retrying. =="
+            break
+          fi
+        elif [[ $(which wget ) ]]; then
+          if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
+            echo "== Failed to wget ${url}. Retrying. =="
+            break
+          fi
+        else
+          echo "== Could not find curl or wget. Retrying. =="
+          break
+        fi
+
+        if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
           echo "== Hash validation of ${url} failed. Retrying. =="
         else
           if [[ -n "${hash}" ]]; then
@@ -303,9 +317,23 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
       for url in "${urls[@]}"; do
         local file="${url##*/}"
         rm -f "${file}"
-        if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
-          echo "== Failed to download ${url}. Retrying. =="
-        elif [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
+
+        if [[ $(which curl) ]]; then
+          if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
+            echo "== Failed to curl ${url}. Retrying. =="
+            break
+          fi
+        elif [[ $(which wget ) ]]; then
+          if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
+            echo "== Failed to wget ${url}. Retrying. =="
+            break
+          fi
+        else
+          echo "== Could not find curl or wget. Retrying. =="
+          break
+        fi
+
+        if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
           echo "== Hash validation of ${url} failed. Retrying. =="
         else
           if [[ -n "${hash}" ]]; then
