@@ -100,8 +100,6 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 	asgGroups, _ := cloud.Autoscaling().DescribeAutoScalingGroups(&autoscaling.DescribeAutoScalingGroupsInput{})
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[0].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
@@ -112,29 +110,27 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("node-1a"),
+				ID:   "node-1a",
 				Node: &v1.Node{},
 			},
 			{
-				ID:   aws.String("node-1b"),
+				ID:   "node-1b",
 				Node: &v1.Node{},
 			},
 		},
 		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("node-1a"),
+				ID:   "node-1a",
 				Node: &v1.Node{},
 			},
 			{
-				ID:   aws.String("node-1b"),
+				ID:   "node-1b",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["node-2"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[1].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
@@ -145,29 +141,27 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("node-2a"),
+				ID:   "node-2a",
 				Node: &v1.Node{},
 			},
 			{
-				ID:   aws.String("node-2b"),
+				ID:   "node-2b",
 				Node: &v1.Node{},
 			},
 		},
 		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("node-2a"),
+				ID:   "node-2a",
 				Node: &v1.Node{},
 			},
 			{
-				ID:   aws.String("node-2b"),
+				ID:   "node-2b",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["master-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[2].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
@@ -178,21 +172,19 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("master-1a"),
+				ID:   "master-1a",
 				Node: &v1.Node{},
 			},
 		},
 		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("master-1a"),
+				ID:   "master-1a",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["bastion-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[3].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",
@@ -203,13 +195,13 @@ func TestRollingUpdateAllNeedUpdate(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("bastion-1a"),
+				ID:   "bastion-1a",
 				Node: &v1.Node{},
 			},
 		},
 		NeedUpdate: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("bastion-1a"),
+				ID:   "bastion-1a",
 				Node: &v1.Node{},
 			},
 		},
@@ -250,8 +242,6 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[0].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
@@ -262,19 +252,17 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("node-1a"),
+				ID:   "node-1a",
 				Node: &v1.Node{},
 			},
 			{
-				ID:   aws.String("node-1b"),
+				ID:   "node-1b",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["node-2"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[1].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
@@ -285,19 +273,17 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("node-2a"),
+				ID:   "node-2a",
 				Node: &v1.Node{},
 			},
 			{
-				ID:   aws.String("node-2b"),
+				ID:   "node-2b",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["master-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[2].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
@@ -308,15 +294,13 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("master-1a"),
+				ID:   "master-1a",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["bastion-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[3].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",
@@ -327,7 +311,7 @@ func TestRollingUpdateNoneNeedUpdate(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("bastion-1a"),
+				ID:   "bastion-1a",
 				Node: &v1.Node{},
 			},
 		},
@@ -396,8 +380,6 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[0].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
@@ -408,19 +390,17 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("node-1a"),
+				ID:   "node-1a",
 				Node: &v1.Node{},
 			},
 			{
-				ID:   aws.String("node-1b"),
+				ID:   "node-1b",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["node-2"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[1].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
@@ -431,19 +411,17 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("node-2a"),
+				ID:   "node-2a",
 				Node: &v1.Node{},
 			},
 			{
-				ID:   aws.String("node-2b"),
+				ID:   "node-2b",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["master-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[2].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
@@ -454,15 +432,13 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("master-1a"),
+				ID:   "master-1a",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["bastion-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[3].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",
@@ -473,7 +449,7 @@ func TestRollingUpdateNoneNeedUpdateWithForce(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("bastion-1a"),
+				ID:   "bastion-1a",
 				Node: &v1.Node{},
 			},
 		},
@@ -575,8 +551,6 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	groups["node-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[0].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[0].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-1",
@@ -587,19 +561,17 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("node-1a"),
+				ID:   "node-1a",
 				Node: &v1.Node{},
 			},
 			{
-				ID:   aws.String("node-1b"),
+				ID:   "node-1b",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["node-2"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[1].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[1].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "node-2",
@@ -610,19 +582,17 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("node-2a"),
+				ID:   "node-2a",
 				Node: &v1.Node{},
 			},
 			{
-				ID:   aws.String("node-2b"),
+				ID:   "node-2b",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["master-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[2].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[2].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "master-1",
@@ -633,15 +603,13 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("master-1a"),
+				ID:   "master-1a",
 				Node: &v1.Node{},
 			},
 		},
 	}
 
 	groups["bastion-1"] = &cloudinstances.CloudInstanceGroup{
-		GroupName:         aws.StringValue(asgGroups.AutoScalingGroups[3].AutoScalingGroupName),
-		GroupTemplateName: aws.StringValue(asgGroups.AutoScalingGroups[3].LaunchConfigurationName),
 		InstanceGroup: &kopsapi.InstanceGroup{
 			ObjectMeta: v1meta.ObjectMeta{
 				Name: "bastion-1",
@@ -652,7 +620,7 @@ func TestRollingUpdateUnknownRole(t *testing.T) {
 		},
 		Ready: []*cloudinstances.CloudInstanceGroupMember{
 			{
-				ID:   aws.String("bastion-1a"),
+				ID:   "bastion-1a",
 				Node: &v1.Node{},
 			},
 		},

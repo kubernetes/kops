@@ -25,9 +25,7 @@ import (
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/storage/v1"
-	"k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
@@ -46,10 +44,6 @@ type GCECloud interface {
 
 	// FindClusterStatus gets the status of the cluster as it exists in GCE, inferred from volumes
 	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
-
-	// FindInstanceTemplates finds all instance templates that are associated with the current cluster
-	// It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
-	FindInstanceTemplates(clusterName string) ([]*compute.InstanceTemplate, error)
 
 	Zones() ([]string, error)
 }
@@ -222,27 +216,9 @@ func (c *gceCloudImplementation) GetApiIngressStatus(cluster *kops.Cluster) ([]k
 	return ingresses, nil
 }
 
-// DeleteGroup deletes a cloud of instances controlled by an Instance Group Manager
-func (c *gceCloudImplementation) DeleteGroup(name string, template string) error {
-	glog.V(8).Infof("gce cloud provider DeleteGroup not implemented yet")
-	return fmt.Errorf("gce cloud provider does not support deleting cloud groups at this time")
-}
-
-// DeleteInstance deletes a GCE instance
-func (c *gceCloudImplementation) DeleteInstance(id *string) error {
-	glog.V(8).Infof("gce cloud provider DeleteInstance not implemented yet")
-	return fmt.Errorf("gce cloud provider does not support deleting cloud instances at this time")
-}
-
-// GetCloudGroups returns a map of CloudGroup that backs a list of instance groups
-func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	glog.V(8).Infof("gce cloud provider GetCloudGroups not implemented yet")
-	return nil, fmt.Errorf("gce cloud provider does not support getting cloud groups at this time")
-}
-
 // FindInstanceTemplates finds all instance templates that are associated with the current cluster
 // It matches them by looking for instance metadata with key='cluster-name' and value of our cluster name
-func (c *gceCloudImplementation) FindInstanceTemplates(clusterName string) ([]*compute.InstanceTemplate, error) {
+func FindInstanceTemplates(c GCECloud, clusterName string) ([]*compute.InstanceTemplate, error) {
 	findClusterName := strings.TrimSpace(clusterName)
 	var matches []*compute.InstanceTemplate
 	ctx := context.Background()
@@ -271,7 +247,7 @@ func (c *gceCloudImplementation) FindInstanceTemplates(clusterName string) ([]*c
 		return nil
 	})
 	if err != nil {
-		return nil, fmt.Errorf("error listing instance groups: %v", err)
+		return nil, fmt.Errorf("error listing instance templates: %v", err)
 	}
 
 	return matches, nil

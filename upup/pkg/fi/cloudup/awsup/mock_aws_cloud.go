@@ -76,12 +76,12 @@ type MockCloud struct {
 	MockRoute53        route53iface.Route53API
 }
 
-func (c *MockAWSCloud) DeleteGroup(name string, template string) error {
-	return deleteGroup(c, name, template)
+func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+	return deleteGroup(c, g)
 }
 
-func (c *MockAWSCloud) DeleteInstance(id *string) error {
-	return deleteInstance(c, id)
+func (c *MockAWSCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return deleteInstance(c, i)
 }
 
 func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {

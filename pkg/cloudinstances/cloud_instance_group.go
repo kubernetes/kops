@@ -26,65 +26,39 @@ import (
 
 // CloudInstanceGroup is the cloud backing of InstanceGroup.
 type CloudInstanceGroup struct {
-	InstanceGroup     *api.InstanceGroup
-	GroupName         string
-	GroupTemplateName string
-	Ready             []*CloudInstanceGroupMember
-	NeedUpdate        []*CloudInstanceGroupMember
-	MinSize           int
-	MaxSize           int
+	// HumanName is a user-friendly name for the group
+	HumanName     string
+	InstanceGroup *api.InstanceGroup
+	Ready         []*CloudInstanceGroupMember
+	NeedUpdate    []*CloudInstanceGroupMember
+	MinSize       int
+	MaxSize       int
+
+	// Raw allows for the implementer to attach an object, for tracking additional state
+	Raw interface{}
 }
 
 // CloudInstanceGroupMember describes an instance in a CloudInstanceGroup group.
 type CloudInstanceGroupMember struct {
-	ID   *string
+	// ID is a unique identifier for the instance, meaningful to the cloud
+	ID string
+	// Node is the associated k8s instance, if it is known
 	Node *v1.Node
 }
 
-// NewCloudInstanceGroup creates a CloudInstanceGroup and validates its initial values.
-func NewCloudInstanceGroup(groupName string, groupTemplateName string, ig *api.InstanceGroup, minSize int, maxSize int) (*CloudInstanceGroup, error) {
-	if groupName == "" {
-		return nil, fmt.Errorf("group name for cloud instance group must be set")
-	}
-	if groupTemplateName == "" {
-		return nil, fmt.Errorf("group template name for cloud instance group must be set")
-	}
-	if ig == nil {
-		return nil, fmt.Errorf("kops instance group for cloud instance group must be set")
-	}
-
-	if minSize < 0 {
-		return nil, fmt.Errorf("cloud instance group min size must be zero or greater")
-	}
-	if maxSize < 0 {
-		return nil, fmt.Errorf("cloud instance group max size must be zero or greater")
-	}
-
-	cg := &CloudInstanceGroup{
-		GroupName:         groupName,
-		GroupTemplateName: groupTemplateName,
-		InstanceGroup:     ig,
-		MinSize:           minSize,
-		MaxSize:           maxSize,
-	}
-
-	return cg, nil
-}
-
 // NewCloudInstanceGroupMember creates a new CloudInstanceGroupMember
-func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId *string, newGroupName string, currentGroupName string, nodeMap map[string]*v1.Node) error {
-	if instanceId == nil {
-		return fmt.Errorf("instance id for cloud instance member cannot be nil")
+func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newGroupName string, currentGroupName string, nodeMap map[string]*v1.Node) error {
+	if instanceId == "" {
+		return fmt.Errorf("instance id for cloud instance member cannot be empty")
 	}
 	cm := &CloudInstanceGroupMember{
 		ID: instanceId,
 	}
-	id := *instanceId
-	node := nodeMap[id]
+	node := nodeMap[instanceId]
 	if node != nil {
 		cm.Node = node
 	} else {
-		glog.V(8).Infof("unable to find node for instance: %s", id)
+		glog.V(8).Infof("unable to find node for instance: %s", instanceId)
 	}
 
 	if newGroupName == currentGroupName {
@@ -105,7 +79,7 @@ func (c *CloudInstanceGroup) Status() string {
 	}
 }
 
-// GetNodeMap returns a list of nodes keyed by there external id
+// GetNodeMap returns a list of nodes keyed by their external id
 func GetNodeMap(nodes []v1.Node) map[string]*v1.Node {
 	nodeMap := make(map[string]*v1.Node)
 	for i := range nodes {
@@ -114,32 +88,4 @@ func GetNodeMap(nodes []v1.Node) map[string]*v1.Node {
 	}
 
 	return nodeMap
-}
-
-// GetInstanceGroup filters a list of instancegroups for recognized cloud groups
-func GetInstanceGroup(name string, clusterName string, instancegroups []*api.InstanceGroup) (*api.InstanceGroup, error) {
-	var instancegroup *api.InstanceGroup
-	for _, g := range instancegroups {
-		var groupName string
-		switch g.Spec.Role {
-		case api.InstanceGroupRoleMaster:
-			groupName = g.ObjectMeta.Name + ".masters." + clusterName
-		case api.InstanceGroupRoleNode:
-			groupName = g.ObjectMeta.Name + "." + clusterName
-		case api.InstanceGroupRoleBastion:
-			groupName = g.ObjectMeta.Name + "." + clusterName
-		default:
-			glog.Warningf("Ignoring InstanceGroup of unknown role %q", g.Spec.Role)
-			continue
-		}
-
-		if name == groupName {
-			if instancegroup != nil {
-				return nil, fmt.Errorf("found multiple instance groups matching ASG %q", groupName)
-			}
-			instancegroup = g
-		}
-	}
-
-	return instancegroup, nil
 }
