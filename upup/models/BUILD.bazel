@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "bindata.go",
+        "vfs.go",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//util/pkg/vfs:go_default_library",
+        "//vendor/github.com/google/cadvisor/pages/static:go_default_library",
+    ],
+)

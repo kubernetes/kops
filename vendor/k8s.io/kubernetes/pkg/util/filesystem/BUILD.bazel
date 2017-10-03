@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "defaultfs.go",
+        "fakefs.go",
+        "filesystem.go",
+        "watcher.go",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/fsnotify/fsnotify:go_default_library",
+        "//vendor/github.com/spf13/afero:go_default_library",
+    ],
+)

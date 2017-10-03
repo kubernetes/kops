@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "client.go",
+        "dial.go",
+        "hybi.go",
+        "server.go",
+        "websocket.go",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "dial_test.go",
+        "hybi_test.go",
+        "websocket_test.go",
+    ],
+    library = ":go_default_library",
+)
+
+go_test(
+    name = "go_default_xtest",
+    srcs = [
+        "exampledial_test.go",
+        "examplehandler_test.go",
+    ],
+    deps = [":go_default_library"],
+)

@@ -1,0 +1,16 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "report.go",
+        "vars.go",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/miekg/coredns/middleware:go_default_library",
+        "//vendor/github.com/miekg/coredns/request:go_default_library",
+        "//vendor/github.com/miekg/dns:go_default_library",
+        "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
+    ],
+)
