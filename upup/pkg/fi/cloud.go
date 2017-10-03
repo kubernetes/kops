@@ -32,10 +32,10 @@ type Cloud interface {
 	FindVPCInfo(id string) (*VPCInfo, error)
 
 	// DeleteInstance deletes a cloud instance
-	DeleteInstance(id *string) error
+	DeleteInstance(instance *cloudinstances.CloudInstanceGroupMember) error
 
-	// DeleteGroup delete a group of cloud instances
-	DeleteGroup(name string, template string) error
+	// DeleteGroup deletes the cloud resources that make up a CloudInstanceGroup, including the instances
+	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
 
 	// GetCloudGroups returns a map of cloud instances that back a kops cluster
 	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)

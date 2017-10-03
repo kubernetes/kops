@@ -135,9 +135,9 @@ func (d *clusterDiscoveryGCE) findInstanceTemplates() ([]*compute.InstanceTempla
 		return d.instanceTemplates, nil
 	}
 
-	instanceTemplates, err := d.gceCloud.FindInstanceTemplates(d.clusterName)
+	instanceTemplates, err := gce.FindInstanceTemplates(d.gceCloud, d.clusterName)
 	if err != nil {
-		return nil, fmt.Errorf("unable to find intance templates: %v", err)
+		return nil, err
 	}
 
 	d.instanceTemplates = instanceTemplates
@@ -152,12 +152,15 @@ func (d *clusterDiscoveryGCE) listGCEInstanceTemplates() ([]*tracker.Resource, e
 		return nil, err
 	}
 	for _, t := range templates {
+		selfLink := t.SelfLink // avoid closure-in-loop go-tcha
 		resourceTracker := &tracker.Resource{
-			Name:    t.Name,
-			ID:      t.Name,
-			Type:    typeInstanceTemplate,
-			Deleter: deleteGCEInstanceTemplate,
-			Obj:     t,
+			Name: t.Name,
+			ID:   t.Name,
+			Type: typeInstanceTemplate,
+			Deleter: func(cloud fi.Cloud, r *tracker.Resource) error {
+				return gce.DeleteInstanceTemplate(d.gceCloud, selfLink)
+			},
+			Obj: t,
 		}
 
 		glog.V(4).Infof("Found resource: %s", t.SelfLink)
@@ -165,28 +168,6 @@ func (d *clusterDiscoveryGCE) listGCEInstanceTemplates() ([]*tracker.Resource, e
 	}
 
 	return resourceTrackers, nil
-}
-
-func deleteGCEInstanceTemplate(cloud fi.Cloud, r *tracker.Resource) error {
-	c := cloud.(gce.GCECloud)
-	t := r.Obj.(*compute.InstanceTemplate)
-
-	glog.V(2).Infof("Deleting GCE InstanceTemplate %s", t.SelfLink)
-	u, err := gce.ParseGoogleCloudURL(t.SelfLink)
-	if err != nil {
-		return err
-	}
-
-	op, err := c.Compute().InstanceTemplates.Delete(u.Project, u.Name).Do()
-	if err != nil {
-		if gce.IsNotFound(err) {
-			glog.Infof("instancetemplate not found, assuming deleted: %q", t.SelfLink)
-			return nil
-		}
-		return fmt.Errorf("error deleting InstanceTemplate %s: %v", t.SelfLink, err)
-	}
-
-	return c.WaitForOp(op)
 }
 
 func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*tracker.Resource, error) {
@@ -210,7 +191,8 @@ func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*tracke
 
 	for _, zoneName := range d.zones {
 		err := c.Compute().InstanceGroupManagers.List(project, zoneName).Pages(ctx, func(page *compute.InstanceGroupManagerList) error {
-			for _, mig := range page.Items {
+			for i := range page.Items {
+				mig := page.Items[i] // avoid closure-in-loop go-tcha
 				instanceTemplate := instanceTemplates[mig.InstanceTemplate]
 				if instanceTemplate == nil {
 					glog.V(2).Infof("Ignoring MIG with unmanaged InstanceTemplate: %s", mig.InstanceTemplate)
@@ -221,7 +203,7 @@ func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*tracke
 					Name:    mig.Name,
 					ID:      zoneName + "/" + mig.Name,
 					Type:    typeInstanceGroupManager,
-					Deleter: deleteInstanceGroupManager,
+					Deleter: func(cloud fi.Cloud, r *tracker.Resource) error { return gce.DeleteInstanceGroupManager(c, mig) },
 					Obj:     mig,
 				}
 
@@ -247,53 +229,30 @@ func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*tracke
 	return resourceTrackers, nil
 }
 
-func deleteInstanceGroupManager(cloud fi.Cloud, r *tracker.Resource) error {
-	c := cloud.(gce.GCECloud)
-	t := r.Obj.(*compute.InstanceGroupManager)
-
-	glog.V(2).Infof("Deleting GCE InstanceGroupManager %s", t.SelfLink)
-	u, err := gce.ParseGoogleCloudURL(t.SelfLink)
-	if err != nil {
-		return err
-	}
-
-	//glog.Infof("MIG: %s", fi.DebugAsJsonString(t))
-
-	op, err := c.Compute().InstanceGroupManagers.Delete(u.Project, u.Zone, u.Name).Do()
-	if err != nil {
-		if gce.IsNotFound(err) {
-			glog.Infof("InstanceGroupManager not found, assuming deleted: %q", t.SelfLink)
-			return nil
-		}
-		return fmt.Errorf("error deleting InstanceGroupManager %s: %v", t.SelfLink, err)
-	}
-
-	return c.WaitForOp(op)
-}
-
 func (d *clusterDiscoveryGCE) listManagedInstances(igm *compute.InstanceGroupManager) ([]*tracker.Resource, error) {
 	c := d.gceCloud
-	project := c.Project()
 
 	var resourceTrackers []*tracker.Resource
 
 	zoneName := gce.LastComponent(igm.Zone)
 
-	// This call is not paginated
-	instances, err := c.Compute().InstanceGroupManagers.ListManagedInstances(project, zoneName, igm.Name).Do()
+	instances, err := gce.ListManagedInstances(c, igm)
 	if err != nil {
-		return nil, fmt.Errorf("error listing ManagedInstances in %s: %v", igm.Name, err)
+		return nil, err
 	}
 
-	for _, i := range instances.ManagedInstances {
-		name := gce.LastComponent(i.Instance)
+	for _, i := range instances {
+		url := i.Instance // avoid closure-in-loop go-tcha
+		name := gce.LastComponent(url)
 
 		resourceTracker := &tracker.Resource{
-			Name:    name,
-			ID:      zoneName + "/" + name,
-			Type:    typeInstance,
-			Deleter: deleteManagedInstance,
-			Obj:     i.Instance,
+			Name: name,
+			ID:   zoneName + "/" + name,
+			Type: typeInstance,
+			Deleter: func(cloud fi.Cloud, tracker *tracker.Resource) error {
+				return gce.DeleteInstance(c, url)
+			},
+			Obj: i.Instance,
 		}
 
 		// We don't block deletion of the instance group manager
@@ -442,8 +401,6 @@ func deleteTargetPool(cloud fi.Cloud, r *tracker.Resource) error {
 		return err
 	}
 
-	glog.Infof("TargetPool: %s", fi.DebugAsJsonString(t))
-
 	op, err := c.Compute().TargetPools.Delete(u.Project, u.Region, u.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
@@ -514,28 +471,6 @@ func deleteForwardingRule(cloud fi.Cloud, r *tracker.Resource) error {
 			return nil
 		}
 		return fmt.Errorf("error deleting ForwardingRule %s: %v", t.SelfLink, err)
-	}
-
-	return c.WaitForOp(op)
-}
-
-func deleteManagedInstance(cloud fi.Cloud, r *tracker.Resource) error {
-	c := cloud.(gce.GCECloud)
-	selfLink := r.Obj.(string)
-
-	glog.V(2).Infof("Deleting GCE Instance %s", selfLink)
-	u, err := gce.ParseGoogleCloudURL(selfLink)
-	if err != nil {
-		return err
-	}
-
-	op, err := c.Compute().Instances.Delete(u.Project, u.Zone, u.Name).Do()
-	if err != nil {
-		if gce.IsNotFound(err) {
-			glog.Infof("Instance not found, assuming deleted: %q", selfLink)
-			return nil
-		}
-		return fmt.Errorf("error deleting Instance %s: %v", selfLink, err)
 	}
 
 	return c.WaitForOp(op)

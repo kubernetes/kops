@@ -59,14 +59,14 @@ func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.Ins
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
 // Baremetal may not support this.
-func (c *Cloud) DeleteGroup(name string, template string) error {
-	glog.V(8).Infof("digitalocean cloud provider DeleteGroup not implemented yet")
-	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud groups at this time")
+func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+	glog.V(8).Infof("baremetal cloud provider DeleteGroup not implemented yet")
+	return fmt.Errorf("baremetal cloud provider does not support deleting cloud groups at this time")
 }
 
 //DeleteInstance is not implemented yet, is func needs to delete a DO instance.
 //Baremetal may not support this.
-func (c *Cloud) DeleteInstance(id *string) error {
+func (c *Cloud) DeleteInstance(instance *cloudinstances.CloudInstanceGroupMember) error {
 	glog.V(8).Infof("baremetal cloud provider DeleteInstance not implemented yet")
 	return fmt.Errorf("baremetal cloud provider does not support deleting cloud instances at this time")
 }
