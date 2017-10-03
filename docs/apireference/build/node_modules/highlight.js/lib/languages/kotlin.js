@@ -1,9 +1,9 @@
-module.exports = function (hljs) {
+module.exports = function(hljs) {
   var KEYWORDS = {
     keyword:
       'abstract as val var vararg get set class object open private protected public noinline ' +
       'crossinline dynamic final enum if else do while for when throw try catch finally ' +
-      'import package is in fun override companion reified inline ' +
+      'import package is in fun override companion reified inline lateinit init' +
       'interface annotation data sealed internal infix operator out by constructor super ' +
       // to be deleted soon
       'trait volatile transient native default',
@@ -31,17 +31,17 @@ module.exports = function (hljs) {
   // for string templates
   var SUBST = {
     className: 'subst',
-    variants: [
-      {begin: '\\$' + hljs.UNDERSCORE_IDENT_RE},
-      {begin: '\\${', end: '}', contains: [hljs.APOS_STRING_MODE, hljs.C_NUMBER_MODE]}
-    ]
+    begin: '\\${', end: '}', contains: [hljs.APOS_STRING_MODE, hljs.C_NUMBER_MODE]
+  };
+  var VARIABLE = {
+    className: 'variable', begin: '\\$' + hljs.UNDERSCORE_IDENT_RE
   };
   var STRING = {
     className: 'string',
     variants: [
       {
         begin: '"""', end: '"""',
-        contains: [SUBST]
+        contains: [VARIABLE, SUBST]
       },
       // Can't use built-in modes easily, as we want to use STRING in the meta
       // context as 'meta-string' and there's no syntax to remove explicitly set
@@ -54,7 +54,7 @@ module.exports = function (hljs) {
       {
         begin: '"', end: '"',
         illegal: /\n/,
-        contains: [hljs.BACKSLASH_ESCAPE, SUBST]
+        contains: [hljs.BACKSLASH_ESCAPE, VARIABLE, SUBST]
       }
     ]
   };

@@ -1518,6 +1518,7 @@ Appears In:
 Appears In:
 
 <ul> 
+<li><a href="#etcdclusterspec-v1alpha2-kops">EtcdClusterSpec kops/v1alpha2</a></li>
 <li><a href="#kubeapiserverconfig-v1alpha2-kops">KubeAPIServerConfig kops/v1alpha2</a></li>
 <li><a href="#kubecontrollermanagerconfig-v1alpha2-kops">KubeControllerManagerConfig kops/v1alpha2</a></li>
 <li><a href="#kubeletconfigspec-v1alpha2-kops">KubeletConfigSpec kops/v1alpha2</a></li>
@@ -1619,6 +1620,14 @@ Appears In:
 <tr>
 <td>etcdMembers <br /> <em><a href="#etcdmemberspec-v1alpha2-kops">EtcdMemberSpec</a> array</em></td>
 <td>Members stores the configurations for each member of the cluster (including the data volume)</td>
+</tr>
+<tr>
+<td>heartbeatInterval <br /> <em><a href="#duration-v1-meta">Duration</a></em></td>
+<td>HeartbeatInterval is the time (in milliseconds) for an etcd heartbeat interval</td>
+</tr>
+<tr>
+<td>leaderElectionTimeout <br /> <em><a href="#duration-v1-meta">Duration</a></em></td>
+<td>LeaderElectionTimeout is the time (in milliseconds) for an etcd leader election timeout</td>
 </tr>
 <tr>
 <td>name <br /> <em>string</em></td>
@@ -2095,6 +2104,10 @@ Appears In:
 </thead>
 <tbody>
 <tr>
+<td>allowContainerRegistry <br /> <em>boolean</em></td>
+<td></td>
+</tr>
+<tr>
 <td>legacy <br /> <em>boolean</em></td>
 <td></td>
 </tr>
@@ -2431,6 +2444,26 @@ Appears In:
 <td>The apiserver&#39;s client key used for outbound requests.</td>
 </tr>
 <tr>
+<td>requestheaderAllowedNames <br /> <em>string array</em></td>
+<td>List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.</td>
+</tr>
+<tr>
+<td>requestheaderClientCAFile <br /> <em>string</em></td>
+<td>Root certificate bundle to use to verify client certificates on incoming requests before trusting usernames in headers specified by --requestheader-username-headers</td>
+</tr>
+<tr>
+<td>requestheaderExtraHeaderPrefixes <br /> <em>string array</em></td>
+<td>List of request header prefixes to inspect. X-Remote-Extra- is suggested.</td>
+</tr>
+<tr>
+<td>requestheaderGroupHeaders <br /> <em>string array</em></td>
+<td>List of request headers to inspect for groups. X-Remote-Group is suggested.</td>
+</tr>
+<tr>
+<td>requestheaderUsernameHeaders <br /> <em>string array</em></td>
+<td>List of request headers to inspect for usernames. X-Remote-User is common.</td>
+</tr>
+<tr>
 <td>runtimeConfig <br /> <em>object</em></td>
 <td>RuntimeConfig is a series of keys/values are parsed into the <code>--runtime-config</code> parameters</td>
 </tr>
@@ -2520,6 +2553,10 @@ Appears In:
 <tr>
 <td>configureCloudRoutes <br /> <em>boolean</em></td>
 <td>ConfigureCloudRoutes enables CIDRs allocated with to be configured on the cloud provider.</td>
+</tr>
+<tr>
+<td>horizontalPodAutoscalerSyncPeriod <br /> <em><a href="#duration-v1-meta">Duration</a></em></td>
+<td>HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition</td>
 </tr>
 <tr>
 <td>image <br /> <em>string</em></td>
@@ -2647,6 +2684,10 @@ Appears In:
 <td></td>
 </tr>
 <tr>
+<td>enabled <br /> <em>boolean</em></td>
+<td>Enabled allows enabling or disabling kube-proxy</td>
+</tr>
+<tr>
 <td>featureGates <br /> <em>object</em></td>
 <td>FeatureGates is a series of key pairs used to switch on features for the proxy</td>
 </tr>
@@ -2716,6 +2757,10 @@ Appears In:
 <tr>
 <td>master <br /> <em>string</em></td>
 <td>Master is a url to the kube master</td>
+</tr>
+<tr>
+<td>usePolicyConfigMap <br /> <em>boolean</em></td>
+<td>UsePolicyConfigMap enable setting the scheduler policy from a configmap</td>
 </tr>
 </tbody>
 </table>
