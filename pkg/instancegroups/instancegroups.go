@@ -111,8 +111,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 	}
 
 	for _, u := range update {
-
-		instanceId := fi.StringValue(u.ID)
+		instanceId := u.ID
 
 		nodeName := ""
 		if u.Node != nil {
@@ -235,19 +234,23 @@ func (r *RollingUpdateInstanceGroup) ValidateCluster(rollingUpdateData *RollingU
 // DeleteInstance deletes an Cloud Instance.
 func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInstanceGroupMember) error {
 
-	id := fi.StringValue(u.ID)
-
+	id := u.ID
+	nodeName := ""
 	if u.Node != nil {
-		glog.Infof("Stopping instance %q, node %q, in group %q.", id, u.Node.Name, r.CloudGroup.GroupName)
+		nodeName = u.Node.Name
+	}
+	if nodeName != "" {
+		glog.Infof("Stopping instance %q, node %q, in group %q.", id, nodeName, r.CloudGroup.HumanName)
 	} else {
-		glog.Infof("Stopping instance %q, in group %q.", fi.StringValue(u.ID), r.CloudGroup.GroupName)
+		glog.Infof("Stopping instance %q, in group %q.", id, r.CloudGroup.HumanName)
 	}
 
-	if err := r.Cloud.DeleteInstance(u.ID); err != nil {
-		if u.Node.Name != "" {
-			return fmt.Errorf("error deleting instance %q, node %q: %v", id, u.Node.Name, err)
+	if err := r.Cloud.DeleteInstance(u); err != nil {
+		if nodeName != "" {
+			return fmt.Errorf("error deleting instance %q, node %q: %v", id, nodeName, err)
+		} else {
+			return fmt.Errorf("error deleting instance %q: %v", id, err)
 		}
-		return fmt.Errorf("error deleting instance %q: %v", id, err)
 	}
 
 	return nil
@@ -310,12 +313,6 @@ func (r *RollingUpdateInstanceGroup) Delete() error {
 	if r.CloudGroup == nil {
 		return fmt.Errorf("group has to be set")
 	}
-	if r.CloudGroup.GroupName == "" {
-		return fmt.Errorf("group name has to be set")
-	}
-	if r.CloudGroup.GroupTemplateName == "" {
-		return fmt.Errorf("group template name has to be set")
-	}
 	// TODO: Leaving func in place in order to cordon nd drain nodes
-	return r.Cloud.DeleteGroup(r.CloudGroup.GroupName, r.CloudGroup.GroupTemplateName)
+	return r.Cloud.DeleteGroup(r.CloudGroup)
 }
