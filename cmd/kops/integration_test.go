@@ -45,87 +45,89 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
+const updateClusterTestBase = "../../tests/integration/update_cluster/"
+
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimal(t *testing.T) {
-	runTestAWS(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha0", false, 1)
-	runTestAWS(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha1", false, 1)
-	runTestAWS(t, "minimal.example.com", "../../tests/integration/minimal", "v1alpha2", false, 1)
+	runTestAWS(t, "minimal.example.com", updateClusterTestBase+"minimal", "v1alpha0", false, 1)
+	runTestAWS(t, "minimal.example.com", updateClusterTestBase+"minimal", "v1alpha1", false, 1)
+	runTestAWS(t, "minimal.example.com", updateClusterTestBase+"minimal", "v1alpha2", false, 1)
 }
 
 // TestHA runs the test on a simple HA configuration, similar to kops create cluster minimal.example.com --zones us-west-1a,us-west-1b,us-west-1c --master-count=3
 func TestHA(t *testing.T) {
-	runTestAWS(t, "ha.example.com", "../../tests/integration/ha", "v1alpha1", false, 3)
-	runTestAWS(t, "ha.example.com", "../../tests/integration/ha", "v1alpha2", false, 3)
+	runTestAWS(t, "ha.example.com", updateClusterTestBase+"ha", "v1alpha1", false, 3)
+	runTestAWS(t, "ha.example.com", updateClusterTestBase+"ha", "v1alpha2", false, 3)
 }
 
 // TestHighAvailabilityGCE runs the test on a simple HA GCE configuration, similar to kops create cluster ha-gce.example.com
 // --zones us-test1-a,us-test1-b,us-test1-c --master-count=3
 func TestHighAvailabilityGCE(t *testing.T) {
-	runTestGCE(t, "ha-gce.example.com", "../../tests/integration/ha_gce", "v1alpha2", false, 3)
+	runTestGCE(t, "ha-gce.example.com", updateClusterTestBase+"ha_gce", "v1alpha2", false, 3)
 }
 
 // TestComplex runs the test on a more complex configuration, intended to hit more of the edge cases
 func TestComplex(t *testing.T) {
-	runTestAWS(t, "complex.example.com", "../../tests/integration/complex", "v1alpha2", false, 1)
+	runTestAWS(t, "complex.example.com", updateClusterTestBase+"complex", "v1alpha2", false, 1)
 }
 
 // TestMinimalCloudformation runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimalCloudformation(t *testing.T) {
-	runTestCloudformation(t, "minimal.example.com", "../../tests/integration/minimal-cloudformation", "v1alpha2", false)
+	runTestCloudformation(t, "minimal.example.com", updateClusterTestBase+"minimal-cloudformation", "v1alpha2", false)
 }
 
 // TestMinimal_141 runs the test on a configuration from 1.4.1 release
 func TestMinimal_141(t *testing.T) {
-	runTestAWS(t, "minimal-141.example.com", "../../tests/integration/minimal-141", "v1alpha0", false, 1)
+	runTestAWS(t, "minimal-141.example.com", updateClusterTestBase+"minimal-141", "v1alpha0", false, 1)
 }
 
 // TestPrivateWeave runs the test on a configuration with private topology, weave networking
 func TestPrivateWeave(t *testing.T) {
-	runTestAWS(t, "privateweave.example.com", "../../tests/integration/privateweave", "v1alpha1", true, 1)
-	runTestAWS(t, "privateweave.example.com", "../../tests/integration/privateweave", "v1alpha2", true, 1)
+	runTestAWS(t, "privateweave.example.com", updateClusterTestBase+"privateweave", "v1alpha1", true, 1)
+	runTestAWS(t, "privateweave.example.com", updateClusterTestBase+"privateweave", "v1alpha2", true, 1)
 }
 
 // TestPrivateFlannel runs the test on a configuration with private topology, flannel networking
 func TestPrivateFlannel(t *testing.T) {
-	runTestAWS(t, "privateflannel.example.com", "../../tests/integration/privateflannel", "v1alpha1", true, 1)
-	runTestAWS(t, "privateflannel.example.com", "../../tests/integration/privateflannel", "v1alpha2", true, 1)
+	runTestAWS(t, "privateflannel.example.com", updateClusterTestBase+"privateflannel", "v1alpha1", true, 1)
+	runTestAWS(t, "privateflannel.example.com", updateClusterTestBase+"privateflannel", "v1alpha2", true, 1)
 }
 
 // TestPrivateCalico runs the test on a configuration with private topology, calico networking
 func TestPrivateCalico(t *testing.T) {
-	runTestAWS(t, "privatecalico.example.com", "../../tests/integration/privatecalico", "v1alpha1", true, 1)
-	runTestAWS(t, "privatecalico.example.com", "../../tests/integration/privatecalico", "v1alpha2", true, 1)
+	runTestAWS(t, "privatecalico.example.com", updateClusterTestBase+"privatecalico", "v1alpha1", true, 1)
+	runTestAWS(t, "privatecalico.example.com", updateClusterTestBase+"privatecalico", "v1alpha2", true, 1)
 }
 
 // TestPrivateCanal runs the test on a configuration with private topology, canal networking
 func TestPrivateCanal(t *testing.T) {
-	runTestAWS(t, "privatecanal.example.com", "../../tests/integration/privatecanal", "v1alpha1", true, 1)
-	runTestAWS(t, "privatecanal.example.com", "../../tests/integration/privatecanal", "v1alpha2", true, 1)
+	runTestAWS(t, "privatecanal.example.com", updateClusterTestBase+"privatecanal", "v1alpha1", true, 1)
+	runTestAWS(t, "privatecanal.example.com", updateClusterTestBase+"privatecanal", "v1alpha2", true, 1)
 }
 
 // TestPrivateKopeio runs the test on a configuration with private topology, kopeio networking
 func TestPrivateKopeio(t *testing.T) {
-	runTestAWS(t, "privatekopeio.example.com", "../../tests/integration/privatekopeio", "v1alpha2", true, 1)
+	runTestAWS(t, "privatekopeio.example.com", updateClusterTestBase+"privatekopeio", "v1alpha2", true, 1)
 }
 
 // TestPrivateDns1 runs the test on a configuration with private topology, private dns
 func TestPrivateDns1(t *testing.T) {
-	runTestAWS(t, "privatedns1.example.com", "../../tests/integration/privatedns1", "v1alpha2", true, 1)
+	runTestAWS(t, "privatedns1.example.com", updateClusterTestBase+"privatedns1", "v1alpha2", true, 1)
 }
 
 // TestPrivateDns2 runs the test on a configuration with private topology, private dns, extant vpc
 func TestPrivateDns2(t *testing.T) {
-	runTestAWS(t, "privatedns2.example.com", "../../tests/integration/privatedns2", "v1alpha2", true, 1)
+	runTestAWS(t, "privatedns2.example.com", updateClusterTestBase+"privatedns2", "v1alpha2", true, 1)
 }
 
 // TestSharedSubnet runs the test on a configuration with a shared subnet (and VPC)
 func TestSharedSubnet(t *testing.T) {
-	runTestAWS(t, "sharedsubnet.example.com", "../../tests/integration/shared_subnet", "v1alpha2", false, 1)
+	runTestAWS(t, "sharedsubnet.example.com", updateClusterTestBase+"shared_subnet", "v1alpha2", false, 1)
 }
 
 // TestSharedVPC runs the test on a configuration with a shared VPC
 func TestSharedVPC(t *testing.T) {
-	runTestAWS(t, "sharedvpc.example.com", "../../tests/integration/shared_vpc", "v1alpha2", false, 1)
+	runTestAWS(t, "sharedvpc.example.com", updateClusterTestBase+"shared_vpc", "v1alpha2", false, 1)
 }
 
 func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string) {
