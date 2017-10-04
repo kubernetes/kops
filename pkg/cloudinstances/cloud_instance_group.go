@@ -44,6 +44,8 @@ type CloudInstanceGroupMember struct {
 	ID string
 	// Node is the associated k8s instance, if it is known
 	Node *v1.Node
+	// CloudInstanceGroup is the managing CloudInstanceGroup
+	CloudInstanceGroup *CloudInstanceGroup
 }
 
 // NewCloudInstanceGroupMember creates a new CloudInstanceGroupMember
@@ -52,7 +54,8 @@ func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newG
 		return fmt.Errorf("instance id for cloud instance member cannot be empty")
 	}
 	cm := &CloudInstanceGroupMember{
-		ID: instanceId,
+		ID:                 instanceId,
+		CloudInstanceGroup: c,
 	}
 	node := nodeMap[instanceId]
 	if node != nil {
