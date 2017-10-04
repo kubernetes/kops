@@ -41,9 +41,14 @@ import (
 
 	"github.com/ghodss/yaml"
 	"golang.org/x/crypto/ssh"
+	"k8s.io/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
+
+// TestVersion is set by the Makefile so that we do get kops upgrade warnings.
+// We cannot use the release version, because CI will fail before we have a release.
+var TestVersion = "1.7.0"
 
 // TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
 func TestMinimal(t *testing.T) {
@@ -235,6 +240,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 }
 
 func runTestAWS(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int) {
+	kops.Version = TestVersion
 	h := testutils.NewIntegrationTestHarness(t)
 	defer h.Close()
 
@@ -268,6 +274,7 @@ func runTestAWS(t *testing.T, clusterName string, srcDir string, version string,
 }
 
 func runTestGCE(t *testing.T, clusterName string, srcDir string, version string, private bool, zones int) {
+	kops.Version = TestVersion
 	featureflag.ParseFlags("+AlphaAllowGCE")
 
 	h := testutils.NewIntegrationTestHarness(t)
@@ -293,6 +300,9 @@ func runTestGCE(t *testing.T, clusterName string, srcDir string, version string,
 
 func runTestCloudformation(t *testing.T, clusterName string, srcDir string, version string, private bool) {
 	var stdout bytes.Buffer
+	// TODO this is hardcoded in the cf file
+	// TODO we may want to build the file dynamically
+	kops.Version = "1.5.0"
 
 	inputYAML := "in-" + version + ".yaml"
 	expectedCfPath := "cloudformation.json"
@@ -305,7 +315,12 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 
 	h.SetupMockAWS()
 
+
 	factory := util.NewFactory(factoryOptions)
+
+	// TODO this is hardcoded in the cf file
+	// TODO we may want to build the file dynamically
+	kops.Version = "1.5.0"
 
 	{
 		options := &CreateOptions{}
