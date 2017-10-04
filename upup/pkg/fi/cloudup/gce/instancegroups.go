@@ -172,10 +172,11 @@ func NameForInstanceGroupManager(c *kops.Cluster, ig *kops.InstanceGroup, zone s
 
 // matchInstanceGroup filters a list of instancegroups for recognized cloud groups
 func matchInstanceGroup(mig *compute.InstanceGroupManager, c *kops.Cluster, instancegroups []*kops.InstanceGroup) (*kops.InstanceGroup, error) {
+	migName := LastComponent(mig.Name)
 	var matches []*kops.InstanceGroup
 	for _, ig := range instancegroups {
-		name := NameForInstanceGroupManager(c, ig, mig.Zone)
-		if name == mig.Name {
+		name := NameForInstanceGroupManager(c, ig, LastComponent(mig.Zone))
+		if name == migName {
 			matches = append(matches, ig)
 		}
 	}
