@@ -50,12 +50,40 @@ func (c *mockGCECloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
 
 // DeleteInstance deletes a GCE instance
 func (c *gceCloudImplementation) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
-	return DeleteInstance(c, i.ID)
+	return recreateCloudInstanceGroupMember(c, i)
 }
 
 // DeleteInstance deletes a GCE instance
 func (c *mockGCECloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
-	return DeleteInstance(c, i.ID)
+	return recreateCloudInstanceGroupMember(c, i)
+}
+
+// recreateCloudInstanceGroupMember recreates the specified instances, managed by an InstanceGroupManager
+func recreateCloudInstanceGroupMember(c GCECloud, i *cloudinstances.CloudInstanceGroupMember) error {
+	mig := i.CloudInstanceGroup.Raw.(*compute.InstanceGroupManager)
+
+	glog.V(2).Infof("Recreating GCE Instance %s in MIG %s", i.ID, mig.Name)
+
+	migURL, err := ParseGoogleCloudURL(mig.SelfLink)
+	if err != nil {
+		return err
+	}
+
+	req := &compute.InstanceGroupManagersRecreateInstancesRequest{
+		Instances: []string{
+			i.ID,
+		},
+	}
+	op, err := c.Compute().InstanceGroupManagers.RecreateInstances(migURL.Project, migURL.Zone, migURL.Name, req).Do()
+	if err != nil {
+		if IsNotFound(err) {
+			glog.Infof("Instance not found, assuming deleted: %q", i.ID)
+			return nil
+		}
+		return fmt.Errorf("error recreating Instance %s: %v", i.ID, err)
+	}
+
+	return c.WaitForOp(op)
 }
 
 // GetCloudGroups returns a map of CloudGroup that backs a list of instance groups
@@ -135,7 +163,8 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 				for _, i := range instances {
 					id := i.Instance
 					cm := &cloudinstances.CloudInstanceGroupMember{
-						ID: id,
+						ID:                 id,
+						CloudInstanceGroup: g,
 					}
 
 					node := nodesByExternalID[strconv.FormatUint(i.Id, 10)]
