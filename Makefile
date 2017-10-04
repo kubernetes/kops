@@ -150,6 +150,7 @@ kops: ${KOPS}
 ${KOPS}: ${BINDATA_TARGETS} ${SOURCES}
 	go build ${EXTRA_BUILDFLAGS} -ldflags "-X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA} ${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/cmd/kops/
 
+.PHONY: ${GOBINDATA}
 ${GOBINDATA}:
 	mkdir -p ${LOCAL}
 	go build ${EXTRA_BUILDFLAGS} -ldflags "${EXTRA_LDFLAGS}" -o $@ k8s.io/kops/vendor/github.com/jteeuwen/go-bindata/go-bindata
