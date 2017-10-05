@@ -472,11 +472,14 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Add packages
 	{
+		count := 0
 		for i := range dockerVersions {
 			dv := &dockerVersions[i]
 			if !dv.matches(b.Architecture, dockerVersion, b.Distribution) {
 				continue
 			}
+
+			count++
 
 			c.AddTask(&nodetasks.Package{
 				Name:    dv.Name,
@@ -493,6 +496,10 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 			}
 
 			// Note we do _not_ stop looping... centos/rhel comprises multiple packages
+		}
+
+		if count == 0 {
+			glog.Warningf("Did not find docker package for %s %s %s", b.Distribution, b.Architecture, dockerVersion)
 		}
 	}
 
