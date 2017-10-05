@@ -330,6 +330,10 @@ type KubeSchedulerConfig struct {
 	Image string `json:"image,omitempty"`
 	// LeaderElection defines the configuration of leader election client.
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
+	// Name of configmap to use for scheduler policy
+	PolicyConfigMap string `json:"policyConfigMap,omitempty" flag:"policy-configmap"`
+	// Namespace of configmap
+	PolicyConfigMapNamespace string `json:"policyConfigMapNamespace,omitempty" flag:"policy-configmap-namespace"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election
