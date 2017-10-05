@@ -52,7 +52,7 @@ A valid value follows the format s3://<bucket>.
 A s3 bucket is required to store cluster state information.`
 
 	INVALID_STATE_ERROR = `Unable to read state store s3 bucket.
-Please use a valid s3 bucket uri when setting --state or KOPS_STATE_STORE evn var.
+Please use a valid s3 bucket uri when setting --state or KOPS_STATE_STORE env var.
 A valid value follows the format s3://<bucket>.
 Trailing slash will be trimmed.`
 )
