@@ -19,7 +19,7 @@ package kops
 import "strings"
 
 // Version should be replaced by the makefile
-var Version = "1.5.0"
+var Version = "1.7.0"
 
 // GitVersion should be replaced by the makefile
 var GitVersion = ""
