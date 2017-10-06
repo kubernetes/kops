@@ -108,7 +108,11 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		"-v", "/:/rootfs/",
 		"-v", "/var/run/dbus:/var/run/dbus",
 		"-v", "/run/systemd:/run/systemd",
-		"--net=host", "--privileged",
+		"--net=host", "--cap-add=SYS_ADMIN",
+		// TODO we need to write our own apparmour profile
+		// see https://github.com/moby/moby/blob/17.05.x/contrib/apparmor/template.go#L13
+		// for the default profile
+		"--security-opt=apparmor:unconfined",
 		"--env", "KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
 		t.ProtokubeEnvironmentVariables(),
 		t.ProtokubeImageName(),
