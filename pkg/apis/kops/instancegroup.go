@@ -179,3 +179,18 @@ func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
 		g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
 	}
 }
+
+// IsMaster checks if instanceGroup is a bastion
+func (g *InstanceGroup) IsBastion() bool {
+	switch g.Spec.Role {
+	case InstanceGroupRoleMaster:
+		return false
+	case InstanceGroupRoleNode:
+		return false
+	case InstanceGroupRoleBastion:
+		return true
+	default:
+		glog.Fatalf("Role not set in group %v", g)
+		return false
+	}
+}
