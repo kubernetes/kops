@@ -52,7 +52,7 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		t := &nodetasks.File{
-			Path:     b.kubectlPath(),
+			Path:     b.KubectlPath() + "/" + assetName,
 			Contents: asset,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0755"),
@@ -99,15 +99,4 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
-}
-
-func (b *KubectlBuilder) kubectlPath() string {
-	kubeletCommand := "/usr/local/bin/kubectl"
-	if b.Distribution == distros.DistributionCoreOS {
-		kubeletCommand = "/opt/bin/kubectl"
-	}
-	if b.Distribution == distros.DistributionContainerOS {
-		kubeletCommand = "/home/kubernetes/bin/kubectl"
-	}
-	return kubeletCommand
 }

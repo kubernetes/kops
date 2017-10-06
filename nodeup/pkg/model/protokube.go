@@ -108,12 +108,27 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		"-v", "/:/rootfs/",
 		"-v", "/var/run/dbus:/var/run/dbus",
 		"-v", "/run/systemd:/run/systemd",
-		"--net=host", "--privileged",
+	}
+
+	// add kubectl only if a master
+	// path changes depending on distro, and always mount it on /opt/kops/bin
+	// kubectl is downloaded an installed by other tasks
+	if t.IsMaster {
+		dockerArgs = append(dockerArgs, []string{
+			"-v", t.KubectlPath() + ":/opt/kops/bin:ro",
+			"--env", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kops/bin",
+		}...)
+	}
+
+	dockerArgs = append(dockerArgs, []string{
+		"--net=host",
+		"--privileged",
 		"--env", "KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
 		t.ProtokubeEnvironmentVariables(),
 		t.ProtokubeImageName(),
 		"/usr/bin/protokube",
-	}
+	}...)
+
 	protokubeCommand := strings.Join(dockerArgs, " ") + " " + protokubeFlagsArgs
 
 	manifest := &systemd.Manifest{}
