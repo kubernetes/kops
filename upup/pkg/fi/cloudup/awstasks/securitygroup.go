@@ -146,7 +146,7 @@ func (_ *SecurityGroup) CheckChanges(a, e, changes *SecurityGroup) error {
 		if changes.ID != nil {
 			return fi.CannotChangeField("ID")
 		}
-		if changes.Name != nil {
+		if changes.Name != nil && !fi.BoolValue(e.Shared) {
 			return fi.CannotChangeField("Name")
 		}
 		if changes.VPC != nil {
