@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -27,7 +28,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
-	"github.com/blang/semver"
 	"github.com/golang/glog"
 )
 
@@ -503,12 +503,25 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	dockerSemver, err := semver.ParseTolerant(dockerVersion)
-	if err != nil {
-		return fmt.Errorf("error parsing docker version %q as semver: %v", dockerVersion, err)
+	// Split into major.minor.(patch+pr+meta)
+	parts := strings.SplitN(dockerVersion, ".", 3)
+	if len(parts) != 3 {
+		return fmt.Errorf("error parsing docker version %q, no Major.Minor.Patch elements found", dockerVersion)
 	}
 
-	c.AddTask(b.buildSystemdService(dockerSemver))
+	// Validate major
+	dockerVersionMajor, err := strconv.ParseInt(parts[0], 10, 64)
+	if err != nil {
+		return fmt.Errorf("error parsing major docker version %q: %v", parts[0], err)
+	}
+
+	// Validate minor
+	dockerVersionMinor, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return fmt.Errorf("error parsing minor docker version %q: %v", parts[1], err)
+	}
+
+	c.AddTask(b.buildSystemdService(dockerVersionMajor, dockerVersionMinor))
 
 	if err := b.buildSysconfig(c); err != nil {
 		return err
@@ -517,8 +530,8 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodetasks.Service {
-	oldDocker := dockerVersion.Major <= 1 && dockerVersion.Minor <= 11
+func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVersionMinor int64) *nodetasks.Service {
+	oldDocker := dockerVersionMajor <= 1 && dockerVersionMinor <= 11
 	usesDockerSocket := true
 	hasDockerBabysitter := false
 
