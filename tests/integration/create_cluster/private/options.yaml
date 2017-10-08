@@ -13,3 +13,5 @@ MasterSecurityGroups:
 - sg-exampleid4
 KubernetesVersion: v1.4.8
 cloudLabels: "Owner=John Doe,dn=\"cn=John Doe: dc=example dc=com\", foo/bar=fib+baz"
+Overrides:
+- cluster.spec.api.loadBalancer.securityGroup=sg-12345678

@@ -6,6 +6,7 @@ metadata:
 spec:
   api:
     loadBalancer:
+      securityGroup: sg-12345678
       type: Public
   authorization:
     alwaysAllow: {}

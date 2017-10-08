@@ -184,7 +184,7 @@ resource "aws_elb" "api-custom-security-groups-example-com" {
     lb_protocol       = "TCP"
   }
 
-  security_groups = ["${aws_security_group.api-elb-custom-security-groups-example-com.id}"]
+  security_groups = ["sg-12345678"]
   subnets         = ["${aws_subnet.utility-us-test-1a-custom-security-groups-example-com.id}"]
 
   health_check = {
@@ -419,17 +419,6 @@ resource "aws_route_table_association" "utility-us-test-1a-custom-security-group
   route_table_id = "${aws_route_table.custom-security-groups-example-com.id}"
 }
 
-resource "aws_security_group" "api-elb-custom-security-groups-example-com" {
-  name        = "api-elb.custom-security-groups.example.com"
-  vpc_id      = "${aws_vpc.custom-security-groups-example-com.id}"
-  description = "Security group for api ELB"
-
-  tags = {
-    KubernetesCluster = "custom-security-groups.example.com"
-    Name              = "api-elb.custom-security-groups.example.com"
-  }
-}
-
 resource "aws_security_group" "bastion-custom-security-groups-example-com" {
   name        = "bastion.custom-security-groups.example.com"
   vpc_id      = "${aws_vpc.custom-security-groups-example-com.id}"
@@ -503,7 +492,7 @@ resource "aws_security_group_rule" "all-node-to-node" {
 
 resource "aws_security_group_rule" "api-elb-egress" {
   type              = "egress"
-  security_group_id = "${aws_security_group.api-elb-custom-security-groups-example-com.id}"
+  security_group_id = "sg-12345678"
   from_port         = 0
   to_port           = 0
   protocol          = "-1"
@@ -548,7 +537,7 @@ resource "aws_security_group_rule" "bastion-to-node-ssh" {
 
 resource "aws_security_group_rule" "https-api-elb-0-0-0-0--0" {
   type              = "ingress"
-  security_group_id = "${aws_security_group.api-elb-custom-security-groups-example-com.id}"
+  security_group_id = "sg-12345678"
   from_port         = 443
   to_port           = 443
   protocol          = "tcp"
@@ -558,7 +547,7 @@ resource "aws_security_group_rule" "https-api-elb-0-0-0-0--0" {
 resource "aws_security_group_rule" "https-elb-to-master" {
   type                     = "ingress"
   security_group_id        = "${aws_security_group.masters-custom-security-groups-example-com.id}"
-  source_security_group_id = "${aws_security_group.api-elb-custom-security-groups-example-com.id}"
+  source_security_group_id = "sg-12345678"
   from_port                = 443
   to_port                  = 443
   protocol                 = "tcp"

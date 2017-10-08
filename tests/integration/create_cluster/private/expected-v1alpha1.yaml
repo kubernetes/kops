@@ -8,6 +8,7 @@ spec:
   - 0.0.0.0/0
   api:
     loadBalancer:
+      securityGroup: sg-12345678
       type: Public
   authorization:
     alwaysAllow: {}
