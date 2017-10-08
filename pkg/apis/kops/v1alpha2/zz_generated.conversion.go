@@ -2479,6 +2479,7 @@ func Convert_kops_LeaderElectionConfiguration_To_v1alpha2_LeaderElectionConfigur
 func autoConvert_v1alpha2_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(in *LoadBalancerAccessSpec, out *kops.LoadBalancerAccessSpec, s conversion.Scope) error {
 	out.Type = kops.LoadBalancerType(in.Type)
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
+	out.SecurityGroup = in.SecurityGroup
 	return nil
 }
 
@@ -2490,6 +2491,7 @@ func Convert_v1alpha2_LoadBalancerAccessSpec_To_kops_LoadBalancerAccessSpec(in *
 func autoConvert_kops_LoadBalancerAccessSpec_To_v1alpha2_LoadBalancerAccessSpec(in *kops.LoadBalancerAccessSpec, out *LoadBalancerAccessSpec, s conversion.Scope) error {
 	out.Type = LoadBalancerType(in.Type)
 	out.IdleTimeoutSeconds = in.IdleTimeoutSeconds
+	out.SecurityGroup = in.SecurityGroup
 	return nil
 }
 
