@@ -191,7 +191,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 			return err
 		}
 		fmt.Fprintf(os.Stdout, "\nInstance Groups\n")
-		err = igOutputTable(instancegroups, out)
+		err = igOutputTable(cluster, instancegroups, out)
 		if err != nil {
 			return err
 		}
