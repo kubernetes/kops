@@ -150,6 +150,12 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 			Description:      s("Security group for api ELB"),
 			RemoveExtraRules: []string{"port=443"},
 		}
+
+		if lbSpec.SecurityGroup != "" {
+			t.ID = fi.String(lbSpec.SecurityGroup)
+			t.Shared = fi.Bool(true)
+		}
+
 		c.AddTask(t)
 	}
 
