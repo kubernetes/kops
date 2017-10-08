@@ -42,7 +42,28 @@ type MountDiskTask struct {
 var _ fi.Task = &MountDiskTask{}
 
 func (s *MountDiskTask) String() string {
-	return fmt.Sprintf("Disk: %s", s.Name)
+	return fmt.Sprintf("MountDisk: %s %s->%s", s.Name, s.Device, s.Mountpoint)
+}
+
+var _ CreatesDir = &MountDiskTask{}
+
+// Dir implements CreatesDir::Dir
+func (e *MountDiskTask) Dir() string {
+	return e.Mountpoint
+}
+
+var _ fi.HasDependencies = &MountDiskTask{}
+
+// GetDependencies implements HasDependencies::GetDependencies
+func (e *MountDiskTask) GetDependencies(tasks map[string]fi.Task) []fi.Task {
+	var deps []fi.Task
+
+	// Requires parent directories to be created
+	for _, v := range findCreatesDirParents(e.Mountpoint, tasks) {
+		deps = append(deps, v)
+	}
+
+	return deps
 }
 
 func NewMountDiskTask(name string, contents string, meta string) (fi.Task, error) {
