@@ -247,7 +247,7 @@ kops-dist: crossbuild-in-docker
 	(${SHASUMCMD} ${DIST}/linux/amd64/kops | cut -d' ' -f1) > ${DIST}/linux/amd64/kops.sha1
 
 .PHONY: version-dist
-version-dist: nodeup-dist kops-dist protokube-export utils-dist
+version-dist: clean nodeup-dist kops-dist protokube-export utils-dist
 	rm -rf ${UPLOAD}
 	mkdir -p ${UPLOAD}/kops/${VERSION}/linux/amd64/
 	mkdir -p ${UPLOAD}/kops/${VERSION}/darwin/amd64/
