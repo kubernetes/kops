@@ -18,13 +18,14 @@ package nodetasks
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
+	"strings"
+
+	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
-	"strings"
 )
 
 // BindMount performs bind mounts

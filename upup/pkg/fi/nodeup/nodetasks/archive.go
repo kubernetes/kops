@@ -19,16 +19,17 @@ package nodetasks
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
-	"k8s.io/kops/upup/pkg/fi/nodeup/local"
-	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"os/exec"
 	"path"
 	"reflect"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
+	"k8s.io/kops/upup/pkg/fi/nodeup/local"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 // Archive task downloads and extracts a tar file
@@ -85,6 +86,7 @@ func (e *Archive) Dir() string {
 	return e.TargetDir
 }
 
+// Find implements fi.Task::Find
 func (e *Archive) Find(c *fi.Context) (*Archive, error) {
 	// We write a marker file to prevent re-execution
 	localStateFile := path.Join(localArchiveStateDir, e.Name)
@@ -100,6 +102,7 @@ func (e *Archive) Find(c *fi.Context) (*Archive, error) {
 	}
 
 	if stateBytes == nil {
+		// No marker file found, assume archive not installed
 		return nil, nil
 	}
 
@@ -113,17 +116,22 @@ func (e *Archive) Find(c *fi.Context) (*Archive, error) {
 	if state.Hash == e.Hash && state.TargetDir == e.TargetDir {
 		return state, nil
 	}
+
+	// Existing version is different, force a reinstall
 	return nil, nil
 }
 
+// Run implements fi.Task::Run
 func (e *Archive) Run(c *fi.Context) error {
 	return fi.DefaultDeltaRunMethod(e, c)
 }
 
+// CheckChanges immplements fi.Task::CheckChanges
 func (_ *Archive) CheckChanges(a, e, changes *Archive) error {
 	return nil
 }
 
+// RenderLocal implements the fi.Task::Render functionality for a local target
 func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) error {
 	if a == nil {
 		glog.Infof("Installing archive %q", e.Name)
@@ -180,6 +188,7 @@ func (_ *Archive) RenderLocal(t *local.LocalTarget, a, e, changes *Archive) erro
 	return nil
 }
 
+// RenderCloudInit implements fi.Task::Render functionality for a CloudInit target
 func (_ *Archive) RenderCloudInit(t *cloudinit.CloudInitTarget, a, e, changes *Archive) error {
 	archiveName := e.Name
 

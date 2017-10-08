@@ -343,9 +343,6 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 		Options:    []string{"ro"},
 	})
 
-	//		cp "${KUBE_HOME}/kube-manifests/kubernetes/gci-trusty/gci-mounter" "${CONTAINERIZED_MOUNTER_HOME}/mounter"
-	//		chmod a+x "${CONTAINERIZED_MOUNTER_HOME}/mounter"
-
 	return nil
 }
 

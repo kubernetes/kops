@@ -18,11 +18,12 @@ package nodetasks
 
 import (
 	"fmt"
-	"k8s.io/kops/upup/pkg/fi"
 	"path"
 	"reflect"
 	"strings"
 	"testing"
+
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestBindMountCommands(t *testing.T) {
