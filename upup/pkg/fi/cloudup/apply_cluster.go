@@ -1036,7 +1036,7 @@ func needsStaticUtils(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) boo
 // needsKubernetesManifests checks if we need kubernetes manifests
 // This is only needed currently on ContainerOS i.e. GCE, but we don't have a nice way to detect it yet
 func needsKubernetesManifests(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
-	// TODO: Do real detection of ContainerOS (but this has to work with AMI names, and maybe even forked AMIs)
+	// TODO: Do real detection of ContainerOS (but this has to work with image names, and maybe even forked images)
 	switch kops.CloudProviderID(c.Spec.CloudProvider) {
 	case kops.CloudProviderGCE:
 		return true

@@ -17,8 +17,9 @@ limitations under the License.
 package nodetasks
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
 	"strings"
+
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 // CreatesDir is a marker interface for tasks that create directories, used for dependencies

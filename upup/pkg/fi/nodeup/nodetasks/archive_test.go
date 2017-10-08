@@ -17,8 +17,9 @@ limitations under the License.
 package nodetasks
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
 	"testing"
+
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestArchiveDependencies(t *testing.T) {
