@@ -194,6 +194,16 @@ NOTE: Where the corresponding configuration value can be empty, fields can be se
 
 Will result in the flag `--resolv-conf=` being built.
 
+#### Enable Custom metrics support
+To use custom metrics in kubernetes we have to set flag  `ENABLE_CUSTOM_METRICS` to `true` on all the kubelets.
+we can specify that in the `kubelet` spec in our cluster.yml.
+
+```
+spec:
+  kubelet:
+    enableCustomMetrics: true
+```
+
 ####  Feature Gates
 
 ```yaml
