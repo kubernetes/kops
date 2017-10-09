@@ -352,6 +352,7 @@ protokube-builder-image:
 
 .PHONY: protokube-build-in-docker
 protokube-build-in-docker: protokube-builder-image
+	mkdir -p ${IMAGES} # We have to create the directory first, so docker doesn't mess up the ownership of the dir
 	docker run -t -e VERSION=${VERSION} -e HOST_UID=${UID} -e HOST_GID=${GID} -v `pwd`:/src protokube-builder /onbuild.sh
 
 .PHONY: protokube-image
@@ -360,7 +361,6 @@ protokube-image: protokube-build-in-docker
 
 .PHONY: protokube-export
 protokube-export: protokube-image
-	mkdir -p ${IMAGES}
 	docker save protokube:${PROTOKUBE_TAG} > ${IMAGES}/protokube.tar
 	gzip --force --best ${IMAGES}/protokube.tar
 	(${SHASUMCMD} ${IMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${IMAGES}/protokube.tar.gz.sha1
