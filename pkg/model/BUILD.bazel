@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "bastion.go",
+        "bastion_loadbalancer.go",
         "bootstrapscript.go",
         "context.go",
         "convenience.go",

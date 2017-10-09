@@ -17,22 +17,18 @@ limitations under the License.
 package model
 
 import (
-	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"time"
 )
 
 const BastionELBSecurityGroupPrefix = "bastion"
-const BastionELBDefaultIdleTimeout = 5 * time.Minute
 
 // BastionModelBuilder adds model objects to support bastions
 //
 // Bastion instances live in the utility subnets created in the private topology.
 // All traffic goes through an ELB, and the ELB has port 22 open to SSHAccess.
 // Bastion instances have access to all internal master and node instances.
-
 type BastionModelBuilder struct {
 	*KopsModelContext
 	Lifecycle *fi.Lifecycle
@@ -40,6 +36,7 @@ type BastionModelBuilder struct {
 
 var _ fi.ModelBuilder = &BastionModelBuilder{}
 
+// Build creates the security group tasks for a bastion
 func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	var bastionGroups []*kops.InstanceGroup
 	for _, ig := range b.InstanceGroups {
@@ -166,98 +163,5 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	var elbSubnets []*awstasks.Subnet
-	{
-		zones := sets.NewString()
-		for _, ig := range bastionGroups {
-			subnets, err := b.GatherSubnets(ig)
-			if err != nil {
-				return err
-			}
-			for _, s := range subnets {
-				zones.Insert(s.Zone)
-			}
-		}
-
-		for zoneName := range zones {
-			utilitySubnet, err := b.LinkToUtilitySubnetInZone(zoneName)
-			if err != nil {
-				return err
-			}
-			elbSubnets = append(elbSubnets, utilitySubnet)
-		}
-	}
-
-	// Create ELB itself
-	var elb *awstasks.LoadBalancer
-	{
-		loadBalancerName := b.GetELBName32("bastion")
-
-		idleTimeout := BastionELBDefaultIdleTimeout
-		if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil && b.Cluster.Spec.Topology.Bastion.IdleTimeoutSeconds != nil {
-			idleTimeout = time.Second * time.Duration(*b.Cluster.Spec.Topology.Bastion.IdleTimeoutSeconds)
-		}
-
-		elb = &awstasks.LoadBalancer{
-			Name:      s("bastion." + b.ClusterName()),
-			Lifecycle: b.Lifecycle,
-
-			LoadBalancerName: s(loadBalancerName),
-			SecurityGroups: []*awstasks.SecurityGroup{
-				b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
-			},
-			Subnets: elbSubnets,
-			Listeners: map[string]*awstasks.LoadBalancerListener{
-				"22": {InstancePort: 22},
-			},
-
-			HealthCheck: &awstasks.LoadBalancerHealthCheck{
-				Target:             s("TCP:22"),
-				Timeout:            i64(5),
-				Interval:           i64(10),
-				HealthyThreshold:   i64(2),
-				UnhealthyThreshold: i64(2),
-			},
-
-			ConnectionSettings: &awstasks.LoadBalancerConnectionSettings{
-				IdleTimeout: i64(int64(idleTimeout.Seconds())),
-			},
-		}
-
-		c.AddTask(elb)
-	}
-
-	for _, ig := range bastionGroups {
-		// We build the ASG when we iterate over the instance groups
-
-		// Attach the ELB to the ASG
-		t := &awstasks.LoadBalancerAttachment{
-			Name:      s("bastion-elb-attachment"),
-			Lifecycle: b.Lifecycle,
-
-			LoadBalancer:     elb,
-			AutoscalingGroup: b.LinkToAutoscalingGroup(ig),
-		}
-		c.AddTask(t)
-	}
-
-	bastionPublicName := ""
-	if b.Cluster.Spec.Topology != nil && b.Cluster.Spec.Topology.Bastion != nil {
-		bastionPublicName = b.Cluster.Spec.Topology.Bastion.BastionPublicName
-	}
-	if bastionPublicName != "" {
-		// Here we implement the bastion CNAME logic
-		// By default bastions will create a CNAME that follows the `bastion-$clustername` formula
-		t := &awstasks.DNSName{
-			Name:      s(bastionPublicName),
-			Lifecycle: b.Lifecycle,
-
-			Zone:               b.LinkToDNSZone(),
-			ResourceType:       s("A"),
-			TargetLoadBalancer: elb,
-		}
-		c.AddTask(t)
-
-	}
 	return nil
 }
