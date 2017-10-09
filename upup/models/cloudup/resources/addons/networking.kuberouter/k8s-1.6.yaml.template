@@ -125,10 +125,17 @@ rules:
   - apiGroups: [""]
     resources:
       - namespaces
-      - pod
-      - service
-      - node
+      - pods
+      - services
+      - nodes
       - endpoints
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups: ["networking.k8s.io"]
+    resources:
+      - networkpolicies
     verbs:
       - get
       - list
@@ -153,3 +160,5 @@ subjects:
 - kind: ServiceAccount
   name: kube-router
   namespace: kube-system
+- kind: User
+  name: system:kube-router
