@@ -32,11 +32,18 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
+// InstanceTemplateNamePrefixMaxLength is the max length for the NamePrefix of an InstanceTemplate
+//  52 = 63 - 10 - 1; 63 is the GCE limit; 10 is the length of seconds since epoch; and one for the dash
+const InstanceTemplateNamePrefixMaxLength = 63 - 10 - 1
+
 // InstanceTemplate represents a GCE InstanceTemplate
 //go:generate fitask -type=InstanceTemplate
 type InstanceTemplate struct {
-	// Name will be used for as the name prefix
-	Name      *string
+	Name *string
+
+	// NamePrefix is used as the prefix for the names; we add a timestamp.  Max = InstanceTemplateNamePrefixMaxLength
+	NamePrefix *string
+
 	Lifecycle *fi.Lifecycle
 
 	Network *Network
@@ -83,7 +90,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 	}
 
 	for _, r := range response.Items {
-		if !strings.HasPrefix(r.Name, fi.StringValue(e.Name)) {
+		if !strings.HasPrefix(r.Name, fi.StringValue(e.NamePrefix)+"-") {
 			continue
 		}
 
@@ -155,6 +162,7 @@ func (e *InstanceTemplate) Find(c *fi.Context) (*InstanceTemplate, error) {
 
 		// Prevent spurious changes
 		actual.Name = e.Name
+		actual.NamePrefix = e.NamePrefix
 
 		actual.ID = &r.Name
 		if e.ID == nil {
@@ -356,7 +364,7 @@ func (_ *InstanceTemplate) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instanc
 	if a == nil {
 		glog.V(4).Infof("Creating InstanceTemplate %v", i)
 
-		name := fi.StringValue(e.Name) + "-" + strconv.FormatInt(time.Now().Unix(), 10)
+		name := fi.StringValue(e.NamePrefix) + "-" + strconv.FormatInt(time.Now().Unix(), 10)
 		e.ID = &name
 		i.Name = name
 
@@ -508,7 +516,7 @@ func (_ *InstanceTemplate) RenderTerraform(t *terraform.TerraformTarget, a, e, c
 	name := fi.StringValue(e.Name)
 
 	tf := &terraformInstanceTemplate{
-		NamePrefix: fi.StringValue(e.Name),
+		NamePrefix: fi.StringValue(e.NamePrefix) + "-",
 	}
 
 	tf.CanIPForward = i.Properties.CanIpForward
