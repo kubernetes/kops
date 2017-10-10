@@ -23,6 +23,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -62,19 +63,19 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.addLogRotate(c, "kube-scheduler", "/var/log/kube-scheduler.log", logRotateOptions{})
 	b.addLogRotate(c, "kubelet", "/var/log/kubelet.log", logRotateOptions{})
 
-	// Add cron job to run hourly
-	{
-		script := `#!/bin/sh
-logrotate /etc/logrotate.conf`
+	// Add timer to run hourly.
+	unit := &systemd.Manifest{}
+	unit.Set("Unit", "Description", "Hourly Log Rotation")
+	unit.Set("Timer", "OnCalendar", "hourly")
 
-		t := &nodetasks.File{
-			Path:     "/etc/cron.hourly/logrotate",
-			Contents: fi.NewStringResource(script),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0755"),
-		}
-		c.AddTask(t)
+	service := &nodetasks.Service{
+		Name:       "logrotate.timer", // Override (by name) any existing timer
+		Definition: s(unit.Render()),
 	}
+
+	service.InitDefaults()
+
+	c.AddTask(service)
 
 	return nil
 }
