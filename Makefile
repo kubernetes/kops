@@ -562,3 +562,35 @@ kops-server-build:
 .PHONY: kops-server-push
 kops-server-push: kops-server-build
 	docker push ${DOCKER_REGISTRY}/kops-server:latest
+
+# -----------------------------------------------------
+# bazel targets
+
+.PHONY: bazel-test
+bazel-test:
+	bazel test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/...
+
+.PHONY: bazel-build
+bazel-build:
+	bazel build //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/...
+
+# TODO: Get working on a mac / windows machine!
+# 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
+.PHONY: bazel-crossbuild-nodeup
+bazel-crossbuild-nodeup:
+	bazel build //cmd/nodeup
+
+.PHONY: push
+# Will always push a linux-based build up to the server
+bazel-push: bazel-crossbuild-nodeup
+	scp -C bazel-bin/cmd/nodeup/nodeup  ${TARGET}:/tmp/
+
+.PHONY: bazel-push-gce-run
+bazel-push-gce-run: bazel-push
+	ssh ${TARGET} sudo cp /tmp/nodeup /var/lib/toolbox/kubernetes-install/nodeup
+	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /var/lib/toolbox/kubernetes-install/nodeup --conf=/var/lib/toolbox/kubernetes-install/kube_env.yaml --v=8
+
+# -t is for CentOS http://unix.stackexchange.com/questions/122616/why-do-i-need-a-tty-to-run-sudo-if-i-can-sudo-without-a-password
+.PHONY: bazel-push-aws-run
+bazel-push-aws-run: bazel-push
+	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
