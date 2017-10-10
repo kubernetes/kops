@@ -17,7 +17,7 @@ kops needs a state store, to hold the configuration for your clusters.  The simp
 for Google Cloud is to store it in a Google Cloud Storage bucket in the same account, so that's how we'll
 start.
 
-So, just create an empty bucket - you can use any name: `gsutil mb s3://kubernetes-clusters/`
+So, just create an empty bucket - you can use any name: `gsutil mb gs://kubernetes-clusters/`
 
 # Creating our first cluster
 
