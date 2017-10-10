@@ -194,6 +194,21 @@ NOTE: Where the corresponding configuration value can be empty, fields can be se
 
 Will result in the flag `--resolv-conf=` being built.
 
+### kubeScheduler
+
+This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
+
+ ```yaml
+ spec:
+   kubeScheduler:
+     policyConfigMap: scheduler-policy
+     policyConfigMapNamespace: default
+```
+
+Will resulting to running kube-scheduler with the arguments `--policy-configmap=scheduler-policy --policy-configmap-namespace=default`.
+
+Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually. Also, this option is not supported during cluster creation, only during updates.
+
 ####  Feature Gates
 
 ```yaml
