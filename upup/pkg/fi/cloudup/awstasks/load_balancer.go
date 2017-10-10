@@ -634,10 +634,12 @@ func (_ *LoadBalancer) RenderTerraform(t *terraform.TerraformTarget, a, e, chang
 	for _, subnet := range e.Subnets {
 		tf.Subnets = append(tf.Subnets, subnet.TerraformLink())
 	}
+	terraform.SortLiterals(tf.Subnets)
 
 	for _, sg := range e.SecurityGroups {
 		tf.SecurityGroups = append(tf.SecurityGroups, sg.TerraformLink())
 	}
+	terraform.SortLiterals(tf.SecurityGroups)
 
 	for loadBalancerPort, listener := range e.Listeners {
 		loadBalancerPortInt, err := strconv.ParseInt(loadBalancerPort, 10, 64)
