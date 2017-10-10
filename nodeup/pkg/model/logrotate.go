@@ -63,18 +63,47 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.addLogRotate(c, "kube-scheduler", "/var/log/kube-scheduler.log", logRotateOptions{})
 	b.addLogRotate(c, "kubelet", "/var/log/kubelet.log", logRotateOptions{})
 
-	// Add timer to run hourly.
-	unit := &systemd.Manifest{}
-	unit.Set("Unit", "Description", "Hourly Log Rotation")
-	unit.Set("Timer", "OnCalendar", "hourly")
-
-	service := &nodetasks.Service{
-		Name:       "logrotate.timer", // Override (by name) any existing timer
-		Definition: s(unit.Render()),
+	if err := b.addLogrotateService(c); err != nil {
+		return err
 	}
 
-	service.InitDefaults()
+	// Add timer to run hourly.
+	{
+		unit := &systemd.Manifest{}
+		unit.Set("Unit", "Description", "Hourly Log Rotation")
+		unit.Set("Timer", "OnCalendar", "hourly")
 
+		service := &nodetasks.Service{
+			Name:       "logrotate.timer", // Override (by name) any existing timer
+			Definition: s(unit.Render()),
+		}
+
+		service.InitDefaults()
+
+		c.AddTask(service)
+	}
+
+	return nil
+}
+
+// addLogrotateService creates a logrotate systemd task to act as target for the timer, if one is needed
+func (b *LogrotateBuilder) addLogrotateService(c *fi.ModelBuilderContext) error {
+	switch b.Distribution {
+	case distros.DistributionCoreOS:
+	case distros.DistributionContainerOS:
+		// logrotate service already exists
+		return nil
+	}
+
+	manifest := &systemd.Manifest{}
+	manifest.Set("Unit", "Description", "Rotate and Compress System Logs")
+	manifest.Set("Service", "ExecStart", "/usr/sbin/logrotate /etc/logrotate.conf")
+
+	service := &nodetasks.Service{
+		Name:       "logrotate.service",
+		Definition: s(manifest.Render()),
+	}
+	service.InitDefaults()
 	c.AddTask(service)
 
 	return nil
