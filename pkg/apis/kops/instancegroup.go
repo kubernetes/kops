@@ -116,6 +116,8 @@ type InstanceGroupSpec struct {
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
 	// SuspendProcesses disables the listed Scaling Policies
 	SuspendProcesses []string `json:"suspendProcesses,omitempty"`
+	// SecurityGroup is the id of the shared security group to use. Currently only AWS is supported.
+	SecurityGroup *string `json:"securityGroup,omitempty"`
 }
 
 // UserData defines a user-data section
