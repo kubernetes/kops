@@ -2021,8 +2021,7 @@ func autoConvert_v1alpha1_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	} else {
 		out.LeaderElection = nil
 	}
-	out.PolicyConfigMap = in.PolicyConfigMap
-	out.PolicyConfigMapNamespace = in.PolicyConfigMapNamespace
+	out.UsePolicyConfigMap = in.UsePolicyConfigMap
 	return nil
 }
 
@@ -2044,8 +2043,7 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha1_KubeSchedulerConfig(in *ko
 	} else {
 		out.LeaderElection = nil
 	}
-	out.PolicyConfigMap = in.PolicyConfigMap
-	out.PolicyConfigMapNamespace = in.PolicyConfigMapNamespace
+	out.UsePolicyConfigMap = in.UsePolicyConfigMap
 	return nil
 }
 

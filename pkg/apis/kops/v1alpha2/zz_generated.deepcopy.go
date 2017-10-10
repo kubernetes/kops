@@ -2324,6 +2324,15 @@ func (in *KubeSchedulerConfig) DeepCopyInto(out *KubeSchedulerConfig) {
 			(*in).DeepCopyInto(*out)
 		}
 	}
+	if in.UsePolicyConfigMap != nil {
+		in, out := &in.UsePolicyConfigMap, &out.UsePolicyConfigMap
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	return
 }
 
