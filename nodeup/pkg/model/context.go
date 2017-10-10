@@ -246,3 +246,15 @@ func (c *NodeupModelContext) UseSecureKubelet() bool {
 
 	return false
 }
+
+// KubectlPath returns distro based path for kubectl
+func (c *NodeupModelContext) KubectlPath() string {
+	kubeletCommand := "/usr/local/bin"
+	if c.Distribution == distros.DistributionCoreOS {
+		kubeletCommand = "/opt/bin"
+	}
+	if c.Distribution == distros.DistributionContainerOS {
+		kubeletCommand = "/home/kubernetes/bin"
+	}
+	return kubeletCommand
+}

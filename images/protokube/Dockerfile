@@ -21,8 +21,6 @@ RUN apt-get update && apt-get install --yes \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
-COPY /.build/artifacts/kubectl /usr/bin/kubectl
-
 COPY /.build/artifacts/protokube /usr/bin/protokube
 COPY /.build/artifacts/channels /usr/bin/channels
 
