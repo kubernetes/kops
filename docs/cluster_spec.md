@@ -195,7 +195,7 @@ NOTE: Where the corresponding configuration value can be empty, fields can be se
 Will result in the flag `--resolv-conf=` being built.
 
 #### Enable Custom metrics support
-To use custom metrics in kubernetes as per [custom metrics doc](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics) we have to set flag  `ENABLE_CUSTOM_METRICS` to `true` on all the kubelets.
+To use custom metrics in kubernetes as per [custom metrics doc](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics) we have to set flag `ENABLE_CUSTOM_METRICS` to `true` on all the kubelets.
 we can specify that in the `kubelet` spec in our cluster.yml.
 
 ```
