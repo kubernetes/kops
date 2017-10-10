@@ -19,6 +19,10 @@ package bootstrap
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/nodeup/pkg/distros"
@@ -27,9 +31,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/local"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 	"k8s.io/kops/util/pkg/vfs"
-	"os"
-	"strings"
-	"time"
 )
 
 type Installation struct {
@@ -138,6 +139,7 @@ func (i *Installation) buildSystemdJob() *nodetasks.Service {
 		manifest.Set("Service", "Environment", buffer.String())
 	}
 
+	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 	manifest.Set("Service", "ExecStart", command)
 	manifest.Set("Service", "Type", "oneshot")
 
