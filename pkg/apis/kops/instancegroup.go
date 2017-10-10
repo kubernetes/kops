@@ -114,6 +114,8 @@ type InstanceGroupSpec struct {
 	Taints []string `json:"taints,omitempty"`
 	// AdditionalUserData is any aditional user-data to be passed to the host
 	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
+	// SecurityGroup is the id of the shared security group to use. Currently only AWS is supported.
+	SecurityGroup *string `json:"securityGroup,omitempty"`
 }
 
 // UserData defines a user-data section

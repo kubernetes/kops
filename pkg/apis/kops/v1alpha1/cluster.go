@@ -161,6 +161,25 @@ type ClusterSpec struct {
 	EncryptionConfig *bool `json:"encryptionConfig,omitempty"`
 	// Target allows for us to nest extra config for targets such as terraform
 	Target *TargetSpec `json:"target,omitempty"`
+	// SecurityGroups allows for use an existing custom cloud security group for the instances.
+	// One example is to specify the name of an AWS security group for master and another for the nodes.
+	SecurityGroups *SecurityGroups `json:"securityGroups,omitempty"`
+}
+
+// SecurityGroups defines existing security groups that are used by kops
+// instead of kops creating its own groups
+type SecurityGroups struct {
+	// MasterGroups is the name of the sg(s) to use for the master
+	MasterGroups []string `json:"masterGroups,omitempty"`
+
+	// NodeGroups is the name of the sg(s) to use for the nodes
+	NodeGroups []string `json:"nodeGroups,omitempty"`
+
+	// BastionGroups is the name of the sg(s) to use for the bastion
+	BastionGroups []string `json:"bastionGroups,omitempty"`
+
+	// BastionELBGroups is the name of the sg(s) to use for the bastion elb
+	BastionELBGroups []string `json:"bastionELBGroups,omitempty"`
 }
 
 // FileAssetSpec defines the structure for a file asset
@@ -268,11 +287,18 @@ const (
 	LoadBalancerTypeInternal LoadBalancerType = "Internal"
 )
 
-// LoadBalancerAccessSpec provides configuration details related to API LoadBalancer and its access
+// LoadBalancerAccessSpec contains detailed configurations for the API ELB.
 type LoadBalancerAccessSpec struct {
-	Type                     LoadBalancerType `json:"type,omitempty"`
-	IdleTimeoutSeconds       *int64           `json:"idleTimeoutSeconds,omitempty"`
-	AdditionalSecurityGroups []string         `json:"additionalSecurityGroups,omitempty"`
+	// Type may be Public or Internal.
+	Type LoadBalancerType `json:"type,omitempty"`
+	// IdleTimeoutSeconds sets the timeout of the api loadbalancer.
+	IdleTimeoutSeconds *int64 `json:"idleTimeoutSeconds,omitempty"`
+	// AdditionalSecurityGroups attaches additional security groups (e.g. sg-123456).
+	AdditionalSecurityGroups []string `json:"additionalSecurityGroups,omitempty"`
+	// SecurityGroup is the id of the shared security group to use for the InstanceGroupSpec.
+	SecurityGroup *string `json:"securityGroup,omitempty"`
+	// SecurityGroups is a list of the security groups to use for the API ELB
+	SecurityGroups []string `json:"securityGroups,omitempty"`
 }
 
 // KubeDNSConfig defines the kube dns configuration
