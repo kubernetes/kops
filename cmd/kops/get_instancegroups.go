@@ -109,8 +109,7 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 	}
 
 	if len(instancegroups) == 0 {
-		fmt.Fprintf(os.Stderr, "No InstanceGroup objects found\n")
-		return nil
+		return fmt.Errorf("No InstanceGroup objects found")
 	}
 
 	switch options.output {
