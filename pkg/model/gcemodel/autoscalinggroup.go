@@ -63,8 +63,11 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				volumeType = DefaultVolumeType
 			}
 
+			namePrefix := gce.LimitedLengthName(name, gcetasks.InstanceTemplateNamePrefixMaxLength)
+
 			t := &gcetasks.InstanceTemplate{
 				Name:           s(name),
+				NamePrefix:     s(namePrefix),
 				Lifecycle:      b.Lifecycle,
 				Network:        b.LinkToNetwork(),
 				MachineType:    s(ig.Spec.MachineType),
@@ -118,9 +121,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		targetSizes := make([]int, len(zones), len(zones))
-		totalSize := 0
-
 		// TODO: Duplicated from aws - move to defaults?
 		minSize := 1
 		if ig.Spec.MinSize != nil {
@@ -129,6 +129,14 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			minSize = 2
 		}
 
+		// We have to assign instances to the various zones
+		// TODO: Switch to regional managed instance group
+		// But we can't yet use RegionInstanceGroups:
+		// 1) no support in terraform
+		// 2) we can't steer to specific zones AFAICT, only to all zones in the region
+
+		targetSizes := make([]int, len(zones), len(zones))
+		totalSize := 0
 		for i := range zones {
 			targetSizes[i] = minSize / len(zones)
 			totalSize += targetSizes[i]

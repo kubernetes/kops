@@ -17,14 +17,18 @@ limitations under the License.
 package gce
 
 import (
+	"encoding/base32"
 	"fmt"
+	"hash/fnv"
+	"strconv"
+	"strings"
+
 	"github.com/golang/glog"
 	context "golang.org/x/net/context"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
-	"strconv"
 )
 
 // DeleteGroup deletes a cloud of instances controlled by an Instance Group Manager
@@ -195,8 +199,40 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 
 // NameForInstanceGroupManager builds a name for an InstanceGroupManager in the specified zone
 func NameForInstanceGroupManager(c *kops.Cluster, ig *kops.InstanceGroup, zone string) string {
-	name := SafeObjectName(zone+"."+ig.ObjectMeta.Name, c.ObjectMeta.Name)
+	shortZone := zone
+	lastDash := strings.LastIndex(shortZone, "-")
+	if lastDash != -1 {
+		shortZone = shortZone[lastDash+1:]
+	}
+	name := SafeObjectName(shortZone+"."+ig.ObjectMeta.Name, c.ObjectMeta.Name)
+	name = LimitedLengthName(name, 63)
 	return name
+}
+
+// LimitedLengthName returns a string subject to a maximum length
+func LimitedLengthName(s string, n int) string {
+	// We only use the hash if we need to
+	if len(s) <= n {
+		return s
+	}
+
+	h := fnv.New32a()
+	if _, err := h.Write([]byte(s)); err != nil {
+		glog.Fatalf("error hashing values: %v", err)
+	}
+	hashString := base32.HexEncoding.EncodeToString(h.Sum(nil))
+	hashString = strings.ToLower(hashString)
+	if len(hashString) > 6 {
+		hashString = hashString[:6]
+	}
+
+	maxBaseLength := n - len(hashString) - 1
+	if len(s) > maxBaseLength {
+		s = s[:maxBaseLength]
+	}
+	s = s + "-" + hashString
+
+	return s
 }
 
 // matchInstanceGroup filters a list of instancegroups for recognized cloud groups
