@@ -125,8 +125,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 	}
 
 	if cluster == nil {
-		fmt.Fprintf(os.Stderr, "No cluster found\n")
-		return nil
+		return fmt.Errorf("No cluster found")
 	}
 
 	clusterList := &api.ClusterList{}
