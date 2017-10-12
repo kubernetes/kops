@@ -20,6 +20,7 @@ Follow either of the two links above to access the appropriate CLA and instructi
 1. If your proposed change is accepted, and you haven't already done so, sign a Contributor License Agreement (see details above).
 1. If instructed by the repo owners provide a short design document in a PR.
 1. Fork the desired repo, develop and test your code changes. Unit tests are required for most PRs.
+1. All additions of features or options must be documented with example invocations and acceptable input values. If possible the the feature or option must be exposed via the input yaml manifest specified during cluster creation.
 1. Submit a pull request.
 
 ### Adding dependencies
