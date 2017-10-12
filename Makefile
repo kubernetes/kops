@@ -35,6 +35,7 @@ UPLOAD=$(BUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
 TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages) 
+BAZEL_TEST?=
 
 SOURCES:=$(shell find . -name "*.go")
 
