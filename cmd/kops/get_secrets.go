@@ -167,9 +167,7 @@ func RunGetSecrets(options *GetSecretsOptions, args []string) error {
 	}
 
 	if len(items) == 0 {
-		fmt.Fprintf(os.Stderr, "No secrets found\n")
-
-		return nil
+		return fmt.Errorf("No secrets found")
 	}
 	switch options.output {
 
