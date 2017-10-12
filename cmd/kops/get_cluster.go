@@ -133,8 +133,7 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 	}
 
 	if len(clusters) == 0 {
-		fmt.Fprintf(os.Stderr, "No clusters found\n")
-		return nil
+		return fmt.Errorf("No clusters found")
 	}
 
 	if options.FullSpec {
