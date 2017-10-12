@@ -96,6 +96,16 @@ type InstanceGroupSpec struct {
 	Zones []string `json:"zones,omitempty"`
 	// SuspendProcesses disables the listed Scaling Policies
 	SuspendProcesses []string `json:"suspendProcesses,omitempty"`
+	// IAMProfileSpec defines the identity of the cloud group iam profile (AWS only).
+	IAM *IAMProfileSpec `json:"iam,omitempty"`
+}
+
+// IAMProfileSpec is the AWS IAM Profile to attach to instances in this instance
+// group. Specify the ARN for the IAM instance profile (AWS only).
+type IAMProfileSpec struct {
+	// Profile of the cloud group iam profile. In aws this is the arn
+	// for the iam instance profile
+	Profile *string `json:"profile,omitempty"`
 }
 
 // UserData defines a user-data section
