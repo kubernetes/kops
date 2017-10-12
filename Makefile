@@ -578,7 +578,7 @@ bazel-build:
 # 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 .PHONY: bazel-crossbuild-nodeup
 bazel-crossbuild-nodeup:
-	bazel build --cpu=k8 //cmd/nodeup 
+	bazel build //cmd/nodeup 
 
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
