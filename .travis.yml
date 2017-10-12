@@ -1,3 +1,4 @@
+sudo: required
 language: go
 go:
   - 1.8
@@ -7,8 +8,16 @@ go:
 
 go_import_path: k8s.io/kops
 
+before_install:
+- echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+- curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
+- sudo apt-get -y update
+- sudo apt-get -y install bazel
+
 script:
-  - make --debug=b ci
+  - make ci
+  - make bazel-build
+  - make bazel-test
 
 git:
   submodules: false
