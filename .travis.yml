@@ -6,6 +6,10 @@ go:
 # removed because of govet issue with apimahcinery
 #  - tip
 
+cache:
+  directories:
+    - $HOME/bazel/outbase
+
 go_import_path: k8s.io/kops
 
 before_install:
@@ -16,8 +20,8 @@ before_install:
 
 script:
   - make ci
-  - make bazel-build
-  - make bazel-test
+  # TODO make an option to pass in outbase?
+  - bazel --output_base=${HOME}/bazel/outbase test //...  test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/...
 
 git:
   submodules: false
