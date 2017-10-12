@@ -578,7 +578,7 @@ bazel-build:
 # 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 .PHONY: bazel-crossbuild-nodeup
 bazel-crossbuild-nodeup:
-	bazel build //cmd/nodeup
+	bazel build --cpu=k8 //cmd/nodeup 
 
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
@@ -594,6 +594,9 @@ bazel-push-gce-run: bazel-push
 .PHONY: bazel-push-aws-run
 bazel-push-aws-run: bazel-push
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
+
+.PHONY: bazel-fix
+	bazel run //:gazelle
 
 .PHONY: check-markdown-links
 check-markdown-links:
