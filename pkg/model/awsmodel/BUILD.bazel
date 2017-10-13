@@ -4,6 +4,7 @@ go_library(
     name = "go_default_library",
     srcs = [
         "api_loadbalancer.go",
+        "api_loadbalancer_security_groups.go",
         "autoscalinggroup.go",
         "context.go",
         "convenience.go",
