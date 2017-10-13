@@ -89,6 +89,7 @@ rules:
   verbs:
   - watch
   - list
+  - get
 
 ---
 
