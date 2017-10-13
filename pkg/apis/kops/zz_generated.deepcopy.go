@@ -21,6 +21,8 @@ limitations under the License.
 package kops
 
 import (
+	reflect "reflect"
+
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 )
