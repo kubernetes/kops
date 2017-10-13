@@ -564,6 +564,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVers
 
 	manifest.Set("Service", "Type", "notify")
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/docker")
+	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 
 	if usesDockerSocket {
 		manifest.Set("Service", "ExecStart", dockerdCommand+" -H fd:// \"$DOCKER_OPTS\"")
@@ -632,6 +633,7 @@ func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderCo
 	lines := []string{
 		"[Service]",
 		"EnvironmentFile=/etc/sysconfig/docker",
+		"EnvironmentFile=/etc/environment",
 	}
 	contents := strings.Join(lines, "\n")
 
