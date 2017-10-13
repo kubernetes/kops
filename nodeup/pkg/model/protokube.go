@@ -122,7 +122,6 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 
 	dockerArgs = append(dockerArgs, []string{
 		"--net=host",
-		"--privileged",
 		"--env", "KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
 		t.ProtokubeEnvironmentVariables(),
 		t.ProtokubeImageName(),
