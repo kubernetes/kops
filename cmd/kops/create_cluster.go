@@ -1111,6 +1111,14 @@ func setOverrides(overrides []string, cluster *api.Cluster, instanceGroups []*ap
 		switch kv[0] {
 		case "cluster.spec.nodePortAccess":
 			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
+		case "cluster.spec.api.loadBalancer.securityGroup":
+			if cluster.Spec.API == nil {
+				cluster.Spec.API = &api.AccessSpec{}
+			}
+			if cluster.Spec.API.LoadBalancer == nil {
+				cluster.Spec.API.LoadBalancer = &api.LoadBalancerAccessSpec{}
+			}
+			cluster.Spec.API.LoadBalancer.SecurityGroup = kv[1]
 		default:
 			return fmt.Errorf("unhandled override: %q", override)
 		}

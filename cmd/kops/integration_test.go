@@ -132,6 +132,11 @@ func TestSharedVPC(t *testing.T) {
 	runTestAWS(t, "sharedvpc.example.com", "shared_vpc", "v1alpha2", false, 1)
 }
 
+// TestCustomSecurityGroup runs the test on a configuration with custom security groups
+func TestCustomSecurityGroup(t *testing.T) {
+	runTestAWS(t, "custom-security-groups.example.com", "custom_security_groups", "v1alpha2", true, 1)
+}
+
 func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string) {
 	var stdout bytes.Buffer
 

@@ -2,21 +2,17 @@ apiVersion: kops/v1alpha2
 kind: Cluster
 metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
-  name: private.example.com
+  name: custom-security-groups.example.com
 spec:
   api:
     loadBalancer:
-      securityGroup: sg-12345678
       type: Public
+      securityGroup: sg-12345678
   authorization:
     alwaysAllow: {}
   channel: stable
-  cloudLabels:
-    Owner: John Doe
-    dn: 'cn=John Doe: dc=example dc=com'
-    foo/bar: fib+baz
   cloudProvider: aws
-  configBase: memfs://tests/private.example.com
+  configBase: memfs://tests/custom-security-groups.example.com
   etcdClusters:
   - etcdMembers:
     - instanceGroup: master-us-test-1a
@@ -30,8 +26,8 @@ spec:
     legacy: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.4.8
-  masterPublicName: api.private.example.com
+  kubernetesVersion: v1.8.0
+  masterPublicName: api.custom-security-groups.example.com
   networkCIDR: 172.20.0.0/16
   networking:
     kopeio: {}
@@ -43,13 +39,11 @@ spec:
     name: us-test-1a
     type: Private
     zone: us-test-1a
-  - cidr: 172.20.0.0/22
+  - cidr: 172.20.4.0/22
     name: utility-us-test-1a
     type: Utility
     zone: us-test-1a
   topology:
-    bastion:
-      bastionPublicName: bastion.private.example.com
     dns:
       type: Public
     masters: private
@@ -62,10 +56,10 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
   labels:
-    kops.k8s.io/cluster: private.example.com
-  name: bastions
+    kops.k8s.io/cluster: custom-security-groups.example.com
+  name: bastion
 spec:
-  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   machineType: t2.micro
   maxSize: 1
   minSize: 1
@@ -80,13 +74,13 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
   labels:
-    kops.k8s.io/cluster: private.example.com
+    kops.k8s.io/cluster: custom-security-groups.example.com
   name: master-us-test-1a
 spec:
   additionalSecurityGroups:
   - sg-exampleid3
   - sg-exampleid4
-  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   machineType: m3.medium
   maxSize: 1
   minSize: 1
@@ -101,13 +95,13 @@ kind: InstanceGroup
 metadata:
   creationTimestamp: 2017-01-01T00:00:00Z
   labels:
-    kops.k8s.io/cluster: private.example.com
+    kops.k8s.io/cluster: custom-security-groups.example.com
   name: nodes
 spec:
   additionalSecurityGroups:
   - sg-exampleid
   - sg-exampleid2
-  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2017-07-28
+  image: kope.io/k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21
   machineType: t2.medium
   maxSize: 2
   minSize: 2

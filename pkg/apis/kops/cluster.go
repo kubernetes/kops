@@ -260,6 +260,9 @@ const (
 type LoadBalancerAccessSpec struct {
 	Type               LoadBalancerType `json:"type,omitempty"`
 	IdleTimeoutSeconds *int64           `json:"idleTimeoutSeconds,omitempty"`
+
+	// TODO: We need a name for this that is generic
+	SecurityGroup string `json:"securityGroup,omitempty"`
 }
 
 // KubeDNSConfig defines the kube dns configuration
