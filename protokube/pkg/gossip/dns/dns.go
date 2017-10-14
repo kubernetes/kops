@@ -43,13 +43,13 @@ func RunDNSUpdates(target DNSTarget, src *DNSView) {
 		// Snapshot is very cheap if we are in-sync
 		snapshot := src.Snapshot()
 		if lastSnapshot != nil && lastSnapshot.version == snapshot.version {
-			glog.Infof("DNSView unchanged: %v", lastSnapshot.version)
+			glog.V(4).Infof("DNSView unchanged: %v", lastSnapshot.version)
 			continue
 		}
 
 		// TODO: We might want to keep old records alive for a bit
 
-		glog.Infof("DNSView changed: %v", snapshot.version)
+		glog.V(2).Infof("DNSView changed: %v", snapshot.version)
 
 		err := target.Update(snapshot)
 		if err != nil {
