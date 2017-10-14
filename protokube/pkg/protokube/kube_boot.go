@@ -19,10 +19,10 @@ package protokube
 import (
 	"fmt"
 	"net"
-	"os/exec"
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/kubernetes/pkg/util/mount"
 )
 
 var (
@@ -151,8 +151,17 @@ func startKubeletService() error {
 	// (in particular, we want to avoid kubernetes/kubernetes#40123 )
 	glog.V(2).Infof("ensuring that kubelet systemd service is running")
 
-	cmd := exec.Command("systemctl", "status", "--no-block", "kubelet")
-	output, err := cmd.CombinedOutput()
+	// We run systemctl from the hostfs so we don't need systemd in our image
+	// (and we don't risk version skew)
+
+	exec := mount.NewOsExec()
+	if Containerized {
+		exec = NewNsEnterExec()
+	}
+
+	systemctlCommand := "systemctl"
+
+	output, err := exec.Run(systemctlCommand, "status", "--no-block", "kubelet")
 	glog.V(2).Infof("'systemctl status kubelet' output:\n%s", string(output))
 	if err == nil {
 		glog.V(2).Infof("kubelet systemd service already running")
@@ -160,8 +169,7 @@ func startKubeletService() error {
 	}
 
 	glog.Infof("kubelet systemd service not running. Starting")
-	cmd = exec.Command("systemctl", "start", "--no-block", "kubelet")
-	output, err = cmd.CombinedOutput()
+	output, err = exec.Run(systemctlCommand, "start", "--no-block", "kubelet")
 	if err != nil {
 		return fmt.Errorf("error starting kubelet: %v\nOutput: %s", err, output)
 	}
