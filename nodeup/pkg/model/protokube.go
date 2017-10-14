@@ -122,7 +122,8 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 
 	dockerArgs = append(dockerArgs, []string{
 		"--net=host",
-		"--privileged",
+		"--pid=host",   // Needed for mounting in a container (when using systemd mounting?)
+		"--privileged", // We execute in the host namespace
 		"--env", "KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
 		t.ProtokubeEnvironmentVariables(),
 		t.ProtokubeImageName(),
