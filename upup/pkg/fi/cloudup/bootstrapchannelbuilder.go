@@ -236,8 +236,23 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 	}
 
-	{
+	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderAWS {
 		key := "storage-aws.addons.k8s.io"
+		version := "1.6.0"
+
+		location := key + "/v" + version + ".yaml"
+
+		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+			Name:     fi.String(key),
+			Version:  fi.String(version),
+			Selector: map[string]string{"k8s-addon": key},
+			Manifest: fi.String(location),
+		})
+		manifests[key] = "addons/" + location
+	}
+
+	if kops.CloudProviderID(b.cluster.Spec.CloudProvider) == kops.CloudProviderGCE {
+		key := "storage-gce.addons.k8s.io"
 		version := "1.6.0"
 
 		location := key + "/v" + version + ".yaml"
