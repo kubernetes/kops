@@ -270,7 +270,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.12.6",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.6-1.el7.centos.x86_64.rpm",
 		Hash:          "776dbefa9dc7733000e46049293555a9a422c50e",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp"},
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
 	},
 	{
 		DockerVersion: "1.12.6",
@@ -280,6 +280,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.12.6",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.6-1.el7.centos.noarch.rpm",
 		Hash:          "9a6ee0d631ca911b6927450a3c396e9a5be75047",
+		Dependencies:  []string{"policycoreutils-python"},
 	},
 
 	// 1.13.1 - k8s 1.8
@@ -332,7 +333,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.13.1",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.13.1-1.el7.centos.x86_64.rpm",
 		Hash:          "b18f7fd8057665e7d2871d29640e214173f70fe1",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp"},
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
 	},
 	{
 		DockerVersion: "1.13.1",
@@ -342,6 +343,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.13.1",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.13.1-1.el7.centos.noarch.rpm",
 		Hash:          "948c518a610af631fa98aa32d9bcd43e9ddd5ebc",
+		Dependencies:  []string{"policycoreutils-python"},
 	},
 
 	// 17.03.2 - k8s 1.8
@@ -391,7 +393,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "17.03.2.ce",
 		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm",
 		Hash:          "494ca888f5b1553f93b9d9a5dad4a67f76cf9eb5",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp"},
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libgcroup"},
 	},
 	{
 		DockerVersion: "17.03.2",
@@ -401,6 +403,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "17.03.2.ce",
 		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm",
 		Hash:          "4659c937b66519c88ef2a82a906bb156db29d191",
+		Dependencies:  []string{"policycoreutils-python"},
 	},
 }
 
