@@ -117,6 +117,10 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
 	}
 
+	if clusterSpec.ExternalCloudControllerManager != nil {
+		kcm.CloudProvider = "external"
+	}
+
 	if kcm.Master == "" {
 		if b.Context.IsKubernetesLT("1.6") {
 			// As of 1.6, we find the master using kubeconfig
