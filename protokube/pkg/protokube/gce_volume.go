@@ -238,7 +238,7 @@ func (v *GCEVolumes) FindVolumes() ([]*Volume, error) {
 
 			diskClusterName := d.Labels[gce.GceLabelNameKubernetesCluster]
 			if diskClusterName == "" {
-				glog.V(2).Infof("Skipping disk %q with no cluster name", d.Name)
+				glog.V(4).Infof("Skipping disk %q with no cluster name", d.Name)
 				continue
 			}
 			// Note that the cluster name is _not_ encoded with EncodeGCELabel

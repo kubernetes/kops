@@ -83,8 +83,7 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 		federations = append(federations, &list.Items[i])
 	}
 	if len(federations) == 0 {
-		fmt.Fprintf(out, "No federations found\n")
-		return nil
+		return fmt.Errorf("No federations found")
 	}
 	switch options.output {
 
