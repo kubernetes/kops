@@ -30,6 +30,8 @@ spec:
   topology:
     masters: private
     nodes: private
+    bastion:
+      bastionPublicName: bastion.privateweave.example.com
   subnets:
   - cidr: 172.20.32.0/19
     name: us-test-1a

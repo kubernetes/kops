@@ -183,6 +183,52 @@ func TestPhaseSecurityGroup(t *testing.T) {
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseSecurityGroups)
 }
 
+// TODO missing variables
+/*
+output "bastion_security_group_ids" {
+  value = ["${aws_security_group.bastion-privateweave-example-com.id}"]
+}
+
+output "bastions_role_arn" {
+  value = "${aws_iam_role.bastions-privateweave-example-com.arn}"
+}
+
+output "bastions_role_name" {
+  value = "${aws_iam_role.bastions-privateweave-example-com.name}"
+}
+
+output "cluster_name" {
+  value = "privateweave.example.com"
+}
+
+output "master_security_group_ids" {
+  value = ["${aws_security_group.masters-privateweave-example-com.id}"]
+}
+
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-privateweave-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-privateweave-example-com.name}"
+}
+
+output "node_security_group_ids" {
+  value = ["${aws_security_group.nodes-privateweave-example-com.id}"]
+}
+
+output "node_subnet_ids" {
+  value = ["${aws_subnet.us-test-1a-privateweave-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-privateweave-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-privateweave-example-com.name}"
+}
+*/
 // TestPhaseCluster tests the output of tf for the loadbalancer phase
 func TestPhaseLoadBalancers(t *testing.T) {
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseLoadBalancers)

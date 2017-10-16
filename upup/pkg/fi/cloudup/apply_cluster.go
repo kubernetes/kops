@@ -568,7 +568,7 @@ func (c *ApplyClusterCmd) Run() error {
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: loadBalancerLifecycle, SecurityGroupLifecycle: securityGroupLifecycle},
 					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: loadBalancerLifecycle, SecurityGroupLifecycle: securityGroupLifecycle},
-					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
+					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: loadBalancerLifecycle},
 					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: securityGroupLifecycle},
 					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: securityGroupLifecycle},
 					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
