@@ -39,6 +39,8 @@ import (
 	"k8s.io/kops/pkg/jsonutils"
 	"k8s.io/kops/pkg/testutils"
 
+	"fmt"
+
 	"github.com/ghodss/yaml"
 	"golang.org/x/crypto/ssh"
 	"k8s.io/kops/pkg/featureflag"
@@ -146,8 +148,6 @@ func TestPhaseIAM(t *testing.T) {
 
 // TestPhaseCluster tests the output of tf for the cluster phase
 func TestPhaseCluster(t *testing.T) {
-	// TODO fix tf for phase, and allow override on validation
-	t.Skip("unable to test w/o allowing failed validation")
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
 }
 
@@ -262,6 +262,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 	}
 
 	{
+
 		options := &CreateSecretPublickeyOptions{}
 		options.ClusterName = clusterName
 		options.Name = "admin"
@@ -280,7 +281,12 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		options.OutDir = path.Join(h.TempDir, "out")
 		options.MaxTaskDuration = 30 * time.Second
 		if phase != nil {
+			failValidate := []string{}
+			for _, phase := range cloudup.Phases.List() {
+				failValidate = append(failValidate, fmt.Sprintf("%s=true", phase))
+			}
 			options.Phase = string(*phase)
+			options.PhasesAllowFailValidation = failValidate
 		}
 
 		// We don't test it here, and it adds a dependency on kubectl

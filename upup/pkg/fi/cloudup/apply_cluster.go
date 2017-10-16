@@ -118,6 +118,8 @@ type ApplyClusterCmd struct {
 
 	// Phase can be set to a Phase to run the specific subset of tasks, if we don't want to run everything
 	Phase Phase
+
+	LifeCycleAllowFailValidation map[Phase]bool
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -493,18 +495,18 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case PhaseNetwork:
 		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		securityGroupLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		loadBalancerLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseSecurityGroups:
 		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		// TODO need to put this in, but testing won't pass until we can fail validation
 		//networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
-		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 		loadBalancerLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseCluster:
@@ -513,7 +515,7 @@ func (c *ApplyClusterCmd) Run() error {
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 			securityGroupLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
-			loadBalancerLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			loadBalancerLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 		} else {
 			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
@@ -526,13 +528,43 @@ func (c *ApplyClusterCmd) Run() error {
 		// TODO need to put in ExistsAndValidates, but testing won't pass until we can fail validation
 		// TODO do we want to move the DrynRun stuff here?
 		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		securityGroupLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		securityGroupLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 
 	default:
 		return fmt.Errorf("unknown phase %q", c.Phase)
+	}
+
+	// TODO need to fail validation here
+	if c.Phase != "" {
+		for failPhaseName, failValidation := range c.LifeCycleAllowFailValidation {
+			if failPhaseName == c.Phase {
+				continue
+			}
+
+			if !failValidation {
+				continue
+			}
+
+			switch failPhaseName {
+			case PhaseStageAssets:
+				stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			case PhaseIAM:
+				iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			case PhaseNetwork:
+				networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			case PhaseSecurityGroups:
+				securityGroupLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			case PhaseCluster:
+				clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			case PhaseLoadBalancers:
+				networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			default:
+				return fmt.Errorf("unknown phase %q", c.Phase)
+			}
+		}
 	}
 
 	var fileModels []string
