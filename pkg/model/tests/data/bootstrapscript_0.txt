@@ -1,3 +1,12 @@
+Content-Type: multipart/mixed; boundary="MIMEBOUNDRY"
+MIME-Version: 1.0
+
+--MIMEBOUNDRY
+Content-Disposition: attachment; filename="nodeup.sh"
+Content-Transfer-Encoding: 7bit
+Content-Type: text/x-shellscript
+Mime-Version: 1.0
+
 #!/bin/bash
 # Copyright 2016 The Kubernetes Authors All rights reserved.
 #
@@ -206,3 +215,5 @@ __EOF_KUBE_ENV
 
 download-release
 echo "== nodeup node config done =="
+
+--MIMEBOUNDRY--

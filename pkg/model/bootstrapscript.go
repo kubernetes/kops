@@ -160,7 +160,12 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 		},
 	}
 
-	templateResource, err := NewTemplateResource("nodeup", resources.AWSNodeUpTemplate, functions, nil)
+	AWSNodeUpTemplate, err := resources.AWSNodeUpTemplate()
+	if err != nil {
+		return nil, err
+	}
+
+	templateResource, err := NewTemplateResource("nodeup", AWSNodeUpTemplate, functions, nil)
 	if err != nil {
 		return nil, err
 	}
