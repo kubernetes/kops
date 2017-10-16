@@ -431,21 +431,36 @@ func runTestCloudformation(t *testing.T, clusterName string, srcDir string, vers
 			t.Fatalf("cloudformation output differed from expected")
 		}
 
-		actualExtracted, err := yaml.Marshal(extracted)
-		if err != nil {
-			t.Fatalf("unexpected error serializing extracted values: %v", err)
-		}
 		expectedExtracted, err := ioutil.ReadFile(path.Join(srcDir, expectedCfPath+".extracted.yaml"))
 		if err != nil {
 			t.Fatalf("unexpected error reading expected extracted cloudformation output: %v", err)
 		}
 
-		actualExtractedTrimmed := strings.TrimSpace(string(actualExtracted))
-		expectedExtractedTrimmed := strings.TrimSpace(string(expectedExtracted))
-		if actualExtractedTrimmed != expectedExtractedTrimmed {
-			diffString := diff.FormatDiff(actualExtractedTrimmed, expectedExtractedTrimmed)
-			t.Logf("diff:\n%s\n", diffString)
-			t.Fatalf("cloudformation output differed from expected")
+		expected := make(map[string]string)
+		err = yaml.Unmarshal(expectedExtracted, &expected)
+		if err != nil {
+			t.Fatalf("unexpected error unmarshal expected extracted cloudformation output: %v", err)
+		}
+
+		if len(extracted) != len(expected) {
+			t.Fatalf("error differed number of cloudformation in expected and extracted: %v", err)
+		}
+
+		for key, expectedValue := range expected {
+			extractedValue, ok := extracted[key]
+			if !ok {
+				t.Fatalf("unexpected error expected cloudformation not found for k: %v", key)
+			}
+
+			// Strip cariage return as expectedValue is stored in a yaml string literal
+			// and golang will automaticaly strip CR from any string literal
+			extractedValueTrimmed := strings.Replace(extractedValue, "\r", "", -1)
+			if expectedValue != extractedValueTrimmed {
+
+				diffString := diff.FormatDiff(expectedValue, extractedValueTrimmed)
+				t.Logf("diff for key %s:\n%s\n\n\n\n\n\n", key, diffString)
+				t.Fatalf("cloudformation output differed from expected")
+			}
 		}
 	}
 }
