@@ -10,7 +10,9 @@ Update a cluster.
 
 Create or update cloud or cluster resources to match current cluster state.  If the cluster or cloud resources already exist this command may modify those resources. 
 
-If nodes need updating such as during a Kubernetes upgrade, a rolling-update may be required as well.
+If nodes need updating such as during a Kubernetes upgrade, a rolling-update may be required as well. 
+
+Running kops update in different phases is supported.  Phases are 'iam', 'network' and 'cluster', can be run in said order. This allows a users to run just the phase to build IAM components, if another user does not have the cloud permission to build such components as roles.  Phases will warn and apply strict validation of the required cluster components, such a tags or labels on subnets. But in certain customized environments a user may specify running a phase without strict validation.  Use the phase-validation-policy flag to set for loose validation.  We highly recommend using strict validation.
 
 ```
 kops update cluster
@@ -19,20 +21,27 @@ kops update cluster
 ### Examples
 
 ```
-  # After cluster has been edited or upgraded, configure it with:
-  kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
+  # After cluster has been edited or upgraded apply an update, in dry-run mode.
+  kops update cluster k8s-cluster.example.com --state=s3://kops-state-1234
+  
+  # After cluster has been edited or upgraded apply an update, and modify the cluster.
+  kops update cluster k8s-cluster.example.com --state=s3://kops-state-1234 --yes
+  
+  # Run only the iam phase for cluster update.
+  kops update cluster k8s-cluster.example.com --phase iam --yes
 ```
 
 ### Options
 
 ```
-      --create-kube-config      Will control automatically creating the kube config file on your local filesystem (default true)
-      --model string            Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
-      --out string              Path to write any local output
-      --phase string            Subset of tasks to run: assets,cluster,iam,network
-      --ssh-public-key string   SSH public key to use (deprecated: use kops create secret instead)
-      --target string           Target - direct, terraform, cloudformation (default "direct")
-      --yes                     Actually create cloud resources
+      --create-kube-config               Will control automatically creating the kube config file on your local filesystem (default true)
+      --model string                     Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
+      --out string                       Path to write any local output
+      --phase string                     Subset of tasks to run: assets,cluster,iam,network
+      --phase-validation-policy string   Allow loose or strict validation for kops: strict or loose (default "strict")
+      --ssh-public-key string            SSH public key to use (deprecated: use kops create secret instead)
+      --target string                    Target - direct, terraform, cloudformation (default "direct")
+      --yes                              Actually create cloud resources
 ```
 
 ### Options inherited from parent commands

@@ -46,11 +46,23 @@ var (
 
 	If nodes need updating such as during a Kubernetes upgrade, a rolling-update may
 	be required as well.
+
+	Running kops update in different phases is supported.  Phases are 'iam', 'network' and 'cluster', can be run in said order.
+	This allows a users to run just the phase to build IAM components, if another user does not have the cloud permission to build
+	such components as roles.  Phases will warn and apply strict validation of the required cluster components, such a tags or labels on subnets.
+	But in certain customized environments a user may specify running a phase without strict validation.  Use the phase-validation-policy flag
+	to set for loose validation.  We highly recommend using strict validation.
 	`))
 
 	update_cluster_example = templates.Examples(i18n.T(`
-	# After cluster has been edited or upgraded, configure it with:
-	kops update cluster k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
+	# After cluster has been edited or upgraded apply an update, in dry-run mode.
+	kops update cluster k8s-cluster.example.com --state=s3://kops-state-1234
+
+	# After cluster has been edited or upgraded apply an update, and modify the cluster.
+	kops update cluster k8s-cluster.example.com --state=s3://kops-state-1234 --yes
+
+	# Run only the iam phase for cluster update.
+	kops update cluster k8s-cluster.example.com --phase iam --yes
 	`))
 
 	update_cluster_short = i18n.T("Update a cluster.")
@@ -65,7 +77,8 @@ type UpdateClusterOptions struct {
 	MaxTaskDuration time.Duration
 	CreateKubecfg   bool
 
-	Phase string
+	Phase                 string
+	PhaseValidationPolicy string
 }
 
 func (o *UpdateClusterOptions) InitDefaults() {
@@ -76,6 +89,7 @@ func (o *UpdateClusterOptions) InitDefaults() {
 	o.OutDir = ""
 	o.MaxTaskDuration = cloudup.DefaultMaxTaskDuration
 	o.CreateKubecfg = true
+	o.PhaseValidationPolicy = string(fi.LifecycleValidationStrict)
 }
 
 func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
@@ -109,6 +123,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
 	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ","))
+	cmd.Flags().StringVar(&options.PhaseValidationPolicy, "phase-validation-policy", options.PhaseValidationPolicy, "Allow loose or strict validation for kops: strict or loose")
 	return cmd
 }
 
@@ -190,6 +205,18 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 	}
 
+	var phaseValidation fi.LifecycleValidationPolicy
+	if c.PhaseValidationPolicy != "" {
+		switch strings.ToLower(c.PhaseValidationPolicy) {
+		case string(fi.LifecycleValidationStrict):
+			phaseValidation = fi.LifecycleValidationStrict
+		case string(fi.LifecycleValidationLoose):
+			phaseValidation = fi.LifecycleValidationLoose
+		default:
+			return fmt.Errorf("unknown phase validation policy %q, available policies: %s, %s", c.PhaseValidationPolicy, fi.LifecycleValidationStrict, fi.LifecycleValidationLoose)
+		}
+	}
+
 	var instanceGroups []*kops.InstanceGroup
 	{
 		list, err := clientset.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
@@ -211,6 +238,8 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		MaxTaskDuration: c.MaxTaskDuration,
 		InstanceGroups:  instanceGroups,
 		Phase:           phase,
+
+		PhaseValidationPolicy: phaseValidation,
 	}
 
 	err = applyCmd.Run()

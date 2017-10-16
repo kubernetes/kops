@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 type Lifecycle string
+type LifecycleValidationPolicy string
 
 const (
 	// LifecycleSync should do the normal synchronization
@@ -30,6 +31,12 @@ const (
 
 	// LifecycleExistsAndWarnIfChanges will check that the task exists and will warn on changes, but then ignore them
 	LifecycleExistsAndWarnIfChanges Lifecycle = "ExistsAndWarnIfChanges"
+
+	// LifecycleValidationLoose allows for validiation to warn and pass. This is optional.
+	LifecycleValidationLoose LifecycleValidationPolicy = "loose"
+
+	// LifecycleValidationStrict allows for validiation to warn and fail. This is default.
+	LifecycleValidationStrict LifecycleValidationPolicy = "strict"
 )
 
 // HasLifecycle indicates that the task has a Lifecycle
