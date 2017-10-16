@@ -568,7 +568,7 @@ kops-server-push: kops-server-build
 
 .PHONY: bazel-test
 bazel-test:
-	bazel test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/...
+	bazel test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/... --test_output=errors
 
 .PHONY: bazel-build
 bazel-build:
