@@ -466,40 +466,40 @@ func (c *ApplyClusterCmd) Run() error {
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
-	iamLifecycle := lifecyclePointer(fi.LifecycleSync)
+	stageAssetsLifecycle := lifecyclePointer(fi.LifecycleSync)
+	securityLifecycle := lifecyclePointer(fi.LifecycleSync)
 	networkLifecycle := lifecyclePointer(fi.LifecycleSync)
 	clusterLifecycle := lifecyclePointer(fi.LifecycleSync)
-	stageAssetsLifecycle := lifecyclePointer(fi.LifecycleSync)
 
 	switch c.Phase {
 	case Phase(""):
 	// Everything ... the default
 	case PhaseStageAssets:
-		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleSync)
-		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-
-	case PhaseIAM:
-		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		securityLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseNetwork:
 		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		securityLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+
+	case PhaseSecurity:
+		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseCluster:
 		if c.TargetName == TargetDryRun {
 			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
-			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+			securityLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 		} else {
 			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+			securityLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 		}
+
 	default:
 		return fmt.Errorf("unknown phase %q", c.Phase)
 	}
@@ -540,7 +540,7 @@ func (c *ApplyClusterCmd) Run() error {
 					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
 					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
-					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
+					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: securityLifecycle},
 				)
 
 				l.Builders = append(l.Builders,
@@ -548,7 +548,7 @@ func (c *ApplyClusterCmd) Run() error {
 				)
 
 				l.Builders = append(l.Builders,
-					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
+					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: securityLifecycle},
 				)
 			case kops.CloudProviderDO:
 				l.Builders = append(l.Builders,
