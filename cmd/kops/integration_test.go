@@ -185,9 +185,7 @@ func TestPhaseSecurityGroup(t *testing.T) {
 
 // TestPhaseCluster tests the output of tf for the loadbalancer phase
 func TestPhaseLoadBalancers(t *testing.T) {
-	t.Skip("unable to test until phase is created")
-	// TODO
-	// runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.LoadBalancers)
+	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseLoadBalancers)
 }
 
 func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string, tfFileName string, phase *cloudup.Phase) {
