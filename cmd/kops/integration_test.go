@@ -151,6 +151,8 @@ func TestPhaseCluster(t *testing.T) {
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
 }
 
+// See https://github.com/kubernetes/kops/issues/1026 for tracking on the output tweaks
+
 // TODO I should be getting sec groups ids ... need to figure this out
 /*
 output "bastion_security_group_ids" {
@@ -178,7 +180,78 @@ provider "aws" {
 }
 */
 
-// TestPhaseCluster tests the output of tf for the security group phase
+/*
+TODO need to fix outputs
+TODO need feedback what we should have
+
+	- output "bastions_role_arn" {
+		-   value = "${aws_iam_role.bastions-privateweave-example-com.arn}"
+		- }
+		-
+		- output "bastions_role_name" {
+		-   value = "${aws_iam_role.bastions-privateweave-example-com.name}"
+		- }
+		-
+		- output "cluster_name" {
+		-   value = "privateweave.example.com"
+		- }
+		-
+		- output "master_security_group_ids" {
+		-   value = ["${aws_security_group.masters-privateweave-example-com.id}"]
+		- }
+		-
+		- output "masters_role_arn" {
+		-   value = "${aws_iam_role.masters-privateweave-example-com.arn}"
+		- }
+		-
+		- output "masters_role_name" {
+		-   value = "${aws_iam_role.masters-privateweave-example-com.name}"
+		- }
+		-
+		- output "node_security_group_ids" {
+		-   value = ["${aws_security_group.nodes-privateweave-example-com.id}"]
+		- }
+		-
+		- output "node_subnet_ids" {
+		-   value = ["${aws_subnet.us-test-1a-privateweave-example-com.id}"]
+		- }
+		-
+		- output "nodes_role_arn" {
+		-   value = "${aws_iam_role.nodes-privateweave-example-com.arn}"
+		- }
+		-
+		- output "nodes_role_name" {
+		-   value = "${aws_iam_role.nodes-privateweave-example-com.name}"
+		- }
+		-
+		- output "region" {
+		-   value = "us-test-1"
+		- }
+		-
+		- output "vpc_id" {
+		+ output "cluster_name" {
+		+   value = "privateweave.example.com"
+		+ }
+		+
+		+ output "master_security_group_ids" {
+		+   value = ["${aws_security_group.masters-privateweave-example-com.id}"]
+		+ }
+		+
+		+ output "node_security_group_ids" {
+		+   value = ["${aws_security_group.nodes-privateweave-example-com.id}"]
+		+ }
+		+
+		+ output "node_subnet_ids" {
+		+   value = ["${aws_subnet.us-test-1a-privateweave-example-com.id}"]
+		+ }
+		+
+		+ output "region" {
+		+   value = "us-test-1"
+		-   value = "${aws_vpc.privateweave-example-com.id}"
+		  }
+*/
+
+// TestPhaseSecurityGroup tests the output of tf for the security group phase
 func TestPhaseSecurityGroup(t *testing.T) {
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseSecurityGroups)
 }
