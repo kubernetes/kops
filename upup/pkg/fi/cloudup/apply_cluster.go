@@ -466,10 +466,10 @@ func (c *ApplyClusterCmd) Run() error {
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
+	stageAssetsLifecycle := lifecyclePointer(fi.LifecycleSync)
 	iamLifecycle := lifecyclePointer(fi.LifecycleSync)
 	networkLifecycle := lifecyclePointer(fi.LifecycleSync)
 	clusterLifecycle := lifecyclePointer(fi.LifecycleSync)
-	stageAssetsLifecycle := lifecyclePointer(fi.LifecycleSync)
 
 	switch c.Phase {
 	case Phase(""):
@@ -490,6 +490,10 @@ func (c *ApplyClusterCmd) Run() error {
 		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
+	case PhaseSecurityGroups:
+		// TODO create securityGroupLifecycle
+		return fmt.Errorf("not implemented yet - phase %q", c.Phase)
+
 	case PhaseCluster:
 		if c.TargetName == TargetDryRun {
 			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
@@ -500,6 +504,11 @@ func (c *ApplyClusterCmd) Run() error {
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 		}
+
+	case PhaseLoadBalancers:
+		// TODO create loadBalancerLifecycle
+		return fmt.Errorf("not implemented yet - phase %q", c.Phase)
+
 	default:
 		return fmt.Errorf("unknown phase %q", c.Phase)
 	}
