@@ -151,6 +151,33 @@ func TestPhaseCluster(t *testing.T) {
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
 }
 
+// TODO I should be getting sec groups ids ... need to figure this out
+/*
+output "bastion_security_group_ids" {
+  value = ["${aws_security_group.bastion-privateweave-example-com.id}"]
+}
+
+output "cluster_name" {
+  value = "privateweave.example.com"
+}
+
+output "master_security_group_ids" {
+  value = ["${aws_security_group.masters-privateweave-example-com.id}"]
+}
+
+output "node_security_group_ids" {
+  value = ["${aws_security_group.nodes-privateweave-example-com.id}"]
+}
+
+output "region" {
+  value = "us-test-1"
+}
+
+provider "aws" {
+  region = "us-test-1"
+}
+*/
+
 // TestPhaseCluster tests the output of tf for the security group phase
 func TestPhaseSecurityGroup(t *testing.T) {
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseSecurityGroups)
@@ -262,8 +289,8 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		}
 	}
 
-	// Compare data files
-	{
+	// Compare data files if they are provided
+	if len(expectedFilenames) > 0 {
 		files, err := ioutil.ReadDir(path.Join(h.TempDir, "out", "data"))
 		if err != nil {
 			t.Fatalf("failed to read data dir: %v", err)
@@ -280,6 +307,8 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		}
 
 		// TODO: any verification of data files?
+	} else {
+		t.Logf("no data files for test %q", t.Name())
 	}
 }
 

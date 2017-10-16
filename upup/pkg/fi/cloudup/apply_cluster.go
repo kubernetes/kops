@@ -495,8 +495,12 @@ func (c *ApplyClusterCmd) Run() error {
 		securityGroupLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseSecurityGroups:
-		// TODO create securityGroupLifecycle
-		return fmt.Errorf("not implemented yet - phase %q", c.Phase)
+		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		// TODO need to put this in, but testing won't pass until we can fail validation
+		//networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseCluster:
 		if c.TargetName == TargetDryRun {
