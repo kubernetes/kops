@@ -153,9 +153,7 @@ func TestPhaseCluster(t *testing.T) {
 
 // TestPhaseCluster tests the output of tf for the security group phase
 func TestPhaseSecurityGroup(t *testing.T) {
-	t.Skip("unable to test until phase is created")
-	// TODO fix tf for phase, and allow override on validation
-	// runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.SecurityGroups)
+	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseSecurityGroups)
 }
 
 // TestPhaseCluster tests the output of tf for the loadbalancer phase

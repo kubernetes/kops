@@ -27,7 +27,8 @@ import (
 // APILoadBalancerBuilder builds a LoadBalancer for accessing the API
 type APILoadBalancerBuilder struct {
 	*GCEModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle              *fi.Lifecycle
+	SecurityGroupLifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &APILoadBalancerBuilder{}
@@ -90,7 +91,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &gcetasks.FirewallRule{
 			Name:         s(b.NameForFirewallRule("https-api")),
-			Lifecycle:    b.Lifecycle,
+			Lifecycle:    b.SecurityGroupLifecycle,
 			Network:      b.LinkToNetwork(),
 			SourceRanges: b.Cluster.Spec.KubernetesAPIAccess,
 			TargetTags:   []string{b.GCETagForRole(kops.InstanceGroupRoleMaster)},
