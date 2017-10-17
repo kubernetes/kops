@@ -21,6 +21,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -117,7 +118,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.IsKubernetesGTE("1.7") {
-
+		// TODO: Remove - we use the apiserver-aggregator keypair instead (which is signed by a different CA)
 		cert, err := b.KeyStore.Cert("apiserver-proxy-client", false)
 		if err != nil {
 			return fmt.Errorf("apiserver proxy client cert lookup failed: %v", err.Error())
@@ -151,6 +152,22 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 			Type:     nodetasks.FileType_File,
 		}
 		c.AddTask(t)
+	}
+
+	if b.IsKubernetesGTE("1.7") {
+		if err := b.writeCertificate(c, "apiserver-aggregator"); err != nil {
+			return err
+		}
+
+		if err := b.writePrivateKey(c, "apiserver-aggregator"); err != nil {
+			return err
+		}
+	}
+
+	if b.IsKubernetesGTE("1.7") {
+		if err := b.writeCertificate(c, "apiserver-aggregator-ca"); err != nil {
+			return err
+		}
 	}
 
 	if b.SecretStore != nil {
@@ -196,6 +213,55 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(t)
 	}
+
+	return nil
+}
+
+// writeCertificate writes the specified certificate to the local filesystem, under PathSrvKubernetes()
+func (b *SecretBuilder) writeCertificate(c *fi.ModelBuilderContext, id string) error {
+	cert, err := b.KeyStore.FindCert(id)
+	if err != nil {
+		return fmt.Errorf("cert lookup failed for %q: %v", id, err)
+	}
+
+	if cert != nil {
+		serialized, err := cert.AsString()
+		if err != nil {
+			return err
+		}
+
+		t := &nodetasks.File{
+			Path:     filepath.Join(b.PathSrvKubernetes(), id+".cert"),
+			Contents: fi.NewStringResource(serialized),
+			Type:     nodetasks.FileType_File,
+		}
+		c.AddTask(t)
+	} else {
+		// TODO: Make this an error?
+		glog.Warningf("certificate %q not found", id)
+	}
+
+	return nil
+}
+
+// writePrivateKey writes the specified private key to the local filesystem, under PathSrvKubernetes()
+func (b *SecretBuilder) writePrivateKey(c *fi.ModelBuilderContext, id string) error {
+	key, err := b.KeyStore.FindPrivateKey(id)
+	if err != nil {
+		return fmt.Errorf("private key lookup failed for %q: %v", id, err)
+	}
+
+	serialized, err := key.AsString()
+	if err != nil {
+		return err
+	}
+
+	t := &nodetasks.File{
+		Path:     filepath.Join(b.PathSrvKubernetes(), id+".key"),
+		Contents: fi.NewStringResource(serialized),
+		Type:     nodetasks.FileType_File,
+	}
+	c.AddTask(t)
 
 	return nil
 }

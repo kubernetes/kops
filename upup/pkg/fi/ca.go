@@ -49,7 +49,7 @@ type Keystore interface {
 	// (if the certificate is found but not keypair, that is not an error: only the cert will be returned)
 	FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error)
 
-	CreateKeypair(name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error)
+	CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error)
 
 	// StoreKeypair writes the keypair to the store
 	StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
@@ -67,11 +67,13 @@ type CAStore interface {
 	Keystore
 
 	// Cert returns the primary specified certificate
+	// For createIfMissing=false, using FindCert is preferred
 	Cert(name string, createIfMissing bool) (*pki.Certificate, error)
 	// CertificatePool returns all active certificates with the specified id
 	CertificatePool(name string, createIfMissing bool) (*CertificatePool, error)
 	PrivateKey(name string, createIfMissing bool) (*pki.PrivateKey, error)
 
+	// FindCert returns the specified certificate, if it exists, or nil if not found
 	FindCert(name string) (*pki.Certificate, error)
 	FindPrivateKey(name string) (*pki.PrivateKey, error)
 
