@@ -64,6 +64,8 @@ spec:
       labels:
         name: weave-net
         role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       containers:
         - name: weave
@@ -140,6 +142,8 @@ spec:
       serviceAccountName: weave-net
       tolerations:
         - effect: NoSchedule
+          operator: Exists
+        - key: CriticalAddonsOnly
           operator: Exists
       volumes:
         - name: weavedb
