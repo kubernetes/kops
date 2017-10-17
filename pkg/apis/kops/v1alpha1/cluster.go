@@ -291,10 +291,10 @@ type EtcdClusterSpec struct {
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
 	// Version is the version of etcd to run i.e. 2.1.2, 3.0.17 etcd
 	Version string `json:"version,omitempty"`
-	// Leader election timeout
+	// LeaderElectionTimeout is the time (in milliseconds) for an etcd leader election timeout
 	LeaderElectionTimeout string `json:"leaderElectionTimeout,omitempty"`
-	// Heartbeat interval timeout
-	HearbeatInterval string `json:"heartbeatInterval,omitempty"`
+	// HeartbeatInterval is the time (in milliseconds) for an etcd heartbeat interval
+	HeartbeatInterval string `json:"heartbeatInterval,omitempty"`
 }
 
 // EtcdMemberSpec is a specification for a etcd member
