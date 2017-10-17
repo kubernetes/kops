@@ -45,6 +45,12 @@ func (e *MirrorKeystore) GetDependencies(tasks map[string]fi.Task) []fi.Task {
 
 // Find implements fi.Task::Find
 func (e *MirrorKeystore) Find(c *fi.Context) (*MirrorKeystore, error) {
+	if vfsKeystore, ok := c.Keystore.(*fi.VFSCAStore); ok {
+		if vfsKeystore.VFSPath().Path() == e.MirrorPath.Path() {
+			return e, nil
+		}
+	}
+
 	// TODO: implement Find so that we aren't always mirroring
 	glog.V(2).Infof("MirrorKeystore::Find not implemented; always copying (inefficient)")
 	return nil, nil
