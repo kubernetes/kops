@@ -114,10 +114,19 @@ type RollingUpdateOptions struct {
 	// does not validate, after a validation period.
 	FailOnValidate bool
 
-	DrainInterval time.Duration
+	// PostDrainDelay is the duration of a pause after a drain operation
+	PostDrainDelay time.Duration
 
-	MasterInterval  time.Duration
-	NodeInterval    time.Duration
+	// ValidationTimeout is the timeout for validation to succeed after the drain and pause
+	ValidationTimeout time.Duration
+
+	// MasterInterval is the minimum time to wait after stopping a master node.  This does not include drain and validate time.
+	MasterInterval time.Duration
+
+	// NodeInterval is the minimum time to wait after stopping a (non-master) node.  This does not include drain and validate time.
+	NodeInterval time.Duration
+
+	// BastionInterval is the minimum time to wait after stopping a bastion.  This does not include drain and validate time.
 	BastionInterval time.Duration
 
 	ClusterName string
@@ -138,7 +147,8 @@ func (o *RollingUpdateOptions) InitDefaults() {
 	o.NodeInterval = 4 * time.Minute
 	o.BastionInterval = 5 * time.Minute
 
-	o.DrainInterval = 90 * time.Second
+	o.PostDrainDelay = 90 * time.Second
+	o.ValidationTimeout = 5 * time.Minute
 
 }
 
@@ -350,17 +360,19 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		glog.V(2).Infof("Rolling update with drain and validate enabled.")
 	}
 	d := &instancegroups.RollingUpdateCluster{
-		MasterInterval:   options.MasterInterval,
-		NodeInterval:     options.NodeInterval,
-		Force:            options.Force,
-		Cloud:            cloud,
-		K8sClient:        k8sClient,
-		ClientConfig:     kutil.NewClientConfig(config, "kube-system"),
-		FailOnDrainError: options.FailOnDrainError,
-		FailOnValidate:   options.FailOnValidate,
-		CloudOnly:        options.CloudOnly,
-		ClusterName:      options.ClusterName,
-		DrainInterval:    options.DrainInterval,
+		MasterInterval:    options.MasterInterval,
+		NodeInterval:      options.NodeInterval,
+		BastionInterval:   options.BastionInterval,
+		Force:             options.Force,
+		Cloud:             cloud,
+		K8sClient:         k8sClient,
+		ClientConfig:      kutil.NewClientConfig(config, "kube-system"),
+		FailOnDrainError:  options.FailOnDrainError,
+		FailOnValidate:    options.FailOnValidate,
+		CloudOnly:         options.CloudOnly,
+		ClusterName:       options.ClusterName,
+		PostDrainDelay:    options.PostDrainDelay,
+		ValidationTimeout: options.ValidationTimeout,
 	}
 	return d.RollingUpdate(groups, list)
 }
