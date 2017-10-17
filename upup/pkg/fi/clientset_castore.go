@@ -42,8 +42,8 @@ type ClientsetCAStore struct {
 	namespace string
 	clientset kopsinternalversion.KopsInterface
 
-	mutex         sync.Mutex
-	cacheCaKeyset *keyset
+	mutex           sync.Mutex
+	cachedCaKeysets map[string]*keyset
 }
 
 var _ CAStore = &ClientsetCAStore{}
@@ -51,42 +51,44 @@ var _ CAStore = &ClientsetCAStore{}
 // NewClientsetCAStore is the constructor for ClientsetCAStore
 func NewClientsetCAStore(clientset kopsinternalversion.KopsInterface, namespace string) CAStore {
 	c := &ClientsetCAStore{
-		clientset: clientset,
-		namespace: namespace,
+		clientset:       clientset,
+		namespace:       namespace,
+		cachedCaKeysets: make(map[string]*keyset),
 	}
 
 	return c
 }
 
 // readCAKeypairs retrieves the CA keypair, generating a new keypair if not found
-func (c *ClientsetCAStore) readCAKeypairs() (*keyset, error) {
+func (c *ClientsetCAStore) readCAKeypairs(id string) (*keyset, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
 
-	if c.cacheCaKeyset != nil {
-		return c.cacheCaKeyset, nil
+	cached := c.cachedCaKeysets[id]
+	if cached != nil {
+		return cached, nil
 	}
 
-	keyset, err := c.loadKeyset(CertificateId_CA)
+	keyset, err := c.loadKeyset(id)
 	if err != nil {
 		return nil, err
 	}
 
 	if keyset == nil {
-		keyset, err = c.generateCACertificate()
+		keyset, err = c.generateCACertificate(id)
 		if err != nil {
 			return nil, err
 		}
 
 	}
-	c.cacheCaKeyset = keyset
+	c.cachedCaKeysets[id] = keyset
 
 	return keyset, nil
 }
 
 // generateCACertificate creates and stores a CA keypair
 // Should be called with the mutex held, to prevent concurrent creation of different keys
-func (c *ClientsetCAStore) generateCACertificate() (*keyset, error) {
+func (c *ClientsetCAStore) generateCACertificate(id string) (*keyset, error) {
 	template := BuildCAX509Template()
 
 	caRsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
@@ -104,7 +106,7 @@ func (c *ClientsetCAStore) generateCACertificate() (*keyset, error) {
 		return nil, err
 	}
 
-	return c.storeAndVerifyKeypair(CertificateId_CA, caCertificate, caPrivateKey)
+	return c.storeAndVerifyKeypair(id, caCertificate, caPrivateKey)
 }
 
 // keyset is a parsed Keyset
@@ -310,12 +312,12 @@ func (c *ClientsetCAStore) List() ([]*KeystoreItem, error) {
 }
 
 // IssueCert implements CAStore::IssueCert
-func (c *ClientsetCAStore) IssueCert(name string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
+func (c *ClientsetCAStore) IssueCert(signer string, name string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
 	glog.Infof("Issuing new certificate: %q", name)
 
 	template.SerialNumber = serial
 
-	caKeyset, err := c.readCAKeypairs()
+	caKeyset, err := c.readCAKeypairs(signer)
 	if err != nil {
 		return nil, err
 	}
@@ -416,10 +418,10 @@ func (c *ClientsetCAStore) PrivateKey(name string, createIfMissing bool) (*pki.P
 }
 
 // CreateKeypair implements CAStore::CreateKeypair
-func (c *ClientsetCAStore) CreateKeypair(id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
+func (c *ClientsetCAStore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
 	serial := c.buildSerial()
 
-	cert, err := c.IssueCert(id, serial, privateKey, template)
+	cert, err := c.IssueCert(signer, id, serial, privateKey, template)
 	if err != nil {
 		return nil, err
 	}

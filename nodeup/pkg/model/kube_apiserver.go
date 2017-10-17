@@ -184,10 +184,23 @@ func (b *KubeAPIServerBuilder) buildPod() (*v1.Pod, error) {
 	}
 
 	if b.IsKubernetesGTE("1.7") {
-		certPath := filepath.Join(b.PathSrvKubernetes(), "proxy-client.cert")
+		certPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator.cert")
 		kubeAPIServer.ProxyClientCertFile = &certPath
-		keyPath := filepath.Join(b.PathSrvKubernetes(), "proxy-client.key")
+		keyPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator.key")
 		kubeAPIServer.ProxyClientKeyFile = &keyPath
+	}
+
+	// APIServer aggregation options
+	if b.IsKubernetesGTE("1.7") {
+		cert, err := b.KeyStore.FindCert("apiserver-aggregator-ca")
+		if err != nil {
+			return nil, fmt.Errorf("apiserver aggregator CA cert lookup failed: %v", err.Error())
+		}
+
+		if cert != nil {
+			certPath := filepath.Join(b.PathSrvKubernetes(), "apiserver-aggregator-ca.cert")
+			kubeAPIServer.RequestheaderClientCAFile = certPath
+		}
 	}
 
 	// build the kube-apiserver flags for the service
