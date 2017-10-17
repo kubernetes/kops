@@ -45,6 +45,7 @@
 * [Cluster addon manager](addon_manager.md)
 * [Cluster addons](addons.md)
 * [Cluster configuration management](changing_configuration.md)
+* [Cluster desired configuration creation from template](cluster_template.md)
 * [Cluster upgrades and migrations](cluster_upgrades_and_migrations.md)
 * [`etcd` volume encryption setup](etcd_volume_encryption.md)
 * [`etcd` backup setup](etcd_backup.md)
