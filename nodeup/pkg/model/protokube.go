@@ -34,6 +34,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/assets"
 )
 
 // ProtokubeBuilder configures protokube
@@ -232,12 +233,24 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	f := &ProtokubeFlags{
 		Channels:                  t.NodeupConfig.Channels,
 		Containerized:             fi.Bool(true),
-		EtcdImage:                 s(fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)),
 		EtcdLeaderElectionTimeout: s(leaderElectionTimeout),
 		EtcdHearbeatInterval:      s(heartbeatInterval),
 		LogLevel:                  fi.Int32(4),
 		Master:                    b(t.IsMaster),
 	}
+
+	// TODO this is dupicate code with etcd model
+	image := fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)
+	assets := assets.NewAssetBuilder(t.Cluster.Spec.Assets)
+	remapped, err := assets.RemapImage(image)
+	if err != nil {
+		glog.Errorf("unable to remap container %q: %v", image, err)
+		glog.Errorf("using default %s", image)
+	} else {
+		image = remapped
+	}
+
+	f.EtcdImage = s(image)
 
 	// initialize rbac on Kubernetes >= 1.6 and master
 	if k8sVersion.Major == 1 && k8sVersion.Minor >= 6 {
