@@ -1243,6 +1243,24 @@ func (in *EtcdClusterSpec) DeepCopyInto(out *EtcdClusterSpec) {
 			}
 		}
 	}
+	if in.LeaderElectionTimeout != nil {
+		in, out := &in.LeaderElectionTimeout, &out.LeaderElectionTimeout
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
+	if in.HeartbeatInterval != nil {
+		in, out := &in.HeartbeatInterval, &out.HeartbeatInterval
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
 	return
 }
 
