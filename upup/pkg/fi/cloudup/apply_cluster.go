@@ -152,7 +152,12 @@ func (c *ApplyClusterCmd) Run() error {
 	}
 	c.channel = channel
 
+	// The asset builder needs to know if it is in assets or another phase.  When
+	// In assets phases it uses the original file location, otherwise it uses
+	// the location that the assets will be downloaded from.
 	assetBuilder := assets.NewAssetBuilder(c.Cluster.Spec.Assets)
+	// TODO this is kinda ugly. Should we move phases into k8s.io/kops/pkg/phases?
+	assetBuilder.Phase = string(c.Phase)
 	err = c.upgradeSpecs(assetBuilder)
 	if err != nil {
 		return err

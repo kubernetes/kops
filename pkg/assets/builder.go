@@ -23,22 +23,29 @@ import (
 	"os"
 	"strings"
 
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
+	"k8s.io/kops/util/pkg/hashing"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // RewriteManifests controls whether we rewrite manifests
 // Because manifest rewriting converts everything to and from YAML, we normalize everything by doing so
 var RewriteManifests = featureflag.New("RewriteManifests", featureflag.Bool(true))
 
-// AssetBuilder discovers and remaps assets
+// AssetBuilder discovers and remaps assets.
 type AssetBuilder struct {
 	ContainerAssets []*ContainerAsset
 	FileAssets      []*FileAsset
 	AssetsLocation  *kops.Assets
+	// yay go cyclic dependency
+	//Phase       cloudup.Phase
+	Phase string
 }
 
+// ContainerAsset models a container's location.
 type ContainerAsset struct {
 	// DockerImage will be the name of the docker image we should run, if this is a docker image
 	DockerImage string
@@ -47,17 +54,29 @@ type ContainerAsset struct {
 	CanonicalLocation string
 }
 
+// FileAsset models a file's location.
 type FileAsset struct {
 	// File will be the name of the file we should use
 	File string
 
+	// SHA will be the name of the sha file we should use
+	SHA string
+
 	// CanonicalLocation will be the source location of the file, if we should copy it to the actual location
 	CanonicalLocation string
+
+	// CanonicalSHALocation will be the source location of the sha file, if we should copy it to the actual location
+	CononicalSHALocation string
+
+	// SHAValue will be the value of the files SHA
+	SHAValue string
 }
 
+// NewAssetBuilder creates a new AssetBuilder.
 func NewAssetBuilder(assets *kops.Assets) *AssetBuilder {
 	return &AssetBuilder{
 		AssetsLocation: assets,
+		Phase:          "",
 	}
 }
 
@@ -92,6 +111,8 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	return bytes.Join(remappedManifests, yamlSeparator), nil
 }
 
+// RemapImage normalizes a containers location if a user sets
+// the AssetsLocation ContainerRegistry location.
 func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	asset := &ContainerAsset{}
 
@@ -127,32 +148,117 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 	}
 
 	a.ContainerAssets = append(a.ContainerAssets, asset)
-
 	return image, nil
 }
 
 // RemapFile sets a new url location for the file, if a AssetsLocation is defined.
-func (a AssetBuilder) RemapFile(file string) (string, error) {
+func (a *AssetBuilder) RemapFileAndSHA(file string, sha string) (string, *hashing.Hash, error) {
+	if file == "" {
+		return "", nil, fmt.Errorf("unable to remap an empty string")
+	}
+
+	fileAsset := &FileAsset{
+		File: file,
+		SHA:  sha,
+	}
+
+	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
+		fileAsset.CanonicalLocation = file
+		fileAsset.CononicalSHALocation = sha
+
+		file, err := a.normalizeURL(file)
+		if err != nil {
+			return "", nil, fmt.Errorf("unable to parse file url %q: %v", file, err)
+		}
+
+		fileAsset.File = file
+
+		sha, err = a.normalizeURL(sha)
+		if err != nil {
+			return "", nil, fmt.Errorf("unable to parse sha url %q: %v", file, err)
+		}
+
+		fileAsset.SHA = sha
+		glog.V(4).Infof("adding remapped file: %+v", fileAsset)
+	}
+
+	h, err := a.FindHash(fileAsset)
+	if err != nil {
+		return "", nil, err
+	}
+
+	fileAsset.SHAValue = h.Hex()
+	a.FileAssets = append(a.FileAssets, fileAsset)
+
+	glog.V(8).Infof("adding file: %+v", fileAsset)
+
+	return fileAsset.File, h, nil
+}
+
+// RemapFileAndSHAValue is used exclusively to remap the cni tarball, as the tarball
+// does not have a sha file in object storage.
+func (a *AssetBuilder) RemapFileAndSHAValue(file string, shaValue string) (string, error) {
 	if file == "" {
 		return "", fmt.Errorf("unable to remap an empty string")
 	}
 
 	fileAsset := &FileAsset{
-		File:              file,
-		CanonicalLocation: file,
+		File:     file,
+		SHAValue: shaValue,
 	}
 
 	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-		fileURL, err := url.Parse(file)
+		fileAsset.CanonicalLocation = file
+
+		file, err := a.normalizeURL(file)
 		if err != nil {
 			return "", fmt.Errorf("unable to parse file url %q: %v", file, err)
 		}
 
-		fileRepo := strings.TrimSuffix(*a.AssetsLocation.FileRepository, "/")
-		fileAsset.File = fileRepo + fileURL.Path
+		fileAsset.File = file
+		glog.V(4).Infof("adding remapped file: %q", fileAsset.File)
 	}
 
 	a.FileAssets = append(a.FileAssets, fileAsset)
 
 	return fileAsset.File, nil
+}
+
+// FindHash returns the hash value from remove sha file via https.
+func (a *AssetBuilder) FindHash(file *FileAsset) (*hashing.Hash, error) {
+	u := file.File
+
+	// FIXME ugly hack because dep loop with lifecycle
+	// FIXME move lifecycle out of fi??
+	if a.Phase == "assets" && file.CanonicalLocation != "" {
+		u = file.CanonicalLocation
+	}
+
+	if u == "" {
+		return nil, fmt.Errorf("file url is not defined")
+	}
+
+	for _, ext := range []string{".sha1"} {
+		hashURL := u + ext
+		b, err := vfs.Context.ReadFile(hashURL)
+		if err != nil {
+			glog.Infof("error reading hash file %q: %v", hashURL, err)
+			continue
+		}
+		hashString := strings.TrimSpace(string(b))
+		glog.V(2).Infof("Found hash %q for %q", hashString, u)
+
+		return hashing.FromString(hashString)
+	}
+	return nil, fmt.Errorf("cannot determine hash for %q (have you specified a valid file location?)", u)
+}
+
+func (a *AssetBuilder) normalizeURL(file string) (string, error) {
+	fileURL, err := url.Parse(file)
+	if err != nil {
+		return "", fmt.Errorf("unable to parse file url %q: %v", file, err)
+	}
+
+	fileRepo := strings.TrimSuffix(*a.AssetsLocation.FileRepository, "/")
+	return fileRepo + fileURL.Path, nil
 }
