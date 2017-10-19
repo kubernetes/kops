@@ -34,6 +34,7 @@ func TestBuildEtcdManifest(t *testing.T) {
 	}{
 		{TestFile: "non_tls.yaml"},
 		{TestFile: "tls.yaml"},
+		{TestFile: "etcd_env_vars.yaml"},
 	}
 	for i, x := range cs {
 		cluster, expected := loadTestIntegration(t, path.Join("main", x.TestFile))
