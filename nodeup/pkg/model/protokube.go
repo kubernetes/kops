@@ -98,7 +98,10 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		return nil, fmt.Errorf("unable to parse KubernetesVersion %q", t.Cluster.Spec.KubernetesVersion)
 	}
 
-	protokubeFlags := t.ProtokubeFlags(*k8sVersion)
+	protokubeFlags, err := t.ProtokubeFlags(*k8sVersion)
+	if err != nil {
+		return nil, err
+	}
 	protokubeFlagsArgs, err := flagbuilder.BuildFlags(protokubeFlags)
 	if err != nil {
 		return nil, err
@@ -214,7 +217,7 @@ type ProtokubeFlags struct {
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
-func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeFlags {
+func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*ProtokubeFlags, error) {
 	// @todo: i think we should allow the user to override the source of the image, but for now
 	// lets keep that for another PR and allow the version change
 	imageVersion := t.Cluster.Spec.EtcdClusters[0].Version
@@ -244,8 +247,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	assets := assets.NewAssetBuilder(t.Cluster.Spec.Assets)
 	remapped, err := assets.RemapImage(image)
 	if err != nil {
-		glog.Errorf("unable to remap container %q: %v", image, err)
-		glog.Errorf("using default %s", image)
+		return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
 	} else {
 		image = remapped
 	}
@@ -319,7 +321,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		f.ApplyTaints = fi.Bool(true)
 	}
 
-	return f
+	return f, nil
 }
 
 // ProtokubeEnvironmentVariables generates the environments variables for docker
