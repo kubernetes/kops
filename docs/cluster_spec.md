@@ -219,6 +219,17 @@ Will resulting to running kube-scheduler with the arguments `--policy-configmap=
 
 Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually. Also, this option is not supported during cluster creation, only during updates.
 
+### kubeControllerManager
+This block contains configurations for the `controller-manager`.
+
+```yaml
+spec:
+  kubeControllerManager:
+    horizontalPodAutoscalerSyncPeriod: 15s
+```
+
+For more details on `horizontalPodAutoscalerSyncPeriod` see the [HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+
 ####  Feature Gates
 
 ```yaml

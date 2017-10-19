@@ -169,7 +169,7 @@ type KubeProxyConfig struct {
 
 // KubeAPIServerConfig defines the configuration for the kube api
 type KubeAPIServerConfig struct {
-	// Image is the docker container used
+	// Image is the docker container usedrun
 	Image string `json:"image,omitempty"`
 	// LogLevel is the logging level of the api
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
@@ -294,6 +294,10 @@ type KubeControllerManagerConfig struct {
 	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
 	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.
 	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
+	// HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs
+	// During each period, the controller manager queries the resource utilization
+	// against the metrics specified in each HorizontalPodAutoscaler definition
+	HorizontalPodAutoscalerSyncPeriod *metav1.Duration `json:"horizontalPodAutoscalerSyncPeriod,omitempty" flag:"horizontal-pod-autoscaler-sync-period"`
 }
 
 type CloudControllerManagerConfig struct {
