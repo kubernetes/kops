@@ -292,9 +292,12 @@ type KubeControllerManagerConfig struct {
 	// before the terminated pod garbage collector starts deleting terminated pods.
 	// If <= 0, the terminated pod garbage collector is disabled.
 	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
-
 	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.
 	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
+	// HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs
+	// During each period, the controller manager queries the resource utilization
+	// against the metrics specified in each HorizontalPodAutoscaler definition
+	HorizontalPodAutoscalerSyncPeriod *metav1.Duration `json:"horizontalPodAutoscalerSyncPeriod,omitempty" flag:"horizontal-pod-autoscaler-sync-period"`
 }
 
 type CloudControllerManagerConfig struct {
