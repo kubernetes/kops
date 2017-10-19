@@ -2432,6 +2432,15 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			**out = **in
 		}
 	}
+	if in.HorizontalPodAutoscalerSyncPeriod != nil {
+		in, out := &in.HorizontalPodAutoscalerSyncPeriod, &out.HorizontalPodAutoscalerSyncPeriod
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
 	return
 }
 
