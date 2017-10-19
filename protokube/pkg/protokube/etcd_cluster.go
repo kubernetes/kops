@@ -73,6 +73,10 @@ type EtcdCluster struct {
 	PeerCert string
 	// PeerKey is the path to a peer ca for etcd
 	PeerKey string
+	// ElectionTimeout is the leader election timeout
+	ElectionTimeout string
+	// HeartbeatInterval is the heartbeat interval
+	HeartbeatInterval string
 }
 
 // EtcdNode is a definition for the etcd node
@@ -97,21 +101,23 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *etcd.EtcdClusterSpec
 
 	cluster := &EtcdCluster{
 		// @TODO we need to deprecate this port and use 2379, but that would be a breaking change
-		ClientPort:      4001,
-		ClusterName:     "etcd-" + spec.ClusterKey,
-		CPURequest:      resource.MustParse("200m"),
-		DataDirName:     "data-" + spec.ClusterKey,
-		ImageSource:     kubeBoot.EtcdImageSource,
-		TLSCA:           kubeBoot.TLSCA,
-		TLSCert:         kubeBoot.TLSCert,
-		TLSKey:          kubeBoot.TLSKey,
-		PeerCA:          kubeBoot.PeerCA,
-		PeerCert:        kubeBoot.PeerCert,
-		PeerKey:         kubeBoot.PeerKey,
-		PeerPort:        2380,
-		PodName:         "etcd-server-" + spec.ClusterKey,
-		Spec:            spec,
-		VolumeMountPath: v.Mountpoint,
+		ClientPort:        4001,
+		ClusterName:       "etcd-" + spec.ClusterKey,
+		CPURequest:        resource.MustParse("200m"),
+		DataDirName:       "data-" + spec.ClusterKey,
+		ImageSource:       kubeBoot.EtcdImageSource,
+		TLSCA:             kubeBoot.TLSCA,
+		TLSCert:           kubeBoot.TLSCert,
+		TLSKey:            kubeBoot.TLSKey,
+		PeerCA:            kubeBoot.PeerCA,
+		PeerCert:          kubeBoot.PeerCert,
+		PeerKey:           kubeBoot.PeerKey,
+		PeerPort:          2380,
+		PodName:           "etcd-server-" + spec.ClusterKey,
+		Spec:              spec,
+		VolumeMountPath:   v.Mountpoint,
+		ElectionTimeout:   kubeBoot.EtcdElectionTimeout,
+		HeartbeatInterval: kubeBoot.EtcdHeartbeatInterval,
 	}
 
 	// We used to build this through text files ... it turns out to just be more complicated than code!
