@@ -49,8 +49,17 @@ spec:
     selector:
       k8s-addon: dns-controller.addons.k8s.io
     version: 1.7.1
-  - manifest: storage-aws.addons.k8s.io/v1.6.0.yaml
+  - id: v1.7.0
+    kubernetesVersion: '>=1.7.0'
+    manifest: storage-aws.addons.k8s.io/v1.7.0.yaml
     name: storage-aws.addons.k8s.io
     selector:
       k8s-addon: storage-aws.addons.k8s.io
-    version: 1.6.0
+    version: 1.7.0
+  - id: v1.6.0
+    kubernetesVersion: <1.7.0
+    manifest: storage-aws.addons.k8s.io/v1.6.0.yaml
+    name: storage-aws.addons.k8s.io
+    selector:
+      k8s-addon: storage-aws.addons.k8s.io
+    version: 1.7.0
