@@ -192,22 +192,24 @@ type ProtokubeFlags struct {
 	Channels    []string `json:"channels,omitempty" flag:"channels"`
 	Cloud       *string  `json:"cloud,omitempty" flag:"cloud"`
 	// ClusterID flag is required only for vSphere cloud type, to pass cluster id information to protokube. AWS and GCE workflows ignore this flag.
-	ClusterID         *string  `json:"cluster-id,omitempty" flag:"cluster-id"`
-	Containerized     *bool    `json:"containerized,omitempty" flag:"containerized"`
-	DNSInternalSuffix *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
-	DNSProvider       *string  `json:"dnsProvider,omitempty" flag:"dns"`
-	DNSServer         *string  `json:"dns-server,omitempty" flag:"dns-server"`
-	EtcdImage         *string  `json:"etcd-image,omitempty" flag:"etcd-image"`
-	InitializeRBAC    *bool    `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
-	LogLevel          *int32   `json:"logLevel,omitempty" flag:"v"`
-	Master            *bool    `json:"master,omitempty" flag:"master"`
-	PeerTLSCaFile     *string  `json:"peer-ca,omitempty" flag:"peer-ca"`
-	PeerTLSCertFile   *string  `json:"peer-cert,omitempty" flag:"peer-cert"`
-	PeerTLSKeyFile    *string  `json:"peer-key,omitempty" flag:"peer-key"`
-	TLSCAFile         *string  `json:"tls-ca,omitempty" flag:"tls-ca"`
-	TLSCertFile       *string  `json:"tls-cert,omitempty" flag:"tls-cert"`
-	TLSKeyFile        *string  `json:"tls-key,omitempty" flag:"tls-key"`
-	Zone              []string `json:"zone,omitempty" flag:"zone"`
+	ClusterID                 *string  `json:"cluster-id,omitempty" flag:"cluster-id"`
+	Containerized             *bool    `json:"containerized,omitempty" flag:"containerized"`
+	DNSInternalSuffix         *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
+	DNSProvider               *string  `json:"dnsProvider,omitempty" flag:"dns"`
+	DNSServer                 *string  `json:"dns-server,omitempty" flag:"dns-server"`
+	EtcdImage                 *string  `json:"etcd-image,omitempty" flag:"etcd-image"`
+	EtcdLeaderElectionTimeout *string  `json:"etcd-election-timeout,omitempty" flag:"etcd-election-timeout"`
+	EtcdHearbeatInterval      *string  `json:"etcd-heartbeat-interval,omitempty" flag:"etcd-heartbeat-interval"`
+	InitializeRBAC            *bool    `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
+	LogLevel                  *int32   `json:"logLevel,omitempty" flag:"v"`
+	Master                    *bool    `json:"master,omitempty" flag:"master"`
+	PeerTLSCaFile             *string  `json:"peer-ca,omitempty" flag:"peer-ca"`
+	PeerTLSCertFile           *string  `json:"peer-cert,omitempty" flag:"peer-cert"`
+	PeerTLSKeyFile            *string  `json:"peer-key,omitempty" flag:"peer-key"`
+	TLSCAFile                 *string  `json:"tls-ca,omitempty" flag:"tls-ca"`
+	TLSCertFile               *string  `json:"tls-cert,omitempty" flag:"tls-cert"`
+	TLSKeyFile                *string  `json:"tls-key,omitempty" flag:"tls-key"`
+	Zone                      []string `json:"zone,omitempty" flag:"zone"`
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
@@ -216,12 +218,25 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	// lets keep that for another PR and allow the version change
 	imageVersion := t.Cluster.Spec.EtcdClusters[0].Version
 
+	var leaderElectionTimeout string
+	var heartbeatInterval string
+
+	if v := t.Cluster.Spec.EtcdClusters[0].LeaderElectionTimeout; v != nil {
+		leaderElectionTimeout = convEtcdSettingsToMs(v)
+	}
+
+	if v := t.Cluster.Spec.EtcdClusters[0].HeartbeatInterval; v != nil {
+		heartbeatInterval = convEtcdSettingsToMs(v)
+	}
+
 	f := &ProtokubeFlags{
-		Channels:      t.NodeupConfig.Channels,
-		Containerized: fi.Bool(true),
-		EtcdImage:     s(fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)),
-		LogLevel:      fi.Int32(4),
-		Master:        b(t.IsMaster),
+		Channels:                  t.NodeupConfig.Channels,
+		Containerized:             fi.Bool(true),
+		EtcdImage:                 s(fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)),
+		EtcdLeaderElectionTimeout: s(leaderElectionTimeout),
+		EtcdHearbeatInterval:      s(heartbeatInterval),
+		LogLevel:                  fi.Int32(4),
+		Master:                    b(t.IsMaster),
 	}
 
 	// initialize rbac on Kubernetes >= 1.6 and master
