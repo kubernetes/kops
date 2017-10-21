@@ -147,6 +147,18 @@ func TestRenderContext(t *testing.T) {
 	makeRenderTests(t, cases)
 }
 
+func TestAllowForMissingVars(t *testing.T) {
+	cases := []renderTest{
+		{
+			Context:        map[string]interface{}{},
+			Template:       `{{ default "is missing" .name }}`,
+			Expected:       "is missing",
+			DisableMissing: true,
+		},
+	}
+	makeRenderTests(t, cases)
+}
+
 func TestRenderIntegration(t *testing.T) {
 	var cases []renderTest
 	content, err := ioutil.ReadFile("integration_tests.yml")
@@ -161,17 +173,18 @@ func TestRenderIntegration(t *testing.T) {
 }
 
 type renderTest struct {
-	Expected string
-	Snippets map[string]string
-	Context  map[string]interface{}
-	Template string
-	NotOK    bool
+	Context        map[string]interface{}
+	DisableMissing bool
+	Expected       string
+	NotOK          bool
+	Snippets       map[string]string
+	Template       string
 }
 
 func makeRenderTests(t *testing.T, tests []renderTest) {
 	r := NewTemplater()
 	for i, x := range tests {
-		render, err := r.Render(x.Template, x.Context, x.Snippets)
+		render, err := r.Render(x.Template, x.Context, x.Snippets, !x.DisableMissing)
 		if x.NotOK {
 			if err == nil {
 				t.Errorf("case %d: should have thrown an error", i)
