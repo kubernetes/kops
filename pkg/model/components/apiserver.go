@@ -115,6 +115,10 @@ func (b *KubeAPIServerOptionsBuilder) BuildOptions(o interface{}) error {
 		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
 	}
 
+	if clusterSpec.ExternalCloudControllerManager != nil {
+		c.CloudProvider = "external"
+	}
+
 	c.LogLevel = 2
 	c.SecurePort = 443
 	c.Address = "127.0.0.1"

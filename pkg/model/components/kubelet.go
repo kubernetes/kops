@@ -172,6 +172,10 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.HairpinMode = "promiscuous-bridge"
 	}
 
+	if clusterSpec.ExternalCloudControllerManager != nil {
+		clusterSpec.Kubelet.CloudProvider = "external"
+	}
+
 	usesKubenet, err := UsesKubenet(clusterSpec)
 	if err != nil {
 		return err
