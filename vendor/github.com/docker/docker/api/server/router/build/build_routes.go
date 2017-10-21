@@ -7,33 +7,37 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"runtime"
 	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/Sirupsen/logrus"
+	apierrors "github.com/docker/docker/api/errors"
 	"github.com/docker/docker/api/server/httputils"
-	"github.com/docker/docker/builder"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/backend"
+	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/versions"
 	"github.com/docker/docker/pkg/ioutils"
 	"github.com/docker/docker/pkg/progress"
 	"github.com/docker/docker/pkg/streamformatter"
-	"github.com/docker/engine-api/types"
-	"github.com/docker/engine-api/types/container"
-	"github.com/docker/go-units"
+	units "github.com/docker/go-units"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
 
 func newImageBuildOptions(ctx context.Context, r *http.Request) (*types.ImageBuildOptions, error) {
 	version := httputils.VersionFromContext(ctx)
 	options := &types.ImageBuildOptions{}
-	if httputils.BoolValue(r, "forcerm") && version.GreaterThanOrEqualTo("1.12") {
+	if httputils.BoolValue(r, "forcerm") && versions.GreaterThanOrEqualTo(version, "1.12") {
 		options.Remove = true
-	} else if r.FormValue("rm") == "" && version.GreaterThanOrEqualTo("1.12") {
+	} else if r.FormValue("rm") == "" && versions.GreaterThanOrEqualTo(version, "1.12") {
 		options.Remove = true
 	} else {
 		options.Remove = httputils.BoolValue(r, "rm")
 	}
-	if httputils.BoolValue(r, "pull") && version.GreaterThanOrEqualTo("1.16") {
+	if httputils.BoolValue(r, "pull") && versions.GreaterThanOrEqualTo(version, "1.16") {
 		options.PullParent = true
 	}
 
@@ -49,7 +53,13 @@ func newImageBuildOptions(ctx context.Context, r *http.Request) (*types.ImageBui
 	options.CPUSetCPUs = r.FormValue("cpusetcpus")
 	options.CPUSetMems = r.FormValue("cpusetmems")
 	options.CgroupParent = r.FormValue("cgroupparent")
+	options.NetworkMode = r.FormValue("networkmode")
 	options.Tags = r.Form["t"]
+	options.ExtraHosts = r.Form["extrahosts"]
+	options.SecurityOpt = r.Form["securityopt"]
+	options.Squash = httputils.BoolValue(r, "squash")
+	options.Target = r.FormValue("target")
+	options.RemoteContext = r.FormValue("remote")
 
 	if r.Form.Get("shmsize") != "" {
 		shmSize, err := strconv.ParseInt(r.Form.Get("shmsize"), 10, 64)
@@ -66,33 +76,151 @@ func newImageBuildOptions(ctx context.Context, r *http.Request) (*types.ImageBui
 		options.Isolation = i
 	}
 
+	if runtime.GOOS != "windows" && options.SecurityOpt != nil {
+		return nil, fmt.Errorf("The daemon on this platform does not support setting security options on build")
+	}
+
 	var buildUlimits = []*units.Ulimit{}
 	ulimitsJSON := r.FormValue("ulimits")
 	if ulimitsJSON != "" {
-		if err := json.NewDecoder(strings.NewReader(ulimitsJSON)).Decode(&buildUlimits); err != nil {
+		if err := json.Unmarshal([]byte(ulimitsJSON), &buildUlimits); err != nil {
 			return nil, err
 		}
 		options.Ulimits = buildUlimits
 	}
 
-	var buildArgs = map[string]string{}
+	// Note that there are two ways a --build-arg might appear in the
+	// json of the query param:
+	//     "foo":"bar"
+	// and "foo":nil
+	// The first is the normal case, ie. --build-arg foo=bar
+	// or  --build-arg foo
+	// where foo's value was picked up from an env var.
+	// The second ("foo":nil) is where they put --build-arg foo
+	// but "foo" isn't set as an env var. In that case we can't just drop
+	// the fact they mentioned it, we need to pass that along to the builder
+	// so that it can print a warning about "foo" being unused if there is
+	// no "ARG foo" in the Dockerfile.
 	buildArgsJSON := r.FormValue("buildargs")
 	if buildArgsJSON != "" {
-		if err := json.NewDecoder(strings.NewReader(buildArgsJSON)).Decode(&buildArgs); err != nil {
+		var buildArgs = map[string]*string{}
+		if err := json.Unmarshal([]byte(buildArgsJSON), &buildArgs); err != nil {
 			return nil, err
 		}
 		options.BuildArgs = buildArgs
 	}
-	var labels = map[string]string{}
+
 	labelsJSON := r.FormValue("labels")
 	if labelsJSON != "" {
-		if err := json.NewDecoder(strings.NewReader(labelsJSON)).Decode(&labels); err != nil {
+		var labels = map[string]string{}
+		if err := json.Unmarshal([]byte(labelsJSON), &labels); err != nil {
 			return nil, err
 		}
 		options.Labels = labels
 	}
 
+	cacheFromJSON := r.FormValue("cachefrom")
+	if cacheFromJSON != "" {
+		var cacheFrom = []string{}
+		if err := json.Unmarshal([]byte(cacheFromJSON), &cacheFrom); err != nil {
+			return nil, err
+		}
+		options.CacheFrom = cacheFrom
+	}
+	options.SessionID = r.FormValue("session")
+
 	return options, nil
+}
+
+func (br *buildRouter) postPrune(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
+	report, err := br.backend.PruneCache(ctx)
+	if err != nil {
+		return err
+	}
+	return httputils.WriteJSON(w, http.StatusOK, report)
+}
+
+func (br *buildRouter) postBuild(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
+	var (
+		notVerboseBuffer = bytes.NewBuffer(nil)
+		version          = httputils.VersionFromContext(ctx)
+	)
+
+	w.Header().Set("Content-Type", "application/json")
+
+	output := ioutils.NewWriteFlusher(w)
+	defer output.Close()
+	errf := func(err error) error {
+		if httputils.BoolValue(r, "q") && notVerboseBuffer.Len() > 0 {
+			output.Write(notVerboseBuffer.Bytes())
+		}
+		// Do not write the error in the http output if it's still empty.
+		// This prevents from writing a 200(OK) when there is an internal error.
+		if !output.Flushed() {
+			return err
+		}
+		_, err = w.Write(streamformatter.FormatError(err))
+		if err != nil {
+			logrus.Warnf("could not write error response: %v", err)
+		}
+		return nil
+	}
+
+	buildOptions, err := newImageBuildOptions(ctx, r)
+	if err != nil {
+		return errf(err)
+	}
+	buildOptions.AuthConfigs = getAuthConfigs(r.Header)
+
+	if buildOptions.Squash && !br.daemon.HasExperimental() {
+		return apierrors.NewBadRequestError(
+			errors.New("squash is only supported with experimental mode"))
+	}
+
+	out := io.Writer(output)
+	if buildOptions.SuppressOutput {
+		out = notVerboseBuffer
+	}
+
+	// Currently, only used if context is from a remote url.
+	// Look at code in DetectContextFromRemoteURL for more information.
+	createProgressReader := func(in io.ReadCloser) io.ReadCloser {
+		progressOutput := streamformatter.NewJSONProgressOutput(out, true)
+		return progress.NewProgressReader(in, progressOutput, r.ContentLength, "Downloading context", buildOptions.RemoteContext)
+	}
+
+	wantAux := versions.GreaterThanOrEqualTo(version, "1.30")
+
+	imgID, err := br.backend.Build(ctx, backend.BuildConfig{
+		Source:         r.Body,
+		Options:        buildOptions,
+		ProgressWriter: buildProgressWriter(out, wantAux, createProgressReader),
+	})
+	if err != nil {
+		return errf(err)
+	}
+
+	// Everything worked so if -q was provided the output from the daemon
+	// should be just the image ID and we'll print that to stdout.
+	if buildOptions.SuppressOutput {
+		fmt.Fprintln(streamformatter.NewStdoutWriter(output), imgID)
+	}
+	return nil
+}
+
+func getAuthConfigs(header http.Header) map[string]types.AuthConfig {
+	authConfigs := map[string]types.AuthConfig{}
+	authConfigsEncoded := header.Get("X-Registry-Config")
+
+	if authConfigsEncoded == "" {
+		return authConfigs
+	}
+
+	authConfigsJSON := base64.NewDecoder(base64.URLEncoding, strings.NewReader(authConfigsEncoded))
+	// Pulling an image does not error when no auth is provided so to remain
+	// consistent with the existing api decode errors are ignored
+	json.NewDecoder(authConfigsJSON).Decode(&authConfigs)
+	return authConfigs
 }
 
 type syncWriter struct {
@@ -107,107 +235,19 @@ func (s *syncWriter) Write(b []byte) (count int, err error) {
 	return
 }
 
-func (br *buildRouter) postBuild(ctx context.Context, w http.ResponseWriter, r *http.Request, vars map[string]string) error {
-	var (
-		authConfigs        = map[string]types.AuthConfig{}
-		authConfigsEncoded = r.Header.Get("X-Registry-Config")
-		notVerboseBuffer   = bytes.NewBuffer(nil)
-	)
-
-	if authConfigsEncoded != "" {
-		authConfigsJSON := base64.NewDecoder(base64.URLEncoding, strings.NewReader(authConfigsEncoded))
-		if err := json.NewDecoder(authConfigsJSON).Decode(&authConfigs); err != nil {
-			// for a pull it is not an error if no auth was given
-			// to increase compatibility with the existing api it is defaulting
-			// to be empty.
-		}
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-
-	output := ioutils.NewWriteFlusher(w)
-	defer output.Close()
-	sf := streamformatter.NewJSONStreamFormatter()
-	errf := func(err error) error {
-		if httputils.BoolValue(r, "q") && notVerboseBuffer.Len() > 0 {
-			output.Write(notVerboseBuffer.Bytes())
-		}
-		// Do not write the error in the http output if it's still empty.
-		// This prevents from writing a 200(OK) when there is an internal error.
-		if !output.Flushed() {
-			return err
-		}
-		_, err = w.Write(sf.FormatError(err))
-		if err != nil {
-			logrus.Warnf("could not write error response: %v", err)
-		}
-		return nil
-	}
-
-	buildOptions, err := newImageBuildOptions(ctx, r)
-	if err != nil {
-		return errf(err)
-	}
-
-	remoteURL := r.FormValue("remote")
-
-	// Currently, only used if context is from a remote url.
-	// Look at code in DetectContextFromRemoteURL for more information.
-	createProgressReader := func(in io.ReadCloser) io.ReadCloser {
-		progressOutput := sf.NewProgressOutput(output, true)
-		if buildOptions.SuppressOutput {
-			progressOutput = sf.NewProgressOutput(notVerboseBuffer, true)
-		}
-		return progress.NewProgressReader(in, progressOutput, r.ContentLength, "Downloading context", remoteURL)
-	}
-
-	var (
-		context        builder.ModifiableContext
-		dockerfileName string
-		out            io.Writer
-	)
-	context, dockerfileName, err = builder.DetectContextFromRemoteURL(r.Body, remoteURL, createProgressReader)
-	if err != nil {
-		return errf(err)
-	}
-	defer func() {
-		if err := context.Close(); err != nil {
-			logrus.Debugf("[BUILDER] failed to remove temporary context: %v", err)
-		}
-	}()
-	if len(dockerfileName) > 0 {
-		buildOptions.Dockerfile = dockerfileName
-	}
-
-	buildOptions.AuthConfigs = authConfigs
-
-	out = output
-	if buildOptions.SuppressOutput {
-		out = notVerboseBuffer
-	}
+func buildProgressWriter(out io.Writer, wantAux bool, createProgressReader func(io.ReadCloser) io.ReadCloser) backend.ProgressWriter {
 	out = &syncWriter{w: out}
-	stdout := &streamformatter.StdoutFormatter{Writer: out, StreamFormatter: sf}
-	stderr := &streamformatter.StderrFormatter{Writer: out, StreamFormatter: sf}
 
-	closeNotifier := make(<-chan bool)
-	if notifier, ok := w.(http.CloseNotifier); ok {
-		closeNotifier = notifier.CloseNotify()
+	var aux *streamformatter.AuxFormatter
+	if wantAux {
+		aux = &streamformatter.AuxFormatter{Writer: out}
 	}
 
-	imgID, err := br.backend.Build(ctx, buildOptions,
-		builder.DockerIgnoreContext{ModifiableContext: context},
-		stdout, stderr, out,
-		closeNotifier)
-	if err != nil {
-		return errf(err)
+	return backend.ProgressWriter{
+		Output:             out,
+		StdoutFormatter:    streamformatter.NewStdoutWriter(out),
+		StderrFormatter:    streamformatter.NewStderrWriter(out),
+		AuxFormatter:       aux,
+		ProgressReaderFunc: createProgressReader,
 	}
-
-	// Everything worked so if -q was provided the output from the daemon
-	// should be just the image ID and we'll print that to stdout.
-	if buildOptions.SuppressOutput {
-		stdout := &streamformatter.StdoutFormatter{Writer: output, StreamFormatter: sf}
-		fmt.Fprintf(stdout, "%s\n", string(imgID))
-	}
-
-	return nil
 }

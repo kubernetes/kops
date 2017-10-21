@@ -32,9 +32,8 @@ spec:
     legacy: false
   kubernetesApiAccess:
   - 0.0.0.0/0
-  kubernetesVersion: v1.8.0
+  kubernetesVersion: v1.8.0-beta.1
   masterPublicName: api.ha-gce.example.com
-  networkCIDR: 172.20.0.0/16
   networking:
     kubenet: {}
   nonMasqueradeCIDR: 100.64.0.0/10
@@ -42,18 +41,9 @@ spec:
   sshAccess:
   - 0.0.0.0/0
   subnets:
-  - cidr: 172.20.32.0/19
-    name: us-test1-a
+  - name: us-test1
+    region: us-test1
     type: Public
-    zone: us-test1-a
-  - cidr: 172.20.64.0/19
-    name: us-test1-b
-    type: Public
-    zone: us-test1-b
-  - cidr: 172.20.96.0/19
-    name: us-test1-c
-    type: Public
-    zone: us-test1-c
   topology:
     dns:
       type: Public
@@ -70,12 +60,14 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: master-us-test1-a
 spec:
-  image: cos-cloud/cos-stable-57-9202-64-0
+  image: cos-cloud/cos-stable-60-9592-90-0
   machineType: n1-standard-1
   maxSize: 1
   minSize: 1
   role: Master
   subnets:
+  - us-test1
+  zones:
   - us-test1-a
 
 ---
@@ -88,12 +80,14 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: master-us-test1-b
 spec:
-  image: cos-cloud/cos-stable-57-9202-64-0
+  image: cos-cloud/cos-stable-60-9592-90-0
   machineType: n1-standard-1
   maxSize: 1
   minSize: 1
   role: Master
   subnets:
+  - us-test1
+  zones:
   - us-test1-b
 
 ---
@@ -106,12 +100,14 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: master-us-test1-c
 spec:
-  image: cos-cloud/cos-stable-57-9202-64-0
+  image: cos-cloud/cos-stable-60-9592-90-0
   machineType: n1-standard-1
   maxSize: 1
   minSize: 1
   role: Master
   subnets:
+  - us-test1
+  zones:
   - us-test1-c
 
 ---
@@ -124,12 +120,14 @@ metadata:
     kops.k8s.io/cluster: ha-gce.example.com
   name: nodes
 spec:
-  image: cos-cloud/cos-stable-57-9202-64-0
+  image: cos-cloud/cos-stable-60-9592-90-0
   machineType: n1-standard-2
   maxSize: 2
   minSize: 2
   role: Node
   subnets:
+  - us-test1
+  zones:
   - us-test1-a
   - us-test1-b
   - us-test1-c

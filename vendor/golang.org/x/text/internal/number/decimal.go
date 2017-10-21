@@ -1,416 +1,433 @@
-// Copyright 2009 The Go Authors. All rights reserved.
+// Copyright 2017 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// TODO: use build tags once a low-level public API has been established in
-// package strconv.
-
-// Multiprecision decimal numbers.
-// For floating-point formatting only; not general purpose.
-// Only operations are assign and (binary) left/right shift.
-// Can do binary floating point in multiprecision decimal precisely
-// because 2 divides 10; cannot do decimal floating point
-// in multiprecision binary precisely.
+//go:generate stringer -type RoundingMode
 
 package number
 
-type decimal struct {
-	d     [800]byte // digits, big-endian representation
-	nd    int       // number of digits used
-	dp    int       // decimal point
-	neg   bool
-	trunc bool // discarded nonzero digits beyond d[:nd]
+import (
+	"math"
+	"strconv"
+)
+
+// RoundingMode determines how a number is rounded to the desired precision.
+type RoundingMode byte
+
+const (
+	ToNearestEven RoundingMode = iota // towards the nearest integer, or towards an even number if equidistant.
+	ToNearestZero                     // towards the nearest integer, or towards zero if equidistant.
+	ToNearestAway                     // towards the nearest integer, or away from zero if equidistant.
+	ToPositiveInf                     // towards infinity
+	ToNegativeInf                     // towards negative infinity
+	ToZero                            // towards zero
+	AwayFromZero                      // away from zero
+	numModes
+)
+
+// A RoundingContext indicates how a number should be converted to digits.
+type RoundingContext struct {
+	Mode      RoundingMode
+	Increment int32 // if > 0, round to Increment * 10^-Scale
+
+	Precision int32 // maximum number of significant digits.
+	Scale     int32 // maximum number of decimals after the dot.
 }
 
-func (a *decimal) String() string {
-	n := 10 + a.nd
-	if a.dp > 0 {
-		n += a.dp
-	}
-	if a.dp < 0 {
-		n += -a.dp
-	}
+const maxIntDigits = 20
 
-	buf := make([]byte, n)
-	w := 0
+// A Decimal represents floating point number represented in digits of the base
+// in which a number is to be displayed. Digits represents a number [0, 1.0),
+// and the absolute value represented by Decimal is Digits * 10^Exp.
+// Leading and trailing zeros may be omitted and Exp may point outside a valid
+// position in Digits.
+//
+// Examples:
+//      Number     Decimal
+//      12345      Digits: [1, 2, 3, 4, 5], Exp: 5
+//      12.345     Digits: [1, 2, 3, 4, 5], Exp: 2
+//      12000      Digits: [1, 2],          Exp: 5
+//      0.00123    Digits: [1, 2, 3],       Exp: -2
+type Decimal struct {
+	Digits []byte // mantissa digits, big-endian
+	Exp    int32  // exponent
+	Neg    bool
+	Inf    bool // Takes precedence over Digits and Exp.
+	NaN    bool // Takes precedence over Inf.
+
+	buf [maxIntDigits]byte
+}
+
+// normalize returns a new Decimal with leading and trailing zeros removed.
+func (d *Decimal) normalize() (n Decimal) {
+	n = *d
+	b := n.Digits
+	// Strip leading zeros. Resulting number of digits is significant digits.
+	for len(b) > 0 && b[0] == 0 {
+		b = b[1:]
+		n.Exp--
+	}
+	// Strip trailing zeros
+	for len(b) > 0 && b[len(b)-1] == 0 {
+		b = b[:len(b)-1]
+	}
+	if len(b) == 0 {
+		n.Exp = 0
+	}
+	n.Digits = b
+	return n
+}
+
+func (d *Decimal) clear() {
+	b := d.Digits
+	if b == nil {
+		b = d.buf[:0]
+	}
+	*d = Decimal{}
+	d.Digits = b[:0]
+}
+
+func (x *Decimal) String() string {
+	if x.NaN {
+		return "NaN"
+	}
+	var buf []byte
+	if x.Neg {
+		buf = append(buf, '-')
+	}
+	if x.Inf {
+		buf = append(buf, "Inf"...)
+		return string(buf)
+	}
 	switch {
-	case a.nd == 0:
-		return "0"
+	case len(x.Digits) == 0:
+		buf = append(buf, '0')
+	case x.Exp <= 0:
+		// 0.00ddd
+		buf = append(buf, "0."...)
+		buf = appendZeros(buf, -int(x.Exp))
+		buf = appendDigits(buf, x.Digits)
 
-	case a.dp <= 0:
-		// zeros fill space between decimal point and digits
-		buf[w] = '0'
-		w++
-		buf[w] = '.'
-		w++
-		w += digitZero(buf[w : w+-a.dp])
-		w += copy(buf[w:], a.d[0:a.nd])
+	case /* 0 < */ int(x.Exp) < len(x.Digits):
+		// dd.ddd
+		buf = appendDigits(buf, x.Digits[:x.Exp])
+		buf = append(buf, '.')
+		buf = appendDigits(buf, x.Digits[x.Exp:])
 
-	case a.dp < a.nd:
-		// decimal point in middle of digits
-		w += copy(buf[w:], a.d[0:a.dp])
-		buf[w] = '.'
-		w++
-		w += copy(buf[w:], a.d[a.dp:a.nd])
+	default: // len(x.Digits) <= x.Exp
+		// ddd00
+		buf = appendDigits(buf, x.Digits)
+		buf = appendZeros(buf, int(x.Exp)-len(x.Digits))
+	}
+	return string(buf)
+}
 
+func appendDigits(buf []byte, digits []byte) []byte {
+	for _, c := range digits {
+		buf = append(buf, c+'0')
+	}
+	return buf
+}
+
+// appendZeros appends n 0 digits to buf and returns buf.
+func appendZeros(buf []byte, n int) []byte {
+	for ; n > 0; n-- {
+		buf = append(buf, '0')
+	}
+	return buf
+}
+
+func (d *Decimal) round(mode RoundingMode, n int) {
+	if n >= len(d.Digits) {
+		return
+	}
+	// Make rounding decision: The result mantissa is truncated ("rounded down")
+	// by default. Decide if we need to increment, or "round up", the (unsigned)
+	// mantissa.
+	inc := false
+	switch mode {
+	case ToNegativeInf:
+		inc = d.Neg
+	case ToPositiveInf:
+		inc = !d.Neg
+	case ToZero:
+		// nothing to do
+	case AwayFromZero:
+		inc = true
+	case ToNearestEven:
+		inc = d.Digits[n] > 5 || d.Digits[n] == 5 &&
+			(len(d.Digits) > n+1 || n == 0 || d.Digits[n-1]&1 != 0)
+	case ToNearestAway:
+		inc = d.Digits[n] >= 5
+	case ToNearestZero:
+		inc = d.Digits[n] > 5 || d.Digits[n] == 5 && len(d.Digits) > n+1
 	default:
-		// zeros fill space between digits and decimal point
-		w += copy(buf[w:], a.d[0:a.nd])
-		w += digitZero(buf[w : w+a.dp-a.nd])
+		panic("unreachable")
 	}
-	return string(buf[0:w])
-}
-
-func digitZero(dst []byte) int {
-	for i := range dst {
-		dst[i] = '0'
-	}
-	return len(dst)
-}
-
-// trim trailing zeros from number.
-// (They are meaningless; the decimal point is tracked
-// independent of the number of digits.)
-func trim(a *decimal) {
-	for a.nd > 0 && a.d[a.nd-1] == '0' {
-		a.nd--
-	}
-	if a.nd == 0 {
-		a.dp = 0
+	if inc {
+		d.roundUp(n)
+	} else {
+		d.roundDown(n)
 	}
 }
 
-// Assign v to a.
-func (a *decimal) Assign(v uint64) {
-	var buf [24]byte
-
-	// Write reversed decimal in buf.
-	n := 0
-	for v > 0 {
-		v1 := v / 10
-		v -= 10 * v1
-		buf[n] = byte(v + '0')
-		n++
-		v = v1
+// roundFloat rounds a floating point number.
+func (r RoundingMode) roundFloat(x float64) float64 {
+	// Make rounding decision: The result mantissa is truncated ("rounded down")
+	// by default. Decide if we need to increment, or "round up", the (unsigned)
+	// mantissa.
+	abs := x
+	if x < 0 {
+		abs = -x
 	}
-
-	// Reverse again to produce forward decimal in a.d.
-	a.nd = 0
-	for n--; n >= 0; n-- {
-		a.d[a.nd] = buf[n]
-		a.nd++
+	i, f := math.Modf(abs)
+	if f == 0.0 {
+		return x
 	}
-	a.dp = a.nd
-	trim(a)
+	inc := false
+	switch r {
+	case ToNegativeInf:
+		inc = x < 0
+	case ToPositiveInf:
+		inc = x >= 0
+	case ToZero:
+		// nothing to do
+	case AwayFromZero:
+		inc = true
+	case ToNearestEven:
+		// TODO: check overflow
+		inc = f > 0.5 || f == 0.5 && int64(i)&1 != 0
+	case ToNearestAway:
+		inc = f >= 0.5
+	case ToNearestZero:
+		inc = f > 0.5
+	default:
+		panic("unreachable")
+	}
+	if inc {
+		i += 1
+	}
+	if abs != x {
+		i = -i
+	}
+	return i
 }
 
-// Maximum shift that we can do in one pass without overflow.
-// A uint has 32 or 64 bits, and we have to be able to accommodate 9<<k.
-const uintSize = 32 << (^uint(0) >> 63)
-const maxShift = uintSize - 4
+func (x *Decimal) roundUp(n int) {
+	if n < 0 || n >= len(x.Digits) {
+		return // nothing to do
+	}
+	// find first digit < 9
+	for n > 0 && x.Digits[n-1] >= 9 {
+		n--
+	}
 
-// Binary shift right (/ 2) by k bits.  k <= maxShift to avoid overflow.
-func rightShift(a *decimal, k uint) {
-	r := 0 // read pointer
-	w := 0 // write pointer
+	if n == 0 {
+		// all digits are 9s => round up to 1 and update exponent
+		x.Digits[0] = 1 // ok since len(x.Digits) > n
+		x.Digits = x.Digits[:1]
+		x.Exp++
+		return
+	}
+	x.Digits[n-1]++
+	x.Digits = x.Digits[:n]
+	// x already trimmed
+}
 
-	// Pick up enough leading digits to cover first shift.
-	var n uint
-	for ; n>>k == 0; r++ {
-		if r >= a.nd {
-			if n == 0 {
-				// a == 0; shouldn't get here, but handle anyway.
-				a.nd = 0
-				return
-			}
-			for n>>k == 0 {
-				n = n * 10
-				r++
-			}
+func (x *Decimal) roundDown(n int) {
+	if n < 0 || n >= len(x.Digits) {
+		return // nothing to do
+	}
+	x.Digits = x.Digits[:n]
+	trim(x)
+}
+
+// trim cuts off any trailing zeros from x's mantissa;
+// they are meaningless for the value of x.
+func trim(x *Decimal) {
+	i := len(x.Digits)
+	for i > 0 && x.Digits[i-1] == 0 {
+		i--
+	}
+	x.Digits = x.Digits[:i]
+	if i == 0 {
+		x.Exp = 0
+	}
+}
+
+// A Converter converts a number into decimals according to the given rounding
+// criteria.
+type Converter interface {
+	Convert(d *Decimal, r *RoundingContext)
+}
+
+const (
+	signed   = true
+	unsigned = false
+)
+
+// Convert converts the given number to the decimal representation using the
+// supplied RoundingContext.
+func (d *Decimal) Convert(r *RoundingContext, number interface{}) {
+	switch f := number.(type) {
+	case Converter:
+		d.clear()
+		f.Convert(d, r)
+	case float32:
+		d.ConvertFloat(r, float64(f), 32)
+	case float64:
+		d.ConvertFloat(r, f, 64)
+	case int:
+		d.ConvertInt(r, signed, uint64(f))
+	case int8:
+		d.ConvertInt(r, signed, uint64(f))
+	case int16:
+		d.ConvertInt(r, signed, uint64(f))
+	case int32:
+		d.ConvertInt(r, signed, uint64(f))
+	case int64:
+		d.ConvertInt(r, signed, uint64(f))
+	case uint:
+		d.ConvertInt(r, unsigned, uint64(f))
+	case uint8:
+		d.ConvertInt(r, unsigned, uint64(f))
+	case uint16:
+		d.ConvertInt(r, unsigned, uint64(f))
+	case uint32:
+		d.ConvertInt(r, unsigned, uint64(f))
+	case uint64:
+		d.ConvertInt(r, unsigned, f)
+
+		// TODO:
+		// case string: if produced by strconv, allows for easy arbitrary pos.
+		// case reflect.Value:
+		// case big.Float
+		// case big.Int
+		// case big.Rat?
+		// catch underlyings using reflect or will this already be done by the
+		//    message package?
+	}
+}
+
+// ConvertInt converts an integer to decimals.
+func (d *Decimal) ConvertInt(r *RoundingContext, signed bool, x uint64) {
+	if r.Increment > 0 {
+		// TODO: if uint64 is too large, fall back to float64
+		if signed {
+			d.ConvertFloat(r, float64(int64(x)), 64)
+		} else {
+			d.ConvertFloat(r, float64(x), 64)
+		}
+		return
+	}
+	d.clear()
+	if signed && int64(x) < 0 {
+		x = uint64(-int64(x))
+		d.Neg = true
+	}
+	d.fillIntDigits(x)
+	d.Exp = int32(len(d.Digits))
+}
+
+// ConvertFloat converts a floating point number to decimals.
+func (d *Decimal) ConvertFloat(r *RoundingContext, x float64, size int) {
+	d.clear()
+	if math.IsNaN(x) {
+		d.NaN = true
+		return
+	}
+	abs := x
+	if x < 0 {
+		d.Neg = true
+		abs = -x
+	}
+	if math.IsInf(abs, 1) {
+		d.Inf = true
+		return
+	}
+	// Simple case: decimal notation
+	if r.Scale > 0 || r.Increment > 0 || r.Precision == 0 {
+		if int(r.Scale) > len(scales) {
+			x *= math.Pow(10, float64(r.Scale))
+		} else {
+			x *= scales[r.Scale]
+		}
+		if r.Increment > 0 {
+			inc := float64(r.Increment)
+			x /= float64(inc)
+			x = r.Mode.roundFloat(x)
+			x *= inc
+		} else {
+			x = r.Mode.roundFloat(x)
+		}
+		d.fillIntDigits(uint64(math.Abs(x)))
+		d.Exp = int32(len(d.Digits)) - r.Scale
+		return
+	}
+
+	// Nasty case (for non-decimal notation).
+	// Asides from being inefficient, this result is also wrong as it will
+	// apply ToNearestEven rounding regardless of the user setting.
+	// TODO: expose functionality in strconv so we can avoid this hack.
+	//   Something like this would work:
+	//   AppendDigits(dst []byte, x float64, base, size, prec int) (digits []byte, exp, accuracy int)
+	// TODO: This only supports the nearest even rounding mode.
+
+	prec := int(r.Precision)
+	if prec > 0 {
+		prec--
+	}
+	b := strconv.AppendFloat(d.Digits, abs, 'e', prec, size)
+	i := 0
+	k := 0
+	// No need to check i < len(b) as we always have an 'e'.
+	for {
+		if c := b[i]; '0' <= c && c <= '9' {
+			b[k] = c - '0'
+			k++
+		} else if c != '.' {
 			break
 		}
-		c := uint(a.d[r])
-		n = n*10 + c - '0'
+		i++
 	}
-	a.dp -= r - 1
-
-	// Pick up a digit, put down a digit.
-	for ; r < a.nd; r++ {
-		c := uint(a.d[r])
-		dig := n >> k
-		n -= dig << k
-		a.d[w] = byte(dig + '0')
-		w++
-		n = n*10 + c - '0'
+	d.Digits = b[:k]
+	i += len("e")
+	pSign := i
+	exp := 0
+	for i++; i < len(b); i++ {
+		exp *= 10
+		exp += int(b[i] - '0')
 	}
-
-	// Put down extra digits.
-	for n > 0 {
-		dig := n >> k
-		n -= dig << k
-		if w < len(a.d) {
-			a.d[w] = byte(dig + '0')
-			w++
-		} else if dig > 0 {
-			a.trunc = true
-		}
-		n = n * 10
+	if b[pSign] == '-' {
+		exp = -exp
 	}
-
-	a.nd = w
-	trim(a)
+	d.Exp = int32(exp) + 1
 }
 
-// Cheat sheet for left shift: table indexed by shift count giving
-// number of new digits that will be introduced by that shift.
-//
-// For example, leftcheats[4] = {2, "625"}.  That means that
-// if we are shifting by 4 (multiplying by 16), it will add 2 digits
-// when the string prefix is "625" through "999", and one fewer digit
-// if the string prefix is "000" through "624".
-//
-// Credit for this trick goes to Ken.
-
-type leftCheat struct {
-	delta  int    // number of new digits
-	cutoff string // minus one digit if original < a.
-}
-
-var leftcheats = []leftCheat{
-	// Leading digits of 1/2^i = 5^i.
-	// 5^23 is not an exact 64-bit floating point number,
-	// so have to use bc for the math.
-	// Go up to 60 to be large enough for 32bit and 64bit platforms.
-	/*
-		seq 60 | sed 's/^/5^/' | bc |
-		awk 'BEGIN{ print "\t{ 0, \"\" }," }
-		{
-			log2 = log(2)/log(10)
-			printf("\t{ %d, \"%s\" },\t// * %d\n",
-				int(log2*NR+1), $0, 2**NR)
-		}'
-	*/
-	{0, ""},
-	{1, "5"},                                           // * 2
-	{1, "25"},                                          // * 4
-	{1, "125"},                                         // * 8
-	{2, "625"},                                         // * 16
-	{2, "3125"},                                        // * 32
-	{2, "15625"},                                       // * 64
-	{3, "78125"},                                       // * 128
-	{3, "390625"},                                      // * 256
-	{3, "1953125"},                                     // * 512
-	{4, "9765625"},                                     // * 1024
-	{4, "48828125"},                                    // * 2048
-	{4, "244140625"},                                   // * 4096
-	{4, "1220703125"},                                  // * 8192
-	{5, "6103515625"},                                  // * 16384
-	{5, "30517578125"},                                 // * 32768
-	{5, "152587890625"},                                // * 65536
-	{6, "762939453125"},                                // * 131072
-	{6, "3814697265625"},                               // * 262144
-	{6, "19073486328125"},                              // * 524288
-	{7, "95367431640625"},                              // * 1048576
-	{7, "476837158203125"},                             // * 2097152
-	{7, "2384185791015625"},                            // * 4194304
-	{7, "11920928955078125"},                           // * 8388608
-	{8, "59604644775390625"},                           // * 16777216
-	{8, "298023223876953125"},                          // * 33554432
-	{8, "1490116119384765625"},                         // * 67108864
-	{9, "7450580596923828125"},                         // * 134217728
-	{9, "37252902984619140625"},                        // * 268435456
-	{9, "186264514923095703125"},                       // * 536870912
-	{10, "931322574615478515625"},                      // * 1073741824
-	{10, "4656612873077392578125"},                     // * 2147483648
-	{10, "23283064365386962890625"},                    // * 4294967296
-	{10, "116415321826934814453125"},                   // * 8589934592
-	{11, "582076609134674072265625"},                   // * 17179869184
-	{11, "2910383045673370361328125"},                  // * 34359738368
-	{11, "14551915228366851806640625"},                 // * 68719476736
-	{12, "72759576141834259033203125"},                 // * 137438953472
-	{12, "363797880709171295166015625"},                // * 274877906944
-	{12, "1818989403545856475830078125"},               // * 549755813888
-	{13, "9094947017729282379150390625"},               // * 1099511627776
-	{13, "45474735088646411895751953125"},              // * 2199023255552
-	{13, "227373675443232059478759765625"},             // * 4398046511104
-	{13, "1136868377216160297393798828125"},            // * 8796093022208
-	{14, "5684341886080801486968994140625"},            // * 17592186044416
-	{14, "28421709430404007434844970703125"},           // * 35184372088832
-	{14, "142108547152020037174224853515625"},          // * 70368744177664
-	{15, "710542735760100185871124267578125"},          // * 140737488355328
-	{15, "3552713678800500929355621337890625"},         // * 281474976710656
-	{15, "17763568394002504646778106689453125"},        // * 562949953421312
-	{16, "88817841970012523233890533447265625"},        // * 1125899906842624
-	{16, "444089209850062616169452667236328125"},       // * 2251799813685248
-	{16, "2220446049250313080847263336181640625"},      // * 4503599627370496
-	{16, "11102230246251565404236316680908203125"},     // * 9007199254740992
-	{17, "55511151231257827021181583404541015625"},     // * 18014398509481984
-	{17, "277555756156289135105907917022705078125"},    // * 36028797018963968
-	{17, "1387778780781445675529539585113525390625"},   // * 72057594037927936
-	{18, "6938893903907228377647697925567626953125"},   // * 144115188075855872
-	{18, "34694469519536141888238489627838134765625"},  // * 288230376151711744
-	{18, "173472347597680709441192448139190673828125"}, // * 576460752303423488
-	{19, "867361737988403547205962240695953369140625"}, // * 1152921504606846976
-}
-
-// Is the leading prefix of b lexicographically less than s?
-func prefixIsLessThan(b []byte, s string) bool {
-	for i := 0; i < len(s); i++ {
-		if i >= len(b) {
-			return true
-		}
-		if b[i] != s[i] {
-			return b[i] < s[i]
-		}
-	}
-	return false
-}
-
-// Binary shift left (* 2) by k bits.  k <= maxShift to avoid overflow.
-func leftShift(a *decimal, k uint) {
-	delta := leftcheats[k].delta
-	if prefixIsLessThan(a.d[0:a.nd], leftcheats[k].cutoff) {
-		delta--
-	}
-
-	r := a.nd         // read index
-	w := a.nd + delta // write index
-
-	// Pick up a digit, put down a digit.
-	var n uint
-	for r--; r >= 0; r-- {
-		n += (uint(a.d[r]) - '0') << k
-		quo := n / 10
-		rem := n - 10*quo
-		w--
-		if w < len(a.d) {
-			a.d[w] = byte(rem + '0')
-		} else if rem != 0 {
-			a.trunc = true
-		}
-		n = quo
-	}
-
-	// Put down extra digits.
-	for n > 0 {
-		quo := n / 10
-		rem := n - 10*quo
-		w--
-		if w < len(a.d) {
-			a.d[w] = byte(rem + '0')
-		} else if rem != 0 {
-			a.trunc = true
-		}
-		n = quo
-	}
-
-	a.nd += delta
-	if a.nd >= len(a.d) {
-		a.nd = len(a.d)
-	}
-	a.dp += delta
-	trim(a)
-}
-
-// Binary shift left (k > 0) or right (k < 0).
-func (a *decimal) Shift(k int) {
-	switch {
-	case a.nd == 0:
-		// nothing to do: a == 0
-	case k > 0:
-		for k > maxShift {
-			leftShift(a, maxShift)
-			k -= maxShift
-		}
-		leftShift(a, uint(k))
-	case k < 0:
-		for k < -maxShift {
-			rightShift(a, maxShift)
-			k += maxShift
-		}
-		rightShift(a, uint(-k))
-	}
-}
-
-// If we chop a at nd digits, should we round up?
-func shouldRoundUp(a *decimal, nd int) bool {
-	if nd < 0 || nd >= a.nd {
-		return false
-	}
-	if a.d[nd] == '5' && nd+1 == a.nd { // exactly halfway - round to even
-		// if we truncated, a little higher than what's recorded - always round up
-		if a.trunc {
-			return true
-		}
-		return nd > 0 && (a.d[nd-1]-'0')%2 != 0
-	}
-	// not halfway - digit tells all
-	return a.d[nd] >= '5'
-}
-
-// Round a to nd digits (or fewer).
-// If nd is zero, it means we're rounding
-// just to the left of the digits, as in
-// 0.09 -> 0.1.
-func (a *decimal) Round(nd int) {
-	if nd < 0 || nd >= a.nd {
-		return
-	}
-	if shouldRoundUp(a, nd) {
-		a.RoundUp(nd)
+func (d *Decimal) fillIntDigits(x uint64) {
+	if cap(d.Digits) < maxIntDigits {
+		d.Digits = d.buf[:]
 	} else {
-		a.RoundDown(nd)
+		d.Digits = d.buf[:maxIntDigits]
+	}
+	i := 0
+	for ; x > 0; x /= 10 {
+		d.Digits[i] = byte(x % 10)
+		i++
+	}
+	d.Digits = d.Digits[:i]
+	for p := 0; p < i; p++ {
+		i--
+		d.Digits[p], d.Digits[i] = d.Digits[i], d.Digits[p]
 	}
 }
 
-// Round a down to nd digits (or fewer).
-func (a *decimal) RoundDown(nd int) {
-	if nd < 0 || nd >= a.nd {
-		return
-	}
-	a.nd = nd
-	trim(a)
-}
+var scales [70]float64
 
-// Round a up to nd digits (or fewer).
-func (a *decimal) RoundUp(nd int) {
-	if nd < 0 || nd >= a.nd {
-		return
+func init() {
+	x := 1.0
+	for i := range scales {
+		scales[i] = x
+		x *= 10
 	}
-
-	// round up
-	for i := nd - 1; i >= 0; i-- {
-		c := a.d[i]
-		if c < '9' { // can stop after this digit
-			a.d[i]++
-			a.nd = i + 1
-			return
-		}
-	}
-
-	// Number is all 9s.
-	// Change to single 1 with adjusted decimal point.
-	a.d[0] = '1'
-	a.nd = 1
-	a.dp++
-}
-
-// Extract integer part, rounded appropriately.
-// No guarantees about overflow.
-func (a *decimal) RoundedInteger() uint64 {
-	if a.dp > 20 {
-		return 0xFFFFFFFFFFFFFFFF
-	}
-	var i int
-	n := uint64(0)
-	for i = 0; i < a.dp && i < a.nd; i++ {
-		n = n*10 + uint64(a.d[i]-'0')
-	}
-	for ; i < a.dp; i++ {
-		n *= 10
-	}
-	if shouldRoundUp(a, a.dp) {
-		n++
-	}
-	return n
 }

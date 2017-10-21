@@ -24,9 +24,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -99,7 +98,12 @@ func RunCreateSecretPublicKey(f *util.Factory, out io.Writer, options *CreateSec
 		return err
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	clientset, err := f.Clientset()
+	if err != nil {
+		return err
+	}
+
+	keyStore, err := clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}

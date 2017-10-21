@@ -2,19 +2,25 @@
 package stringid
 
 import (
-	"crypto/rand"
+	cryptorand "crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"io"
+	"math"
+	"math/big"
+	"math/rand"
 	"regexp"
 	"strconv"
 	"strings"
-
-	"github.com/docker/docker/pkg/random"
+	"time"
 )
 
 const shortLen = 12
 
-var validShortID = regexp.MustCompile("^[a-z0-9]{12}$")
+var (
+	validShortID = regexp.MustCompile("^[a-f0-9]{12}$")
+	validHex     = regexp.MustCompile(`^[a-f0-9]{64}$`)
+)
 
 // IsShortID determines if an arbitrary string *looks like* a short ID.
 func IsShortID(id string) bool {
@@ -24,24 +30,19 @@ func IsShortID(id string) bool {
 // TruncateID returns a shorthand version of a string identifier for convenience.
 // A collision with other shorthands is very unlikely, but possible.
 // In case of a collision a lookup with TruncIndex.Get() will fail, and the caller
-// will need to use a langer prefix, or the full-length Id.
+// will need to use a longer prefix, or the full-length Id.
 func TruncateID(id string) string {
 	if i := strings.IndexRune(id, ':'); i >= 0 {
 		id = id[i+1:]
 	}
-	trimTo := shortLen
-	if len(id) < shortLen {
-		trimTo = len(id)
+	if len(id) > shortLen {
+		id = id[:shortLen]
 	}
-	return id[:trimTo]
+	return id
 }
 
-func generateID(crypto bool) string {
+func generateID(r io.Reader) string {
 	b := make([]byte, 32)
-	r := random.Reader
-	if crypto {
-		r = rand.Reader
-	}
 	for {
 		if _, err := io.ReadFull(r, b); err != nil {
 			panic(err) // This shouldn't happen
@@ -57,15 +58,42 @@ func generateID(crypto bool) string {
 	}
 }
 
-// GenerateRandomID returns an unique id.
+// GenerateRandomID returns a unique id.
 func GenerateRandomID() string {
-	return generateID(true)
-
+	return generateID(cryptorand.Reader)
 }
 
 // GenerateNonCryptoID generates unique id without using cryptographically
 // secure sources of random.
 // It helps you to save entropy.
 func GenerateNonCryptoID() string {
-	return generateID(false)
+	return generateID(readerFunc(rand.Read))
+}
+
+// ValidateID checks whether an ID string is a valid image ID.
+func ValidateID(id string) error {
+	if ok := validHex.MatchString(id); !ok {
+		return fmt.Errorf("image ID %q is invalid", id)
+	}
+	return nil
+}
+
+func init() {
+	// safely set the seed globally so we generate random ids. Tries to use a
+	// crypto seed before falling back to time.
+	var seed int64
+	if cryptoseed, err := cryptorand.Int(cryptorand.Reader, big.NewInt(math.MaxInt64)); err != nil {
+		// This should not happen, but worst-case fallback to time-based seed.
+		seed = time.Now().UnixNano()
+	} else {
+		seed = cryptoseed.Int64()
+	}
+
+	rand.Seed(seed)
+}
+
+type readerFunc func(p []byte) (int, error)
+
+func (fn readerFunc) Read(p []byte) (int, error) {
+	return fn(p)
 }

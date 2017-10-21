@@ -1,6 +1,22 @@
 # CHANGELOG
+
+## v7.3.0
+- Exposing new `RespondDecorator`, `ByDiscardingBody`. This allows operations
+  to acknowledge that they do not need either the entire or a trailing portion
+  of accepts response body. In doing so, Go's http library can reuse HTTP
+  connections more readily.
+- Adding `PrepareDecorator` to target custom BaseURLs.
+- Adding ACR suffix to public cloud environment.
+- Updating Glide dependencies.
+
+## v7.2.5
+- Fixed the Active Directory endpoint for the China cloud.
+- Removes UTF-8 BOM if present in response payload.
+- Added telemetry.
+
 ## v7.2.3
-- Fixing bug in calls to `DelayForBackoff` that caused doubling of delay duration.
+- Fixing bug in calls to `DelayForBackoff` that caused doubling of delay 
+  duration.
 
 ## v7.2.2
 - autorest/azure: added ASM and ARM VM DNS suffixes.

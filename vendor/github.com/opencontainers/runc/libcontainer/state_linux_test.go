@@ -78,3 +78,40 @@ func TestRestoredStateTransition(t *testing.T) {
 		t.Fatal("expected stateTransitionError")
 	}
 }
+
+func TestRunningStateTransition(t *testing.T) {
+	s := &runningState{c: &linuxContainer{}}
+	valid := []containerState{
+		&stoppedState{},
+		&pausedState{},
+		&runningState{},
+	}
+	for _, v := range valid {
+		if err := s.transition(v); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	err := s.transition(&createdState{})
+	if err == nil {
+		t.Fatal("transition to created state should fail")
+	}
+	if !isStateTransitionError(err) {
+		t.Fatal("expected stateTransitionError")
+	}
+}
+
+func TestCreatedStateTransition(t *testing.T) {
+	s := &createdState{c: &linuxContainer{}}
+	valid := []containerState{
+		&stoppedState{},
+		&pausedState{},
+		&runningState{},
+		&createdState{},
+	}
+	for _, v := range valid {
+		if err := s.transition(v); err != nil {
+			t.Fatal(err)
+		}
+	}
+}

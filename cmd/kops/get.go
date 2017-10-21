@@ -28,8 +28,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -124,8 +125,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 	}
 
 	if cluster == nil {
-		fmt.Fprintf(os.Stderr, "No cluster found\n")
-		return nil
+		return fmt.Errorf("No cluster found")
 	}
 
 	clusterList := &api.ClusterList{}
@@ -190,7 +190,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 			return err
 		}
 		fmt.Fprintf(os.Stdout, "\nInstance Groups\n")
-		err = igOutputTable(instancegroups, out)
+		err = igOutputTable(cluster, instancegroups, out)
 		if err != nil {
 			return err
 		}
@@ -226,7 +226,7 @@ func marshalToWriter(obj runtime.Object, marshal marshalFunc, w io.Writer) error
 
 // obj must be a pointer to a marshalable object
 func marshalYaml(obj runtime.Object) ([]byte, error) {
-	y, err := api.ToVersionedYaml(obj)
+	y, err := kopscodecs.ToVersionedYaml(obj)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling yaml: %v", err)
 	}

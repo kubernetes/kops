@@ -2,12 +2,11 @@ package idtools
 
 import (
 	"fmt"
-	"os/exec"
-	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // add a user and/or group to Linux /etc/passwd, /etc/group using standard
@@ -16,6 +15,7 @@ import (
 // useradd -r -s /bin/false <username>
 
 var (
+	once        sync.Once
 	userCommand string
 
 	cmdTemplates = map[string]string{
@@ -30,32 +30,6 @@ var (
 	defaultRangeStart = 100000
 	userMod           = "usermod"
 )
-
-func init() {
-	// set up which commands are used for adding users/groups dependent on distro
-	if _, err := resolveBinary("adduser"); err == nil {
-		userCommand = "adduser"
-	} else if _, err := resolveBinary("useradd"); err == nil {
-		userCommand = "useradd"
-	}
-}
-
-func resolveBinary(binname string) (string, error) {
-	binaryPath, err := exec.LookPath(binname)
-	if err != nil {
-		return "", err
-	}
-	resolvedPath, err := filepath.EvalSymlinks(binaryPath)
-	if err != nil {
-		return "", err
-	}
-	//only return no error if the final resolved binary basename
-	//matches what was searched for
-	if filepath.Base(resolvedPath) == binname {
-		return resolvedPath, nil
-	}
-	return "", fmt.Errorf("Binary %q does not resolve to a binary of that name in $PATH (%q)", binname, resolvedPath)
-}
 
 // AddNamespaceRangesUser takes a username and uses the standard system
 // utility to create a system user/group pair used to hold the
@@ -94,7 +68,14 @@ func AddNamespaceRangesUser(name string) (int, int, error) {
 }
 
 func addUser(userName string) error {
-
+	once.Do(func() {
+		// set up which commands are used for adding users/groups dependent on distro
+		if _, err := resolveBinary("adduser"); err == nil {
+			userCommand = "adduser"
+		} else if _, err := resolveBinary("useradd"); err == nil {
+			userCommand = "useradd"
+		}
+	})
 	if userCommand == "" {
 		return fmt.Errorf("Cannot add user; no useradd/adduser binary found")
 	}
@@ -180,9 +161,4 @@ func wouldOverlap(arange subIDRange, ID int) bool {
 		return true
 	}
 	return false
-}
-
-func execCmd(cmd, args string) ([]byte, error) {
-	execCmd := exec.Command(cmd, strings.Split(args, " ")...)
-	return execCmd.CombinedOutput()
 }

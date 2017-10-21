@@ -25,8 +25,8 @@ func TestReturns200IfThereAreNoChecks(t *testing.T) {
 	}
 }
 
-// TestReturns500IfThereAreErrorChecks ensures that the result code of the
-// health endpoint is 500 if there are health checks with errors
+// TestReturns503IfThereAreErrorChecks ensures that the result code of the
+// health endpoint is 503 if there are health checks with errors.
 func TestReturns503IfThereAreErrorChecks(t *testing.T) {
 	recorder := httptest.NewRecorder()
 

@@ -1,0 +1,84 @@
+name: daemonset-example
+namespace: default
+request: |
+  apiVersion: extensions/v1beta1
+  kind: DaemonSet
+  metadata:
+    name: daemonset-example
+  spec:
+    template:
+      metadata:
+        labels:
+          app: daemonset-example
+      spec:
+        containers:
+        - name: daemonset-example
+          image: ubuntu:trusty
+          command:
+          - /bin/sh
+          args:
+          - -c
+          - >-
+            while [ true ]; do
+            echo "DaemonSet running on $(hostname)" ;
+            sleep 10 ;
+            done
+response: |
+  {
+    "kind": "DaemonSet",
+    "apiVersion": "extensions/v1beta1",
+    "metadata": {
+      "name": "daemonset-example",
+      "namespace": "default",
+      "selfLink": "/apis/extensions/v1beta1/namespaces/default/daemonsets/daemonset-example",
+      "uid": "65552ced-b0e2-11e6-aef0-42010af00229",
+      "resourceVersion": "3558",
+      "generation": 1,
+      "creationTimestamp": "2016-11-22T18:35:09Z",
+      "labels": {
+        "app": "daemonset-example"
+      }
+    },
+    "spec": {
+      "selector": {
+        "matchLabels": {
+          "app": "daemonset-example"
+        }
+      },
+      "template": {
+        "metadata": {
+          "creationTimestamp": null,
+          "labels": {
+            "app": "daemonset-example"
+          }
+        },
+        "spec": {
+          "containers": [
+            {
+              "name": "daemonset-example",
+              "image": "ubuntu:trusty",
+              "command": [
+                "/bin/sh"
+              ],
+              "args": [
+                "-c",
+                "while [ true ]; do echo \"DaemonSet running on $(hostname)\" ; sleep 10 ; done"
+              ],
+              "resources": {},
+              "terminationMessagePath": "/dev/termination-log",
+              "imagePullPolicy": "IfNotPresent"
+            }
+          ],
+          "restartPolicy": "Always",
+          "terminationGracePeriodSeconds": 30,
+          "dnsPolicy": "ClusterFirst",
+          "securityContext": {}
+        }
+      }
+    },
+    "status": {
+      "currentNumberScheduled": 0,
+      "numberMisscheduled": 0,
+      "desiredNumberScheduled": 0
+    }
+  }

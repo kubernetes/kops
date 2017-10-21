@@ -3,14 +3,27 @@ package daemon
 import (
 	"errors"
 	"fmt"
-	"io"
 	"runtime"
 	"strconv"
+	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/container"
 	"github.com/docker/docker/libcontainerd"
-	"github.com/docker/docker/runconfig"
+	"github.com/docker/docker/restartmanager"
+	"github.com/sirupsen/logrus"
 )
+
+func (daemon *Daemon) setStateCounter(c *container.Container) {
+	switch c.StateString() {
+	case "paused":
+		stateCtr.set(c.ID, "paused")
+	case "running":
+		stateCtr.set(c.ID, "running")
+	default:
+		stateCtr.set(c.ID, "stopped")
+	}
+}
 
 // StateChanged updates daemon state changes from containerd
 func (daemon *Daemon) StateChanged(id string, e libcontainerd.StateInfo) error {
@@ -25,43 +38,75 @@ func (daemon *Daemon) StateChanged(id string, e libcontainerd.StateInfo) error {
 		if runtime.GOOS == "windows" {
 			return errors.New("Received StateOOM from libcontainerd on Windows. This should never happen.")
 		}
+		daemon.updateHealthMonitor(c)
+		if err := c.CheckpointTo(daemon.containersReplica); err != nil {
+			return err
+		}
 		daemon.LogContainerEvent(c, "oom")
 	case libcontainerd.StateExit:
+
 		c.Lock()
-		defer c.Unlock()
-		c.Wait()
+		c.StreamConfig.Wait()
 		c.Reset(false)
-		c.SetStopped(platformConstructExitStatus(e))
+
+		// If daemon is being shutdown, don't let the container restart
+		restart, wait, err := c.RestartManager().ShouldRestart(e.ExitCode, daemon.IsShuttingDown() || c.HasBeenManuallyStopped, time.Since(c.StartedAt))
+		if err == nil && restart {
+			c.RestartCount++
+			c.SetRestarting(platformConstructExitStatus(e))
+		} else {
+			c.SetStopped(platformConstructExitStatus(e))
+			defer daemon.autoRemove(c)
+		}
+
+		// cancel healthcheck here, they will be automatically
+		// restarted if/when the container is started again
+		daemon.stopHealthchecks(c)
 		attributes := map[string]string{
 			"exitCode": strconv.Itoa(int(e.ExitCode)),
 		}
 		daemon.LogContainerEventWithAttributes(c, "die", attributes)
 		daemon.Cleanup(c)
-		// FIXME: here is race condition between two RUN instructions in Dockerfile
-		// because they share same runconfig and change image. Must be fixed
-		// in builder/builder.go
-		return c.ToDisk()
-	case libcontainerd.StateRestart:
-		c.Lock()
-		defer c.Unlock()
-		c.Reset(false)
-		c.RestartCount++
-		c.SetRestarting(platformConstructExitStatus(e))
-		attributes := map[string]string{
-			"exitCode": strconv.Itoa(int(e.ExitCode)),
+
+		if err == nil && restart {
+			go func() {
+				err := <-wait
+				if err == nil {
+					// daemon.netController is initialized when daemon is restoring containers.
+					// But containerStart will use daemon.netController segment.
+					// So to avoid panic at startup process, here must wait util daemon restore done.
+					daemon.waitForStartupDone()
+					if err = daemon.containerStart(c, "", "", false); err != nil {
+						logrus.Debugf("failed to restart container: %+v", err)
+					}
+				}
+				if err != nil {
+					c.SetStopped(platformConstructExitStatus(e))
+					defer daemon.autoRemove(c)
+					if err != restartmanager.ErrRestartCanceled {
+						logrus.Errorf("restartmanger wait error: %+v", err)
+					}
+				}
+			}()
 		}
-		daemon.LogContainerEventWithAttributes(c, "die", attributes)
-		return c.ToDisk()
-	case libcontainerd.StateExitProcess:
-		c.Lock()
+
+		daemon.setStateCounter(c)
+
 		defer c.Unlock()
+		if err := c.CheckpointTo(daemon.containersReplica); err != nil {
+			return err
+		}
+		return daemon.postRunProcessing(c, e)
+	case libcontainerd.StateExitProcess:
 		if execConfig := c.ExecCommands.Get(e.ProcessID); execConfig != nil {
 			ec := int(e.ExitCode)
+			execConfig.Lock()
+			defer execConfig.Unlock()
 			execConfig.ExitCode = &ec
 			execConfig.Running = false
-			execConfig.Wait()
+			execConfig.StreamConfig.Wait()
 			if err := execConfig.CloseStreams(); err != nil {
-				logrus.Errorf("%s: %s", c.ID, err)
+				logrus.Errorf("failed to cleanup exec %s streams: %s", c.ID, err)
 			}
 
 			// remove the exec command from the container's store only and not the
@@ -71,74 +116,58 @@ func (daemon *Daemon) StateChanged(id string, e libcontainerd.StateInfo) error {
 			logrus.Warnf("Ignoring StateExitProcess for %v but no exec command found", e)
 		}
 	case libcontainerd.StateStart, libcontainerd.StateRestore:
+		// Container is already locked in this case
 		c.SetRunning(int(e.Pid), e.State == libcontainerd.StateStart)
 		c.HasBeenManuallyStopped = false
-		if err := c.ToDisk(); err != nil {
+		c.HasBeenStartedBefore = true
+		daemon.setStateCounter(c)
+
+		daemon.initHealthMonitor(c)
+		if err := c.CheckpointTo(daemon.containersReplica); err != nil {
 			c.Reset(false)
 			return err
 		}
+
 		daemon.LogContainerEvent(c, "start")
 	case libcontainerd.StatePause:
+		// Container is already locked in this case
 		c.Paused = true
+		daemon.setStateCounter(c)
+		daemon.updateHealthMonitor(c)
+		if err := c.CheckpointTo(daemon.containersReplica); err != nil {
+			return err
+		}
 		daemon.LogContainerEvent(c, "pause")
 	case libcontainerd.StateResume:
+		// Container is already locked in this case
 		c.Paused = false
+		daemon.setStateCounter(c)
+		daemon.updateHealthMonitor(c)
+		if err := c.CheckpointTo(daemon.containersReplica); err != nil {
+			return err
+		}
 		daemon.LogContainerEvent(c, "unpause")
 	}
-
 	return nil
 }
 
-// AttachStreams is called by libcontainerd to connect the stdio.
-func (daemon *Daemon) AttachStreams(id string, iop libcontainerd.IOPipe) error {
-	var s *runconfig.StreamConfig
-	c := daemon.containers.Get(id)
-	if c == nil {
-		ec, err := daemon.getExecConfig(id)
-		if err != nil {
-			return fmt.Errorf("no such exec/container: %s", id)
-		}
-		s = ec.StreamConfig
-	} else {
-		s = c.StreamConfig
-		if err := daemon.StartLogging(c); err != nil {
-			c.Reset(false)
-			return err
-		}
+func (daemon *Daemon) autoRemove(c *container.Container) {
+	c.Lock()
+	ar := c.HostConfig.AutoRemove
+	c.Unlock()
+	if !ar {
+		return
 	}
 
-	if stdin := s.Stdin(); stdin != nil {
-		if iop.Stdin != nil {
-			go func() {
-				io.Copy(iop.Stdin, stdin)
-				iop.Stdin.Close()
-			}()
-		}
-	} else {
-		if c != nil && !c.Config.Tty {
-			// tty is enabled, so dont close containerd's iopipe stdin.
-			if iop.Stdin != nil {
-				iop.Stdin.Close()
-			}
-		}
+	var err error
+	if err = daemon.ContainerRm(c.ID, &types.ContainerRmConfig{ForceRemove: true, RemoveVolume: true}); err == nil {
+		return
+	}
+	if c := daemon.containers.Get(c.ID); c == nil {
+		return
 	}
 
-	copy := func(w io.Writer, r io.Reader) {
-		s.Add(1)
-		go func() {
-			if _, err := io.Copy(w, r); err != nil {
-				logrus.Errorf("%v stream copy error: %v", id, err)
-			}
-			s.Done()
-		}()
+	if err != nil {
+		logrus.WithError(err).WithField("container", c.ID).Error("error removing container")
 	}
-
-	if iop.Stdout != nil {
-		copy(s.Stdout(), iop.Stdout)
-	}
-	if iop.Stderr != nil {
-		copy(s.Stderr(), iop.Stderr)
-	}
-
-	return nil
 }

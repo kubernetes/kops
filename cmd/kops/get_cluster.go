@@ -31,7 +31,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -133,8 +133,7 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 	}
 
 	if len(clusters) == 0 {
-		fmt.Fprintf(os.Stderr, "No clusters found\n")
-		return nil
+		return fmt.Errorf("No clusters found")
 	}
 
 	if options.FullSpec {
@@ -197,7 +196,9 @@ func clusterOutputTable(clusters []*api.Cluster, out io.Writer) error {
 	t.AddColumn("ZONES", func(c *api.Cluster) string {
 		zones := sets.NewString()
 		for _, s := range c.Spec.Subnets {
-			zones.Insert(s.Zone)
+			if s.Zone != "" {
+				zones.Insert(s.Zone)
+			}
 		}
 		return strings.Join(zones.List(), ",")
 	})

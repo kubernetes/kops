@@ -249,13 +249,15 @@
       "id": "BillingAccount"
     }
   },
-  "revision": "20170210",
+  "revision": "20170711",
   "basePath": "",
   "icons": {
     "x32": "http://www.google.com/images/icons/product/search-32.gif",
     "x16": "http://www.google.com/images/icons/product/search-16.gif"
   },
+  "canonicalName": "Cloudbilling",
   "discoveryVersion": "v1",
+  "fullyEncodeReservedExpansion": true,
   "baseUrl": "https://cloudbilling.googleapis.com/",
   "name": "cloudbilling",
   "parameters": {

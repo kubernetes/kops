@@ -1,7 +1,8 @@
-package volumetestutils
+package testutils
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/docker/docker/volume"
 )
@@ -19,10 +20,16 @@ func (NoopVolume) DriverName() string { return "noop" }
 func (NoopVolume) Path() string { return "noop" }
 
 // Mount mounts the volume in the container
-func (NoopVolume) Mount() (string, error) { return "noop", nil }
+func (NoopVolume) Mount(_ string) (string, error) { return "noop", nil }
 
 // Unmount unmounts the volume from the container
-func (NoopVolume) Unmount() error { return nil }
+func (NoopVolume) Unmount(_ string) error { return nil }
+
+// Status provides low-level details about the volume
+func (NoopVolume) Status() map[string]interface{} { return nil }
+
+// CreatedAt provides the time the volume (directory) was created at
+func (NoopVolume) CreatedAt() (time.Time, error) { return time.Now(), nil }
 
 // FakeVolume is a fake volume with a random name
 type FakeVolume struct {
@@ -45,10 +52,16 @@ func (f FakeVolume) DriverName() string { return f.driverName }
 func (FakeVolume) Path() string { return "fake" }
 
 // Mount mounts the volume in the container
-func (FakeVolume) Mount() (string, error) { return "fake", nil }
+func (FakeVolume) Mount(_ string) (string, error) { return "fake", nil }
 
 // Unmount unmounts the volume from the container
-func (FakeVolume) Unmount() error { return nil }
+func (FakeVolume) Unmount(_ string) error { return nil }
+
+// Status provides low-level details about the volume
+func (FakeVolume) Status() map[string]interface{} { return nil }
+
+// CreatedAt provides the time the volume (directory) was created at
+func (FakeVolume) CreatedAt() (time.Time, error) { return time.Now(), nil }
 
 // FakeDriver is a driver that generates fake volumes
 type FakeDriver struct {
@@ -102,4 +115,9 @@ func (d *FakeDriver) Get(name string) (volume.Volume, error) {
 		return v, nil
 	}
 	return nil, fmt.Errorf("no such volume")
+}
+
+// Scope returns the local scope
+func (*FakeDriver) Scope() string {
+	return "local"
 }

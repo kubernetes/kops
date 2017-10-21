@@ -816,7 +816,7 @@ type ListBreakpointsResponse struct {
 	// breakpoint.
 	// The fields: `stack_frames`, `evaluated_expressions` and
 	// `variable_table`
-	// are cleared on each breakpoint regardless of it's status.
+	// are cleared on each breakpoint regardless of its status.
 	Breakpoints []*Breakpoint `json:"breakpoints,omitempty"`
 
 	// NextWaitToken: A wait token that can be used in the next call to
@@ -1225,7 +1225,7 @@ func (s *StatusMessage) MarshalJSON() ([]byte, error) {
 // breakpoint.
 type UpdateActiveBreakpointRequest struct {
 	// Breakpoint: Updated breakpoint information.
-	// The field 'id' must be set.
+	// The field `id` must be set.
 	Breakpoint *Breakpoint `json:"breakpoint,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "Breakpoint") to
@@ -1610,8 +1610,8 @@ type ControllerDebuggeesBreakpointsListCall struct {
 // List: Returns the list of all active breakpoints for the
 // debuggee.
 //
-// The breakpoint specification (location, condition, and
-// expression
+// The breakpoint specification (`location`, `condition`, and
+// `expressions`
 // fields) is semantically immutable, although the field values
 // may
 // change. For example, an agent may update the location line number
@@ -1753,7 +1753,7 @@ func (c *ControllerDebuggeesBreakpointsListCall) Do(opts ...googleapi.CallOption
 	}
 	return ret, nil
 	// {
-	//   "description": "Returns the list of all active breakpoints for the debuggee.\n\nThe breakpoint specification (location, condition, and expression\nfields) is semantically immutable, although the field values may\nchange. For example, an agent may update the location line number\nto reflect the actual line where the breakpoint was set, but this\ndoesn't change the breakpoint semantics.\n\nThis means that an agent does not need to check if a breakpoint has changed\nwhen it encounters the same breakpoint on a successive call.\nMoreover, an agent should remember the breakpoints that are completed\nuntil the controller removes them from the active list to avoid\nsetting those breakpoints again.",
+	//   "description": "Returns the list of all active breakpoints for the debuggee.\n\nThe breakpoint specification (`location`, `condition`, and `expressions`\nfields) is semantically immutable, although the field values may\nchange. For example, an agent may update the location line number\nto reflect the actual line where the breakpoint was set, but this\ndoesn't change the breakpoint semantics.\n\nThis means that an agent does not need to check if a breakpoint has changed\nwhen it encounters the same breakpoint on a successive call.\nMoreover, an agent should remember the breakpoints that are completed\nuntil the controller removes them from the active list to avoid\nsetting those breakpoints again.",
 	//   "flatPath": "v2/controller/debuggees/{debuggeeId}/breakpoints",
 	//   "httpMethod": "GET",
 	//   "id": "clouddebugger.controller.debuggees.breakpoints.list",
@@ -1811,7 +1811,7 @@ type ControllerDebuggeesBreakpointsUpdateCall struct {
 // value
 // does not change the breakpoint specification. Updates to the
 // `location`,
-// `condition` and `expression` fields should not alter the
+// `condition` and `expressions` fields should not alter the
 // breakpoint
 // semantics. These may only make changes such as canonicalizing a
 // value
@@ -1911,7 +1911,7 @@ func (c *ControllerDebuggeesBreakpointsUpdateCall) Do(opts ...googleapi.CallOpti
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates the breakpoint state or mutable fields.\nThe entire Breakpoint message must be sent back to the controller\nservice.\n\nUpdates to active breakpoint fields are only allowed if the new value\ndoes not change the breakpoint specification. Updates to the `location`,\n`condition` and `expression` fields should not alter the breakpoint\nsemantics. These may only make changes such as canonicalizing a value\nor snapping the location to the correct line of code.",
+	//   "description": "Updates the breakpoint state or mutable fields.\nThe entire Breakpoint message must be sent back to the controller\nservice.\n\nUpdates to active breakpoint fields are only allowed if the new value\ndoes not change the breakpoint specification. Updates to the `location`,\n`condition` and `expressions` fields should not alter the breakpoint\nsemantics. These may only make changes such as canonicalizing a value\nor snapping the location to the correct line of code.",
 	//   "flatPath": "v2/controller/debuggees/{debuggeeId}/breakpoints/{id}",
 	//   "httpMethod": "PUT",
 	//   "id": "clouddebugger.controller.debuggees.breakpoints.update",

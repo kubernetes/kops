@@ -17,21 +17,23 @@ limitations under the License.
 package testutils
 
 import (
+	"io/ioutil"
+	"os"
+	"path"
+	"path/filepath"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
-	"io/ioutil"
+	kopsroot "k8s.io/kops"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/cloudmock/aws/mockroute53"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/util/pkg/vfs"
-	"os"
-	"path"
-	"path/filepath"
-	"testing"
 )
 
 type IntegrationTestHarness struct {
@@ -40,6 +42,9 @@ type IntegrationTestHarness struct {
 
 	// The original kops DefaultChannelBase value, restored on Close
 	originalDefaultChannelBase string
+
+	// originalKopsVersion is the original kops.Version value, restored on Close
+	originalKopsVersion string
 }
 
 func NewIntegrationTestHarness(t *testing.T) *IntegrationTestHarness {
@@ -76,6 +81,10 @@ func (h *IntegrationTestHarness) Close() {
 				h.T.Fatalf("failed to remove temp dir %q: %v", h.TempDir, err)
 			}
 		}
+	}
+
+	if h.originalKopsVersion != "" {
+		kopsroot.Version = h.originalKopsVersion
 	}
 
 	if h.originalDefaultChannelBase != "" {
@@ -134,4 +143,14 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 // SetupMockGCE configures a mock GCE cloud provider
 func (h *IntegrationTestHarness) SetupMockGCE() {
 	gce.InstallMockGCECloud("us-test1", "testproject")
+}
+
+// MockKopsVersion will set the kops version to the specified value, until Close is called
+func (h *IntegrationTestHarness) MockKopsVersion(version string) {
+	if h.originalKopsVersion != "" {
+		h.T.Fatalf("MockKopsVersion called twice (%s and %s)", version, h.originalKopsVersion)
+	}
+
+	h.originalKopsVersion = kopsroot.Version
+	kopsroot.Version = version
 }

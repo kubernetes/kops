@@ -20,7 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// +genclient=true
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Cluster is a specific cluster wrapper
 type Cluster struct {
@@ -30,6 +31,8 @@ type Cluster struct {
 	// Spec defines the behavior of a Cluster.
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ClusterList is a list of clusters
 type ClusterList struct {
@@ -41,7 +44,7 @@ type ClusterList struct {
 
 // ClusterSpec defines the configuration for a cluster
 type ClusterSpec struct {
-	// The Channel we are following
+	// Channel we are following
 	Channel string `json:"channel,omitempty"`
 	// ConfigBase is the path where we store configuration for the cluster
 	// This might be different that the location when the cluster spec itself is stored,
@@ -60,8 +63,9 @@ type ClusterSpec struct {
 	MasterPublicName string `json:"masterPublicName,omitempty"`
 	// MasterInternalName is the internal DNS name for the master nodes
 	MasterInternalName string `json:"masterInternalName,omitempty"`
-	// The CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
+	// NetworkCIDR is the CIDR used for the AWS VPC Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s network
+	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
 	NetworkCIDR string `json:"networkCIDR,omitempty"`
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
 	NetworkID string `json:"networkID,omitempty"`
@@ -165,9 +169,12 @@ type FileAssetSpec struct {
 	IsBase64 bool `json:"isBase64,omitempty"`
 }
 
+// Assets defined the privately hosted assets
 type Assets struct {
+	// ContainerRegistry is a url for to a docker registry
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
-	FileRepository    *string `json:"fileRepository,omitempty"`
+	// FileRepository is the url for a private file serving repository
+	FileRepository *string `json:"fileRepository,omitempty"`
 }
 
 // IAMSpec adds control over the IAM security policies applied to resources
@@ -284,6 +291,10 @@ type EtcdClusterSpec struct {
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
 	// Version is the version of etcd to run i.e. 2.1.2, 3.0.17 etcd
 	Version string `json:"version,omitempty"`
+	// LeaderElectionTimeout is the time (in milliseconds) for an etcd leader election timeout
+	LeaderElectionTimeout *metav1.Duration `json:"leaderElectionTimeout,omitempty"`
+	// HeartbeatInterval is the time (in milliseconds) for an etcd heartbeat interval
+	HeartbeatInterval *metav1.Duration `json:"heartbeatInterval,omitempty"`
 }
 
 // EtcdMemberSpec is a specification for a etcd member

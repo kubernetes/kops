@@ -18,12 +18,13 @@ package model
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"strings"
 )
 
 // NetworkModelBuilder configures network objects
@@ -260,8 +261,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		//
 		// The private route table that will route to the NAT Gateway
 		rt := &awstasks.RouteTable{
-			Name: s(b.NamePrivateRouteTableInZone(zone)),
-			VPC:  b.LinkToVPC(),
+			Name:      s(b.NamePrivateRouteTableInZone(zone)),
+			VPC:       b.LinkToVPC(),
+			Lifecycle: b.Lifecycle,
 		}
 		c.AddTask(rt)
 

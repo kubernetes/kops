@@ -17,20 +17,18 @@ limitations under the License.
 package main
 
 import (
-	"fmt"
-
 	"bytes"
 	"crypto/rsa"
+	"fmt"
 	"os"
 	"sort"
 	"strings"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -77,12 +75,17 @@ func (c *DescribeSecretsCommand) Run(args []string) error {
 		return err
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	secretStore, err := registry.SecretStore(cluster)
+	keyStore, err := clientset.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
 		return err
 	}

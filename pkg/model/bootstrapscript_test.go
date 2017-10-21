@@ -41,14 +41,14 @@ func Test_ProxyFunc(t *testing.T) {
 		t.Fatalf("script cannot be empty")
 	}
 
-	if !strings.HasPrefix(script, "export http_proxy=http://example.com:80") {
+	if !strings.HasPrefix(script, "echo \"http_proxy=http://example.com:80\" >> /etc/environment") {
 		t.Fatalf("script not setting http_proxy properly")
 	}
 
 	ps.ProxyExcludes = "www.google.com,www.kubernetes.io"
 
 	script = b.createProxyEnv(ps)
-	if !strings.Contains(script, "export no_proxy="+ps.ProxyExcludes) {
+	if !strings.Contains(script, "no_proxy="+ps.ProxyExcludes) {
 		t.Fatalf("script not setting no_proxy properly")
 	}
 }

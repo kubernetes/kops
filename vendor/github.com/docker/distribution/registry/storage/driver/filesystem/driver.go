@@ -8,6 +8,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"reflect"
+	"strconv"
 	"time"
 
 	"github.com/docker/distribution/context"
@@ -16,8 +18,23 @@ import (
 	"github.com/docker/distribution/registry/storage/driver/factory"
 )
 
-const driverName = "filesystem"
-const defaultRootDirectory = "/var/lib/registry"
+const (
+	driverName           = "filesystem"
+	defaultRootDirectory = "/var/lib/registry"
+	defaultMaxThreads    = uint64(100)
+
+	// minThreads is the minimum value for the maxthreads configuration
+	// parameter. If the driver's parameters are less than this we set
+	// the parameters to minThreads
+	minThreads = uint64(25)
+)
+
+// DriverParameters represents all configuration options available for the
+// filesystem driver
+type DriverParameters struct {
+	RootDirectory string
+	MaxThreads    uint64
+}
 
 func init() {
 	factory.Register(driverName, &filesystemDriverFactory{})
@@ -27,7 +44,7 @@ func init() {
 type filesystemDriverFactory struct{}
 
 func (factory *filesystemDriverFactory) Create(parameters map[string]interface{}) (storagedriver.StorageDriver, error) {
-	return FromParameters(parameters), nil
+	return FromParameters(parameters)
 }
 
 type driver struct {
@@ -47,25 +64,72 @@ type Driver struct {
 // FromParameters constructs a new Driver with a given parameters map
 // Optional Parameters:
 // - rootdirectory
-func FromParameters(parameters map[string]interface{}) *Driver {
-	var rootDirectory = defaultRootDirectory
+// - maxthreads
+func FromParameters(parameters map[string]interface{}) (*Driver, error) {
+	params, err := fromParametersImpl(parameters)
+	if err != nil || params == nil {
+		return nil, err
+	}
+	return New(*params), nil
+}
+
+func fromParametersImpl(parameters map[string]interface{}) (*DriverParameters, error) {
+	var (
+		err           error
+		maxThreads    = defaultMaxThreads
+		rootDirectory = defaultRootDirectory
+	)
+
 	if parameters != nil {
-		rootDir, ok := parameters["rootdirectory"]
-		if ok {
+		if rootDir, ok := parameters["rootdirectory"]; ok {
 			rootDirectory = fmt.Sprint(rootDir)
 		}
+
+		// Get maximum number of threads for blocking filesystem operations,
+		// if specified
+		threads := parameters["maxthreads"]
+		switch v := threads.(type) {
+		case string:
+			if maxThreads, err = strconv.ParseUint(v, 0, 64); err != nil {
+				return nil, fmt.Errorf("maxthreads parameter must be an integer, %v invalid", threads)
+			}
+		case uint64:
+			maxThreads = v
+		case int, int32, int64:
+			val := reflect.ValueOf(v).Convert(reflect.TypeOf(threads)).Int()
+			// If threads is negative casting to uint64 will wrap around and
+			// give you the hugest thread limit ever. Let's be sensible, here
+			if val > 0 {
+				maxThreads = uint64(val)
+			}
+		case uint, uint32:
+			maxThreads = reflect.ValueOf(v).Convert(reflect.TypeOf(threads)).Uint()
+		case nil:
+			// do nothing
+		default:
+			return nil, fmt.Errorf("invalid value for maxthreads: %#v", threads)
+		}
+
+		if maxThreads < minThreads {
+			maxThreads = minThreads
+		}
 	}
-	return New(rootDirectory)
+
+	params := &DriverParameters{
+		RootDirectory: rootDirectory,
+		MaxThreads:    maxThreads,
+	}
+	return params, nil
 }
 
 // New constructs a new Driver with a given rootDirectory
-func New(rootDirectory string) *Driver {
+func New(params DriverParameters) *Driver {
+	fsDriver := &driver{rootDirectory: params.RootDirectory}
+
 	return &Driver{
 		baseEmbed: baseEmbed{
 			Base: base.Base{
-				StorageDriver: &driver{
-					rootDirectory: rootDirectory,
-				},
+				StorageDriver: base.NewRegulator(fsDriver, params.MaxThreads),
 			},
 		},
 	}

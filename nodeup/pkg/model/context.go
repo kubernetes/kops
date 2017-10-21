@@ -20,28 +20,40 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
-
-	"github.com/blang/semver"
 )
 
 // NodeupModelContext is the context supplied the nodeup tasks
 type NodeupModelContext struct {
-	Architecture      Architecture
-	Assets            *fi.AssetStore
-	Cluster           *kops.Cluster
-	Distribution      distros.Distribution
-	InstanceGroup     *kops.InstanceGroup
-	IsMaster          bool
-	KeyStore          fi.CAStore
-	KubernetesVersion semver.Version
-	NodeupConfig      *nodeup.Config
-	SecretStore       fi.SecretStore
+	Architecture  Architecture
+	Assets        *fi.AssetStore
+	Cluster       *kops.Cluster
+	Distribution  distros.Distribution
+	InstanceGroup *kops.InstanceGroup
+	IsMaster      bool
+	KeyStore      fi.CAStore
+	NodeupConfig  *nodeup.Config
+	SecretStore   fi.SecretStore
+
+	kubernetesVersion semver.Version
+}
+
+// Init completes initialization of the object, for example pre-parsing the kubernetes version
+func (c *NodeupModelContext) Init() error {
+	k8sVersion, err := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
+	if err != nil || k8sVersion == nil {
+		return fmt.Errorf("unable to parse KubernetesVersion %q", c.Cluster.Spec.KubernetesVersion)
+	}
+	c.kubernetesVersion = *k8sVersion
+
+	return nil
 }
 
 // SSLHostPaths returns the TLS paths for the distribution
@@ -181,7 +193,10 @@ func (c *NodeupModelContext) buildPKIKubeconfig(id string) (string, error) {
 
 // IsKubernetesGTE checks if the version is greater-than-or-equal
 func (c *NodeupModelContext) IsKubernetesGTE(version string) bool {
-	return util.IsKubernetesGTE(version, c.KubernetesVersion)
+	if c.kubernetesVersion.Major == 0 {
+		glog.Fatalf("kubernetesVersion not set (%s); Init not called", c.kubernetesVersion)
+	}
+	return util.IsKubernetesGTE(version, c.kubernetesVersion)
 }
 
 // UseEtcdTLS checks if the etcd cluster has TLS enabled bool
@@ -230,4 +245,16 @@ func (c *NodeupModelContext) UseSecureKubelet() bool {
 	}
 
 	return false
+}
+
+// KubectlPath returns distro based path for kubectl
+func (c *NodeupModelContext) KubectlPath() string {
+	kubeletCommand := "/usr/local/bin"
+	if c.Distribution == distros.DistributionCoreOS {
+		kubeletCommand = "/opt/bin"
+	}
+	if c.Distribution == distros.DistributionContainerOS {
+		kubeletCommand = "/home/kubernetes/bin"
+	}
+	return kubeletCommand
 }

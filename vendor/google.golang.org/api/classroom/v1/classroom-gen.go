@@ -68,6 +68,16 @@ const (
 	// classes you teach or administer
 	ClassroomCourseworkStudentsReadonlyScope = "https://www.googleapis.com/auth/classroom.coursework.students.readonly"
 
+	// View your Google Classroom guardians
+	ClassroomGuardianlinksMeReadonlyScope = "https://www.googleapis.com/auth/classroom.guardianlinks.me.readonly"
+
+	// View and manage guardians for students in your Google Classroom
+	// classes
+	ClassroomGuardianlinksStudentsScope = "https://www.googleapis.com/auth/classroom.guardianlinks.students"
+
+	// View guardians for students in your Google Classroom classes
+	ClassroomGuardianlinksStudentsReadonlyScope = "https://www.googleapis.com/auth/classroom.guardianlinks.students.readonly"
+
 	// View the email addresses of people in your classes
 	ClassroomProfileEmailsScope = "https://www.googleapis.com/auth/classroom.profile.emails"
 
@@ -233,7 +243,7 @@ type UserProfilesGuardiansService struct {
 type Assignment struct {
 	// StudentWorkFolder: Drive folder where attachments from student
 	// submissions are placed.
-	// This is only populated for course teachers.
+	// This is only populated for course teachers and administrators.
 	StudentWorkFolder *DriveFolder `json:"studentWorkFolder,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "StudentWorkFolder")
@@ -345,6 +355,14 @@ type Course struct {
 	//
 	// Read-only.
 	AlternateLink string `json:"alternateLink,omitempty"`
+
+	// CalendarId: The Calendar ID for a calendar that all course members
+	// can see, to which
+	// Classroom adds events for course work and announcements in the
+	// course.
+	//
+	// Read-only.
+	CalendarId string `json:"calendarId,omitempty"`
 
 	// CourseGroupEmail: The email address of a Google group containing all
 	// members of the course.
@@ -757,6 +775,10 @@ type CourseWork struct {
 	// set otherwise.
 	MultipleChoiceQuestion *MultipleChoiceQuestion `json:"multipleChoiceQuestion,omitempty"`
 
+	// ScheduledTime: Optional timestamp when this course work is scheduled
+	// to be published.
+	ScheduledTime string `json:"scheduledTime,omitempty"`
+
 	// State: Status of this course work.
 	// If unspecified, the default state is `DRAFT`.
 	//
@@ -1086,6 +1108,75 @@ func (s *GlobalPermission) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// GradeHistory: The history of each grade on this submission.
+type GradeHistory struct {
+	// ActorUserId: The teacher who made the grade change.
+	ActorUserId string `json:"actorUserId,omitempty"`
+
+	// GradeChangeType: The type of grade change at this time in the
+	// submission grade history.
+	//
+	// Possible values:
+	//   "UNKNOWN_GRADE_CHANGE_TYPE" - No grade change type specified. This
+	// should never be returned.
+	//   "DRAFT_GRADE_POINTS_EARNED_CHANGE" - A change in the numerator of
+	// the draft grade.
+	//   "ASSIGNED_GRADE_POINTS_EARNED_CHANGE" - A change in the numerator
+	// of the assigned grade.
+	//   "MAX_POINTS_CHANGE" - A change in the denominator of the grade.
+	GradeChangeType string `json:"gradeChangeType,omitempty"`
+
+	// GradeTimestamp: When the grade of the submission was changed.
+	GradeTimestamp string `json:"gradeTimestamp,omitempty"`
+
+	// MaxPoints: The denominator of the grade at this time in the
+	// submission grade
+	// history.
+	MaxPoints float64 `json:"maxPoints,omitempty"`
+
+	// PointsEarned: The numerator of the grade at this time in the
+	// submission grade history.
+	PointsEarned float64 `json:"pointsEarned,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ActorUserId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ActorUserId") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *GradeHistory) MarshalJSON() ([]byte, error) {
+	type noMethod GradeHistory
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
+func (s *GradeHistory) UnmarshalJSON(data []byte) error {
+	type noMethod GradeHistory
+	var s1 struct {
+		MaxPoints    gensupport.JSONFloat64 `json:"maxPoints"`
+		PointsEarned gensupport.JSONFloat64 `json:"pointsEarned"`
+		*noMethod
+	}
+	s1.noMethod = (*noMethod)(s)
+	if err := json.Unmarshal(data, &s1); err != nil {
+		return err
+	}
+	s.MaxPoints = float64(s1.MaxPoints)
+	s.PointsEarned = float64(s1.PointsEarned)
+	return nil
+}
+
 // Guardian: Association between a student and a guardian of that
 // student. The guardian
 // may receive information about the student's course work.
@@ -1208,6 +1299,7 @@ type Invitation struct {
 	//   "COURSE_ROLE_UNSPECIFIED" - No course role.
 	//   "STUDENT" - Student in the course.
 	//   "TEACHER" - Teacher of the course.
+	//   "OWNER" - Owner of the course.
 	Role string `json:"role,omitempty"`
 
 	// UserId: Identifier of the invited user.
@@ -1877,6 +1969,58 @@ func (s *ShortAnswerSubmission) MarshalJSON() ([]byte, error) {
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
+// StateHistory: The history of each state this submission has been in.
+type StateHistory struct {
+	// ActorUserId: The teacher or student who made the change
+	ActorUserId string `json:"actorUserId,omitempty"`
+
+	// State: The workflow pipeline stage.
+	//
+	// Possible values:
+	//   "STATE_UNSPECIFIED" - No state specified. This should never be
+	// returned.
+	//   "CREATED" - The Submission has been created.
+	//   "TURNED_IN" - The student has turned in an assigned document, which
+	// may or may not be
+	// a template.
+	//   "RETURNED" - The teacher has returned the assigned document to the
+	// student.
+	//   "RECLAIMED_BY_STUDENT" - The student turned in the assigned
+	// document, and then chose to
+	// "unsubmit" the assignment, giving the student control again as
+	// the
+	// owner.
+	//   "STUDENT_EDITED_AFTER_TURN_IN" - The student edited their
+	// submission after turning it in. Currently,
+	// only used by Questions, when the student edits their answer.
+	State string `json:"state,omitempty"`
+
+	// StateTimestamp: When the submission entered this state.
+	StateTimestamp string `json:"stateTimestamp,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "ActorUserId") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "ActorUserId") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *StateHistory) MarshalJSON() ([]byte, error) {
+	type noMethod StateHistory
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
+}
+
 // Student: Student in a course.
 type Student struct {
 	// CourseId: Identifier of the course.
@@ -2045,6 +2189,12 @@ type StudentSubmission struct {
 	// assignment.
 	State string `json:"state,omitempty"`
 
+	// SubmissionHistory: The history of the submission (includes state and
+	// grade histories).
+	//
+	// Read-only.
+	SubmissionHistory []*SubmissionHistory `json:"submissionHistory,omitempty"`
+
 	// UpdateTime: Last update time of this submission.
 	// This may be unset if the student has not accessed this
 	// item.
@@ -2099,6 +2249,41 @@ func (s *StudentSubmission) UnmarshalJSON(data []byte) error {
 	s.AssignedGrade = float64(s1.AssignedGrade)
 	s.DraftGrade = float64(s1.DraftGrade)
 	return nil
+}
+
+// SubmissionHistory: The history of the submission. This currently
+// includes state and grade
+// histories.
+type SubmissionHistory struct {
+	// GradeHistory: The grade history information of the submission, if
+	// present.
+	GradeHistory *GradeHistory `json:"gradeHistory,omitempty"`
+
+	// StateHistory: The state history information of the submission, if
+	// present.
+	StateHistory *StateHistory `json:"stateHistory,omitempty"`
+
+	// ForceSendFields is a list of field names (e.g. "GradeHistory") to
+	// unconditionally include in API requests. By default, fields with
+	// empty values are omitted from API requests. However, any non-pointer,
+	// non-interface field appearing in ForceSendFields will be sent to the
+	// server regardless of whether the field is empty or not. This may be
+	// used to include empty fields in Patch requests.
+	ForceSendFields []string `json:"-"`
+
+	// NullFields is a list of field names (e.g. "GradeHistory") to include
+	// in API requests with the JSON null value. By default, fields with
+	// empty values are omitted from API requests. However, any field with
+	// an empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
+	NullFields []string `json:"-"`
+}
+
+func (s *SubmissionHistory) MarshalJSON() ([]byte, error) {
+	type noMethod SubmissionHistory
+	raw := noMethod(*s)
+	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 // Teacher: Teacher of a course.
@@ -2229,6 +2414,16 @@ type UserProfile struct {
 	//
 	// Read-only.
 	PhotoUrl string `json:"photoUrl,omitempty"`
+
+	// VerifiedTeacher: Represents whether a G Suite for Education user's
+	// domain administrator has
+	// explicitly verified them as being a teacher. If the user is not a
+	// member of
+	// a G Suite for Education domain, than this field will always be
+	// false.
+	//
+	// Read-only
+	VerifiedTeacher bool `json:"verifiedTeacher,omitempty"`
 
 	// ServerResponse contains the HTTP response code and headers from the
 	// server.
@@ -4573,6 +4768,7 @@ func (r *CoursesCourseWorkService) Patch(courseId string, id string, coursework 
 // * `due_date`
 // * `due_time`
 // * `max_points`
+// * `scheduled_time`
 // * `submission_modification_mode`
 func (c *CoursesCourseWorkPatchCall) UpdateMask(updateMask string) *CoursesCourseWorkPatchCall {
 	c.urlParams_.Set("updateMask", updateMask)
@@ -4688,7 +4884,7 @@ func (c *CoursesCourseWorkPatchCall) Do(opts ...googleapi.CallOption) (*CourseWo
 	//       "type": "string"
 	//     },
 	//     "updateMask": {
-	//       "description": "Mask that identifies which fields on the course work to update.\nThis field is required to do an update. The update fails if invalid\nfields are specified. If a field supports empty values, it can be cleared\nby specifying it in the update mask and not in the CourseWork object. If a\nfield that does not support empty values is included in the update mask and\nnot set in the CourseWork object, an `INVALID_ARGUMENT` error will be\nreturned.\n\nThe following fields may be specified by teachers:\n* `title`\n* `description`\n* `state`\n* `due_date`\n* `due_time`\n* `max_points`\n* `submission_modification_mode`",
+	//       "description": "Mask that identifies which fields on the course work to update.\nThis field is required to do an update. The update fails if invalid\nfields are specified. If a field supports empty values, it can be cleared\nby specifying it in the update mask and not in the CourseWork object. If a\nfield that does not support empty values is included in the update mask and\nnot set in the CourseWork object, an `INVALID_ARGUMENT` error will be\nreturned.\n\nThe following fields may be specified by teachers:\n* `title`\n* `description`\n* `state`\n* `due_date`\n* `due_time`\n* `max_points`\n* `scheduled_time`\n* `submission_modification_mode`",
 	//       "format": "google-fieldmask",
 	//       "location": "query",
 	//       "type": "string"
@@ -8525,7 +8721,10 @@ func (c *UserProfilesGuardianInvitationsCreateCall) Do(opts ...googleapi.CallOpt
 	//   },
 	//   "response": {
 	//     "$ref": "GuardianInvitation"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.students"
+	//   ]
 	// }
 
 }
@@ -8689,7 +8888,11 @@ func (c *UserProfilesGuardianInvitationsGetCall) Do(opts ...googleapi.CallOption
 	//   "path": "v1/userProfiles/{studentId}/guardianInvitations/{invitationId}",
 	//   "response": {
 	//     "$ref": "GuardianInvitation"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.students",
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.students.readonly"
+	//   ]
 	// }
 
 }
@@ -8921,7 +9124,11 @@ func (c *UserProfilesGuardianInvitationsListCall) Do(opts ...googleapi.CallOptio
 	//   "path": "v1/userProfiles/{studentId}/guardianInvitations",
 	//   "response": {
 	//     "$ref": "ListGuardianInvitationsResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.students",
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.students.readonly"
+	//   ]
 	// }
 
 }
@@ -9131,7 +9338,10 @@ func (c *UserProfilesGuardianInvitationsPatchCall) Do(opts ...googleapi.CallOpti
 	//   },
 	//   "response": {
 	//     "$ref": "GuardianInvitation"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.students"
+	//   ]
 	// }
 
 }
@@ -9286,7 +9496,10 @@ func (c *UserProfilesGuardiansDeleteCall) Do(opts ...googleapi.CallOption) (*Emp
 	//   "path": "v1/userProfiles/{studentId}/guardians/{guardianId}",
 	//   "response": {
 	//     "$ref": "Empty"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.students"
+	//   ]
 	// }
 
 }
@@ -9452,7 +9665,12 @@ func (c *UserProfilesGuardiansGetCall) Do(opts ...googleapi.CallOption) (*Guardi
 	//   "path": "v1/userProfiles/{studentId}/guardians/{guardianId}",
 	//   "response": {
 	//     "$ref": "Guardian"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.me.readonly",
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.students",
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.students.readonly"
+	//   ]
 	// }
 
 }
@@ -9667,7 +9885,12 @@ func (c *UserProfilesGuardiansListCall) Do(opts ...googleapi.CallOption) (*ListG
 	//   "path": "v1/userProfiles/{studentId}/guardians",
 	//   "response": {
 	//     "$ref": "ListGuardiansResponse"
-	//   }
+	//   },
+	//   "scopes": [
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.me.readonly",
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.students",
+	//     "https://www.googleapis.com/auth/classroom.guardianlinks.students.readonly"
+	//   ]
 	// }
 
 }

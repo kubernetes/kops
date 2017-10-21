@@ -5,7 +5,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"log"
 	"net/http"
 	"os"
@@ -23,13 +22,6 @@ var (
 
 const appNonce = "a super secret nonce"
 
-func ClaimNonce(nonce string) error {
-	if nonce != appNonce {
-		return errors.New("unregonized nonce")
-	}
-	return nil
-}
-
 func main() {
 	ctx := context.Background()
 
@@ -39,8 +31,7 @@ func main() {
 	}
 
 	oidcConfig := &oidc.Config{
-		ClientID:   clientID,
-		ClaimNonce: ClaimNonce,
+		ClientID: clientID,
 	}
 	// Use the nonce source to create a custom ID Token verifier.
 	nonceEnabledVerifier := provider.Verifier(oidcConfig)
@@ -80,6 +71,10 @@ func main() {
 		idToken, err := nonceEnabledVerifier.Verify(ctx, rawIDToken)
 		if err != nil {
 			http.Error(w, "Failed to verify ID Token: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		if idToken.Nonce != appNonce {
+			http.Error(w, "Invalid ID Token nonce", http.StatusInternalServerError)
 			return
 		}
 

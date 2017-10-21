@@ -20,7 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// +genclient=true
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // SSHCredential represent a set of kops secrets
 type SSHCredential struct {
@@ -33,6 +34,8 @@ type SSHCredential struct {
 type SSHCredentialSpec struct {
 	PublicKey string `json:"publicKey,omitempty"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 type SSHCredentialList struct {
 	metav1.TypeMeta `json:",inline"`

@@ -169,7 +169,7 @@ type KubeProxyConfig struct {
 
 // KubeAPIServerConfig defines the configuration for the kube api
 type KubeAPIServerConfig struct {
-	// Image is the docker container used
+	// Image is the docker container usedrun
 	Image string `json:"image,omitempty"`
 	// LogLevel is the logging level of the api
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
@@ -294,6 +294,10 @@ type KubeControllerManagerConfig struct {
 	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
 	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.
 	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
+	// HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs
+	// During each period, the controller manager queries the resource utilization
+	// against the metrics specified in each HorizontalPodAutoscaler definition
+	HorizontalPodAutoscalerSyncPeriod *metav1.Duration `json:"horizontalPodAutoscalerSyncPeriod,omitempty" flag:"horizontal-pod-autoscaler-sync-period"`
 }
 
 type CloudControllerManagerConfig struct {
@@ -330,6 +334,10 @@ type KubeSchedulerConfig struct {
 	Image string `json:"image,omitempty"`
 	// LeaderElection defines the configuration of leader election client.
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
+	// PolicyConfigMap is the name of configmap to use for scheduler policy
+	PolicyConfigMap string `json:"policyConfigMap,omitempty" flag:"policy-configmap"`
+	// PolicyConfigMapNamespace is the namespace containing the configmap
+	PolicyConfigMapNamespace string `json:"policyConfigMapNamespace,omitempty" flag:"policy-configmap-namespace"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election

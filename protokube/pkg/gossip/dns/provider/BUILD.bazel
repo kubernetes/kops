@@ -1,0 +1,19 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "changeset.go",
+        "doc.go",
+        "provider.go",
+        "rrset.go",
+        "zone.go",
+        "zones.go",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//protokube/pkg/gossip/dns:go_default_library",
+        "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider:go_default_library",
+        "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype:go_default_library",
+    ],
+)

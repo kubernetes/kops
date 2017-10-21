@@ -3,14 +3,14 @@
 source "$(dirname "$BASH_SOURCE")/.validate"
 
 IFS=$'\n'
-files=( $(validate_diff --diff-filter=ACMR --name-only -- '*.go' | grep -v '^Godeps/' || true) )
+files=($(validate_diff --diff-filter=ACMR --name-only -- '*.go' | grep -v '^vendor/' || true))
 unset IFS
 
 badFiles=()
 for f in "${files[@]}"; do
 	# we use "git show" here to validate that what's committed is formatted
 	if [ "$(git show "$VALIDATE_HEAD:$f" | gofmt -s -l)" ]; then
-		badFiles+=( "$f" )
+		badFiles+=("$f")
 	fi
 done
 

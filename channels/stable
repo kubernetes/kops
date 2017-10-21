@@ -14,17 +14,17 @@ spec:
       providerID: aws
       kubernetesVersion: ">=1.7.0"
     - providerID: gce
-      name: "cos-cloud/cos-stable-57-9202-64-0"
+      name: "cos-cloud/cos-stable-60-9592-90-0"
   cluster:
     kubernetesVersion: v1.5.7
     networking:
       kubenet: {}
   kubernetesVersions:
   - range: ">=1.7.0"
-    recommendedVersion: 1.7.2
+    recommendedVersion: 1.7.4
     requiredVersion: 1.7.0
   - range: ">=1.6.0"
-    recommendedVersion: 1.6.6
+    recommendedVersion: 1.6.7
     requiredVersion: 1.6.0
   - range: ">=1.5.0"
     recommendedVersion: 1.5.7
@@ -36,7 +36,7 @@ spec:
   - range: ">=1.7.0-alpha.1"
     recommendedVersion: 1.7.0
     #requiredVersion: 1.7.0
-    kubernetesVersion: 1.7.2
+    kubernetesVersion: 1.7.4
   - range: ">=1.6.0-alpha.1"
     #recommendedVersion: 1.6.0
     #requiredVersion: 1.6.0

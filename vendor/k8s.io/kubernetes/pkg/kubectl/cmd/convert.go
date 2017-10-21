@@ -27,8 +27,8 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 	"k8s.io/kubernetes/pkg/printers"
-	"k8s.io/kubernetes/pkg/util/i18n"
 
 	"github.com/spf13/cobra"
 )
@@ -122,13 +122,13 @@ func (o *ConvertOptions) Complete(f cmdutil.Factory, out io.Writer, cmd *cobra.C
 		return err
 	}
 	if !api.Registry.IsEnabledVersion(o.outputVersion) {
-		cmdutil.UsageError(cmd, "'%s' is not a registered version.", o.outputVersion)
+		cmdutil.UsageErrorf(cmd, "'%s' is not a registered version.", o.outputVersion)
 	}
 
 	// build the builder
 	o.builder = f.NewBuilder(!o.local)
 	if !o.local {
-		schema, err := f.Validator(cmdutil.GetFlagBool(cmd, "validate"), cmdutil.GetFlagString(cmd, "schema-cache-dir"))
+		schema, err := f.Validator(cmdutil.GetFlagBool(cmd, "validate"), cmdutil.GetFlagBool(cmd, "openapi-validation"), cmdutil.GetFlagString(cmd, "schema-cache-dir"))
 		if err != nil {
 			return err
 		}
@@ -158,11 +158,7 @@ func (o *ConvertOptions) Complete(f cmdutil.Factory, out io.Writer, cmd *cobra.C
 	}
 	o.encoder = f.JSONEncoder()
 	o.printer, err = f.PrinterForCommand(cmd, o.local, nil, printers.PrintOptions{})
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
 
 // RunConvert implements the generic Convert command

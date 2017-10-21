@@ -180,8 +180,8 @@ func TestRouterWithPathTraversals(t *testing.T) {
 	testCases := []routeTestCase{
 		{
 			RouteName:   RouteNameBlobUploadChunk,
-			RequestURI:  "/v2/foo/../../blob/uploads/D95306FA-FAD3-4E36-8D41-CF1C93EF8286",
-			ExpectedURI: "/blob/uploads/D95306FA-FAD3-4E36-8D41-CF1C93EF8286",
+			RequestURI:  "/v2/foo/../../blobs/uploads/D95306FA-FAD3-4E36-8D41-CF1C93EF8286",
+			ExpectedURI: "/blobs/uploads/D95306FA-FAD3-4E36-8D41-CF1C93EF8286",
 			StatusCode:  http.StatusNotFound,
 		},
 		{
@@ -202,7 +202,7 @@ func TestRouterWithBadCharacters(t *testing.T) {
 		testCases := []routeTestCase{
 			{
 				RouteName:  RouteNameBlobUploadChunk,
-				RequestURI: "/v2/foo/blob/uploads/不95306FA-FAD3-4E36-8D41-CF1C93EF8286",
+				RequestURI: "/v2/foo/blobs/uploads/不95306FA-FAD3-4E36-8D41-CF1C93EF8286",
 				StatusCode: http.StatusNotFound,
 			},
 			{

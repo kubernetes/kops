@@ -22,10 +22,9 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -88,17 +87,22 @@ func RunDeleteSecret(f *util.Factory, out io.Writer, options *DeleteSecretOption
 		return fmt.Errorf("SecretName is required")
 	}
 
+	clientset, err := f.Clientset()
+	if err != nil {
+		return err
+	}
+
 	cluster, err := GetCluster(f, options.ClusterName)
 	if err != nil {
 		return err
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	keyStore, err := clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
 
-	secretStore, err := registry.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
 		return err
 	}

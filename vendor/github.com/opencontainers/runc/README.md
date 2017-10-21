@@ -1,6 +1,10 @@
-[![Build Status](https://jenkins.dockerproject.org/buildStatus/icon?job=runc Master)](https://jenkins.dockerproject.org/job/runc Master)
+# runc
 
-## runc
+[![Build Status](https://travis-ci.org/opencontainers/runc.svg?branch=master)](https://travis-ci.org/opencontainers/runc)
+[![Go Report Card](https://goreportcard.com/badge/github.com/opencontainers/runc)](https://goreportcard.com/report/github.com/opencontainers/runc)
+[![GoDoc](https://godoc.org/github.com/opencontainers/runc?status.svg)](https://godoc.org/github.com/opencontainers/runc)
+
+## Introduction
 
 `runc` is a CLI tool for spawning and running containers according to the OCI specification.
 
@@ -12,10 +16,20 @@ This means that `runc` 1.0.0 should implement the 1.0 version of the specificati
 
 You can find official releases of `runc` on the [release](https://github.com/opencontainers/runc/releases) page.
 
+### Security
+
+If you wish to report a security issue, please disclose the issue responsibly
+to security@opencontainers.org.
+
 ## Building
 
-`runc` currently supports the Linux platform with various architecture support. 
+`runc` currently supports the Linux platform with various architecture support.
 It must be built with Go version 1.6 or higher in order for some features to function properly.
+
+In order to enable seccomp support you will need to install `libseccomp` on your platform.
+> e.g. `libseccomp-devel` for CentOS, or `libseccomp-dev` for Ubuntu
+
+Otherwise, if you do not want to build `runc` with seccomp support you can add `BUILDTAGS=""` when running make.
 
 ```bash
 # create a 'github.com/opencontainers' in your GOPATH/src
@@ -28,9 +42,6 @@ sudo make install
 ```
 
 `runc` will be installed to `/usr/local/sbin/runc` on your system.
-
-In order to enable seccomp support you will need to install libseccomp on your platform.
-If you do not want to build `runc` with seccomp support you can add `BUILDTAGS=""` when running make.
 
 #### Build Tags
 
@@ -46,6 +57,7 @@ make BUILDTAGS='seccomp apparmor'
 | seccomp   | Syscall filtering                  | libseccomp  |
 | selinux   | selinux process and mount labeling | <none>      |
 | apparmor  | apparmor profile support           | libapparmor |
+| ambient   | ambient capability support         | kernel 4.3  |
 
 
 ### Running the test suite
@@ -64,6 +76,12 @@ You can run a specific test case by setting the `TESTFLAGS` variable.
 ```bash
 # make test TESTFLAGS="-run=SomeTestFunction"
 ```
+
+### Dependencies Management
+
+`runc` uses [vndr](https://github.com/LK4D4/vndr) for dependencies management.
+Please refer to [vndr](https://github.com/LK4D4/vndr) for how to add or update
+new dependencies.
 
 ## Using runc
 
@@ -99,15 +117,15 @@ Assuming you have an OCI bundle from the previous step you can execute the conta
 The first way is to use the convenience command `run` that will handle creating, starting, and deleting the container after it exits.
 
 ```bash
+# run as root
 cd /mycontainer
-
 runc run mycontainerid
 ```
 
 If you used the unmodified `runc spec` template this should give you a `sh` session inside the container.
 
 The second way to start a container is using the specs lifecycle operations.
-This gives you move power of how the container is created and managed while it is running.
+This gives you more power over how the container is created and managed while it is running.
 This will also launch the container in the background so you will have to edit the `config.json` to remove the `terminal` setting for the simple examples here.
 Your process field in the `config.json` should look like this below with `"terminal": false` and `"args": ["sleep", "5"]`.
 
@@ -127,11 +145,33 @@ Your process field in the `config.json` should look like this below with `"termi
                         "TERM=xterm"
                 ],
                 "cwd": "/",
-                "capabilities": [
-                        "CAP_AUDIT_WRITE",
-                        "CAP_KILL",
-                        "CAP_NET_BIND_SERVICE"
-                ],
+                "capabilities": {
+                        "bounding": [
+                                "CAP_AUDIT_WRITE",
+                                "CAP_KILL",
+                                "CAP_NET_BIND_SERVICE"
+                        ],
+                        "effective": [
+                                "CAP_AUDIT_WRITE",
+                                "CAP_KILL",
+                                "CAP_NET_BIND_SERVICE"
+                        ],
+                        "inheritable": [
+                                "CAP_AUDIT_WRITE",
+                                "CAP_KILL",
+                                "CAP_NET_BIND_SERVICE"
+                        ],
+                        "permitted": [
+                                "CAP_AUDIT_WRITE",
+                                "CAP_KILL",
+                                "CAP_NET_BIND_SERVICE"
+                        ],
+                        "ambient": [
+                                "CAP_AUDIT_WRITE",
+                                "CAP_KILL",
+                                "CAP_NET_BIND_SERVICE"
+                        ]
+                },
                 "rlimits": [
                         {
                                 "type": "RLIMIT_NOFILE",
@@ -143,12 +183,12 @@ Your process field in the `config.json` should look like this below with `"termi
         },
 ```
 
-Now we can go though the lifecycle operations in your shell.
+Now we can go through the lifecycle operations in your shell.
 
 
 ```bash
+# run as root
 cd /mycontainer
-
 runc create mycontainerid
 
 # view the container is created and in the "created" state
@@ -166,6 +206,22 @@ runc delete mycontainerid
 
 This adds more complexity but allows higher level systems to manage runc and provides points in the containers creation to setup various settings after the container has created and/or before it is deleted.
 This is commonly used to setup the container's network stack after `create` but before `start` where the user's defined process will be running.
+
+#### Rootless containers
+`runc` has the ability to run containers without root privileges. This is called `rootless`. You need to pass some parameters to `runc` in order to run rootless containers. See below and compare with the previous version. Run the following commands as an ordinary user:
+```bash
+# Same as the first example
+mkdir ~/mycontainer
+cd ~/mycontainer
+mkdir rootfs
+docker export $(docker create busybox) | tar -C rootfs -xvf -
+
+# The --rootless parameter instructs runc spec to generate a configuration for a rootless container, which will allow you to run the container as a non-root user.
+runc spec --rootless
+
+# The --root parameter tells runc where to store the container state. It must be writable by the user.
+runc --root /tmp/runc run mycontainerid
+```
 
 #### Supervisors
 

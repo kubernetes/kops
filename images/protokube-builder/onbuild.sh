@@ -32,9 +32,4 @@ cp /src/.build/local/protokube /src/.build/artifacts/
 make channels
 cp /src/.build/local/channels /src/.build/artifacts/
 
-# channels uses protokube
-cd /src/.build/artifacts/
-curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.6.6/bin/linux/amd64/kubectl
-chmod +x kubectl
-
 chown -R $HOST_UID:$HOST_GID /src/.build/artifacts

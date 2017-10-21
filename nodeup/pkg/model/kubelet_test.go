@@ -30,6 +30,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -50,6 +51,10 @@ func Test_InstanceGroupKubeletMerge(t *testing.T) {
 			InstanceGroup: instanceGroup,
 		},
 	}
+	if err := b.Init(); err != nil {
+		t.Error(err)
+	}
+
 	var mergedKubeletSpec, err = b.buildKubeletConfigSpec()
 	if err != nil {
 		t.Error(err)
@@ -108,6 +113,10 @@ func TestTaintsAppliedAfter160(t *testing.T) {
 				InstanceGroup: ig,
 			},
 		}
+		if err := b.Init(); err != nil {
+			t.Error(err)
+		}
+
 		c, err := b.buildKubeletConfigSpec()
 
 		if g.expectError {
@@ -123,7 +132,7 @@ func TestTaintsAppliedAfter160(t *testing.T) {
 		}
 
 		if fi.BoolValue(c.RegisterSchedulable) != g.expectSchedulable {
-			t.Fatalf("Expected RegisterSchedulable == %v, got %v", g.expectSchedulable, fi.BoolValue(c.RegisterSchedulable))
+			t.Fatalf("Expected RegisterSchedulable == %v, got %v (for %v)", g.expectSchedulable, fi.BoolValue(c.RegisterSchedulable), g.version)
 		}
 
 		if !stringSlicesEqual(g.expectTaints, c.Taints) {
@@ -195,7 +204,7 @@ func LoadModel(basedir string) (*NodeupModelContext, error) {
 	var instanceGroup *kops.InstanceGroup
 
 	// Codecs provides access to encoding and decoding for the scheme
-	codecs := kops.Codecs
+	codecs := kopscodecs.Codecs
 
 	codec := codecs.UniversalDecoder(kops.SchemeGroupVersion)
 
@@ -225,6 +234,9 @@ func LoadModel(basedir string) (*NodeupModelContext, error) {
 		Architecture:  "amd64",
 		Distribution:  distros.DistributionXenial,
 		InstanceGroup: instanceGroup,
+	}
+	if err := nodeUpModelContext.Init(); err != nil {
+		return nil, err
 	}
 
 	return nodeUpModelContext, nil

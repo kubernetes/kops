@@ -22,7 +22,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// +genclient=true
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // Cluster is a specific cluster wrapper
 type Cluster struct {
@@ -31,6 +32,8 @@ type Cluster struct {
 
 	Spec ClusterSpec `json:"spec,omitempty"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ClusterList is a list of clusters
 type ClusterList struct {
@@ -61,8 +64,9 @@ type ClusterSpec struct {
 	MasterPublicName string `json:"masterPublicName,omitempty"`
 	// MasterInternalName is the internal DNS name for the master nodes
 	MasterInternalName string `json:"masterInternalName,omitempty"`
-	// The CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
+	// NetworkCIDR is the CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s
 	// This is a real CIDR, not the internal k8s network
+	// On AWS, it maps to the VPC CIDR.  It is not required on GCE.
 	NetworkCIDR string `json:"networkCIDR,omitempty"`
 	// NetworkID is an identifier of a network, if we want to reuse/share an existing network (e.g. an AWS VPC)
 	NetworkID string `json:"networkID,omitempty"`
@@ -144,11 +148,8 @@ type ClusterSpec struct {
 	CloudLabels map[string]string `json:"cloudLabels,omitempty"`
 	// Hooks for custom actions e.g. on first installation
 	Hooks []HookSpec `json:"hooks,omitempty"`
-	// Alternative locations for files and containers
-	// This API component is under construction, will remove this comment
-	// once this API is fully functional.
+	// Assets is alternative locations for files and containers; the API under construction, will remove this comment once this API is fully functional.
 	Assets *Assets `json:"assets,omitempty"`
-
 	// IAM field adds control over the IAM security policies applied to resources
 	IAM *IAMSpec `json:"iam,omitempty"`
 	// EncryptionConfig controls if encryption is enabled
@@ -169,9 +170,12 @@ type FileAssetSpec struct {
 	IsBase64 bool `json:"isBase64,omitempty"`
 }
 
+// Assets defined the privately hosted assets
 type Assets struct {
+	// ContainerRegistry is a url for to a docker registry
 	ContainerRegistry *string `json:"containerRegistry,omitempty"`
-	FileRepository    *string `json:"fileRepository,omitempty"`
+	// FileRepository is the url for a private file serving repository
+	FileRepository *string `json:"fileRepository,omitempty"`
 }
 
 // IAMSpec adds control over the IAM security policies applied to resources
@@ -288,6 +292,10 @@ type EtcdClusterSpec struct {
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
 	// Version is the version of etcd to run i.e. 2.1.2, 3.0.17 etcd
 	Version string `json:"version,omitempty"`
+	// LeaderElectionTimeout is the time (in milliseconds) for an etcd leader election timeout
+	LeaderElectionTimeout *metav1.Duration `json:"leaderElectionTimeout,omitempty"`
+	// HeartbeatInterval is the time (in milliseconds) for an etcd heartbeat interval
+	HeartbeatInterval *metav1.Duration `json:"heartbeatInterval,omitempty"`
 }
 
 // EtcdMemberSpec is a specification for a etcd member
@@ -324,8 +332,10 @@ type ClusterSubnetSpec struct {
 	Name string `json:"name,omitempty"`
 	// CIDR is the network cidr of the subnet
 	CIDR string `json:"cidr,omitempty"`
-	// Zone is the zone the subnet resides
+	// Zone is the zone the subnet is in, set for subnets that are zonally scoped
 	Zone string `json:"zone,omitempty"`
+	// Region is the region the subnet is in, set for subnets that are regionally scoped
+	Region string `json:"region,omitempty"`
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
 	// Egress defines the method of traffic egress for this subnet

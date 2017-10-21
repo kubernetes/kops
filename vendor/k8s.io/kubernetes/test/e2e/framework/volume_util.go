@@ -44,10 +44,10 @@ import (
 	"strconv"
 	"time"
 
+	"k8s.io/api/core/v1"
 	apierrs "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kubernetes/pkg/api/v1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
+	clientset "k8s.io/client-go/kubernetes"
 
 	"github.com/golang/glog"
 	. "github.com/onsi/ginkgo"
@@ -61,7 +61,17 @@ const (
 	GlusterfsServerImage string = "gcr.io/google_containers/volume-gluster:0.2"
 	CephServerImage      string = "gcr.io/google_containers/volume-ceph:0.1"
 	RbdServerImage       string = "gcr.io/google_containers/volume-rbd:0.1"
-	BusyBoxImage         string = "gcr.io/google_containers/busybox:1.24"
+)
+
+const (
+	Kb  int64 = 1000
+	Mb  int64 = 1000 * Kb
+	Gb  int64 = 1000 * Mb
+	Tb  int64 = 1000 * Gb
+	KiB int64 = 1024
+	MiB int64 = 1024 * KiB
+	GiB int64 = 1024 * MiB
+	TiB int64 = 1024 * GiB
 )
 
 // Configuration of one tests. The test consist of:
@@ -85,8 +95,12 @@ type VolumeTestConfig struct {
 	// Wait for the pod to terminate successfully
 	// False indicates that the pod is long running
 	WaitForCompletion bool
-	// NodeName to run pod on.  Default is any node.
-	NodeName string
+	// ServerNodeName is the spec.nodeName to run server pod on.  Default is any node.
+	ServerNodeName string
+	// ClientNodeName is the spec.nodeName to run client pod on.  Default is any node.
+	ClientNodeName string
+	// NodeSelector to use in pod spec (server, client and injector pods).
+	NodeSelector map[string]string
 }
 
 // VolumeTest contains a volume to mount into a client pod and its
@@ -95,6 +109,106 @@ type VolumeTest struct {
 	Volume          v1.VolumeSource
 	File            string
 	ExpectedContent string
+}
+
+// NFS-specific wrapper for CreateStorageServer.
+func NewNFSServer(cs clientset.Interface, namespace string, args []string) (config VolumeTestConfig, pod *v1.Pod, ip string) {
+	config = VolumeTestConfig{
+		Namespace:   namespace,
+		Prefix:      "nfs",
+		ServerImage: NfsServerImage,
+		ServerPorts: []int{2049},
+	}
+	if len(args) > 0 {
+		config.ServerArgs = args
+	}
+	pod, ip = CreateStorageServer(cs, config)
+	return config, pod, ip
+}
+
+// GlusterFS-specific wrapper for CreateStorageServer. Also creates the gluster endpoints object.
+func NewGlusterfsServer(cs clientset.Interface, namespace string) (config VolumeTestConfig, pod *v1.Pod, ip string) {
+	config = VolumeTestConfig{
+		Namespace:   namespace,
+		Prefix:      "gluster",
+		ServerImage: GlusterfsServerImage,
+		ServerPorts: []int{24007, 24008, 49152},
+	}
+	pod, ip = CreateStorageServer(cs, config)
+
+	By("creating Gluster endpoints")
+	endpoints := &v1.Endpoints{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Endpoints",
+			APIVersion: "v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: config.Prefix + "-server",
+		},
+		Subsets: []v1.EndpointSubset{
+			{
+				Addresses: []v1.EndpointAddress{
+					{
+						IP: ip,
+					},
+				},
+				Ports: []v1.EndpointPort{
+					{
+						Name:     "gluster",
+						Port:     24007,
+						Protocol: v1.ProtocolTCP,
+					},
+				},
+			},
+		},
+	}
+	endpoints, err := cs.CoreV1().Endpoints(namespace).Create(endpoints)
+	Expect(err).NotTo(HaveOccurred(), "failed to create endpoints for Gluster server")
+
+	return config, pod, ip
+}
+
+// iSCSI-specific wrapper for CreateStorageServer.
+func NewISCSIServer(cs clientset.Interface, namespace string) (config VolumeTestConfig, pod *v1.Pod, ip string) {
+	config = VolumeTestConfig{
+		Namespace:   namespace,
+		Prefix:      "iscsi",
+		ServerImage: IscsiServerImage,
+		ServerPorts: []int{3260},
+		ServerVolumes: map[string]string{
+			// iSCSI container needs to insert modules from the host
+			"/lib/modules": "/lib/modules",
+		},
+	}
+	pod, ip = CreateStorageServer(cs, config)
+	return config, pod, ip
+}
+
+// CephRBD-specific wrapper for CreateStorageServer.
+func NewRBDServer(cs clientset.Interface, namespace string) (config VolumeTestConfig, pod *v1.Pod, ip string) {
+	config = VolumeTestConfig{
+		Namespace:   namespace,
+		Prefix:      "rbd",
+		ServerImage: RbdServerImage,
+		ServerPorts: []int{6789},
+		ServerVolumes: map[string]string{
+			"/lib/modules": "/lib/modules",
+		},
+	}
+	pod, ip = CreateStorageServer(cs, config)
+	return config, pod, ip
+}
+
+// Wrapper for StartVolumeServer(). A storage server config is passed in, and a pod pointer
+// and ip address string are returned.
+// Note: Expect() is called so no error is returned.
+func CreateStorageServer(cs clientset.Interface, config VolumeTestConfig) (pod *v1.Pod, ip string) {
+	pod = StartVolumeServer(cs, config)
+	Expect(pod).NotTo(BeNil(), "storage server pod should not be nil")
+	ip = pod.Status.PodIP
+	Expect(len(ip)).NotTo(BeZero(), fmt.Sprintf("pod %s's IP should not be empty", pod.Name))
+	Logf("%s server pod IP address: %s", config.Prefix, ip)
+	return pod, ip
 }
 
 // Starts a container specified by config.serverImage and exports all
@@ -172,7 +286,8 @@ func StartVolumeServer(client clientset.Interface, config VolumeTestConfig) *v1.
 			},
 			Volumes:       volumes,
 			RestartPolicy: restartPolicy,
-			NodeName:      config.NodeName,
+			NodeName:      config.ServerNodeName,
+			NodeSelector:  config.NodeSelector,
 		},
 	}
 
@@ -277,7 +392,9 @@ func TestVolumeClient(client clientset.Interface, config VolumeTestConfig, fsGro
 					Level: "s0:c0,c1",
 				},
 			},
-			Volumes: []v1.Volume{},
+			Volumes:      []v1.Volume{},
+			NodeName:     config.ClientNodeName,
+			NodeSelector: config.NodeSelector,
 		},
 	}
 	podsNamespacer := client.CoreV1().Pods(config.Namespace)
@@ -339,7 +456,7 @@ func InjectHtml(client clientset.Interface, config VolumeTestConfig, volume v1.V
 			Containers: []v1.Container{
 				{
 					Name:    config.Prefix + "-injector",
-					Image:   "gcr.io/google_containers/busybox:1.24",
+					Image:   BusyBoxImage,
 					Command: []string{"/bin/sh"},
 					Args:    []string{"-c", "echo '" + content + "' > /mnt/index.html && chmod o+rX /mnt /mnt/index.html"},
 					VolumeMounts: []v1.VolumeMount{
@@ -362,6 +479,7 @@ func InjectHtml(client clientset.Interface, config VolumeTestConfig, volume v1.V
 					VolumeSource: volume,
 				},
 			},
+			NodeSelector: config.NodeSelector,
 		},
 	}
 

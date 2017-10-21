@@ -134,11 +134,12 @@ func (ttles *TTLExpirationScheduler) Start() error {
 		for {
 			select {
 			case <-ttles.saveTimer.C:
+				ttles.Lock()
 				if !ttles.indexDirty {
+					ttles.Unlock()
 					continue
 				}
 
-				ttles.Lock()
 				err := ttles.writeState()
 				if err != nil {
 					context.GetLogger(ttles.ctx).Errorf("Error writing scheduler state: %s", err)

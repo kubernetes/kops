@@ -24,9 +24,8 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/k8scodecs"
 	"k8s.io/kops/protokube/pkg/protokube"
-
-	_ "k8s.io/client-go/pkg/api/install"
 )
 
 func TestBuildEtcdManifest(t *testing.T) {
@@ -35,11 +34,12 @@ func TestBuildEtcdManifest(t *testing.T) {
 	}{
 		{TestFile: "non_tls.yaml"},
 		{TestFile: "tls.yaml"},
+		{TestFile: "etcd_env_vars.yaml"},
 	}
 	for i, x := range cs {
 		cluster, expected := loadTestIntegration(t, path.Join("main", x.TestFile))
 		definition := protokube.BuildEtcdManifest(cluster)
-		generated, err := protokube.ToVersionedYaml(definition)
+		generated, err := k8scodecs.ToVersionedYaml(definition)
 		if err != nil {
 			t.Errorf("case %d, unable to convert to yaml, error: %v", i, err)
 			continue

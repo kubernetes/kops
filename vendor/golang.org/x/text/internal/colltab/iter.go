@@ -4,16 +4,12 @@
 
 package colltab
 
-import (
-	"golang.org/x/text/collate/colltab"
-)
-
 // An Iter incrementally converts chunks of the input text to collation
 // elements, while ensuring that the collation elements are in normalized order
 // (that is, they are in the order as if the input text were normalized first).
 type Iter struct {
-	Weighter colltab.Weighter
-	Elems    []colltab.Elem
+	Weighter Weighter
+	Elems    []Elem
 	// N is the number of elements in Elems that will not be reordered on
 	// subsequent iterations, N <= len(Elems).
 	N int
