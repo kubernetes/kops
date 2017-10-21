@@ -17,19 +17,21 @@ limitations under the License.
 package deployment
 
 import (
+	"fmt"
 	"net/http/httptest"
 	"testing"
 	"time"
 
+	"k8s.io/api/core/v1"
+	"k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/informers"
+	clientset "k8s.io/client-go/kubernetes"
 	restclient "k8s.io/client-go/rest"
-	"k8s.io/kubernetes/pkg/api/v1"
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
-	"k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
-	informers "k8s.io/kubernetes/pkg/client/informers/informers_generated/externalversions"
 	"k8s.io/kubernetes/pkg/controller/deployment"
+	deploymentutil "k8s.io/kubernetes/pkg/controller/deployment/util"
 	"k8s.io/kubernetes/pkg/controller/replicaset"
 	"k8s.io/kubernetes/test/integration/framework"
 	testutil "k8s.io/kubernetes/test/utils"
@@ -115,6 +117,20 @@ func dcSetup(t *testing.T) (*httptest.Server, framework.CloseFunc, *replicaset.R
 	return s, closeFn, rm, dc, informers, clientSet
 }
 
+// dcSimpleSetup sets up necessities for Deployment integration test, including master, apiserver,
+// and clientset, but not controllers and informers
+func dcSimpleSetup(t *testing.T) (*httptest.Server, framework.CloseFunc, clientset.Interface) {
+	masterConfig := framework.NewIntegrationTestMasterConfig()
+	_, s, closeFn := framework.RunAMaster(masterConfig)
+
+	config := restclient.Config{Host: s.URL}
+	clientSet, err := clientset.NewForConfig(&config)
+	if err != nil {
+		t.Fatalf("error in create clientset: %v", err)
+	}
+	return s, closeFn, clientSet
+}
+
 // addPodConditionReady sets given pod status to ready at given time
 func addPodConditionReady(pod *v1.Pod, time metav1.Time) {
 	pod.Status = v1.PodStatus{
@@ -130,7 +146,10 @@ func addPodConditionReady(pod *v1.Pod, time metav1.Time) {
 }
 
 func (d *deploymentTester) waitForDeploymentRevisionAndImage(revision, image string) error {
-	return testutil.WaitForDeploymentRevisionAndImage(d.c, d.deployment.Namespace, d.deployment.Name, revision, image, d.t.Logf, pollInterval, pollTimeout)
+	if err := testutil.WaitForDeploymentRevisionAndImage(d.c, d.deployment.Namespace, d.deployment.Name, revision, image, d.t.Logf, pollInterval, pollTimeout); err != nil {
+		return fmt.Errorf("failed to wait for Deployment revision %s: %v", d.deployment.Name, err)
+	}
+	return nil
 }
 
 // markAllPodsReady manually updates all Deployment pods status to ready
@@ -177,13 +196,67 @@ func (d *deploymentTester) waitForDeploymentStatusValid() error {
 
 // waitForDeploymentStatusValidAndMarkPodsReady waits for the Deployment status to become valid
 // while marking all Deployment pods as ready at the same time.
-func (d *deploymentTester) waitForDeploymentStatusValidAndMarkPodsReady() {
+func (d *deploymentTester) waitForDeploymentStatusValidAndMarkPodsReady() error {
 	// Manually mark all Deployment pods as ready in a separate goroutine
 	go d.markAllPodsReady()
 
 	// Make sure the Deployment status is valid while Deployment pods are becoming ready
 	err := d.waitForDeploymentStatusValid()
 	if err != nil {
-		d.t.Fatalf("failed to wait for Deployment status %s: %v", d.deployment.Name, err)
+		return fmt.Errorf("failed to wait for Deployment status %s: %v", d.deployment.Name, err)
+	}
+	return nil
+}
+
+func (d *deploymentTester) updateDeployment(applyUpdate testutil.UpdateDeploymentFunc) (*v1beta1.Deployment, error) {
+	return testutil.UpdateDeploymentWithRetries(d.c, d.deployment.Namespace, d.deployment.Name, applyUpdate, d.t.Logf)
+}
+
+func (d *deploymentTester) waitForObservedDeployment(desiredGeneration int64) error {
+	if err := testutil.WaitForObservedDeployment(d.c, d.deployment.Namespace, d.deployment.Name, desiredGeneration); err != nil {
+		return fmt.Errorf("failed waiting for ObservedGeneration of deployment %s to become %d: %v", d.deployment.Name, desiredGeneration, err)
+	}
+	return nil
+}
+
+func (d *deploymentTester) getNewReplicaSet() (*v1beta1.ReplicaSet, error) {
+	rs, err := deploymentutil.GetNewReplicaSet(d.deployment, d.c.ExtensionsV1beta1())
+	if err != nil {
+		return nil, fmt.Errorf("failed retrieving new replicaset of deployment %s: %v", d.deployment.Name, err)
+	}
+	return rs, nil
+}
+
+func (d *deploymentTester) expectNoNewReplicaSet() error {
+	rs, err := d.getNewReplicaSet()
+	if err != nil {
+		return err
+	}
+	if rs != nil {
+		return fmt.Errorf("expected deployment %s not to create a new replicaset, got %v", d.deployment.Name, rs)
+	}
+	return nil
+}
+
+func (d *deploymentTester) expectNewReplicaSet() (*v1beta1.ReplicaSet, error) {
+	rs, err := d.getNewReplicaSet()
+	if err != nil {
+		return nil, err
+	}
+	if rs == nil {
+		return nil, fmt.Errorf("expected deployment %s to create a new replicaset, got nil", d.deployment.Name)
+	}
+	return rs, nil
+}
+
+func pauseFn() func(update *v1beta1.Deployment) {
+	return func(update *v1beta1.Deployment) {
+		update.Spec.Paused = true
+	}
+}
+
+func resumeFn() func(update *v1beta1.Deployment) {
+	return func(update *v1beta1.Deployment) {
+		update.Spec.Paused = false
 	}
 }

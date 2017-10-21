@@ -24,11 +24,11 @@ import (
 
 	"github.com/docker/distribution/context"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/denverdino/aliyungo/oss"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/distribution/registry/storage/driver/base"
 	"github.com/docker/distribution/registry/storage/driver/factory"
+	"github.com/sirupsen/logrus"
 )
 
 const driverName = "oss"
@@ -351,7 +351,8 @@ func (d *driver) List(ctx context.Context, opath string) ([]string, error) {
 		prefix = "/"
 	}
 
-	listResponse, err := d.Bucket.List(d.ossPath(path), "/", "", listMax)
+	ossPath := d.ossPath(path)
+	listResponse, err := d.Bucket.List(ossPath, "/", "", listMax)
 	if err != nil {
 		return nil, parseError(opath, err)
 	}
@@ -369,13 +370,18 @@ func (d *driver) List(ctx context.Context, opath string) ([]string, error) {
 		}
 
 		if listResponse.IsTruncated {
-			listResponse, err = d.Bucket.List(d.ossPath(path), "/", listResponse.NextMarker, listMax)
+			listResponse, err = d.Bucket.List(ossPath, "/", listResponse.NextMarker, listMax)
 			if err != nil {
 				return nil, err
 			}
 		} else {
 			break
 		}
+	}
+
+	// This is to cover for the cases when the first key equal to ossPath.
+	if len(files) > 0 && files[0] == strings.Replace(ossPath, d.ossPath(""), prefix, 1) {
+		files = files[1:]
 	}
 
 	if opath != "/" {
@@ -389,15 +395,17 @@ func (d *driver) List(ctx context.Context, opath string) ([]string, error) {
 	return append(files, directories...), nil
 }
 
+const maxConcurrency = 10
+
 // Move moves an object stored at sourcePath to destPath, removing the original
 // object.
 func (d *driver) Move(ctx context.Context, sourcePath string, destPath string) error {
 	logrus.Infof("Move from %s to %s", d.ossPath(sourcePath), d.ossPath(destPath))
-
-	err := d.Bucket.CopyLargeFile(d.ossPath(sourcePath), d.ossPath(destPath),
+	err := d.Bucket.CopyLargeFileInParallel(d.ossPath(sourcePath), d.ossPath(destPath),
 		d.getContentType(),
 		getPermissions(),
-		oss.Options{})
+		oss.Options{},
+		maxConcurrency)
 	if err != nil {
 		logrus.Errorf("Failed for move from %s to %s: %v", d.ossPath(sourcePath), d.ossPath(destPath), err)
 		return parseError(sourcePath, err)
@@ -408,7 +416,8 @@ func (d *driver) Move(ctx context.Context, sourcePath string, destPath string) e
 
 // Delete recursively deletes all objects stored at "path" and its subpaths.
 func (d *driver) Delete(ctx context.Context, path string) error {
-	listResponse, err := d.Bucket.List(d.ossPath(path), "", "", listMax)
+	ossPath := d.ossPath(path)
+	listResponse, err := d.Bucket.List(ossPath, "", "", listMax)
 	if err != nil || len(listResponse.Contents) == 0 {
 		return storagedriver.PathNotFoundError{Path: path}
 	}
@@ -416,12 +425,22 @@ func (d *driver) Delete(ctx context.Context, path string) error {
 	ossObjects := make([]oss.Object, listMax)
 
 	for len(listResponse.Contents) > 0 {
+		numOssObjects := len(listResponse.Contents)
 		for index, key := range listResponse.Contents {
+			// Stop if we encounter a key that is not a subpath (so that deleting "/a" does not delete "/ab").
+			if len(key.Key) > len(ossPath) && (key.Key)[len(ossPath)] != '/' {
+				numOssObjects = index
+				break
+			}
 			ossObjects[index].Key = key.Key
 		}
 
-		err := d.Bucket.DelMulti(oss.Delete{Quiet: false, Objects: ossObjects[0:len(listResponse.Contents)]})
+		err := d.Bucket.DelMulti(oss.Delete{Quiet: false, Objects: ossObjects[0:numOssObjects]})
 		if err != nil {
+			return nil
+		}
+
+		if numOssObjects < len(listResponse.Contents) {
 			return nil
 		}
 

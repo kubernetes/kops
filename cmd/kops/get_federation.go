@@ -28,7 +28,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -83,8 +83,7 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 		federations = append(federations, &list.Items[i])
 	}
 	if len(federations) == 0 {
-		fmt.Fprintf(out, "No federations found\n")
-		return nil
+		return fmt.Errorf("No federations found")
 	}
 	switch options.output {
 

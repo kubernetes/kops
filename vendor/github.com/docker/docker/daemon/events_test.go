@@ -4,10 +4,10 @@ import (
 	"testing"
 	"time"
 
+	containertypes "github.com/docker/docker/api/types/container"
+	eventtypes "github.com/docker/docker/api/types/events"
 	"github.com/docker/docker/container"
 	"github.com/docker/docker/daemon/events"
-	containertypes "github.com/docker/engine-api/types/container"
-	eventtypes "github.com/docker/engine-api/types/events"
 )
 
 func TestLogContainerEventCopyLabels(t *testing.T) {
@@ -16,15 +16,13 @@ func TestLogContainerEventCopyLabels(t *testing.T) {
 	defer e.Evict(l)
 
 	container := &container.Container{
-		CommonContainer: container.CommonContainer{
-			ID:   "container_id",
-			Name: "container_name",
-			Config: &containertypes.Config{
-				Image: "image_name",
-				Labels: map[string]string{
-					"node": "1",
-					"os":   "alpine",
-				},
+		ID:   "container_id",
+		Name: "container_name",
+		Config: &containertypes.Config{
+			Image: "image_name",
+			Labels: map[string]string{
+				"node": "1",
+				"os":   "alpine",
 			},
 		},
 	}
@@ -49,14 +47,12 @@ func TestLogContainerEventWithAttributes(t *testing.T) {
 	defer e.Evict(l)
 
 	container := &container.Container{
-		CommonContainer: container.CommonContainer{
-			ID:   "container_id",
-			Name: "container_name",
-			Config: &containertypes.Config{
-				Labels: map[string]string{
-					"node": "1",
-					"os":   "alpine",
-				},
+		ID:   "container_id",
+		Name: "container_name",
+		Config: &containertypes.Config{
+			Labels: map[string]string{
+				"node": "1",
+				"os":   "alpine",
 			},
 		},
 	}
@@ -89,6 +85,6 @@ func validateTestAttributes(t *testing.T, l chan interface{}, expectedAttributes
 			}
 		}
 	case <-time.After(10 * time.Second):
-		t.Fatalf("LogEvent test timed out")
+		t.Fatal("LogEvent test timed out")
 	}
 }

@@ -36,8 +36,8 @@ type SecretStore interface {
 	// ListSecrets lists the ids of all known secrets
 	ListSecrets() ([]string, error)
 
-	// VFSPath returns the path where the SecretStore is stored
-	VFSPath() vfs.Path
+	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
+	MirrorTo(basedir vfs.Path) error
 }
 
 type Secret struct {

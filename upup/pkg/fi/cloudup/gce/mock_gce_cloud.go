@@ -18,10 +18,13 @@ package gce
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/storage/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	dnsproviderclouddns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
@@ -49,7 +52,18 @@ func buildMockGCECloud(region string, project string) *mockGCECloud {
 	return i
 }
 
-// mockGCECloud returns a copy of the mockGCECloud bound to the specified labels
+// GetCloudGroups is not implemented yet
+func (c *mockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	glog.V(8).Infof("mockGCECloud cloud provider GetCloudGroups not implemented yet")
+	return nil, fmt.Errorf("mockGCECloud cloud provider does not support getting cloud groups at this time")
+}
+
+// Zones is not implemented yet
+func (c *mockGCECloud) Zones() ([]string, error) {
+	return nil, fmt.Errorf("not yet implented")
+}
+
+// WithLabels returns a copy of the mockGCECloud bound to the specified labels
 func (c *mockGCECloud) WithLabels(labels map[string]string) GCECloud {
 	i := &mockGCECloud{}
 	*i = *c

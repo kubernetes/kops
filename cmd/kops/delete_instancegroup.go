@@ -29,7 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/ui"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -109,7 +109,11 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
+// RunDeleteInstanceGroup runs the deletion of an instance group
 func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInstanceGroupOptions) error {
+
+	// TODO make this drain and validate the ig?
+	// TODO implement drain and validate logic
 	groupName := options.GroupName
 	if groupName == "" {
 		return fmt.Errorf("GroupName is required")

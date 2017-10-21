@@ -21,9 +21,14 @@ import (
 	"os"
 
 	"github.com/digitalocean/godo"
+	"github.com/golang/glog"
 	"golang.org/x/oauth2"
 
+	"fmt"
+
+	"k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/pkg/resources/digitalocean/dns"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
@@ -76,6 +81,24 @@ func NewCloud(region string) (*Cloud, error) {
 	}, nil
 }
 
+// GetCloudGroups is not implemented yet, that needs to return the instances and groups that back a kops cluster.
+func (c *Cloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	glog.V(8).Infof("digitalocean cloud provider GetCloudGroups not implemented yet")
+	return nil, fmt.Errorf("digital ocean cloud provider does not support getting cloud groups at this time")
+}
+
+// DeleteGroup is not implemented yet, is a func that needs to delete a DO instance group.
+func (c *Cloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+	glog.V(8).Infof("digitalocean cloud provider DeleteGroup not implemented yet")
+	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud groups at this time")
+}
+
+// DeleteInstance is not implemented yet, is func needs to delete a DO instance.
+func (c *Cloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	glog.V(8).Infof("digitalocean cloud provider DeleteInstance not implemented yet")
+	return fmt.Errorf("digital ocean cloud provider does not support deleting cloud instances at this time")
+}
+
 // ProviderID returns the kops api identifier for DigitalOcean cloud provider
 func (c *Cloud) ProviderID() kops.CloudProviderID {
 	return kops.CloudProviderDO
@@ -86,7 +109,7 @@ func (c *Cloud) DNS() (dnsprovider.Interface, error) {
 	return c.dns, nil
 }
 
-// Volume returns an implementation of godo.StorageService
+// Volumes returns an implementation of godo.StorageService
 func (c *Cloud) Volumes() godo.StorageService {
 	return c.Client.Storage
 }

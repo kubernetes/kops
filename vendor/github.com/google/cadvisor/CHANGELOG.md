@@ -1,5 +1,16 @@
 # Changelog
 
+### 0.27.1 (2017-09-06)
+- Add CRI-O support
+
+### 0.27.0 (2017-09-01)
+- Fix journalctl leak
+- Fix container memory rss
+- Add hugepages support
+- Fix incorrect CPU usage with 4.7 kernel
+- OOM parser uses kmsg
+- Add tmpfs support
+
 ### 0.26.1 (2017-06-21)
 - Fix prometheus metrics.
 

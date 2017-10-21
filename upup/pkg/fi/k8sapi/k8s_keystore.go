@@ -20,12 +20,13 @@ import (
 	"crypto/x509"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"time"
 )
@@ -144,4 +145,8 @@ func (c *KubernetesKeystore) StoreKeypair(id string, cert *pki.Certificate, priv
 	}
 
 	return err
+}
+
+func (c *KubernetesKeystore) MirrorTo(dest vfs.Path) error {
+	return fmt.Errorf("KubernetesKeystore does not implement MirrorTo")
 }

@@ -1,0 +1,13 @@
+name: deployment-example
+namespace: default
+request: |
+  gracePeriodSeconds: 0
+  orphanDependents: false
+response: |
+  {
+    "kind": "Status",
+    "apiVersion": "v1",
+    "metadata": {},
+    "status": "Success",
+    "code": 200
+  }

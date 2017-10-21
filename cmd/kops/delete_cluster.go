@@ -24,7 +24,6 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/pkg/resources/tracker"
@@ -32,9 +31,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/util/pkg/tables"
-	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 type DeleteClusterOptions struct {
@@ -96,8 +94,6 @@ func NewCmdDeleteCluster(f *util.Factory, out io.Writer) *cobra.Command {
 type getter func(o interface{}) interface{}
 
 func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOptions) error {
-	var configBase vfs.Path
-
 	clusterName := options.ClusterName
 	if clusterName == "" {
 		return fmt.Errorf("--name is required (for safety)")
@@ -120,11 +116,6 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 		}
 	} else {
 		cluster, err = GetCluster(f, clusterName)
-		if err != nil {
-			return err
-		}
-
-		configBase, err = registry.ConfigBase(cluster)
 		if err != nil {
 			return err
 		}
@@ -205,7 +196,11 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 			}
 			return nil
 		}
-		err := registry.DeleteAllClusterState(configBase)
+		clientset, err := f.Clientset()
+		if err != nil {
+			return err
+		}
+		err = clientset.DeleteCluster(cluster)
 		if err != nil {
 			return fmt.Errorf("error removing cluster from state store: %v", err)
 		}

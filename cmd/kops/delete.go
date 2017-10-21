@@ -28,11 +28,12 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 type DeleteOptions struct {
@@ -70,7 +71,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 		Example:    delete_example,
 		SuggestFor: []string{"rm"},
 		Run: func(cmd *cobra.Command, args []string) {
-			if cmdutil.IsFilenameEmpty(options.Filenames) {
+			if cmdutil.IsFilenameSliceEmpty(options.Filenames) {
 				cmd.Help()
 				return
 			}
@@ -92,7 +93,7 @@ func NewCmdDelete(f *util.Factory, out io.Writer) *cobra.Command {
 
 func RunDelete(factory *util.Factory, out io.Writer, d *DeleteOptions) error {
 	// Codecs provides access to encoding and decoding for the scheme
-	codec := kopsapi.Codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
+	codec := kopscodecs.Codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
 	// We could have more than one cluster in a manifest so we are using a set
 	deletedClusters := sets.NewString()

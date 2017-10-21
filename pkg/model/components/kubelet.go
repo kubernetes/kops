@@ -17,11 +17,12 @@ limitations under the License.
 package components
 
 import (
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
-	"strings"
 )
 
 // KubeletOptionsBuilder adds options for kubelets
@@ -171,6 +172,10 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.HairpinMode = "promiscuous-bridge"
 	}
 
+	if clusterSpec.ExternalCloudControllerManager != nil {
+		clusterSpec.Kubelet.CloudProvider = "external"
+	}
+
 	usesKubenet, err := UsesKubenet(clusterSpec)
 	if err != nil {
 		return err
@@ -190,6 +195,15 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		return err
 	}
 	clusterSpec.Kubelet.PodInfraContainerImage = image
+
+	if clusterSpec.Kubelet.FeatureGates == nil {
+		clusterSpec.Kubelet.FeatureGates = make(map[string]string)
+	}
+	if _, found := clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"]; !found {
+		if b.Context.IsKubernetesGTE("1.5.2") {
+			clusterSpec.Kubelet.FeatureGates["ExperimentalCriticalPodAnnotation"] = "true"
+		}
+	}
 
 	return nil
 }

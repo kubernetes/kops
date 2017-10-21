@@ -18,12 +18,14 @@ package model
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"strings"
 )
 
 // LogrotateBuilder installs logrotate.d and configures log rotation for kubernetes logs
@@ -34,17 +36,14 @@ type LogrotateBuilder struct {
 var _ fi.ModelBuilder = &LogrotateBuilder{}
 
 func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Distribution == distros.DistributionCoreOS {
-		glog.Infof("Detected CoreOS; won't install logrotate")
-		return nil
-	}
-
 	if b.Distribution == distros.DistributionContainerOS {
 		glog.Infof("Detected ContainerOS; won't install logrotate")
 		return nil
+	} else if b.Distribution == distros.DistributionCoreOS {
+		glog.Infof("Detected CoreOS; won't install logrotate")
+	} else {
+		c.AddTask(&nodetasks.Package{Name: "logrotate"})
 	}
-
-	c.AddTask(&nodetasks.Package{Name: "logrotate"})
 
 	k8sVersion, err := util.ParseKubernetesVersion(b.Cluster.Spec.KubernetesVersion)
 	if err != nil || k8sVersion == nil {
@@ -64,19 +63,48 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 	b.addLogRotate(c, "kube-scheduler", "/var/log/kube-scheduler.log", logRotateOptions{})
 	b.addLogRotate(c, "kubelet", "/var/log/kubelet.log", logRotateOptions{})
 
-	// Add cron job to run hourly
-	{
-		script := `#!/bin/sh
-logrotate /etc/logrotate.conf`
-
-		t := &nodetasks.File{
-			Path:     "/etc/cron.hourly/logrotate",
-			Contents: fi.NewStringResource(script),
-			Type:     nodetasks.FileType_File,
-			Mode:     s("0755"),
-		}
-		c.AddTask(t)
+	if err := b.addLogrotateService(c); err != nil {
+		return err
 	}
+
+	// Add timer to run hourly.
+	{
+		unit := &systemd.Manifest{}
+		unit.Set("Unit", "Description", "Hourly Log Rotation")
+		unit.Set("Timer", "OnCalendar", "hourly")
+
+		service := &nodetasks.Service{
+			Name:       "logrotate.timer", // Override (by name) any existing timer
+			Definition: s(unit.Render()),
+		}
+
+		service.InitDefaults()
+
+		c.AddTask(service)
+	}
+
+	return nil
+}
+
+// addLogrotateService creates a logrotate systemd task to act as target for the timer, if one is needed
+func (b *LogrotateBuilder) addLogrotateService(c *fi.ModelBuilderContext) error {
+	switch b.Distribution {
+	case distros.DistributionCoreOS:
+	case distros.DistributionContainerOS:
+		// logrotate service already exists
+		return nil
+	}
+
+	manifest := &systemd.Manifest{}
+	manifest.Set("Unit", "Description", "Rotate and Compress System Logs")
+	manifest.Set("Service", "ExecStart", "/usr/sbin/logrotate /etc/logrotate.conf")
+
+	service := &nodetasks.Service{
+		Name:       "logrotate.service",
+		Definition: s(manifest.Render()),
+	}
+	service.InitDefaults()
+	c.AddTask(service)
 
 	return nil
 }

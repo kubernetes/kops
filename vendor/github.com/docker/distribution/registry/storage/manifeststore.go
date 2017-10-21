@@ -2,17 +2,15 @@ package storage
 
 import (
 	"fmt"
-	"path"
 
 	"encoding/json"
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/docker/distribution/registry/storage/driver"
+	"github.com/opencontainers/go-digest"
 )
 
 // A ManifestHandler gets and puts manifests of a particular type.
@@ -125,7 +123,7 @@ func (ms *manifestStore) Put(ctx context.Context, manifest distribution.Manifest
 	return "", fmt.Errorf("unrecognized manifest type %T", manifest)
 }
 
-// Delete removes the revision of the specified manfiest.
+// Delete removes the revision of the specified manifest.
 func (ms *manifestStore) Delete(ctx context.Context, dgst digest.Digest) error {
 	context.GetLogger(ms.ctx).Debug("(*manifestStore).Delete")
 	return ms.blobStore.Delete(ctx, dgst)
@@ -140,49 +138,4 @@ func (ms *manifestStore) Enumerate(ctx context.Context, ingester func(digest.Dig
 		return nil
 	})
 	return err
-}
-
-// Only valid for schema1 signed manifests
-func (ms *manifestStore) GetSignatures(ctx context.Context, manifestDigest digest.Digest) ([]digest.Digest, error) {
-	// sanity check that digest refers to a schema1 digest
-	manifest, err := ms.Get(ctx, manifestDigest)
-	if err != nil {
-		return nil, err
-	}
-
-	if _, ok := manifest.(*schema1.SignedManifest); !ok {
-		return nil, fmt.Errorf("digest %v is not for schema1 manifest", manifestDigest)
-	}
-
-	signaturesPath, err := pathFor(manifestSignaturesPathSpec{
-		name:     ms.repository.Named().Name(),
-		revision: manifestDigest,
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	var digests []digest.Digest
-	alg := string(digest.SHA256)
-	signaturePaths, err := ms.blobStore.driver.List(ctx, path.Join(signaturesPath, alg))
-
-	switch err.(type) {
-	case nil:
-		break
-	case driver.PathNotFoundError:
-		// Manifest may have been pushed with signature store disabled
-		return digests, nil
-	default:
-		return nil, err
-	}
-
-	for _, sigPath := range signaturePaths {
-		sigdigest, err := digest.ParseDigest(alg + ":" + path.Base(sigPath))
-		if err != nil {
-			// merely found not a digest
-			continue
-		}
-		digests = append(digests, sigdigest)
-	}
-	return digests, nil
 }

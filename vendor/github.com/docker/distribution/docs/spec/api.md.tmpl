@@ -1,12 +1,8 @@
-<!--[metadata]>
-+++
-title = "HTTP API V2"
-description = "Specification for the Registry API."
-keywords = ["registry, on-prem, images, tags, repository, distribution, api, advanced"]
-[menu.main]
-parent="smn_registry_ref"
-+++
-<![end-metadata]-->
+---
+title: "HTTP API V2"
+description: "Specification for the Registry API."
+keywords: ["registry, on-prem, images, tags, repository, distribution, api, advanced"]
+---
 
 # Docker Registry HTTP API V2
 
@@ -126,6 +122,13 @@ reference and shouldn't be used outside the specification other than to
 identify a set of modifications.
 
 <dl>
+  <dt>l</dt>
+  <dd>
+    <ul>
+      <li>Document TOOMANYREQUESTS error code.</li>
+    </ul>
+  </dd>
+
   <dt>k</dt>
   <dd>
     <ul>
@@ -241,7 +244,7 @@ enforce this. The rules for a repository name are as follows:
    must match the regular expression `[a-z0-9]+(?:[._-][a-z0-9]+)*`.
 2. If a repository  name has two or more path components, they must be
    separated by a forward slash ("/").
-3. The total length of a repository name, including slashes, must be less the
+3. The total length of a repository name, including slashes, must be less than
    256 characters.
 
 These name requirements _only_ apply to the registry API and should accept a
@@ -618,26 +621,6 @@ The "digest" parameter must be included with the PUT request. Please see the
 [_Completed Upload_](#completed-upload) section for details on the parameters
 and expected responses.
 
-Additionally, the upload can be completed with a single `POST` request to
-the uploads endpoint, including the "size" and "digest" parameters:
-
-```
-POST /v2/<name>/blobs/uploads/?digest=<digest>
-Content-Length: <size of layer>
-Content-Type: application/octet-stream
-
-<Layer Binary Data>
-```
-
-On the registry service, this should allocate a download, accept and verify
-the data and return the same  response as the final chunk of an upload. If the
-POST request fails collecting the data in any way, the registry should attempt
-to return an error response to the client with the `Location` header providing
-a place to continue the download.
-
-The single `POST` method is provided for convenience and most clients should
-implement `POST` + `PUT` to support reliable resume of uploads.
-
 ##### Chunked Upload
 
 To carry out an upload of a chunk, the client can specify a range header and
@@ -693,7 +676,7 @@ the upload will not be considered complete. The format for the final chunk
 will be as follows:
 
 ```
-PUT /v2/<name>/blob/uploads/<uuid>?digest=<digest>
+PUT /v2/<name>/blobs/uploads/<uuid>?digest=<digest>
 Content-Length: <size of chunk>
 Content-Range: <start of range>-<end of range>
 Content-Type: application/octet-stream
@@ -726,7 +709,7 @@ the uploaded blob data.
 ###### Digest Parameter
 
 The "digest" parameter is designed as an opaque parameter to support
-verification of a successful transfer. For example, a HTTP URI parameter
+verification of a successful transfer. For example, an HTTP URI parameter
 might be as follows:
 
 ```
@@ -812,7 +795,7 @@ Note that the upload url will not be available forever. If the upload uuid is
 unknown to the registry, a `404 Not Found` response will be returned and the
 client must restart the upload process.
 
-### Deleting a Layer
+#### Deleting a Layer
 
 A layer may be deleted from the registry via its `name` and `digest`. A
 delete may be issued with the following request format:

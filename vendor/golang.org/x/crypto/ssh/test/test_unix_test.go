@@ -30,6 +30,7 @@ Protocol 2
 HostKey {{.Dir}}/id_rsa
 HostKey {{.Dir}}/id_dsa
 HostKey {{.Dir}}/id_ecdsa
+HostCertificate {{.Dir}}/id_rsa-cert.pub
 Pidfile {{.Dir}}/sshd.pid
 #UsePrivilegeSeparation no
 KeyRegenerationInterval 3600
@@ -119,6 +120,11 @@ func clientConfig() *ssh.ClientConfig {
 			ssh.PublicKeys(testSigners["user"]),
 		},
 		HostKeyCallback: hostKeyDB().Check,
+		HostKeyAlgorithms: []string{ // by default, don't allow certs as this affects the hostKeyDB checker
+			ssh.KeyAlgoECDSA256, ssh.KeyAlgoECDSA384, ssh.KeyAlgoECDSA521,
+			ssh.KeyAlgoRSA, ssh.KeyAlgoDSA,
+			ssh.KeyAlgoED25519,
+		},
 	}
 	return config
 }
@@ -154,6 +160,12 @@ func unixConnection() (*net.UnixConn, *net.UnixConn, error) {
 }
 
 func (s *server) TryDial(config *ssh.ClientConfig) (*ssh.Client, error) {
+	return s.TryDialWithAddr(config, "")
+}
+
+// addr is the user specified host:port. While we don't actually dial it,
+// we need to know this for host key matching
+func (s *server) TryDialWithAddr(config *ssh.ClientConfig, addr string) (*ssh.Client, error) {
 	sshd, err := exec.LookPath("sshd")
 	if err != nil {
 		s.t.Skipf("skipping test: %v", err)
@@ -179,7 +191,7 @@ func (s *server) TryDial(config *ssh.ClientConfig) (*ssh.Client, error) {
 		s.t.Fatalf("s.cmd.Start: %v", err)
 	}
 	s.clientConn = c1
-	conn, chans, reqs, err := ssh.NewClientConn(c1, "", config)
+	conn, chans, reqs, err := ssh.NewClientConn(c1, addr, config)
 	if err != nil {
 		return nil, err
 	}
@@ -250,6 +262,11 @@ func newServer(t *testing.T) *server {
 		writeFile(filepath.Join(dir, filename+".pub"), ssh.MarshalAuthorizedKey(testPublicKeys[k]))
 	}
 
+	for k, v := range testdata.SSHCertificates {
+		filename := "id_" + k + "-cert.pub"
+		writeFile(filepath.Join(dir, filename), v)
+	}
+
 	var authkeys bytes.Buffer
 	for k, _ := range testdata.PEMBytes {
 		authkeys.Write(ssh.MarshalAuthorizedKey(testPublicKeys[k]))
@@ -265,4 +282,14 @@ func newServer(t *testing.T) *server {
 			}
 		},
 	}
+}
+
+func newTempSocket(t *testing.T) (string, func()) {
+	dir, err := ioutil.TempDir("", "socket")
+	if err != nil {
+		t.Fatal(err)
+	}
+	deferFunc := func() { os.RemoveAll(dir) }
+	addr := filepath.Join(dir, "sock")
+	return addr, deferFunc
 }

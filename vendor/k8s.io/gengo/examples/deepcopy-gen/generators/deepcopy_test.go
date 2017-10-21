@@ -17,6 +17,7 @@ limitations under the License.
 package generators
 
 import (
+	"reflect"
 	"testing"
 
 	"k8s.io/gengo/types"
@@ -339,6 +340,59 @@ func Test_extractTagParams(t *testing.T) {
 		}
 		if r != nil && *r != *tc.expect {
 			t.Errorf("case[%d]: expected %v, got %v", i, *tc.expect, *r)
+		}
+	}
+}
+
+func Test_extractInterfacesTag(t *testing.T) {
+	testCases := []struct {
+		comments []string
+		expect   []string
+	}{
+		{
+			comments: []string{},
+			expect: nil,
+		},
+		{
+			comments: []string{
+				"+k8s:deepcopy-gen:interfaces=k8s.io/kubernetes/runtime.Object",
+			},
+			expect: []string{
+				"k8s.io/kubernetes/runtime.Object",
+			},
+		},
+		{
+			comments: []string{
+				"+k8s:deepcopy-gen:interfaces=k8s.io/kubernetes/runtime.Object",
+				"+k8s:deepcopy-gen:interfaces=k8s.io/kubernetes/runtime.List",
+			},
+			expect: []string{
+				"k8s.io/kubernetes/runtime.Object",
+				"k8s.io/kubernetes/runtime.List",
+			},
+		},
+		{
+			comments: []string{
+				"+k8s:deepcopy-gen:interfaces=k8s.io/kubernetes/runtime.Object",
+				"+k8s:deepcopy-gen:interfaces=k8s.io/kubernetes/runtime.Object",
+			},
+			expect: []string{
+				"k8s.io/kubernetes/runtime.Object",
+				"k8s.io/kubernetes/runtime.Object",
+			},
+		},
+	}
+
+	for i, tc := range testCases {
+		r := extractInterfacesTag(tc.comments)
+		if r == nil && tc.expect != nil {
+			t.Errorf("case[%d]: expected non-nil", i)
+		}
+		if r != nil && tc.expect == nil {
+			t.Errorf("case[%d]: expected nil, got %v", i, r)
+		}
+		if r != nil && !reflect.DeepEqual(r, tc.expect) {
+			t.Errorf("case[%d]: expected %v, got %v", i, tc.expect, r)
 		}
 	}
 }

@@ -1,0 +1,27 @@
+note: DaemonSet Config to print the `hostname` on each Node in the cluster every 10 seconds.
+sample: |
+  apiVersion: extensions/v1beta1
+  kind: DaemonSet
+  metadata:
+    # Unique key of the DaemonSet instance
+    name: daemonset-example
+  spec:
+    template:
+      metadata:
+        labels:
+          app: daemonset-example
+      spec:
+        containers:
+        # This container is run once on each Node in the cluster
+        - name: daemonset-example
+          image: ubuntu:trusty
+          command:
+          - /bin/sh
+          args:
+          - -c
+          # This script is run through `sh -c <script>`
+          - >-
+            while [ true ]; do
+            echo "DaemonSet running on $(hostname)" ;
+            sleep 10 ;
+            done

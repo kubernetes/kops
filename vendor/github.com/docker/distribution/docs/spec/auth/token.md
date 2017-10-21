@@ -1,18 +1,14 @@
-<!--[metadata]>
-+++
-title = "Token Authentication Specification"
-description = "Specifies the Docker Registry v2 authentication"
-keywords = ["registry, on-prem, images, tags, repository, distribution, Bearer authentication, advanced"]
-[menu.main]
-parent="smn_registry_ref"
-+++
-<![end-metadata]-->
+---
+title: "Token Authentication Specification"
+description: "Specifies the Docker Registry v2 authentication"
+keywords: ["registry, on-prem, images, tags, repository, distribution, Bearer authentication, advanced"]
+---
 
 # Docker Registry v2 authentication via central service
 
 This document outlines the v2 Docker registry authentication scheme:
 
-![v2 registry auth](https://docs.google.com/drawings/d/1EHZU9uBLmcH0kytDClBv6jv6WR4xZjE8RKEUw1mARJA/pub?w=480&h=360)
+![v2 registry auth](../images/v2-registry-auth.png)
 
 1. Attempt to begin a push/pull operation with the registry.
 2. If the registry requires authorization it will return a `401 Unauthorized`
@@ -24,7 +20,7 @@ This document outlines the v2 Docker registry authentication scheme:
 5. The client retries the original request with the Bearer token embedded in
    the request's Authorization header.
 6. The Registry authorizes the client by validating the Bearer token and the
-   claim set embedded within it and begins the push/pull session as usual. 
+   claim set embedded within it and begins the push/pull session as usual.
 
 ## Requirements
 
@@ -160,7 +156,7 @@ Defines getting a bearer and refresh token using the token endpoint.
         <code>expires_in</code>
     </dt>
     <dd>
-        (Optional) The duration in seconds since the token was issued that it 
+        (Optional) The duration in seconds since the token was issued that it
         will remain valid.  When omitted, this defaults to 60 seconds.  For
         compatibility with older clients, a token should never be returned with
         less than 60 seconds to live.
@@ -238,7 +234,7 @@ authenticate to the audience service (within the indicated window of time):
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-{"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IlBZWU86VEVXVTpWN0pIOjI2SlY6QVFUWjpMSkMzOlNYVko6WEdIQTozNEYyOjJMQVE6WlJNSzpaN1E2In0.eyJpc3MiOiJhdXRoLmRvY2tlci5jb20iLCJzdWIiOiJqbGhhd24iLCJhdWQiOiJyZWdpc3RyeS5kb2NrZXIuY29tIiwiZXhwIjoxNDE1Mzg3MzE1LCJuYmYiOjE0MTUzODcwMTUsImlhdCI6MTQxNTM4NzAxNSwianRpIjoidFlKQ08xYzZjbnl5N2tBbjBjN3JLUGdiVjFIMWJGd3MiLCJhY2Nlc3MiOlt7InR5cGUiOiJyZXBvc2l0b3J5IiwibmFtZSI6InNhbWFsYmEvbXktYXBwIiwiYWN0aW9ucyI6WyJwdXNoIl19XX0.QhflHPfbd6eVF4lM9bwYpFZIV0PfikbyXuLx959ykRTBpe3CYnzs6YBK8FToVb5R47920PVLrh8zuLzdCr9t3w", "expires_in": "3600","issued_at": "2009-11-10T23:00:00Z"}
+{"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NiIsImtpZCI6IlBZWU86VEVXVTpWN0pIOjI2SlY6QVFUWjpMSkMzOlNYVko6WEdIQTozNEYyOjJMQVE6WlJNSzpaN1E2In0.eyJpc3MiOiJhdXRoLmRvY2tlci5jb20iLCJzdWIiOiJqbGhhd24iLCJhdWQiOiJyZWdpc3RyeS5kb2NrZXIuY29tIiwiZXhwIjoxNDE1Mzg3MzE1LCJuYmYiOjE0MTUzODcwMTUsImlhdCI6MTQxNTM4NzAxNSwianRpIjoidFlKQ08xYzZjbnl5N2tBbjBjN3JLUGdiVjFIMWJGd3MiLCJhY2Nlc3MiOlt7InR5cGUiOiJyZXBvc2l0b3J5IiwibmFtZSI6InNhbWFsYmEvbXktYXBwIiwiYWN0aW9ucyI6WyJwdXNoIl19XX0.QhflHPfbd6eVF4lM9bwYpFZIV0PfikbyXuLx959ykRTBpe3CYnzs6YBK8FToVb5R47920PVLrh8zuLzdCr9t3w", "expires_in": 3600,"issued_at": "2009-11-10T23:00:00Z"}
 ```
 
 

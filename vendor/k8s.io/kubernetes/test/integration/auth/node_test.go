@@ -27,14 +27,17 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apiserver/pkg/authentication/request/bearertoken"
+	"k8s.io/apiserver/pkg/authentication/token/tokenfile"
+	"k8s.io/apiserver/pkg/authentication/user"
 	restclient "k8s.io/client-go/rest"
 	"k8s.io/kubernetes/pkg/api"
+	"k8s.io/kubernetes/pkg/apis/policy"
 	"k8s.io/kubernetes/pkg/auth/nodeidentifier"
 	clientset "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset"
 	informers "k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion"
 	"k8s.io/kubernetes/pkg/kubeapiserver/authorizer"
 	"k8s.io/kubernetes/plugin/pkg/admission/noderestriction"
-	"k8s.io/kubernetes/plugin/pkg/auth/authorizer/rbac/bootstrappolicy"
 	"k8s.io/kubernetes/test/integration/framework"
 )
 
@@ -46,9 +49,24 @@ func TestNodeAuthorizer(t *testing.T) {
 		h.M.GenericAPIServer.Handler.ServeHTTP(w, req)
 	}))
 
+	const (
+		// Define credentials
+		tokenMaster      = "master-token"
+		tokenNodeUnknown = "unknown-token"
+		tokenNode1       = "node1-token"
+		tokenNode2       = "node2-token"
+	)
+
+	authenticator := bearertoken.New(tokenfile.New(map[string]*user.DefaultInfo{
+		tokenMaster:      {Name: "admin", Groups: []string{"system:masters"}},
+		tokenNodeUnknown: {Name: "unknown", Groups: []string{"system:nodes"}},
+		tokenNode1:       {Name: "system:node:node1", Groups: []string{"system:nodes"}},
+		tokenNode2:       {Name: "system:node:node2", Groups: []string{"system:nodes"}},
+	}))
+
 	// Build client config, clientset, and informers
 	clientConfig := &restclient.Config{Host: apiServer.URL, ContentConfig: restclient.ContentConfig{NegotiatedSerializer: api.Codecs}}
-	superuserClient := clientsetForUser("admin/system:masters", clientConfig)
+	superuserClient := clientsetForToken(tokenMaster, clientConfig)
 	informerFactory := informers.NewSharedInformerFactory(superuserClient, time.Minute)
 
 	// Set up Node+RBAC authorizer
@@ -56,11 +74,10 @@ func TestNodeAuthorizer(t *testing.T) {
 		AuthorizationModes: []string{"Node", "RBAC"},
 		InformerFactory:    informerFactory,
 	}
-	nodeRBACAuthorizer, err := authorizerConfig.New()
+	nodeRBACAuthorizer, _, err := authorizerConfig.New()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer bootstrappolicy.ClearClusterRoleBindingFilters()
 
 	// Set up NodeRestriction admission
 	nodeRestrictionAdmission := noderestriction.NewPlugin(nodeidentifier.NewDefaultNodeIdentifier())
@@ -71,7 +88,8 @@ func TestNodeAuthorizer(t *testing.T) {
 
 	// Start the server
 	masterConfig := framework.NewIntegrationTestMasterConfig()
-	masterConfig.GenericConfig.Authenticator = newFakeAuthenticator()
+	masterConfig.GenericConfig.Authenticator = authenticator
+
 	masterConfig.GenericConfig.Authorizer = nodeRBACAuthorizer
 	masterConfig.GenericConfig.AdmissionControl = nodeRestrictionAdmission
 	_, _, closeFn := framework.RunAMasterUsingServer(masterConfig, apiServer, h)
@@ -118,7 +136,7 @@ func TestNodeAuthorizer(t *testing.T) {
 			AccessModes:            []api.PersistentVolumeAccessMode{api.ReadOnlyMany},
 			Capacity:               api.ResourceList{api.ResourceStorage: resource.MustParse("1")},
 			ClaimRef:               &api.ObjectReference{Namespace: "ns", Name: "mypvc"},
-			PersistentVolumeSource: api.PersistentVolumeSource{AzureFile: &api.AzureFileVolumeSource{ShareName: "default", SecretName: "mypvsecret"}},
+			PersistentVolumeSource: api.PersistentVolumeSource{AzureFile: &api.AzureFilePersistentVolumeSource{ShareName: "default", SecretName: "mypvsecret"}},
 		},
 	}); err != nil {
 		t.Fatal(err)
@@ -205,10 +223,34 @@ func TestNodeAuthorizer(t *testing.T) {
 	deleteNode2 := func(client clientset.Interface) error {
 		return client.Core().Nodes().Delete("node2", nil)
 	}
+	createNode2NormalPodEviction := func(client clientset.Interface) error {
+		return client.Policy().Evictions("ns").Evict(&policy.Eviction{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "policy/v1beta1",
+				Kind:       "Eviction",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "node2normalpod",
+				Namespace: "ns",
+			},
+		})
+	}
+	createNode2MirrorPodEviction := func(client clientset.Interface) error {
+		return client.Policy().Evictions("ns").Evict(&policy.Eviction{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "policy/v1beta1",
+				Kind:       "Eviction",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "node2mirrorpod",
+				Namespace: "ns",
+			},
+		})
+	}
 
-	nodeanonClient := clientsetForUser("unknown/system:nodes", clientConfig)
-	node1Client := clientsetForUser("system:node:node1/system:nodes", clientConfig)
-	node2Client := clientsetForUser("system:node:node2/system:nodes", clientConfig)
+	nodeanonClient := clientsetForToken(tokenNodeUnknown, clientConfig)
+	node1Client := clientsetForToken(tokenNode1, clientConfig)
+	node2Client := clientsetForToken(tokenNode2, clientConfig)
 
 	// all node requests from node1 and unknown node fail
 	expectForbidden(t, getSecret(nodeanonClient))
@@ -218,7 +260,9 @@ func TestNodeAuthorizer(t *testing.T) {
 	expectForbidden(t, getPV(nodeanonClient))
 	expectForbidden(t, createNode2NormalPod(nodeanonClient))
 	expectForbidden(t, createNode2MirrorPod(nodeanonClient))
+	expectForbidden(t, deleteNode2NormalPod(nodeanonClient))
 	expectForbidden(t, deleteNode2MirrorPod(nodeanonClient))
+	expectForbidden(t, createNode2MirrorPodEviction(nodeanonClient))
 	expectForbidden(t, createNode2(nodeanonClient))
 	expectForbidden(t, updateNode2Status(nodeanonClient))
 	expectForbidden(t, deleteNode2(nodeanonClient))
@@ -230,7 +274,8 @@ func TestNodeAuthorizer(t *testing.T) {
 	expectForbidden(t, getPV(node1Client))
 	expectForbidden(t, createNode2NormalPod(nodeanonClient))
 	expectForbidden(t, createNode2MirrorPod(node1Client))
-	expectForbidden(t, deleteNode2MirrorPod(node1Client))
+	expectNotFound(t, deleteNode2MirrorPod(node1Client))
+	expectNotFound(t, createNode2MirrorPodEviction(node1Client))
 	expectForbidden(t, createNode2(node1Client))
 	expectForbidden(t, updateNode2Status(node1Client))
 	expectForbidden(t, deleteNode2(node1Client))
@@ -245,6 +290,8 @@ func TestNodeAuthorizer(t *testing.T) {
 	// mirror pod and self node lifecycle is allowed
 	expectAllowed(t, createNode2MirrorPod(node2Client))
 	expectAllowed(t, deleteNode2MirrorPod(node2Client))
+	expectAllowed(t, createNode2MirrorPod(node2Client))
+	expectAllowed(t, createNode2MirrorPodEviction(node2Client))
 	expectAllowed(t, createNode2(node2Client))
 	expectAllowed(t, updateNode2Status(node2Client))
 	expectAllowed(t, deleteNode2(node2Client))
@@ -261,8 +308,10 @@ func TestNodeAuthorizer(t *testing.T) {
 	expectForbidden(t, createNode2NormalPod(nodeanonClient))
 	expectForbidden(t, updateNode2NormalPodStatus(nodeanonClient))
 	expectForbidden(t, deleteNode2NormalPod(nodeanonClient))
+	expectForbidden(t, createNode2NormalPodEviction(nodeanonClient))
 	expectForbidden(t, createNode2MirrorPod(nodeanonClient))
 	expectForbidden(t, deleteNode2MirrorPod(nodeanonClient))
+	expectForbidden(t, createNode2MirrorPodEviction(nodeanonClient))
 
 	expectForbidden(t, getSecret(node1Client))
 	expectForbidden(t, getPVSecret(node1Client))
@@ -272,8 +321,10 @@ func TestNodeAuthorizer(t *testing.T) {
 	expectForbidden(t, createNode2NormalPod(node1Client))
 	expectForbidden(t, updateNode2NormalPodStatus(node1Client))
 	expectForbidden(t, deleteNode2NormalPod(node1Client))
+	expectForbidden(t, createNode2NormalPodEviction(node1Client))
 	expectForbidden(t, createNode2MirrorPod(node1Client))
-	expectForbidden(t, deleteNode2MirrorPod(node1Client))
+	expectNotFound(t, deleteNode2MirrorPod(node1Client))
+	expectNotFound(t, createNode2MirrorPodEviction(node1Client))
 
 	// node2 can get referenced objects now
 	expectAllowed(t, getSecret(node2Client))
@@ -286,12 +337,24 @@ func TestNodeAuthorizer(t *testing.T) {
 	expectAllowed(t, deleteNode2NormalPod(node2Client))
 	expectAllowed(t, createNode2MirrorPod(node2Client))
 	expectAllowed(t, deleteNode2MirrorPod(node2Client))
+	// recreate as an admin to test eviction
+	expectAllowed(t, createNode2NormalPod(superuserClient))
+	expectAllowed(t, createNode2MirrorPod(superuserClient))
+	expectAllowed(t, createNode2NormalPodEviction(node2Client))
+	expectAllowed(t, createNode2MirrorPodEviction(node2Client))
 }
 
 func expectForbidden(t *testing.T, err error) {
 	if !errors.IsForbidden(err) {
 		_, file, line, _ := runtime.Caller(1)
 		t.Errorf("%s:%d: Expected forbidden error, got %v", filepath.Base(file), line, err)
+	}
+}
+
+func expectNotFound(t *testing.T, err error) {
+	if !errors.IsNotFound(err) {
+		_, file, line, _ := runtime.Caller(1)
+		t.Errorf("%s:%d: Expected notfound error, got %v", filepath.Base(file), line, err)
 	}
 }
 

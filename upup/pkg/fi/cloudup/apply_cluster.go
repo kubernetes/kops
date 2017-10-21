@@ -58,6 +58,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 )
 
@@ -190,12 +191,12 @@ func (c *ApplyClusterCmd) Run() error {
 		return fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	keyStore, err := c.Clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
 
-	secretStore, err := registry.SecretStore(cluster)
+	secretStore, err := c.Clientset.SecretStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -270,6 +271,17 @@ func (c *ApplyClusterCmd) Run() error {
 			}
 			c.Assets = append(c.Assets, hash.Hex()+"@"+utilsLocation)
 		}
+
+		if needsKubernetesManifests(cluster, c.InstanceGroups) {
+			defaultManifestsAsset := baseURL + "/kubernetes-manifests.tar.gz"
+			glog.V(2).Infof("Adding default kubernetes manifests asset: %s", defaultManifestsAsset)
+
+			hash, err := findHash(defaultManifestsAsset)
+			if err != nil {
+				return err
+			}
+			c.Assets = append(c.Assets, hash.Hex()+"@"+defaultManifestsAsset)
+		}
 	}
 
 	if c.NodeUpSource == "" {
@@ -279,9 +291,11 @@ func (c *ApplyClusterCmd) Run() error {
 	checkExisting := true
 
 	l.AddTypes(map[string]interface{}{
-		"keypair":     &fitasks.Keypair{},
-		"secret":      &fitasks.Secret{},
-		"managedFile": &fitasks.ManagedFile{},
+		"keypair":        &fitasks.Keypair{},
+		"secret":         &fitasks.Secret{},
+		"managedFile":    &fitasks.ManagedFile{},
+		"mirrorKeystore": &fitasks.MirrorKeystore{},
+		"mirrorSecrets":  &fitasks.MirrorSecrets{},
 	})
 
 	cloud, err := BuildCloud(cluster)
@@ -786,10 +800,18 @@ func (c *ApplyClusterCmd) Run() error {
 			return fmt.Errorf("error writing completed cluster spec: %v", err)
 		}
 
+		vfsMirror := vfsclientset.NewInstanceGroupMirror(cluster.Name, configBase)
+
 		for _, g := range c.InstanceGroups {
+			// TODO: We need to update the mirror (below), but do we need to update the primary?
 			_, err := c.Clientset.InstanceGroupsFor(c.Cluster).Update(g)
 			if err != nil {
 				return fmt.Errorf("error writing InstanceGroup %q to registry: %v", g.ObjectMeta.Name, err)
+			}
+
+			// TODO: Don't write if vfsMirror == c.ClientSet
+			if err := vfsMirror.WriteMirror(g); err != nil {
+				return fmt.Errorf("error writing instance group spec to mirror: %v", err)
 			}
 		}
 	}
@@ -841,7 +863,7 @@ func findHash(url string) (*hashing.Hash, error) {
 
 // upgradeSpecs ensures that fields are fully populated / defaulted
 func (c *ApplyClusterCmd) upgradeSpecs(assetBuilder *assets.AssetBuilder) error {
-	fullCluster, err := PopulateClusterSpec(c.Cluster, assetBuilder)
+	fullCluster, err := PopulateClusterSpec(c.Clientset, c.Cluster, assetBuilder)
 	if err != nil {
 		return err
 	}
@@ -1009,6 +1031,18 @@ func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
 func needsStaticUtils(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
 	// TODO: Do real detection of CoreOS (but this has to work with AMI names, and maybe even forked AMIs)
 	return true
+}
+
+// needsKubernetesManifests checks if we need kubernetes manifests
+// This is only needed currently on ContainerOS i.e. GCE, but we don't have a nice way to detect it yet
+func needsKubernetesManifests(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
+	// TODO: Do real detection of ContainerOS (but this has to work with image names, and maybe even forked images)
+	switch kops.CloudProviderID(c.Spec.CloudProvider) {
+	case kops.CloudProviderGCE:
+		return true
+	default:
+		return false
+	}
 }
 
 func lifecyclePointer(v fi.Lifecycle) *fi.Lifecycle {

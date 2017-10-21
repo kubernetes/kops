@@ -21,12 +21,12 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
+		defer f.Close()
 
-		ast, err := parser.Parse(f)
+		result, err := parser.Parse(f)
 		if err != nil {
 			panic(err)
-		} else {
-			fmt.Println(ast.Dump())
 		}
+		fmt.Println(result.AST.Dump())
 	}
 }

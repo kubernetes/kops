@@ -22,9 +22,9 @@ import (
 	"strings"
 	"time"
 
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
-	"k8s.io/kubernetes/pkg/api/v1"
 	"k8s.io/kubernetes/test/e2e/framework"
 
 	. "github.com/onsi/ginkgo"
@@ -49,7 +49,7 @@ var _ = framework.KubeDescribe("Kubelet", func() {
 					RestartPolicy: v1.RestartPolicyNever,
 					Containers: []v1.Container{
 						{
-							Image:   "gcr.io/google_containers/busybox:1.24",
+							Image:   busyboxImage,
 							Name:    podName,
 							Command: []string{"sh", "-c", "echo 'Hello World' ; sleep 240"},
 						},
@@ -83,7 +83,7 @@ var _ = framework.KubeDescribe("Kubelet", func() {
 					RestartPolicy: v1.RestartPolicyNever,
 					Containers: []v1.Container{
 						{
-							Image:   "gcr.io/google_containers/busybox:1.24",
+							Image:   busyboxImage,
 							Name:    podName,
 							Command: []string{"/bin/false"},
 						},
@@ -130,7 +130,7 @@ var _ = framework.KubeDescribe("Kubelet", func() {
 					RestartPolicy: v1.RestartPolicyNever,
 					Containers: []v1.Container{
 						{
-							Image:   "gcr.io/google_containers/busybox:1.24",
+							Image:   busyboxImage,
 							Name:    podName,
 							Command: []string{"/bin/sh", "-c", "cat /etc/hosts; sleep 6000"},
 						},
@@ -175,7 +175,7 @@ var _ = framework.KubeDescribe("Kubelet", func() {
 					RestartPolicy: v1.RestartPolicyNever,
 					Containers: []v1.Container{
 						{
-							Image:   "gcr.io/google_containers/busybox:1.24",
+							Image:   busyboxImage,
 							Name:    podName,
 							Command: []string{"/bin/sh", "-c", "echo test > /file; sleep 240"},
 							SecurityContext: &v1.SecurityContext{

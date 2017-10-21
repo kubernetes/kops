@@ -58,6 +58,41 @@ func newInstanceGroups(c *KopsClient, namespace string) *instanceGroups {
 	}
 }
 
+// Get takes name of the instanceGroup, and returns the corresponding instanceGroup object, and an error if there is any.
+func (c *instanceGroups) Get(name string, options v1.GetOptions) (result *kops.InstanceGroup, err error) {
+	result = &kops.InstanceGroup{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("instancegroups").
+		Name(name).
+		VersionedParams(&options, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// List takes label and field selectors, and returns the list of InstanceGroups that match those selectors.
+func (c *instanceGroups) List(opts v1.ListOptions) (result *kops.InstanceGroupList, err error) {
+	result = &kops.InstanceGroupList{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("instancegroups").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// Watch returns a watch.Interface that watches the requested instanceGroups.
+func (c *instanceGroups) Watch(opts v1.ListOptions) (watch.Interface, error) {
+	opts.Watch = true
+	return c.client.Get().
+		Namespace(c.ns).
+		Resource("instancegroups").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Watch()
+}
+
 // Create takes the representation of a instanceGroup and creates it.  Returns the server's representation of the instanceGroup, and an error, if there is any.
 func (c *instanceGroups) Create(instanceGroup *kops.InstanceGroup) (result *kops.InstanceGroup, err error) {
 	result = &kops.InstanceGroup{}
@@ -103,41 +138,6 @@ func (c *instanceGroups) DeleteCollection(options *v1.DeleteOptions, listOptions
 		Body(options).
 		Do().
 		Error()
-}
-
-// Get takes name of the instanceGroup, and returns the corresponding instanceGroup object, and an error if there is any.
-func (c *instanceGroups) Get(name string, options v1.GetOptions) (result *kops.InstanceGroup, err error) {
-	result = &kops.InstanceGroup{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("instancegroups").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of InstanceGroups that match those selectors.
-func (c *instanceGroups) List(opts v1.ListOptions) (result *kops.InstanceGroupList, err error) {
-	result = &kops.InstanceGroupList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("instancegroups").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested instanceGroups.
-func (c *instanceGroups) Watch(opts v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("instancegroups").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
 }
 
 // Patch applies the patch and returns the patched instanceGroup.

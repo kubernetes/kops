@@ -20,7 +20,7 @@ import (
 	"fmt"
 	"time"
 
-	autoscalingv1 "k8s.io/kubernetes/pkg/apis/autoscaling/v1"
+	autoscalingv1 "k8s.io/api/autoscaling/v1"
 	"k8s.io/kubernetes/test/e2e/common"
 	"k8s.io/kubernetes/test/e2e/framework"
 
@@ -39,6 +39,7 @@ func (HPAUpgradeTest) Name() string { return "hpa-upgrade" }
 func (t *HPAUpgradeTest) Setup(f *framework.Framework) {
 	t.rc = common.NewDynamicResourceConsumer(
 		"res-cons-upgrade",
+		f.Namespace.Name,
 		common.KindRC,
 		1,   /* replicas */
 		250, /* initCPUTotal */
@@ -46,7 +47,8 @@ func (t *HPAUpgradeTest) Setup(f *framework.Framework) {
 		0,
 		500, /* cpuLimit */
 		200, /* memLimit */
-		f)
+		f.ClientSet,
+		f.InternalClientset)
 	t.hpa = common.CreateCPUHorizontalPodAutoscaler(
 		t.rc,
 		20, /* targetCPUUtilizationPercent */

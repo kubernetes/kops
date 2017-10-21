@@ -1,11 +1,11 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"tbys6C40o18GZwyMen5GMkdK-3s/kNCxeHzf8zHSdahaoD4fNF__mRA\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/-SiQlGIRBbnzY0JcLS-jmuPpVII\"",
  "discoveryVersion": "v1",
  "id": "analytics:v3",
  "name": "analytics",
  "version": "v3",
- "revision": "20170321",
+ "revision": "20170726",
  "title": "Google Analytics API",
  "description": "Views and manages your Google Analytics data.",
  "ownerDomain": "google.com",
@@ -2115,7 +2115,7 @@
     },
     "type": {
      "type": "string",
-     "description": "The type of the foreign account. For example `ADWORDS_LINKS`."
+     "description": "The type of the foreign account. For example, `ADWORDS_LINKS`, `DBM_LINKS`, `MCC_LINKS` or `OPTIMIZE`."
     },
     "webPropertyId": {
      "type": "string",

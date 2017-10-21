@@ -24,6 +24,7 @@ import (
 // The following methods display Schemas.
 //
 
+// Description returns a string representation of a string or string array.
 func (s *StringOrStringArray) Description() string {
 	if s.String != nil {
 		return *s.String
@@ -45,8 +46,8 @@ func (schema *Schema) describeSchema(indent string) string {
 	if schema.Schema != nil {
 		result += indent + "$schema: " + *(schema.Schema) + "\n"
 	}
-	if schema.Id != nil {
-		result += indent + "id: " + *(schema.Id) + "\n"
+	if schema.ID != nil {
+		result += indent + "id: " + *(schema.ID) + "\n"
 	}
 	if schema.MultipleOf != nil {
 		result += indent + fmt.Sprintf("multipleOf: %+v\n", *(schema.MultipleOf))

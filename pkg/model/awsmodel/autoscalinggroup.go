@@ -23,16 +23,14 @@ import (
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
+	"k8s.io/kops/pkg/model/defaults"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 )
 
 const (
-	DefaultVolumeSizeNode    = 128
-	DefaultVolumeSizeMaster  = 64
-	DefaultVolumeSizeBastion = 32
-	DefaultVolumeType        = "gp2"
-	DefaultVolumeIops        = 100
+	DefaultVolumeType = "gp2"
+	DefaultVolumeIops = 100
 )
 
 // AutoscalingGroupModelBuilder configures AutoscalingGroup objects
@@ -46,6 +44,7 @@ type AutoscalingGroupModelBuilder struct {
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
 
 func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
+	var err error
 	for _, ig := range b.InstanceGroups {
 		name := b.AutoscalingGroupName(ig)
 
@@ -54,15 +53,9 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		{
 			volumeSize := fi.Int32Value(ig.Spec.RootVolumeSize)
 			if volumeSize == 0 {
-				switch ig.Spec.Role {
-				case kops.InstanceGroupRoleMaster:
-					volumeSize = DefaultVolumeSizeMaster
-				case kops.InstanceGroupRoleNode:
-					volumeSize = DefaultVolumeSizeNode
-				case kops.InstanceGroupRoleBastion:
-					volumeSize = DefaultVolumeSizeBastion
-				default:
-					return fmt.Errorf("this case should not get hit, kops.Role not found %s", ig.Spec.Role)
+				volumeSize, err = defaults.DefaultInstanceGroupVolumeSize(ig.Spec.Role)
+				if err != nil {
+					return err
 				}
 			}
 			volumeType := fi.StringValue(ig.Spec.RootVolumeType)
@@ -112,8 +105,6 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				}
 				t.SecurityGroups = append(t.SecurityGroups, sgTask)
 			}
-
-			var err error
 
 			if t.SSHKey, err = b.LinkToSSHKey(); err != nil {
 				return err

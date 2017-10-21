@@ -9,9 +9,9 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/docker/distribution/registry/client/transport"
-	registrytypes "github.com/docker/engine-api/types/registry"
+	registrytypes "github.com/docker/docker/api/types/registry"
+	"github.com/sirupsen/logrus"
 )
 
 // V1Endpoint stores basic information about a V1 registry endpoint.
@@ -175,7 +175,7 @@ func (e *V1Endpoint) Ping() (PingResult, error) {
 		Standalone: true,
 	}
 	if err := json.Unmarshal(jsonString, &info); err != nil {
-		logrus.Debugf("Error unmarshalling the _ping PingResult: %s", err)
+		logrus.Debugf("Error unmarshaling the _ping PingResult: %s", err)
 		// don't stop here. Just assume sane defaults
 	}
 	if hdr := resp.Header.Get("X-Docker-Registry-Version"); hdr != "" {

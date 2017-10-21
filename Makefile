@@ -44,8 +44,8 @@ MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
 DNS_CONTROLLER_TAG=1.7.1
 
-KOPS_RELEASE_VERSION = 1.7.1-beta.2
-KOPS_CI_VERSION      = 1.7.1-beta.3
+KOPS_RELEASE_VERSION = 1.8.0-alpha.1
+KOPS_CI_VERSION      = 1.8.0-alpha.2
 
 # kops local location
 KOPS                 = ${LOCAL}/kops
@@ -203,6 +203,7 @@ hooks: # Install Git hooks
 test: ${BINDATA_TARGETS}  # Run tests locally
 	go test -v ${TESTABLE_PACKAGES}
 
+.PHONY: ${DIST}/linux/amd64/nodeup
 ${DIST}/linux/amd64/nodeup: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
@@ -213,13 +214,15 @@ crossbuild-nodeup: ${DIST}/linux/amd64/nodeup
 .PHONY: crossbuild-nodeup-in-docker
 crossbuild-nodeup-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile crossbuild-nodeup
+	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ crossbuild-nodeup
 	docker cp nodeup-build-${UNIQUE}:/go/.build .
 
+.PHONY: ${DIST}/darwin/amd64/kops
 ${DIST}/darwin/amd64/kops: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
 	GOOS=darwin GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
+.PHONY: ${DIST}/linux/amd64/kops
 ${DIST}/linux/amd64/kops: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
@@ -230,7 +233,7 @@ crossbuild: ${DIST}/darwin/amd64/kops ${DIST}/linux/amd64/kops
 .PHONY: crossbuild-in-docker
 crossbuild-in-docker:
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile crossbuild
+	docker run --name=kops-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ crossbuild
 	docker start kops-build-${UNIQUE}
 	docker exec kops-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
 	docker cp kops-build-${UNIQUE}:/go/src/k8s.io/kops/.build .
@@ -308,12 +311,7 @@ gen-cli-docs: ${KOPS} # Regenerate CLI docs
 .PHONY: gen-api-docs
 gen-api-docs:
 	# Follow procedure in docs/apireference/README.md
-	# Install the apiserver-builder commands
-	go get -u github.com/kubernetes-incubator/apiserver-builder/cmd/...
-	# Install the reference docs commands (apiserver-builder commands invoke these)
-	go get -u github.com/kubernetes-incubator/reference-docs/gen-apidocs/...
-	# Install the code generation commands (apiserver-builder commands invoke these)
-	go install k8s.io/kubernetes/cmd/libs/go2idl/openapi-gen
+	hack/make-gendocs.sh
 	# Update the `pkg/openapi/openapi_generated.go`
 	${GOPATH}/bin/apiserver-boot build generated --generator openapi --copyright hack/boilerplate/boilerplate.go.txt
 	go install k8s.io/kops/cmd/kops-server
@@ -334,8 +332,8 @@ push-aws-dry: push
 
 .PHONY: push-gce-run
 push-gce-run: push
-	ssh ${TARGET} sudo cp /tmp/nodeup /home/kubernetes/bin/nodeup
-	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /home/kubernetes/bin/nodeup --conf=/var/lib/toolbox/kubernetes-install/kube_env.yaml --v=8
+	ssh ${TARGET} sudo cp /tmp/nodeup /var/lib/toolbox/kubernetes-install/nodeup
+	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /var/lib/toolbox/kubernetes-install/nodeup --conf=/var/lib/toolbox/kubernetes-install/kube_env.yaml --v=8
 
 # -t is for CentOS http://unix.stackexchange.com/questions/122616/why-do-i-need-a-tty-to-run-sudo-if-i-can-sudo-without-a-password
 .PHONY: push-aws-run
@@ -354,6 +352,7 @@ protokube-builder-image:
 
 .PHONY: protokube-build-in-docker
 protokube-build-in-docker: protokube-builder-image
+	mkdir -p ${IMAGES} # We have to create the directory first, so docker doesn't mess up the ownership of the dir
 	docker run -t -e VERSION=${VERSION} -e HOST_UID=${UID} -e HOST_GID=${GID} -v `pwd`:/src protokube-builder /onbuild.sh
 
 .PHONY: protokube-image
@@ -362,7 +361,6 @@ protokube-image: protokube-build-in-docker
 
 .PHONY: protokube-export
 protokube-export: protokube-image
-	mkdir -p ${IMAGES}
 	docker save protokube:${PROTOKUBE_TAG} > ${IMAGES}/protokube.tar
 	gzip --force --best ${IMAGES}/protokube.tar
 	(${SHASUMCMD} ${IMAGES}/protokube.tar.gz | cut -d' ' -f1) > ${IMAGES}/protokube.tar.gz.sha1
@@ -384,7 +382,7 @@ ${NODEUP}: ${BINDATA_TARGETS} ${SOURCES}
 nodeup-dist:
 	mkdir -p ${DIST}
 	docker pull golang:${GOVERSION} # Keep golang image up to date
-	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile nodeup
+	docker run --name=nodeup-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ nodeup
 	docker start nodeup-build-${UNIQUE}
 	docker exec nodeup-build-${UNIQUE} chown -R ${UID}:${GID} /go/src/k8s.io/kops/.build
 	docker cp nodeup-build-${UNIQUE}:/go/src/k8s.io/kops/.build/local/nodeup .build/dist/
@@ -425,10 +423,13 @@ utils-dist:
 # See docs/development/dependencies.md
 .PHONY: copydeps
 copydeps:
-	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git
+	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git --exclude BUILD --exclude BUILD.bazel
+	ln -sf kubernetes/staging/src/k8s.io/api vendor/k8s.io/api
+	ln -sf kubernetes/staging/src/k8s.io/apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
 	ln -sf kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
 	ln -sf kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
 	ln -sf kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
+	ln -sf kubernetes/staging/src/k8s.io/code-generator vendor/k8s.io/code-generator
 	ln -sf kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
 
 .PHONY: gofmt
@@ -529,6 +530,9 @@ apimachinery:
 	sh -c hack/make-apimachinery.sh
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.conversion
 	${GOPATH}/bin/conversion-gen --skip-unsafe=true --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.conversion
+	${GOPATH}/bin/deepcopy-gen --input-dirs k8s.io/kops/pkg/apis/kops --v=0  --output-file-base=zz_generated.deepcopy
+	${GOPATH}/bin/deepcopy-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.deepcopy
+	${GOPATH}/bin/deepcopy-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.deepcopy
 	${GOPATH}/bin/defaulter-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha1 --v=0  --output-file-base=zz_generated.defaults
 	${GOPATH}/bin/defaulter-gen --input-dirs k8s.io/kops/pkg/apis/kops/v1alpha2 --v=0  --output-file-base=zz_generated.defaults
 	#go install github.com/ugorji/go/codec/codecgen
@@ -551,10 +555,42 @@ kops-server-docker-compile:
 kops-server-build:
 	# Compile the API binary in linux, and copy to local filesystem
 	docker pull golang:${GOVERSION}
-	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -f /go/src/k8s.io/kops/Makefile kops-server-docker-compile
+	docker run --name=kops-server-build-${UNIQUE} -e STATIC_BUILD=yes -e VERSION=${VERSION} -v ${GOPATH}/src:/go/src -v ${MAKEDIR}:/go/src/k8s.io/kops golang:${GOVERSION} make -C /go/src/k8s.io/kops/ kops-server-docker-compile
 	docker cp kops-server-build-${UNIQUE}:/go/.build .
 	docker build -t ${DOCKER_REGISTRY}/kops-server:${KOPS_SERVER_TAG} -f images/kops-server/Dockerfile .
 
 .PHONY: kops-server-push
 kops-server-push: kops-server-build
 	docker push ${DOCKER_REGISTRY}/kops-server:latest
+
+# -----------------------------------------------------
+# bazel targets
+
+.PHONY: bazel-test
+bazel-test:
+	bazel test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/... //upup/... //util/... --test_output=errors
+
+.PHONY: bazel-build
+bazel-build:
+	bazel build //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/...
+
+# TODO: Get working on a mac / windows machine!
+# 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
+.PHONY: bazel-crossbuild-nodeup
+bazel-crossbuild-nodeup:
+	bazel build //cmd/nodeup
+
+.PHONY: bazel-push
+# Will always push a linux-based build up to the server
+bazel-push: bazel-crossbuild-nodeup
+	scp -C bazel-bin/cmd/nodeup/nodeup  ${TARGET}:/tmp/
+
+.PHONY: bazel-push-gce-run
+bazel-push-gce-run: bazel-push
+	ssh ${TARGET} sudo cp /tmp/nodeup /var/lib/toolbox/kubernetes-install/nodeup
+	ssh ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /var/lib/toolbox/kubernetes-install/nodeup --conf=/var/lib/toolbox/kubernetes-install/kube_env.yaml --v=8
+
+# -t is for CentOS http://unix.stackexchange.com/questions/122616/why-do-i-need-a-tty-to-run-sudo-if-i-can-sudo-without-a-password
+.PHONY: bazel-push-aws-run
+bazel-push-aws-run: bazel-push
+	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8

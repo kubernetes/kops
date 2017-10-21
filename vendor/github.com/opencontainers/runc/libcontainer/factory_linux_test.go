@@ -7,12 +7,13 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
-	"syscall"
 	"testing"
 
 	"github.com/docker/docker/pkg/mount"
 	"github.com/opencontainers/runc/libcontainer/configs"
 	"github.com/opencontainers/runc/libcontainer/utils"
+
+	"golang.org/x/sys/unix"
 )
 
 func newTestRoot() (string, error) {
@@ -99,7 +100,7 @@ func TestFactoryNewTmpfs(t *testing.T) {
 	if !found {
 		t.Fatalf("Factory Root is not listed in mounts list")
 	}
-	defer syscall.Unmount(root, syscall.MNT_DETACH)
+	defer unix.Unmount(root, unix.MNT_DETACH)
 }
 
 func TestFactoryLoadNotExists(t *testing.T) {

@@ -34,6 +34,34 @@ spec:
       idleTimeoutSeconds: 300
 ```
 
+### etcdClusters v3 & tls
+
+Although kops doesn't presently default to etcd3, it is possible to turn on both v3 and TLS authentication for communication amongst cluster members. These options may be enabled via the cluster spec (manifests only i.e. no command line options as yet). An upfront warning; at present no upgrade path exists for migrating from v2 to v3 so **DO NOT** try to enable this on a v2 running cluster as it must be done on cluster creation. The below example snippet assumes a HA cluster of three masters.
+
+```yaml
+etcdClusters:
+- etcdMembers:
+  - instanceGroup: master0-az0
+    name: a-1
+  - instanceGroup: master1-az0
+    name: a-2
+  - instanceGroup: master0-az1
+    name: b-1
+  enableEtcdTLS: true
+  name: main
+  version: 3.0.17
+- etcdMembers:
+  - instanceGroup: master0-az0
+    name: a-1
+  - instanceGroup: master1-az0
+    name: a-2
+  - instanceGroup: master0-az1
+    name: b-1
+  enableEtcdTLS: true
+  name: events
+  version: 3.0.17
+```
+
 ### sshAccess
 
 This array configures the CIDRs that are able to ssh into nodes. On AWS this is manifested as inbound security group rules on the `nodes` and `master` security groups.
@@ -166,17 +194,55 @@ NOTE: Where the corresponding configuration value can be empty, fields can be se
 
 Will result in the flag `--resolv-conf=` being built.
 
+#### Enable Custom metrics support
+To use custom metrics in kubernetes as per [custom metrics doc](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics)
+we have to set the flag `--enable-custom-metrics` to `true` on all the kubelets. We can specify that in the `kubelet` spec in our cluster.yml.
+
+```
+spec:
+  kubelet:
+    enableCustomMetrics: true
+```
+
+### kubeScheduler
+
+This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
+
+ ```yaml
+ spec:
+   kubeScheduler:
+     policyConfigMap: scheduler-policy
+     policyConfigMapNamespace: default
+```
+
+Will resulting to running kube-scheduler with the arguments `--policy-configmap=scheduler-policy --policy-configmap-namespace=default`.
+
+Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually. Also, this option is not supported during cluster creation, only during updates.
+
+### kubeControllerManager
+This block contains configurations for the `controller-manager`.
+
+```yaml
+spec:
+  kubeControllerManager:
+    horizontalPodAutoscalerSyncPeriod: 15s
+```
+
+For more details on `horizontalPodAutoscalerSyncPeriod` see the [HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+
 ####  Feature Gates
 
 ```yaml
 spec:
   kubelet:
     featureGates:
-      ExperimentalCriticalPodAnnotation: "true"
+      Accelerators: "true"
       AllowExtTrafficLocalEndpoints: "false"
 ```
 
-Will result in the flag `--feature-gates=ExperimentalCriticalPodAnnotation=true,AllowExtTrafficLocalEndpoints=false`
+Will result in the flag `--feature-gates=Accelerators=true,AllowExtTrafficLocalEndpoints=false`
+
+NOTE: Feature gate `ExperimentalCriticalPodAnnotation` is enabled by default because some critical components like `kube-proxy` depend on its presence.
 
 ####  Compute Resources Reservation
 

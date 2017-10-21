@@ -15,8 +15,8 @@ possibleConfigFiles=(
 	"config-$(uname -r)"
 	'.config'
 )
-	
-if ! command -v zgrep &> /dev/null; then
+
+if ! command -v zgrep &>/dev/null; then
 	zgrep() {
 		zcat "$2" | grep "$1"
 	}
@@ -28,36 +28,36 @@ kernelMinor="${kernelVersion#$kernelMajor.}"
 kernelMinor="${kernelMinor%%.*}"
 
 is_set() {
-	zgrep "CONFIG_$1=[y|m]" "$CONFIG" > /dev/null
+	zgrep "CONFIG_$1=[y|m]" "$CONFIG" >/dev/null
 }
 is_set_in_kernel() {
-	zgrep "CONFIG_$1=y" "$CONFIG" > /dev/null
+	zgrep "CONFIG_$1=y" "$CONFIG" >/dev/null
 }
 is_set_as_module() {
-	zgrep "CONFIG_$1=m" "$CONFIG" > /dev/null
+	zgrep "CONFIG_$1=m" "$CONFIG" >/dev/null
 }
 
 color() {
 	local codes=()
 	if [ "$1" = 'bold' ]; then
-		codes=( "${codes[@]}" '1' )
+		codes=("${codes[@]}" '1')
 		shift
 	fi
 	if [ "$#" -gt 0 ]; then
-		local code=
+		local code
 		case "$1" in
-			# see https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
-			black) code=30 ;;
-			red) code=31 ;;
-			green) code=32 ;;
-			yellow) code=33 ;;
-			blue) code=34 ;;
-			magenta) code=35 ;;
-			cyan) code=36 ;;
-			white) code=37 ;;
+		# see https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
+		black) code=30 ;;
+		red) code=31 ;;
+		green) code=32 ;;
+		yellow) code=33 ;;
+		blue) code=34 ;;
+		magenta) code=35 ;;
+		cyan) code=36 ;;
+		white) code=37 ;;
 		esac
 		if [ "$code" ]; then
-			codes=( "${codes[@]}" "$code" )
+			codes=("${codes[@]}" "$code")
 		fi
 	fi
 	local IFS=';'
@@ -109,8 +109,7 @@ check_distro_userns() {
 	fi
 }
 
-is_config()
-{
+is_config() {
 	local config="$1"
 
 	# Todo: more check
@@ -118,8 +117,7 @@ is_config()
 	return 1
 }
 
-search_config()
-{
+search_config() {
 	local target_dir="$1"
 	[[ "$target_dir" ]] || target_dir=("${possibleConfigs[@]}")
 
@@ -181,14 +179,14 @@ fi
 
 if [ "$(cat /sys/module/apparmor/parameters/enabled 2>/dev/null)" = 'Y' ]; then
 	echo -n '- '
-	if command -v apparmor_parser &> /dev/null; then
+	if command -v apparmor_parser &>/dev/null; then
 		echo "$(wrap_good 'apparmor' 'enabled and tools installed')"
 	else
 		echo "$(wrap_bad 'apparmor' 'enabled, but apparmor_parser missing')"
 		echo -n '    '
-		if command -v apt-get &> /dev/null; then
+		if command -v apt-get &>/dev/null; then
 			echo "$(wrap_color '(use "apt-get install apparmor" to fix this)')"
-		elif command -v yum &> /dev/null; then
+		elif command -v yum &>/dev/null; then
 			echo "$(wrap_color '(your best bet is "yum install apparmor-parser")')"
 		else
 			echo "$(wrap_color '(look for an "apparmor" package for your distribution)')"
@@ -204,7 +202,7 @@ flags=(
 	NF_NAT_IPV4 IP_NF_FILTER IP_NF_TARGET_MASQUERADE
 	NETFILTER_XT_MATCH_{ADDRTYPE,CONNTRACK}
 	NF_NAT NF_NAT_NEEDED
-
+	
 	# required for bind-mounting /dev/mqueue into containers
 	POSIX_MQUEUE
 )
@@ -220,7 +218,7 @@ echo 'Optional Features:'
 	check_flags CGROUP_PIDS
 
 	check_flags MEMCG_SWAP MEMCG_SWAP_ENABLED
-	if  is_set MEMCG_SWAP && ! is_set MEMCG_SWAP_ENABLED; then
+	if is_set MEMCG_SWAP && ! is_set MEMCG_SWAP_ENABLED; then
 		echo "    $(wrap_color '(note that cgroup swap accounting is not enabled in your kernel config, you can enable it by setting boot option "swapaccount=1")' bold black)"
 	fi
 }

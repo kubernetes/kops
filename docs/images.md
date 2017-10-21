@@ -49,6 +49,9 @@ by `kope.io`, (which is a well-known alias to account `383156758163`), with the 
 `k8s-1.4-debian-jessie-amd64-hvm-ebs-2016-10-21`.  By using a name instead of an AMI, we can reference an image
 irrespective of the region in which it is located.
 
+kops should also now work on stock Debian 9 (Stretch) images.  Stock Debian 8 (Jessie) images are not recommended,
+as they typically do not have a suitable kernel and kernel options configured.
+
 ## Ubuntu
 
 Ubuntu is not the default platform, but is believed to be entirely functional.

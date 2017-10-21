@@ -18,18 +18,16 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
-
 	"strings"
 
 	"github.com/spf13/cobra"
-	"io"
 	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -148,12 +146,17 @@ func RunGetSecrets(options *GetSecretsOptions, args []string) error {
 		return err
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
+	clientset, err := rootCommand.Clientset()
 	if err != nil {
 		return err
 	}
 
-	secretStore, err := registry.SecretStore(cluster)
+	keyStore, err := clientset.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -164,9 +167,7 @@ func RunGetSecrets(options *GetSecretsOptions, args []string) error {
 	}
 
 	if len(items) == 0 {
-		fmt.Fprintf(os.Stderr, "No secrets found\n")
-
-		return nil
+		return fmt.Errorf("No secrets found")
 	}
 	switch options.output {
 

@@ -3473,7 +3473,8 @@ type LinkedForeignAccount struct {
 	// Status: The status of this foreign account link.
 	Status string `json:"status,omitempty"`
 
-	// Type: The type of the foreign account. For example `ADWORDS_LINKS`.
+	// Type: The type of the foreign account. For example, `ADWORDS_LINKS`,
+	// `DBM_LINKS`, `MCC_LINKS` or `OPTIMIZE`.
 	Type string `json:"type,omitempty"`
 
 	// WebPropertyId: Web property ID of the form UA-XXXXX-YY to which this
