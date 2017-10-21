@@ -29,6 +29,7 @@ kops toolbox template
 ### Options
 
 ```
+      --fail-on-missing        Fail on referencing unset variables in templates (default true)
       --output string          Path to output file, otherwise defaults to stdout
       --snippets stringSlice   Path to directory containing snippets used for templating
       --template stringSlice   Path to template file or directory of templates to render

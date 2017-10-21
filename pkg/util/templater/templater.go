@@ -39,14 +39,15 @@ func NewTemplater() *Templater {
 }
 
 // Render is responsible for actually rendering the template
-func (r *Templater) Render(content string, context map[string]interface{}, snippets map[string]string) (rendered string, err error) {
-
+func (r *Templater) Render(content string, context map[string]interface{}, snippets map[string]string, failOnMissing bool) (rendered string, err error) {
 	// @step: create the template
 	tm := template.New(templateName)
 	if _, err = tm.Funcs(r.templateFuncsMap(tm)).Parse(content); err != nil {
 		return
 	}
-	tm.Option("missingkey=error")
+	if failOnMissing {
+		tm.Option("missingkey=error")
+	}
 
 	// @step: add the snippits into the mix
 	for filename, snippet := range snippets {
