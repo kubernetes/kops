@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 
 	"github.com/golang/glog"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // s is a helper that builds a *string from a string value
@@ -170,4 +171,9 @@ func addHostPathMapping(pod *v1.Pod, container *v1.Container, name, path string)
 	})
 
 	return &container.VolumeMounts[len(container.VolumeMounts)-1]
+}
+
+// convEtcdSettingsToMs converts etcd settings to a string rep of int milliseconds
+func convEtcdSettingsToMs(dur *metav1.Duration) string {
+	return strconv.FormatInt(dur.Nanoseconds()/1000000, 10)
 }

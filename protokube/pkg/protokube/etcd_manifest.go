@@ -48,7 +48,7 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 				"/bin/sh", "-c", "/usr/local/bin/etcd 2>&1 | /bin/tee -a /var/log/etcd.log",
 			},
 		}
-		// build the the environment variables for etcd service
+		// build the environment variables for etcd service
 		container.Env = buildEtcdEnvironmentOptions(c)
 
 		container.LivenessProbe = &v1.Probe{
@@ -169,6 +169,14 @@ func buildEtcdEnvironmentOptions(c *EtcdCluster) []v1.EnvVar {
 		{Name: "ETCD_INITIAL_ADVERTISE_PEER_URLS", Value: fmt.Sprintf("%s://%s:%d", scheme, c.Me.InternalName, c.PeerPort)},
 		{Name: "ETCD_INITIAL_CLUSTER_STATE", Value: "new"},
 		{Name: "ETCD_INITIAL_CLUSTER_TOKEN", Value: c.ClusterToken}}...)
+
+	// add timeout/hearbeat settings
+	if notEmpty(c.ElectionTimeout) {
+		options = append(options, v1.EnvVar{Name: "ETCD_ELECTION_TIMEOUT", Value: c.ElectionTimeout})
+	}
+	if notEmpty(c.HeartbeatInterval) {
+		options = append(options, v1.EnvVar{Name: "ETCD_HEARTBEAT_INTERVAL", Value: c.HeartbeatInterval})
+	}
 
 	// @check if we are using peer certificates
 	if notEmpty(c.PeerCA) {
