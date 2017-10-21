@@ -117,6 +117,9 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	if strict && c.Spec.KubeControllerManager == nil {
 		return field.Required(fieldSpec.Child("KubeControllerManager"), "KubeControllerManager not configured")
 	}
+	if kubernetesRelease.LT(semver.MustParse("1.7.0")) && c.Spec.ExternalCloudControllerManager != nil {
+		return field.Invalid(fieldSpec.Child("ExternalCloudControllerManager"), c.Spec.ExternalCloudControllerManager, "ExternalCloudControllerManager is not supported in version 1.6.0 or lower")
+	}
 	if strict && c.Spec.KubeDNS == nil {
 		return field.Required(fieldSpec.Child("KubeDNS"), "KubeDNS not configured")
 	}
@@ -279,22 +282,23 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 
 		if c.Spec.Kubelet != nil && (strict || c.Spec.Kubelet.CloudProvider != "") {
-			if k8sCloudProvider != c.Spec.Kubelet.CloudProvider {
+			if c.Spec.Kubelet.CloudProvider != "external" && k8sCloudProvider != c.Spec.Kubelet.CloudProvider {
 				return field.Invalid(fieldSpec.Child("Kubelet", "CloudProvider"), c.Spec.Kubelet.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
 		if c.Spec.MasterKubelet != nil && (strict || c.Spec.MasterKubelet.CloudProvider != "") {
-			if k8sCloudProvider != c.Spec.MasterKubelet.CloudProvider {
+			if c.Spec.MasterKubelet.CloudProvider != "external" && k8sCloudProvider != c.Spec.MasterKubelet.CloudProvider {
 				return field.Invalid(fieldSpec.Child("MasterKubelet", "CloudProvider"), c.Spec.MasterKubelet.CloudProvider, "Did not match cluster CloudProvider")
+
 			}
 		}
 		if c.Spec.KubeAPIServer != nil && (strict || c.Spec.KubeAPIServer.CloudProvider != "") {
-			if k8sCloudProvider != c.Spec.KubeAPIServer.CloudProvider {
+			if c.Spec.KubeAPIServer.CloudProvider != "external" && k8sCloudProvider != c.Spec.KubeAPIServer.CloudProvider {
 				return field.Invalid(fieldSpec.Child("KubeAPIServer", "CloudProvider"), c.Spec.KubeAPIServer.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
 		if c.Spec.KubeControllerManager != nil && (strict || c.Spec.KubeControllerManager.CloudProvider != "") {
-			if k8sCloudProvider != c.Spec.KubeControllerManager.CloudProvider {
+			if c.Spec.KubeControllerManager.CloudProvider != "external" && k8sCloudProvider != c.Spec.KubeControllerManager.CloudProvider {
 				return field.Invalid(fieldSpec.Child("KubeControllerManager", "CloudProvider"), c.Spec.KubeControllerManager.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
