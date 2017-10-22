@@ -1,5 +1,29 @@
 # ROADMAP
 
+# 1.9
+
+## Must-have features
+
+* Support for k8s 1.9
+
+## Other features
+
+* Use NodeAuthorizer / bootstrap kubeconfigs  [#3551](https://github.com/kubernetes/kops/issues/3551)
+
+
+# HISTORICAL
+
+# 1.8
+
+## Must-have features
+
+* Support for k8s 1.8
+
+## Other features
+
+* Improved GCE support
+* Support for API aggregation
+
 # 1.7
 
 ## Must-have features
@@ -17,8 +41,6 @@
 * promote GCE to stable
 * RBAC policies for all components
 * bringing rolling-update out of alpha
-
-# HISTORICAL
 
 ## 1.6
 
