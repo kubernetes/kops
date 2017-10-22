@@ -37,6 +37,7 @@ go_library(
 
 go_test(
     name = "go_default_test",
+    size = "small",
     srcs = [
         "aws_test.go",
         "gce_test.go",
