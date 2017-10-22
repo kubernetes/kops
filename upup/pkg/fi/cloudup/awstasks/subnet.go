@@ -22,6 +22,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
@@ -41,6 +42,7 @@ type Subnet struct {
 	Shared           *bool
 
 	Tags map[string]string
+	Type kops.SubnetType
 }
 
 var _ fi.CompareWithID = &Subnet{}
@@ -162,7 +164,6 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 
 		return nil
 	}
-
 	if a == nil {
 		glog.V(2).Infof("Creating Subnet with CIDR: %q", *e.CIDR)
 
@@ -178,6 +179,19 @@ func (_ *Subnet) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Subnet) error {
 		}
 
 		e.ID = response.Subnet.SubnetId
+
+	}
+
+	// Tagging according to upstream so that internal and external ELBs
+	// are deterministically created where they are supposed to be.
+	// https://github.com/kubernetes/kops/issues/2011
+	glog.V(4).Infoln("Found a subnet of type: %s and tagging it for proper ELB placement", e.Type)
+	if e.Type == kops.SubnetTypePrivate {
+		e.Tags["kubernetes.io/role/internal-elb"] = ""
+	} else if e.Type == kops.SubnetTypeUtility {
+		e.Tags["kubernetes.io/role/elb"] = ""
+	} else if e.Type == kops.SubnetTypePublic {
+		e.Tags["kubernetes.io/role/elb"] = ""
 	}
 
 	return t.AddAWSTags(*e.ID, e.Tags)

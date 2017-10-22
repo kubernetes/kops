@@ -156,6 +156,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			CIDR:             s(subnetSpec.CIDR),
 			Shared:           fi.Bool(sharedSubnet),
 			Tags:             tags,
+			Type:             subnetSpec.Type,
 		}
 
 		if subnetSpec.ProviderID != "" {
