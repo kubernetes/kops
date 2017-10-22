@@ -365,6 +365,7 @@ resource "aws_subnet" "us-test-1a-minimal-example-com" {
     KubernetesCluster                           = "minimal.example.com"
     Name                                        = "us-test-1a.minimal.example.com"
     "kubernetes.io/cluster/minimal.example.com" = "owned"
+    "kubernetes.io/role/elb"                    = "1"
   }
 }
 
