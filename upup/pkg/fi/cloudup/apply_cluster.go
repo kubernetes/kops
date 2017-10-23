@@ -36,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/vspheremodel"
 	"k8s.io/kops/pkg/resources/digitalocean"
@@ -351,8 +352,11 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("DigitalOcean support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowDO to enable it")
 			}
 
+			modelContext.SSHPublicKeys = sshPublicKeys
+
 			l.AddTypes(map[string]interface{}{
-				"volume": &dotasks.Volume{},
+				"volume":  &dotasks.Volume{},
+				"droplet": &dotasks.Droplet{},
 			})
 		}
 	case kops.CloudProviderAWS:
@@ -686,7 +690,15 @@ func (c *ApplyClusterCmd) Run() error {
 			Lifecycle:       clusterLifecycle,
 		})
 	case kops.CloudProviderDO:
-		// DigitalOcean tasks will go here
+		doModelContext := &domodel.DOModelContext{
+			KopsModelContext: modelContext,
+		}
+
+		l.Builders = append(l.Builders, &domodel.DropletBuilder{
+			DOModelContext:  doModelContext,
+			BootstrapScript: bootstrapScriptBuilder,
+			Lifecycle:       clusterLifecycle,
+		})
 	case kops.CloudProviderGCE:
 		{
 			gceModelContext := &gcemodel.GCEModelContext{
