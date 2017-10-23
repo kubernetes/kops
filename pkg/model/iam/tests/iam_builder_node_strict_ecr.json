@@ -39,6 +39,22 @@
         "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/ssh/*",
         "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/secrets/dockerconfig"
       ]
+    },
+    {
+      "Sid": "kopsK8sECR",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:GetRepositoryPolicy",
+        "ecr:DescribeRepositories",
+        "ecr:ListImages",
+        "ecr:BatchGetImage"
+      ],
+      "Resource": [
+        "*"
+      ]
     }
   ]
 }
