@@ -34,7 +34,6 @@ k8s.io/kops/pkg/apis/kops/validation
 k8s.io/kops/pkg/apis/nodeup
 k8s.io/kops/pkg/apiserver
 k8s.io/kops/pkg/apiserver/cmd/server
-k8s.io/kops/pkg/apiserver/registry
 k8s.io/kops/pkg/apiserver/registry/cluster
 k8s.io/kops/pkg/apiserver/registry/instancegroup
 k8s.io/kops/pkg/assets
