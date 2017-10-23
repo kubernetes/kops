@@ -73,6 +73,7 @@ go_library(
 
 go_test(
     name = "go_default_test",
+    size = "small",
     srcs = [
         "bootstrapchannelbuilder_test.go",
         "deepvalidate_test.go",
@@ -84,6 +85,9 @@ go_test(
         "subnets_test.go",
         "tagbuilder_test.go",
         "validation_test.go",
+    ],
+    data = [
+        "//upup/pkg/fi/cloudup/tests:exported_testdata",  # keep
     ],
     library = ":go_default_library",
     deps = [
@@ -102,8 +106,5 @@ go_test(
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
-    ],
-    data = [
-        "//upup/pkg/fi/cloudup/tests:exported_testdata",  # keep
     ],
 )
