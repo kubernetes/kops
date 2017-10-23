@@ -35,7 +35,7 @@ UPLOAD=$(BUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
 TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages) 
-BAZEL_TEST?=
+BAZEL_TEST_OPTIONS?=
 
 SOURCES:=$(shell find . -name "*.go")
 
@@ -569,7 +569,7 @@ kops-server-push: kops-server-build
 
 .PHONY: bazel-test
 bazel-test:
-	bazel test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/... //upup/... //util/... --test_output=errors
+	bazel test ${BAZEL_TEST_OPTIONS} //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/... //upup/... //util/... --test_output=errors
 
 .PHONY: bazel-build
 bazel-build:

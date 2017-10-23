@@ -19,8 +19,7 @@ before_install:
 - sudo apt-get -y install bazel
 
 script:
-  # FIXME put this into makefile with options
-  - bazel --batch --output_base=${HOME}/bazel/outbase test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/... --test_output=errors
+  - BAZEL_TEST_OPTIONS="--batch --output_base=${HOME}/bazel/outbase" make bazel-test
   - make ci
  
 git:
