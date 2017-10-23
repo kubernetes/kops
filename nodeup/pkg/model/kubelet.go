@@ -149,8 +149,13 @@ func (b *KubeletBuilder) buildSystemdEnvironmentFile(kubeletConfig *kops.Kubelet
 	}
 
 	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kubenet != nil {
-		// Kubenet is neither CNI nor not-CNI, so we need to pass it `--network-plugin-dir` also
-		flags += " --network-plugin-dir=" + b.CNIBinDir()
+		// Kubenet is neither CNI nor not-CNI, so we need to pass it `--cni-bin-dir` also
+		if b.IsKubernetesGTE("1.9") {
+			// Flag renamed in #53564
+			flags += " --cni-bin-dir=" + b.CNIBinDir()
+		} else {
+			flags += " --network-plugin-dir=" + b.CNIBinDir()
+		}
 	}
 
 	if b.usesContainerizedMounter() {
