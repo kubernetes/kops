@@ -49,6 +49,22 @@
       ]
     },
     {
+      "Sid": "kopsK8sECR",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:GetAuthorizationToken",
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:GetDownloadUrlForLayer",
+        "ecr:GetRepositoryPolicy",
+        "ecr:DescribeRepositories",
+        "ecr:ListImages",
+        "ecr:BatchGetImage"
+      ],
+      "Resource": [
+        "*"
+      ]
+    },
+    {
       "Sid": "kopsK8sS3GetListBucket",
       "Effect": "Allow",
       "Action": [
@@ -95,22 +111,6 @@
         "key-id-1",
         "key-id-2",
         "key-id-3"
-      ]
-    },
-    {
-      "Sid": "kopsK8sECR",
-      "Effect": "Allow",
-      "Action": [
-        "ecr:GetAuthorizationToken",
-        "ecr:BatchCheckLayerAvailability",
-        "ecr:GetDownloadUrlForLayer",
-        "ecr:GetRepositoryPolicy",
-        "ecr:DescribeRepositories",
-        "ecr:ListImages",
-        "ecr:BatchGetImage"
-      ],
-      "Resource": [
-        "*"
       ]
     },
     {
