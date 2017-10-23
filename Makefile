@@ -598,6 +598,7 @@ bazel-push-aws-run: bazel-push
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
 
 .PHONY: bazel-fix
+bazel-fix:
 	bazel run //:gazelle
 
 .PHONY: check-markdown-links
