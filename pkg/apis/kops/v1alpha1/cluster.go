@@ -179,7 +179,8 @@ type Assets struct {
 
 // IAMSpec adds control over the IAM security policies applied to resources
 type IAMSpec struct {
-	Legacy bool `json:"legacy"`
+	Legacy                 bool `json:"legacy"`
+	AllowContainerRegistry bool `json:"allowContainerRegistry,omitempty"`
 }
 
 // HookSpec is a definition hook

@@ -158,7 +158,6 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 	addMasterASPolicies(p, resource, b.Cluster.Spec.IAM.Legacy, b.Cluster.GetName())
 	addMasterELBPolicies(p, resource, b.Cluster.Spec.IAM.Legacy)
 	addCertIAMPolicies(p, resource)
-	addECRPermissions(p)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -177,6 +176,10 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addRoute53ListHostedZonesPermission(p)
 	}
 
+	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
+		addECRPermissions(p)
+	}
+
 	return p, nil
 }
 
@@ -189,7 +192,6 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 	}
 
 	addNodeEC2Policies(p, resource)
-	addECRPermissions(p)
 
 	var err error
 	if p, err = b.AddS3Permissions(p); err != nil {
@@ -201,6 +203,10 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 			addRoute53Permissions(p, b.HostedZoneID)
 		}
 		addRoute53ListHostedZonesPermission(p)
+	}
+
+	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
+		addECRPermissions(p)
 	}
 
 	return p, nil

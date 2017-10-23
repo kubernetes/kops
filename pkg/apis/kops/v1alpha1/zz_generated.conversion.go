@@ -1543,6 +1543,7 @@ func Convert_kops_HookSpec_To_v1alpha1_HookSpec(in *kops.HookSpec, out *HookSpec
 
 func autoConvert_v1alpha1_IAMSpec_To_kops_IAMSpec(in *IAMSpec, out *kops.IAMSpec, s conversion.Scope) error {
 	out.Legacy = in.Legacy
+	out.AllowContainerRegistry = in.AllowContainerRegistry
 	return nil
 }
 
@@ -1553,6 +1554,7 @@ func Convert_v1alpha1_IAMSpec_To_kops_IAMSpec(in *IAMSpec, out *kops.IAMSpec, s 
 
 func autoConvert_kops_IAMSpec_To_v1alpha1_IAMSpec(in *kops.IAMSpec, out *IAMSpec, s conversion.Scope) error {
 	out.Legacy = in.Legacy
+	out.AllowContainerRegistry = in.AllowContainerRegistry
 	return nil
 }
 
