@@ -19,7 +19,7 @@ before_install:
 - sudo apt-get -y install bazel
 
 script:
-  - time BAZEL_OPTIONS="--batch --output_base=${HOME}/bazel/outbase --host_jvm_args=-Xmx500m --host_jvm_args=-Xms500m" BAZEL_TEST_OPTIONS="--experimental_repository_cache="$HOME/.bazel_repository_cache" make bazel-test
+  - time BAZEL_OPTIONS="--batch --output_base=${HOME}/bazel/outbase --host_jvm_args=-Xmx500m --host_jvm_args=-Xms500m" make bazel-test
   - time make ci
  
 git:
