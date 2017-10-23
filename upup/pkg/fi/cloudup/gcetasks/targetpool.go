@@ -99,11 +99,11 @@ func (_ *TargetPool) RenderGCE(t *gce.GCEAPITarget, a, e, changes *TargetPool) e
 }
 
 type terraformTargetPool struct {
-	Name           string   `json:"name"`
-	Description    string   `json:"description,omitempty"`
-	HealthChecks   []string `json:"health_checks,omitempty"`
-	Instances      []string `json:"instances,omitempty"`
-	SessionAfinity string   `json:"session_affnity,omitempty"`
+	Name            string   `json:"name"`
+	Description     string   `json:"description,omitempty"`
+	HealthChecks    []string `json:"health_checks,omitempty"`
+	Instances       []string `json:"instances,omitempty"`
+	SessionAffinity string   `json:"session_affinity,omitempty"`
 }
 
 func (_ *TargetPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetPool) error {
