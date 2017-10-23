@@ -19,8 +19,8 @@ before_install:
 - sudo apt-get -y install bazel
 
 script:
-  - BAZEL_TEST_OPTIONS="--batch --output_base=${HOME}/bazel/outbase" make bazel-test
-  - make ci
+  - time BAZEL_TEST_OPTIONS="--batch --output_base=${HOME}/bazel/outbase" make bazel-test
+  - time make ci
  
 git:
   submodules: false
