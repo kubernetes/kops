@@ -243,6 +243,10 @@ func TestSharedSubnetCreateDoesNotCreateNew(t *testing.T) {
 				"kubernetes.io/cluster/cluster.example.com": "shared",
 			}),
 		}
+
+		mockec2.SortTags(expected.Tags)
+		mockec2.SortTags(actual.Tags)
+
 		if !reflect.DeepEqual(actual, expected) {
 			t.Fatalf("Unexpected Subnet: expected=%v actual=%v", expected, actual)
 		}
