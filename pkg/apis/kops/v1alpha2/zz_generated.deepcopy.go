@@ -2161,6 +2161,26 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 			**out = **in
 		}
 	}
+	if in.RequestheaderUsernameHeaders != nil {
+		in, out := &in.RequestheaderUsernameHeaders, &out.RequestheaderUsernameHeaders
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.RequestheaderGroupHeaders != nil {
+		in, out := &in.RequestheaderGroupHeaders, &out.RequestheaderGroupHeaders
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.RequestheaderExtraHeaderPrefixes != nil {
+		in, out := &in.RequestheaderExtraHeaderPrefixes, &out.RequestheaderExtraHeaderPrefixes
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.RequestheaderAllowedNames != nil {
+		in, out := &in.RequestheaderAllowedNames, &out.RequestheaderAllowedNames
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 

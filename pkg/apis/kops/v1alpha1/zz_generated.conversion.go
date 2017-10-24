@@ -1816,6 +1816,11 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	out.ExperimentalEncryptionProviderConfig = in.ExperimentalEncryptionProviderConfig
+	out.RequestheaderUsernameHeaders = in.RequestheaderUsernameHeaders
+	out.RequestheaderGroupHeaders = in.RequestheaderGroupHeaders
+	out.RequestheaderExtraHeaderPrefixes = in.RequestheaderExtraHeaderPrefixes
+	out.RequestheaderClientCAFile = in.RequestheaderClientCAFile
+	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
 	return nil
 }
 
@@ -1868,6 +1873,11 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	out.ExperimentalEncryptionProviderConfig = in.ExperimentalEncryptionProviderConfig
+	out.RequestheaderUsernameHeaders = in.RequestheaderUsernameHeaders
+	out.RequestheaderGroupHeaders = in.RequestheaderGroupHeaders
+	out.RequestheaderExtraHeaderPrefixes = in.RequestheaderExtraHeaderPrefixes
+	out.RequestheaderClientCAFile = in.RequestheaderClientCAFile
+	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
 	return nil
 }
 

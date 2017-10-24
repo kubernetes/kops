@@ -40,16 +40,21 @@ import (
 type VFSCAStore struct {
 	basedir vfs.Path
 
-	mutex               sync.Mutex
-	cacheCaCertificates *certificates
-	cacheCaPrivateKeys  *privateKeys
+	mutex     sync.Mutex
+	cachedCAs map[string]*cachedEntry
+}
+
+type cachedEntry struct {
+	certificates *certificates
+	privateKeys  *privateKeys
 }
 
 var _ CAStore = &VFSCAStore{}
 
 func NewVFSCAStore(basedir vfs.Path) CAStore {
 	c := &VFSCAStore{
-		basedir: basedir,
+		basedir:   basedir,
+		cachedCAs: make(map[string]*cachedEntry),
 	}
 
 	return c
@@ -60,15 +65,16 @@ func (s *VFSCAStore) VFSPath() vfs.Path {
 }
 
 // Retrieves the CA keypair, generating a new keypair if not found
-func (s *VFSCAStore) readCAKeypairs() (*certificates, *privateKeys, error) {
+func (s *VFSCAStore) readCAKeypairs(id string) (*certificates, *privateKeys, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	if s.cacheCaPrivateKeys != nil {
-		return s.cacheCaCertificates, s.cacheCaPrivateKeys, nil
+	cached := s.cachedCAs[id]
+	if cached != nil {
+		return cached.certificates, cached.privateKeys, nil
 	}
 
-	caCertificates, err := s.loadCertificates(s.buildCertificatePoolPath(CertificateId_CA))
+	caCertificates, err := s.loadCertificates(s.buildCertificatePoolPath(id))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -76,7 +82,7 @@ func (s *VFSCAStore) readCAKeypairs() (*certificates, *privateKeys, error) {
 	var caPrivateKeys *privateKeys
 
 	if caCertificates != nil {
-		caPrivateKeys, err = s.loadPrivateKeys(s.buildPrivateKeyPoolPath(CertificateId_CA))
+		caPrivateKeys, err = s.loadPrivateKeys(s.buildPrivateKeyPoolPath(id))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -88,16 +94,16 @@ func (s *VFSCAStore) readCAKeypairs() (*certificates, *privateKeys, error) {
 	}
 
 	if caPrivateKeys == nil {
-		caCertificates, caPrivateKeys, err = s.generateCACertificate()
+		caCertificates, caPrivateKeys, err = s.generateCACertificate(id)
 		if err != nil {
 			return nil, nil, err
 		}
 
 	}
-	s.cacheCaCertificates = caCertificates
-	s.cacheCaPrivateKeys = caPrivateKeys
+	cached = &cachedEntry{certificates: caCertificates, privateKeys: caPrivateKeys}
+	s.cachedCAs[id] = cached
 
-	return s.cacheCaCertificates, s.cacheCaPrivateKeys, nil
+	return cached.certificates, cached.privateKeys, nil
 }
 
 func BuildCAX509Template() *x509.Certificate {
@@ -117,7 +123,7 @@ func BuildCAX509Template() *x509.Certificate {
 
 // Creates and stores CA keypair
 // Should be called with the mutex held, to prevent concurrent creation of different keys
-func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error) {
+func (c *VFSCAStore) generateCACertificate(id string) (*certificates, *privateKeys, error) {
 	template := BuildCAX509Template()
 
 	caRsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
@@ -135,14 +141,14 @@ func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error
 	t := time.Now().UnixNano()
 	serial := pki.BuildPKISerial(t)
 
-	keyPath := c.buildPrivateKeyPath(CertificateId_CA, serial)
+	keyPath := c.buildPrivateKeyPath(id, serial)
 	err = c.storePrivateKey(caPrivateKey, keyPath)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Make double-sure it round-trips
-	privateKeys, err := c.loadPrivateKeys(c.buildPrivateKeyPoolPath(CertificateId_CA))
+	privateKeys, err := c.loadPrivateKeys(c.buildPrivateKeyPoolPath(id))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -150,14 +156,14 @@ func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error
 		return nil, nil, fmt.Errorf("failed to round-trip CA private key")
 	}
 
-	certPath := c.buildCertificatePath(CertificateId_CA, serial)
+	certPath := c.buildCertificatePath(id, serial)
 	err = c.storeCertificate(caCertificate, certPath)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Make double-sure it round-trips
-	certificates, err := c.loadCertificates(c.buildCertificatePoolPath(CertificateId_CA))
+	certificates, err := c.loadCertificates(c.buildCertificatePoolPath(id))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -414,25 +420,34 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 	return vfs.CopyTree(c.basedir, basedir)
 }
 
-func (c *VFSCAStore) IssueCert(id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
+func (c *VFSCAStore) IssueCert(signer string, id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
 	glog.Infof("Issuing new certificate: %q", id)
 
 	template.SerialNumber = serial
 
-	caCertificates, caPrivateKeys, err := c.readCAKeypairs()
-	if err != nil {
-		return nil, err
+	var cert *pki.Certificate
+	if template.IsCA {
+		var err error
+		cert, err = pki.SignNewCertificate(privateKey, template, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		caCertificates, caPrivateKeys, err := c.readCAKeypairs(signer)
+		if err != nil {
+			return nil, err
+		}
+
+		if caPrivateKeys == nil || caPrivateKeys.Primary() == nil {
+			return nil, fmt.Errorf("ca key for %q was not found; cannot issue certificates", signer)
+		}
+		cert, err = pki.SignNewCertificate(privateKey, template, caCertificates.Primary().Certificate, caPrivateKeys.Primary())
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	if caPrivateKeys == nil || caPrivateKeys.Primary() == nil {
-		return nil, fmt.Errorf("ca.key was not found; cannot issue certificates")
-	}
-	cert, err := pki.SignNewCertificate(privateKey, template, caCertificates.Primary().Certificate, caPrivateKeys.Primary())
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.StoreKeypair(id, cert, privateKey)
+	err := c.StoreKeypair(id, cert, privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -557,7 +572,7 @@ func (c *VFSCAStore) loadOnePrivateKey(p vfs.Path) (*pki.PrivateKey, error) {
 func (c *VFSCAStore) FindPrivateKey(id string) (*pki.PrivateKey, error) {
 	var keys *privateKeys
 	if id == CertificateId_CA {
-		_, caPrivateKeys, err := c.readCAKeypairs()
+		_, caPrivateKeys, err := c.readCAKeypairs(id)
 		if err != nil {
 			return nil, err
 		}
@@ -592,10 +607,10 @@ func (c *VFSCAStore) PrivateKey(id string, createIfMissing bool) (*pki.PrivateKe
 
 }
 
-func (c *VFSCAStore) CreateKeypair(id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
+func (c *VFSCAStore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
 	serial := c.buildSerial()
 
-	cert, err := c.IssueCert(id, serial, privateKey, template)
+	cert, err := c.IssueCert(signer, id, serial, privateKey, template)
 	if err != nil {
 		return nil, err
 	}
