@@ -1179,6 +1179,8 @@ func autoConvert_v1alpha1_EtcdClusterSpec_To_kops_EtcdClusterSpec(in *EtcdCluste
 	}
 	out.EnableEtcdTLS = in.EnableEtcdTLS
 	out.Version = in.Version
+	out.LeaderElectionTimeout = in.LeaderElectionTimeout
+	out.HeartbeatInterval = in.HeartbeatInterval
 	return nil
 }
 
@@ -1203,6 +1205,8 @@ func autoConvert_kops_EtcdClusterSpec_To_v1alpha1_EtcdClusterSpec(in *kops.EtcdC
 	}
 	out.EnableEtcdTLS = in.EnableEtcdTLS
 	out.Version = in.Version
+	out.LeaderElectionTimeout = in.LeaderElectionTimeout
+	out.HeartbeatInterval = in.HeartbeatInterval
 	return nil
 }
 
@@ -1539,6 +1543,7 @@ func Convert_kops_HookSpec_To_v1alpha1_HookSpec(in *kops.HookSpec, out *HookSpec
 
 func autoConvert_v1alpha1_IAMSpec_To_kops_IAMSpec(in *IAMSpec, out *kops.IAMSpec, s conversion.Scope) error {
 	out.Legacy = in.Legacy
+	out.AllowContainerRegistry = in.AllowContainerRegistry
 	return nil
 }
 
@@ -1549,6 +1554,7 @@ func Convert_v1alpha1_IAMSpec_To_kops_IAMSpec(in *IAMSpec, out *kops.IAMSpec, s 
 
 func autoConvert_kops_IAMSpec_To_v1alpha1_IAMSpec(in *kops.IAMSpec, out *IAMSpec, s conversion.Scope) error {
 	out.Legacy = in.Legacy
+	out.AllowContainerRegistry = in.AllowContainerRegistry
 	return nil
 }
 
@@ -1810,6 +1816,11 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	out.ExperimentalEncryptionProviderConfig = in.ExperimentalEncryptionProviderConfig
+	out.RequestheaderUsernameHeaders = in.RequestheaderUsernameHeaders
+	out.RequestheaderGroupHeaders = in.RequestheaderGroupHeaders
+	out.RequestheaderExtraHeaderPrefixes = in.RequestheaderExtraHeaderPrefixes
+	out.RequestheaderClientCAFile = in.RequestheaderClientCAFile
+	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
 	return nil
 }
 
@@ -1862,6 +1873,11 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.AuthorizationMode = in.AuthorizationMode
 	out.AuthorizationRBACSuperUser = in.AuthorizationRBACSuperUser
 	out.ExperimentalEncryptionProviderConfig = in.ExperimentalEncryptionProviderConfig
+	out.RequestheaderUsernameHeaders = in.RequestheaderUsernameHeaders
+	out.RequestheaderGroupHeaders = in.RequestheaderGroupHeaders
+	out.RequestheaderExtraHeaderPrefixes = in.RequestheaderExtraHeaderPrefixes
+	out.RequestheaderClientCAFile = in.RequestheaderClientCAFile
+	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
 	return nil
 }
 
@@ -1893,6 +1909,7 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
+	out.HorizontalPodAutoscalerSyncPeriod = in.HorizontalPodAutoscalerSyncPeriod
 	return nil
 }
 
@@ -1924,6 +1941,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	out.AttachDetachReconcileSyncPeriod = in.AttachDetachReconcileSyncPeriod
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
+	out.HorizontalPodAutoscalerSyncPeriod = in.HorizontalPodAutoscalerSyncPeriod
 	return nil
 }
 

@@ -180,7 +180,8 @@ type Assets struct {
 
 // IAMSpec adds control over the IAM security policies applied to resources
 type IAMSpec struct {
-	Legacy bool `json:"legacy"`
+	Legacy                 bool `json:"legacy"`
+	AllowContainerRegistry bool `json:"allowContainerRegistry,omitempty"`
 }
 
 // HookSpec is a definition hook
@@ -292,6 +293,10 @@ type EtcdClusterSpec struct {
 	EnableEtcdTLS bool `json:"enableEtcdTLS,omitempty"`
 	// Version is the version of etcd to run i.e. 2.1.2, 3.0.17 etcd
 	Version string `json:"version,omitempty"`
+	// LeaderElectionTimeout is the time (in milliseconds) for an etcd leader election timeout
+	LeaderElectionTimeout *metav1.Duration `json:"leaderElectionTimeout,omitempty"`
+	// HeartbeatInterval is the time (in milliseconds) for an etcd heartbeat interval
+	HeartbeatInterval *metav1.Duration `json:"heartbeatInterval,omitempty"`
 }
 
 // EtcdMemberSpec is a specification for a etcd member

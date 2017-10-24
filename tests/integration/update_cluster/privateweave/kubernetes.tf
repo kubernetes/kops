@@ -636,6 +636,7 @@ resource "aws_subnet" "us-test-1a-privateweave-example-com" {
     KubernetesCluster                                = "privateweave.example.com"
     Name                                             = "us-test-1a.privateweave.example.com"
     "kubernetes.io/cluster/privateweave.example.com" = "owned"
+    "kubernetes.io/role/internal-elb"                = "1"
   }
 }
 
@@ -648,6 +649,7 @@ resource "aws_subnet" "utility-us-test-1a-privateweave-example-com" {
     KubernetesCluster                                = "privateweave.example.com"
     Name                                             = "utility-us-test-1a.privateweave.example.com"
     "kubernetes.io/cluster/privateweave.example.com" = "owned"
+    "kubernetes.io/role/elb"                         = "1"
   }
 }
 

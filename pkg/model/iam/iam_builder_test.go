@@ -78,39 +78,64 @@ func TestRoundTrip(t *testing.T) {
 
 func TestPolicyGeneration(t *testing.T) {
 	grid := []struct {
-		Role      kops.InstanceGroupRole
-		LegacyIAM bool
-		Policy    string
+		Role                   kops.InstanceGroupRole
+		LegacyIAM              bool
+		AllowContainerRegistry bool
+		Policy                 string
 	}{
 		{
-			Role:      "Master",
-			LegacyIAM: true,
-			Policy:    "tests/iam_builder_master_legacy.json",
+			Role:                   "Master",
+			LegacyIAM:              true,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_master_legacy.json",
 		},
 		{
-			Role:      "Master",
-			LegacyIAM: false,
-			Policy:    "tests/iam_builder_master_strict.json",
+			Role:                   "Master",
+			LegacyIAM:              false,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_master_strict.json",
 		},
 		{
-			Role:      "Node",
-			LegacyIAM: true,
-			Policy:    "tests/iam_builder_node_legacy.json",
+			Role:                   "Master",
+			LegacyIAM:              false,
+			AllowContainerRegistry: true,
+			Policy:                 "tests/iam_builder_master_strict_ecr.json",
 		},
 		{
-			Role:      "Node",
-			LegacyIAM: false,
-			Policy:    "tests/iam_builder_node_strict.json",
+			Role:                   "Node",
+			LegacyIAM:              true,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_node_legacy.json",
 		},
 		{
-			Role:      "Bastion",
-			LegacyIAM: true,
-			Policy:    "tests/iam_builder_bastion.json",
+			Role:                   "Node",
+			LegacyIAM:              false,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_node_strict.json",
 		},
 		{
-			Role:      "Bastion",
-			LegacyIAM: false,
-			Policy:    "tests/iam_builder_bastion.json",
+			Role:                   "Node",
+			LegacyIAM:              false,
+			AllowContainerRegistry: true,
+			Policy:                 "tests/iam_builder_node_strict_ecr.json",
+		},
+		{
+			Role:                   "Bastion",
+			LegacyIAM:              true,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_bastion.json",
+		},
+		{
+			Role:                   "Bastion",
+			LegacyIAM:              false,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_bastion.json",
+		},
+		{
+			Role:                   "Bastion",
+			LegacyIAM:              false,
+			AllowContainerRegistry: true,
+			Policy:                 "tests/iam_builder_bastion.json",
 		},
 	}
 
@@ -120,7 +145,8 @@ func TestPolicyGeneration(t *testing.T) {
 				Spec: kops.ClusterSpec{
 					ConfigStore: "s3://kops-tests/iam-builder-test.k8s.local",
 					IAM: &kops.IAMSpec{
-						Legacy: x.LegacyIAM,
+						Legacy:                 x.LegacyIAM,
+						AllowContainerRegistry: x.AllowContainerRegistry,
 					},
 					EtcdClusters: []*kops.EtcdClusterSpec{
 						{
