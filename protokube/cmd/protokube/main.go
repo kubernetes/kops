@@ -61,7 +61,8 @@ func run() error {
 	var zones []string
 	var applyTaints, initializeRBAC, containerized, master bool
 	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen string
-	var flagChannels, tlsCert, tlsKey, tlsCA, peerCert, peerKey, peerCA, etcdImageSource string
+	var flagChannels, tlsCert, tlsKey, tlsCA, peerCert, peerKey, peerCA string
+	var etcdImageSource, etcdElectionTimeout, etcdHeartbeatInterval string
 
 	flag.BoolVar(&applyTaints, "apply-taints", applyTaints, "Apply taints to nodes based on the role")
 	flag.BoolVar(&containerized, "containerized", containerized, "Set if we are running containerized.")
@@ -82,6 +83,8 @@ func run() error {
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
 	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, coredns)")
 	flags.StringVar(&etcdImageSource, "etcd-image", "gcr.io/google_containers/etcd:2.2.1", "Etcd Source Container Registry")
+	flags.StringVar(&etcdElectionTimeout, "etcd-election-timeout", etcdElectionTimeout, "time in ms for an election to timeout")
+	flags.StringVar(&etcdHeartbeatInterval, "etcd-heartbeat-interval", etcdHeartbeatInterval, "time in ms of a heartbeat interval")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
 
 	// Trick to avoid 'logging before flag.Parse' warning
@@ -282,22 +285,24 @@ func run() error {
 	}
 
 	k := &protokube.KubeBoot{
-		ApplyTaints:       applyTaints,
-		Channels:          channels,
-		DNS:               dnsProvider,
-		EtcdImageSource:   etcdImageSource,
-		InitializeRBAC:    initializeRBAC,
-		InternalDNSSuffix: dnsInternalSuffix,
-		InternalIP:        internalIP,
-		Kubernetes:        protokube.NewKubernetesContext(),
-		Master:            master,
-		ModelDir:          modelDir,
-		PeerCA:            peerCA,
-		PeerCert:          peerCert,
-		PeerKey:           peerKey,
-		TLSCA:             tlsCA,
-		TLSCert:           tlsCert,
-		TLSKey:            tlsKey,
+		ApplyTaints:           applyTaints,
+		Channels:              channels,
+		DNS:                   dnsProvider,
+		EtcdImageSource:       etcdImageSource,
+		EtcdElectionTimeout:   etcdElectionTimeout,
+		EtcdHeartbeatInterval: etcdHeartbeatInterval,
+		InitializeRBAC:        initializeRBAC,
+		InternalDNSSuffix:     dnsInternalSuffix,
+		InternalIP:            internalIP,
+		Kubernetes:            protokube.NewKubernetesContext(),
+		Master:                master,
+		ModelDir:              modelDir,
+		PeerCA:                peerCA,
+		PeerCert:              peerCert,
+		PeerKey:               peerKey,
+		TLSCA:                 tlsCA,
+		TLSCert:               tlsCert,
+		TLSKey:                tlsKey,
 	}
 
 	k.Init(volumes)

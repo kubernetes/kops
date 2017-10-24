@@ -116,7 +116,7 @@ func (c *NodeupModelContext) CNIConfDir() string {
 
 // buildPKIKubeconfig generates a kubeconfig
 func (c *NodeupModelContext) buildPKIKubeconfig(id string) (string, error) {
-	caCertificate, err := c.KeyStore.Cert(fi.CertificateId_CA, false)
+	caCertificate, err := c.KeyStore.FindCert(fi.CertificateId_CA)
 	if err != nil {
 		return "", fmt.Errorf("error fetching CA certificate from keystore: %v", err)
 	}

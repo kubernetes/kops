@@ -627,6 +627,7 @@ resource "aws_subnet" "us-test-1a-privatekopeio-example-com" {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "us-test-1a.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+    "kubernetes.io/role/internal-elb"                 = "1"
   }
 }
 
@@ -639,6 +640,7 @@ resource "aws_subnet" "utility-us-test-1a-privatekopeio-example-com" {
     KubernetesCluster                                 = "privatekopeio.example.com"
     Name                                              = "utility-us-test-1a.privatekopeio.example.com"
     "kubernetes.io/cluster/privatekopeio.example.com" = "owned"
+    "kubernetes.io/role/elb"                          = "1"
   }
 }
 

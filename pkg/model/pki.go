@@ -35,13 +35,25 @@ var _ fi.ModelBuilder = &PKIModelBuilder{}
 
 // Build is responsible for generating the various pki assets
 func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
+
+	// TODO: Only create the CA via this task
+	defaultCA := &fitasks.Keypair{
+		Name:      fi.String(fi.CertificateId_CA),
+		Lifecycle: b.Lifecycle,
+		Subject:   "cn=kubernetes",
+		Type:      "ca",
+	}
+	c.AddTask(defaultCA)
+
 	{
+
 		t := &fitasks.Keypair{
 			Name:      fi.String("kubelet"),
 			Lifecycle: b.Lifecycle,
 
 			Subject: "o=" + user.NodesGroup + ",cn=kubelet",
 			Type:    "client",
+			Signer:  defaultCA,
 		}
 		c.AddTask(t)
 	}
@@ -54,6 +66,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=kubelet-api",
 			Type:      "client",
+			Signer:    defaultCA,
 		})
 	}
 	{
@@ -62,6 +75,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=" + user.KubeScheduler,
 			Type:      "client",
+			Signer:    defaultCA,
 		}
 		c.AddTask(t)
 	}
@@ -72,6 +86,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=" + user.KubeProxy,
 			Type:      "client",
+			Signer:    defaultCA,
 		}
 		c.AddTask(t)
 	}
@@ -82,6 +97,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=" + user.KubeControllerManager,
 			Type:      "client",
+			Signer:    defaultCA,
 		}
 		c.AddTask(t)
 	}
@@ -101,6 +117,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name:           fi.String("etcd"),
 				Subject:        "cn=etcd",
 				Type:           "server",
+				Signer:         defaultCA,
 			})
 		}
 		{
@@ -109,6 +126,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Lifecycle: b.Lifecycle,
 				Subject:   "cn=etcd-client",
 				Type:      "client",
+				Signer:    defaultCA,
 			})
 		}
 	}
@@ -118,6 +136,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Name:    fi.String("kube-router"),
 			Subject: "cn=" + "system:kube-router",
 			Type:    "client",
+			Signer:  defaultCA,
 		}
 		c.AddTask(t)
 	}
@@ -128,6 +147,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			Subject:   "o=" + user.SystemPrivilegedGroup + ",cn=kubecfg",
 			Type:      "client",
+			Signer:    defaultCA,
 		}
 		c.AddTask(t)
 	}
@@ -138,8 +158,29 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			Subject:   "cn=apiserver-proxy-client",
 			Type:      "client",
+			Signer:    defaultCA,
 		}
 		c.AddTask(t)
+	}
+
+	{
+		aggregatorCA := &fitasks.Keypair{
+			Name:      fi.String("apiserver-aggregator-ca"),
+			Lifecycle: b.Lifecycle,
+			Subject:   "cn=apiserver-aggregator-ca",
+			Type:      "ca",
+		}
+		c.AddTask(aggregatorCA)
+
+		aggregator := &fitasks.Keypair{
+			Name:      fi.String("apiserver-aggregator"),
+			Lifecycle: b.Lifecycle,
+			// Must match RequestheaderAllowedNames
+			Subject: "cn=aggregator",
+			Type:    "client",
+			Signer:  aggregatorCA,
+		}
+		c.AddTask(aggregator)
 	}
 
 	{
@@ -148,6 +189,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Lifecycle: b.Lifecycle,
 			Subject:   "o=" + user.SystemPrivilegedGroup + ",cn=kops",
 			Type:      "client",
+			Signer:    defaultCA,
 		}
 		c.AddTask(t)
 	}
@@ -183,6 +225,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Subject:        "cn=kubernetes-master",
 			Type:           "server",
 			AlternateNames: alternateNames,
+			Signer:         defaultCA,
 		}
 		c.AddTask(t)
 	}

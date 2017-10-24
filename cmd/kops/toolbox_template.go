@@ -52,11 +52,12 @@ var (
 
 // the options for the command
 type toolboxTemplateOption struct {
-	clusterName  string
-	configPath   []string
-	outputPath   string
-	snippetsPath []string
-	templatePath []string
+	clusterName   string
+	configPath    []string
+	failOnMissing bool
+	outputPath    string
+	snippetsPath  []string
+	templatePath  []string
 }
 
 // NewCmdToolboxTemplate returns a new templating command
@@ -84,6 +85,7 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringSliceVar(&options.templatePath, "template", options.templatePath, "Path to template file or directory of templates to render")
 	cmd.Flags().StringSliceVar(&options.snippetsPath, "snippets", options.snippetsPath, "Path to directory containing snippets used for templating")
 	cmd.Flags().StringVar(&options.outputPath, "output", options.outputPath, "Path to output file, otherwise defaults to stdout")
+	cmd.Flags().BoolVar(&options.failOnMissing, "fail-on-missing", true, "Fail on referencing unset variables in templates")
 
 	return cmd
 }
@@ -160,10 +162,11 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 			return fmt.Errorf("unable to read template: %s, error: %s", x, err)
 		}
 
-		rendered, err := r.Render(string(content), context, snippets)
+		rendered, err := r.Render(string(content), context, snippets, options.failOnMissing)
 		if err != nil {
 			return fmt.Errorf("unable to render template: %s, error: %s", x, err)
 		}
+
 		io.WriteString(writer, rendered)
 
 		// @check if we should need to add document separator

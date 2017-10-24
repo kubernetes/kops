@@ -1402,6 +1402,24 @@ func (in *EtcdClusterSpec) DeepCopyInto(out *EtcdClusterSpec) {
 			}
 		}
 	}
+	if in.LeaderElectionTimeout != nil {
+		in, out := &in.LeaderElectionTimeout, &out.LeaderElectionTimeout
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
+	if in.HeartbeatInterval != nil {
+		in, out := &in.HeartbeatInterval, &out.HeartbeatInterval
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
 	return
 }
 
@@ -2362,6 +2380,26 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 			**out = **in
 		}
 	}
+	if in.RequestheaderUsernameHeaders != nil {
+		in, out := &in.RequestheaderUsernameHeaders, &out.RequestheaderUsernameHeaders
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.RequestheaderGroupHeaders != nil {
+		in, out := &in.RequestheaderGroupHeaders, &out.RequestheaderGroupHeaders
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.RequestheaderExtraHeaderPrefixes != nil {
+		in, out := &in.RequestheaderExtraHeaderPrefixes, &out.RequestheaderExtraHeaderPrefixes
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.RequestheaderAllowedNames != nil {
+		in, out := &in.RequestheaderAllowedNames, &out.RequestheaderAllowedNames
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
@@ -2429,6 +2467,15 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			*out = nil
 		} else {
 			*out = new(bool)
+			**out = **in
+		}
+	}
+	if in.HorizontalPodAutoscalerSyncPeriod != nil {
+		in, out := &in.HorizontalPodAutoscalerSyncPeriod, &out.HorizontalPodAutoscalerSyncPeriod
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
 			**out = **in
 		}
 	}

@@ -100,13 +100,12 @@ func (l *Statement) Equal(r *Statement) bool {
 // PolicyBuilder struct defines all valid fields to be used when building the
 // AWS IAM policy document for a given instance group role.
 type PolicyBuilder struct {
-	Cluster        *kops.Cluster
-	CreateECRPerms bool
-	HostedZoneID   string
-	KMSKeys        []string
-	Region         string
-	ResourceARN    *string
-	Role           kops.InstanceGroupRole
+	Cluster      *kops.Cluster
+	HostedZoneID string
+	KMSKeys      []string
+	Region       string
+	ResourceARN  *string
+	Role         kops.InstanceGroupRole
 }
 
 // BuildAWSPolicy builds a set of IAM policy statements based on the
@@ -169,16 +168,16 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addKMSIAMPolicies(p, stringorslice.Slice(b.KMSKeys), b.Cluster.Spec.IAM.Legacy)
 	}
 
-	if b.Cluster.Spec.IAM.Legacy || b.CreateECRPerms {
-		addECRPermissions(p)
-	}
-
 	if b.HostedZoneID != "" {
 		addRoute53Permissions(p, b.HostedZoneID)
 	}
 
 	if b.Cluster.Spec.IAM.Legacy {
 		addRoute53ListHostedZonesPermission(p)
+	}
+
+	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
+		addECRPermissions(p)
 	}
 
 	return p, nil
@@ -199,15 +198,15 @@ func (b *PolicyBuilder) BuildAWSPolicyNode() (*Policy, error) {
 		return nil, fmt.Errorf("failed to generate AWS IAM S3 access statements: %v", err)
 	}
 
-	if b.Cluster.Spec.IAM.Legacy || b.CreateECRPerms {
-		addECRPermissions(p)
-	}
-
 	if b.Cluster.Spec.IAM.Legacy {
 		if b.HostedZoneID != "" {
 			addRoute53Permissions(p, b.HostedZoneID)
 		}
 		addRoute53ListHostedZonesPermission(p)
+	}
+
+	if b.Cluster.Spec.IAM.Legacy || b.Cluster.Spec.IAM.AllowContainerRegistry {
+		addECRPermissions(p)
 	}
 
 	return p, nil

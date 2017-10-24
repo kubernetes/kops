@@ -85,7 +85,7 @@ func SignNewCertificate(privateKey *PrivateKey, template *x509.Certificate, sign
 		template.KeyUsage = x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment
 	}
 
-	if template.ExtKeyUsage == nil {
+	if template.ExtKeyUsage == nil && !template.IsCA {
 		template.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}
 	}
 	//c.SignatureAlgorithm  = do we want to overrride?
