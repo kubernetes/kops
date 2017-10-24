@@ -23,21 +23,21 @@
       ]
     },
     {
-      "Sid": "kopsK8sS3BucketFullAccess",
+      "Sid": "kopsK8sS3NodeBucketSelectiveGet",
       "Effect": "Allow",
       "Action": [
-        "s3:*"
-      ],
-      "Resource": "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/*"
-    },
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Action": [
-        "route53:ListHostedZones"
+        "s3:Get*"
       ],
       "Resource": [
-        "*"
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/addons/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/cluster.spec",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/config",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/instancegroup/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/issued/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kube-proxy/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/private/kubelet/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/pki/ssh/*",
+        "arn:aws:s3:::kops-tests/iam-builder-test.k8s.local/secrets/dockerconfig"
       ]
     },
     {
