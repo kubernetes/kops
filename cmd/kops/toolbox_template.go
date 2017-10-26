@@ -17,19 +17,21 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 
-	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/pkg/util/templater"
-	"k8s.io/kops/upup/pkg/fi/utils"
-
+	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
+
+	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/util/templater"
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 var (
@@ -54,7 +56,9 @@ var (
 type toolboxTemplateOption struct {
 	clusterName   string
 	configPath    []string
+	configValue   string
 	failOnMissing bool
+	formatYAML    bool
 	outputPath    string
 	snippetsPath  []string
 	templatePath  []string
@@ -85,7 +89,9 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringSliceVar(&options.templatePath, "template", options.templatePath, "Path to template file or directory of templates to render")
 	cmd.Flags().StringSliceVar(&options.snippetsPath, "snippets", options.snippetsPath, "Path to directory containing snippets used for templating")
 	cmd.Flags().StringVar(&options.outputPath, "output", options.outputPath, "Path to output file, otherwise defaults to stdout")
+	cmd.Flags().StringVar(&options.configValue, "config-value", "", "Show the value of a specific configuration value")
 	cmd.Flags().BoolVar(&options.failOnMissing, "fail-on-missing", true, "Fail on referencing unset variables in templates")
+	cmd.Flags().BoolVar(&options.formatYAML, "format-yaml", false, "Attempt to format the generated yaml content before output")
 
 	return cmd
 }
@@ -93,29 +99,23 @@ func NewCmdToolboxTemplate(f *util.Factory, out io.Writer) *cobra.Command {
 // runToolBoxTemplate is the action for the command
 func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplateOption) error {
 	// @step: read in the configuration if any
-	context := make(map[string]interface{}, 0)
-	for _, x := range options.configPath {
-		list, err := expandFiles(utils.ExpandPath(x))
-		if err != nil {
-			return err
-		}
-		for _, j := range list {
-			content, err := ioutil.ReadFile(j)
-			if err != nil {
-				return fmt.Errorf("unable to configuration file: %s, error: %s", j, err)
-			}
-
-			ctx := make(map[string]interface{}, 0)
-			if err := utils.YamlUnmarshal(content, &ctx); err != nil {
-				return fmt.Errorf("unable decode the configuration file: %s, error: %v", j, err)
-			}
-			// @step: merge the maps together
-			for k, v := range ctx {
-				context[k] = v
-			}
-		}
+	context, err := newTemplateContext(options.configPath)
+	if err != nil {
+		return err
 	}
 	context["clusterName"] = options.clusterName
+
+	// @check if we are just rendering the config value
+	if options.configValue != "" {
+		v, found := context[options.configValue]
+		switch found {
+		case true:
+			fmt.Fprintf(out, "%s\n", v)
+		default:
+			fmt.Fprintf(out, "null\n")
+		}
+		return nil
+	}
 
 	// @step: expand the list of templates into a list of files to render
 	var templates []string
@@ -143,15 +143,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		}
 	}
 
-	// @step: get the output io.Writer
-	writer := out
-	if options.outputPath != "" {
-		w, err := os.OpenFile(utils.ExpandPath(options.outputPath), os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0660)
-		if err != nil {
-			return fmt.Errorf("unable to open file: %s, error: %v", options.outputPath, err)
-		}
-		writer = w
-	}
+	b := new(bytes.Buffer)
 
 	// @step: render each of the template and write to location
 	r := templater.NewTemplater()
@@ -166,16 +158,81 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		if err != nil {
 			return fmt.Errorf("unable to render template: %s, error: %s", x, err)
 		}
+		// @check if we have a zero length string and if so, forgo it
+		if len(rendered) <= 0 {
+			continue
+		}
 
-		io.WriteString(writer, rendered)
+		// @check if we need to format the yaml
+		if options.formatYAML {
+			var data interface{}
+			if err := utils.YamlUnmarshal([]byte(rendered), &data); err != nil {
+				return fmt.Errorf("unable to unmarshall content from template: %s, error: %s", x, err)
+			}
+			// @TODO: i'm not sure how this could happen but best to heck none the less
+			formatted, err := yaml.Marshal(&data)
+			if err != nil {
+				return fmt.Errorf("unable to marhshal formated content to yaml: %s", err)
+			}
+			rendered = string(formatted)
+		}
+		if _, err := b.WriteString(rendered); err != nil {
+			return fmt.Errorf("unable to write template: %s, error: %s", x, err)
+		}
 
 		// @check if we should need to add document separator
 		if i < size {
-			io.WriteString(writer, "---\n")
+			if _, err := b.WriteString("---\n"); err != nil {
+				return fmt.Errorf("unable to write to template: %s, error: %s", x, err)
+			}
 		}
+	}
+	iowriter := out
+
+	// @check if we are writing to a file rather than stdout
+	if options.outputPath != "" {
+		w, err := os.OpenFile(utils.ExpandPath(options.outputPath), os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0660)
+		if err != nil {
+			return fmt.Errorf("unable to open file: %s, error: %v", options.outputPath, err)
+		}
+		defer w.Close()
+		iowriter = w
+	}
+
+	if _, err := iowriter.Write(b.Bytes()); err != nil {
+		return fmt.Errorf("unable to write template: %s", err)
 	}
 
 	return nil
+}
+
+// newTemplateContext is responsible for loadding the --values and build a context for the template
+func newTemplateContext(files []string) (map[string]interface{}, error) {
+	context := make(map[string]interface{}, 0)
+
+	for _, x := range files {
+		list, err := expandFiles(utils.ExpandPath(x))
+		if err != nil {
+			return nil, err
+		}
+		for _, j := range list {
+			content, err := ioutil.ReadFile(j)
+			if err != nil {
+				return nil, fmt.Errorf("unable to configuration file: %s, error: %s", j, err)
+			}
+
+			ctx := make(map[string]interface{}, 0)
+			if err := utils.YamlUnmarshal(content, &ctx); err != nil {
+				return nil, fmt.Errorf("unable decode the configuration file: %s, error: %v", j, err)
+			}
+
+			for k, v := range ctx {
+				context[k] = v
+			}
+		}
+	}
+
+	return context, nil
 }
 
 // expandFiles is responsible for resolving any references to directories
@@ -185,7 +242,7 @@ func expandFiles(path string) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	// @check if no a directory and return as is
+	// @check if not a directory and return as is
 	if !stat.IsDir() {
 		return []string{path}, nil
 	}
