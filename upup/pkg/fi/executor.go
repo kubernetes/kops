@@ -78,6 +78,7 @@ func (e *executor) RunTasks(taskMap map[string]Task, maxTaskDuration time.Durati
 					break
 				}
 			}
+
 			if ready {
 				if ts.deadline.IsZero() {
 					ts.deadline = time.Now().Add(maxTaskDuration)
@@ -102,13 +103,31 @@ func (e *executor) RunTasks(taskMap map[string]Task, maxTaskDuration time.Durati
 
 		taskErrors := e.forkJoin(tasks)
 		var errors []error
+
 		for i, err := range taskErrors {
 			ts := tasks[i]
+			var lifecycle *Lifecycle
+			if hl, ok := ts.task.(HasLifecycle); ok {
+				lifecycle = hl.GetLifecycle()
+			}
+
 			if err != nil {
 				remaining := time.Second * time.Duration(int(ts.deadline.Sub(time.Now()).Seconds()))
-				glog.Warningf("error running task %q (%v remaining to succeed): %v", ts.key, remaining, err)
 				errors = append(errors, err)
 				ts.lastError = err
+				if lifecycle == nil {
+					glog.Warningf("error running task %q (%v remaining to succeed): %v", ts.key, remaining, err)
+				}
+				switch *lifecycle {
+				case LifecycleExistsAndValidates:
+					glog.Warningf("error running Validating Task %q", ts.key)
+					ts.done = true
+				case LifecycleExistsAndWarnIfChanges:
+					glog.Warningf("error running Checking that Task exists %q", ts.key)
+					ts.done = true
+				default:
+					glog.Warningf("error running task %q (%v remaining to succeed): %v", ts.key, remaining, err)
+				}
 			} else {
 				ts.done = true
 				ts.lastError = nil
