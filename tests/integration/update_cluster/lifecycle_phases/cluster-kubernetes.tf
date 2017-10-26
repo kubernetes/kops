@@ -2,28 +2,12 @@ output "bastion_security_group_ids" {
   value = ["${aws_security_group.bastion-privateweave-example-com.id}"]
 }
 
-output "bastions_role_arn" {
-  value = "${aws_iam_role.bastions-privateweave-example-com.arn}"
-}
-
-output "bastions_role_name" {
-  value = "${aws_iam_role.bastions-privateweave-example-com.name}"
-}
-
 output "cluster_name" {
   value = "privateweave.example.com"
 }
 
 output "master_security_group_ids" {
   value = ["${aws_security_group.masters-privateweave-example-com.id}"]
-}
-
-output "masters_role_arn" {
-  value = "${aws_iam_role.masters-privateweave-example-com.arn}"
-}
-
-output "masters_role_name" {
-  value = "${aws_iam_role.masters-privateweave-example-com.name}"
 }
 
 output "node_security_group_ids" {
@@ -34,20 +18,8 @@ output "node_subnet_ids" {
   value = ["${aws_subnet.us-test-1a-privateweave-example-com.id}"]
 }
 
-output "nodes_role_arn" {
-  value = "${aws_iam_role.nodes-privateweave-example-com.arn}"
-}
-
-output "nodes_role_name" {
-  value = "${aws_iam_role.nodes-privateweave-example-com.name}"
-}
-
 output "region" {
   value = "us-test-1"
-}
-
-output "vpc_id" {
-  value = "${aws_vpc.privateweave-example-com.id}"
 }
 
 provider "aws" {
@@ -159,6 +131,7 @@ resource "aws_ebs_volume" "us-test-1a-etcd-main-privateweave-example-com" {
     "k8s.io/role/master" = "1"
   }
 }
+
 resource "aws_launch_configuration" "bastion-privateweave-example-com" {
   name_prefix                 = "bastion.privateweave.example.com-"
   image_id                    = "ami-12345678"

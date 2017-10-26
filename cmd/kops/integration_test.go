@@ -39,6 +39,8 @@ import (
 	"k8s.io/kops/pkg/jsonutils"
 	"k8s.io/kops/pkg/testutils"
 
+	"fmt"
+
 	"github.com/ghodss/yaml"
 	"golang.org/x/crypto/ssh"
 	"k8s.io/kops/pkg/featureflag"
@@ -146,23 +148,163 @@ func TestPhaseIAM(t *testing.T) {
 
 // TestPhaseCluster tests the output of tf for the cluster phase
 func TestPhaseCluster(t *testing.T) {
-	// TODO fix tf for phase, and allow override on validation
-	t.Skip("unable to test w/o allowing failed validation")
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
 }
 
-// TestPhaseCluster tests the output of tf for the security group phase
-func TestPhaseSecurityGroup(t *testing.T) {
-	t.Skip("unable to test until phase is created")
-	// TODO fix tf for phase, and allow override on validation
-	// runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.SecurityGroups)
+// See https://github.com/kubernetes/kops/issues/1026 for tracking on the output tweaks
+
+// TODO I should be getting sec groups ids ... need to figure this out
+/*
+output "bastion_security_group_ids" {
+  value = ["${aws_security_group.bastion-privateweave-example-com.id}"]
 }
 
+output "cluster_name" {
+  value = "privateweave.example.com"
+}
+
+output "master_security_group_ids" {
+  value = ["${aws_security_group.masters-privateweave-example-com.id}"]
+}
+
+output "node_security_group_ids" {
+  value = ["${aws_security_group.nodes-privateweave-example-com.id}"]
+}
+
+output "region" {
+  value = "us-test-1"
+}
+
+provider "aws" {
+  region = "us-test-1"
+}
+*/
+
+/*
+TODO need to fix outputs
+TODO need feedback what we should have
+
+	- output "bastions_role_arn" {
+		-   value = "${aws_iam_role.bastions-privateweave-example-com.arn}"
+		- }
+		-
+		- output "bastions_role_name" {
+		-   value = "${aws_iam_role.bastions-privateweave-example-com.name}"
+		- }
+		-
+		- output "cluster_name" {
+		-   value = "privateweave.example.com"
+		- }
+		-
+		- output "master_security_group_ids" {
+		-   value = ["${aws_security_group.masters-privateweave-example-com.id}"]
+		- }
+		-
+		- output "masters_role_arn" {
+		-   value = "${aws_iam_role.masters-privateweave-example-com.arn}"
+		- }
+		-
+		- output "masters_role_name" {
+		-   value = "${aws_iam_role.masters-privateweave-example-com.name}"
+		- }
+		-
+		- output "node_security_group_ids" {
+		-   value = ["${aws_security_group.nodes-privateweave-example-com.id}"]
+		- }
+		-
+		- output "node_subnet_ids" {
+		-   value = ["${aws_subnet.us-test-1a-privateweave-example-com.id}"]
+		- }
+		-
+		- output "nodes_role_arn" {
+		-   value = "${aws_iam_role.nodes-privateweave-example-com.arn}"
+		- }
+		-
+		- output "nodes_role_name" {
+		-   value = "${aws_iam_role.nodes-privateweave-example-com.name}"
+		- }
+		-
+		- output "region" {
+		-   value = "us-test-1"
+		- }
+		-
+		- output "vpc_id" {
+		+ output "cluster_name" {
+		+   value = "privateweave.example.com"
+		+ }
+		+
+		+ output "master_security_group_ids" {
+		+   value = ["${aws_security_group.masters-privateweave-example-com.id}"]
+		+ }
+		+
+		+ output "node_security_group_ids" {
+		+   value = ["${aws_security_group.nodes-privateweave-example-com.id}"]
+		+ }
+		+
+		+ output "node_subnet_ids" {
+		+   value = ["${aws_subnet.us-test-1a-privateweave-example-com.id}"]
+		+ }
+		+
+		+ output "region" {
+		+   value = "us-test-1"
+		-   value = "${aws_vpc.privateweave-example-com.id}"
+		  }
+*/
+
+// TestPhaseSecurityGroup tests the output of tf for the security group phase
+func TestPhaseSecurityGroup(t *testing.T) {
+	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseSecurityGroups)
+}
+
+// TODO missing variables
+/*
+output "bastion_security_group_ids" {
+  value = ["${aws_security_group.bastion-privateweave-example-com.id}"]
+}
+
+output "bastions_role_arn" {
+  value = "${aws_iam_role.bastions-privateweave-example-com.arn}"
+}
+
+output "bastions_role_name" {
+  value = "${aws_iam_role.bastions-privateweave-example-com.name}"
+}
+
+output "cluster_name" {
+  value = "privateweave.example.com"
+}
+
+output "master_security_group_ids" {
+  value = ["${aws_security_group.masters-privateweave-example-com.id}"]
+}
+
+output "masters_role_arn" {
+  value = "${aws_iam_role.masters-privateweave-example-com.arn}"
+}
+
+output "masters_role_name" {
+  value = "${aws_iam_role.masters-privateweave-example-com.name}"
+}
+
+output "node_security_group_ids" {
+  value = ["${aws_security_group.nodes-privateweave-example-com.id}"]
+}
+
+output "node_subnet_ids" {
+  value = ["${aws_subnet.us-test-1a-privateweave-example-com.id}"]
+}
+
+output "nodes_role_arn" {
+  value = "${aws_iam_role.nodes-privateweave-example-com.arn}"
+}
+
+output "nodes_role_name" {
+  value = "${aws_iam_role.nodes-privateweave-example-com.name}"
+}
+*/
 // TestPhaseCluster tests the output of tf for the loadbalancer phase
 func TestPhaseLoadBalancers(t *testing.T) {
-	t.Skip("unable to test until phase is created")
-	// TODO
-	// runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.LoadBalancers)
+	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseLoadBalancers)
 }
 
 func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string, tfFileName string, phase *cloudup.Phase) {
@@ -193,6 +335,7 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 	}
 
 	{
+
 		options := &CreateSecretPublickeyOptions{}
 		options.ClusterName = clusterName
 		options.Name = "admin"
@@ -211,7 +354,12 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		options.OutDir = path.Join(h.TempDir, "out")
 		options.MaxTaskDuration = 30 * time.Second
 		if phase != nil {
+			failValidate := []string{}
+			for _, phase := range cloudup.Phases.List() {
+				failValidate = append(failValidate, fmt.Sprintf("%s=true", phase))
+			}
 			options.Phase = string(*phase)
+			options.PhasesAllowFailValidation = failValidate
 		}
 
 		// We don't test it here, and it adds a dependency on kubectl
@@ -264,8 +412,8 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		}
 	}
 
-	// Compare data files
-	{
+	// Compare data files if they are provided
+	if len(expectedFilenames) > 0 {
 		files, err := ioutil.ReadDir(path.Join(h.TempDir, "out", "data"))
 		if err != nil {
 			t.Fatalf("failed to read data dir: %v", err)
@@ -282,6 +430,8 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		}
 
 		// TODO: any verification of data files?
+	} else {
+		t.Logf("no data files for test %q", t.Name())
 	}
 }
 

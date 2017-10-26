@@ -22,6 +22,7 @@ import (
 	"io"
 	"io/ioutil"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 
@@ -65,7 +66,8 @@ type UpdateClusterOptions struct {
 	MaxTaskDuration time.Duration
 	CreateKubecfg   bool
 
-	Phase string
+	Phase                     string
+	PhasesAllowFailValidation []string
 }
 
 func (o *UpdateClusterOptions) InitDefaults() {
@@ -108,7 +110,8 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
-	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ","))
+	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ", "))
+	cmd.Flags().StringSliceVar(&options.PhasesAllowFailValidation, "phase-allow-fail-validation", options.PhasesAllowFailValidation, "Lists of Phases that can fail validation, for example: network=true,security-groups=false")
 	return cmd
 }
 
@@ -174,19 +177,33 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
 	}
 
-	var phase cloudup.Phase
-	if c.Phase != "" {
-		switch strings.ToLower(c.Phase) {
-		case string(cloudup.PhaseStageAssets):
-			phase = cloudup.PhaseStageAssets
-		case string(cloudup.PhaseIAM):
-			phase = cloudup.PhaseIAM
-		case string(cloudup.PhaseNetwork):
-			phase = cloudup.PhaseNetwork
-		case string(cloudup.PhaseCluster):
-			phase = cloudup.PhaseCluster
-		default:
-			return fmt.Errorf("unknown phase %q, available phases: %s", c.Phase, strings.Join(cloudup.Phases.List(), ","))
+	phase, err := validatePhase(c.Phase)
+	if err != nil {
+		return err
+	}
+
+	lifeCycleAllowFailValidation := make(map[cloudup.Phase]bool)
+	if phase != "" {
+		for _, allowFail := range c.PhasesAllowFailValidation {
+			currentPhaseSlice := strings.Split(allowFail, "=")
+
+			if len(currentPhaseSlice) != 2 {
+				return fmt.Errorf("unable to read parameter FIXME")
+			}
+
+			failPhase, err := validatePhase(currentPhaseSlice[0])
+			if err != nil {
+				// TODO format
+				return fmt.Errorf("unable to read parameter FIXME")
+			}
+
+			phaseBoolean, err := strconv.ParseBool(currentPhaseSlice[1])
+			if err != nil {
+				return fmt.Errorf("unable to read parameter FIXME")
+			}
+
+			lifeCycleAllowFailValidation[failPhase] = phaseBoolean
+
 		}
 	}
 
@@ -211,6 +228,8 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		MaxTaskDuration: c.MaxTaskDuration,
 		InstanceGroups:  instanceGroups,
 		Phase:           phase,
+
+		LifeCycleAllowFailValidation: lifeCycleAllowFailValidation,
 	}
 
 	err = applyCmd.Run()
@@ -367,4 +386,27 @@ func hasKubecfg(contextName string) (bool, error) {
 		}
 	}
 	return false, nil
+}
+
+func validatePhase(phase string) (cloudup.Phase, error) {
+	if phase != "" {
+		switch strings.ToLower(phase) {
+		case string(cloudup.PhaseStageAssets):
+			return cloudup.PhaseStageAssets, nil
+		case string(cloudup.PhaseIAM):
+			return cloudup.PhaseIAM, nil
+		case string(cloudup.PhaseNetwork):
+			return cloudup.PhaseNetwork, nil
+		case string(cloudup.PhaseCluster):
+			return cloudup.PhaseCluster, nil
+		case string(cloudup.PhaseSecurityGroups):
+			return cloudup.PhaseSecurityGroups, nil
+		case string(cloudup.PhaseLoadBalancers):
+			return cloudup.PhaseLoadBalancers, nil
+		default:
+			return "", fmt.Errorf("unknown phase %q, available phases: %s", phase, strings.Join(cloudup.Phases.List(), ","))
+		}
+	}
+
+	return "", nil
 }

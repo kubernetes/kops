@@ -118,6 +118,8 @@ type ApplyClusterCmd struct {
 
 	// Phase can be set to a Phase to run the specific subset of tasks, if we don't want to run everything
 	Phase Phase
+
+	LifeCycleAllowFailValidation map[Phase]bool
 }
 
 func (c *ApplyClusterCmd) Run() error {
@@ -466,10 +468,12 @@ func (c *ApplyClusterCmd) Run() error {
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
+	stageAssetsLifecycle := lifecyclePointer(fi.LifecycleSync)
 	iamLifecycle := lifecyclePointer(fi.LifecycleSync)
 	networkLifecycle := lifecyclePointer(fi.LifecycleSync)
 	clusterLifecycle := lifecyclePointer(fi.LifecycleSync)
-	stageAssetsLifecycle := lifecyclePointer(fi.LifecycleSync)
+	securityGroupLifecycle := lifecyclePointer(fi.LifecycleSync)
+	loadBalancerLifecycle := lifecyclePointer(fi.LifecycleSync)
 
 	switch c.Phase {
 	case Phase(""):
@@ -479,29 +483,88 @@ func (c *ApplyClusterCmd) Run() error {
 		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		securityGroupLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		loadBalancerLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseIAM:
 		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		securityGroupLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		loadBalancerLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseNetwork:
 		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		securityGroupLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		loadBalancerLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+
+	case PhaseSecurityGroups:
+		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		// TODO need to put this in, but testing won't pass until we can fail validation
+		//networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		loadBalancerLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseCluster:
 		if c.TargetName == TargetDryRun {
 			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+			securityGroupLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+			loadBalancerLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 		} else {
 			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+			securityGroupLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+			loadBalancerLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		}
+
+	case PhaseLoadBalancers:
+		// TODO need to put in ExistsAndValidates, but testing won't pass until we can fail validation
+		// TODO do we want to move the DrynRun stuff here?
+		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		securityGroupLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+
 	default:
 		return fmt.Errorf("unknown phase %q", c.Phase)
+	}
+
+	// TODO need to fail validation here
+	if c.Phase != "" {
+		for failPhaseName, failValidation := range c.LifeCycleAllowFailValidation {
+			if failPhaseName == c.Phase {
+				continue
+			}
+
+			if !failValidation {
+				continue
+			}
+
+			switch failPhaseName {
+			case PhaseStageAssets:
+				stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			case PhaseIAM:
+				iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			case PhaseNetwork:
+				networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			case PhaseSecurityGroups:
+				securityGroupLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			case PhaseCluster:
+				clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			case PhaseLoadBalancers:
+				networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+			default:
+				return fmt.Errorf("unknown phase %q", c.Phase)
+			}
+		}
 	}
 
 	var fileModels []string
@@ -535,11 +598,11 @@ func (c *ApplyClusterCmd) Run() error {
 
 				l.Builders = append(l.Builders,
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
-					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: networkLifecycle},
-					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
-					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
-					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
-					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: loadBalancerLifecycle, SecurityGroupLifecycle: securityGroupLifecycle},
+					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: loadBalancerLifecycle, SecurityGroupLifecycle: securityGroupLifecycle},
+					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: loadBalancerLifecycle},
+					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: securityGroupLifecycle},
+					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: securityGroupLifecycle},
 					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
 				)
 
@@ -563,9 +626,10 @@ func (c *ApplyClusterCmd) Run() error {
 				l.Builders = append(l.Builders,
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 
-					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
-					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
-					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
+					// TODO fix firewalls here
+					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: loadBalancerLifecycle},
+					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: securityGroupLifecycle},
+					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: securityGroupLifecycle},
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
 				)
 
