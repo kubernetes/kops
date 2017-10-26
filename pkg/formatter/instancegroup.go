@@ -38,7 +38,7 @@ func RenderInstanceGroupZones(cluster *kops.Cluster) InstanceGroupRenderFunction
 	return func(ig *kops.InstanceGroup) string {
 		zones, err := model.FindZonesForInstanceGroup(cluster, ig)
 		if err != nil {
-			glog.Warningf("error fetch zones for instancegroup: %v", err)
+			glog.Warningf("error fetching zones for instancegroup: %v", err)
 			return ""
 		}
 		return strings.Join(zones, ",")
