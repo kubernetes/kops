@@ -466,10 +466,11 @@ func (c *ApplyClusterCmd) Run() error {
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
+	stageAssetsLifecycle := lifecyclePointer(fi.LifecycleSync)
 	iamLifecycle := lifecyclePointer(fi.LifecycleSync)
 	networkLifecycle := lifecyclePointer(fi.LifecycleSync)
 	clusterLifecycle := lifecyclePointer(fi.LifecycleSync)
-	stageAssetsLifecycle := lifecyclePointer(fi.LifecycleSync)
+	securityGroupLifecycle := lifecyclePointer(fi.LifecycleSync)
 
 	switch c.Phase {
 	case Phase(""):
@@ -479,27 +480,45 @@ func (c *ApplyClusterCmd) Run() error {
 		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		securityGroupLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseIAM:
 		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		securityGroupLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseNetwork:
 		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		securityGroupLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+
+	case PhaseSecurityGroups:
+		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		// TODO need to put this in, but testing won't pass until we can fail validation
+		//networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 
 	case PhaseCluster:
 		if c.TargetName == TargetDryRun {
 			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+			securityGroupLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
 		} else {
 			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
 			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+			securityGroupLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
 		}
+
+	case PhaseLoadBalancers:
+		// TODO create loadBalancerLifecycle
+		return fmt.Errorf("not implemented yet - phase %q", c.Phase)
+
 	default:
 		return fmt.Errorf("unknown phase %q", c.Phase)
 	}
@@ -535,11 +554,11 @@ func (c *ApplyClusterCmd) Run() error {
 
 				l.Builders = append(l.Builders,
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
-					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: networkLifecycle},
-					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
+					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: networkLifecycle, SecurityGroupLifecycle: securityGroupLifecycle},
+					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle, SecurityGroupLifecycle: securityGroupLifecycle},
 					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
-					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
-					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: securityGroupLifecycle},
+					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: securityGroupLifecycle},
 					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
 				)
 
@@ -564,8 +583,8 @@ func (c *ApplyClusterCmd) Run() error {
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 
 					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
-					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
-					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
+					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: securityGroupLifecycle},
+					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: securityGroupLifecycle},
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
 				)
 

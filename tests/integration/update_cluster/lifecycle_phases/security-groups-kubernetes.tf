@@ -1,17 +1,5 @@
-output "bastion_security_group_ids" {
-  value = ["${aws_security_group.bastion-privateweave-example-com.id}"]
-}
-
 output "cluster_name" {
   value = "privateweave.example.com"
-}
-
-output "master_security_group_ids" {
-  value = ["${aws_security_group.masters-privateweave-example-com.id}"]
-}
-
-output "node_security_group_ids" {
-  value = ["${aws_security_group.nodes-privateweave-example-com.id}"]
 }
 
 output "region" {

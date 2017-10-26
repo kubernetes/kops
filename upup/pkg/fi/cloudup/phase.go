@@ -18,13 +18,30 @@ package cloudup
 
 import "k8s.io/apimachinery/pkg/util/sets"
 
+// Phase is a portion of work that kops completes.
 type Phase string
 
 const (
-	PhaseIAM         Phase = "iam"
-	PhaseNetwork     Phase = "network"
-	PhaseCluster     Phase = "cluster"
+	// PhaseStageAssets uploads various assets such as containers in a private registry
 	PhaseStageAssets Phase = "assets"
+	// PhaseIAM creates IAM profiles and roles
+	PhaseIAM Phase = "iam"
+	// PhaseNetwork creates network infrastructure.  Does not include load balancers.
+	PhaseNetwork Phase = "network"
+	// PhaseSecurityGroups create firewall rules and security groups.
+	PhaseSecurityGroups Phase = "security-groups"
+	// PhaseCluster creates the servers.
+	PhaseCluster Phase = "cluster"
+	// PhaseLoadBalancers creates loadbalancers.
+	PhaseLoadBalancers Phase = "load-balancers"
 )
 
-var Phases = sets.NewString(string(PhaseIAM), string(PhaseNetwork), string(PhaseCluster), string(PhaseStageAssets))
+// Phases are used for validation and cli help.
+var Phases = sets.NewString(
+	string(PhaseStageAssets),
+	string(PhaseSecurityGroups),
+	string(PhaseIAM),
+	string(PhaseNetwork),
+	string(PhaseCluster),
+	string(PhaseLoadBalancers),
+)
