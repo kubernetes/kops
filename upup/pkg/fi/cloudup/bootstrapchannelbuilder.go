@@ -639,5 +639,20 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 	}
 
+	if b.cluster.Spec.KubeScheduler.UsePolicyConfigMap != nil {
+		key := "scheduler.addons.k8s.io"
+		version := "1.7.0"
+
+		location := key + "/v" + version + ".yaml"
+
+		addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+			Name:     fi.String(key),
+			Version:  fi.String(version),
+			Selector: map[string]string{"k8s-addon": key},
+			Manifest: fi.String(location),
+		})
+		manifests[key] = "addons/" + location
+	}
+
 	return addons, manifests, nil
 }
