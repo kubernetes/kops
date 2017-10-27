@@ -141,7 +141,7 @@ func TestPhaseNetwork(t *testing.T) {
 
 // TestPhaseIAM tests the output of tf for the iam phase
 func TestPhaseIAM(t *testing.T) {
-	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseIAM)
+	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseSecurity)
 }
 
 // TestPhaseCluster tests the output of tf for the cluster phase
@@ -149,13 +149,6 @@ func TestPhaseCluster(t *testing.T) {
 	// TODO fix tf for phase, and allow override on validation
 	t.Skip("unable to test w/o allowing failed validation")
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
-}
-
-// TestPhaseCluster tests the output of tf for the security group phase
-func TestPhaseSecurityGroup(t *testing.T) {
-	t.Skip("unable to test until phase is created")
-	// TODO fix tf for phase, and allow override on validation
-	// runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.SecurityGroups)
 }
 
 // TestPhaseCluster tests the output of tf for the loadbalancer phase
@@ -333,7 +326,7 @@ func runTestPhase(t *testing.T, clusterName string, srcDir string, version strin
 
 	expectedFilenames := []string{}
 
-	if phase == cloudup.PhaseIAM {
+	if phase == cloudup.PhaseSecurity {
 		expectedFilenames = []string{
 			"aws_iam_role_masters." + clusterName + "_policy",
 			"aws_iam_role_nodes." + clusterName + "_policy",
