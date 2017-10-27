@@ -43,6 +43,12 @@ var _ fi.ModelBuilder = &KubeAPIServerBuilder{}
 // Build is responsible for building the kube-proxy manifest
 // @TODO we should probaby change this to a daemonset in the future and follow the kubeadm path
 func (b *KubeProxyBuilder) Build(c *fi.ModelBuilderContext) error {
+
+	if b.Cluster.Spec.KubeProxy.Enabled != nil && *b.Cluster.Spec.KubeProxy.Enabled == false {
+		glog.V(2).Infof("Kube-proxy is disabled, will not create configuration for it.")
+		return nil
+	}
+
 	if b.IsMaster {
 		// If this is a master that is not isolated, run it as a normal node also (start kube-proxy etc)
 		// This lets e.g. daemonset pods communicate with other pods in the system
