@@ -39,8 +39,8 @@ func (b *KubeSchedulerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	config := clusterSpec.KubeScheduler
 
-	if config.PolicyConfigMap != "" && b.IsKubernetesLT("v1.7.0") {
-		return fmt.Errorf("policyConfigMap is only supported in Kubernetes 1.7.0 or later")
+	if config.UsePolicyConfigMap != nil && b.IsKubernetesLT("v1.7.0") {
+		return fmt.Errorf("usePolicyConfigMap is only supported in Kubernetes 1.7.0 or later")
 	}
 
 	if config.LogLevel == 0 {

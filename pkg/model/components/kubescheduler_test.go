@@ -25,12 +25,14 @@ import (
 )
 
 func buildSchedulerConfigMapCluster() *api.Cluster {
+	usePolicyConfigMap := true
+
 	return &api.Cluster{
 		Spec: api.ClusterSpec{
 			CloudProvider:     "aws",
 			KubernetesVersion: "v1.4.0",
 			KubeScheduler: &api.KubeSchedulerConfig{
-				PolicyConfigMap: "scheduler-config",
+				UsePolicyConfigMap: &usePolicyConfigMap,
 			},
 		},
 	}

@@ -211,13 +211,12 @@ This block contains configurations for `kube-scheduler`.  See https://kubernetes
  ```yaml
  spec:
    kubeScheduler:
-     policyConfigMap: scheduler-policy
-     policyConfigMapNamespace: default
+     usePolicyConfigMap: true
 ```
 
-Will resulting to running kube-scheduler with the arguments `--policy-configmap=scheduler-policy --policy-configmap-namespace=default`.
+Will make kube-scheduler use the scheduler policy from configmap "scheduler-policy" in namespace kube-system.
 
-Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually. Also, this option is not supported during cluster creation, only during updates.
+Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually.
 
 ### kubeControllerManager
 This block contains configurations for the `controller-manager`.
