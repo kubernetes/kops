@@ -163,6 +163,8 @@ type KubeProxyConfig struct {
 	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
 	// Master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
+	// Enabled allows enabling or disabling kube-proxy
+	Enabled *bool `json:"enabled,omitempty"`
 	// FeatureGates is a series of key pairs used to switch on features for the proxy
 	FeatureGates map[string]string `json:"featureGates" flag:"feature-gates"`
 }
