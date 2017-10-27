@@ -535,11 +535,11 @@ func (c *ApplyClusterCmd) Run() error {
 
 				l.Builders = append(l.Builders,
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
-					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: networkLifecycle},
-					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
-					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
-					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
-					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: clusterLifecycle, SecurityLifecycle: securityLifecycle},
+					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle, SecurityLifecycle: securityLifecycle},
+					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: securityLifecycle},
+					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: securityLifecycle},
 					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: securityLifecycle},
 				)
 
@@ -563,9 +563,9 @@ func (c *ApplyClusterCmd) Run() error {
 				l.Builders = append(l.Builders,
 					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
 
-					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
-					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
-					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
+					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: securityLifecycle},
+					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: securityLifecycle},
+					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: securityLifecycle},
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
 				)
 
