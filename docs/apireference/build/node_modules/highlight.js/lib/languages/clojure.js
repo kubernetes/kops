@@ -85,6 +85,7 @@ module.exports = function(hljs) {
   LIST.contains = [hljs.COMMENT('comment', ''), NAME, BODY];
   BODY.contains = DEFAULT_CONTAINS;
   COLLECTION.contains = DEFAULT_CONTAINS;
+  HINT_COL.contains = [COLLECTION];
 
   return {
     aliases: ['clj'],

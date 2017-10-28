@@ -4,6 +4,7 @@ Embedded JavaScript templates
 
 [![Build Status](https://img.shields.io/travis/mde/ejs/master.svg?style=flat)](https://travis-ci.org/mde/ejs)
 [![Developing Dependencies](https://img.shields.io/david/dev/mde/ejs.svg?style=flat)](https://david-dm.org/mde/ejs?type=dev)
+[![Known Vulnerabilities](https://snyk.io/test/npm/ejs/badge.svg?style=flat-square)](https://snyk.io/test/npm/ejs)
 
 ## Installation
 
@@ -161,6 +162,21 @@ ejs.cache = LRU(100); // LRU cache with 100-item limit
 If you want to clear the EJS cache, call `ejs.clearCache`. If you're using the
 LRU cache and need a different limit, simple reset `ejs.cache` to a new instance
 of the LRU.
+
+## Custom FileLoader
+
+The default file loader is `fs.readFileSync`, if you want to customize it, you can set ejs.fileLoader.
+
+```javascript
+var ejs = require('ejs');
+var myFileLoad = function (filePath) {
+  return 'myFileLoad: ' + fs.readFileSync(filePath);
+};
+
+ejs.fileLoader = myFileLoad;
+```
+
+With this feature, you can preprocess the template before reading it.
 
 ## Layouts
 

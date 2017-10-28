@@ -21889,11 +21889,23 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"leaderElectionTimeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "LeaderElectionTimeout is the time (in milliseconds) for an etcd leader election timeout",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"heartbeatInterval": {
+							SchemaProps: spec.SchemaProps{
+								Description: "HeartbeatInterval is the time (in milliseconds) for an etcd heartbeat interval",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdMemberSpec"},
+				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration", "k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdMemberSpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.EtcdMemberSpec": {
 			Schema: spec.Schema{
@@ -22319,6 +22331,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 					Description: "IAMSpec adds control over the IAM security policies applied to resources",
 					Properties: map[string]spec.Schema{
 						"legacy": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"allowContainerRegistry": {
 							SchemaProps: spec.SchemaProps{
 								Type:   []string{"boolean"},
 								Format: "",
@@ -22956,6 +22974,69 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"requestheaderUsernameHeaders": {
+							SchemaProps: spec.SchemaProps{
+								Description: "List of request headers to inspect for usernames. X-Remote-User is common.",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"requestheaderGroupHeaders": {
+							SchemaProps: spec.SchemaProps{
+								Description: "List of request headers to inspect for groups. X-Remote-Group is suggested.",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"requestheaderExtraHeaderPrefixes": {
+							SchemaProps: spec.SchemaProps{
+								Description: "List of request header prefixes to inspect. X-Remote-Extra- is suggested.",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"requestheaderClientCAFile": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Root certificate bundle to use to verify client certificates on incoming requests before trusting usernames in headers specified by --requestheader-username-headers",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"requestheaderAllowedNames": {
+							SchemaProps: spec.SchemaProps{
+								Description: "List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -23063,6 +23144,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"horizontalPodAutoscalerSyncPeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
 					},
 				},
 			},
@@ -23152,6 +23239,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"enabled": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Enabled allows enabling or disabling kube-proxy",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
 						"featureGates": {
 							SchemaProps: spec.SchemaProps{
 								Description: "FeatureGates is a series of key pairs used to switch on features for the proxy",
@@ -23202,6 +23296,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 							SchemaProps: spec.SchemaProps{
 								Description: "LeaderElection defines the configuration of leader election client.",
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.LeaderElectionConfiguration"),
+							},
+						},
+						"usePolicyConfigMap": {
+							SchemaProps: spec.SchemaProps{
+								Description: "UsePolicyConfigMap enable setting the scheduler policy from a configmap",
+								Type:        []string{"boolean"},
+								Format:      "",
 							},
 						},
 					},
@@ -25030,11 +25131,23 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"leaderElectionTimeout": {
+							SchemaProps: spec.SchemaProps{
+								Description: "LeaderElectionTimeout is the time (in milliseconds) for an etcd leader election timeout",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"heartbeatInterval": {
+							SchemaProps: spec.SchemaProps{
+								Description: "HeartbeatInterval is the time (in milliseconds) for an etcd heartbeat interval",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdMemberSpec"},
+				"k8s.io/apimachinery/pkg/apis/meta/v1.Duration", "k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdMemberSpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.EtcdMemberSpec": {
 			Schema: spec.Schema{
@@ -25460,6 +25573,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 					Description: "IAMSpec adds control over the IAM security policies applied to resources",
 					Properties: map[string]spec.Schema{
 						"legacy": {
+							SchemaProps: spec.SchemaProps{
+								Type:   []string{"boolean"},
+								Format: "",
+							},
+						},
+						"allowContainerRegistry": {
 							SchemaProps: spec.SchemaProps{
 								Type:   []string{"boolean"},
 								Format: "",
@@ -26251,6 +26370,69 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"requestheaderUsernameHeaders": {
+							SchemaProps: spec.SchemaProps{
+								Description: "List of request headers to inspect for usernames. X-Remote-User is common.",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"requestheaderGroupHeaders": {
+							SchemaProps: spec.SchemaProps{
+								Description: "List of request headers to inspect for groups. X-Remote-Group is suggested.",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"requestheaderExtraHeaderPrefixes": {
+							SchemaProps: spec.SchemaProps{
+								Description: "List of request header prefixes to inspect. X-Remote-Extra- is suggested.",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
+						"requestheaderClientCAFile": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Root certificate bundle to use to verify client certificates on incoming requests before trusting usernames in headers specified by --requestheader-username-headers",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"requestheaderAllowedNames": {
+							SchemaProps: spec.SchemaProps{
+								Description: "List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -26358,6 +26540,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"horizontalPodAutoscalerSyncPeriod": {
+							SchemaProps: spec.SchemaProps{
+								Description: "HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
 					},
 				},
 			},
@@ -26443,6 +26631,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"enabled": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Enabled allows enabling or disabling kube-proxy",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
 						"featureGates": {
 							SchemaProps: spec.SchemaProps{
 								Description: "FeatureGates is a series of key pairs used to switch on features for the proxy",
@@ -26493,6 +26688,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 							SchemaProps: spec.SchemaProps{
 								Description: "LeaderElection defines the configuration of leader election client.",
 								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.LeaderElectionConfiguration"),
+							},
+						},
+						"usePolicyConfigMap": {
+							SchemaProps: spec.SchemaProps{
+								Description: "UsePolicyConfigMap enable setting the scheduler policy from a configmap",
+								Type:        []string{"boolean"},
+								Format:      "",
 							},
 						},
 					},

@@ -153,7 +153,7 @@ function generateNestedNav(parent, nest) {
 
 function generateNavJson(data) {
     var navJson = JSON.stringify(data);
-    navScript = `(function(){navData = ${navJson}})();`;
+    navScript = `(function(){navData = ${navJson};})();`;
     fs.writeFile('./navData.js', navScript, function(err) {
         if (err) {
             return console.log(err);

@@ -1,5 +1,5 @@
 module.exports = function(hljs) {
-  var LITERALS = {literal: '{ } true false yes no Yes No True False null'};
+  var LITERALS = 'true false yes no null';
 
   var keyPrefix = '^[ \\-]*';
   var keyName =  '[a-zA-Z_][\\w\\-]*';
@@ -24,7 +24,8 @@ module.exports = function(hljs) {
     relevance: 0,
     variants: [
       {begin: /'/, end: /'/},
-      {begin: /"/, end: /"/}
+      {begin: /"/, end: /"/},
+      {begin: /\S+/}
     ],
     contains: [
       hljs.BACKSLASH_ESCAPE,
@@ -74,10 +75,13 @@ module.exports = function(hljs) {
         begin: '^ *-',
         relevance: 0
       },
-      STRING,
       hljs.HASH_COMMENT_MODE,
-      hljs.C_NUMBER_MODE
-    ],
-    keywords: LITERALS
+      {
+        beginKeywords: LITERALS,
+        keywords: {literal: LITERALS}
+      },
+      hljs.C_NUMBER_MODE,
+      STRING
+    ]
   };
 };
