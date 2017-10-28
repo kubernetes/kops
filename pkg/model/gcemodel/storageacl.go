@@ -50,12 +50,13 @@ func (b *StorageAclBuilder) Build(c *fi.ModelBuilderContext) error {
 	case *vfs.GSPath:
 		// It's not ideal that we have to do this at the bucket level,
 		// but GCS doesn't seem to have a way to do subtrees (like AWS IAM does)
-		c.AddTask(&gcetasks.StorageBucketIam{
-			Name:      s("serviceaccount-statestore-read"),
+		// Note this permission only lets us list objects, not read them
+		c.AddTask(&gcetasks.StorageBucketAcl{
+			Name:      s("serviceaccount-statestore-list"),
 			Lifecycle: b.Lifecycle,
 			Bucket:    s(p.Bucket()),
-			Entity:    s("serviceAccount:" + serviceAccount),
-			Role:      s("roles/storage.objectViewer"),
+			Entity:    s("user-" + serviceAccount),
+			Role:      s("READER"),
 		})
 	}
 

@@ -284,6 +284,7 @@ func (c *VFSContext) buildGCSPath(p string) (*GSPath, error) {
 	return gcsPath, nil
 }
 
+// getGCSClient returns the google storage.Service client, caching it for future calls
 func (c *VFSContext) getGCSClient() (*storage.Service, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
