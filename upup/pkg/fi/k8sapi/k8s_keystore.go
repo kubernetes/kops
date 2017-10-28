@@ -19,6 +19,9 @@ package k8sapi
 import (
 	"crypto/x509"
 	"fmt"
+	"math/big"
+	"time"
+
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -27,8 +30,6 @@ import (
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
-	"math/big"
-	"time"
 )
 
 type KubernetesKeystore struct {
