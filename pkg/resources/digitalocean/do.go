@@ -14,17 +14,17 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package resources
+package digitalocean
 
 import (
-	"k8s.io/kops/pkg/resources/digitalocean"
-	"k8s.io/kops/pkg/resources/tracker"
+	"k8s.io/kops/pkg/resources"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
-func (c *ClusterResources) listResourcesDO() (map[string]*tracker.Resource, error) {
-	r := digitalocean.Resources{
-		Cloud:       c.Cloud,
-		ClusterName: c.ClusterName,
+func ListResources(cloud fi.Cloud, clusterName string) (map[string]*resources.Resource, error) {
+	r := Resources{
+		Cloud:       cloud,
+		ClusterName: clusterName,
 	}
 
 	return r.ListResources()

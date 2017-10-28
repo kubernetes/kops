@@ -25,13 +25,12 @@ import (
 	compute "google.golang.org/api/compute/v0.beta"
 
 	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/kops/pkg/resources/tracker"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
-type gceListFn func() ([]*tracker.Resource, error)
+type gceListFn func() ([]*Resource, error)
 
 const (
 	typeInstance             = "Instance"
@@ -48,18 +47,17 @@ const (
 // Maximum number of `-` separated tokens in a name
 const maxPrefixTokens = 4
 
-func (c *ClusterResources) listResourcesGCE() (map[string]*tracker.Resource, error) {
-	gceCloud := c.Cloud.(gce.GCECloud)
-	if c.Region == "" {
-		c.Region = gceCloud.Region()
+func ListResourcesGCE(gceCloud gce.GCECloud, clusterName string, region string) (map[string]*Resource, error) {
+	if region == "" {
+		region = gceCloud.Region()
 	}
 
-	resources := make(map[string]*tracker.Resource)
+	resources := make(map[string]*Resource)
 
 	d := &clusterDiscoveryGCE{
-		cloud:       c.Cloud,
+		cloud:       gceCloud,
 		gceCloud:    gceCloud,
-		clusterName: c.ClusterName,
+		clusterName: clusterName,
 	}
 
 	{
@@ -73,13 +71,13 @@ func (c *ClusterResources) listResourcesGCE() (map[string]*tracker.Resource, err
 			if err != nil {
 				return nil, err
 			}
-			if u.Name != c.Region {
+			if u.Name != region {
 				continue
 			}
 			d.zones = append(d.zones, gceZone.Name)
 		}
 		if len(d.zones) == 0 {
-			return nil, fmt.Errorf("unable to determine zones in region %q", c.Region)
+			return nil, fmt.Errorf("unable to determine zones in region %q", region)
 		}
 		glog.Infof("Scanning zones: %v", d.zones)
 	}
@@ -149,8 +147,8 @@ func (d *clusterDiscoveryGCE) findInstanceTemplates() ([]*compute.InstanceTempla
 	return d.instanceTemplates, nil
 }
 
-func (d *clusterDiscoveryGCE) listGCEInstanceTemplates() ([]*tracker.Resource, error) {
-	var resourceTrackers []*tracker.Resource
+func (d *clusterDiscoveryGCE) listGCEInstanceTemplates() ([]*Resource, error) {
+	var resourceTrackers []*Resource
 
 	templates, err := d.findInstanceTemplates()
 	if err != nil {
@@ -158,11 +156,11 @@ func (d *clusterDiscoveryGCE) listGCEInstanceTemplates() ([]*tracker.Resource, e
 	}
 	for _, t := range templates {
 		selfLink := t.SelfLink // avoid closure-in-loop go-tcha
-		resourceTracker := &tracker.Resource{
+		resourceTracker := &Resource{
 			Name: t.Name,
 			ID:   t.Name,
 			Type: typeInstanceTemplate,
-			Deleter: func(cloud fi.Cloud, r *tracker.Resource) error {
+			Deleter: func(cloud fi.Cloud, r *Resource) error {
 				return gce.DeleteInstanceTemplate(d.gceCloud, selfLink)
 			},
 			Obj: t,
@@ -175,11 +173,11 @@ func (d *clusterDiscoveryGCE) listGCEInstanceTemplates() ([]*tracker.Resource, e
 	return resourceTrackers, nil
 }
 
-func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*tracker.Resource, error) {
+func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*Resource, error) {
 	c := d.gceCloud
 	project := c.Project()
 
-	var resourceTrackers []*tracker.Resource
+	var resourceTrackers []*Resource
 
 	instanceTemplates := make(map[string]*compute.InstanceTemplate)
 	{
@@ -204,11 +202,11 @@ func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*tracke
 					continue
 				}
 
-				resourceTracker := &tracker.Resource{
+				resourceTracker := &Resource{
 					Name:    mig.Name,
 					ID:      zoneName + "/" + mig.Name,
 					Type:    typeInstanceGroupManager,
-					Deleter: func(cloud fi.Cloud, r *tracker.Resource) error { return gce.DeleteInstanceGroupManager(c, mig) },
+					Deleter: func(cloud fi.Cloud, r *Resource) error { return gce.DeleteInstanceGroupManager(c, mig) },
 					Obj:     mig,
 				}
 
@@ -234,10 +232,10 @@ func (d *clusterDiscoveryGCE) listInstanceGroupManagersAndInstances() ([]*tracke
 	return resourceTrackers, nil
 }
 
-func (d *clusterDiscoveryGCE) listManagedInstances(igm *compute.InstanceGroupManager) ([]*tracker.Resource, error) {
+func (d *clusterDiscoveryGCE) listManagedInstances(igm *compute.InstanceGroupManager) ([]*Resource, error) {
 	c := d.gceCloud
 
-	var resourceTrackers []*tracker.Resource
+	var resourceTrackers []*Resource
 
 	zoneName := gce.LastComponent(igm.Zone)
 
@@ -250,12 +248,19 @@ func (d *clusterDiscoveryGCE) listManagedInstances(igm *compute.InstanceGroupMan
 		url := i.Instance // avoid closure-in-loop go-tcha
 		name := gce.LastComponent(url)
 
-		resourceTracker := &tracker.Resource{
+		resourceTracker := &Resource{
 			Name: name,
 			ID:   zoneName + "/" + name,
 			Type: typeInstance,
-			Deleter: func(cloud fi.Cloud, tracker *tracker.Resource) error {
+			Deleter: func(cloud fi.Cloud, tracker *Resource) error {
 				return gce.DeleteInstance(c, url)
+			},
+			Dumper: func(r *Resource, dump *Dump) error {
+				i := &Instance{
+					Name: name,
+				}
+				dump.Instances = append(dump.Instances, i)
+				return nil
 			},
 			Obj: i.Instance,
 		}
@@ -313,15 +318,15 @@ func (d *clusterDiscoveryGCE) findGCEDisks() ([]*compute.Disk, error) {
 	return matches, nil
 }
 
-func (d *clusterDiscoveryGCE) listGCEDisks() ([]*tracker.Resource, error) {
-	var resourceTrackers []*tracker.Resource
+func (d *clusterDiscoveryGCE) listGCEDisks() ([]*Resource, error) {
+	var resourceTrackers []*Resource
 
 	disks, err := d.findGCEDisks()
 	if err != nil {
 		return nil, err
 	}
 	for _, t := range disks {
-		resourceTracker := &tracker.Resource{
+		resourceTracker := &Resource{
 			Name:    t.Name,
 			ID:      t.Name,
 			Type:    typeDisk,
@@ -340,7 +345,7 @@ func (d *clusterDiscoveryGCE) listGCEDisks() ([]*tracker.Resource, error) {
 	return resourceTrackers, nil
 }
 
-func deleteGCEDisk(cloud fi.Cloud, r *tracker.Resource) error {
+func deleteGCEDisk(cloud fi.Cloud, r *Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.Disk)
 
@@ -362,10 +367,10 @@ func deleteGCEDisk(cloud fi.Cloud, r *tracker.Resource) error {
 	return c.WaitForOp(op)
 }
 
-func (d *clusterDiscoveryGCE) listTargetPools() ([]*tracker.Resource, error) {
+func (d *clusterDiscoveryGCE) listTargetPools() ([]*Resource, error) {
 	c := d.gceCloud
 
-	var resourceTrackers []*tracker.Resource
+	var resourceTrackers []*Resource
 
 	ctx := context.Background()
 
@@ -375,7 +380,7 @@ func (d *clusterDiscoveryGCE) listTargetPools() ([]*tracker.Resource, error) {
 				continue
 			}
 
-			resourceTracker := &tracker.Resource{
+			resourceTracker := &Resource{
 				Name:    tp.Name,
 				ID:      tp.Name,
 				Type:    typeTargetPool,
@@ -396,7 +401,7 @@ func (d *clusterDiscoveryGCE) listTargetPools() ([]*tracker.Resource, error) {
 	return resourceTrackers, nil
 }
 
-func deleteTargetPool(cloud fi.Cloud, r *tracker.Resource) error {
+func deleteTargetPool(cloud fi.Cloud, r *Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.TargetPool)
 
@@ -418,10 +423,10 @@ func deleteTargetPool(cloud fi.Cloud, r *tracker.Resource) error {
 	return c.WaitForOp(op)
 }
 
-func (d *clusterDiscoveryGCE) listForwardingRules() ([]*tracker.Resource, error) {
+func (d *clusterDiscoveryGCE) listForwardingRules() ([]*Resource, error) {
 	c := d.gceCloud
 
-	var resourceTrackers []*tracker.Resource
+	var resourceTrackers []*Resource
 
 	ctx := context.Background()
 
@@ -431,7 +436,7 @@ func (d *clusterDiscoveryGCE) listForwardingRules() ([]*tracker.Resource, error)
 				continue
 			}
 
-			resourceTracker := &tracker.Resource{
+			resourceTracker := &Resource{
 				Name:    fr.Name,
 				ID:      fr.Name,
 				Type:    typeForwardingRule,
@@ -459,7 +464,7 @@ func (d *clusterDiscoveryGCE) listForwardingRules() ([]*tracker.Resource, error)
 	return resourceTrackers, nil
 }
 
-func deleteForwardingRule(cloud fi.Cloud, r *tracker.Resource) error {
+func deleteForwardingRule(cloud fi.Cloud, r *Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.ForwardingRule)
 
@@ -482,10 +487,10 @@ func deleteForwardingRule(cloud fi.Cloud, r *tracker.Resource) error {
 }
 
 // listFirewallRules discovers Firewall objects for the cluster
-func (d *clusterDiscoveryGCE) listFirewallRules() ([]*tracker.Resource, error) {
+func (d *clusterDiscoveryGCE) listFirewallRules() ([]*Resource, error) {
 	c := d.gceCloud
 
-	var resourceTrackers []*tracker.Resource
+	var resourceTrackers []*Resource
 
 	ctx := context.Background()
 
@@ -506,7 +511,7 @@ func (d *clusterDiscoveryGCE) listFirewallRules() ([]*tracker.Resource, error) {
 				break
 			}
 
-			resourceTracker := &tracker.Resource{
+			resourceTracker := &Resource{
 				Name:    fr.Name,
 				ID:      fr.Name,
 				Type:    typeFirewallRule,
@@ -526,8 +531,8 @@ func (d *clusterDiscoveryGCE) listFirewallRules() ([]*tracker.Resource, error) {
 	return resourceTrackers, nil
 }
 
-// deleteFirewallRule is the helper function to delete a tracker.Resource for a Firewall object
-func deleteFirewallRule(cloud fi.Cloud, r *tracker.Resource) error {
+// deleteFirewallRule is the helper function to delete a Resource for a Firewall object
+func deleteFirewallRule(cloud fi.Cloud, r *Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.Firewall)
 
@@ -549,10 +554,10 @@ func deleteFirewallRule(cloud fi.Cloud, r *tracker.Resource) error {
 	return c.WaitForOp(op)
 }
 
-func (d *clusterDiscoveryGCE) listRoutes(resources map[string]*tracker.Resource) ([]*tracker.Resource, error) {
+func (d *clusterDiscoveryGCE) listRoutes(resources map[string]*Resource) ([]*Resource, error) {
 	c := d.gceCloud
 
-	var resourceTrackers []*tracker.Resource
+	var resourceTrackers []*Resource
 
 	instances := sets.NewString()
 	for _, resource := range resources {
@@ -593,7 +598,7 @@ func (d *clusterDiscoveryGCE) listRoutes(resources map[string]*tracker.Resource)
 			}
 
 			if remove {
-				resourceTracker := &tracker.Resource{
+				resourceTracker := &Resource{
 					Name:    r.Name,
 					ID:      r.Name,
 					Type:    typeRoute,
@@ -619,7 +624,7 @@ func (d *clusterDiscoveryGCE) listRoutes(resources map[string]*tracker.Resource)
 	return resourceTrackers, nil
 }
 
-func deleteRoute(cloud fi.Cloud, r *tracker.Resource) error {
+func deleteRoute(cloud fi.Cloud, r *Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.Route)
 
@@ -641,10 +646,10 @@ func deleteRoute(cloud fi.Cloud, r *tracker.Resource) error {
 	return c.WaitForOp(op)
 }
 
-func (d *clusterDiscoveryGCE) listAddresses() ([]*tracker.Resource, error) {
+func (d *clusterDiscoveryGCE) listAddresses() ([]*Resource, error) {
 	c := d.gceCloud
 
-	var resourceTrackers []*tracker.Resource
+	var resourceTrackers []*Resource
 
 	ctx := context.Background()
 
@@ -655,7 +660,7 @@ func (d *clusterDiscoveryGCE) listAddresses() ([]*tracker.Resource, error) {
 				continue
 			}
 
-			resourceTracker := &tracker.Resource{
+			resourceTracker := &Resource{
 				Name:    a.Name,
 				ID:      a.Name,
 				Type:    typeAddress,
@@ -675,7 +680,7 @@ func (d *clusterDiscoveryGCE) listAddresses() ([]*tracker.Resource, error) {
 	return resourceTrackers, nil
 }
 
-func deleteAddress(cloud fi.Cloud, r *tracker.Resource) error {
+func deleteAddress(cloud fi.Cloud, r *Resource) error {
 	c := cloud.(gce.GCECloud)
 	t := r.Obj.(*compute.Address)
 
@@ -722,7 +727,7 @@ func (d *clusterDiscoveryGCE) matchesClusterNameMultipart(name string, maxParts 
 	return false
 }
 
-func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*tracker.Resource, error) {
+func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*Resource, error) {
 	// We never delete the hosted zone, because it is usually shared and we don't create it
 	return nil, nil
 	// TODO: When shared resource PR lands, reintroduce
@@ -734,7 +739,7 @@ func (d *clusterDiscoveryGCE) listGCEDNSZone() ([]*tracker.Resource, error) {
 	//	return nil, err
 	//}
 	//
-	//return []*tracker.Resource{
+	//return []*Resource{
 	//	{
 	//		Name:    zone.Name(),
 	//		ID:      zone.Name(),
@@ -770,7 +775,7 @@ func (d *clusterDiscoveryGCE) findDNSZone() (dnsprovider.Zone, error) {
 	return nil, fmt.Errorf("DNS Zone for cluster %s could not be found", d.clusterName)
 }
 
-func (d *clusterDiscoveryGCE) deleteDNSZone(cloud fi.Cloud, r *tracker.Resource) error {
+func (d *clusterDiscoveryGCE) deleteDNSZone(cloud fi.Cloud, r *Resource) error {
 	clusterZone := r.Obj.(dnsprovider.Zone)
 
 	rrs, supported := clusterZone.ResourceRecordSets()
