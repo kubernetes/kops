@@ -23,7 +23,6 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/cloudresourcemanager/v1"
 	compute "google.golang.org/api/compute/v0.beta"
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
@@ -31,7 +30,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
-	"strconv"
 )
 
 type GCECloud interface {
@@ -56,19 +54,15 @@ type GCECloud interface {
 }
 
 type gceCloudImplementation struct {
-	compute              *compute.Service
-	storage              *storage.Service
-	iam                  *iam.Service
-	cloudResourceManager *cloudresourcemanager.Service
+	compute *compute.Service
+	storage *storage.Service
+	iam     *iam.Service
 
 	region  string
 	project string
 
-	// projectInfo caches the project info from the cloud resource manager
-	projectInfo *cloudresourcemanager.Project
-
-	// serviceAccount caches the service account from IAM
-	serviceAccount *iam.ServiceAccount
+	// projectInfo caches the project info from the compute API
+	projectInfo *compute.Project
 
 	labels map[string]string
 }
@@ -112,12 +106,6 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 		return nil, fmt.Errorf("error building IAM API client: %v", err)
 	}
 	c.iam = iamService
-
-	cloudResourceManagerService, err := cloudresourcemanager.New(client)
-	if err != nil {
-		return nil, fmt.Errorf("error building Cloud Resource Manager API client: %v", err)
-	}
-	c.cloudResourceManager = cloudResourceManagerService
 
 	gceCloudInstances[region+"::"+project] = c
 
@@ -166,8 +154,9 @@ func (c *gceCloudImplementation) Project() string {
 // ServiceAccount returns the email address for the service account that the instances will run under.
 func (c *gceCloudImplementation) ServiceAccount() (string, error) {
 	if c.projectInfo == nil {
-		// Find the project info, so we can find the ProjectNumber
-		p, err := c.cloudResourceManager.Projects.Get(c.project).Do()
+		// Find the project info from the compute API, which includes the default service account
+		glog.V(2).Infof("fetching project %q from compute API", c.project)
+		p, err := c.compute.Projects.Get(c.project).Do()
 		if err != nil {
 			return "", fmt.Errorf("error fetching info for project %q: %v", c.project, err)
 		}
@@ -175,36 +164,11 @@ func (c *gceCloudImplementation) ServiceAccount() (string, error) {
 		c.projectInfo = p
 	}
 
-	if c.serviceAccount == nil {
-		// This is the format of the default GCE compute IAM service account
-		expectedName := strconv.FormatInt(c.projectInfo.ProjectNumber, 10) + "-compute@developer.gserviceaccount.com"
-
-		var matches []*iam.ServiceAccount
-		ctx := context.TODO()
-		err := c.iam.Projects.ServiceAccounts.List("projects/"+c.project).Pages(ctx, func(page *iam.ListServiceAccountsResponse) error {
-			for _, a := range page.Accounts {
-				if a.Email == expectedName {
-					matches = append(matches, a)
-				}
-			}
-			return nil
-		})
-		if err != nil {
-			return "", fmt.Errorf("error listing service accounts: %v", err)
-		}
-
-		if len(matches) == 0 {
-			return "", fmt.Errorf("could not find expected service account with name %q", expectedName)
-		}
-
-		if len(matches) > 1 {
-			return "", fmt.Errorf("found multiple service accounts with name %q", expectedName)
-		}
-
-		c.serviceAccount = matches[0]
+	if c.projectInfo.DefaultServiceAccount == "" {
+		return "", fmt.Errorf("compute project %q did not have DefaultServiceAccount", c.project)
 	}
 
-	return c.serviceAccount.Email, nil
+	return c.projectInfo.DefaultServiceAccount, nil
 }
 
 func (c *gceCloudImplementation) DNS() (dnsprovider.Interface, error) {
