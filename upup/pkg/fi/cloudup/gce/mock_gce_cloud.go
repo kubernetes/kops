@@ -21,6 +21,7 @@ import (
 
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
@@ -89,6 +90,12 @@ func (c *mockGCECloud) DNS() (dnsprovider.Interface, error) {
 // Compute implements GCECloud::Compute
 func (c *mockGCECloud) Compute() *compute.Service {
 	glog.Fatalf("mockGCECloud::Compute not implemented")
+	return nil
+}
+
+// IAM implements GCECloud::IAM
+func (c *mockGCECloud) IAM() *iam.Service {
+	glog.Fatalf("mockGCECloud::IAM not implemented")
 	return nil
 }
 
