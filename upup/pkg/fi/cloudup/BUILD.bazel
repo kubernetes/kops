@@ -38,6 +38,7 @@ go_library(
         "//pkg/model:go_default_library",
         "//pkg/model/awsmodel:go_default_library",
         "//pkg/model/components:go_default_library",
+        "//pkg/model/domodel:go_default_library",
         "//pkg/model/gcemodel:go_default_library",
         "//pkg/model/vspheremodel:go_default_library",
         "//pkg/resources/digitalocean:go_default_library",
