@@ -24,6 +24,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
+	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -33,6 +34,7 @@ import (
 
 type GCECloud interface {
 	fi.Cloud
+	IAM() *iam.Service
 	Compute() *compute.Service
 	Storage() *storage.Service
 
@@ -50,6 +52,7 @@ type GCECloud interface {
 
 type gceCloudImplementation struct {
 	compute *compute.Service
+	iam     *iam.Service
 	storage *storage.Service
 
 	region  string
@@ -86,6 +89,12 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	}
 	c.compute = computeService
 
+	iamService, err := iam.New(client)
+	if err != nil {
+		return nil, fmt.Errorf("error building iam API client: %v", err)
+	}
+	c.iam = iamService
+
 	storageService, err := storage.New(client)
 	if err != nil {
 		return nil, fmt.Errorf("error building storage API client: %v", err)
@@ -114,6 +123,11 @@ func (c *gceCloudImplementation) WithLabels(labels map[string]string) GCECloud {
 // Compute returns private struct element compute.
 func (c *gceCloudImplementation) Compute() *compute.Service {
 	return c.compute
+}
+
+// IAM returns the IAM service client.
+func (c *gceCloudImplementation) IAM() *iam.Service {
+	return c.iam
 }
 
 // Storage returns private struct element storage.

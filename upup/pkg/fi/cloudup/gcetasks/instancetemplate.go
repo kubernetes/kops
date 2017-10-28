@@ -389,9 +389,10 @@ type terraformInstanceTemplate struct {
 }
 
 type terraformInstanceCommon struct {
-	CanIPForward          bool                          `json:"can_ip_forward"`
-	MachineType           string                        `json:"machine_type,omitempty"`
-	ServiceAccount        *terraformServiceAccount      `json:"service_account,omitempty"`
+	CanIPForward   bool                             `json:"can_ip_forward"`
+	MachineType    string                           `json:"machine_type,omitempty"`
+	ServiceAccount *terraformInstanceServiceAccount `json:"service_account,omitempty"`
+
 	Scheduling            *terraformScheduling          `json:"scheduling,omitempty"`
 	Disks                 []*terraformAttachedDisk      `json:"disk,omitempty"`
 	NetworkInterfaces     []*terraformNetworkInterface  `json:"network_interface,omitempty"`
@@ -403,7 +404,7 @@ type terraformInstanceCommon struct {
 	Zone string `json:"zone,omitempty"`
 }
 
-type terraformServiceAccount struct {
+type terraformInstanceServiceAccount struct {
 	Scopes []string `json:"scopes"`
 }
 
@@ -498,7 +499,7 @@ func (t *terraformInstanceCommon) AddServiceAccounts(serviceAccounts []*compute.
 	for _, g := range serviceAccounts {
 		for _, scope := range g.Scopes {
 			if t.ServiceAccount == nil {
-				t.ServiceAccount = &terraformServiceAccount{}
+				t.ServiceAccount = &terraformInstanceServiceAccount{}
 			}
 			t.ServiceAccount.Scopes = append(t.ServiceAccount.Scopes, scope)
 		}
