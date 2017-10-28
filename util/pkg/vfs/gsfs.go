@@ -82,6 +82,10 @@ func (p *GSPath) Bucket() string {
 	return p.bucket
 }
 
+func (p *GSPath) Object() string {
+	return p.key
+}
+
 func (p *GSPath) String() string {
 	return p.Path()
 }
