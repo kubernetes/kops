@@ -7,16 +7,22 @@ go_library(
 )
 
 genrule(
-  name = "bindata",
-  srcs = glob(["*"], exclude=["bindata.go", "BUILD.bazel"]),
-  outs = ["bindata.go"],
-  cmd = """
+    name = "bindata",
+    srcs = glob(
+        ["*"],
+        exclude = [
+            "bindata.go",
+            "BUILD.bazel",
+        ],
+    ),
+    outs = ["bindata.go"],
+    cmd = """
 $(location //vendor/github.com/jteeuwen/go-bindata/go-bindata:go-bindata) \
   -o "$(OUTS)" -pkg model \
   -prefix $$(pwd) \
   -prefix federation/model $(SRCS)
 """,
-  tools = [
+    tools = [
         "//vendor/github.com/jteeuwen/go-bindata/go-bindata",
     ],
 )
