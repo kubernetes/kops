@@ -563,6 +563,32 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		GPU:            true,
 	},
 
+	// p3 family
+	{
+		Name:           "p3.2xlarge",
+		MemoryGB:       61,
+		ECU:            23.5,
+		Cores:          8,
+		EphemeralDisks: nil,
+		GPU:            true,
+	},
+	{
+		Name:           "p3.8xlarge",
+		MemoryGB:       244,
+		ECU:            94,
+		Cores:          32,
+		EphemeralDisks: nil,
+		GPU:            true,
+	},
+	{
+		Name:           "p3.16xlarge",
+		MemoryGB:       488,
+		ECU:            188,
+		Cores:          64,
+		EphemeralDisks: nil,
+		GPU:            true,
+	},
+
 	// g3 family
 	{
 		Name:           "g3.4xlarge",
