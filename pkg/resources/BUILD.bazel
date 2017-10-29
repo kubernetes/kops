@@ -4,7 +4,6 @@ go_library(
     name = "go_default_library",
     srcs = [
         "aws.go",
-        "cluster_resources.go",
         "dump.go",
         "dumpmodel.go",
         "gce.go",

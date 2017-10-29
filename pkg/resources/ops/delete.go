@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package resources
+package ops
 
 import (
 	"fmt"
@@ -22,17 +22,19 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
-func DeleteResources(cloud fi.Cloud, resources map[string]*Resource) error {
+// DeleteResources deletes the resources, as previously collected by ListResources
+func DeleteResources(cloud fi.Cloud, resourceMap map[string]*resources.Resource) error {
 	depMap := make(map[string][]string)
 
-	done := make(map[string]*Resource)
+	done := make(map[string]*resources.Resource)
 
 	var mutex sync.Mutex
 
-	for k, t := range resources {
+	for k, t := range resourceMap {
 		for _, block := range t.Blocks {
 			depMap[block] = append(depMap[block], k)
 		}
@@ -55,12 +57,12 @@ func DeleteResources(cloud fi.Cloud, resources map[string]*Resource) error {
 	for {
 		// TODO: Some form of default ordering based on types?
 
-		failed := make(map[string]*Resource)
+		failed := make(map[string]*resources.Resource)
 
 		for {
-			phase := make(map[string]*Resource)
+			phase := make(map[string]*resources.Resource)
 
-			for k, r := range resources {
+			for k, r := range resourceMap {
 				if _, d := done[k]; d {
 					continue
 				}
@@ -88,7 +90,7 @@ func DeleteResources(cloud fi.Cloud, resources map[string]*Resource) error {
 				break
 			}
 
-			groups := make(map[string][]*Resource)
+			groups := make(map[string][]*resources.Resource)
 			for k, t := range phase {
 				groupKey := t.GroupKey
 				if groupKey == "" {
@@ -101,7 +103,7 @@ func DeleteResources(cloud fi.Cloud, resources map[string]*Resource) error {
 			for _, trackers := range groups {
 				wg.Add(1)
 
-				go func(trackers []*Resource) {
+				go func(trackers []*resources.Resource) {
 					mutex.Lock()
 					for _, t := range trackers {
 						k := t.Type + ":" + t.ID
@@ -124,11 +126,11 @@ func DeleteResources(cloud fi.Cloud, resources map[string]*Resource) error {
 					}
 					if err != nil {
 						mutex.Lock()
-						if IsDependencyViolation(err) {
+						if resources.IsDependencyViolation(err) {
 							fmt.Printf("%s\tstill has dependencies, will retry\n", human)
 							glog.V(4).Infof("API call made when had dependency: %s", human)
 						} else {
-							fmt.Printf("%s\terror deleting resource, will retry: %v\n", human, err)
+							fmt.Printf("%s\terror deleting resources, will retry: %v\n", human, err)
 						}
 						for _, t := range trackers {
 							k := t.Type + ":" + t.ID
@@ -152,12 +154,12 @@ func DeleteResources(cloud fi.Cloud, resources map[string]*Resource) error {
 			wg.Wait()
 		}
 
-		if len(resources) == len(done) {
+		if len(resourceMap) == len(done) {
 			return nil
 		}
 
 		fmt.Printf("Not all resources deleted; waiting before reattempting deletion\n")
-		for k := range resources {
+		for k := range resourceMap {
 			if _, d := done[k]; d {
 				continue
 			}
@@ -167,7 +169,7 @@ func DeleteResources(cloud fi.Cloud, resources map[string]*Resource) error {
 
 		iterationsWithNoProgress++
 		if iterationsWithNoProgress > 42 {
-			return fmt.Errorf("Not making progress deleting resources; giving up")
+			return fmt.Errorf("not making progress deleting resources; giving up")
 		}
 
 		time.Sleep(10 * time.Second)
