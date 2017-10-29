@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -112,7 +113,7 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 	if err != nil {
 		return err
 	}
-	dump, err := resources.BuildDump(resourceMap)
+	dump, err := resources.BuildDump(context.TODO(), cloud, resourceMap)
 	if err != nil {
 		return err
 	}

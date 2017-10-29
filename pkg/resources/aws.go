@@ -314,12 +314,12 @@ func DeleteCloudFormationStack(cloud fi.Cloud, t *Resource) error {
 	return nil
 }
 
-func DumpCloudFormationStack(r *Resource, dump *Dump) error {
+func DumpCloudFormationStack(op *DumpOperation, r *Resource) error {
 	data := make(map[string]interface{})
 	data["id"] = r.ID
 	data["type"] = r.Type
 	data["raw"] = r.Obj
-	dump.Resources = append(dump.Resources, data)
+	op.Dump.Resources = append(op.Dump.Resources, data)
 	return nil
 }
 
@@ -417,12 +417,12 @@ func ListInstances(cloud fi.Cloud, clusterName string) ([]*Resource, error) {
 	return resourceTrackers, nil
 }
 
-func DumpInstance(r *Resource, dump *Dump) error {
+func DumpInstance(op *DumpOperation, r *Resource) error {
 	data := make(map[string]interface{})
 	data["id"] = r.ID
 	data["type"] = ec2.ResourceTypeInstance
 	data["raw"] = r.Obj
-	dump.Resources = append(dump.Resources, data)
+	op.Dump.Resources = append(op.Dump.Resources, data)
 
 	ec2Instance := r.Obj.(*ec2.Instance)
 	i := &Instance{
@@ -436,7 +436,7 @@ func DumpInstance(r *Resource, dump *Dump) error {
 			}
 		}
 	}
-	dump.Instances = append(dump.Instances, i)
+	op.Dump.Instances = append(op.Dump.Instances, i)
 
 	return nil
 }
@@ -496,12 +496,12 @@ func DeleteSecurityGroup(cloud fi.Cloud, t *Resource) error {
 	return nil
 }
 
-func DumpSecurityGroup(r *Resource, dump *Dump) error {
+func DumpSecurityGroup(op *DumpOperation, r *Resource) error {
 	data := make(map[string]interface{})
 	data["id"] = r.ID
 	data["type"] = ec2.ResourceTypeSecurityGroup
 	data["raw"] = r.Obj
-	dump.Resources = append(dump.Resources, data)
+	op.Dump.Resources = append(op.Dump.Resources, data)
 	return nil
 }
 
@@ -1218,12 +1218,12 @@ func DeleteVPC(cloud fi.Cloud, r *Resource) error {
 	return nil
 }
 
-func DumpVPC(r *Resource, dump *Dump) error {
+func DumpVPC(op *DumpOperation, r *Resource) error {
 	data := make(map[string]interface{})
 	data["id"] = r.ID
 	data["type"] = ec2.ResourceTypeVpc
 	data["raw"] = r.Obj
-	dump.Resources = append(dump.Resources, data)
+	op.Dump.Resources = append(op.Dump.Resources, data)
 	return nil
 }
 
@@ -1558,12 +1558,12 @@ func DeleteELB(cloud fi.Cloud, r *Resource) error {
 	return nil
 }
 
-func DumpELB(r *Resource, dump *Dump) error {
+func DumpELB(op *DumpOperation, r *Resource) error {
 	data := make(map[string]interface{})
 	data["id"] = r.ID
 	data["type"] = TypeLoadBalancer
 	data["raw"] = r.Obj
-	dump.Resources = append(dump.Resources, data)
+	op.Dump.Resources = append(op.Dump.Resources, data)
 	return nil
 }
 
