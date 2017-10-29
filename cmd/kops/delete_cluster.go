@@ -26,7 +26,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/resources"
-	resourceutils "k8s.io/kops/pkg/resources/utils"
+	resourceops "k8s.io/kops/pkg/resources/ops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -131,7 +131,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 			}
 		}
 
-		allResources, err := resourceutils.ListResources(cloud, clusterName, options.Region)
+		allResources, err := resourceops.ListResources(cloud, clusterName, options.Region)
 		if err != nil {
 			return err
 		}
@@ -176,7 +176,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 
 			fmt.Fprintf(out, "\n")
 
-			err = resources.DeleteResources(cloud, clusterResources)
+			err = resourceops.DeleteResources(cloud, clusterResources)
 			if err != nil {
 				return err
 			}

@@ -25,7 +25,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
-	resourceutils "k8s.io/kops/pkg/resources/utils"
+	resourceops "k8s.io/kops/pkg/resources/ops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
@@ -108,7 +108,7 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 	}
 
 	region := "" // Use default
-	resourceMap, err := resourceutils.ListResources(cloud, options.ClusterName, region)
+	resourceMap, err := resourceops.ListResources(cloud, options.ClusterName, region)
 	if err != nil {
 		return err
 	}
