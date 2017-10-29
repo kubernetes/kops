@@ -250,7 +250,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			return preservedFile(err, file, out)
 		}
 
-		err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullCluster)
+		err = registry.WriteConfigDeprecated(newCluster, configBase.Join(registry.PathClusterCompleted), fullCluster)
 		if err != nil {
 			return preservedFile(fmt.Errorf("error writing completed cluster spec: %v", err), file, out)
 		}

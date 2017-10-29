@@ -17,17 +17,16 @@ limitations under the License.
 package assettasks
 
 import (
-	"fmt"
-
-	"net/url"
-
 	"bytes"
+	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
-	"strings"
 )
 
 // CopyFile copies an from a source file repository, to a target repository,
@@ -83,14 +82,14 @@ func (_ *CopyFile) Render(c *fi.Context, a, e, changes *CopyFile) error {
 
 	glog.Infof("copying bits from %q to %q", source, target)
 
-	if err := transferFile(source, target, sourceSha, sourceSHALocation); err != nil {
+	if err := transferFile(c, source, target, sourceSha, sourceSHALocation); err != nil {
 		return fmt.Errorf("unable to transfer %q to %q: %v", source, target, err)
 	}
 
 	return nil
 }
 
-func transferFile(source string, target string, sourceSHA string, sourceSHALocation string) error {
+func transferFile(c *fi.Context, source string, target string, sourceSHA string, sourceSHALocation string) error {
 	data, err := vfs.Context.ReadFile(source)
 	if err != nil {
 		return fmt.Errorf("Error unable to read path %q: %v", source, err)
@@ -139,28 +138,33 @@ func transferFile(source string, target string, sourceSHA string, sourceSHALocat
 			}
 
 			b := bytes.NewBufferString(sha)
-			if err := writeFile(shaVFS, b.Bytes()); err != nil {
+			if err := writeFile(c, shaVFS, b.Bytes()); err != nil {
 				return fmt.Errorf("Error uploading file %q: %v", shaVFS, err)
 			}
 		}
 	}
 
-	if err := writeFile(uploadVFS, data); err != nil {
+	if err := writeFile(c, uploadVFS, data); err != nil {
 		return fmt.Errorf("Error uploading file %q: %v", uploadVFS, err)
 	}
 
 	return nil
 }
 
-func writeFile(vfsPath string, data []byte) error {
+func writeFile(c *fi.Context, vfsPath string, data []byte) error {
 	glog.V(2).Infof("uploading to %q", vfsPath)
-	destinationRegistry, err := vfs.Context.BuildVfsPath(vfsPath)
+	p, err := vfs.Context.BuildVfsPath(vfsPath)
 	if err != nil {
-		return fmt.Errorf("Error parsing registry path %q: %v", vfsPath, err)
+		return fmt.Errorf("error building path %q: %v", vfsPath, err)
 	}
 
-	if err = destinationRegistry.WriteFile(data); err != nil {
-		return fmt.Errorf("Error destination path %q: %v", vfsPath, err)
+	acl, err := acls.GetACL(p, c.Cluster)
+	if err != nil {
+		return err
+	}
+
+	if err = p.WriteFile(data, acl); err != nil {
+		return fmt.Errorf("error writing path %q: %v", vfsPath, err)
 	}
 
 	glog.V(2).Infof("upload complete: %q", vfsPath)

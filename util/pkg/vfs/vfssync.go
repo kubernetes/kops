@@ -161,7 +161,7 @@ func SyncDir(src *VFSScan, destBase Path) error {
 
 		if destData == nil || !bytes.Equal(srcData, destData) {
 			glog.V(2).Infof("Copying data from %s to %s", f, destFile)
-			err = destFile.WriteFile(srcData)
+			err = destFile.WriteFile(srcData, nil)
 			if err != nil {
 				return fmt.Errorf("error writing dest file %q: %v", f, err)
 			}
@@ -215,7 +215,7 @@ func hashesMatch(src, dest Path) (bool, error) {
 }
 
 // CopyTree copies all files in src to dest.  It copies the whole recursive subtree of files.
-func CopyTree(src Path, dest Path) error {
+func CopyTree(src Path, dest Path, aclOracle ACLOracle) error {
 	srcFiles, err := src.ReadTree()
 	if err != nil {
 		return fmt.Errorf("error reading source directory %q: %v", src, err)
@@ -269,8 +269,13 @@ func CopyTree(src Path, dest Path) error {
 		}
 
 		if destData == nil || !bytes.Equal(srcData, destData) {
+			acl, err := aclOracle(destFile)
+			if err != nil {
+				return err
+			}
+
 			glog.V(2).Infof("Copying data from %s to %s", srcFile, destFile)
-			err = destFile.WriteFile(srcData)
+			err = destFile.WriteFile(srcData, acl)
 			if err != nil {
 				return fmt.Errorf("error writing dest file %q: %v", destFile, err)
 			}

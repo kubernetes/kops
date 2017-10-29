@@ -33,12 +33,15 @@ import (
 	"github.com/golang/glog"
 	"golang.org/x/crypto/ssh"
 
+	"k8s.io/kops/pkg/acls"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
 type VFSCAStore struct {
 	basedir vfs.Path
+	cluster *kops.Cluster
 
 	mutex     sync.Mutex
 	cachedCAs map[string]*cachedEntry
@@ -51,9 +54,10 @@ type cachedEntry struct {
 
 var _ CAStore = &VFSCAStore{}
 
-func NewVFSCAStore(basedir vfs.Path) CAStore {
+func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path) CAStore {
 	c := &VFSCAStore{
 		basedir:   basedir,
+		cluster:   cluster,
 		cachedCAs: make(map[string]*cachedEntry),
 	}
 
@@ -417,7 +421,10 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 	}
 	glog.V(2).Infof("Mirroring key store from %q to %q", c.basedir, basedir)
 
-	return vfs.CopyTree(c.basedir, basedir)
+	aclOracle := func(p vfs.Path) (vfs.ACL, error) {
+		return acls.GetACL(p, c.cluster)
+	}
+	return vfs.CopyTree(c.basedir, basedir, aclOracle)
 }
 
 func (c *VFSCAStore) IssueCert(signer string, id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
@@ -625,7 +632,11 @@ func (c *VFSCAStore) storePrivateKey(privateKey *pki.PrivateKey, p vfs.Path) err
 		return err
 	}
 
-	return p.WriteFile(data.Bytes())
+	acl, err := acls.GetACL(p, c.cluster)
+	if err != nil {
+		return err
+	}
+	return p.WriteFile(data.Bytes(), acl)
 }
 
 func (c *VFSCAStore) storeCertificate(cert *pki.Certificate, p vfs.Path) error {
@@ -636,7 +647,11 @@ func (c *VFSCAStore) storeCertificate(cert *pki.Certificate, p vfs.Path) error {
 		return err
 	}
 
-	return p.WriteFile(data.Bytes())
+	acl, err := acls.GetACL(p, c.cluster)
+	if err != nil {
+		return err
+	}
+	return p.WriteFile(data.Bytes(), acl)
 }
 
 func (c *VFSCAStore) buildSerial() *big.Int {
@@ -699,17 +714,19 @@ func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 	}
 
 	p := c.buildSSHPublicKeyPath(name, id)
-	return c.storeData(pubkey, p)
+
+	acl, err := acls.GetACL(p, c.cluster)
+	if err != nil {
+		return err
+	}
+
+	return p.WriteFile(pubkey, acl)
 }
 
 func (c *VFSCAStore) buildSSHPublicKeyPath(name string, id string) vfs.Path {
 	// id is fingerprint with colons, but we store without colons
 	id = strings.Replace(id, ":", "", -1)
 	return c.basedir.Join("ssh", "public", name, id)
-}
-
-func (c *VFSCAStore) storeData(data []byte, p vfs.Path) error {
-	return p.WriteFile(data)
 }
 
 func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*KeystoreItem, error) {
