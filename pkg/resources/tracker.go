@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package tracker
+package resources
 
 import (
 	"k8s.io/kops/upup/pkg/fi"
@@ -36,7 +36,8 @@ type Resource struct {
 	GroupKey     string
 	GroupDeleter func(cloud fi.Cloud, trackers []*Resource) error
 
-	Dumper func(r *Resource) (interface{}, error)
+	// Dumper populates the dump with any information from the resource
+	Dumper func(r *Resource, dump *Dump) error
 
 	Obj interface{}
 }
