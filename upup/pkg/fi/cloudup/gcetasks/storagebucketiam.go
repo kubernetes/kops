@@ -57,7 +57,7 @@ func (e *StorageBucketIam) Find(c *fi.Context) (*StorageBucketIam, error) {
 		if gce.IsNotFound(err) {
 			policy = &storage.Policy{}
 		} else {
-			return nil, fmt.Errorf("error querying GCS IAM policy for gs://%s: %v", bucket, err)
+			return nil, fmt.Errorf("error querying GCS IAM policy for gs://%s for %s: %v", bucket, entity, err)
 		}
 	}
 
