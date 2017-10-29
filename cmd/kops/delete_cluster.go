@@ -176,7 +176,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 
 			fmt.Fprintf(out, "\n")
 
-			err = resources.DeleteResources(cloud, clusterResources)
+			err = resourceutils.DeleteResources(cloud, clusterResources)
 			if err != nil {
 				return err
 			}
