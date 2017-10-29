@@ -5,16 +5,15 @@ go_library(
     srcs = [
         "aws.go",
         "cluster_resources.go",
-        "do.go",
+        "dump.go",
+        "dumpmodel.go",
         "gce.go",
+        "tracker.go",
         "vsphere.go",
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//pkg/apis/kops:go_default_library",
         "//pkg/dns:go_default_library",
-        "//pkg/resources/digitalocean:go_default_library",
-        "//pkg/resources/tracker:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//upup/pkg/fi/cloudup/gce:go_default_library",
@@ -45,7 +44,6 @@ go_test(
     library = ":go_default_library",
     deps = [
         "//cloudmock/aws/mockec2:go_default_library",
-        "//pkg/resources/tracker:go_default_library",
         "//upup/pkg/fi/cloudup/awsup:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/ec2:go_default_library",
