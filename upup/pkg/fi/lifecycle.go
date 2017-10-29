@@ -25,7 +25,7 @@ const (
 	// LifecycleIgnore will skip the task
 	LifecycleIgnore Lifecycle = "Ignore"
 
-	// LifecycleValidateMustExist will check that the task exists and is the same
+	// LifecycleExistsAndValidates will check that the task exists and is the same
 	LifecycleExistsAndValidates Lifecycle = "ExistsAndValidates"
 
 	// LifecycleExistsAndWarnIfChanges will check that the task exists and will warn on changes, but then ignore them
