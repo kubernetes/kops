@@ -119,12 +119,12 @@ func deleteVM(cloud fi.Cloud, r *Resource) error {
 	return nil
 }
 
-func DumpVMInfo(r *Resource, dump *Dump) error {
+func DumpVMInfo(op *DumpOperation, r *Resource) error {
 	data := make(map[string]interface{})
 	data["id"] = r.ID
 	data["type"] = r.Type
 	data["raw"] = r.Obj
-	dump.Resources = append(dump.Resources, data)
+	op.Dump.Resources = append(op.Dump.Resources, data)
 	return nil
 }
 

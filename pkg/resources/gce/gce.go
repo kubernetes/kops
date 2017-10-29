@@ -255,14 +255,8 @@ func (d *clusterDiscoveryGCE) listManagedInstances(igm *compute.InstanceGroupMan
 			Deleter: func(cloud fi.Cloud, tracker *resources.Resource) error {
 				return gce.DeleteInstance(c, url)
 			},
-			Dumper: func(r *resources.Resource, dump *resources.Dump) error {
-				i := &resources.Instance{
-					Name: name,
-				}
-				dump.Instances = append(dump.Instances, i)
-				return nil
-			},
-			Obj: i.Instance,
+			Dumper: DumpManagedInstance,
+			Obj:    i,
 		}
 
 		// We don't block deletion of the instance group manager
