@@ -18,6 +18,7 @@ package gcetasks
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	"google.golang.org/api/storage/v1"
 	"k8s.io/kops/upup/pkg/fi"
