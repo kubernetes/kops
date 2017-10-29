@@ -86,7 +86,7 @@ k8s.io/kops/pkg/pretty
 k8s.io/kops/pkg/resources
 k8s.io/kops/pkg/resources/digitalocean
 k8s.io/kops/pkg/resources/digitalocean/dns
-k8s.io/kops/pkg/resources/utils
+k8s.io/kops/pkg/resources/ops
 k8s.io/kops/pkg/systemd
 k8s.io/kops/pkg/templates
 k8s.io/kops/pkg/testutils
