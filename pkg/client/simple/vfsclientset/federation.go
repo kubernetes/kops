@@ -72,7 +72,7 @@ func (c *FederationVFS) List(options metav1.ListOptions) (*api.FederationList, e
 }
 
 func (c *FederationVFS) Create(g *api.Federation) (*api.Federation, error) {
-	err := c.create(g)
+	err := c.create(nil, g)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (c *FederationVFS) Create(g *api.Federation) (*api.Federation, error) {
 }
 
 func (c *FederationVFS) Update(g *api.Federation) (*api.Federation, error) {
-	err := c.update(g)
+	err := c.update(nil, g)
 	if err != nil {
 		return nil, err
 	}

@@ -13,6 +13,7 @@ go_library(
     ],
     visibility = ["//visibility:public"],
     deps = [
+        "//pkg/acls:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/apis/kops/registry:go_default_library",
         "//pkg/apis/kops/v1alpha1:go_default_library",

@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"os"
@@ -35,6 +36,7 @@ type Context struct {
 	Target            Target
 	DNS               dnsprovider.Interface
 	Cloud             Cloud
+	Cluster           *kops.Cluster
 	Keystore          Keystore
 	SecretStore       SecretStore
 	ClusterConfigBase vfs.Path
@@ -44,9 +46,10 @@ type Context struct {
 	tasks map[string]Task
 }
 
-func NewContext(target Target, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
+func NewContext(target Target, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
 	c := &Context{
 		Cloud:             cloud,
+		Cluster:           cluster,
 		Target:            target,
 		Keystore:          keystore,
 		SecretStore:       secretStore,

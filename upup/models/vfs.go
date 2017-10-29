@@ -49,11 +49,11 @@ func (p *AssetPath) Join(relativePath ...string) vfs.Path {
 	return &AssetPath{location: joined}
 }
 
-func (p *AssetPath) WriteFile(data []byte) error {
+func (p *AssetPath) WriteFile(data []byte, acl vfs.ACL) error {
 	return ReadOnlyError
 }
 
-func (p *AssetPath) CreateFile(data []byte) error {
+func (p *AssetPath) CreateFile(data []byte, acl vfs.ACL) error {
 	return ReadOnlyError
 }
 

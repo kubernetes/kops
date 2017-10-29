@@ -25,6 +25,7 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/pkg/pki"
@@ -37,6 +38,7 @@ const NamePrefix = "token-"
 
 // ClientsetSecretStore is a SecretStore backed by Keyset objects in an API server
 type ClientsetSecretStore struct {
+	cluster   *kops.Cluster
 	namespace string
 	clientset kopsinternalversion.KopsInterface
 }
@@ -44,8 +46,9 @@ type ClientsetSecretStore struct {
 var _ fi.SecretStore = &ClientsetSecretStore{}
 
 // NewClientsetSecretStore is the constructor for ClientsetSecretStore
-func NewClientsetSecretStore(clientset kopsinternalversion.KopsInterface, namespace string) fi.SecretStore {
+func NewClientsetSecretStore(cluster *kops.Cluster, clientset kopsinternalversion.KopsInterface, namespace string) fi.SecretStore {
 	c := &ClientsetSecretStore{
+		cluster:   cluster,
 		clientset: clientset,
 		namespace: namespace,
 	}
@@ -81,7 +84,12 @@ func (c *ClientsetSecretStore) MirrorTo(basedir vfs.Path) error {
 			return fmt.Errorf("error serializing secret: %v", err)
 		}
 
-		if err := p.WriteFile(data); err != nil {
+		acl, err := acls.GetACL(p, c.cluster)
+		if err != nil {
+			return err
+		}
+
+		if err := p.WriteFile(data, acl); err != nil {
 			return fmt.Errorf("error writing secret to %q: %v", p, err)
 		}
 	}
