@@ -67,7 +67,7 @@ func newTemplateFunctions(nodeupConfig *nodeup.Config, cluster *api.Cluster, ins
 			return nil, fmt.Errorf("error building secret store path: %v", err)
 		}
 
-		t.secretStore = secrets.NewVFSSecretStore(p)
+		t.secretStore = secrets.NewVFSSecretStore(cluster, p)
 	} else {
 		return nil, fmt.Errorf("SecretStore not set")
 	}
@@ -79,7 +79,7 @@ func newTemplateFunctions(nodeupConfig *nodeup.Config, cluster *api.Cluster, ins
 			return nil, fmt.Errorf("error building key store path: %v", err)
 		}
 
-		t.keyStore = fi.NewVFSCAStore(p)
+		t.keyStore = fi.NewVFSCAStore(cluster, p)
 	} else {
 		return nil, fmt.Errorf("KeyStore not set")
 	}

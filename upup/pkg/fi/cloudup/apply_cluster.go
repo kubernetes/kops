@@ -22,6 +22,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
@@ -31,6 +33,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
@@ -45,6 +48,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
@@ -56,11 +60,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
-
-	"github.com/blang/semver"
-	"github.com/golang/glog"
-	"k8s.io/kops/pkg/client/simple/vfsclientset"
-	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 )
 
 const (
@@ -808,12 +807,12 @@ func (c *ApplyClusterCmd) Run() error {
 	c.Target = target
 
 	if !dryRun {
-		err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), c.Cluster)
+		err = registry.WriteConfigDeprecated(cluster, configBase.Join(registry.PathClusterCompleted), c.Cluster)
 		if err != nil {
 			return fmt.Errorf("error writing completed cluster spec: %v", err)
 		}
 
-		vfsMirror := vfsclientset.NewInstanceGroupMirror(cluster.Name, configBase)
+		vfsMirror := vfsclientset.NewInstanceGroupMirror(cluster, configBase)
 
 		for _, g := range c.InstanceGroups {
 			// TODO: We need to update the mirror (below), but do we need to update the primary?
@@ -829,7 +828,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 	}
 
-	context, err := fi.NewContext(target, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
+	context, err := fi.NewContext(target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}

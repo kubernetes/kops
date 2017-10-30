@@ -996,7 +996,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
-	err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullCluster)
+	err = registry.WriteConfigDeprecated(cluster, configBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
