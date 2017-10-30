@@ -25,6 +25,9 @@ const (
 	// LifecycleIgnore will skip the task
 	LifecycleIgnore Lifecycle = "Ignore"
 
+	// LifecycleWarnIfInsufficientAccess will warn but ignore the task if there is an error during the find
+	LifecycleWarnIfInsufficientAccess Lifecycle = "WarnIfInsufficientAccess"
+
 	// LifecycleExistsAndValidates will check that the task exists and is the same
 	LifecycleExistsAndValidates Lifecycle = "ExistsAndValidates"
 
