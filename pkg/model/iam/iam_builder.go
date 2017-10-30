@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// IAM Documentation: /docs/iam_roles.md
+
 // TODO: We have a couple different code paths until we do lifecycles, and
 // TODO: when we have a cluster or refactor some s3 code.  The only code that
 // TODO: is not shared by the different path is the s3 / state store stuff.
