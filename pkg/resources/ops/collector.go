@@ -22,9 +22,10 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/pkg/resources/digitalocean"
+	"k8s.io/kops/pkg/resources/gce"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	cloudgce "k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
 
@@ -36,7 +37,7 @@ func ListResources(cloud fi.Cloud, clusterName string, region string) (map[strin
 	case kops.CloudProviderDO:
 		return digitalocean.ListResources(cloud, clusterName)
 	case kops.CloudProviderGCE:
-		return resources.ListResourcesGCE(cloud.(gce.GCECloud), clusterName, region)
+		return gce.ListResourcesGCE(cloud.(cloudgce.GCECloud), clusterName, region)
 	case kops.CloudProviderVSphere:
 		return resources.ListResourcesVSphere(cloud.(*vsphere.VSphereCloud), clusterName)
 	default:
