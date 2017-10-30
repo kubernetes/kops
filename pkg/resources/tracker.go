@@ -37,7 +37,7 @@ type Resource struct {
 	GroupDeleter func(cloud fi.Cloud, trackers []*Resource) error
 
 	// Dumper populates the dump with any information from the resource
-	Dumper func(r *Resource, dump *Dump) error
+	Dumper func(op *DumpOperation, r *Resource) error
 
 	Obj interface{}
 }

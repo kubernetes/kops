@@ -17,19 +17,36 @@ limitations under the License.
 package resources
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
-// Dumpable is the interface that Resources that can report into the dump should implement
-type Dumpable interface {
-	Dump(dump *Dump) error
+// DumpOperation holds context information for a dump, allowing for extension
+type DumpOperation struct {
+	// Context is the golang context.Context for the dump operation
+	Context context.Context
+
+	// Cloud is the cloud we are dumping
+	Cloud fi.Cloud
+
+	// CloudState allows the cloudprovider to store state during the dump operation
+	CloudState interface{}
+
+	// Dump is the target of our dump
+	Dump *Dump
 }
 
 // BuildDump gathers information about the cluster and returns an object for dumping
-func BuildDump(resources map[string]*Resource) (*Dump, error) {
+func BuildDump(ctx context.Context, cloud fi.Cloud, resources map[string]*Resource) (*Dump, error) {
 	dump := &Dump{}
+	op := &DumpOperation{
+		Context: ctx,
+		Cloud:   cloud,
+		Dump:    dump,
+	}
 
 	for k, r := range resources {
 		if r.Dumper == nil {
@@ -37,7 +54,7 @@ func BuildDump(resources map[string]*Resource) (*Dump, error) {
 			continue
 		}
 
-		err := r.Dumper(r, dump)
+		err := r.Dumper(op, r)
 		if err != nil {
 			return nil, fmt.Errorf("error dumping %q: %v", k, err)
 		}
