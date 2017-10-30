@@ -19,7 +19,6 @@ package templater
 import (
 	"bytes"
 	"fmt"
-	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -51,11 +50,10 @@ func (r *Templater) Render(content string, context map[string]interface{}, snipp
 
 	// @step: add the snippits into the mix
 	for filename, snippet := range snippets {
-		name := filepath.Base(filename)
-		if name == templateName {
-			return "", fmt.Errorf("snippet cannot have the same name as the template: %s", name)
+		if filename == templateName {
+			return "", fmt.Errorf("snippet cannot have the same name as the template: %s", filename)
 		}
-		if _, err = tm.New(name).Parse(snippet); err != nil {
+		if _, err = tm.New(filename).Parse(snippet); err != nil {
 			return rendered, fmt.Errorf("unable to parse snippet: %s, error: %s", filename, err)
 		}
 	}
