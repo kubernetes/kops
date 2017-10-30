@@ -44,6 +44,14 @@ type Context struct {
 	CheckExisting bool
 
 	tasks map[string]Task
+
+	warnings []*Warning
+}
+
+// Warning holds the details of a warning encountered during validation/creation
+type Warning struct {
+	Task    Task
+	Message string
 }
 
 func NewContext(target Target, cluster *kops.Cluster, cloud Cloud, keystore Keystore, secretStore SecretStore, clusterConfigBase vfs.Path, checkExisting bool, tasks map[string]Task) (*Context, error) {
@@ -216,4 +224,17 @@ func (c *Context) Render(a, e, changes Task) error {
 		rvErr = rv[0].Interface().(error)
 	}
 	return rvErr
+}
+
+// AddWarning records a warning encountered during validation / creation.
+// Typically this will be an error that we choose to ignore because of Lifecycle.
+func (c *Context) AddWarning(task Task, message string) {
+	warning := &Warning{
+		Task:    task,
+		Message: message,
+	}
+	// We don't actually do anything with these warnings yet, other than log them to glog below.
+	// In future we might produce a structured warning report.
+	c.warnings = append(c.warnings, warning)
+	glog.Warningf("warning during task %s: %s", task, message)
 }
