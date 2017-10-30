@@ -109,12 +109,12 @@ func (c *RESTClientset) GetFederation(name string) (*kops.Federation, error) {
 
 func (c *RESTClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
-	return secrets.NewClientsetSecretStore(c.KopsClient, namespace), nil
+	return secrets.NewClientsetSecretStore(cluster, c.KopsClient, namespace), nil
 }
 
 func (c *RESTClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
 	namespace := restNamespaceForClusterName(cluster.Name)
-	return fi.NewClientsetCAStore(c.KopsClient, namespace), nil
+	return fi.NewClientsetCAStore(cluster, c.KopsClient, namespace), nil
 }
 
 func (c *RESTClientset) DeleteCluster(cluster *kops.Cluster) error {

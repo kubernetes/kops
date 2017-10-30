@@ -70,8 +70,7 @@ func (c *VFSClientset) ConfigBaseFor(cluster *kops.Cluster) (vfs.Path, error) {
 
 // InstanceGroupsFor implements the InstanceGroupsFor method of simple.Clientset for a VFS-backed state store
 func (c *VFSClientset) InstanceGroupsFor(cluster *kops.Cluster) kopsinternalversion.InstanceGroupInterface {
-	clusterName := cluster.Name
-	return newInstanceGroupVFS(c, clusterName)
+	return newInstanceGroupVFS(c, cluster)
 }
 
 func (c *VFSClientset) federations() kopsinternalversion.FederationInterface {
@@ -99,7 +98,7 @@ func (c *VFSClientset) SecretStore(cluster *kops.Cluster) (fi.SecretStore, error
 		return nil, err
 	}
 	basedir := configBase.Join("secrets")
-	return secrets.NewVFSSecretStore(basedir), nil
+	return secrets.NewVFSSecretStore(cluster, basedir), nil
 }
 
 func (c *VFSClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
@@ -108,7 +107,7 @@ func (c *VFSClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
 		return nil, err
 	}
 	basedir := configBase.Join("pki")
-	return fi.NewVFSCAStore(basedir), nil
+	return fi.NewVFSCAStore(cluster, basedir), nil
 }
 
 func DeleteAllClusterState(basePath vfs.Path) error {

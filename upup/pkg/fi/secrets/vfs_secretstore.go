@@ -20,19 +20,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/acls"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
 	"os"
 )
 
 type VFSSecretStore struct {
+	cluster *kops.Cluster
 	basedir vfs.Path
 }
 
 var _ fi.SecretStore = &VFSSecretStore{}
 
-func NewVFSSecretStore(basedir vfs.Path) fi.SecretStore {
+func NewVFSSecretStore(cluster *kops.Cluster, basedir vfs.Path) fi.SecretStore {
 	c := &VFSSecretStore{
+		cluster: cluster,
 		basedir: basedir,
 	}
 	return c
@@ -48,7 +52,7 @@ func (c *VFSSecretStore) MirrorTo(basedir vfs.Path) error {
 	}
 	glog.V(2).Infof("Mirroring secret store from %q to %q", c.basedir, basedir)
 
-	return vfs.CopyTree(c.basedir, basedir)
+	return vfs.CopyTree(c.basedir, basedir, func(p vfs.Path) (vfs.ACL, error) { return acls.GetACL(p, c.cluster) })
 }
 
 func BuildVfsSecretPath(basedir vfs.Path, name string) vfs.Path {
@@ -117,7 +121,12 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Se
 			return s, false, nil
 		}
 
-		err = c.createSecret(secret, p)
+		acl, err := acls.GetACL(p, c.cluster)
+		if err != nil {
+			return nil, false, err
+		}
+
+		err = c.createSecret(secret, p, acl)
 		if err != nil {
 			if os.IsExist(err) && i == 0 {
 				glog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
@@ -157,10 +166,10 @@ func (c *VFSSecretStore) loadSecret(p vfs.Path) (*fi.Secret, error) {
 }
 
 // createSecret writes the secret, but only if it does not exists
-func (c *VFSSecretStore) createSecret(s *fi.Secret, p vfs.Path) error {
+func (c *VFSSecretStore) createSecret(s *fi.Secret, p vfs.Path, acl vfs.ACL) error {
 	data, err := json.Marshal(s)
 	if err != nil {
 		return fmt.Errorf("error serializing secret: %v", err)
 	}
-	return p.CreateFile(data)
+	return p.CreateFile(data, acl)
 }

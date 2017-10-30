@@ -45,7 +45,7 @@ func (p *FSPath) Join(relativePath ...string) Path {
 	return &FSPath{location: joined}
 }
 
-func (p *FSPath) WriteFile(data []byte) error {
+func (p *FSPath) WriteFile(data []byte, acl ACL) error {
 	dir := path.Dir(p.location)
 	err := os.MkdirAll(dir, 0755)
 	if err != nil {
@@ -94,7 +94,7 @@ func (p *FSPath) WriteFile(data []byte) error {
 // TODO: should we take a file lock or equivalent here?  Can we use RENAME_NOREPLACE ?
 var createFileLock sync.Mutex
 
-func (p *FSPath) CreateFile(data []byte) error {
+func (p *FSPath) CreateFile(data []byte, acl ACL) error {
 	createFileLock.Lock()
 	defer createFileLock.Unlock()
 
@@ -108,7 +108,7 @@ func (p *FSPath) CreateFile(data []byte) error {
 		return err
 	}
 
-	return p.WriteFile(data)
+	return p.WriteFile(data, acl)
 }
 
 func (p *FSPath) ReadFile() ([]byte, error) {
