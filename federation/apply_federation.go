@@ -207,7 +207,7 @@ func (o *ApplyFederationOperation) federationContextForCluster(cluster *kopsapi.
 	federationKeystore := k8sapi.NewKubernetesKeystore(target.KubernetesClient, o.namespace)
 
 	checkExisting := true
-	context, err := fi.NewContext(target, nil, federationKeystore, nil, nil, checkExisting, nil)
+	context, err := fi.NewContext(target, nil, nil, federationKeystore, nil, nil, checkExisting, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -39,6 +39,7 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider:go_default_library",
         "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/cloudprovider/providers/aws:go_default_library",
     ],
 )
 

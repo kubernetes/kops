@@ -29,7 +29,9 @@ kops toolbox template
 ### Options
 
 ```
+      --config-value string    Show the value of a specific configuration value
       --fail-on-missing        Fail on referencing unset variables in templates (default true)
+      --format-yaml            Attempt to format the generated yaml content before output
       --output string          Path to output file, otherwise defaults to stdout
       --snippets stringSlice   Path to directory containing snippets used for templating
       --template stringSlice   Path to template file or directory of templates to render

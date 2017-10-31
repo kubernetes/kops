@@ -31,6 +31,7 @@ import (
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/pkg/pki"
@@ -39,6 +40,7 @@ import (
 
 // ClientsetCAStore is a CAStore implementation that stores keypairs in Keyset on a API server
 type ClientsetCAStore struct {
+	cluster   *kops.Cluster
 	namespace string
 	clientset kopsinternalversion.KopsInterface
 
@@ -49,8 +51,9 @@ type ClientsetCAStore struct {
 var _ CAStore = &ClientsetCAStore{}
 
 // NewClientsetCAStore is the constructor for ClientsetCAStore
-func NewClientsetCAStore(clientset kopsinternalversion.KopsInterface, namespace string) CAStore {
+func NewClientsetCAStore(cluster *kops.Cluster, clientset kopsinternalversion.KopsInterface, namespace string) CAStore {
 	c := &ClientsetCAStore{
+		cluster:         cluster,
 		clientset:       clientset,
 		namespace:       namespace,
 		cachedCaKeysets: make(map[string]*keyset),
@@ -643,14 +646,24 @@ func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
 				item := &keyset.Spec.Keys[i]
 				{
 					p := basedir.Join("issued", keyset.Name, item.Id+".crt")
-					err = p.WriteFile(item.PublicMaterial)
+					acl, err := acls.GetACL(p, c.cluster)
+					if err != nil {
+						return err
+					}
+
+					err = p.WriteFile(item.PublicMaterial, acl)
 					if err != nil {
 						return fmt.Errorf("error writing %q: %v", p, err)
 					}
 				}
 				{
 					p := basedir.Join("private", keyset.Name, item.Id+".key")
-					err = p.WriteFile(item.PrivateMaterial)
+					acl, err := acls.GetACL(p, c.cluster)
+					if err != nil {
+						return err
+					}
+
+					err = p.WriteFile(item.PrivateMaterial, acl)
 					if err != nil {
 						return fmt.Errorf("error writing %q: %v", p, err)
 					}
@@ -684,7 +697,12 @@ func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
 		id := formatFingerprint(h.Sum(nil))
 
 		p := basedir.Join("ssh", "public", sshCredential.Name, id)
-		err = p.WriteFile([]byte(sshCredential.Spec.PublicKey))
+		acl, err := acls.GetACL(p, c.cluster)
+		if err != nil {
+			return err
+		}
+
+		err = p.WriteFile([]byte(sshCredential.Spec.PublicKey), acl)
 		if err != nil {
 			return fmt.Errorf("error writing %q: %v", p, err)
 		}

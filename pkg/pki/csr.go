@@ -21,9 +21,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
-	"github.com/golang/glog"
 	"math/big"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 // BuildPKISerial produces a serial number for certs that is vanishingly unlikely to collide

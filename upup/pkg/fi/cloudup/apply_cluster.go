@@ -22,6 +22,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/blang/semver"
+	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kopsbase "k8s.io/kops"
 	"k8s.io/kops/pkg/apis/kops"
@@ -31,11 +33,13 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/pkg/model/awsmodel"
 	"k8s.io/kops/pkg/model/components"
+	"k8s.io/kops/pkg/model/domodel"
 	"k8s.io/kops/pkg/model/gcemodel"
 	"k8s.io/kops/pkg/model/vspheremodel"
 	"k8s.io/kops/pkg/resources/digitalocean"
@@ -44,6 +48,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
@@ -55,11 +60,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/hashing"
 	"k8s.io/kops/util/pkg/vfs"
-
-	"github.com/blang/semver"
-	"github.com/golang/glog"
-	"k8s.io/kops/pkg/client/simple/vfsclientset"
-	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 )
 
 const (
@@ -351,8 +351,11 @@ func (c *ApplyClusterCmd) Run() error {
 				return fmt.Errorf("DigitalOcean support is currently (very) alpha and is feature-gated. export KOPS_FEATURE_FLAGS=AlphaAllowDO to enable it")
 			}
 
+			modelContext.SSHPublicKeys = sshPublicKeys
+
 			l.AddTypes(map[string]interface{}{
-				"volume": &dotasks.Volume{},
+				"volume":  &dotasks.Volume{},
+				"droplet": &dotasks.Droplet{},
 			})
 		}
 	case kops.CloudProviderAWS:
@@ -466,40 +469,40 @@ func (c *ApplyClusterCmd) Run() error {
 	l.WorkDir = c.OutDir
 	l.ModelStore = modelStore
 
-	iamLifecycle := lifecyclePointer(fi.LifecycleSync)
-	networkLifecycle := lifecyclePointer(fi.LifecycleSync)
-	clusterLifecycle := lifecyclePointer(fi.LifecycleSync)
-	stageAssetsLifecycle := lifecyclePointer(fi.LifecycleSync)
+	stageAssetsLifecycle := fi.LifecycleSync
+	securityLifecycle := fi.LifecycleSync
+	networkLifecycle := fi.LifecycleSync
+	clusterLifecycle := fi.LifecycleSync
 
 	switch c.Phase {
 	case Phase(""):
 	// Everything ... the default
 	case PhaseStageAssets:
-		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleSync)
-		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-
-	case PhaseIAM:
-		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		networkLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		networkLifecycle = fi.LifecycleIgnore
+		securityLifecycle = fi.LifecycleIgnore
+		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseNetwork:
-		stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		iamLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-		clusterLifecycle = lifecyclePointer(fi.LifecycleIgnore)
+		stageAssetsLifecycle = fi.LifecycleIgnore
+		securityLifecycle = fi.LifecycleIgnore
+		clusterLifecycle = fi.LifecycleIgnore
+
+	case PhaseSecurity:
+		stageAssetsLifecycle = fi.LifecycleIgnore
+		networkLifecycle = fi.LifecycleIgnore
+		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseCluster:
 		if c.TargetName == TargetDryRun {
-			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
-			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
-			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndWarnIfChanges)
+			stageAssetsLifecycle = fi.LifecycleExistsAndWarnIfChanges
+			securityLifecycle = fi.LifecycleExistsAndWarnIfChanges
+			networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
 		} else {
-			stageAssetsLifecycle = lifecyclePointer(fi.LifecycleIgnore)
-			iamLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
-			networkLifecycle = lifecyclePointer(fi.LifecycleExistsAndValidates)
+			stageAssetsLifecycle = fi.LifecycleIgnore
+			networkLifecycle = fi.LifecycleExistsAndValidates
+			securityLifecycle = fi.LifecycleExistsAndValidates
 		}
+
 	default:
 		return fmt.Errorf("unknown phase %q", c.Phase)
 	}
@@ -520,11 +523,11 @@ func (c *ApplyClusterCmd) Run() error {
 			l.Builders = append(l.Builders,
 				&BootstrapChannelBuilder{
 					cluster:      cluster,
-					Lifecycle:    clusterLifecycle,
+					Lifecycle:    &clusterLifecycle,
 					templates:    templates,
 					assetBuilder: assetBuilder,
 				},
-				&model.PKIModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+				&model.PKIModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 			)
 
 			switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
@@ -534,25 +537,25 @@ func (c *ApplyClusterCmd) Run() error {
 				}
 
 				l.Builders = append(l.Builders,
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
-					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: networkLifecycle},
-					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
-					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
-					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
-					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
-					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+					&awsmodel.APILoadBalancerBuilder{AWSModelContext: awsModelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
+					&model.BastionModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle, SecurityLifecycle: &securityLifecycle},
+					&model.DNSModelBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+					&model.ExternalAccessModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+					&model.FirewallModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
+					&model.SSHKeyModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 				)
 
 				l.Builders = append(l.Builders,
-					&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: networkLifecycle},
+					&model.NetworkModelBuilder{KopsModelContext: modelContext, Lifecycle: &networkLifecycle},
 				)
 
 				l.Builders = append(l.Builders,
-					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: iamLifecycle},
+					&model.IAMModelBuilder{KopsModelContext: modelContext, Lifecycle: &securityLifecycle},
 				)
 			case kops.CloudProviderDO:
 				l.Builders = append(l.Builders,
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
 				)
 
 			case kops.CloudProviderGCE:
@@ -560,13 +563,20 @@ func (c *ApplyClusterCmd) Run() error {
 					KopsModelContext: modelContext,
 				}
 
-				l.Builders = append(l.Builders,
-					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: clusterLifecycle},
+				storageAclLifecycle := securityLifecycle
+				if storageAclLifecycle != fi.LifecycleIgnore {
+					// This is a best-effort permissions fix
+					storageAclLifecycle = fi.LifecycleWarnIfInsufficientAccess
+				}
 
-					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
-					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
-					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
-					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: networkLifecycle},
+				l.Builders = append(l.Builders,
+					&model.MasterVolumeBuilder{KopsModelContext: modelContext, Lifecycle: &clusterLifecycle},
+
+					&gcemodel.APILoadBalancerBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
+					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
+					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
+					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &networkLifecycle},
+					&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageAclLifecycle},
 				)
 
 			case kops.CloudProviderVSphere:
@@ -683,10 +693,18 @@ func (c *ApplyClusterCmd) Run() error {
 		l.Builders = append(l.Builders, &awsmodel.AutoscalingGroupModelBuilder{
 			AWSModelContext: awsModelContext,
 			BootstrapScript: bootstrapScriptBuilder,
-			Lifecycle:       clusterLifecycle,
+			Lifecycle:       &clusterLifecycle,
 		})
 	case kops.CloudProviderDO:
-		// DigitalOcean tasks will go here
+		doModelContext := &domodel.DOModelContext{
+			KopsModelContext: modelContext,
+		}
+
+		l.Builders = append(l.Builders, &domodel.DropletBuilder{
+			DOModelContext:  doModelContext,
+			BootstrapScript: bootstrapScriptBuilder,
+			Lifecycle:       &clusterLifecycle,
+		})
 	case kops.CloudProviderGCE:
 		{
 			gceModelContext := &gcemodel.GCEModelContext{
@@ -696,7 +714,7 @@ func (c *ApplyClusterCmd) Run() error {
 			l.Builders = append(l.Builders, &gcemodel.AutoscalingGroupModelBuilder{
 				GCEModelContext: gceModelContext,
 				BootstrapScript: bootstrapScriptBuilder,
-				Lifecycle:       clusterLifecycle,
+				Lifecycle:       &clusterLifecycle,
 			})
 		}
 	case kops.CloudProviderVSphere:
@@ -708,7 +726,7 @@ func (c *ApplyClusterCmd) Run() error {
 			l.Builders = append(l.Builders, &vspheremodel.AutoscalingGroupModelBuilder{
 				VSphereModelContext: vsphereModelContext,
 				BootstrapScript:     bootstrapScriptBuilder,
-				Lifecycle:           clusterLifecycle,
+				Lifecycle:           &clusterLifecycle,
 			})
 		}
 
@@ -723,7 +741,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	tf.AddTo(l.TemplateFunctions)
 
-	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, stageAssetsLifecycle)
+	taskMap, err := l.BuildTasks(modelStore, fileModels, assetBuilder, &stageAssetsLifecycle)
 	if err != nil {
 		return fmt.Errorf("error building tasks: %v", err)
 	}
@@ -795,12 +813,12 @@ func (c *ApplyClusterCmd) Run() error {
 	c.Target = target
 
 	if !dryRun {
-		err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), c.Cluster)
+		err = registry.WriteConfigDeprecated(cluster, configBase.Join(registry.PathClusterCompleted), c.Cluster)
 		if err != nil {
 			return fmt.Errorf("error writing completed cluster spec: %v", err)
 		}
 
-		vfsMirror := vfsclientset.NewInstanceGroupMirror(cluster.Name, configBase)
+		vfsMirror := vfsclientset.NewInstanceGroupMirror(cluster, configBase)
 
 		for _, g := range c.InstanceGroups {
 			// TODO: We need to update the mirror (below), but do we need to update the primary?
@@ -816,7 +834,7 @@ func (c *ApplyClusterCmd) Run() error {
 		}
 	}
 
-	context, err := fi.NewContext(target, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
+	context, err := fi.NewContext(target, cluster, cloud, keyStore, secretStore, configBase, checkExisting, taskMap)
 	if err != nil {
 		return fmt.Errorf("error building context: %v", err)
 	}

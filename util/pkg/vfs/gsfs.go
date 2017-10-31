@@ -55,6 +55,13 @@ var gcsReadBackoff = wait.Backoff{
 	Steps:    4,
 }
 
+// GSAcl is an ACL implementation for objects on Google Cloud Storage
+type GSAcl struct {
+	Acl []*storage.ObjectAccessControl
+}
+
+var _ ACL = &GSAcl{}
+
 // gcsWriteBackoff is the backoff strategy for GCS write retries
 var gcsWriteBackoff = wait.Backoff{
 	Duration: time.Second,
@@ -80,6 +87,15 @@ func (p *GSPath) Path() string {
 
 func (p *GSPath) Bucket() string {
 	return p.bucket
+}
+
+func (p *GSPath) Object() string {
+	return p.key
+}
+
+// Client returns the storage.Service bound to this path
+func (p *GSPath) Client() *storage.Service {
+	return p.client
 }
 
 func (p *GSPath) String() string {
@@ -118,7 +134,7 @@ func (p *GSPath) Join(relativePath ...string) Path {
 	}
 }
 
-func (p *GSPath) WriteFile(data []byte) error {
+func (p *GSPath) WriteFile(data []byte, acl ACL) error {
 	done, err := RetryWithBackoff(gcsWriteBackoff, func() (bool, error) {
 		glog.V(4).Infof("Writing file %q", p)
 
@@ -131,6 +147,15 @@ func (p *GSPath) WriteFile(data []byte) error {
 			Name:    p.key,
 			Md5Hash: base64.StdEncoding.EncodeToString(md5Hash.HashValue),
 		}
+
+		if acl != nil {
+			gsAcl, ok := acl.(*GSAcl)
+			if !ok {
+				return true, fmt.Errorf("write to %s with ACL of unexpected type %T", p, acl)
+			}
+			obj.Acl = gsAcl.Acl
+		}
+
 		r := bytes.NewReader(data)
 		_, err = p.client.Objects.Insert(p.bucket, obj).Media(r).Do()
 		if err != nil {
@@ -155,7 +180,7 @@ func (p *GSPath) WriteFile(data []byte) error {
 // TODO: should we enable versioning?
 var createFileLockGCS sync.Mutex
 
-func (p *GSPath) CreateFile(data []byte) error {
+func (p *GSPath) CreateFile(data []byte, acl ACL) error {
 	createFileLockGCS.Lock()
 	defer createFileLockGCS.Unlock()
 
@@ -169,7 +194,7 @@ func (p *GSPath) CreateFile(data []byte) error {
 		return err
 	}
 
-	return p.WriteFile(data)
+	return p.WriteFile(data, acl)
 }
 
 // ReadFile implements Path::ReadFile

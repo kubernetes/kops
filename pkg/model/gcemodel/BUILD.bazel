@@ -10,6 +10,7 @@ go_library(
         "external_access.go",
         "firewall.go",
         "network.go",
+        "storageacl.go",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -21,6 +22,7 @@ go_library(
         "//upup/pkg/fi/cloudup/gce:go_default_library",
         "//upup/pkg/fi/cloudup/gcetasks:go_default_library",
         "//upup/pkg/fi/fitasks:go_default_library",
+        "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
     ],
 )

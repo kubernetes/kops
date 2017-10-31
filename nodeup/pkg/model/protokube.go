@@ -34,6 +34,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/assets"
 )
 
 // ProtokubeBuilder configures protokube
@@ -97,7 +98,10 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		return nil, fmt.Errorf("unable to parse KubernetesVersion %q", t.Cluster.Spec.KubernetesVersion)
 	}
 
-	protokubeFlags := t.ProtokubeFlags(*k8sVersion)
+	protokubeFlags, err := t.ProtokubeFlags(*k8sVersion)
+	if err != nil {
+		return nil, err
+	}
 	protokubeFlagsArgs, err := flagbuilder.BuildFlags(protokubeFlags)
 	if err != nil {
 		return nil, err
@@ -213,7 +217,7 @@ type ProtokubeFlags struct {
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
-func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeFlags {
+func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*ProtokubeFlags, error) {
 	// @todo: i think we should allow the user to override the source of the image, but for now
 	// lets keep that for another PR and allow the version change
 	imageVersion := t.Cluster.Spec.EtcdClusters[0].Version
@@ -232,12 +236,23 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 	f := &ProtokubeFlags{
 		Channels:                  t.NodeupConfig.Channels,
 		Containerized:             fi.Bool(true),
-		EtcdImage:                 s(fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)),
 		EtcdLeaderElectionTimeout: s(leaderElectionTimeout),
 		EtcdHearbeatInterval:      s(heartbeatInterval),
 		LogLevel:                  fi.Int32(4),
 		Master:                    b(t.IsMaster),
 	}
+
+	// TODO this is dupicate code with etcd model
+	image := fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)
+	assets := assets.NewAssetBuilder(t.Cluster.Spec.Assets)
+	remapped, err := assets.RemapImage(image)
+	if err != nil {
+		return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
+	} else {
+		image = remapped
+	}
+
+	f.EtcdImage = s(image)
 
 	// initialize rbac on Kubernetes >= 1.6 and master
 	if k8sVersion.Major == 1 && k8sVersion.Minor >= 6 {
@@ -306,7 +321,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		f.ApplyTaints = fi.Bool(true)
 	}
 
-	return f
+	return f, nil
 }
 
 // ProtokubeEnvironmentVariables generates the environments variables for docker

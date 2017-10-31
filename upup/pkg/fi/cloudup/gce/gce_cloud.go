@@ -24,6 +24,7 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	compute "google.golang.org/api/compute/v0.beta"
+	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
@@ -35,6 +36,7 @@ type GCECloud interface {
 	fi.Cloud
 	Compute() *compute.Service
 	Storage() *storage.Service
+	IAM() *iam.Service
 
 	Region() string
 	Project() string
@@ -46,14 +48,21 @@ type GCECloud interface {
 	FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error)
 
 	Zones() ([]string, error)
+
+	// ServiceAccount returns the email for the service account that the instances will run under
+	ServiceAccount() (string, error)
 }
 
 type gceCloudImplementation struct {
 	compute *compute.Service
 	storage *storage.Service
+	iam     *iam.Service
 
 	region  string
 	project string
+
+	// projectInfo caches the project info from the compute API
+	projectInfo *compute.Project
 
 	labels map[string]string
 }
@@ -92,6 +101,12 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	}
 	c.storage = storageService
 
+	iamService, err := iam.New(client)
+	if err != nil {
+		return nil, fmt.Errorf("error building IAM API client: %v", err)
+	}
+	c.iam = iamService
+
 	gceCloudInstances[region+"::"+project] = c
 
 	return c.WithLabels(labels), nil
@@ -121,6 +136,11 @@ func (c *gceCloudImplementation) Storage() *storage.Service {
 	return c.storage
 }
 
+// IAM returns the IAM client
+func (c *gceCloudImplementation) IAM() *iam.Service {
+	return c.iam
+}
+
 // Region returns private struct element region.
 func (c *gceCloudImplementation) Region() string {
 	return c.region
@@ -129,6 +149,26 @@ func (c *gceCloudImplementation) Region() string {
 // Project returns private struct element project.
 func (c *gceCloudImplementation) Project() string {
 	return c.project
+}
+
+// ServiceAccount returns the email address for the service account that the instances will run under.
+func (c *gceCloudImplementation) ServiceAccount() (string, error) {
+	if c.projectInfo == nil {
+		// Find the project info from the compute API, which includes the default service account
+		glog.V(2).Infof("fetching project %q from compute API", c.project)
+		p, err := c.compute.Projects.Get(c.project).Do()
+		if err != nil {
+			return "", fmt.Errorf("error fetching info for project %q: %v", c.project, err)
+		}
+
+		c.projectInfo = p
+	}
+
+	if c.projectInfo.DefaultServiceAccount == "" {
+		return "", fmt.Errorf("compute project %q did not have DefaultServiceAccount", c.project)
+	}
+
+	return c.projectInfo.DefaultServiceAccount, nil
 }
 
 func (c *gceCloudImplementation) DNS() (dnsprovider.Interface, error) {
@@ -158,7 +198,6 @@ func (c *gceCloudImplementation) Labels() map[string]string {
 
 // Zones returns the zones in a region
 func (c *gceCloudImplementation) Zones() ([]string, error) {
-
 	var zones []string
 	// TODO: Only zones in api.Cluster object, if we have one?
 	gceZones, err := c.Compute().Zones.List(c.Project()).Do()

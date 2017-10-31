@@ -4,14 +4,15 @@ go_library(
     name = "go_default_library",
     srcs = [
         "cloud.go",
+        "do.go",
         "resources.go",
     ],
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",
         "//pkg/cloudinstances:go_default_library",
+        "//pkg/resources:go_default_library",
         "//pkg/resources/digitalocean/dns:go_default_library",
-        "//pkg/resources/tracker:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//vendor/github.com/digitalocean/godo:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",

@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"fmt"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/loader"
 )
@@ -39,6 +41,13 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 		if x.Version == "" {
 			x.Version = "2.2.1"
 		}
+	}
+
+	// TODO put this into API values.  Do that in another PR?
+	image := fmt.Sprintf("gcr.io/google_containers/etcd:%s", spec.EtcdClusters[0].Version)
+	image, err := b.Context.AssetBuilder.RemapImage(image)
+	if err != nil {
+		return fmt.Errorf("unable to remap container %q: %v", image, err)
 	}
 
 	return nil

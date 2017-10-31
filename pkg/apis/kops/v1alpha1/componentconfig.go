@@ -163,6 +163,8 @@ type KubeProxyConfig struct {
 	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
 	// Master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
+	// Enabled allows enabling or disabling kube-proxy
+	Enabled *bool `json:"enabled,omitempty"`
 	// FeatureGates is a series of key pairs used to switch on features for the proxy
 	FeatureGates map[string]string `json:"featureGates" flag:"feature-gates"`
 }
@@ -248,6 +250,8 @@ type KubeAPIServerConfig struct {
 	AuditLogMaxBackups *int32 `json:"auditLogMaxBackups,omitempty" flag:"audit-log-maxbackup"`
 	// The maximum size in megabytes of the audit log file before it gets rotated. Defaults to 100MB.
 	AuditLogMaxSize *int32 `json:"auditLogMaxSize,omitempty" flag:"audit-log-maxsize"`
+	// AuditPolicyFile is the full path to a advanced audit configuration file a.g. /srv/kubernetes/audit.conf
+	AuditPolicyFile string `json:"auditPolicyFile,omitempty" flag:"audit-policy-file"`
 	// File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.
 	AuthenticationTokenWebhookConfigFile *string `json:"authenticationTokenWebhookConfigFile,omitempty" flag:"authentication-token-webhook-config-file"`
 	// The duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
@@ -345,10 +349,8 @@ type KubeSchedulerConfig struct {
 	Image string `json:"image,omitempty"`
 	// LeaderElection defines the configuration of leader election client.
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
-	// PolicyConfigMap is the name of configmap to use for scheduler policy
-	PolicyConfigMap string `json:"policyConfigMap,omitempty" flag:"policy-configmap"`
-	// PolicyConfigMapNamespace is the namespace containing the configmap
-	PolicyConfigMapNamespace string `json:"policyConfigMapNamespace,omitempty" flag:"policy-configmap-namespace"`
+	// UsePolicyConfigMap enable setting the scheduler policy from a configmap
+	UsePolicyConfigMap *bool `json:"usePolicyConfigMap,omitempty"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election

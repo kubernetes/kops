@@ -87,18 +87,18 @@ func (p *MemFSPath) Join(relativePath ...string) Path {
 	return current
 }
 
-func (p *MemFSPath) WriteFile(data []byte) error {
+func (p *MemFSPath) WriteFile(data []byte, acl ACL) error {
 	p.contents = data
 	return nil
 }
 
-func (p *MemFSPath) CreateFile(data []byte) error {
+func (p *MemFSPath) CreateFile(data []byte, acl ACL) error {
 	// Check if exists
 	if p.contents != nil {
 		return os.ErrExist
 	}
 
-	return p.WriteFile(data)
+	return p.WriteFile(data, acl)
 }
 
 func (p *MemFSPath) ReadFile() ([]byte, error) {

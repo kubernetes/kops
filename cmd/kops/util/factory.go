@@ -18,17 +18,18 @@ package util
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/pkg/client/simple/vfsclientset"
-	"k8s.io/kops/util/pkg/vfs"
-
-	"github.com/golang/glog"
-	"k8s.io/client-go/rest"
-	kopsclient "k8s.io/kops/pkg/client/clientset_generated/clientset"
-	"k8s.io/kops/pkg/client/simple/api"
 	"net/url"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/client-go/rest"
+	gceacls "k8s.io/kops/pkg/acls/gce"
+	kopsclient "k8s.io/kops/pkg/client/clientset_generated/clientset"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/client/simple/api"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type FactoryOptions struct {
@@ -41,6 +42,8 @@ type Factory struct {
 }
 
 func NewFactory(options *FactoryOptions) *Factory {
+	gceacls.Register()
+
 	return &Factory{
 		options: options,
 	}

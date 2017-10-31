@@ -101,6 +101,10 @@ func (b *KubeSchedulerBuilder) buildPod() (*v1.Pod, error) {
 	// Add kubeconfig flag
 	flags = append(flags, "--kubeconfig="+"/var/lib/kube-scheduler/kubeconfig")
 
+	if c.UsePolicyConfigMap != nil {
+		flags = append(flags, "--policy-configmap=scheduler-policy")
+	}
+
 	pod := &v1.Pod{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: "v1",

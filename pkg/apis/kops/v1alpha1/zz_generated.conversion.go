@@ -1811,6 +1811,7 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.AuditLogMaxAge = in.AuditLogMaxAge
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
 	out.AuditLogMaxSize = in.AuditLogMaxSize
+	out.AuditPolicyFile = in.AuditPolicyFile
 	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
@@ -1868,6 +1869,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.AuditLogMaxAge = in.AuditLogMaxAge
 	out.AuditLogMaxBackups = in.AuditLogMaxBackups
 	out.AuditLogMaxSize = in.AuditLogMaxSize
+	out.AuditPolicyFile = in.AuditPolicyFile
 	out.AuthenticationTokenWebhookConfigFile = in.AuthenticationTokenWebhookConfigFile
 	out.AuthenticationTokenWebhookCacheTTL = in.AuthenticationTokenWebhookCacheTTL
 	out.AuthorizationMode = in.AuthorizationMode
@@ -1983,6 +1985,7 @@ func autoConvert_v1alpha1_KubeProxyConfig_To_kops_KubeProxyConfig(in *KubeProxyC
 	out.ClusterCIDR = in.ClusterCIDR
 	out.HostnameOverride = in.HostnameOverride
 	out.Master = in.Master
+	out.Enabled = in.Enabled
 	out.FeatureGates = in.FeatureGates
 	return nil
 }
@@ -1999,6 +2002,7 @@ func autoConvert_kops_KubeProxyConfig_To_v1alpha1_KubeProxyConfig(in *kops.KubeP
 	out.ClusterCIDR = in.ClusterCIDR
 	out.HostnameOverride = in.HostnameOverride
 	out.Master = in.Master
+	out.Enabled = in.Enabled
 	out.FeatureGates = in.FeatureGates
 	return nil
 }
@@ -2021,8 +2025,7 @@ func autoConvert_v1alpha1_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 	} else {
 		out.LeaderElection = nil
 	}
-	out.PolicyConfigMap = in.PolicyConfigMap
-	out.PolicyConfigMapNamespace = in.PolicyConfigMapNamespace
+	out.UsePolicyConfigMap = in.UsePolicyConfigMap
 	return nil
 }
 
@@ -2044,8 +2047,7 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha1_KubeSchedulerConfig(in *ko
 	} else {
 		out.LeaderElection = nil
 	}
-	out.PolicyConfigMap = in.PolicyConfigMap
-	out.PolicyConfigMapNamespace = in.PolicyConfigMapNamespace
+	out.UsePolicyConfigMap = in.UsePolicyConfigMap
 	return nil
 }
 
