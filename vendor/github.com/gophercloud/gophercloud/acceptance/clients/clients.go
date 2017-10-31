@@ -10,6 +10,7 @@ import (
 
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/noauth"
 )
 
 // AcceptanceTestChoices contains image and flavor selections for use by the acceptance tests.
@@ -35,6 +36,12 @@ type AcceptanceTestChoices struct {
 
 	// ShareNetworkID is the Manila Share network ID
 	ShareNetworkID string
+
+	// DBDatastoreType is the datastore type for DB tests.
+	DBDatastoreType string
+
+	// DBDatastoreTypeID is the datastore type version for DB tests.
+	DBDatastoreVersion string
 }
 
 // AcceptanceTestChoicesFromEnv populates a ComputeChoices struct from environment variables.
@@ -47,6 +54,8 @@ func AcceptanceTestChoicesFromEnv() (*AcceptanceTestChoices, error) {
 	floatingIPPoolName := os.Getenv("OS_POOL_NAME")
 	externalNetworkID := os.Getenv("OS_EXTGW_ID")
 	shareNetworkID := os.Getenv("OS_SHARE_NETWORK_ID")
+	dbDatastoreType := os.Getenv("OS_DB_DATASTORE_TYPE")
+	dbDatastoreVersion := os.Getenv("OS_DB_DATASTORE_VERSION")
 
 	missing := make([]string, 0, 3)
 	if imageID == "" {
@@ -95,6 +104,8 @@ func AcceptanceTestChoicesFromEnv() (*AcceptanceTestChoices, error) {
 		NetworkName:        networkName,
 		ExternalNetworkID:  externalNetworkID,
 		ShareNetworkID:     shareNetworkID,
+		DBDatastoreType:    dbDatastoreType,
+		DBDatastoreVersion: dbDatastoreVersion,
 	}, nil
 }
 
@@ -136,22 +147,20 @@ func NewBlockStorageV2Client() (*gophercloud.ServiceClient, error) {
 	})
 }
 
-// NewSharedFileSystemV2Client returns a *ServiceClient for making calls
-// to the OpenStack Shared File System v2 API. An error will be returned
-// if authentication or client creation was not possible.
-func NewSharedFileSystemV2Client() (*gophercloud.ServiceClient, error) {
-	ao, err := openstack.AuthOptionsFromEnv()
+// NewBlockStorageV2NoAuthClient returns a noauth *ServiceClient for
+// making calls to the OpenStack Block Storage v2 API. An error will be
+// returned if client creation was not possible.
+func NewBlockStorageV2NoAuthClient() (*gophercloud.ServiceClient, error) {
+	client, err := noauth.NewClient(gophercloud.AuthOptions{
+		Username:   os.Getenv("OS_USERNAME"),
+		TenantName: os.Getenv("OS_TENANT_NAME"),
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	client, err := openstack.AuthenticatedClient(ao)
-	if err != nil {
-		return nil, err
-	}
-
-	return openstack.NewSharedFileSystemV2(client, gophercloud.EndpointOpts{
-		Region: os.Getenv("OS_REGION_NAME"),
+	return noauth.NewBlockStorageV2(client, noauth.EndpointOpts{
+		CinderEndpoint: os.Getenv("CINDER_ENDPOINT"),
 	})
 }
 
@@ -170,6 +179,25 @@ func NewComputeV2Client() (*gophercloud.ServiceClient, error) {
 	}
 
 	return openstack.NewComputeV2(client, gophercloud.EndpointOpts{
+		Region: os.Getenv("OS_REGION_NAME"),
+	})
+}
+
+// NewDBV1Client returns a *ServiceClient for making calls
+// to the OpenStack Database v1 API. An error will be returned
+// if authentication or client creation was not possible.
+func NewDBV1Client() (*gophercloud.ServiceClient, error) {
+	ao, err := openstack.AuthOptionsFromEnv()
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := openstack.AuthenticatedClient(ao)
+	if err != nil {
+		return nil, err
+	}
+
+	return openstack.NewDBV1(client, gophercloud.EndpointOpts{
 		Region: os.Getenv("OS_REGION_NAME"),
 	})
 }
@@ -338,6 +366,25 @@ func NewObjectStorageV1Client() (*gophercloud.ServiceClient, error) {
 	}
 
 	return openstack.NewObjectStorageV1(client, gophercloud.EndpointOpts{
+		Region: os.Getenv("OS_REGION_NAME"),
+	})
+}
+
+// NewSharedFileSystemV2Client returns a *ServiceClient for making calls
+// to the OpenStack Shared File System v2 API. An error will be returned
+// if authentication or client creation was not possible.
+func NewSharedFileSystemV2Client() (*gophercloud.ServiceClient, error) {
+	ao, err := openstack.AuthOptionsFromEnv()
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := openstack.AuthenticatedClient(ao)
+	if err != nil {
+		return nil, err
+	}
+
+	return openstack.NewSharedFileSystemV2(client, gophercloud.EndpointOpts{
 		Region: os.Getenv("OS_REGION_NAME"),
 	})
 }

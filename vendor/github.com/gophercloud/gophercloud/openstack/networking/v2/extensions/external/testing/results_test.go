@@ -93,8 +93,8 @@ func TestCreate(t *testing.T) {
 	}
 
 	externalCreateOpts := external.CreateOptsExt{
-		networkCreateOpts,
-		&iFalse,
+		CreateOptsBuilder: &networkCreateOpts,
+		External:          &iFalse,
 	}
 
 	_, err := networks.Create(fake.ServiceClient(), externalCreateOpts).Extract()
@@ -129,8 +129,8 @@ func TestUpdate(t *testing.T) {
 	}
 
 	externalUpdateOpts := external.UpdateOptsExt{
-		networkUpdateOpts,
-		&iFalse,
+		UpdateOptsBuilder: &networkUpdateOpts,
+		External:          &iFalse,
 	}
 
 	_, err := networks.Update(fake.ServiceClient(), "4e8e5957-649f-477b-9e5b-f1f75b21c03c", externalUpdateOpts).Extract()

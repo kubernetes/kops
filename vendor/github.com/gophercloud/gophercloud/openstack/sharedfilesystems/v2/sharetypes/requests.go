@@ -113,7 +113,7 @@ type SetExtraSpecsOptsBuilder interface {
 
 type SetExtraSpecsOpts struct {
 	// A list of all extra specifications to be added to a ShareType
-	Specs map[string]interface{} `json:"extra_specs"`
+	ExtraSpecs map[string]interface{} `json:"extra_specs" required:"true"`
 }
 
 // ToShareTypeSetExtraSpecsMap assembles a request body based on the contents of a

@@ -10,7 +10,26 @@ to a remote API.
 > be certain cases where this does not happen; always double-check to make sure
 > you have no stragglers left behind.
 
-### Step 1. Set environment variables
+### Step 1. Creating a Testing Environment
+
+Running tests on an existing OpenStack cloud can be risky. Malformed tests,
+especially ones which require Admin privileges, can cause damage to the
+environment. Additionally, you may incur bandwidth and service charges for
+the resources used, as mentioned in the note above.
+
+Therefore, it is usually best to first practice running acceptance tests in
+an isolated test environment. Two options to easily create a testing
+environment are [DevStack](https://docs.openstack.org/devstack/latest/)
+and [PackStack](https://www.rdoproject.org/install/packstack/).
+
+The following blog posts detail how to create reusable PackStack environments.
+These posts were written with Gophercloud in mind:
+
+* http://terrarum.net/blog/building-openstack-environments.html
+* http://terrarum.net/blog/building-openstack-environments-2.html
+* http://terrarum.net/blog/building-openstack-environments-3.html
+
+### Step 2. Set environment variables
 
 A lot of tests rely on environment variables for configuration - so you will need
 to set them before running the suite. If you're testing against pure OpenStack APIs,
@@ -43,14 +62,22 @@ to set them manually.
 |`OS_FLAVOR_ID`|The ID of the flavor you want your server to be based on|
 |`OS_FLAVOR_ID_RESIZE`|The ID of the flavor you want your server to be resized to|
 |`OS_POOL_NAME`|The Pool from where to obtain Floating IPs|
-|`OS_NETWORK_NAME`|The network to launch instances on|
+|`OS_NETWORK_NAME`|The internal/private network to launch instances on|
+|`OS_EXTGW_ID`|The external/public network|
+
+#### Database
+
+|Name|Description|
+|---|---|
+|`OS_DB_DATASTORE_TYPE`|The Datastore type to use. Example: `mariadb`|
+|`OS_DB_DATASTORE_VERSION`|The Datastore version to use. Example: `mariadb-10`|
 
 #### Shared file systems
 |Name|Description|
 |---|---|
 |`OS_SHARE_NETWORK_ID`| The share network ID to use when creating shares|
 
-### 2. Run the test suite
+### 3. Run the test suite
 
 From the root directory, run:
 
@@ -78,7 +105,7 @@ $ gophercloudtest TestFlavors compute/v2
 $ gophercloudtest Test compute/v2
 ```
 
-### 3. Notes
+### 4. Notes
 
 #### Compute Tests
 

@@ -87,17 +87,20 @@ var createReq = `
 `
 
 var (
-	instanceID = "{instanceID}"
-	rootURL    = "/instances"
-	resURL     = rootURL + "/" + instanceID
-	uRootURL   = resURL + "/root"
-	aURL       = resURL + "/action"
+	instanceID    = "{instanceID}"
+	configGroupID = "00000000-0000-0000-0000-000000000000"
+	rootURL       = "/instances"
+	resURL        = rootURL + "/" + instanceID
+	uRootURL      = resURL + "/root"
+	aURL          = resURL + "/action"
 )
 
 var (
-	restartReq   = `{"restart": {}}`
-	resizeReq    = `{"resize": {"flavorRef": "2"}}`
-	resizeVolReq = `{"resize": {"volume": {"size": 4}}}`
+	restartReq                  = `{"restart": {}}`
+	resizeReq                   = `{"resize": {"flavorRef": "2"}}`
+	resizeVolReq                = `{"resize": {"volume": {"size": 4}}}`
+	attachConfigurationGroupReq = `{"instance": {"configuration": "00000000-0000-0000-0000-000000000000"}}`
+	detachConfigurationGroupReq = `{"instance": {}}`
 )
 
 var (
@@ -166,4 +169,12 @@ func HandleResize(t *testing.T) {
 
 func HandleResizeVol(t *testing.T) {
 	fixture.SetupHandler(t, aURL, "POST", resizeVolReq, "", 202)
+}
+
+func HandleAttachConfigurationGroup(t *testing.T) {
+	fixture.SetupHandler(t, resURL, "PUT", attachConfigurationGroupReq, "", 202)
+}
+
+func HandleDetachConfigurationGroup(t *testing.T) {
+	fixture.SetupHandler(t, resURL, "PUT", detachConfigurationGroupReq, "", 202)
 }

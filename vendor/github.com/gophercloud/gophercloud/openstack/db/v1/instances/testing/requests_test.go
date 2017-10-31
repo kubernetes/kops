@@ -132,3 +132,21 @@ func TestResizeVolume(t *testing.T) {
 	res := instances.ResizeVolume(fake.ServiceClient(), instanceID, 4)
 	th.AssertNoErr(t, res.Err)
 }
+
+func TestAttachConfigurationGroup(t *testing.T) {
+	th.SetupHTTP()
+	defer th.TeardownHTTP()
+	HandleAttachConfigurationGroup(t)
+
+	res := instances.AttachConfigurationGroup(fake.ServiceClient(), instanceID, configGroupID)
+	th.AssertNoErr(t, res.Err)
+}
+
+func TestDetachConfigurationGroup(t *testing.T) {
+	th.SetupHTTP()
+	defer th.TeardownHTTP()
+	HandleDetachConfigurationGroup(t)
+
+	res := instances.DetachConfigurationGroup(fake.ServiceClient(), instanceID)
+	th.AssertNoErr(t, res.Err)
+}

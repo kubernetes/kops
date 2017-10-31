@@ -45,6 +45,12 @@ type ListOpts struct {
 	// SizeMax filters on the size_max image property.
 	SizeMax int64 `q:"size_max"`
 
+	// Sort sorts the results using the new style of sorting. See the OpenStack
+	// Image API reference for the exact syntax.
+	//
+	// Sort cannot be used with the classic sort options (sort_key and sort_dir).
+	Sort string `q:"sort"`
+
 	// SortKey will sort the results based on a specified image property.
 	SortKey string `q:"sort_key"`
 
