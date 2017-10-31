@@ -102,7 +102,7 @@ func TestListAllWithExtensions(t *testing.T) {
 
 	type VolumeWithExt struct {
 		volumes.Volume
-		volumetenants.VolumeExt
+		volumetenants.VolumeTenantExt
 	}
 
 	allPages, err := volumes.List(client.ServiceClient(), &volumes.ListOpts{}).AllPages()
@@ -244,7 +244,7 @@ func TestGetWithExtensions(t *testing.T) {
 
 	var s struct {
 		volumes.Volume
-		volumetenants.VolumeExt
+		volumetenants.VolumeTenantExt
 	}
 	err := volumes.Get(client.ServiceClient(), "d32019d3-bc6e-4319-9c1d-6722fc136a22").ExtractInto(&s)
 	th.AssertNoErr(t, err)

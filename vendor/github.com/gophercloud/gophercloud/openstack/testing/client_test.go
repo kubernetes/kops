@@ -289,7 +289,7 @@ func TestIdentityAdminV3Client(t *testing.T) {
 		Availability: gophercloud.AvailabilityAdmin,
 	})
 	th.AssertNoErr(t, err)
-	th.CheckEquals(t, "http://localhost:35357/", sc.Endpoint)
+	th.CheckEquals(t, "http://localhost:35357/v3/", sc.Endpoint)
 }
 
 func testAuthenticatedClientFails(t *testing.T, endpoint string) {
