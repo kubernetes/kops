@@ -52,13 +52,13 @@ func (e *StorageObjectAcl) Find(c *fi.Context) (*StorageObjectAcl, error) {
 	object := fi.StringValue(e.Object)
 	entity := fi.StringValue(e.Entity)
 
-	glog.V(2).Infof("Checking GCS Object ACL for gs://%s/%s for %s", bucket, object, entity)
+	glog.V(2).Infof("Checking GCS object ACL for gs://%s/%s for %s", bucket, object, entity)
 	r, err := cloud.Storage().ObjectAccessControls.Get(bucket, object, entity).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("error querying GCS Object ACL for gs://%s/%s for %s: %v", bucket, object, entity, err)
+		return nil, fmt.Errorf("error querying GCS object ACL for gs://%s/%s for %s: %v", bucket, object, entity, err)
 	}
 
 	actual := &StorageObjectAcl{}
@@ -104,18 +104,18 @@ func (_ *StorageObjectAcl) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Storage
 	}
 
 	if a == nil {
-		glog.V(2).Infof("Creating GCS Object ACL for gs://%s/%s for %s as %s", bucket, object, entity, role)
+		glog.V(2).Infof("Creating GCS object ACL for gs://%s/%s for %s as %s", bucket, object, entity, role)
 
 		_, err := t.Cloud.Storage().ObjectAccessControls.Insert(bucket, object, acl).Do()
 		if err != nil {
-			return fmt.Errorf("error creating GCS Object ACL for gs://%s/%s for %s as %s: %v", bucket, object, entity, role, err)
+			return fmt.Errorf("error creating GCS object ACL for gs://%s/%s for %s as %s: %v", bucket, object, entity, role, err)
 		}
 	} else {
-		glog.V(2).Infof("Updating GCS Object ACL for gs://%s/%s for %s as %s", bucket, object, entity, role)
+		glog.V(2).Infof("Updating GCS object ACL for gs://%s/%s for %s as %s", bucket, object, entity, role)
 
 		_, err := t.Cloud.Storage().ObjectAccessControls.Update(bucket, object, entity, acl).Do()
 		if err != nil {
-			return fmt.Errorf("error updating GCS Object ACL for gs://%s/%s for %s as %s: %v", bucket, object, entity, role, err)
+			return fmt.Errorf("error updating GCS object ACL for gs://%s/%s for %s as %s: %v", bucket, object, entity, role, err)
 		}
 	}
 
