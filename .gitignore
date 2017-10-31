@@ -68,3 +68,5 @@ bazel-genfiles
 bazel-kops
 bazel-out
 bazel-testlogs
+# Ignore default apiserver config
+apiserver.local.config

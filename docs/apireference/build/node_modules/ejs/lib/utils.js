@@ -133,11 +133,12 @@ exports.shallowCopy = function (to, from) {
  * @private
  */
 exports.shallowCopyFromList = function (to, from, list) {
-  list.forEach(function (p) {
+  for (var i = 0; i < list.length; i++) {
+    var p = list[i];
     if (typeof from[p] != 'undefined') {
       to[p] = from[p];
     }
-  });
+  }
   return to;
 };
 

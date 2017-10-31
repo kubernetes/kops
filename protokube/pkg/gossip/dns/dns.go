@@ -18,11 +18,12 @@ package dns
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/protokube/pkg/gossip"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/protokube/pkg/gossip"
 )
 
 // We don't really support multiple zone ids, but we could

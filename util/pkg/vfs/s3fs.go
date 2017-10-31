@@ -103,7 +103,7 @@ func (p *S3Path) Join(relativePath ...string) Path {
 	}
 }
 
-func (p *S3Path) WriteFile(data []byte) error {
+func (p *S3Path) WriteFile(data []byte, aclObj ACL) error {
 	client, err := p.client()
 	if err != nil {
 		return err
@@ -149,7 +149,7 @@ func (p *S3Path) WriteFile(data []byte) error {
 // TODO: should we enable versioning?
 var createFileLockS3 sync.Mutex
 
-func (p *S3Path) CreateFile(data []byte) error {
+func (p *S3Path) CreateFile(data []byte, acl ACL) error {
 	createFileLockS3.Lock()
 	defer createFileLockS3.Unlock()
 
@@ -163,7 +163,7 @@ func (p *S3Path) CreateFile(data []byte) error {
 		return err
 	}
 
-	return p.WriteFile(data)
+	return p.WriteFile(data, acl)
 }
 
 func (p *S3Path) ReadFile() ([]byte, error) {

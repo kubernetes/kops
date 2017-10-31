@@ -21,6 +21,7 @@ import (
 
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
+	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
 	"k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
@@ -98,6 +99,12 @@ func (c *mockGCECloud) Storage() *storage.Service {
 	return nil
 }
 
+// IAM returns the IAM client
+func (c *mockGCECloud) IAM() *iam.Service {
+	glog.Fatalf("mockGCECloud::IAM not implemented")
+	return nil
+}
+
 // WaitForOp implements GCECloud::WaitForOp
 func (c *mockGCECloud) WaitForOp(op *compute.Operation) error {
 	return fmt.Errorf("mockGCECloud::WaitForOp not implemented")
@@ -121,6 +128,11 @@ func (c *mockGCECloud) Region() string {
 // Project implements GCECloud::Project
 func (c *mockGCECloud) Project() string {
 	return c.region
+}
+
+// ServiceAccount implements GCECloud::ServiceAccount
+func (c *mockGCECloud) ServiceAccount() (string, error) {
+	return "12345678-compute@developer.gserviceaccount.com", nil
 }
 
 // Labels implements GCECloud::Labels

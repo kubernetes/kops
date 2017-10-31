@@ -26,7 +26,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/pkg/resources"
-	"k8s.io/kops/pkg/resources/tracker"
+	resourceops "k8s.io/kops/pkg/resources/ops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -131,16 +131,12 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 			}
 		}
 
-		d := &resources.ClusterResources{}
-		d.ClusterName = clusterName
-		d.Cloud = cloud
-
-		allResources, err := d.ListResources()
+		allResources, err := resourceops.ListResources(cloud, clusterName, options.Region)
 		if err != nil {
 			return err
 		}
 
-		clusterResources := make(map[string]*tracker.Resource)
+		clusterResources := make(map[string]*resources.Resource)
 		for k, resource := range allResources {
 			if resource.Shared {
 				continue
@@ -154,16 +150,16 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 			wouldDeleteCloudResources = true
 
 			t := &tables.Table{}
-			t.AddColumn("TYPE", func(r *tracker.Resource) string {
+			t.AddColumn("TYPE", func(r *resources.Resource) string {
 				return r.Type
 			})
-			t.AddColumn("ID", func(r *tracker.Resource) string {
+			t.AddColumn("ID", func(r *resources.Resource) string {
 				return r.ID
 			})
-			t.AddColumn("NAME", func(r *tracker.Resource) string {
+			t.AddColumn("NAME", func(r *resources.Resource) string {
 				return r.Name
 			})
-			var l []*tracker.Resource
+			var l []*resources.Resource
 			for _, v := range clusterResources {
 				l = append(l, v)
 			}
@@ -180,7 +176,7 @@ func RunDeleteCluster(f *util.Factory, out io.Writer, options *DeleteClusterOpti
 
 			fmt.Fprintf(out, "\n")
 
-			err = d.DeleteResources(clusterResources)
+			err = resourceops.DeleteResources(cloud, clusterResources)
 			if err != nil {
 				return err
 			}

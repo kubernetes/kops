@@ -3,6 +3,8 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = [
+        "droplet.go",
+        "droplet_fitask.go",
         "volume.go",
         "volume_fitask.go",
     ],

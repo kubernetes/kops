@@ -17,15 +17,16 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 
-	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/resources"
+	resourceops "k8s.io/kops/pkg/resources/ops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
@@ -107,38 +108,19 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 		return err
 	}
 
-	// Todo lets make this smart enough to detect the cloud and switch on the ClusterResources interface
-	d := &resources.ClusterResources{}
-	d.ClusterName = options.ClusterName
-	d.Cloud = cloud
-
-	resources, err := d.ListResources()
+	region := "" // Use default
+	resourceMap, err := resourceops.ListResources(cloud, options.ClusterName, region)
+	if err != nil {
+		return err
+	}
+	dump, err := resources.BuildDump(context.TODO(), cloud, resourceMap)
 	if err != nil {
 		return err
 	}
 
-	data := make(map[string]interface{})
-
-	dumpedResources := []interface{}{}
-	for k, r := range resources {
-		if r.Dumper == nil {
-			glog.V(8).Infof("skipping dump of %q (no Dumper)", k)
-			continue
-		}
-
-		o, err := r.Dumper(r)
-		if err != nil {
-			return fmt.Errorf("error dumping %q: %v", k, err)
-		}
-		if o != nil {
-			dumpedResources = append(dumpedResources, o)
-		}
-	}
-	data["resources"] = dumpedResources
-
 	switch options.Output {
 	case OutputYaml:
-		b, err := kops.ToRawYaml(data)
+		b, err := kops.ToRawYaml(dump)
 		if err != nil {
 			return fmt.Errorf("error marshaling yaml: %v", err)
 		}
@@ -149,7 +131,7 @@ func RunToolboxDump(f *util.Factory, out io.Writer, options *ToolboxDumpOptions)
 		return nil
 
 	case OutputJSON:
-		b, err := json.MarshalIndent(data, "", "  ")
+		b, err := json.MarshalIndent(dump, "", "  ")
 		if err != nil {
 			return fmt.Errorf("error marshaling json: %v", err)
 		}

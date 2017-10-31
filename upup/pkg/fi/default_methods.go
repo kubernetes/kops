@@ -17,6 +17,7 @@ limitations under the License.
 package fi
 
 import (
+	"fmt"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"reflect"
 )
@@ -44,6 +45,12 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 	if checkExisting {
 		a, err = invokeFind(e, c)
 		if err != nil {
+			if lifecycle != nil && *lifecycle == LifecycleWarnIfInsufficientAccess {
+				// For now we assume all errors are permissions problems
+				// TODO: bounded retry?
+				c.AddWarning(e, fmt.Sprintf("error checking if task exists; assuming it is correctly configured: %v", err))
+				return nil
+			}
 			return err
 		}
 	}

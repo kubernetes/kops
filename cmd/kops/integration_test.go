@@ -135,13 +135,12 @@ func TestSharedVPC(t *testing.T) {
 
 // TestPhaseNetwork tests the output of tf for the network phase
 func TestPhaseNetwork(t *testing.T) {
-	t.Skip("unable to pass test w/o removing elb stuff")
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseNetwork)
 }
 
 // TestPhaseIAM tests the output of tf for the iam phase
 func TestPhaseIAM(t *testing.T) {
-	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseIAM)
+	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseSecurity)
 }
 
 // TestPhaseCluster tests the output of tf for the cluster phase
@@ -149,20 +148,6 @@ func TestPhaseCluster(t *testing.T) {
 	// TODO fix tf for phase, and allow override on validation
 	t.Skip("unable to test w/o allowing failed validation")
 	runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.PhaseCluster)
-}
-
-// TestPhaseCluster tests the output of tf for the security group phase
-func TestPhaseSecurityGroup(t *testing.T) {
-	t.Skip("unable to test until phase is created")
-	// TODO fix tf for phase, and allow override on validation
-	// runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.SecurityGroups)
-}
-
-// TestPhaseCluster tests the output of tf for the loadbalancer phase
-func TestPhaseLoadBalancers(t *testing.T) {
-	t.Skip("unable to test until phase is created")
-	// TODO
-	// runTestPhase(t, "privateweave.example.com", "lifecycle_phases", "v1alpha2", true, 1, cloudup.LoadBalancers)
 }
 
 func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName string, srcDir string, version string, private bool, zones int, expectedFilenames []string, tfFileName string, phase *cloudup.Phase) {
@@ -264,8 +249,8 @@ func runTest(t *testing.T, h *testutils.IntegrationTestHarness, clusterName stri
 		}
 	}
 
-	// Compare data files
-	{
+	// Compare data files if they are provided
+	if len(expectedFilenames) > 0 {
 		files, err := ioutil.ReadDir(path.Join(h.TempDir, "out", "data"))
 		if err != nil {
 			t.Fatalf("failed to read data dir: %v", err)
@@ -333,7 +318,7 @@ func runTestPhase(t *testing.T, clusterName string, srcDir string, version strin
 
 	expectedFilenames := []string{}
 
-	if phase == cloudup.PhaseIAM {
+	if phase == cloudup.PhaseSecurity {
 		expectedFilenames = []string{
 			"aws_iam_role_masters." + clusterName + "_policy",
 			"aws_iam_role_nodes." + clusterName + "_policy",

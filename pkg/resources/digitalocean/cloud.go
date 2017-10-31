@@ -114,6 +114,10 @@ func (c *Cloud) Volumes() godo.StorageService {
 	return c.Client.Storage
 }
 
+func (c *Cloud) Droplets() godo.DropletsService {
+	return c.Client.Droplets
+}
+
 // FindVPCInfo is not implemented, it's only here to satisfy the fi.Cloud interface
 func (c *Cloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return nil, errors.New("not implemented")
