@@ -88,7 +88,7 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	ctx := context.Background()
 
 	// TODO: should we create different clients with per-service scopes?
-	client, err := google.DefaultClient(ctx, compute.ComputeReadonlyScope)
+	client, err := google.DefaultClient(ctx, compute.CloudPlatformScope)
 	if err != nil {
 		return nil, fmt.Errorf("error building google API client: %v", err)
 	}
