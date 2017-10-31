@@ -50,13 +50,13 @@ func (e *StorageBucketAcl) Find(c *fi.Context) (*StorageBucketAcl, error) {
 	bucket := fi.StringValue(e.Bucket)
 	entity := fi.StringValue(e.Entity)
 
-	glog.V(2).Infof("Checking GCS Object ACL for gs://%s for %s", bucket, entity)
+	glog.V(2).Infof("Checking GCS bucket ACL for gs://%s for %s", bucket, entity)
 	r, err := cloud.Storage().BucketAccessControls.Get(bucket, entity).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
 		}
-		return nil, fmt.Errorf("error checking GCS Object ACL for gs://%s for %s: %v", bucket, entity, err)
+		return nil, fmt.Errorf("error checking GCS bucket ACL for gs://%s for %s: %v", bucket, entity, err)
 	}
 
 	actual := &StorageBucketAcl{}
@@ -104,7 +104,7 @@ func (_ *StorageBucketAcl) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Storage
 			return fmt.Errorf("error creating GCS bucket ACL for gs://%s for %s as %s: %v", bucket, entity, role, err)
 		}
 	} else {
-		glog.V(2).Infof("Updating GCS Object ACL for gs://%s for %s as %s", bucket, entity, role)
+		glog.V(2).Infof("Updating GCS bucket ACL for gs://%s for %s as %s", bucket, entity, role)
 
 		_, err := t.Cloud.Storage().BucketAccessControls.Update(bucket, entity, acl).Do()
 		if err != nil {
