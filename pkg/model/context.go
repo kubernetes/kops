@@ -138,7 +138,7 @@ func (m *KopsModelContext) FindSubnet(name string) *kops.ClusterSubnetSpec {
 
 // FindZonesForInstanceGroup finds the zones for an InstanceGroup
 func (m *KopsModelContext) FindZonesForInstanceGroup(ig *kops.InstanceGroup) ([]string, error) {
-	return model.FindZonesForInstanceGroup(m.Cluster, ig)
+	return model.FindZonesOrRegionForInstanceGroup(m.Cluster, ig)
 }
 
 // MasterInstanceGroups returns InstanceGroups with the master role

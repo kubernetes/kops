@@ -1087,7 +1087,7 @@ func (c *awsCloudImplementation) DefaultInstanceType(cluster *kops.Cluster, ig *
 	}
 
 	// Find the AZs the InstanceGroup targets
-	igZones, err := model.FindZonesForInstanceGroup(cluster, ig)
+	igZones, err := model.FindZonesOrRegionForInstanceGroup(cluster, ig)
 	if err != nil {
 		return "", err
 	}

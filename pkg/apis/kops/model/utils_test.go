@@ -73,9 +73,9 @@ func Test_FindSubnet(t *testing.T) {
 	}
 }
 
-// Test_FindZonesForInstanceGroup tests FindZonesForInstanceGroup
-func Test_FindZonesForInstanceGroup(t *testing.T) {
-	cluster := &kops.Cluster{
+// TestW_FindZonesOrRegionForInstanceGroup tests FindZonesOrRegionForInstanceGroup for a cluster
+func Test_FindZonesOrRegionForInstanceGroup(t *testing.T) {
+	clusterWithZones := &kops.Cluster{
 		Spec: kops.ClusterSpec{
 			Subnets: []kops.ClusterSubnetSpec{
 				{Name: "zonea", Zone: "zonea"},
@@ -84,14 +84,25 @@ func Test_FindZonesForInstanceGroup(t *testing.T) {
 		},
 	}
 
-	grid := []struct {
+	clusterWithRegion := &kops.Cluster{
+		Spec: kops.ClusterSpec{
+			Subnets: []kops.ClusterSubnetSpec{
+				{Name: "region1", Region: "region1"},
+				{Name: "region2", Region: "region2"},
+			},
+		},
+	}
+
+	testcases := []struct {
+		name        string
 		cluster     *kops.Cluster
 		ig          *kops.InstanceGroup
 		expected    []string
 		expectError bool
 	}{
 		{
-			cluster: cluster,
+			name:    "cluster with only 1 zone",
+			cluster: clusterWithZones,
 			ig: &kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
 					Subnets: []string{"zonea"},
@@ -100,7 +111,8 @@ func Test_FindZonesForInstanceGroup(t *testing.T) {
 			expected: []string{"zonea"},
 		},
 		{
-			cluster: cluster,
+			name:    "cluster with multiple zones",
+			cluster: clusterWithZones,
 			ig: &kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
 					Subnets: []string{"zonea", "zoneb"},
@@ -109,17 +121,28 @@ func Test_FindZonesForInstanceGroup(t *testing.T) {
 			expected: []string{"zonea", "zoneb"},
 		},
 		{
-			cluster: cluster,
+			name:    "cluster with 1 region",
+			cluster: clusterWithRegion,
 			ig: &kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
-					Subnets: []string{"zoneb", "zonea"},
+					Subnets: []string{"region1"},
 				},
 			},
-			// Order is not preserved (they are in fact sorted)
-			expected: []string{"zonea", "zoneb"},
+			expected: []string{"region1"},
 		},
 		{
-			cluster: cluster,
+			name:    "cluster with multiple regions",
+			cluster: clusterWithRegion,
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Subnets: []string{"region1", "region2"},
+				},
+			},
+			expected: []string{"region1", "region2"},
+		},
+		{
+			name:    "cluster with invalid zone",
+			cluster: clusterWithZones,
 			ig: &kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
 					Subnets: []string{"zoneb", "nope"},
@@ -128,7 +151,18 @@ func Test_FindZonesForInstanceGroup(t *testing.T) {
 			expectError: true,
 		},
 		{
-			cluster: cluster,
+			name:    "cluster with invalid region",
+			cluster: clusterWithRegion,
+			ig: &kops.InstanceGroup{
+				Spec: kops.InstanceGroupSpec{
+					Subnets: []string{"region1", "nope"},
+				},
+			},
+			expectError: true,
+		},
+		{
+			name:    "cluster with existing zones",
+			cluster: clusterWithZones,
 			ig: &kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
 					Zones: []string{"directa", "directb"},
@@ -137,7 +171,8 @@ func Test_FindZonesForInstanceGroup(t *testing.T) {
 			expected: []string{"directa", "directb"},
 		},
 		{
-			cluster: cluster,
+			name:    "cluster with new and existing zones",
+			cluster: clusterWithZones,
 			ig: &kops.InstanceGroup{
 				Spec: kops.InstanceGroupSpec{
 					Zones:   []string{"directa", "directb"},
@@ -149,22 +184,22 @@ func Test_FindZonesForInstanceGroup(t *testing.T) {
 			expected: []string{"directa", "directb", "zonea", "zoneb"},
 		},
 	}
-	for i, g := range grid {
-		actual, err := FindZonesForInstanceGroup(g.cluster, g.ig)
-		if err != nil {
-			if g.expectError {
-				continue
+
+	for _, tc := range testcases {
+		t.Run(tc.name, func(t *testing.T) {
+			actual, err := FindZonesOrRegionForInstanceGroup(tc.cluster, tc.ig)
+			if err != nil {
+				if tc.expectError {
+					return
+				}
+				t.Errorf("unexpected error: %v", err)
 			}
-			t.Errorf("unexpected error for %d: %v", i, err)
-			continue
-		}
-		if g.expectError {
-			t.Errorf("expected error for %d, result was %v", i, actual)
-			continue
-		}
-		if !reflect.DeepEqual(actual, g.expected) {
-			t.Errorf("unexpected result for %d: actual=%v, expected=%v", i, actual, g.expected)
-			continue
-		}
+			if tc.expectError {
+				t.Errorf("expected error, result was %v", actual)
+			}
+			if !reflect.DeepEqual(actual, tc.expected) {
+				t.Errorf("unexpected result: actual=%v, expected=%v", actual, tc.expected)
+			}
+		})
 	}
 }
