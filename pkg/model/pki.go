@@ -184,6 +184,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
+		// Used by e.g. protokube
 		t := &fitasks.Keypair{
 			Name:      fi.String("kops"),
 			Lifecycle: b.Lifecycle,
