@@ -106,6 +106,11 @@ type DeleteResult struct {
 	gophercloud.ErrResult
 }
 
+// ConfigurationResult represents the result of a AttachConfigurationGroup/DetachConfigurationGroup operation.
+type ConfigurationResult struct {
+	gophercloud.ErrResult
+}
+
 // Extract will extract an Instance from various result structs.
 func (r commonResult) Extract() (*Instance, error) {
 	var s struct {

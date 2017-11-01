@@ -3,6 +3,7 @@ package users
 import (
 	"github.com/gophercloud/gophercloud"
 	"github.com/gophercloud/gophercloud/openstack/identity/v3/groups"
+	"github.com/gophercloud/gophercloud/openstack/identity/v3/projects"
 	"github.com/gophercloud/gophercloud/pagination"
 )
 
@@ -213,6 +214,29 @@ func Delete(client *gophercloud.ServiceClient, userID string) (r DeleteResult) {
 func ListGroups(client *gophercloud.ServiceClient, userID string) pagination.Pager {
 	url := listGroupsURL(client, userID)
 	return pagination.NewPager(client, url, func(r pagination.PageResult) pagination.Page {
-		return groups.GroupPage{pagination.LinkedPageBase{PageResult: r}}
+		return groups.GroupPage{LinkedPageBase: pagination.LinkedPageBase{PageResult: r}}
+	})
+}
+
+// ListProjects enumerates groups user belongs to.
+func ListProjects(client *gophercloud.ServiceClient, userID string) pagination.Pager {
+	url := listProjectsURL(client, userID)
+	return pagination.NewPager(client, url, func(r pagination.PageResult) pagination.Page {
+		return projects.ProjectPage{LinkedPageBase: pagination.LinkedPageBase{PageResult: r}}
+	})
+}
+
+// ListInGroup enumerates users that belong to a group.
+func ListInGroup(client *gophercloud.ServiceClient, groupID string, opts ListOptsBuilder) pagination.Pager {
+	url := listInGroupURL(client, groupID)
+	if opts != nil {
+		query, err := opts.ToUserListQuery()
+		if err != nil {
+			return pagination.Pager{Err: err}
+		}
+		url += query
+	}
+	return pagination.NewPager(client, url, func(r pagination.PageResult) pagination.Page {
+		return UserPage{pagination.LinkedPageBase{PageResult: r}}
 	})
 }
