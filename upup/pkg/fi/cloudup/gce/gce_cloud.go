@@ -32,6 +32,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
+	"os"
 )
 
 type GCECloud interface {
@@ -86,6 +87,10 @@ func NewGCECloud(region string, project string, labels map[string]string) (GCECl
 	c := &gceCloudImplementation{region: region, project: project}
 
 	ctx := context.Background()
+
+	if os.Getenv("GOOGLE_APPLICATION_CREDENTIALS") != "" {
+		glog.Infof("Will load GOOGLE_APPLICATION_CREDENTIALS from %s", os.Getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+	}
 
 	// TODO: should we create different clients with per-service scopes?
 	client, err := google.DefaultClient(ctx, compute.CloudPlatformScope)
