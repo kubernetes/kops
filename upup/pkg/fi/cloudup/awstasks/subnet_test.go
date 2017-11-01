@@ -18,13 +18,14 @@ package awstasks
 
 import (
 	"fmt"
+	"reflect"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"reflect"
-	"testing"
 )
 
 func Test_Subnet_ValidateRequired(t *testing.T) {

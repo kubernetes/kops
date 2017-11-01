@@ -18,18 +18,19 @@ package vfs
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"golang.org/x/net/context"
-	"golang.org/x/oauth2/google"
-	storage "google.golang.org/api/storage/v1"
 	"io/ioutil"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"net/http"
 	"net/url"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
+	"golang.org/x/net/context"
+	"golang.org/x/oauth2/google"
+	storage "google.golang.org/api/storage/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 // VFSContext is a 'context' for VFS, that is normally a singleton

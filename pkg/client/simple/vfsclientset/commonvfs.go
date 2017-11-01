@@ -19,6 +19,11 @@ package vfsclientset
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"reflect"
+	"sort"
+	"time"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -30,10 +35,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/vfs"
-	"os"
-	"reflect"
-	"sort"
-	"time"
 )
 
 var StoreVersion = v1alpha2.SchemeGroupVersion

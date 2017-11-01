@@ -21,6 +21,8 @@ import (
 	"net/http"
 	"strings"
 
+	"os"
+
 	"github.com/golang/glog"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
@@ -32,7 +34,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
-	"os"
 )
 
 type GCECloud interface {
