@@ -69,7 +69,7 @@ func Get(client *gophercloud.ServiceClient, id string) (r GetResult) {
 }
 
 // Delete will permanently delete a rule the project's default security group.
-func Delete(client *gophercloud.ServiceClient, id string) (r gophercloud.ErrResult) {
+func Delete(client *gophercloud.ServiceClient, id string) (r DeleteResult) {
 	_, r.Err = client.Delete(resourceURL(client, id), nil)
 	return
 }

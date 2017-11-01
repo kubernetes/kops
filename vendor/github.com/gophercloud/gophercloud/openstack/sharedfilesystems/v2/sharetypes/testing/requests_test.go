@@ -143,7 +143,7 @@ func TestSetExtraSpecs(t *testing.T) {
 	MockSetExtraSpecsResponse(t)
 
 	options := &sharetypes.SetExtraSpecsOpts{
-		Specs: map[string]interface{}{"my_key": "my_value"},
+		ExtraSpecs: map[string]interface{}{"my_key": "my_value"},
 	}
 
 	es, err := sharetypes.SetExtraSpecs(client.ServiceClient(), "shareTypeID", options).Extract()

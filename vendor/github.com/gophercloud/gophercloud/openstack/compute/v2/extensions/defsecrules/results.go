@@ -65,3 +65,9 @@ func (r commonResult) Extract() (*DefaultRule, error) {
 	err := r.ExtractInto(&s)
 	return &s.DefaultRule, err
 }
+
+// DeleteResult is the response from a delete operation. Call its ExtractErr
+// method to determine if the request succeeded or failed.
+type DeleteResult struct {
+	gophercloud.ErrResult
+}
