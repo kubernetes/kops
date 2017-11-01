@@ -19,12 +19,13 @@ package secrets
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
-	"os"
 )
 
 type VFSSecretStore struct {

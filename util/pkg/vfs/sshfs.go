@@ -19,14 +19,15 @@ package vfs
 import (
 	"bytes"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/pkg/sftp"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"math/rand"
 	"os"
 	"path"
 	"sync"
+
+	"github.com/golang/glog"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
 )
 
 type SSHPath struct {
