@@ -1,12 +1,13 @@
 language: go
 go:
   - 1.8
+  - 1.9
   - tip
 
 go_import_path: k8s.io/kops
 
 script:
-  - make ci
+  - make --debug=b ci
 
 git:
   submodules: false

@@ -66,6 +66,13 @@ var Cases = []Case{
 		`{ "foo": [ "bar", "qux", "baz" ] }`,
 	},
 	{
+		`{ "foo": [ "bar", "baz" ] }`,
+		`[
+     { "op": "add", "path": "/foo/-1", "value": "qux" }
+    ]`,
+		`{ "foo": [ "bar", "baz", "qux" ] }`,
+	},
+	{
 		`{ "baz": "qux", "foo": "bar" }`,
 		`[ { "op": "remove", "path": "/baz" } ]`,
 		`{ "foo": "bar" }`,
@@ -146,6 +153,21 @@ var Cases = []Case{
 		`[ { "op": "replace", "path": "/0/foo/0", "value": "bum"}]`,
 		`[ {"foo": ["bum","qux","baz"]}]`,
 	},
+	{
+		`[ {"foo": ["bar","qux","baz"], "bar": ["qux","baz"]}]`,
+		`[ { "op": "copy", "from": "/0/foo/0", "path": "/0/bar/0"}]`,
+		`[ {"foo": ["bar","qux","baz"], "bar": ["bar", "baz"]}]`,
+	},
+	{
+		`[ {"foo": ["bar","qux","baz"], "bar": ["qux","baz"]}]`,
+		`[ { "op": "copy", "from": "/0/foo/0", "path": "/0/bar"}]`,
+		`[ {"foo": ["bar","qux","baz"], "bar": ["bar", "qux", "baz"]}]`,
+	},
+	{
+		`[ { "foo": {"bar": ["qux","baz"]}, "baz": {"qux": "bum"}}]`,
+		`[ { "op": "copy", "from": "/0/foo/bar", "path": "/0/baz/bar"}]`,
+		`[ { "baz": {"bar": ["qux","baz"], "qux":"bum"}, "foo": {"bar": ["qux","baz"]}}]`,
+	},
 }
 
 type BadCase struct {
@@ -191,6 +213,19 @@ var BadCases = []BadCase{
 	{
 		`{ "foo": "bar" }`,
 		`[ { "op": "add", "path": "", "value": "qux" } ]`,
+	},
+	{
+		`{ "foo": ["bar","baz"]}`,
+		`[ { "op": "replace", "path": "/foo/2", "value": "bum"}]`,
+	},
+	{
+		`{ "foo": ["bar","baz"]}`,
+		`[ { "op": "add", "path": "/foo/-4", "value": "bum"}]`,
+	},
+
+	{
+		`{ "name":{ "foo": "bat", "qux": "bum"}}`,
+		`[ { "op": "replace", "path": "/foo/bar", "value":"baz"}]`,
 	},
 }
 
@@ -239,13 +274,13 @@ type TestCase struct {
 var TestCases = []TestCase{
 	{
 		`{
-			"baz": "qux",
-			"foo": [ "a", 2, "c" ]
-		}`,
+      "baz": "qux",
+      "foo": [ "a", 2, "c" ]
+    }`,
 		`[
-			{ "op": "test", "path": "/baz", "value": "qux" },
-			{ "op": "test", "path": "/foo/1", "value": 2 }
-		]`,
+      { "op": "test", "path": "/baz", "value": "qux" },
+      { "op": "test", "path": "/foo/1", "value": 2 }
+    ]`,
 		true,
 		"",
 	},
@@ -257,13 +292,13 @@ var TestCases = []TestCase{
 	},
 	{
 		`{
-			"baz": "qux",
-			"foo": ["a", 2, "c"]
-		}`,
+      "baz": "qux",
+      "foo": ["a", 2, "c"]
+    }`,
 		`[
-			{ "op": "test", "path": "/baz", "value": "qux" },
-			{ "op": "test", "path": "/foo/1", "value": "c" }
-		]`,
+      { "op": "test", "path": "/baz", "value": "qux" },
+      { "op": "test", "path": "/foo/1", "value": "c" }
+    ]`,
 		false,
 		"/foo/1",
 	},

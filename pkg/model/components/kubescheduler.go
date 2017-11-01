@@ -17,6 +17,8 @@ limitations under the License.
 package components
 
 import (
+	"fmt"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/loader"
@@ -37,13 +39,17 @@ func (b *KubeSchedulerOptionsBuilder) BuildOptions(o interface{}) error {
 
 	config := clusterSpec.KubeScheduler
 
+	if config.UsePolicyConfigMap != nil && b.IsKubernetesLT("v1.7.0") {
+		return fmt.Errorf("usePolicyConfigMap is only supported in Kubernetes 1.7.0 or later")
+	}
+
 	if config.LogLevel == 0 {
 		// TODO: No way to set to 0?
 		config.LogLevel = 2
 	}
 
 	if config.Image == "" {
-		image, err := Image("kube-scheduler", clusterSpec)
+		image, err := Image("kube-scheduler", clusterSpec, b.AssetBuilder)
 		if err != nil {
 			return err
 		}

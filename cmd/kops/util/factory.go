@@ -18,19 +18,18 @@ package util
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/util/validation/field"
-	"k8s.io/kops/pkg/client/simple"
-	"k8s.io/kops/pkg/client/simple/vfsclientset"
-	"k8s.io/kops/util/pkg/vfs"
-
-	"k8s.io/client-go/rest"
-	kopsclient "k8s.io/kops/pkg/client/clientset_generated/clientset"
-
-	// Register our APIs
-	"github.com/golang/glog"
-	_ "k8s.io/kops/pkg/apis/kops/install"
 	"net/url"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/validation/field"
+	"k8s.io/client-go/rest"
+	gceacls "k8s.io/kops/pkg/acls/gce"
+	kopsclient "k8s.io/kops/pkg/client/clientset_generated/clientset"
+	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/client/simple/api"
+	"k8s.io/kops/pkg/client/simple/vfsclientset"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type FactoryOptions struct {
@@ -43,6 +42,8 @@ type Factory struct {
 }
 
 func NewFactory(options *FactoryOptions) *Factory {
+	gceacls.Register()
+
 	return &Factory{
 		options: options,
 	}
@@ -54,7 +55,7 @@ A valid value follows the format s3://<bucket>.
 A s3 bucket is required to store cluster state information.`
 
 	INVALID_STATE_ERROR = `Unable to read state store s3 bucket.
-Please use a valid s3 bucket uri when setting --state or KOPS_STATE_STORE evn var.
+Please use a valid s3 bucket uri when setting --state or KOPS_STATE_STORE env var.
 A valid value follows the format s3://<bucket>.
 Trailing slash will be trimmed.`
 )
@@ -74,6 +75,8 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 				return nil, fmt.Errorf("Invalid kops server url: %q", registryPath)
 			}
 
+			u.Scheme = "https"
+
 			config := &rest.Config{
 				Host: u.Scheme + "://" + u.Host,
 			}
@@ -86,7 +89,7 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 				return nil, fmt.Errorf("error building kops API client: %v", err)
 			}
 
-			f.clientset = &simple.RESTClientset{
+			f.clientset = &api.RESTClientset{
 				BaseURL: &url.URL{
 					Scheme: "k8s",
 					Host:   u.Host,

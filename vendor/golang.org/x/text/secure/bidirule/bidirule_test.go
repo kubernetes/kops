@@ -5,8 +5,10 @@
 package bidirule
 
 import (
+	"fmt"
 	"testing"
 
+	"golang.org/x/text/internal/testtext"
 	"golang.org/x/text/transform"
 	"golang.org/x/text/unicode/bidi"
 )
@@ -49,52 +51,52 @@ var testCases = [][]ruleTest{
 		dir: bidi.LeftToRight,
 	}, {
 		in:  "\x80",
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
 		err: ErrInvalid,
 		n:   0,
 	}, {
 		in:  "\xcc",
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
 		err: ErrInvalid,
 		n:   0,
 	}, {
 		in:  "abc\x80",
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
 		err: ErrInvalid,
 		n:   3,
 	}, {
 		in:  "abc\xcc",
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
 		err: ErrInvalid,
 		n:   3,
 	}, {
 		in:  "abc\xccdef",
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
 		err: ErrInvalid,
 		n:   3,
 	}, {
 		in:  "\xccdef",
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
 		err: ErrInvalid,
 		n:   0,
 	}, {
 		in:  strR + "\x80",
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		err: ErrInvalid,
 		n:   len(strR),
 	}, {
 		in:  strR + "\xcc",
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		err: ErrInvalid,
 		n:   len(strR),
 	}, {
 		in:  strAL + "\xcc" + strR,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		err: ErrInvalid,
 		n:   len(strAL),
 	}, {
 		in:  "\xcc" + strR,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		err: ErrInvalid,
 		n:   0,
 	}},
@@ -112,49 +114,99 @@ var testCases = [][]ruleTest{
 		in:  strAL,
 		dir: bidi.RightToLeft,
 	}, {
-		in:  strEN,
-		dir: bidi.Neutral,
+		in:  strAN,
+		dir: bidi.RightToLeft,
 		err: ErrInvalid,
+	}, {
+		in:  strEN,
+		dir: bidi.LeftToRight,
+		err: nil, // not an RTL string
 	}, {
 		in:  strES,
-		dir: bidi.Neutral,
-		err: ErrInvalid,
+		dir: bidi.LeftToRight,
+		err: nil, // not an RTL string
 	}, {
 		in:  strET,
-		dir: bidi.Neutral,
-		err: ErrInvalid,
-	}, {
-		in:  strAN,
-		dir: bidi.Neutral,
-		err: ErrInvalid,
+		dir: bidi.LeftToRight,
+		err: nil, // not an RTL string
 	}, {
 		in:  strCS,
-		dir: bidi.Neutral,
-		err: ErrInvalid,
+		dir: bidi.LeftToRight,
+		err: nil, // not an RTL string
 	}, {
 		in:  strNSM,
-		dir: bidi.Neutral,
-		err: ErrInvalid,
+		dir: bidi.LeftToRight,
+		err: nil, // not an RTL string
 	}, {
 		in:  strBN,
-		dir: bidi.Neutral,
-		err: ErrInvalid,
+		dir: bidi.LeftToRight,
+		err: nil, // not an RTL string
 	}, {
 		in:  strB,
-		dir: bidi.Neutral,
-		err: ErrInvalid,
+		dir: bidi.LeftToRight,
+		err: nil, // not an RTL string
 	}, {
 		in:  strS,
-		dir: bidi.Neutral,
-		err: ErrInvalid,
+		dir: bidi.LeftToRight,
+		err: nil, // not an RTL string
 	}, {
 		in:  strWS,
-		dir: bidi.Neutral,
-		err: ErrInvalid,
+		dir: bidi.LeftToRight,
+		err: nil, // not an RTL string
 	}, {
 		in:  strON,
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
+		err: nil, // not an RTL string
+	}, {
+		in:  strEN + strR,
+		dir: bidi.RightToLeft,
 		err: ErrInvalid,
+		n:   3,
+	}, {
+		in:  strES + strR,
+		dir: bidi.RightToLeft,
+		err: ErrInvalid,
+		n:   2,
+	}, {
+		in:  strET + strR,
+		dir: bidi.RightToLeft,
+		err: ErrInvalid,
+		n:   1,
+	}, {
+		in:  strCS + strR,
+		dir: bidi.RightToLeft,
+		err: ErrInvalid,
+		n:   1,
+	}, {
+		in:  strNSM + strR,
+		dir: bidi.RightToLeft,
+		err: ErrInvalid,
+		n:   2,
+	}, {
+		in:  strBN + strR,
+		dir: bidi.RightToLeft,
+		err: ErrInvalid,
+		n:   3,
+	}, {
+		in:  strB + strR,
+		dir: bidi.RightToLeft,
+		err: ErrInvalid,
+		n:   3,
+	}, {
+		in:  strS + strR,
+		dir: bidi.RightToLeft,
+		err: ErrInvalid,
+		n:   1,
+	}, {
+		in:  strWS + strR,
+		dir: bidi.RightToLeft,
+		err: ErrInvalid,
+		n:   1,
+	}, {
+		in:  strON + strR,
+		dir: bidi.RightToLeft,
+		err: ErrInvalid,
+		n:   1,
 	}},
 
 	// Rule 2.2: In an RTL label, only characters with the Bidi properties R,
@@ -191,22 +243,22 @@ var testCases = [][]ruleTest{
 		dir: bidi.RightToLeft,
 	}, {
 		in:  strR + strL + strR,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strB + strR,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strS + strAL,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strWS + strAL,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR),
 		err: ErrInvalid,
 	}, {
@@ -241,22 +293,22 @@ var testCases = [][]ruleTest{
 		dir: bidi.RightToLeft,
 	}, {
 		in:  strAL + strL + strR,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strB + strR,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strS + strAL,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strWS + strAL,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL),
 		err: ErrInvalid,
 	}},
@@ -281,47 +333,47 @@ var testCases = [][]ruleTest{
 		dir: bidi.RightToLeft,
 	}, {
 		in:  strR + strES + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR + strES + strNSM),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strCS + strNSM + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR + strCS + strNSM + strNSM),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strET,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR + strET),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strON + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR + strON + strNSM),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strBN + strNSM + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR + strBN + strNSM + strNSM),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strL + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strB + strNSM + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strS,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strWS,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR),
 		err: ErrInvalid,
 	}, {
@@ -341,47 +393,47 @@ var testCases = [][]ruleTest{
 		dir: bidi.RightToLeft,
 	}, {
 		in:  strAL + strES + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL + strES + strNSM),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strCS + strNSM + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL + strCS + strNSM + strNSM),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strET,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL + strET),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strON + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL + strON + strNSM),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strBN + strNSM + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL + strBN + strNSM + strNSM),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strL + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strB + strNSM + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strS,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strWS,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL),
 		err: ErrInvalid,
 	}},
@@ -390,22 +442,22 @@ var testCases = [][]ruleTest{
 	// and vice versa.
 	4: []ruleTest{{
 		in:  strR + strEN + strAN,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR + strEN),
 		err: ErrInvalid,
 	}, {
 		in:  strR + strAN + strEN + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR + strAN),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strEN + strAN,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL + strEN),
 		err: ErrInvalid,
 	}, {
 		in:  strAL + strAN + strEN + strNSM,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strAL + strAN),
 		err: ErrInvalid,
 	}},
@@ -438,33 +490,48 @@ var testCases = [][]ruleTest{
 		dir: bidi.LeftToRight,
 	}, {
 		in:  strL + strR + strL,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strL),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strAL + strL,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strL),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strAN + strL,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strL),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strB + strL,
-		dir: bidi.Neutral,
-		n:   len(strL),
+		dir: bidi.LeftToRight,
+		n:   len(strL + strAN + strL),
+		err: nil,
+	}, {
+		in:  strL + strB + strL + strR,
+		dir: bidi.RightToLeft,
+		n:   len(strL + strB + strL),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strS + strL,
-		dir: bidi.Neutral,
-		n:   len(strL),
+		dir: bidi.LeftToRight,
+		n:   len(strL + strS + strL),
+		err: nil,
+	}, {
+		in:  strL + strS + strL + strR,
+		dir: bidi.RightToLeft,
+		n:   len(strL + strS + strL),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strWS + strL,
-		dir: bidi.Neutral,
-		n:   len(strL),
+		dir: bidi.LeftToRight,
+		n:   len(strL + strWS + strL),
+		err: nil,
+	}, {
+		in:  strL + strWS + strL + strR,
+		dir: bidi.RightToLeft,
+		n:   len(strL + strWS + strL),
 		err: ErrInvalid,
 	}},
 
@@ -491,58 +558,98 @@ var testCases = [][]ruleTest{
 		dir: bidi.LeftToRight,
 	}, {
 		in:  strL + strES,
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
+		n:   len(strL + strES),
+		err: nil,
+	}, {
+		in:  strL + strES + strR,
+		dir: bidi.RightToLeft,
 		n:   len(strL + strES),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strCS,
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
+		n:   len(strL + strCS),
+		err: nil,
+	}, {
+		in:  strL + strCS + strR,
+		dir: bidi.RightToLeft,
 		n:   len(strL + strCS),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strET,
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
+		n:   len(strL + strET),
+		err: nil,
+	}, {
+		in:  strL + strET + strR,
+		dir: bidi.RightToLeft,
 		n:   len(strL + strET),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strON,
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
+		n:   len(strL + strON),
+		err: nil,
+	}, {
+		in:  strL + strON + strR,
+		dir: bidi.RightToLeft,
 		n:   len(strL + strON),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strBN,
-		dir: bidi.Neutral,
+		dir: bidi.LeftToRight,
+		n:   len(strL + strBN),
+		err: nil,
+	}, {
+		in:  strL + strBN + strR,
+		dir: bidi.RightToLeft,
 		n:   len(strL + strBN),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strR,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strL),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strAL,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strL),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strAN,
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strL),
 		err: ErrInvalid,
 	}, {
 		in:  strL + strB,
-		dir: bidi.Neutral,
-		n:   len(strL),
+		dir: bidi.LeftToRight,
+		n:   len(strL + strB),
+		err: nil,
+	}, {
+		in:  strL + strB + strR,
+		dir: bidi.RightToLeft,
+		n:   len(strL + strB),
 		err: ErrInvalid,
 	}, {
-		in:  strL + strS,
-		dir: bidi.Neutral,
-		n:   len(strL),
+		in:  strL + strB,
+		dir: bidi.LeftToRight,
+		n:   len(strL + strB),
+		err: nil,
+	}, {
+		in:  strL + strB + strR,
+		dir: bidi.RightToLeft,
+		n:   len(strL + strB),
 		err: ErrInvalid,
 	}, {
-		in:  strL + strWS,
-		dir: bidi.Neutral,
-		n:   len(strL),
+		in:  strL + strB,
+		dir: bidi.LeftToRight,
+		n:   len(strL + strB),
+		err: nil,
+	}, {
+		in:  strL + strB + strR,
+		dir: bidi.RightToLeft,
+		n:   len(strL + strB),
 		err: ErrInvalid,
 	}},
 
@@ -564,7 +671,7 @@ var testCases = [][]ruleTest{
 	}, {
 		// Remain invalid once invalid.
 		in:  strR + "ab",
-		dir: bidi.Neutral,
+		dir: bidi.RightToLeft,
 		n:   len(strR),
 		err: ErrInvalid,
 
@@ -602,12 +709,20 @@ func init() {
 	}
 }
 
+func doTests(t *testing.T, fn func(t *testing.T, tc ruleTest)) {
+	for rule, cases := range testCases {
+		for i, tc := range cases {
+			name := fmt.Sprintf("%d/%d:%+q:%s", rule, i, tc.in, tc.in)
+			testtext.Run(t, name, func(t *testing.T) {
+				fn(t, tc)
+			})
+		}
+	}
+}
+
 func TestDirection(t *testing.T) {
 	doTests(t, func(t *testing.T, tc ruleTest) {
-		dir, err := Direction([]byte(tc.in))
-		if err != tc.err {
-			t.Errorf("error was %v; want %v", err, tc.err)
-		}
+		dir := Direction([]byte(tc.in))
 		if dir != tc.dir {
 			t.Errorf("dir was %v; want %v", dir, tc.dir)
 		}
@@ -616,12 +731,25 @@ func TestDirection(t *testing.T) {
 
 func TestDirectionString(t *testing.T) {
 	doTests(t, func(t *testing.T, tc ruleTest) {
-		dir, err := DirectionString(tc.in)
-		if err != tc.err {
-			t.Errorf("error was %v; want %v", err, tc.err)
-		}
+		dir := DirectionString(tc.in)
 		if dir != tc.dir {
 			t.Errorf("dir was %v; want %v", dir, tc.dir)
+		}
+	})
+}
+
+func TestValid(t *testing.T) {
+	doTests(t, func(t *testing.T, tc ruleTest) {
+		got := Valid([]byte(tc.in))
+		want := tc.err == nil
+		if got != want {
+			t.Fatalf("Valid: got %v; want %v", got, want)
+		}
+
+		got = ValidString(tc.in)
+		want = tc.err == nil
+		if got != want {
+			t.Fatalf("Valid: got %v; want %v", got, want)
 		}
 	})
 }

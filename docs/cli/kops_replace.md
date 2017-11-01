@@ -8,7 +8,7 @@ Replace cluster resources.
 ### Synopsis
 
 
-Replace a resource specification by filename or stdin.
+Replace a resource desired configuration by filename or stdin.
 
 ```
 kops replace -f FILENAME
@@ -17,14 +17,18 @@ kops replace -f FILENAME
 ### Examples
 
 ```
-  # Replace a cluster specification using a file
+  # Replace a cluster desired configuration using a YAML file
   kops replace -f my-cluster.yaml
+  
+  # Note, if the resource does not exist the command will error, use --force to provision resource
+  kops replace -f my-cluster.yaml --force
 ```
 
 ### Options
 
 ```
   -f, --filename stringSlice   A list of one or more files separated by a comma.
+      --force                  Force any changes, which will also create any non-existing respurce (defaults to instancegroups only)
 ```
 
 ### Options inherited from parent commands

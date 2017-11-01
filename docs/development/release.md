@@ -3,7 +3,7 @@
 The kops project is released on an as-needed basis. The process is as follows:
 
 1. An issue is proposing a new release with a changelog since the last release
-1. All [OWNERS](OWNERS) must LGTM this release
+1. All [OWNERS](https://github.com/kubernetes/kops/blob/master/OWNERS) must LGTM this release
 1. An OWNER runs `git tag -s $VERSION` and inserts the changelog and pushes the tag with `git push $VERSION`
 1. The release issue is closed
 1. An announcement email is sent to `kubernetes-dev@googlegroups.com` with the subject `[ANNOUNCE] kops $VERSION is released`
@@ -73,7 +73,7 @@ git push --tags
 For the time being, we are also maintaining a release branch.  We push released
 versions to that.
 
-`git push origin release`
+`git push origin release-1.7:release`
 
 ## Upload to github
 

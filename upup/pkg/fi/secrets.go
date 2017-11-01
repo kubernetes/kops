@@ -25,17 +25,19 @@ import (
 )
 
 type SecretStore interface {
-	// Get a secret.  Returns an error if not found
+	// Secret returns a secret.  Returns an error if not found
 	Secret(id string) (*Secret, error)
-	// Find a secret, if exists.  Returns nil,nil if not found
+	// DeleteSecret deletes the specified secret
+	DeleteSecret(item *KeystoreItem) error
+	// FindSecret finds a secret, if exists.  Returns nil,nil if not found
 	FindSecret(id string) (*Secret, error)
-	// Create or replace a secret
+	// GetOrCreateSecret creates or replace a secret
 	GetOrCreateSecret(id string, secret *Secret) (current *Secret, created bool, err error)
-	// Lists the ids of all known secrets
+	// ListSecrets lists the ids of all known secrets
 	ListSecrets() ([]string, error)
 
-	// VFSPath returns the path where the SecretStore is stored
-	VFSPath() vfs.Path
+	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
+	MirrorTo(basedir vfs.Path) error
 }
 
 type Secret struct {

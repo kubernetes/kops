@@ -41,6 +41,8 @@ NODEUP_HASH={{ NodeUpSourceHash }}
 {{ S3Env }}
 {{ AWS_REGION }}
 
+{{ ProxyEnv }}
+
 function ensure-install-dir() {
   INSTALL_DIR="/var/cache/kubernetes-install"
   # On ContainerOS, we install to /var/lib/toolbox install (because of noexec)
@@ -64,9 +66,23 @@ download-or-bust() {
     for url in "${urls[@]}"; do
       local file="${url##*/}"
       rm -f "${file}"
-      if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
-        echo "== Failed to download ${url}. Retrying. =="
-      elif [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
+
+      if [[ $(which curl) ]]; then
+        if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
+          echo "== Failed to curl ${url}. Retrying. =="
+          break
+        fi
+      elif [[ $(which wget ) ]]; then
+        if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
+          echo "== Failed to wget ${url}. Retrying. =="
+          break
+        fi
+      else
+        echo "== Could not find curl or wget. Retrying. =="
+        break
+      fi
+
+      if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
         echo "== Hash validation of ${url} failed. Retrying. =="
       else
         if [[ -n "${hash}" ]]; then
@@ -139,7 +155,15 @@ function download-release() {
 echo "== nodeup node config starting =="
 ensure-install-dir
 
-cat > kube_env.yaml << __EOF_KUBE_ENV
+cat > cluster_spec.yaml << '__EOF_CLUSTER_SPEC'
+{{ ClusterSpec }}
+__EOF_CLUSTER_SPEC
+
+cat > ig_spec.yaml << '__EOF_IG_SPEC'
+{{ IGSpec }}
+__EOF_IG_SPEC
+
+cat > kube_env.yaml << '__EOF_KUBE_ENV'
 {{ KubeEnv }}
 __EOF_KUBE_ENV
 

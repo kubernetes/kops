@@ -31,6 +31,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -290,7 +291,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	//}
 
 	{
-		groups, err := resources.FindAutoscalingGroups(awsCloud, awsCloud.Tags())
+		groups, err := awsup.FindAutoscalingGroups(awsCloud, awsCloud.Tags())
 		if err != nil {
 			return fmt.Errorf("error listing autoscaling groups: %v", err)
 		}
@@ -413,7 +414,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	//b.Context = "aws_" + instancePrefix
 
-	keyStore, err := registry.KeyStore(cluster)
+	keyStore, err := x.Clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -714,7 +715,7 @@ func (u *UserDataConfiguration) ParseBool(key string) *bool {
 	return fi.Bool(false)
 }
 
-func (u *UserDataConfiguration) ParseCert(key string) (*fi.Certificate, error) {
+func (u *UserDataConfiguration) ParseCert(key string) (*pki.Certificate, error) {
 	s := u.Settings[key]
 	if s == "" {
 		return nil, nil
@@ -724,7 +725,7 @@ func (u *UserDataConfiguration) ParseCert(key string) (*fi.Certificate, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error decoding base64 certificate %q: %v", key, err)
 	}
-	cert, err := fi.LoadPEMCertificate(data)
+	cert, err := pki.LoadPEMCertificate(data)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing certificate %q: %v", key, err)
 	}
@@ -732,7 +733,7 @@ func (u *UserDataConfiguration) ParseCert(key string) (*fi.Certificate, error) {
 	return cert, nil
 }
 
-func (u *UserDataConfiguration) ParseKey(key string) (*fi.PrivateKey, error) {
+func (u *UserDataConfiguration) ParseKey(key string) (*pki.PrivateKey, error) {
 	s := u.Settings[key]
 	if s == "" {
 		return nil, nil
@@ -742,7 +743,7 @@ func (u *UserDataConfiguration) ParseKey(key string) (*fi.PrivateKey, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error decoding base64 private key %q: %v", key, err)
 	}
-	k, err := fi.ParsePEMPrivateKey(data)
+	k, err := pki.ParsePEMPrivateKey(data)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing private key %q: %v", key, err)
 	}

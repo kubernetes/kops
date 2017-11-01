@@ -19,27 +19,32 @@ package fitasks
 import (
 	"crypto/x509"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi"
 	"net"
 	"sort"
 	"strings"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 var wellKnownCertificateTypes = map[string]string{
 	"client": "ExtKeyUsageClientAuth,KeyUsageDigitalSignature",
 	"server": "ExtKeyUsageServerAuth,KeyUsageDigitalSignature,KeyUsageKeyEncipherment",
+	"ca":     "CA,KeyUsageCRLSign,KeyUsageCertSign",
 }
 
 //go:generate fitask -type=Keypair
 type Keypair struct {
-	Name      *string
-	Lifecycle *fi.Lifecycle
-
+	Name               *string
+	Lifecycle          *fi.Lifecycle
 	Subject            string    `json:"subject"`
 	Type               string    `json:"type"`
 	AlternateNames     []string  `json:"alternateNames"`
 	AlternateNameTasks []fi.Task `json:"alternateNameTasks"`
+
+	// Signer is the keypair to use to sign, for when we want to use an alternative CA
+	Signer *Keypair
 }
 
 var _ fi.HasCheckExisting = &Keypair{}
@@ -48,6 +53,12 @@ var _ fi.HasName = &Keypair{}
 // It's important always to check for the existing key, so we don't regenerate keys e.g. on terraform
 func (e *Keypair) CheckExisting(c *fi.Context) bool {
 	return true
+}
+
+var _ fi.CompareWithID = &Keypair{}
+
+func (e *Keypair) CompareWithID() *string {
+	return &e.Subject
 }
 
 func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
@@ -82,6 +93,8 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 		AlternateNames: alternateNames,
 		Type:           buildTypeDescription(cert.Certificate),
 	}
+
+	actual.Signer = &Keypair{Subject: pkixNameToString(&cert.Certificate.Issuer)}
 
 	// Avoid spurious changes
 	actual.Lifecycle = e.Lifecycle
@@ -132,7 +145,7 @@ func (e *Keypair) normalize(c *fi.Context) error {
 	return nil
 }
 
-func (s *Keypair) CheckChanges(a, e, changes *Keypair) error {
+func (_ *Keypair) CheckChanges(a, e, changes *Keypair) error {
 	if a != nil {
 		if changes.Name != nil {
 			return fi.CannotChangeField("Name")
@@ -177,13 +190,17 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 		// if we change keys we often have to regenerate e.g. the service accounts
 		// TODO: Eventually rotate keys / don't always reuse?
 		if privateKey == nil {
-			privateKey, err = fi.GeneratePrivateKey()
+			privateKey, err = pki.GeneratePrivateKey()
 			if err != nil {
 				return err
 			}
 		}
 
-		cert, err = c.Keystore.CreateKeypair(name, template, privateKey)
+		signer := fi.CertificateId_CA
+		if e.Signer != nil {
+			signer = fi.StringValue(e.Signer.Name)
+		}
+		cert, err = c.Keystore.CreateKeypair(signer, name, template, privateKey)
 		if err != nil {
 			return err
 		}
@@ -255,8 +272,10 @@ func buildCertificateTemplateForType(certificateType string) (*x509.Certificate,
 				return nil, fmt.Errorf("unrecognized certificate option: %v", t)
 			}
 			template.ExtKeyUsage = append(template.ExtKeyUsage, ku)
+		} else if t == "CA" {
+			template.IsCA = true
 		} else {
-			return nil, fmt.Errorf("unrecognized certificate option: %v", t)
+			return nil, fmt.Errorf("unrecognized certificate option: %q", t)
 		}
 	}
 

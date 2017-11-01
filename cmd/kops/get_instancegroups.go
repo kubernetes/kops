@@ -18,18 +18,18 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/spf13/cobra"
-	"io"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/formatter"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -40,8 +40,12 @@ var (
 	# Get all instancegroups in a state store
 	kops get ig
 
-	# Get a cluster
-	kops get ig --name k8s-cluster.example.com nodes`))
+	# Get a cluster's instancegroup
+	kops get ig --name k8s-cluster.example.com nodes
+
+	# Save a cluster's instancegroups desired configuration to YAML file
+	kops get ig --name k8s-cluster.example.com -o yaml > instancegroups-desired-config.yaml
+	`))
 
 	get_instancegroups_short = i18n.T(`Get one or many instancegroups`)
 )
@@ -105,14 +109,13 @@ func RunGetInstanceGroups(options *GetInstanceGroupsOptions, args []string) erro
 	}
 
 	if len(instancegroups) == 0 {
-		fmt.Fprintf(os.Stderr, "No InstanceGroup objects found\n")
-		return nil
+		return fmt.Errorf("No InstanceGroup objects found")
 	}
 
 	switch options.output {
 
 	case OutputTable:
-		return igOutputTable(instancegroups, out)
+		return igOutputTable(cluster, instancegroups, out)
 	case OutputYaml:
 		return igOutputYAML(instancegroups, out)
 	case OutputJSON:
@@ -150,7 +153,7 @@ func buildInstanceGroups(args []string, list *api.InstanceGroupList) ([]*api.Ins
 	return instancegroups, nil
 }
 
-func igOutputTable(instancegroups []*api.InstanceGroup, out io.Writer) error {
+func igOutputTable(cluster *api.Cluster, instancegroups []*api.InstanceGroup, out io.Writer) error {
 	t := &tables.Table{}
 	t.AddColumn("NAME", func(c *api.InstanceGroup) string {
 		return c.ObjectMeta.Name
@@ -161,16 +164,16 @@ func igOutputTable(instancegroups []*api.InstanceGroup, out io.Writer) error {
 	t.AddColumn("MACHINETYPE", func(c *api.InstanceGroup) string {
 		return c.Spec.MachineType
 	})
-	t.AddColumn("SUBNETS", func(c *api.InstanceGroup) string {
-		return strings.Join(c.Spec.Subnets, ",")
-	})
+	t.AddColumn("SUBNETS", formatter.RenderInstanceGroupSubnets(cluster))
+	t.AddColumn("ZONES", formatter.RenderInstanceGroupZones(cluster))
 	t.AddColumn("MIN", func(c *api.InstanceGroup) string {
 		return int32PointerToString(c.Spec.MinSize)
 	})
 	t.AddColumn("MAX", func(c *api.InstanceGroup) string {
 		return int32PointerToString(c.Spec.MaxSize)
 	})
-	return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
+	// SUBNETS is not not selected by default - not as useful as ZONES
+	return t.Render(instancegroups, os.Stdout, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "ZONES")
 }
 
 func igOutputJson(instanceGroups []*api.InstanceGroup, out io.Writer) error {

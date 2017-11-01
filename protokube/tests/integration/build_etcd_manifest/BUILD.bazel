@@ -1,0 +1,13 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_test")
+
+go_test(
+    name = "go_default_test",
+    srcs = ["integration_test.go"],
+    data = glob(["main/*"]),  #keep
+    deps = [
+        "//pkg/apis/kops:go_default_library",
+        "//pkg/diff:go_default_library",
+        "//pkg/k8scodecs:go_default_library",
+        "//protokube/pkg/protokube:go_default_library",
+    ],
+)

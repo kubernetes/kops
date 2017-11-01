@@ -34,13 +34,19 @@ func IsDirectory(p Path) bool {
 	return err == nil
 }
 
+type ACL interface {
+}
+
+type ACLOracle func(Path) (ACL, error)
+
+// Path is a path in the VFS space, which we can read, write, list etc
 type Path interface {
 	Join(relativePath ...string) Path
 	ReadFile() ([]byte, error)
 
-	WriteFile(data []byte) error
+	WriteFile(data []byte, acl ACL) error
 	// CreateFile writes the file contents, but only if the file does not already exist
-	CreateFile(data []byte) error
+	CreateFile(data []byte, acl ACL) error
 
 	// Remove deletes the file
 	Remove() error
@@ -54,7 +60,7 @@ type Path interface {
 	// ReadDir lists the files in a particular Path
 	ReadDir() ([]Path, error)
 
-	// ReadTree lists all files in the subtree rooted at the current Path
+	// ReadTree lists all files (recursively) in the subtree rooted at the current Path
 	ReadTree() ([]Path, error)
 }
 

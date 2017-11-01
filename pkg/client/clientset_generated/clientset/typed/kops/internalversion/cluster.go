@@ -58,6 +58,41 @@ func newClusters(c *KopsClient, namespace string) *clusters {
 	}
 }
 
+// Get takes name of the cluster, and returns the corresponding cluster object, and an error if there is any.
+func (c *clusters) Get(name string, options v1.GetOptions) (result *kops.Cluster, err error) {
+	result = &kops.Cluster{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("clusters").
+		Name(name).
+		VersionedParams(&options, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// List takes label and field selectors, and returns the list of Clusters that match those selectors.
+func (c *clusters) List(opts v1.ListOptions) (result *kops.ClusterList, err error) {
+	result = &kops.ClusterList{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("clusters").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// Watch returns a watch.Interface that watches the requested clusters.
+func (c *clusters) Watch(opts v1.ListOptions) (watch.Interface, error) {
+	opts.Watch = true
+	return c.client.Get().
+		Namespace(c.ns).
+		Resource("clusters").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Watch()
+}
+
 // Create takes the representation of a cluster and creates it.  Returns the server's representation of the cluster, and an error, if there is any.
 func (c *clusters) Create(cluster *kops.Cluster) (result *kops.Cluster, err error) {
 	result = &kops.Cluster{}
@@ -103,41 +138,6 @@ func (c *clusters) DeleteCollection(options *v1.DeleteOptions, listOptions v1.Li
 		Body(options).
 		Do().
 		Error()
-}
-
-// Get takes name of the cluster, and returns the corresponding cluster object, and an error if there is any.
-func (c *clusters) Get(name string, options v1.GetOptions) (result *kops.Cluster, err error) {
-	result = &kops.Cluster{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("clusters").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of Clusters that match those selectors.
-func (c *clusters) List(opts v1.ListOptions) (result *kops.ClusterList, err error) {
-	result = &kops.ClusterList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("clusters").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested clusters.
-func (c *clusters) Watch(opts v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("clusters").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
 }
 
 // Patch applies the patch and returns the patched cluster.

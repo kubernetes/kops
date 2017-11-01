@@ -19,6 +19,7 @@ package local
 import (
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/upup/pkg/fi"
+	"os/exec"
 )
 
 type LocalTarget struct {
@@ -40,4 +41,10 @@ func (t *LocalTarget) ProcessDeletions() bool {
 func (t *LocalTarget) HasTag(tag string) bool {
 	_, found := t.Tags[tag]
 	return found
+}
+
+// CombinedOutput is a helper function that executes a command, returning stdout & stderr combined
+func (t *LocalTarget) CombinedOutput(args []string) ([]byte, error) {
+	c := exec.Command(args[0], args[1:]...)
+	return c.CombinedOutput()
 }

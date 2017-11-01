@@ -3,10 +3,11 @@ package notifications
 import (
 	"fmt"
 	"math/rand"
+	"reflect"
 	"sync"
 	"time"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 
 	"testing"
 )
@@ -109,6 +110,38 @@ func TestEventQueue(t *testing.T) {
 
 	if metrics.Pending != 0 {
 		t.Fatalf("unexpected egress count: %d != %d", metrics.Pending, 0)
+	}
+}
+
+func TestIgnoredMediaTypesSink(t *testing.T) {
+	blob := createTestEvent("push", "library/test", "blob")
+	manifest := createTestEvent("push", "library/test", "manifest")
+
+	type testcase struct {
+		ignored  []string
+		expected []Event
+	}
+
+	cases := []testcase{
+		{nil, []Event{blob, manifest}},
+		{[]string{"other"}, []Event{blob, manifest}},
+		{[]string{"blob"}, []Event{manifest}},
+		{[]string{"blob", "manifest"}, nil},
+	}
+
+	for _, c := range cases {
+		ts := &testSink{}
+		s := newIgnoredMediaTypesSink(ts, c.ignored)
+
+		if err := s.Write(blob, manifest); err != nil {
+			t.Fatalf("error writing event: %v", err)
+		}
+
+		ts.mu.Lock()
+		if !reflect.DeepEqual(ts.events, c.expected) {
+			t.Fatalf("unexpected events: %#v != %#v", ts.events, c.expected)
+		}
+		ts.mu.Unlock()
 	}
 }
 

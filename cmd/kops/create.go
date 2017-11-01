@@ -28,12 +28,13 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 type CreateOptions struct {
@@ -44,15 +45,18 @@ var (
 	create_long = templates.LongDesc(i18n.T(`
 		Create a resource:` + validResources +
 		`
-	Create a cluster, instancegroup or secret using command line flags or
-	YAML cluster spec. Clusters and instancegroups can be created using the YAML
-	cluster spec.
+	Create a cluster, instancegroup or secret using command line parameters
+	or YAML configuration specification files.
+	(Note: secrets cannot be created from YAML config files yet).
 	`))
 
 	create_example = templates.Examples(i18n.T(`
 
-	# Create a cluster using a cluser spec file
+	# Create a cluster from the configuration specification in a YAML file
 	kops create -f my-cluster.yaml
+
+	# Create secret from secret spec file 
+	kops create -f secret.yaml
 
 	# Create a cluster in AWS
 	kops create cluster --name=kubernetes-cluster.example.com \
@@ -80,7 +84,7 @@ func NewCmdCreate(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    create_long,
 		Example: create_example,
 		Run: func(cmd *cobra.Command, args []string) {
-			if cmdutil.IsFilenameEmpty(options.Filenames) {
+			if cmdutil.IsFilenameSliceEmpty(options.Filenames) {
 				cmd.Help()
 				return
 			}
@@ -112,7 +116,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 	}
 
 	// Codecs provides access to encoding and decoding for the scheme
-	codecs := kopsapi.Codecs //serializer.NewCodecFactory(scheme)
+	codecs := kopscodecs.Codecs //serializer.NewCodecFactory(scheme)
 
 	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
@@ -155,7 +159,7 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 				if err != nil {
 					return fmt.Errorf("error populating configuration: %v", err)
 				}
-				_, err = clientset.ClustersFor(v).Create(v)
+				_, err = clientset.CreateCluster(v)
 				if err != nil {
 					if apierrors.IsAlreadyExists(err) {
 						return fmt.Errorf("cluster %q already exists", v.ObjectMeta.Name)
@@ -188,6 +192,33 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					return fmt.Errorf("error creating instanceGroup: %v", err)
 				} else {
 					fmt.Fprintf(&sb, "Created instancegroup/%s\n", v.ObjectMeta.Name)
+				}
+
+			case *kopsapi.SSHCredential:
+				clusterName = v.ObjectMeta.Labels[kopsapi.LabelClusterName]
+				if clusterName == "" {
+					return fmt.Errorf("must specify %q label with cluster name to create instanceGroup", kopsapi.LabelClusterName)
+				}
+				if v.Spec.PublicKey == "" {
+					return fmt.Errorf("spec.PublicKey is required")
+				}
+
+				cluster, err := clientset.GetCluster(clusterName)
+				if err != nil {
+					return err
+				}
+
+				keyStore, err := clientset.KeyStore(cluster)
+				if err != nil {
+					return err
+				}
+
+				sshKeyArr := []byte(v.Spec.PublicKey)
+				err = keyStore.AddSSHPublicKey("admin", sshKeyArr)
+				if err != nil {
+					return err
+				} else {
+					fmt.Fprintf(&sb, "Added ssh creadential\n")
 				}
 
 			default:

@@ -27,20 +27,21 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
 	edit_federation_long = pretty.LongDesc(`
 		Edit a cluster configuration.
 
-		This command changes the federation cloud specification in the registry.
+		This command changes the federation cloud desired configuration in the registry.
 
-		To set your preferred editor, you can define the EDITOR environment variable.
-		When you have done this, kops will use the editor that you have set.
+			To set your preferred editor, you can define the EDITOR environment variable.
+			When you have done this, kops will use the editor that you have set.
 
 		kops edit does not update the cloud resources, to apply the changes use ` + pretty.Bash("kops update cluster") + `.`)
 
@@ -108,7 +109,7 @@ func RunEditFederation(f *util.Factory, cmd *cobra.Command, args []string, out i
 
 	ext := "yaml"
 
-	raw, err := kopsapi.ToVersionedYaml(old)
+	raw, err := kopscodecs.ToVersionedYaml(old)
 	if err != nil {
 		return err
 	}
@@ -129,7 +130,7 @@ func RunEditFederation(f *util.Factory, cmd *cobra.Command, args []string, out i
 		return nil
 	}
 
-	newObj, _, err := kopsapi.ParseVersionedYaml(edited)
+	newObj, _, err := kopscodecs.ParseVersionedYaml(edited)
 	if err != nil {
 		return fmt.Errorf("error parsing config: %v", err)
 	}

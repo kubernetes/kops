@@ -22,12 +22,12 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
 	update_long = templates.LongDesc(i18n.T(`
-	Creates or updates cloud resources to match cluster spec.
+	Creates or updates cloud resources to match cluster desired configuration.
 	`))
 
 	update_example = templates.Examples(i18n.T(`

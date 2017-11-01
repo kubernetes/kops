@@ -71,19 +71,21 @@ spec:
       hostNetwork: true
       serviceAccountName: canal
       tolerations:
-        # Allow the pod to run on the master.  This is required for
-        # the master to communicate with pods.
-        - key: node-role.kubernetes.io/master
-          effect: NoSchedule
         # Mark the pod as a critical add-on for rescheduling.
         - key: "CriticalAddonsOnly"
           operator: "Exists"
+        - effect: NoExecute
+          operator: Exists
+        # Allow the pod to run on all nodes.  This is required
+        # for cluster communication
+        - effect: NoSchedule
+          operator: Exists
       containers:
         # Runs calico/node container on each Kubernetes node.  This
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v1.2.1
+          image: quay.io/calico/node:v2.4.1
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -100,6 +102,9 @@ spec:
             # Don't enable BGP.
             - name: CALICO_NETWORKING_BACKEND
               value: "none"
+            # Cluster type to identify the deployment type
+            - name: CLUSTER_TYPE
+              value: "kops,canal"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
@@ -114,7 +119,22 @@ spec:
                   fieldPath: spec.nodeName
             # Set Felix endpoint to host default action to ACCEPT.
             - name: FELIX_DEFAULTENDPOINTTOHOSTACTION
-              value: "ACCEPT"
+              value: "{{- or .Networking.Canal.DefaultEndpointToHostAction "ACCEPT" }}"
+            # Controls whether Felix inserts rules to the top of iptables chains, or appends to the bottom
+            - name: FELIX_CHAININSERTMODE
+              value: "{{- or .Networking.Canal.ChainInsertMode "insert" }}"
+            # Set to enable the experimental Prometheus metrics server
+            - name: FELIX_PROMETHEUSMETRICSENABLED
+              value: "{{- or .Networking.Canal.PrometheusMetricsEnabled "false" }}"
+            # TCP port that the Prometheus metrics server should bind to
+            - name: FELIX_PROMETHEUSMETRICSPORT
+              value: "{{- or .Networking.Canal.PrometheusMetricsPort "9091" }}"
+            # Enable Prometheus Go runtime metrics collection
+            - name: FELIX_PROMETHEUSGOMETRICSENABLED
+              value: "{{- or .Networking.Canal.PrometheusGoMetricsEnabled "true" }}"
+            # Enable Prometheus process metrics collection
+            - name: FELIX_PROMETHEUSPROCESSMETRICSENABLED
+              value: "{{- or .Networking.Canal.PrometheusProcessMetricsEnabled "true" }}"
           securityContext:
             privileged: true
           resources:
@@ -130,7 +150,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v1.8.3
+          image: quay.io/calico/cni:v1.10.0
           command: ["/install-cni.sh"]
           env:
             # The CNI network config to install on each node.
@@ -151,7 +171,7 @@ spec:
         # This container runs flannel using the kube-subnet-mgr backend
         # for allocating subnets.
         - name: kube-flannel
-          image: quay.io/coreos/flannel:v0.7.1
+          image: quay.io/coreos/flannel:v0.8.0
           command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
           securityContext:
             privileged: true
@@ -263,7 +283,14 @@ rules:
       - watch
   - apiGroups: ["projectcalico.org"]
     resources:
+      - globalbgppeers
+    verbs:
+      - get
+      - list
+  - apiGroups: ["projectcalico.org"]
+    resources:
       - globalconfigs
+      - globalbgpconfigs
     verbs:
       - create
       - get
@@ -275,10 +302,16 @@ rules:
       - ippools
     verbs:
       - create
-      - delete
       - get
       - list
       - update
+      - watch
+  - apiGroups: ["alpha.projectcalico.org"]
+    resources:
+      - systemnetworkpolicies
+    verbs:
+      - get
+      - list
       - watch
 
 ---

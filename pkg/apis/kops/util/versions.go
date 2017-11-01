@@ -52,6 +52,26 @@ func ParseKubernetesVersion(version string) (*semver.Version, error) {
 			sv = semver.Version{Major: 1, Minor: 8}
 		} else if strings.Contains(v, "/v1.9.") {
 			sv = semver.Version{Major: 1, Minor: 9}
+		} else if strings.Contains(v, "/v1.10.") {
+			sv = semver.Version{Major: 1, Minor: 10}
+		} else if strings.Contains(v, "/v1.11.") {
+			sv = semver.Version{Major: 1, Minor: 11}
+		} else if strings.Contains(v, "/v1.12.") {
+			sv = semver.Version{Major: 1, Minor: 12}
+		} else if strings.Contains(v, "/v1.13.") {
+			sv = semver.Version{Major: 1, Minor: 13}
+		} else if strings.Contains(v, "/v1.14.") {
+			sv = semver.Version{Major: 1, Minor: 14}
+		} else if strings.Contains(v, "/v1.15.") {
+			sv = semver.Version{Major: 1, Minor: 15}
+		} else if strings.Contains(v, "/v1.16.") {
+			sv = semver.Version{Major: 1, Minor: 16}
+		} else if strings.Contains(v, "/v1.17.") {
+			sv = semver.Version{Major: 1, Minor: 17}
+		} else if strings.Contains(v, "/v1.18.") {
+			sv = semver.Version{Major: 1, Minor: 18}
+		} else if strings.Contains(v, "/v1.19.") {
+			sv = semver.Version{Major: 1, Minor: 19}
 		} else {
 			glog.Errorf("unable to parse Kubernetes version %q", version)
 			return nil, fmt.Errorf("unable to parse kubernetes version %q", version)
@@ -65,21 +85,14 @@ func ParseKubernetesVersion(version string) (*semver.Version, error) {
 // TODO: Convert to our own KubernetesVersion type?
 
 func IsKubernetesGTE(version string, k8sVersion semver.Version) bool {
-	// The string-arg is a little annoying, but simplifies the calling code!
-	switch version {
-	case "1.2":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 2)
-	case "1.3":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 3)
-	case "1.4":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 4)
-	case "1.5":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 5)
-	case "1.6":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 6)
-	case "1.7":
-		return k8sVersion.Major > 1 || (k8sVersion.Major == 1 && k8sVersion.Minor >= 7)
-	default:
-		panic(fmt.Sprintf("IsKubernetesGTE not supported with version %q", version))
+	parsedVersion, err := ParseKubernetesVersion(version)
+	if err != nil {
+		panic(fmt.Sprintf("Error parsing version %s: %v", version, err))
 	}
+
+	// Ignore Pre & Build fields
+	k8sVersion.Pre = nil
+	k8sVersion.Build = nil
+
+	return k8sVersion.GTE(*parsedVersion)
 }

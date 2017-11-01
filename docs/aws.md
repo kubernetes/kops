@@ -74,16 +74,16 @@ aws configure           # Use your new access and secret key here
 aws iam list-users      # you should see a list of all your IAM users here
 
 # Because "aws configure" doesn't export these vars for kops to use, we export them now
-export AWS_ACCESS_KEY_ID=<access key>
-export AWS_SECRET_ACCESS_KEY=<secret key>
+export AWS_ACCESS_KEY_ID=`aws configure get aws_access_key_id`
+export AWS_SECRET_ACCESS_KEY=`aws configure get aws_secret_access_key`
 ```
 
 ## Configure DNS
 
-Note: If you are using Kops 1.6.2 or later, then DNS configuration is 
-optional. Instead, a gossip-based cluster can be easily created. The 
-only requirement to trigger this is to have the cluster name end with 
-`k8s.local`. If a gossip-based cluster is created then you can skip 
+Note: If you are using Kops 1.6.2 or later, then DNS configuration is
+optional. Instead, a gossip-based cluster can be easily created. The
+only requirement to trigger this is to have the cluster name end with
+`.k8s.local`. If a gossip-based cluster is created then you can skip
 this section.
 
 In order to build a Kubernetes cluster with `kops`, we need to prepare
@@ -257,8 +257,12 @@ We recommend keeping the creation of this bucket confined to us-east-1,
 otherwise more work will be required.
 
 ```bash
-aws s3api create-bucket --bucket prefix-example-com-state-store --region us-east-1
+aws s3api create-bucket \
+    --bucket prefix-example-com-state-store \
+    --region us-east-1
 ```
+
+Note: S3 requires `--create-bucket-configuration LocationConstraint=<region>` for regions other than `us-east-1`.
 
 Note: We **STRONGLY** recommend versioning your S3 bucket in case you ever need
 to revert or recover a previous state store.
@@ -316,8 +320,9 @@ aws ec2 describe-availability-zones --region us-west-2
 ```
 
 Below is a create cluster command.  We'll use the most basic example possible,
-with more verbose examples in [advanced creation](advanced_create.md).  The
-below command will generate a cluster configuration, but not start building it.
+with more verbose examples in [high availability](high_availability.md#advanced-example).
+The below command will generate a cluster configuration, but not start building
+it. Make sure that you have generated SSH key pair before creating the cluster.
 
 ```bash
 kops create cluster \
@@ -420,7 +425,7 @@ topology](topology.md) in AWS.
 
 There's an incredible team behind Kops and we encourage you to reach out to the
 community on the Kubernetes
-Slack(https://github.com/kubernetes/community#slack-chat).  Bring your
+Slack(http://slack.k8s.io/).  Bring your
 questions, comments, and requests and meet the people behind the project!
 
 ## Legal

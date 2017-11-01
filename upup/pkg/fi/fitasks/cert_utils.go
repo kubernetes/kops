@@ -21,8 +21,9 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
-	"github.com/golang/glog"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
 func pkixNameToString(name *pkix.Name) string {

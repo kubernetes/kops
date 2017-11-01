@@ -19,11 +19,13 @@ package protokube
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
+
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/pkg/api/v1"
+
+	"github.com/golang/glog"
 )
 
 type nodePatch struct {
@@ -44,10 +46,10 @@ type nodePatchSpec struct {
 // Note that this is for k8s <= 1.5 only
 const TaintsAnnotationKey string = "scheduler.alpha.kubernetes.io/taints"
 
-// ApplyMasterTaints finds masters that have not yet been tainted, and applies the master taint.
+// applyMasterTaints finds masters that have not yet been tainted, and applies the master taint.
 // Once all supported kubelet versions accept the --register-with-taints flag introduced in 1.6.0, this can probably
 // go away entirely. It also sets the unschedulable flag to false, so pods (with a toleration) can target the node
-func ApplyMasterTaints(kubeContext *KubernetesContext) error {
+func applyMasterTaints(kubeContext *KubernetesContext) error {
 	client, err := kubeContext.KubernetesClient()
 	if err != nil {
 		return err

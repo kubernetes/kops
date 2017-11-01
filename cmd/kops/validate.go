@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -39,7 +39,7 @@ var (
 	# Validate a cluster.
 	# This command uses the currently selected kops cluster as
 	# set by the kubectl config.
-	kubernetes validate cluster`))
+	kops validate cluster`))
 
 	validate_short = i18n.T(`Validate a kops cluster.`)
 )

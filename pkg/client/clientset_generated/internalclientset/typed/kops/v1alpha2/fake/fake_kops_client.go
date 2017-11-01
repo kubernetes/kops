@@ -38,6 +38,14 @@ func (c *FakeKopsV1alpha2) InstanceGroups(namespace string) v1alpha2.InstanceGro
 	return &FakeInstanceGroups{c, namespace}
 }
 
+func (c *FakeKopsV1alpha2) Keysets(namespace string) v1alpha2.KeysetInterface {
+	return &FakeKeysets{c, namespace}
+}
+
+func (c *FakeKopsV1alpha2) SSHCredentials(namespace string) v1alpha2.SSHCredentialInterface {
+	return &FakeSSHCredentials{c, namespace}
+}
+
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
 func (c *FakeKopsV1alpha2) RESTClient() rest.Interface {

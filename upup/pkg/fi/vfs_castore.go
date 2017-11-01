@@ -24,30 +24,41 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"fmt"
-	"github.com/golang/glog"
-	"golang.org/x/crypto/ssh"
-	"k8s.io/kops/util/pkg/vfs"
 	"math/big"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/golang/glog"
+	"golang.org/x/crypto/ssh"
+
+	"k8s.io/kops/pkg/acls"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type VFSCAStore struct {
-	DryRun  bool
 	basedir vfs.Path
+	cluster *kops.Cluster
 
-	mutex               sync.Mutex
-	cacheCaCertificates *certificates
-	cacheCaPrivateKeys  *privateKeys
+	mutex     sync.Mutex
+	cachedCAs map[string]*cachedEntry
+}
+
+type cachedEntry struct {
+	certificates *certificates
+	privateKeys  *privateKeys
 }
 
 var _ CAStore = &VFSCAStore{}
 
-func NewVFSCAStore(basedir vfs.Path) CAStore {
+func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path) CAStore {
 	c := &VFSCAStore{
-		basedir: basedir,
+		basedir:   basedir,
+		cluster:   cluster,
+		cachedCAs: make(map[string]*cachedEntry),
 	}
 
 	return c
@@ -58,15 +69,16 @@ func (s *VFSCAStore) VFSPath() vfs.Path {
 }
 
 // Retrieves the CA keypair, generating a new keypair if not found
-func (s *VFSCAStore) readCAKeypairs() (*certificates, *privateKeys, error) {
+func (s *VFSCAStore) readCAKeypairs(id string) (*certificates, *privateKeys, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	if s.cacheCaPrivateKeys != nil {
-		return s.cacheCaCertificates, s.cacheCaPrivateKeys, nil
+	cached := s.cachedCAs[id]
+	if cached != nil {
+		return cached.certificates, cached.privateKeys, nil
 	}
 
-	caCertificates, err := s.loadCertificates(s.buildCertificatePoolPath(CertificateId_CA))
+	caCertificates, err := s.loadCertificates(s.buildCertificatePoolPath(id))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -74,7 +86,7 @@ func (s *VFSCAStore) readCAKeypairs() (*certificates, *privateKeys, error) {
 	var caPrivateKeys *privateKeys
 
 	if caCertificates != nil {
-		caPrivateKeys, err = s.loadPrivateKeys(s.buildPrivateKeyPoolPath(CertificateId_CA))
+		caPrivateKeys, err = s.loadPrivateKeys(s.buildPrivateKeyPoolPath(id))
 		if err != nil {
 			return nil, nil, err
 		}
@@ -86,16 +98,16 @@ func (s *VFSCAStore) readCAKeypairs() (*certificates, *privateKeys, error) {
 	}
 
 	if caPrivateKeys == nil {
-		caCertificates, caPrivateKeys, err = s.generateCACertificate()
+		caCertificates, caPrivateKeys, err = s.generateCACertificate(id)
 		if err != nil {
 			return nil, nil, err
 		}
 
 	}
-	s.cacheCaCertificates = caCertificates
-	s.cacheCaPrivateKeys = caPrivateKeys
+	cached = &cachedEntry{certificates: caCertificates, privateKeys: caPrivateKeys}
+	s.cachedCAs[id] = cached
 
-	return s.cacheCaCertificates, s.cacheCaPrivateKeys, nil
+	return cached.certificates, cached.privateKeys, nil
 }
 
 func BuildCAX509Template() *x509.Certificate {
@@ -115,7 +127,7 @@ func BuildCAX509Template() *x509.Certificate {
 
 // Creates and stores CA keypair
 // Should be called with the mutex held, to prevent concurrent creation of different keys
-func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error) {
+func (c *VFSCAStore) generateCACertificate(id string) (*certificates, *privateKeys, error) {
 	template := BuildCAX509Template()
 
 	caRsaKey, err := rsa.GenerateKey(crypto_rand.Reader, 2048)
@@ -123,24 +135,24 @@ func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error
 		return nil, nil, fmt.Errorf("error generating RSA private key: %v", err)
 	}
 
-	caPrivateKey := &PrivateKey{Key: caRsaKey}
+	caPrivateKey := &pki.PrivateKey{Key: caRsaKey}
 
-	caCertificate, err := SignNewCertificate(caPrivateKey, template, nil, nil)
+	caCertificate, err := pki.SignNewCertificate(caPrivateKey, template, nil, nil)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	t := time.Now().UnixNano()
-	serial := BuildPKISerial(t)
+	serial := pki.BuildPKISerial(t)
 
-	keyPath := c.buildPrivateKeyPath(CertificateId_CA, serial)
+	keyPath := c.buildPrivateKeyPath(id, serial)
 	err = c.storePrivateKey(caPrivateKey, keyPath)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Make double-sure it round-trips
-	privateKeys, err := c.loadPrivateKeys(c.buildPrivateKeyPoolPath(CertificateId_CA))
+	privateKeys, err := c.loadPrivateKeys(c.buildPrivateKeyPoolPath(id))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -148,14 +160,14 @@ func (c *VFSCAStore) generateCACertificate() (*certificates, *privateKeys, error
 		return nil, nil, fmt.Errorf("failed to round-trip CA private key")
 	}
 
-	certPath := c.buildCertificatePath(CertificateId_CA, serial)
+	certPath := c.buildCertificatePath(id, serial)
 	err = c.storeCertificate(caCertificate, certPath)
 	if err != nil {
 		return nil, nil, err
 	}
 
 	// Make double-sure it round-trips
-	certificates, err := c.loadCertificates(c.buildCertificatePoolPath(CertificateId_CA))
+	certificates, err := c.loadCertificates(c.buildCertificatePoolPath(id))
 	if err != nil {
 		return nil, nil, err
 	}
@@ -184,11 +196,11 @@ func (c *VFSCAStore) buildPrivateKeyPath(id string, serial *big.Int) vfs.Path {
 }
 
 type certificates struct {
-	certificates map[string]*Certificate
+	certificates map[string]*pki.Certificate
 	primary      string
 }
 
-func (p *certificates) Primary() *Certificate {
+func (p *certificates) Primary() *pki.Certificate {
 	if p.primary == "" {
 		return nil
 	}
@@ -205,7 +217,7 @@ func (c *VFSCAStore) loadCertificates(p vfs.Path) (*certificates, error) {
 	}
 
 	certs := &certificates{
-		certificates: make(map[string]*Certificate),
+		certificates: make(map[string]*pki.Certificate),
 	}
 
 	for _, f := range files {
@@ -239,7 +251,7 @@ func (c *VFSCAStore) loadCertificates(p vfs.Path) (*certificates, error) {
 	return certs, nil
 }
 
-func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*Certificate, error) {
+func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*pki.Certificate, error) {
 	data, err := p.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -247,7 +259,7 @@ func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*Certificate, error) {
 		}
 		return nil, err
 	}
-	cert, err := LoadPEMCertificate(data)
+	cert, err := pki.LoadPEMCertificate(data)
 	if err != nil {
 		return nil, err
 	}
@@ -257,12 +269,12 @@ func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*Certificate, error) {
 	return cert, nil
 }
 
-func (c *VFSCAStore) Cert(id string) (*Certificate, error) {
+func (c *VFSCAStore) Cert(id string, createIfMissing bool) (*pki.Certificate, error) {
 	cert, err := c.FindCert(id)
 	if err == nil && cert == nil {
-		if c.DryRun {
+		if !createIfMissing {
 			glog.Warningf("using empty certificate, because running with DryRun")
-			return &Certificate{}, err
+			return &pki.Certificate{}, err
 		}
 		return nil, fmt.Errorf("cannot find certificate %q", id)
 	}
@@ -270,10 +282,10 @@ func (c *VFSCAStore) Cert(id string) (*Certificate, error) {
 
 }
 
-func (c *VFSCAStore) CertificatePool(id string) (*CertificatePool, error) {
+func (c *VFSCAStore) CertificatePool(id string, createIfMissing bool) (*CertificatePool, error) {
 	cert, err := c.FindCertificatePool(id)
 	if err == nil && cert == nil {
-		if c.DryRun {
+		if !createIfMissing {
 			glog.Warningf("using empty certificate, because running with DryRun")
 			return &CertificatePool{}, err
 		}
@@ -283,7 +295,7 @@ func (c *VFSCAStore) CertificatePool(id string) (*CertificatePool, error) {
 
 }
 
-func (c *VFSCAStore) FindKeypair(id string) (*Certificate, *PrivateKey, error) {
+func (c *VFSCAStore) FindKeypair(id string) (*pki.Certificate, *pki.PrivateKey, error) {
 	cert, err := c.FindCert(id)
 	if err != nil {
 		return nil, nil, err
@@ -297,25 +309,17 @@ func (c *VFSCAStore) FindKeypair(id string) (*Certificate, *PrivateKey, error) {
 	return cert, key, nil
 }
 
-func (c *VFSCAStore) FindCert(id string) (*Certificate, error) {
+func (c *VFSCAStore) FindCert(id string) (*pki.Certificate, error) {
 	var certs *certificates
 
-	if id == CertificateId_CA {
-		caCertificates, _, err := c.readCAKeypairs()
-		if err != nil {
-			return nil, err
-		}
-		certs = caCertificates
-	} else {
-		var err error
-		p := c.buildCertificatePoolPath(id)
-		certs, err = c.loadCertificates(p)
-		if err != nil {
-			return nil, err
-		}
+	var err error
+	p := c.buildCertificatePoolPath(id)
+	certs, err = c.loadCertificates(p)
+	if err != nil {
+		return nil, fmt.Errorf("error in 'FindCert' attempting to load cert %q: %v", id, err)
 	}
 
-	var cert *Certificate
+	var cert *pki.Certificate
 	if certs != nil && certs.primary != "" {
 		cert = certs.certificates[certs.primary]
 	}
@@ -326,19 +330,11 @@ func (c *VFSCAStore) FindCert(id string) (*Certificate, error) {
 func (c *VFSCAStore) FindCertificatePool(id string) (*CertificatePool, error) {
 	var certs *certificates
 
-	if id == CertificateId_CA {
-		caCertificates, _, err := c.readCAKeypairs()
-		if err != nil {
-			return nil, err
-		}
-		certs = caCertificates
-	} else {
-		var err error
-		p := c.buildCertificatePoolPath(id)
-		certs, err = c.loadCertificates(p)
-		if err != nil {
-			return nil, err
-		}
+	var err error
+	p := c.buildCertificatePoolPath(id)
+	certs, err = c.loadCertificates(p)
+	if err != nil {
+		return nil, fmt.Errorf("error in 'FindCertificatePool' attempting to load cert %q: %v", id, err)
 	}
 
 	pool := &CertificatePool{}
@@ -418,25 +414,47 @@ func (c *VFSCAStore) List() ([]*KeystoreItem, error) {
 	return items, nil
 }
 
-func (c *VFSCAStore) IssueCert(id string, serial *big.Int, privateKey *PrivateKey, template *x509.Certificate) (*Certificate, error) {
+// MirrorTo will copy keys to a vfs.Path, which is often easier for a machine to read
+func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
+	if basedir.Path() == c.basedir.Path() {
+		return nil
+	}
+	glog.V(2).Infof("Mirroring key store from %q to %q", c.basedir, basedir)
+
+	aclOracle := func(p vfs.Path) (vfs.ACL, error) {
+		return acls.GetACL(p, c.cluster)
+	}
+	return vfs.CopyTree(c.basedir, basedir, aclOracle)
+}
+
+func (c *VFSCAStore) IssueCert(signer string, id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
 	glog.Infof("Issuing new certificate: %q", id)
 
 	template.SerialNumber = serial
 
-	caCertificates, caPrivateKeys, err := c.readCAKeypairs()
-	if err != nil {
-		return nil, err
+	var cert *pki.Certificate
+	if template.IsCA {
+		var err error
+		cert, err = pki.SignNewCertificate(privateKey, template, nil, nil)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		caCertificates, caPrivateKeys, err := c.readCAKeypairs(signer)
+		if err != nil {
+			return nil, err
+		}
+
+		if caPrivateKeys == nil || caPrivateKeys.Primary() == nil {
+			return nil, fmt.Errorf("ca key for %q was not found; cannot issue certificates", signer)
+		}
+		cert, err = pki.SignNewCertificate(privateKey, template, caCertificates.Primary().Certificate, caPrivateKeys.Primary())
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	if caPrivateKeys == nil || caPrivateKeys.Primary() == nil {
-		return nil, fmt.Errorf("ca.key was not found; cannot issue certificates")
-	}
-	cert, err := SignNewCertificate(privateKey, template, caCertificates.Primary().Certificate, caPrivateKeys.Primary())
-	if err != nil {
-		return nil, err
-	}
-
-	err = c.StoreKeypair(id, cert, privateKey)
+	err := c.StoreKeypair(id, cert, privateKey)
 	if err != nil {
 		return nil, err
 	}
@@ -446,7 +464,7 @@ func (c *VFSCAStore) IssueCert(id string, serial *big.Int, privateKey *PrivateKe
 	return c.loadOneCertificate(p)
 }
 
-func (c *VFSCAStore) StoreKeypair(id string, cert *Certificate, privateKey *PrivateKey) error {
+func (c *VFSCAStore) StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error {
 	serial := cert.Certificate.SerialNumber
 
 	{
@@ -469,11 +487,11 @@ func (c *VFSCAStore) StoreKeypair(id string, cert *Certificate, privateKey *Priv
 	return nil
 }
 
-func (c *VFSCAStore) AddCert(id string, cert *Certificate) error {
+func (c *VFSCAStore) AddCert(id string, cert *pki.Certificate) error {
 	glog.Infof("Adding TLS certificate: %q", id)
 
 	// We add with a timestamp of zero so this will never be the newest cert
-	serial := BuildPKISerial(0)
+	serial := pki.BuildPKISerial(0)
 
 	p := c.buildCertificatePath(id, serial)
 
@@ -488,11 +506,11 @@ func (c *VFSCAStore) AddCert(id string, cert *Certificate) error {
 }
 
 type privateKeys struct {
-	keys    map[string]*PrivateKey
+	keys    map[string]*pki.PrivateKey
 	primary string
 }
 
-func (p *privateKeys) Primary() *PrivateKey {
+func (p *privateKeys) Primary() *pki.PrivateKey {
 	if p.primary == "" {
 		return nil
 	}
@@ -509,7 +527,7 @@ func (c *VFSCAStore) loadPrivateKeys(p vfs.Path) (*privateKeys, error) {
 	}
 
 	keys := &privateKeys{
-		keys: make(map[string]*PrivateKey),
+		keys: make(map[string]*pki.PrivateKey),
 	}
 
 	for _, f := range files {
@@ -543,7 +561,7 @@ func (c *VFSCAStore) loadPrivateKeys(p vfs.Path) (*privateKeys, error) {
 	return keys, nil
 }
 
-func (c *VFSCAStore) loadOnePrivateKey(p vfs.Path) (*PrivateKey, error) {
+func (c *VFSCAStore) loadOnePrivateKey(p vfs.Path) (*pki.PrivateKey, error) {
 	data, err := p.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -551,28 +569,17 @@ func (c *VFSCAStore) loadOnePrivateKey(p vfs.Path) (*PrivateKey, error) {
 		}
 		return nil, err
 	}
-	k, err := ParsePEMPrivateKey(data)
+	k, err := pki.ParsePEMPrivateKey(data)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing private key from %q: %v", p, err)
 	}
 	return k, err
 }
 
-func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {
-	k, err := parsePEMPrivateKey(data)
-	if err != nil {
-		return nil, err
-	}
-	if k == nil {
-		return nil, nil
-	}
-	return &PrivateKey{Key: k}, nil
-}
-
-func (c *VFSCAStore) FindPrivateKey(id string) (*PrivateKey, error) {
+func (c *VFSCAStore) FindPrivateKey(id string) (*pki.PrivateKey, error) {
 	var keys *privateKeys
 	if id == CertificateId_CA {
-		_, caPrivateKeys, err := c.readCAKeypairs()
+		_, caPrivateKeys, err := c.readCAKeypairs(id)
 		if err != nil {
 			return nil, err
 		}
@@ -587,19 +594,19 @@ func (c *VFSCAStore) FindPrivateKey(id string) (*PrivateKey, error) {
 
 	}
 
-	var key *PrivateKey
+	var key *pki.PrivateKey
 	if keys != nil && keys.primary != "" {
 		key = keys.keys[keys.primary]
 	}
 	return key, nil
 }
 
-func (c *VFSCAStore) PrivateKey(id string) (*PrivateKey, error) {
+func (c *VFSCAStore) PrivateKey(id string, createIfMissing bool) (*pki.PrivateKey, error) {
 	key, err := c.FindPrivateKey(id)
 	if err == nil && key == nil {
-		if c.DryRun {
+		if !createIfMissing {
 			glog.Warningf("using empty certificate, because running with DryRun")
-			return &PrivateKey{}, err
+			return &pki.PrivateKey{}, err
 		}
 		return nil, fmt.Errorf("cannot find SSL key %q", id)
 	}
@@ -607,10 +614,10 @@ func (c *VFSCAStore) PrivateKey(id string) (*PrivateKey, error) {
 
 }
 
-func (c *VFSCAStore) CreateKeypair(id string, template *x509.Certificate, privateKey *PrivateKey) (*Certificate, error) {
+func (c *VFSCAStore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
 	serial := c.buildSerial()
 
-	cert, err := c.IssueCert(id, serial, privateKey, template)
+	cert, err := c.IssueCert(signer, id, serial, privateKey, template)
 	if err != nil {
 		return nil, err
 	}
@@ -618,17 +625,21 @@ func (c *VFSCAStore) CreateKeypair(id string, template *x509.Certificate, privat
 	return cert, nil
 }
 
-func (c *VFSCAStore) storePrivateKey(privateKey *PrivateKey, p vfs.Path) error {
+func (c *VFSCAStore) storePrivateKey(privateKey *pki.PrivateKey, p vfs.Path) error {
 	var data bytes.Buffer
 	_, err := privateKey.WriteTo(&data)
 	if err != nil {
 		return err
 	}
 
-	return p.WriteFile(data.Bytes())
+	acl, err := acls.GetACL(p, c.cluster)
+	if err != nil {
+		return err
+	}
+	return p.WriteFile(data.Bytes(), acl)
 }
 
-func (c *VFSCAStore) storeCertificate(cert *Certificate, p vfs.Path) error {
+func (c *VFSCAStore) storeCertificate(cert *pki.Certificate, p vfs.Path) error {
 	// TODO: replace storePrivateKey & storeCertificate with writeFile(io.WriterTo)?
 	var data bytes.Buffer
 	_, err := cert.WriteTo(&data)
@@ -636,30 +647,16 @@ func (c *VFSCAStore) storeCertificate(cert *Certificate, p vfs.Path) error {
 		return err
 	}
 
-	return p.WriteFile(data.Bytes())
+	acl, err := acls.GetACL(p, c.cluster)
+	if err != nil {
+		return err
+	}
+	return p.WriteFile(data.Bytes(), acl)
 }
 
 func (c *VFSCAStore) buildSerial() *big.Int {
 	t := time.Now().UnixNano()
-	return BuildPKISerial(t)
-}
-
-// BuildPKISerial produces a serial number for certs that is vanishingly unlikely to collide
-// The timestamp should be provided as an input (time.Now().UnixNano()), and then we combine
-// that with a 32 bit random crypto-rand integer.
-// We also know that a bigger value was created later (modulo clock skew)
-func BuildPKISerial(timestamp int64) *big.Int {
-	randomLimit := new(big.Int).Lsh(big.NewInt(1), 32)
-	randomComponent, err := crypto_rand.Int(crypto_rand.Reader, randomLimit)
-	if err != nil {
-		glog.Fatalf("error generating random number: %v", err)
-	}
-
-	serial := big.NewInt(timestamp)
-	serial.Lsh(serial, 32)
-	serial.Or(serial, randomComponent)
-
-	return serial
+	return pki.BuildPKISerial(t)
 }
 
 func formatFingerprint(data []byte) string {
@@ -676,20 +673,23 @@ func formatFingerprint(data []byte) string {
 }
 
 func insertFingerprintColons(id string) string {
-	var buf bytes.Buffer
+	remaining := id
 
+	var buf bytes.Buffer
 	for {
-		if id == "" {
+		if remaining == "" {
 			break
 		}
 		if buf.Len() != 0 {
 			buf.WriteString(":")
 		}
-		if len(id) < 2 {
-			buf.WriteString(id)
+		if len(remaining) < 2 {
+			glog.Warningf("unexpected format for SSH public key id: %q", id)
+			buf.WriteString(remaining)
+			break
 		} else {
-			buf.WriteString(id[0:2])
-			id = id[2:]
+			buf.WriteString(remaining[0:2])
+			remaining = remaining[2:]
 		}
 	}
 	return buf.String()
@@ -714,17 +714,19 @@ func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 	}
 
 	p := c.buildSSHPublicKeyPath(name, id)
-	return c.storeData(pubkey, p)
+
+	acl, err := acls.GetACL(p, c.cluster)
+	if err != nil {
+		return err
+	}
+
+	return p.WriteFile(pubkey, acl)
 }
 
 func (c *VFSCAStore) buildSSHPublicKeyPath(name string, id string) vfs.Path {
 	// id is fingerprint with colons, but we store without colons
 	id = strings.Replace(id, ":", "", -1)
 	return c.basedir.Join("ssh", "public", name, id)
-}
-
-func (c *VFSCAStore) storeData(data []byte, p vfs.Path) error {
-	return p.WriteFile(data)
 }
 
 func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*KeystoreItem, error) {
@@ -775,7 +777,7 @@ func (c *VFSCAStore) loadPath(p vfs.Path) ([]*KeystoreItem, error) {
 	return keystoreItems, nil
 }
 
-func (c *VFSCAStore) loadData(p vfs.Path) (*PrivateKey, error) {
+func (c *VFSCAStore) loadData(p vfs.Path) (*pki.PrivateKey, error) {
 	data, err := p.ReadFile()
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -783,7 +785,7 @@ func (c *VFSCAStore) loadData(p vfs.Path) (*PrivateKey, error) {
 		}
 		return nil, err
 	}
-	k, err := ParsePEMPrivateKey(data)
+	k, err := pki.ParsePEMPrivateKey(data)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing private key from %q: %v", p, err)
 	}
@@ -795,6 +797,21 @@ func (c *VFSCAStore) DeleteSecret(item *KeystoreItem) error {
 	case SecretTypeSSHPublicKey:
 		p := c.buildSSHPublicKeyPath(item.Name, item.Id)
 		return p.Remove()
+
+	case SecretTypeKeypair:
+		version, ok := big.NewInt(0).SetString(item.Id, 10)
+		if !ok {
+			return fmt.Errorf("keypair had non-integer version: %q", item.Id)
+		}
+		p := c.buildCertificatePath(item.Name, version)
+		if err := p.Remove(); err != nil {
+			return fmt.Errorf("error deleting certificate: %v", err)
+		}
+		p = c.buildPrivateKeyPath(item.Name, version)
+		if err := p.Remove(); err != nil {
+			return fmt.Errorf("error deleting private key: %v", err)
+		}
+		return nil
 
 	default:
 		// Primarily because we need to make sure users can recreate them!

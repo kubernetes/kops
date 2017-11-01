@@ -33,10 +33,11 @@ import (
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/pkg/edit"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	util_editor "k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 type EditClusterOptions struct {
@@ -45,7 +46,7 @@ type EditClusterOptions struct {
 var (
 	edit_cluster_long = templates.LongDesc(i18n.T(`Edit a cluster configuration.
 
-	This command changes the cluster cloud specification in the registry.
+	This command changes the desired cluster configuration in the registry.
 
     	To set your preferred editor, you can define the EDITOR environment variable.
     	When you have done this, kops will use the editor that you have set.
@@ -112,7 +113,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 	)
 
 	ext := "yaml"
-	raw, err := api.ToVersionedYaml(oldCluster)
+	raw, err := kopscodecs.ToVersionedYaml(oldCluster)
 	if err != nil {
 		return err
 	}
@@ -169,7 +170,7 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			return nil
 		}
 
-		newObj, _, err := api.ParseVersionedYaml(edited)
+		newObj, _, err := kopscodecs.ParseVersionedYaml(edited)
 		if err != nil {
 			return preservedFile(fmt.Errorf("error parsing config: %s", err), file, out)
 		}
@@ -210,8 +211,8 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			return preservedFile(fmt.Errorf("error populating configuration: %v", err), file, out)
 		}
 
-		assetBuilder := assets.NewAssetBuilder()
-		fullCluster, err := cloudup.PopulateClusterSpec(newCluster, assetBuilder)
+		assetBuilder := assets.NewAssetBuilder(newCluster.Spec.Assets)
+		fullCluster, err := cloudup.PopulateClusterSpec(clientset, newCluster, assetBuilder)
 		if err != nil {
 			results = editResults{
 				file: file,
@@ -236,13 +237,20 @@ func RunEditCluster(f *util.Factory, cmd *cobra.Command, args []string, out io.W
 			return preservedFile(err, file, out)
 		}
 
+		// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
+		statusDiscovery := &cloudDiscoveryStatusStore{}
+		status, err := statusDiscovery.FindClusterStatus(oldCluster)
+		if err != nil {
+			return err
+		}
+
 		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.ClustersFor(newCluster).Update(newCluster)
+		_, err = clientset.UpdateCluster(newCluster, status)
 		if err != nil {
 			return preservedFile(err, file, out)
 		}
 
-		err = registry.WriteConfigDeprecated(configBase.Join(registry.PathClusterCompleted), fullCluster)
+		err = registry.WriteConfigDeprecated(newCluster, configBase.Join(registry.PathClusterCompleted), fullCluster)
 		if err != nil {
 			return preservedFile(fmt.Errorf("error writing completed cluster spec: %v", err), file, out)
 		}

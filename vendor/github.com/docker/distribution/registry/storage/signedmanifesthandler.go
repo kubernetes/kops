@@ -6,19 +6,19 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/libtrust"
+	"github.com/opencontainers/go-digest"
 )
 
 // signedManifestHandler is a ManifestHandler that covers schema1 manifests. It
 // can unmarshal and put schema1 manifests that have been signed by libtrust.
 type signedManifestHandler struct {
-	repository *repository
-	blobStore  *linkedBlobStore
-	ctx        context.Context
-	signatures *signatureStore
+	repository        distribution.Repository
+	schema1SigningKey libtrust.PrivateKey
+	blobStore         distribution.BlobStore
+	ctx               context.Context
 }
 
 var _ ManifestHandler = &signedManifestHandler{}
@@ -30,25 +30,16 @@ func (ms *signedManifestHandler) Unmarshal(ctx context.Context, dgst digest.Dige
 		signatures [][]byte
 		err        error
 	)
-	if ms.repository.schema1SignaturesEnabled {
-		// Fetch the signatures for the manifest
-		signatures, err = ms.signatures.Get(dgst)
-		if err != nil {
-			return nil, err
-		}
-	}
 
 	jsig, err := libtrust.NewJSONSignature(content, signatures...)
 	if err != nil {
 		return nil, err
 	}
 
-	if ms.repository.schema1SigningKey != nil {
-		if err := jsig.Sign(ms.repository.schema1SigningKey); err != nil {
+	if ms.schema1SigningKey != nil {
+		if err := jsig.Sign(ms.schema1SigningKey); err != nil {
 			return nil, err
 		}
-	} else if !ms.repository.schema1SignaturesEnabled {
-		return nil, fmt.Errorf("missing signing key with signature store disabled")
 	}
 
 	// Extract the pretty JWS
@@ -83,23 +74,6 @@ func (ms *signedManifestHandler) Put(ctx context.Context, manifest distribution.
 	if err != nil {
 		context.GetLogger(ctx).Errorf("error putting payload into blobstore: %v", err)
 		return "", err
-	}
-
-	// Link the revision into the repository.
-	if err := ms.blobStore.linkBlob(ctx, revision); err != nil {
-		return "", err
-	}
-
-	if ms.repository.schema1SignaturesEnabled {
-		// Grab each json signature and store them.
-		signatures, err := sm.Signatures()
-		if err != nil {
-			return "", err
-		}
-
-		if err := ms.signatures.Put(revision.Digest, signatures...); err != nil {
-			return "", err
-		}
 	}
 
 	return revision.Digest, nil

@@ -25,7 +25,9 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	utilnet "k8s.io/apimachinery/pkg/util/net"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/model/components"
@@ -131,13 +133,12 @@ func (m *KopsModelContext) FindInstanceGroup(name string) *kops.InstanceGroup {
 
 // FindSubnet returns the subnet with the matching Name (or nil if not found)
 func (m *KopsModelContext) FindSubnet(name string) *kops.ClusterSubnetSpec {
-	for i := range m.Cluster.Spec.Subnets {
-		s := &m.Cluster.Spec.Subnets[i]
-		if s.Name == name {
-			return s
-		}
-	}
-	return nil
+	return model.FindSubnet(m.Cluster, name)
+}
+
+// FindZonesForInstanceGroup finds the zones for an InstanceGroup
+func (m *KopsModelContext) FindZonesForInstanceGroup(ig *kops.InstanceGroup) ([]string, error) {
+	return model.FindZonesForInstanceGroup(m.Cluster, ig)
 }
 
 // MasterInstanceGroups returns InstanceGroups with the master role
@@ -271,6 +272,17 @@ func (m *KopsModelContext) UsePrivateDNS() bool {
 	return false
 }
 
+// UseEtcdTLS checks to see if etcd tls is enabled
+func (c *KopsModelContext) UseEtcdTLS() bool {
+	for _, x := range c.Cluster.Spec.EtcdClusters {
+		if x.EnableEtcdTLS {
+			return true
+		}
+	}
+
+	return false
+}
+
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
 func (c *KopsModelContext) KubernetesVersion() (semver.Version, error) {
 	// TODO: Remove copy-pasting c.f. https://github.com/kubernetes/kops/blob/master/pkg/model/components/context.go#L32
@@ -302,4 +314,20 @@ func VersionGTE(version semver.Version, major uint64, minor uint64) bool {
 
 func (c *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {
 	return components.WellKnownServiceIP(&c.Cluster.Spec, id)
+}
+
+// NodePortRange returns the range of ports allocated to NodePorts
+func (c *KopsModelContext) NodePortRange() (utilnet.PortRange, error) {
+	// defaultServiceNodePortRange is the default port range for NodePort services.
+	defaultServiceNodePortRange := utilnet.PortRange{Base: 30000, Size: 2768}
+
+	kubeApiServer := c.Cluster.Spec.KubeAPIServer
+	if kubeApiServer != nil && kubeApiServer.ServiceNodePortRange != "" {
+		err := defaultServiceNodePortRange.Set(kubeApiServer.ServiceNodePortRange)
+		if err != nil {
+			return utilnet.PortRange{}, fmt.Errorf("error parsing ServiceNodePortRange %q", kubeApiServer.ServiceNodePortRange)
+		}
+	}
+
+	return defaultServiceNodePortRange, nil
 }

@@ -140,7 +140,7 @@ module.exports = function (hljs) {
         contains: [
               { // Function title
                 className: 'title',
-                begin: /^[a-z][a-z0-9_]+/,
+                begin: /^[a-z0-9_]+/,
               },
               PARAMS,
               SYMBOLS,

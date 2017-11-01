@@ -35,7 +35,8 @@ const LoadBalancerDefaultIdleTimeout = 5 * time.Minute
 // APILoadBalancerBuilder builds a LoadBalancer for accessing the API
 type APILoadBalancerBuilder struct {
 	*AWSModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle         *fi.Lifecycle
+	SecurityLifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &APILoadBalancerBuilder{}
@@ -116,7 +117,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			// Configure fast-recovery health-checks
 			HealthCheck: &awstasks.LoadBalancerHealthCheck{
-				Target:             s("TCP:443"),
+				Target:             s("SSL:443"),
 				Timeout:            i64(5),
 				Interval:           i64(10),
 				HealthyThreshold:   i64(2),
@@ -144,7 +145,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroup{
 			Name:      s(b.ELBSecurityGroupName("api")),
-			Lifecycle: b.Lifecycle,
+			Lifecycle: b.SecurityLifecycle,
 
 			VPC:              b.LinkToVPC(),
 			Description:      s("Security group for api ELB"),
@@ -157,7 +158,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:      s("api-elb-egress"),
-			Lifecycle: b.Lifecycle,
+			Lifecycle: b.SecurityLifecycle,
 
 			SecurityGroup: b.LinkToELBSecurityGroup("api"),
 			Egress:        fi.Bool(true),
@@ -171,7 +172,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		for _, cidr := range b.Cluster.Spec.KubernetesAPIAccess {
 			t := &awstasks.SecurityGroupRule{
 				Name:      s("https-api-elb-" + cidr),
-				Lifecycle: b.Lifecycle,
+				Lifecycle: b.SecurityLifecycle,
 
 				SecurityGroup: b.LinkToELBSecurityGroup("api"),
 				CIDR:          s(cidr),
@@ -187,7 +188,7 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:      s("https-elb-to-master"),
-			Lifecycle: b.Lifecycle,
+			Lifecycle: b.SecurityLifecycle,
 
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToELBSecurityGroup("api"),

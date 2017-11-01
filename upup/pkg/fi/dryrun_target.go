@@ -247,9 +247,9 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 		}
 	}
 
-	if len(t.assetBuilder.Assets) != 0 {
-		glog.V(4).Infof("Assets:")
-		for _, a := range t.assetBuilder.Assets {
+	if len(t.assetBuilder.ContainerAssets) != 0 {
+		glog.V(4).Infof("ContainerAssets:")
+		for _, a := range t.assetBuilder.ContainerAssets {
 			glog.V(4).Infof("  %s %s", a.DockerImage, a.CanonicalLocation)
 		}
 	}
@@ -372,7 +372,7 @@ func getTaskName(t Task) string {
 	return s
 }
 
-// asString returns a human-readable string representation of the passed value
+// ValueAsString returns a human-readable string representation of the passed value
 func ValueAsString(value reflect.Value) string {
 	b := &bytes.Buffer{}
 

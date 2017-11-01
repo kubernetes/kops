@@ -36,7 +36,7 @@ const TagMaster = "_kubernetes_master"
 
 // templateFunctions is a simple helper-class for the functions accessible to templates
 type templateFunctions struct {
-	nodeupConfig *nodeup.NodeUpConfig
+	nodeupConfig *nodeup.Config
 
 	// cluster is populated with the current cluster
 	cluster *api.Cluster
@@ -52,7 +52,7 @@ type templateFunctions struct {
 }
 
 // newTemplateFunctions is the constructor for templateFunctions
-func newTemplateFunctions(nodeupConfig *nodeup.NodeUpConfig, cluster *api.Cluster, instanceGroup *api.InstanceGroup, tags sets.String) (*templateFunctions, error) {
+func newTemplateFunctions(nodeupConfig *nodeup.Config, cluster *api.Cluster, instanceGroup *api.InstanceGroup, tags sets.String) (*templateFunctions, error) {
 	t := &templateFunctions{
 		nodeupConfig:  nodeupConfig,
 		cluster:       cluster,
@@ -67,7 +67,7 @@ func newTemplateFunctions(nodeupConfig *nodeup.NodeUpConfig, cluster *api.Cluste
 			return nil, fmt.Errorf("error building secret store path: %v", err)
 		}
 
-		t.secretStore = secrets.NewVFSSecretStore(p)
+		t.secretStore = secrets.NewVFSSecretStore(cluster, p)
 	} else {
 		return nil, fmt.Errorf("SecretStore not set")
 	}
@@ -79,7 +79,7 @@ func newTemplateFunctions(nodeupConfig *nodeup.NodeUpConfig, cluster *api.Cluste
 			return nil, fmt.Errorf("error building key store path: %v", err)
 		}
 
-		t.keyStore = fi.NewVFSCAStore(p)
+		t.keyStore = fi.NewVFSCAStore(cluster, p)
 	} else {
 		return nil, fmt.Errorf("KeyStore not set")
 	}
@@ -92,9 +92,6 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 		return runtime.GOARCH
 	}
 
-	dest["CACertificate"] = t.CACertificate
-	dest["PrivateKey"] = t.PrivateKey
-	dest["Certificate"] = t.Certificate
 	dest["GetToken"] = t.GetToken
 
 	dest["BuildFlags"] = flagbuilder.BuildFlags
@@ -119,21 +116,6 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["ClusterName"] = func() string {
 		return t.cluster.ObjectMeta.Name
 	}
-}
-
-// CACertificate returns the primary CA certificate for the cluster
-func (t *templateFunctions) CACertificate() (*fi.Certificate, error) {
-	return t.keyStore.Cert(fi.CertificateId_CA)
-}
-
-// PrivateKey returns the specified private key
-func (t *templateFunctions) PrivateKey(id string) (*fi.PrivateKey, error) {
-	return t.keyStore.PrivateKey(id)
-}
-
-// Certificate returns the specified private key
-func (t *templateFunctions) Certificate(id string) (*fi.Certificate, error) {
-	return t.keyStore.Cert(id)
 }
 
 // GetToken returns the specified token

@@ -30,14 +30,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -109,7 +108,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.SSHPublicKey, "ssh-public-key", options.SSHPublicKey, "SSH public key to use (deprecated: use kops create secret instead)")
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
-	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run")
+	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ", "))
 	return cmd
 }
 
@@ -144,17 +143,17 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		return err
 	}
 
-	keyStore, err := registry.KeyStore(cluster)
-	if err != nil {
-		return err
-	}
-
-	secretStore, err := registry.SecretStore(cluster)
-	if err != nil {
-		return err
-	}
-
 	clientset, err := f.Clientset()
+	if err != nil {
+		return err
+	}
+
+	keyStore, err := clientset.KeyStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -169,7 +168,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 		err = keyStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, authorized)
 		if err != nil {
-			return fmt.Errorf("error addding SSH public key: %v", err)
+			return fmt.Errorf("error adding SSH public key: %v", err)
 		}
 
 		glog.Infof("Using SSH public key: %v\n", c.SSHPublicKey)
@@ -178,14 +177,16 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	var phase cloudup.Phase
 	if c.Phase != "" {
 		switch strings.ToLower(c.Phase) {
-		case "iam":
-			phase = cloudup.PhaseIAM
-		case "network":
+		case string(cloudup.PhaseStageAssets):
+			phase = cloudup.PhaseStageAssets
+		case string(cloudup.PhaseNetwork):
 			phase = cloudup.PhaseNetwork
-		case "cluster":
+		case string(cloudup.PhaseSecurity), "iam": // keeping IAM for backwards compatibility
+			phase = cloudup.PhaseSecurity
+		case string(cloudup.PhaseCluster):
 			phase = cloudup.PhaseCluster
 		default:
-			return fmt.Errorf("unknown phase %q", c.Phase)
+			return fmt.Errorf("unknown phase %q, available phases: %s", c.Phase, strings.Join(cloudup.Phases.List(), ","))
 		}
 	}
 

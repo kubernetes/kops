@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -32,6 +32,12 @@ var (
 	create_secret_example = templates.Examples(i18n.T(`
 	# Create an new ssh public key called admin.
 	kops create secret sshpublickey admin -i ~/.ssh/id_rsa.pub \
+		--name k8s-cluster.example.com --state s3://example.com
+
+	kops create secret dockerconfig -f ~/.docker/config.json \
+		--name k8s-cluster.example.com --state s3://example.com
+
+	kops create secret encryptionconfig -f ~/.encryptionconfig.yaml \
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
 
@@ -48,6 +54,8 @@ func NewCmdCreateSecret(f *util.Factory, out io.Writer) *cobra.Command {
 
 	// create subcommands
 	cmd.AddCommand(NewCmdCreateSecretPublicKey(f, out))
+	cmd.AddCommand(NewCmdCreateSecretDockerConfig(f, out))
+	cmd.AddCommand(NewCmdCreateSecretEncryptionConfig(f, out))
 
 	return cmd
 }

@@ -204,12 +204,12 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		if v.Value != nil {
 			tfVar["value"] = v.Value
 		} else {
-			dedup := true
-			sorted, err := sortLiterals(v.ValueArray, dedup)
+			SortLiterals(v.ValueArray)
+			deduped, err := DedupLiterals(v.ValueArray)
 			if err != nil {
-				return fmt.Errorf("error sorting literals: %v", err)
+				return err
 			}
-			tfVar["value"] = sorted
+			tfVar["value"] = deduped
 		}
 		outputVariables[tfName] = tfVar
 	}

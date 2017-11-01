@@ -322,3 +322,66 @@
 [submodule "_vendor/github.com/tent/http-link-go"]
 	path = _vendor/github.com/tent/http-link-go
 	url = https://github.com/tent/http-link-go.git
+[submodule "_vendor/github.com/Masterminds/semver"]
+	path = _vendor/github.com/Masterminds/semver
+	url = https://github.com/Masterminds/semver.git
+[submodule "_vendor/github.com/huandu/xstrings"]
+	path = _vendor/github.com/huandu/xstrings
+	url = https://github.com/huandu/xstrings.git
+[submodule "_vendor/github.com/satori/go.uuid"]
+	path = _vendor/github.com/satori/go.uuid
+	url = https://github.com/satori/go.uuid.git
+[submodule "_vendor/github.com/Masterminds/sprig"]
+	path = _vendor/github.com/Masterminds/sprig
+	url = https://github.com/Masterminds/sprig.git
+[submodule "_vendor/github.com/aokoli/goutils"]
+	path = _vendor/github.com/aokoli/goutils
+	url = https://github.com/aokoli/goutils.git
+[submodule "_vendor/gopkg.in/warnings.v0"]
+	path = _vendor/gopkg.in/warnings.v0
+	url = https://github.com/go-warnings/warnings.git
+[submodule "_vendor/k8s.io/utils"]
+	path = _vendor/k8s.io/utils
+	url = https://github.com/kubernetes/utils.git
+[submodule "_vendor/github.com/gophercloud/gophercloud"]
+	path = _vendor/github.com/gophercloud/gophercloud
+	url = https://github.com/gophercloud/gophercloud.git
+[submodule "_vendor/github.com/json-iterator/go"]
+	path = _vendor/github.com/json-iterator/go
+	url = https://github.com/json-iterator/go.git
+[submodule "_vendor/github.com/mxk/go-flowrate"]
+	path = _vendor/github.com/mxk/go-flowrate
+	url = https://github.com/mxk/go-flowrate.git
+[submodule "_vendor/github.com/peterbourgon/diskv"]
+	path = _vendor/github.com/peterbourgon/diskv
+	url = https://github.com/peterbourgon/diskv.git
+[submodule "_vendor/github.com/gregjones/httpcache"]
+	path = _vendor/github.com/gregjones/httpcache
+	url = https://github.com/gregjones/httpcache.git
+[submodule "_vendor/github.com/opencontainers/go-digest"]
+	path = _vendor/github.com/opencontainers/go-digest
+	url = https://github.com/opencontainers/go-digest.git
+[submodule "_vendor/k8s.io/kube-openapi"]
+	path = _vendor/k8s.io/kube-openapi
+	url = https://github.com/kubernetes/kube-openapi.git
+[submodule "_vendor/github.com/opencontainers/image-spec"]
+	path = _vendor/github.com/opencontainers/image-spec
+	url = https://github.com/opencontainers/image-spec.git
+[submodule "_vendor/github.com/google/btree"]
+	path = _vendor/github.com/google/btree
+	url = https://github.com/google/btree.git
+[submodule "_vendor/github.com/NYTimes/gziphandler"]
+	path = _vendor/github.com/NYTimes/gziphandler
+	url = https://github.com/NYTimes/gziphandler.git
+[submodule "_vendor/google.golang.org/genproto"]
+	path = _vendor/google.golang.org/genproto
+	url = https://github.com/google/go-genproto.git
+[submodule "_vendor/github.com/kubernetes-incubator/apiserver-builder"]
+	path = _vendor/github.com/kubernetes-incubator/apiserver-builder
+	url = https://github.com/kubernetes-incubator/apiserver-builder.git
+[submodule "_vendor/github.com/kubernetes-incubator/reference-docs"]
+	path = _vendor/github.com/kubernetes-incubator/reference-docs
+	url = https://github.com/kubernetes-incubator/reference-docs
+[submodule "_vendor/github.com/markbates/inflect"]
+	path = _vendor/github.com/markbates/inflect
+	url = https://github.com/markbates/inflect

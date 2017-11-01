@@ -6,9 +6,9 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/uuid"
+	"github.com/opencontainers/go-digest"
 )
 
 type bridge struct {

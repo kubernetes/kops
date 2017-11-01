@@ -26,62 +26,47 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/pflag"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/watchers"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	gossipdnsprovider "k8s.io/kops/protokube/pkg/gossip/dns/provider"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/rest"
 	"k8s.io/kops/protokube/pkg/gossip/mesh"
+	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
 	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
 )
 
 var (
-	flags = pflag.NewFlagSet("", pflag.ExitOnError)
-
-	// value overwritten during build. This can be used to resolve issues.
+	flags        = pflag.NewFlagSet("", pflag.ExitOnError)
 	BuildVersion = "0.1"
 )
 
 func main() {
 	fmt.Printf("dns-controller version %s\n", BuildVersion)
+	var dnsServer, dnsProviderID, gossipListen, gossipSecret, watchNamespace string
+	var gossipSeeds, zones []string
+	var watchIngress bool
 
 	// Be sure to get the glog flags
 	glog.Flush()
 
-	dnsProviderId := "aws-route53"
-	flags.StringVar(&dnsProviderId, "dns", dnsProviderId, "DNS provider we should use (aws-route53, google-clouddns, coredns, gossip)")
-
-	gossipListen := "0.0.0.0:3998"
-	flags.StringVar(&gossipListen, "gossip-listen", gossipListen, "The address on which to listen if gossip is enabled")
-
-	var gossipSeeds []string
+	flag.StringVar(&dnsServer, "dns-server", "", "DNS Server")
+	flags.BoolVar(&watchIngress, "watch-ingress", true, "Configure hostnames found in ingress resources")
 	flags.StringSliceVar(&gossipSeeds, "gossip-seed", gossipSeeds, "If set, will enable gossip zones and seed using the provided addresses")
-
-	var gossipSecret string
-	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
-
-	var zones []string
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
-
-	watchIngress := true
-	flags.BoolVar(&watchIngress, "watch-ingress", watchIngress, "Configure hostnames found in ingress resources")
-
-	dnsServer := ""
-	flag.StringVar(&dnsServer, "dns-server", dnsServer, "DNS Server")
-
+	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, coredns, gossip)")
+	flags.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3998", "The address on which to listen if gossip is enabled")
+	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
+	flags.StringVar(&watchNamespace, "watch-namespace", "", "Limits the functionality for pods, services and ingress to specific namespace, by default all")
 	// Trick to avoid 'logging before flag.Parse' warning
 	flag.CommandLine.Parse([]string{})
 
 	flag.Set("logtostderr", "true")
-
 	flags.AddGoFlagSet(flag.CommandLine)
-
 	flags.Parse(os.Args)
 
 	zoneRules, err := dns.ParseZoneRules(zones)
@@ -96,33 +81,28 @@ func main() {
 		os.Exit(1)
 	}
 
-	kubeClient, err := kubernetes.NewForConfig(config)
+	client, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		glog.Fatalf("error building REST client: %v", err)
 	}
 
-	//kubeExtensionsClient, err := client_extensions.NewForConfig(config)
-	//if err != nil {
-	//	glog.Fatalf("error building extensions REST client: %v", err)
-	//}
-
 	var dnsProviders []dnsprovider.Interface
-	if dnsProviderId != "gossip" {
+	if dnsProviderID != "gossip" {
 		var file io.Reader
-		if dnsProviderId == k8scoredns.ProviderName {
+		if dnsProviderID == k8scoredns.ProviderName {
 			var lines []string
 			lines = append(lines, "etcd-endpoints = "+dnsServer)
 			lines = append(lines, "zones = "+zones[0])
 			config := "[global]\n" + strings.Join(lines, "\n") + "\n"
 			file = bytes.NewReader([]byte(config))
 		}
-		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderId, file)
+		dnsProvider, err := dnsprovider.GetDnsProvider(dnsProviderID, file)
 		if err != nil {
-			glog.Errorf("Error initializing DNS provider %q: %v", dnsProviderId, err)
+			glog.Errorf("Error initializing DNS provider %q: %v", dnsProviderID, err)
 			os.Exit(1)
 		}
 		if dnsProvider == nil {
-			glog.Errorf("DNS provider was nil %q: %v", dnsProviderId, err)
+			glog.Errorf("DNS provider was nil %q: %v", dnsProviderID, err)
 			os.Exit(1)
 		}
 		dnsProviders = append(dnsProviders, dnsProvider)
@@ -172,30 +152,40 @@ func main() {
 		os.Exit(1)
 	}
 
-	nodeController, err := watchers.NewNodeController(kubeClient, dnsController)
-	if err != nil {
-		glog.Errorf("Error building node controller: %v", err)
+	// @step: initialize the watchers
+	if err := initializeWatchers(client, dnsController, watchNamespace, watchIngress); err != nil {
+		glog.Errorf("%s", err)
 		os.Exit(1)
 	}
 
-	podController, err := watchers.NewPodController(kubeClient, dnsController)
+	// start and wait on the dns controller
+	dnsController.Run()
+}
+
+// initializeWatchers is responsible for creating the watchers
+func initializeWatchers(client kubernetes.Interface, dnsctl *dns.DNSController, namespace string, watchIngress bool) error {
+	glog.V(1).Info("initializing the watch controllers, namespace: %q", namespace)
+
+	nodeController, err := watchers.NewNodeController(client, dnsctl)
 	if err != nil {
-		glog.Errorf("Error building pod controller: %v", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to initialize the node controller, error: %v", err)
 	}
 
-	serviceController, err := watchers.NewServiceController(kubeClient, dnsController)
+	podController, err := watchers.NewPodController(client, dnsctl, namespace)
 	if err != nil {
-		glog.Errorf("Error building service controller: %v", err)
-		os.Exit(1)
+		return fmt.Errorf("failed to initialize the pod controller, error: %v", err)
+	}
+
+	serviceController, err := watchers.NewServiceController(client, dnsctl, namespace)
+	if err != nil {
+		return fmt.Errorf("failed to initialize the service controller, error: %v", err)
 	}
 
 	var ingressController *watchers.IngressController
 	if watchIngress {
-		ingressController, err = watchers.NewIngressController(kubeClient, dnsController)
+		ingressController, err = watchers.NewIngressController(client, dnsctl, namespace)
 		if err != nil {
-			glog.Errorf("Error building ingress controller: %v", err)
-			os.Exit(1)
+			return fmt.Errorf("failed to initialize the ingress controller, error: %v", err)
 		}
 	} else {
 		glog.Infof("Ingress controller disabled")
@@ -205,9 +195,9 @@ func main() {
 	go podController.Run()
 	go serviceController.Run()
 
-	if ingressController != nil {
+	if watchIngress {
 		go ingressController.Run()
 	}
 
-	dnsController.Run()
+	return nil
 }

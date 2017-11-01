@@ -19,33 +19,38 @@ import (
 	"fmt"
 )
 
-const INDENT = "  "
+const indentation = "  "
 
+// Code represents a file of code to be printed.
 type Code struct {
 	text   string
 	indent int
 }
 
+// Print adds a line of code using the current indentation. Accepts printf-style format strings and arguments.
 func (c *Code) Print(args ...interface{}) {
 	if len(args) > 0 {
 		for i := 0; i < c.indent; i++ {
-			c.text += INDENT
+			c.text += indentation
 		}
 		c.text += fmt.Sprintf(args[0].(string), args[1:]...)
 	}
 	c.text += "\n"
 }
 
+// String returns the accumulated code as a string.
 func (c *Code) String() string {
 	return c.text
 }
 
+// Indent adds one level of indentation.
 func (c *Code) Indent() {
-	c.indent += 1
+	c.indent++
 }
 
+// Outdent remvoes one level of indentation.
 func (c *Code) Outdent() {
-	c.indent -= 1
+	c.indent--
 	if c.indent < 0 {
 		c.indent = 0
 	}

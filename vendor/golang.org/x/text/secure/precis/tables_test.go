@@ -31,7 +31,7 @@ var exceptions = runes.Predicate(func(r rune) bool {
 	}
 })
 
-// Ensure that ceratain properties were generated correctly.
+// Ensure that certain properties were generated correctly.
 func TestTable(t *testing.T) {
 	tests := []tableTest{
 		tableTest{

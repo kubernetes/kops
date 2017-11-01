@@ -18,6 +18,7 @@ package gcetasks
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/upup/pkg/fi"
@@ -39,10 +40,10 @@ func (e *TargetPool) CompareWithID() *string {
 }
 
 func (e *TargetPool) Find(c *fi.Context) (*TargetPool, error) {
-	cloud := c.Cloud.(*gce.GCECloud)
+	cloud := c.Cloud.(gce.GCECloud)
 	name := fi.StringValue(e.Name)
 
-	r, err := cloud.Compute.TargetPools.Get(cloud.Project, cloud.Region, name).Do()
+	r, err := cloud.Compute().TargetPools.Get(cloud.Project(), cloud.Region(), name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -67,10 +68,10 @@ func (_ *TargetPool) CheckChanges(a, e, changes *TargetPool) error {
 	return nil
 }
 
-func (e *TargetPool) URL(cloud *gce.GCECloud) string {
+func (e *TargetPool) URL(cloud gce.GCECloud) string {
 	name := fi.StringValue(e.Name)
 
-	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/targetPools/%s", cloud.Project, cloud.Region, name)
+	return fmt.Sprintf("https://www.googleapis.com/compute/v1/projects/%s/regions/%s/targetPools/%s", cloud.Project(), cloud.Region(), name)
 }
 
 func (_ *TargetPool) RenderGCE(t *gce.GCEAPITarget, a, e, changes *TargetPool) error {
@@ -83,7 +84,7 @@ func (_ *TargetPool) RenderGCE(t *gce.GCEAPITarget, a, e, changes *TargetPool) e
 	if a == nil {
 		glog.V(4).Infof("Creating TargetPool %q", o.Name)
 
-		op, err := t.Cloud.Compute.TargetPools.Insert(t.Cloud.Project, t.Cloud.Region, o).Do()
+		op, err := t.Cloud.Compute().TargetPools.Insert(t.Cloud.Project(), t.Cloud.Region(), o).Do()
 		if err != nil {
 			return fmt.Errorf("error creating TargetPool %q: %v", name, err)
 		}
@@ -99,11 +100,11 @@ func (_ *TargetPool) RenderGCE(t *gce.GCEAPITarget, a, e, changes *TargetPool) e
 }
 
 type terraformTargetPool struct {
-	Name           string   `json:"name"`
-	Description    string   `json:"description,omitempty"`
-	HealthChecks   []string `json:"health_checks,omitempty"`
-	Instances      []string `json:"instances,omitempty"`
-	SessionAfinity string   `json:"session_affnity,omitempty"`
+	Name            string   `json:"name"`
+	Description     string   `json:"description,omitempty"`
+	HealthChecks    []string `json:"health_checks,omitempty"`
+	Instances       []string `json:"instances,omitempty"`
+	SessionAffinity string   `json:"session_affinity,omitempty"`
 }
 
 func (_ *TargetPool) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *TargetPool) error {

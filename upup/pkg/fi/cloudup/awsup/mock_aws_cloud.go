@@ -18,6 +18,7 @@ package awsup
 
 import (
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/autoscaling/autoscalingiface"
 	"github.com/aws/aws-sdk-go/service/cloudformation"
@@ -27,7 +28,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
+	"k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	dnsproviderroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
@@ -73,8 +76,20 @@ type MockCloud struct {
 	MockRoute53        route53iface.Route53API
 }
 
+func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+	return deleteGroup(c, g)
+}
+
+func (c *MockAWSCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+	return deleteInstance(c, i)
+}
+
+func (c *MockAWSCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
+}
+
 func (c *MockCloud) ProviderID() kops.CloudProviderID {
-	return "mock"
+	return kops.CloudProviderAWS
 }
 
 func (c *MockCloud) DNS() (dnsprovider.Interface, error) {
@@ -107,6 +122,10 @@ func (c *MockAWSCloud) BuildFilters(name *string) []*ec2.Filter {
 
 func (c *MockAWSCloud) AddAWSTags(id string, expected map[string]string) error {
 	return addAWSTags(c, id, expected)
+}
+
+func (c *MockAWSCloud) DeleteTags(id string, tags map[string]string) error {
+	return deleteTags(c, id, tags)
 }
 
 func (c *MockAWSCloud) BuildTags(name *string) map[string]string {

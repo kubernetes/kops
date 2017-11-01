@@ -16,13 +16,14 @@ limitations under the License.
 
 package protokube
 
-// vspehre_volume houses vSphere volume and implements relevant interfaces.
+// vsphere_volume houses vSphere volume and implements relevant interfaces.
 
 import (
 	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"io/ioutil"
+	etcdmanager "k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"net"
 	"os/exec"
@@ -78,7 +79,7 @@ func (v *VSphereVolumes) FindVolumes() ([]*Volume, error) {
 			},
 		}
 
-		etcdSpec := &EtcdClusterSpec{
+		etcdSpec := &etcdmanager.EtcdClusterSpec{
 			ClusterKey: etcd.EtcdClusterName,
 			NodeName:   etcd.EtcdNodeName,
 		}
@@ -88,7 +89,7 @@ func (v *VSphereVolumes) FindVolumes() ([]*Volume, error) {
 			nodeNames = append(nodeNames, member.Name)
 		}
 		etcdSpec.NodeNames = nodeNames
-		vol.Info.EtcdClusters = []*EtcdClusterSpec{etcdSpec}
+		vol.Info.EtcdClusters = []*etcdmanager.EtcdClusterSpec{etcdSpec}
 		volumes = append(volumes, vol)
 	}
 	glog.V(4).Infof("Found volumes: %v", volumes)
@@ -105,7 +106,7 @@ func getDevice(mountPoint string) (string, error) {
 		}
 
 		if Containerized {
-			mountPoint = PathFor(mountPoint)
+			mountPoint = pathFor(mountPoint)
 		}
 		lines := strings.Split(string(out), "\n")
 		for _, line := range lines {
@@ -122,7 +123,7 @@ func getDevice(mountPoint string) (string, error) {
 }
 
 func getVolMetadata() ([]vsphere.VolumeMetadata, error) {
-	rawData, err := ioutil.ReadFile(PathFor(VolumeMetaDataFile))
+	rawData, err := ioutil.ReadFile(pathFor(VolumeMetaDataFile))
 
 	if err != nil {
 		return nil, err

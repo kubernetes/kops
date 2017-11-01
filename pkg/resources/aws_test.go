@@ -29,7 +29,7 @@ import (
 
 func TestAddUntaggedRouteTables(t *testing.T) {
 	cloud := awsup.BuildMockAWSCloud("us-east-1", "abc")
-	resources := make(map[string]*ResourceTracker)
+	resources := make(map[string]*Resource)
 
 	clusterName := "me.example.com"
 
@@ -71,7 +71,7 @@ func TestAddUntaggedRouteTables(t *testing.T) {
 		RouteTableId: aws.String("rt-5555"),
 	})
 
-	resources["vpc:vpc-1234"] = &ResourceTracker{}
+	resources["vpc:vpc-1234"] = &Resource{}
 
 	err := addUntaggedRouteTables(cloud, clusterName, resources)
 	if err != nil {

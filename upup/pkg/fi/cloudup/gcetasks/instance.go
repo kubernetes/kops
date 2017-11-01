@@ -18,13 +18,14 @@ package gcetasks
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"reflect"
-	"strings"
 )
 
 var scopeAliases map[string]string
@@ -60,9 +61,9 @@ func (e *Instance) CompareWithID() *string {
 }
 
 func (e *Instance) Find(c *fi.Context) (*Instance, error) {
-	cloud := c.Cloud.(*gce.GCECloud)
+	cloud := c.Cloud.(gce.GCECloud)
 
-	r, err := cloud.Compute.Instances.Get(cloud.Project, *e.Zone, *e.Name).Do()
+	r, err := cloud.Compute().Instances.Get(cloud.Project(), *e.Zone, *e.Name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -88,7 +89,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 		if len(ni.AccessConfigs) != 0 {
 			ac := ni.AccessConfigs[0]
 			if ac.NatIP != "" {
-				addr, err := cloud.Compute.Addresses.List(cloud.Project, cloud.Region).Filter("address eq " + ac.NatIP).Do()
+				addr, err := cloud.Compute().Addresses.List(cloud.Project(), cloud.Region()).Filter("address eq " + ac.NatIP).Do()
 				if err != nil {
 					return nil, fmt.Errorf("error querying for address %q: %v", ac.NatIP, err)
 				} else if len(addr.Items) != 0 {
@@ -113,7 +114,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 
 			// TODO: Parse source URL instead of assuming same project/zone?
 			name := lastComponent(source)
-			d, err := cloud.Compute.Disks.Get(cloud.Project, *e.Zone, name).Do()
+			d, err := cloud.Compute().Disks.Get(cloud.Project(), *e.Zone, name).Do()
 			if err != nil {
 				if gce.IsNotFound(err) {
 					return nil, fmt.Errorf("disk not found %q: %v", source, err)
@@ -121,7 +122,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 				return nil, fmt.Errorf("error querying for disk %q: %v", source, err)
 			}
 
-			image, err := ShortenImageURL(cloud.Project, d.SourceImage)
+			image, err := ShortenImageURL(cloud.Project(), d.SourceImage)
 			if err != nil {
 				return nil, fmt.Errorf("error parsing source image URL: %v", err)
 			}
@@ -139,7 +140,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if r.Metadata != nil {
 		actual.Metadata = make(map[string]fi.Resource)
 		for _, i := range r.Metadata.Items {
-			actual.Metadata[i.Key] = fi.NewStringResource(i.Value)
+			actual.Metadata[i.Key] = fi.NewStringResource(fi.StringValue(i.Value))
 		}
 		actual.metadataFingerprint = r.Metadata.Fingerprint
 	}
@@ -195,7 +196,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 		}
 	} else {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart: true,
+			AutomaticRestart: fi.Bool(true),
 			// TODO: Migrate or terminate?
 			OnHostMaintenance: "MIGRATE",
 			Preemptible:       false,
@@ -275,7 +276,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 		}
 		metadataItems = append(metadataItems, &compute.MetadataItems{
 			Key:   key,
-			Value: v,
+			Value: fi.String(v),
 		})
 	}
 
@@ -311,7 +312,7 @@ func (i *Instance) isZero() bool {
 
 func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error {
 	cloud := t.Cloud
-	project := cloud.Project
+	project := cloud.Project()
 	zone := *e.Zone
 
 	ipAddressResolver := func(ip *Address) (*string, error) {
@@ -325,7 +326,7 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 
 	if a == nil {
 		glog.V(2).Infof("Creating instance %q", i.Name)
-		_, err := t.Cloud.Compute.Instances.Insert(project, zone, i).Do()
+		_, err := cloud.Compute().Instances.Insert(project, zone, i).Do()
 		if err != nil {
 			return fmt.Errorf("error creating Instance: %v", err)
 		}
@@ -335,7 +336,7 @@ func (_ *Instance) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Instance) error
 
 			i.Metadata.Fingerprint = a.metadataFingerprint
 
-			op, err := cloud.Compute.Instances.SetMetadata(project, zone, i.Name, i.Metadata).Do()
+			op, err := cloud.Compute().Instances.SetMetadata(project, zone, i.Name, i.Metadata).Do()
 			if err != nil {
 				return fmt.Errorf("error setting metadata on instance: %v", err)
 			}
@@ -447,7 +448,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 
 	tf.AddNetworks(e.Network, e.Subnet, i.NetworkInterfaces)
 
-	tf.AddMetadata(i.Metadata)
+	tf.AddMetadata(t, i.Name, i.Metadata)
 
 	// Using metadata_startup_script is now mandatory (?)
 	{
@@ -460,7 +461,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 
 	if i.Scheduling != nil {
 		tf.Scheduling = &terraformScheduling{
-			AutomaticRestart:  i.Scheduling.AutomaticRestart,
+			AutomaticRestart:  fi.BoolValue(i.Scheduling.AutomaticRestart),
 			OnHostMaintenance: i.Scheduling.OnHostMaintenance,
 			Preemptible:       i.Scheduling.Preemptible,
 		}

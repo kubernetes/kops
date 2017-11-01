@@ -17,26 +17,21 @@ limitations under the License.
 package dockershim
 
 import (
-	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"testing"
 
 	"github.com/blang/semver"
-	dockertypes "github.com/docker/engine-api/types"
+	dockertypes "github.com/docker/docker/api/types"
 	dockernat "github.com/docker/go-connections/nat"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"k8s.io/kubernetes/pkg/api/v1"
-
 	runtimeapi "k8s.io/kubernetes/pkg/kubelet/apis/cri/v1alpha1/runtime"
-	"k8s.io/kubernetes/pkg/security/apparmor"
-
 	"k8s.io/kubernetes/pkg/kubelet/dockershim/libdocker"
+	"k8s.io/kubernetes/pkg/security/apparmor"
 )
 
 func TestLabelsAndAnnotationsRoundTrip(t *testing.T) {
@@ -48,99 +43,6 @@ func TestLabelsAndAnnotationsRoundTrip(t *testing.T) {
 	actualLabels, actualAnnotations := extractLabels(dockerLabels)
 	assert.Equal(t, expectedLabels, actualLabels)
 	assert.Equal(t, expectedAnnotations, actualAnnotations)
-}
-
-func TestGetSeccompSecurityOpts(t *testing.T) {
-	containerName := "bar"
-	makeConfig := func(annotations map[string]string) *runtimeapi.PodSandboxConfig {
-		return makeSandboxConfigWithLabelsAndAnnotations("pod", "ns", "1234", 1, nil, annotations)
-	}
-
-	tests := []struct {
-		msg          string
-		config       *runtimeapi.PodSandboxConfig
-		expectedOpts []string
-	}{{
-		msg:          "No security annotations",
-		config:       makeConfig(nil),
-		expectedOpts: []string{"seccomp=unconfined"},
-	}, {
-		msg: "Seccomp unconfined",
-		config: makeConfig(map[string]string{
-			v1.SeccompContainerAnnotationKeyPrefix + containerName: "unconfined",
-		}),
-		expectedOpts: []string{"seccomp=unconfined"},
-	}, {
-		msg: "Seccomp default",
-		config: makeConfig(map[string]string{
-			v1.SeccompContainerAnnotationKeyPrefix + containerName: "docker/default",
-		}),
-		expectedOpts: nil,
-	}, {
-		msg: "Seccomp pod default",
-		config: makeConfig(map[string]string{
-			v1.SeccompPodAnnotationKey: "docker/default",
-		}),
-		expectedOpts: nil,
-	}}
-
-	for i, test := range tests {
-		opts, err := getSeccompSecurityOpts(containerName, test.config, "test/seccomp/profile/root", '=')
-		assert.NoError(t, err, "TestCase[%d]: %s", i, test.msg)
-		assert.Len(t, opts, len(test.expectedOpts), "TestCase[%d]: %s", i, test.msg)
-		for _, opt := range test.expectedOpts {
-			assert.Contains(t, opts, opt, "TestCase[%d]: %s", i, test.msg)
-		}
-	}
-}
-
-func TestLoadSeccompLocalhostProfiles(t *testing.T) {
-	containerName := "bar"
-	makeConfig := func(annotations map[string]string) *runtimeapi.PodSandboxConfig {
-		return makeSandboxConfigWithLabelsAndAnnotations("pod", "ns", "1234", 1, nil, annotations)
-	}
-
-	tests := []struct {
-		msg          string
-		config       *runtimeapi.PodSandboxConfig
-		expectedOpts []string
-		expectErr    bool
-	}{{
-		msg: "Seccomp localhost/test profile",
-		config: makeConfig(map[string]string{
-			v1.SeccompPodAnnotationKey: "localhost/test",
-		}),
-		expectedOpts: []string{`seccomp={"foo":"bar"}`},
-		expectErr:    false,
-	}, {
-		msg: "Seccomp localhost/sub/subtest profile",
-		config: makeConfig(map[string]string{
-			v1.SeccompPodAnnotationKey: "localhost/sub/subtest",
-		}),
-		expectedOpts: []string{`seccomp={"abc":"def"}`},
-		expectErr:    false,
-	}, {
-		msg: "Seccomp non-existent",
-		config: makeConfig(map[string]string{
-			v1.SeccompPodAnnotationKey: "localhost/non-existent",
-		}),
-		expectedOpts: nil,
-		expectErr:    true,
-	}}
-
-	profileRoot := path.Join("fixtures", "seccomp")
-	for i, test := range tests {
-		opts, err := getSeccompSecurityOpts(containerName, test.config, profileRoot, '=')
-		if test.expectErr {
-			assert.Error(t, err, fmt.Sprintf("TestCase[%d]: %s", i, test.msg))
-			continue
-		}
-		assert.NoError(t, err, "TestCase[%d]: %s", i, test.msg)
-		assert.Len(t, opts, len(test.expectedOpts), "TestCase[%d]: %s", i, test.msg)
-		for _, opt := range test.expectedOpts {
-			assert.Contains(t, opts, opt, "TestCase[%d]: %s", i, test.msg)
-		}
-	}
 }
 
 // TestGetApparmorSecurityOpts tests the logic of generating container apparmor options from sandbox annotations.
@@ -267,10 +169,7 @@ func writeDockerConfig(cfg string) (string, error) {
 
 func TestEnsureSandboxImageExists(t *testing.T) {
 	sandboxImage := "gcr.io/test/image"
-	registryHost := "https://gcr.io/"
 	authConfig := dockertypes.AuthConfig{Username: "user", Password: "pass"}
-	authB64 := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", authConfig.Username, authConfig.Password)))
-	authJSON := fmt.Sprintf("{\"auths\": {\"%s\": {\"auth\": \"%s\"} } }", registryHost, authB64)
 	for desc, test := range map[string]struct {
 		injectImage  bool
 		imgNeedsAuth bool
@@ -302,19 +201,11 @@ func TestEnsureSandboxImageExists(t *testing.T) {
 			calls:        []string{"inspect_image", "pull"},
 			err:          true,
 		},
-		"should pull private image using dockerauth if image doesn't exist": {
-			injectImage:  true,
-			imgNeedsAuth: true,
-			injectErr:    libdocker.ImageNotFoundError{ID: "image_id"},
-			calls:        []string{"inspect_image", "pull"},
-			configJSON:   authJSON,
-			err:          false,
-		},
 	} {
 		t.Logf("TestCase: %q", desc)
 		_, fakeDocker, _ := newTestDockerService()
 		if test.injectImage {
-			images := []dockertypes.Image{{ID: sandboxImage}}
+			images := []dockertypes.ImageSummary{{ID: sandboxImage}}
 			fakeDocker.InjectImages(images)
 			if test.imgNeedsAuth {
 				fakeDocker.MakeImagesPrivate(images, authConfig)
@@ -322,15 +213,7 @@ func TestEnsureSandboxImageExists(t *testing.T) {
 		}
 		fakeDocker.InjectError("inspect_image", test.injectErr)
 
-		var dockerCfgSearchPath []string
-		if test.configJSON != "" {
-			tmpdir, err := writeDockerConfig(test.configJSON)
-			require.NoError(t, err, "could not create a temp docker config file")
-			dockerCfgSearchPath = append(dockerCfgSearchPath, filepath.Join(tmpdir, ".docker"))
-			defer os.RemoveAll(tmpdir)
-		}
-
-		err := ensureSandboxImageExistsDockerCfg(fakeDocker, sandboxImage, dockerCfgSearchPath)
+		err := ensureSandboxImageExists(fakeDocker, sandboxImage)
 		assert.NoError(t, fakeDocker.AssertCalls(test.calls))
 		assert.Equal(t, test.err, err != nil)
 	}
@@ -339,7 +222,7 @@ func TestEnsureSandboxImageExists(t *testing.T) {
 func TestMakePortsAndBindings(t *testing.T) {
 	for desc, test := range map[string]struct {
 		pm           []*runtimeapi.PortMapping
-		exposedPorts map[dockernat.Port]struct{}
+		exposedPorts dockernat.PortSet
 		portmappings map[dockernat.Port][]dockernat.PortBinding
 	}{
 		"no port mapping": {
@@ -418,4 +301,71 @@ func TestMakePortsAndBindings(t *testing.T) {
 		assert.Equal(t, test.exposedPorts, actualExposedPorts)
 		assert.Equal(t, test.portmappings, actualPortMappings)
 	}
+}
+
+func TestGenerateMountBindings(t *testing.T) {
+	mounts := []*runtimeapi.Mount{
+		// everything default
+		{
+			HostPath:      "/mnt/1",
+			ContainerPath: "/var/lib/mysql/1",
+		},
+		// readOnly
+		{
+			HostPath:      "/mnt/2",
+			ContainerPath: "/var/lib/mysql/2",
+			Readonly:      true,
+		},
+		// SELinux
+		{
+			HostPath:       "/mnt/3",
+			ContainerPath:  "/var/lib/mysql/3",
+			SelinuxRelabel: true,
+		},
+		// Propagation private
+		{
+			HostPath:      "/mnt/4",
+			ContainerPath: "/var/lib/mysql/4",
+			Propagation:   runtimeapi.MountPropagation_PROPAGATION_PRIVATE,
+		},
+		// Propagation rslave
+		{
+			HostPath:      "/mnt/5",
+			ContainerPath: "/var/lib/mysql/5",
+			Propagation:   runtimeapi.MountPropagation_PROPAGATION_HOST_TO_CONTAINER,
+		},
+		// Propagation rshared
+		{
+			HostPath:      "/mnt/6",
+			ContainerPath: "/var/lib/mysql/6",
+			Propagation:   runtimeapi.MountPropagation_PROPAGATION_BIDIRECTIONAL,
+		},
+		// Propagation unknown (falls back to private)
+		{
+			HostPath:      "/mnt/7",
+			ContainerPath: "/var/lib/mysql/7",
+			Propagation:   runtimeapi.MountPropagation(42),
+		},
+		// Everything
+		{
+			HostPath:       "/mnt/8",
+			ContainerPath:  "/var/lib/mysql/8",
+			Readonly:       true,
+			SelinuxRelabel: true,
+			Propagation:    runtimeapi.MountPropagation_PROPAGATION_BIDIRECTIONAL,
+		},
+	}
+	expectedResult := []string{
+		"/mnt/1:/var/lib/mysql/1",
+		"/mnt/2:/var/lib/mysql/2:ro",
+		"/mnt/3:/var/lib/mysql/3:Z",
+		"/mnt/4:/var/lib/mysql/4",
+		"/mnt/5:/var/lib/mysql/5:rslave",
+		"/mnt/6:/var/lib/mysql/6:rshared",
+		"/mnt/7:/var/lib/mysql/7",
+		"/mnt/8:/var/lib/mysql/8:ro,Z,rshared",
+	}
+	result := generateMountBindings(mounts)
+
+	assert.Equal(t, result, expectedResult)
 }

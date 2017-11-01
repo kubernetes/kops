@@ -29,10 +29,11 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 type CreateInstanceGroupOptions struct {
@@ -43,7 +44,7 @@ type CreateInstanceGroupOptions struct {
 var (
 	create_ig_long = templates.LongDesc(i18n.T(`
 		Create an instancegroup configuration.  kops has the concept of "instance groups",
-		which are a group of similar virutal machines. On AWS, they map to an
+		which are a group of similar virtual machines. On AWS, they map to an
 		AutoScalingGroup. An ig work either as a Kubernetes master or a node.`))
 
 	create_ig_example = templates.Examples(i18n.T(`
@@ -56,7 +57,7 @@ var (
 	create_ig_short = i18n.T(`Create an instancegroup.`)
 )
 
-//  NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
+// NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
 func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateInstanceGroupOptions{
 		Role: string(api.InstanceGroupRoleNode),
@@ -145,7 +146,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		edit = editor.NewDefaultEditor(editorEnvs)
 	)
 
-	raw, err := api.ToVersionedYaml(ig)
+	raw, err := kopscodecs.ToVersionedYaml(ig)
 	if err != nil {
 		return err
 	}
@@ -162,7 +163,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return fmt.Errorf("error launching editor: %v", err)
 	}
 
-	obj, _, err := api.ParseVersionedYaml(edited)
+	obj, _, err := kopscodecs.ParseVersionedYaml(edited)
 	if err != nil {
 		return fmt.Errorf("error parsing yaml: %v", err)
 	}

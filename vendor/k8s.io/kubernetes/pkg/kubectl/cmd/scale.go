@@ -26,7 +26,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -60,7 +60,7 @@ var (
 func NewCmdScale(f cmdutil.Factory, out io.Writer) *cobra.Command {
 	options := &resource.FilenameOptions{}
 
-	validArgs := []string{"deployment", "replicaset", "replicationcontroller", "job"}
+	validArgs := []string{"deployment", "replicaset", "replicationcontroller", "job", "statefulset"}
 	argAliases := kubectl.ResourceAliases(validArgs)
 
 	cmd := &cobra.Command{
@@ -108,7 +108,7 @@ func RunScale(f cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []strin
 		Do()
 	err = r.Err()
 	if resource.IsUsageError(err) {
-		return cmdutil.UsageError(cmd, err.Error())
+		return cmdutil.UsageErrorf(cmd, "%v", err)
 	}
 	if err != nil {
 		return err
@@ -116,7 +116,7 @@ func RunScale(f cmdutil.Factory, out io.Writer, cmd *cobra.Command, args []strin
 
 	count := cmdutil.GetFlagInt(cmd, "replicas")
 	if count < 0 {
-		return cmdutil.UsageError(cmd, "The --replicas=COUNT flag is required, and COUNT must be greater than or equal to 0")
+		return cmdutil.UsageErrorf(cmd, "The --replicas=COUNT flag is required, and COUNT must be greater than or equal to 0")
 	}
 
 	infos := []*resource.Info{}

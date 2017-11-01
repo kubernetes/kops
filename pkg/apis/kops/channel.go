@@ -27,7 +27,8 @@ import (
 	"net/url"
 )
 
-const DefaultChannelBase = "https://raw.githubusercontent.com/kubernetes/kops/master/channels/"
+var DefaultChannelBase = "https://raw.githubusercontent.com/kubernetes/kops/master/channels/"
+
 const DefaultChannel = "stable"
 const AlphaChannel = "alpha"
 
@@ -243,6 +244,7 @@ func FindKopsVersionSpec(versions []KopsVersionSpec, version semver.Version) *Ko
 type CloudProviderID string
 
 const CloudProviderAWS CloudProviderID = "aws"
+const CloudProviderBareMetal CloudProviderID = "baremetal"
 const CloudProviderGCE CloudProviderID = "gce"
 const CloudProviderDO CloudProviderID = "digitalocean"
 const CloudProviderVSphere CloudProviderID = "vsphere"

@@ -31,13 +31,10 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
+	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
-
-	// Register our APIs
-	_ "k8s.io/kops/pkg/apis/kops/install"
-	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 const (
@@ -128,7 +125,7 @@ func NewCmdRoot(f *util.Factory, out io.Writer) *cobra.Command {
 
 	defaultStateStore := os.Getenv("KOPS_STATE_STORE")
 	if strings.HasSuffix(defaultStateStore, "/") {
-		strings.TrimSuffix(defaultStateStore, "/")
+		defaultStateStore = strings.TrimSuffix(defaultStateStore, "/")
 	}
 	cmd.PersistentFlags().StringVarP(&rootCommand.RegistryPath, "state", "", defaultStateStore, "Location of state storage")
 

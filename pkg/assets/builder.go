@@ -19,9 +19,11 @@ package assets
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
 )
@@ -32,10 +34,12 @@ var RewriteManifests = featureflag.New("RewriteManifests", featureflag.Bool(true
 
 // AssetBuilder discovers and remaps assets
 type AssetBuilder struct {
-	Assets []*Asset
+	ContainerAssets []*ContainerAsset
+	FileAssets      []*FileAsset
+	AssetsLocation  *kops.Assets
 }
 
-type Asset struct {
+type ContainerAsset struct {
 	// DockerImage will be the name of the docker image we should run, if this is a docker image
 	DockerImage string
 
@@ -43,8 +47,18 @@ type Asset struct {
 	CanonicalLocation string
 }
 
-func NewAssetBuilder() *AssetBuilder {
-	return &AssetBuilder{}
+type FileAsset struct {
+	// File will be the name of the file we should use
+	File string
+
+	// CanonicalLocation will be the source location of the file, if we should copy it to the actual location
+	CanonicalLocation string
+}
+
+func NewAssetBuilder(assets *kops.Assets) *AssetBuilder {
+	return &AssetBuilder{
+		AssetsLocation: assets,
+	}
 }
 
 // RemapManifest transforms a kubernetes manifest.
@@ -79,7 +93,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 }
 
 func (a *AssetBuilder) RemapImage(image string) (string, error) {
-	asset := &Asset{}
+	asset := &ContainerAsset{}
 
 	asset.DockerImage = image
 
@@ -94,9 +108,8 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		}
 	}
 
-	registryMirror := os.Getenv("DEV_KOPS_REGISTRY_MIRROR")
-	registryMirror = strings.TrimSuffix(registryMirror, "/")
-	if registryMirror != "" {
+	if a.AssetsLocation != nil && a.AssetsLocation.ContainerRegistry != nil {
+		registryMirror := *a.AssetsLocation.ContainerRegistry
 		normalized := image
 
 		// Remove the 'standard' kubernetes image prefix, just for sanity
@@ -113,7 +126,33 @@ func (a *AssetBuilder) RemapImage(image string) (string, error) {
 		image = asset.DockerImage
 	}
 
-	a.Assets = append(a.Assets, asset)
+	a.ContainerAssets = append(a.ContainerAssets, asset)
 
 	return image, nil
+}
+
+// RemapFile sets a new url location for the file, if a AssetsLocation is defined.
+func (a AssetBuilder) RemapFile(file string) (string, error) {
+	if file == "" {
+		return "", fmt.Errorf("unable to remap an empty string")
+	}
+
+	fileAsset := &FileAsset{
+		File:              file,
+		CanonicalLocation: file,
+	}
+
+	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
+		fileURL, err := url.Parse(file)
+		if err != nil {
+			return "", fmt.Errorf("unable to parse file url %q: %v", file, err)
+		}
+
+		fileRepo := strings.TrimSuffix(*a.AssetsLocation.FileRepository, "/")
+		fileAsset.File = fileRepo + fileURL.Path
+	}
+
+	a.FileAssets = append(a.FileAssets, fileAsset)
+
+	return fileAsset.File, nil
 }

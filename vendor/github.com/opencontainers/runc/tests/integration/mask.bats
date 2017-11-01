@@ -3,54 +3,57 @@
 load helpers
 
 function setup() {
-  teardown_busybox
-  setup_busybox
+	teardown_busybox
+	setup_busybox
+
+	# Create fake rootfs.
+	mkdir rootfs/testdir
+	echo "Forbidden information!" > rootfs/testfile
+
+	# add extra masked paths
+	sed -i 's;"maskedPaths": \[;"maskedPaths": \["/testdir","/testfile",;g' config.json
 }
 
 function teardown() {
-  teardown_busybox
+	teardown_busybox
 }
 
-@test "MaskPaths(file)" {
-  # run busybox detached
-  runc run -d --console /dev/pts/ptmx test_busybox
-  [ "$status" -eq 0 ]
+@test "mask paths [file]" {
+	# run busybox detached
+	runc run -d --console-socket $CONSOLE_SOCKET test_busybox
+	[ "$status" -eq 0 ]
 
-  wait_for_container 15 1 test_busybox
+	runc exec test_busybox cat /testfile
+	[ "$status" -eq 0 ]
+	[[ "${output}" == "" ]]
 
-  runc exec test_busybox cat /proc/kcore
-  [ "$status" -eq 0 ]
-  [[ "${output}" == "" ]]
+	runc exec test_busybox rm -f /testfile
+	[ "$status" -eq 1 ]
+	[[ "${output}" == *"Read-only file system"* ]]
 
-  runc exec test_busybox rm -f /proc/kcore
-  [ "$status" -eq 1 ]
-  [[ "${output}" == *"Permission denied"* ]]
-
-  runc exec test_busybox umount /proc/kcore
-  [ "$status" -eq 1 ]
-  [[ "${output}" == *"Operation not permitted"* ]]
+	runc exec test_busybox umount /testfile
+	[ "$status" -eq 1 ]
+	[[ "${output}" == *"Operation not permitted"* ]]
 }
 
-@test "MaskPaths(directory)" {
-  # run busybox detached
-  runc run -d --console /dev/pts/ptmx test_busybox
-  [ "$status" -eq 0 ]
+@test "mask paths [directory]" {
+	# run busybox detached
+	runc run -d --console-socket $CONSOLE_SOCKET test_busybox
+	[ "$status" -eq 0 ]
 
-  wait_for_container 15 1 test_busybox
+	runc exec test_busybox ls /testdir
+	[ "$status" -eq 0 ]
+	[[ "${output}" == "" ]]
 
-  runc exec test_busybox ls /sys/firmware
-  [ "$status" -eq 0 ]
-  [[ "${output}" == "" ]]
+	runc exec test_busybox touch /testdir/foo
+	[ "$status" -eq 1 ]
+	[[ "${output}" == *"Read-only file system"* ]]
 
-  runc exec test_busybox touch /sys/firmware/foo
-  [ "$status" -eq 1 ]
-  [[ "${output}" == *"Read-only file system"* ]]
+	runc exec test_busybox rm -rf /testdir
+	[ "$status" -eq 1 ]
+	[[ "${output}" == *"Read-only file system"* ]]
 
-  runc exec test_busybox rm -rf /sys/firmware
-  [ "$status" -eq 1 ]
-  [[ "${output}" == *"Read-only file system"* ]]
-
-  runc exec test_busybox umount /sys/firmware
-  [ "$status" -eq 1 ]
-  [[ "${output}" == *"Operation not permitted"* ]]
+	runc exec test_busybox umount /testdir
+	[ "$status" -eq 1 ]
+	[[ "${output}" == *"Operation not permitted"* ]]
 }

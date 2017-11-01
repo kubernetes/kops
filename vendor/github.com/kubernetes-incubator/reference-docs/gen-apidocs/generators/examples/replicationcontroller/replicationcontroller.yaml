@@ -1,0 +1,19 @@
+note: ReplicationController Config to run 3 nginx instances.
+sample: |
+  apiVersion: v1
+  kind: ReplicationController
+  metadata:
+    # Unique key of the ReplicationController instance
+    name: replicationcontroller-example
+  spec:
+    # 3 Pods should exist at all times.
+    replicas: 3
+    template:
+      metadata:
+        labels:
+          app: nginx
+      spec:
+        containers:
+        # Run the nginx image
+        - name: nginx
+          image: nginx:1.10

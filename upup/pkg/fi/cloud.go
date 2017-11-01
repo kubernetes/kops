@@ -17,7 +17,9 @@ limitations under the License.
 package fi
 
 import (
+	"k8s.io/api/core/v1"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
@@ -28,6 +30,15 @@ type Cloud interface {
 
 	// FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil)
 	FindVPCInfo(id string) (*VPCInfo, error)
+
+	// DeleteInstance deletes a cloud instance
+	DeleteInstance(instance *cloudinstances.CloudInstanceGroupMember) error
+
+	// DeleteGroup deletes the cloud resources that make up a CloudInstanceGroup, including the instances
+	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
+
+	// GetCloudGroups returns a map of cloud instances that back a kops cluster
+	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
 }
 
 type VPCInfo struct {
@@ -79,6 +90,8 @@ var zonesToCloud = map[string]kops.CloudProviderID{
 	"eu-west-1c": kops.CloudProviderAWS,
 	"eu-west-1d": kops.CloudProviderAWS,
 	"eu-west-1e": kops.CloudProviderAWS,
+	"eu-west-2a": kops.CloudProviderAWS,
+	"eu-west-2b": kops.CloudProviderAWS,
 
 	"eu-central-1a": kops.CloudProviderAWS,
 	"eu-central-1b": kops.CloudProviderAWS,

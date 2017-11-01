@@ -22,7 +22,7 @@ import (
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -47,6 +47,7 @@ func NewCmdToolbox(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.AddCommand(NewCmdToolboxConvertImported(f, out))
 	cmd.AddCommand(NewCmdToolboxDump(f, out))
+	cmd.AddCommand(NewCmdToolboxTemplate(f, out))
 
 	return cmd
 }

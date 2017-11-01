@@ -28,8 +28,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -37,20 +38,17 @@ var (
 	Display one or many resources.` + validResources))
 
 	get_example = templates.Examples(i18n.T(`
-	# Get all resource in a single cluster as yaml
-	kops get --name k8s-cluster.example.com -o yaml
-
 	# Get all clusters in a state store
 	kops get clusters
 
-	# Get a cluster
-	kops get cluster k8s-cluster.example.com
+	# Get a cluster and its instancegroups
+	kops get k8s-cluster.example.com
 
-	# Get a cluster YAML cluster spec
-	kops get cluster k8s-cluster.example.com -o yaml
+	# Get a cluster and its instancegroups' YAML desired configuration
+	kops get k8s-cluster.example.com -o yaml
 
-	# Get an instancegroup
-	kops get ig --name k8s-cluster.example.com nodes
+	# Save a cluster and its instancegroups' desired configuration to YAML file
+	kops get k8s-cluster.example.com -o yaml > cluster-desired-config.yaml
 
 	# Get a secret
 	kops get secrets kube -oplaintext
@@ -127,8 +125,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 	}
 
 	if cluster == nil {
-		fmt.Fprintf(os.Stderr, "No cluster found\n")
-		return nil
+		return fmt.Errorf("No cluster found")
 	}
 
 	clusterList := &api.ClusterList{}
@@ -138,6 +135,9 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 	args := make([]string, 0)
 
 	clusters, err := buildClusters(args, clusterList)
+	if err != nil {
+		return fmt.Errorf("error on buildClusters(): %v", err)
+	}
 
 	ig, err := client.InstanceGroupsFor(cluster).List(metav1.ListOptions{})
 	if err != nil {
@@ -190,7 +190,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 			return err
 		}
 		fmt.Fprintf(os.Stdout, "\nInstance Groups\n")
-		err = igOutputTable(instancegroups, out)
+		err = igOutputTable(cluster, instancegroups, out)
 		if err != nil {
 			return err
 		}
@@ -226,7 +226,7 @@ func marshalToWriter(obj runtime.Object, marshal marshalFunc, w io.Writer) error
 
 // obj must be a pointer to a marshalable object
 func marshalYaml(obj runtime.Object) ([]byte, error) {
-	y, err := api.ToVersionedYaml(obj)
+	y, err := kopscodecs.ToVersionedYaml(obj)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling yaml: %v", err)
 	}

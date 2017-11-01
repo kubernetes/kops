@@ -18,6 +18,7 @@ package gcetasks
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/upup/pkg/fi"
@@ -44,10 +45,10 @@ func (e *ForwardingRule) CompareWithID() *string {
 }
 
 func (e *ForwardingRule) Find(c *fi.Context) (*ForwardingRule, error) {
-	cloud := c.Cloud.(*gce.GCECloud)
+	cloud := c.Cloud.(gce.GCECloud)
 	name := fi.StringValue(e.Name)
 
-	r, err := cloud.Compute.ForwardingRules.Get(cloud.Project, cloud.Region, name).Do()
+	r, err := cloud.Compute().ForwardingRules.Get(cloud.Project(), cloud.Region(), name).Do()
 	if err != nil {
 		if gce.IsNotFound(err) {
 			return nil, nil
@@ -72,6 +73,9 @@ func (e *ForwardingRule) Find(c *fi.Context) (*ForwardingRule, error) {
 		}
 		actual.IPAddress = address
 	}
+
+	// Ignore "system" fields
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }
@@ -121,7 +125,7 @@ func (_ *ForwardingRule) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Forwardin
 	if a == nil {
 		glog.V(4).Infof("Creating ForwardingRule %q", o.Name)
 
-		_, err := t.Cloud.Compute.ForwardingRules.Insert(t.Cloud.Project, t.Cloud.Region, o).Do()
+		_, err := t.Cloud.Compute().ForwardingRules.Insert(t.Cloud.Project(), t.Cloud.Region(), o).Do()
 		if err != nil {
 			return fmt.Errorf("error creating ForwardingRule %q: %v", o.Name, err)
 		}

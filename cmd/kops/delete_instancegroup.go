@@ -29,13 +29,13 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/util/pkg/ui"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
 	delete_ig_long = templates.LongDesc(i18n.T(`
 		Delete an instancegroup configuration.  kops has the concept of "instance groups",
-		which are a group of similar virutal machines. On AWS, they map to an
+		which are a group of similar virtual machines. On AWS, they map to an
 		AutoScalingGroup. An ig work either as a Kubernetes master or a node.`))
 
 	delete_ig_example = templates.Examples(i18n.T(`
@@ -109,7 +109,11 @@ func NewCmdDeleteInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
+// RunDeleteInstanceGroup runs the deletion of an instance group
 func RunDeleteInstanceGroup(f *util.Factory, out io.Writer, options *DeleteInstanceGroupOptions) error {
+
+	// TODO make this drain and validate the ig?
+	// TODO implement drain and validate logic
 	groupName := options.GroupName
 	if groupName == "" {
 		return fmt.Errorf("GroupName is required")

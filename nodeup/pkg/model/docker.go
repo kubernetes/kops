@@ -18,15 +18,17 @@ package model
 
 import (
 	"fmt"
-	"github.com/blang/semver"
-	"github.com/golang/glog"
+	"strconv"
+	"strings"
+
 	"k8s.io/kops/nodeup/pkg/distros"
 	"k8s.io/kops/nodeup/pkg/model/resources"
 	"k8s.io/kops/pkg/flagbuilder"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"strings"
+
+	"github.com/golang/glog"
 )
 
 // DockerBuilder install docker (just the packages at the moment)
@@ -48,6 +50,8 @@ type dockerVersion struct {
 	Architectures []Architecture
 }
 
+// DefaultDockerVersion is the (legacy) docker version we use if one is not specified in the manifest.
+// We don't change this with each version of kops, we expect newer versions of kops to populate the field.
 const DefaultDockerVersion = "1.12.3"
 
 var dockerVersions = []dockerVersion{
@@ -218,6 +222,20 @@ var dockerVersions = []dockerVersion{
 		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
 	},
 
+	// 1.12.6 - Debian9 (stretch)
+	{
+		DockerVersion: "1.12.6",
+		Name:          "docker-engine",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "1.12.6-0~debian-stretch",
+		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~debian-stretch_amd64.deb",
+		Hash:          "18bb7d024658f27a1221eae4de78d792bf00611b",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl", "libseccomp2"},
+		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
+	},
+
 	// 1.12.6 - Jessie on ARM
 	{
 		DockerVersion: "1.12.6",
@@ -239,7 +257,8 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.12.6-0~ubuntu-xenial",
 		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.12.6-0~ubuntu-xenial_amd64.deb",
 		Hash:          "fffc22da4ad5b20715bbb6c485b2d2bb7e84fd33",
-		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		// Depends: iptables, init-system-helpers (>= 1.18~), lsb-base (>= 4.1+Debian11ubuntu7), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
 	},
 
 	// 1.12.6 - Centos / Rhel7 (two packages)
@@ -251,7 +270,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.12.6",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.12.6-1.el7.centos.x86_64.rpm",
 		Hash:          "776dbefa9dc7733000e46049293555a9a422c50e",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp"},
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
 	},
 	{
 		DockerVersion: "1.12.6",
@@ -261,6 +280,130 @@ var dockerVersions = []dockerVersion{
 		Version:       "1.12.6",
 		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.12.6-1.el7.centos.noarch.rpm",
 		Hash:          "9a6ee0d631ca911b6927450a3c396e9a5be75047",
+		Dependencies:  []string{"policycoreutils-python"},
+	},
+
+	// 1.13.1 - k8s 1.8
+
+	// 1.13.1 - Jessie
+	{
+		DockerVersion: "1.13.1",
+		Name:          "docker-engine",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "1.13.1-0~debian-jessie",
+		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~debian-jessie_amd64.deb",
+		Hash:          "1d3370549e32ea13b2755b2db8dbc82b2b787ece",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
+	},
+
+	// 1.13.1 - Jessie on ARM
+	{
+		DockerVersion: "1.13.1",
+		Name:          "docker-engine",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureArm},
+		Version:       "1.13.1-0~debian-jessie",
+		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~debian-jessie_armhf.deb",
+		Hash:          "a3f252c5fbb2d3266be611bee50e1f331ff8d05f",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 1.13.1 - Xenial
+	{
+		DockerVersion: "1.13.1",
+		Name:          "docker-engine",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "1.13.1-0~ubuntu-xenial",
+		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~ubuntu-xenial_amd64.deb",
+		Hash:          "d12cbd686f44536c679a03cf0137df163f0bba5f",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		// Depends: iptables, init-system-helpers (>= 1.18~), lsb-base (>= 4.1+Debian11ubuntu7), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.97), libltdl7 (>= 2.4.6), libseccomp2 (>= 2.1.0), libsystemd0
+	},
+
+	// 1.13.1 - Centos / Rhel7 (two packages)
+	{
+		DockerVersion: "1.13.1",
+		Name:          "docker-engine",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "1.13.1",
+		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-1.13.1-1.el7.centos.x86_64.rpm",
+		Hash:          "b18f7fd8057665e7d2871d29640e214173f70fe1",
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
+	},
+	{
+		DockerVersion: "1.13.1",
+		Name:          "docker-engine-selinux",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "1.13.1",
+		Source:        "https://yum.dockerproject.org/repo/main/centos/7/Packages/docker-engine-selinux-1.13.1-1.el7.centos.noarch.rpm",
+		Hash:          "948c518a610af631fa98aa32d9bcd43e9ddd5ebc",
+		Dependencies:  []string{"policycoreutils-python"},
+	},
+
+	// 17.03.2 - k8s 1.8
+
+	// 17.03.2 - Jessie
+	{
+		DockerVersion: "17.03.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.03.2~ce-0~debian-jessie",
+		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-jessie_amd64.deb",
+		Hash:          "a7ac54aaa7d33122ca5f7a2df817cbefb5cdbfc7",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 17.03.2 - Jessie on ARM
+	{
+		DockerVersion: "17.03.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureArm},
+		Version:       "17.03.2~ce-0~debian-jessie",
+		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/armhf/docker-ce_17.03.2~ce-0~debian-jessie_armhf.deb",
+		Hash:          "71e425b83ce0ef49d6298d61e61c4efbc76b9c65",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 17.03.2 - Xenial
+	{
+		DockerVersion: "17.03.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.03.2~ce-0~ubuntu-xenial",
+		Source:        "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.03.2~ce-0~ubuntu-xenial_amd64.deb",
+		Hash:          "4dcee1a05ec592e8a76e53e5b464ea43085a2849",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 17.03.2 - Centos / Rhel7 (two packages)
+	{
+		DockerVersion: "17.03.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.03.2.ce",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm",
+		Hash:          "494ca888f5b1553f93b9d9a5dad4a67f76cf9eb5",
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libgcroup"},
+	},
+	{
+		DockerVersion: "17.03.2",
+		Name:          "docker-ce-selinux",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.03.2.ce",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-selinux-17.03.2.ce-1.el7.centos.noarch.rpm",
+		Hash:          "4659c937b66519c88ef2a82a906bb156db29d191",
+		Dependencies:  []string{"policycoreutils-python"},
 	},
 }
 
@@ -291,14 +434,23 @@ func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro 
 	return true
 }
 
+// Build is responsible for configuring the docker daemon
 func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
+
+	// @check: neither coreos or containeros need provision docker.service, just the docker daemon options
 	switch b.Distribution {
 	case distros.DistributionCoreOS:
 		glog.Infof("Detected CoreOS; won't install Docker")
+		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
+			return err
+		}
 		return nil
 
 	case distros.DistributionContainerOS:
 		glog.Infof("Detected ContainerOS; won't install Docker")
+		if err := b.buildContainerOSConfigurationDropIn(c); err != nil {
+			return err
+		}
 		return nil
 	}
 
@@ -323,11 +475,14 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// Add packages
 	{
+		count := 0
 		for i := range dockerVersions {
 			dv := &dockerVersions[i]
 			if !dv.matches(b.Architecture, dockerVersion, b.Distribution) {
 				continue
 			}
+
+			count++
 
 			c.AddTask(&nodetasks.Package{
 				Name:    dv.Name,
@@ -345,14 +500,31 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			// Note we do _not_ stop looping... centos/rhel comprises multiple packages
 		}
+
+		if count == 0 {
+			glog.Warningf("Did not find docker package for %s %s %s", b.Distribution, b.Architecture, dockerVersion)
+		}
 	}
 
-	dockerSemver, err := semver.ParseTolerant(dockerVersion)
+	// Split into major.minor.(patch+pr+meta)
+	parts := strings.SplitN(dockerVersion, ".", 3)
+	if len(parts) != 3 {
+		return fmt.Errorf("error parsing docker version %q, no Major.Minor.Patch elements found", dockerVersion)
+	}
+
+	// Validate major
+	dockerVersionMajor, err := strconv.ParseInt(parts[0], 10, 64)
 	if err != nil {
-		return fmt.Errorf("error parsing docker version %q as semver: %v", dockerVersion, err)
+		return fmt.Errorf("error parsing major docker version %q: %v", parts[0], err)
 	}
 
-	c.AddTask(b.buildSystemdService(dockerSemver))
+	// Validate minor
+	dockerVersionMinor, err := strconv.ParseInt(parts[1], 10, 64)
+	if err != nil {
+		return fmt.Errorf("error parsing minor docker version %q: %v", parts[1], err)
+	}
+
+	c.AddTask(b.buildSystemdService(dockerVersionMajor, dockerVersionMinor))
 
 	if err := b.buildSysconfig(c); err != nil {
 		return err
@@ -361,8 +533,8 @@ func (b *DockerBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodetasks.Service {
-	oldDocker := dockerVersion.Major <= 1 && dockerVersion.Minor <= 11
+func (b *DockerBuilder) buildSystemdService(dockerVersionMajor int64, dockerVersionMinor int64) *nodetasks.Service {
+	oldDocker := dockerVersionMajor <= 1 && dockerVersionMinor <= 11
 	usesDockerSocket := true
 	hasDockerBabysitter := false
 
@@ -395,6 +567,7 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 
 	manifest.Set("Service", "Type", "notify")
 	manifest.Set("Service", "EnvironmentFile", "/etc/sysconfig/docker")
+	manifest.Set("Service", "EnvironmentFile", "/etc/environment")
 
 	if usesDockerSocket {
 		manifest.Set("Service", "ExecStart", dockerdCommand+" -H fd:// \"$DOCKER_OPTS\"")
@@ -458,6 +631,33 @@ func (b *DockerBuilder) buildSystemdService(dockerVersion semver.Version) *nodet
 	return service
 }
 
+// buildContainerOSConfigurationDropIn is responsible for configuring the docker daemon options
+func (b *DockerBuilder) buildContainerOSConfigurationDropIn(c *fi.ModelBuilderContext) error {
+	lines := []string{
+		"[Service]",
+		"EnvironmentFile=/etc/sysconfig/docker",
+		"EnvironmentFile=/etc/environment",
+	}
+	contents := strings.Join(lines, "\n")
+
+	c.AddTask(&nodetasks.File{
+		Path:     "/etc/systemd/system/docker.service.d/10-kops.conf",
+		Contents: fi.NewStringResource(contents),
+		Type:     nodetasks.FileType_File,
+		OnChangeExecute: [][]string{
+			{"systemctl", "daemon-reload"},
+			{"systemctl", "restart", "docker.service"},
+		},
+	})
+
+	if err := b.buildSysconfig(c); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// buildSysconfig is responsible for extracting the docker configuration and writing the sysconfig file
 func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 	flagsString, err := flagbuilder.BuildFlags(b.Cluster.Spec.Docker)
 	if err != nil {
@@ -470,12 +670,11 @@ func (b *DockerBuilder) buildSysconfig(c *fi.ModelBuilderContext) error {
 	}
 	contents := strings.Join(lines, "\n")
 
-	t := &nodetasks.File{
+	c.AddTask(&nodetasks.File{
 		Path:     "/etc/sysconfig/docker",
 		Contents: fi.NewStringResource(contents),
 		Type:     nodetasks.FileType_File,
-	}
-	c.AddTask(t)
+	})
 
 	return nil
 }

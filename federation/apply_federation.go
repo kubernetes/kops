@@ -25,22 +25,22 @@ import (
 	"text/template"
 
 	"github.com/golang/glog"
+	"k8s.io/api/core/v1"
+	k8sapiv1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/federation/model"
 	"k8s.io/kops/federation/targets/kubernetestarget"
 	"k8s.io/kops/federation/tasks"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/upup/pkg/fi/k8sapi"
 	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
-	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 type ApplyFederationOperation struct {
@@ -176,7 +176,7 @@ func (o *ApplyFederationOperation) Run() error {
 			ClusterName:       clusterName,
 			ApiserverHostname: cluster.Spec.MasterPublicName,
 		}
-		err = a.Run(cluster)
+		err = a.Run(o.KopsClient, cluster)
 		if err != nil {
 			return err
 		}
@@ -194,7 +194,7 @@ func (o *ApplyFederationOperation) Run() error {
 // Builds a fi.Context applying to the federation namespace in the specified cluster
 // Note that this operates inside the cluster, for example the KeyStore is backed by secrets in the namespace
 func (o *ApplyFederationOperation) federationContextForCluster(cluster *kopsapi.Cluster) (*fi.Context, error) {
-	clusterKeystore, err := registry.KeyStore(cluster)
+	clusterKeystore, err := o.KopsClient.KeyStore(cluster)
 	if err != nil {
 		return nil, err
 	}
@@ -207,7 +207,7 @@ func (o *ApplyFederationOperation) federationContextForCluster(cluster *kopsapi.
 	federationKeystore := k8sapi.NewKubernetesKeystore(target.KubernetesClient, o.namespace)
 
 	checkExisting := true
-	context, err := fi.NewContext(target, nil, federationKeystore, nil, nil, checkExisting, nil)
+	context, err := fi.NewContext(target, nil, nil, federationKeystore, nil, nil, checkExisting, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -398,7 +398,7 @@ func (o *ApplyFederationOperation) ensureFederationNamespace(k8s federation_clie
 	})
 }
 
-func EnsureCASecret(keystore fi.Keystore) (*fi.Certificate, *fi.PrivateKey, error) {
+func EnsureCASecret(keystore fi.Keystore) (*pki.Certificate, *pki.PrivateKey, error) {
 	id := fi.CertificateId_CA
 	caCert, caPrivateKey, err := keystore.FindKeypair(id)
 	if err != nil {
@@ -411,9 +411,9 @@ func EnsureCASecret(keystore fi.Keystore) (*fi.Certificate, *fi.PrivateKey, erro
 			return nil, nil, fmt.Errorf("error generating RSA private key: %v", err)
 		}
 
-		caPrivateKey = &fi.PrivateKey{Key: caRsaKey}
+		caPrivateKey = &pki.PrivateKey{Key: caRsaKey}
 
-		caCert, err = fi.SignNewCertificate(caPrivateKey, template, nil, nil)
+		caCert, err = pki.SignNewCertificate(caPrivateKey, template, nil, nil)
 		if err != nil {
 			return nil, nil, err
 		}

@@ -31,7 +31,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops/registry"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -43,9 +43,31 @@ var (
 	kops get clusters
 
 	# Get a cluster
-	kops get cluster k8s-cluster.example.com`))
+	kops get cluster k8s-cluster.example.com
+
+	# Get a cluster YAML desired configuration
+	kops get cluster k8s-cluster.example.com -o yaml
+
+	# Save a cluster desired configuration to YAML file
+	kops get cluster k8s-cluster.example.com -o yaml > cluster-desired-config.yaml
+	`))
 
 	get_cluster_short = i18n.T(`Get one or many clusters.`)
+
+	// Warning for --full.  Since we are not using the template from kubectl
+	// we have to have zero white space before the comment characters otherwise
+	// output to stdout is going to be off.
+	get_cluster_full_warning = i18n.T(`
+//
+//   WARNING: Do not use a '--full' cluster specification to define a Kubernetes installation.
+//   You may experience unexpected behavior and other bugs.  Use only the required elements
+//   and any modifications that you require.
+//
+//   Use the following command to retrieve only the required elements:
+//   $ kop get cluster -o yaml
+//
+
+`)
 )
 
 type GetClusterOptions struct {
@@ -111,8 +133,7 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 	}
 
 	if len(clusters) == 0 {
-		fmt.Fprintf(os.Stderr, "No clusters found\n")
-		return nil
+		return fmt.Errorf("No clusters found")
 	}
 
 	if options.FullSpec {
@@ -121,6 +142,8 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		if err != nil {
 			return err
 		}
+
+		fmt.Fprint(out, get_cluster_full_warning)
 	}
 
 	switch options.output {
@@ -173,7 +196,9 @@ func clusterOutputTable(clusters []*api.Cluster, out io.Writer) error {
 	t.AddColumn("ZONES", func(c *api.Cluster) string {
 		zones := sets.NewString()
 		for _, s := range c.Spec.Subnets {
-			zones.Insert(s.Zone)
+			if s.Zone != "" {
+				zones.Insert(s.Zone)
+			}
 		}
 		return strings.Join(zones.List(), ",")
 	})

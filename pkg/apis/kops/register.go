@@ -17,12 +17,8 @@ limitations under the License.
 package kops
 
 import (
-	"k8s.io/apimachinery/pkg/apimachinery/announced"
-	"k8s.io/apimachinery/pkg/apimachinery/registered"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"os"
 )
 
 var (
@@ -30,16 +26,16 @@ var (
 	AddToScheme   = SchemeBuilder.AddToScheme
 )
 
-var GroupFactoryRegistry = make(announced.APIGroupFactoryRegistry)
-
-var Registry = registered.NewOrDie(os.Getenv("KOPS_API_VERSIONS"))
-
-var Scheme = runtime.NewScheme()
-
-var Codecs = serializer.NewCodecFactory(Scheme)
-
-// ParameterCodec handles versioning of objects that are converted to query parameters.
-var ParameterCodec = runtime.NewParameterCodec(Scheme)
+//var GroupFactoryRegistry = make(announced.APIGroupFactoryRegistry)
+//
+//var Registry = registered.NewOrDie(os.Getenv("KOPS_API_VERSIONS"))
+//
+//var Scheme = runtime.NewScheme()
+//
+//var Codecs = serializer.NewCodecFactory(Scheme)
+//
+//// ParameterCodec handles versioning of objects that are converted to query parameters.
+//var ParameterCodec = runtime.NewParameterCodec(Scheme)
 
 // GroupName is the group name use in this package
 const GroupName = "kops"
@@ -47,10 +43,10 @@ const GroupName = "kops"
 // SchemeGroupVersion is group version used to register these objects
 var SchemeGroupVersion = schema.GroupVersion{Group: GroupName, Version: runtime.APIVersionInternal}
 
-// Kind takes an unqualified kind and returns a Group qualified GroupKind
-func Kind(kind string) schema.GroupKind {
-	return SchemeGroupVersion.WithKind(kind).GroupKind()
-}
+//// Kind takes an unqualified kind and returns a Group qualified GroupKind
+//func Kind(kind string) schema.GroupKind {
+//	return SchemeGroupVersion.WithKind(kind).GroupKind()
+//}
 
 // Resource takes an unqualified resource and returns a Group qualified GroupResource
 func Resource(resource string) schema.GroupResource {
@@ -65,6 +61,10 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		&InstanceGroupList{},
 		&Federation{},
 		&FederationList{},
+		&Keyset{},
+		&KeysetList{},
+		&SSHCredential{},
+		&SSHCredentialList{},
 	)
 	//metav1.AddToGroupVersion(scheme, SchemeGroupVersion)
 	return nil
@@ -77,5 +77,11 @@ func (obj *InstanceGroup) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
 func (obj *Federation) GetObjectKind() schema.ObjectKind {
+	return &obj.TypeMeta
+}
+func (obj *Keyset) GetObjectKind() schema.ObjectKind {
+	return &obj.TypeMeta
+}
+func (obj *SSHCredential) GetObjectKind() schema.ObjectKind {
 	return &obj.TypeMeta
 }
