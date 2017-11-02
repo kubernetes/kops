@@ -594,3 +594,12 @@ bazel-push-gce-run: bazel-push
 .PHONY: bazel-push-aws-run
 bazel-push-aws-run: bazel-push
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
+
+.PHONY: check-markdown-links
+check-markdown-links:
+	docker run -t -v $$PWD:/tmp \
+		-e LC_ALL=C.UTF-8 \
+		-e LANG=en_US.UTF-8 \
+		-e LANGUAGE=en_US.UTF-8 \
+		rubygem/awesome_bot --allow-dupe --allow-redirect \
+		$(shell find $$PWD -name "*.md" -mindepth 1 -printf '%P\n' | grep -v vendor | grep -v _vendor | grep -v Changelog.md)
