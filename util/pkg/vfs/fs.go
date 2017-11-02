@@ -18,13 +18,14 @@ package vfs
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io"
 	"io/ioutil"
-	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"path"
 	"sync"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 type FSPath struct {

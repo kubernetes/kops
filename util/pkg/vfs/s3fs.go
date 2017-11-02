@@ -20,16 +20,17 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/awserr"
-	"github.com/aws/aws-sdk-go/service/s3"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/aws/awserr"
+	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 type S3Path struct {

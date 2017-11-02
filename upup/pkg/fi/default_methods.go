@@ -18,8 +18,9 @@ package fi
 
 import (
 	"fmt"
-	"k8s.io/kops/upup/pkg/fi/utils"
 	"reflect"
+
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // DefaultDeltaRunMethod implements the standard change-based run procedure:

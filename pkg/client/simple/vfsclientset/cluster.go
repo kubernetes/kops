@@ -18,6 +18,10 @@ package vfsclientset
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -28,9 +32,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/util/pkg/vfs"
-	"os"
-	"strings"
-	"time"
 )
 
 type ClusterVFS struct {
