@@ -18,9 +18,10 @@ package vfs
 
 import (
 	"fmt"
-	"k8s.io/kops/util/pkg/hashing"
 	"path"
 	"strings"
+
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 // KubernetesPath is a path for a VFS backed by the kubernetes API

@@ -17,8 +17,9 @@ limitations under the License.
 package assets
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
 	"testing"
+
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func TestRemap_File(t *testing.T) {

@@ -18,9 +18,10 @@ package vfs
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/util/pkg/hashing"
-	"strings"
 )
 
 // Yet another VFS package

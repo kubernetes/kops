@@ -17,9 +17,10 @@ limitations under the License.
 package cloudup
 
 import (
-	api "k8s.io/kops/pkg/apis/kops"
 	"os"
 	"testing"
+
+	api "k8s.io/kops/pkg/apis/kops"
 )
 
 func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
