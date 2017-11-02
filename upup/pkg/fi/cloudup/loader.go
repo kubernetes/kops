@@ -185,6 +185,9 @@ func (l *Loader) BuildTasks(modelStore vfs.Path, models []string, assetBuilder *
 		return nil, err
 	}
 
+	if err := l.addAssetFileCopyTasks(assetBuilder.FileAssets, lifecycle); err != nil {
+		return nil, err
+	}
 	err := l.processDeferrals()
 	if err != nil {
 		return nil, err
@@ -214,6 +217,41 @@ func (l *Loader) addAssetCopyTasks(assets []*assets.ContainerAsset, lifecycle *f
 
 		}
 	}
+
+	return nil
+}
+
+func (l *Loader) addAssetFileCopyTasks(assets []*assets.FileAsset, lifecycle *fi.Lifecycle) error {
+	for _, asset := range assets {
+		glog.V(10).Infof("processing asset: %q, %q", asset.File, asset.CanonicalLocation)
+		if asset.CanonicalLocation != "" && asset.File != asset.CanonicalLocation {
+			context := &fi.ModelBuilderContext{
+				Tasks: l.tasks,
+			}
+
+			glog.V(10).Infof("adding task: %q", asset.File)
+			copyFileTask := &assettasks.CopyFile{
+				Name:       fi.String(asset.CanonicalLocation),
+				TargetFile: fi.String(asset.File),
+				SourceFile: fi.String(asset.CanonicalLocation),
+				Lifecycle:  lifecycle,
+			}
+
+			if asset.SHAValue != "" {
+				copyFileTask.SourceSha = fi.String(asset.SHAValue)
+			} else if asset.CononicalSHALocation != "" && asset.SHA != "" {
+				copyFileTask.SourceShaLocation = fi.String(asset.CononicalSHALocation)
+				copyFileTask.TargetSha = fi.String(asset.SHA)
+			}
+			if err := context.EnsureTask(copyFileTask); err != nil {
+				return fmt.Errorf("error adding asset-copy task: %v", err)
+			}
+
+			l.tasks = context.Tasks
+
+		}
+	}
+
 	return nil
 }
 
