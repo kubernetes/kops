@@ -21,6 +21,7 @@ spec:
       name: a
     name: events
   iam:
+    allowContainerRegistry: true
     legacy: false
   kubernetesApiAccess:
   - 0.0.0.0/0
