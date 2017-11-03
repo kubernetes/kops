@@ -37,6 +37,7 @@ spec:
       zone: us-test-1c
     name: events
   iam:
+    allowContainerRegistry: true
     legacy: false
   kubernetesVersion: v1.6.0-alpha.3
   masterPublicName: api.ha.example.com
