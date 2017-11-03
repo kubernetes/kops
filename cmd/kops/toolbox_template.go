@@ -17,12 +17,13 @@ limitations under the License.
 package main
 
 import (
-	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/ghodss/yaml"
 	"github.com/spf13/cobra"
@@ -139,16 +140,14 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 			if err != nil {
 				return fmt.Errorf("unable to read snippet: %s, error: %s", j, err)
 			}
-			snippets[j] = string(content)
+			snippets[path.Base(j)] = string(content)
 		}
 	}
 
-	b := new(bytes.Buffer)
-
-	// @step: render each of the template and write to location
+	// @step: render each of the templates, splitting on the documents
 	r := templater.NewTemplater()
-	size := len(templates) - 1
-	for i, x := range templates {
+	var documents []string
+	for _, x := range templates {
 		content, err := ioutil.ReadFile(x)
 		if err != nil {
 			return fmt.Errorf("unable to read template: %s, error: %s", x, err)
@@ -158,37 +157,35 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		if err != nil {
 			return fmt.Errorf("unable to render template: %s, error: %s", x, err)
 		}
-		// @check if we have a zero length string and if so, forgo it
+		// @check if the content is zero ignore it
 		if len(rendered) <= 0 {
 			continue
 		}
 
-		// @check if we need to format the yaml
-		if options.formatYAML {
-			var data interface{}
-			if err := utils.YamlUnmarshal([]byte(rendered), &data); err != nil {
+		if !options.formatYAML {
+			documents = append(documents, strings.Split(rendered, "---\n")...)
+			continue
+		}
+
+		for _, x := range strings.Split(rendered, "---\n") {
+			var data map[string]interface{}
+			if err := yaml.Unmarshal([]byte(x), &data); err != nil {
 				return fmt.Errorf("unable to unmarshall content from template: %s, error: %s", x, err)
 			}
-			// @TODO: i'm not sure how this could happen but best to heck none the less
+			if len(data) <= 0 {
+				continue
+			}
 			formatted, err := yaml.Marshal(&data)
 			if err != nil {
 				return fmt.Errorf("unable to marhshal formated content to yaml: %s", err)
 			}
-			rendered = string(formatted)
-		}
-		if _, err := b.WriteString(rendered); err != nil {
-			return fmt.Errorf("unable to write template: %s, error: %s", x, err)
-		}
-
-		// @check if we should need to add document separator
-		if i < size {
-			if _, err := b.WriteString("---\n"); err != nil {
-				return fmt.Errorf("unable to write to template: %s, error: %s", x, err)
-			}
+			documents = append(documents, string(formatted))
 		}
 	}
-	iowriter := out
+	// join in harmony all the YAML documents back together
+	content := strings.Join(documents, "---\n")
 
+	iowriter := out
 	// @check if we are writing to a file rather than stdout
 	if options.outputPath != "" {
 		w, err := os.OpenFile(utils.ExpandPath(options.outputPath), os.O_RDWR|os.O_TRUNC|os.O_CREATE, 0660)
@@ -199,7 +196,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		iowriter = w
 	}
 
-	if _, err := iowriter.Write(b.Bytes()); err != nil {
+	if _, err := iowriter.Write([]byte(content)); err != nil {
 		return fmt.Errorf("unable to write template: %s", err)
 	}
 
