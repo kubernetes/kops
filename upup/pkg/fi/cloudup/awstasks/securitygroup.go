@@ -69,6 +69,7 @@ func (e *SecurityGroup) Find(c *fi.Context) (*SecurityGroup, error) {
 	if sg == nil {
 		return nil, nil
 	}
+
 	actual := &SecurityGroup{
 		ID:          sg.GroupId,
 		Name:        sg.GroupName,
@@ -161,6 +162,30 @@ func (_ *SecurityGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Security
 	if shared {
 		// Do we want to do any verification of the security group?
 		return nil
+	}
+
+	// We are getting into an odd spot with phases when you run just the security phase
+	// the VPC id is not set, this is setting the id.
+	if e.VPC.ID == nil {
+
+		request := &ec2.DescribeVpcsInput{}
+
+		request.Filters = t.Cloud.BuildFilters(e.VPC.Name)
+		cloud := t.Cloud.(awsup.AWSCloud)
+		response, err := cloud.EC2().DescribeVpcs(request)
+		if err != nil {
+			return fmt.Errorf("error listing VPCs: %v", err)
+		}
+		if response == nil || len(response.Vpcs) == 0 {
+			return fmt.Errorf("unable to find VPC: %q", e.VPC.Name)
+		}
+
+		if len(response.Vpcs) != 1 {
+			return fmt.Errorf("found multiple VPCs matching tags")
+		}
+		vpcID := response.Vpcs[0].VpcId
+
+		e.VPC.ID = vpcID
 	}
 
 	if a == nil {
