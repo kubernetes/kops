@@ -60,14 +60,14 @@ func ParseAddons(name string, location *url.URL, data []byte) (*Addons, error) {
 }
 
 func (a *Addons) GetCurrent(kubernetesVersion semver.Version) (*AddonMenu, error) {
-	all, err := a.wrapInAddons()
+	all, err := a.WrapInAddons()
 	if err != nil {
 		return nil, err
 	}
 
 	menu := NewAddonMenu()
 	for _, addon := range all {
-		if !addon.matches(kubernetesVersion) {
+		if !addon.Matches(kubernetesVersion) {
 			continue
 		}
 		name := addon.Name
@@ -81,7 +81,7 @@ func (a *Addons) GetCurrent(kubernetesVersion semver.Version) (*AddonMenu, error
 	return menu, nil
 }
 
-func (a *Addons) wrapInAddons() ([]*Addon, error) {
+func (a *Addons) WrapInAddons() ([]*Addon, error) {
 	var addons []*Addon
 	for _, s := range a.APIObject.Spec.Addons {
 		name := a.APIObject.ObjectMeta.Name
@@ -101,7 +101,7 @@ func (a *Addons) wrapInAddons() ([]*Addon, error) {
 	return addons, nil
 }
 
-func (s *Addon) matches(kubernetesVersion semver.Version) bool {
+func (s *Addon) Matches(kubernetesVersion semver.Version) bool {
 	if s.Spec.KubernetesVersion != "" {
 		versionRange, err := semver.ParseRange(s.Spec.KubernetesVersion)
 		if err != nil {
