@@ -18,9 +18,10 @@ package dns
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	"strings"
 )
 
 type ZoneSpec struct {

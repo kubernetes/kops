@@ -21,8 +21,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"k8s.io/kops/util/pkg/vfs"
 	"os"
+
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Resource interface {

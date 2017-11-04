@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 )

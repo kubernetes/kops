@@ -18,6 +18,7 @@ package gce
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	context "golang.org/x/net/context"
 	compute "google.golang.org/api/compute/v0.beta"

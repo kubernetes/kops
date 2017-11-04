@@ -19,15 +19,16 @@ package terraform
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
-	hcl_parser "github.com/hashicorp/hcl/json/parser"
 	"io/ioutil"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"os"
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/golang/glog"
+	hcl_parser "github.com/hashicorp/hcl/json/parser"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type TerraformTarget struct {

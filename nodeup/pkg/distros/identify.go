@@ -18,11 +18,12 @@ package distros
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"os"
 	"path"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
 // FindDistribution identifies the distribution on which we are running

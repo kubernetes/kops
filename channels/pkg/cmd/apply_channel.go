@@ -18,14 +18,15 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/blang/semver"
-	"github.com/spf13/cobra"
 	"io"
-	"k8s.io/kops/channels/pkg/channels"
-	"k8s.io/kops/util/pkg/tables"
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/blang/semver"
+	"github.com/spf13/cobra"
+	"k8s.io/kops/channels/pkg/channels"
+	"k8s.io/kops/util/pkg/tables"
 )
 
 type ApplyChannelOptions struct {
