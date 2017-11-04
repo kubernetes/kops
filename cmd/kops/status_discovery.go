@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"

@@ -19,18 +19,19 @@ package nodetasks
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
-	"k8s.io/kops/upup/pkg/fi/nodeup/local"
-	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
-	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"os/exec"
 	"path"
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/cloudinit"
+	"k8s.io/kops/upup/pkg/fi/nodeup/local"
+	"k8s.io/kops/upup/pkg/fi/nodeup/tags"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 type Package struct {

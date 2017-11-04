@@ -18,11 +18,12 @@ package mesh
 
 import (
 	"fmt"
+	"sync"
+	"time"
+
 	"github.com/gogo/protobuf/proto"
 	"github.com/weaveworks/mesh"
 	"k8s.io/kops/protokube/pkg/gossip"
-	"sync"
-	"time"
 )
 
 // state is an implementation of a LWW map

@@ -7,5 +7,6 @@ go_library(
     deps = [
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack:go_default_library",
+        "//vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/noauth:go_default_library",
     ],
 )

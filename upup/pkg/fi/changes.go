@@ -17,8 +17,9 @@ limitations under the License.
 package fi
 
 import (
-	"github.com/golang/glog"
 	"reflect"
+
+	"github.com/golang/glog"
 )
 
 // An important part of our state synchronization is to compare two tasks, to see what has changed

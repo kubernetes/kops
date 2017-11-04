@@ -19,6 +19,8 @@ package kopscodecs
 import (
 	"bytes"
 	"fmt"
+	"os"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/apimachinery/announced"
 	"k8s.io/apimachinery/pkg/apimachinery/registered"
@@ -29,7 +31,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/install"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
-	"os"
 )
 
 var Scheme = runtime.NewScheme()

@@ -18,13 +18,14 @@ package awsup
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi"
-	"strings"
 )
 
 // FindClusterStatus discovers the status of the cluster, by looking for the tagged etcd volumes
