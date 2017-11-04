@@ -919,8 +919,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
+	// Use Strict IAM policy and allow AWS ECR by default when creating a new cluster
 	cluster.Spec.IAM = &api.IAMSpec{
-		Legacy: false,
+		AllowContainerRegistry: true,
+		Legacy:                 false,
 	}
 
 	sshPublicKeys := make(map[string][]byte)
