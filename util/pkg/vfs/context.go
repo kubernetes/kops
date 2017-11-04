@@ -27,6 +27,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/gophercloud/gophercloud"
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2/google"
 	storage "google.golang.org/api/storage/v1"
@@ -43,6 +44,8 @@ type VFSContext struct {
 	mutex sync.Mutex
 	// The google cloud storage client, if initialized
 	gcsClient *storage.Service
+	// swiftClient is the openstack swift client
+	swiftClient *gophercloud.ServiceClient
 }
 
 var Context = VFSContext{
@@ -111,6 +114,10 @@ func (c *VFSContext) BuildVfsPath(p string) (Path, error) {
 
 	if strings.HasPrefix(p, "k8s://") {
 		return c.buildKubernetesPath(p)
+	}
+
+	if strings.HasPrefix(p, "swift://") {
+		return c.buildOpenstackSwiftPath(p)
 	}
 
 	return nil, fmt.Errorf("unknown / unhandled path type: %q", p)
@@ -309,4 +316,30 @@ func (c *VFSContext) getGCSClient() (*storage.Service, error) {
 
 	c.gcsClient = gcsClient
 	return gcsClient, nil
+}
+
+func (c *VFSContext) buildOpenstackSwiftPath(p string) (*SwiftPath, error) {
+	u, err := url.Parse(p)
+	if err != nil {
+		return nil, fmt.Errorf("invalid openstack cloud storage path: %q", p)
+	}
+
+	if u.Scheme != "swift" {
+		return nil, fmt.Errorf("invalid openstack cloud storage path: %q", p)
+	}
+
+	bucket := strings.TrimSuffix(u.Host, "/")
+	if bucket == "" {
+		return nil, fmt.Errorf("invalid swift path: %q", p)
+	}
+
+	if c.swiftClient == nil {
+		swiftClient, err := NewSwiftClient()
+		if err != nil {
+			return nil, err
+		}
+		c.swiftClient = swiftClient
+	}
+
+	return NewSwiftPath(c.swiftClient, bucket, u.Path)
 }

@@ -94,7 +94,7 @@ func IsClusterReadable(p Path) bool {
 	}
 
 	switch p.(type) {
-	case *S3Path, *GSPath:
+	case *S3Path, *GSPath, *SwiftPath:
 		return true
 
 	case *KubernetesPath:
