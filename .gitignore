@@ -70,3 +70,6 @@ bazel-out
 bazel-testlogs
 # Ignore default apiserver config
 apiserver.local.config
+
+# Ignore awesome_bot markdown links check output
+ab-results-*.json
