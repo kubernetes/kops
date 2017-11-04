@@ -101,7 +101,7 @@ kops create cluster
       --target string                        Valid targets: direct, terraform, direct. Set this flag to terraform if you want kops to generate terraform (default "direct")
   -t, --topology string                      Controls network topology for the cluster. public|private. Default is 'public'. (default "public")
       --vpc string                           Set to use a shared VPC
-      --yes                                  Specify --yes to immediately create the cluster
+  -y, --yes                                  Specify --yes to immediately create the cluster
       --zones stringSlice                    Zones in which to run the cluster
 ```
 

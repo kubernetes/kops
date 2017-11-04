@@ -32,7 +32,7 @@ kops update cluster
       --phase string            Subset of tasks to run: assets, cluster, network, security
       --ssh-public-key string   SSH public key to use (deprecated: use kops create secret instead)
       --target string           Target - direct, terraform, cloudformation (default "direct")
-      --yes                     Actually create cloud resources
+  -y, --yes                     Create cloud resources, without --yes update is in dry run mode
 ```
 
 ### Options inherited from parent commands
