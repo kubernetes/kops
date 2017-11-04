@@ -18,6 +18,7 @@ package awsup
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 )

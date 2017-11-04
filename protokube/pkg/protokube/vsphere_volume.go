@@ -21,14 +21,15 @@ package protokube
 import (
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
-	etcdmanager "k8s.io/kops/protokube/pkg/etcd"
-	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"net"
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"github.com/golang/glog"
+	etcdmanager "k8s.io/kops/protokube/pkg/etcd"
+	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 )
 
 const VolumeMetaDataFile = "/vol-metadata/metadata.json"

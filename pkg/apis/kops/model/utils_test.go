@@ -17,9 +17,10 @@ limitations under the License.
 package model
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
 	"reflect"
 	"testing"
+
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 // Test_FindSubnet tests FindSubnet

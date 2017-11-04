@@ -25,8 +25,9 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"github.com/golang/glog"
 	"io"
+
+	"github.com/golang/glog"
 )
 
 type Certificate struct {

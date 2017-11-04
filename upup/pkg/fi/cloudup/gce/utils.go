@@ -18,8 +18,9 @@ package gce
 
 import (
 	"fmt"
-	"google.golang.org/api/googleapi"
 	"strings"
+
+	"google.golang.org/api/googleapi"
 )
 
 func IsNotFound(err error) bool {

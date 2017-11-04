@@ -18,11 +18,12 @@ package v1alpha1
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/conversion"
-	"k8s.io/kops/pkg/apis/kops"
 	"reflect"
 	"sort"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/conversion"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func Convert_v1alpha1_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops.BastionSpec, s conversion.Scope) error {

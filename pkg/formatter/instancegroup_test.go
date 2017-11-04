@@ -17,8 +17,9 @@ limitations under the License.
 package formatter
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
 	"testing"
+
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func TestRenderInstanceGroupZones(t *testing.T) {

@@ -17,8 +17,9 @@ limitations under the License.
 package diff
 
 import (
-	"github.com/sergi/go-diff/diffmatchpatch"
 	"testing"
+
+	"github.com/sergi/go-diff/diffmatchpatch"
 )
 
 func Test_Diff_1(t *testing.T) {

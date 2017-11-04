@@ -17,10 +17,11 @@ limitations under the License.
 package formatter
 
 import (
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
-	"strings"
 )
 
 // InstanceGroupRenderFunction is a render function for an InstanceGroup

@@ -17,9 +17,10 @@ limitations under the License.
 package featureflag
 
 import (
-	"github.com/golang/glog"
 	"os"
 	"testing"
+
+	"github.com/golang/glog"
 )
 
 func TestFlagToFalse(t *testing.T) {

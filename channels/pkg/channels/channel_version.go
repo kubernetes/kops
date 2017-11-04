@@ -19,13 +19,14 @@ package channels
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
-	"strings"
 )
 
 const AnnotationPrefix = "addons.k8s.io/"
