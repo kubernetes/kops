@@ -17,8 +17,9 @@ limitations under the License.
 package cmd
 
 import (
-	"github.com/spf13/cobra"
 	"io"
+
+	"github.com/spf13/cobra"
 )
 
 func NewCmdApply(f Factory, out io.Writer) *cobra.Command {

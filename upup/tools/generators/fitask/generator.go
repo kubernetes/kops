@@ -18,8 +18,9 @@ package main
 
 import (
 	"io"
-	"k8s.io/kops/upup/tools/generators/pkg/codegen"
 	"text/template"
+
+	"k8s.io/kops/upup/tools/generators/pkg/codegen"
 )
 
 type FitaskGenerator struct {

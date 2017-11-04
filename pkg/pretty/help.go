@@ -18,8 +18,9 @@ package pretty
 
 import (
 	"fmt"
-	"github.com/MakeNowJust/heredoc"
 	"strings"
+
+	"github.com/MakeNowJust/heredoc"
 )
 
 // Bash markdown-quotes a bash command for insertion into help text.

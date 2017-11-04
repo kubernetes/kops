@@ -19,13 +19,14 @@ package cloudformation
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
-	"k8s.io/kops/upup/pkg/fi"
 	"os"
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type CloudformationTarget struct {

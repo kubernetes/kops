@@ -19,6 +19,7 @@ package vfsclientset
 // These imports are the API groups the client will support.
 import (
 	"fmt"
+
 	"k8s.io/kops/pkg/kopscodecs"
 )
 

@@ -18,10 +18,11 @@ package awsup
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/aws/aws-sdk-go/aws/client"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/golang/glog"
-	"time"
 )
 
 // LoggingRetryer adds some logging when we are retrying, so we have some idea what is happening

@@ -17,14 +17,15 @@ limitations under the License.
 package k8scodecs
 
 import (
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/MakeNowJust/heredoc"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/pkg/diff"
-	"strings"
-	"testing"
-	"time"
 )
 
 // An arbitrary timestamp for testing

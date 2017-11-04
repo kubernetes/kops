@@ -17,10 +17,11 @@ limitations under the License.
 package cloudup
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
 	"net"
 	"reflect"
 	"testing"
+
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func Test_Split_Subnet(t *testing.T) {

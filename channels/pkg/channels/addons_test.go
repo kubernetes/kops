@@ -17,9 +17,10 @@ limitations under the License.
 package channels
 
 import (
+	"testing"
+
 	"github.com/blang/semver"
 	"k8s.io/kops/channels/pkg/api"
-	"testing"
 )
 
 func Test_Filtering(t *testing.T) {

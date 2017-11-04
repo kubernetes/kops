@@ -18,8 +18,9 @@ package main
 
 import (
 	"fmt"
-	"k8s.io/kops/channels/pkg/cmd"
 	"os"
+
+	"k8s.io/kops/channels/pkg/cmd"
 )
 
 func main() {
