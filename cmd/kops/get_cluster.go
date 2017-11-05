@@ -18,13 +18,13 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
-	"io"
-
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
@@ -133,7 +133,7 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 	}
 
 	if len(clusters) == 0 {
-		return fmt.Errorf("No clusters found")
+		return fmt.Errorf("no clusters found")
 	}
 
 	if options.FullSpec {
@@ -146,14 +146,20 @@ func RunGetClusters(context Factory, out io.Writer, options *GetClusterOptions) 
 		fmt.Fprint(out, get_cluster_full_warning)
 	}
 
+	var obj []runtime.Object
+	if options.output != OutputTable {
+		for _, c := range clusters {
+			obj = append(obj, c)
+		}
+	}
+
 	switch options.output {
 	case OutputTable:
 		return clusterOutputTable(clusters, out)
 	case OutputYaml:
-		return clusterOutputYAML(clusters, out)
+		return fullOutputYAML(out, obj...)
 	case OutputJSON:
-		return clusterOutputJson(clusters, out)
-
+		return fullOutputJSON(out, obj...)
 	default:
 		return fmt.Errorf("Unknown output format: %q", options.output)
 	}
@@ -206,23 +212,47 @@ func clusterOutputTable(clusters []*api.Cluster, out io.Writer) error {
 	return t.Render(clusters, out, "NAME", "CLOUD", "ZONES")
 }
 
-func clusterOutputJson(clusters []*api.Cluster, out io.Writer) error {
-	for _, cluster := range clusters {
-		if err := marshalToWriter(cluster, marshalJSON, out); err != nil {
+// fullOutputJson outputs the marshalled JSON of a list of clusters and instance groups.  It will handle
+// nils for clusters and instanceGroups slices.
+func fullOutputJSON(out io.Writer, args ...runtime.Object) error {
+	argsLen := len(args)
+
+	if argsLen > 1 {
+		if _, err := fmt.Fprint(out, "["); err != nil {
 			return err
 		}
 	}
+
+	for i, arg := range args {
+		if i != 0 {
+			if _, err := fmt.Fprint(out, ","); err != nil {
+				return err
+			}
+		}
+		if err := marshalToWriter(arg, marshalJSON, out); err != nil {
+			return err
+		}
+	}
+
+	if argsLen > 1 {
+		if _, err := fmt.Fprint(out, "]"); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
-func clusterOutputYAML(clusters []*api.Cluster, out io.Writer) error {
-	for i, cluster := range clusters {
+// fullOutputJson outputs the marshalled JSON of a list of clusters and instance groups.  It will handle
+// nils for clusters and instanceGroups slices.
+func fullOutputYAML(out io.Writer, args ...runtime.Object) error {
+	for i, obj := range args {
 		if i != 0 {
 			if err := writeYAMLSep(out); err != nil {
 				return fmt.Errorf("error writing to stdout: %v", err)
 			}
 		}
-		if err := marshalToWriter(cluster, marshalYaml, out); err != nil {
+		if err := marshalToWriter(obj, marshalYaml, out); err != nil {
 			return err
 		}
 	}

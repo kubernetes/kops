@@ -18,13 +18,14 @@ package fi
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io"
-	"k8s.io/kops/util/pkg/hashing"
 	"os"
 	"path"
 	"strconv"
 	"syscall"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 func WriteFile(destPath string, contents Resource, fileMode os.FileMode, dirMode os.FileMode) error {

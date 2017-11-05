@@ -20,8 +20,9 @@ import (
 	crypto_rand "crypto/rand"
 	"encoding/base64"
 	"fmt"
-	"k8s.io/kops/util/pkg/vfs"
 	"strings"
+
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type SecretStore interface {

@@ -20,12 +20,13 @@ package vsphere
 
 import (
 	"context"
+	"path"
+	"sync"
+
 	"github.com/golang/glog"
 	"github.com/vmware/govmomi/object"
 	"github.com/vmware/govmomi/vim25/mo"
 	"github.com/vmware/govmomi/vim25/types"
-	"path"
-	"sync"
 )
 
 var snapshotLock sync.Mutex

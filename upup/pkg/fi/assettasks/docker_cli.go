@@ -18,8 +18,9 @@ package assettasks
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"os/exec"
+
+	"github.com/golang/glog"
 )
 
 // dockerCLI encapsulates access to docker via the CLI

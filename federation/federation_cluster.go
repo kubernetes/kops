@@ -18,6 +18,7 @@ package federation
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	"k8s.io/api/core/v1"
 	k8sapiv1 "k8s.io/api/core/v1"

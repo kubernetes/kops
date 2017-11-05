@@ -18,9 +18,10 @@ package model
 
 import (
 	"fmt"
+	"path/filepath"
+
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-	"path/filepath"
 )
 
 // NetworkBuilder writes CNI assets

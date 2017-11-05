@@ -17,9 +17,10 @@ limitations under the License.
 package cloudup
 
 import (
+	"testing"
+
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
-	"testing"
 )
 
 type ClusterParams struct {

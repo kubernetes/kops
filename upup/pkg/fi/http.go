@@ -18,12 +18,13 @@ package fi
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io"
-	"k8s.io/kops/util/pkg/hashing"
 	"net/http"
 	"os"
 	"path"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 func DownloadURL(url string, dest string, hash *hashing.Hash) (*hashing.Hash, error) {
