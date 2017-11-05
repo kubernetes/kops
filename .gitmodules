@@ -391,3 +391,6 @@
 [submodule "_vendor/github.com/Microsoft/go-winio"]
 	path = _vendor/github.com/Microsoft/go-winio
 	url = https://github.com/Microsoft/go-winio
+[submodule "_vendor/github.com/inconshreveable/mousetrap"]
+	path = _vendor/github.com/inconshreveable/mousetrap
+	url = https://github.com/inconshreveable/mousetrap
