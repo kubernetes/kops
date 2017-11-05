@@ -227,8 +227,14 @@ ${DIST}/linux/amd64/kops: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
+.PHONY: ${DIST}/windows/amd64/kops.exe
+${DIST}/windows/amd64/kops.exe: ${BINDATA_TARGETS}
+	mkdir -p ${DIST}
+	GOOS=windows GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+
+
 .PHONY: crossbuild
-crossbuild: ${DIST}/darwin/amd64/kops ${DIST}/linux/amd64/kops
+crossbuild: ${DIST}/windows/amd64/kops.exe ${DIST}/darwin/amd64/kops ${DIST}/linux/amd64/kops
 
 .PHONY: crossbuild-in-docker
 crossbuild-in-docker:
@@ -245,6 +251,7 @@ kops-dist: crossbuild-in-docker
 	mkdir -p ${DIST}
 	(${SHASUMCMD} ${DIST}/darwin/amd64/kops | cut -d' ' -f1) > ${DIST}/darwin/amd64/kops.sha1
 	(${SHASUMCMD} ${DIST}/linux/amd64/kops | cut -d' ' -f1) > ${DIST}/linux/amd64/kops.sha1
+	(${SHASUMCMD} ${DIST}/windows/amd64/kops.exe | cut -d' ' -f1) > ${DIST}/windows/amd64/kops.exe.sha1
 
 .PHONY: version-dist
 version-dist: nodeup-dist kops-dist protokube-export utils-dist
@@ -282,6 +289,7 @@ vsphere-version-dist: nodeup-dist protokube-export
 	cp ${DIST}/linux/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/kops.sha1
 	cp ${DIST}/darwin/amd64/kops ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops
 	cp ${DIST}/darwin/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
+	cp ${DIST}/windows/amd64/kops.exe ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
 
 .PHONY: upload
 upload: version-dist # Upload kops to S3

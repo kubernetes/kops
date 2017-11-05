@@ -91,9 +91,9 @@
 [submodule "_vendor/github.com/blang/semver"]
 	path = _vendor/github.com/blang/semver
 	url = https://github.com/blang/semver
-[submodule "_vendor/github.com/Sirupsen/logrus"]
-	path = _vendor/github.com/Sirupsen/logrus
-	url = https://github.com/Sirupsen/logrus
+[submodule "_vendor/github.com/sirupsen/logrus"]
+	path = _vendor/github.com/sirupsen/logrus
+	url = https://github.com/sirupsen/logrus
 [submodule "_vendor/github.com/coreos/pkg"]
 	path = _vendor/github.com/coreos/pkg
 	url = https://github.com/coreos/pkg
@@ -385,3 +385,12 @@
 [submodule "_vendor/github.com/markbates/inflect"]
 	path = _vendor/github.com/markbates/inflect
 	url = https://github.com/markbates/inflect
+[submodule "_vendor/github.com/Azure/go-ansiterm"]
+	path = _vendor/github.com/Azure/go-ansiterm
+	url = https://github.com/Azure/go-ansiterm
+[submodule "_vendor/github.com/Microsoft/go-winio"]
+	path = _vendor/github.com/Microsoft/go-winio
+	url = https://github.com/Microsoft/go-winio
+[submodule "_vendor/github.com/inconshreveable/mousetrap"]
+	path = _vendor/github.com/inconshreveable/mousetrap
+	url = https://github.com/inconshreveable/mousetrap
