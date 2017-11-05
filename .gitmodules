@@ -91,9 +91,9 @@
 [submodule "_vendor/github.com/blang/semver"]
 	path = _vendor/github.com/blang/semver
 	url = https://github.com/blang/semver
-[submodule "_vendor/github.com/Sirupsen/logrus"]
-	path = _vendor/github.com/Sirupsen/logrus
-	url = https://github.com/Sirupsen/logrus
+[submodule "_vendor/github.com/sirupsen/logrus"]
+	path = _vendor/github.com/sirupsen/logrus
+	url = https://github.com/sirupsen/logrus
 [submodule "_vendor/github.com/coreos/pkg"]
 	path = _vendor/github.com/coreos/pkg
 	url = https://github.com/coreos/pkg
