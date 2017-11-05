@@ -16,6 +16,7 @@ go_library(
         "errors.go",
         "executor.go",
         "files.go",
+        "files_owner.go",
         "has_address.go",
         "http.go",
         "lifecycle.go",
