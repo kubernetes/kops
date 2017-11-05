@@ -18,12 +18,13 @@ package mesh
 
 import (
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/weaveworks/mesh"
-	"k8s.io/kops/protokube/pkg/gossip"
 	"net"
 	"strconv"
 	"time"
+
+	"github.com/golang/glog"
+	"github.com/weaveworks/mesh"
+	"k8s.io/kops/protokube/pkg/gossip"
 )
 
 type MeshGossiper struct {

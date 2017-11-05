@@ -19,12 +19,13 @@ package gce
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi"
-	"strings"
 )
 
 func (c *gceCloudImplementation) allZones() ([]string, error) {

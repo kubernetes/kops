@@ -19,6 +19,10 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"path"
+	"strings"
+	"testing"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/pkg/apis/kops"
@@ -26,9 +30,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
-	"path"
-	"strings"
-	"testing"
 )
 
 // TestConversionMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a

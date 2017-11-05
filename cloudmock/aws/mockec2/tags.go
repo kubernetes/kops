@@ -18,10 +18,13 @@ package mockec2
 
 import (
 	"fmt"
+	"sort"
+	"strings"
+
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
-	"strings"
 )
 
 func (m *MockEC2) CreateTagsRequest(*ec2.CreateTagsInput) (*request.Request, *ec2.CreateTagsOutput) {
@@ -164,4 +167,15 @@ func (m *MockEC2) DescribeTags(request *ec2.DescribeTagsInput) (*ec2.DescribeTag
 func (m *MockEC2) DescribeTagsPages(*ec2.DescribeTagsInput, func(*ec2.DescribeTagsOutput, bool) bool) error {
 	panic("Not implemented")
 	return nil
+}
+
+// SortTags sorts the slice of tags by Key
+func SortTags(tags []*ec2.Tag) {
+	keys := make([]string, len(tags))
+	for i := range tags {
+		if tags[i] != nil {
+			keys[i] = aws.StringValue(tags[i].Key)
+		}
+	}
+	sort.SliceStable(tags, func(i, j int) bool { return keys[i] < keys[j] })
 }

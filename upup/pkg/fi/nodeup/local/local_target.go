@@ -17,9 +17,10 @@ limitations under the License.
 package local
 
 import (
+	"os/exec"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/upup/pkg/fi"
-	"os/exec"
 )
 
 type LocalTarget struct {

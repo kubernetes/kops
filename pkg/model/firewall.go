@@ -155,6 +155,10 @@ func (b *FirewallModelBuilder) applyNodeToMasterAllowSpecificPorts(c *fi.ModelBu
 			tcpPorts = append(tcpPorts, 4001)
 			tcpPorts = append(tcpPorts, 9600)
 		}
+
+		if b.Cluster.Spec.Networking.Kuberouter != nil {
+			protocols = append(protocols, ProtocolIPIP)
+		}
 	}
 
 	for _, udpPort := range udpPorts {
@@ -223,6 +227,10 @@ func (b *FirewallModelBuilder) applyNodeToMasterBlockSpecificPorts(c *fi.ModelBu
 		// Romana needs to access etcd
 		glog.Warningf("Opening etcd port on masters for access from the nodes, for romana.  This is unsafe in untrusted environments.")
 		tcpRanges = []portRange{{From: 1, To: 4001}, {From: 4003, To: 65535}}
+		protocols = append(protocols, ProtocolIPIP)
+	}
+
+	if b.Cluster.Spec.Networking.Kuberouter != nil {
 		protocols = append(protocols, ProtocolIPIP)
 	}
 

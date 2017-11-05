@@ -107,6 +107,7 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 		e.ID = actual.ID
 	}
 	actual.Lifecycle = e.Lifecycle
+	actual.Name = e.Name // Name is part of Tags
 
 	return actual, nil
 }
@@ -143,11 +144,10 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 			if featureflag.VPCSkipEnableDNSSupport.Enabled() {
 				glog.Warningf("VPC did not have EnableDNSSupport=true, but ignoring because of VPCSkipEnableDNSSupport feature-flag")
 			} else {
+				// TODO: We could easily just allow kops to fix this...
 				return fmt.Errorf("VPC with id %q was set to be shared, but did not have EnableDNSSupport=true.", fi.StringValue(e.ID))
 			}
 		}
-
-		return nil
 	}
 
 	if a == nil {
@@ -189,12 +189,7 @@ func (_ *VPC) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *VPC) error {
 		}
 	}
 
-	tags := e.Tags
-	if shared {
-		// Don't tag shared resources
-		tags = nil
-	}
-	return t.AddAWSTags(*e.ID, tags)
+	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
 type terraformVPC struct {
@@ -212,6 +207,7 @@ func (_ *VPC) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *VPC) 
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not terraform owned / managed
+		// We won't apply changes, but our validation (kops update) will still warn
 		return nil
 	}
 
@@ -250,6 +246,7 @@ func (_ *VPC) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e,
 	shared := fi.BoolValue(e.Shared)
 	if shared {
 		// Not cloudformation owned / managed
+		// We won't apply changes, but our validation (kops update) will still warn
 		return nil
 	}
 

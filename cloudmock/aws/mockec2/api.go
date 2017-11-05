@@ -33,7 +33,7 @@ type MockEC2 struct {
 	SecurityGroups      []*ec2.SecurityGroup
 
 	subnetNumber int
-	Subnets      []*ec2.Subnet
+	subnets      map[string]*subnetInfo
 
 	volumeNumber int
 	Volumes      []*ec2.Volume

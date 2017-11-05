@@ -98,8 +98,8 @@ type UpdateResult struct {
 	userResult
 }
 
-// DeleteResult is the response from a Delete operation. Call its ExtractErr
-// method to interpret it as a User.
+// DeleteResult is the response from a Delete operation. Call its ExtractErr to
+// determine if the request succeeded or failed.
 type DeleteResult struct {
 	gophercloud.ErrResult
 }

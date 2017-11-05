@@ -2,7 +2,8 @@ language: go
 go:
   - 1.8
   - 1.9
-  - tip
+# removed because of govet issue with apimahcinery
+#  - tip
 
 go_import_path: k8s.io/kops
 

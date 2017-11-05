@@ -18,10 +18,11 @@ package gce
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/protokube/pkg/gossip"
-	"strings"
 )
 
 type SeedProvider struct {

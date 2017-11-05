@@ -215,9 +215,27 @@ func (m *KopsModelContext) CloudTags(name string, shared bool) map[string]string
 
 	switch kops.CloudProviderID(m.Cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
-		tags[awsup.TagClusterName] = m.Cluster.ObjectMeta.Name
-		if name != "" {
-			tags["Name"] = name
+		if shared {
+			// If the resource is shared, we don't try to set the Name - we presume that is managed externally
+			glog.V(4).Infof("Skipping Name tag for shared resource")
+		} else {
+			if name != "" {
+				tags["Name"] = name
+			}
+		}
+
+		// Kubernetes 1.6 introduced the shared ownership tag; that replaces TagClusterName
+		setLegacyTag := true
+		if m.IsKubernetesGTE("1.6") {
+			// For the moment, we only skip the legacy tag for shared resources
+			// (other people may be using it)
+			if shared {
+				glog.V(4).Infof("Skipping %q tag for shared resource", awsup.TagClusterName)
+				setLegacyTag = false
+			}
+		}
+		if setLegacyTag {
+			tags[awsup.TagClusterName] = m.Cluster.ObjectMeta.Name
 		}
 
 		if shared {
@@ -284,32 +302,26 @@ func (c *KopsModelContext) UseEtcdTLS() bool {
 }
 
 // KubernetesVersion parses the semver version of kubernetes, from the cluster spec
-func (c *KopsModelContext) KubernetesVersion() (semver.Version, error) {
+func (c *KopsModelContext) KubernetesVersion() semver.Version {
 	// TODO: Remove copy-pasting c.f. https://github.com/kubernetes/kops/blob/master/pkg/model/components/context.go#L32
 
 	kubernetesVersion := c.Cluster.Spec.KubernetesVersion
 
 	if kubernetesVersion == "" {
-		return semver.Version{}, fmt.Errorf("KubernetesVersion is required")
+		glog.Fatalf("KubernetesVersion is required")
 	}
 
 	sv, err := util.ParseKubernetesVersion(kubernetesVersion)
 	if err != nil {
-		return semver.Version{}, fmt.Errorf("unable to determine kubernetes version from %q", kubernetesVersion)
+		glog.Fatalf("unable to determine kubernetes version from %q", kubernetesVersion)
 	}
 
-	return *sv, nil
+	return *sv
 }
 
-// VersionGTE is a simplified semver comparison
-func VersionGTE(version semver.Version, major uint64, minor uint64) bool {
-	if version.Major > major {
-		return true
-	}
-	if version.Major == major && version.Minor >= minor {
-		return true
-	}
-	return false
+// IsKubernetesGTE checks if the kubernetes version is at least version, ignoring prereleases / patches
+func (c *KopsModelContext) IsKubernetesGTE(version string) bool {
+	return util.IsKubernetesGTE(version, c.KubernetesVersion())
 }
 
 func (c *KopsModelContext) WellKnownServiceIP(id int) (net.IP, error) {

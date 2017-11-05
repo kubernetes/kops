@@ -29,7 +29,7 @@ import (
 	"github.com/golang/glog"
 )
 
-// BuildFlags returns a space seperated list arguments
+// BuildFlags returns a space separated list arguments
 // @deprecated: please use BuildFlagsList
 func BuildFlags(options interface{}) (string, error) {
 	flags, err := BuildFlagsList(options)

@@ -17,8 +17,9 @@ limitations under the License.
 package cloudup
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
 	"testing"
+
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func TestPopulateClusterSpec_Proxy(t *testing.T) {

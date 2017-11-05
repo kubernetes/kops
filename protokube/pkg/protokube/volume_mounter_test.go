@@ -17,10 +17,11 @@ limitations under the License.
 package protokube
 
 import (
-	"k8s.io/kops/protokube/pkg/etcd"
 	"sort"
 	"strings"
 	"testing"
+
+	"k8s.io/kops/protokube/pkg/etcd"
 )
 
 func getIDs(volumes []*Volume) string {

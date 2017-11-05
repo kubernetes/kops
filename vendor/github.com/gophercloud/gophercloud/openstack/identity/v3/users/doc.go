@@ -71,7 +71,7 @@ Example to List Groups a User Belongs To
 		panic(err)
 	}
 
-	allGroups, err := users.ExtractGroups(allPages)
+	allGroups, err := groups.ExtractGroups(allPages)
 	if err != nil {
 		panic(err)
 	}
@@ -79,5 +79,45 @@ Example to List Groups a User Belongs To
 	for _, group := range allGroups {
 		fmt.Printf("%+v\n", group)
 	}
+
+Example to List Projects a User Belongs To
+
+	userID := "0fe36e73809d46aeae6705c39077b1b3"
+
+	allPages, err := users.ListProjects(identityClient, userID).AllPages()
+	if err != nil {
+		panic(err)
+	}
+
+	allProjects, err := projects.ExtractProjects(allPages)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, project := range allProjects {
+		fmt.Printf("%+v\n", project)
+	}
+
+Example to List Users in a Group
+
+	groupID := "bede500ee1124ae9b0006ff859758b3a"
+	listOpts := users.ListOpts{
+		DomainID: "default",
+	}
+
+	allPages, err := users.ListInGroup(identityClient, groupID, listOpts).AllPages()
+	if err != nil {
+		panic(err)
+	}
+
+	allUsers, err := users.ExtractUsers(allPages)
+	if err != nil {
+		panic(err)
+	}
+
+	for _, user := range allUsers {
+		fmt.Printf("%+v\n", user)
+	}
+
 */
 package users

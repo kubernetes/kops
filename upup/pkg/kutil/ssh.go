@@ -18,8 +18,9 @@ package kutil
 
 import (
 	"fmt"
-	"golang.org/x/crypto/ssh"
 	"io/ioutil"
+
+	"golang.org/x/crypto/ssh"
 	"k8s.io/kops/util/pkg/vfs"
 )
 

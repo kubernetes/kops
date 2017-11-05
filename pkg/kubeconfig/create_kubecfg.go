@@ -18,11 +18,12 @@ package kubeconfig
 
 import (
 	"fmt"
+	"sort"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/upup/pkg/fi"
-	"sort"
 )
 
 func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.SecretStore, status kops.StatusStore) (*KubeconfigBuilder, error) {

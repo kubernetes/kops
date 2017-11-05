@@ -18,9 +18,10 @@ package vfs
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/util/pkg/hashing"
-	"strings"
 )
 
 // Yet another VFS package
@@ -60,7 +61,7 @@ type Path interface {
 	// ReadDir lists the files in a particular Path
 	ReadDir() ([]Path, error)
 
-	// ReadTree lists all files in the subtree rooted at the current Path
+	// ReadTree lists all files (recursively) in the subtree rooted at the current Path
 	ReadTree() ([]Path, error)
 }
 
@@ -93,7 +94,7 @@ func IsClusterReadable(p Path) bool {
 	}
 
 	switch p.(type) {
-	case *S3Path, *GSPath:
+	case *S3Path, *GSPath, *SwiftPath:
 		return true
 
 	case *KubernetesPath:
