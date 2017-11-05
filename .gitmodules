@@ -385,3 +385,9 @@
 [submodule "_vendor/github.com/markbates/inflect"]
 	path = _vendor/github.com/markbates/inflect
 	url = https://github.com/markbates/inflect
+[submodule "_vendor/github.com/Azure/go-ansiterm"]
+	path = _vendor/github.com/Azure/go-ansiterm
+	url = https://github.com/Azure/go-ansiterm
+[submodule "_vendor/github.com/Microsoft/go-winio"]
+	path = _vendor/github.com/Microsoft/go-winio
+	url = https://github.com/Microsoft/go-winio
