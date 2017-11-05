@@ -6,6 +6,11 @@ go_prefix("k8s.io/kops")
 
 gazelle(
     name = "gazelle",
+    args = [
+        "-build_file_name",
+        "BUILD,BUILD.bazel",
+    ],
+    command = "fix",
     external = "vendored",
     prefix = "k8s.io/kops",
 )

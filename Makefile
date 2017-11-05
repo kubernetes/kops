@@ -35,6 +35,8 @@ UPLOAD=$(BUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
 TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages) 
+BAZEL_OPTIONS?=
+BAZEL_TEST_OPTIONS?=
 
 SOURCES:=$(shell find . -name "*.go")
 
@@ -568,7 +570,7 @@ kops-server-push: kops-server-build
 
 .PHONY: bazel-test
 bazel-test:
-	bazel test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/... //upup/... //util/... --test_output=errors
+	bazel ${BAZEL_OPTIONS} test ${BAZEL_TEST_OPTIONS} //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/... //upup/... //util/... --test_output=errors 
 
 .PHONY: bazel-build
 bazel-build:
@@ -578,7 +580,7 @@ bazel-build:
 # 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
 .PHONY: bazel-crossbuild-nodeup
 bazel-crossbuild-nodeup:
-	bazel build //cmd/nodeup
+	bazel build //cmd/nodeup 
 
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
@@ -594,6 +596,10 @@ bazel-push-gce-run: bazel-push
 .PHONY: bazel-push-aws-run
 bazel-push-aws-run: bazel-push
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
+
+.PHONY: bazel-fix
+bazel-fix:
+	bazel run //:gazelle
 
 .PHONY: check-markdown-links
 check-markdown-links:

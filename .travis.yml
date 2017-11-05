@@ -1,3 +1,4 @@
+sudo: required
 language: go
 go:
   - 1.8
@@ -5,10 +6,21 @@ go:
 # removed because of govet issue with apimahcinery
 #  - tip
 
+cache:
+  directories:
+    - $HOME/bazel/outbase
+
 go_import_path: k8s.io/kops
 
-script:
-  - make --debug=b ci
+before_install:
+- echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
+- curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
+- sudo apt-get -y update
+- sudo apt-get -y install bazel
 
+script:
+  - time BAZEL_OPTIONS="--batch --output_base=${HOME}/bazel/outbase --host_jvm_args=-Xmx500m --host_jvm_args=-Xms500m" make bazel-test
+  - time make ci
+ 
 git:
   submodules: false
