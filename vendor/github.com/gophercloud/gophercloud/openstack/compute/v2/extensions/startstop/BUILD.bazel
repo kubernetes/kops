@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "doc.go",
         "requests.go",
+        "results.go",
     ],
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/gophercloud/gophercloud:go_default_library"],

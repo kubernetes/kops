@@ -28,6 +28,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops"
 	"k8s.io/kops/cmd/kops/util"
@@ -124,6 +125,11 @@ type CreateClusterOptions struct {
 
 	// ConfigBase is the location where we will store the configuration, it defaults to the state store
 	ConfigBase string
+
+	// DryRun mode output a cluster manifest of Output type.
+	DryRun bool
+	// Output type during a DryRun
+	Output string
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -190,6 +196,11 @@ var (
           --project my-gce-project \
           --image "ubuntu-os-cloud/ubuntu-1604-xenial-v20170202" \
           --yes
+	# Create manifest for a cluster in AWS
+	kops create cluster --name=kubernetes-cluster.example.com \
+	--state=s3://kops-state-1234 --zones=eu-west-1a \
+	--node-count=2 --dry-run -oyaml
+
 	`))
 
 	create_cluster_short = i18n.T("Create a Kubernetes cluster.")
@@ -227,7 +238,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	}
 
 	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Specify --yes to immediately create the cluster")
-	cmd.Flags().StringVar(&options.Target, "target", options.Target, "Target - direct, terraform, cloudformation")
+	cmd.Flags().StringVar(&options.Target, "target", options.Target, fmt.Sprintf("Valid targets: %s, %s, %s. Set this flag to %s if you want kops to generate terraform", cloudup.TargetDirect, cloudup.TargetTerraform, cloudup.TargetDirect, cloudup.TargetTerraform))
 	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
 
 	// Configuration / state location
@@ -297,6 +308,10 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
 
+	// DryRun mode that will print YAML or JSON
+	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
+	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Ouput format. One of json|yaml. Used with the --dry-run flag.")
+
 	if featureflag.SpecOverrideFlag.Enabled() {
 		cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
 	}
@@ -326,6 +341,11 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		isDryrun = true
 		targetName = cloudup.TargetDryRun
 	}
+
+	if c.DryRun && c.Output == "" {
+		return fmt.Errorf("unable to execute --dry-run without setting --output")
+	}
+
 	clusterName := c.ClusterName
 	if clusterName == "" {
 		return fmt.Errorf("--name is required")
@@ -987,6 +1007,32 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return err
 	}
 
+	if c.DryRun {
+		var obj []runtime.Object
+		obj = append(obj, cluster)
+
+		for _, group := range fullInstanceGroups {
+			// Cluster name is not populated, and we need it
+			group.ObjectMeta.Labels = make(map[string]string)
+			group.ObjectMeta.Labels[api.LabelClusterName] = cluster.ObjectMeta.Name
+			obj = append(obj, group)
+		}
+		switch c.Output {
+		case OutputYaml:
+			if err := fullOutputYAML(out, obj...); err != nil {
+				return fmt.Errorf("error writing cluster yaml to stdout: %v", err)
+			}
+			return nil
+		case OutputJSON:
+			if err := fullOutputJSON(out, obj...); err != nil {
+				return fmt.Errorf("error writing cluster json to stdout: %v", err)
+			}
+			return nil
+		default:
+			return fmt.Errorf("unsupported output type %q", c.Output)
+		}
+	}
+
 	// Note we perform as much validation as we can, before writing a bad config
 	err = registry.CreateClusterConfig(clientset, cluster, fullInstanceGroups)
 	if err != nil {
@@ -1010,6 +1056,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 	}
 
+	// Can we acutally get to this if??
 	if targetName != "" {
 		if isDryrun {
 			fmt.Fprintf(out, "Previewing changes that will be made:\n\n")

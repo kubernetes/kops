@@ -19,6 +19,8 @@ package k8scodecs
 import (
 	"bytes"
 	"fmt"
+	"os"
+
 	"github.com/golang/glog"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/apimachinery/announced"
@@ -27,7 +29,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
-	"os"
 )
 
 var Scheme = runtime.NewScheme()

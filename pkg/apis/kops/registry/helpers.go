@@ -18,6 +18,7 @@ package registry
 
 import (
 	"fmt"
+
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/client/simple"
 )

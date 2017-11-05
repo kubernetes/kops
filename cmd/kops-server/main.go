@@ -21,11 +21,12 @@ import (
 	"os"
 	"runtime"
 
+	"math/rand"
+	"time"
+
 	"github.com/golang/glog"
 	"k8s.io/apiserver/pkg/util/logs"
 	"k8s.io/kops/pkg/apiserver/cmd/server"
-	"math/rand"
-	"time"
 )
 
 func main() {

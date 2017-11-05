@@ -19,11 +19,12 @@ package terraform
 import (
 	"bytes"
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/hashicorp/hcl/hcl/ast"
 	hcl_printer "github.com/hashicorp/hcl/hcl/printer"
 	"k8s.io/kops/pkg/featureflag"
-	"strings"
 )
 
 const safeChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"

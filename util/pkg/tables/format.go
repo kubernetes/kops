@@ -19,12 +19,13 @@ package tables
 import (
 	"bytes"
 	"fmt"
-	"github.com/golang/glog"
 	"io"
-	"k8s.io/kops/upup/pkg/fi"
 	"reflect"
 	"sort"
 	"text/tabwriter"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 // Table renders tables to stdout

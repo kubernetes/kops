@@ -17,10 +17,11 @@ limitations under the License.
 package formatter
 
 import (
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
-	"strings"
 )
 
 // InstanceGroupRenderFunction is a render function for an InstanceGroup
@@ -38,7 +39,7 @@ func RenderInstanceGroupZones(cluster *kops.Cluster) InstanceGroupRenderFunction
 	return func(ig *kops.InstanceGroup) string {
 		zones, err := model.FindZonesForInstanceGroup(cluster, ig)
 		if err != nil {
-			glog.Warningf("error fetch zones for instancegroup: %v", err)
+			glog.Warningf("error fetching zones for instancegroup: %v", err)
 			return ""
 		}
 		return strings.Join(zones, ",")

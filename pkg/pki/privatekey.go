@@ -26,8 +26,9 @@ import (
 	"encoding/json"
 	"encoding/pem"
 	"fmt"
-	"github.com/golang/glog"
 	"io"
+
+	"github.com/golang/glog"
 )
 
 func ParsePEMPrivateKey(data []byte) (*PrivateKey, error) {

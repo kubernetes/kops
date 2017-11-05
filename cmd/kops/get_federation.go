@@ -24,6 +24,7 @@ import (
 
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/util/pkg/tables"
@@ -85,10 +86,16 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 	if len(federations) == 0 {
 		return fmt.Errorf("No federations found")
 	}
+
+	var obj []runtime.Object
+	if options.output != OutputTable {
+		for _, c := range federations {
+			obj = append(obj, c)
+		}
+	}
+
 	switch options.output {
-
 	case OutputTable:
-
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(f *api.Federation) string {
 			return f.ObjectMeta.Name
@@ -102,25 +109,10 @@ func RunGetFederations(context Factory, out io.Writer, options *GetFederationOpt
 		return t.Render(federations, out, "NAME", "CONTROLLERS", "MEMBERS")
 
 	case OutputYaml:
-		for i, f := range federations {
-			if i != 0 {
-				_, err = out.Write([]byte("\n\n---\n\n"))
-				if err != nil {
-					return fmt.Errorf("error writing to stdout: %v", err)
-				}
-			}
-			if err := marshalToWriter(f, marshalYaml, os.Stdout); err != nil {
-				return err
-			}
-		}
+		return fullOutputYAML(out, obj...)
 	case OutputJSON:
-		for _, f := range federations {
-			if err := marshalToWriter(f, marshalJSON, os.Stdout); err != nil {
-				return err
-			}
-		}
+		return fullOutputJSON(out, obj...)
 	default:
 		return fmt.Errorf("Unknown output format: %q", options.output)
 	}
-	return nil
 }
