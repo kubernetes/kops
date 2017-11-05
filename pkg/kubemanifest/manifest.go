@@ -19,6 +19,7 @@ package kubemanifest
 import (
 	"bytes"
 	"fmt"
+
 	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
 )

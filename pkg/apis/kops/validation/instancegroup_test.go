@@ -17,10 +17,11 @@ limitations under the License.
 package validation
 
 import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kops/pkg/apis/kops"
 	"strings"
 	"testing"
+
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func TestDefaultTaintsEnforcedBefore160(t *testing.T) {

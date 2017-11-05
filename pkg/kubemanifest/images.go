@@ -18,8 +18,9 @@ package kubemanifest
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
 type ImageRemapFunction func(image string) (string, error)

@@ -17,10 +17,11 @@ limitations under the License.
 package mockroute53
 
 import (
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
-	"strings"
 )
 
 type zoneInfo struct {

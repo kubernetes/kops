@@ -19,9 +19,10 @@ package vfs
 import (
 	"bytes"
 	"fmt"
+	"os"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/util/pkg/hashing"
-	"os"
 )
 
 // VFSScan scans a source Path for changes files

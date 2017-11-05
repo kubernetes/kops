@@ -140,7 +140,10 @@ spec:
     auditLogMaxAge: 10
     auditLogMaxBackups: 1
     auditLogMaxSize: 100
+    auditPolicyFile: /srv/kubernetes/audit.conf
 ```
+
+Note: you could use the fileAssets feature to push an advanced audit policy file on the master nodes.
 
 #### runtimeConfig
 

@@ -17,11 +17,12 @@ limitations under the License.
 package awsmodel
 
 import (
+	"testing"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"testing"
 )
 
 func buildMinimalCluster() *kops.Cluster {

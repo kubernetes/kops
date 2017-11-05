@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 
@@ -153,35 +152,27 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 		return err
 	}
 
+	var obj []runtime.Object
+	if options.output != OutputTable {
+		obj = append(obj, cluster)
+		for _, group := range instancegroups {
+			obj = append(obj, group)
+		}
+	}
+
 	switch options.output {
 	case OutputYaml:
-
-		err = clusterOutputYAML(clusters, out)
-		if err != nil {
-			return err
+		if err := fullOutputYAML(out, obj...); err != nil {
+			return fmt.Errorf("error writing cluster yaml to stdout: %v", err)
 		}
 
-		if err := writeYAMLSep(out); err != nil {
-			return err
-		}
-
-		err = igOutputYAML(instancegroups, out)
-		if err != nil {
-			return err
-		}
+		return nil
 
 	case OutputJSON:
-		return fmt.Errorf("not implemented")
-		// TODO this is not outputing valid json.  Not sure what cluster and instance groups should look like
-		/*
-			err = clusterOutputJson(clusters,out)
-			if err != nil {
-				return err
-			}
-			err = igOutputJson(instancegroups,out)
-			if err != nil {
-				return err
-			}*/
+		if err := fullOutputJSON(out, obj...); err != nil {
+			return fmt.Errorf("error writing cluster json to stdout: %v", err)
+		}
+		return nil
 
 	case OutputTable:
 		fmt.Fprintf(os.Stdout, "Cluster\n")
@@ -235,7 +226,7 @@ func marshalYaml(obj runtime.Object) ([]byte, error) {
 
 // obj must be a pointer to a marshalable object
 func marshalJSON(obj runtime.Object) ([]byte, error) {
-	j, err := json.MarshalIndent(obj, "", "  ")
+	j, err := kopscodecs.ToVersionedJSON(obj)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling json: %v", err)
 	}

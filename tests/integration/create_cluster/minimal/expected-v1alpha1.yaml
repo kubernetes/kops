@@ -23,6 +23,7 @@ spec:
       zone: us-test-1a
     name: events
   iam:
+    allowContainerRegistry: true
     legacy: false
   kubernetesVersion: v1.4.8
   masterPublicName: api.minimal.example.com

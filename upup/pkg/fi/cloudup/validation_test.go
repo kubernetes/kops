@@ -18,13 +18,14 @@ package cloudup
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/upup/pkg/fi"
-	"strings"
-	"testing"
 )
 
 const MockAWSRegion = "us-mock-1"

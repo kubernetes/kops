@@ -17,11 +17,12 @@ limitations under the License.
 package components
 
 import (
+	"testing"
+	"time"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
-	"testing"
-	"time"
 )
 
 type ClusterParams struct {

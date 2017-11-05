@@ -18,13 +18,14 @@ package kops
 
 import (
 	"fmt"
+	"net/url"
+
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/util/pkg/vfs"
-	"net/url"
 )
 
 var DefaultChannelBase = "https://raw.githubusercontent.com/kubernetes/kops/master/channels/"

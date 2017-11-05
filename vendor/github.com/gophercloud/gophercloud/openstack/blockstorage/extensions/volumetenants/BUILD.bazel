@@ -2,6 +2,9 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["results.go"],
+    srcs = [
+        "doc.go",
+        "results.go",
+    ],
     visibility = ["//visibility:public"],
 )

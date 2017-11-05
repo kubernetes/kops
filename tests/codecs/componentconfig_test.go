@@ -17,10 +17,11 @@ limitations under the License.
 package codecs
 
 import (
+	"testing"
+
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
-	"testing"
 )
 
 func TestSerializeEmptyCluster(t *testing.T) {

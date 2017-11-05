@@ -46,8 +46,10 @@ func CreateExternalRouter(t *testing.T, client *gophercloud.ServiceClient) (*rou
 	t.Logf("Attempting to create external router: %s", routerName)
 
 	adminStateUp := true
+	enableSNAT := false
 	gatewayInfo := routers.GatewayInfo{
-		NetworkID: choices.ExternalNetworkID,
+		NetworkID:  choices.ExternalNetworkID,
+		EnableSNAT: &enableSNAT,
 	}
 
 	createOpts := routers.CreateOpts{

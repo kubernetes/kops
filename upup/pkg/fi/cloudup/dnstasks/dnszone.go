@@ -19,10 +19,11 @@ package dnstasks
 import (
 	"fmt"
 
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	"strings"
 )
 
 // DNSZone is a zone object in a dns provider

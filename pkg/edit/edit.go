@@ -18,6 +18,7 @@ package edit
 
 import (
 	"bytes"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
