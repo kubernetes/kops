@@ -265,8 +265,10 @@ type LoadBalancerAccessSpec struct {
 
 type KubeDNSConfig struct {
 	// Image is the name of the docker image to run
+	// Deprecated as this is now in the addon
 	Image string `json:"image,omitempty"`
 
+	// Deprecated as this is now in the addon, and controlled by autoscaler
 	Replicas int    `json:"replicas,omitempty"`
 	Domain   string `json:"domain,omitempty"`
 	ServerIP string `json:"serverIP,omitempty"`
