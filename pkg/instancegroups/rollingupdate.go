@@ -33,8 +33,11 @@ import (
 type RollingUpdateCluster struct {
 	Cloud fi.Cloud
 
-	MasterInterval  time.Duration
-	NodeInterval    time.Duration
+	// MasterInterval is the amount of time to wait after stopping a master instance
+	MasterInterval time.Duration
+	// NodeInterval is the amount of time to wait after stopping a non-master instance
+	NodeInterval time.Duration
+	// BastionInterval is the amount of time to wait after stopping a bastion instance
 	BastionInterval time.Duration
 
 	Force bool
@@ -45,7 +48,12 @@ type RollingUpdateCluster struct {
 	FailOnValidate   bool
 	CloudOnly        bool
 	ClusterName      string
-	DrainInterval    time.Duration
+
+	// PostDrainDelay is the duration we wait after draining each node
+	PostDrainDelay time.Duration
+
+	// ValidationTimeout is the maximum time to wait for the cluster to validate, once we start validation
+	ValidationTimeout time.Duration
 }
 
 // RollingUpdate performs a rolling update on a K8s Cluster.
@@ -89,7 +97,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 
 				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
 				if err == nil {
-					err = g.RollingUpdate(c, instanceGroups, true, c.BastionInterval)
+					err = g.RollingUpdate(c, instanceGroups, true, c.BastionInterval, c.ValidationTimeout)
 				}
 
 				resultsMutex.Lock()
@@ -122,7 +130,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 			for k, group := range masterGroups {
 				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
 				if err == nil {
-					err = g.RollingUpdate(c, instanceGroups, false, c.MasterInterval)
+					err = g.RollingUpdate(c, instanceGroups, false, c.MasterInterval, c.ValidationTimeout)
 				}
 
 				resultsMutex.Lock()
@@ -160,7 +168,7 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.C
 			for k, group := range nodeGroups {
 				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
 				if err == nil {
-					err = g.RollingUpdate(c, instanceGroups, false, c.NodeInterval)
+					err = g.RollingUpdate(c, instanceGroups, false, c.NodeInterval, c.ValidationTimeout)
 				}
 
 				resultsMutex.Lock()
