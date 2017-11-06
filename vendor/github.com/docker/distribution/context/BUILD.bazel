@@ -11,6 +11,7 @@ go_library(
         "util.go",
         "version.go",
     ],
+    importpath = "github.com/docker/distribution/context",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/distribution/uuid:go_default_library",
@@ -27,5 +28,6 @@ go_test(
         "trace_test.go",
         "version_test.go",
     ],
+    importpath = "github.com/docker/distribution/context",
     library = ":go_default_library",
 )

@@ -26,6 +26,7 @@ go_library(
         "util.go",
         "watch_command.go",
     ],
+    importpath = "github.com/coreos/etcd/etcdctl/ctlv2/command",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/bgentry/speakeasy:go_default_library",
@@ -47,5 +48,6 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["util_test.go"],
+    importpath = "github.com/coreos/etcd/etcdctl/ctlv2/command",
     library = ":go_default_library",
 )

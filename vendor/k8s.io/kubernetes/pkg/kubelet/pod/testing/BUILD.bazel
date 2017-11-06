@@ -6,6 +6,7 @@ go_library(
         "fake_mirror_client.go",
         "mock_manager.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubelet/pod/testing",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/stretchr/testify/mock:go_default_library",

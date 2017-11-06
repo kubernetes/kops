@@ -7,6 +7,7 @@ go_library(
         "soak.go",
         "utils.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/instrumentation/logging/stackdrvier",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/onsi/ginkgo:go_default_library",

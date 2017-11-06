@@ -8,6 +8,7 @@ go_library(
         "cluster_routes.go",
         "helpers.go",
     ],
+    importpath = "github.com/docker/docker/api/server/router/swarm",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api/errors:go_default_library",

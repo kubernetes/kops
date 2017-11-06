@@ -11,6 +11,7 @@ go_library(
         "transaction.pb.go",
         "type.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/spanner/v1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

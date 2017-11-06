@@ -6,6 +6,7 @@ go_library(
         "ls.go",
         "set.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/host/option",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

@@ -5,13 +5,19 @@ go_library(
     srcs = [
         "doc.go",
         "empty_dir.go",
-        "empty_dir_unsupported.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "empty_dir_unsupported.go",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             "empty_dir_linux.go",
         ],
+        "@io_bazel_rules_go//go/platform:windows_amd64": [
+            "empty_dir_unsupported.go",
+        ],
         "//conditions:default": [],
     }),
+    importpath = "k8s.io/kubernetes/pkg/volume/empty_dir",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
@@ -40,6 +46,7 @@ go_test(
         ],
         "//conditions:default": [],
     }),
+    importpath = "k8s.io/kubernetes/pkg/volume/empty_dir",
     library = ":go_default_library",
     deps = select({
         "@io_bazel_rules_go//go/platform:linux_amd64": [

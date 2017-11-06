@@ -6,6 +6,7 @@ go_library(
         "EchoServiceApi.go",
         "ExamplepbSimpleMessage.go",
     ],
+    importpath = "github.com/grpc-ecosystem/grpc-gateway/examples/clients/echo",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/dghubble/sling:go_default_library"],
 )

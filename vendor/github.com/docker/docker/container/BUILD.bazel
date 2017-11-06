@@ -10,14 +10,17 @@ go_library(
         "history.go",
         "memory_store.go",
         "monitor.go",
-        "mounts_unix.go",
         "state.go",
         "store.go",
         "view.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "mounts_unix.go",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             "container_linux.go",
             "container_unix.go",
+            "mounts_unix.go",
             "state_unix.go",
         ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
@@ -27,6 +30,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/container",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api/types:go_default_library",
@@ -83,6 +87,7 @@ go_test(
         "state_test.go",
         "view_test.go",
     ],
+    importpath = "github.com/docker/docker/container",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/docker/api/types:go_default_library",

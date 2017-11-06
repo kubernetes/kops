@@ -6,6 +6,7 @@ go_test(
         "apiserver_test.go",
         "main_test.go",
     ],
+    importpath = "k8s.io/kubernetes/test/integration/examples",
     deps = [
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",

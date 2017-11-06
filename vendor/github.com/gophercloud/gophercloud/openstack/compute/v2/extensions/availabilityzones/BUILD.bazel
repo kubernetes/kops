@@ -6,5 +6,6 @@ go_library(
         "doc.go",
         "results.go",
     ],
+    importpath = "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/availabilityzones",
     visibility = ["//visibility:public"],
 )

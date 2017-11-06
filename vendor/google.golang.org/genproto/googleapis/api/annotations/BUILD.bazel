@@ -6,6 +6,7 @@ go_library(
         "annotations.pb.go",
         "http.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/api/annotations",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

@@ -10,6 +10,7 @@ go_library(
         "exec.go",
         "inspect.go",
     ],
+    importpath = "github.com/docker/docker/api/server/router/container",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api:go_default_library",

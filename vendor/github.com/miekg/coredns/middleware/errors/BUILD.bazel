@@ -6,6 +6,7 @@ go_library(
         "errors.go",
         "setup.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/errors",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/hashicorp/go-syslog:go_default_library",
@@ -24,6 +25,7 @@ go_test(
         "errors_test.go",
         "setup_test.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/errors",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/mholt/caddy:go_default_library",

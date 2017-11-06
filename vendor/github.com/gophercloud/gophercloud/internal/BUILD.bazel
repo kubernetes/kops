@@ -6,5 +6,6 @@ go_library(
         "pkg.go",
         "util.go",
     ],
+    importpath = "github.com/gophercloud/gophercloud/internal",
     visibility = ["//visibility:public"],
 )

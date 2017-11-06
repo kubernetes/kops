@@ -17,6 +17,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/daemon/graphdriver/register",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/daemon/graphdriver/vfs:go_default_library",

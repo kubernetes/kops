@@ -1,23 +1,25 @@
+load("@io_bazel_rules_go//proto:def.bzl", "go_grpc_library")
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "api.pb.go",
-        "constants.go",
-    ],
+    srcs = ["constants.go"],
+    importpath = "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1alpha1",
+    library = ":deviceplugin_go_proto",
     visibility = ["//visibility:public"],
-    deps = [
-        "//vendor/github.com/gogo/protobuf/gogoproto:go_default_library",
-        "//vendor/github.com/gogo/protobuf/proto:go_default_library",
-        "//vendor/github.com/gogo/protobuf/sortkeys:go_default_library",
-        "//vendor/golang.org/x/net/context:go_default_library",
-        "//vendor/google.golang.org/grpc:go_default_library",
-    ],
 )
 
-filegroup(
-    name = "go_default_library_protos",
+proto_library(
+    name = "deviceplugin_proto",
     srcs = ["api.proto"],
     visibility = ["//visibility:public"],
+    deps = ["//github.com/gogo/protobuf/gogoproto:gogoproto_proto"],
+)
+
+go_grpc_library(
+    name = "deviceplugin_go_proto",
+    importpath = "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1alpha1",
+    proto = ":deviceplugin_proto",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/gogo/protobuf/gogoproto:go_default_library"],
 )

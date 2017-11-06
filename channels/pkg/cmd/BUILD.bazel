@@ -10,6 +10,7 @@ go_library(
         "get_addons.go",
         "root.go",
     ],
+    importpath = "k8s.io/kops/channels/pkg/cmd",
     visibility = ["//visibility:public"],
     deps = [
         "//channels/pkg/channels:go_default_library",

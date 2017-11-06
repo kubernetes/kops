@@ -6,6 +6,7 @@ go_library(
         "factory.go",
         "manager.go",
     ],
+    importpath = "k8s.io/heapster/metrics/sources",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
@@ -20,6 +21,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["manager_test.go"],
+    importpath = "k8s.io/heapster/metrics/sources",
     library = ":go_default_library",
     deps = ["//vendor/k8s.io/heapster/metrics/util:go_default_library"],
 )

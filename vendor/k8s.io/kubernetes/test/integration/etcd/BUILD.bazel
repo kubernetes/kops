@@ -6,6 +6,7 @@ go_test(
         "etcd_storage_path_test.go",
         "main_test.go",
     ],
+    importpath = "k8s.io/kubernetes/test/integration/etcd",
     deps = [
         "//vendor/github.com/coreos/etcd/clientv3:go_default_library",
         "//vendor/github.com/coreos/etcd/pkg/transport:go_default_library",

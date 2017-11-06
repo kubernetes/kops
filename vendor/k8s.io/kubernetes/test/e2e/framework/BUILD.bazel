@@ -33,6 +33,7 @@ go_library(
         "util.go",
         "volume_util.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/framework",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",

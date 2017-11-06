@@ -7,5 +7,6 @@ go_library(
         "doc.go",
         "http_responses.go",
     ],
+    importpath = "github.com/gophercloud/gophercloud/testhelper",
     visibility = ["//visibility:public"],
 )

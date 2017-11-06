@@ -6,5 +6,6 @@ go_library(
         "http_reader.go",
         "transport.go",
     ],
+    importpath = "github.com/docker/distribution/registry/client/transport",
     visibility = ["//visibility:public"],
 )

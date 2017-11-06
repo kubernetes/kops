@@ -9,7 +9,6 @@ go_library(
         "packet.go",
         "release.go",
         "server.go",
-        "server_statvfs_stubs.go",
         "sftp.go",
     ] + select({
         "@io_bazel_rules_go//go/platform:darwin_amd64": [
@@ -26,10 +25,12 @@ go_library(
         ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "attrs_stubs.go",
+            "server_statvfs_stubs.go",
             "server_stubs.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/pkg/sftp",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/kr/fs:go_default_library",
@@ -44,7 +45,6 @@ go_test(
         "attrs_test.go",
         "client_integration_test.go",
         "client_test.go",
-        "other_test.go",
         "packet_test.go",
         "server_integration_test.go",
         "server_test.go",
@@ -55,8 +55,12 @@ go_test(
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             "client_integration_linux_test.go",
         ],
+        "@io_bazel_rules_go//go/platform:windows_amd64": [
+            "other_test.go",
+        ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/pkg/sftp",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/kr/fs:go_default_library",
@@ -67,6 +71,7 @@ go_test(
 go_test(
     name = "go_default_xtest",
     srcs = ["example_test.go"],
+    importpath = "github.com/pkg/sftp_test",
     deps = [
         ":go_default_library",
         "//vendor/golang.org/x/crypto/ssh:go_default_library",

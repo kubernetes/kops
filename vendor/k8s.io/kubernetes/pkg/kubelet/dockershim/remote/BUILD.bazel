@@ -6,6 +6,7 @@ go_library(
         "docker_server.go",
         "docker_service.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubelet/dockershim/remote",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",

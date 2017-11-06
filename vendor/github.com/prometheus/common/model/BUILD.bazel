@@ -15,6 +15,7 @@ go_library(
         "time.go",
         "value.go",
     ],
+    importpath = "github.com/prometheus/common/model",
     visibility = ["//visibility:public"],
 )
 
@@ -29,5 +30,6 @@ go_test(
         "time_test.go",
         "value_test.go",
     ],
+    importpath = "github.com/prometheus/common/model",
     library = ":go_default_library",
 )

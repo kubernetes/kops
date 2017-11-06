@@ -17,6 +17,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/Microsoft/go-winio/archive/tar",
     visibility = ["//visibility:public"],
 )
 
@@ -28,6 +29,7 @@ go_test(
         "writer_test.go",
     ],
     data = glob(["testdata/**"]),
+    importpath = "github.com/Microsoft/go-winio/archive/tar",
     library = ":go_default_library",
 )
 
@@ -35,4 +37,5 @@ go_test(
     name = "go_default_xtest",
     srcs = ["example_test.go"],
     data = glob(["testdata/**"]),
+    importpath = "github.com/Microsoft/go-winio/archive/tar_test",
 )

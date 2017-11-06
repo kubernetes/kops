@@ -7,6 +7,7 @@ go_library(
         "kibana.go",
         "utils.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/instrumentation/logging/elasticsearch",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/onsi/ginkgo:go_default_library",

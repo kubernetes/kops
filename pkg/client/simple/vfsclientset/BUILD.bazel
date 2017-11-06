@@ -11,6 +11,7 @@ go_library(
         "instancegroup.go",
         "utils.go",
     ],
+    importpath = "k8s.io/kops/pkg/client/simple/vfsclientset",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/acls:go_default_library",

@@ -8,6 +8,7 @@ go_library(
         "generator_fake_for_group.go",
         "generator_fake_for_type.go",
     ],
+    importpath = "k8s.io/kubernetes/staging/src/k8s.io/code-generator/cmd/client-gen/generators/fake",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/code-generator/cmd/client-gen/args:go_default_library",

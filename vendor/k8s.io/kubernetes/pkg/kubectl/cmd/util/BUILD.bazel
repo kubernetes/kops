@@ -13,6 +13,7 @@ go_library(
         "printing.go",
         "shortcut_restmapper.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/util",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/emicklei/go-restful-swagger12:go_default_library",
@@ -78,6 +79,7 @@ go_test(
         "helpers_test.go",
         "shortcut_restmapper_test.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/util",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/emicklei/go-restful-swagger12:go_default_library",

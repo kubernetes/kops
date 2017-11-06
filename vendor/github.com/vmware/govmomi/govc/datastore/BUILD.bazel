@@ -15,6 +15,7 @@ go_library(
         "tail.go",
         "upload.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/datastore",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

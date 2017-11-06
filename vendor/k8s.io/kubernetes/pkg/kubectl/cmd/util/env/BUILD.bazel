@@ -6,6 +6,7 @@ go_library(
         "env_parse.go",
         "env_resolve.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/util/env",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",

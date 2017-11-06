@@ -14,6 +14,7 @@ go_library(
         "utils.go",
         "wrappers.go",
     ],
+    importpath = "k8s.io/kops/upup/pkg/fi/cloudup/gce",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",

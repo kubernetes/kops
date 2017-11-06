@@ -6,6 +6,7 @@ go_library(
         "destroy.go",
         "power.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/vapp",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/find:go_default_library",

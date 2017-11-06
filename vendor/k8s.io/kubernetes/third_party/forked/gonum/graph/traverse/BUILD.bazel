@@ -6,6 +6,7 @@ go_library(
         "traverse.go",
         "visit_depth_first.go",
     ],
+    importpath = "k8s.io/kubernetes/third_party/forked/gonum/graph/traverse",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/golang.org/x/tools/container/intsets:go_default_library",

@@ -14,6 +14,7 @@ go_library(
         "xfr.go",
         "zone.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/file",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/fsnotify/fsnotify:go_default_library",
@@ -48,6 +49,7 @@ go_test(
         "xfr_test.go",
         "zone_test.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/file",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/mholt/caddy:go_default_library",

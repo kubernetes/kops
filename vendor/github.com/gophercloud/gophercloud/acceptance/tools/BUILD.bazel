@@ -6,5 +6,6 @@ go_library(
         "pkg.go",
         "tools.go",
     ],
+    importpath = "github.com/gophercloud/gophercloud/acceptance/tools",
     visibility = ["//visibility:public"],
 )
