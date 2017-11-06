@@ -628,7 +628,7 @@ bazel-push-aws-run: bazel-push
 
 .PHONY: bazel-gazelle
 bazel-gazelle:
-	bazel run //:gazelle
+	bazel run //:gazelle -- -proto disable
 
 .PHONY: check-markdown-links
 check-markdown-links:
