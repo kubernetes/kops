@@ -7,6 +7,7 @@ go_library(
         "entity.pb.go",
         "query.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/datastore/v1beta3",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

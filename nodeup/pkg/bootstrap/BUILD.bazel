@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["install.go"],
+    importpath = "k8s.io/kops/nodeup/pkg/bootstrap",
     visibility = ["//visibility:public"],
     deps = [
         "//nodeup/pkg/distros:go_default_library",

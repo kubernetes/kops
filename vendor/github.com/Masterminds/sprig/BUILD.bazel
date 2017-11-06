@@ -16,6 +16,7 @@ go_library(
         "semver.go",
         "strings.go",
     ],
+    importpath = "github.com/Masterminds/sprig",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/Masterminds/semver:go_default_library",
@@ -44,6 +45,7 @@ go_test(
         "semver_test.go",
         "strings_test.go",
     ],
+    importpath = "github.com/Masterminds/sprig",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/aokoli/goutils:go_default_library",

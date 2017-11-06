@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "auth.go",
         "config.go",
-        "config_unix.go",
         "endpoint_v1.go",
         "registry.go",
         "service.go",
@@ -14,11 +13,18 @@ go_library(
         "session.go",
         "types.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "config_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "config_unix.go",
+        ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "config_windows.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/registry",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/distribution/reference:go_default_library",
@@ -53,6 +59,7 @@ go_test(
         "registry_test.go",
         "service_v1_test.go",
     ],
+    importpath = "github.com/docker/docker/registry",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/distribution/reference:go_default_library",

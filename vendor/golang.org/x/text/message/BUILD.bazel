@@ -8,6 +8,7 @@ go_library(
         "message.go",
         "print.go",
     ],
+    importpath = "golang.org/x/text/message",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/golang.org/x/text/internal/number:go_default_library",
@@ -22,6 +23,7 @@ go_test(
         "fmt_test.go",
         "message_test.go",
     ],
+    importpath = "golang.org/x/text/message",
     library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/text/internal:go_default_library",

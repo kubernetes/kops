@@ -7,6 +7,7 @@ go_library(
         "router_swapper.go",
         "server.go",
     ],
+    importpath = "github.com/docker/docker/api/server",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api/errors:go_default_library",
@@ -24,6 +25,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["server_test.go"],
+    importpath = "github.com/docker/docker/api/server",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/docker/api:go_default_library",

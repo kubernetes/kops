@@ -6,6 +6,7 @@ go_library(
         "create.go",
         "info.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/folder",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

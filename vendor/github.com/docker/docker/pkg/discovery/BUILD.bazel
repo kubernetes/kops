@@ -8,6 +8,7 @@ go_library(
         "entry.go",
         "generator.go",
     ],
+    importpath = "github.com/docker/docker/pkg/discovery",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/sirupsen/logrus:go_default_library"],
 )
@@ -18,6 +19,7 @@ go_test(
         "discovery_test.go",
         "generator_test.go",
     ],
+    importpath = "github.com/docker/docker/pkg/discovery",
     library = ":go_default_library",
     deps = ["//vendor/github.com/go-check/check:go_default_library"],
 )

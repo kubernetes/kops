@@ -25,6 +25,7 @@ go_library(
         "util.go",
         "volumes.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/common",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",

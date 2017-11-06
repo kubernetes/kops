@@ -10,6 +10,7 @@ go_library(
         "gc.go",
         "reader.go",
     ],
+    importpath = "cloud.google.com/go/bigtable",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/cloud.google.com/go/bigtable/internal/gax:go_default_library",
@@ -36,6 +37,7 @@ go_test(
         "retry_test.go",
     ],
     data = glob(["testdata/**"]),
+    importpath = "cloud.google.com/go/bigtable",
     library = ":go_default_library",
     deps = [
         "//vendor/cloud.google.com/go/bigtable/bttest:go_default_library",

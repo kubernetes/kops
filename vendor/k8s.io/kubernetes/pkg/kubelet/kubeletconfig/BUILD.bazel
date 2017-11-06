@@ -8,6 +8,7 @@ go_library(
         "rollback.go",
         "watch.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubelet/kubeletconfig",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/api/core/v1:go_default_library",

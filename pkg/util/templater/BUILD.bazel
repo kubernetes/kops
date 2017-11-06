@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["templater.go"],
+    importpath = "k8s.io/kops/pkg/util/templater",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/Masterminds/sprig:go_default_library"],
 )
@@ -11,6 +12,7 @@ go_test(
     name = "go_default_test",
     srcs = ["templater_test.go"],
     data = glob(["integration_tests.yml"]),  #keep
+    importpath = "k8s.io/kops/pkg/util/templater",
     library = ":go_default_library",
     deps = [
         "//pkg/diff:go_default_library",

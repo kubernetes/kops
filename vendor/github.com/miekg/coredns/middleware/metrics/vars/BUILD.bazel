@@ -6,6 +6,7 @@ go_library(
         "report.go",
         "vars.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/metrics/vars",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/miekg/coredns/middleware:go_default_library",

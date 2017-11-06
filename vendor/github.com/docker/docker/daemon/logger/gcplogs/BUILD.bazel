@@ -4,13 +4,19 @@ go_library(
     name = "go_default_library",
     srcs = [
         "gcplogging.go",
-        "gcplogging_others.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "gcplogging_others.go",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             "gcplogging_linux.go",
         ],
+        "@io_bazel_rules_go//go/platform:windows_amd64": [
+            "gcplogging_others.go",
+        ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/daemon/logger/gcplogs",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/cloud.google.com/go/compute/metadata:go_default_library",

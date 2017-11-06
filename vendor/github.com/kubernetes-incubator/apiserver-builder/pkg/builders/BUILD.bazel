@@ -13,6 +13,7 @@ go_library(
         "resource_interfaces.go",
         "scheme.go",
     ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/pkg/builders",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",

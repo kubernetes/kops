@@ -10,6 +10,7 @@ go_library(
         "info.go",
         "resource_config_spec.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/pool",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/find:go_default_library",

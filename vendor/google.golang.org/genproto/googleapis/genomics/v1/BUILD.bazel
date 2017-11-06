@@ -16,6 +16,7 @@ go_library(
         "references.pb.go",
         "variants.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/genomics/v1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

@@ -6,6 +6,7 @@ go_test(
         "evictions_test.go",
         "main_test.go",
     ],
+    importpath = "k8s.io/kubernetes/test/integration/evictions",
     deps = [
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/api/policy/v1beta1:go_default_library",

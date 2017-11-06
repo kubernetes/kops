@@ -9,6 +9,7 @@ go_library(
         "zz_generated.conversion.go",
         "zz_generated.defaults.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/apis/autoscaling/v2beta1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/api/autoscaling/v2beta1:go_default_library",
@@ -26,6 +27,7 @@ go_library(
 go_test(
     name = "go_default_xtest",
     srcs = ["defaults_test.go"],
+    importpath = "k8s.io/kubernetes/pkg/apis/autoscaling/v2beta1_test",
     deps = [
         ":go_default_library",
         "//vendor/k8s.io/api/autoscaling/v2beta1:go_default_library",

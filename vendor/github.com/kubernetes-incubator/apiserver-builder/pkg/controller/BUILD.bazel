@@ -6,6 +6,7 @@ go_library(
         "controller.go",
         "informers.go",
     ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/pkg/controller",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",

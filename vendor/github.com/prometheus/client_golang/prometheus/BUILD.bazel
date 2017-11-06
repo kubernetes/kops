@@ -23,6 +23,7 @@ go_library(
         "value.go",
         "vec.go",
     ],
+    importpath = "github.com/prometheus/client_golang/prometheus",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/beorn7/perks/quantile:go_default_library",
@@ -49,6 +50,7 @@ go_test(
         "timer_test.go",
         "vec_test.go",
     ],
+    importpath = "github.com/prometheus/client_golang/prometheus",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/prometheus/client_model/go:go_default_library",
@@ -68,6 +70,7 @@ go_test(
         "expvar_collector_test.go",
         "registry_test.go",
     ],
+    importpath = "github.com/prometheus/client_golang/prometheus_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

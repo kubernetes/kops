@@ -8,6 +8,7 @@ go_library(
         "remove.go",
         "update.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/host/account",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

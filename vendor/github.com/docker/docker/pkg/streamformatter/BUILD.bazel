@@ -6,6 +6,7 @@ go_library(
         "streamformatter.go",
         "streamwriter.go",
     ],
+    importpath = "github.com/docker/docker/pkg/streamformatter",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/pkg/jsonmessage:go_default_library",
@@ -19,6 +20,7 @@ go_test(
         "streamformatter_test.go",
         "streamwriter_test.go",
     ],
+    importpath = "github.com/docker/docker/pkg/streamformatter",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/docker/pkg/jsonmessage:go_default_library",

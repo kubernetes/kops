@@ -7,6 +7,7 @@ go_library(
         "doc.go",
         "register.go",
     ],
+    importpath = "k8s.io/kops/pkg/client/clientset_generated/internalclientset/fake",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",

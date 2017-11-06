@@ -10,6 +10,7 @@ go_test(
         "node_test.go",
         "rbac_test.go",
     ],
+    importpath = "k8s.io/kubernetes/test/integration/auth",
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/api/authentication/v1beta1:go_default_library",

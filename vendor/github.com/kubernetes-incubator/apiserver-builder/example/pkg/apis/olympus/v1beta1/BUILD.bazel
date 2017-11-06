@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "poseidon_types.go",
     ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/example/pkg/apis/olympus/v1beta1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/kubernetes-incubator/apiserver-builder/example/pkg/apis/olympus:go_default_library",
@@ -24,6 +25,7 @@ go_test(
         "poseidon_types_test.go",
         "v1beta1_suite_test.go",
     ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/example/pkg/apis/olympus/v1beta1_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/kubernetes-incubator/apiserver-builder/example/pkg/apis:go_default_library",

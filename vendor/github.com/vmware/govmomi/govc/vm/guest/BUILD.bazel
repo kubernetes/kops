@@ -20,6 +20,7 @@ go_library(
         "tools.go",
         "upload.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/vm/guest",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

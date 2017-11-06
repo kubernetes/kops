@@ -6,6 +6,7 @@ go_library(
         "fake.go",
         "zz_generated.deepcopy.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/testing",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/emicklei/go-restful-swagger12:go_default_library",

@@ -6,6 +6,7 @@ go_library(
         "change.go",
         "info.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/metric/interval",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

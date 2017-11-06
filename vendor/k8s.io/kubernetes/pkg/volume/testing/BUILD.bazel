@@ -6,6 +6,7 @@ go_library(
         "mock_volume.go",
         "testing.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/volume/testing",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/stretchr/testify/mock:go_default_library",

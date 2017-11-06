@@ -9,6 +9,7 @@ go_library(
         "trie.go",
         "trieval.go",
     ],
+    importpath = "golang.org/x/text/internal/export/idna",
     visibility = ["//vendor/golang.org/x/text:__subpackages__"],
     deps = [
         "//vendor/golang.org/x/text/secure/bidirule:go_default_library",
@@ -24,6 +25,7 @@ go_test(
         "idna_test.go",
         "punycode_test.go",
     ],
+    importpath = "golang.org/x/text/internal/export/idna",
     library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/text/internal/gen:go_default_library",
@@ -35,5 +37,6 @@ go_test(
 go_test(
     name = "go_default_xtest",
     srcs = ["example_test.go"],
+    importpath = "golang.org/x/text/internal/export/idna_test",
     deps = [":go_default_library"],
 )

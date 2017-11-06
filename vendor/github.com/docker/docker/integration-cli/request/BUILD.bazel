@@ -3,14 +3,20 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = [
-        "npipe.go",
         "request.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "npipe.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "npipe.go",
+        ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "npipe_windows.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/integration-cli/request",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api:go_default_library",

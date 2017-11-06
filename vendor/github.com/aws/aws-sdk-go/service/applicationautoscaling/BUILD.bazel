@@ -6,6 +6,7 @@ go_library(
         "api.go",
         "service.go",
     ],
+    importpath = "github.com/aws/aws-sdk-go/service/applicationautoscaling",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
@@ -21,6 +22,7 @@ go_library(
 go_test(
     name = "go_default_xtest",
     srcs = ["examples_test.go"],
+    importpath = "github.com/aws/aws-sdk-go/service/applicationautoscaling_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",

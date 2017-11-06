@@ -13,6 +13,7 @@ go_library(
         "spec.go",
         "vmdk.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/importx",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

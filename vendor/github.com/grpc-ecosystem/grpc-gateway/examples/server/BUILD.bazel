@@ -8,6 +8,7 @@ go_library(
         "flow_combination.go",
         "main.go",
     ],
+    importpath = "github.com/grpc-ecosystem/grpc-gateway/examples/server",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",

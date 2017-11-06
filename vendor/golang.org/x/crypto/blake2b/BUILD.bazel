@@ -5,7 +5,6 @@ go_library(
     srcs = [
         "blake2b.go",
         "blake2b_generic.go",
-        "blake2b_ref.go",
         "blake2x.go",
         "register.go",
     ] + select({
@@ -29,11 +28,13 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "golang.org/x/crypto/blake2b",
     visibility = ["//visibility:public"],
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["blake2b_test.go"],
+    importpath = "golang.org/x/crypto/blake2b",
     library = ":go_default_library",
 )

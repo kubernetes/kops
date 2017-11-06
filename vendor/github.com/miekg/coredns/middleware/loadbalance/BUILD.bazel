@@ -7,6 +7,7 @@ go_library(
         "loadbalance.go",
         "setup.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/loadbalance",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/mholt/caddy:go_default_library",
@@ -20,6 +21,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["loadbalance_test.go"],
+    importpath = "github.com/miekg/coredns/middleware/loadbalance",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/miekg/coredns/middleware:go_default_library",

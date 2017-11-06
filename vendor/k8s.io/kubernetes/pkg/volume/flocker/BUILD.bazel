@@ -8,6 +8,7 @@ go_library(
         "flocker_util.go",
         "flocker_volume.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/volume/flocker",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/clusterhq/flocker-go:go_default_library",
@@ -33,6 +34,7 @@ go_test(
         "flocker_util_test.go",
         "flocker_volume_test.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/volume/flocker",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/clusterhq/flocker-go:go_default_library",

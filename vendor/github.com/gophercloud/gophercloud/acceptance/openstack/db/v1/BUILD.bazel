@@ -6,6 +6,7 @@ go_library(
         "db.go",
         "pkg.go",
     ],
+    importpath = "github.com/gophercloud/gophercloud/acceptance/openstack/db/v1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",

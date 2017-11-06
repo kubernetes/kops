@@ -18,6 +18,7 @@ go_library(
         "unregister.go",
         "vnc.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/vm",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/find:go_default_library",

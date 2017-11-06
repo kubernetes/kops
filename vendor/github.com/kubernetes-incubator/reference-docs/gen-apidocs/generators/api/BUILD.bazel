@@ -17,6 +17,7 @@ go_library(
         "types.go",
         "util.go",
     ],
+    importpath = "github.com/kubernetes-incubator/reference-docs/gen-apidocs/generators/api",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/go-openapi/loads:go_default_library",

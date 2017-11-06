@@ -6,6 +6,7 @@ go_library(
         "functions.pb.go",
         "operations.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/cloud/functions/v1beta2",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

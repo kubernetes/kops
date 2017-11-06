@@ -10,6 +10,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "golang.org/x/sys/windows/svc/mgr",
     visibility = ["//visibility:public"],
     deps = select({
         "@io_bazel_rules_go//go/platform:windows_amd64": [
@@ -28,6 +29,7 @@ go_test(
         ],
         "//conditions:default": [],
     }),
+    importpath = "golang.org/x/sys/windows/svc/mgr_test",
     deps = select({
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             ":go_default_library",

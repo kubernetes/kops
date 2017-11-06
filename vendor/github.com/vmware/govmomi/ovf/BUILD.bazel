@@ -9,6 +9,7 @@ go_library(
         "envelope.go",
         "ovf.go",
     ],
+    importpath = "github.com/vmware/govmomi/ovf",
     visibility = ["//visibility:public"],
 )
 
@@ -18,5 +19,6 @@ go_test(
         "env_test.go",
         "ovf_test.go",
     ],
+    importpath = "github.com/vmware/govmomi/ovf",
     library = ":go_default_library",
 )

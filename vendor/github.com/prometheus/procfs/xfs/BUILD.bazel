@@ -6,12 +6,14 @@ go_library(
         "parse.go",
         "xfs.go",
     ],
+    importpath = "github.com/prometheus/procfs/xfs",
     visibility = ["//visibility:public"],
 )
 
 go_test(
     name = "go_default_xtest",
     srcs = ["parse_test.go"],
+    importpath = "github.com/prometheus/procfs/xfs_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/prometheus/procfs:go_default_library",

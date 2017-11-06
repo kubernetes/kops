@@ -6,5 +6,6 @@ go_library(
         "print.go",
         "version.go",
     ],
+    importpath = "github.com/docker/distribution/version",
     visibility = ["//visibility:public"],
 )
