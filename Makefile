@@ -629,9 +629,7 @@ bazel-push-aws-run: bazel-push
 
 .PHONY: bazel-gazelle
 bazel-gazelle:
-	bazel run //:gazelle
-	git checkout -- vendor/
-	git clean -df vendor/
+	bazel run //:gazelle -- -proto disable
 
 .PHONY: check-markdown-links
 check-markdown-links:
