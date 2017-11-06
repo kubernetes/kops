@@ -164,7 +164,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		Example: rollingupdate_example,
 	}
 
-	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "perform rolling update without confirmation")
+	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Perform rolling update immediately, without --yes rolling-update executes a dry-run")
 	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")
 	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with k8s")
 
