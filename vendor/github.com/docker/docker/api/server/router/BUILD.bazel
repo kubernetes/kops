@@ -7,6 +7,7 @@ go_library(
         "local.go",
         "router.go",
     ],
+    importpath = "github.com/docker/docker/api/server/router",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api/errors:go_default_library",

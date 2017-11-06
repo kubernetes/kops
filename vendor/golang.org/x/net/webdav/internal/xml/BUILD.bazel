@@ -8,6 +8,7 @@ go_library(
         "typeinfo.go",
         "xml.go",
     ],
+    importpath = "golang.org/x/net/webdav/internal/xml",
     visibility = ["//vendor/golang.org/x/net/webdav:__subpackages__"],
 )
 
@@ -19,10 +20,12 @@ go_test(
         "read_test.go",
         "xml_test.go",
     ],
+    importpath = "golang.org/x/net/webdav/internal/xml",
     library = ":go_default_library",
 )
 
 go_test(
     name = "go_default_xtest",
     srcs = ["example_test.go"],
+    importpath = "golang.org/x/net/webdav/internal/xml_test",
 )

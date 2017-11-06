@@ -8,6 +8,7 @@ go_library(
         "round_trippers.go",
         "transport.go",
     ],
+    importpath = "k8s.io/kubernetes/staging/src/k8s.io/client-go/transport",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
@@ -25,5 +26,6 @@ go_test(
         "round_trippers_test.go",
         "transport_test.go",
     ],
+    importpath = "k8s.io/kubernetes/staging/src/k8s.io/client-go/transport",
     library = ":go_default_library",
 )

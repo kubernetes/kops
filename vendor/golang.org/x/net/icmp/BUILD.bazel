@@ -32,6 +32,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "golang.org/x/net/icmp",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/golang.org/x/net/internal/iana:go_default_library",
@@ -47,6 +48,7 @@ go_test(
         "extension_test.go",
         "ipv4_test.go",
     ],
+    importpath = "golang.org/x/net/icmp",
     library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/net/internal/iana:go_default_library",
@@ -63,6 +65,7 @@ go_test(
         "multipart_test.go",
         "ping_test.go",
     ],
+    importpath = "golang.org/x/net/icmp_test",
     deps = [
         ":go_default_library",
         "//vendor/golang.org/x/net/internal/iana:go_default_library",

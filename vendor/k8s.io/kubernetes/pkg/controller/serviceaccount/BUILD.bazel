@@ -8,6 +8,7 @@ go_library(
         "tokengetter.go",
         "tokens_controller.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/controller/serviceaccount",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
@@ -45,6 +46,7 @@ go_test(
         "serviceaccounts_controller_test.go",
         "tokens_controller_test.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/controller/serviceaccount",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/davecgh/go-spew/spew:go_default_library",

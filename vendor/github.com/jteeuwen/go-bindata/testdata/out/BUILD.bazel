@@ -9,11 +9,13 @@ go_library(
         "nocompress-memcopy.go",
         "nocompress-nomemcopy.go",
     ],
+    importpath = "github.com/jteeuwen/go-bindata/testdata/out",
     visibility = ["//visibility:private"],
 )
 
 go_binary(
     name = "out",
+    importpath = "github.com/jteeuwen/go-bindata/testdata/out",
     library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

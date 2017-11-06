@@ -6,6 +6,7 @@ go_library(
         "cache.go",
         "cachedblobdescriptorstore.go",
     ],
+    importpath = "github.com/docker/distribution/registry/storage/cache",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/distribution:go_default_library",

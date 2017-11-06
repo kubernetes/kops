@@ -12,6 +12,7 @@ go_library(
         "rrsig.go",
         "setup.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/dnssec",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/hashicorp/golang-lru:go_default_library",
@@ -36,6 +37,7 @@ go_test(
         "handler_test.go",
         "setup_test.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/dnssec",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/hashicorp/golang-lru:go_default_library",

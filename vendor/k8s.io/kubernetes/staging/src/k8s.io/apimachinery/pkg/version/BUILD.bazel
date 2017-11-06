@@ -6,5 +6,6 @@ go_library(
         "doc.go",
         "types.go",
     ],
+    importpath = "k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/version",
     visibility = ["//visibility:public"],
 )

@@ -6,6 +6,7 @@ go_library(
         "attach.go",
         "streams.go",
     ],
+    importpath = "github.com/docker/docker/container/stream",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/libcontainerd:go_default_library",

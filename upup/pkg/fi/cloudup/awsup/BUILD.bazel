@@ -13,6 +13,7 @@ go_library(
         "request_logger.go",
         "status.go",
     ],
+    importpath = "k8s.io/kops/upup/pkg/fi/cloudup/awsup",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",
@@ -49,6 +50,7 @@ go_test(
         "aws_topology_test.go",
         "aws_utils_test.go",
     ],
+    importpath = "k8s.io/kops/upup/pkg/fi/cloudup/awsup",
     library = ":go_default_library",
     deps = [
         "//pkg/apis/kops:go_default_library",

@@ -58,6 +58,7 @@ go_library(
         "top_pod.go",
         "version.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/daviddengcn/go-colortext:go_default_library",
@@ -179,6 +180,7 @@ go_test(
         "top_pod_test.go",
         "top_test.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/spf13/cobra:go_default_library",

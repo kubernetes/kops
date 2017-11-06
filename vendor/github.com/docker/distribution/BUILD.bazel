@@ -10,6 +10,7 @@ go_library(
         "registry.go",
         "tags.go",
     ],
+    importpath = "github.com/docker/distribution",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/distribution/context:go_default_library",

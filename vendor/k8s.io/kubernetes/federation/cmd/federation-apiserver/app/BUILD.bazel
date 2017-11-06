@@ -12,6 +12,7 @@ go_library(
         "plugins.go",
         "server.go",
     ],
+    importpath = "k8s.io/kubernetes/federation/cmd/federation-apiserver/app",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/go-openapi/spec:go_default_library",

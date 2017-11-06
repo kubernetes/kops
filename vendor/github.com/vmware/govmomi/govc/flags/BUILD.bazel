@@ -23,6 +23,7 @@ go_library(
         "virtual_app.go",
         "virtual_machine.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/flags",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/davecgh/go-spew/spew:go_default_library",
@@ -43,5 +44,6 @@ go_test(
         "optional_bool_test.go",
         "version_test.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/flags",
     library = ":go_default_library",
 )

@@ -6,6 +6,7 @@ go_library(
         "sampling.go",
         "trace.go",
     ],
+    importpath = "cloud.google.com/go/trace",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/golang.org/x/net/context:go_default_library",
@@ -20,6 +21,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["trace_test.go"],
+    importpath = "cloud.google.com/go/trace",
     library = ":go_default_library",
     deps = [
         "//vendor/cloud.google.com/go/storage:go_default_library",

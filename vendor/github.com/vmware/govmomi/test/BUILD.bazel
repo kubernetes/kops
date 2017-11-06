@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "helper.go",
     ],
+    importpath = "github.com/vmware/govmomi/test",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/vim25:go_default_library",

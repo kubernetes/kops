@@ -12,6 +12,7 @@ go_library(
         "swarm.go",
         "task.go",
     ],
+    importpath = "github.com/docker/docker/daemon/cluster/convert",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api/types:go_default_library",
@@ -35,6 +36,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["service_test.go"],
+    importpath = "github.com/docker/docker/daemon/cluster/convert",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/docker/api/types/swarm:go_default_library",

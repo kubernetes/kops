@@ -6,6 +6,7 @@ go_library(
         "assignment_manager.go",
         "manager.go",
     ],
+    importpath = "github.com/vmware/govmomi/license",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/object:go_default_library",

@@ -10,6 +10,7 @@ go_library(
         "runners.go",
         "tmpdir.go",
     ],
+    importpath = "k8s.io/kubernetes/test/utils",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/davecgh/go-spew/spew:go_default_library",

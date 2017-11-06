@@ -9,6 +9,7 @@ go_library(
         "reconnect.go",
         "remove.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/host",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

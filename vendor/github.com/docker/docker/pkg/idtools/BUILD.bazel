@@ -4,31 +4,63 @@ go_library(
     name = "go_default_library",
     srcs = [
         "idtools.go",
-        "idtools_unix.go",
-        "usergroupadd_unsupported.go",
-        "utils_unix.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "idtools_unix.go",
+            "usergroupadd_unsupported.go",
+            "utils_unix.go",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "idtools_unix.go",
             "usergroupadd_linux.go",
+            "utils_unix.go",
         ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "idtools_windows.go",
+            "usergroupadd_unsupported.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/pkg/idtools",
     visibility = ["//visibility:public"],
-    deps = [
-        "//vendor/github.com/docker/docker/pkg/system:go_default_library",
-        "//vendor/github.com/opencontainers/runc/libcontainer/user:go_default_library",
-    ],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "//vendor/github.com/docker/docker/pkg/system:go_default_library",
+            "//vendor/github.com/opencontainers/runc/libcontainer/user:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "//vendor/github.com/docker/docker/pkg/system:go_default_library",
+            "//vendor/github.com/opencontainers/runc/libcontainer/user:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:windows_amd64": [
+            "//vendor/github.com/docker/docker/pkg/system:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 go_test(
     name = "go_default_test",
-    srcs = ["idtools_unix_test.go"],
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "idtools_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "idtools_unix_test.go",
+        ],
+        "//conditions:default": [],
+    }),
+    importpath = "github.com/docker/docker/pkg/idtools",
     library = ":go_default_library",
-    deps = [
-        "//vendor/github.com/stretchr/testify/require:go_default_library",
-        "//vendor/golang.org/x/sys/unix:go_default_library",
-    ],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "//vendor/github.com/stretchr/testify/require:go_default_library",
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "//vendor/github.com/stretchr/testify/require:go_default_library",
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
 )

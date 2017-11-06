@@ -10,6 +10,7 @@ go_library(
         "tables.go",
         "trieval.go",
     ],
+    importpath = "golang.org/x/text/unicode/bidi",
     visibility = ["//visibility:public"],
 )
 
@@ -20,6 +21,7 @@ go_test(
         "ranges_test.go",
         "tables_test.go",
     ],
+    importpath = "golang.org/x/text/unicode/bidi",
     library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/text/internal/gen:go_default_library",

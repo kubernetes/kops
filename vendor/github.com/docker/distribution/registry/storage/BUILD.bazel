@@ -26,6 +26,7 @@ go_library(
         "vacuum.go",
         "walk.go",
     ],
+    importpath = "github.com/docker/distribution/registry/storage",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/distribution:go_default_library",
@@ -63,6 +64,7 @@ go_test(
         "tagstore_test.go",
         "walk_test.go",
     ],
+    importpath = "github.com/docker/distribution/registry/storage",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/distribution:go_default_library",

@@ -7,5 +7,6 @@ go_library(
         "main_helper.go",
         "parse.go",
     ],
+    importpath = "k8s.io/kops/upup/tools/generators/pkg/codegen",
     visibility = ["//visibility:public"],
 )

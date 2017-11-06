@@ -7,6 +7,7 @@ go_library(
         "environment.go",
         "protect.go",
     ],
+    importpath = "github.com/docker/docker/integration-cli/environment",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api/types:go_default_library",

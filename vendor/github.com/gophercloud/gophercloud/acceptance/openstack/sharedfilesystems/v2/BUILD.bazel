@@ -9,6 +9,7 @@ go_library(
         "shares.go",
         "sharetypes.go",
     ],
+    importpath = "github.com/gophercloud/gophercloud/acceptance/openstack/sharedfilesystems/v2",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
@@ -30,6 +31,7 @@ go_test(
         "shares_test.go",
         "sharetypes_test.go",
     ],
+    importpath = "github.com/gophercloud/gophercloud/acceptance/openstack/sharedfilesystems/v2",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/gophercloud/gophercloud/acceptance/clients:go_default_library",

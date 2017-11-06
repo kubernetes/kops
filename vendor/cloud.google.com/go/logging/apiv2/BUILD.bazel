@@ -9,6 +9,7 @@ go_library(
         "logging_client.go",
         "metrics_client.go",
     ],
+    importpath = "cloud.google.com/go/logging/apiv2",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/googleapis/gax-go:go_default_library",
@@ -30,6 +31,7 @@ go_test(
         "logging_client_example_test.go",
         "metrics_client_example_test.go",
     ],
+    importpath = "cloud.google.com/go/logging/apiv2_test",
     deps = [
         ":go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",

@@ -6,6 +6,7 @@ go_library(
         "cert_secret.go",
         "k8s_keystore.go",
     ],
+    importpath = "k8s.io/kops/upup/pkg/fi/k8sapi",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/pki:go_default_library",

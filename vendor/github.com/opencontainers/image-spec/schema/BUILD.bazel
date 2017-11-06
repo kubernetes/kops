@@ -10,6 +10,7 @@ go_library(
         "schema.go",
         "validator.go",
     ],
+    importpath = "github.com/opencontainers/image-spec/schema",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/opencontainers/go-digest:go_default_library",
@@ -30,6 +31,7 @@ go_test(
         "manifest_test.go",
         "spec_test.go",
     ],
+    importpath = "github.com/opencontainers/image-spec/schema_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/opencontainers/go-digest:go_default_library",

@@ -9,6 +9,7 @@ go_library(
         "node_authz.go",
         "service_accounts.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/auth",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/onsi/ginkgo:go_default_library",

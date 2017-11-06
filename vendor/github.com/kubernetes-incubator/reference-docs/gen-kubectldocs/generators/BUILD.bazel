@@ -8,6 +8,7 @@ go_library(
         "templates.go",
         "types.go",
     ],
+    importpath = "github.com/kubernetes-incubator/reference-docs/gen-kubectldocs/generators",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/spf13/cobra:go_default_library",

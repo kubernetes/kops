@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["main.go"],
+    importpath = "github.com/emicklei/go-restful/examples/google_app_engine/datastore",
     visibility = ["//visibility:private"],
     deps = [
         "//vendor/github.com/emicklei/go-restful:go_default_library",
@@ -15,6 +16,7 @@ go_library(
 
 go_binary(
     name = "datastore",
+    importpath = "github.com/emicklei/go-restful/examples/google_app_engine/datastore",
     library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

@@ -12,6 +12,7 @@ go_library(
         "optate.go",
         "twist.go",
     ],
+    importpath = "golang.org/x/crypto/bn256",
     visibility = ["//visibility:public"],
 )
 
@@ -21,5 +22,6 @@ go_test(
         "bn256_test.go",
         "example_test.go",
     ],
+    importpath = "golang.org/x/crypto/bn256",
     library = ":go_default_library",
 )

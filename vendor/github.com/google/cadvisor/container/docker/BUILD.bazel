@@ -8,6 +8,7 @@ go_library(
         "factory.go",
         "handler.go",
     ],
+    importpath = "github.com/google/cadvisor/container/docker",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/blang/semver:go_default_library",
@@ -40,6 +41,7 @@ go_test(
         "factory_test.go",
         "handler_test.go",
     ],
+    importpath = "github.com/google/cadvisor/container/docker",
     library = ":go_default_library",
     deps = ["//vendor/github.com/stretchr/testify/assert:go_default_library"],
 )

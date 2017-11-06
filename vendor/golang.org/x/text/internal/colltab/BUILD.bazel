@@ -12,6 +12,7 @@ go_library(
         "trie.go",
         "weighter.go",
     ],
+    importpath = "golang.org/x/text/internal/colltab",
     visibility = ["//vendor/golang.org/x/text:__subpackages__"],
     deps = [
         "//vendor/golang.org/x/text/language:go_default_library",
@@ -30,6 +31,7 @@ go_test(
         "trie_test.go",
         "weighter_test.go",
     ],
+    importpath = "golang.org/x/text/internal/colltab",
     library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/text/internal/testtext:go_default_library",
@@ -40,6 +42,7 @@ go_test(
 go_test(
     name = "go_default_xtest",
     srcs = ["collate_test.go"],
+    importpath = "golang.org/x/text/internal/colltab_test",
     deps = [
         "//vendor/golang.org/x/text/collate:go_default_library",
         "//vendor/golang.org/x/text/language:go_default_library",

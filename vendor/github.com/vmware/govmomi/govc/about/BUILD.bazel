@@ -6,6 +6,7 @@ go_library(
         "cert.go",
         "command.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/about",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

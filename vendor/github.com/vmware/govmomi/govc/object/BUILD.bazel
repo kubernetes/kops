@@ -11,6 +11,7 @@ go_library(
         "reload.go",
         "rename.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/object",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

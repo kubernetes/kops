@@ -8,6 +8,7 @@ go_library(
         "logging_config.pb.go",
         "logging_metrics.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/logging/v2",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

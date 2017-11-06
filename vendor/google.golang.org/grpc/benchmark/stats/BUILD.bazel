@@ -7,5 +7,6 @@ go_library(
         "stats.go",
         "util.go",
     ],
+    importpath = "google.golang.org/grpc/benchmark/stats",
     visibility = ["//visibility:public"],
 )

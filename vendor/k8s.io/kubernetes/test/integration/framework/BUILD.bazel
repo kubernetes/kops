@@ -9,6 +9,7 @@ go_library(
         "serializer.go",
         "util.go",
     ],
+    importpath = "k8s.io/kubernetes/test/integration/framework",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/go-openapi/spec:go_default_library",

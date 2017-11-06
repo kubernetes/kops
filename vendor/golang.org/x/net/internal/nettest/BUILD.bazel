@@ -23,5 +23,6 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "golang.org/x/net/internal/nettest",
     visibility = ["//vendor/golang.org/x/net:__subpackages__"],
 )
