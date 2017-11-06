@@ -1822,6 +1822,7 @@ func autoConvert_v1alpha1_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.RequestheaderExtraHeaderPrefixes = in.RequestheaderExtraHeaderPrefixes
 	out.RequestheaderClientCAFile = in.RequestheaderClientCAFile
 	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
+	out.FeatureGates = in.FeatureGates
 	return nil
 }
 
@@ -1880,6 +1881,7 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha1_KubeAPIServerConfig(in *ko
 	out.RequestheaderExtraHeaderPrefixes = in.RequestheaderExtraHeaderPrefixes
 	out.RequestheaderClientCAFile = in.RequestheaderClientCAFile
 	out.RequestheaderAllowedNames = in.RequestheaderAllowedNames
+	out.FeatureGates = in.FeatureGates
 	return nil
 }
 
@@ -1912,6 +1914,7 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	out.HorizontalPodAutoscalerSyncPeriod = in.HorizontalPodAutoscalerSyncPeriod
+	out.FeatureGates = in.FeatureGates
 	return nil
 }
 
@@ -1944,6 +1947,7 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	out.HorizontalPodAutoscalerSyncPeriod = in.HorizontalPodAutoscalerSyncPeriod
+	out.FeatureGates = in.FeatureGates
 	return nil
 }
 
@@ -2026,6 +2030,7 @@ func autoConvert_v1alpha1_KubeSchedulerConfig_To_kops_KubeSchedulerConfig(in *Ku
 		out.LeaderElection = nil
 	}
 	out.UsePolicyConfigMap = in.UsePolicyConfigMap
+	out.FeatureGates = in.FeatureGates
 	return nil
 }
 
@@ -2048,6 +2053,7 @@ func autoConvert_kops_KubeSchedulerConfig_To_v1alpha1_KubeSchedulerConfig(in *ko
 		out.LeaderElection = nil
 	}
 	out.UsePolicyConfigMap = in.UsePolicyConfigMap
+	out.FeatureGates = in.FeatureGates
 	return nil
 }
 
