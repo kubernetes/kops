@@ -449,6 +449,7 @@ copydeps:
 	rm -rf vendor/k8s.io/metrics
 	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
 	find vendor/k8s.io/kubernetes -type f -name "*.go" | xargs sed -i -e 's-k8s.io/kubernetes/staging/src/k8s.io/apimachinery-k8s.io/apimachinery-g'
+	bazel run //:gazelle -- -proto disable
 
 .PHONY: gofmt
 gofmt:
@@ -628,7 +629,9 @@ bazel-push-aws-run: bazel-push
 
 .PHONY: bazel-gazelle
 bazel-gazelle:
-	bazel run //:gazelle -- -proto disable
+	bazel run //:gazelle
+	git checkout -- vendor/
+	git clean -df vendor/
 
 .PHONY: check-markdown-links
 check-markdown-links:
