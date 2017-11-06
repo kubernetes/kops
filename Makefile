@@ -433,13 +433,21 @@ utils-dist:
 .PHONY: copydeps
 copydeps:
 	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git --exclude BUILD --exclude BUILD.bazel
-	ln -sf kubernetes/staging/src/k8s.io/api vendor/k8s.io/api
-	ln -sf kubernetes/staging/src/k8s.io/apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
-	ln -sf kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
-	ln -sf kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
-	ln -sf kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
-	ln -sf kubernetes/staging/src/k8s.io/code-generator vendor/k8s.io/code-generator
-	ln -sf kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
+	mkdir -p vendor/k8s.io/
+	rm -rf vendor/k8s.io/api
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/api vendor/k8s.io/api
+	rm -rf vendor/k8s.io/apiextensions-apiserver
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
+	rm -rf vendor/k8s.io/apimachinery
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
+	rm -rf vendor/k8s.io/apiserver
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
+	rm -rf vendor/k8s.io/client-go
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
+	rm -rf vendor/k8s.io/code-generator
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/code-generator vendor/k8s.io/code-generator
+	rm -rf vendor/k8s.io/metrics
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
 
 .PHONY: gofmt
 gofmt:
