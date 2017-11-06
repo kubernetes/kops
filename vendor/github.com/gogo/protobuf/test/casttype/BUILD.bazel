@@ -5,7 +5,6 @@ go_library(
     name = "go_default_library",
     srcs = ["mytypes.go"],
     importpath = "github.com/gogo/protobuf/test/casttype",
-    library = ":casttype_go_proto",
     visibility = ["//visibility:public"],
 )
 

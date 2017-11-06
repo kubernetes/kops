@@ -3,9 +3,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
+    srcs = ["proto3ext.pb.go"],
     importpath = "github.com/gogo/protobuf/test/proto3extension",
-    library = ":proto3extension_go_proto",
     visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/gogo/protobuf/proto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/protoc-gen-gogo/descriptor:go_default_library",
+    ],
 )
 
 proto_library(

@@ -32,7 +32,7 @@ import (
 	"k8s.io/kubernetes/pkg/controller"
 	deploymentutil "k8s.io/kubernetes/pkg/controller/deployment/util"
 	labelsutil "k8s.io/kubernetes/pkg/util/labels"
-	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/rand"
+	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 // syncStatusOnly only updates Deployments Status and doesn't take any mutating actions.

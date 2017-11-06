@@ -15,7 +15,7 @@ go_library(
         "//upup/pkg/fi/secrets:go_default_library",
         "//util/pkg/vfs:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
-        "//vendor/k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/api/errors:go_default_library",
     ],
 )

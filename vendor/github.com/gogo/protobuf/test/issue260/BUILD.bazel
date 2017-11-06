@@ -3,10 +3,17 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["models.go"],
+    srcs = [
+        "issue260.pb.go",
+        "models.go",
+    ],
     importpath = "github.com/gogo/protobuf/test/issue260",
-    library = ":issue260_go_proto",
     visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/gogo/protobuf/gogoproto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/proto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/types:go_default_library",
+    ],
 )
 
 go_test(
