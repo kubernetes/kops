@@ -6,7 +6,7 @@ go_library(
         "expansion_generated.go",
         "tokenreview.go",
     ],
-    importpath = "k8s.io/kubernetes/staging/src/k8s.io/client-go/listers/authentication/v1",
+    importpath = "k8s.io/client-go/listers/authentication/v1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/api/authentication/v1:go_default_library",

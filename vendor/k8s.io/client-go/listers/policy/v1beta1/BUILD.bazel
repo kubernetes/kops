@@ -8,7 +8,7 @@ go_library(
         "poddisruptionbudget.go",
         "poddisruptionbudget_expansion.go",
     ],
-    importpath = "k8s.io/kubernetes/staging/src/k8s.io/client-go/listers/policy/v1beta1",
+    importpath = "k8s.io/client-go/listers/policy/v1beta1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",

@@ -5,7 +5,6 @@ go_library(
     name = "go_default_library",
     srcs = ["doc.go"],
     importpath = "github.com/gogo/protobuf/test/dashfilename",
-    library = ":dashfilename_go_proto",
     visibility = ["//visibility:public"],
 )
 
