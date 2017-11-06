@@ -22940,6 +22940,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "int32",
 							},
 						},
+						"auditPolicyFile": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AuditPolicyFile is the full path to a advanced audit configuration file a.g. /srv/kubernetes/audit.conf",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"authenticationTokenWebhookConfigFile": {
 							SchemaProps: spec.SchemaProps{
 								Description: "File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.",
@@ -23163,14 +23170,14 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 					Properties: map[string]spec.Schema{
 						"image": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Image is the name of the docker image to run",
+								Description: "Image is the name of the docker image to run Deprecated as this is now in the addon",
 								Type:        []string{"string"},
 								Format:      "",
 							},
 						},
 						"replicas": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Replicas is the number of pod replicas",
+								Description: "Replicas is the number of pod replicas Deprecated as this is now in the addon, and controlled by autoscaler",
 								Type:        []string{"integer"},
 								Format:      "int32",
 							},
@@ -26336,6 +26343,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "int32",
 							},
 						},
+						"auditPolicyFile": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AuditPolicyFile is the full path to a advanced audit configuration file a.g. /srv/kubernetes/audit.conf",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
 						"authenticationTokenWebhookConfigFile": {
 							SchemaProps: spec.SchemaProps{
 								Description: "File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.",
@@ -26558,15 +26572,16 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 					Properties: map[string]spec.Schema{
 						"image": {
 							SchemaProps: spec.SchemaProps{
-								Description: "Image is the name of the docker image to run",
+								Description: "Image is the name of the docker image to run Deprecated as this is now in the addon",
 								Type:        []string{"string"},
 								Format:      "",
 							},
 						},
 						"replicas": {
 							SchemaProps: spec.SchemaProps{
-								Type:   []string{"integer"},
-								Format: "int32",
+								Description: "Deprecated as this is now in the addon, and controlled by autoscaler",
+								Type:        []string{"integer"},
+								Format:      "int32",
 							},
 						},
 						"domain": {
