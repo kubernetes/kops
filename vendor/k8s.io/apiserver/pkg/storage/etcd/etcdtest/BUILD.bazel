@@ -6,6 +6,6 @@ go_library(
         "doc.go",
         "etcdtest.go",
     ],
-    importpath = "k8s.io/kubernetes/staging/src/k8s.io/apiserver/pkg/storage/etcd/etcdtest",
+    importpath = "k8s.io/apiserver/pkg/storage/etcd/etcdtest",
     visibility = ["//visibility:public"],
 )

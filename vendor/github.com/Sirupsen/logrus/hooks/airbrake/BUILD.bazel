@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["airbrake.go"],
+    importpath = "github.com/Sirupsen/logrus/hooks/airbrake",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
+        "//vendor/github.com/tobi/airbrake-go:go_default_library",
+    ],
+)

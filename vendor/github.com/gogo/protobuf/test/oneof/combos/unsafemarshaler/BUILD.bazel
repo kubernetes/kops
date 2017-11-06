@@ -3,9 +3,16 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
+    srcs = ["one.pb.go"],
     importpath = "github.com/gogo/protobuf/test/oneof/combos/unsafemarshaler",
-    library = ":one_go_proto",
     visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/gogo/protobuf/gogoproto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/proto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/protoc-gen-gogo/descriptor:go_default_library",
+        "//vendor/github.com/gogo/protobuf/test/casttype:go_default_library",
+        "//vendor/github.com/gogo/protobuf/test/custom:go_default_library",
+    ],
 )
 
 go_test(

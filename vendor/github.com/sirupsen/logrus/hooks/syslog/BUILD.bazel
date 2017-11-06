@@ -2,10 +2,26 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = ["syslog.go"],
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "syslog.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "syslog.go",
+        ],
+        "//conditions:default": [],
+    }),
     importpath = "github.com/sirupsen/logrus/hooks/syslog",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/Sirupsen/logrus:go_default_library"],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "//vendor/github.com/sirupsen/logrus:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "//vendor/github.com/sirupsen/logrus:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
 )
 
 go_test(
@@ -13,5 +29,5 @@ go_test(
     srcs = ["syslog_test.go"],
     importpath = "github.com/sirupsen/logrus/hooks/syslog",
     library = ":go_default_library",
-    deps = ["//vendor/github.com/Sirupsen/logrus:go_default_library"],
+    deps = ["//vendor/github.com/sirupsen/logrus:go_default_library"],
 )

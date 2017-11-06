@@ -5,12 +5,19 @@ go_library(
     name = "go_default_library",
     srcs = [
         "t.go",
+        "thetest.pb.go",
         "uuid.go",
     ],
     importpath = "github.com/gogo/protobuf/test/combos/unsafeunmarshaler",
-    library = ":test_go_proto",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/gogo/protobuf/proto:go_default_library"],
+    deps = [
+        "//vendor/github.com/gogo/protobuf/gogoproto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/proto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/protoc-gen-gogo/descriptor:go_default_library",
+        "//vendor/github.com/gogo/protobuf/sortkeys:go_default_library",
+        "//vendor/github.com/gogo/protobuf/test/custom:go_default_library",
+        "//vendor/github.com/gogo/protobuf/test/custom-dash-type:go_default_library",
+    ],
 )
 
 go_test(

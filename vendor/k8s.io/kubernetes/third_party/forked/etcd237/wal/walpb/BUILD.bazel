@@ -3,10 +3,13 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["record.go"],
+    srcs = [
+        "record.go",
+        "record.pb.go",
+    ],
     importpath = "k8s.io/kubernetes/third_party/forked/etcd237/wal/walpb",
-    library = ":walpb_go_proto",
     visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )
 
 proto_library(
