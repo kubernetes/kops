@@ -182,7 +182,7 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addECRPermissions(p)
 	}
 
-	if b.Cluster.Spec.Networking.Romana != nil {
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Romana != nil {
 		addRomanaCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy)
 	}
 
