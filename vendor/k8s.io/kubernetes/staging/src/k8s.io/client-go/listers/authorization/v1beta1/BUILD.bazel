@@ -9,6 +9,7 @@ go_library(
         "selfsubjectrulesreview.go",
         "subjectaccessreview.go",
     ],
+    importpath = "k8s.io/kubernetes/staging/src/k8s.io/client-go/listers/authorization/v1beta1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/api/authorization/v1beta1:go_default_library",

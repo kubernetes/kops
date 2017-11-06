@@ -9,6 +9,7 @@ go_library(
         "rest.go",
         "strategy.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/registry/core/service",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
@@ -43,6 +44,7 @@ go_test(
         "rest_test.go",
         "strategy_test.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/registry/core/service",
     library = ":go_default_library",
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",

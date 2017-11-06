@@ -12,6 +12,7 @@ go_library(
         "sinker.go",
         "tee.go",
     ],
+    importpath = "github.com/vmware/govmomi/vim25/progress",
     visibility = ["//visibility:public"],
 )
 
@@ -25,5 +26,6 @@ go_test(
         "scale_test.go",
         "tee_test.go",
     ],
+    importpath = "github.com/vmware/govmomi/vim25/progress",
     library = ":go_default_library",
 )

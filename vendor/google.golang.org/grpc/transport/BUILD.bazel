@@ -12,6 +12,7 @@ go_library(
         "http_util.go",
         "transport.go",
     ],
+    importpath = "google.golang.org/grpc/transport",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
@@ -39,6 +40,7 @@ go_test(
         "transport_test.go",
     ],
     data = glob(["testdata/**"]),
+    importpath = "google.golang.org/grpc/transport",
     library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/net/context:go_default_library",

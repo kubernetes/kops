@@ -58,6 +58,7 @@ go_library(
         "//conditions:default": [],
     }),
     cgo = True,
+    importpath = "golang.org/x/sys/unix",
     visibility = ["//visibility:public"],
 )
 
@@ -72,6 +73,7 @@ go_test(
         ],
         "//conditions:default": [],
     }),
+    importpath = "golang.org/x/sys/unix",
     library = ":go_default_library",
 )
 
@@ -95,6 +97,7 @@ go_test(
         ],
         "//conditions:default": [],
     }),
+    importpath = "golang.org/x/sys/unix_test",
     deps = select({
         "@io_bazel_rules_go//go/platform:darwin_amd64": [
             ":go_default_library",

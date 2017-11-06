@@ -18,6 +18,7 @@ go_library(
         "states.go",
         "utilities.go",
     ],
+    importpath = "github.com/Azure/go-ansiterm",
     visibility = ["//visibility:public"],
 )
 
@@ -29,5 +30,6 @@ go_test(
         "parser_test_utilities_test.go",
         "test_event_handler_test.go",
     ],
+    importpath = "github.com/Azure/go-ansiterm",
     library = ":go_default_library",
 )

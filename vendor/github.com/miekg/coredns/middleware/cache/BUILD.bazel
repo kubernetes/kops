@@ -8,6 +8,7 @@ go_library(
         "item.go",
         "setup.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/cache",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/hashicorp/golang-lru:go_default_library",
@@ -29,6 +30,7 @@ go_test(
         "item_test.go",
         "setup_test.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/cache",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/hashicorp/golang-lru:go_default_library",

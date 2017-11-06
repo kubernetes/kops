@@ -7,6 +7,7 @@ go_library(
         "client.go",
         "util.go",
     ],
+    importpath = "github.com/aws/aws-sdk-go/awstesting",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
@@ -23,6 +24,7 @@ go_test(
         "assert_test.go",
         "util_test.go",
     ],
+    importpath = "github.com/aws/aws-sdk-go/awstesting_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",

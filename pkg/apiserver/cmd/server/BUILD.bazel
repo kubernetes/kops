@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 go_library(
     name = "go_default_library",
     srcs = ["start.go"],
+    importpath = "k8s.io/kops/pkg/apiserver/cmd/server",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops/v1alpha2:go_default_library",

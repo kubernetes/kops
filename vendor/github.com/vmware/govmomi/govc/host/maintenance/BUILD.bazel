@@ -6,6 +6,7 @@ go_library(
         "enter.go",
         "exit.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/host/maintenance",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

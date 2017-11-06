@@ -13,6 +13,7 @@ go_library(
         "pod_based_enricher.go",
         "rate_calculator.go",
     ],
+    importpath = "k8s.io/heapster/metrics/processors",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
@@ -36,6 +37,7 @@ go_test(
         "pod_based_enricher_test.go",
         "rate_calculator_test.go",
     ],
+    importpath = "k8s.io/heapster/metrics/processors",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/stretchr/testify/assert:go_default_library",

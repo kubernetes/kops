@@ -18,6 +18,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "k8s.io/kubernetes/test/e2e_node",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/blang/semver:go_default_library",
@@ -106,6 +107,7 @@ go_test(
         ],
         "//conditions:default": [],
     }),
+    importpath = "k8s.io/kubernetes/test/e2e_node",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/coreos/go-systemd/util:go_default_library",

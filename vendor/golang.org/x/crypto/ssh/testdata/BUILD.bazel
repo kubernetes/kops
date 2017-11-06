@@ -6,5 +6,6 @@ go_library(
         "doc.go",
         "keys.go",
     ],
+    importpath = "golang.org/x/crypto/ssh/testdata",
     visibility = ["//visibility:public"],
 )

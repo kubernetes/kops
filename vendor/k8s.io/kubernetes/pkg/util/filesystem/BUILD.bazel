@@ -8,6 +8,7 @@ go_library(
         "filesystem.go",
         "watcher.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/util/filesystem",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/fsnotify/fsnotify:go_default_library",

@@ -10,6 +10,7 @@ go_library(
         "markdown.go",
         "smartypants.go",
     ],
+    importpath = "github.com/russross/blackfriday",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/shurcooL/sanitized_anchor_name:go_default_library"],
 )
@@ -22,5 +23,6 @@ go_test(
         "ref_test.go",
     ],
     data = glob(["testdata/**"]),
+    importpath = "github.com/russross/blackfriday",
     library = ":go_default_library",
 )

@@ -25,6 +25,7 @@ go_library(
         "vsphere_volume_placement.go",
         "vsphere_volume_vsan_policy.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/storage",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",

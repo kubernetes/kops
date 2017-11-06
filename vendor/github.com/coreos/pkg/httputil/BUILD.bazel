@@ -6,6 +6,7 @@ go_library(
         "cookie.go",
         "json.go",
     ],
+    importpath = "github.com/coreos/pkg/httputil",
     visibility = ["//visibility:public"],
 )
 
@@ -15,5 +16,6 @@ go_test(
         "cookie_test.go",
         "json_test.go",
     ],
+    importpath = "github.com/coreos/pkg/httputil",
     library = ":go_default_library",
 )

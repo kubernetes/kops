@@ -8,6 +8,7 @@ go_library(
         "info.go",
         "spec.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/dvs/portgroup",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

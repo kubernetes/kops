@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "fake.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/cloudprovider/providers/fake",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/api/core/v1:go_default_library",

@@ -7,6 +7,7 @@ go_library(
         "registry.go",
         "statestore.go",
     ],
+    importpath = "k8s.io/kops/pkg/apis/kops/registry",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/acls:go_default_library",

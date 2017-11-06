@@ -6,16 +6,20 @@ go_library(
         "config.go",
         "config_experimental.go",
         "daemon.go",
-        "daemon_unix.go",
         "docker.go",
         "metrics.go",
         "options.go",
-        "service_unsupported.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "daemon_unix.go",
+            "service_unsupported.go",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             "config_common_unix.go",
             "config_unix.go",
             "daemon_linux.go",
+            "daemon_unix.go",
+            "service_unsupported.go",
         ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "config_windows.go",
@@ -25,6 +29,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/cmd/dockerd",
     visibility = ["//visibility:private"],
     deps = [
         "//vendor/github.com/docker/distribution/uuid:go_default_library",
@@ -49,7 +54,6 @@ go_library(
         "//vendor/github.com/docker/docker/cli:go_default_library",
         "//vendor/github.com/docker/docker/cli/config:go_default_library",
         "//vendor/github.com/docker/docker/cli/debug:go_default_library",
-        "//vendor/github.com/docker/docker/cmd/dockerd/hack:go_default_library",
         "//vendor/github.com/docker/docker/daemon:go_default_library",
         "//vendor/github.com/docker/docker/daemon/cluster:go_default_library",
         "//vendor/github.com/docker/docker/daemon/config:go_default_library",
@@ -71,19 +75,25 @@ go_library(
         "//vendor/github.com/docker/docker/runconfig:go_default_library",
         "//vendor/github.com/docker/go-connections/tlsconfig:go_default_library",
         "//vendor/github.com/docker/go-metrics:go_default_library",
-        "//vendor/github.com/docker/libnetwork/portallocator:go_default_library",
         "//vendor/github.com/docker/swarmkit/api:go_default_library",
         "//vendor/github.com/moby/buildkit/session:go_default_library",
         "//vendor/github.com/pkg/errors:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/github.com/spf13/pflag:go_default_library",
-        "//vendor/golang.org/x/sys/unix:go_default_library",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "//vendor/github.com/docker/docker/cmd/dockerd/hack:go_default_library",
+            "//vendor/github.com/docker/libnetwork/portallocator:go_default_library",
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             "//vendor/github.com/coreos/go-systemd/daemon:go_default_library",
             "//vendor/github.com/docker/docker/api/types:go_default_library",
+            "//vendor/github.com/docker/docker/cmd/dockerd/hack:go_default_library",
             "//vendor/github.com/docker/go-units:go_default_library",
+            "//vendor/github.com/docker/libnetwork/portallocator:go_default_library",
+            "//vendor/golang.org/x/sys/unix:go_default_library",
         ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "//vendor/github.com/docker/docker/autogen/winresources/dockerd:go_default_library",
@@ -99,6 +109,7 @@ go_library(
 
 go_binary(
     name = "dockerd",
+    importpath = "github.com/docker/docker/cmd/dockerd",
     library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
@@ -107,14 +118,18 @@ go_test(
     name = "go_default_test",
     srcs = [
         "daemon_test.go",
-        "daemon_unix_test.go",
         "options_test.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "daemon_unix_test.go",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             "config_unix_test.go",
+            "daemon_unix_test.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/cmd/dockerd",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/docker/cli/config:go_default_library",

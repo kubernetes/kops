@@ -7,6 +7,7 @@ go_library(
         "connect.go",
         "disconnect.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/device/serial",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

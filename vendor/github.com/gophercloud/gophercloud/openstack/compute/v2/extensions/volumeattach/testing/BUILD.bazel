@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "fixtures.go",
     ],
+    importpath = "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach/testing",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/gophercloud/gophercloud/testhelper:go_default_library",
@@ -16,6 +17,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["requests_test.go"],
+    importpath = "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach/testing",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/volumeattach:go_default_library",

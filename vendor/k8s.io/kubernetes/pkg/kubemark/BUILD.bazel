@@ -7,6 +7,7 @@ go_library(
         "hollow_kubelet.go",
         "hollow_proxy.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubemark",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",

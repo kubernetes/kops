@@ -5,13 +5,19 @@ go_library(
     srcs = [
         "config.go",
         "host_config.go",
-        "hostconfig_unix.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "hostconfig_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "hostconfig_unix.go",
+        ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "hostconfig_windows.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/engine-api/types/container",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/engine-api/types/blkiodev:go_default_library",

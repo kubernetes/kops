@@ -10,6 +10,7 @@ go_library(
         "setup.go",
         "subzone.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/kubernetes",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/mholt/caddy:go_default_library",
@@ -44,6 +45,7 @@ go_test(
         "setup_test.go",
         "subzone_test.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/kubernetes",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/mholt/caddy:go_default_library",

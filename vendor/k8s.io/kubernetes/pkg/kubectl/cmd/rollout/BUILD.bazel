@@ -10,6 +10,7 @@ go_library(
         "rollout_status.go",
         "rollout_undo.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/rollout",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/renstrom/dedent:go_default_library",

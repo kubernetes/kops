@@ -16,6 +16,7 @@ go_library(
         "sysctl.go",
         "upgrade.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/upgrades",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/onsi/ginkgo:go_default_library",

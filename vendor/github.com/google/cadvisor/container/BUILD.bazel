@@ -6,6 +6,7 @@ go_library(
         "container.go",
         "factory.go",
     ],
+    importpath = "github.com/google/cadvisor/container",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
@@ -17,6 +18,7 @@ go_library(
 go_test(
     name = "go_default_xtest",
     srcs = ["factory_test.go"],
+    importpath = "github.com/google/cadvisor/container_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/google/cadvisor/container/testing:go_default_library",

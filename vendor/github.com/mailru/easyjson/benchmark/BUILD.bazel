@@ -6,6 +6,7 @@ go_library(
         "data.go",
         "data_var.go",
     ],
+    importpath = "github.com/mailru/easyjson/benchmark",
     visibility = ["//visibility:public"],
 )
 
@@ -15,5 +16,6 @@ go_test(
         "default_test.go",
         "dummy_test.go",
     ],
+    importpath = "github.com/mailru/easyjson/benchmark",
     library = ":go_default_library",
 )

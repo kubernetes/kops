@@ -9,6 +9,7 @@ go_library(
         "treehash.go",
         "waiters.go",
     ],
+    importpath = "github.com/aws/aws-sdk-go/service/glacier",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
@@ -30,6 +31,7 @@ go_test(
         "examples_test.go",
         "treehash_test.go",
     ],
+    importpath = "github.com/aws/aws-sdk-go/service/glacier_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",

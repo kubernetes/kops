@@ -19,6 +19,7 @@ go_library(
         "gotemplate_Uint8.go",
         "opts.go",
     ],
+    importpath = "github.com/mailru/easyjson/opt",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/mailru/easyjson/jlexer:go_default_library",
