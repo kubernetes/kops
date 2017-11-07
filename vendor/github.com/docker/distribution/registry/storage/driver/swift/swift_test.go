@@ -3,6 +3,7 @@ package swift
 import (
 	"io/ioutil"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -30,9 +31,13 @@ func init() {
 		tenantID           string
 		domain             string
 		domainID           string
+		tenantDomain       string
+		tenantDomainID     string
 		trustID            string
 		container          string
 		region             string
+		AuthVersion        int
+		endpointType       string
 		insecureSkipVerify bool
 		secretKey          string
 		accessKey          string
@@ -49,9 +54,13 @@ func init() {
 	tenantID = os.Getenv("SWIFT_TENANT_ID")
 	domain = os.Getenv("SWIFT_DOMAIN_NAME")
 	domainID = os.Getenv("SWIFT_DOMAIN_ID")
+	tenantDomain = os.Getenv("SWIFT_DOMAIN_NAME")
+	tenantDomainID = os.Getenv("SWIFT_DOMAIN_ID")
 	trustID = os.Getenv("SWIFT_TRUST_ID")
 	container = os.Getenv("SWIFT_CONTAINER_NAME")
 	region = os.Getenv("SWIFT_REGION_NAME")
+	AuthVersion, _ = strconv.Atoi(os.Getenv("SWIFT_AUTH_VERSION"))
+	endpointType = os.Getenv("SWIFT_ENDPOINT_TYPE")
 	insecureSkipVerify, _ = strconv.ParseBool(os.Getenv("SWIFT_INSECURESKIPVERIFY"))
 	secretKey = os.Getenv("SWIFT_SECRET_KEY")
 	accessKey = os.Getenv("SWIFT_ACCESS_KEY")
@@ -83,10 +92,14 @@ func init() {
 			tenantID,
 			domain,
 			domainID,
+			tenantDomain,
+			tenantDomainID,
 			trustID,
 			region,
+			AuthVersion,
 			container,
 			root,
+			endpointType,
 			insecureSkipVerify,
 			defaultChunkSize,
 			secretKey,
@@ -167,5 +180,66 @@ func TestEmptyRootList(t *testing.T) {
 
 	if len(keys) != 0 {
 		t.Fatal("delete did not remove nested objects")
+	}
+}
+
+func TestFilenameChunking(t *testing.T) {
+	// Test valid input and sizes
+	input := []string{"a", "b", "c", "d", "e"}
+	expecteds := [][][]string{
+		{
+			{"a"},
+			{"b"},
+			{"c"},
+			{"d"},
+			{"e"},
+		},
+		{
+			{"a", "b"},
+			{"c", "d"},
+			{"e"},
+		},
+		{
+			{"a", "b", "c"},
+			{"d", "e"},
+		},
+		{
+			{"a", "b", "c", "d"},
+			{"e"},
+		},
+		{
+			{"a", "b", "c", "d", "e"},
+		},
+		{
+			{"a", "b", "c", "d", "e"},
+		},
+	}
+	for i, expected := range expecteds {
+		actual, err := chunkFilenames(input, i+1)
+		if !reflect.DeepEqual(actual, expected) {
+			t.Fatalf("chunk %v didn't match expected value %v", actual, expected)
+		}
+		if err != nil {
+			t.Fatalf("unexpected error chunking filenames: %v", err)
+		}
+	}
+
+	// Test nil input
+	actual, err := chunkFilenames(nil, 5)
+	if len(actual) != 0 {
+		t.Fatal("chunks were returned when passed nil")
+	}
+	if err != nil {
+		t.Fatalf("unexpected error chunking filenames: %v", err)
+	}
+
+	// Test 0 and < 0 sizes
+	actual, err = chunkFilenames(nil, 0)
+	if err == nil {
+		t.Fatal("expected error for size = 0")
+	}
+	actual, err = chunkFilenames(nil, -1)
+	if err == nil {
+		t.Fatal("expected error for size = -1")
 	}
 }

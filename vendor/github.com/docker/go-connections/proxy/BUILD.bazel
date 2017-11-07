@@ -1,0 +1,21 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "logger.go",
+        "proxy.go",
+        "stub_proxy.go",
+        "tcp_proxy.go",
+        "udp_proxy.go",
+    ],
+    importpath = "github.com/docker/go-connections/proxy",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["network_proxy_test.go"],
+    importpath = "github.com/docker/go-connections/proxy",
+    library = ":go_default_library",
+)

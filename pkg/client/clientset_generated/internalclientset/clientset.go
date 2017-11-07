@@ -37,33 +37,24 @@ type Interface interface {
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	*kopsinternalversion.KopsClient
-	*kopsv1alpha1.KopsV1alpha1Client
-	*kopsv1alpha2.KopsV1alpha2Client
+	kops         *kopsinternalversion.KopsClient
+	kopsV1alpha1 *kopsv1alpha1.KopsV1alpha1Client
+	kopsV1alpha2 *kopsv1alpha2.KopsV1alpha2Client
 }
 
 // Kops retrieves the KopsClient
 func (c *Clientset) Kops() kopsinternalversion.KopsInterface {
-	if c == nil {
-		return nil
-	}
-	return c.KopsClient
+	return c.kops
 }
 
 // KopsV1alpha1 retrieves the KopsV1alpha1Client
 func (c *Clientset) KopsV1alpha1() kopsv1alpha1.KopsV1alpha1Interface {
-	if c == nil {
-		return nil
-	}
-	return c.KopsV1alpha1Client
+	return c.kopsV1alpha1
 }
 
 // KopsV1alpha2 retrieves the KopsV1alpha2Client
 func (c *Clientset) KopsV1alpha2() kopsv1alpha2.KopsV1alpha2Interface {
-	if c == nil {
-		return nil
-	}
-	return c.KopsV1alpha2Client
+	return c.kopsV1alpha2
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -82,15 +73,15 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.KopsClient, err = kopsinternalversion.NewForConfig(&configShallowCopy)
+	cs.kops, err = kopsinternalversion.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
-	cs.KopsV1alpha1Client, err = kopsv1alpha1.NewForConfig(&configShallowCopy)
+	cs.kopsV1alpha1, err = kopsv1alpha1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
-	cs.KopsV1alpha2Client, err = kopsv1alpha2.NewForConfig(&configShallowCopy)
+	cs.kopsV1alpha2, err = kopsv1alpha2.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -107,9 +98,9 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.KopsClient = kopsinternalversion.NewForConfigOrDie(c)
-	cs.KopsV1alpha1Client = kopsv1alpha1.NewForConfigOrDie(c)
-	cs.KopsV1alpha2Client = kopsv1alpha2.NewForConfigOrDie(c)
+	cs.kops = kopsinternalversion.NewForConfigOrDie(c)
+	cs.kopsV1alpha1 = kopsv1alpha1.NewForConfigOrDie(c)
+	cs.kopsV1alpha2 = kopsv1alpha2.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -118,9 +109,9 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.KopsClient = kopsinternalversion.New(c)
-	cs.KopsV1alpha1Client = kopsv1alpha1.New(c)
-	cs.KopsV1alpha2Client = kopsv1alpha2.New(c)
+	cs.kops = kopsinternalversion.New(c)
+	cs.kopsV1alpha1 = kopsv1alpha1.New(c)
+	cs.kopsV1alpha2 = kopsv1alpha2.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

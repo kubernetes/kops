@@ -16,7 +16,7 @@ import (
 	_ "github.com/docker/distribution/registry/auth/silly"
 	"github.com/docker/distribution/registry/storage"
 	memorycache "github.com/docker/distribution/registry/storage/cache/memory"
-	"github.com/docker/distribution/registry/storage/driver/inmemory"
+	"github.com/docker/distribution/registry/storage/driver/testdriver"
 )
 
 // TestAppDispatcher builds an application with a test dispatcher and ensures
@@ -24,7 +24,7 @@ import (
 // This only tests the dispatch mechanism. The underlying dispatchers must be
 // tested individually.
 func TestAppDispatcher(t *testing.T) {
-	driver := inmemory.New()
+	driver := testdriver.New()
 	ctx := context.Background()
 	registry, err := storage.NewRegistry(ctx, driver, storage.BlobDescriptorCacheProvider(memorycache.NewInMemoryBlobDescriptorCacheProvider()), storage.EnableDelete, storage.EnableRedirect)
 	if err != nil {
@@ -38,6 +38,7 @@ func TestAppDispatcher(t *testing.T) {
 		registry: registry,
 	}
 	server := httptest.NewServer(app)
+	defer server.Close()
 	router := v2.Router()
 
 	serverURL, err := url.Parse(server.URL)
@@ -142,7 +143,10 @@ func TestNewApp(t *testing.T) {
 	ctx := context.Background()
 	config := configuration.Configuration{
 		Storage: configuration.Storage{
-			"inmemory": nil,
+			"testdriver": nil,
+			"maintenance": configuration.Parameters{"uploadpurging": map[interface{}]interface{}{
+				"enabled": false,
+			}},
 		},
 		Auth: configuration.Auth{
 			// For now, we simply test that new auth results in a viable
@@ -160,6 +164,7 @@ func TestNewApp(t *testing.T) {
 	app := NewApp(ctx, &config)
 
 	server := httptest.NewServer(app)
+	defer server.Close()
 	builder, err := v2.NewURLBuilderFromString(server.URL, false)
 	if err != nil {
 		t.Fatalf("error creating urlbuilder: %v", err)
@@ -224,9 +229,9 @@ func TestAppendAccessRecords(t *testing.T) {
 		Resource: expectedResource,
 		Action:   "push",
 	}
-	expectedAllRecord := auth.Access{
+	expectedDeleteRecord := auth.Access{
 		Resource: expectedResource,
-		Action:   "*",
+		Action:   "delete",
 	}
 
 	records := []auth.Access{}
@@ -266,7 +271,7 @@ func TestAppendAccessRecords(t *testing.T) {
 
 	records = []auth.Access{}
 	result = appendAccessRecords(records, "DELETE", repo)
-	expectedResult = []auth.Access{expectedAllRecord}
+	expectedResult = []auth.Access{expectedDeleteRecord}
 	if ok := reflect.DeepEqual(result, expectedResult); !ok {
 		t.Fatalf("Actual access record differs from expected")
 	}

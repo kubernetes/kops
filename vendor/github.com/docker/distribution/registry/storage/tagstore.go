@@ -5,8 +5,8 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	storagedriver "github.com/docker/distribution/registry/storage/driver"
+	"github.com/opencontainers/go-digest"
 )
 
 var _ distribution.TagService = &tagStore{}

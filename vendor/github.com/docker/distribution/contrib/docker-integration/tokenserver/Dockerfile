@@ -1,4 +1,4 @@
-FROM dmcgowan/token-server:simple
+FROM dmcgowan/token-server@sha256:0eab50ebdff5b6b95b3addf4edbd8bd2f5b940f27b41b43c94afdf05863a81af
 
 WORKDIR /
 

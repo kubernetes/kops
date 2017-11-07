@@ -20,7 +20,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// +genclient=true
+// +genclient
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // InstanceGroup represents a group of instances (either nodes or masters) with the same configuration
 type InstanceGroup struct {
@@ -29,6 +30,8 @@ type InstanceGroup struct {
 
 	Spec InstanceGroupSpec `json:"spec,omitempty"`
 }
+
+// +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 type InstanceGroupList struct {
 	metav1.TypeMeta `json:",inline"`
@@ -74,6 +77,9 @@ type InstanceGroupSpec struct {
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
 	// Subnets is the names of the Subnets (as specified in the Cluster) where machines in this instance group should be placed
 	Subnets []string `json:"subnets,omitempty"`
+	// Zones is the names of the Zones where machines in this instance group should be placed
+	// This is needed for regional subnets (e.g. GCE), to restrict placement to particular zones
+	Zones []string `json:"zones,omitempty"`
 	// Hooks is a list of hooks for this instanceGroup, note: these can override the cluster wide ones if required
 	Hooks []HookSpec `json:"hooks,omitempty"`
 	// MaxPrice indicates this is a spot-pricing group, with the specified value as our max-price bid

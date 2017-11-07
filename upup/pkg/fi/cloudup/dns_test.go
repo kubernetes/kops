@@ -17,10 +17,11 @@ limitations under the License.
 package cloudup
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
 	"reflect"
 	"sort"
 	"testing"
+
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func TestPrecreateDNSNames(t *testing.T) {

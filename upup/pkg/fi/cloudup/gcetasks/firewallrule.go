@@ -18,11 +18,12 @@ package gcetasks
 
 import (
 	"fmt"
+	"strings"
+
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"strings"
 )
 
 // FirewallRule represents a GCE firewall rules
@@ -64,6 +65,9 @@ func (e *FirewallRule) Find(c *fi.Context) (*FirewallRule, error) {
 	for _, a := range r.Allowed {
 		actual.Allowed = append(actual.Allowed, serializeFirewallAllowed(a))
 	}
+
+	// Ignore "system" fields
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

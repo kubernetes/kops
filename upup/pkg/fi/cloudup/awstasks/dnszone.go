@@ -19,6 +19,11 @@ package awstasks
 import (
 	"fmt"
 
+	"math/rand"
+	"reflect"
+	"strconv"
+	"strings"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/golang/glog"
@@ -26,10 +31,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"math/rand"
-	"reflect"
-	"strconv"
-	"strings"
 )
 
 // DNSZone is a zone object in a dns provider

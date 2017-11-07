@@ -1,0 +1,15 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "api_target.go",
+        "cloud.go",
+    ],
+    importpath = "k8s.io/kops/upup/pkg/fi/cloudup/do",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/resources/digitalocean:go_default_library",
+        "//upup/pkg/fi:go_default_library",
+    ],
+)

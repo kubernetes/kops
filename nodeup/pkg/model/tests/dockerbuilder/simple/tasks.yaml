@@ -236,6 +236,7 @@ definition: |
   [Service]
   Type=notify
   EnvironmentFile=/etc/sysconfig/docker
+  EnvironmentFile=/etc/environment
   ExecStart=/usr/bin/dockerd -H fd:// "$DOCKER_OPTS"
   ExecReload=/bin/kill -s HUP $MAINPID
   KillMode=process

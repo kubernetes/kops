@@ -28,11 +28,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
-const (
-	// FileAssetsDefaultPath is the default location for assets which have no path
-	FileAssetsDefaultPath string = "/srv/kubernetes/assets"
-)
-
 // FileAssetsBuilder configures the hooks
 type FileAssetsBuilder struct {
 	*NodeupModelContext
@@ -46,7 +41,7 @@ func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 	tracker := make(map[string]bool, 0)
 	// ensure the default path exists
 	c.AddTask(&nodetasks.File{
-		Path: FileAssetsDefaultPath,
+		Path: f.FileAssetsDefaultPath(),
 		Type: nodetasks.FileType_Directory,
 		Mode: s("0755"),
 	})
@@ -75,7 +70,7 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 		// @check if e have a path and if not use the default path
 		assetPath := asset.Path
 		if assetPath == "" {
-			assetPath = fmt.Sprintf("%s/%s", FileAssetsDefaultPath, asset.Name)
+			assetPath = filepath.Join(f.FileAssetsDefaultPath(), asset.Name)
 		}
 		// @check if the file has already been done and skip
 		if _, found := tracker[assetPath]; found {

@@ -18,17 +18,18 @@ package federation
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
+	"k8s.io/api/core/v1"
+	k8sapiv1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	meta_v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/pkg/api/v1"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/pkg/apis/kops/registry"
+	"k8s.io/kops/pkg/client/simple"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kubernetes/federation/apis/federation/v1beta1"
 	"k8s.io/kubernetes/federation/client/clientset_generated/federation_clientset"
-	k8sapiv1 "k8s.io/kubernetes/pkg/api/v1"
 )
 
 type FederationCluster struct {
@@ -43,12 +44,12 @@ type FederationCluster struct {
 	ApiserverHostname string
 }
 
-func (o *FederationCluster) Run(cluster *kopsapi.Cluster) error {
-	keyStore, err := registry.KeyStore(cluster)
+func (o *FederationCluster) Run(clientset simple.Clientset, cluster *kopsapi.Cluster) error {
+	keyStore, err := clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}
-	secretStore, err := registry.SecretStore(cluster)
+	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
 		return err
 	}

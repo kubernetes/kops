@@ -9,18 +9,22 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/docker/distribution/digest"
+	"github.com/docker/distribution"
+	"github.com/docker/distribution/reference"
 	"github.com/docker/docker/image"
 	"github.com/docker/docker/image/v1"
 	"github.com/docker/docker/layer"
 	"github.com/docker/docker/pkg/archive"
 	"github.com/docker/docker/pkg/system"
-	"github.com/docker/docker/reference"
+	"github.com/opencontainers/go-digest"
+	"github.com/pkg/errors"
 )
 
 type imageDescriptor struct {
-	refs   []reference.NamedTagged
-	layers []string
+	refs     []reference.NamedTagged
+	layers   []string
+	image    *image.Image
+	layerRef layer.Layer
 }
 
 type saveSession struct {
@@ -28,6 +32,7 @@ type saveSession struct {
 	outDir      string
 	images      map[image.ID]*imageDescriptor
 	savedLayers map[string]struct{}
+	diffIDPaths map[layer.DiffID]string // cache every diffID blob to avoid duplicates
 }
 
 func (l *tarexporter) Save(names []string, outStream io.Writer) error {
@@ -36,86 +41,139 @@ func (l *tarexporter) Save(names []string, outStream io.Writer) error {
 		return err
 	}
 
+	// Release all the image top layer references
+	defer l.releaseLayerReferences(images)
 	return (&saveSession{tarexporter: l, images: images}).save(outStream)
 }
 
-func (l *tarexporter) parseNames(names []string) (map[image.ID]*imageDescriptor, error) {
+// parseNames will parse the image names to a map which contains image.ID to *imageDescriptor.
+// Each imageDescriptor holds an image top layer reference named 'layerRef'. It is taken here, should be released later.
+func (l *tarexporter) parseNames(names []string) (desc map[image.ID]*imageDescriptor, rErr error) {
 	imgDescr := make(map[image.ID]*imageDescriptor)
+	defer func() {
+		if rErr != nil {
+			l.releaseLayerReferences(imgDescr)
+		}
+	}()
 
-	addAssoc := func(id image.ID, ref reference.Named) {
+	addAssoc := func(id image.ID, ref reference.Named) error {
 		if _, ok := imgDescr[id]; !ok {
-			imgDescr[id] = &imageDescriptor{}
+			descr := &imageDescriptor{}
+			if err := l.takeLayerReference(id, descr); err != nil {
+				return err
+			}
+			imgDescr[id] = descr
 		}
 
 		if ref != nil {
-			var tagged reference.NamedTagged
 			if _, ok := ref.(reference.Canonical); ok {
-				return
+				return nil
 			}
-			var ok bool
-			if tagged, ok = ref.(reference.NamedTagged); !ok {
-				var err error
-				if tagged, err = reference.WithTag(ref, reference.DefaultTag); err != nil {
-					return
-				}
+			tagged, ok := reference.TagNameOnly(ref).(reference.NamedTagged)
+			if !ok {
+				return nil
 			}
 
 			for _, t := range imgDescr[id].refs {
 				if tagged.String() == t.String() {
-					return
+					return nil
 				}
 			}
 			imgDescr[id].refs = append(imgDescr[id].refs, tagged)
 		}
+		return nil
 	}
 
 	for _, name := range names {
-		id, ref, err := reference.ParseIDOrReference(name)
+		ref, err := reference.ParseAnyReference(name)
 		if err != nil {
 			return nil, err
 		}
-		if id != "" {
-			_, err := l.is.Get(image.ID(id))
-			if err != nil {
-				return nil, err
+		namedRef, ok := ref.(reference.Named)
+		if !ok {
+			// Check if digest ID reference
+			if digested, ok := ref.(reference.Digested); ok {
+				id := image.IDFromDigest(digested.Digest())
+				if err := addAssoc(id, nil); err != nil {
+					return nil, err
+				}
+				continue
 			}
-			addAssoc(image.ID(id), nil)
-			continue
+			return nil, errors.Errorf("invalid reference: %v", name)
 		}
-		if ref.Name() == string(digest.Canonical) {
+
+		if reference.FamiliarName(namedRef) == string(digest.Canonical) {
 			imgID, err := l.is.Search(name)
 			if err != nil {
 				return nil, err
 			}
-			addAssoc(imgID, nil)
+			if err := addAssoc(imgID, nil); err != nil {
+				return nil, err
+			}
 			continue
 		}
-		if reference.IsNameOnly(ref) {
-			assocs := l.rs.ReferencesByName(ref)
+		if reference.IsNameOnly(namedRef) {
+			assocs := l.rs.ReferencesByName(namedRef)
 			for _, assoc := range assocs {
-				addAssoc(assoc.ImageID, assoc.Ref)
+				if err := addAssoc(image.IDFromDigest(assoc.ID), assoc.Ref); err != nil {
+					return nil, err
+				}
 			}
 			if len(assocs) == 0 {
 				imgID, err := l.is.Search(name)
 				if err != nil {
 					return nil, err
 				}
-				addAssoc(imgID, nil)
+				if err := addAssoc(imgID, nil); err != nil {
+					return nil, err
+				}
 			}
 			continue
 		}
-		var imgID image.ID
-		if imgID, err = l.rs.Get(ref); err != nil {
+		id, err := l.rs.Get(namedRef)
+		if err != nil {
 			return nil, err
 		}
-		addAssoc(imgID, ref)
+		if err := addAssoc(image.IDFromDigest(id), namedRef); err != nil {
+			return nil, err
+		}
 
 	}
 	return imgDescr, nil
 }
 
+// takeLayerReference will take/Get the image top layer reference
+func (l *tarexporter) takeLayerReference(id image.ID, imgDescr *imageDescriptor) error {
+	img, err := l.is.Get(id)
+	if err != nil {
+		return err
+	}
+	imgDescr.image = img
+	topLayerID := img.RootFS.ChainID()
+	if topLayerID == "" {
+		return nil
+	}
+	layer, err := l.ls.Get(topLayerID)
+	if err != nil {
+		return err
+	}
+	imgDescr.layerRef = layer
+	return nil
+}
+
+// releaseLayerReferences will release all the image top layer references
+func (l *tarexporter) releaseLayerReferences(imgDescr map[image.ID]*imageDescriptor) error {
+	for _, descr := range imgDescr {
+		if descr.layerRef != nil {
+			l.ls.Release(descr.layerRef)
+		}
+	}
+	return nil
+}
+
 func (s *saveSession) save(outStream io.Writer) error {
 	s.savedLayers = make(map[string]struct{})
+	s.diffIDPaths = make(map[layer.DiffID]string)
 
 	// get image json
 	tempDir, err := ioutil.TempDir("", "docker-export-")
@@ -131,7 +189,8 @@ func (s *saveSession) save(outStream io.Writer) error {
 	var parentLinks []parentLink
 
 	for id, imageDescr := range s.images {
-		if err = s.saveImage(id); err != nil {
+		foreignSrcs, err := s.saveImage(id)
+		if err != nil {
 			return err
 		}
 
@@ -139,11 +198,12 @@ func (s *saveSession) save(outStream io.Writer) error {
 		var layers []string
 
 		for _, ref := range imageDescr.refs {
-			if _, ok := reposLegacy[ref.Name()]; !ok {
-				reposLegacy[ref.Name()] = make(map[string]string)
+			familiarName := reference.FamiliarName(ref)
+			if _, ok := reposLegacy[familiarName]; !ok {
+				reposLegacy[familiarName] = make(map[string]string)
 			}
-			reposLegacy[ref.Name()][ref.Tag()] = imageDescr.layers[len(imageDescr.layers)-1]
-			repoTags = append(repoTags, ref.String())
+			reposLegacy[familiarName][ref.Tag()] = imageDescr.layers[len(imageDescr.layers)-1]
+			repoTags = append(repoTags, reference.FamiliarString(ref))
 		}
 
 		for _, l := range imageDescr.layers {
@@ -151,13 +211,15 @@ func (s *saveSession) save(outStream io.Writer) error {
 		}
 
 		manifest = append(manifest, manifestItem{
-			Config:   digest.Digest(id).Hex() + ".json",
-			RepoTags: repoTags,
-			Layers:   layers,
+			Config:       id.Digest().Hex() + ".json",
+			RepoTags:     repoTags,
+			Layers:       layers,
+			LayerSources: foreignSrcs,
 		})
 
 		parentID, _ := s.is.GetParent(id)
 		parentLinks = append(parentLinks, parentLink{id, parentID})
+		s.tarexporter.loggerImgEvent.LogImageEvent(id.String(), id.String(), "save")
 	}
 
 	for i, p := range validatedParentLinks(parentLinks) {
@@ -168,17 +230,18 @@ func (s *saveSession) save(outStream io.Writer) error {
 
 	if len(reposLegacy) > 0 {
 		reposFile := filepath.Join(tempDir, legacyRepositoriesFileName)
-		f, err := os.OpenFile(reposFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
+		rf, err := os.OpenFile(reposFile, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 		if err != nil {
-			f.Close()
 			return err
 		}
-		if err := json.NewEncoder(f).Encode(reposLegacy); err != nil {
+
+		if err := json.NewEncoder(rf).Encode(reposLegacy); err != nil {
+			rf.Close()
 			return err
 		}
-		if err := f.Close(); err != nil {
-			return err
-		}
+
+		rf.Close()
+
 		if err := system.Chtimes(reposFile, time.Unix(0, 0), time.Unix(0, 0)); err != nil {
 			return err
 		}
@@ -187,15 +250,16 @@ func (s *saveSession) save(outStream io.Writer) error {
 	manifestFileName := filepath.Join(tempDir, manifestFileName)
 	f, err := os.OpenFile(manifestFileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0644)
 	if err != nil {
+		return err
+	}
+
+	if err := json.NewEncoder(f).Encode(manifest); err != nil {
 		f.Close()
 		return err
 	}
-	if err := json.NewEncoder(f).Encode(manifest); err != nil {
-		return err
-	}
-	if err := f.Close(); err != nil {
-		return err
-	}
+
+	f.Close()
+
 	if err := system.Chtimes(manifestFileName, time.Unix(0, 0), time.Unix(0, 0)); err != nil {
 		return err
 	}
@@ -206,26 +270,25 @@ func (s *saveSession) save(outStream io.Writer) error {
 	}
 	defer fs.Close()
 
-	if _, err := io.Copy(outStream, fs); err != nil {
-		return err
-	}
-	return nil
+	_, err = io.Copy(outStream, fs)
+	return err
 }
 
-func (s *saveSession) saveImage(id image.ID) error {
-	img, err := s.is.Get(id)
-	if err != nil {
-		return err
-	}
-
+func (s *saveSession) saveImage(id image.ID) (map[layer.DiffID]distribution.Descriptor, error) {
+	img := s.images[id].image
 	if len(img.RootFS.DiffIDs) == 0 {
-		return fmt.Errorf("empty export - not implemented")
+		return nil, fmt.Errorf("empty export - not implemented")
 	}
 
 	var parent digest.Digest
 	var layers []string
+	var foreignSrcs map[layer.DiffID]distribution.Descriptor
 	for i := range img.RootFS.DiffIDs {
-		v1Img := image.V1Image{}
+		v1Img := image.V1Image{
+			// This is for backward compatibility used for
+			// pre v1.9 docker.
+			Created: time.Unix(0, 0),
+		}
 		if i == len(img.RootFS.DiffIDs)-1 {
 			v1Img = img.V1Image
 		}
@@ -233,7 +296,7 @@ func (s *saveSession) saveImage(id image.ID) error {
 		rootFS.DiffIDs = rootFS.DiffIDs[:i+1]
 		v1ID, err := v1.CreateID(v1Img, rootFS.ChainID(), parent)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		v1Img.ID = v1ID.Hex()
@@ -241,79 +304,106 @@ func (s *saveSession) saveImage(id image.ID) error {
 			v1Img.Parent = parent.Hex()
 		}
 
-		if err := s.saveLayer(rootFS.ChainID(), v1Img, img.Created); err != nil {
-			return err
+		src, err := s.saveLayer(rootFS.ChainID(), v1Img, img.Created)
+		if err != nil {
+			return nil, err
 		}
 		layers = append(layers, v1Img.ID)
 		parent = v1ID
+		if src.Digest != "" {
+			if foreignSrcs == nil {
+				foreignSrcs = make(map[layer.DiffID]distribution.Descriptor)
+			}
+			foreignSrcs[img.RootFS.DiffIDs[i]] = src
+		}
 	}
 
-	configFile := filepath.Join(s.outDir, digest.Digest(id).Hex()+".json")
+	configFile := filepath.Join(s.outDir, id.Digest().Hex()+".json")
 	if err := ioutil.WriteFile(configFile, img.RawJSON(), 0644); err != nil {
-		return err
+		return nil, err
 	}
 	if err := system.Chtimes(configFile, img.Created, img.Created); err != nil {
-		return err
+		return nil, err
 	}
 
 	s.images[id].layers = layers
-	return nil
+	return foreignSrcs, nil
 }
 
-func (s *saveSession) saveLayer(id layer.ChainID, legacyImg image.V1Image, createdTime time.Time) error {
+func (s *saveSession) saveLayer(id layer.ChainID, legacyImg image.V1Image, createdTime time.Time) (distribution.Descriptor, error) {
 	if _, exists := s.savedLayers[legacyImg.ID]; exists {
-		return nil
+		return distribution.Descriptor{}, nil
 	}
 
 	outDir := filepath.Join(s.outDir, legacyImg.ID)
 	if err := os.Mkdir(outDir, 0755); err != nil {
-		return err
+		return distribution.Descriptor{}, err
 	}
 
 	// todo: why is this version file here?
 	if err := ioutil.WriteFile(filepath.Join(outDir, legacyVersionFileName), []byte("1.0"), 0644); err != nil {
-		return err
+		return distribution.Descriptor{}, err
 	}
 
 	imageConfig, err := json.Marshal(legacyImg)
 	if err != nil {
-		return err
+		return distribution.Descriptor{}, err
 	}
 
 	if err := ioutil.WriteFile(filepath.Join(outDir, legacyConfigFileName), imageConfig, 0644); err != nil {
-		return err
+		return distribution.Descriptor{}, err
 	}
 
 	// serialize filesystem
-	tarFile, err := os.Create(filepath.Join(outDir, legacyLayerFileName))
-	if err != nil {
-		return err
-	}
-	defer tarFile.Close()
-
+	layerPath := filepath.Join(outDir, legacyLayerFileName)
 	l, err := s.ls.Get(id)
 	if err != nil {
-		return err
+		return distribution.Descriptor{}, err
 	}
 	defer layer.ReleaseAndLog(s.ls, l)
 
-	arch, err := l.TarStream()
-	if err != nil {
-		return err
-	}
-	defer arch.Close()
-
-	if _, err := io.Copy(tarFile, arch); err != nil {
-		return err
-	}
-
-	for _, fname := range []string{"", legacyVersionFileName, legacyConfigFileName, legacyLayerFileName} {
-		// todo: maybe save layer created timestamp?
-		if err := system.Chtimes(filepath.Join(outDir, fname), createdTime, createdTime); err != nil {
-			return err
+	if oldPath, exists := s.diffIDPaths[l.DiffID()]; exists {
+		relPath, err := filepath.Rel(outDir, oldPath)
+		if err != nil {
+			return distribution.Descriptor{}, err
 		}
-	}
+		if err := os.Symlink(relPath, layerPath); err != nil {
+			return distribution.Descriptor{}, errors.Wrap(err, "error creating symlink while saving layer")
+		}
+	} else {
+		// Use system.CreateSequential rather than os.Create. This ensures sequential
+		// file access on Windows to avoid eating into MM standby list.
+		// On Linux, this equates to a regular os.Create.
+		tarFile, err := system.CreateSequential(layerPath)
+		if err != nil {
+			return distribution.Descriptor{}, err
+		}
+		defer tarFile.Close()
 
+		arch, err := l.TarStream()
+		if err != nil {
+			return distribution.Descriptor{}, err
+		}
+		defer arch.Close()
+
+		if _, err := io.Copy(tarFile, arch); err != nil {
+			return distribution.Descriptor{}, err
+		}
+
+		for _, fname := range []string{"", legacyVersionFileName, legacyConfigFileName, legacyLayerFileName} {
+			// todo: maybe save layer created timestamp?
+			if err := system.Chtimes(filepath.Join(outDir, fname), createdTime, createdTime); err != nil {
+				return distribution.Descriptor{}, err
+			}
+		}
+
+		s.diffIDPaths[l.DiffID()] = layerPath
+	}
 	s.savedLayers[legacyImg.ID] = struct{}{}
-	return nil
+
+	var src distribution.Descriptor
+	if fs, ok := l.(distribution.Describable); ok {
+		src = fs.Descriptor()
+	}
+	return src, nil
 }

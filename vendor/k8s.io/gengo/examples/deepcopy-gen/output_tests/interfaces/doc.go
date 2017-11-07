@@ -20,9 +20,10 @@ limitations under the License.
 package interfaces
 
 type Inner interface {
-  function() float64
+	function() float64
+	DeepCopyInner() Inner
 }
 
 type Ttest struct {
-  I []Inner
+	I []Inner
 }

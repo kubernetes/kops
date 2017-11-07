@@ -40,3 +40,68 @@ func Test_ParseKubernetesVersion(t *testing.T) {
 	}
 
 }
+
+func Test_IsKubernetesGTEWithPatch(t *testing.T) {
+	currentVersion, err := ParseKubernetesVersion("1.6.2")
+	if err != nil {
+		t.Fatalf("Error parsing version: %v", err)
+	}
+
+	grid := map[string]bool{
+		"1.5.2": true,
+		"1.6.2": true,
+		"1.6.5": false,
+		"1.7.8": false,
+	}
+
+	for v, expected := range grid {
+		actual := IsKubernetesGTE(v, *currentVersion)
+		if actual != expected {
+			t.Errorf("expected %s to be >= than %s", v, currentVersion)
+		}
+	}
+}
+
+func Test_IsKubernetesGTEWithoutPatch(t *testing.T) {
+	currentVersion, err := ParseKubernetesVersion("1.6")
+	if err != nil {
+		t.Fatalf("Error parsing version: %v", err)
+	}
+
+	grid := map[string]bool{
+		"1.1": true,
+		"1.2": true,
+		"1.3": true,
+		"1.6": true,
+		"1.7": false,
+	}
+
+	for v, expected := range grid {
+		actual := IsKubernetesGTE(v, *currentVersion)
+		if actual != expected {
+			t.Errorf("expected %s to be >= than %s", v, currentVersion)
+		}
+	}
+}
+
+func Test_IsKubernetesGTEWithPre(t *testing.T) {
+	grid := map[string]bool{
+		"1.6.1":         true,
+		"1.6":           true,
+		"1.6.0-alpha.1": true,
+		"1.6.0-beta":    true,
+		"1.5.9-alpha.1": false,
+	}
+
+	for v, expected := range grid {
+		currentVersion, err := ParseKubernetesVersion(v)
+		if err != nil {
+			t.Fatalf("Error parsing version: %v", err)
+		}
+
+		actual := IsKubernetesGTE("1.6", *currentVersion)
+		if actual != expected {
+			t.Errorf("expected %s to be >= than %s", "1.6", currentVersion)
+		}
+	}
+}

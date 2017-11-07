@@ -102,7 +102,7 @@ func TestAggregatedAPIServer(t *testing.T) {
 			kubeAPIServerOptions.SecureServing.BindPort = kubePort
 			kubeAPIServerOptions.SecureServing.ServerCert.CertDirectory = certDir
 			kubeAPIServerOptions.InsecureServing.BindPort = 0
-			kubeAPIServerOptions.Etcd.StorageConfig.ServerList = []string{framework.GetEtcdURLFromEnv()}
+			kubeAPIServerOptions.Etcd.StorageConfig.ServerList = []string{framework.GetEtcdURL()}
 			kubeAPIServerOptions.ServiceClusterIPRange = *defaultServiceClusterIPRange
 			kubeAPIServerOptions.Authentication.RequestHeader.UsernameHeaders = []string{"X-Remote-User"}
 			kubeAPIServerOptions.Authentication.RequestHeader.GroupHeaders = []string{"X-Remote-Group"}
@@ -116,13 +116,13 @@ func TestAggregatedAPIServer(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			kubeAPIServerConfig, sharedInformers, _, _, _, err := app.CreateKubeAPIServerConfig(kubeAPIServerOptions, tunneler, proxyTransport)
+			kubeAPIServerConfig, sharedInformers, versionedInformers, _, _, err := app.CreateKubeAPIServerConfig(kubeAPIServerOptions, tunneler, proxyTransport)
 			if err != nil {
 				t.Fatal(err)
 			}
 			kubeClientConfigValue.Store(kubeAPIServerConfig.GenericConfig.LoopbackClientConfig)
 
-			kubeAPIServer, err := app.CreateKubeAPIServer(kubeAPIServerConfig, genericapiserver.EmptyDelegate, sharedInformers, nil)
+			kubeAPIServer, err := app.CreateKubeAPIServer(kubeAPIServerConfig, genericapiserver.EmptyDelegate, sharedInformers, versionedInformers)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -190,8 +190,9 @@ func TestAggregatedAPIServer(t *testing.T) {
 				"--requestheader-allowed-names=kube-aggregator",
 				"--authentication-kubeconfig", kubeconfigFile.Name(),
 				"--authorization-kubeconfig", kubeconfigFile.Name(),
-				"--etcd-servers", framework.GetEtcdURLFromEnv(),
+				"--etcd-servers", framework.GetEtcdURL(),
 				"--cert-dir", wardleCertDir,
+				"--kubeconfig", kubeconfigFile.Name(),
 			})
 			if err := wardleCmd.Execute(); err != nil {
 				t.Log(err)
@@ -263,10 +264,10 @@ func TestAggregatedAPIServer(t *testing.T) {
 				"--requestheader-username-headers", "",
 				"--proxy-client-cert-file", proxyClientCertFile.Name(),
 				"--proxy-client-key-file", proxyClientKeyFile.Name(),
-				"--core-kubeconfig", kubeconfigFile.Name(),
+				"--kubeconfig", kubeconfigFile.Name(),
 				"--authentication-kubeconfig", kubeconfigFile.Name(),
 				"--authorization-kubeconfig", kubeconfigFile.Name(),
-				"--etcd-servers", framework.GetEtcdURLFromEnv(),
+				"--etcd-servers", framework.GetEtcdURL(),
 				"--cert-dir", aggregatorCertDir,
 			})
 			if err := aggregatorCmd.Execute(); err != nil {
@@ -448,9 +449,11 @@ func testAPIResourceList(t *testing.T, client rest.Interface) {
 		t.Fatalf("Error in unmarshalling response from server %s: %v", "/apis/wardle.k8s.io/v1alpha1", err)
 	}
 	assert.Equal(t, groupVersion.String(), apiResourceList.GroupVersion)
-	assert.Equal(t, 1, len(apiResourceList.APIResources))
-	assert.Equal(t, "flunders", apiResourceList.APIResources[0].Name)
-	assert.True(t, apiResourceList.APIResources[0].Namespaced)
+	assert.Equal(t, 2, len(apiResourceList.APIResources))
+	assert.Equal(t, "fischers", apiResourceList.APIResources[0].Name)
+	assert.False(t, apiResourceList.APIResources[0].Namespaced)
+	assert.Equal(t, "flunders", apiResourceList.APIResources[1].Name)
+	assert.True(t, apiResourceList.APIResources[1].Namespaced)
 }
 
 const (

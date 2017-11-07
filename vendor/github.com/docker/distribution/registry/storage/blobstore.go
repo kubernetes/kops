@@ -5,8 +5,8 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/registry/storage/driver"
+	"github.com/opencontainers/go-digest"
 )
 
 // blobStore implements the read side of the blob store interface over a
@@ -27,7 +27,7 @@ func (bs *blobStore) Get(ctx context.Context, dgst digest.Digest) ([]byte, error
 		return nil, err
 	}
 
-	p, err := bs.driver.GetContent(ctx, bp)
+	p, err := getContent(ctx, bs.driver, bp)
 	if err != nil {
 		switch err.(type) {
 		case driver.PathNotFoundError:
@@ -37,7 +37,7 @@ func (bs *blobStore) Get(ctx context.Context, dgst digest.Digest) ([]byte, error
 		return nil, err
 	}
 
-	return p, err
+	return p, nil
 }
 
 func (bs *blobStore) Open(ctx context.Context, dgst digest.Digest) (distribution.ReadSeekCloser, error) {
@@ -64,7 +64,7 @@ func (bs *blobStore) Put(ctx context.Context, mediaType string, p []byte) (distr
 		// content already present
 		return desc, nil
 	} else if err != distribution.ErrBlobUnknown {
-		context.GetLogger(ctx).Errorf("blobStore: error stating content (%v): %#v", dgst, err)
+		context.GetLogger(ctx).Errorf("blobStore: error stating content (%v): %v", dgst, err)
 		// real error, return it
 		return distribution.Descriptor{}, err
 	}
@@ -75,7 +75,6 @@ func (bs *blobStore) Put(ctx context.Context, mediaType string, p []byte) (distr
 	}
 
 	// TODO(stevvooe): Write out mediatype here, as well.
-
 	return distribution.Descriptor{
 		Size: int64(len(p)),
 
@@ -146,7 +145,7 @@ func (bs *blobStore) readlink(ctx context.Context, path string) (digest.Digest, 
 		return "", err
 	}
 
-	linked, err := digest.ParseDigest(string(content))
+	linked, err := digest.Parse(string(content))
 	if err != nil {
 		return "", err
 	}

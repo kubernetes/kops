@@ -14,6 +14,7 @@ spec:
         role.kubernetes.io/networking: "1"
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
     spec:
       hostPID: true
       hostIPC: true
@@ -24,11 +25,10 @@ spec:
               cpu: 20m
               memory: 100Mi
             limits:
-              cpu: 20m
               memory: 100Mi
           securityContext:
             privileged: true
-          image: kopeio/networking-agent:1.0.20170406
+          image: kopeio/networking-agent:1.0.20171015
           name: networking-agent
           volumeMounts:
             - name: lib-modules

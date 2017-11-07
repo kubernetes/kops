@@ -1,0 +1,11 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "gossip.go",
+        "seeds.go",
+    ],
+    importpath = "k8s.io/kops/protokube/pkg/gossip",
+    visibility = ["//visibility:public"],
+)

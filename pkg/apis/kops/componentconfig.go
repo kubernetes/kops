@@ -163,13 +163,15 @@ type KubeProxyConfig struct {
 	HostnameOverride string `json:"hostnameOverride,omitempty" flag:"hostname-override"`
 	// Master is the address of the Kubernetes API server (overrides any value in kubeconfig)
 	Master string `json:"master,omitempty" flag:"master"`
+	// Enabled allows enabling or disabling kube-proxy
+	Enabled *bool `json:"enabled,omitempty"`
 	// FeatureGates is a series of key pairs used to switch on features for the proxy
 	FeatureGates map[string]string `json:"featureGates" flag:"feature-gates"`
 }
 
 // KubeAPIServerConfig defines the configuration for the kube api
 type KubeAPIServerConfig struct {
-	// Image is the docker container used
+	// Image is the docker container usedrun
 	Image string `json:"image,omitempty"`
 	// LogLevel is the logging level of the api
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
@@ -185,6 +187,8 @@ type KubeAPIServerConfig struct {
 	AdmissionControl []string `json:"admissionControl,omitempty" flag:"admission-control"`
 	// ServiceClusterIPRange is the service address range
 	ServiceClusterIPRange string `json:"serviceClusterIPRange,omitempty" flag:"service-cluster-ip-range"`
+	// Passed as --service-node-port-range to kube-apiserver. Expects 'startPort-endPort' format. Eg. 30000-33000
+	ServiceNodePortRange string `json:"serviceNodePortRange,omitempty" flag:"service-node-port-range"`
 	// EtcdServers is a list of the etcd service to connect
 	EtcdServers []string `json:"etcdServers,omitempty" flag:"etcd-servers"`
 	// EtcdServersOverrides is per-resource etcd servers overrides, comma separated. The individual override format: group/resource#servers, where servers are http://ip:port, semicolon separated
@@ -246,6 +250,8 @@ type KubeAPIServerConfig struct {
 	AuditLogMaxBackups *int32 `json:"auditLogMaxBackups,omitempty" flag:"audit-log-maxbackup"`
 	// The maximum size in megabytes of the audit log file before it gets rotated. Defaults to 100MB.
 	AuditLogMaxSize *int32 `json:"auditLogMaxSize,omitempty" flag:"audit-log-maxsize"`
+	// AuditPolicyFile is the full path to a advanced audit configuration file a.g. /srv/kubernetes/audit.conf
+	AuditPolicyFile string `json:"auditPolicyFile,omitempty" flag:"audit-policy-file"`
 	// File with webhook configuration for token authentication in kubeconfig format. The API server will query the remote service to determine authentication for bearer tokens.
 	AuthenticationTokenWebhookConfigFile *string `json:"authenticationTokenWebhookConfigFile,omitempty" flag:"authentication-token-webhook-config-file"`
 	// The duration to cache responses from the webhook token authenticator. Default is 2m. (default 2m0s)
@@ -254,6 +260,19 @@ type KubeAPIServerConfig struct {
 	AuthorizationMode *string `json:"authorizationMode,omitempty" flag:"authorization-mode"`
 	// AuthorizationRBACSuperUser is the name of the superuser for default rbac
 	AuthorizationRBACSuperUser *string `json:"authorizationRbacSuperUser,omitempty" flag:"authorization-rbac-super-user"`
+	// ExperimentalEncryptionProviderConfig enables encryption at rest for secrets.
+	ExperimentalEncryptionProviderConfig *string `json:"experimentalEncryptionProviderConfig,omitempty" flag:"experimental-encryption-provider-config"`
+
+	// List of request headers to inspect for usernames. X-Remote-User is common.
+	RequestheaderUsernameHeaders []string `json:"requestheaderUsernameHeaders,omitempty" flag:"requestheader-username-headers"`
+	// List of request headers to inspect for groups. X-Remote-Group is suggested.
+	RequestheaderGroupHeaders []string `json:"requestheaderGroupHeaders,omitempty" flag:"requestheader-group-headers"`
+	// List of request header prefixes to inspect. X-Remote-Extra- is suggested.
+	RequestheaderExtraHeaderPrefixes []string `json:"requestheaderExtraHeaderPrefixes,omitempty" flag:"requestheader-extra-headers-prefix"`
+	//Root certificate bundle to use to verify client certificates on incoming requests before trusting usernames in headers specified by --requestheader-username-headers
+	RequestheaderClientCAFile string `json:"requestheaderClientCAFile,omitempty" flag:"requestheader-client-ca-file"`
+	// List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.
+	RequestheaderAllowedNames []string `json:"requestheaderAllowedNames,omitempty" flag:"requestheader-allowed-names"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -290,6 +309,34 @@ type KubeControllerManagerConfig struct {
 	TerminatedPodGCThreshold *int32 `json:"terminatedPodGCThreshold,omitempty" flag:"terminated-pod-gc-threshold"`
 	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.
 	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
+	// HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs
+	// During each period, the controller manager queries the resource utilization
+	// against the metrics specified in each HorizontalPodAutoscaler definition
+	HorizontalPodAutoscalerSyncPeriod *metav1.Duration `json:"horizontalPodAutoscalerSyncPeriod,omitempty" flag:"horizontal-pod-autoscaler-sync-period"`
+}
+
+type CloudControllerManagerConfig struct {
+	// Master is the url for the kube api master.
+	Master string `json:"master,omitempty" flag:"master"`
+	// LogLevel is the verbosity of the logs.
+	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
+	// Image is the OCI image of the cloud controller manager.
+	Image string `json:"image,omitempty"`
+	// CloudProvider is the provider for cloud services.
+	CloudProvider string `json:"cloudProvider,omitempty" flag:"cloud-provider"`
+	// ClusterName is the instance prefix for the cluster.
+	ClusterName string `json:"clusterName,omitempty" flag:"cluster-name"`
+	// ClusterCIDR is CIDR Range for Pods in cluster.
+	ClusterCIDR string `json:"clusterCIDR,omitempty" flag:"cluster-cidr"`
+	// AllocateNodeCIDRs enables CIDRs for Pods to be allocated and, if
+	// ConfigureCloudRoutes is true, to be set on the cloud provider.
+	AllocateNodeCIDRs *bool `json:"allocateNodeCIDRs,omitempty" flag:"allocate-node-cidrs"`
+	// ConfigureCloudRoutes enables CIDRs allocated with to be configured on the cloud provider.
+	ConfigureCloudRoutes *bool `json:"configureCloudRoutes,omitempty" flag:"configure-cloud-routes"`
+	// LeaderElection defines the configuration of leader election client.
+	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
+	// UseServiceAccountCredentials controls whether we use individual service account credentials for each controller.
+	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
 }
 
 // KubeSchedulerConfig is the configuration for the kube-scheduler
@@ -302,6 +349,8 @@ type KubeSchedulerConfig struct {
 	Image string `json:"image,omitempty"`
 	// LeaderElection defines the configuration of leader election client.
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
+	// UsePolicyConfigMap enable setting the scheduler policy from a configmap
+	UsePolicyConfigMap *bool `json:"usePolicyConfigMap,omitempty"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election

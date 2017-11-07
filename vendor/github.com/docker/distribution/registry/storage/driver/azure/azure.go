@@ -86,7 +86,8 @@ func New(accountName, accountKey, container, realm string) (*Driver, error) {
 	blobClient := api.GetBlobService()
 
 	// Create registry container
-	if _, err = blobClient.CreateContainerIfNotExists(container, azure.ContainerAccessTypePrivate); err != nil {
+	containerRef := blobClient.GetContainerReference(container)
+	if _, err = containerRef.CreateIfNotExists(); err != nil {
 		return nil, err
 	}
 
@@ -111,24 +112,39 @@ func (d *driver) GetContent(ctx context.Context, path string) ([]byte, error) {
 		return nil, err
 	}
 
+	defer blob.Close()
 	return ioutil.ReadAll(blob)
 }
 
 // PutContent stores the []byte content at a location designated by "path".
 func (d *driver) PutContent(ctx context.Context, path string, contents []byte) error {
-	if _, err := d.client.DeleteBlobIfExists(d.container, path); err != nil {
-		return err
+	if limit := 64 * 1024 * 1024; len(contents) > limit { // max size for block blobs uploaded via single "Put Blob"
+		return fmt.Errorf("uploading %d bytes with PutContent is not supported; limit: %d bytes", len(contents), limit)
 	}
-	writer, err := d.Writer(ctx, path, false)
-	if err != nil {
-		return err
+
+	// Historically, blobs uploaded via PutContent used to be of type AppendBlob
+	// (https://github.com/docker/distribution/pull/1438). We can't replace
+	// these blobs atomically via a single "Put Blob" operation without
+	// deleting them first. Once we detect they are BlockBlob type, we can
+	// overwrite them with an atomically "Put Blob" operation.
+	//
+	// While we delete the blob and create a new one, there will be a small
+	// window of inconsistency and if the Put Blob fails, we may end up with
+	// losing the existing data while migrating it to BlockBlob type. However,
+	// expectation is the clients pushing will be retrying when they get an error
+	// response.
+	props, err := d.client.GetBlobProperties(d.container, path)
+	if err != nil && !is404(err) {
+		return fmt.Errorf("failed to get blob properties: %v", err)
 	}
-	defer writer.Close()
-	_, err = writer.Write(contents)
-	if err != nil {
-		return err
+	if err == nil && props.BlobType != azure.BlobTypeBlock {
+		if err := d.client.DeleteBlob(d.container, path, nil); err != nil {
+			return fmt.Errorf("failed to delete legacy blob (%s): %v", props.BlobType, err)
+		}
 	}
-	return writer.Commit()
+
+	r := bytes.NewReader(contents)
+	return d.client.CreateBlockBlobFromReader(d.container, path, uint64(len(contents)), r, nil)
 }
 
 // Reader retrieves an io.ReadCloser for the content stored at "path" with a
@@ -151,7 +167,7 @@ func (d *driver) Reader(ctx context.Context, path string, offset int64) (io.Read
 	}
 
 	bytesRange := fmt.Sprintf("%v-", offset)
-	resp, err := d.client.GetBlobRange(d.container, path, bytesRange)
+	resp, err := d.client.GetBlobRange(d.container, path, bytesRange, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -174,7 +190,7 @@ func (d *driver) Writer(ctx context.Context, path string, append bool) (storaged
 			}
 			size = blobProperties.ContentLength
 		} else {
-			err := d.client.DeleteBlob(d.container, path)
+			err := d.client.DeleteBlob(d.container, path, nil)
 			if err != nil {
 				return nil, err
 			}
@@ -222,7 +238,9 @@ func (d *driver) Stat(ctx context.Context, path string) (storagedriver.FileInfo,
 	if !strings.HasSuffix(virtContainerPath, "/") {
 		virtContainerPath += "/"
 	}
-	blobs, err := d.client.ListBlobs(d.container, azure.ListBlobsParameters{
+
+	containerRef := d.client.GetContainerReference(d.container)
+	blobs, err := containerRef.ListBlobs(azure.ListBlobsParameters{
 		Prefix:     virtContainerPath,
 		MaxResults: 1,
 	})
@@ -272,12 +290,12 @@ func (d *driver) Move(ctx context.Context, sourcePath string, destPath string) e
 		return err
 	}
 
-	return d.client.DeleteBlob(d.container, sourcePath)
+	return d.client.DeleteBlob(d.container, sourcePath, nil)
 }
 
 // Delete recursively deletes all objects stored at "path" and its subpaths.
 func (d *driver) Delete(ctx context.Context, path string) error {
-	ok, err := d.client.DeleteBlobIfExists(d.container, path)
+	ok, err := d.client.DeleteBlobIfExists(d.container, path, nil)
 	if err != nil {
 		return err
 	}
@@ -292,7 +310,7 @@ func (d *driver) Delete(ctx context.Context, path string) error {
 	}
 
 	for _, b := range blobs {
-		if err = d.client.DeleteBlob(d.container, b); err != nil {
+		if err = d.client.DeleteBlob(d.container, b, nil); err != nil {
 			return err
 		}
 	}
@@ -359,8 +377,9 @@ func (d *driver) listBlobs(container, virtPath string) ([]string, error) {
 
 	out := []string{}
 	marker := ""
+	containerRef := d.client.GetContainerReference(d.container)
 	for {
-		resp, err := d.client.ListBlobs(d.container, azure.ListBlobsParameters{
+		resp, err := containerRef.ListBlobs(azure.ListBlobsParameters{
 			Marker: marker,
 			Prefix: virtPath,
 		})
@@ -442,7 +461,7 @@ func (w *writer) Cancel() error {
 		return fmt.Errorf("already committed")
 	}
 	w.cancelled = true
-	return w.driver.client.DeleteBlob(w.driver.container, w.path)
+	return w.driver.client.DeleteBlob(w.driver.container, w.path, nil)
 }
 
 func (w *writer) Commit() error {
@@ -470,7 +489,7 @@ func (bw *blockWriter) Write(p []byte) (int, error) {
 		if offset+chunkSize > len(p) {
 			chunkSize = len(p) - offset
 		}
-		err := bw.client.AppendBlock(bw.container, bw.path, p[offset:offset+chunkSize])
+		err := bw.client.AppendBlock(bw.container, bw.path, p[offset:offset+chunkSize], nil)
 		if err != nil {
 			return n, err
 		}

@@ -18,11 +18,12 @@ package v1alpha1
 
 import (
 	"fmt"
-	"k8s.io/apimachinery/pkg/conversion"
-	"k8s.io/kops/pkg/apis/kops"
 	"reflect"
 	"sort"
 	"strings"
+
+	"k8s.io/apimachinery/pkg/conversion"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 func Convert_v1alpha1_BastionSpec_To_kops_BastionSpec(in *BastionSpec, out *kops.BastionSpec, s conversion.Scope) error {
@@ -235,15 +236,26 @@ func Convert_kops_EtcdMemberSpec_To_v1alpha1_EtcdMemberSpec(in *kops.EtcdMemberS
 }
 
 func Convert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in *InstanceGroupSpec, out *kops.InstanceGroupSpec, s conversion.Scope) error {
-	out.Subnets = in.Zones
+	err := autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in, out, s)
+	if err != nil {
+		return err
+	}
 
-	return autoConvert_v1alpha1_InstanceGroupSpec_To_kops_InstanceGroupSpec(in, out, s)
+	out.Subnets = in.Zones
+	out.Zones = nil // Those zones are not the same as v1alpha1 zones
+
+	return nil
 }
 
 func Convert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in *kops.InstanceGroupSpec, out *InstanceGroupSpec, s conversion.Scope) error {
+	err := autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in, out, s)
+	if err != nil {
+		return err
+	}
+
 	out.Zones = in.Subnets
 
-	return autoConvert_kops_InstanceGroupSpec_To_v1alpha1_InstanceGroupSpec(in, out, s)
+	return nil
 }
 
 func Convert_v1alpha1_TopologySpec_To_kops_TopologySpec(in *TopologySpec, out *kops.TopologySpec, s conversion.Scope) error {

@@ -17,11 +17,12 @@ limitations under the License.
 package main
 
 import (
-	"github.com/blang/semver"
 	"io/ioutil"
-	"k8s.io/kops/pkg/apis/kops"
 	"path"
 	"testing"
+
+	"github.com/blang/semver"
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 // TestKopsUpgrades tests the version logic for kops versions

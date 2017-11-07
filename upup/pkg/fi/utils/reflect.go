@@ -20,8 +20,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/golang/glog"
 	"reflect"
+
+	"github.com/golang/glog"
 )
 
 var SkipReflection = errors.New("skip this value")

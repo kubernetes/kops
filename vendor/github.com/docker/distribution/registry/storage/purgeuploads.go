@@ -5,10 +5,10 @@ import (
 	"strings"
 	"time"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/docker/distribution/context"
 	storageDriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/distribution/uuid"
+	log "github.com/sirupsen/logrus"
 )
 
 // uploadData stored the location of temporary files created during a layer upload
@@ -80,7 +80,7 @@ func getOutstandingUploads(ctx context.Context, driver storageDriver.StorageDriv
 
 		}
 
-		uuid, isContainingDir := uUIDFromPath(filePath)
+		uuid, isContainingDir := uuidFromPath(filePath)
 		if uuid == "" {
 			// Cannot reliably delete
 			return nil
@@ -111,10 +111,10 @@ func getOutstandingUploads(ctx context.Context, driver storageDriver.StorageDriv
 	return uploads, errors
 }
 
-// uUIDFromPath extracts the upload UUID from a given path
+// uuidFromPath extracts the upload UUID from a given path
 // If the UUID is the last path component, this is the containing
 // directory for all upload files
-func uUIDFromPath(path string) (string, bool) {
+func uuidFromPath(path string) (string, bool) {
 	components := strings.Split(path, "/")
 	for i := len(components) - 1; i >= 0; i-- {
 		if u, err := uuid.Parse(components[i]); err == nil {

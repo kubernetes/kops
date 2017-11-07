@@ -290,7 +290,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 		}
 
 		assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets)
-		fullCluster, err := cloudup.PopulateClusterSpec(cluster, assetBuilder)
+		fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
 		if err != nil {
 			return err
 		}
@@ -300,8 +300,15 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 			return err
 		}
 
+		// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
+		statusDiscovery := &cloudDiscoveryStatusStore{}
+		status, err := statusDiscovery.FindClusterStatus(cluster)
+		if err != nil {
+			return err
+		}
+
 		// Note we perform as much validation as we can, before writing a bad config
-		_, err = clientset.UpdateCluster(cluster)
+		_, err = clientset.UpdateCluster(cluster, status)
 		if err != nil {
 			return err
 		}

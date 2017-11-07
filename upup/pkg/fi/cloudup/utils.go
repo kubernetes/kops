@@ -18,16 +18,18 @@ package cloudup
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
-	"strings"
 )
 
 func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
@@ -36,23 +38,16 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 	region := ""
 	project := ""
 
-	switch cluster.Spec.CloudProvider {
-	case "gce":
+	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
+	case kops.CloudProviderGCE:
 		{
-			nodeZones := make(map[string]bool)
 			for _, subnet := range cluster.Spec.Subnets {
-				nodeZones[subnet.Zone] = true
-
-				tokens := strings.Split(subnet.Zone, "-")
-				if len(tokens) <= 2 {
-					return nil, fmt.Errorf("Invalid GCE Zone: %v", subnet.Zone)
+				if subnet.Region != "" {
+					region = subnet.Region
 				}
-				zoneRegion := tokens[0] + "-" + tokens[1]
-				if region != "" && zoneRegion != region {
-					return nil, fmt.Errorf("Clusters cannot span multiple regions (found zone %q, but region is %q)", subnet.Zone, region)
-				}
-
-				region = zoneRegion
+			}
+			if region == "" {
+				return nil, fmt.Errorf("on GCE, subnets must include Regions")
 			}
 
 			project = cluster.Spec.Project
@@ -70,7 +65,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			cloud = gceCloud
 		}
 
-	case "aws":
+	case kops.CloudProviderAWS:
 		{
 			region, err := awsup.FindRegion(cluster)
 			if err != nil {
@@ -99,7 +94,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 			cloud = awsCloud
 		}
-	case "vsphere":
+	case kops.CloudProviderVSphere:
 		{
 			vsphereCloud, err := vsphere.NewVSphereCloud(&cluster.Spec)
 			if err != nil {
@@ -107,7 +102,7 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 			cloud = vsphereCloud
 		}
-	case "digitalocean":
+	case kops.CloudProviderDO:
 		{
 			// for development purposes we're going to assume
 			// single region setups for DO. Reconsider this logic
@@ -119,6 +114,21 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 			}
 
 			cloud = doCloud
+		}
+
+	case kops.CloudProviderBareMetal:
+		{
+			// TODO: Allow dns provider to be specified
+			dns, err := dnsprovider.GetDnsProvider(route53.ProviderName, nil)
+			if err != nil {
+				return nil, fmt.Errorf("Error building (k8s) DNS provider: %v", err)
+			}
+
+			baremetalCloud, err := baremetal.NewCloud(dns)
+			if err != nil {
+				return nil, err
+			}
+			cloud = baremetalCloud
 		}
 
 	default:

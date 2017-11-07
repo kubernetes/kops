@@ -40,7 +40,7 @@ func Bool(b bool) *bool {
 var DNSPreCreate = New("DNSPreCreate", Bool(true))
 
 // DrainAndValidateRollingUpdate if set will use new rolling update code that will drain and validate.
-var DrainAndValidateRollingUpdate = New("DrainAndValidateRollingUpdate", Bool(false))
+var DrainAndValidateRollingUpdate = New("DrainAndValidateRollingUpdate", Bool(true))
 
 // VPCSkipEnableDNSSupport if set will make that a VPC does not need DNSSupport enabled.
 var VPCSkipEnableDNSSupport = New("VPCSkipEnableDNSSupport", Bool(false))
@@ -51,6 +51,12 @@ var SkipTerraformFormat = New("SkipTerraformFormat", Bool(false))
 var VSphereCloudProvider = New("VSphereCloudProvider", Bool(false))
 
 var EnableExternalDNS = New("EnableExternalDNS", Bool(false))
+
+//EnableExternalCloudController toggles the use of cloud-controller-manager introduced in v1.7
+var EnableExternalCloudController = New("EnableExternalCloudController", Bool(false))
+
+// EnableSeparateConfigBase allows a config-base that is different from the state store
+var EnableSeparateConfigBase = New("EnableSeparateConfigBase", Bool(false))
 
 // SpecOverrideFlag allows setting spec values on create
 var SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))

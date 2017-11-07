@@ -201,3 +201,67 @@ func TestValidateSysctl(t *testing.T) {
 		}
 	}
 }
+
+func TestValidateValidSysctl(t *testing.T) {
+	sysctl := map[string]string{
+		"fs.mqueue.ctl": "ctl",
+		"net.ctl":       "ctl",
+		"kernel.msgmax": "ctl",
+	}
+
+	for k, v := range sysctl {
+		config := &configs.Config{
+			Rootfs: "/var",
+			Sysctl: map[string]string{k: v},
+			Namespaces: []configs.Namespace{
+				{
+					Type: configs.NEWNET,
+				},
+				{
+					Type: configs.NEWIPC,
+				},
+			},
+		}
+
+		validator := validate.New()
+		err := validator.Validate(config)
+		if err != nil {
+			t.Errorf("Expected error to not occur with {%s=%s} but got: %q", k, v, err)
+		}
+	}
+}
+
+func TestValidateSysctlWithSameNs(t *testing.T) {
+	config := &configs.Config{
+		Rootfs: "/var",
+		Sysctl: map[string]string{"net.ctl": "ctl"},
+		Namespaces: configs.Namespaces(
+			[]configs.Namespace{
+				{
+					Type: configs.NEWNET,
+					Path: "/proc/self/ns/net",
+				},
+			},
+		),
+	}
+
+	validator := validate.New()
+	err := validator.Validate(config)
+	if err == nil {
+		t.Error("Expected error to occur but it was nil")
+	}
+}
+
+func TestValidateSysctlWithoutNETNamespace(t *testing.T) {
+	config := &configs.Config{
+		Rootfs:     "/var",
+		Sysctl:     map[string]string{"net.ctl": "ctl"},
+		Namespaces: []configs.Namespace{},
+	}
+
+	validator := validate.New()
+	err := validator.Validate(config)
+	if err == nil {
+		t.Error("Expected error to occur but it was nil")
+	}
+}

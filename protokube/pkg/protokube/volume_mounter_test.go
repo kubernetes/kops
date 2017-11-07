@@ -20,6 +20,8 @@ import (
 	"sort"
 	"strings"
 	"testing"
+
+	"k8s.io/kops/protokube/pkg/etcd"
 )
 
 func getIDs(volumes []*Volume) string {
@@ -44,13 +46,13 @@ func Test_VolumeSort_ByEtcdClusterName(t *testing.T) {
 		t.Fatalf("Fail at sort 1: %v", getIDs(volumes))
 	}
 
-	v2.Info.EtcdClusters = append(v2.Info.EtcdClusters, &EtcdClusterSpec{ClusterKey: "events"})
+	v2.Info.EtcdClusters = append(v2.Info.EtcdClusters, &etcd.EtcdClusterSpec{ClusterKey: "events"})
 	sort.Stable(ByEtcdClusterName(volumes))
 	if getIDs(volumes) != "2,1,3" {
 		t.Fatalf("Fail at sort 2: %v", getIDs(volumes))
 	}
 
-	v3.Info.EtcdClusters = append(v3.Info.EtcdClusters, &EtcdClusterSpec{ClusterKey: "main"})
+	v3.Info.EtcdClusters = append(v3.Info.EtcdClusters, &etcd.EtcdClusterSpec{ClusterKey: "main"})
 	sort.Stable(ByEtcdClusterName(volumes))
 	if getIDs(volumes) != "3,2,1" {
 		t.Fatalf("Fail at sort 3: %v", getIDs(volumes))
@@ -75,7 +77,7 @@ func Test_Mount_Volumes(t *testing.T) {
 			&Volume{
 				LocalDevice: "/dev/xvdb",
 				Info: VolumeInfo{
-					EtcdClusters: []*EtcdClusterSpec{
+					EtcdClusters: []*etcd.EtcdClusterSpec{
 						{
 							ClusterKey: "foo",
 							NodeName:   "bar",

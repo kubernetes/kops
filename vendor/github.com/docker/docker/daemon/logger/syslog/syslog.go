@@ -1,5 +1,3 @@
-// +build linux
-
 // Package syslog provides the logdriver for forwarding server logs to syslog endpoints.
 package syslog
 
@@ -10,18 +8,17 @@ import (
 	"net"
 	"net/url"
 	"os"
-	"path"
 	"strconv"
 	"strings"
 	"time"
 
 	syslog "github.com/RackSec/srslog"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/docker/docker/daemon/logger"
 	"github.com/docker/docker/daemon/logger/loggerutils"
 	"github.com/docker/docker/pkg/urlutil"
 	"github.com/docker/go-connections/tlsconfig"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -71,46 +68,55 @@ func init() {
 func rfc5424formatterWithAppNameAsTag(p syslog.Priority, hostname, tag, content string) string {
 	timestamp := time.Now().Format(time.RFC3339)
 	pid := os.Getpid()
-	msg := fmt.Sprintf("<%d>%d %s %s %s %d %s %s",
+	msg := fmt.Sprintf("<%d>%d %s %s %s %d %s - %s",
+		p, 1, timestamp, hostname, tag, pid, tag, content)
+	return msg
+}
+
+// The timestamp field in rfc5424 is derived from rfc3339. Whereas rfc3339 makes allowances
+// for multiple syntaxes, there are further restrictions in rfc5424, i.e., the maximum
+// resolution is limited to "TIME-SECFRAC" which is 6 (microsecond resolution)
+func rfc5424microformatterWithAppNameAsTag(p syslog.Priority, hostname, tag, content string) string {
+	timestamp := time.Now().Format("2006-01-02T15:04:05.999999Z07:00")
+	pid := os.Getpid()
+	msg := fmt.Sprintf("<%d>%d %s %s %s %d %s - %s",
 		p, 1, timestamp, hostname, tag, pid, tag, content)
 	return msg
 }
 
 // New creates a syslog logger using the configuration passed in on
 // the context. Supported context configuration variables are
-// syslog-address, syslog-facility, & syslog-tag.
-func New(ctx logger.Context) (logger.Logger, error) {
-	tag, err := loggerutils.ParseLogTag(ctx, "{{.ID}}")
+// syslog-address, syslog-facility, syslog-format.
+func New(info logger.Info) (logger.Logger, error) {
+	tag, err := loggerutils.ParseLogTag(info, loggerutils.DefaultTemplate)
 	if err != nil {
 		return nil, err
 	}
 
-	proto, address, err := parseAddress(ctx.Config["syslog-address"])
+	proto, address, err := parseAddress(info.Config["syslog-address"])
 	if err != nil {
 		return nil, err
 	}
 
-	facility, err := parseFacility(ctx.Config["syslog-facility"])
+	facility, err := parseFacility(info.Config["syslog-facility"])
 	if err != nil {
 		return nil, err
 	}
 
-	syslogFormatter, syslogFramer, err := parseLogFormat(ctx.Config["syslog-format"])
+	syslogFormatter, syslogFramer, err := parseLogFormat(info.Config["syslog-format"], proto)
 	if err != nil {
 		return nil, err
 	}
-
-	logTag := path.Base(os.Args[0]) + "/" + tag
 
 	var log *syslog.Writer
 	if proto == secureProto {
-		tlsConfig, tlsErr := parseTLSConfig(ctx.Config)
+		tlsConfig, tlsErr := parseTLSConfig(info.Config)
 		if tlsErr != nil {
 			return nil, tlsErr
 		}
-		log, err = syslog.DialWithTLSConfig(proto, address, facility, logTag, tlsConfig)
+		log, err = syslog.DialWithTLSConfig(proto, address, facility, tag, tlsConfig)
 	} else {
-		log, err = syslog.Dial(proto, address, facility, logTag)
+		log, err = syslog.Dial(proto, address, facility, tag)
 	}
 
 	if err != nil {
@@ -126,10 +132,13 @@ func New(ctx logger.Context) (logger.Logger, error) {
 }
 
 func (s *syslogger) Log(msg *logger.Message) error {
-	if msg.Source == "stderr" {
-		return s.writer.Err(string(msg.Line))
+	line := string(msg.Line)
+	source := msg.Source
+	logger.PutMessage(msg)
+	if source == "stderr" {
+		return s.writer.Err(line)
 	}
-	return s.writer.Info(string(msg.Line))
+	return s.writer.Info(line)
 }
 
 func (s *syslogger) Close() error {
@@ -152,8 +161,8 @@ func parseAddress(address string) (string, string, error) {
 		return "", "", err
 	}
 
-	// unix socket validation
-	if url.Scheme == "unix" {
+	// unix and unixgram socket validation
+	if url.Scheme == "unix" || url.Scheme == "unixgram" {
 		if _, err := os.Stat(url.Path); err != nil {
 			return "", "", err
 		}
@@ -173,13 +182,15 @@ func parseAddress(address string) (string, string, error) {
 }
 
 // ValidateLogOpt looks for syslog specific log options
-// syslog-address, syslog-facility, & syslog-tag.
+// syslog-address, syslog-facility.
 func ValidateLogOpt(cfg map[string]string) error {
 	for key := range cfg {
 		switch key {
+		case "env":
+		case "env-regex":
+		case "labels":
 		case "syslog-address":
 		case "syslog-facility":
-		case "syslog-tag":
 		case "syslog-tls-ca-cert":
 		case "syslog-tls-cert":
 		case "syslog-tls-key":
@@ -196,7 +207,7 @@ func ValidateLogOpt(cfg map[string]string) error {
 	if _, err := parseFacility(cfg["syslog-facility"]); err != nil {
 		return err
 	}
-	if _, _, err := parseLogFormat(cfg["syslog-format"]); err != nil {
+	if _, _, err := parseLogFormat(cfg["syslog-format"], ""); err != nil {
 		return err
 	}
 	return nil
@@ -232,14 +243,22 @@ func parseTLSConfig(cfg map[string]string) (*tls.Config, error) {
 	return tlsconfig.Client(opts)
 }
 
-func parseLogFormat(logFormat string) (syslog.Formatter, syslog.Framer, error) {
+func parseLogFormat(logFormat, proto string) (syslog.Formatter, syslog.Framer, error) {
 	switch logFormat {
 	case "":
 		return syslog.UnixFormatter, syslog.DefaultFramer, nil
 	case "rfc3164":
 		return syslog.RFC3164Formatter, syslog.DefaultFramer, nil
 	case "rfc5424":
-		return rfc5424formatterWithAppNameAsTag, syslog.RFC5425MessageLengthFramer, nil
+		if proto == secureProto {
+			return rfc5424formatterWithAppNameAsTag, syslog.RFC5425MessageLengthFramer, nil
+		}
+		return rfc5424formatterWithAppNameAsTag, syslog.DefaultFramer, nil
+	case "rfc5424micro":
+		if proto == secureProto {
+			return rfc5424microformatterWithAppNameAsTag, syslog.RFC5425MessageLengthFramer, nil
+		}
+		return rfc5424microformatterWithAppNameAsTag, syslog.DefaultFramer, nil
 	default:
 		return nil, nil, errors.New("Invalid syslog format")
 	}

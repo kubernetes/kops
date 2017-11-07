@@ -74,8 +74,8 @@ aws configure           # Use your new access and secret key here
 aws iam list-users      # you should see a list of all your IAM users here
 
 # Because "aws configure" doesn't export these vars for kops to use, we export them now
-export AWS_ACCESS_KEY_ID=<access key>
-export AWS_SECRET_ACCESS_KEY=<secret key>
+export AWS_ACCESS_KEY_ID=`aws configure get aws_access_key_id`
+export AWS_SECRET_ACCESS_KEY=`aws configure get aws_secret_access_key`
 ```
 
 ## Configure DNS
@@ -257,8 +257,12 @@ We recommend keeping the creation of this bucket confined to us-east-1,
 otherwise more work will be required.
 
 ```bash
-aws s3api create-bucket --bucket prefix-example-com-state-store --region us-east-1
+aws s3api create-bucket \
+    --bucket prefix-example-com-state-store \
+    --region us-east-1
 ```
+
+Note: S3 requires `--create-bucket-configuration LocationConstraint=<region>` for regions other than `us-east-1`.
 
 Note: We **STRONGLY** recommend versioning your S3 bucket in case you ever need
 to revert or recover a previous state store.

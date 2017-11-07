@@ -18,12 +18,13 @@ package dns
 
 import (
 	"fmt"
-	"github.com/golang/glog"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
+
+	"github.com/golang/glog"
 )
 
 const GUARD_BEGIN = "# Begin host entries managed by kops - do not edit"

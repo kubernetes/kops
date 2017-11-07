@@ -1,0 +1,22 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["start.go"],
+    importpath = "k8s.io/kops/pkg/apiserver/cmd/server",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//pkg/apis/kops/v1alpha2:go_default_library",
+        "//pkg/apiserver:go_default_library",
+        "//pkg/openapi:go_default_library",
+        "//vendor/github.com/golang/glog:go_default_library",
+        "//vendor/github.com/spf13/cobra:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/errors:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/registry/generic:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/server:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/server/options:go_default_library",
+        "//vendor/k8s.io/apiserver/pkg/storage/storagebackend:go_default_library",
+    ],
+)

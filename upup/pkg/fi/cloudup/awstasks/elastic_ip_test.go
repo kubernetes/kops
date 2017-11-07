@@ -18,15 +18,16 @@ package awstasks
 
 import (
 	"bytes"
+	"os"
+	"reflect"
+	"testing"
+	"time"
+
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"k8s.io/kops/cloudmock/aws/mockec2"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"os"
-	"reflect"
-	"testing"
-	"time"
 )
 
 const defaultDeadline = 2 * time.Second
@@ -69,7 +70,7 @@ func TestElasticIPCreate(t *testing.T) {
 			Cloud: cloud,
 		}
 
-		context, err := fi.NewContext(target, cloud, nil, nil, nil, true, allTasks)
+		context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
 		if err != nil {
 			t.Fatalf("error building context: %v", err)
 		}
@@ -106,7 +107,7 @@ func TestElasticIPCreate(t *testing.T) {
 func checkNoChanges(t *testing.T, cloud fi.Cloud, allTasks map[string]fi.Task) {
 	assetBuilder := assets.NewAssetBuilder(nil)
 	target := fi.NewDryRunTarget(assetBuilder, os.Stderr)
-	context, err := fi.NewContext(target, cloud, nil, nil, nil, true, allTasks)
+	context, err := fi.NewContext(target, nil, cloud, nil, nil, nil, true, allTasks)
 	if err != nil {
 		t.Fatalf("error building context: %v", err)
 	}

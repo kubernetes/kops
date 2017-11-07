@@ -1,0 +1,37 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "auth.pb.go",
+        "backend.pb.go",
+        "billing.pb.go",
+        "consumer.pb.go",
+        "context.pb.go",
+        "control.pb.go",
+        "documentation.pb.go",
+        "endpoint.pb.go",
+        "log.pb.go",
+        "logging.pb.go",
+        "monitoring.pb.go",
+        "quota.pb.go",
+        "service.pb.go",
+        "source_info.pb.go",
+        "system_parameter.pb.go",
+        "usage.pb.go",
+    ],
+    importpath = "google.golang.org/genproto/googleapis/api/serviceconfig",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/any:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/wrappers:go_default_library",
+        "//vendor/google.golang.org/genproto/googleapis/api:go_default_library",
+        "//vendor/google.golang.org/genproto/googleapis/api/annotations:go_default_library",
+        "//vendor/google.golang.org/genproto/googleapis/api/label:go_default_library",
+        "//vendor/google.golang.org/genproto/googleapis/api/metric:go_default_library",
+        "//vendor/google.golang.org/genproto/googleapis/api/monitoredres:go_default_library",
+        "//vendor/google.golang.org/genproto/protobuf/api:go_default_library",
+        "//vendor/google.golang.org/genproto/protobuf/ptype:go_default_library",
+    ],
+)

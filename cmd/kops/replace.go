@@ -28,10 +28,11 @@ import (
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -67,7 +68,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    replaceLong,
 		Example: replaceExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			if cmdutil.IsFilenameEmpty(options.Filenames) {
+			if cmdutil.IsFilenameSliceEmpty(options.Filenames) {
 				cmd.Help()
 				return
 			}
@@ -90,7 +91,7 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 	}
 
 	// Codecs provides access to encoding and decoding for the scheme
-	codecs := kopsapi.Codecs //serializer.NewCodecFactory(scheme)
+	codecs := kopscodecs.Codecs //serializer.NewCodecFactory(scheme)
 
 	codec := codecs.UniversalDecoder(kopsapi.SchemeGroupVersion)
 
@@ -115,9 +116,18 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				}
 
 			case *kopsapi.Cluster:
-				_, err = clientset.UpdateCluster(v)
-				if err != nil {
-					return fmt.Errorf("error replacing cluster: %v", err)
+				{
+					// Retrieve the current status of the cluster.  This will eventually be part of the cluster object.
+					statusDiscovery := &cloudDiscoveryStatusStore{}
+					status, err := statusDiscovery.FindClusterStatus(v)
+					if err != nil {
+						return err
+					}
+
+					_, err = clientset.UpdateCluster(v, status)
+					if err != nil {
+						return fmt.Errorf("error replacing cluster: %v", err)
+					}
 				}
 
 			case *kopsapi.InstanceGroup:

@@ -17,7 +17,6 @@ limitations under the License.
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 
@@ -28,8 +27,9 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -124,8 +124,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 	}
 
 	if cluster == nil {
-		fmt.Fprintf(os.Stderr, "No cluster found\n")
-		return nil
+		return fmt.Errorf("No cluster found")
 	}
 
 	clusterList := &api.ClusterList{}
@@ -153,35 +152,27 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 		return err
 	}
 
+	var obj []runtime.Object
+	if options.output != OutputTable {
+		obj = append(obj, cluster)
+		for _, group := range instancegroups {
+			obj = append(obj, group)
+		}
+	}
+
 	switch options.output {
 	case OutputYaml:
-
-		err = clusterOutputYAML(clusters, out)
-		if err != nil {
-			return err
+		if err := fullOutputYAML(out, obj...); err != nil {
+			return fmt.Errorf("error writing cluster yaml to stdout: %v", err)
 		}
 
-		if err := writeYAMLSep(out); err != nil {
-			return err
-		}
-
-		err = igOutputYAML(instancegroups, out)
-		if err != nil {
-			return err
-		}
+		return nil
 
 	case OutputJSON:
-		return fmt.Errorf("not implemented")
-		// TODO this is not outputing valid json.  Not sure what cluster and instance groups should look like
-		/*
-			err = clusterOutputJson(clusters,out)
-			if err != nil {
-				return err
-			}
-			err = igOutputJson(instancegroups,out)
-			if err != nil {
-				return err
-			}*/
+		if err := fullOutputJSON(out, obj...); err != nil {
+			return fmt.Errorf("error writing cluster json to stdout: %v", err)
+		}
+		return nil
 
 	case OutputTable:
 		fmt.Fprintf(os.Stdout, "Cluster\n")
@@ -190,7 +181,7 @@ func RunGet(context Factory, out io.Writer, options *GetOptions) error {
 			return err
 		}
 		fmt.Fprintf(os.Stdout, "\nInstance Groups\n")
-		err = igOutputTable(instancegroups, out)
+		err = igOutputTable(cluster, instancegroups, out)
 		if err != nil {
 			return err
 		}
@@ -226,7 +217,7 @@ func marshalToWriter(obj runtime.Object, marshal marshalFunc, w io.Writer) error
 
 // obj must be a pointer to a marshalable object
 func marshalYaml(obj runtime.Object) ([]byte, error) {
-	y, err := api.ToVersionedYaml(obj)
+	y, err := kopscodecs.ToVersionedYaml(obj)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling yaml: %v", err)
 	}
@@ -235,7 +226,7 @@ func marshalYaml(obj runtime.Object) ([]byte, error) {
 
 // obj must be a pointer to a marshalable object
 func marshalJSON(obj runtime.Object) ([]byte, error) {
-	j, err := json.MarshalIndent(obj, "", "  ")
+	j, err := kopscodecs.ToVersionedJSON(obj)
 	if err != nil {
 		return nil, fmt.Errorf("error marshaling json: %v", err)
 	}

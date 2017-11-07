@@ -64,6 +64,8 @@ spec:
       labels:
         name: weave-net
         role.kubernetes.io/networking: "1"
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       containers:
         - name: weave
@@ -81,7 +83,7 @@ spec:
             - name: WEAVE_MTU
               value: "{{ .Networking.Weave.MTU }}"
             {{- end }}
-          image: 'weaveworks/weave-kube:2.0.1'
+          image: 'weaveworks/weave-kube:2.0.5'
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -117,7 +119,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'weaveworks/weave-npc:2.0.1'
+          image: 'weaveworks/weave-npc:2.0.5'
           resources:
             requests:
               cpu: 100m
@@ -135,6 +137,8 @@ spec:
       serviceAccountName: weave-net
       tolerations:
         - effect: NoSchedule
+          operator: Exists
+        - key: CriticalAddonsOnly
           operator: Exists
       volumes:
         - name: weavedb

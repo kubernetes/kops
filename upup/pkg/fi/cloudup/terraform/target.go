@@ -19,15 +19,16 @@ package terraform
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/golang/glog"
-	hcl_parser "github.com/hashicorp/hcl/json/parser"
 	"io/ioutil"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"os"
 	"path"
 	"strings"
 	"sync"
+
+	"github.com/golang/glog"
+	hcl_parser "github.com/hashicorp/hcl/json/parser"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 type TerraformTarget struct {
@@ -204,12 +205,12 @@ func (t *TerraformTarget) Finish(taskMap map[string]fi.Task) error {
 		if v.Value != nil {
 			tfVar["value"] = v.Value
 		} else {
-			dedup := true
-			sorted, err := sortLiterals(v.ValueArray, dedup)
+			SortLiterals(v.ValueArray)
+			deduped, err := DedupLiterals(v.ValueArray)
 			if err != nil {
-				return fmt.Errorf("error sorting literals: %v", err)
+				return err
 			}
-			tfVar["value"] = sorted
+			tfVar["value"] = deduped
 		}
 		outputVariables[tfName] = tfVar
 	}

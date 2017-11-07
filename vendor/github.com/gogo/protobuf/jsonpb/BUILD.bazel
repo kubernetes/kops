@@ -1,0 +1,25 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["jsonpb.go"],
+    importpath = "github.com/gogo/protobuf/jsonpb",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/gogo/protobuf/proto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/types:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["jsonpb_test.go"],
+    importpath = "github.com/gogo/protobuf/jsonpb",
+    library = ":go_default_library",
+    deps = [
+        "//vendor/github.com/gogo/protobuf/jsonpb/jsonpb_test_proto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/proto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/proto/proto3_proto:go_default_library",
+        "//vendor/github.com/gogo/protobuf/types:go_default_library",
+    ],
+)

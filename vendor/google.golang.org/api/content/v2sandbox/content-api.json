@@ -1,12 +1,12 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/GuL1MzGrpXtMZGxY6n9_TdfBzPA\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/QLI1M7q1prH-C-6ZsfL_vaGQmBM\"",
  "discoveryVersion": "v1",
  "id": "content:v2sandbox",
  "name": "content",
  "canonicalName": "Shopping Content",
  "version": "v2sandbox",
- "revision": "20170406",
+ "revision": "20170803",
  "title": "Content API for Shopping",
  "description": "Manages product items, inventory, and Merchant Center accounts for Google Shopping.",
  "ownerDomain": "google.com",
@@ -181,7 +181,7 @@
     },
     "promotions": {
      "type": "array",
-     "description": "The details of the merchant provided promotions applied to the order. More details about the program are  here.",
+     "description": "The details of the merchant provided promotions applied to the order. More details about the program are here.",
      "items": {
       "$ref": "OrderPromotion"
      }
@@ -1477,7 +1477,7 @@
     },
     "promotions": {
      "type": "array",
-     "description": "The details of the merchant provided promotions applied to the order. More details about the program are  here.",
+     "description": "The details of the merchant provided promotions applied to the order. More details about the program are here.",
      "items": {
       "$ref": "OrderPromotion"
      }

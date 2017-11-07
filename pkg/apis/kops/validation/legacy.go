@@ -76,14 +76,30 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 
 	requiresSubnets := true
 	requiresNetworkCIDR := true
+	requiresSubnetCIDR := true
 	switch kops.CloudProviderID(c.Spec.CloudProvider) {
 	case kops.CloudProviderBareMetal:
 		requiresSubnets = false
 		requiresNetworkCIDR = false
+		if c.Spec.NetworkCIDR != "" {
+			return field.Invalid(fieldSpec.Child("NetworkCIDR"), c.Spec.NetworkCIDR, "NetworkCIDR should not be set on bare metal")
+		}
+
+	case kops.CloudProviderGCE:
+		requiresNetworkCIDR = false
+		if c.Spec.NetworkCIDR != "" {
+			return field.Invalid(fieldSpec.Child("NetworkCIDR"), c.Spec.NetworkCIDR, "NetworkCIDR should not be set on GCE")
+		}
+		requiresSubnetCIDR = false
 
 	case kops.CloudProviderDO:
+		requiresSubnets = false
+		requiresSubnetCIDR = false
+		requiresNetworkCIDR = false
+		if c.Spec.NetworkCIDR != "" {
+			return field.Invalid(fieldSpec.Child("NetworkCIDR"), c.Spec.NetworkCIDR, "NetworkCIDR should not be set on DigitalOcean")
+		}
 	case kops.CloudProviderAWS:
-	case kops.CloudProviderGCE:
 	case kops.CloudProviderVSphere:
 
 	default:
@@ -104,6 +120,9 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	if strict && c.Spec.KubeControllerManager == nil {
 		return field.Required(fieldSpec.Child("KubeControllerManager"), "KubeControllerManager not configured")
 	}
+	if kubernetesRelease.LT(semver.MustParse("1.7.0")) && c.Spec.ExternalCloudControllerManager != nil {
+		return field.Invalid(fieldSpec.Child("ExternalCloudControllerManager"), c.Spec.ExternalCloudControllerManager, "ExternalCloudControllerManager is not supported in version 1.6.0 or lower")
+	}
 	if strict && c.Spec.KubeDNS == nil {
 		return field.Required(fieldSpec.Child("KubeDNS"), "KubeDNS not configured")
 	}
@@ -123,15 +142,14 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	// Check NetworkCIDR
 	var networkCIDR *net.IPNet
 	{
-		networkCIDRString := c.Spec.NetworkCIDR
-		if networkCIDRString == "" {
+		if c.Spec.NetworkCIDR == "" {
 			if requiresNetworkCIDR {
 				return field.Required(fieldSpec.Child("NetworkCIDR"), "Cluster did not have NetworkCIDR set")
 			}
 		} else {
-			_, networkCIDR, err = net.ParseCIDR(networkCIDRString)
+			_, networkCIDR, err = net.ParseCIDR(c.Spec.NetworkCIDR)
 			if err != nil {
-				return field.Invalid(fieldSpec.Child("NetworkCIDR"), networkCIDRString, fmt.Sprintf("Cluster had an invalid NetworkCIDR"))
+				return field.Invalid(fieldSpec.Child("NetworkCIDR"), c.Spec.NetworkCIDR, fmt.Sprintf("Cluster had an invalid NetworkCIDR"))
 			}
 		}
 	}
@@ -198,6 +216,13 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		default:
 			return field.Invalid(fieldSpec.Child("Networking", "Canal", "DefaultEndpointToHostAction"), action, fmt.Sprintf("Unsupported value: %s, supports ACCEPT, DROP or RETURN", action))
 		}
+
+		chainInsertMode := c.Spec.Networking.Canal.ChainInsertMode
+		switch chainInsertMode {
+		case "", "insert", "append":
+		default:
+			return field.Invalid(fieldSpec.Child("Networking", "Canal", "ChainInsertMode"), action, fmt.Sprintf("Unsupported value: %s, supports 'insert' or 'append'", chainInsertMode))
+		}
 	}
 
 	// Check ClusterCIDR
@@ -242,28 +267,41 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 
 	// Check CloudProvider
 	{
-		cloudProvider := c.Spec.CloudProvider
 
-		if cloudProvider == "" {
-			return field.Required(fieldSpec.Child("CloudProvider"), "")
+		var k8sCloudProvider string
+		switch kops.CloudProviderID(c.Spec.CloudProvider) {
+		case kops.CloudProviderAWS:
+			k8sCloudProvider = "aws"
+		case kops.CloudProviderGCE:
+			k8sCloudProvider = "gce"
+		case kops.CloudProviderDO:
+			k8sCloudProvider = "external"
+		case kops.CloudProviderVSphere:
+			k8sCloudProvider = "vsphere"
+		case kops.CloudProviderBareMetal:
+			k8sCloudProvider = ""
+		default:
+			return field.Invalid(fieldSpec.Child("CloudProvider"), c.Spec.CloudProvider, "unknown cloudprovider")
 		}
+
 		if c.Spec.Kubelet != nil && (strict || c.Spec.Kubelet.CloudProvider != "") {
-			if cloudProvider != c.Spec.Kubelet.CloudProvider && c.Spec.Kubelet.CloudProvider != "external" {
+			if c.Spec.Kubelet.CloudProvider != "external" && k8sCloudProvider != c.Spec.Kubelet.CloudProvider {
 				return field.Invalid(fieldSpec.Child("Kubelet", "CloudProvider"), c.Spec.Kubelet.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
 		if c.Spec.MasterKubelet != nil && (strict || c.Spec.MasterKubelet.CloudProvider != "") {
-			if cloudProvider != c.Spec.MasterKubelet.CloudProvider && c.Spec.MasterKubelet.CloudProvider != "external" {
+			if c.Spec.MasterKubelet.CloudProvider != "external" && k8sCloudProvider != c.Spec.MasterKubelet.CloudProvider {
 				return field.Invalid(fieldSpec.Child("MasterKubelet", "CloudProvider"), c.Spec.MasterKubelet.CloudProvider, "Did not match cluster CloudProvider")
+
 			}
 		}
 		if c.Spec.KubeAPIServer != nil && (strict || c.Spec.KubeAPIServer.CloudProvider != "") {
-			if cloudProvider != c.Spec.KubeAPIServer.CloudProvider && c.Spec.KubeAPIServer.CloudProvider != "external" {
+			if c.Spec.KubeAPIServer.CloudProvider != "external" && k8sCloudProvider != c.Spec.KubeAPIServer.CloudProvider {
 				return field.Invalid(fieldSpec.Child("KubeAPIServer", "CloudProvider"), c.Spec.KubeAPIServer.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
 		if c.Spec.KubeControllerManager != nil && (strict || c.Spec.KubeControllerManager.CloudProvider != "") {
-			if cloudProvider != c.Spec.KubeControllerManager.CloudProvider && c.Spec.KubeControllerManager.CloudProvider != "external" {
+			if c.Spec.KubeControllerManager.CloudProvider != "external" && k8sCloudProvider != c.Spec.KubeControllerManager.CloudProvider {
 				return field.Invalid(fieldSpec.Child("KubeControllerManager", "CloudProvider"), c.Spec.KubeControllerManager.CloudProvider, "Did not match cluster CloudProvider")
 			}
 		}
@@ -274,7 +312,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		for i, s := range c.Spec.Subnets {
 			fieldSubnet := fieldSpec.Child("Subnets").Index(i)
 			if s.CIDR == "" {
-				if strict {
+				if requiresSubnetCIDR && strict {
 					return field.Required(fieldSubnet.Child("CIDR"), "Subnet did not have a CIDR set")
 				}
 			} else {
@@ -423,6 +461,12 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	if kubernetesRelease.GTE(semver.MustParse("1.4.0")) {
 		if c.Spec.Networking != nil && c.Spec.Networking.Classic != nil {
 			return field.Invalid(fieldSpec.Child("Networking"), "classic", "classic networking is not supported with kubernetes versions 1.4 and later")
+		}
+	}
+
+	if kubernetesRelease.LT(semver.MustParse("1.6.0")) {
+		if c.Spec.Networking != nil && c.Spec.Networking.Romana != nil {
+			return field.Invalid(fieldSpec.Child("Networking"), "romana", "romana networking is not supported with kubernetes versions 1.5 or lower")
 		}
 	}
 

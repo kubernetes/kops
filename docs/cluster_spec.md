@@ -34,6 +34,34 @@ spec:
       idleTimeoutSeconds: 300
 ```
 
+### etcdClusters v3 & tls
+
+Although kops doesn't presently default to etcd3, it is possible to turn on both v3 and TLS authentication for communication amongst cluster members. These options may be enabled via the cluster spec (manifests only i.e. no command line options as yet). An upfront warning; at present no upgrade path exists for migrating from v2 to v3 so **DO NOT** try to enable this on a v2 running cluster as it must be done on cluster creation. The below example snippet assumes a HA cluster of three masters.
+
+```yaml
+etcdClusters:
+- etcdMembers:
+  - instanceGroup: master0-az0
+    name: a-1
+  - instanceGroup: master1-az0
+    name: a-2
+  - instanceGroup: master0-az1
+    name: b-1
+  enableEtcdTLS: true
+  name: main
+  version: 3.0.17
+- etcdMembers:
+  - instanceGroup: master0-az0
+    name: a-1
+  - instanceGroup: master1-az0
+    name: a-2
+  - instanceGroup: master0-az1
+    name: b-1
+  enableEtcdTLS: true
+  name: events
+  version: 3.0.17
+```
+
 ### sshAccess
 
 This array configures the CIDRs that are able to ssh into nodes. On AWS this is manifested as inbound security group rules on the `nodes` and `master` security groups.
@@ -112,7 +140,10 @@ spec:
     auditLogMaxAge: 10
     auditLogMaxBackups: 1
     auditLogMaxSize: 100
+    auditPolicyFile: /srv/kubernetes/audit.conf
 ```
+
+Note: you could use the fileAssets feature to push an advanced audit policy file on the master nodes.
 
 #### runtimeConfig
 
@@ -126,6 +157,16 @@ spec:
     runtimeConfig:
       batch/v2alpha1: "true"
       apps/v1alpha1: "true"
+```
+
+#### serviceNodePortRange
+
+This value is passed as `--service-node-port-range` for `kube-apiserver`.
+
+```yaml
+spec:
+  kubeAPIServer:
+    serviceNodePortRange: 30000-33000
 ```
 
 Will result in the flag `--runtime-config=batch/v2alpha1=true,apps/v1alpha1=true`. Note that `kube-apiserver` accepts `true` as a value for switch-like flags.
@@ -156,17 +197,54 @@ NOTE: Where the corresponding configuration value can be empty, fields can be se
 
 Will result in the flag `--resolv-conf=` being built.
 
+#### Enable Custom metrics support
+To use custom metrics in kubernetes as per [custom metrics doc](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-custom-metrics)
+we have to set the flag `--enable-custom-metrics` to `true` on all the kubelets. We can specify that in the `kubelet` spec in our cluster.yml.
+
+```
+spec:
+  kubelet:
+    enableCustomMetrics: true
+```
+
+### kubeScheduler
+
+This block contains configurations for `kube-scheduler`.  See https://kubernetes.io/docs/admin/kube-scheduler/
+
+ ```yaml
+ spec:
+   kubeScheduler:
+     usePolicyConfigMap: true
+```
+
+Will make kube-scheduler use the scheduler policy from configmap "scheduler-policy" in namespace kube-system.
+
+Note that as of Kubernetes 1.8.0 kube-scheduler does not reload its configuration from configmap automatically. You will need to ssh into the master instance and restart the Docker container manually.
+
+### kubeControllerManager
+This block contains configurations for the `controller-manager`.
+
+```yaml
+spec:
+  kubeControllerManager:
+    horizontalPodAutoscalerSyncPeriod: 15s
+```
+
+For more details on `horizontalPodAutoscalerSyncPeriod` see the [HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+
 ####  Feature Gates
 
 ```yaml
 spec:
   kubelet:
     featureGates:
-      ExperimentalCriticalPodAnnotation: "true"
+      Accelerators: "true"
       AllowExtTrafficLocalEndpoints: "false"
 ```
 
-Will result in the flag `--feature-gates=ExperimentalCriticalPodAnnotation=true,AllowExtTrafficLocalEndpoints=false`
+Will result in the flag `--feature-gates=Accelerators=true,AllowExtTrafficLocalEndpoints=false`
+
+NOTE: Feature gate `ExperimentalCriticalPodAnnotation` is enabled by default because some critical components like `kube-proxy` depend on its presence.
 
 ####  Compute Resources Reservation
 
@@ -203,7 +281,7 @@ More information about running in an existing VPC is [here](run_in_existing_vpc.
 
 ### hooks
 
-Hooks allow for the execution of an action before the installation of Kubernetes on every node in a cluster.  For instance you can install nvidia drivers for using GPUs. This hooks can be in the form on docker images or manifest files (systemd units). Hooks can be place in either then cluster spec, meaning the will be globally deployed, or they can be placed into the instanceGroup specification. Note, service names on the instanceGroup which overlap with the cluster spec take precedence and ignore the cluster spec definition, i.e. if you have a unit file 'myunit.service' in cluster and then one in the instanceGroup, only the instanceGroup is applied.
+Hooks allow for the execution of an action before the installation of Kubernetes on every node in a cluster.  For instance you can install Nvidia drivers for using GPUs. This hooks can be in the form of Docker images or manifest files (systemd units). Hooks can be placed in either the cluster spec, meaning they will be globally deployed, or they can be placed into the instanceGroup specification. Note: service names on the instanceGroup which overlap with the cluster spec take precedence and ignore the cluster spec definition, i.e. if you have a unit file 'myunit.service' in cluster and then one in the instanceGroup, only the instanceGroup is applied.
 
 ```
 spec:
@@ -236,7 +314,7 @@ spec:
   # or disable a systemd unit
   hooks:
   - name: update-engine.service
-    disable: true
+    disabled: true
 
   # or you could wrap this into a full unit
   hooks:
@@ -312,4 +390,14 @@ This can be usefull to avoid AWS limits: 500 security groups per region and 50 r
 spec:
   cloudConfig:
     elbSecurityGroup: sg-123445678
+```
+
+### sshKeyName
+
+In some cases, it may be desirable to use an existing AWS SSH key instead of allowing kops to create a new one.
+Providing the name of a key already in AWS is an alternative to `--ssh-public-key`.
+
+```yaml
+spec:
+  sshKeyName: myexistingkey
 ```

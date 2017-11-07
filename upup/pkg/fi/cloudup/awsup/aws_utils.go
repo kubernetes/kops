@@ -18,6 +18,8 @@ package awsup
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -26,7 +28,6 @@ import (
 	"github.com/aws/aws-sdk-go/service/elb"
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
-	"os"
 )
 
 // allRegions is the list of all regions; tests will set the values

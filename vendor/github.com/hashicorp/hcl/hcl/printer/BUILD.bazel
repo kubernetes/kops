@@ -1,0 +1,41 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "nodes.go",
+        "printer.go",
+    ],
+    importpath = "github.com/hashicorp/hcl/hcl/printer",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/hashicorp/hcl/hcl/ast:go_default_library",
+        "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
+        "//vendor/github.com/hashicorp/hcl/hcl/token:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "printer_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "printer_test.go",
+        ],
+        "//conditions:default": [],
+    }),
+    data = glob(["testdata/**"]),
+    importpath = "github.com/hashicorp/hcl/hcl/printer",
+    library = ":go_default_library",
+    deps = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)

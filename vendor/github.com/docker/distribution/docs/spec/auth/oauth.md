@@ -1,18 +1,19 @@
-<!--[metadata]>
-+++
-title = "Oauth2 Token Authentication"
-description = "Specifies the Docker Registry v2 authentication"
-keywords = ["registry, on-prem, images, tags, repository, distribution, oauth2, advanced"]
-[menu.main]
-parent="smn_registry_ref"
-+++
-<![end-metadata]-->
+---
+title: "Oauth2 Token Authentication"
+description: "Specifies the Docker Registry v2 authentication"
+keywords: ["registry, on-prem, images, tags, repository, distribution, oauth2, advanced"]
+---
 
 # Docker Registry v2 authentication using OAuth2
 
 This document describes support for the OAuth2 protocol within the authorization
 server. [RFC6749](https://tools.ietf.org/html/rfc6749) should be used as a
 reference for the protocol and HTTP endpoints described here.
+
+**Note**: Not all token servers implement oauth2. If the request to the endpoint
+returns `404` using the HTTP `POST` method, refer to
+[Token Documentation](token.md) for using the HTTP `GET` method supported by all
+token servers.
 
 ## Refresh token format
 
@@ -170,12 +171,12 @@ grant_type=password&username=johndoe&password=A3ddj3w&service=hub.docker.io&clie
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-{"refresh_token":"kas9Da81Dfa8","access_token":"eyJhbGciOiJFUzI1NiIsInR5","expires_in":"900","scope":""}
-````
+{"refresh_token":"kas9Da81Dfa8","access_token":"eyJhbGciOiJFUzI1NiIsInR5","expires_in":900,"scope":""}
+```
 
 #### Example refreshing an Access Token
 
-````
+```
 POST /token HTTP/1.1
 Host: auth.docker.io
 Content-Type: application/x-www-form-urlencoded
@@ -185,6 +186,5 @@ grant_type=refresh_token&refresh_token=kas9Da81Dfa8&service=registry-1.docker.io
 HTTP/1.1 200 OK
 Content-Type: application/json
 
-{"refresh_token":"kas9Da81Dfa8","access_token":"eyJhbGciOiJFUzI1NiIsInR5":"expires_in":"900","scope":"repository:samalba/my-app:pull,repository:samalba/my-app:push"}
-````
-
+{"refresh_token":"kas9Da81Dfa8","access_token":"eyJhbGciOiJFUzI1NiIsInR5":"expires_in":900,"scope":"repository:samalba/my-app:pull,repository:samalba/my-app:push"}
+```

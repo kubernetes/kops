@@ -73,7 +73,7 @@ git push --tags
 For the time being, we are also maintaining a release branch.  We push released
 versions to that.
 
-`git push origin release`
+`git push origin release-1.7:release`
 
 ## Upload to github
 

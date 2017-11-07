@@ -18,6 +18,10 @@ package vfsclientset
 
 import (
 	"fmt"
+	"os"
+	"strings"
+	"time"
+
 	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -28,9 +32,6 @@ import (
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/validation"
 	"k8s.io/kops/util/pkg/vfs"
-	"os"
-	"strings"
-	"time"
 )
 
 type ClusterVFS struct {
@@ -101,7 +102,7 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 		return nil, fmt.Errorf("clusterName is required")
 	}
 
-	if err := r.writeConfig(r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionCreate); err != nil {
+	if err := r.writeConfig(c, r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionCreate); err != nil {
 		if os.IsExist(err) {
 			return nil, err
 		}
@@ -111,18 +112,22 @@ func (r *ClusterVFS) Create(c *api.Cluster) (*api.Cluster, error) {
 	return c, nil
 }
 
-func (r *ClusterVFS) Update(c *api.Cluster) (*api.Cluster, error) {
-	err := validation.ValidateCluster(c, false)
-	if err != nil {
-		return nil, err
-	}
-
+func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Cluster, error) {
 	clusterName := c.ObjectMeta.Name
 	if clusterName == "" {
 		return nil, field.Required(field.NewPath("Name"), "clusterName is required")
 	}
 
-	if err := r.writeConfig(r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionOnlyIfExists); err != nil {
+	old, err := r.Get(clusterName, metav1.GetOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	if err := validation.ValidateClusterUpdate(c, status, old).ToAggregate(); err != nil {
+		return nil, err
+	}
+
+	if err := r.writeConfig(c, r.basePath.Join(clusterName, registry.PathCluster), c, vfs.WriteOptionOnlyIfExists); err != nil {
 		if os.IsNotExist(err) {
 			return nil, err
 		}

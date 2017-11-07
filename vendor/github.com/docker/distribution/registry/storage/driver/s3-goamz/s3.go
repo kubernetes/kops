@@ -266,10 +266,8 @@ func New(params DriverParameters) (*Driver, error) {
 
 	if params.V4Auth {
 		s3obj.Signature = aws.V4Signature
-	} else {
-		if params.Region.Name == "eu-central-1" {
-			return nil, fmt.Errorf("The eu-central-1 region only works with v4 authentication")
-		}
+	} else if mustV4Auth(params.Region.Name) {
+		return nil, fmt.Errorf("The %s region only works with v4 authentication", params.Region.Name)
 	}
 
 	bucket := s3obj.Bucket(params.Bucket)
@@ -443,13 +441,13 @@ func (d *driver) List(ctx context.Context, opath string) ([]string, error) {
 			directories = append(directories, strings.Replace(commonPrefix[0:len(commonPrefix)-1], d.s3Path(""), prefix, 1))
 		}
 
-		if listResponse.IsTruncated {
-			listResponse, err = d.Bucket.List(d.s3Path(path), "/", listResponse.NextMarker, listMax)
-			if err != nil {
-				return nil, err
-			}
-		} else {
+		if !listResponse.IsTruncated {
 			break
+		}
+
+		listResponse, err = d.Bucket.List(d.s3Path(path), "/", listResponse.NextMarker, listMax)
+		if err != nil {
+			return nil, err
 		}
 	}
 
@@ -479,7 +477,8 @@ func (d *driver) Move(ctx context.Context, sourcePath string, destPath string) e
 
 // Delete recursively deletes all objects stored at "path" and its subpaths.
 func (d *driver) Delete(ctx context.Context, path string) error {
-	listResponse, err := d.Bucket.List(d.s3Path(path), "", "", listMax)
+	s3Path := d.s3Path(path)
+	listResponse, err := d.Bucket.List(s3Path, "", "", listMax)
 	if err != nil || len(listResponse.Contents) == 0 {
 		return storagedriver.PathNotFoundError{Path: path}
 	}
@@ -487,12 +486,22 @@ func (d *driver) Delete(ctx context.Context, path string) error {
 	s3Objects := make([]s3.Object, listMax)
 
 	for len(listResponse.Contents) > 0 {
+		numS3Objects := len(listResponse.Contents)
 		for index, key := range listResponse.Contents {
+			// Stop if we encounter a key that is not a subpath (so that deleting "/a" does not delete "/ab").
+			if len(key.Key) > len(s3Path) && (key.Key)[len(s3Path)] != '/' {
+				numS3Objects = index
+				break
+			}
 			s3Objects[index].Key = key.Key
 		}
 
-		err := d.Bucket.DelMulti(s3.Delete{Quiet: false, Objects: s3Objects[0:len(listResponse.Contents)]})
+		err := d.Bucket.DelMulti(s3.Delete{Quiet: false, Objects: s3Objects[0:numS3Objects]})
 		if err != nil {
+			return nil
+		}
+
+		if numS3Objects < len(listResponse.Contents) {
 			return nil
 		}
 
@@ -546,11 +555,6 @@ func parseError(path string, err error) error {
 	return err
 }
 
-func hasCode(err error, code string) bool {
-	s3err, ok := err.(*aws.Error)
-	return ok && s3err.Code == code
-}
-
 func (d *driver) getOptions() s3.Options {
 	return s3.Options{
 		SSE:          d.Encrypt,
@@ -560,6 +564,17 @@ func (d *driver) getOptions() s3.Options {
 
 func getPermissions() s3.ACL {
 	return s3.Private
+}
+
+// mustV4Auth checks whether must use v4 auth in specific region.
+// Please see documentation at http://docs.aws.amazon.com/general/latest/gr/signature-version-2.html
+func mustV4Auth(region string) bool {
+	switch region {
+	case "eu-central-1", "cn-north-1", "us-east-2",
+		"ca-central-1", "ap-south-1", "ap-northeast-2", "eu-west-2":
+		return true
+	}
+	return false
 }
 
 func (d *driver) getContentType() string {

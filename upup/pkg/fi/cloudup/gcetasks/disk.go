@@ -18,12 +18,13 @@ package gcetasks
 
 import (
 	"fmt"
+	"reflect"
+
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"reflect"
 )
 
 // Disk represents a GCE PD
@@ -62,6 +63,9 @@ func (e *Disk) Find(c *fi.Context) (*Disk, error) {
 	actual.SizeGB = &r.SizeGb
 
 	actual.Labels = r.Labels
+
+	// Ignore "system" fields
+	actual.Lifecycle = e.Lifecycle
 
 	return actual, nil
 }

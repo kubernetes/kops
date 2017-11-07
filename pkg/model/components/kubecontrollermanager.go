@@ -110,8 +110,15 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	case kops.CloudProviderVSphere:
 		kcm.CloudProvider = "vsphere"
 
+	case kops.CloudProviderBareMetal:
+		// No cloudprovider
+
 	default:
-		return fmt.Errorf("unknown cloud provider %q", clusterSpec.CloudProvider)
+		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
+	}
+
+	if clusterSpec.ExternalCloudControllerManager != nil {
+		kcm.CloudProvider = "external"
 	}
 
 	if kcm.Master == "" {
@@ -142,7 +149,7 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 		kcm.ConfigureCloudRoutes = fi.Bool(true)
 	} else if networking.External != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil {
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil {
 		kcm.ConfigureCloudRoutes = fi.Bool(false)
 	} else if networking.Kopeio != nil {
 		// Kopeio is based on kubenet / external

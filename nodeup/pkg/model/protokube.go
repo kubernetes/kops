@@ -34,6 +34,7 @@ import (
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/assets"
 )
 
 // ProtokubeBuilder configures protokube
@@ -97,7 +98,10 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		return nil, fmt.Errorf("unable to parse KubernetesVersion %q", t.Cluster.Spec.KubernetesVersion)
 	}
 
-	protokubeFlags := t.ProtokubeFlags(*k8sVersion)
+	protokubeFlags, err := t.ProtokubeFlags(*k8sVersion)
+	if err != nil {
+		return nil, err
+	}
 	protokubeFlagsArgs, err := flagbuilder.BuildFlags(protokubeFlags)
 	if err != nil {
 		return nil, err
@@ -108,12 +112,28 @@ func (t *ProtokubeBuilder) buildSystemdService() (*nodetasks.Service, error) {
 		"-v", "/:/rootfs/",
 		"-v", "/var/run/dbus:/var/run/dbus",
 		"-v", "/run/systemd:/run/systemd",
-		"--net=host", "--privileged",
+	}
+
+	// add kubectl only if a master
+	// path changes depending on distro, and always mount it on /opt/kops/bin
+	// kubectl is downloaded an installed by other tasks
+	if t.IsMaster {
+		dockerArgs = append(dockerArgs, []string{
+			"-v", t.KubectlPath() + ":/opt/kops/bin:ro",
+			"--env", "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/kops/bin",
+		}...)
+	}
+
+	dockerArgs = append(dockerArgs, []string{
+		"--net=host",
+		"--pid=host",   // Needed for mounting in a container (when using systemd mounting?)
+		"--privileged", // We execute in the host namespace
 		"--env", "KUBECONFIG=/rootfs/var/lib/kops/kubeconfig",
 		t.ProtokubeEnvironmentVariables(),
 		t.ProtokubeImageName(),
 		"/usr/bin/protokube",
-	}
+	}...)
+
 	protokubeCommand := strings.Join(dockerArgs, " ") + " " + protokubeFlagsArgs
 
 	manifest := &systemd.Manifest{}
@@ -176,37 +196,63 @@ type ProtokubeFlags struct {
 	Channels    []string `json:"channels,omitempty" flag:"channels"`
 	Cloud       *string  `json:"cloud,omitempty" flag:"cloud"`
 	// ClusterID flag is required only for vSphere cloud type, to pass cluster id information to protokube. AWS and GCE workflows ignore this flag.
-	ClusterID         *string  `json:"cluster-id,omitempty" flag:"cluster-id"`
-	Containerized     *bool    `json:"containerized,omitempty" flag:"containerized"`
-	DNSInternalSuffix *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
-	DNSProvider       *string  `json:"dnsProvider,omitempty" flag:"dns"`
-	DNSServer         *string  `json:"dns-server,omitempty" flag:"dns-server"`
-	EtcdImage         *string  `json:"etcd-image,omitempty" flag:"etcd-image"`
-	InitializeRBAC    *bool    `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
-	LogLevel          *int32   `json:"logLevel,omitempty" flag:"v"`
-	Master            *bool    `json:"master,omitempty" flag:"master"`
-	PeerTLSCaFile     *string  `json:"peer-ca,omitempty" flag:"peer-ca"`
-	PeerTLSCertFile   *string  `json:"peer-cert,omitempty" flag:"peer-cert"`
-	PeerTLSKeyFile    *string  `json:"peer-key,omitempty" flag:"peer-key"`
-	TLSCAFile         *string  `json:"tls-ca,omitempty" flag:"tls-ca"`
-	TLSCertFile       *string  `json:"tls-cert,omitempty" flag:"tls-cert"`
-	TLSKeyFile        *string  `json:"tls-key,omitempty" flag:"tls-key"`
-	Zone              []string `json:"zone,omitempty" flag:"zone"`
+	ClusterID                 *string  `json:"cluster-id,omitempty" flag:"cluster-id"`
+	Containerized             *bool    `json:"containerized,omitempty" flag:"containerized"`
+	DNSInternalSuffix         *string  `json:"dnsInternalSuffix,omitempty" flag:"dns-internal-suffix"`
+	DNSProvider               *string  `json:"dnsProvider,omitempty" flag:"dns"`
+	DNSServer                 *string  `json:"dns-server,omitempty" flag:"dns-server"`
+	EtcdImage                 *string  `json:"etcd-image,omitempty" flag:"etcd-image"`
+	EtcdLeaderElectionTimeout *string  `json:"etcd-election-timeout,omitempty" flag:"etcd-election-timeout"`
+	EtcdHearbeatInterval      *string  `json:"etcd-heartbeat-interval,omitempty" flag:"etcd-heartbeat-interval"`
+	InitializeRBAC            *bool    `json:"initializeRBAC,omitempty" flag:"initialize-rbac"`
+	LogLevel                  *int32   `json:"logLevel,omitempty" flag:"v"`
+	Master                    *bool    `json:"master,omitempty" flag:"master"`
+	PeerTLSCaFile             *string  `json:"peer-ca,omitempty" flag:"peer-ca"`
+	PeerTLSCertFile           *string  `json:"peer-cert,omitempty" flag:"peer-cert"`
+	PeerTLSKeyFile            *string  `json:"peer-key,omitempty" flag:"peer-key"`
+	TLSCAFile                 *string  `json:"tls-ca,omitempty" flag:"tls-ca"`
+	TLSCertFile               *string  `json:"tls-cert,omitempty" flag:"tls-cert"`
+	TLSKeyFile                *string  `json:"tls-key,omitempty" flag:"tls-key"`
+	Zone                      []string `json:"zone,omitempty" flag:"zone"`
 }
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
-func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeFlags {
+func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*ProtokubeFlags, error) {
 	// @todo: i think we should allow the user to override the source of the image, but for now
 	// lets keep that for another PR and allow the version change
 	imageVersion := t.Cluster.Spec.EtcdClusters[0].Version
 
-	f := &ProtokubeFlags{
-		Channels:      t.NodeupConfig.Channels,
-		Containerized: fi.Bool(true),
-		EtcdImage:     s(fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)),
-		LogLevel:      fi.Int32(4),
-		Master:        b(t.IsMaster),
+	var leaderElectionTimeout string
+	var heartbeatInterval string
+
+	if v := t.Cluster.Spec.EtcdClusters[0].LeaderElectionTimeout; v != nil {
+		leaderElectionTimeout = convEtcdSettingsToMs(v)
 	}
+
+	if v := t.Cluster.Spec.EtcdClusters[0].HeartbeatInterval; v != nil {
+		heartbeatInterval = convEtcdSettingsToMs(v)
+	}
+
+	f := &ProtokubeFlags{
+		Channels:                  t.NodeupConfig.Channels,
+		Containerized:             fi.Bool(true),
+		EtcdLeaderElectionTimeout: s(leaderElectionTimeout),
+		EtcdHearbeatInterval:      s(heartbeatInterval),
+		LogLevel:                  fi.Int32(4),
+		Master:                    b(t.IsMaster),
+	}
+
+	// TODO this is dupicate code with etcd model
+	image := fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)
+	assets := assets.NewAssetBuilder(t.Cluster.Spec.Assets)
+	remapped, err := assets.RemapImage(image)
+	if err != nil {
+		return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
+	} else {
+		image = remapped
+	}
+
+	f.EtcdImage = s(image)
 
 	// initialize rbac on Kubernetes >= 1.6 and master
 	if k8sVersion.Major == 1 && k8sVersion.Minor >= 6 {
@@ -275,7 +321,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) *ProtokubeF
 		f.ApplyTaints = fi.Bool(true)
 	}
 
-	return f
+	return f, nil
 }
 
 // ProtokubeEnvironmentVariables generates the environments variables for docker
@@ -331,7 +377,7 @@ func (t *ProtokubeBuilder) writeProxyEnvVars(buffer *bytes.Buffer) {
 
 // buildCertificateTask is responsible for build a certificate request task
 func (t *ProtokubeBuilder) buildCeritificateTask(c *fi.ModelBuilderContext, name, filename string) error {
-	cert, err := t.KeyStore.Cert(name)
+	cert, err := t.KeyStore.Cert(name, false)
 	if err != nil {
 		return err
 	}
@@ -353,7 +399,7 @@ func (t *ProtokubeBuilder) buildCeritificateTask(c *fi.ModelBuilderContext, name
 
 // buildPrivateKeyTask is responsible for build a certificate request task
 func (t *ProtokubeBuilder) buildPrivateTask(c *fi.ModelBuilderContext, name, filename string) error {
-	cert, err := t.KeyStore.PrivateKey(name)
+	cert, err := t.KeyStore.PrivateKey(name, false)
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "experimental.go",
+        "local.go",
+        "router.go",
+    ],
+    importpath = "github.com/docker/docker/api/server/router",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/docker/docker/api/errors:go_default_library",
+        "//vendor/github.com/docker/docker/api/server/httputils:go_default_library",
+        "//vendor/golang.org/x/net/context:go_default_library",
+    ],
+)

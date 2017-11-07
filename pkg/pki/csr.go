@@ -21,9 +21,10 @@ import (
 	"crypto/rsa"
 	"crypto/x509"
 	"fmt"
-	"github.com/golang/glog"
 	"math/big"
 	"time"
+
+	"github.com/golang/glog"
 )
 
 // BuildPKISerial produces a serial number for certs that is vanishingly unlikely to collide
@@ -85,7 +86,7 @@ func SignNewCertificate(privateKey *PrivateKey, template *x509.Certificate, sign
 		template.KeyUsage = x509.KeyUsageDigitalSignature | x509.KeyUsageKeyEncipherment
 	}
 
-	if template.ExtKeyUsage == nil {
+	if template.ExtKeyUsage == nil && !template.IsCA {
 		template.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}
 	}
 	//c.SignatureAlgorithm  = do we want to overrride?

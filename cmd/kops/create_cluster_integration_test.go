@@ -27,9 +27,11 @@ import (
 	"github.com/golang/glog"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/testutils"
 )
 
@@ -57,6 +59,11 @@ func TestCreateClusterHA(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha", "v1alpha2")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_encrypt", "v1alpha1")
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_encrypt", "v1alpha2")
+}
+
+// TestCreateClusterHAGCE runs kops create cluster ha-gce.example.com --cloud gce --zones us-test1-a,us-test1-b,us-test1-c --master-zones us-test1-a,us-test1-b,us-test1-c
+func TestCreateClusterHAGCE(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ha_gce", "v1alpha2")
 }
 
 // TestCreateClusterHASharedZones tests kops create cluster when the master count is bigger than the number of zones
@@ -90,6 +97,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	defer h.Close()
 
 	h.SetupMockAWS()
+	h.SetupMockGCE()
 
 	publicKeyPath := path.Join(h.TempDir, "id_rsa.pub")
 	privateKeyPath := path.Join(h.TempDir, "id_rsa")
@@ -146,7 +154,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	for _, cluster := range clusters.Items {
 		cluster.ObjectMeta.CreationTimestamp = MagicTimestamp
-		actualYAMLBytes, err := kops.ToVersionedYamlWithVersion(&cluster, version)
+		actualYAMLBytes, err := kopscodecs.ToVersionedYamlWithVersion(&cluster, schema.GroupVersion{Group: "kops", Version: version})
 		if err != nil {
 			t.Fatalf("unexpected error serializing cluster: %v", err)
 		}
@@ -165,7 +173,7 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 	for _, ig := range instanceGroups.Items {
 		ig.ObjectMeta.CreationTimestamp = MagicTimestamp
 
-		actualYAMLBytes, err := kops.ToVersionedYamlWithVersion(&ig, version)
+		actualYAMLBytes, err := kopscodecs.ToVersionedYamlWithVersion(&ig, schema.GroupVersion{Group: "kops", Version: version})
 		if err != nil {
 			t.Fatalf("unexpected error serializing InstanceGroup: %v", err)
 		}

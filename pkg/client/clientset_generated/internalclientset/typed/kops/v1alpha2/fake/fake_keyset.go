@@ -36,40 +36,7 @@ var keysetsResource = schema.GroupVersionResource{Group: "kops", Version: "v1alp
 
 var keysetsKind = schema.GroupVersionKind{Group: "kops", Version: "v1alpha2", Kind: "Keyset"}
 
-func (c *FakeKeysets) Create(keyset *v1alpha2.Keyset) (result *v1alpha2.Keyset, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewCreateAction(keysetsResource, c.ns, keyset), &v1alpha2.Keyset{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha2.Keyset), err
-}
-
-func (c *FakeKeysets) Update(keyset *v1alpha2.Keyset) (result *v1alpha2.Keyset, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateAction(keysetsResource, c.ns, keyset), &v1alpha2.Keyset{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha2.Keyset), err
-}
-
-func (c *FakeKeysets) Delete(name string, options *v1.DeleteOptions) error {
-	_, err := c.Fake.
-		Invokes(testing.NewDeleteAction(keysetsResource, c.ns, name), &v1alpha2.Keyset{})
-
-	return err
-}
-
-func (c *FakeKeysets) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	action := testing.NewDeleteCollectionAction(keysetsResource, c.ns, listOptions)
-
-	_, err := c.Fake.Invokes(action, &v1alpha2.KeysetList{})
-	return err
-}
-
+// Get takes name of the keyset, and returns the corresponding keyset object, and an error if there is any.
 func (c *FakeKeysets) Get(name string, options v1.GetOptions) (result *v1alpha2.Keyset, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewGetAction(keysetsResource, c.ns, name), &v1alpha2.Keyset{})
@@ -80,6 +47,7 @@ func (c *FakeKeysets) Get(name string, options v1.GetOptions) (result *v1alpha2.
 	return obj.(*v1alpha2.Keyset), err
 }
 
+// List takes label and field selectors, and returns the list of Keysets that match those selectors.
 func (c *FakeKeysets) List(opts v1.ListOptions) (result *v1alpha2.KeysetList, err error) {
 	obj, err := c.Fake.
 		Invokes(testing.NewListAction(keysetsResource, keysetsKind, c.ns, opts), &v1alpha2.KeysetList{})
@@ -106,6 +74,44 @@ func (c *FakeKeysets) Watch(opts v1.ListOptions) (watch.Interface, error) {
 	return c.Fake.
 		InvokesWatch(testing.NewWatchAction(keysetsResource, c.ns, opts))
 
+}
+
+// Create takes the representation of a keyset and creates it.  Returns the server's representation of the keyset, and an error, if there is any.
+func (c *FakeKeysets) Create(keyset *v1alpha2.Keyset) (result *v1alpha2.Keyset, err error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewCreateAction(keysetsResource, c.ns, keyset), &v1alpha2.Keyset{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha2.Keyset), err
+}
+
+// Update takes the representation of a keyset and updates it. Returns the server's representation of the keyset, and an error, if there is any.
+func (c *FakeKeysets) Update(keyset *v1alpha2.Keyset) (result *v1alpha2.Keyset, err error) {
+	obj, err := c.Fake.
+		Invokes(testing.NewUpdateAction(keysetsResource, c.ns, keyset), &v1alpha2.Keyset{})
+
+	if obj == nil {
+		return nil, err
+	}
+	return obj.(*v1alpha2.Keyset), err
+}
+
+// Delete takes name of the keyset and deletes it. Returns an error if one occurs.
+func (c *FakeKeysets) Delete(name string, options *v1.DeleteOptions) error {
+	_, err := c.Fake.
+		Invokes(testing.NewDeleteAction(keysetsResource, c.ns, name), &v1alpha2.Keyset{})
+
+	return err
+}
+
+// DeleteCollection deletes a collection of objects.
+func (c *FakeKeysets) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
+	action := testing.NewDeleteCollectionAction(keysetsResource, c.ns, listOptions)
+
+	_, err := c.Fake.Invokes(action, &v1alpha2.KeysetList{})
+	return err
 }
 
 // Patch applies the patch and returns the patched keyset.

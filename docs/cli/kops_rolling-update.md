@@ -8,36 +8,53 @@ Rolling update a cluster.
 ### Synopsis
 
 
-This command updates a kubernetes cluster to match the cloud, and kops specifications.
+This command updates a kubernetes cluster to match the cloud and kops specifications.
 
-To perform rolling update, you need to update the cloud resources first with "kops update cluster"
+To perform a rolling update, you need to update the cloud resources first with the command
+`kops update cluster`.
 
-Note: terraform users will need run the following commands all from the same directory "kops update cluster --target=terraform" then "terraform plan" then "terraform apply"
-prior to running "kops rolling-update cluster"
+If rolling-update does not report that the cluster needs to be rolled, you can force the cluster to be
+rolled with the force flag.  Rolling update drains and validates the cluster by default.  A cluster is
+deemed validated when all required nodes are running and all pods in the kube-system namespace are operational.
+When a node is deleted, rolling-update sleeps the interval for the node type, and then tries for the same period
+of time for the cluster to be validated.  For instance, setting --master-interval=3m causes rolling-update
+to wait for 3 minutes after a master is rolled, and another 3 minutes for the cluster to stabilize and pass
+validation.
 
-Use `export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"` to use beta code that drains the nodes
-and validates the cluster.  New flags for Drain and Validation operations will be shown when
-the environment variable is set.
+Note: terraform users will need to run all of the following commands from the same directory
+`kops update cluster --target=terraform` then `terraform plan` then
+`terraform apply` prior to running `kops rolling-update cluster`.
 
 ### Examples
 
 ```
-  # Roll the currently selected kops cluster
+  # Preview a rolling-update.
+  kops rolling-update cluster
+  
+  # Roll the currently selected kops cluster with defaults.
+  # Nodes will be drained and the cluster will be validated between node replacement.
   kops rolling-update cluster --yes
   
-  # Roll the k8s-cluster.example.com kops cluster
-  # use the new drain an validate functionality
-  export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+  # Roll the k8s-cluster.example.com kops cluster,
+  # do not fail if the cluster does not validate,
+  # wait 8 min to create new node, and wait at least
+  # 8 min to validate the cluster.
   kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false" \
   --master-interval=8m \
   --node-interval=8m
   
+  # Roll the k8s-cluster.example.com kops cluster,
+  # do not validate the cluster because of the cloudonly flag.
+  # Force the entire cluster to roll, even if rolling update
+  # reports that the cluster does not need to be rolled.
+  kops rolling-update cluster k8s-cluster.example.com --yes \
+  --cloudonly \
+  --force
   
-  # Roll the k8s-cluster.example.com kops cluster
-  # only roll the node instancegroup
-  # use the new drain an validate functionality
-  export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"
+  # Roll the k8s-cluster.example.com kops cluster,
+  # only roll the node instancegroup,
+  # use the new drain an validate functionality.
   kops rolling-update cluster k8s-cluster.example.com --yes \
   --fail-on-validate-error="false" \
   --node-interval 8m \

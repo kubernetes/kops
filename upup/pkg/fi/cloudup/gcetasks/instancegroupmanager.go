@@ -18,11 +18,12 @@ package gcetasks
 
 import (
 	"fmt"
+	"reflect"
+
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"reflect"
 )
 
 //go:generate fitask -type=InstanceGroupManager
@@ -69,6 +70,9 @@ func (e *InstanceGroupManager) Find(c *fi.Context) (*InstanceGroupManager, error
 	}
 	// TODO: Sort by name
 
+	// Ignore "system" fields
+	actual.Lifecycle = e.Lifecycle
+
 	return actual, nil
 }
 
@@ -101,7 +105,10 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 	}
 
 	if a == nil {
-		//for {
+		if i.TargetSize == 0 {
+			// TargetSize 0 will normally be omitted by the marshalling code; we need to force it
+			i.ForceSendFields = append(i.ForceSendFields, "TargetSize")
+		}
 		op, err := t.Cloud.Compute().InstanceGroupManagers.Insert(t.Cloud.Project(), *e.Zone, i).Do()
 		if err != nil {
 			return fmt.Errorf("error creating InstanceGroupManager: %v", err)
@@ -143,9 +150,28 @@ func (_ *InstanceGroupManager) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Ins
 			changes.InstanceTemplate = nil
 		}
 
+		if changes.TargetSize != nil {
+			request := &compute.InstanceGroupManagersResizeAdvancedRequest{
+				TargetSize: i.TargetSize,
+			}
+			if i.TargetSize == 0 {
+				request.ForceSendFields = append(request.ForceSendFields, "TargetSize")
+			}
+			op, err := t.Cloud.Compute().InstanceGroupManagers.ResizeAdvanced(t.Cloud.Project(), *e.Zone, i.Name, request).Do()
+			if err != nil {
+				return fmt.Errorf("error resizing InstanceGroupManager: %v", err)
+			}
+
+			if err := t.Cloud.WaitForOp(op); err != nil {
+				return fmt.Errorf("error resizing InstanceGroupManager: %v", err)
+			}
+
+			changes.TargetSize = nil
+		}
+
 		empty := &InstanceGroupManager{}
 		if !reflect.DeepEqual(empty, changes) {
-			return fmt.Errorf("Cannot apply changes to InstanceGroupManager: %v", changes)
+			return fmt.Errorf("cannot apply changes to InstanceGroupManager: %v", changes)
 		}
 	}
 

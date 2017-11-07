@@ -19,11 +19,12 @@ package terraform
 import (
 	"bytes"
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"github.com/hashicorp/hcl/hcl/ast"
 	hcl_printer "github.com/hashicorp/hcl/hcl/printer"
 	"k8s.io/kops/pkg/featureflag"
-	"strings"
 )
 
 const safeChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_"
@@ -121,6 +122,10 @@ func hclPrint(node ast.Node) ([]byte, error) {
 	// Apply Terraform style (alignment etc.)
 	formatted, err := hcl_printer.Format([]byte(s))
 	if err != nil {
+		glog.Errorf("Invalid HCL follows:")
+		for i, line := range strings.Split(s, "\n") {
+			glog.Errorf("%d\t%s", (i + 1), line)
+		}
 		return nil, fmt.Errorf("error formatting HCL: %v", err)
 	}
 

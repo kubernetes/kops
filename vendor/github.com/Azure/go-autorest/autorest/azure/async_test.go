@@ -2,8 +2,6 @@ package azure
 
 import (
 	"fmt"
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/mocks"
 	"io/ioutil"
 	"net/http"
 	"reflect"
@@ -11,6 +9,9 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/mocks"
 )
 
 func TestGetAsyncOperation_ReturnsAzureAsyncOperationHeader(t *testing.T) {
@@ -357,7 +358,7 @@ func TestUpdatePollingState_UsesTheObjectLocationIfAsyncHeadersAreMissing(t *tes
 	resp := newAsynchronousResponse()
 	resp.Header.Del(http.CanonicalHeaderKey(headerAsyncOperation))
 	resp.Header.Del(http.CanonicalHeaderKey(autorest.HeaderLocation))
-	resp.Request.Method = methodPatch
+	resp.Request.Method = http.MethodPatch
 
 	ps := pollingState{}
 	updatePollingState(resp, &ps)
@@ -368,7 +369,7 @@ func TestUpdatePollingState_UsesTheObjectLocationIfAsyncHeadersAreMissing(t *tes
 }
 
 func TestUpdatePollingState_RecognizesLowerCaseHTTPVerbs(t *testing.T) {
-	for _, m := range []string{"patch", "put", "get"} {
+	for _, m := range []string{strings.ToLower(http.MethodPatch), strings.ToLower(http.MethodPut), strings.ToLower(http.MethodGet)} {
 		resp := newAsynchronousResponse()
 		resp.Header.Del(http.CanonicalHeaderKey(headerAsyncOperation))
 		resp.Header.Del(http.CanonicalHeaderKey(autorest.HeaderLocation))
@@ -388,7 +389,7 @@ func TestUpdatePollingState_ReturnsAnErrorIfAsyncHeadersAreMissingForANewOrDelet
 	resp.Header.Del(http.CanonicalHeaderKey(headerAsyncOperation))
 	resp.Header.Del(http.CanonicalHeaderKey(autorest.HeaderLocation))
 
-	for _, m := range []string{methodDelete, methodPost} {
+	for _, m := range []string{http.MethodDelete, http.MethodPost} {
 		resp.Request.Method = m
 		err := updatePollingState(resp, &pollingState{})
 		if err == nil {

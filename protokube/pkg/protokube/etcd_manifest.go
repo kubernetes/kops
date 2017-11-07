@@ -21,8 +21,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
-	"k8s.io/client-go/pkg/api/v1"
+	"k8s.io/kops/pkg/kubemanifest"
 )
 
 // BuildEtcdManifest creates the pod spec, based on the etcd cluster
@@ -43,9 +44,11 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 					v1.ResourceCPU: c.CPURequest,
 				},
 			},
-			Command: []string{"/bin/sh", "-c", "/usr/local/bin/etcd 2>&1 | /bin/tee /var/log/etcd.log"},
+			Command: []string{
+				"/bin/sh", "-c", "/usr/local/bin/etcd 2>&1 | /bin/tee -a /var/log/etcd.log",
+			},
 		}
-		// build the the environment variables for etcd service
+		// build the environment variables for etcd service
 		container.Env = buildEtcdEnvironmentOptions(c)
 
 		container.LivenessProbe = &v1.Probe{
@@ -86,6 +89,11 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 			MountPath: "/var/log/etcd.log",
 			ReadOnly:  false,
 		})
+		container.VolumeMounts = append(container.VolumeMounts, v1.VolumeMount{
+			Name:      "hosts",
+			MountPath: "/etc/hosts",
+			ReadOnly:  true,
+		})
 		// add the host path mount to the pod spec
 		pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
 			Name: "varetcdata",
@@ -103,7 +111,14 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 				},
 			},
 		})
-
+		pod.Spec.Volumes = append(pod.Spec.Volumes, v1.Volume{
+			Name: "hosts",
+			VolumeSource: v1.VolumeSource{
+				HostPath: &v1.HostPathVolumeSource{
+					Path: "/etc/hosts",
+				},
+			},
+		})
 		// @check if tls is enabled and mount the directory. It might be worth considering
 		// if we you use our own directory in /srv i.e /srv/etcd rather than the default /src/kubernetes
 		if c.isTLS() {
@@ -127,6 +142,8 @@ func BuildEtcdManifest(c *EtcdCluster) *v1.Pod {
 
 		pod.Spec.Containers = append(pod.Spec.Containers, container)
 	}
+
+	kubemanifest.MarkPodAsCritical(pod)
 
 	return pod
 }
@@ -152,6 +169,14 @@ func buildEtcdEnvironmentOptions(c *EtcdCluster) []v1.EnvVar {
 		{Name: "ETCD_INITIAL_ADVERTISE_PEER_URLS", Value: fmt.Sprintf("%s://%s:%d", scheme, c.Me.InternalName, c.PeerPort)},
 		{Name: "ETCD_INITIAL_CLUSTER_STATE", Value: "new"},
 		{Name: "ETCD_INITIAL_CLUSTER_TOKEN", Value: c.ClusterToken}}...)
+
+	// add timeout/hearbeat settings
+	if notEmpty(c.ElectionTimeout) {
+		options = append(options, v1.EnvVar{Name: "ETCD_ELECTION_TIMEOUT", Value: c.ElectionTimeout})
+	}
+	if notEmpty(c.HeartbeatInterval) {
+		options = append(options, v1.EnvVar{Name: "ETCD_HEARTBEAT_INTERVAL", Value: c.HeartbeatInterval})
+	}
 
 	// @check if we are using peer certificates
 	if notEmpty(c.PeerCA) {

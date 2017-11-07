@@ -1,0 +1,21 @@
+note: Service Config to load balance traffic across all Pods with the app=nginx label.  Receives on and sends to port 80.  Exposes an externally accessible endpoint.
+sample: |
+  kind: Service
+  apiVersion: v1
+  metadata:
+    # Unique key of the Service instance
+    name: service-example
+  spec:
+    ports:
+      # Accept traffic sent to port 80
+      - name: http
+        port: 80
+        targetPort: 80
+    selector:
+      # Loadbalance traffic across Pods matching
+      # this label selector
+      app: nginx
+    # Create an HA proxy in the cloud provider
+    # with an External IP address - *Only supported
+    # by some cloud providers*
+    type: LoadBalancer

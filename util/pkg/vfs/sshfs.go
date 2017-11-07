@@ -19,14 +19,15 @@ package vfs
 import (
 	"bytes"
 	"fmt"
-	"github.com/golang/glog"
-	"github.com/pkg/sftp"
-	"golang.org/x/crypto/ssh"
 	"io"
 	"math/rand"
 	"os"
 	"path"
 	"sync"
+
+	"github.com/golang/glog"
+	"github.com/pkg/sftp"
+	"golang.org/x/crypto/ssh"
 )
 
 type SSHPath struct {
@@ -142,7 +143,7 @@ func mkdirAll(sftpClient *sftp.Client, dir string) error {
 	return nil
 }
 
-func (p *SSHPath) WriteFile(data []byte) error {
+func (p *SSHPath) WriteFile(data []byte, acl ACL) error {
 	sftpClient, err := p.newClient()
 	if err != nil {
 		return err
@@ -197,7 +198,7 @@ func (p *SSHPath) WriteFile(data []byte) error {
 // Not a great approach, but fine for a single process (with low concurrency)
 var createFileLockSSH sync.Mutex
 
-func (p *SSHPath) CreateFile(data []byte) error {
+func (p *SSHPath) CreateFile(data []byte, acl ACL) error {
 	createFileLockSSH.Lock()
 	defer createFileLockSSH.Unlock()
 
@@ -211,7 +212,7 @@ func (p *SSHPath) CreateFile(data []byte) error {
 		return err
 	}
 
-	return p.WriteFile(data)
+	return p.WriteFile(data, acl)
 }
 
 func (p *SSHPath) ReadFile() ([]byte, error) {

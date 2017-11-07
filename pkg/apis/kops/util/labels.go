@@ -17,8 +17,9 @@ limitations under the License.
 package util
 
 import (
-	"k8s.io/client-go/pkg/api/v1"
 	"strings"
+
+	"k8s.io/api/core/v1"
 )
 
 func GetNodeRole(node *v1.Node) string {

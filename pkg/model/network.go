@@ -18,12 +18,14 @@ package model
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"strings"
+	"k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 )
 
 // NetworkModelBuilder configures network objects
@@ -35,11 +37,6 @@ type NetworkModelBuilder struct {
 var _ fi.ModelBuilder = &NetworkModelBuilder{}
 
 func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
-	kubernetesVersion, err := b.KubernetesVersion()
-	if err != nil {
-		return err
-	}
-
 	sharedVPC := b.Cluster.SharedVPC()
 	vpcName := b.ClusterName()
 
@@ -55,10 +52,10 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			Tags:             tags,
 		}
 
-		if sharedVPC && VersionGTE(kubernetesVersion, 1, 5) {
+		if sharedVPC && b.IsKubernetesGTE("1.5") {
 			// If we're running k8s 1.5, and we have e.g.  --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP,LegacyHostIP
 			// then we don't need EnableDNSHostnames any more
-			glog.V(4).Infof("Kubernetes version %q; skipping EnableDNSHostnames requirement on VPC", kubernetesVersion)
+			glog.V(4).Infof("Kubernetes version %q; skipping EnableDNSHostnames requirement on VPC", b.KubernetesVersion())
 		} else {
 			// In theory we don't need to enable it for >= 1.5,
 			// but seems safer to stick with existing behaviour
@@ -69,6 +66,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		if b.Cluster.Spec.NetworkID != "" {
 			t.ID = s(b.Cluster.Spec.NetworkID)
 		}
+
 		if b.Cluster.Spec.NetworkCIDR != "" {
 			t.CIDR = s(b.Cluster.Spec.NetworkCIDR)
 		}
@@ -146,6 +144,18 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		sharedSubnet := subnetSpec.ProviderID != ""
 		subnetName := subnetSpec.Name + "." + b.ClusterName()
 		tags := b.CloudTags(subnetName, sharedSubnet)
+
+		// Apply tags so that Kubernetes knows which subnets should be used for internal/external ELBs
+		switch subnetSpec.Type {
+		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
+			tags[aws.TagNameSubnetPublicELB] = "1"
+
+		case kops.SubnetTypePrivate:
+			tags[aws.TagNameSubnetInternalELB] = "1"
+
+		default:
+			glog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
+		}
 
 		subnet := &awstasks.Subnet{
 			Name:             s(subnetName),
@@ -260,8 +270,9 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		//
 		// The private route table that will route to the NAT Gateway
 		rt := &awstasks.RouteTable{
-			Name: s(b.NamePrivateRouteTableInZone(zone)),
-			VPC:  b.LinkToVPC(),
+			Name:      s(b.NamePrivateRouteTableInZone(zone)),
+			VPC:       b.LinkToVPC(),
+			Lifecycle: b.Lifecycle,
 		}
 		c.AddTask(rt)
 

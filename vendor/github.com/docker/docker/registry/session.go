@@ -18,15 +18,16 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
+	"github.com/docker/distribution/reference"
 	"github.com/docker/distribution/registry/api/errcode"
-	"github.com/docker/docker/pkg/httputils"
+	"github.com/docker/docker/api/types"
+	registrytypes "github.com/docker/docker/api/types/registry"
 	"github.com/docker/docker/pkg/ioutils"
+	"github.com/docker/docker/pkg/jsonmessage"
 	"github.com/docker/docker/pkg/stringid"
 	"github.com/docker/docker/pkg/tarsum"
-	"github.com/docker/docker/reference"
-	"github.com/docker/engine-api/types"
-	registrytypes "github.com/docker/engine-api/types/registry"
+	"github.com/docker/docker/registry/resumable"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -95,7 +96,7 @@ func cloneRequest(r *http.Request) *http.Request {
 	return r2
 }
 
-// RoundTrip changes a HTTP request's headers to add the necessary
+// RoundTrip changes an HTTP request's headers to add the necessary
 // authentication-related headers
 func (tr *authTransport) RoundTrip(orig *http.Request) (*http.Response, error) {
 	// Authorization should not be set on 302 redirect for untrusted locations.
@@ -161,16 +162,7 @@ func (tr *authTransport) CancelRequest(req *http.Request) {
 	}
 }
 
-// NewSession creates a new session
-// TODO(tiborvass): remove authConfig param once registry client v2 is vendored
-func NewSession(client *http.Client, authConfig *types.AuthConfig, endpoint *V1Endpoint) (r *Session, err error) {
-	r = &Session{
-		authConfig:    authConfig,
-		client:        client,
-		indexEndpoint: endpoint,
-		id:            stringid.GenerateRandomID(),
-	}
-
+func authorizeClient(client *http.Client, authConfig *types.AuthConfig, endpoint *V1Endpoint) error {
 	var alwaysSetBasicAuth bool
 
 	// If we're working with a standalone private registry over HTTPS, send Basic Auth headers
@@ -178,7 +170,7 @@ func NewSession(client *http.Client, authConfig *types.AuthConfig, endpoint *V1E
 	if endpoint.String() != IndexServer && endpoint.URL.Scheme == "https" {
 		info, err := endpoint.Ping()
 		if err != nil {
-			return nil, err
+			return err
 		}
 		if info.Standalone && authConfig != nil {
 			logrus.Debugf("Endpoint %s is eligible for private registry. Enabling decorator.", endpoint.String())
@@ -192,11 +184,30 @@ func NewSession(client *http.Client, authConfig *types.AuthConfig, endpoint *V1E
 
 	jar, err := cookiejar.New(nil)
 	if err != nil {
-		return nil, errors.New("cookiejar.New is not supposed to return an error")
+		return errors.New("cookiejar.New is not supposed to return an error")
 	}
 	client.Jar = jar
 
-	return r, nil
+	return nil
+}
+
+func newSession(client *http.Client, authConfig *types.AuthConfig, endpoint *V1Endpoint) *Session {
+	return &Session{
+		authConfig:    authConfig,
+		client:        client,
+		indexEndpoint: endpoint,
+		id:            stringid.GenerateRandomID(),
+	}
+}
+
+// NewSession creates a new session
+// TODO(tiborvass): remove authConfig param once registry client v2 is vendored
+func NewSession(client *http.Client, authConfig *types.AuthConfig, endpoint *V1Endpoint) (*Session, error) {
+	if err := authorizeClient(client, authConfig, endpoint); err != nil {
+		return nil, err
+	}
+
+	return newSession(client, authConfig, endpoint), nil
 }
 
 // ID returns this registry session's ID.
@@ -216,7 +227,7 @@ func (r *Session) GetRemoteHistory(imgID, registry string) ([]string, error) {
 		if res.StatusCode == 401 {
 			return nil, errcode.ErrorCodeUnauthorized.WithArgs()
 		}
-		return nil, httputils.NewHTTPRequestError(fmt.Sprintf("Server error: %d trying to fetch remote history for %s", res.StatusCode, imgID), res)
+		return nil, newJSONError(fmt.Sprintf("Server error: %d trying to fetch remote history for %s", res.StatusCode, imgID), res)
 	}
 
 	var history []string
@@ -236,7 +247,7 @@ func (r *Session) LookupRemoteImage(imgID, registry string) error {
 	}
 	res.Body.Close()
 	if res.StatusCode != 200 {
-		return httputils.NewHTTPRequestError(fmt.Sprintf("HTTP code %d", res.StatusCode), res)
+		return newJSONError(fmt.Sprintf("HTTP code %d", res.StatusCode), res)
 	}
 	return nil
 }
@@ -249,7 +260,7 @@ func (r *Session) GetRemoteImageJSON(imgID, registry string) ([]byte, int64, err
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return nil, -1, httputils.NewHTTPRequestError(fmt.Sprintf("HTTP code %d", res.StatusCode), res)
+		return nil, -1, newJSONError(fmt.Sprintf("HTTP code %d", res.StatusCode), res)
 	}
 	// if the size header is not present, then set it to '-1'
 	imageSize := int64(-1)
@@ -280,7 +291,7 @@ func (r *Session) GetRemoteImageLayer(imgID, registry string, imgSize int64) (io
 	if err != nil {
 		return nil, fmt.Errorf("Error while getting from the server: %v", err)
 	}
-	statusCode = 0
+
 	res, err = r.client.Do(req)
 	if err != nil {
 		logrus.Debugf("Error contacting registry %s: %v", registry, err)
@@ -302,10 +313,10 @@ func (r *Session) GetRemoteImageLayer(imgID, registry string, imgSize int64) (io
 	}
 
 	if res.Header.Get("Accept-Ranges") == "bytes" && imgSize > 0 {
-		logrus.Debugf("server supports resume")
-		return httputils.ResumableRequestReaderWithInitialResponse(r.client, req, 5, imgSize, res), nil
+		logrus.Debug("server supports resume")
+		return resumable.NewRequestReaderWithInitialResponse(r.client, req, 5, imgSize, res), nil
 	}
-	logrus.Debugf("server doesn't support resume")
+	logrus.Debug("server doesn't support resume")
 	return res.Body, nil
 }
 
@@ -314,7 +325,7 @@ func (r *Session) GetRemoteImageLayer(imgID, registry string, imgSize int64) (io
 // argument, and returns data from the first one that answers the query
 // successfully.
 func (r *Session) GetRemoteTag(registries []string, repositoryRef reference.Named, askedTag string) (string, error) {
-	repository := repositoryRef.RemoteName()
+	repository := reference.Path(repositoryRef)
 
 	if strings.Count(repository, "/") == 0 {
 		// This will be removed once the registry supports auto-resolution on
@@ -352,7 +363,7 @@ func (r *Session) GetRemoteTag(registries []string, repositoryRef reference.Name
 // the first one that answers the query successfully. It returns a map with
 // tag names as the keys and image IDs as the values.
 func (r *Session) GetRemoteTags(registries []string, repositoryRef reference.Named) (map[string]string, error) {
-	repository := repositoryRef.RemoteName()
+	repository := reference.Path(repositoryRef)
 
 	if strings.Count(repository, "/") == 0 {
 		// This will be removed once the registry supports auto-resolution on
@@ -406,7 +417,7 @@ func buildEndpointsList(headers []string, indexEp string) ([]string, error) {
 
 // GetRepositoryData returns lists of images and endpoints for the repository
 func (r *Session) GetRepositoryData(name reference.Named) (*RepositoryData, error) {
-	repositoryTarget := fmt.Sprintf("%srepositories/%s/images", r.indexEndpoint.String(), name.RemoteName())
+	repositoryTarget := fmt.Sprintf("%srepositories/%s/images", r.indexEndpoint.String(), reference.Path(name))
 
 	logrus.Debugf("[registry] Calling GET %s", repositoryTarget)
 
@@ -434,13 +445,13 @@ func (r *Session) GetRepositoryData(name reference.Named) (*RepositoryData, erro
 	// TODO: Right now we're ignoring checksums in the response body.
 	// In the future, we need to use them to check image validity.
 	if res.StatusCode == 404 {
-		return nil, httputils.NewHTTPRequestError(fmt.Sprintf("HTTP code: %d", res.StatusCode), res)
+		return nil, newJSONError(fmt.Sprintf("HTTP code: %d", res.StatusCode), res)
 	} else if res.StatusCode != 200 {
 		errBody, err := ioutil.ReadAll(res.Body)
 		if err != nil {
 			logrus.Debugf("Error reading response body: %s", err)
 		}
-		return nil, httputils.NewHTTPRequestError(fmt.Sprintf("Error: Status %d trying to pull repository %s: %q", res.StatusCode, name.RemoteName(), errBody), res)
+		return nil, newJSONError(fmt.Sprintf("Error: Status %d trying to pull repository %s: %q", res.StatusCode, reference.Path(name), errBody), res)
 	}
 
 	var endpoints []string
@@ -527,12 +538,12 @@ func (r *Session) PushImageJSONRegistry(imgData *ImgData, jsonRaw []byte, regist
 	}
 	defer res.Body.Close()
 	if res.StatusCode == 401 && strings.HasPrefix(registry, "http://") {
-		return httputils.NewHTTPRequestError("HTTP code 401, Docker will not send auth headers over HTTP.", res)
+		return newJSONError("HTTP code 401, Docker will not send auth headers over HTTP.", res)
 	}
 	if res.StatusCode != 200 {
 		errBody, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			return httputils.NewHTTPRequestError(fmt.Sprintf("HTTP code %d while uploading metadata and error when trying to parse response body: %s", res.StatusCode, err), res)
+			return newJSONError(fmt.Sprintf("HTTP code %d while uploading metadata and error when trying to parse response body: %s", res.StatusCode, err), res)
 		}
 		var jsonBody map[string]string
 		if err := json.Unmarshal(errBody, &jsonBody); err != nil {
@@ -540,7 +551,7 @@ func (r *Session) PushImageJSONRegistry(imgData *ImgData, jsonRaw []byte, regist
 		} else if jsonBody["error"] == "Image already exists" {
 			return ErrAlreadyExists
 		}
-		return httputils.NewHTTPRequestError(fmt.Sprintf("HTTP code %d while uploading metadata: %q", res.StatusCode, errBody), res)
+		return newJSONError(fmt.Sprintf("HTTP code %d while uploading metadata: %q", res.StatusCode, errBody), res)
 	}
 	return nil
 }
@@ -581,9 +592,9 @@ func (r *Session) PushImageLayerRegistry(imgID string, layer io.Reader, registry
 	if res.StatusCode != 200 {
 		errBody, err := ioutil.ReadAll(res.Body)
 		if err != nil {
-			return "", "", httputils.NewHTTPRequestError(fmt.Sprintf("HTTP code %d while uploading metadata and error when trying to parse response body: %s", res.StatusCode, err), res)
+			return "", "", newJSONError(fmt.Sprintf("HTTP code %d while uploading metadata and error when trying to parse response body: %s", res.StatusCode, err), res)
 		}
-		return "", "", httputils.NewHTTPRequestError(fmt.Sprintf("Received HTTP code %d while uploading layer: %q", res.StatusCode, errBody), res)
+		return "", "", newJSONError(fmt.Sprintf("Received HTTP code %d while uploading layer: %q", res.StatusCode, errBody), res)
 	}
 
 	checksumPayload = "sha256:" + hex.EncodeToString(h.Sum(nil))
@@ -595,7 +606,7 @@ func (r *Session) PushImageLayerRegistry(imgID string, layer io.Reader, registry
 func (r *Session) PushRegistryTag(remote reference.Named, revision, tag, registry string) error {
 	// "jsonify" the string
 	revision = "\"" + revision + "\""
-	path := fmt.Sprintf("repositories/%s/tags/%s", remote.RemoteName(), tag)
+	path := fmt.Sprintf("repositories/%s/tags/%s", reference.Path(remote), tag)
 
 	req, err := http.NewRequest("PUT", registry+path, strings.NewReader(revision))
 	if err != nil {
@@ -609,7 +620,7 @@ func (r *Session) PushRegistryTag(remote reference.Named, revision, tag, registr
 	}
 	res.Body.Close()
 	if res.StatusCode != 200 && res.StatusCode != 201 {
-		return httputils.NewHTTPRequestError(fmt.Sprintf("Internal server error: %d trying to push tag %s on %s", res.StatusCode, tag, remote.RemoteName()), res)
+		return newJSONError(fmt.Sprintf("Internal server error: %d trying to push tag %s on %s", res.StatusCode, tag, reference.Path(remote)), res)
 	}
 	return nil
 }
@@ -635,7 +646,7 @@ func (r *Session) PushImageJSONIndex(remote reference.Named, imgList []*ImgData,
 	if validate {
 		suffix = "images"
 	}
-	u := fmt.Sprintf("%srepositories/%s/%s", r.indexEndpoint.String(), remote.RemoteName(), suffix)
+	u := fmt.Sprintf("%srepositories/%s/%s", r.indexEndpoint.String(), reference.Path(remote), suffix)
 	logrus.Debugf("[registry] PUT %s", u)
 	logrus.Debugf("Image list pushed to index:\n%s", imgListJSON)
 	headers := map[string][]string{
@@ -673,7 +684,7 @@ func (r *Session) PushImageJSONIndex(remote reference.Named, imgList []*ImgData,
 			if err != nil {
 				logrus.Debugf("Error reading response body: %s", err)
 			}
-			return nil, httputils.NewHTTPRequestError(fmt.Sprintf("Error: Status %d trying to push repository %s: %q", res.StatusCode, remote.RemoteName(), errBody), res)
+			return nil, newJSONError(fmt.Sprintf("Error: Status %d trying to push repository %s: %q", res.StatusCode, reference.Path(remote), errBody), res)
 		}
 		tokens = res.Header["X-Docker-Token"]
 		logrus.Debugf("Auth token: %v", tokens)
@@ -691,7 +702,7 @@ func (r *Session) PushImageJSONIndex(remote reference.Named, imgList []*ImgData,
 			if err != nil {
 				logrus.Debugf("Error reading response body: %s", err)
 			}
-			return nil, httputils.NewHTTPRequestError(fmt.Sprintf("Error: Status %d trying to push checksums %s: %q", res.StatusCode, remote.RemoteName(), errBody), res)
+			return nil, newJSONError(fmt.Sprintf("Error: Status %d trying to push checksums %s: %q", res.StatusCode, reference.Path(remote), errBody), res)
 		}
 	}
 
@@ -721,9 +732,12 @@ func shouldRedirect(response *http.Response) bool {
 }
 
 // SearchRepositories performs a search against the remote repository
-func (r *Session) SearchRepositories(term string) (*registrytypes.SearchResults, error) {
+func (r *Session) SearchRepositories(term string, limit int) (*registrytypes.SearchResults, error) {
+	if limit < 1 || limit > 100 {
+		return nil, fmt.Errorf("Limit %d is outside the range of [1, 100]", limit)
+	}
 	logrus.Debugf("Index server: %s", r.indexEndpoint)
-	u := r.indexEndpoint.String() + "search?q=" + url.QueryEscape(term)
+	u := r.indexEndpoint.String() + "search?q=" + url.QueryEscape(term) + "&n=" + url.QueryEscape(fmt.Sprintf("%d", limit))
 
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
@@ -737,23 +751,10 @@ func (r *Session) SearchRepositories(term string) (*registrytypes.SearchResults,
 	}
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
-		return nil, httputils.NewHTTPRequestError(fmt.Sprintf("Unexpected status code %d", res.StatusCode), res)
+		return nil, newJSONError(fmt.Sprintf("Unexpected status code %d", res.StatusCode), res)
 	}
 	result := new(registrytypes.SearchResults)
 	return result, json.NewDecoder(res.Body).Decode(result)
-}
-
-// GetAuthConfig returns the authentication settings for a session
-// TODO(tiborvass): remove this once registry client v2 is vendored
-func (r *Session) GetAuthConfig(withPasswd bool) *types.AuthConfig {
-	password := ""
-	if withPasswd {
-		password = r.authConfig.Password
-	}
-	return &types.AuthConfig{
-		Username: r.authConfig.Username,
-		Password: password,
-	}
 }
 
 func isTimeout(err error) bool {
@@ -767,4 +768,11 @@ func isTimeout(err error) bool {
 	}
 	t, ok := e.(timeout)
 	return ok && t.Timeout()
+}
+
+func newJSONError(msg string, res *http.Response) error {
+	return &jsonmessage.JSONError{
+		Message: msg,
+		Code:    res.StatusCode,
+	}
 }

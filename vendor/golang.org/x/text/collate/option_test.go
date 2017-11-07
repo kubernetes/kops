@@ -8,13 +8,13 @@ import (
 	"strings"
 	"testing"
 
-	"golang.org/x/text/collate/colltab"
+	"golang.org/x/text/internal/colltab"
 	"golang.org/x/text/language"
 )
 
 var (
 	defaultIgnore = ignore(colltab.Tertiary)
-	defaultTable  = colltab.Init(locales[0])
+	defaultTable  = getTable(locales[0])
 )
 
 func TestOptions(t *testing.T) {

@@ -17,11 +17,12 @@ limitations under the License.
 package model
 
 import (
+	"time"
+
 	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
-	"time"
 )
 
 const BastionELBSecurityGroupPrefix = "bastion"
@@ -35,7 +36,8 @@ const BastionELBDefaultIdleTimeout = 5 * time.Minute
 
 type BastionModelBuilder struct {
 	*KopsModelContext
-	Lifecycle *fi.Lifecycle
+	Lifecycle         *fi.Lifecycle
+	SecurityLifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &BastionModelBuilder{}
@@ -56,7 +58,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroup{
 			Name:      s(b.SecurityGroupName(kops.InstanceGroupRoleBastion)),
-			Lifecycle: b.Lifecycle,
+			Lifecycle: b.SecurityLifecycle,
 
 			VPC:              b.LinkToVPC(),
 			Description:      s("Security group for bastion"),
@@ -69,7 +71,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:      s("bastion-egress"),
-			Lifecycle: b.Lifecycle,
+			Lifecycle: b.SecurityLifecycle,
 
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 			Egress:        fi.Bool(true),
@@ -83,7 +85,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:      s("ssh-elb-to-bastion"),
-			Lifecycle: b.Lifecycle,
+			Lifecycle: b.SecurityLifecycle,
 
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
 			SourceGroup:   b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
@@ -98,7 +100,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:      s("bastion-to-master-ssh"),
-			Lifecycle: b.Lifecycle,
+			Lifecycle: b.SecurityLifecycle,
 
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
@@ -113,7 +115,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:      s("bastion-to-node-ssh"),
-			Lifecycle: b.Lifecycle,
+			Lifecycle: b.SecurityLifecycle,
 
 			SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
 			SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleBastion),
@@ -128,7 +130,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroup{
 			Name:      s(b.ELBSecurityGroupName(BastionELBSecurityGroupPrefix)),
-			Lifecycle: b.Lifecycle,
+			Lifecycle: b.SecurityLifecycle,
 
 			VPC:              b.LinkToVPC(),
 			Description:      s("Security group for bastion ELB"),
@@ -141,7 +143,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	{
 		t := &awstasks.SecurityGroupRule{
 			Name:      s("bastion-elb-egress"),
-			Lifecycle: b.Lifecycle,
+			Lifecycle: b.SecurityLifecycle,
 
 			SecurityGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
 			Egress:        fi.Bool(true),
@@ -155,7 +157,7 @@ func (b *BastionModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	for _, sshAccess := range b.Cluster.Spec.SSHAccess {
 		t := &awstasks.SecurityGroupRule{
 			Name:      s("ssh-external-to-bastion-elb-" + sshAccess),
-			Lifecycle: b.Lifecycle,
+			Lifecycle: b.SecurityLifecycle,
 
 			SecurityGroup: b.LinkToELBSecurityGroup(BastionELBSecurityGroupPrefix),
 			Protocol:      s("tcp"),

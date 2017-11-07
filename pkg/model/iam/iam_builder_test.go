@@ -18,34 +18,39 @@ package iam
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"strings"
 	"testing"
+
+	"github.com/aws/aws-sdk-go/aws"
 
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/util/stringorslice"
-	"k8s.io/kops/util/pkg/vfs"
 )
 
 func TestRoundTrip(t *testing.T) {
 	grid := []struct {
-		IAM  *IAMStatement
+		IAM  *Statement
 		JSON string
 	}{
 		{
-			IAM: &IAMStatement{
-				Effect:   IAMStatementEffectAllow,
+			IAM: &Statement{
+				Effect:   StatementEffectAllow,
 				Action:   stringorslice.Of("ec2:DescribeRegions"),
 				Resource: stringorslice.Of("*"),
+				Sid:      "foo",
 			},
-			JSON: "{\"Effect\":\"Allow\",\"Action\":\"ec2:DescribeRegions\",\"Resource\":\"*\"}",
+			JSON: "{\"Sid\":\"foo\",\"Effect\":\"Allow\",\"Action\":\"ec2:DescribeRegions\",\"Resource\":\"*\"}",
 		},
 		{
-			IAM: &IAMStatement{
-				Effect:   IAMStatementEffectDeny,
+			IAM: &Statement{
+				Effect:   StatementEffectDeny,
 				Action:   stringorslice.Of("ec2:DescribeRegions", "ec2:DescribeInstances"),
 				Resource: stringorslice.Of("a", "b"),
+				Sid:      "foo",
 			},
-			JSON: "{\"Effect\":\"Deny\",\"Action\":[\"ec2:DescribeRegions\",\"ec2:DescribeInstances\"],\"Resource\":[\"a\",\"b\"]}",
+			JSON: "{\"Sid\":\"foo\",\"Effect\":\"Deny\",\"Action\":[\"ec2:DescribeRegions\",\"ec2:DescribeInstances\"],\"Resource\":[\"a\",\"b\"]}",
 		},
 	}
 	for _, g := range grid {
@@ -58,7 +63,7 @@ func TestRoundTrip(t *testing.T) {
 			t.Errorf("Unexpected JSON encoding.  Actual=%q, Expected=%q", string(actualJSON), g.JSON)
 		}
 
-		parsed := &IAMStatement{}
+		parsed := &Statement{}
 		err = json.Unmarshal([]byte(g.JSON), parsed)
 		if err != nil {
 			t.Errorf("error decoding IAM %s to json: %v", g.JSON, err)
@@ -71,271 +76,129 @@ func TestRoundTrip(t *testing.T) {
 	}
 }
 
-func TestS3PolicyGeneration(t *testing.T) {
-	defaultS3Statements := []*IAMStatement{
-		{
-			Effect: IAMStatementEffectAllow,
-			Action: stringorslice.Of(
-				"s3:GetBucketLocation",
-				"s3:ListBucket",
-			),
-			Resource: stringorslice.Slice([]string{
-				"arn:aws:s3:::bucket-name",
-			}),
-		},
-		{
-			Effect: IAMStatementEffectAllow,
-			Action: stringorslice.Slice([]string{
-				"s3:List*",
-			}),
-			Resource: stringorslice.Slice([]string{
-				"arn:aws:s3:::bucket-name/cluster-name.k8s.local",
-				"arn:aws:s3:::bucket-name/cluster-name.k8s.local/*",
-			}),
-		},
-	}
-
+func TestPolicyGeneration(t *testing.T) {
 	grid := []struct {
-		Role      kops.InstanceGroupRole
-		LegacyIAM bool
-		IAMPolicy IAMPolicy
+		Role                   kops.InstanceGroupRole
+		LegacyIAM              bool
+		AllowContainerRegistry bool
+		Policy                 string
 	}{
 		{
-			Role:      "Master",
-			LegacyIAM: false,
-			IAMPolicy: IAMPolicy{
-				Statement: append(defaultS3Statements, &IAMStatement{
-					Effect: IAMStatementEffectAllow,
-					Action: stringorslice.Slice([]string{
-						"s3:Get*",
-					}),
-					Resource: stringorslice.Of(
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/*",
-					),
-				}),
-			},
+			Role:                   "Master",
+			LegacyIAM:              true,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_master_legacy.json",
 		},
 		{
-			Role:      "Master",
-			LegacyIAM: true,
-			IAMPolicy: IAMPolicy{
-				Statement: append(defaultS3Statements, &IAMStatement{
-					Effect: IAMStatementEffectAllow,
-					Action: stringorslice.Slice([]string{
-						"s3:*",
-					}),
-					Resource: stringorslice.Of(
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/*",
-					),
-				}),
-			},
+			Role:                   "Master",
+			LegacyIAM:              false,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_master_strict.json",
 		},
 		{
-			Role:      "Node",
-			LegacyIAM: false,
-			IAMPolicy: IAMPolicy{
-				Statement: append(defaultS3Statements, &IAMStatement{
-					Effect: IAMStatementEffectAllow,
-					Action: stringorslice.Slice([]string{
-						"s3:Get*",
-					}),
-					Resource: stringorslice.Slice([]string{
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/addons/*",
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/cluster.spec",
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/config",
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/instancegroup/*",
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/pki/issued/*",
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/pki/private/kube-proxy/*",
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/pki/private/kubelet/*",
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/pki/ssh/*",
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/secrets/dockerconfig",
-					}),
-				}),
-			},
+			Role:                   "Master",
+			LegacyIAM:              false,
+			AllowContainerRegistry: true,
+			Policy:                 "tests/iam_builder_master_strict_ecr.json",
 		},
 		{
-			Role:      "Node",
-			LegacyIAM: true,
-			IAMPolicy: IAMPolicy{
-				Statement: append(defaultS3Statements, &IAMStatement{
-					Effect: IAMStatementEffectAllow,
-					Action: stringorslice.Slice([]string{
-						"s3:*",
-					}),
-					Resource: stringorslice.Of(
-						"arn:aws:s3:::bucket-name/cluster-name.k8s.local/*",
-					),
-				}),
-			},
+			Role:                   "Node",
+			LegacyIAM:              true,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_node_legacy.json",
 		},
 		{
-			Role:      "Bastion",
-			LegacyIAM: false,
-			IAMPolicy: IAMPolicy{
-				Statement: defaultS3Statements,
-			},
+			Role:                   "Node",
+			LegacyIAM:              false,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_node_strict.json",
 		},
 		{
-			Role:      "Bastion",
-			LegacyIAM: true,
-			IAMPolicy: IAMPolicy{
-				Statement: defaultS3Statements,
-			},
+			Role:                   "Node",
+			LegacyIAM:              false,
+			AllowContainerRegistry: true,
+			Policy:                 "tests/iam_builder_node_strict_ecr.json",
+		},
+		{
+			Role:                   "Bastion",
+			LegacyIAM:              true,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_bastion.json",
+		},
+		{
+			Role:                   "Bastion",
+			LegacyIAM:              false,
+			AllowContainerRegistry: false,
+			Policy:                 "tests/iam_builder_bastion.json",
+		},
+		{
+			Role:                   "Bastion",
+			LegacyIAM:              false,
+			AllowContainerRegistry: true,
+			Policy:                 "tests/iam_builder_bastion.json",
 		},
 	}
 
 	for i, x := range grid {
-		ip := &IAMPolicy{}
-
-		vfsPath, err := vfs.Context.BuildVfsPath("s3://bucket-name/cluster-name.k8s.local")
-		if err != nil {
-			t.Errorf("case %d failed to build Vfs Path. error: %s", i, err)
-			continue
-		}
-		s3Path, ok := vfsPath.(*vfs.S3Path)
-		if !ok {
-			t.Errorf("case %d failed to build S3 Path.", i)
-			continue
-		}
-
-		addS3Permissions(ip, "arn:aws", s3Path, x.Role, x.LegacyIAM)
-
-		expectedPolicy, err := x.IAMPolicy.AsJSON()
-		if err != nil {
-			t.Errorf("case %d failed to convert expected IAM Policy to JSON. Error: %q", i, err)
-			continue
-		}
-		actualPolicy, err := ip.AsJSON()
-		if err != nil {
-			t.Errorf("case %d failed to convert generated IAM Policy to JSON. Error: %q", i, err)
-			continue
-		}
-
-		if expectedPolicy != actualPolicy {
-			diffString := diff.FormatDiff(expectedPolicy, actualPolicy)
-			t.Logf("diff:\n%s\n", diffString)
-			t.Errorf("case %d failed, policy output differed from expected.", i)
-			continue
-		}
-	}
-}
-
-func TestEC2PolicyGeneration(t *testing.T) {
-	wildcard := stringorslice.Slice([]string{"*"})
-	clusterName := "my-cluster.k8s.local"
-	defaultEC2Statements := []*IAMStatement{
-		{
-			Effect:   IAMStatementEffectAllow,
-			Action:   stringorslice.Slice([]string{"ec2:Describe*"}),
-			Resource: wildcard,
-		},
-	}
-
-	grid := []struct {
-		Role      kops.InstanceGroupRole
-		LegacyIAM bool
-		IAMPolicy IAMPolicy
-	}{
-		{
-			Role:      "Node",
-			LegacyIAM: false,
-			IAMPolicy: IAMPolicy{
-				Statement: defaultEC2Statements,
-			},
-		},
-		{
-			Role:      "Node",
-			LegacyIAM: true,
-			IAMPolicy: IAMPolicy{
-				Statement: defaultEC2Statements,
-			},
-		},
-		{
-			Role:      "Master",
-			LegacyIAM: false,
-			IAMPolicy: IAMPolicy{
-				Statement: append(
-					defaultEC2Statements,
-					&IAMStatement{
-						Effect: IAMStatementEffectAllow,
-						Action: stringorslice.Slice([]string{
-							"ec2:CreateRoute",
-							"ec2:CreateSecurityGroup",
-							"ec2:CreateTags",
-							"ec2:CreateVolume",
-							"ec2:DeleteVolume",
-							"ec2:ModifyInstanceAttribute",
-						}),
-						Resource: wildcard,
+		b := &PolicyBuilder{
+			Cluster: &kops.Cluster{
+				Spec: kops.ClusterSpec{
+					ConfigStore: "s3://kops-tests/iam-builder-test.k8s.local",
+					IAM: &kops.IAMSpec{
+						Legacy:                 x.LegacyIAM,
+						AllowContainerRegistry: x.AllowContainerRegistry,
 					},
-					&IAMStatement{
-						Effect:   IAMStatementEffectAllow,
-						Action:   stringorslice.Slice([]string{"ec2:*"}),
-						Resource: wildcard,
-						Condition: Condition{
-							"StringEquals": map[string]string{
-								"ec2:ResourceTag/KubernetesCluster": clusterName,
+					EtcdClusters: []*kops.EtcdClusterSpec{
+						{
+							Members: []*kops.EtcdMemberSpec{
+								{
+									KmsKeyId: aws.String("key-id-1"),
+								},
+								{
+									KmsKeyId: aws.String("key-id-2"),
+								},
+							},
+						},
+						{
+							Members: []*kops.EtcdMemberSpec{},
+						},
+						{
+							Members: []*kops.EtcdMemberSpec{
+								{
+									KmsKeyId: aws.String("key-id-3"),
+								},
 							},
 						},
 					},
-				),
+				},
 			},
-		},
-		{
-			Role:      "Master",
-			LegacyIAM: true,
-			IAMPolicy: IAMPolicy{
-				Statement: append(
-					defaultEC2Statements,
-					&IAMStatement{
-						Effect:   IAMStatementEffectAllow,
-						Action:   stringorslice.Slice([]string{"ec2:*"}),
-						Resource: wildcard,
-					},
-				),
-			},
-		},
-		{
-			Role:      "Bastion",
-			LegacyIAM: false,
-			IAMPolicy: IAMPolicy{
-				Statement: nil,
-			},
-		},
-		{
-			Role:      "Bastion",
-			LegacyIAM: true,
-			IAMPolicy: IAMPolicy{
-				Statement: nil,
-			},
-		},
-	}
-
-	for i, x := range grid {
-		ip := &IAMPolicy{}
-		b := IAMPolicyBuilder{
-			Role:    x.Role,
-			Cluster: &kops.Cluster{},
+			Role: x.Role,
 		}
-		b.Cluster.SetName(clusterName)
+		b.Cluster.SetName("iam-builder-test.k8s.local")
 
-		addEC2Permissions(ip, "arn:aws", &b, wildcard, x.LegacyIAM)
-
-		expectedPolicy, err := x.IAMPolicy.AsJSON()
+		p, err := b.BuildAWSPolicy()
 		if err != nil {
-			t.Errorf("case %d failed to convert expected IAM Policy to JSON. Error: %q", i, err)
+			t.Errorf("case %d failed to build an AWS IAM policy. Error: %v", i, err)
 			continue
 		}
-		actualPolicy, err := ip.AsJSON()
+
+		actualPolicy, err := p.AsJSON()
 		if err != nil {
-			t.Errorf("case %d failed to convert generated IAM Policy to JSON. Error: %q", i, err)
+			t.Errorf("case %d failed to convert generated IAM Policy to JSON. Error: %v", i, err)
 			continue
 		}
+		actualPolicy = strings.TrimSpace(actualPolicy)
+
+		expectedPolicyBytes, err := ioutil.ReadFile(x.Policy)
+		if err != nil {
+			t.Fatalf("unexpected error reading IAM Policy from file %q: %v", x.Policy, err)
+		}
+		expectedPolicy := strings.TrimSpace(string(expectedPolicyBytes))
 
 		if expectedPolicy != actualPolicy {
 			diffString := diff.FormatDiff(expectedPolicy, actualPolicy)
 			t.Logf("diff:\n%s\n", diffString)
-			t.Errorf("case %d failed, policy output differed from expected.", i)
+			t.Errorf("case %d failed, policy output differed from expected (%s).", i, x.Policy)
 			continue
 		}
 	}

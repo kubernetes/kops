@@ -22,11 +22,9 @@ import (
 	"sort"
 	"time"
 
-	"k8s.io/apimachinery/pkg/util/sets"
-	"k8s.io/kubernetes/pkg/util/exec"
-	"k8s.io/kubernetes/pkg/util/mount"
-
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kubernetes/pkg/util/mount"
 )
 
 type VolumeMountController struct {
@@ -107,54 +105,51 @@ func (k *VolumeMountController) safeFormatAndMount(device string, mountpoint str
 	}
 	glog.Infof("Found device %q", device)
 
-	// If we are containerized, we still first SafeFormatAndMount in our namespace
-	// This is because SafeFormatAndMount doesn't seem to work in a container
-	safeFormatAndMount := &mount.SafeFormatAndMount{Interface: mount.New(""), Runner: exec.New()}
+	safeFormatAndMount := &mount.SafeFormatAndMount{}
+
+	if Containerized {
+		// Build mount & exec implementations that execute in the host namespaces
+		safeFormatAndMount.Interface = mount.NewNsenterMounter()
+		safeFormatAndMount.Exec = NewNsEnterExec()
+
+		// Note that we don't use pathFor for operations going through safeFormatAndMount,
+		// because NewNsenterMounter and NewNsEnterExec will operate in the host
+	} else {
+		safeFormatAndMount.Interface = mount.New("")
+		safeFormatAndMount.Exec = mount.NewOsExec()
+	}
 
 	// Check if it is already mounted
+	// TODO: can we now use IsLikelyNotMountPoint or IsMountPointMatch instead here
 	mounts, err := safeFormatAndMount.List()
 	if err != nil {
 		return fmt.Errorf("error listing existing mounts: %v", err)
 	}
 
-	// Note: IsLikelyNotMountPoint is not containerized
-
-	findMountpoint := pathFor(mountpoint)
 	var existing []*mount.MountPoint
 	for i := range mounts {
 		m := &mounts[i]
 		glog.V(8).Infof("found existing mount: %v", m)
-		if m.Path == findMountpoint {
+		// Note: when containerized, we still list mounts in the host, so we don't need to call pathFor(mountpoint)
+		if m.Path == mountpoint {
 			existing = append(existing, m)
 		}
 	}
 
-	options := []string{}
-	//if readOnly {
-	//	options = append(options, "ro")
-	//}
+	// Mount only if isn't mounted already
 	if len(existing) == 0 {
+		options := []string{}
+
 		glog.Infof("Creating mount directory %q", pathFor(mountpoint))
 		if err := os.MkdirAll(pathFor(mountpoint), 0750); err != nil {
 			return err
 		}
 
-		glog.Infof("Mounting device %q on %q", pathFor(device), pathFor(mountpoint))
+		glog.Infof("Mounting device %q on %q", device, mountpoint)
 
-		err = safeFormatAndMount.FormatAndMount(pathFor(device), pathFor(mountpoint), fstype, options)
+		err = safeFormatAndMount.FormatAndMount(device, mountpoint, fstype, options)
 		if err != nil {
-			//os.Remove(mountpoint)
-			return fmt.Errorf("error formatting and mounting disk %q on %q: %v", pathFor(device), pathFor(mountpoint), err)
-		}
-
-		// If we are containerized, we then also mount it into the host
-		if Containerized {
-			hostMounter := mount.NewNsenterMounter()
-			err = hostMounter.Mount(device, mountpoint, fstype, options)
-			if err != nil {
-				//os.Remove(mountpoint)
-				return fmt.Errorf("error formatting and mounting disk %q on %q in host: %v", device, mountpoint, err)
-			}
+			return fmt.Errorf("error formatting and mounting disk %q on %q: %v", device, mountpoint, err)
 		}
 	} else {
 		glog.Infof("Device already mounted on %q, verifying it is our device", mountpoint)
@@ -167,12 +162,38 @@ func (k *VolumeMountController) safeFormatAndMount(device string, mountpoint str
 				glog.Infof("%s\t%s", m.Device, m.Path)
 			}
 
-			return fmt.Errorf("Found multiple existing mounts of %q at %q", device, mountpoint)
+			return fmt.Errorf("found multiple existing mounts of %q at %q", device, mountpoint)
 		} else {
 			glog.Infof("Found existing mount of %q at %q", device, mountpoint)
 		}
-
 	}
+
+	// If we're containerized we also want to mount the device (again) into our container
+	// We could also do this with mount propagation, but this is simple
+	if Containerized {
+		source := pathFor(device)
+		target := pathFor(mountpoint)
+		options := []string{}
+
+		mounter := mount.New("")
+
+		mountedDevice, _, err := mount.GetDeviceNameFromMount(mounter, target)
+		if err != nil {
+			return fmt.Errorf("error checking for mounts of %s inside container: %v", target, err)
+		}
+
+		if mountedDevice != "" {
+			if mountedDevice != source {
+				return fmt.Errorf("device already mounted at %s, but is %s and we want %s", target, mountedDevice, source)
+			}
+		} else {
+			glog.Infof("mounting inside container: %s -> %s", source, target)
+			if err := mounter.Mount(source, target, fstype, options); err != nil {
+				return fmt.Errorf("error mounting %s inside container at %s: %v", source, target, err)
+			}
+		}
+	}
+
 	return nil
 }
 

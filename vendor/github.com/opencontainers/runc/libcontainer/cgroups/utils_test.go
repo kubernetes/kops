@@ -93,6 +93,34 @@ const systemdMountinfo = `115 83 0:32 / / rw,relatime - aufs none rw,si=c0bd3d3,
 136 117 0:12 /1 /dev/console rw,nosuid,noexec,relatime - devpts none rw,gid=5,mode=620,ptmxmode=000
 84 115 0:40 / /tmp rw,relatime - tmpfs none rw`
 
+const cgroup2Mountinfo = `18 64 0:18 / /sys rw,nosuid,nodev,noexec,relatime shared:6 - sysfs sysfs rw,seclabel
+19 64 0:4 / /proc rw,nosuid,nodev,noexec,relatime shared:5 - proc proc rw
+20 64 0:6 / /dev rw,nosuid shared:2 - devtmpfs devtmpfs rw,seclabel,size=8171204k,nr_inodes=2042801,mode=755
+21 18 0:19 / /sys/kernel/security rw,nosuid,nodev,noexec,relatime shared:7 - securityfs securityfs rw
+22 20 0:20 / /dev/shm rw,nosuid,nodev shared:3 - tmpfs tmpfs rw,seclabel
+23 20 0:21 / /dev/pts rw,nosuid,noexec,relatime shared:4 - devpts devpts rw,seclabel,gid=5,mode=620,ptmxmode=000
+24 64 0:22 / /run rw,nosuid,nodev shared:24 - tmpfs tmpfs rw,seclabel,mode=755
+25 18 0:23 / /sys/fs/cgroup ro,nosuid,nodev,noexec shared:8 - tmpfs tmpfs ro,seclabel,mode=755
+26 25 0:24 / /sys/fs/cgroup/systemd rw,nosuid,nodev,noexec,relatime shared:9 - cgroup2 cgroup rw
+27 18 0:25 / /sys/fs/pstore rw,nosuid,nodev,noexec,relatime shared:20 - pstore pstore rw,seclabel
+28 18 0:26 / /sys/firmware/efi/efivars rw,nosuid,nodev,noexec,relatime shared:21 - efivarfs efivarfs rw
+29 25 0:27 / /sys/fs/cgroup/cpu,cpuacct rw,nosuid,nodev,noexec,relatime shared:10 - cgroup cgroup rw,cpu,cpuacct
+30 25 0:28 / /sys/fs/cgroup/memory rw,nosuid,nodev,noexec,relatime shared:11 - cgroup cgroup rw,memory
+31 25 0:29 / /sys/fs/cgroup/net_cls,net_prio rw,nosuid,nodev,noexec,relatime shared:12 - cgroup cgroup rw,net_cls,net_prio
+32 25 0:30 / /sys/fs/cgroup/blkio rw,nosuid,nodev,noexec,relatime shared:13 - cgroup cgroup rw,blkio
+33 25 0:31 / /sys/fs/cgroup/perf_event rw,nosuid,nodev,noexec,relatime shared:14 - cgroup cgroup rw,perf_event
+34 25 0:32 / /sys/fs/cgroup/hugetlb rw,nosuid,nodev,noexec,relatime shared:15 - cgroup cgroup rw,hugetlb
+35 25 0:33 / /sys/fs/cgroup/freezer rw,nosuid,nodev,noexec,relatime shared:16 - cgroup cgroup rw,freezer
+36 25 0:34 / /sys/fs/cgroup/cpuset rw,nosuid,nodev,noexec,relatime shared:17 - cgroup cgroup rw,cpuset
+37 25 0:35 / /sys/fs/cgroup/devices rw,nosuid,nodev,noexec,relatime shared:18 - cgroup cgroup rw,devices
+38 25 0:36 / /sys/fs/cgroup/pids rw,nosuid,nodev,noexec,relatime shared:19 - cgroup cgroup rw,pids
+61 18 0:37 / /sys/kernel/config rw,relatime shared:22 - configfs configfs rw
+64 0 253:0 / / rw,relatime shared:1 - ext4 /dev/mapper/fedora_dhcp--16--129-root rw,seclabel,data=ordered
+39 18 0:17 / /sys/fs/selinux rw,relatime shared:23 - selinuxfs selinuxfs rw
+40 20 0:16 / /dev/mqueue rw,relatime shared:25 - mqueue mqueue rw,seclabel
+41 20 0:39 / /dev/hugepages rw,relatime shared:26 - hugetlbfs hugetlbfs rw,seclabel
+`
+
 func TestGetCgroupMounts(t *testing.T) {
 	type testData struct {
 		mountInfo  string
@@ -244,4 +272,62 @@ func TestParseCgroupString(t *testing.T) {
 		}
 	}
 
+}
+
+func TestIgnoreCgroup2Mount(t *testing.T) {
+	subsystems := map[string]bool{
+		"cpuset":       true,
+		"cpu":          true,
+		"cpuacct":      true,
+		"memory":       true,
+		"devices":      true,
+		"freezer":      true,
+		"net_cls":      true,
+		"blkio":        true,
+		"perf_event":   true,
+		"pids":         true,
+		"name=systemd": true,
+	}
+
+	mi := bytes.NewBufferString(cgroup2Mountinfo)
+	cgMounts, err := getCgroupMountsHelper(subsystems, mi, false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, m := range cgMounts {
+		if m.Mountpoint == "/sys/fs/cgroup/systemd" {
+			t.Errorf("parsed a cgroup2 mount at /sys/fs/cgroup/systemd instead of ignoring it")
+		}
+	}
+}
+
+const fakeMountInfo = ` 18 24 0:17 / /sys rw,nosuid,nodev,noexec,relatime - sysfs sysfs rw
+100 99 1:31 / /foo/bar rw,relatime - fake fake rw,fake
+100 99 1:31 / /foo/bar/baz2 rw,relatime - fake fake rw,fake
+100 99 1:31 / /foo/bar/baz rw,relatime - fake fake rw,fake
+100 99 1:31 / /foo/bar/bazza rw,relatime - fake fake rw,fake
+100 99 1:31 / /foo/bar/baz3 rw,relatime - fake fake rw,fake
+100 99 1:31 / /foo rw,relatime - fake fake rw,fake
+100 99 1:31 / /unrelated rw,relatime - fake fake rw,fake
+100 99 1:31 / / rw,relatime - fake fake rw,fake
+`
+
+func TestGetClosestMountpointAncestor(t *testing.T) {
+	testCases := []struct {
+		input      string
+		mountinfos string
+		output     string
+	}{
+		{input: "/foo/bar/baz/a/b/c", mountinfos: fakeMountInfo, output: "/foo/bar/baz"},
+		{input: "/foo/bar/baz", mountinfos: fakeMountInfo, output: "/foo/bar/baz"},
+		{input: "/foo/bar/bazza", mountinfos: fakeMountInfo, output: "/foo/bar/bazza"},
+		{input: "/a/b/c/d", mountinfos: fakeMountInfo, output: "/"},
+	}
+
+	for _, c := range testCases {
+		mountpoint := GetClosestMountpointAncestor(c.input, c.mountinfos)
+		if mountpoint != c.output {
+			t.Errorf("expected %s, got %s", c.output, mountpoint)
+		}
+	}
 }

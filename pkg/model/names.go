@@ -18,6 +18,7 @@ package model
 
 import (
 	"fmt"
+
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
@@ -116,14 +117,21 @@ func (b *KopsModelContext) LinkToIAMInstanceProfile(ig *kops.InstanceGroup) *aws
 	return &awstasks.IAMInstanceProfile{Name: &name}
 }
 
-// SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint
+// SSHKeyName computes a unique SSH key name, combining the cluster name and the SSH public key fingerprint.
+// If an SSH key name is provided in the cluster configuration, it will use that instead.
 func (c *KopsModelContext) SSHKeyName() (string, error) {
+	// use configured SSH key name if present
+	name := c.Cluster.Spec.SSHKeyName
+	if name != "" {
+		return name, nil
+	}
+
 	fingerprint, err := awstasks.ComputeOpenSSHKeyFingerprint(string(c.SSHPublicKeys[0]))
 	if err != nil {
 		return "", err
 	}
 
-	name := "kubernetes." + c.Cluster.ObjectMeta.Name + "-" + fingerprint
+	name = "kubernetes." + c.Cluster.ObjectMeta.Name + "-" + fingerprint
 	return name, nil
 }
 
