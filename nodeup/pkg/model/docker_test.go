@@ -17,14 +17,12 @@ limitations under the License.
 package model
 
 import (
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
 	"path"
 	"testing"
 
-	// Register our APIs
-	_ "k8s.io/kops/pkg/apis/kops/install"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestDockerBuilder_Simple(t *testing.T) {

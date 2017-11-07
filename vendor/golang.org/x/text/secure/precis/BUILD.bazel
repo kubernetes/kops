@@ -1,0 +1,48 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "class.go",
+        "context.go",
+        "doc.go",
+        "nickname.go",
+        "options.go",
+        "profile.go",
+        "profiles.go",
+        "tables.go",
+        "transformer.go",
+        "trieval.go",
+    ],
+    importpath = "golang.org/x/text/secure/precis",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/golang.org/x/text/cases:go_default_library",
+        "//vendor/golang.org/x/text/language:go_default_library",
+        "//vendor/golang.org/x/text/runes:go_default_library",
+        "//vendor/golang.org/x/text/secure/bidirule:go_default_library",
+        "//vendor/golang.org/x/text/transform:go_default_library",
+        "//vendor/golang.org/x/text/unicode/norm:go_default_library",
+        "//vendor/golang.org/x/text/width:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "benchmark_test.go",
+        "class_test.go",
+        "enforce_test.go",
+        "profile_test.go",
+        "tables_test.go",
+    ],
+    importpath = "golang.org/x/text/secure/precis",
+    library = ":go_default_library",
+    deps = [
+        "//vendor/golang.org/x/text/internal/testtext:go_default_library",
+        "//vendor/golang.org/x/text/runes:go_default_library",
+        "//vendor/golang.org/x/text/secure/bidirule:go_default_library",
+        "//vendor/golang.org/x/text/transform:go_default_library",
+        "//vendor/golang.org/x/text/unicode/rangetable:go_default_library",
+    ],
+)

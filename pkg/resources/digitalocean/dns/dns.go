@@ -18,8 +18,6 @@ package dns
 
 import (
 	"fmt"
-	"io/ioutil"
-	"net/http"
 
 	"github.com/digitalocean/godo"
 	"github.com/digitalocean/godo/context"
@@ -311,7 +309,7 @@ func (r *resourceRecordChangeset) Apply() error {
 
 			err := deleteRecord(r.client, r.zone.Name(), desiredRecord.ID)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to delete record: %v", err)
 			}
 		}
 
@@ -321,7 +319,7 @@ func (r *resourceRecordChangeset) Apply() error {
 	if len(r.upserts) > 0 {
 		records, err := getRecords(r.client, r.zone.Name())
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to get records: %v", err)
 		}
 
 		for _, record := range r.upserts {
@@ -346,7 +344,7 @@ func (r *resourceRecordChangeset) Apply() error {
 			}
 			err := editRecord(r.client, r.zone.Name(), desiredRecord.ID, domainEditRequest)
 			if err != nil {
-				return err
+				return fmt.Errorf("failed to edit record: %v", err)
 			}
 		}
 
@@ -374,13 +372,9 @@ func (r *resourceRecordChangeset) ResourceRecordSets() dnsprovider.ResourceRecor
 // listDomains returns a list of godo.Domain
 func listDomains(c *godo.Client) ([]godo.Domain, error) {
 	// TODO (andrewsykim): pagination in ListOptions
-	domains, resp, err := c.Domains.List(context.TODO(), &godo.ListOptions{})
+	domains, _, err := c.Domains.List(context.TODO(), &godo.ListOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list domains: %v", err)
-	}
-
-	if err = handleResponse(resp); err != nil {
-		return nil, err
 	}
 
 	return domains, err
@@ -388,12 +382,8 @@ func listDomains(c *godo.Client) ([]godo.Domain, error) {
 
 // createDomain creates a domain provided godo.DomainCreateRequest
 func createDomain(c *godo.Client, createRequest *godo.DomainCreateRequest) (*godo.Domain, error) {
-	domain, resp, err := c.Domains.Create(context.TODO(), createRequest)
+	domain, _, err := c.Domains.Create(context.TODO(), createRequest)
 	if err != nil {
-		return nil, err
-	}
-
-	if err = handleResponse(resp); err != nil {
 		return nil, err
 	}
 
@@ -402,12 +392,8 @@ func createDomain(c *godo.Client, createRequest *godo.DomainCreateRequest) (*god
 
 // deleteDomain deletes a domain given its name
 func deleteDomain(c *godo.Client, name string) error {
-	resp, err := c.Domains.Delete(context.TODO(), name)
+	_, err := c.Domains.Delete(context.TODO(), name)
 	if err != nil {
-		return err
-	}
-
-	if err = handleResponse(resp); err != nil {
 		return err
 	}
 
@@ -416,12 +402,8 @@ func deleteDomain(c *godo.Client, name string) error {
 
 // getRecords returns a list of godo.DomainRecord given a zone name
 func getRecords(c *godo.Client, zoneName string) ([]godo.DomainRecord, error) {
-	records, resp, err := c.Domains.Records(context.TODO(), zoneName, &godo.ListOptions{})
+	records, _, err := c.Domains.Records(context.TODO(), zoneName, &godo.ListOptions{})
 	if err != nil {
-		return nil, err
-	}
-
-	if err = handleResponse(resp); err != nil {
 		return nil, err
 	}
 
@@ -430,13 +412,9 @@ func getRecords(c *godo.Client, zoneName string) ([]godo.DomainRecord, error) {
 
 // createRecord creates a record given an associated zone and a godo.DomainRecordEditRequest
 func createRecord(c *godo.Client, zoneName string, createRequest *godo.DomainRecordEditRequest) error {
-	_, resp, err := c.Domains.CreateRecord(context.TODO(), zoneName, createRequest)
+	_, _, err := c.Domains.CreateRecord(context.TODO(), zoneName, createRequest)
 	if err != nil {
 		return fmt.Errorf("error applying changeset: %v", err)
-	}
-
-	if err = handleResponse(resp); err != nil {
-		return err
 	}
 
 	return nil
@@ -444,13 +422,9 @@ func createRecord(c *godo.Client, zoneName string, createRequest *godo.DomainRec
 
 // editRecord edits a record given an associated ozone and a godo.DomainRecordEditRequest
 func editRecord(c *godo.Client, zoneName string, recordID int, editRequest *godo.DomainRecordEditRequest) error {
-	_, resp, err := c.Domains.EditRecord(context.TODO(), zoneName, recordID, editRequest)
+	_, _, err := c.Domains.EditRecord(context.TODO(), zoneName, recordID, editRequest)
 	if err != nil {
 		return fmt.Errorf("error applying changeset: %v", err)
-	}
-
-	if err = handleResponse(resp); err != nil {
-		return err
 	}
 
 	return nil
@@ -458,27 +432,9 @@ func editRecord(c *godo.Client, zoneName string, recordID int, editRequest *godo
 
 // deleteRecord deletes a record given an associated zone and a record ID
 func deleteRecord(c *godo.Client, zoneName string, recordID int) error {
-	resp, err := c.Domains.DeleteRecord(context.TODO(), zoneName, recordID)
+	_, err := c.Domains.DeleteRecord(context.TODO(), zoneName, recordID)
 	if err != nil {
 		return fmt.Errorf("error applying changeset: %v", err)
-	}
-
-	if err = handleResponse(resp); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func handleResponse(resp *godo.Response) error {
-	if resp.StatusCode != http.StatusOK {
-		respData, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Errorf("error reading response body: %v", err)
-		}
-
-		return fmt.Errorf("received non 200 status code: %d from api: %v",
-			resp.StatusCode, string(respData))
 	}
 
 	return nil

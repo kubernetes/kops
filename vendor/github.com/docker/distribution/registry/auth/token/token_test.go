@@ -91,7 +91,7 @@ func makeTrustedKeyMap(rootKeys []libtrust.PrivateKey) map[string]libtrust.Publi
 	return trustedKeys
 }
 
-func makeTestToken(issuer, audience string, access []*ResourceActions, rootKey libtrust.PrivateKey, depth int) (*Token, error) {
+func makeTestToken(issuer, audience string, access []*ResourceActions, rootKey libtrust.PrivateKey, depth int, now time.Time, exp time.Time) (*Token, error) {
 	signingKey, err := makeSigningKeyWithChain(rootKey, depth)
 	if err != nil {
 		return nil, fmt.Errorf("unable to make signing key with chain: %s", err)
@@ -109,8 +109,6 @@ func makeTestToken(issuer, audience string, access []*ResourceActions, rootKey l
 		RawJWK:     &rawJWK,
 	}
 
-	now := time.Now()
-
 	randomBytes := make([]byte, 15)
 	if _, err = rand.Read(randomBytes); err != nil {
 		return nil, fmt.Errorf("unable to read random bytes for jwt id: %s", err)
@@ -120,7 +118,7 @@ func makeTestToken(issuer, audience string, access []*ResourceActions, rootKey l
 		Issuer:     issuer,
 		Subject:    "foo",
 		Audience:   audience,
-		Expiration: now.Add(5 * time.Minute).Unix(),
+		Expiration: exp.Unix(),
 		NotBefore:  now.Unix(),
 		IssuedAt:   now.Unix(),
 		JWTID:      base64.URLEncoding.EncodeToString(randomBytes),
@@ -188,7 +186,7 @@ func TestTokenVerify(t *testing.T) {
 	tokens := make([]*Token, 0, numTokens)
 
 	for i := 0; i < numTokens; i++ {
-		token, err := makeTestToken(issuer, audience, access, rootKeys[i], i)
+		token, err := makeTestToken(issuer, audience, access, rootKeys[i], i, time.Now(), time.Now().Add(5*time.Minute))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -206,6 +204,78 @@ func TestTokenVerify(t *testing.T) {
 		if err := token.Verify(verifyOps); err != nil {
 			t.Fatal(err)
 		}
+	}
+}
+
+// This tests that we don't fail tokens with nbf within
+// the defined leeway in seconds
+func TestLeeway(t *testing.T) {
+	var (
+		issuer   = "test-issuer"
+		audience = "test-audience"
+		access   = []*ResourceActions{
+			{
+				Type:    "repository",
+				Name:    "foo/bar",
+				Actions: []string{"pull", "push"},
+			},
+		}
+	)
+
+	rootKeys, err := makeRootKeys(1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	trustedKeys := makeTrustedKeyMap(rootKeys)
+
+	verifyOps := VerifyOptions{
+		TrustedIssuers:    []string{issuer},
+		AcceptedAudiences: []string{audience},
+		Roots:             nil,
+		TrustedKeys:       trustedKeys,
+	}
+
+	// nbf verification should pass within leeway
+	futureNow := time.Now().Add(time.Duration(5) * time.Second)
+	token, err := makeTestToken(issuer, audience, access, rootKeys[0], 0, futureNow, futureNow.Add(5*time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err := token.Verify(verifyOps); err != nil {
+		t.Fatal(err)
+	}
+
+	// nbf verification should fail with a skew larger than leeway
+	futureNow = time.Now().Add(time.Duration(61) * time.Second)
+	token, err = makeTestToken(issuer, audience, access, rootKeys[0], 0, futureNow, futureNow.Add(5*time.Minute))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = token.Verify(verifyOps); err == nil {
+		t.Fatal("Verification should fail for token with nbf in the future outside leeway")
+	}
+
+	// exp verification should pass within leeway
+	token, err = makeTestToken(issuer, audience, access, rootKeys[0], 0, time.Now(), time.Now().Add(-59*time.Second))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = token.Verify(verifyOps); err != nil {
+		t.Fatal(err)
+	}
+
+	// exp verification should fail with a skew larger than leeway
+	token, err = makeTestToken(issuer, audience, access, rootKeys[0], 0, time.Now(), time.Now().Add(-60*time.Second))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if err = token.Verify(verifyOps); err == nil {
+		t.Fatal("Verification should fail for token with exp in the future outside leeway")
 	}
 }
 
@@ -284,7 +354,7 @@ func TestAccessController(t *testing.T) {
 		Action: "baz",
 	}
 
-	ctx := context.WithValue(nil, "http.request", req)
+	ctx := context.WithRequest(context.Background(), req)
 	authCtx, err := accessController.Authorized(ctx, testAccess)
 	challenge, ok := err.(auth.Challenge)
 	if !ok {
@@ -307,7 +377,7 @@ func TestAccessController(t *testing.T) {
 			Name:    testAccess.Name,
 			Actions: []string{testAccess.Action},
 		}},
-		rootKeys[1], 1, // Everything is valid except the key which signed it.
+		rootKeys[1], 1, time.Now(), time.Now().Add(5*time.Minute), // Everything is valid except the key which signed it.
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -333,7 +403,7 @@ func TestAccessController(t *testing.T) {
 	token, err = makeTestToken(
 		issuer, service,
 		[]*ResourceActions{}, // No access specified.
-		rootKeys[0], 1,
+		rootKeys[0], 1, time.Now(), time.Now().Add(5*time.Minute),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -363,7 +433,7 @@ func TestAccessController(t *testing.T) {
 			Name:    testAccess.Name,
 			Actions: []string{testAccess.Action},
 		}},
-		rootKeys[0], 1,
+		rootKeys[0], 1, time.Now(), time.Now().Add(5*time.Minute),
 	)
 	if err != nil {
 		t.Fatal(err)
@@ -383,5 +453,79 @@ func TestAccessController(t *testing.T) {
 
 	if userInfo.Name != "foo" {
 		t.Fatalf("expected user name %q, got %q", "foo", userInfo.Name)
+	}
+
+	// 5. Supply a token with full admin rights, which is represented as "*".
+	token, err = makeTestToken(
+		issuer, service,
+		[]*ResourceActions{{
+			Type:    testAccess.Type,
+			Name:    testAccess.Name,
+			Actions: []string{"*"},
+		}},
+		rootKeys[0], 1, time.Now(), time.Now().Add(5*time.Minute),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token.compactRaw()))
+
+	_, err = accessController.Authorized(ctx, testAccess)
+	if err != nil {
+		t.Fatalf("accessController returned unexpected error: %s", err)
+	}
+}
+
+// This tests that newAccessController can handle PEM blocks in the certificate
+// file other than certificates, for example a private key.
+func TestNewAccessControllerPemBlock(t *testing.T) {
+	rootKeys, err := makeRootKeys(2)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rootCertBundleFilename, err := writeTempRootCerts(rootKeys)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(rootCertBundleFilename)
+
+	// Add something other than a certificate to the rootcertbundle
+	file, err := os.OpenFile(rootCertBundleFilename, os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		t.Fatal(err)
+	}
+	keyBlock, err := rootKeys[0].PEMBlock()
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = pem.Encode(file, keyBlock)
+	if err != nil {
+		t.Fatal(err)
+	}
+	err = file.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	realm := "https://auth.example.com/token/"
+	issuer := "test-issuer.example.com"
+	service := "test-service.example.com"
+
+	options := map[string]interface{}{
+		"realm":          realm,
+		"issuer":         issuer,
+		"service":        service,
+		"rootcertbundle": rootCertBundleFilename,
+	}
+
+	ac, err := newAccessController(options)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if len(ac.(*accessController).rootCerts.Subjects()) != 2 {
+		t.Fatal("accessController has the wrong number of certificates")
 	}
 }

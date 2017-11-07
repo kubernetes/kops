@@ -33,7 +33,7 @@ type KubectlBuilder struct {
 
 var _ fi.ModelBuilder = &KubectlBuilder{}
 
-// Build is responsible for mananging the kubectl on the nodes
+// Build is responsible for managing the kubectl on the nodes
 func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 	if !b.IsMaster {
 		return nil
@@ -52,7 +52,7 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 
 		t := &nodetasks.File{
-			Path:     b.kubectlPath(),
+			Path:     b.KubectlPath() + "/" + assetName,
 			Contents: asset,
 			Type:     nodetasks.FileType_File,
 			Mode:     s("0755"),
@@ -75,7 +75,7 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 
 		switch b.Distribution {
-		case distros.DistributionJessie:
+		case distros.DistributionJessie, distros.DistributionDebian9:
 			c.AddTask(&nodetasks.File{
 				Path:  "/home/admin/.kube/",
 				Type:  nodetasks.FileType_Directory,
@@ -99,15 +99,4 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
-}
-
-func (b *KubectlBuilder) kubectlPath() string {
-	kubeletCommand := "/usr/local/bin/kubectl"
-	if b.Distribution == distros.DistributionCoreOS {
-		kubeletCommand = "/opt/bin/kubectl"
-	}
-	if b.Distribution == distros.DistributionContainerOS {
-		kubeletCommand = "/home/kubernetes/bin/kubectl"
-	}
-	return kubeletCommand
 }

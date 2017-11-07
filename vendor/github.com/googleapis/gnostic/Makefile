@@ -1,12 +1,15 @@
 
 build:	
-	go install github.com/googleapis/gnostic
-	go install github.com/googleapis/gnostic/apps/report
-	go install github.com/googleapis/gnostic/plugins/go/gnostic_go_sample
-	go install github.com/googleapis/gnostic/plugins/go/gnostic_go_generator/encode_templates
-	go generate github.com/googleapis/gnostic/plugins/go/gnostic_go_generator
-	go install github.com/googleapis/gnostic/plugins/go/gnostic_go_generator
-	rm -f $(GOPATH)/bin/gnostic_go_client $(GOPATH)/bin/gnostic_go_server
-	ln -s $(GOPATH)/bin/gnostic_go_generator $(GOPATH)/bin/gnostic_go_client
-	ln -s $(GOPATH)/bin/gnostic_go_generator $(GOPATH)/bin/gnostic_go_server
+	go get
+	go install
+	cd generate-gnostic; go get; go install
+	cd apps/report; go get; go install
+	cd apps/petstore-builder; go get; go install
+	cd plugins/gnostic-go-sample; go get; go install
+	cd plugins/gnostic-go-generator/encode-templates; go get; go install
+	cd plugins/gnostic-go-generator; go get; go install
+	rm -f $(GOPATH)/bin/gnostic-go-client $(GOPATH)/bin/gnostic-go-server
+	ln -s $(GOPATH)/bin/gnostic-go-generator $(GOPATH)/bin/gnostic-go-client
+	ln -s $(GOPATH)/bin/gnostic-go-generator $(GOPATH)/bin/gnostic-go-server
+	cd extensions/sample; make
 

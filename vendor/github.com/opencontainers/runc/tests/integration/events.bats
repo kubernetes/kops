@@ -12,12 +12,12 @@ function teardown() {
 }
 
 @test "events --stats" {
-  # run busybox detached
-  runc run -d --console /dev/pts/ptmx test_busybox
-  [ "$status" -eq 0 ]
+  # XXX: currently cgroups require root containers.
+  requires root
 
-  # check state
-  wait_for_container 15 1 test_busybox
+  # run busybox detached
+  runc run -d --console-socket $CONSOLE_SOCKET test_busybox
+  [ "$status" -eq 0 ]
 
   # generate stats
   runc events --stats test_busybox
@@ -27,12 +27,12 @@ function teardown() {
 }
 
 @test "events --interval default " {
-  # run busybox detached
-  runc run -d --console /dev/pts/ptmx test_busybox
-  [ "$status" -eq 0 ]
+  # XXX: currently cgroups require root containers.
+  requires root
 
-  # check state
-  wait_for_container 15 1 test_busybox
+  # run busybox detached
+  runc run -d --console-socket $CONSOLE_SOCKET test_busybox
+  [ "$status" -eq 0 ]
 
   # spawn two sub processes (shells)
   # the first sub process is an event logger that sends stats events to events.log
@@ -54,12 +54,12 @@ function teardown() {
 }
 
 @test "events --interval 1s " {
-  # run busybox detached
-  runc run -d --console /dev/pts/ptmx test_busybox
-  [ "$status" -eq 0 ]
+  # XXX: currently cgroups require root containers.
+  requires root
 
-  # check state
-  wait_for_container 15 1 test_busybox
+  # run busybox detached
+  runc run -d --console-socket $CONSOLE_SOCKET test_busybox
+  [ "$status" -eq 0 ]
 
   # spawn two sub processes (shells)
   # the first sub process is an event logger that sends stats events to events.log once a second
@@ -80,12 +80,12 @@ function teardown() {
 }
 
 @test "events --interval 100ms " {
-  # run busybox detached
-  runc run -d --console /dev/pts/ptmx test_busybox
-  [ "$status" -eq 0 ]
+  # XXX: currently cgroups require root containers.
+  requires root
 
-  # check state
-  wait_for_container 15 1 test_busybox
+  # run busybox detached
+  runc run -d --console-socket $CONSOLE_SOCKET test_busybox
+  [ "$status" -eq 0 ]
 
   #prove there is no carry over of events.log from a prior test
   [ ! -e events.log ]

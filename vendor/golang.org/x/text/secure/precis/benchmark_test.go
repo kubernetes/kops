@@ -6,7 +6,11 @@
 
 package precis
 
-import "testing"
+import (
+	"testing"
+
+	"golang.org/x/text/internal/testtext"
+)
 
 var benchData = []struct{ name, str string }{
 	{"ASCII", "Malvolio"},
@@ -29,7 +33,7 @@ var benchProfiles = []struct {
 func doBench(b *testing.B, f func(b *testing.B, p *Profile, s string)) {
 	for _, bp := range benchProfiles {
 		for _, d := range benchData {
-			b.Run(bp.name+"/"+d.name, func(b *testing.B) {
+			testtext.Bench(b, bp.name+"/"+d.name, func(b *testing.B) {
 				f(b, bp.p, d.str)
 			})
 		}

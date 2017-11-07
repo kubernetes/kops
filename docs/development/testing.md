@@ -73,12 +73,12 @@ can do the following:
 
 ```
 # cd to your kops repo
-export BUILD_BUCKET=your-kops-builds # Change to a bucket for kops builds
-make upload S3_BUCKET=s3://${BUILD_BUCKET}
+export S3_BUCKET_NAME=<yourbucketname>
+make kops-install upload S3_BUCKET=s3://${S3_BUCKET_NAME} VERSION=dev
 
-# That will output s3 paths a it's uploading. Copy the relevant
-# kops/git-<foo> path and then:
-export KOPS_URL=http://${BUILD_BUCKET}.s3.amazonaws.com/kops/git-<foo>
+export KOPS_BASE_URL=https://${S3_BUCKET_NAME}.s3.amazonaws.com/kops/dev/
+
+kops create cluster <clustername> --zones us-east-1b
 ```
 
 Then follow the test directions above.

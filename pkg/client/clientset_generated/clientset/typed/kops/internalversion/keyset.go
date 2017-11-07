@@ -58,6 +58,41 @@ func newKeysets(c *KopsClient, namespace string) *keysets {
 	}
 }
 
+// Get takes name of the keyset, and returns the corresponding keyset object, and an error if there is any.
+func (c *keysets) Get(name string, options v1.GetOptions) (result *kops.Keyset, err error) {
+	result = &kops.Keyset{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("keysets").
+		Name(name).
+		VersionedParams(&options, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// List takes label and field selectors, and returns the list of Keysets that match those selectors.
+func (c *keysets) List(opts v1.ListOptions) (result *kops.KeysetList, err error) {
+	result = &kops.KeysetList{}
+	err = c.client.Get().
+		Namespace(c.ns).
+		Resource("keysets").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Do().
+		Into(result)
+	return
+}
+
+// Watch returns a watch.Interface that watches the requested keysets.
+func (c *keysets) Watch(opts v1.ListOptions) (watch.Interface, error) {
+	opts.Watch = true
+	return c.client.Get().
+		Namespace(c.ns).
+		Resource("keysets").
+		VersionedParams(&opts, scheme.ParameterCodec).
+		Watch()
+}
+
 // Create takes the representation of a keyset and creates it.  Returns the server's representation of the keyset, and an error, if there is any.
 func (c *keysets) Create(keyset *kops.Keyset) (result *kops.Keyset, err error) {
 	result = &kops.Keyset{}
@@ -103,41 +138,6 @@ func (c *keysets) DeleteCollection(options *v1.DeleteOptions, listOptions v1.Lis
 		Body(options).
 		Do().
 		Error()
-}
-
-// Get takes name of the keyset, and returns the corresponding keyset object, and an error if there is any.
-func (c *keysets) Get(name string, options v1.GetOptions) (result *kops.Keyset, err error) {
-	result = &kops.Keyset{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("keysets").
-		Name(name).
-		VersionedParams(&options, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// List takes label and field selectors, and returns the list of Keysets that match those selectors.
-func (c *keysets) List(opts v1.ListOptions) (result *kops.KeysetList, err error) {
-	result = &kops.KeysetList{}
-	err = c.client.Get().
-		Namespace(c.ns).
-		Resource("keysets").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Do().
-		Into(result)
-	return
-}
-
-// Watch returns a watch.Interface that watches the requested keysets.
-func (c *keysets) Watch(opts v1.ListOptions) (watch.Interface, error) {
-	opts.Watch = true
-	return c.client.Get().
-		Namespace(c.ns).
-		Resource("keysets").
-		VersionedParams(&opts, scheme.ParameterCodec).
-		Watch()
 }
 
 // Patch applies the patch and returns the patched keyset.

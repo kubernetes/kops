@@ -29,6 +29,8 @@ spec: {}
 apiVersion: v1
 kind: Pod
 metadata:
+  annotations:
+    scheduler.alpha.kubernetes.io/critical-pod: ""
   creationTimestamp: null
   labels:
     k8s-app: etcd-server-main
@@ -39,7 +41,7 @@ spec:
   - command:
     - /bin/sh
     - -c
-    - /usr/local/bin/etcd 2>&1 | /bin/tee /var/log/etcd.log
+    - /usr/local/bin/etcd 2>&1 | /bin/tee -a /var/log/etcd.log
     env:
     - name: ETCD_NAME
       value: node0
@@ -94,10 +96,16 @@ spec:
       name: varetcdata
     - mountPath: /var/log/etcd.log
       name: varlogetcd
+    - mountPath: /etc/hosts
+      name: hosts
+      readOnly: true
     - mountPath: /srv/kubernetes
       name: srvkubernetes
       readOnly: true
   hostNetwork: true
+  tolerations:
+  - key: CriticalAddonsOnly
+    operator: Exists
   volumes:
   - hostPath:
       path: /mnt/main/var/etcd/data-main
@@ -105,6 +113,9 @@ spec:
   - hostPath:
       path: /var/log/etcd.log
     name: varlogetcd
+  - hostPath:
+      path: /etc/hosts
+    name: hosts
   - hostPath:
       path: /srv/kubernetes
     name: srvkubernetes

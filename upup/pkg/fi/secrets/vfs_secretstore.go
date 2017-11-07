@@ -19,31 +19,49 @@ package secrets
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/acls"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
-	"os"
 )
 
 type VFSSecretStore struct {
+	cluster *kops.Cluster
 	basedir vfs.Path
 }
 
 var _ fi.SecretStore = &VFSSecretStore{}
 
-func NewVFSSecretStore(basedir vfs.Path) fi.SecretStore {
+func NewVFSSecretStore(cluster *kops.Cluster, basedir vfs.Path) fi.SecretStore {
 	c := &VFSSecretStore{
+		cluster: cluster,
 		basedir: basedir,
 	}
 	return c
 }
 
-func (s *VFSSecretStore) VFSPath() vfs.Path {
-	return s.basedir
+func (c *VFSSecretStore) VFSPath() vfs.Path {
+	return c.basedir
 }
 
-func (c *VFSSecretStore) buildSecretPath(id string) vfs.Path {
-	return c.basedir.Join(id)
+func (c *VFSSecretStore) MirrorTo(basedir vfs.Path) error {
+	if basedir.Path() == c.basedir.Path() {
+		return nil
+	}
+	glog.V(2).Infof("Mirroring secret store from %q to %q", c.basedir, basedir)
+
+	return vfs.CopyTree(c.basedir, basedir, func(p vfs.Path) (vfs.ACL, error) { return acls.GetACL(p, c.cluster) })
+}
+
+func BuildVfsSecretPath(basedir vfs.Path, name string) vfs.Path {
+	return basedir.Join(name)
+}
+
+func (c *VFSSecretStore) buildSecretPath(name string) vfs.Path {
+	return BuildVfsSecretPath(c.basedir, name)
 }
 
 func (c *VFSSecretStore) FindSecret(id string) (*fi.Secret, error) {
@@ -53,6 +71,18 @@ func (c *VFSSecretStore) FindSecret(id string) (*fi.Secret, error) {
 		return nil, err
 	}
 	return s, nil
+}
+
+// DeleteSecret implements fi.SecretStore DeleteSecret
+func (c *VFSSecretStore) DeleteSecret(item *fi.KeystoreItem) error {
+	switch item.Type {
+	case fi.SecretTypeSecret:
+		p := c.buildSecretPath(item.Name)
+		return p.Remove()
+
+	default:
+		return fmt.Errorf("deletion of secretstore items of type %v not (yet) supported", item.Type)
+	}
 }
 
 func (c *VFSSecretStore) ListSecrets() ([]string, error) {
@@ -92,7 +122,12 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Se
 			return s, false, nil
 		}
 
-		err = c.createSecret(secret, p)
+		acl, err := acls.GetACL(p, c.cluster)
+		if err != nil {
+			return nil, false, err
+		}
+
+		err = c.createSecret(secret, p, acl)
 		if err != nil {
 			if os.IsExist(err) && i == 0 {
 				glog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
@@ -132,10 +167,10 @@ func (c *VFSSecretStore) loadSecret(p vfs.Path) (*fi.Secret, error) {
 }
 
 // createSecret writes the secret, but only if it does not exists
-func (c *VFSSecretStore) createSecret(s *fi.Secret, p vfs.Path) error {
+func (c *VFSSecretStore) createSecret(s *fi.Secret, p vfs.Path, acl vfs.ACL) error {
 	data, err := json.Marshal(s)
 	if err != nil {
 		return fmt.Errorf("error serializing secret: %v", err)
 	}
-	return p.CreateFile(data)
+	return p.CreateFile(data, acl)
 }

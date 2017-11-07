@@ -28,6 +28,7 @@ type NetworkingSpec struct {
 	Calico     *CalicoNetworkingSpec     `json:"calico,omitempty"`
 	Canal      *CanalNetworkingSpec      `json:"canal,omitempty"`
 	Kuberouter *KuberouterNetworkingSpec `json:"kuberouter,omitempty"`
+	Romana     *RomanaNetworkingSpec     `json:"romana,omitempty"`
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
@@ -43,28 +44,28 @@ type KubenetNetworkingSpec struct {
 type ExternalNetworkingSpec struct {
 }
 
-// CNI is the specification for networking that is implemented by a Daemonset
+// CNINetworkingSpec is the specification for networking that is implemented by a Daemonset
 // Networking is not managed by kops - we can create options here that directly configure e.g. weave
 // but this is useful for arbitrary network modes or for modes that don't need additional configuration.
 type CNINetworkingSpec struct {
 }
 
-// Kopeio declares that we want Kopeio networking
+// KopeioNetworkingSpec declares that we want Kopeio networking
 type KopeioNetworkingSpec struct {
 }
 
-// Weave declares that we want Weave networking
+// WeaveNetworkingSpec declares that we want Weave networking
 type WeaveNetworkingSpec struct {
 	MTU *int32 `json:"mtu,omitempty"`
 }
 
-// Flannel declares that we want Flannel networking
+// FlannelNetworkingSpec declares that we want Flannel networking
 type FlannelNetworkingSpec struct {
 	// Backend is the backend overlay type we want to use (vxlan or udp)
 	Backend string `json:"backend,omitempty"`
 }
 
-// Calico declares that we want Calico networking
+// CalicoNetworkingSpec declares that we want Calico networking
 type CalicoNetworkingSpec struct {
 	CrossSubnet bool `json:"crossSubnet,omitempty"` // Enables Calico's cross-subnet mode when set to true
 }
@@ -75,8 +76,30 @@ type CanalNetworkingSpec struct {
 	// for traffic between pod to host after calico rules have been processed.
 	// Default: ACCEPT (other options: DROP, RETURN)
 	DefaultEndpointToHostAction string `json:"defaultEndpointToHostAction,omitempty"`
+	// ChainInsertMode controls whether Felix inserts rules to the top of iptables chains, or
+	// appends to the bottom. Leaving the default option is safest to prevent accidentally
+	// breaking connectivity. Default: 'insert' (other options: 'append')
+	ChainInsertMode string `json:"chainInsertMode,omitempty"`
+	// PrometheusMetricsEnabled can be set to enable the experimental Prometheus
+	// metrics server (default: false)
+	PrometheusMetricsEnabled bool `json:"prometheusMetricsEnabled,omitempty"`
+	// PrometheusMetricsPort is the TCP port that the experimental Prometheus
+	// metrics server should bind to (default: 9091)
+	PrometheusMetricsPort int32 `json:"prometheusMetricsPort,omitempty"`
+	// PrometheusGoMetricsEnabled enables Prometheus Go runtime metrics collection
+	PrometheusGoMetricsEnabled bool `json:"prometheusGoMetricsEnabled,omitempty"`
+	// PrometheusProcessMetricsEnabled enables Prometheus process metrics collection
+	PrometheusProcessMetricsEnabled bool `json:"prometheusProcessMetricsEnabled,omitempty"`
 }
 
-// Kuberouter declares that we want Kube-router networking
+// KuberouterNetworkingSpec declares that we want Kube-router networking
 type KuberouterNetworkingSpec struct {
+}
+
+// RomanaNetworkingSpec declares that we want Romana networking
+type RomanaNetworkingSpec struct {
+	// DaemonServiceIP is the Kubernetes Service IP for the romana-daemon pod
+	DaemonServiceIP string `json:"daemonServiceIP,omitempty"`
+	// EtcdServiceIP is the Kubernetes Service IP for the etcd backend used by Romana
+	EtcdServiceIP string `json:"etcdServiceIP,omitempty"`
 }

@@ -36,8 +36,8 @@ import (
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 	"k8s.io/kubernetes/pkg/printers"
-	"k8s.io/kubernetes/pkg/util/i18n"
 	"k8s.io/kubernetes/pkg/util/interrupt"
 )
 
@@ -51,19 +51,20 @@ type GetOptions struct {
 }
 
 var (
-	get_long = templates.LongDesc(`
+	getLong = templates.LongDesc(`
 		Display one or many resources.
 
 		` + validResources + `
 
 		This command will hide resources that have completed, such as pods that are
 		in the Succeeded or Failed phases. You can see the full results for any
-		resource by providing the '--show-all' flag.
+		resource by providing the '--show-all' flag, but this flag does not include
+		the uninitialized objects by default, unless '--include-uninitialized' is explicitly set.
 
 		By specifying the output as 'template' and providing a Go template as the value
 		of the --template flag, you can filter the attributes of the fetched resources.`)
 
-	get_example = templates.Examples(i18n.T(`
+	getExample = templates.Examples(i18n.T(`
 		# List all pods in ps output format.
 		kubectl get pods
 
@@ -115,8 +116,8 @@ func NewCmdGet(f cmdutil.Factory, out io.Writer, errOut io.Writer) *cobra.Comman
 	cmd := &cobra.Command{
 		Use:     "get [(-o|--output=)json|yaml|wide|custom-columns=...|custom-columns-file=...|go-template=...|go-template-file=...|jsonpath=...|jsonpath-file=...] (TYPE [NAME | -l label] | TYPE/NAME ...) [flags]",
 		Short:   i18n.T("Display one or many resources"),
-		Long:    get_long,
-		Example: get_example,
+		Long:    getLong,
+		Example: getExample,
 		Run: func(cmd *cobra.Command, args []string) {
 			err := RunGet(f, out, errOut, cmd, args, options)
 			cmdutil.CheckErr(err)
@@ -126,8 +127,9 @@ func NewCmdGet(f cmdutil.Factory, out io.Writer, errOut io.Writer) *cobra.Comman
 		ArgAliases: argAliases,
 	}
 	cmdutil.AddPrinterFlags(cmd)
-	cmd.Flags().StringP("selector", "l", "", "Selector (label query) to filter on, supports '=', '==', and '!='.")
-	cmd.Flags().BoolP("watch", "w", false, "After listing/getting the requested object, watch for changes.")
+	cmd.Flags().StringP("selector", "l", "", "Selector (label query) to filter on, supports '=', '==', and '!='.(e.g. -l key1=value1,key2=value2)")
+	cmdutil.AddIncludeUninitializedFlag(cmd)
+	cmd.Flags().BoolP("watch", "w", false, "After listing/getting the requested object, watch for changes. Uninitialized objects are excluded if no object name is provided.")
 	cmd.Flags().Bool("watch-only", false, "Watch for changes to the requested object(s), without listing/getting first.")
 	cmd.Flags().Bool("show-kind", false, "If present, list the resource type for the requested object(s).")
 	cmd.Flags().Bool("all-namespaces", false, "If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even if specified with --namespace.")
@@ -138,7 +140,6 @@ func NewCmdGet(f cmdutil.Factory, out io.Writer, errOut io.Writer) *cobra.Comman
 	usage := "identifying the resource to get from a server."
 	cmdutil.AddFilenameOptionFlags(cmd, &options.FilenameOptions, usage)
 	cmdutil.AddInclude3rdPartyFlags(cmd)
-	cmdutil.AddOpenAPIFlags(cmd)
 	cmd.Flags().StringVar(&options.Raw, "raw", options.Raw, "Raw URI to request from the server.  Uses the transport specified by the kubeconfig file.")
 	return cmd
 }
@@ -182,7 +183,7 @@ func RunGet(f cmdutil.Factory, out, errOut io.Writer, cmd *cobra.Command, args [
 		enforceNamespace = false
 	}
 
-	if len(args) == 0 && cmdutil.IsFilenameEmpty(options.Filenames) {
+	if len(args) == 0 && cmdutil.IsFilenameSliceEmpty(options.Filenames) {
 		fmt.Fprint(errOut, "You must specify the type of resource to get. ", validResources)
 
 		fullCmdName := cmd.Parent().CommandPath()
@@ -191,7 +192,7 @@ func RunGet(f cmdutil.Factory, out, errOut io.Writer, cmd *cobra.Command, args [
 			usageString = fmt.Sprintf("%s\nUse \"%s explain <resource>\" for a detailed description of that resource (e.g. %[2]s explain pods).", usageString, fullCmdName)
 		}
 
-		return cmdutil.UsageError(cmd, usageString)
+		return cmdutil.UsageErrorf(cmd, usageString)
 	}
 
 	export := cmdutil.GetFlagBool(cmd, "export")
@@ -201,6 +202,15 @@ func RunGet(f cmdutil.Factory, out, errOut io.Writer, cmd *cobra.Command, args [
 
 	// handle watch separately since we cannot watch multiple resource types
 	isWatch, isWatchOnly := cmdutil.GetFlagBool(cmd, "watch"), cmdutil.GetFlagBool(cmd, "watch-only")
+
+	var includeUninitialized bool
+	if isWatch && len(args) == 2 {
+		// include the uninitialized one for watching on a single object
+		// unless explicitly set --include-uninitialized=false
+		includeUninitialized = true
+	}
+	includeUninitialized = cmdutil.ShouldIncludeUninitialized(cmd, includeUninitialized)
+
 	if isWatch || isWatchOnly {
 		builder, err := f.NewUnstructuredBuilder(true)
 		if err != nil {
@@ -212,6 +222,7 @@ func RunGet(f cmdutil.Factory, out, errOut io.Writer, cmd *cobra.Command, args [
 			FilenameParam(enforceNamespace, &options.FilenameOptions).
 			SelectorParam(selector).
 			ExportParam(export).
+			IncludeUninitialized(includeUninitialized).
 			ResourceTypeOrNameArgs(true, args...).
 			SingleResourceType().
 			Latest().
@@ -289,8 +300,7 @@ func RunGet(f cmdutil.Factory, out, errOut io.Writer, cmd *cobra.Command, args [
 					first = false
 					return false, nil
 				}
-				err := printer.PrintObj(e.Object, out)
-				return false, err
+				return false, printer.PrintObj(e.Object, out)
 			})
 			return err
 		})
@@ -302,6 +312,7 @@ func RunGet(f cmdutil.Factory, out, errOut io.Writer, cmd *cobra.Command, args [
 		FilenameParam(enforceNamespace, &options.FilenameOptions).
 		SelectorParam(selector).
 		ExportParam(export).
+		IncludeUninitialized(includeUninitialized).
 		ResourceTypeOrNameArgs(true, args...).
 		ContinueOnError().
 		Latest().
@@ -458,7 +469,7 @@ func RunGet(f cmdutil.Factory, out, errOut io.Writer, cmd *cobra.Command, args [
 			// if cmd does not specify output format and useOpenAPIPrintColumnFlagLabel flag is true,
 			// then get the default output options for this mapping from OpenAPI schema.
 			if !cmdSpecifiesOutputFmt(cmd) && useOpenAPIPrintColumns {
-				outputOpts, _ = outputOptsForMappingFromOpenAPI(f, cmdutil.GetOpenAPICacheDir(cmd), mapping)
+				outputOpts, _ = outputOptsForMappingFromOpenAPI(f, mapping)
 			}
 
 			printer, err = f.PrinterForMapping(cmd, false, outputOpts, mapping, allNamespaces)
@@ -544,7 +555,7 @@ func RunGet(f cmdutil.Factory, out, errOut io.Writer, cmd *cobra.Command, args [
 func addOpenAPIPrintColumnFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool(useOpenAPIPrintColumnFlagLabel, false, "If true, use x-kubernetes-print-column metadata (if present) from openapi schema for displaying a resource.")
 	// marking it deprecated so that it is hidden from usage/help text.
-	cmd.Flags().MarkDeprecated(useOpenAPIPrintColumnFlagLabel, "its an experimental feature.")
+	cmd.Flags().MarkDeprecated(useOpenAPIPrintColumnFlagLabel, "It's an experimental feature.")
 }
 
 func shouldGetNewPrinterForMapping(printer printers.ResourcePrinter, lastMapping, mapping *meta.RESTMapping) bool {
@@ -557,23 +568,23 @@ func cmdSpecifiesOutputFmt(cmd *cobra.Command) bool {
 
 // outputOptsForMappingFromOpenAPI looks for the output format metatadata in the
 // openapi schema and returns the output options for the mapping if found.
-func outputOptsForMappingFromOpenAPI(f cmdutil.Factory, openAPIcacheDir string, mapping *meta.RESTMapping) (*printers.OutputOptions, bool) {
+func outputOptsForMappingFromOpenAPI(f cmdutil.Factory, mapping *meta.RESTMapping) (*printers.OutputOptions, bool) {
 
 	// user has not specified any output format, check if OpenAPI has
 	// default specification to print this resource type
-	api, err := f.OpenAPISchema(openAPIcacheDir)
+	api, err := f.OpenAPISchema()
 	if err != nil {
 		// Error getting schema
 		return nil, false
 	}
 	// Found openapi metadata for this resource
-	kind, found := api.LookupResource(mapping.GroupVersionKind)
-	if !found {
-		// Kind not found, return empty columns
+	schema := api.LookupResource(mapping.GroupVersionKind)
+	if schema == nil {
+		// Schema not found, return empty columns
 		return nil, false
 	}
 
-	columns, found := openapi.GetPrintColumns(kind.Extensions)
+	columns, found := openapi.GetPrintColumns(schema.GetExtensions())
 	if !found {
 		// Extension not found, return empty columns
 		return nil, false

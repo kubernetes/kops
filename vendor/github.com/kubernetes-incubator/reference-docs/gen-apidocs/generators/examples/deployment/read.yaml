@@ -1,0 +1,72 @@
+name: deployment-example
+namespace: default
+response: |
+  {
+    "kind": "Deployment",
+    "apiVersion": "apps/v1beta1",
+    "metadata": {
+      "name": "deployment-example",
+      "namespace": "default",
+      "selfLink": "/apis/apps/v1beta1/namespaces/default/deployments/deployment-example",
+      "uid": "1b33145a-9c63-11e6-9c54-42010a800148",
+      "resourceVersion": "2064726",
+      "generation": 4,
+      "creationTimestamp": "2016-10-27T16:33:35Z",
+      "labels": {
+        "app": "nginx"
+      },
+      "annotations": {
+        "deployment.kubernetes.io/revision": "1"
+      }
+    },
+    "spec": {
+      "replicas": 3,
+      "selector": {
+        "matchLabels": {
+          "app": "nginx"
+        }
+      },
+      "template": {
+        "metadata": {
+          "creationTimestamp": null,
+          "labels": {
+            "app": "nginx"
+          }
+        },
+        "spec": {
+          "containers": [
+            {
+              "name": "nginx",
+              "image": "nginx:1.10",
+              "ports": [
+                {
+                  "containerPort": 80,
+                  "protocol": "TCP"
+                }
+              ],
+              "resources": {},
+              "terminationMessagePath": "/dev/termination-log",
+              "imagePullPolicy": "IfNotPresent"
+            }
+          ],
+          "restartPolicy": "Always",
+          "terminationGracePeriodSeconds": 30,
+          "dnsPolicy": "ClusterFirst",
+          "securityContext": {}
+        }
+      },
+      "strategy": {
+        "type": "RollingUpdate",
+        "rollingUpdate": {
+          "maxUnavailable": 1,
+          "maxSurge": 1
+        }
+      }
+    },
+    "status": {
+      "observedGeneration": 4,
+      "replicas": 3,
+      "updatedReplicas": 3,
+      "availableReplicas": 3
+    }
+  }

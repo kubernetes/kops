@@ -291,7 +291,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 	//}
 
 	{
-		groups, err := resources.FindAutoscalingGroups(awsCloud, awsCloud.Tags())
+		groups, err := awsup.FindAutoscalingGroups(awsCloud, awsCloud.Tags())
 		if err != nil {
 			return fmt.Errorf("error listing autoscaling groups: %v", err)
 		}
@@ -414,7 +414,7 @@ func (x *ImportCluster) ImportAWSCluster() error {
 
 	//b.Context = "aws_" + instancePrefix
 
-	keyStore, err := registry.KeyStore(cluster)
+	keyStore, err := x.Clientset.KeyStore(cluster)
 	if err != nil {
 		return err
 	}

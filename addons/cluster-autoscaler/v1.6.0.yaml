@@ -27,6 +27,12 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - pods/eviction
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
   - pods/status
   verbs:
   - update
@@ -43,6 +49,14 @@ rules:
   - ""
   resources:
   - nodes
+  verbs:
+  - watch
+  - list
+  - get
+  - update
+- apiGroups:
+  - ""
+  resources:
   - pods
   - services
   - replicationcontrollers
@@ -51,6 +65,7 @@ rules:
   verbs:
   - watch
   - list
+  - get
 - apiGroups:
   - extensions
   resources:
@@ -59,6 +74,7 @@ rules:
   verbs:
   - watch
   - list
+  - get
 - apiGroups:
   - policy
   resources:
@@ -66,6 +82,14 @@ rules:
   verbs:
   - watch
   - list
+- apiGroups:
+  - apps
+  resources:
+  - statefulsets
+  verbs:
+  - watch
+  - list
+  - get
 
 ---
 
@@ -182,6 +206,7 @@ spec:
         - name: ssl-certs
           hostPath:
             path: {{SSL_CERT_PATH}}
+      dnsPolicy: "Default"
       nodeSelector:
         node-role.kubernetes.io/master: ""
       tolerations:

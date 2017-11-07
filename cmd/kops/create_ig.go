@@ -29,15 +29,20 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/util/editor"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 type CreateInstanceGroupOptions struct {
 	Role    string
 	Subnets []string
+	// DryRun mode output an ig manifest of Output type.
+	DryRun bool
+	// Output type during a DryRun
+	Output string
 }
 
 var (
@@ -51,6 +56,10 @@ var (
 		# Create an instancegroup for the k8s-cluster.example.com cluster.
 		kops create ig --name=k8s-cluster.example.com node-example \
 		  --role node --subnet my-subnet-name
+
+		# Create a YAML manifest for an instancegroup for the k8s-cluster.example.com cluster.
+		kops create ig --name=k8s-cluster.example.com node-example \
+		  --role node --subnet my-subnet-name --dry-run -oyaml
 		`))
 
 	create_ig_short = i18n.T(`Create an instancegroup.`)
@@ -84,6 +93,9 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 
 	cmd.Flags().StringVar(&options.Role, "role", options.Role, "Type of instance group to create ("+strings.Join(allRoles, ",")+")")
 	cmd.Flags().StringSliceVar(&options.Subnets, "subnet", options.Subnets, "Subnets in which to create instance group")
+	// DryRun mode that will print YAML or JSON
+	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
+	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Ouput format. One of json|yaml")
 
 	return cmd
 }
@@ -141,11 +153,37 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return err
 	}
 
+	if options.DryRun {
+
+		if options.Output == "" {
+			return fmt.Errorf("must set output flag; yaml or json")
+		}
+
+		// Cluster name is not populated, and we need it
+		ig.ObjectMeta.Labels = make(map[string]string)
+		ig.ObjectMeta.Labels[api.LabelClusterName] = cluster.ObjectMeta.Name
+
+		switch options.Output {
+		case OutputYaml:
+			if err := fullOutputYAML(out, ig); err != nil {
+				return fmt.Errorf("error writing cluster yaml to stdout: %v", err)
+			}
+			return nil
+		case OutputJSON:
+			if err := fullOutputJSON(out, ig); err != nil {
+				return fmt.Errorf("error writing cluster json to stdout: %v", err)
+			}
+			return nil
+		default:
+			return fmt.Errorf("unsupported output type %q", options.Output)
+		}
+	}
+
 	var (
 		edit = editor.NewDefaultEditor(editorEnvs)
 	)
 
-	raw, err := api.ToVersionedYaml(ig)
+	raw, err := kopscodecs.ToVersionedYaml(ig)
 	if err != nil {
 		return err
 	}
@@ -162,7 +200,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		return fmt.Errorf("error launching editor: %v", err)
 	}
 
-	obj, _, err := api.ParseVersionedYaml(edited)
+	obj, _, err := kopscodecs.ParseVersionedYaml(edited)
 	if err != nil {
 		return fmt.Errorf("error parsing yaml: %v", err)
 	}

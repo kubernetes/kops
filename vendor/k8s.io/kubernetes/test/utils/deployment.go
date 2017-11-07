@@ -22,12 +22,12 @@ import (
 
 	"github.com/davecgh/go-spew/spew"
 
+	"k8s.io/api/core/v1"
+	extensions "k8s.io/api/extensions/v1beta1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/kubernetes/pkg/api/v1"
+	clientset "k8s.io/client-go/kubernetes"
 	podutil "k8s.io/kubernetes/pkg/api/v1/pod"
-	extensions "k8s.io/kubernetes/pkg/apis/extensions/v1beta1"
-	"k8s.io/kubernetes/pkg/client/clientset_generated/clientset"
 	deploymentutil "k8s.io/kubernetes/pkg/controller/deployment/util"
 	labelsutil "k8s.io/kubernetes/pkg/util/labels"
 )
@@ -85,7 +85,7 @@ func WaitForDeploymentStatusValid(c clientset.Interface, d *extensions.Deploymen
 		if err != nil {
 			return false, err
 		}
-		oldRSs, allOldRSs, newRS, err = deploymentutil.GetAllReplicaSets(deployment, c)
+		oldRSs, allOldRSs, newRS, err = deploymentutil.GetAllReplicaSets(deployment, c.ExtensionsV1beta1())
 		if err != nil {
 			return false, err
 		}
@@ -154,7 +154,7 @@ func WaitForDeploymentRevisionAndImage(c clientset.Interface, ns, deploymentName
 		}
 		// The new ReplicaSet needs to be non-nil and contain the pod-template-hash label
 
-		newRS, err = deploymentutil.GetNewReplicaSet(deployment, c)
+		newRS, err = deploymentutil.GetNewReplicaSet(deployment, c.ExtensionsV1beta1())
 
 		if err != nil {
 			return false, err
@@ -175,8 +175,8 @@ func WaitForDeploymentRevisionAndImage(c clientset.Interface, ns, deploymentName
 			logf(reason)
 			return false, nil
 		}
-		if deployment.Spec.Template.Spec.Containers[0].Image != image {
-			reason = fmt.Sprintf("Deployment %q doesn't have the required image set", deployment.Name)
+		if !containsImage(deployment.Spec.Template.Spec.Containers, image) {
+			reason = fmt.Sprintf("Deployment %q doesn't have the required image %s set", deployment.Name, image)
 			logf(reason)
 			return false, nil
 		}
@@ -185,8 +185,8 @@ func WaitForDeploymentRevisionAndImage(c clientset.Interface, ns, deploymentName
 			logf(reason)
 			return false, nil
 		}
-		if newRS.Spec.Template.Spec.Containers[0].Image != image {
-			reason = fmt.Sprintf("New replica set %q doesn't have the required image set", newRS.Name)
+		if !containsImage(newRS.Spec.Template.Spec.Containers, image) {
+			reason = fmt.Sprintf("New replica set %q doesn't have the required image %s.", newRS.Name, image)
 			logf(reason)
 			return false, nil
 		}
@@ -203,4 +203,44 @@ func WaitForDeploymentRevisionAndImage(c clientset.Interface, ns, deploymentName
 		return fmt.Errorf("error waiting for deployment %q (got %s / %s) and new replica set %q (got %s / %s) revision and image to match expectation (expected %s / %s): %v", deploymentName, deployment.Annotations[deploymentutil.RevisionAnnotation], deployment.Spec.Template.Spec.Containers[0].Image, newRS.Name, newRS.Annotations[deploymentutil.RevisionAnnotation], newRS.Spec.Template.Spec.Containers[0].Image, revision, image, err)
 	}
 	return nil
+}
+
+func containsImage(containers []v1.Container, imageName string) bool {
+	for _, container := range containers {
+		if container.Image == imageName {
+			return true
+		}
+	}
+	return false
+}
+
+type UpdateDeploymentFunc func(d *extensions.Deployment)
+
+func UpdateDeploymentWithRetries(c clientset.Interface, namespace, name string, applyUpdate UpdateDeploymentFunc, logf LogfFn) (*extensions.Deployment, error) {
+	var deployment *extensions.Deployment
+	var updateErr error
+	pollErr := wait.PollImmediate(1*time.Second, 1*time.Minute, func() (bool, error) {
+		var err error
+		if deployment, err = c.Extensions().Deployments(namespace).Get(name, metav1.GetOptions{}); err != nil {
+			return false, err
+		}
+		// Apply the update, then attempt to push it to the apiserver.
+		applyUpdate(deployment)
+		if deployment, err = c.Extensions().Deployments(namespace).Update(deployment); err == nil {
+			logf("Updating deployment %s", name)
+			return true, nil
+		}
+		updateErr = err
+		return false, nil
+	})
+	if pollErr == wait.ErrWaitTimeout {
+		pollErr = fmt.Errorf("couldn't apply the provided updated to deployment %q: %v", name, updateErr)
+	}
+	return deployment, pollErr
+}
+
+func WaitForObservedDeployment(c clientset.Interface, ns, deploymentName string, desiredGeneration int64) error {
+	return deploymentutil.WaitForObservedDeployment(func() (*extensions.Deployment, error) {
+		return c.Extensions().Deployments(ns).Get(deploymentName, metav1.GetOptions{})
+	}, desiredGeneration, 2*time.Second, 1*time.Minute)
 }

@@ -1,0 +1,17 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["scanner.go"],
+    importpath = "github.com/hashicorp/hcl/json/scanner",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/hashicorp/hcl/json/token:go_default_library"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["scanner_test.go"],
+    importpath = "github.com/hashicorp/hcl/json/scanner",
+    library = ":go_default_library",
+    deps = ["//vendor/github.com/hashicorp/hcl/json/token:go_default_library"],
+)

@@ -29,8 +29,19 @@ import (
 	"github.com/golang/glog"
 )
 
-// BuildFlags builds flag arguments based on "flag" tags on the structure
+// BuildFlags returns a space separated list arguments
+// @deprecated: please use BuildFlagsList
 func BuildFlags(options interface{}) (string, error) {
+	flags, err := BuildFlagsList(options)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Join(flags, " "), nil
+}
+
+// BuildFlagsList reflects the options interface and extracts the flags from struct tags
+func BuildFlagsList(options interface{}) ([]string, error) {
 	var flags []string
 
 	walker := func(path string, field *reflect.StructField, val reflect.Value) error {
@@ -171,20 +182,20 @@ func BuildFlags(options interface{}) (string, error) {
 			}
 
 		default:
-			return fmt.Errorf("BuildFlags of value type not handled: %T %s=%v", v, path, v)
+			return fmt.Errorf("BuildFlagsList of value type not handled: %T %s=%v", v, path, v)
 		}
 		if flag != "" {
 			flags = append(flags, flag)
 		}
-		// Nothing more to do here
+
 		return utils.SkipReflection
 	}
 	err := utils.ReflectRecursive(reflect.ValueOf(options), walker)
 	if err != nil {
-		return "", err
+		return nil, fmt.Errorf("BuildFlagsList to reflect value: %s", err)
 	}
 	// Sort so that the order is stable across runs
 	sort.Strings(flags)
 
-	return strings.Join(flags, " "), nil
+	return flags, nil
 }

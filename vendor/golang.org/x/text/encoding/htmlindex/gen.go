@@ -26,7 +26,7 @@ type group struct {
 func main() {
 	gen.Init()
 
-	r := gen.Open("http://www.w3.org/TR", "w3", "encoding/indexes/encodings.json")
+	r := gen.Open("https://encoding.spec.whatwg.org", "whatwg", "encodings.json")
 	var groups []group
 	if err := json.NewDecoder(r).Decode(&groups); err != nil {
 		log.Fatalf("Error reading encodings.json: %v", err)
@@ -37,9 +37,10 @@ func main() {
 	fmt.Fprintln(w, "const (")
 	for i, g := range groups {
 		for _, e := range g.Encodings {
-			name := consts[e.Name]
+			key := strings.ToLower(e.Name)
+			name := consts[key]
 			if name == "" {
-				log.Fatalf("No const defined for %s.", e.Name)
+				log.Fatalf("No const defined for %s.", key)
 			}
 			if i == 0 {
 				fmt.Fprintf(w, "%s htmlEncoding = iota\n", name)
@@ -54,7 +55,7 @@ func main() {
 	fmt.Fprintln(w, "var canonical = [numEncodings]string{")
 	for _, g := range groups {
 		for _, e := range g.Encodings {
-			fmt.Fprintf(w, "%q,\n", e.Name)
+			fmt.Fprintf(w, "%q,\n", strings.ToLower(e.Name))
 		}
 	}
 	fmt.Fprint(w, "}\n\n")
@@ -63,7 +64,9 @@ func main() {
 	for _, g := range groups {
 		for _, e := range g.Encodings {
 			for _, l := range e.Labels {
-				fmt.Fprintf(w, "%q: %s,\n", l, consts[e.Name])
+				key := strings.ToLower(e.Name)
+				name := consts[key]
+				fmt.Fprintf(w, "%q: %s,\n", l, name)
 			}
 		}
 	}
@@ -130,7 +133,10 @@ var consts = map[string]string{
 // locales is taken from
 // https://html.spec.whatwg.org/multipage/syntax.html#encoding-sniffing-algorithm.
 var locales = []struct{ tag, name string }{
-	{"und", "windows-1252"}, // The default value.
+	// The default value. Explicitly state latin to benefit from the exact
+	// script option, while still making 1252 the default encoding for languages
+	// written in Latin script.
+	{"und_Latn", "windows-1252"},
 	{"ar", "windows-1256"},
 	{"ba", "windows-1251"},
 	{"be", "windows-1251"},

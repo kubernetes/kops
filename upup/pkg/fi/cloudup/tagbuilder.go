@@ -45,7 +45,7 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 	} else if networking.External != nil {
 		// external is based on kubenet
 		tags.Insert("_networking_kubenet", "_networking_external")
-	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil {
+	} else if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil {
 		tags.Insert("_networking_cni")
 	} else if networking.Kopeio != nil {
 		// TODO combine with the External
@@ -56,24 +56,27 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		return nil, fmt.Errorf("no networking mode set")
 	}
 
-	switch cluster.Spec.CloudProvider {
-	case "gce":
+	switch api.CloudProviderID(cluster.Spec.CloudProvider) {
+	case api.CloudProviderGCE:
 		{
 			tags.Insert("_gce")
 		}
 
-	case "aws":
+	case api.CloudProviderAWS:
 		{
 			tags.Insert("_aws")
 		}
-	case "digitalocean":
+	case api.CloudProviderDO:
 		{
 			tags.Insert("_do")
 		}
-	case "vsphere":
+	case api.CloudProviderVSphere:
 		{
 			tags.Insert("_vsphere")
 		}
+
+	case api.CloudProviderBareMetal:
+		// No tags
 
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
@@ -117,7 +120,7 @@ func buildNodeupTags(role api.InstanceGroupRole, cluster *api.Cluster, clusterTa
 		return nil, fmt.Errorf("Networking is not set, and should not be nil here")
 	}
 
-	if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil {
+	if networking.CNI != nil || networking.Weave != nil || networking.Flannel != nil || networking.Calico != nil || networking.Canal != nil || networking.Kuberouter != nil || networking.Romana != nil {
 		// external is based on cni, weave, flannel, calico, etc
 		tags.Insert("_networking_cni")
 	}

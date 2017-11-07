@@ -211,7 +211,7 @@ func TestExpand(t *testing.T) {
 
 	e := o.front()
 	for _, tt := range expandTest {
-		exp := b.t.expandElem[e.expansionIndex:]
+		exp := b.t.ExpandElem[e.expansionIndex:]
 		if int(exp[0]) != len(tt.ces) {
 			t.Errorf("%U: len(expansion)==%d; want %d", []rune(tt.str)[0], exp[0], len(tt.ces))
 		}
@@ -224,8 +224,8 @@ func TestExpand(t *testing.T) {
 		e, _ = e.nextIndexed()
 	}
 	// Verify uniquing.
-	if len(b.t.expandElem) != totalElements {
-		t.Errorf("len(expandElem)==%d; want %d", len(b.t.expandElem), totalElements)
+	if len(b.t.ExpandElem) != totalElements {
+		t.Errorf("len(expandElem)==%d; want %d", len(b.t.ExpandElem), totalElements)
 	}
 }
 
@@ -275,16 +275,16 @@ func TestContract(t *testing.T) {
 			continue
 		}
 		str := tt.str[1:]
-		offset, n := b.t.contractTries.lookup(e.contractionHandle, []byte(str))
+		offset, n := lookup(&b.t.ContractTries, e.contractionHandle, []byte(str))
 		if len(str) != n {
 			t.Errorf("%s: bytes consumed==%d; want %d", tt.str, n, len(str))
 		}
-		ce := b.t.contractElem[offset+e.contractionIndex]
+		ce := b.t.ContractElem[offset+e.contractionIndex]
 		if want, _ := makeCE(tt.ces[0]); want != ce {
 			t.Errorf("%s: element %X; want %X", tt.str, ce, want)
 		}
 	}
-	if len(b.t.contractElem) != totalElements {
-		t.Errorf("len(expandElem)==%d; want %d", len(b.t.contractElem), totalElements)
+	if len(b.t.ContractElem) != totalElements {
+		t.Errorf("len(expandElem)==%d; want %d", len(b.t.ContractElem), totalElements)
 	}
 }

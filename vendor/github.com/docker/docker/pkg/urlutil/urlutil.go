@@ -11,7 +11,7 @@ var (
 	validPrefixes = map[string][]string{
 		"url":       {"http://", "https://"},
 		"git":       {"git://", "github.com/", "git@"},
-		"transport": {"tcp://", "tcp+tls://", "udp://", "unix://"},
+		"transport": {"tcp://", "tcp+tls://", "udp://", "unix://", "unixgram://"},
 	}
 	urlPathWithFragmentSuffix = regexp.MustCompile(".git(?:#.+)?$")
 )
@@ -27,12 +27,6 @@ func IsGitURL(str string) bool {
 		return true
 	}
 	return checkURL(str, "git")
-}
-
-// IsGitTransport returns true if the provided str is a git transport by inspecting
-// the prefix of the string for known protocols used in git.
-func IsGitTransport(str string) bool {
-	return IsURL(str) || strings.HasPrefix(str, "git://") || strings.HasPrefix(str, "git@")
 }
 
 // IsTransportURL returns true if the provided str is a transport (tcp, tcp+tls, udp, unix) URL.

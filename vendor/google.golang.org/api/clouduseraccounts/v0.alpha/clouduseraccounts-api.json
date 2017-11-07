@@ -1,6 +1,6 @@
 {
  "kind": "discovery#restDescription",
- "etag": "\"jQLIOHBVnDZie4rQHGH1WJF-INE/lOQeocShB0dxGwrtxzB56jZ95Xk\"",
+ "etag": "\"YWOzh2SDasdU84ArJnpYek-OMdg/lOQeocShB0dxGwrtxzB56jZ95Xk\"",
  "discoveryVersion": "v1",
  "id": "clouduseraccounts:alpha",
  "name": "clouduseraccounts",

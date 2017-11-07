@@ -19,6 +19,9 @@ Create a secret
   
   kops create secret dockerconfig -f ~/.docker/config.json \
   --name k8s-cluster.example.com --state s3://example.com
+  
+  kops create secret encryptionconfig -f ~/.encryptionconfig.yaml \
+  --name k8s-cluster.example.com --state s3://example.com
 ```
 
 ### Options inherited from parent commands
@@ -39,5 +42,6 @@ Create a secret
 ### SEE ALSO
 * [kops create](kops_create.md)	 - Create a resource by command line, filename or stdin.
 * [kops create secret dockerconfig](kops_create_secret_dockerconfig.md)	 - Create a docker config.
+* [kops create secret encryptionconfig](kops_create_secret_encryptionconfig.md)	 - Create an encryption config.
 * [kops create secret sshpublickey](kops_create_secret_sshpublickey.md)	 - Create a ssh public key.
 

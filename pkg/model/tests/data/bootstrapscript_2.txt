@@ -23,27 +23,22 @@ NODEUP_HASH=NUSHash
 
 
 
-export http_proxy=http://example.com:80
-export https_proxy=${http_proxy}
-export no_proxy=
-export NO_PROXY=${no_proxy}
-echo "export http_proxy=${http_proxy}" >> /etc/default/docker
-echo "export https_proxy=${http_proxy}" >> /etc/default/docker
-echo "export no_proxy=${no_proxy}" >> /etc/default/docker
-echo "export NO_PROXY=${no_proxy}" >> /etc/default/docker
-echo "export http_proxy=${http_proxy}" >> /etc/environment
-echo "export https_proxy=${http_proxy}" >> /etc/environment
-echo "export no_proxy=${no_proxy}" >> /etc/environment
-echo "export NO_PROXY=${no_proxy}" >> /etc/environment
-echo DefaultEnvironment=\"http_proxy=${http_proxy}\" \"https_proxy=${http_proxy}\"echo DefaultEnvironment=\"http_proxy=${http_proxy}\" \"https_proxy=${http_proxy}\" \"NO_PROXY=${no_proxy}\" \"no_proxy=${no_proxy}\" >> /etc/systemd/system.conf
-source /etc/environment
+echo "http_proxy=http://example.com:80" >> /etc/environment
+echo "https_proxy=http://example.com:80" >> /etc/environment
+echo "no_proxy=" >> /etc/environment
+echo "NO_PROXY=" >> /etc/environment
+while read in; do export $in; done < /etc/environment
+case `cat /proc/version` in
+*[Dd]ebian*)
+  echo "Acquire::http::Proxy \"${http_proxy}\";" > /etc/apt/apt.conf.d/30proxy ;;
+*[Uu]buntu*)
+  echo "Acquire::http::Proxy \"${http_proxy}\";" > /etc/apt/apt.conf.d/30proxy ;;
+*[Rr]ed[Hh]at*)
+  echo "http_proxy=${http_proxy}" >> /etc/yum.conf ;;
+esac
+echo "DefaultEnvironment=\"http_proxy=${http_proxy}\" \"https_proxy=${http_proxy}\" \"NO_PROXY=${no_proxy}\" \"no_proxy=${no_proxy}\"" >> /etc/systemd/system.conf
 systemctl daemon-reload
 systemctl daemon-reexec
-if [ -f /etc/lsb-release ] || [ -f /etc/debian_version ]; then
-    echo "Acquire::http::Proxy \"${http_proxy}\";" > /etc/apt/apt.conf.d/30proxy
-elif [ -f /etc/redhat-release ]; then
-  echo "http_proxy=${http_proxy}" >> /etc/yum.conf
-fi
 
 
 function ensure-install-dir() {
@@ -69,9 +64,23 @@ download-or-bust() {
     for url in "${urls[@]}"; do
       local file="${url##*/}"
       rm -f "${file}"
-      if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
-        echo "== Failed to download ${url}. Retrying. =="
-      elif [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
+
+      if [[ $(which curl) ]]; then
+        if ! curl -f --ipv4 -Lo "${file}" --connect-timeout 20 --retry 6 --retry-delay 10 "${url}"; then
+          echo "== Failed to curl ${url}. Retrying. =="
+          break
+        fi
+      elif [[ $(which wget ) ]]; then
+        if ! wget --inet4-only -O "${file}" --connect-timeout=20 --tries=6 --wait=10 "${url}"; then
+          echo "== Failed to wget ${url}. Retrying. =="
+          break
+        fi
+      else
+        echo "== Could not find curl or wget. Retrying. =="
+        break
+      fi
+
+      if [[ -n "${hash}" ]] && ! validate-hash "${file}" "${hash}"; then
         echo "== Hash validation of ${url} failed. Retrying. =="
       else
         if [[ -n "${hash}" ]]; then
@@ -149,16 +158,15 @@ cloudConfig:
   nodeTags: something
 docker:
   logLevel: INFO
+fileAssets:
+- content: 4/KwQntXJBIluh/8K2f+zWTQdhM= (fingerprint)
+  name: iptables-restore
+  path: /var/lib/iptables/rules-save
 hooks:
 - execContainer:
     command:
-    - sh
-    - -c
-    - chroot /rootfs apt-get update && chroot /rootfs apt-get install -y ceph-common
+    - ChIIt0bv6sTY/wwaEWTBNaObBgM= (fingerprint)
     image: busybox
-  roles:
-  - Master
-  - Node
 kubeAPIServer:
   image: CoreOS
 kubeControllerManager:
@@ -177,20 +185,20 @@ masterKubelet:
 __EOF_CLUSTER_SPEC
 
 cat > ig_spec.yaml << '__EOF_IG_SPEC'
+fileAssets:
+- content: 4/KwQntXJBIluh/8K2f+zWTQdhM= (fingerprint)
+  name: iptables-restore
+  path: /var/lib/iptables/rules-save
+- content: tre8+iQw12cCsccJY3cQk4HQV3g= (fingerprint)
+  name: tokens
+  path: /kube/tokens.csv
 hooks:
 - before:
   - update-engine.service
   - kubelet.service
-  manifest: |-
-    Type=oneshot
-    ExecStart=/usr/bin/systemctl stop update-engine.service
+  manifest: LSdpmOQebIkYoG0lRv8AUHCBIyg= (fingerprint)
   name: disable-update-engine.service
-  roles:
-  - Master
-  - Node
-- manifest: |-
-    Type=oneshot
-    ExecStart=/usr/bin/systemctl start apply-to-all.service
+- manifest: FdicqEXLciSI1yRjQxsrye3QivU= (fingerprint)
   name: apply-to-all.service
 kubelet:
   kubeconfigPath: /etc/kubernetes/igconfig.txt

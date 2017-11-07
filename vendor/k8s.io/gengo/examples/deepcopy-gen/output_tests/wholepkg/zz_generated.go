@@ -22,509 +22,922 @@ package wholepkg
 
 import (
 	conversion "k8s.io/apimachinery/pkg/conversion"
+	otherpkg "k8s.io/gengo/examples/deepcopy-gen/output_tests/otherpkg"
 	reflect "reflect"
 )
 
 // GetGeneratedDeepCopyFuncs returns the generated funcs, since we aren't registering them.
+//
+// Deprecated: deepcopy registration will go away when static deepcopy is fully implemented.
 func GetGeneratedDeepCopyFuncs() []conversion.GeneratedDeepCopyFunc {
 	return []conversion.GeneratedDeepCopyFunc{
-		{Fn: DeepCopy_wholepkg_ManualStruct, InType: reflect.TypeOf(&ManualStruct{})},
-		{Fn: DeepCopy_wholepkg_ManualStruct_Alias, InType: reflect.TypeOf(&ManualStruct_Alias{})},
-		{Fn: DeepCopy_wholepkg_Struct_B, InType: reflect.TypeOf(&Struct_B{})},
-		{Fn: DeepCopy_wholepkg_Struct_Embed_Int, InType: reflect.TypeOf(&Struct_Embed_Int{})},
-		{Fn: DeepCopy_wholepkg_Struct_Embed_ManualStruct, InType: reflect.TypeOf(&Struct_Embed_ManualStruct{})},
-		{Fn: DeepCopy_wholepkg_Struct_Embed_Pointer, InType: reflect.TypeOf(&Struct_Embed_Pointer{})},
-		{Fn: DeepCopy_wholepkg_Struct_Embed_Struct_PrimitivePointers, InType: reflect.TypeOf(&Struct_Embed_Struct_PrimitivePointers{})},
-		{Fn: DeepCopy_wholepkg_Struct_Embed_Struct_Primitives, InType: reflect.TypeOf(&Struct_Embed_Struct_Primitives{})},
-		{Fn: DeepCopy_wholepkg_Struct_Embed_Struct_Slices, InType: reflect.TypeOf(&Struct_Embed_Struct_Slices{})},
-		{Fn: DeepCopy_wholepkg_Struct_Empty, InType: reflect.TypeOf(&Struct_Empty{})},
-		{Fn: DeepCopy_wholepkg_Struct_Everything, InType: reflect.TypeOf(&Struct_Everything{})},
-		{Fn: DeepCopy_wholepkg_Struct_PrimitivePointers, InType: reflect.TypeOf(&Struct_PrimitivePointers{})},
-		{Fn: DeepCopy_wholepkg_Struct_PrimitivePointers_Alias, InType: reflect.TypeOf(&Struct_PrimitivePointers_Alias{})},
-		{Fn: DeepCopy_wholepkg_Struct_Primitives, InType: reflect.TypeOf(&Struct_Primitives{})},
-		{Fn: DeepCopy_wholepkg_Struct_Primitives_Alias, InType: reflect.TypeOf(&Struct_Primitives_Alias{})},
-		{Fn: DeepCopy_wholepkg_Struct_Slices, InType: reflect.TypeOf(&Struct_Slices{})},
-		{Fn: DeepCopy_wholepkg_Struct_Slices_Alias, InType: reflect.TypeOf(&Struct_Slices_Alias{})},
-		{Fn: DeepCopy_wholepkg_Struct_Struct_PrimitivePointers, InType: reflect.TypeOf(&Struct_Struct_PrimitivePointers{})},
-		{Fn: DeepCopy_wholepkg_Struct_Struct_Primitives, InType: reflect.TypeOf(&Struct_Struct_Primitives{})},
-		{Fn: DeepCopy_wholepkg_Struct_Struct_Slices, InType: reflect.TypeOf(&Struct_Struct_Slices{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*ManualStruct).DeepCopyInto(out.(*ManualStruct))
+			return nil
+		}, InType: reflect.TypeOf(&ManualStruct{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*ManualStruct_Alias).DeepCopyInto(out.(*ManualStruct_Alias))
+			return nil
+		}, InType: reflect.TypeOf(&ManualStruct_Alias{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_B).DeepCopyInto(out.(*Struct_B))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_B{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Embed_Int).DeepCopyInto(out.(*Struct_Embed_Int))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Embed_Int{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Embed_ManualStruct).DeepCopyInto(out.(*Struct_Embed_ManualStruct))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Embed_ManualStruct{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Embed_Pointer).DeepCopyInto(out.(*Struct_Embed_Pointer))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Embed_Pointer{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Embed_Struct_PrimitivePointers).DeepCopyInto(out.(*Struct_Embed_Struct_PrimitivePointers))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Embed_Struct_PrimitivePointers{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Embed_Struct_Primitives).DeepCopyInto(out.(*Struct_Embed_Struct_Primitives))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Embed_Struct_Primitives{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Embed_Struct_Slices).DeepCopyInto(out.(*Struct_Embed_Struct_Slices))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Embed_Struct_Slices{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Empty).DeepCopyInto(out.(*Struct_Empty))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Empty{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Everything).DeepCopyInto(out.(*Struct_Everything))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Everything{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_ExplicitObject).DeepCopyInto(out.(*Struct_ExplicitObject))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_ExplicitObject{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_ExplicitSelectorExplicitObject).DeepCopyInto(out.(*Struct_ExplicitSelectorExplicitObject))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_ExplicitSelectorExplicitObject{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Interfaces).DeepCopyInto(out.(*Struct_Interfaces))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Interfaces{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_NonPointerExplicitObject).DeepCopyInto(out.(*Struct_NonPointerExplicitObject))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_NonPointerExplicitObject{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_ObjectAndList).DeepCopyInto(out.(*Struct_ObjectAndList))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_ObjectAndList{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_ObjectAndObject).DeepCopyInto(out.(*Struct_ObjectAndObject))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_ObjectAndObject{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_PrimitivePointers).DeepCopyInto(out.(*Struct_PrimitivePointers))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_PrimitivePointers{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_PrimitivePointers_Alias).DeepCopyInto(out.(*Struct_PrimitivePointers_Alias))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_PrimitivePointers_Alias{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Primitives).DeepCopyInto(out.(*Struct_Primitives))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Primitives{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Primitives_Alias).DeepCopyInto(out.(*Struct_Primitives_Alias))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Primitives_Alias{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Slices).DeepCopyInto(out.(*Struct_Slices))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Slices{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Slices_Alias).DeepCopyInto(out.(*Struct_Slices_Alias))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Slices_Alias{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Struct_PrimitivePointers).DeepCopyInto(out.(*Struct_Struct_PrimitivePointers))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Struct_PrimitivePointers{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Struct_Primitives).DeepCopyInto(out.(*Struct_Struct_Primitives))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Struct_Primitives{})},
+		{Fn: func(in interface{}, out interface{}, c *conversion.Cloner) error {
+			in.(*Struct_Struct_Slices).DeepCopyInto(out.(*Struct_Struct_Slices))
+			return nil
+		}, InType: reflect.TypeOf(&Struct_Struct_Slices{})},
 	}
 }
 
-// DeepCopy_wholepkg_ManualStruct is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_ManualStruct(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*ManualStruct)
-		out := out.(*ManualStruct)
-		*out = in.DeepCopy()
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *ManualStruct) DeepCopyInto(out *ManualStruct) {
+	*out = in.DeepCopy()
+	return
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *ManualStruct_Alias) DeepCopyInto(out *ManualStruct_Alias) {
+	*out = *in
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new ManualStruct_Alias.
+func (in *ManualStruct_Alias) DeepCopy() *ManualStruct_Alias {
+	if in == nil {
 		return nil
 	}
+	out := new(ManualStruct_Alias)
+	in.DeepCopyInto(out)
+	return out
 }
 
-// DeepCopy_wholepkg_ManualStruct_Alias is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_ManualStruct_Alias(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*ManualStruct_Alias)
-		out := out.(*ManualStruct_Alias)
-		*out = *in
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_B) DeepCopyInto(out *Struct_B) {
+	*out = *in
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_B.
+func (in *Struct_B) DeepCopy() *Struct_B {
+	if in == nil {
 		return nil
 	}
+	out := new(Struct_B)
+	in.DeepCopyInto(out)
+	return out
 }
 
-// DeepCopy_wholepkg_Struct_B is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_B(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_B)
-		out := out.(*Struct_B)
-		*out = *in
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Embed_Int) DeepCopyInto(out *Struct_Embed_Int) {
+	*out = *in
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Embed_Int.
+func (in *Struct_Embed_Int) DeepCopy() *Struct_Embed_Int {
+	if in == nil {
 		return nil
 	}
+	out := new(Struct_Embed_Int)
+	in.DeepCopyInto(out)
+	return out
 }
 
-// DeepCopy_wholepkg_Struct_Embed_Int is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Embed_Int(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Embed_Int)
-		out := out.(*Struct_Embed_Int)
-		*out = *in
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Embed_ManualStruct) DeepCopyInto(out *Struct_Embed_ManualStruct) {
+	*out = *in
+	out.ManualStruct = in.ManualStruct.DeepCopy()
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Embed_ManualStruct.
+func (in *Struct_Embed_ManualStruct) DeepCopy() *Struct_Embed_ManualStruct {
+	if in == nil {
 		return nil
 	}
+	out := new(Struct_Embed_ManualStruct)
+	in.DeepCopyInto(out)
+	return out
 }
 
-// DeepCopy_wholepkg_Struct_Embed_ManualStruct is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Embed_ManualStruct(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Embed_ManualStruct)
-		out := out.(*Struct_Embed_ManualStruct)
-		*out = *in
-		out.ManualStruct = in.ManualStruct.DeepCopy()
-		return nil
-	}
-}
-
-// DeepCopy_wholepkg_Struct_Embed_Pointer is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Embed_Pointer(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Embed_Pointer)
-		out := out.(*Struct_Embed_Pointer)
-		*out = *in
-		if in.int != nil {
-			in, out := &in.int, &out.int
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Embed_Pointer) DeepCopyInto(out *Struct_Embed_Pointer) {
+	*out = *in
+	if in.int != nil {
+		in, out := &in.int, &out.int
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(int)
 			**out = **in
 		}
-		return nil
 	}
+	return
 }
 
-// DeepCopy_wholepkg_Struct_Embed_Struct_PrimitivePointers is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Embed_Struct_PrimitivePointers(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Embed_Struct_PrimitivePointers)
-		out := out.(*Struct_Embed_Struct_PrimitivePointers)
-		*out = *in
-		if err := DeepCopy_wholepkg_Struct_PrimitivePointers(&in.Struct_PrimitivePointers, &out.Struct_PrimitivePointers, c); err != nil {
-			return err
-		}
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Embed_Pointer.
+func (in *Struct_Embed_Pointer) DeepCopy() *Struct_Embed_Pointer {
+	if in == nil {
 		return nil
 	}
+	out := new(Struct_Embed_Pointer)
+	in.DeepCopyInto(out)
+	return out
 }
 
-// DeepCopy_wholepkg_Struct_Embed_Struct_Primitives is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Embed_Struct_Primitives(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Embed_Struct_Primitives)
-		out := out.(*Struct_Embed_Struct_Primitives)
-		*out = *in
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Embed_Struct_PrimitivePointers) DeepCopyInto(out *Struct_Embed_Struct_PrimitivePointers) {
+	*out = *in
+	in.Struct_PrimitivePointers.DeepCopyInto(&out.Struct_PrimitivePointers)
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Embed_Struct_PrimitivePointers.
+func (in *Struct_Embed_Struct_PrimitivePointers) DeepCopy() *Struct_Embed_Struct_PrimitivePointers {
+	if in == nil {
 		return nil
 	}
+	out := new(Struct_Embed_Struct_PrimitivePointers)
+	in.DeepCopyInto(out)
+	return out
 }
 
-// DeepCopy_wholepkg_Struct_Embed_Struct_Slices is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Embed_Struct_Slices(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Embed_Struct_Slices)
-		out := out.(*Struct_Embed_Struct_Slices)
-		*out = *in
-		if err := DeepCopy_wholepkg_Struct_Slices(&in.Struct_Slices, &out.Struct_Slices, c); err != nil {
-			return err
-		}
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Embed_Struct_Primitives) DeepCopyInto(out *Struct_Embed_Struct_Primitives) {
+	*out = *in
+	out.Struct_Primitives = in.Struct_Primitives
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Embed_Struct_Primitives.
+func (in *Struct_Embed_Struct_Primitives) DeepCopy() *Struct_Embed_Struct_Primitives {
+	if in == nil {
 		return nil
 	}
+	out := new(Struct_Embed_Struct_Primitives)
+	in.DeepCopyInto(out)
+	return out
 }
 
-// DeepCopy_wholepkg_Struct_Empty is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Empty(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Empty)
-		out := out.(*Struct_Empty)
-		*out = *in
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Embed_Struct_Slices) DeepCopyInto(out *Struct_Embed_Struct_Slices) {
+	*out = *in
+	in.Struct_Slices.DeepCopyInto(&out.Struct_Slices)
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Embed_Struct_Slices.
+func (in *Struct_Embed_Struct_Slices) DeepCopy() *Struct_Embed_Struct_Slices {
+	if in == nil {
 		return nil
 	}
+	out := new(Struct_Embed_Struct_Slices)
+	in.DeepCopyInto(out)
+	return out
 }
 
-// DeepCopy_wholepkg_Struct_Everything is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Everything(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Everything)
-		out := out.(*Struct_Everything)
-		*out = *in
-		out.ManualStructField = in.ManualStructField.DeepCopy()
-		if in.BoolPtrField != nil {
-			in, out := &in.BoolPtrField, &out.BoolPtrField
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Empty) DeepCopyInto(out *Struct_Empty) {
+	*out = *in
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Empty.
+func (in *Struct_Empty) DeepCopy() *Struct_Empty {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_Empty)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Everything) DeepCopyInto(out *Struct_Everything) {
+	*out = *in
+	out.StructField = in.StructField
+	out.EmptyStructField = in.EmptyStructField
+	out.ManualStructField = in.ManualStructField.DeepCopy()
+	out.ManualStructAliasField = in.ManualStructAliasField
+	if in.BoolPtrField != nil {
+		in, out := &in.BoolPtrField, &out.BoolPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(bool)
 			**out = **in
 		}
-		if in.IntPtrField != nil {
-			in, out := &in.IntPtrField, &out.IntPtrField
+	}
+	if in.IntPtrField != nil {
+		in, out := &in.IntPtrField, &out.IntPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(int)
 			**out = **in
 		}
-		if in.StringPtrField != nil {
-			in, out := &in.StringPtrField, &out.StringPtrField
+	}
+	if in.StringPtrField != nil {
+		in, out := &in.StringPtrField, &out.StringPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(string)
 			**out = **in
 		}
-		if in.FloatPtrField != nil {
-			in, out := &in.FloatPtrField, &out.FloatPtrField
+	}
+	if in.FloatPtrField != nil {
+		in, out := &in.FloatPtrField, &out.FloatPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(float64)
 			**out = **in
 		}
-		if err := DeepCopy_wholepkg_Struct_PrimitivePointers(&in.PrimitivePointersField, &out.PrimitivePointersField, c); err != nil {
-			return err
-		}
-		if in.ManualStructPtrField != nil {
-			in, out := &in.ManualStructPtrField, &out.ManualStructPtrField
+	}
+	in.PrimitivePointersField.DeepCopyInto(&out.PrimitivePointersField)
+	if in.ManualStructPtrField != nil {
+		in, out := &in.ManualStructPtrField, &out.ManualStructPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(ManualStruct)
 			**out = (*in).DeepCopy()
 		}
-		if in.ManualStructAliasPtrField != nil {
-			in, out := &in.ManualStructAliasPtrField, &out.ManualStructAliasPtrField
+	}
+	if in.ManualStructAliasPtrField != nil {
+		in, out := &in.ManualStructAliasPtrField, &out.ManualStructAliasPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(ManualStruct_Alias)
 			**out = **in
 		}
-		if in.SliceBoolField != nil {
-			in, out := &in.SliceBoolField, &out.SliceBoolField
-			*out = make([]bool, len(*in))
-			copy(*out, *in)
+	}
+	if in.SliceBoolField != nil {
+		in, out := &in.SliceBoolField, &out.SliceBoolField
+		*out = make([]bool, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceByteField != nil {
+		in, out := &in.SliceByteField, &out.SliceByteField
+		*out = make([]byte, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceIntField != nil {
+		in, out := &in.SliceIntField, &out.SliceIntField
+		*out = make([]int, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceStringField != nil {
+		in, out := &in.SliceStringField, &out.SliceStringField
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceFloatField != nil {
+		in, out := &in.SliceFloatField, &out.SliceFloatField
+		*out = make([]float64, len(*in))
+		copy(*out, *in)
+	}
+	in.SlicesField.DeepCopyInto(&out.SlicesField)
+	if in.SliceManualStructField != nil {
+		in, out := &in.SliceManualStructField, &out.SliceManualStructField
+		*out = make([]ManualStruct, len(*in))
+		for i := range *in {
+			(*out)[i] = (*in)[i].DeepCopy()
 		}
-		if in.SliceByteField != nil {
-			in, out := &in.SliceByteField, &out.SliceByteField
-			*out = make([]byte, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceIntField != nil {
-			in, out := &in.SliceIntField, &out.SliceIntField
-			*out = make([]int, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceStringField != nil {
-			in, out := &in.SliceStringField, &out.SliceStringField
-			*out = make([]string, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceFloatField != nil {
-			in, out := &in.SliceFloatField, &out.SliceFloatField
-			*out = make([]float64, len(*in))
-			copy(*out, *in)
-		}
-		if err := DeepCopy_wholepkg_Struct_Slices(&in.SlicesField, &out.SlicesField, c); err != nil {
-			return err
-		}
-		if in.SliceManualStructField != nil {
-			in, out := &in.SliceManualStructField, &out.SliceManualStructField
-			*out = make([]ManualStruct, len(*in))
-			for i := range *in {
-				(*out)[i] = (*in)[i].DeepCopy()
-			}
-		}
-		if in.ManualSliceField != nil {
-			out.ManualSliceField = in.ManualSliceField.DeepCopy()
-		}
+	}
+	if in.ManualSliceField != nil {
+		out.ManualSliceField = in.ManualSliceField.DeepCopy()
+	}
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Everything.
+func (in *Struct_Everything) DeepCopy() *Struct_Everything {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_Everything)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_ExplicitObject) DeepCopyInto(out *Struct_ExplicitObject) {
+	*out = *in
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_ExplicitObject.
+func (in *Struct_ExplicitObject) DeepCopy() *Struct_ExplicitObject {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_ExplicitObject)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyObject is an autogenerated deepcopy function, copying the receiver, creating a new otherpkg.Object.
+func (in *Struct_ExplicitObject) DeepCopyObject() otherpkg.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	} else {
 		return nil
 	}
 }
 
-// DeepCopy_wholepkg_Struct_PrimitivePointers is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_PrimitivePointers(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_PrimitivePointers)
-		out := out.(*Struct_PrimitivePointers)
-		*out = *in
-		if in.BoolPtrField != nil {
-			in, out := &in.BoolPtrField, &out.BoolPtrField
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_ExplicitSelectorExplicitObject) DeepCopyInto(out *Struct_ExplicitSelectorExplicitObject) {
+	*out = *in
+	out.Struct_TypeMeta = in.Struct_TypeMeta
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_ExplicitSelectorExplicitObject.
+func (in *Struct_ExplicitSelectorExplicitObject) DeepCopy() *Struct_ExplicitSelectorExplicitObject {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_ExplicitSelectorExplicitObject)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyObject is an autogenerated deepcopy function, copying the receiver, creating a new otherpkg.Object.
+func (in *Struct_ExplicitSelectorExplicitObject) DeepCopyObject() otherpkg.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	} else {
+		return nil
+	}
+}
+
+// DeepCopySelector is an autogenerated deepcopy function, copying the receiver, creating a new Selector.
+func (in *Struct_ExplicitSelectorExplicitObject) DeepCopySelector() Selector {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	} else {
+		return nil
+	}
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Interfaces) DeepCopyInto(out *Struct_Interfaces) {
+	*out = *in
+	if in.ObjectField == nil {
+		out.ObjectField = nil
+	} else {
+		out.ObjectField = in.ObjectField.DeepCopyObject()
+	}
+	if in.NilObjectField == nil {
+		out.NilObjectField = nil
+	} else {
+		out.NilObjectField = in.NilObjectField.DeepCopyObject()
+	}
+	if in.SelectorField == nil {
+		out.SelectorField = nil
+	} else {
+		out.SelectorField = in.SelectorField.DeepCopySelector()
+	}
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Interfaces.
+func (in *Struct_Interfaces) DeepCopy() *Struct_Interfaces {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_Interfaces)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_NonPointerExplicitObject) DeepCopyInto(out *Struct_NonPointerExplicitObject) {
+	*out = *in
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_NonPointerExplicitObject.
+func (in *Struct_NonPointerExplicitObject) DeepCopy() *Struct_NonPointerExplicitObject {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_NonPointerExplicitObject)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyObject is an autogenerated deepcopy function, copying the receiver, creating a new otherpkg.Object.
+func (in Struct_NonPointerExplicitObject) DeepCopyObject() otherpkg.Object {
+	return *in.DeepCopy()
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_ObjectAndList) DeepCopyInto(out *Struct_ObjectAndList) {
+	*out = *in
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_ObjectAndList.
+func (in *Struct_ObjectAndList) DeepCopy() *Struct_ObjectAndList {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_ObjectAndList)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyList is an autogenerated deepcopy function, copying the receiver, creating a new otherpkg.List.
+func (in *Struct_ObjectAndList) DeepCopyList() otherpkg.List {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	} else {
+		return nil
+	}
+}
+
+// DeepCopyObject is an autogenerated deepcopy function, copying the receiver, creating a new otherpkg.Object.
+func (in *Struct_ObjectAndList) DeepCopyObject() otherpkg.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	} else {
+		return nil
+	}
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_ObjectAndObject) DeepCopyInto(out *Struct_ObjectAndObject) {
+	*out = *in
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_ObjectAndObject.
+func (in *Struct_ObjectAndObject) DeepCopy() *Struct_ObjectAndObject {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_ObjectAndObject)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyObject is an autogenerated deepcopy function, copying the receiver, creating a new otherpkg.Object.
+func (in *Struct_ObjectAndObject) DeepCopyObject() otherpkg.Object {
+	if c := in.DeepCopy(); c != nil {
+		return c
+	} else {
+		return nil
+	}
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_PrimitivePointers) DeepCopyInto(out *Struct_PrimitivePointers) {
+	*out = *in
+	if in.BoolPtrField != nil {
+		in, out := &in.BoolPtrField, &out.BoolPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(bool)
 			**out = **in
 		}
-		if in.IntPtrField != nil {
-			in, out := &in.IntPtrField, &out.IntPtrField
+	}
+	if in.IntPtrField != nil {
+		in, out := &in.IntPtrField, &out.IntPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(int)
 			**out = **in
 		}
-		if in.StringPtrField != nil {
-			in, out := &in.StringPtrField, &out.StringPtrField
+	}
+	if in.StringPtrField != nil {
+		in, out := &in.StringPtrField, &out.StringPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(string)
 			**out = **in
 		}
-		if in.FloatPtrField != nil {
-			in, out := &in.FloatPtrField, &out.FloatPtrField
+	}
+	if in.FloatPtrField != nil {
+		in, out := &in.FloatPtrField, &out.FloatPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(float64)
 			**out = **in
 		}
-		return nil
 	}
+	return
 }
 
-// DeepCopy_wholepkg_Struct_PrimitivePointers_Alias is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_PrimitivePointers_Alias(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_PrimitivePointers_Alias)
-		out := out.(*Struct_PrimitivePointers_Alias)
-		*out = *in
-		if in.BoolPtrField != nil {
-			in, out := &in.BoolPtrField, &out.BoolPtrField
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_PrimitivePointers.
+func (in *Struct_PrimitivePointers) DeepCopy() *Struct_PrimitivePointers {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_PrimitivePointers)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_PrimitivePointers_Alias) DeepCopyInto(out *Struct_PrimitivePointers_Alias) {
+	*out = *in
+	if in.BoolPtrField != nil {
+		in, out := &in.BoolPtrField, &out.BoolPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(bool)
 			**out = **in
 		}
-		if in.IntPtrField != nil {
-			in, out := &in.IntPtrField, &out.IntPtrField
+	}
+	if in.IntPtrField != nil {
+		in, out := &in.IntPtrField, &out.IntPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(int)
 			**out = **in
 		}
-		if in.StringPtrField != nil {
-			in, out := &in.StringPtrField, &out.StringPtrField
+	}
+	if in.StringPtrField != nil {
+		in, out := &in.StringPtrField, &out.StringPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(string)
 			**out = **in
 		}
-		if in.FloatPtrField != nil {
-			in, out := &in.FloatPtrField, &out.FloatPtrField
+	}
+	if in.FloatPtrField != nil {
+		in, out := &in.FloatPtrField, &out.FloatPtrField
+		if *in == nil {
+			*out = nil
+		} else {
 			*out = new(float64)
 			**out = **in
 		}
-		return nil
 	}
+	return
 }
 
-// DeepCopy_wholepkg_Struct_Primitives is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Primitives(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Primitives)
-		out := out.(*Struct_Primitives)
-		*out = *in
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_PrimitivePointers_Alias.
+func (in *Struct_PrimitivePointers_Alias) DeepCopy() *Struct_PrimitivePointers_Alias {
+	if in == nil {
 		return nil
 	}
+	out := new(Struct_PrimitivePointers_Alias)
+	in.DeepCopyInto(out)
+	return out
 }
 
-// DeepCopy_wholepkg_Struct_Primitives_Alias is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Primitives_Alias(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Primitives_Alias)
-		out := out.(*Struct_Primitives_Alias)
-		*out = *in
-		return nil
-	}
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Primitives) DeepCopyInto(out *Struct_Primitives) {
+	*out = *in
+	return
 }
 
-// DeepCopy_wholepkg_Struct_Slices is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Slices(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Slices)
-		out := out.(*Struct_Slices)
-		*out = *in
-		if in.SliceBoolField != nil {
-			in, out := &in.SliceBoolField, &out.SliceBoolField
-			*out = make([]bool, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceByteField != nil {
-			in, out := &in.SliceByteField, &out.SliceByteField
-			*out = make([]byte, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceIntField != nil {
-			in, out := &in.SliceIntField, &out.SliceIntField
-			*out = make([]int, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceStringField != nil {
-			in, out := &in.SliceStringField, &out.SliceStringField
-			*out = make([]string, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceFloatField != nil {
-			in, out := &in.SliceFloatField, &out.SliceFloatField
-			*out = make([]float64, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceStructPrimitivesField != nil {
-			in, out := &in.SliceStructPrimitivesField, &out.SliceStructPrimitivesField
-			*out = make([]Struct_Primitives, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceStructPrimitivesAliasField != nil {
-			in, out := &in.SliceStructPrimitivesAliasField, &out.SliceStructPrimitivesAliasField
-			*out = make([]Struct_Primitives_Alias, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceStructPrimitivePointersField != nil {
-			in, out := &in.SliceStructPrimitivePointersField, &out.SliceStructPrimitivePointersField
-			*out = make([]Struct_PrimitivePointers, len(*in))
-			for i := range *in {
-				if err := DeepCopy_wholepkg_Struct_PrimitivePointers(&(*in)[i], &(*out)[i], c); err != nil {
-					return err
-				}
-			}
-		}
-		if in.SliceStructPrimitivePointersAliasField != nil {
-			in, out := &in.SliceStructPrimitivePointersAliasField, &out.SliceStructPrimitivePointersAliasField
-			*out = make([]Struct_PrimitivePointers_Alias, len(*in))
-			for i := range *in {
-				if err := DeepCopy_wholepkg_Struct_PrimitivePointers_Alias(&(*in)[i], &(*out)[i], c); err != nil {
-					return err
-				}
-			}
-		}
-		if in.SliceSliceIntField != nil {
-			in, out := &in.SliceSliceIntField, &out.SliceSliceIntField
-			*out = make([][]int, len(*in))
-			for i := range *in {
-				if (*in)[i] != nil {
-					in, out := &(*in)[i], &(*out)[i]
-					*out = make([]int, len(*in))
-					copy(*out, *in)
-				}
-			}
-		}
-		if in.SliceManualStructField != nil {
-			in, out := &in.SliceManualStructField, &out.SliceManualStructField
-			*out = make([]ManualStruct, len(*in))
-			for i := range *in {
-				(*out)[i] = (*in)[i].DeepCopy()
-			}
-		}
-		if in.ManualSliceField != nil {
-			out.ManualSliceField = in.ManualSliceField.DeepCopy()
-		}
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Primitives.
+func (in *Struct_Primitives) DeepCopy() *Struct_Primitives {
+	if in == nil {
 		return nil
 	}
+	out := new(Struct_Primitives)
+	in.DeepCopyInto(out)
+	return out
 }
 
-// DeepCopy_wholepkg_Struct_Slices_Alias is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Slices_Alias(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Slices_Alias)
-		out := out.(*Struct_Slices_Alias)
-		*out = *in
-		if in.SliceBoolField != nil {
-			in, out := &in.SliceBoolField, &out.SliceBoolField
-			*out = make([]bool, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceByteField != nil {
-			in, out := &in.SliceByteField, &out.SliceByteField
-			*out = make([]byte, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceIntField != nil {
-			in, out := &in.SliceIntField, &out.SliceIntField
-			*out = make([]int, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceStringField != nil {
-			in, out := &in.SliceStringField, &out.SliceStringField
-			*out = make([]string, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceFloatField != nil {
-			in, out := &in.SliceFloatField, &out.SliceFloatField
-			*out = make([]float64, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceStructPrimitivesField != nil {
-			in, out := &in.SliceStructPrimitivesField, &out.SliceStructPrimitivesField
-			*out = make([]Struct_Primitives, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceStructPrimitivesAliasField != nil {
-			in, out := &in.SliceStructPrimitivesAliasField, &out.SliceStructPrimitivesAliasField
-			*out = make([]Struct_Primitives_Alias, len(*in))
-			copy(*out, *in)
-		}
-		if in.SliceStructPrimitivePointersField != nil {
-			in, out := &in.SliceStructPrimitivePointersField, &out.SliceStructPrimitivePointersField
-			*out = make([]Struct_PrimitivePointers, len(*in))
-			for i := range *in {
-				if err := DeepCopy_wholepkg_Struct_PrimitivePointers(&(*in)[i], &(*out)[i], c); err != nil {
-					return err
-				}
-			}
-		}
-		if in.SliceStructPrimitivePointersAliasField != nil {
-			in, out := &in.SliceStructPrimitivePointersAliasField, &out.SliceStructPrimitivePointersAliasField
-			*out = make([]Struct_PrimitivePointers_Alias, len(*in))
-			for i := range *in {
-				if err := DeepCopy_wholepkg_Struct_PrimitivePointers_Alias(&(*in)[i], &(*out)[i], c); err != nil {
-					return err
-				}
-			}
-		}
-		if in.SliceSliceIntField != nil {
-			in, out := &in.SliceSliceIntField, &out.SliceSliceIntField
-			*out = make([][]int, len(*in))
-			for i := range *in {
-				if (*in)[i] != nil {
-					in, out := &(*in)[i], &(*out)[i]
-					*out = make([]int, len(*in))
-					copy(*out, *in)
-				}
-			}
-		}
-		if in.SliceManualStructField != nil {
-			in, out := &in.SliceManualStructField, &out.SliceManualStructField
-			*out = make([]ManualStruct, len(*in))
-			for i := range *in {
-				(*out)[i] = (*in)[i].DeepCopy()
-			}
-		}
-		if in.ManualSliceField != nil {
-			out.ManualSliceField = in.ManualSliceField.DeepCopy()
-		}
-		return nil
-	}
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Primitives_Alias) DeepCopyInto(out *Struct_Primitives_Alias) {
+	*out = *in
+	return
 }
 
-// DeepCopy_wholepkg_Struct_Struct_PrimitivePointers is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Struct_PrimitivePointers(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Struct_PrimitivePointers)
-		out := out.(*Struct_Struct_PrimitivePointers)
-		*out = *in
-		if err := DeepCopy_wholepkg_Struct_PrimitivePointers(&in.StructField, &out.StructField, c); err != nil {
-			return err
-		}
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Primitives_Alias.
+func (in *Struct_Primitives_Alias) DeepCopy() *Struct_Primitives_Alias {
+	if in == nil {
 		return nil
 	}
+	out := new(Struct_Primitives_Alias)
+	in.DeepCopyInto(out)
+	return out
 }
 
-// DeepCopy_wholepkg_Struct_Struct_Primitives is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Struct_Primitives(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Struct_Primitives)
-		out := out.(*Struct_Struct_Primitives)
-		*out = *in
-		return nil
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Slices) DeepCopyInto(out *Struct_Slices) {
+	*out = *in
+	if in.SliceBoolField != nil {
+		in, out := &in.SliceBoolField, &out.SliceBoolField
+		*out = make([]bool, len(*in))
+		copy(*out, *in)
 	}
+	if in.SliceByteField != nil {
+		in, out := &in.SliceByteField, &out.SliceByteField
+		*out = make([]byte, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceIntField != nil {
+		in, out := &in.SliceIntField, &out.SliceIntField
+		*out = make([]int, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceStringField != nil {
+		in, out := &in.SliceStringField, &out.SliceStringField
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceFloatField != nil {
+		in, out := &in.SliceFloatField, &out.SliceFloatField
+		*out = make([]float64, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceStructPrimitivesField != nil {
+		in, out := &in.SliceStructPrimitivesField, &out.SliceStructPrimitivesField
+		*out = make([]Struct_Primitives, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceStructPrimitivesAliasField != nil {
+		in, out := &in.SliceStructPrimitivesAliasField, &out.SliceStructPrimitivesAliasField
+		*out = make([]Struct_Primitives_Alias, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceStructPrimitivePointersField != nil {
+		in, out := &in.SliceStructPrimitivePointersField, &out.SliceStructPrimitivePointersField
+		*out = make([]Struct_PrimitivePointers, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.SliceStructPrimitivePointersAliasField != nil {
+		in, out := &in.SliceStructPrimitivePointersAliasField, &out.SliceStructPrimitivePointersAliasField
+		*out = make([]Struct_PrimitivePointers_Alias, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.SliceSliceIntField != nil {
+		in, out := &in.SliceSliceIntField, &out.SliceSliceIntField
+		*out = make([][]int, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = make([]int, len(*in))
+				copy(*out, *in)
+			}
+		}
+	}
+	if in.SliceManualStructField != nil {
+		in, out := &in.SliceManualStructField, &out.SliceManualStructField
+		*out = make([]ManualStruct, len(*in))
+		for i := range *in {
+			(*out)[i] = (*in)[i].DeepCopy()
+		}
+	}
+	if in.ManualSliceField != nil {
+		out.ManualSliceField = in.ManualSliceField.DeepCopy()
+	}
+	return
 }
 
-// DeepCopy_wholepkg_Struct_Struct_Slices is an autogenerated deepcopy function.
-func DeepCopy_wholepkg_Struct_Struct_Slices(in interface{}, out interface{}, c *conversion.Cloner) error {
-	{
-		in := in.(*Struct_Struct_Slices)
-		out := out.(*Struct_Struct_Slices)
-		*out = *in
-		if err := DeepCopy_wholepkg_Struct_Slices(&in.StructField, &out.StructField, c); err != nil {
-			return err
-		}
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Slices.
+func (in *Struct_Slices) DeepCopy() *Struct_Slices {
+	if in == nil {
 		return nil
 	}
+	out := new(Struct_Slices)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Slices_Alias) DeepCopyInto(out *Struct_Slices_Alias) {
+	*out = *in
+	if in.SliceBoolField != nil {
+		in, out := &in.SliceBoolField, &out.SliceBoolField
+		*out = make([]bool, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceByteField != nil {
+		in, out := &in.SliceByteField, &out.SliceByteField
+		*out = make([]byte, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceIntField != nil {
+		in, out := &in.SliceIntField, &out.SliceIntField
+		*out = make([]int, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceStringField != nil {
+		in, out := &in.SliceStringField, &out.SliceStringField
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceFloatField != nil {
+		in, out := &in.SliceFloatField, &out.SliceFloatField
+		*out = make([]float64, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceStructPrimitivesField != nil {
+		in, out := &in.SliceStructPrimitivesField, &out.SliceStructPrimitivesField
+		*out = make([]Struct_Primitives, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceStructPrimitivesAliasField != nil {
+		in, out := &in.SliceStructPrimitivesAliasField, &out.SliceStructPrimitivesAliasField
+		*out = make([]Struct_Primitives_Alias, len(*in))
+		copy(*out, *in)
+	}
+	if in.SliceStructPrimitivePointersField != nil {
+		in, out := &in.SliceStructPrimitivePointersField, &out.SliceStructPrimitivePointersField
+		*out = make([]Struct_PrimitivePointers, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.SliceStructPrimitivePointersAliasField != nil {
+		in, out := &in.SliceStructPrimitivePointersAliasField, &out.SliceStructPrimitivePointersAliasField
+		*out = make([]Struct_PrimitivePointers_Alias, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
+	}
+	if in.SliceSliceIntField != nil {
+		in, out := &in.SliceSliceIntField, &out.SliceSliceIntField
+		*out = make([][]int, len(*in))
+		for i := range *in {
+			if (*in)[i] != nil {
+				in, out := &(*in)[i], &(*out)[i]
+				*out = make([]int, len(*in))
+				copy(*out, *in)
+			}
+		}
+	}
+	if in.SliceManualStructField != nil {
+		in, out := &in.SliceManualStructField, &out.SliceManualStructField
+		*out = make([]ManualStruct, len(*in))
+		for i := range *in {
+			(*out)[i] = (*in)[i].DeepCopy()
+		}
+	}
+	if in.ManualSliceField != nil {
+		out.ManualSliceField = in.ManualSliceField.DeepCopy()
+	}
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Slices_Alias.
+func (in *Struct_Slices_Alias) DeepCopy() *Struct_Slices_Alias {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_Slices_Alias)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Struct_PrimitivePointers) DeepCopyInto(out *Struct_Struct_PrimitivePointers) {
+	*out = *in
+	in.StructField.DeepCopyInto(&out.StructField)
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Struct_PrimitivePointers.
+func (in *Struct_Struct_PrimitivePointers) DeepCopy() *Struct_Struct_PrimitivePointers {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_Struct_PrimitivePointers)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Struct_Primitives) DeepCopyInto(out *Struct_Struct_Primitives) {
+	*out = *in
+	out.StructField = in.StructField
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Struct_Primitives.
+func (in *Struct_Struct_Primitives) DeepCopy() *Struct_Struct_Primitives {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_Struct_Primitives)
+	in.DeepCopyInto(out)
+	return out
+}
+
+// DeepCopyInto is an autogenerated deepcopy function, copying the receiver, writing into out. in must be non-nil.
+func (in *Struct_Struct_Slices) DeepCopyInto(out *Struct_Struct_Slices) {
+	*out = *in
+	in.StructField.DeepCopyInto(&out.StructField)
+	return
+}
+
+// DeepCopy is an autogenerated deepcopy function, copying the receiver, creating a new Struct_Struct_Slices.
+func (in *Struct_Struct_Slices) DeepCopy() *Struct_Struct_Slices {
+	if in == nil {
+		return nil
+	}
+	out := new(Struct_Struct_Slices)
+	in.DeepCopyInto(out)
+	return out
 }

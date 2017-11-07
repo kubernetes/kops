@@ -28,7 +28,9 @@ import (
 	"k8s.io/apiserver/pkg/storage"
 	"k8s.io/apiserver/pkg/storage/names"
 
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/validation"
 )
 
 type clusterStrategy struct {
@@ -36,7 +38,9 @@ type clusterStrategy struct {
 	names.NameGenerator
 }
 
-var Strategy = clusterStrategy{kops.Scheme, names.SimpleNameGenerator}
+func NewStrategy(typer runtime.ObjectTyper) clusterStrategy {
+	return clusterStrategy{typer, names.SimpleNameGenerator}
+}
 
 func (clusterStrategy) NamespaceScoped() bool {
 	return true
@@ -65,8 +69,9 @@ func (clusterStrategy) Canonicalize(obj runtime.Object) {
 }
 
 func (clusterStrategy) ValidateUpdate(ctx genericapirequest.Context, obj, old runtime.Object) field.ErrorList {
-	return field.ErrorList{}
-	// return validation.ValidateServiceInjectionUpdate(obj.(*serviceinjection.ServiceInjection), old.(*serviceinjection.ServiceInjection))
+	glog.Warningf("Performing cluster update without status validation")
+	var status *kops.ClusterStatus
+	return validation.ValidateClusterUpdate(obj.(*kops.Cluster), status, old.(*kops.Cluster))
 }
 
 func GetAttrs(obj runtime.Object) (labels.Set, fields.Set, bool, error) {

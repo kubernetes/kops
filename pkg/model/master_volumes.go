@@ -21,7 +21,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awstasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -59,21 +61,17 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				return fmt.Errorf("InstanceGroup not found (for etcd %s/%s): %q", m.Name, etcd.Name, igName)
 			}
 
-			if len(ig.Spec.Subnets) == 0 {
-				return fmt.Errorf("Must specify a subnet for instancegroup %q used by etcd %s/%s", igName, m.Name, etcd.Name)
+			zones, err := model.FindZonesForInstanceGroup(b.Cluster, ig)
+			if err != nil {
+				return err
 			}
-			if len(ig.Spec.Subnets) != 1 {
-				return fmt.Errorf("Must specify a unique subnet for instancegroup %q used by etcd %s/%s", igName, m.Name, etcd.Name)
+			if len(zones) == 0 {
+				return fmt.Errorf("must specify a zone for instancegroup %q used by etcd %s/%s", igName, m.Name, etcd.Name)
 			}
-
-			subnet := b.FindSubnet(ig.Spec.Subnets[0])
-			if subnet == nil {
-				return fmt.Errorf("Subnet %q not found (specified by instancegroup %q)", ig.Spec.Subnets[0], igName)
+			if len(zones) != 1 {
+				return fmt.Errorf("must specify a unique zone for instancegroup %q used by etcd %s/%s", igName, m.Name, etcd.Name)
 			}
-
-			if subnet.Zone == "" {
-				return fmt.Errorf("Subnet %q did not specify a zone", subnet.Name)
-			}
+			zone := zones[0]
 
 			volumeSize := fi.Int32Value(m.VolumeSize)
 			if volumeSize == 0 {
@@ -88,13 +86,15 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 
 			switch kops.CloudProviderID(b.Cluster.Spec.CloudProvider) {
 			case kops.CloudProviderAWS:
-				b.addAWSVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+				b.addAWSVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			case kops.CloudProviderDO:
-				b.addDOVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+				b.addDOVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			case kops.CloudProviderGCE:
-				b.addGCEVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+				b.addGCEVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			case kops.CloudProviderVSphere:
-				b.addVSphereVolume(c, name, volumeSize, subnet, etcd, m, allMembers)
+				b.addVSphereVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+			case kops.CloudProviderBareMetal:
+				glog.Fatalf("BareMetal not implemented")
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.CloudProvider)
 			}
@@ -103,7 +103,7 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 	return nil
 }
 
-func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
 	volumeType := fi.StringValue(m.VolumeType)
 	if volumeType == "" {
 		volumeType = DefaultAWSEtcdVolumeType
@@ -129,7 +129,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 		Name:      s(name),
 		Lifecycle: b.Lifecycle,
 
-		AvailabilityZone: s(subnet.Zone),
+		AvailabilityZone: s(zone),
 		SizeGB:           fi.Int64(int64(volumeSize)),
 		VolumeType:       s(volumeType),
 		KmsKeyId:         m.KmsKeyId,
@@ -140,7 +140,7 @@ func (b *MasterVolumeBuilder) addAWSVolume(c *fi.ModelBuilderContext, name strin
 	c.AddTask(t)
 }
 
-func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
 	// required that names start with a lower case and only contains letters, numbers and hyphens
 	name = "kops-" + strings.Replace(name, ".", "-", -1)
 
@@ -153,13 +153,13 @@ func (b *MasterVolumeBuilder) addDOVolume(c *fi.ModelBuilderContext, name string
 		Name:      s(name),
 		Lifecycle: b.Lifecycle,
 		SizeGB:    fi.Int64(int64(volumeSize)),
-		Region:    s(subnet.Zone),
+		Region:    s(zone),
 	}
 
 	c.AddTask(t)
 }
 
-func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
 	volumeType := fi.StringValue(m.VolumeType)
 	if volumeType == "" {
 		volumeType = DefaultGCEEtcdVolumeType
@@ -193,7 +193,7 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 		Name:      s(name),
 		Lifecycle: b.Lifecycle,
 
-		Zone:       s(subnet.Zone),
+		Zone:       s(zone),
 		SizeGB:     fi.Int64(int64(volumeSize)),
 		VolumeType: s(volumeType),
 		Labels:     tags,
@@ -202,6 +202,6 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 	c.AddTask(t)
 }
 
-func (b *MasterVolumeBuilder) addVSphereVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, subnet *kops.ClusterSubnetSpec, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
+func (b *MasterVolumeBuilder) addVSphereVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
 	fmt.Print("addVSphereVolume to be implemented")
 }

@@ -1,0 +1,32 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_binary", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["main.go"],
+    importpath = "github.com/docker/distribution/cmd/registry",
+    visibility = ["//visibility:private"],
+    deps = [
+        "//vendor/github.com/docker/distribution/registry:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/auth/htpasswd:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/auth/silly:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/auth/token:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/proxy:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/driver/azure:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/driver/filesystem:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/driver/gcs:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/driver/inmemory:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/driver/middleware/cloudfront:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/driver/middleware/redirect:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/driver/oss:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/driver/s3-aws:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/driver/s3-goamz:go_default_library",
+        "//vendor/github.com/docker/distribution/registry/storage/driver/swift:go_default_library",
+    ],
+)
+
+go_binary(
+    name = "registry",
+    importpath = "github.com/docker/distribution/cmd/registry",
+    library = ":go_default_library",
+    visibility = ["//visibility:public"],
+)

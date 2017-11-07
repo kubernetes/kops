@@ -19,21 +19,21 @@ package main
 import (
 	"bytes"
 	"io/ioutil"
+	"path"
+	"strings"
+	"testing"
+
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha1"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
 	"k8s.io/kops/pkg/diff"
-	"path"
-	"strings"
-	"testing"
-
-	_ "k8s.io/kops/pkg/apis/kops/install"
+	"k8s.io/kops/pkg/kopscodecs"
 )
 
-// TestMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
-func ConversionTestMinimal(t *testing.T) {
+// TestConversionMinimal runs the test on a minimum configuration, similar to kops create cluster minimal.example.com --zones us-west-1a
+func TestConversionMinimal(t *testing.T) {
 	runTest(t, "minimal", "v1alpha1", "v1alpha2")
 	runTest(t, "minimal", "v1alpha2", "v1alpha1")
 
@@ -54,14 +54,14 @@ func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) 
 		t.Fatalf("unexpected error reading expectedPath %q: %v", expectedPath, err)
 	}
 
-	codec := kops.Codecs.UniversalDecoder(kops.SchemeGroupVersion)
+	codec := kopscodecs.Codecs.UniversalDecoder(kops.SchemeGroupVersion)
 
 	defaults := &schema.GroupVersionKind{
 		Group:   v1alpha1.SchemeGroupVersion.Group,
 		Version: v1alpha1.SchemeGroupVersion.Version,
 	}
 
-	yaml, ok := runtime.SerializerInfoForMediaType(kops.Codecs.SupportedMediaTypes(), "application/yaml")
+	yaml, ok := runtime.SerializerInfoForMediaType(kopscodecs.Codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
 		t.Fatalf("no YAML serializer registered")
 	}
@@ -69,9 +69,9 @@ func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) 
 
 	switch toVersion {
 	case "v1alpha1":
-		encoder = kops.Codecs.EncoderForVersion(yaml.Serializer, v1alpha1.SchemeGroupVersion)
+		encoder = kopscodecs.Codecs.EncoderForVersion(yaml.Serializer, v1alpha1.SchemeGroupVersion)
 	case "v1alpha2":
-		encoder = kops.Codecs.EncoderForVersion(yaml.Serializer, v1alpha2.SchemeGroupVersion)
+		encoder = kopscodecs.Codecs.EncoderForVersion(yaml.Serializer, v1alpha2.SchemeGroupVersion)
 
 	default:
 		t.Fatalf("unknown version %q", toVersion)
@@ -111,6 +111,6 @@ func runTest(t *testing.T, srcDir string, fromVersion string, toVersion string) 
 		diffString := diff.FormatDiff(expectedString, actualString)
 		t.Logf("diff:\n%s\n", diffString)
 
-		t.Fatalf("converted output differed from expected")
+		t.Fatalf("%s->%s converted output differed from expected", fromVersion, toVersion)
 	}
 }

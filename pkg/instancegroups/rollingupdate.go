@@ -25,6 +25,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/clientcmd"
 	api "k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 )
 
@@ -32,8 +33,11 @@ import (
 type RollingUpdateCluster struct {
 	Cloud fi.Cloud
 
-	MasterInterval  time.Duration
-	NodeInterval    time.Duration
+	// MasterInterval is the amount of time to wait after stopping a master instance
+	MasterInterval time.Duration
+	// NodeInterval is the amount of time to wait after stopping a non-master instance
+	NodeInterval time.Duration
+	// BastionInterval is the amount of time to wait after stopping a bastion instance
 	BastionInterval time.Duration
 
 	Force bool
@@ -44,12 +48,16 @@ type RollingUpdateCluster struct {
 	FailOnValidate   bool
 	CloudOnly        bool
 	ClusterName      string
-	ValidateRetries  int
-	DrainInterval    time.Duration
+
+	// PostDrainDelay is the duration we wait after draining each node
+	PostDrainDelay time.Duration
+
+	// ValidationTimeout is the maximum time to wait for the cluster to validate, once we start validation
+	ValidationTimeout time.Duration
 }
 
 // RollingUpdate performs a rolling update on a K8s Cluster.
-func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
+func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*cloudinstances.CloudInstanceGroup, instanceGroups *api.InstanceGroupList) error {
 	if len(groups) == 0 {
 		glog.Infof("Cloud Instance Group length is zero. Not doing a rolling-update.")
 		return nil
@@ -58,9 +66,9 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 	var resultsMutex sync.Mutex
 	results := make(map[string]error)
 
-	masterGroups := make(map[string]*CloudInstanceGroup)
-	nodeGroups := make(map[string]*CloudInstanceGroup)
-	bastionGroups := make(map[string]*CloudInstanceGroup)
+	masterGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	nodeGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
+	bastionGroups := make(map[string]*cloudinstances.CloudInstanceGroup)
 	for k, group := range groups {
 		switch group.InstanceGroup.Spec.Role {
 		case api.InstanceGroupRoleNode:
@@ -80,14 +88,17 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 
 		for k, bastionGroup := range bastionGroups {
 			wg.Add(1)
-			go func(k string, group *CloudInstanceGroup) {
+			go func(k string, group *cloudinstances.CloudInstanceGroup) {
 				resultsMutex.Lock()
 				results[k] = fmt.Errorf("function panic bastions")
 				resultsMutex.Unlock()
 
 				defer wg.Done()
 
-				err := group.RollingUpdate(c, instanceGroups, true, c.BastionInterval)
+				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
+				if err == nil {
+					err = g.RollingUpdate(c, instanceGroups, true, c.BastionInterval, c.ValidationTimeout)
+				}
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -117,7 +128,10 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 			defer wg.Done()
 
 			for k, group := range masterGroups {
-				err := group.RollingUpdate(c, instanceGroups, false, c.MasterInterval)
+				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
+				if err == nil {
+					err = g.RollingUpdate(c, instanceGroups, false, c.MasterInterval, c.ValidationTimeout)
+				}
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -152,7 +166,10 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 			defer wg.Done()
 
 			for k, group := range nodeGroups {
-				err := group.RollingUpdate(c, instanceGroups, false, c.NodeInterval)
+				g, err := NewRollingUpdateInstanceGroup(c.Cloud, group)
+				if err == nil {
+					err = g.RollingUpdate(c, instanceGroups, false, c.NodeInterval, c.ValidationTimeout)
+				}
 
 				resultsMutex.Lock()
 				results[k] = err
@@ -171,6 +188,6 @@ func (c *RollingUpdateCluster) RollingUpdate(groups map[string]*CloudInstanceGro
 		}
 	}
 
-	glog.Infof("Rolling update completed!")
+	glog.Infof("Rolling update completed for cluster %q!", c.ClusterName)
 	return nil
 }

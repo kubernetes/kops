@@ -18,9 +18,10 @@ package cloudup
 
 import (
 	"fmt"
-	api "k8s.io/kops/pkg/apis/kops"
 	"strings"
 	"testing"
+
+	api "k8s.io/kops/pkg/apis/kops"
 )
 
 func buildMinimalNodeInstanceGroup(subnets ...string) *api.InstanceGroup {

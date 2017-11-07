@@ -12,7 +12,7 @@ function setup() {
 }
 
 @test "Test malevolent proxy pass through" {
-	docker_t tag -f $base:latest $host/$base/nochange:latest
+	docker_t tag $base:latest $host/$base/nochange:latest
 	run docker_t push $host/$base/nochange:latest
 	echo $output
 	[ "$status" -eq 0 ]
@@ -26,7 +26,7 @@ function setup() {
 @test "Test malevolent image name change" {
 	imagename="$host/$base/rename"
 	image="$imagename:lastest"
-	docker_t tag -f $base:latest $image
+	docker_t tag $base:latest $image
 	run docker_t push $image
 	[ "$status" -eq 0 ]
 	has_digest "$output"
@@ -133,7 +133,7 @@ function setup() {
 	has_digest "$output"
 
 	image2="$host/$base/image2/alteredid:$poison2"
-	docker_t tag -f $image1 $image2
+	docker_t tag $image1 $image2
 	run docker_t push $image2
 	echo "$output"
 	[ "$status" -eq 0 ]

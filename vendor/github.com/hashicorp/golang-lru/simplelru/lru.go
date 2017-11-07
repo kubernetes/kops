@@ -47,7 +47,7 @@ func (c *LRU) Purge() {
 	c.evictList.Init()
 }
 
-// Add adds a value to the cache.  Returns true if an eviction occurred.
+// Add adds a value to the cache.  Returns true if an eviction occured.
 func (c *LRU) Add(key, value interface{}) bool {
 	// Check for existing item
 	if ent, ok := c.items[key]; ok {

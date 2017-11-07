@@ -201,11 +201,6 @@ type CloudFunction struct {
 	// Defaults to 256MB.
 	AvailableMemoryMb int64 `json:"availableMemoryMb,omitempty"`
 
-	// DeployedSourceDownloadUrl: Output only. The Google Cloud Storage
-	// signed URL generated for downloading
-	// the current deployed source code.
-	DeployedSourceDownloadUrl string `json:"deployedSourceDownloadUrl,omitempty"`
-
 	// EntryPoint: The name of the function (as defined in source code) that
 	// will be
 	// executed. Defaults to the resource name suffix, if not specified.
@@ -249,6 +244,29 @@ type CloudFunction struct {
 	// SourceRepository: The hosted repository where the function is
 	// defined.
 	SourceRepository *SourceRepository `json:"sourceRepository,omitempty"`
+
+	// SourceRepositoryUrl: The URL pointing to the hosted repository where
+	// the function is defined.
+	// There are supported Cloud Source Repository URLs in the
+	// following
+	// formats:
+	//
+	// To refer to a specific
+	// commit:
+	// `https://source.developers.google.com/projects/*/repos/*/revis
+	// ions/*/paths/*`
+	// To refer to a moveable alias
+	// (branch):
+	// `https://source.developers.google.com/projects/*/repos/*/ali
+	// ases/movable/*/paths/*`
+	// In particular, to refer to HEAD use `master` moveable alias.
+	// To refer to a specific fixed alias
+	// (tag):
+	// `https://source.developers.google.com/projects/*/repos/*/aliase
+	// s/fixed/*/paths/*`
+	//
+	// You may omit `paths/*` if you want to use the main directory.
+	SourceRepositoryUrl string `json:"sourceRepositoryUrl,omitempty"`
 
 	// Status: Output only. Status of the function deployment.
 	//
@@ -754,7 +772,7 @@ func (s *SourceRepository) MarshalJSON() ([]byte, error) {
 // arbitrary
 // information about the error. There is a predefined set of error
 // detail types
-// in the package `google.rpc` which can be used for common error
+// in the package `google.rpc` that can be used for common error
 // conditions.
 //
 // # Language mapping
@@ -787,7 +805,7 @@ func (s *SourceRepository) MarshalJSON() ([]byte, error) {
 //
 // - Workflow errors. A typical workflow has multiple steps. Each step
 // may
-//     have a `Status` message for error reporting purpose.
+//     have a `Status` message for error reporting.
 //
 // - Batch operations. If a client uses batch request and batch
 // response, the
@@ -810,9 +828,9 @@ type Status struct {
 	// google.rpc.Code.
 	Code int64 `json:"code,omitempty"`
 
-	// Details: A list of messages that carry the error details.  There will
-	// be a
-	// common set of message types for APIs to use.
+	// Details: A list of messages that carry the error details.  There is a
+	// common set of
+	// message types for APIs to use.
 	Details []googleapi.RawMessage `json:"details,omitempty"`
 
 	// Message: A developer-facing error message, which should be in
@@ -1003,9 +1021,18 @@ type OperationsListCall struct {
 // server doesn't support this method, it returns
 // `UNIMPLEMENTED`.
 //
-// NOTE: the `name` binding below allows API services to override the
+// NOTE: the `name` binding allows API services to override the
 // binding
 // to use different resource name schemes, such as `users/*/operations`.
+// To
+// override the binding, API services can add a binding such
+// as
+// "/v1/{name=users/*}/operations" to their service configuration.
+// For backwards compatibility, the default name includes the
+// operations
+// collection id, however overriding users must ensure the name
+// binding
+// is the parent resource, without the operations collection id.
 func (r *OperationsService) List() *OperationsListCall {
 	c := &OperationsListCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	return c
@@ -1018,8 +1045,8 @@ func (c *OperationsListCall) Filter(filter string) *OperationsListCall {
 	return c
 }
 
-// Name sets the optional parameter "name": The name of the operation
-// collection.
+// Name sets the optional parameter "name": The name of the operation's
+// parent resource.
 func (c *OperationsListCall) Name(name string) *OperationsListCall {
 	c.urlParams_.Set("name", name)
 	return c
@@ -1130,7 +1157,7 @@ func (c *OperationsListCall) Do(opts ...googleapi.CallOption) (*ListOperationsRe
 	}
 	return ret, nil
 	// {
-	//   "description": "Lists operations that match the specified filter in the request. If the\nserver doesn't support this method, it returns `UNIMPLEMENTED`.\n\nNOTE: the `name` binding below allows API services to override the binding\nto use different resource name schemes, such as `users/*/operations`.",
+	//   "description": "Lists operations that match the specified filter in the request. If the\nserver doesn't support this method, it returns `UNIMPLEMENTED`.\n\nNOTE: the `name` binding allows API services to override the binding\nto use different resource name schemes, such as `users/*/operations`. To\noverride the binding, API services can add a binding such as\n`\"/v1/{name=users/*}/operations\"` to their service configuration.\nFor backwards compatibility, the default name includes the operations\ncollection id, however overriding users must ensure the name binding\nis the parent resource, without the operations collection id.",
 	//   "flatPath": "v1beta2/operations",
 	//   "httpMethod": "GET",
 	//   "id": "cloudfunctions.operations.list",
@@ -1142,7 +1169,7 @@ func (c *OperationsListCall) Do(opts ...googleapi.CallOption) (*ListOperationsRe
 	//       "type": "string"
 	//     },
 	//     "name": {
-	//       "description": "The name of the operation collection.",
+	//       "description": "The name of the operation's parent resource.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },

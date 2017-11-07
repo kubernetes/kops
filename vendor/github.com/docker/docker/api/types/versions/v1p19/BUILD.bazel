@@ -1,0 +1,14 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["types.go"],
+    importpath = "github.com/docker/docker/api/types/versions/v1p19",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/docker/docker/api/types:go_default_library",
+        "//vendor/github.com/docker/docker/api/types/container:go_default_library",
+        "//vendor/github.com/docker/docker/api/types/versions/v1p20:go_default_library",
+        "//vendor/github.com/docker/go-connections/nat:go_default_library",
+    ],
+)

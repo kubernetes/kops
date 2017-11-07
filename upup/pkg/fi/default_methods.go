@@ -17,8 +17,10 @@ limitations under the License.
 package fi
 
 import (
-	"k8s.io/kops/upup/pkg/fi/utils"
+	"fmt"
 	"reflect"
+
+	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
 // DefaultDeltaRunMethod implements the standard change-based run procedure:
@@ -44,6 +46,12 @@ func DefaultDeltaRunMethod(e Task, c *Context) error {
 	if checkExisting {
 		a, err = invokeFind(e, c)
 		if err != nil {
+			if lifecycle != nil && *lifecycle == LifecycleWarnIfInsufficientAccess {
+				// For now we assume all errors are permissions problems
+				// TODO: bounded retry?
+				c.AddWarning(e, fmt.Sprintf("error checking if task exists; assuming it is correctly configured: %v", err))
+				return nil
+			}
 			return err
 		}
 	}

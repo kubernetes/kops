@@ -27,7 +27,6 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/flagbuilder"
-	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
@@ -68,7 +67,7 @@ func newTemplateFunctions(nodeupConfig *nodeup.Config, cluster *api.Cluster, ins
 			return nil, fmt.Errorf("error building secret store path: %v", err)
 		}
 
-		t.secretStore = secrets.NewVFSSecretStore(p)
+		t.secretStore = secrets.NewVFSSecretStore(cluster, p)
 	} else {
 		return nil, fmt.Errorf("SecretStore not set")
 	}
@@ -80,7 +79,7 @@ func newTemplateFunctions(nodeupConfig *nodeup.Config, cluster *api.Cluster, ins
 			return nil, fmt.Errorf("error building key store path: %v", err)
 		}
 
-		t.keyStore = fi.NewVFSCAStore(p)
+		t.keyStore = fi.NewVFSCAStore(cluster, p)
 	} else {
 		return nil, fmt.Errorf("KeyStore not set")
 	}
@@ -93,9 +92,6 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 		return runtime.GOARCH
 	}
 
-	dest["CACertificate"] = t.CACertificate
-	dest["PrivateKey"] = t.PrivateKey
-	dest["Certificate"] = t.Certificate
 	dest["GetToken"] = t.GetToken
 
 	dest["BuildFlags"] = flagbuilder.BuildFlags
@@ -120,21 +116,6 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["ClusterName"] = func() string {
 		return t.cluster.ObjectMeta.Name
 	}
-}
-
-// CACertificate returns the primary CA certificate for the cluster
-func (t *templateFunctions) CACertificate() (*pki.Certificate, error) {
-	return t.keyStore.Cert(fi.CertificateId_CA)
-}
-
-// PrivateKey returns the specified private key
-func (t *templateFunctions) PrivateKey(id string) (*pki.PrivateKey, error) {
-	return t.keyStore.PrivateKey(id)
-}
-
-// Certificate returns the specified private key
-func (t *templateFunctions) Certificate(id string) (*pki.Certificate, error) {
-	return t.keyStore.Cert(id)
 }
 
 // GetToken returns the specified token

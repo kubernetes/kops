@@ -18,6 +18,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -67,4 +68,22 @@ func (s *cloudDiscoveryStatusStore) GetApiIngressStatus(cluster *kops.Cluster) (
 	}
 
 	return nil, fmt.Errorf("API Ingress Status not implemented for %T", cloud)
+}
+
+// FindClusterStatus discovers the status of the cluster, by inspecting the cloud objects
+func (s *cloudDiscoveryStatusStore) FindClusterStatus(cluster *kops.Cluster) (*kops.ClusterStatus, error) {
+	cloud, err := cloudup.BuildCloud(cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	if gceCloud, ok := cloud.(gce.GCECloud); ok {
+		return gceCloud.FindClusterStatus(cluster)
+	}
+
+	if awsCloud, ok := cloud.(awsup.AWSCloud); ok {
+		return awsCloud.FindClusterStatus(cluster)
+	}
+
+	return nil, fmt.Errorf("Etcd Status not implemented for %T", cloud)
 }

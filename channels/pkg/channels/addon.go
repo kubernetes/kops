@@ -18,11 +18,12 @@ package channels
 
 import (
 	"fmt"
+	"net/url"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/kops/channels/pkg/api"
-	"net/url"
 )
 
 // Addon is a wrapper around a single version of an addon

@@ -28,8 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 	oidcConfig := &oidc.Config{
-		ClientID:       clientID,
-		SkipNonceCheck: true,
+		ClientID: clientID,
 	}
 	verifier := provider.Verifier(oidcConfig)
 

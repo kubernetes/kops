@@ -56,6 +56,10 @@ kops create cluster
   --project my-gce-project \
   --image "ubuntu-os-cloud/ubuntu-1604-xenial-v20170202" \
   --yes
+  # Create manifest for a cluster in AWS
+  kops create cluster --name=kubernetes-cluster.example.com \
+  --state=s3://kops-state-1234 --zones=eu-west-1a \
+  --node-count=2 --dry-run -oyaml
 ```
 
 ### Options
@@ -71,6 +75,7 @@ kops create cluster
       --cloud-labels string                  A list of KV pairs used to tag all instance groups in AWS (eg "Owner=John Doe,Team=Some Team").
       --dns string                           DNS hosted zone to use: public|private. Default is 'public'. (default "Public")
       --dns-zone string                      DNS hosted zone to use (defaults to longest matching zone)
+      --dry-run                              If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --encrypt-etcd-storage                 Generate key in aws kms and use it for encrypt etcd volumes
       --image string                         Image to use for all instances.
       --kubernetes-version string            Version of kubernetes to run (defaults to version in channel)
@@ -83,20 +88,21 @@ kops create cluster
       --master-zones stringSlice             Zones in which to run masters (must be an odd number)
       --model string                         Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --network-cidr string                  Set to override the default network CIDR
-      --networking string                    Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router. (default "kubenet")
+      --networking string                    Networking mode to use.  kubenet (default), classic, external, kopeio-vxlan (or kopeio), weave, flannel-vxlan (or flannel), flannel-udp, calico, canal, kube-router, romana. (default "kubenet")
       --node-count int32                     Set the number of nodes
       --node-security-groups stringSlice     Add precreated additional security groups to nodes.
       --node-size string                     Set instance size for nodes
       --node-tenancy string                  The tenancy of the node group on AWS. Can be either default or dedicated.
       --node-volume-size int32               Set instance volume size (in GB) for nodes
       --out string                           Path to write any local output
+  -o, --output string                        Ouput format. One of json|yaml. Used with the --dry-run flag.
       --project string                       Project to use (must be set on GCE)
       --ssh-access stringSlice               Restrict SSH access to this CIDR.  If not set, access will not be restricted by IP. (default [0.0.0.0/0])
       --ssh-public-key string                SSH public key to use (default "~/.ssh/id_rsa.pub")
-      --target string                        Target - direct, terraform, cloudformation (default "direct")
+      --target string                        Valid targets: direct, terraform, direct. Set this flag to terraform if you want kops to generate terraform (default "direct")
   -t, --topology string                      Controls network topology for the cluster. public|private. Default is 'public'. (default "public")
       --vpc string                           Set to use a shared VPC
-      --yes                                  Specify --yes to immediately create the cluster
+  -y, --yes                                  Specify --yes to immediately create the cluster
       --zones stringSlice                    Zones in which to run the cluster
 ```
 

@@ -34,13 +34,14 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
 	"io"
+	"os"
+
+	"github.com/spf13/cobra"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/pkg/api/v1"
 	"k8s.io/kops/channels/pkg/channels"
 	"k8s.io/kops/util/pkg/tables"
-	"os"
 )
 
 type GetAddonsOptions struct {

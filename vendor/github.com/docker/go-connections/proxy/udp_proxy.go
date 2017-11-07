@@ -7,8 +7,6 @@ import (
 	"sync"
 	"syscall"
 	"time"
-
-	"github.com/Sirupsen/logrus"
 )
 
 const (
@@ -47,6 +45,7 @@ type connTrackMap map[connTrackKey]*net.UDPConn
 // interface to handle UDP traffic forwarding between the frontend and backend
 // addresses.
 type UDPProxy struct {
+	Logger         logger
 	listener       *net.UDPConn
 	frontendAddr   *net.UDPAddr
 	backendAddr    *net.UDPAddr
@@ -55,17 +54,25 @@ type UDPProxy struct {
 }
 
 // NewUDPProxy creates a new UDPProxy.
-func NewUDPProxy(frontendAddr, backendAddr *net.UDPAddr) (*UDPProxy, error) {
+func NewUDPProxy(frontendAddr, backendAddr *net.UDPAddr, ops ...func(*UDPProxy)) (*UDPProxy, error) {
 	listener, err := net.ListenUDP("udp", frontendAddr)
 	if err != nil {
 		return nil, err
 	}
-	return &UDPProxy{
+
+	proxy := &UDPProxy{
 		listener:       listener,
 		frontendAddr:   listener.LocalAddr().(*net.UDPAddr),
 		backendAddr:    backendAddr,
 		connTrackTable: make(connTrackMap),
-	}, nil
+		Logger:       &noopLogger{},
+	}
+
+	for _, op := range ops {
+		op(proxy)
+	}
+
+	return proxy, nil
 }
 
 func (proxy *UDPProxy) replyLoop(proxyConn *net.UDPConn, clientAddr *net.UDPAddr, clientKey *connTrackKey) {
@@ -112,7 +119,7 @@ func (proxy *UDPProxy) Run() {
 			// ECONNREFUSED like Read do (see comment in
 			// UDPProxy.replyLoop)
 			if !isClosedError(err) {
-				logrus.Printf("Stopping proxy on udp/%v for udp/%v (%s)", proxy.frontendAddr, proxy.backendAddr, err)
+				proxy.Logger.Printf("Stopping proxy on udp/%v for udp/%v (%s)", proxy.frontendAddr, proxy.backendAddr, err)
 			}
 			break
 		}
@@ -123,7 +130,7 @@ func (proxy *UDPProxy) Run() {
 		if !hit {
 			proxyConn, err = net.DialUDP("udp", nil, proxy.backendAddr)
 			if err != nil {
-				logrus.Printf("Can't proxy a datagram to udp/%s: %s\n", proxy.backendAddr, err)
+				proxy.Logger.Printf("Can't proxy a datagram to udp/%s: %s\n", proxy.backendAddr, err)
 				proxy.connTrackLock.Unlock()
 				continue
 			}
@@ -134,7 +141,7 @@ func (proxy *UDPProxy) Run() {
 		for i := 0; i != read; {
 			written, err := proxyConn.Write(readBuf[i:read])
 			if err != nil {
-				logrus.Printf("Can't proxy a datagram to udp/%s: %s\n", proxy.backendAddr, err)
+				proxy.Logger.Printf("Can't proxy a datagram to udp/%s: %s\n", proxy.backendAddr, err)
 				break
 			}
 			i += written

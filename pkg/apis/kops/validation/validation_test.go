@@ -167,6 +167,14 @@ func TestValidateKubeAPIServer(t *testing.T) {
 				"Invalid value::KubeAPIServer",
 			},
 		},
+		{
+			Input: kops.KubeAPIServerConfig{
+				ServiceNodePortRange: str,
+			},
+			ExpectedErrors: []string{
+				"Invalid value::KubeAPIServer",
+			},
+		},
 	}
 	for _, g := range grid {
 		errs := validateKubeAPIServer(&g.Input, field.NewPath("KubeAPIServer"))

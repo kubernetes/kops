@@ -49,29 +49,36 @@ type Keystore interface {
 	// (if the certificate is found but not keypair, that is not an error: only the cert will be returned)
 	FindKeypair(name string) (*pki.Certificate, *pki.PrivateKey, error)
 
-	CreateKeypair(name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error)
+	CreateKeypair(signer string, name string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error)
 
-	// Store the keypair
+	// StoreKeypair writes the keypair to the store
 	StoreKeypair(id string, cert *pki.Certificate, privateKey *pki.PrivateKey) error
+
+	// MirrorTo will copy secrets to a vfs.Path, which is often easier for a machine to read
+	MirrorTo(basedir vfs.Path) error
+}
+
+// HasVFSPath is implemented by keystore & other stores that use a VFS path as their backing store
+type HasVFSPath interface {
+	VFSPath() vfs.Path
 }
 
 type CAStore interface {
 	Keystore
 
 	// Cert returns the primary specified certificate
-	Cert(name string) (*pki.Certificate, error)
+	// For createIfMissing=false, using FindCert is preferred
+	Cert(name string, createIfMissing bool) (*pki.Certificate, error)
 	// CertificatePool returns all active certificates with the specified id
-	CertificatePool(name string) (*CertificatePool, error)
-	PrivateKey(name string) (*pki.PrivateKey, error)
+	CertificatePool(name string, createIfMissing bool) (*CertificatePool, error)
+	PrivateKey(name string, createIfMissing bool) (*pki.PrivateKey, error)
 
+	// FindCert returns the specified certificate, if it exists, or nil if not found
 	FindCert(name string) (*pki.Certificate, error)
 	FindPrivateKey(name string) (*pki.PrivateKey, error)
 
 	// List will list all the items, but will not fetch the data
 	List() ([]*KeystoreItem, error)
-
-	// VFSPath returns the path where the CAStore is stored
-	VFSPath() vfs.Path
 
 	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
 	AddCert(name string, cert *pki.Certificate) error

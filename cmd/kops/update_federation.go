@@ -24,7 +24,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/federation"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
 
 var (
@@ -34,7 +34,7 @@ var (
 
 	update_federation_example = templates.Examples(i18n.T(`
 	# After cluster has been edited or upgraded, configure it with:
-	kops update federation k8s-cluster.example.com --yes --state=s3://kops-state-1234 --yes
+	kops update federation k8s-cluster.example.com --state=s3://kops-state-1234
 	`))
 
 	update_federation_short = i18n.T("Update federation cluster resources.")

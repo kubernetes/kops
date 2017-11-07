@@ -18,9 +18,10 @@ package vfs
 
 import (
 	"fmt"
-	"k8s.io/kops/util/pkg/hashing"
 	"path"
 	"strings"
+
+	"k8s.io/kops/util/pkg/hashing"
 )
 
 // KubernetesPath is a path for a VFS backed by the kubernetes API
@@ -76,11 +77,11 @@ func (p *KubernetesPath) Join(relativePath ...string) Path {
 	}
 }
 
-func (p *KubernetesPath) WriteFile(data []byte) error {
+func (p *KubernetesPath) WriteFile(data []byte, acl ACL) error {
 	return fmt.Errorf("KubernetesPath::WriteFile not supported")
 }
 
-func (p *KubernetesPath) CreateFile(data []byte) error {
+func (p *KubernetesPath) CreateFile(data []byte, acl ACL) error {
 	return fmt.Errorf("KubernetesPath::CreateFile not supported")
 }
 

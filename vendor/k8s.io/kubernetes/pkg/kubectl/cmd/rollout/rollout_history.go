@@ -24,7 +24,7 @@ import (
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
-	"k8s.io/kubernetes/pkg/util/i18n"
+	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 
 	"github.com/spf13/cobra"
 )
@@ -44,7 +44,7 @@ var (
 func NewCmdRolloutHistory(f cmdutil.Factory, out io.Writer) *cobra.Command {
 	options := &resource.FilenameOptions{}
 
-	validArgs := []string{"deployment", "daemonset"}
+	validArgs := []string{"deployment", "daemonset", "statefulset"}
 	argAliases := kubectl.ResourceAliases(validArgs)
 
 	cmd := &cobra.Command{
@@ -66,8 +66,8 @@ func NewCmdRolloutHistory(f cmdutil.Factory, out io.Writer) *cobra.Command {
 }
 
 func RunHistory(f cmdutil.Factory, cmd *cobra.Command, out io.Writer, args []string, options *resource.FilenameOptions) error {
-	if len(args) == 0 && cmdutil.IsFilenameEmpty(options.Filenames) {
-		return cmdutil.UsageError(cmd, "Required resource not specified.")
+	if len(args) == 0 && cmdutil.IsFilenameSliceEmpty(options.Filenames) {
+		return cmdutil.UsageErrorf(cmd, "Required resource not specified.")
 	}
 	revision := cmdutil.GetFlagInt64(cmd, "revision")
 	if revision < 0 {

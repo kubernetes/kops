@@ -18,13 +18,14 @@ package gcetasks
 
 import (
 	"fmt"
+	"reflect"
+	"strings"
+
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
-	"reflect"
-	"strings"
 )
 
 var scopeAliases map[string]string
@@ -139,7 +140,7 @@ func (e *Instance) Find(c *fi.Context) (*Instance, error) {
 	if r.Metadata != nil {
 		actual.Metadata = make(map[string]fi.Resource)
 		for _, i := range r.Metadata.Items {
-			actual.Metadata[i.Key] = fi.NewStringResource(i.Value)
+			actual.Metadata[i.Key] = fi.NewStringResource(fi.StringValue(i.Value))
 		}
 		actual.metadataFingerprint = r.Metadata.Fingerprint
 	}
@@ -195,7 +196,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 		}
 	} else {
 		scheduling = &compute.Scheduling{
-			AutomaticRestart: true,
+			AutomaticRestart: fi.Bool(true),
 			// TODO: Migrate or terminate?
 			OnHostMaintenance: "MIGRATE",
 			Preemptible:       false,
@@ -275,7 +276,7 @@ func (e *Instance) mapToGCE(project string, ipAddressResolver func(*Address) (*s
 		}
 		metadataItems = append(metadataItems, &compute.MetadataItems{
 			Key:   key,
-			Value: v,
+			Value: fi.String(v),
 		})
 	}
 
@@ -447,7 +448,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 
 	tf.AddNetworks(e.Network, e.Subnet, i.NetworkInterfaces)
 
-	tf.AddMetadata(i.Metadata)
+	tf.AddMetadata(t, i.Name, i.Metadata)
 
 	// Using metadata_startup_script is now mandatory (?)
 	{
@@ -460,7 +461,7 @@ func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *
 
 	if i.Scheduling != nil {
 		tf.Scheduling = &terraformScheduling{
-			AutomaticRestart:  i.Scheduling.AutomaticRestart,
+			AutomaticRestart:  fi.BoolValue(i.Scheduling.AutomaticRestart),
 			OnHostMaintenance: i.Scheduling.OnHostMaintenance,
 			Preemptible:       i.Scheduling.Preemptible,
 		}

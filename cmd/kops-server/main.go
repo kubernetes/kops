@@ -21,11 +21,12 @@ import (
 	"os"
 	"runtime"
 
-	"k8s.io/kops/pkg/apiserver/cmd/server"
-	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
-	"k8s.io/kubernetes/pkg/util/logs"
 	"math/rand"
 	"time"
+
+	"github.com/golang/glog"
+	"k8s.io/apiserver/pkg/util/logs"
+	"k8s.io/kops/pkg/apiserver/cmd/server"
 )
 
 func main() {
@@ -41,6 +42,6 @@ func main() {
 	cmd := server.NewCommandStartKopsServer(os.Stdout, os.Stderr)
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
 	if err := cmd.Execute(); err != nil {
-		cmdutil.CheckErr(err)
+		glog.Fatal(err)
 	}
 }

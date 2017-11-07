@@ -925,9 +925,10 @@ type GetQueryResultsResponse struct {
 	// CacheHit: Whether the query result was fetched from the query cache.
 	CacheHit bool `json:"cacheHit,omitempty"`
 
-	// Errors: [Output-only] All errors and warnings encountered during the
-	// running of the job. Errors here do not necessarily mean that the job
-	// has completed or was unsuccessful.
+	// Errors: [Output-only] The first errors or warnings encountered during
+	// the running of the job. The final message includes the number of
+	// errors that caused the process to stop. Errors here do not
+	// necessarily mean that the job has completed or was unsuccessful.
 	Errors []*ErrorProto `json:"errors,omitempty"`
 
 	// Etag: A hash of this response.
@@ -1349,15 +1350,16 @@ type JobConfigurationLoad struct {
 	SchemaInlineFormat string `json:"schemaInlineFormat,omitempty"`
 
 	// SchemaUpdateOptions: [Experimental] Allows the schema of the
-	// desitination table to be updated as a side effect of the load job.
-	// Schema update options are supported in two cases: when
-	// writeDisposition is WRITE_APPEND; when writeDisposition is
-	// WRITE_TRUNCATE and the destination table is a partition of a table,
-	// specified by partition decorators. For normal tables, WRITE_TRUNCATE
-	// will always overwrite the schema. One or more of the following values
-	// are specified: ALLOW_FIELD_ADDITION: allow adding a nullable field to
-	// the schema. ALLOW_FIELD_RELAXATION: allow relaxing a required field
-	// in the original schema to nullable.
+	// desitination table to be updated as a side effect of the load job if
+	// a schema is autodetected or supplied in the job configuration. Schema
+	// update options are supported in two cases: when writeDisposition is
+	// WRITE_APPEND; when writeDisposition is WRITE_TRUNCATE and the
+	// destination table is a partition of a table, specified by partition
+	// decorators. For normal tables, WRITE_TRUNCATE will always overwrite
+	// the schema. One or more of the following values are specified:
+	// ALLOW_FIELD_ADDITION: allow adding a nullable field to the schema.
+	// ALLOW_FIELD_RELAXATION: allow relaxing a required field in the
+	// original schema to nullable.
 	SchemaUpdateOptions []string `json:"schemaUpdateOptions,omitempty"`
 
 	// SkipLeadingRows: [Optional] The number of rows at the top of a CSV
@@ -1373,8 +1375,14 @@ type JobConfigurationLoad struct {
 	SourceFormat string `json:"sourceFormat,omitempty"`
 
 	// SourceUris: [Required] The fully-qualified URIs that point to your
-	// data in Google Cloud Storage. Each URI can contain one '*' wildcard
-	// character and it must come after the 'bucket' name.
+	// data in Google Cloud. For Google Cloud Storage URIs: Each URI can
+	// contain one '*' wildcard character and it must come after the
+	// 'bucket' name. Size limits related to load jobs apply to external
+	// data sources. For Google Cloud Bigtable URIs: Exactly one URI can be
+	// specified and it has be a fully specified and valid HTTPS URL for a
+	// Google Cloud Bigtable table. For Google Cloud Datastore backups:
+	// Exactly one URI can be specified, and it must end with
+	// '.backup_info'. Also, the '*' wildcard character is not allowed.
 	SourceUris []string `json:"sourceUris,omitempty"`
 
 	// WriteDisposition: [Optional] Specifies the action that occurs if the
@@ -1418,7 +1426,8 @@ type JobConfigurationQuery struct {
 	// dialect, allows the query to produce arbitrarily large result tables
 	// at a slight cost in performance. Requires destinationTable to be set.
 	// For standard SQL queries, this flag is ignored and large results are
-	// always allowed.
+	// always allowed. However, you must still set destinationTable when
+	// result size exceeds the allowed maximum response size.
 	AllowLargeResults bool `json:"allowLargeResults,omitempty"`
 
 	// CreateDisposition: [Optional] Specifies whether the job is allowed to
@@ -1436,7 +1445,8 @@ type JobConfigurationQuery struct {
 
 	// DestinationTable: [Optional] Describes the table where the query
 	// results should be stored. If not present, a new table will be created
-	// to store the results.
+	// to store the results. This property must be set for large results
+	// that exceed the maximum response size.
 	DestinationTable *TableReference `json:"destinationTable,omitempty"`
 
 	// FlattenResults: [Optional] If true and query uses legacy SQL dialect,
@@ -1474,7 +1484,9 @@ type JobConfigurationQuery struct {
 	// INTERACTIVE.
 	Priority string `json:"priority,omitempty"`
 
-	// Query: [Required] BigQuery SQL query to execute.
+	// Query: [Required] SQL query text to execute. The useLegacySql field
+	// can be used to indicate whether the query uses legacy SQL or standard
+	// SQL.
 	Query string `json:"query,omitempty"`
 
 	// QueryParameters: Query parameters for standard SQL queries.
@@ -1502,9 +1514,8 @@ type JobConfigurationQuery struct {
 	// for this query. The default value is true. If set to false, the query
 	// will use BigQuery's standard SQL:
 	// https://cloud.google.com/bigquery/sql-reference/ When useLegacySql is
-	// set to false, the values of allowLargeResults and flattenResults are
-	// ignored; query will be run as if allowLargeResults is true and
-	// flattenResults is false.
+	// set to false, the value of flattenResults is ignored; query will be
+	// run as if flattenResults is false.
 	UseLegacySql bool `json:"useLegacySql,omitempty"`
 
 	// UseQueryCache: [Optional] Whether to look for the result in the query
@@ -1523,13 +1534,13 @@ type JobConfigurationQuery struct {
 	// WriteDisposition: [Optional] Specifies the action that occurs if the
 	// destination table already exists. The following values are supported:
 	// WRITE_TRUNCATE: If the table already exists, BigQuery overwrites the
-	// table data. WRITE_APPEND: If the table already exists, BigQuery
-	// appends the data to the table. WRITE_EMPTY: If the table already
-	// exists and contains data, a 'duplicate' error is returned in the job
-	// result. The default value is WRITE_EMPTY. Each action is atomic and
-	// only occurs if BigQuery is able to complete the job successfully.
-	// Creation, truncation and append actions occur as one atomic update
-	// upon job completion.
+	// table data and uses the schema from the query result. WRITE_APPEND:
+	// If the table already exists, BigQuery appends the data to the table.
+	// WRITE_EMPTY: If the table already exists and contains data, a
+	// 'duplicate' error is returned in the job result. The default value is
+	// WRITE_EMPTY. Each action is atomic and only occurs if BigQuery is
+	// able to complete the job successfully. Creation, truncation and
+	// append actions occur as one atomic update upon job completion.
 	WriteDisposition string `json:"writeDisposition,omitempty"`
 
 	// ForceSendFields is a list of field names (e.g. "AllowLargeResults")
@@ -1854,6 +1865,13 @@ func (s *JobStatistics2) MarshalJSON() ([]byte, error) {
 }
 
 type JobStatistics3 struct {
+	// BadRecords: [Output-only] The number of bad records encountered. Note
+	// that if the job has failed because of more bad records encountered
+	// than the maximum allowed in the load job configuration, then this
+	// number can be less than the total number of bad records present in
+	// the input data.
+	BadRecords int64 `json:"badRecords,omitempty,string"`
+
 	// InputFileBytes: [Output-only] Number of bytes of source data in a
 	// load job.
 	InputFileBytes int64 `json:"inputFileBytes,omitempty,string"`
@@ -1870,7 +1888,7 @@ type JobStatistics3 struct {
 	// change.
 	OutputRows int64 `json:"outputRows,omitempty,string"`
 
-	// ForceSendFields is a list of field names (e.g. "InputFileBytes") to
+	// ForceSendFields is a list of field names (e.g. "BadRecords") to
 	// unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
@@ -1878,13 +1896,12 @@ type JobStatistics3 struct {
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "InputFileBytes") to
-	// include in API requests with the JSON null value. By default, fields
-	// with empty values are omitted from API requests. However, any field
-	// with an empty value appearing in NullFields will be sent to the
-	// server as null. It is an error if a field in this list has a
-	// non-empty value. This may be used to include null fields in Patch
-	// requests.
+	// NullFields is a list of field names (e.g. "BadRecords") to include in
+	// API requests with the JSON null value. By default, fields with empty
+	// values are omitted from API requests. However, any field with an
+	// empty value appearing in NullFields will be sent to the server as
+	// null. It is an error if a field in this list has a non-empty value.
+	// This may be used to include null fields in Patch requests.
 	NullFields []string `json:"-"`
 }
 
@@ -1931,9 +1948,10 @@ type JobStatus struct {
 	// indicates that the job has completed and was unsuccessful.
 	ErrorResult *ErrorProto `json:"errorResult,omitempty"`
 
-	// Errors: [Output-only] All errors encountered during the running of
-	// the job. Errors here do not necessarily mean that the job has
-	// completed or was unsuccessful.
+	// Errors: [Output-only] The first errors encountered during the running
+	// of the job. The final message includes the number of errors that
+	// caused the process to stop. Errors here do not necessarily mean that
+	// the job has completed or was unsuccessful.
 	Errors []*ErrorProto `json:"errors,omitempty"`
 
 	// State: [Output-only] Running state of the job.
@@ -2263,9 +2281,8 @@ type QueryRequest struct {
 	// for this query. The default value is true. If set to false, the query
 	// will use BigQuery's standard SQL:
 	// https://cloud.google.com/bigquery/sql-reference/ When useLegacySql is
-	// set to false, the values of allowLargeResults and flattenResults are
-	// ignored; query will be run as if allowLargeResults is true and
-	// flattenResults is false.
+	// set to false, the value of flattenResults is ignored; query will be
+	// run as if flattenResults is false.
 	//
 	// Default: true
 	UseLegacySql *bool `json:"useLegacySql,omitempty"`
@@ -2305,9 +2322,10 @@ type QueryResponse struct {
 	// CacheHit: Whether the query result was fetched from the query cache.
 	CacheHit bool `json:"cacheHit,omitempty"`
 
-	// Errors: [Output-only] All errors and warnings encountered during the
-	// running of the job. Errors here do not necessarily mean that the job
-	// has completed or was unsuccessful.
+	// Errors: [Output-only] The first errors or warnings encountered during
+	// the running of the job. The final message includes the number of
+	// errors that caused the process to stop. Errors here do not
+	// necessarily mean that the job has completed or was unsuccessful.
 	Errors []*ErrorProto `json:"errors,omitempty"`
 
 	// JobComplete: Whether the query has completed or not. If rows or
@@ -2758,7 +2776,7 @@ func (s *TableDataList) MarshalJSON() ([]byte, error) {
 
 type TableFieldSchema struct {
 	// Description: [Optional] The field description. The maximum length is
-	// 16K characters.
+	// 1,024 characters.
 	Description string `json:"description,omitempty"`
 
 	// Fields: [Optional] Describes the nested schema fields if the type
@@ -2863,6 +2881,10 @@ type TableListTables struct {
 
 	// TableReference: A reference uniquely identifying the table.
 	TableReference *TableReference `json:"tableReference,omitempty"`
+
+	// TimePartitioning: [Experimental] The time-based partitioning for this
+	// table.
+	TimePartitioning *TimePartitioning `json:"timePartitioning,omitempty"`
 
 	// Type: The type of table. Possible values are: TABLE, VIEW.
 	Type string `json:"type,omitempty"`

@@ -19,19 +19,22 @@ package vfsclientset
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"reflect"
+	"sort"
+	"time"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/kops/pkg/acls"
 	kops "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/v1alpha2"
+	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/util/pkg/vfs"
-	"os"
-	"reflect"
-	"sort"
-	"time"
 )
 
 var StoreVersion = v1alpha2.SchemeGroupVersion
@@ -48,12 +51,13 @@ type commonVFS struct {
 }
 
 func (c *commonVFS) init(kind string, basePath vfs.Path, storeVersion runtime.GroupVersioner) {
-	yaml, ok := runtime.SerializerInfoForMediaType(kops.Codecs.SupportedMediaTypes(), "application/yaml")
+	codecs := kopscodecs.Codecs
+	yaml, ok := runtime.SerializerInfoForMediaType(codecs.SupportedMediaTypes(), "application/yaml")
 	if !ok {
 		glog.Fatalf("no YAML serializer registered")
 	}
-	c.encoder = kops.Codecs.EncoderForVersion(yaml.Serializer, storeVersion)
-	c.decoder = kops.Codecs.DecoderToVersion(yaml.Serializer, kops.SchemeGroupVersion)
+	c.encoder = codecs.EncoderForVersion(yaml.Serializer, storeVersion)
+	c.decoder = codecs.DecoderToVersion(yaml.Serializer, kops.SchemeGroupVersion)
 
 	c.kind = kind
 	c.basePath = basePath
@@ -74,7 +78,7 @@ func (c *commonVFS) list(items interface{}, options metav1.ListOptions) (interfa
 	return c.readAll(items)
 }
 
-func (c *commonVFS) create(i runtime.Object) error {
+func (c *commonVFS) create(cluster *kops.Cluster, i runtime.Object) error {
 	objectMeta, err := meta.Accessor(i)
 	if err != nil {
 		return err
@@ -92,7 +96,7 @@ func (c *commonVFS) create(i runtime.Object) error {
 		objectMeta.SetCreationTimestamp(v1.NewTime(time.Now().UTC()))
 	}
 
-	err = c.writeConfig(c.basePath.Join(objectMeta.GetName()), i, vfs.WriteOptionCreate)
+	err = c.writeConfig(cluster, c.basePath.Join(objectMeta.GetName()), i, vfs.WriteOptionCreate)
 	if err != nil {
 		if os.IsExist(err) {
 			return err
@@ -129,7 +133,7 @@ func (c *commonVFS) readConfig(configPath vfs.Path) (runtime.Object, error) {
 	return object, nil
 }
 
-func (c *commonVFS) writeConfig(configPath vfs.Path, o runtime.Object, writeOptions ...vfs.WriteOption) error {
+func (c *commonVFS) writeConfig(cluster *kops.Cluster, configPath vfs.Path, o runtime.Object, writeOptions ...vfs.WriteOption) error {
 	data, err := c.serialize(o)
 	if err != nil {
 		return fmt.Errorf("error marshalling object: %v", err)
@@ -153,10 +157,15 @@ func (c *commonVFS) writeConfig(configPath vfs.Path, o runtime.Object, writeOpti
 		}
 	}
 
+	acl, err := acls.GetACL(configPath, cluster)
+	if err != nil {
+		return err
+	}
+
 	if create {
-		err = configPath.CreateFile(data)
+		err = configPath.CreateFile(data, acl)
 	} else {
-		err = configPath.WriteFile(data)
+		err = configPath.WriteFile(data, acl)
 	}
 	if err != nil {
 		if create && os.IsExist(err) {
@@ -168,7 +177,7 @@ func (c *commonVFS) writeConfig(configPath vfs.Path, o runtime.Object, writeOpti
 	return nil
 }
 
-func (c *commonVFS) update(i runtime.Object) error {
+func (c *commonVFS) update(cluster *kops.Cluster, i runtime.Object) error {
 	objectMeta, err := meta.Accessor(i)
 	if err != nil {
 		return err
@@ -186,7 +195,7 @@ func (c *commonVFS) update(i runtime.Object) error {
 		objectMeta.SetCreationTimestamp(v1.NewTime(time.Now().UTC()))
 	}
 
-	err = c.writeConfig(c.basePath.Join(objectMeta.GetName()), i, vfs.WriteOptionOnlyIfExists)
+	err = c.writeConfig(cluster, c.basePath.Join(objectMeta.GetName()), i, vfs.WriteOptionOnlyIfExists)
 	if err != nil {
 		return fmt.Errorf("error writing %s: %v", c.kind, err)
 	}

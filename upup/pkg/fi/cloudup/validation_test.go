@@ -18,22 +18,19 @@ package cloudup
 
 import (
 	"fmt"
+	"strings"
+	"testing"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/validation"
-	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
-	"strings"
-	"testing"
 )
 
 const MockAWSRegion = "us-mock-1"
 
 func buildDefaultCluster(t *testing.T) *api.Cluster {
-	awsup.InstallMockAWSCloud(MockAWSRegion, "abcd")
-
 	c := buildMinimalCluster()
 
 	err := PerformAssignments(c)
@@ -61,8 +58,7 @@ func buildDefaultCluster(t *testing.T) *api.Cluster {
 		}
 	}
 
-	assetBuilder := assets.NewAssetBuilder(nil)
-	fullSpec, err := PopulateClusterSpec(c, assetBuilder)
+	fullSpec, err := mockedPopulateClusterSpec(c)
 	if err != nil {
 		t.Fatalf("error from PopulateClusterSpec: %v", err)
 	}

@@ -710,10 +710,6 @@ func (s *KindExpression) MarshalJSON() ([]byte, error) {
 //     assert (0.0, -170.0) == NormalizeLatLng(180.0, 10.0)
 //     assert (-90.0, 10.0) == NormalizeLatLng(270.0, 10.0)
 //     assert (90.0, 10.0) == NormalizeLatLng(-270.0, 10.0)
-//
-// The code in logs/storage/validator/logs_validator_traits.cc treats
-// this type
-// as if it were annotated as ST_LOCATION.
 type LatLng struct {
 	// Latitude: The latitude in degrees. It must be in the range [-90.0,
 	// +90.0].
@@ -1284,7 +1280,8 @@ type QueryResultBatch struct {
 	//   "MORE_RESULTS_AFTER_CURSOR" - The query is finished, but there may
 	// be more results after the end
 	// cursor.
-	//   "NO_MORE_RESULTS" - The query has been exhausted.
+	//   "NO_MORE_RESULTS" - The query is finished, and there are no more
+	// results.
 	MoreResults string `json:"moreResults,omitempty"`
 
 	// SkippedCursor: A cursor that points to the position after the last

@@ -19,14 +19,15 @@ package templates
 import (
 	"bytes"
 	"fmt"
-	"github.com/golang/glog"
 	"io"
-	"k8s.io/kops/pkg/apis/kops"
-	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kops/util/pkg/vfs"
 	"os"
 	"strings"
 	"text/template"
+
+	"github.com/golang/glog"
+	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 type Templates struct {
