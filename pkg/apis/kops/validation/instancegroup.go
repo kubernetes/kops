@@ -54,6 +54,15 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		}
 	}
 
+	if len(g.Spec.ExtraUserData) > 0 {
+		for _, UserDataInfo := range g.Spec.ExtraUserData {
+			err := validateExtraUserData(&UserDataInfo)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
 	return nil
 }
 
@@ -101,6 +110,32 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 
 	if len(allErrs) != 0 {
 		return allErrs[0]
+	}
+
+	return nil
+}
+
+func validateExtraUserData(userData *kops.ExtraUserDataSpec) error {
+	if userData.Name == "" {
+		return field.Required(field.NewPath("ExtraUserData Name"), "extraUserData Name field must be set")
+	}
+
+	if userData.Content == "" {
+		return field.Required(field.NewPath("ExtraUserData Content"), "extraUserData Content field must be set")
+	}
+
+	switch userData.Type {
+	case "text/x-include-once-url":
+	case "text/x-include-url":
+	case "text/cloud-config-archive":
+	case "text/upstart-job":
+	case "text/cloud-config":
+	case "text/part-handler":
+	case "text/x-shellscript":
+	case "text/cloud-boothook":
+
+	default:
+		return field.Invalid(field.NewPath("ExtraUserData Type"), userData.Type, "Unknown user-data content type")
 	}
 
 	return nil
