@@ -160,7 +160,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 		},
 	}
 
-	AWSNodeUpTemplate, err := resources.AWSNodeUpTemplate()
+	AWSNodeUpTemplate, err := resources.AWSNodeUpTemplate(ig)
 	if err != nil {
 		return nil, err
 	}

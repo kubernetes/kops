@@ -20,11 +20,10 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"mime/multipart"
 	"net/textproto"
-	"os"
-	"strings"
+
+	"k8s.io/kops/pkg/apis/kops"
 )
 
 var NodeUpTemplate = `#!/bin/bash
@@ -183,56 +182,49 @@ echo "== nodeup node config done =="
 `
 
 // AWSNodeUpTemplate returns a Mime Multi Part Archive container the nodeup (bootstrap) script
-// and any aditional User Data passed to it in files using the env variable EXTRA_USER_DATA
-func AWSNodeUpTemplate() (string, error) {
+// and any aditional User Data passed to it in files using the env variable KOPS_EXTRA_USER_DATA
+func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 
-	/* Create a buffer to hold the user-data*/
-	buffer := bytes.NewBufferString("")
-	writer := bufio.NewWriter(buffer)
+	UserDataTemplate := NodeUpTemplate
 
-	mimeWriter := multipart.NewWriter(writer)
+	if len(ig.Spec.ExtraUserData) > 0 {
+		/* Create a buffer to hold the user-data*/
+		buffer := bytes.NewBufferString("")
+		writer := bufio.NewWriter(buffer)
 
-	// we explicitly set the buoudaries to make testing easier.
-	boundary := "MIMEBOUNDRY"
-	if err := mimeWriter.SetBoundary(boundary); err != nil {
-		return "", err
-	}
+		mimeWriter := multipart.NewWriter(writer)
 
-	writer.Write([]byte(fmt.Sprintf("Content-Type: multipart/mixed; boundary=\"%s\"\r\n", boundary)))
-	writer.Write([]byte("MIME-Version: 1.0\r\n\r\n"))
+		// we explicitly set the buoudaries to make testing easier.
+		boundary := "MIMEBOUNDRY"
+		if err := mimeWriter.SetBoundary(boundary); err != nil {
+			return "", err
+		}
 
-	err := writeUserDataPart(mimeWriter, "nodeup.sh", "text/x-shellscript", []byte(NodeUpTemplate))
-	if err != nil {
-		return "", err
-	}
+		writer.Write([]byte(fmt.Sprintf("Content-Type: multipart/mixed; boundary=\"%s\"\r\n", boundary)))
+		writer.Write([]byte("MIME-Version: 1.0\r\n\r\n"))
 
-	if os.Getenv("EXTRA_USER_DATA") != "" {
-		ExtraUserDataSlices := strings.Fields(os.Getenv("EXTRA_USER_DATA"))
+		err := writeUserDataPart(mimeWriter, "nodeup.sh", "text/x-shellscript", []byte(UserDataTemplate))
+		if err != nil {
+			return "", err
+		}
 
-		for _, UserDataInfo := range ExtraUserDataSlices {
-			slice := strings.Split(UserDataInfo, ":")
-			if len(slice) != 2 {
-				return "", fmt.Errorf("error processing extra user data, '%v' is not in the format 'file:content-type'", UserDataInfo)
-			}
-
-			content, err := ioutil.ReadFile(slice[0])
-			if err != nil {
-				return "", err
-			}
-
-			err = writeUserDataPart(mimeWriter, slice[0], slice[1], content)
+		for _, UserDataInfo := range ig.Spec.ExtraUserData {
+			err = writeUserDataPart(mimeWriter, UserDataInfo.Name, UserDataInfo.Type, []byte(UserDataInfo.Content))
 			if err != nil {
 				return "", err
 			}
 		}
+
+		writer.Write([]byte(fmt.Sprintf("\r\n--%s--\r\n", boundary)))
+
+		writer.Flush()
+		mimeWriter.Close()
+
+		UserDataTemplate = buffer.String()
 	}
 
-	writer.Write([]byte(fmt.Sprintf("\r\n--%s--\r\n", boundary)))
+	return UserDataTemplate, nil
 
-	writer.Flush()
-	mimeWriter.Close()
-
-	return buffer.String(), nil
 }
 
 func writeUserDataPart(mimeWriter *multipart.Writer, fileName string, contentType string, content []byte) error {

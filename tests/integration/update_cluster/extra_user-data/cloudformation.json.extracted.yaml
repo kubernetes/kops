@@ -1,4 +1,13 @@
-Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexamplecom.Properties.UserData: |
+Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersextrauserdataexamplecom.Properties.UserData: |
+  Content-Type: multipart/mixed; boundary="MIMEBOUNDRY"
+  MIME-Version: 1.0
+
+  --MIMEBOUNDRY
+  Content-Disposition: attachment; filename="nodeup.sh"
+  Content-Transfer-Encoding: 7bit
+  Content-Type: text/x-shellscript
+  Mime-Version: 1.0
+
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
@@ -175,7 +184,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
     attachDetachReconcileSyncPeriod: 1m0s
     cloudProvider: aws
     clusterCIDR: 100.96.0.0/11
-    clusterName: minimal.example.com
+    clusterName: extrauserdata.example.com
     configureCloudRoutes: true
     image: gcr.io/google_containers/kube-controller-manager:v1.4.12
     leaderElection:
@@ -197,7 +206,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
     master: http://127.0.0.1:8080
   kubelet:
     allowPrivileged: true
-    apiServers: https://api.internal.minimal.example.com
+    apiServers: https://api.internal.extrauserdata.example.com
     babysitDaemons: true
     cgroupRoot: docker
     cloudProvider: aws
@@ -249,15 +258,15 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
   - d9fdb6b37597d371ef853cde76170f38a553aa78@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubectl
   - 19d49f7b2b99cd2493d5ae0ace896c64e289ccbb@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz
   - 5d95d64d7134f202ba60b1fa14adaff138905d15@https://kubeupv2.s3.amazonaws.com/kops/1.7.0/linux/amd64/utils.tar.gz
-  ClusterName: minimal.example.com
-  ConfigBase: memfs://clusters.example.com/minimal.example.com
+  ClusterName: extrauserdata.example.com
+  ConfigBase: memfs://clusters.example.com/extrauserdata.example.com
   InstanceGroupName: master-us-test-1a
   Tags:
   - _automatic_upgrades
   - _aws
   - _kubernetes_master
   channels:
-  - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
+  - memfs://clusters.example.com/extrauserdata.example.com/addons/bootstrap-channel.yaml
   protokubeImage:
     hash: 5bd97a02f0793d1906e9f446c548ececf1444737
     name: protokube:1.7.0
@@ -267,7 +276,28 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
 
   download-release
   echo "== nodeup node config done =="
-Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.UserData: |
+
+  --MIMEBOUNDRY
+  Content-Disposition: attachment; filename="myscript.sh"
+  Content-Transfer-Encoding: 7bit
+  Content-Type: text/x-shellscript
+  Mime-Version: 1.0
+
+  #!/bin/sh
+  echo "Hello World.  The time is now $(date -R)!" | tee /root/output.txt
+
+  --MIMEBOUNDRY--
+
+Resources.AWSAutoScalingLaunchConfigurationnodesextrauserdataexamplecom.Properties.UserData: |
+  Content-Type: multipart/mixed; boundary="MIMEBOUNDRY"
+  MIME-Version: 1.0
+
+  --MIMEBOUNDRY
+  Content-Disposition: attachment; filename="nodeup.sh"
+  Content-Transfer-Encoding: 7bit
+  Content-Type: text/x-shellscript
+  Mime-Version: 1.0
+
   #!/bin/bash
   # Copyright 2016 The Kubernetes Authors All rights reserved.
   #
@@ -425,7 +455,7 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
     logLevel: 2
   kubelet:
     allowPrivileged: true
-    apiServers: https://api.internal.minimal.example.com
+    apiServers: https://api.internal.extrauserdata.example.com
     babysitDaemons: true
     cgroupRoot: docker
     cloudProvider: aws
@@ -457,14 +487,14 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
   - d9fdb6b37597d371ef853cde76170f38a553aa78@https://storage.googleapis.com/kubernetes-release/release/v1.4.12/bin/linux/amd64/kubectl
   - 19d49f7b2b99cd2493d5ae0ace896c64e289ccbb@https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz
   - 5d95d64d7134f202ba60b1fa14adaff138905d15@https://kubeupv2.s3.amazonaws.com/kops/1.7.0/linux/amd64/utils.tar.gz
-  ClusterName: minimal.example.com
-  ConfigBase: memfs://clusters.example.com/minimal.example.com
+  ClusterName: extrauserdata.example.com
+  ConfigBase: memfs://clusters.example.com/extrauserdata.example.com
   InstanceGroupName: nodes
   Tags:
   - _automatic_upgrades
   - _aws
   channels:
-  - memfs://clusters.example.com/minimal.example.com/addons/bootstrap-channel.yaml
+  - memfs://clusters.example.com/extrauserdata.example.com/addons/bootstrap-channel.yaml
   protokubeImage:
     hash: 5bd97a02f0793d1906e9f446c548ececf1444737
     name: protokube:1.7.0
@@ -474,3 +504,14 @@ Resources.AWSAutoScalingLaunchConfigurationnodesminimalexamplecom.Properties.Use
 
   download-release
   echo "== nodeup node config done =="
+
+  --MIMEBOUNDRY
+  Content-Disposition: attachment; filename="myscript.sh"
+  Content-Transfer-Encoding: 7bit
+  Content-Type: text/x-shellscript
+  Mime-Version: 1.0
+
+  #!/bin/sh
+  echo "Hello World.  The time is now $(date -R)!" | tee /root/output.txt
+
+  --MIMEBOUNDRY--
