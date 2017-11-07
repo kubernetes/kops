@@ -207,6 +207,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// Names specified in the cluster spec
 		alternateNames = append(alternateNames, b.Cluster.Spec.MasterPublicName)
 		alternateNames = append(alternateNames, b.Cluster.Spec.MasterInternalName)
+		alternateNames = append(alternateNames, b.Cluster.Spec.AdditionalSANs...)
 
 		// Referencing it by internal IP should work also
 		{
