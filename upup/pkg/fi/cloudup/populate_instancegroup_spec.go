@@ -31,8 +31,6 @@ import (
 
 // Default Machine types for various types of instance group machine
 const (
-	defaultNodeLabel = "kops.k8s.io/instancegroup"
-
 	defaultNodeMachineTypeGCE     = "n1-standard-2"
 	defaultNodeMachineTypeVSphere = "vsphere_node"
 	defaultNodeMachineTypeDO      = "2gb"
@@ -150,14 +148,6 @@ func PopulateInstanceGroupSpec(cluster *kops.Cluster, input *kops.InstanceGroup,
 
 	if len(ig.Spec.Subnets) == 0 {
 		return nil, fmt.Errorf("unable to infer any Subnets for InstanceGroup %s ", ig.ObjectMeta.Name)
-	}
-
-	if ig.Spec.NodeLabels == nil {
-		nodeLabels := make(map[string]string)
-		nodeLabels[defaultNodeLabel] = ig.Name
-		ig.Spec.NodeLabels = nodeLabels
-	} else {
-		ig.Spec.NodeLabels[defaultNodeLabel] = ig.Name
 	}
 
 	return ig, nil

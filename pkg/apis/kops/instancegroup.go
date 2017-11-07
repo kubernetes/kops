@@ -25,6 +25,9 @@ import (
 
 const LabelClusterName = "kops.k8s.io/cluster"
 
+// NodeLabelInstanceGroup is a node label set to the name of the instance group
+const NodeLabelInstanceGroup = "kops.k8s.io/instancegroup"
+
 // Deprecated - use the new labels & taints node-role.kubernetes.io/master and node-role.kubernetes.io/node
 const TaintNoScheduleMaster15 = "dedicated=master:NoSchedule"
 
@@ -150,5 +153,15 @@ func (g *InstanceGroup) IsMaster() bool {
 	default:
 		glog.Fatalf("Role not set in group %v", g)
 		return false
+	}
+}
+
+func (g *InstanceGroup) AddInstanceGroupNodeLabel() {
+	if g.Spec.NodeLabels == nil {
+		nodeLabels := make(map[string]string)
+		nodeLabels[NodeLabelInstanceGroup] = g.Name
+		g.Spec.NodeLabels = nodeLabels
+	} else {
+		g.Spec.NodeLabels[NodeLabelInstanceGroup] = g.Name
 	}
 }
