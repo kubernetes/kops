@@ -80,6 +80,7 @@ kops create cluster
       --image string                         Image to use for all instances.
       --kubernetes-version string            Version of kubernetes to run (defaults to version in channel)
       --master-count int32                   Set the number of masters.  Defaults to one master per master-zone
+      --master-public-name string            Sets the public master public name
       --master-security-groups stringSlice   Add precreated additional security groups to masters.
       --master-size string                   Set instance size for masters
       --master-tenancy string                The tenancy of the master group on AWS. Can either be default or dedicated.
