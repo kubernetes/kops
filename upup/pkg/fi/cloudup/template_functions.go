@@ -156,7 +156,7 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 		}
 		argv = append(argv, fmt.Sprintf("--watch-ingress=%t", watchIngress))
 		if tf.cluster.Spec.ExternalDNS.WatchNamespace != "" {
-			argv = append(argv, fmt.Sprintf("--watch-namespace=%q", tf.cluster.Spec.ExternalDNS.WatchNamespace))
+			argv = append(argv, fmt.Sprintf("--watch-namespace=%s", tf.cluster.Spec.ExternalDNS.WatchNamespace))
 		}
 	}
 
