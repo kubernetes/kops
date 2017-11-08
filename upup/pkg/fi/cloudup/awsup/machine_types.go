@@ -279,7 +279,7 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		Cores:          32,
 		EphemeralDisks: nil,
 	},
-	
+
 	// c5 family
 	{
 		Name:           "c5.large",
@@ -315,15 +315,15 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		ECU:            139,
 		Cores:          36,
 		EphemeralDisks: nil,
-	},	
+	},
 	{
 		Name:           "c5.18xlarge",
 		MemoryGB:       144,
 		ECU:            278,
 		Cores:          72,
 		EphemeralDisks: nil,
-	},	
-	
+	},
+
 	// cc2 family
 	{
 		Name:           "cc2.8xlarge",
