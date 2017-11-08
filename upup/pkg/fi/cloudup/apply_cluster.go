@@ -205,6 +205,7 @@ func (c *ApplyClusterCmd) Run() error {
 	channels := []string{
 		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
 	}
+	channels = append(channels, c.Cluster.Spec.AddonChannels...)
 
 	// Normalize k8s version
 	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
