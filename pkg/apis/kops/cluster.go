@@ -47,6 +47,8 @@ type ClusterList struct {
 type ClusterSpec struct {
 	// The Channel we are following
 	Channel string `json:"channel,omitempty"`
+	// Additional addon channels
+	AddonChannels []string `json:"addonChannels,omitempty"`
 	// ConfigBase is the path where we store configuration for the cluster
 	// This might be different than the location where the cluster spec itself is stored,
 	// both because this must be accessible to the cluster,
