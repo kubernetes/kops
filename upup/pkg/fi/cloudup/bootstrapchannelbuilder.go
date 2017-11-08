@@ -468,15 +468,14 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Calico != nil {
 		key := "networking.projectcalico.org"
-		version := "2.4.1-kops.1"
 
 		{
-			location := key + "/pre-k8s-1.6.yaml"
 			id := "pre-k8s-1.6"
+			location := key + "/" + id + ".yaml"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
-				Version:           fi.String(version),
+				Version:           fi.String("2.4.1"),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
 				KubernetesVersion: "<1.6.0",
@@ -486,12 +485,12 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 
 		{
-			location := key + "/k8s-1.6.yaml"
 			id := "k8s-1.6"
+			location := key + "/" + id + ".yaml"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
-				Version:           fi.String(version),
+				Version:           fi.String("2.4.1"),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.6.0 <1.8.0",
@@ -501,12 +500,12 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 
 		{
-			location := key + "/k8s-1.8.yaml"
 			id := "k8s-1.8"
+			location := key + "/" + id + ".yaml"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
-				Version:           fi.String(version),
+				Version:           fi.String("2.6.2"),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
 				KubernetesVersion: ">=1.8.0",
