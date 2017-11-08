@@ -600,6 +600,7 @@ func Convert_kops_ClusterList_To_v1alpha1_ClusterList(in *kops.ClusterList, out 
 
 func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops.ClusterSpec, s conversion.Scope) error {
 	out.Channel = in.Channel
+	out.AddonChannels = in.AddonChannels
 	out.ConfigBase = in.ConfigBase
 	out.CloudProvider = in.CloudProvider
 	out.KubernetesVersion = in.KubernetesVersion
@@ -845,6 +846,7 @@ func autoConvert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *
 
 func autoConvert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out *ClusterSpec, s conversion.Scope) error {
 	out.Channel = in.Channel
+	out.AddonChannels = in.AddonChannels
 	out.ConfigBase = in.ConfigBase
 	out.CloudProvider = in.CloudProvider
 	out.KubernetesVersion = in.KubernetesVersion
