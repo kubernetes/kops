@@ -7,6 +7,7 @@ go_library(
         "customizations.go",
         "service.go",
     ],
+    importpath = "github.com/aws/aws-sdk-go/service/polly",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
@@ -23,6 +24,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["customizations_test.go"],
+    importpath = "github.com/aws/aws-sdk-go/service/polly",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
@@ -34,6 +36,7 @@ go_test(
 go_test(
     name = "go_default_xtest",
     srcs = ["examples_test.go"],
+    importpath = "github.com/aws/aws-sdk-go/service/polly_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",

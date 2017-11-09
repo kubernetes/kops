@@ -8,6 +8,7 @@ go_library(
         "setcert.go",
         "unregister.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/extension",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

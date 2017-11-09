@@ -6,6 +6,7 @@ go_library(
         "context.go",
         "droplets.go",
     ],
+    importpath = "k8s.io/kops/pkg/model/domodel",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/model:go_default_library",

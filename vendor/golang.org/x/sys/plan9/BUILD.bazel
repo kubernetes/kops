@@ -6,5 +6,6 @@ go_library(
         "asm.s",
         "env_unset.go",
     ],
+    importpath = "golang.org/x/sys/plan9",
     visibility = ["//visibility:public"],
 )

@@ -7,12 +7,7 @@ go_library(
         "gen.go",
         "io.go",
     ],
+    importpath = "github.com/docker/docker/api/types/plugins/logdriver",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/gogo/protobuf/proto:go_default_library"],
-)
-
-filegroup(
-    name = "go_default_library_protos",
-    srcs = ["entry.proto"],
-    visibility = ["//visibility:public"],
 )

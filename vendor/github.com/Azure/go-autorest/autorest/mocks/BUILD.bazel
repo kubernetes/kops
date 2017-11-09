@@ -6,6 +6,7 @@ go_library(
         "helpers.go",
         "mocks.go",
     ],
+    importpath = "github.com/Azure/go-autorest/autorest/mocks",
     visibility = ["//visibility:public"],
 )
 
@@ -15,5 +16,6 @@ go_test(
         "helpers_test.go",
         "mocks_test.go",
     ],
+    importpath = "github.com/Azure/go-autorest/autorest/mocks",
     library = ":go_default_library",
 )

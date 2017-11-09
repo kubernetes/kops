@@ -35,6 +35,7 @@ UPLOAD=$(BUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
 TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages) 
+BAZEL_OPTIONS?=
 
 SOURCES:=$(shell find . -name "*.go")
 
@@ -42,10 +43,10 @@ SOURCES:=$(shell find . -name "*.go")
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.7.1
+DNS_CONTROLLER_TAG=1.8.0-beta.1
 
-KOPS_RELEASE_VERSION = 1.8.0-alpha.1
-KOPS_CI_VERSION      = 1.8.0-alpha.2
+KOPS_RELEASE_VERSION = 1.8.0-beta.1
+KOPS_CI_VERSION      = 1.8.0-beta.2
 
 # kops local location
 KOPS                 = ${LOCAL}/kops
@@ -227,8 +228,14 @@ ${DIST}/linux/amd64/kops: ${BINDATA_TARGETS}
 	mkdir -p ${DIST}
 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
 
+.PHONY: ${DIST}/windows/amd64/kops.exe
+${DIST}/windows/amd64/kops.exe: ${BINDATA_TARGETS}
+	mkdir -p ${DIST}
+	GOOS=windows GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/kops
+
+
 .PHONY: crossbuild
-crossbuild: ${DIST}/darwin/amd64/kops ${DIST}/linux/amd64/kops
+crossbuild: ${DIST}/windows/amd64/kops.exe ${DIST}/darwin/amd64/kops ${DIST}/linux/amd64/kops
 
 .PHONY: crossbuild-in-docker
 crossbuild-in-docker:
@@ -245,6 +252,7 @@ kops-dist: crossbuild-in-docker
 	mkdir -p ${DIST}
 	(${SHASUMCMD} ${DIST}/darwin/amd64/kops | cut -d' ' -f1) > ${DIST}/darwin/amd64/kops.sha1
 	(${SHASUMCMD} ${DIST}/linux/amd64/kops | cut -d' ' -f1) > ${DIST}/linux/amd64/kops.sha1
+	(${SHASUMCMD} ${DIST}/windows/amd64/kops.exe | cut -d' ' -f1) > ${DIST}/windows/amd64/kops.exe.sha1
 
 .PHONY: version-dist
 version-dist: nodeup-dist kops-dist protokube-export utils-dist
@@ -282,6 +290,7 @@ vsphere-version-dist: nodeup-dist protokube-export
 	cp ${DIST}/linux/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/linux/amd64/kops.sha1
 	cp ${DIST}/darwin/amd64/kops ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops
 	cp ${DIST}/darwin/amd64/kops.sha1 ${UPLOAD}/kops/${VERSION}/darwin/amd64/kops.sha1
+	cp ${DIST}/windows/amd64/kops.exe ${UPLOAD}/kops/${VERSION}/windows/amd64/kops.exe
 
 .PHONY: upload
 upload: version-dist # Upload kops to S3
@@ -424,13 +433,23 @@ utils-dist:
 .PHONY: copydeps
 copydeps:
 	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git --exclude BUILD --exclude BUILD.bazel
-	ln -sf kubernetes/staging/src/k8s.io/api vendor/k8s.io/api
-	ln -sf kubernetes/staging/src/k8s.io/apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
-	ln -sf kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
-	ln -sf kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
-	ln -sf kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
-	ln -sf kubernetes/staging/src/k8s.io/code-generator vendor/k8s.io/code-generator
-	ln -sf kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
+	mkdir -p vendor/k8s.io/
+	rm -rf vendor/k8s.io/api
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/api vendor/k8s.io/api
+	rm -rf vendor/k8s.io/apiextensions-apiserver
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
+	rm -rf vendor/k8s.io/apimachinery
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
+	rm -rf vendor/k8s.io/apiserver
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
+	rm -rf vendor/k8s.io/client-go
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
+	rm -rf vendor/k8s.io/code-generator
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/code-generator vendor/k8s.io/code-generator
+	rm -rf vendor/k8s.io/metrics
+	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
+	find vendor/k8s.io/kubernetes -type f -name "*.go" | xargs sed -i -e 's-k8s.io/kubernetes/staging/src/k8s.io/apimachinery-k8s.io/apimachinery-g'
+	bazel run //:gazelle -- -proto disable
 
 .PHONY: gofmt
 gofmt:
@@ -568,17 +587,30 @@ kops-server-push: kops-server-build
 
 .PHONY: bazel-test
 bazel-test:
-	bazel test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/... //upup/... //util/... --test_output=errors
+	bazel ${BAZEL_OPTIONS} test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/... //upup/... //util/... //hack:verify-all --test_output=errors
 
 .PHONY: bazel-build
 bazel-build:
 	bazel build //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/...
 
-# TODO: Get working on a mac / windows machine!
-# 	GOOS=linux GOARCH=amd64 go build -a ${EXTRA_BUILDFLAGS} -o $@ -ldflags "${EXTRA_LDFLAGS} -X k8s.io/kops.Version=${VERSION} -X k8s.io/kops.GitVersion=${GITSHA}" k8s.io/kops/cmd/nodeup
-.PHONY: bazel-crossbuild-nodeup
-bazel-crossbuild-nodeup:
-	bazel build //cmd/nodeup
+# Not working yet, but we can hope
+#.PHONY: bazel-crossbuild-kops
+#bazel-crossbuild-kops:
+#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:darwin_amd64 //cmd/kops/...
+#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/kops/...
+#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:windows_amd64 //cmd/kops/...
+#
+#.PHONY: bazel-crossbuild-nodeup
+#bazel-crossbuild-nodeup:
+#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //cmd/nodeup/...
+
+#.PHONY: bazel-crossbuild-protokube
+#bazel-crossbuild-protokube:
+#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //protokube/...
+
+#.PHONY: bazel-crossbuild-dns-controller
+#bazel-crossbuild-dns-controller:
+#	bazel build --experimental_platforms=@io_bazel_rules_go//go/toolchain:linux_amd64 //dns-controller/...
 
 .PHONY: bazel-push
 # Will always push a linux-based build up to the server
@@ -594,6 +626,10 @@ bazel-push-gce-run: bazel-push
 .PHONY: bazel-push-aws-run
 bazel-push-aws-run: bazel-push
 	ssh -t ${TARGET} sudo SKIP_PACKAGE_UPDATE=1 /tmp/nodeup --conf=/var/cache/kubernetes-install/kube_env.yaml --v=8
+
+.PHONY: bazel-gazelle
+bazel-gazelle:
+	bazel run //:gazelle -- -proto disable
 
 .PHONY: check-markdown-links
 check-markdown-links:

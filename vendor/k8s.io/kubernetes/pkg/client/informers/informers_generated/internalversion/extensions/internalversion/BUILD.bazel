@@ -11,6 +11,7 @@ go_library(
         "replicaset.go",
         "thirdpartyresource.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/client/informers/informers_generated/internalversion/extensions/internalversion",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",

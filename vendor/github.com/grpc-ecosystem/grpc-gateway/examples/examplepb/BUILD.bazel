@@ -1,3 +1,4 @@
+load("@io_bazel_rules_go//proto:def.bzl", "go_grpc_library")
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
@@ -12,6 +13,7 @@ go_library(
         "stream.pb.go",
         "stream.pb.gw.go",
     ],
+    importpath = "github.com/grpc-ecosystem/grpc-gateway/examples/examplepb",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
@@ -29,8 +31,8 @@ go_library(
     ],
 )
 
-filegroup(
-    name = "go_default_library_protos",
+proto_library(
+    name = "examplepb_proto",
     srcs = [
         "a_bit_of_everything.proto",
         "echo_service.proto",
@@ -38,4 +40,27 @@ filegroup(
         "stream.proto",
     ],
     visibility = ["//visibility:public"],
+    deps = [
+        "//examples/examplepb:examplepb_proto",
+        "//examples/sub:sub_proto",
+        "//examples/sub2:sub2_proto",
+        "//google/api:api_proto",
+        "@com_google_protobuf//:empty_proto",
+        "@com_google_protobuf//:timestamp_proto",
+    ],
+)
+
+go_grpc_library(
+    name = "examplepb_go_proto",
+    importpath = "github.com/grpc-ecosystem/grpc-gateway/examples/examplepb",
+    proto = ":examplepb_proto",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/examples/examplepb:go_default_library",
+        "//vendor/examples/sub:go_default_library",
+        "//vendor/examples/sub2:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/empty:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/timestamp:go_default_library",
+        "//vendor/google/api:go_default_library",
+    ],
 )

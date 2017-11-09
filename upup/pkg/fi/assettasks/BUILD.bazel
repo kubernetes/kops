@@ -10,6 +10,7 @@ go_library(
         "docker_api.go",
         "docker_cli.go",
     ],
+    importpath = "k8s.io/kops/upup/pkg/fi/assettasks",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/acls:go_default_library",
@@ -26,5 +27,6 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["copyfile_test.go"],
+    importpath = "k8s.io/kops/upup/pkg/fi/assettasks",
     library = ":go_default_library",
 )

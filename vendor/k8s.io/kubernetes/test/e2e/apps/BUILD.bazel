@@ -15,6 +15,7 @@ go_library(
         "statefulset.go",
         "types.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/apps",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/davecgh/go-spew/spew:go_default_library",

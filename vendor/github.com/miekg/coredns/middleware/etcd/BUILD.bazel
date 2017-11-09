@@ -10,6 +10,7 @@ go_library(
         "stub.go",
         "stub_handler.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/etcd",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/coreos/etcd/client:go_default_library",

@@ -84,6 +84,8 @@ type ClusterSpec struct {
 	// Note that DNSZone can either by the host name of the zone (containing dots),
 	// or can be an identifier for the zone.
 	DNSZone string `json:"dnsZone,omitempty"`
+	// AdditionalSANs adds additional Subject Alternate Names to apiserver cert that kops generates
+	AdditionalSANs []string `json:"additionalSans,omitempty"`
 	// ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)
 	ClusterDNSDomain string `json:"clusterDNSDomain,omitempty"`
 	// ServiceClusterIPRange is the CIDR, from the internal network, where we allocate IPs for services
@@ -265,8 +267,10 @@ type LoadBalancerAccessSpec struct {
 
 type KubeDNSConfig struct {
 	// Image is the name of the docker image to run
+	// Deprecated as this is now in the addon
 	Image string `json:"image,omitempty"`
 
+	// Deprecated as this is now in the addon, and controlled by autoscaler
 	Replicas int    `json:"replicas,omitempty"`
 	Domain   string `json:"domain,omitempty"`
 	ServerIP string `json:"serverIP,omitempty"`

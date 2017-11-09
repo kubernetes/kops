@@ -9,6 +9,7 @@ go_library(
         "reader.go",
         "writer.go",
     ],
+    importpath = "github.com/googleapis/gnostic/jsonschema",
     visibility = ["//visibility:public"],
     deps = ["//vendor/gopkg.in/yaml.v2:go_default_library"],
 )

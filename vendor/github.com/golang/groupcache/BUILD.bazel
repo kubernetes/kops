@@ -9,6 +9,7 @@ go_library(
         "peers.go",
         "sinks.go",
     ],
+    importpath = "github.com/golang/groupcache",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/groupcache/consistenthash:go_default_library",
@@ -26,6 +27,7 @@ go_test(
         "groupcache_test.go",
         "http_test.go",
     ],
+    importpath = "github.com/golang/groupcache",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/golang/groupcache/groupcachepb:go_default_library",

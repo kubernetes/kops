@@ -11,6 +11,7 @@ go_library(
         "output.go",
         "remove.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/license",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

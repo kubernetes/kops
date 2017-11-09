@@ -10,6 +10,7 @@ go_library(
         "types.go",
         "wait.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/instrumentation/logging/utils",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/api/core/v1:go_default_library",

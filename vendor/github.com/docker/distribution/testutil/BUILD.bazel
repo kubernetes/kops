@@ -7,6 +7,7 @@ go_library(
         "manifests.go",
         "tarfile.go",
     ],
+    importpath = "github.com/docker/distribution/testutil",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/distribution:go_default_library",

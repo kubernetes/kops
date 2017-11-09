@@ -10,6 +10,7 @@ go_library(
         "session.go",
         "stm.go",
     ],
+    importpath = "github.com/coreos/etcd/clientv3/concurrency",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/coreos/etcd/clientv3:go_default_library",

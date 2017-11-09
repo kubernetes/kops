@@ -6,23 +6,32 @@ go_library(
         "bflag.go",
         "buildargs.go",
         "builder.go",
-        "builder_unix.go",
         "clientsession.go",
         "containerbackend.go",
         "copy.go",
-        "copy_unix.go",
         "dispatchers.go",
-        "dispatchers_unix.go",
         "evaluator.go",
-        "evaluator_unix.go",
         "imagecontext.go",
         "imageprobe.go",
         "internals.go",
-        "internals_unix.go",
         "metrics.go",
         "shell_parser.go",
         "support.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "builder_unix.go",
+            "copy_unix.go",
+            "dispatchers_unix.go",
+            "evaluator_unix.go",
+            "internals_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "builder_unix.go",
+            "copy_unix.go",
+            "dispatchers_unix.go",
+            "evaluator_unix.go",
+            "internals_unix.go",
+        ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "builder_windows.go",
             "copy_windows.go",
@@ -32,6 +41,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/builder/dockerfile",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api:go_default_library",
@@ -78,7 +88,6 @@ go_test(
         "builder_test.go",
         "copy_test.go",
         "dispatchers_test.go",
-        "dispatchers_unix_test.go",
         "evaluator_test.go",
         "internals_test.go",
         "mockbackend_test.go",
@@ -86,12 +95,19 @@ go_test(
         "support_test.go",
         "utils_test.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "dispatchers_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "dispatchers_unix_test.go",
+        ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "dispatchers_windows_test.go",
             "internals_windows_test.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/builder/dockerfile",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/docker/api/types:go_default_library",

@@ -1,3 +1,4 @@
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
@@ -14,6 +15,7 @@ go_library(
         "tarsum.go",
         "tarsum.pb.go",
     ],
+    importpath = "github.com/docker/docker/builder/remotecontext",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api/types/backend:go_default_library",
@@ -38,12 +40,6 @@ go_library(
     ],
 )
 
-filegroup(
-    name = "go_default_library_protos",
-    srcs = ["tarsum.proto"],
-    visibility = ["//visibility:public"],
-)
-
 go_test(
     name = "go_default_test",
     srcs = [
@@ -53,6 +49,7 @@ go_test(
         "tarsum_test.go",
         "utils_test.go",
     ],
+    importpath = "github.com/docker/docker/builder/remotecontext",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/docker/builder:go_default_library",
@@ -63,4 +60,17 @@ go_test(
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",
     ],
+)
+
+proto_library(
+    name = "remotecontext_proto",
+    srcs = ["tarsum.proto"],
+    visibility = ["//visibility:public"],
+)
+
+go_proto_library(
+    name = "remotecontext_go_proto",
+    importpath = "github.com/docker/docker/builder/remotecontext",
+    proto = ":remotecontext_proto",
+    visibility = ["//visibility:public"],
 )

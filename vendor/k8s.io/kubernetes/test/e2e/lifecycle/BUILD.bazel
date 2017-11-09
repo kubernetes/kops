@@ -11,6 +11,7 @@ go_library(
         "resize_nodes.go",
         "restart.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/lifecycle",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/onsi/ginkgo:go_default_library",

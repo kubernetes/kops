@@ -16,6 +16,7 @@ go_library(
         "volumes.go",
         "vpcs.go",
     ],
+    importpath = "k8s.io/kops/cloudmock/aws/mockec2",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",

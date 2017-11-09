@@ -11,6 +11,7 @@ go_library(
         "metrics_grabber.go",
         "scheduler_metrics.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/framework/metrics",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",

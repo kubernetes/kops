@@ -36,7 +36,7 @@ import (
 	"k8s.io/kubernetes/pkg/controller"
 	"k8s.io/kubernetes/pkg/controller/daemon/util"
 	labelsutil "k8s.io/kubernetes/pkg/util/labels"
-	"k8s.io/kubernetes/staging/src/k8s.io/apimachinery/pkg/util/rand"
+	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 // rollingUpdate deletes old daemon set pods making sure that no more than

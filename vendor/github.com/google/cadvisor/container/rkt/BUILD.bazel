@@ -8,6 +8,7 @@ go_library(
         "handler.go",
         "helpers.go",
     ],
+    importpath = "github.com/google/cadvisor/container/rkt",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/blang/semver:go_default_library",
@@ -30,6 +31,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["client_test.go"],
+    importpath = "github.com/google/cadvisor/container/rkt",
     library = ":go_default_library",
     deps = ["//vendor/github.com/blang/semver:go_default_library"],
 )

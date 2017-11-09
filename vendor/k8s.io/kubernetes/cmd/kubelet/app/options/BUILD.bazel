@@ -6,6 +6,7 @@ go_library(
         "container_runtime.go",
         "options.go",
     ],
+    importpath = "k8s.io/kubernetes/cmd/kubelet/app/options",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/spf13/pflag:go_default_library",

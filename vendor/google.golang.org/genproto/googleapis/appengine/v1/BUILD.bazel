@@ -13,6 +13,7 @@ go_library(
         "service.pb.go",
         "version.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/appengine/v1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

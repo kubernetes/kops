@@ -8,6 +8,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/daemon/graphdriver/windows",
     visibility = ["//visibility:public"],
     deps = select({
         "@io_bazel_rules_go//go/platform:windows_amd64": [

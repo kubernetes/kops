@@ -70,7 +70,7 @@ func NewRollingUpdateInstanceGroup(cloud fi.Cloud, cloudGroup *cloudinstances.Cl
 // TODO: Batch termination, like a rolling-update
 
 // RollingUpdate performs a rolling update on a list of ec2 instances.
-func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, isBastion bool, t time.Duration) (err error) {
+func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpdateCluster, instanceGroupList *api.InstanceGroupList, isBastion bool, sleepAfterTerminate time.Duration, validationTimeout time.Duration) (err error) {
 
 	// we should not get here, but hey I am going to check.
 	if rollingUpdateData == nil {
@@ -119,15 +119,7 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 		}
 
 		if isBastion {
-			if err = r.DeleteInstance(u); err != nil {
-				glog.Errorf("Error deleting aws instance %q: %v", instanceId, err)
-				return err
-			}
-
-			glog.Infof("Deleted a bastion instance, %s, and continuing with rolling-update.", instanceId)
-
-			continue
-
+			// We don't want to validate for bastions - they aren't part of the cluster
 		} else if rollingUpdateData.CloudOnly {
 
 			glog.Warningf("Not draining cluster nodes as 'cloudonly' flag is set.")
@@ -154,22 +146,24 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 			return err
 		}
 
-		// Wait for new EC2 instances to be created
-		time.Sleep(t)
+		// Wait for the minimum interval
+		time.Sleep(sleepAfterTerminate)
 
-		if rollingUpdateData.CloudOnly {
+		if isBastion {
+			glog.Infof("Deleted a bastion instance, %s, and continuing with rolling-update.", instanceId)
 
+			continue
+		} else if rollingUpdateData.CloudOnly {
 			glog.Warningf("Not validating cluster as cloudonly flag is set.")
 			continue
 
 		} else if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-
 			glog.Infof("Validating the cluster.")
 
-			if err = r.ValidateClusterWithDuration(rollingUpdateData, instanceGroupList, t); err != nil {
+			if err = r.ValidateClusterWithDuration(rollingUpdateData, instanceGroupList, validationTimeout); err != nil {
 
 				if rollingUpdateData.FailOnValidate {
-					glog.Errorf("Cluster did not validate within the set duration of %q, you can retry, and maybe extend the duration", t)
+					glog.Errorf("Cluster did not validate within %s", validationTimeout)
 					return fmt.Errorf("error validating cluster after removing a node: %v", err)
 				}
 
@@ -300,9 +294,9 @@ func (r *RollingUpdateInstanceGroup) DrainNode(u *cloudinstances.CloudInstanceGr
 		return fmt.Errorf("error draining node: %v", err)
 	}
 
-	if rollingUpdateData.DrainInterval > time.Second*0 {
-		glog.V(3).Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.DrainInterval)
-		time.Sleep(rollingUpdateData.DrainInterval)
+	if rollingUpdateData.PostDrainDelay > 0 {
+		glog.V(3).Infof("Waiting for %s for pods to stabilize after draining.", rollingUpdateData.PostDrainDelay)
+		time.Sleep(rollingUpdateData.PostDrainDelay)
 	}
 
 	return nil

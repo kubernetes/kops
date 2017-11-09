@@ -76,7 +76,7 @@ kops rolling-update cluster
       --instance-group stringSlice   List of instance groups to update (defaults to all if not specified)
       --master-interval duration     Time to wait between restarting masters (default 5m0s)
       --node-interval duration       Time to wait between restarting nodes (default 4m0s)
-      --yes                          perform rolling update without confirmation
+  -y, --yes                          Perform rolling update immediately, without --yes rolling-update executes a dry-run
 ```
 
 ### Options inherited from parent commands

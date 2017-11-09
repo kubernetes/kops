@@ -34,6 +34,7 @@ go_library(
         "version_command.go",
         "watch_command.go",
     ],
+    importpath = "github.com/coreos/etcd/etcdctl/ctlv3/command",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/bgentry/speakeasy:go_default_library",

@@ -8,6 +8,7 @@ go_library(
         "glusterfs_minmax.go",
         "glusterfs_util.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/volume/glusterfs",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
@@ -36,6 +37,7 @@ go_test(
         "glusterfs_minmax_test.go",
         "glusterfs_test.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/volume/glusterfs",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/heketi/heketi/pkg/glusterfs/api:go_default_library",

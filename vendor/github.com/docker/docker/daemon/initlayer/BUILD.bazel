@@ -11,6 +11,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/daemon/initlayer",
     visibility = ["//visibility:public"],
     deps = select({
         "@io_bazel_rules_go//go/platform:linux_amd64": [

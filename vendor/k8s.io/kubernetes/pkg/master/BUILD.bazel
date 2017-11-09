@@ -10,6 +10,7 @@ go_library(
         "master.go",
         "services.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/master",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
@@ -104,6 +105,7 @@ go_test(
         "master_openapi_test.go",
         "master_test.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/master",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/go-openapi/loads:go_default_library",

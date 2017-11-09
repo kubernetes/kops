@@ -20,6 +20,7 @@ go_library(
         "system_parameter.pb.go",
         "usage.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/api/serviceconfig",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

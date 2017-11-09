@@ -12,6 +12,7 @@ go_library(
         "Sub2IdMessage.go",
         "SubStringMessage.go",
     ],
+    importpath = "github.com/grpc-ecosystem/grpc-gateway/examples/clients/abe",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/dghubble/sling:go_default_library"],
 )

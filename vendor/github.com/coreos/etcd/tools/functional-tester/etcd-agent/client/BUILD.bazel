@@ -6,5 +6,6 @@ go_library(
         "client.go",
         "doc.go",
     ],
+    importpath = "github.com/coreos/etcd/tools/functional-tester/etcd-agent/client",
     visibility = ["//visibility:public"],
 )

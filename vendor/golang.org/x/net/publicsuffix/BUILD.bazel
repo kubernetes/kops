@@ -6,6 +6,7 @@ go_library(
         "list.go",
         "table.go",
     ],
+    importpath = "golang.org/x/net/publicsuffix",
     visibility = ["//visibility:public"],
 )
 
@@ -15,5 +16,6 @@ go_test(
         "list_test.go",
         "table_test.go",
     ],
+    importpath = "golang.org/x/net/publicsuffix",
     library = ":go_default_library",
 )

@@ -9,6 +9,7 @@ go_library(
         "prediction_service.pb.go",
         "project_service.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/cloud/ml/v1beta1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

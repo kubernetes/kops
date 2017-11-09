@@ -6,6 +6,7 @@ go_library(
         "fscache.go",
         "naivedriver.go",
     ],
+    importpath = "github.com/docker/docker/builder/fscache",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/boltdb/bolt:go_default_library",
@@ -25,6 +26,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["fscache_test.go"],
+    importpath = "github.com/docker/docker/builder/fscache",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/moby/buildkit/session/filesync:go_default_library",

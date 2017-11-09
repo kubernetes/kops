@@ -7,5 +7,6 @@ go_library(
         "jiffy.go",
     ],
     cgo = True,
+    importpath = "github.com/google/cadvisor/utils/procfs",
     visibility = ["//visibility:public"],
 )

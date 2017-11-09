@@ -2,17 +2,22 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 
 go_library(
     name = "go_default_library",
-    srcs = [
-        "mount_unsupported.go",
-    ] + select({
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "mount_unsupported.go",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             "aufs.go",
             "dirs.go",
             "mount.go",
             "mount_linux.go",
         ],
+        "@io_bazel_rules_go//go/platform:windows_amd64": [
+            "mount_unsupported.go",
+        ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/daemon/graphdriver/aufs",
     visibility = ["//visibility:public"],
     deps = select({
         "@io_bazel_rules_go//go/platform:linux_amd64": [
@@ -43,6 +48,7 @@ go_test(
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/daemon/graphdriver/aufs",
     library = ":go_default_library",
     deps = select({
         "@io_bazel_rules_go//go/platform:linux_amd64": [

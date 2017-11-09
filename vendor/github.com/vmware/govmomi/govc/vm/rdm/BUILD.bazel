@@ -6,6 +6,7 @@ go_library(
         "attach.go",
         "ls.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/vm/rdm",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",
