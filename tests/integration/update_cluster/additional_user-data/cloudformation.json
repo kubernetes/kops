@@ -1,27 +1,27 @@
 {
   "Resources": {
-    "AWSAutoScalingAutoScalingGroupmasterustest1amastersextrauserdataexamplecom": {
+    "AWSAutoScalingAutoScalingGroupmasterustest1amastersadditionaluserdataexamplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersextrauserdataexamplecom"
+          "Ref": "AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserdataexamplecom"
         },
         "MaxSize": 1,
         "MinSize": 1,
         "VPCZoneIdentifier": [
           {
-            "Ref": "AWSEC2Subnetustest1aextrauserdataexamplecom"
+            "Ref": "AWSEC2Subnetustest1aadditionaluserdataexamplecom"
           }
         ],
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "extrauserdata.example.com",
+            "Value": "additionaluserdata.example.com",
             "PropagateAtLaunch": true
           },
           {
             "Key": "Name",
-            "Value": "master-us-test-1a.masters.extrauserdata.example.com",
+            "Value": "master-us-test-1a.masters.additionaluserdata.example.com",
             "PropagateAtLaunch": true
           },
           {
@@ -32,28 +32,28 @@
         ]
       }
     },
-    "AWSAutoScalingAutoScalingGroupnodesextrauserdataexamplecom": {
+    "AWSAutoScalingAutoScalingGroupnodesadditionaluserdataexamplecom": {
       "Type": "AWS::AutoScaling::AutoScalingGroup",
       "Properties": {
         "LaunchConfigurationName": {
-          "Ref": "AWSAutoScalingLaunchConfigurationnodesextrauserdataexamplecom"
+          "Ref": "AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom"
         },
         "MaxSize": 2,
         "MinSize": 2,
         "VPCZoneIdentifier": [
           {
-            "Ref": "AWSEC2Subnetustest1aextrauserdataexamplecom"
+            "Ref": "AWSEC2Subnetustest1aadditionaluserdataexamplecom"
           }
         ],
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "extrauserdata.example.com",
+            "Value": "additionaluserdata.example.com",
             "PropagateAtLaunch": true
           },
           {
             "Key": "Name",
-            "Value": "nodes.extrauserdata.example.com",
+            "Value": "nodes.additionaluserdata.example.com",
             "PropagateAtLaunch": true
           },
           {
@@ -64,7 +64,7 @@
         ]
       }
     },
-    "AWSAutoScalingLaunchConfigurationmasterustest1amastersextrauserdataexamplecom": {
+    "AWSAutoScalingLaunchConfigurationmasterustest1amastersadditionaluserdataexamplecom": {
       "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
         "AssociatePublicIpAddress": true,
@@ -83,20 +83,20 @@
           }
         ],
         "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilemastersextrauserdataexamplecom"
+          "Ref": "AWSIAMInstanceProfilemastersadditionaluserdataexamplecom"
         },
         "ImageId": "ami-12345678",
         "InstanceType": "m3.medium",
-        "KeyName": "kubernetes.extrauserdata.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+        "KeyName": "kubernetes.additionaluserdata.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
         "SecurityGroups": [
           {
-            "Ref": "AWSEC2SecurityGroupmastersextrauserdataexamplecom"
+            "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
           }
         ],
         "UserData": "extracted"
       }
     },
-    "AWSAutoScalingLaunchConfigurationnodesextrauserdataexamplecom": {
+    "AWSAutoScalingLaunchConfigurationnodesadditionaluserdataexamplecom": {
       "Type": "AWS::AutoScaling::LaunchConfiguration",
       "Properties": {
         "AssociatePublicIpAddress": true,
@@ -111,20 +111,20 @@
           }
         ],
         "IamInstanceProfile": {
-          "Ref": "AWSIAMInstanceProfilenodesextrauserdataexamplecom"
+          "Ref": "AWSIAMInstanceProfilenodesadditionaluserdataexamplecom"
         },
         "ImageId": "ami-12345678",
         "InstanceType": "t2.medium",
-        "KeyName": "kubernetes.extrauserdata.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
+        "KeyName": "kubernetes.additionaluserdata.example.com-c4:a6:ed:9a:a8:89:b9:e2:c3:9c:d6:63:eb:9c:71:57",
         "SecurityGroups": [
           {
-            "Ref": "AWSEC2SecurityGroupnodesextrauserdataexamplecom"
+            "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
           }
         ],
         "UserData": "extracted"
       }
     },
-    "AWSEC2DHCPOptionsextrauserdataexamplecom": {
+    "AWSEC2DHCPOptionsadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::DHCPOptions",
       "Properties": {
         "DomainName": "us-test-1.compute.internal",
@@ -134,26 +134,26 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           },
           {
             "Key": "Name",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           }
         ]
       }
     },
-    "AWSEC2InternetGatewayextrauserdataexamplecom": {
+    "AWSEC2InternetGatewayadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::InternetGateway",
       "Properties": {
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           },
           {
             "Key": "Name",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           }
         ]
       }
@@ -162,28 +162,28 @@
       "Type": "AWS::EC2::Route",
       "Properties": {
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTableextrauserdataexamplecom"
+          "Ref": "AWSEC2RouteTableadditionaluserdataexamplecom"
         },
         "DestinationCidrBlock": "0.0.0.0/0",
         "GatewayId": {
-          "Ref": "AWSEC2InternetGatewayextrauserdataexamplecom"
+          "Ref": "AWSEC2InternetGatewayadditionaluserdataexamplecom"
         }
       }
     },
-    "AWSEC2RouteTableextrauserdataexamplecom": {
+    "AWSEC2RouteTableadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCextrauserdataexamplecom"
+          "Ref": "AWSEC2VPCadditionaluserdataexamplecom"
         },
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           },
           {
             "Key": "Name",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           }
         ]
       }
@@ -192,7 +192,7 @@
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -204,7 +204,7 @@
       "Type": "AWS::EC2::SecurityGroupEgress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -216,10 +216,10 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -230,10 +230,10 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -244,10 +244,10 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
         },
         "FromPort": 0,
         "ToPort": 0,
@@ -258,7 +258,7 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
         },
         "FromPort": 443,
         "ToPort": 443,
@@ -270,10 +270,10 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
         },
         "FromPort": 1,
         "ToPort": 4000,
@@ -284,10 +284,10 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
         },
         "FromPort": 4003,
         "ToPort": 65535,
@@ -298,10 +298,10 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
         },
         "SourceSecurityGroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
         },
         "FromPort": 1,
         "ToPort": 65535,
@@ -312,7 +312,7 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupmastersextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
         },
         "FromPort": 22,
         "ToPort": 22,
@@ -324,7 +324,7 @@
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
-          "Ref": "AWSEC2SecurityGroupnodesextrauserdataexamplecom"
+          "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
         },
         "FromPort": 22,
         "ToPort": 22,
@@ -332,74 +332,74 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupmastersextrauserdataexamplecom": {
+    "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCextrauserdataexamplecom"
+          "Ref": "AWSEC2VPCadditionaluserdataexamplecom"
         },
         "GroupDescription": "Security group for masters",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           },
           {
             "Key": "Name",
-            "Value": "masters.extrauserdata.example.com"
+            "Value": "masters.additionaluserdata.example.com"
           }
         ]
       }
     },
-    "AWSEC2SecurityGroupnodesextrauserdataexamplecom": {
+    "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::SecurityGroup",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCextrauserdataexamplecom"
+          "Ref": "AWSEC2VPCadditionaluserdataexamplecom"
         },
         "GroupDescription": "Security group for nodes",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           },
           {
             "Key": "Name",
-            "Value": "nodes.extrauserdata.example.com"
+            "Value": "nodes.additionaluserdata.example.com"
           }
         ]
       }
     },
-    "AWSEC2SubnetRouteTableAssociationustest1aextrauserdataexamplecom": {
+    "AWSEC2SubnetRouteTableAssociationustest1aadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::SubnetRouteTableAssociation",
       "Properties": {
         "SubnetId": {
-          "Ref": "AWSEC2Subnetustest1aextrauserdataexamplecom"
+          "Ref": "AWSEC2Subnetustest1aadditionaluserdataexamplecom"
         },
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTableextrauserdataexamplecom"
+          "Ref": "AWSEC2RouteTableadditionaluserdataexamplecom"
         }
       }
     },
-    "AWSEC2Subnetustest1aextrauserdataexamplecom": {
+    "AWSEC2Subnetustest1aadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::Subnet",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCextrauserdataexamplecom"
+          "Ref": "AWSEC2VPCadditionaluserdataexamplecom"
         },
         "CidrBlock": "172.20.32.0/19",
         "AvailabilityZone": "us-test-1a",
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.extrauserdata.example.com"
+            "Value": "us-test-1a.additionaluserdata.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/extrauserdata.example.com",
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
             "Value": "owned"
           },
           {
@@ -409,29 +409,29 @@
         ]
       }
     },
-    "AWSEC2VPCDHCPOptionsAssociationextrauserdataexamplecom": {
+    "AWSEC2VPCDHCPOptionsAssociationadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::VPCDHCPOptionsAssociation",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCextrauserdataexamplecom"
+          "Ref": "AWSEC2VPCadditionaluserdataexamplecom"
         },
         "DhcpOptionsId": {
-          "Ref": "AWSEC2DHCPOptionsextrauserdataexamplecom"
+          "Ref": "AWSEC2DHCPOptionsadditionaluserdataexamplecom"
         }
       }
     },
-    "AWSEC2VPCGatewayAttachmentextrauserdataexamplecom": {
+    "AWSEC2VPCGatewayAttachmentadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::VPCGatewayAttachment",
       "Properties": {
         "VpcId": {
-          "Ref": "AWSEC2VPCextrauserdataexamplecom"
+          "Ref": "AWSEC2VPCadditionaluserdataexamplecom"
         },
         "InternetGatewayId": {
-          "Ref": "AWSEC2InternetGatewayextrauserdataexamplecom"
+          "Ref": "AWSEC2InternetGatewayadditionaluserdataexamplecom"
         }
       }
     },
-    "AWSEC2VPCextrauserdataexamplecom": {
+    "AWSEC2VPCadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::VPC",
       "Properties": {
         "CidrBlock": "172.20.0.0/16",
@@ -440,20 +440,20 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           },
           {
             "Key": "Name",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           },
           {
-            "Key": "kubernetes.io/cluster/extrauserdata.example.com",
+            "Key": "kubernetes.io/cluster/additionaluserdata.example.com",
             "Value": "owned"
           }
         ]
       }
     },
-    "AWSEC2Volumeustest1aetcdeventsextrauserdataexamplecom": {
+    "AWSEC2Volumeustest1aetcdeventsadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::Volume",
       "Properties": {
         "AvailabilityZone": "us-test-1a",
@@ -463,11 +463,11 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.etcd-events.extrauserdata.example.com"
+            "Value": "us-test-1a.etcd-events.additionaluserdata.example.com"
           },
           {
             "Key": "k8s.io/etcd/events",
@@ -480,7 +480,7 @@
         ]
       }
     },
-    "AWSEC2Volumeustest1aetcdmainextrauserdataexamplecom": {
+    "AWSEC2Volumeustest1aetcdmainadditionaluserdataexamplecom": {
       "Type": "AWS::EC2::Volume",
       "Properties": {
         "AvailabilityZone": "us-test-1a",
@@ -490,11 +490,11 @@
         "Tags": [
           {
             "Key": "KubernetesCluster",
-            "Value": "extrauserdata.example.com"
+            "Value": "additionaluserdata.example.com"
           },
           {
             "Key": "Name",
-            "Value": "us-test-1a.etcd-main.extrauserdata.example.com"
+            "Value": "us-test-1a.etcd-main.additionaluserdata.example.com"
           },
           {
             "Key": "k8s.io/etcd/main",
@@ -507,33 +507,33 @@
         ]
       }
     },
-    "AWSIAMInstanceProfilemastersextrauserdataexamplecom": {
+    "AWSIAMInstanceProfilemastersadditionaluserdataexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersextrauserdataexamplecom"
+            "Ref": "AWSIAMRolemastersadditionaluserdataexamplecom"
           }
         ]
       }
     },
-    "AWSIAMInstanceProfilenodesextrauserdataexamplecom": {
+    "AWSIAMInstanceProfilenodesadditionaluserdataexamplecom": {
       "Type": "AWS::IAM::InstanceProfile",
       "Properties": {
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodesextrauserdataexamplecom"
+            "Ref": "AWSIAMRolenodesadditionaluserdataexamplecom"
           }
         ]
       }
     },
-    "AWSIAMPolicymastersextrauserdataexamplecom": {
+    "AWSIAMPolicymastersadditionaluserdataexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "masters.extrauserdata.example.com",
+        "PolicyName": "masters.additionaluserdata.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolemastersextrauserdataexamplecom"
+            "Ref": "AWSIAMRolemastersadditionaluserdataexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -648,13 +648,13 @@
         }
       }
     },
-    "AWSIAMPolicynodesextrauserdataexamplecom": {
+    "AWSIAMPolicynodesadditionaluserdataexamplecom": {
       "Type": "AWS::IAM::Policy",
       "Properties": {
-        "PolicyName": "nodes.extrauserdata.example.com",
+        "PolicyName": "nodes.additionaluserdata.example.com",
         "Roles": [
           {
-            "Ref": "AWSIAMRolenodesextrauserdataexamplecom"
+            "Ref": "AWSIAMRolenodesadditionaluserdataexamplecom"
           }
         ],
         "PolicyDocument": {
@@ -732,10 +732,10 @@
         }
       }
     },
-    "AWSIAMRolemastersextrauserdataexamplecom": {
+    "AWSIAMRolemastersadditionaluserdataexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "masters.extrauserdata.example.com",
+        "RoleName": "masters.additionaluserdata.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
@@ -750,10 +750,10 @@
         }
       }
     },
-    "AWSIAMRolenodesextrauserdataexamplecom": {
+    "AWSIAMRolenodesadditionaluserdataexamplecom": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "RoleName": "nodes.extrauserdata.example.com",
+        "RoleName": "nodes.additionaluserdata.example.com",
         "AssumeRolePolicyDocument": {
           "Statement": [
             {
