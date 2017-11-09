@@ -285,6 +285,20 @@ var dockerVersions = []dockerVersion{
 
 	// 1.13.1 - k8s 1.8
 
+	// 1.13.1 - Debian9 (stretch)
+	{
+		DockerVersion: "1.13.1",
+		Name:          "docker-engine",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "1.13.1-0~debian-stretch",
+		Source:        "http://apt.dockerproject.org/repo/pool/main/d/docker-engine/docker-engine_1.13.1-0~debian-stretch_amd64.deb",
+		Hash:          "19296514610aa2e5efddade5222cafae7894a689",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+		//Depends: iptables, init-system-helpers (>= 1.18~), libapparmor1 (>= 2.6~devel), libc6 (>= 2.17), libdevmapper1.02.1 (>= 2:1.02.90), libltdl7 (>= 2.4.2), libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils
+	},
+
 	// 1.13.1 - Jessie
 	{
 		DockerVersion: "1.13.1",
@@ -347,6 +361,18 @@ var dockerVersions = []dockerVersion{
 	},
 
 	// 17.03.2 - k8s 1.8
+
+	// 17.03.2 - Debian9 (stretch)
+	{
+		DockerVersion: "17.03.2",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionDebian9},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.03.2~ce-0~debian-stretch",
+		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-stretch_amd64.deb",
+		Hash:          "36773361cf44817371770cb4e6e6823590d10297",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
 
 	// 17.03.2 - Jessie
 	{
