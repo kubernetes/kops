@@ -21,11 +21,10 @@ limitations under the License.
 package v1alpha2
 
 import (
-	reflect "reflect"
-
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
+	reflect "reflect"
 )
 
 func init() {
@@ -767,6 +766,11 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 			*out = new(TopologySpec)
 			(*in).DeepCopyInto(*out)
 		}
+	}
+	if in.AdditionalSANs != nil {
+		in, out := &in.AdditionalSANs, &out.AdditionalSANs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
 	}
 	if in.SSHAccess != nil {
 		in, out := &in.SSHAccess, &out.SSHAccess
