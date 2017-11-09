@@ -11,7 +11,7 @@ brew update && brew install kops
 From Github:
 
 ```bash
-wget -O kops https://github.com/kubernetes/kops/releases/download/1.7.0/kops-darwin-amd64
+wget -O kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-darwin-amd64
 chmod +x ./kops
 sudo mv ./kops /usr/local/bin/
 ```
@@ -23,7 +23,7 @@ You can also [install from source](development/building.md).
 From Github:
 
 ```bash
-wget -O kops https://github.com/kubernetes/kops/releases/download/1.7.0/kops-linux-amd64
+wget -O kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
 chmod +x ./kops
 sudo mv ./kops /usr/local/bin/
 ```
@@ -46,7 +46,7 @@ brew install kubernetes-cli
 From the [official kubernetes kubectl release](https://kubernetes.io/docs/tasks/tools/install-kubectl/):
 
 ```
-wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/darwin/amd64/kubectl
+wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/darwin/amd64/kubectl
 chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 ```
@@ -56,7 +56,7 @@ sudo mv ./kubectl /usr/local/bin/kubectl
 From the [official kubernetes kubectl release](https://kubernetes.io/docs/tasks/tools/install-kubectl/):
 
 ```
-wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
+wget -O kubectl https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
 chmod +x ./kubectl
 sudo mv ./kubectl /usr/local/bin/kubectl
 ```
