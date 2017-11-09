@@ -109,12 +109,12 @@ type InstanceGroupSpec struct {
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
 	// Taints indicates the kubernetes taints for nodes in this group
 	Taints []string `json:"taints,omitempty"`
-	// ExtraUserData is any extra user-data to be passed to the host
-	ExtraUserData []ExtraUserDataSpec `json:"extraUserData,omitempty"`
+	// AdditionalUserData is any aditional user-data to be passed to the host
+	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
 }
 
-// ExtraUserDataSpec defines a user-data section
-type ExtraUserDataSpec struct {
+// UserData defines a user-data section
+type UserData struct {
 	// Name is the name of the user-data
 	Name string `json:"name,omitempty"`
 	// Type is the type of user-data

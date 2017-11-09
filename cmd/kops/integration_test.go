@@ -79,9 +79,9 @@ func TestMinimalCloudformation(t *testing.T) {
 	runTestCloudformation(t, "minimal.example.com", "minimal-cloudformation", "v1alpha2", false)
 }
 
-// TestMiniExtraUserData runs the test on passing additional user-data to an instance at bootstrap.
-func TestExtraUserData(t *testing.T) {
-	runTestCloudformation(t, "extrauserdata.example.com", "extra_user-data", "v1alpha2", false)
+// TestAdditionalUserData runs the test on passing additional user-data to an instance at bootstrap.
+func TestAdditionalUserData(t *testing.T) {
+	runTestCloudformation(t, "additionaluserdata.example.com", "additional_user-data", "v1alpha2", false)
 }
 
 // TestMinimal_141 runs the test on a configuration from 1.4.1 release

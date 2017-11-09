@@ -181,21 +181,21 @@ download-release
 echo "== nodeup node config done =="
 `
 
-// AWSNodeUpTemplate returns a Mime Multi Part Archive container the nodeup (bootstrap) script
-// and any aditional User Data passed to it in files using the env variable KOPS_EXTRA_USER_DATA
+// AWSNodeUpTemplate returns a Mime Multi Part Archive containing the nodeup (bootstrap) script
+// and any aditional User Data passed to using AdditionalUserData in the IG Spec
 func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 
-	UserDataTemplate := NodeUpTemplate
+	userDataTemplate := NodeUpTemplate
 
-	if len(ig.Spec.ExtraUserData) > 0 {
+	if len(ig.Spec.AdditionalUserData) > 0 {
 		/* Create a buffer to hold the user-data*/
 		buffer := bytes.NewBufferString("")
 		writer := bufio.NewWriter(buffer)
 
 		mimeWriter := multipart.NewWriter(writer)
 
-		// we explicitly set the buoudaries to make testing easier.
-		boundary := "MIMEBOUNDRY"
+		// we explicitly set the boundary to make testing easier.
+		boundary := "MIMEBOUNDARY"
 		if err := mimeWriter.SetBoundary(boundary); err != nil {
 			return "", err
 		}
@@ -203,12 +203,12 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 		writer.Write([]byte(fmt.Sprintf("Content-Type: multipart/mixed; boundary=\"%s\"\r\n", boundary)))
 		writer.Write([]byte("MIME-Version: 1.0\r\n\r\n"))
 
-		err := writeUserDataPart(mimeWriter, "nodeup.sh", "text/x-shellscript", []byte(UserDataTemplate))
+		err := writeUserDataPart(mimeWriter, "nodeup.sh", "text/x-shellscript", []byte(userDataTemplate))
 		if err != nil {
 			return "", err
 		}
 
-		for _, UserDataInfo := range ig.Spec.ExtraUserData {
+		for _, UserDataInfo := range ig.Spec.AdditionalUserData {
 			err = writeUserDataPart(mimeWriter, UserDataInfo.Name, UserDataInfo.Type, []byte(UserDataInfo.Content))
 			if err != nil {
 				return "", err
@@ -220,10 +220,10 @@ func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
 		writer.Flush()
 		mimeWriter.Close()
 
-		UserDataTemplate = buffer.String()
+		userDataTemplate = buffer.String()
 	}
 
-	return UserDataTemplate, nil
+	return userDataTemplate, nil
 
 }
 

@@ -54,8 +54,8 @@ func ValidateInstanceGroup(g *kops.InstanceGroup) error {
 		}
 	}
 
-	if len(g.Spec.ExtraUserData) > 0 {
-		for _, UserDataInfo := range g.Spec.ExtraUserData {
+	if len(g.Spec.AdditionalUserData) > 0 {
+		for _, UserDataInfo := range g.Spec.AdditionalUserData {
 			err := validateExtraUserData(&UserDataInfo)
 			if err != nil {
 				return err
@@ -115,13 +115,15 @@ func CrossValidateInstanceGroup(g *kops.InstanceGroup, cluster *kops.Cluster, st
 	return nil
 }
 
-func validateExtraUserData(userData *kops.ExtraUserDataSpec) error {
+func validateExtraUserData(userData *kops.UserData) error {
+	fieldPath := field.NewPath("AdditionalUserData")
+
 	if userData.Name == "" {
-		return field.Required(field.NewPath("ExtraUserData Name"), "extraUserData Name field must be set")
+		return field.Required(fieldPath.Child("Name"), "field must be set")
 	}
 
 	if userData.Content == "" {
-		return field.Required(field.NewPath("ExtraUserData Content"), "extraUserData Content field must be set")
+		return field.Required(fieldPath.Child("Content"), "field must be set")
 	}
 
 	switch userData.Type {
@@ -135,7 +137,7 @@ func validateExtraUserData(userData *kops.ExtraUserDataSpec) error {
 	case "text/cloud-boothook":
 
 	default:
-		return field.Invalid(field.NewPath("ExtraUserData Type"), userData.Type, "Unknown user-data content type")
+		return field.Invalid(fieldPath.Child("Type"), userData.Type, "Invalid user-data content type")
 	}
 
 	return nil
