@@ -8,6 +8,7 @@ go_library(
         "processor.go",
         "sort.go",
     ],
+    importpath = "github.com/vmware/govmomi/event",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/object:go_default_library",

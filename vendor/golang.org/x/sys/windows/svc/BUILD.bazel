@@ -5,7 +5,6 @@ go_library(
     srcs = select({
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "event.go",
-            "go12.c",
             "go12.go",
             "go13.go",
             "security.go",
@@ -14,6 +13,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "golang.org/x/sys/windows/svc",
     visibility = ["//visibility:public"],
     deps = select({
         "@io_bazel_rules_go//go/platform:windows_amd64": [
@@ -31,6 +31,7 @@ go_test(
         ],
         "//conditions:default": [],
     }),
+    importpath = "golang.org/x/sys/windows/svc_test",
     deps = select({
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             ":go_default_library",

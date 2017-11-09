@@ -10,6 +10,7 @@ go_library(
         "ls.go",
         "remove.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/device",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

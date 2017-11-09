@@ -113,6 +113,9 @@ type CreateClusterOptions struct {
 	// Specify API loadbalancer as public or internal
 	APILoadBalancerType string
 
+	// Allow custom public master name
+	MasterPublicName string
+
 	// vSphere options
 	VSphereServer        string
 	VSphereDatacenter    string
@@ -237,7 +240,7 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 
-	cmd.Flags().BoolVar(&options.Yes, "yes", options.Yes, "Specify --yes to immediately create the cluster")
+	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Specify --yes to immediately create the cluster")
 	cmd.Flags().StringVar(&options.Target, "target", options.Target, fmt.Sprintf("Valid targets: %s, %s, %s. Set this flag to %s if you want kops to generate terraform", cloudup.TargetDirect, cloudup.TargetTerraform, cloudup.TargetDirect, cloudup.TargetTerraform))
 	cmd.Flags().StringVar(&options.Models, "model", options.Models, "Models to apply (separate multiple models with commas)")
 
@@ -307,6 +310,9 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
 	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
+
+	// Allow custom public master name
+	cmd.Flags().StringVar(&options.MasterPublicName, "master-public-name", options.MasterPublicName, "Sets the public master public name")
 
 	// DryRun mode that will print YAML or JSON
 	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
@@ -900,6 +906,10 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		cluster.Spec.Topology.DNS.Type = api.DNSTypePrivate
 	default:
 		return fmt.Errorf("unknown DNSType: %q", c.DNSType)
+	}
+
+	if c.MasterPublicName != "" {
+		cluster.Spec.MasterPublicName = c.MasterPublicName
 	}
 
 	// Populate the API access, so that it can be discoverable

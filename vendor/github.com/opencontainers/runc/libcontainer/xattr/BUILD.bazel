@@ -4,13 +4,19 @@ go_library(
     name = "go_default_library",
     srcs = [
         "errors.go",
-        "xattr_unsupported.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "xattr_unsupported.go",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             "xattr_linux.go",
         ],
+        "@io_bazel_rules_go//go/platform:windows_amd64": [
+            "xattr_unsupported.go",
+        ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/opencontainers/runc/libcontainer/xattr",
     visibility = ["//visibility:public"],
     deps = select({
         "@io_bazel_rules_go//go/platform:linux_amd64": [
@@ -29,6 +35,7 @@ go_test(
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/opencontainers/runc/libcontainer/xattr_test",
     deps = select({
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             ":go_default_library",

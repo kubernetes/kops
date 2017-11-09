@@ -6,6 +6,7 @@ go_library(
         "debug.go",
         "debug_routes.go",
     ],
+    importpath = "github.com/docker/docker/api/server/router/debug",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api/server/httputils:go_default_library",

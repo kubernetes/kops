@@ -7,6 +7,7 @@ go_library(
         "speech.go",
         "speech_client.go",
     ],
+    importpath = "cloud.google.com/go/speech/apiv1beta1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/googleapis/gax-go:go_default_library",
@@ -24,6 +25,7 @@ go_library(
 go_test(
     name = "go_default_xtest",
     srcs = ["speech_client_example_test.go"],
+    importpath = "cloud.google.com/go/speech/apiv1beta1_test",
     deps = [
         ":go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",

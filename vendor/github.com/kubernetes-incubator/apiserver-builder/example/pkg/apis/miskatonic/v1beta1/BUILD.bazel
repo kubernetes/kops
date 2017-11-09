@@ -8,6 +8,7 @@ go_library(
         "student_types.go",
         "university_types.go",
     ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/example/pkg/apis/miskatonic/v1beta1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/kubernetes-incubator/apiserver-builder/example/pkg/apis/miskatonic:go_default_library",
@@ -29,6 +30,7 @@ go_test(
         "university_types_test.go",
         "v1beta1_suite_test.go",
     ],
+    importpath = "github.com/kubernetes-incubator/apiserver-builder/example/pkg/apis/miskatonic/v1beta1_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/kubernetes-incubator/apiserver-builder/example/pkg/apis:go_default_library",

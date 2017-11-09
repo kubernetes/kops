@@ -6,6 +6,7 @@ go_library(
         "api.go",
         "service.go",
     ],
+    importpath = "github.com/aws/aws-sdk-go/service/cloudsearchdomain",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
@@ -24,6 +25,7 @@ go_test(
         "customizations_test.go",
         "examples_test.go",
     ],
+    importpath = "github.com/aws/aws-sdk-go/service/cloudsearchdomain_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",

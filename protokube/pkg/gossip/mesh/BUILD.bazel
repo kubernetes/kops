@@ -9,6 +9,7 @@ go_library(
         "peer.go",
         "state.go",
     ],
+    importpath = "k8s.io/kops/protokube/pkg/gossip/mesh",
     visibility = ["//visibility:public"],
     deps = [
         "//protokube/pkg/gossip:go_default_library",
@@ -19,10 +20,4 @@ go_library(
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/github.com/weaveworks/mesh:go_default_library",
     ],
-)
-
-filegroup(
-    name = "go_default_library_protos",
-    srcs = ["mesh.proto"],
-    visibility = ["//visibility:public"],
 )

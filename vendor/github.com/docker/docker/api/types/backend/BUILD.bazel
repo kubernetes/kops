@@ -6,6 +6,7 @@ go_library(
         "backend.go",
         "build.go",
     ],
+    importpath = "github.com/docker/docker/api/types/backend",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api/types:go_default_library",

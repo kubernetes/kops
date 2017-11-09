@@ -9,6 +9,7 @@ go_library(
         "ms_keys.go",
         "types.go",
     ],
+    importpath = "k8s.io/heapster/metrics/core",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/google/cadvisor/info/v1:go_default_library"],
 )

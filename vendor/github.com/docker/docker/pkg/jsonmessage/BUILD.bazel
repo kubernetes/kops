@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["jsonmessage.go"],
+    importpath = "github.com/docker/docker/pkg/jsonmessage",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/Nvveen/Gotty:go_default_library",
@@ -15,6 +16,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["jsonmessage_test.go"],
+    importpath = "github.com/docker/docker/pkg/jsonmessage",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/docker/pkg/jsonlog:go_default_library",

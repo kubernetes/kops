@@ -15,6 +15,7 @@ go_library(
         "upgrade.go",
         "util.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e_federation",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/onsi/ginkgo:go_default_library",

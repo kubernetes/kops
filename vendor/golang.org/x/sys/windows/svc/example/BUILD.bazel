@@ -12,6 +12,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "golang.org/x/sys/windows/svc/example",
     visibility = ["//visibility:private"],
     deps = select({
         "@io_bazel_rules_go//go/platform:windows_amd64": [
@@ -26,6 +27,7 @@ go_library(
 
 go_binary(
     name = "example",
+    importpath = "golang.org/x/sys/windows/svc/example",
     library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

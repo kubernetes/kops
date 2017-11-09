@@ -12,6 +12,7 @@ go_library(
         "services.go",
         "util.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e_node/services",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/coreos/etcd/etcdserver:go_default_library",

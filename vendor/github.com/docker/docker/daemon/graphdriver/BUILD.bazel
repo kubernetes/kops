@@ -5,11 +5,13 @@ go_library(
     srcs = [
         "counter.go",
         "driver.go",
-        "driver_unsupported.go",
         "fsdiff.go",
         "plugin.go",
         "proxy.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "driver_unsupported.go",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             "driver_linux.go",
         ],
@@ -19,6 +21,7 @@ go_library(
         "//conditions:default": [],
     }),
     cgo = True,
+    importpath = "github.com/docker/docker/daemon/graphdriver",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/pkg/archive:go_default_library",

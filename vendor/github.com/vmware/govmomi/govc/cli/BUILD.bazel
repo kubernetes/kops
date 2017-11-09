@@ -6,5 +6,6 @@ go_library(
         "command.go",
         "register.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/cli",
     visibility = ["//visibility:public"],
 )

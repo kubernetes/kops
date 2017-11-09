@@ -9,6 +9,7 @@ go_library(
         "update.go",
         "usage.go",
     ],
+    importpath = "github.com/vmware/govmomi/govc/role",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/govc/cli:go_default_library",

@@ -11,6 +11,7 @@ go_library(
         "format.go",
         "spew.go",
     ],
+    importpath = "github.com/davecgh/go-spew/spew",
     visibility = ["//visibility:public"],
 )
 
@@ -21,6 +22,7 @@ go_test(
         "internalunsafe_test.go",
     ],
     data = glob(["testdata/**"]),
+    importpath = "github.com/davecgh/go-spew/spew",
     library = ":go_default_library",
 )
 
@@ -35,5 +37,6 @@ go_test(
         "spew_test.go",
     ],
     data = glob(["testdata/**"]),
+    importpath = "github.com/davecgh/go-spew/spew_test",
     deps = [":go_default_library"],
 )

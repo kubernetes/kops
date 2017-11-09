@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["iterator.go"],
+    importpath = "google.golang.org/api/iterator",
     visibility = ["//visibility:public"],
 )
 
@@ -12,6 +13,7 @@ go_test(
         "examples_test.go",
         "iterator_test.go",
     ],
+    importpath = "google.golang.org/api/iterator_test",
     deps = [
         ":go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",

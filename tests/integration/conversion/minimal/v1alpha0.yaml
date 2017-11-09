@@ -3,6 +3,8 @@ metadata:
   creationTimestamp: 2016-12-10T22:42:27Z
   name: minimal.example.com
 spec:
+  additionalSans:
+  - proxy.api.minimal.example.com
   adminAccess:
   - 0.0.0.0/0
   channel: stable

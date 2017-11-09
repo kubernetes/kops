@@ -8,6 +8,7 @@ go_library(
         "text_annotation.pb.go",
         "web_detection.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/cloud/vision/v1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

@@ -6,6 +6,7 @@ go_library(
         "iam_policy.pb.go",
         "policy.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/iam/v1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

@@ -16,6 +16,7 @@ go_library(
         "uploadconfig.go",
         "util.go",
     ],
+    importpath = "k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/spf13/cobra:go_default_library",
@@ -56,6 +57,7 @@ go_test(
         "etcd_test.go",
         "kubeconfig_test.go",
     ],
+    importpath = "k8s.io/kubernetes/cmd/kubeadm/app/cmd/phases",
     library = ":go_default_library",
     deps = [
         "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",

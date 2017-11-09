@@ -6,6 +6,7 @@ go_library(
         "chaos.go",
         "setup.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/chaos",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/mholt/caddy:go_default_library",
@@ -23,6 +24,7 @@ go_test(
         "chaos_test.go",
         "setup_test.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/chaos",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/mholt/caddy:go_default_library",

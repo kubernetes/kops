@@ -5,13 +5,19 @@ go_library(
     srcs = [
         "daemon.go",
         "daemon_swarm.go",
-        "daemon_unix.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "daemon_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "daemon_unix.go",
+        ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "daemon_windows.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/integration-cli/daemon",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api/types:go_default_library",
@@ -30,8 +36,13 @@ go_library(
         "//vendor/github.com/docker/go-connections/tlsconfig:go_default_library",
         "//vendor/github.com/go-check/check:go_default_library",
         "//vendor/github.com/pkg/errors:go_default_library",
-        "//vendor/golang.org/x/sys/unix:go_default_library",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
             "//vendor/golang.org/x/sys/windows:go_default_library",
         ],

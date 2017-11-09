@@ -6,6 +6,7 @@ go_library(
         "resources.pb.go",
         "servicemanager.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/api/servicemanagement/v1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

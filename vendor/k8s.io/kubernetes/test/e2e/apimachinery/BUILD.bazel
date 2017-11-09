@@ -13,6 +13,7 @@ go_library(
         "namespace.go",
         "table_conversion.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/apimachinery",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/onsi/ginkgo:go_default_library",

@@ -6,6 +6,7 @@ go_library(
         "dlp.pb.go",
         "storage.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/privacy/dlp/v2beta1",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

@@ -6,6 +6,7 @@ go_library(
         "setup.go",
         "whoami.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/whoami",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/mholt/caddy:go_default_library",
@@ -23,6 +24,7 @@ go_test(
         "setup_test.go",
         "whoami_test.go",
     ],
+    importpath = "github.com/miekg/coredns/middleware/whoami",
     library = ":go_default_library",
     deps = [
         "//vendor/github.com/mholt/caddy:go_default_library",

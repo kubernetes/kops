@@ -202,11 +202,17 @@ func (b *BootstrapScript) getRelevantHooks(allHooks []kops.HookSpec, role kops.I
 			}
 
 			if hook.ExecContainer != nil && hook.ExecContainer.Command != nil {
-				execContainerCommandFingerprint, err := b.computeFingerprint(hook.ExecContainer.Command)
+				execContainerCommandFingerprint, err := b.computeFingerprint(strings.Join(hook.ExecContainer.Command[:], " "))
 				if err != nil {
 					return nil, err
 				}
-				hook.ExecContainer.Command = []string{execContainerCommandFingerprint + " (fingerprint)"}
+
+				execContainerAction := &kops.ExecContainerAction{
+					Command:     []string{execContainerCommandFingerprint + " (fingerprint)"},
+					Environment: hook.ExecContainer.Environment,
+					Image:       hook.ExecContainer.Image,
+				}
+				hook.ExecContainer = execContainerAction
 			}
 
 			hook.Roles = nil
@@ -253,16 +259,11 @@ func (b *BootstrapScript) getRelevantFileAssets(allFileAssets []kops.FileAssetSp
 	return fileAssets, nil
 }
 
-// computeFingerprint takes an object and returns a base64 encoded fingerprint
-func (b *BootstrapScript) computeFingerprint(obj interface{}) (string, error) {
+// computeFingerprint takes a string and returns a base64 encoded fingerprint
+func (b *BootstrapScript) computeFingerprint(content string) (string, error) {
 	hasher := sha1.New()
 
-	data, err := kops.ToRawYaml(obj)
-	if err != nil {
-		return "", err
-	}
-
-	if _, err := hasher.Write(data); err != nil {
+	if _, err := hasher.Write([]byte(content)); err != nil {
 		return "", fmt.Errorf("error computing fingerprint hash: %v", err)
 	}
 

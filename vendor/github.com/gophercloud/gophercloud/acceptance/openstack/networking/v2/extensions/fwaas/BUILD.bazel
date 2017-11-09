@@ -6,6 +6,7 @@ go_library(
         "fwaas.go",
         "pkg.go",
     ],
+    importpath = "github.com/gophercloud/gophercloud/acceptance/openstack/networking/v2/extensions/fwaas",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",

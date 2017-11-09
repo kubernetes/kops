@@ -182,6 +182,10 @@ func (b *PolicyBuilder) BuildAWSPolicyMaster() (*Policy, error) {
 		addECRPermissions(p)
 	}
 
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Romana != nil {
+		addRomanaCNIPermissions(p, resource, b.Cluster.Spec.IAM.Legacy)
+	}
+
 	return p, nil
 }
 
@@ -674,6 +678,27 @@ func addRoute53ListHostedZonesPermission(p *Policy) {
 		Action:   stringorslice.Slice([]string{"route53:ListHostedZones"}),
 		Resource: wildcard,
 	})
+}
+
+func addRomanaCNIPermissions(p *Policy, resource stringorslice.StringOrSlice, legacyIAM bool) {
+	if legacyIAM {
+		// Legacy IAM provides ec2:*, so no additional permissions required
+		return
+	} else {
+		// Romana requires additional Describe permissions
+		// Comments are which Romana component makes the call
+		p.Statement = append(p.Statement,
+			&Statement{
+				Sid:    "kopsK8sEC2MasterPermsRomanaCNI",
+				Effect: StatementEffectAllow,
+				Action: stringorslice.Slice([]string{
+					"ec2:DescribeAvailabilityZones", // vpcrouter
+					"ec2:DescribeVpcs",              // vpcrouter
+				}),
+				Resource: resource,
+			},
+		)
+	}
 }
 
 func createResource(b *PolicyBuilder) stringorslice.StringOrSlice {

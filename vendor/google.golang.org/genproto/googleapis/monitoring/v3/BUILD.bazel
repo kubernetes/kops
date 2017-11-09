@@ -9,6 +9,7 @@ go_library(
         "metric.pb.go",
         "metric_service.pb.go",
     ],
+    importpath = "google.golang.org/genproto/googleapis/monitoring/v3",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

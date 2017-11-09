@@ -7,6 +7,7 @@ go_library(
         "volume.go",
         "volume_routes.go",
     ],
+    importpath = "github.com/docker/docker/api/server/router/volume",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/docker/docker/api/server/httputils:go_default_library",

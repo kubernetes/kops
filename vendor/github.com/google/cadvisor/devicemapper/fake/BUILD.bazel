@@ -6,5 +6,6 @@ go_library(
         "dmsetup_client_fake.go",
         "thin_ls_client_fake.go",
     ],
+    importpath = "github.com/google/cadvisor/devicemapper/fake",
     visibility = ["//visibility:public"],
 )

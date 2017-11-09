@@ -6,6 +6,7 @@ go_library(
         "doc.go",
         "strategy.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/registry/core/limitrange",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",

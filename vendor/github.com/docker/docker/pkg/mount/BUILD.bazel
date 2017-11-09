@@ -4,12 +4,14 @@ go_library(
     name = "go_default_library",
     srcs = [
         "flags.go",
-        "flags_unsupported.go",
         "mount.go",
-        "mounter_unsupported.go",
         "mountinfo.go",
-        "mountinfo_unsupported.go",
     ] + select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "flags_unsupported.go",
+            "mounter_unsupported.go",
+            "mountinfo_unsupported.go",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
             "flags_linux.go",
             "mounter_linux.go",
@@ -17,11 +19,14 @@ go_library(
             "sharedsubtree_linux.go",
         ],
         "@io_bazel_rules_go//go/platform:windows_amd64": [
+            "flags_unsupported.go",
+            "mounter_unsupported.go",
             "mountinfo_windows.go",
         ],
         "//conditions:default": [],
     }),
     cgo = True,
+    importpath = "github.com/docker/docker/pkg/mount",
     visibility = ["//visibility:public"],
     deps = select({
         "@io_bazel_rules_go//go/platform:linux_amd64": [
@@ -33,16 +38,19 @@ go_library(
 
 go_test(
     name = "go_default_test",
-    srcs = [
-        "mount_unix_test.go",
-    ] + select({
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+            "mount_unix_test.go",
+        ],
         "@io_bazel_rules_go//go/platform:linux_amd64": [
+            "mount_unix_test.go",
             "mounter_linux_test.go",
             "mountinfo_linux_test.go",
             "sharedsubtree_linux_test.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "github.com/docker/docker/pkg/mount",
     library = ":go_default_library",
     deps = select({
         "@io_bazel_rules_go//go/platform:linux_amd64": [

@@ -6,11 +6,13 @@ go_library(
         "uritemplates.go",
         "utils.go",
     ],
+    importpath = "google.golang.org/api/googleapi/internal/uritemplates",
     visibility = ["//vendor/google.golang.org/api/googleapi:__subpackages__"],
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["uritemplates_test.go"],
+    importpath = "google.golang.org/api/googleapi/internal/uritemplates",
     library = ":go_default_library",
 )

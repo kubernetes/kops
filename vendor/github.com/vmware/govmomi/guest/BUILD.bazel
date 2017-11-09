@@ -8,6 +8,7 @@ go_library(
         "operations_manager.go",
         "process_manager.go",
     ],
+    importpath = "github.com/vmware/govmomi/guest",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/vmware/govmomi/property:go_default_library",

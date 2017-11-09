@@ -6,6 +6,7 @@ go_library(
         "fileinfo.go",
         "storagedriver.go",
     ],
+    importpath = "github.com/docker/distribution/registry/storage/driver",
     visibility = ["//visibility:public"],
     deps = ["//vendor/github.com/docker/distribution/context:go_default_library"],
 )

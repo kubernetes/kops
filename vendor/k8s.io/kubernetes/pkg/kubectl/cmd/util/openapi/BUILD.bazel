@@ -9,6 +9,7 @@ go_library(
         "openapi.go",
         "openapi_getter.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/go-openapi/spec:go_default_library",
@@ -26,6 +27,7 @@ go_test(
         "openapi_suite_test.go",
         "openapi_test.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/onsi/ginkgo:go_default_library",

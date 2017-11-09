@@ -3,6 +3,7 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = ["rackspace.go"],
+    importpath = "k8s.io/kubernetes/pkg/cloudprovider/providers/rackspace",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
@@ -25,6 +26,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["rackspace_test.go"],
+    importpath = "k8s.io/kubernetes/pkg/cloudprovider/providers/rackspace",
     library = ":go_default_library",
     deps = ["//vendor/github.com/rackspace/gophercloud:go_default_library"],
 )

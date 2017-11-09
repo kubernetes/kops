@@ -8,11 +8,13 @@ go_library(
         "types.go",
         "write.go",
     ],
+    importpath = "github.com/docker/spdystream/spdy",
     visibility = ["//visibility:public"],
 )
 
 go_test(
     name = "go_default_test",
     srcs = ["spdy_test.go"],
+    importpath = "github.com/docker/spdystream/spdy",
     library = ":go_default_library",
 )

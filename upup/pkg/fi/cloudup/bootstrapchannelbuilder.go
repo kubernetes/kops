@@ -186,7 +186,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	{
 		key := "dns-controller.addons.k8s.io"
-		version := "1.7.1"
+		version := "1.8.0-beta.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -506,7 +506,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		versions := map[string]string{
 			"pre-k8s-1.6": "2.4.1",
 			"k8s-1.6":     "2.4.1",
-			"k8s-1.8":     "2.5.1",
+			"k8s-1.8":     "2.6.2",
 		}
 
 		{

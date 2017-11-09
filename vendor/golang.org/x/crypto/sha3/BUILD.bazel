@@ -5,11 +5,9 @@ go_library(
     srcs = [
         "doc.go",
         "hashes.go",
-        "keccakf.go",
         "register.go",
         "sha3.go",
         "shake.go",
-        "xor.go",
         "xor_generic.go",
     ] + select({
         "@io_bazel_rules_go//go/platform:darwin_amd64": [
@@ -29,6 +27,7 @@ go_library(
         ],
         "//conditions:default": [],
     }),
+    importpath = "golang.org/x/crypto/sha3",
     visibility = ["//visibility:public"],
 )
 
@@ -36,5 +35,6 @@ go_test(
     name = "go_default_test",
     srcs = ["sha3_test.go"],
     data = glob(["testdata/**"]),
+    importpath = "golang.org/x/crypto/sha3",
     library = ":go_default_library",
 )

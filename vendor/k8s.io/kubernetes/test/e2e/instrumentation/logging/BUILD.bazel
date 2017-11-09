@@ -6,6 +6,7 @@ go_library(
         "generic_soak.go",
         "imports.go",
     ],
+    importpath = "k8s.io/kubernetes/test/e2e/instrumentation/logging",
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/onsi/ginkgo:go_default_library",

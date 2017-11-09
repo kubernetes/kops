@@ -6,6 +6,7 @@ go_library(
         "cloud.go",
         "target.go",
     ],
+    importpath = "k8s.io/kops/upup/pkg/fi/cloudup/baremetal",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/apis/kops:go_default_library",

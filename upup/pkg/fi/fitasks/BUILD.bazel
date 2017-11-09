@@ -15,6 +15,7 @@ go_library(
         "secret.go",
         "secret_fitask.go",
     ],
+    importpath = "k8s.io/kops/upup/pkg/fi/fitasks",
     visibility = ["//visibility:public"],
     deps = [
         "//pkg/acls:go_default_library",
