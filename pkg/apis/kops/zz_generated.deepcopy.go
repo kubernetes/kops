@@ -1664,6 +1664,11 @@ func (in *InstanceGroupSpec) DeepCopyInto(out *InstanceGroupSpec) {
 		*out = make([]UserData, len(*in))
 		copy(*out, *in)
 	}
+	if in.SuspendProcesses != nil {
+		in, out := &in.SuspendProcesses, &out.SuspendProcesses
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
