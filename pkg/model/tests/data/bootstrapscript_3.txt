@@ -180,6 +180,8 @@ kubelet:
 nodeLabels:
   label2: value2
   labelname: labelvalue
+suspendProcesses:
+- AZRebalance
 taints:
 - key1=value1:NoSchedule
 - key2=value2:NoExecute

@@ -261,6 +261,9 @@ func makeTestInstanceGroup(role kops.InstanceGroupRole, hookSpecRoles []kops.Ins
 				"key1=value1:NoSchedule",
 				"key2=value2:NoExecute",
 			},
+			SuspendProcesses: []string{
+				"AZRebalance",
+			},
 			Hooks: []kops.HookSpec{
 				{
 					Name: "disable-update-engine.service",

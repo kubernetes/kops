@@ -127,6 +127,7 @@ resource "aws_autoscaling_group" "nodes-complex-example-com" {
 
   metrics_granularity = "1Minute"
   enabled_metrics     = ["GroupDesiredCapacity", "GroupInServiceInstances", "GroupMaxSize", "GroupMinSize", "GroupPendingInstances", "GroupStandbyInstances", "GroupTerminatingInstances", "GroupTotalInstances"]
+  suspended_processes = ["AZRebalance"]
 }
 
 resource "aws_ebs_volume" "us-test-1a-etcd-events-complex-example-com" {
