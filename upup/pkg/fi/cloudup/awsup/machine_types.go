@@ -280,6 +280,50 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: nil,
 	},
 
+	// c5 family
+	{
+		Name:           "c5.large",
+		MemoryGB:       4,
+		ECU:            8,
+		Cores:          2,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "c5.xlarge",
+		MemoryGB:       8,
+		ECU:            16,
+		Cores:          4,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "c5.2xlarge",
+		MemoryGB:       16,
+		ECU:            31,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "c5.4xlarge",
+		MemoryGB:       32,
+		ECU:            62,
+		Cores:          16,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "c5.9xlarge",
+		MemoryGB:       72,
+		ECU:            139,
+		Cores:          36,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "c5.18xlarge",
+		MemoryGB:       144,
+		ECU:            278,
+		Cores:          72,
+		EphemeralDisks: nil,
+	},
+
 	// cc2 family
 	{
 		Name:           "cc2.8xlarge",
