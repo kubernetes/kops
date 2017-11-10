@@ -3,26 +3,33 @@ you can.
 
 ------------- BUG REPORT TEMPLATE --------------------
 
-1. What kops version are you running? Use `kops version`?
+1. What `kops` version are you running? The command `kops version`, will display
+ this information.
 
-1. What Kubernetes version are you running? Use `kubectl version`?
+2. What Kubernetes version are you running? `kubectl version` will print the
+ version if a cluster is running or provide the Kubernetes version specified as
+ a `kops` flag.
 
-1. What cloud provider are you using?
+3. What cloud provider are you using?
 
-1. What commands did you execute, and what happened after the commands executed?
+4. What commands did you run?  What is the simplest way to reproduce this issue?
 
-1. Can you provide cluster manifest `kops get --name my.example.com -oyaml`?
+5. What happened after the commands executed?
 
-1. What you expected to happen?
+6. What did you expect to happen?
 
-1. How can we to reproduce it (as minimally and precisely as possible)?
+7. Please provide your cluster manifest. Execute
+  `kops get --name my.example.com -oyaml` to display your cluster manifest.
+  You may want to remove your cluster name and other sensitive information.
 
-1. Can you run the `kops` command with the `-v 10` flag and provide logs?
+8. Please run the commands with most verbose logging by adding the `-v 10` flag.
+  Paste the logs into this report, or in a gist and provide the gist link here.
 
-1. Anything else do we need to know?
+9. Anything else do we need to know?
+
 
 ------------- FEATURE REQUEST TEMPLATE --------------------
 
 1. Describe IN DETAIL the feature/behavior/change you would like to see.
 
-1. Feel free to provide a design supporting your feature request.
+2. Feel free to provide a design supporting your feature request.
