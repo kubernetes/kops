@@ -27,6 +27,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/baremetal"
 	"k8s.io/kops/upup/pkg/fi/cloudup/do"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
@@ -129,6 +130,14 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 				return nil, err
 			}
 			cloud = baremetalCloud
+		}
+	case kops.CloudProviderOpenstack:
+		{
+			osc, err := openstack.NewOpenstackCloud()
+			if err != nil {
+				return nil, err
+			}
+			cloud = osc
 		}
 
 	default:

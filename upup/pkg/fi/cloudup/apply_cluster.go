@@ -54,6 +54,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks"
@@ -437,6 +438,8 @@ func (c *ApplyClusterCmd) Run() error {
 			// No additional tasks (yet)
 		}
 
+	case kops.CloudProviderOpenstack:
+
 	default:
 		return fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
 	}
@@ -584,6 +587,8 @@ func (c *ApplyClusterCmd) Run() error {
 
 			case kops.CloudProviderBareMetal:
 				// No special settings (yet!)
+
+			case kops.CloudProviderOpenstack:
 
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
@@ -733,6 +738,8 @@ func (c *ApplyClusterCmd) Run() error {
 	case kops.CloudProviderBareMetal:
 		// BareMetal tasks will go here
 
+	case kops.CloudProviderOpenstack:
+
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", cluster.Spec.CloudProvider)
 	}
@@ -763,6 +770,8 @@ func (c *ApplyClusterCmd) Run() error {
 			target = vsphere.NewVSphereAPITarget(cloud.(*vsphere.VSphereCloud))
 		case kops.CloudProviderBareMetal:
 			target = baremetal.NewTarget(cloud.(*baremetal.Cloud))
+		case kops.CloudProviderOpenstack:
+			target = openstack.NewOpenstackAPITarget(cloud.(openstack.OpenstackCloud))
 		default:
 			return fmt.Errorf("direct configuration not supported with CloudProvider:%q", cluster.Spec.CloudProvider)
 		}
