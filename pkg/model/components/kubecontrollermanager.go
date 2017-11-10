@@ -113,6 +113,9 @@ func (b *KubeControllerManagerOptionsBuilder) BuildOptions(o interface{}) error 
 	case kops.CloudProviderBareMetal:
 		// No cloudprovider
 
+	case kops.CloudProviderOpenstack:
+		kcm.CloudProvider = "openstack"
+
 	default:
 		return fmt.Errorf("unknown cloudprovider %q", clusterSpec.CloudProvider)
 	}
