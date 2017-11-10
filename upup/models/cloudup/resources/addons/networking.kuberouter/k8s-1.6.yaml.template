@@ -34,30 +34,16 @@ spec:
         tier: node
       annotations:
         scheduler.alpha.kubernetes.io/critical-pod: ''
-        pod.beta.kubernetes.io/init-containers: '[
-            {
-                "name": "install-cni",
-                "image": "busybox",
-                "command": [ "/bin/sh", "-c", "set -e -x; if [ ! -f /etc/cni/net.d/10-kuberouter.conf ]; then TMP=/etc/cni/net.d/.tmp-kuberouter-cfg; cp /etc/kube-router/cni-conf.json ${TMP}; mv ${TMP} /etc/cni/net.d/10-kuberouter.conf; fi" ],
-                "volumeMounts": [
-                    {
-                        "name": "cni",
-                        "mountPath": "/etc/cni/net.d"
-                    },
-                    {
-                        "name": "kube-router-cfg",
-                        "mountPath": "/etc/kube-router"
-                    }
-                ],
-                "volumes": {
-                     "name": "cni",
-                     "hostPath": {
-                          "path": "/etc/cni/net.d"
-                     }
-                }
-            }
-        ]'
     spec:
+      initContainers:
+      - name: install-cni
+        image: busybox
+        command: [ "/bin/sh", "-c", "set -e -x; if [ ! -f /etc/cni/net.d/10-kuberouter.conf ]; then TMP=/etc/cni/net.d/.tmp-kuberouter-cfg; cp /etc/kube-router/cni-conf.json ${TMP}; mv ${TMP} /etc/cni/net.d/10-kuberouter.conf; fi" ]
+        volumeMounts:
+        - mountPath: /etc/cni/net.d
+          name: cni
+        - mountPath: /etc/kube-router
+          name: kube-router-cfg
       containers:
       - name: kube-router
         image: cloudnativelabs/kube-router
@@ -112,7 +98,7 @@ spec:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: kube-router 
+  name: kube-router
   namespace: kube-system
 ---
 # Kube-router roles
