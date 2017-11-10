@@ -89,7 +89,19 @@ type InstanceGroupSpec struct {
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
 	// Taints indicates the kubernetes taints for nodes in this group
 	Taints []string `json:"taints,omitempty"`
+	// AdditionalUserData is any aditional user-data to be passed to the host
+	AdditionalUserData []UserData `json:"additionalUserData,omitempty"`
 	// Zones is the names of the Zones where machines in this instance group should be placed
 	// This is needed for regional subnets (e.g. GCE), to restrict placement to particular zones
 	Zones []string `json:"zones,omitempty"`
+}
+
+// UserData defines a user-data section
+type UserData struct {
+	// Name is the name of the user-data
+	Name string `json:"name,omitempty"`
+	// Type is the type of user-data
+	Type string `json:"type,omitempty"`
+	// Content is the user-data content
+	Content string `json:"content,omitempty"`
 }

@@ -16,7 +16,17 @@ limitations under the License.
 
 package resources
 
-var AWSNodeUpTemplate = `#!/bin/bash
+import (
+	"bufio"
+	"bytes"
+	"fmt"
+	"mime/multipart"
+	"net/textproto"
+
+	"k8s.io/kops/pkg/apis/kops"
+)
+
+var NodeUpTemplate = `#!/bin/bash
 # Copyright 2016 The Kubernetes Authors All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -170,3 +180,70 @@ __EOF_KUBE_ENV
 download-release
 echo "== nodeup node config done =="
 `
+
+// AWSNodeUpTemplate returns a Mime Multi Part Archive containing the nodeup (bootstrap) script
+// and any aditional User Data passed to using AdditionalUserData in the IG Spec
+func AWSNodeUpTemplate(ig *kops.InstanceGroup) (string, error) {
+
+	userDataTemplate := NodeUpTemplate
+
+	if len(ig.Spec.AdditionalUserData) > 0 {
+		/* Create a buffer to hold the user-data*/
+		buffer := bytes.NewBufferString("")
+		writer := bufio.NewWriter(buffer)
+
+		mimeWriter := multipart.NewWriter(writer)
+
+		// we explicitly set the boundary to make testing easier.
+		boundary := "MIMEBOUNDARY"
+		if err := mimeWriter.SetBoundary(boundary); err != nil {
+			return "", err
+		}
+
+		writer.Write([]byte(fmt.Sprintf("Content-Type: multipart/mixed; boundary=\"%s\"\r\n", boundary)))
+		writer.Write([]byte("MIME-Version: 1.0\r\n\r\n"))
+
+		err := writeUserDataPart(mimeWriter, "nodeup.sh", "text/x-shellscript", []byte(userDataTemplate))
+		if err != nil {
+			return "", err
+		}
+
+		for _, UserDataInfo := range ig.Spec.AdditionalUserData {
+			err = writeUserDataPart(mimeWriter, UserDataInfo.Name, UserDataInfo.Type, []byte(UserDataInfo.Content))
+			if err != nil {
+				return "", err
+			}
+		}
+
+		writer.Write([]byte(fmt.Sprintf("\r\n--%s--\r\n", boundary)))
+
+		writer.Flush()
+		mimeWriter.Close()
+
+		userDataTemplate = buffer.String()
+	}
+
+	return userDataTemplate, nil
+
+}
+
+func writeUserDataPart(mimeWriter *multipart.Writer, fileName string, contentType string, content []byte) error {
+	header := textproto.MIMEHeader{}
+
+	header.Set("Content-Type", contentType)
+	header.Set("MIME-Version", "1.0")
+	header.Set("Content-Transfer-Encoding", "7bit")
+	header.Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, fileName))
+
+	partWriter, err := mimeWriter.CreatePart(header)
+	if err != nil {
+		return err
+	}
+
+	_, err = partWriter.Write(content)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
