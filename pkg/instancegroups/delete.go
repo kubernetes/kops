@@ -27,14 +27,16 @@ import (
 
 // DeleteInstanceGroup removes the cloud resources for an InstanceGroup
 type DeleteInstanceGroup struct {
-	Cluster   *api.Cluster
-	Cloud     fi.Cloud
+	// Cluster is a reference to the KOPS cluster spec
+	Cluster *api.Cluster
+	// Cloud is cloud provider interface
+	Cloud fi.Cloud
+	// Clientset is a kubernetes client
 	Clientset simple.Clientset
 }
 
 // DeleteInstanceGroup deletes a cloud instance group
 func (d *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) error {
-
 	groups, err := d.Cloud.GetCloudGroups(d.Cluster, []*api.InstanceGroup{group}, false, nil)
 	if err != nil {
 		return fmt.Errorf("error finding CloudInstanceGroups: %v", err)
@@ -56,10 +58,5 @@ func (d *DeleteInstanceGroup) DeleteInstanceGroup(group *api.InstanceGroup) erro
 		}
 	}
 
-	err = d.Clientset.InstanceGroupsFor(d.Cluster).Delete(group.ObjectMeta.Name, nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return d.Clientset.InstanceGroupsFor(d.Cluster).Delete(group.ObjectMeta.Name, nil)
 }

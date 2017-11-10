@@ -16,9 +16,7 @@ limitations under the License.
 
 package v1alpha1
 
-import (
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-)
+import metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 // +genclient
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -48,8 +46,44 @@ const (
 	InstanceGroupRoleNode   InstanceGroupRole = "Node"
 )
 
+// RolloutStrategy defines the strategy to use when performing rollouts on this instance group
+type RolloutStrategy string
+
+// DuplicatStrategy contains options for the duplication rollout
+type DuplicatStrategy struct {
+	// DuplicateInstanceGroup indicate we should copy the entire group
+	DuplicatInstanceGroup bool `json:"duplicateInstanceGroup,omitempty"`
+}
+
+const (
+	// DefaultRollout indicates the default one by one with a time interval and or drain
+	DefaultRollout = "default"
+	// DuplicateRollout indicates a duplication of instancegroup
+	DuplicateRollout = "duplicate"
+	// ScaledRollout indicates a scalled ASG rollout
+	ScaledRollout = "scaled-ig"
+)
+
+// UpdateStrategy provides details about the rollout stratergy for a instancegroup
+type UpdateStrategy struct {
+	// Batch is a batch size to operate within
+	Batch int `json:"batch,omitempty"`
+	// Drain indicates if this group should be drained
+	Drain bool `json:"drain,omitempty"`
+	// DrainTimeout is the amount of time we wait for drain pods
+	DrainTimeout *metav1.Duration `json:"drainTimeout,omitempty"`
+	// Interval is the time to given between iterations
+	Interval *metav1.Duration `json:"interval,omitempty"`
+	// PostDrainDelay is the duration we wait after draining each node
+	PostDrainDelay *metav1.Duration `json:"postDrainDelay,omitempty"`
+	// Rollout defines the strategy to use when performing a rollout on this instance group
+	Rollout RolloutStrategy `json:"rollout,omitempty"`
+}
+
 // InstanceGroupSpec is the specification for a instanceGroup
 type InstanceGroupSpec struct {
+	// Strategy is the strategy to use for this instances group
+	Strategy *UpdateStrategy `json:"strategy,omitempty"`
 	// Type determines the role of instances in this group: masters or nodes
 	Role InstanceGroupRole `json:"role,omitempty"`
 	// Image is the instance instance (ami etc) we should use

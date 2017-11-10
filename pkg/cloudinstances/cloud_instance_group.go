@@ -29,14 +29,18 @@ import (
 
 // CloudInstanceGroup is the cloud backing of InstanceGroup.
 type CloudInstanceGroup struct {
-	// HumanName is a user-friendly name for the group
-	HumanName     string
+	// InstanceGroup is a reference to the actual instanceGroup
 	InstanceGroup *api.InstanceGroup
-	Ready         []*CloudInstanceGroupMember
-	NeedUpdate    []*CloudInstanceGroupMember
-	MinSize       int
-	MaxSize       int
-
+	// HumanName is a user-friendly name for the group
+	HumanName string
+	// Ready is the number of instances ready
+	Ready []*CloudInstanceGroupMember
+	// NeedUpdate is the number of instances which are required to be updated
+	NeedUpdate []*CloudInstanceGroupMember
+	// MinSize is the minimum size of the instanceGroup
+	MinSize int
+	// MaxSize is the maximum size of the instanceGroup
+	MaxSize int
 	// Raw allows for the implementer to attach an object, for tracking additional state
 	Raw interface{}
 }
@@ -52,24 +56,22 @@ type CloudInstanceGroupMember struct {
 }
 
 // NewCloudInstanceGroupMember creates a new CloudInstanceGroupMember
-func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newGroupName string, currentGroupName string, nodeMap map[string]*v1.Node) error {
-	if instanceId == "" {
+func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(id string, newGroupName string, currentGroupName string, nodeMap map[string]*v1.Node) error {
+	if id == "" {
 		return fmt.Errorf("instance id for cloud instance member cannot be empty")
 	}
-	cm := &CloudInstanceGroupMember{
-		ID:                 instanceId,
-		CloudInstanceGroup: c,
-	}
-	node := nodeMap[instanceId]
-	if node != nil {
+	cm := &CloudInstanceGroupMember{ID: id, CloudInstanceGroup: c}
+
+	if node := nodeMap[id]; node != nil {
 		cm.Node = node
 	} else {
-		glog.V(8).Infof("unable to find node for instance: %s", instanceId)
+		glog.V(8).Infof("unable to find node for instance: %s", id)
 	}
 
-	if newGroupName == currentGroupName {
+	switch newGroupName {
+	case currentGroupName:
 		c.Ready = append(c.Ready, cm)
-	} else {
+	default:
 		c.NeedUpdate = append(c.NeedUpdate, cm)
 	}
 
@@ -80,9 +82,9 @@ func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(instanceId string, newG
 func (c *CloudInstanceGroup) Status() string {
 	if len(c.NeedUpdate) == 0 {
 		return "Ready"
-	} else {
-		return "NeedsUpdate"
 	}
+
+	return "NeedsUpdate"
 }
 
 // GetNodeMap returns a list of nodes keyed by their external id

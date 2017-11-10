@@ -19,10 +19,10 @@ package kops
 import (
 	"fmt"
 
-	"github.com/golang/glog"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// LabelClusterName is a cloud tag label
 const LabelClusterName = "kops.k8s.io/cluster"
 
 // NodeLabelInstanceGroup is a node label set to the name of the instance group
@@ -44,10 +44,11 @@ type InstanceGroup struct {
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
+// InstanceGroupList is a list of instance groups
 type InstanceGroupList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-
+	// Items is a collection of instancegroups
 	Items []InstanceGroup `json:"items"`
 }
 
@@ -55,19 +56,59 @@ type InstanceGroupList struct {
 type InstanceGroupRole string
 
 const (
-	InstanceGroupRoleMaster  InstanceGroupRole = "Master"
-	InstanceGroupRoleNode    InstanceGroupRole = "Node"
+	// InstanceGroupRoleMaster indicates a master node
+	InstanceGroupRoleMaster InstanceGroupRole = "Master"
+	// InstanceGroupRoleNode indicates a compute node
+	InstanceGroupRoleNode InstanceGroupRole = "Node"
+	// InstanceGroupRoleBastion indicates a bastion node
 	InstanceGroupRoleBastion InstanceGroupRole = "Bastion"
 )
 
+// AllInstanceGroupRoles is a collection of roles a node may be
 var AllInstanceGroupRoles = []InstanceGroupRole{
 	InstanceGroupRoleNode,
 	InstanceGroupRoleMaster,
 	InstanceGroupRoleBastion,
 }
 
+// RolloutStrategy defines the strategy to use when performing rollouts on this instance group
+type RolloutStrategy string
+
+// DuplicatStrategy contains options for the duplication rollout
+type DuplicatStrategy struct {
+	// DuplicateInstanceGroup indicate we should copy the entire group
+	DuplicatInstanceGroup bool `json:"duplicateInstanceGroup,omitempty"`
+}
+
+const (
+	// DefaultRollout indicates the default one by one with a time interval and or drain
+	DefaultRollout = "default"
+	// DuplicateRollout indicates a duplication of instancegroup
+	DuplicateRollout = "duplicate"
+	// ScaleUpRollout indicates a scalled ASG rollout
+	ScaleUpRollout = "scale-up"
+)
+
+// UpdateStrategy provides details about the rollout stratergy for a instancegroup
+type UpdateStrategy struct {
+	// Batch is a batch size to operate within
+	Batch int `json:"batch,omitempty"`
+	// Drain indicates if this group should be drained
+	Drain bool `json:"drain,omitempty"`
+	// DrainTimeout is the amount of time we wait for drain pods
+	DrainTimeout *metav1.Duration `json:"drainTimeout,omitempty"`
+	// Interval is the time to given between iterations
+	Interval *metav1.Duration `json:"interval,omitempty"`
+	// PostDrainDelay is the duration we wait after draining each node
+	PostDrainDelay *metav1.Duration `json:"postDrainDelay,omitempty"`
+	// Rollout defines the strategy to use when performing a rollout on this instance group
+	Rollout RolloutStrategy `json:"rollout,omitempty"`
+}
+
 // InstanceGroupSpec is the specification for a instanceGroup
 type InstanceGroupSpec struct {
+	// Strategy is the strategy to use for this instances group
+	Strategy *UpdateStrategy `json:"strategy,omitempty"`
 	// Type determines the role of instances in this group: masters or nodes
 	Role InstanceGroupRole `json:"role,omitempty"`
 	// Image is the instance instance (ami etc) we should use
@@ -88,8 +129,7 @@ type InstanceGroupSpec struct {
 	RootVolumeOptimization *bool `json:"rootVolumeOptimization,omitempty"`
 	// Subnets is the names of the Subnets (as specified in the Cluster) where machines in this instance group should be placed
 	Subnets []string `json:"subnets,omitempty"`
-	// Zones is the names of the Zones where machines in this instance group should be placed
-	// This is needed for regional subnets (e.g. GCE), to restrict placement to particular zones
+	// Zones is the names of the Zones where machines in this instance group should be placed This is needed for regional subnets (e.g. GCE), to restrict placement to particular zones
 	Zones []string `json:"zones,omitempty"`
 	// Hooks is a list of hooks for this instanceGroup, note: these can override the cluster wide ones if required
 	Hooks []HookSpec `json:"hooks,omitempty"`
@@ -105,8 +145,7 @@ type InstanceGroupSpec struct {
 	NodeLabels map[string]string `json:"nodeLabels,omitempty"`
 	// FileAssets is a collection of file assets for this instance group
 	FileAssets []FileAssetSpec `json:"fileAssets,omitempty"`
-	// Describes the tenancy of the instance group. Can be either default or dedicated.
-	// Currently only applies to AWS.
+	// Tenancy sescribes the tenancy of the instance group. Can be either default or dedicated. Currently only applies to AWS.
 	Tenancy string `json:"tenancy,omitempty"`
 	// Kubelet overrides kubelet config from the ClusterSpec
 	Kubelet *KubeletConfigSpec `json:"kubelet,omitempty"`
@@ -177,7 +216,6 @@ func (g *InstanceGroup) IsMaster() bool {
 	case InstanceGroupRoleBastion:
 		return false
 	default:
-		glog.Fatalf("Role not set in group %v", g)
 		return false
 	}
 }

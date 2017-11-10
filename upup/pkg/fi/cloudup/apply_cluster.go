@@ -90,47 +90,39 @@ var (
 	CloudupModels = []string{"proto", "cloudup"}
 )
 
+// ApplyClusterCmd is the kops apply command
 type ApplyClusterCmd struct {
+	// Cluster is the kops cluster configuration
 	Cluster *kops.Cluster
-
+	// InstanceGroups is a list of instance groups in the cluster
 	InstanceGroups []*kops.InstanceGroup
-
 	// NodeUpSource is the location from which we download nodeup
 	NodeUpSource string
-
 	// NodeUpHash is the sha hash
 	NodeUpHash string
-
 	// Models is a list of cloudup models to apply
 	Models []string
-
 	// TargetName specifies how we are operating e.g. direct to GCE, or AWS, or dry-run, or terraform
 	TargetName string
-
 	// Target is the fi.Target we will operate against
 	Target fi.Target
-
 	// OutDir is a local directory in which we place output, can cache files etc
 	OutDir string
-
 	// Assets is a list of sources for files (primarily when not using everything containerized)
 	// Formats:
 	//  raw url: http://... or https://...
 	//  url with hash: <hex>@http://... or <hex>@https://...
 	Assets []string
-
+	// Clientset is the kops api interface
 	Clientset simple.Clientset
-
 	// DryRun is true if this is only a dry run
 	DryRun bool
-
+	// MaxTaskDuration is the max time for a task to take
 	MaxTaskDuration time.Duration
-
-	// The channel we are using
-	channel *kops.Channel
-
 	// Phase can be set to a Phase to run the specific subset of tasks, if we don't want to run everything
 	Phase Phase
+	// The channel we are using
+	channel *kops.Channel
 
 	// LifecycleOverrides is passed in to override the lifecycle for one of more tasks.
 	// The key value is the task name such as InternetGateway and the value is the fi.Lifecycle

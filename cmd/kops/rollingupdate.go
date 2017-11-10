@@ -23,6 +23,7 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 )
 
+// NewCmdRollingUpdate creates and returns a rollout command
 func NewCmdRollingUpdate(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:     "rolling-update",
@@ -30,8 +31,6 @@ func NewCmdRollingUpdate(f *util.Factory, out io.Writer) *cobra.Command {
 		Long:    rollingupdateLong,
 		Example: rollingupdateExample,
 	}
-
-	// create subcommands
 	cmd.AddCommand(NewCmdRollingUpdateCluster(f, out))
 
 	return cmd

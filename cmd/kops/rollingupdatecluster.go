@@ -17,6 +17,7 @@ limitations under the License.
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"os"
@@ -32,7 +33,6 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
-	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/instancegroups"
 	"k8s.io/kops/pkg/pretty"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
@@ -98,129 +98,134 @@ var (
 	rollingupdateShort = i18n.T(`Rolling update a cluster.`)
 )
 
-// RollingUpdateOptions is the command Object for a Rolling Update.
-type RollingUpdateOptions struct {
-	Yes       bool
-	Force     bool
-	CloudOnly bool
-
-	// The following two variables are when kops is validating a cluster
-	// during a rolling update.
-
-	// FailOnDrainError fail rolling-update if drain errors.
-	FailOnDrainError bool
-
-	// FailOnValidate fail the cluster rolling-update when the cluster
-	// does not validate, after a validation period.
-	FailOnValidate bool
-
-	// PostDrainDelay is the duration of a pause after a drain operation
-	PostDrainDelay time.Duration
-
-	// ValidationTimeout is the timeout for validation to succeed after the drain and pause
-	ValidationTimeout time.Duration
-
-	// MasterInterval is the minimum time to wait after stopping a master node.  This does not include drain and validate time.
-	MasterInterval time.Duration
-
-	// NodeInterval is the minimum time to wait after stopping a (non-master) node.  This does not include drain and validate time.
-	NodeInterval time.Duration
-
+// rollingUpdateOptions is the command Object for a Rolling Update.
+type rollingUpdateOptions struct {
 	// BastionInterval is the minimum time to wait after stopping a bastion.  This does not include drain and validate time.
 	BastionInterval time.Duration
-
-	// Interactive rolling-update prompts user to continue after each instances is updated.
-	Interactive bool
-
+	// Batch indicates the size of the batch to rollout i.e. rollout 2 at a time
+	Batch int
+	// CloudOnly indicate we only perform a cloud provider rollout, i.e. not kubernetes operation like draining
+	CloudOnly bool
+	// ClusterName is the name of the kops cluster
 	ClusterName string
-
-	// InstanceGroups is the list of instance groups to rolling-update;
-	// if not specified, all instance groups will be updated
+	// Count provides a optional argument to indicate to only perform a subnet of instances with one or remove instancegroups
+	Count int
+	// Drain indicates we should drain the node between deleting it
+	Drain *bool
+	// DrainTimeout is the timeout for drain the node
+	DrainTimeout time.Duration
+	// FailOnDrainError fail rolling-update if drain errors.
+	FailOnDrainError bool
+	// FailOnValidate fail the cluster rolling-update when the cluster does not validate, after a validation period.
+	FailOnValidate bool
+	// Force indicates we should update the instance regardless whether we detect a change
+	Force bool
+	// InstanceGroups is the list of instance groups to rolling-update; if not specified, all instance groups will be updated
 	InstanceGroups []string
-
 	// InstanceGroupRoles is the list of roles we should rolling-update
 	// if not specified, all instance groups will be updated
 	InstanceGroupRoles []string
+	// Interactive rolling-update prompts user to continue after each instances is updated.
+	Interactive bool
+	// MasterInterval is the minimum time to wait after stopping a master node.  This does not include drain and validate time.
+	MasterInterval time.Duration
+	// NodeBatch is the number of node instancegroups to rollout concurrently
+	NodeBatch int
+	// NodeInterval is the minimum time to wait after stopping a (non-master) node.  This does not include drain and validate time.
+	NodeInterval time.Duration
+	// PostDrainDelay is the duration of a pause after a drain operation
+	PostDrainDelay time.Duration
+	// Strategy is the name of the rollout strategy to use
+	Strategy string
+	// ValidationTimeout is the timeout for validation to succeed after the drain and pause
+	ValidationTimeout time.Duration
+	// Yes is a confirmation option for rollout
+	Yes bool
 }
 
-func (o *RollingUpdateOptions) InitDefaults() {
-	o.Yes = false
-	o.Force = false
+// InitDefaults are some sane defaults for the rollouts
+func (o *rollingUpdateOptions) initDefaults() {
+	o.BastionInterval = 5 * time.Minute
+	o.Batch = 0
 	o.CloudOnly = false
+	o.Count = 0
+	o.Drain = nil
+	o.DrainTimeout = 5 * time.Minute
 	o.FailOnDrainError = false
 	o.FailOnValidate = true
-
+	o.Force = false
 	o.MasterInterval = 5 * time.Minute
+	o.NodeBatch = 1
 	o.NodeInterval = 4 * time.Minute
-	o.BastionInterval = 5 * time.Minute
-	o.Interactive = false
-
-	o.PostDrainDelay = 90 * time.Second
+	o.PostDrainDelay = 0
 	o.ValidationTimeout = 5 * time.Minute
-
+	o.Yes = false
 }
 
+// NewCmdRollingUpdateCluster creates and returns the rollout command
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
+	var options rollingUpdateOptions
+	var drainOption bool
 
-	var options RollingUpdateOptions
-	options.InitDefaults()
+	options.initDefaults()
 
 	cmd := &cobra.Command{
 		Use:     "cluster",
-		Short:   rollingupdateShort,
-		Long:    rollingupdateLong,
 		Example: rollingupdateExample,
+		Long:    rollingupdateLong,
+		Short:   rollingupdateShort,
 	}
 
-	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Perform rolling update immediately, without --yes rolling-update executes a dry-run")
-	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")
 	cmd.Flags().BoolVar(&options.CloudOnly, "cloudonly", options.CloudOnly, "Perform rolling update without confirming progress with k8s")
-
+	cmd.Flags().BoolVar(&drainOption, "drain", drainOption, "Indicates we should drain the node perform terminating")
+	cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
+	cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
+	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force rolling update, even if no changes")
+	cmd.Flags().BoolVarP(&options.Interactive, "interactive", "i", options.Interactive, "Prompt to continue after each instance is updated")
+	cmd.Flags().BoolVarP(&options.Yes, "yes", "y", options.Yes, "Perform rolling update immediately, without --yes rolling-update executes a dry-run")
+	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
 	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
 	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
-	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
-	cmd.Flags().BoolVarP(&options.Interactive, "interactive", "i", options.Interactive, "Prompt to continue after each instance is updated")
+	cmd.Flags().DurationVar(&options.PostDrainDelay, "post-drain-delay", options.PostDrainDelay, "Time to wait post draining a node to allow pods to settle")
+	cmd.Flags().DurationVar(&options.ValidationTimeout, "valiation-timeout", options.ValidationTimeout, "Maxiumum time to wait for cluster validation")
+	cmd.Flags().IntVar(&options.Batch, "batch", options.Batch, "Perform the rollout in batches, i.e. rollout to x at a time")
+	cmd.Flags().IntVar(&options.Count, "count", options.Count, "Perform the rollout on only x instancegroup members, zero means all member")
+	cmd.Flags().IntVar(&options.NodeBatch, "node-batch", options.NodeBatch, "The number of node instancegroup to run concurrently")
 	cmd.Flags().StringSliceVar(&options.InstanceGroups, "instance-group", options.InstanceGroups, "List of instance groups to update (defaults to all if not specified)")
 	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "If specified, only instance groups of the specified role will be updated")
-
-	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-		cmd.Flags().BoolVar(&options.FailOnDrainError, "fail-on-drain-error", true, "The rolling-update will fail if draining a node fails.")
-		cmd.Flags().BoolVar(&options.FailOnValidate, "fail-on-validate-error", true, "The rolling-update will fail if the cluster fails to validate.")
-	}
+	cmd.Flags().StringVar(&options.Strategy, "strategy", options.Strategy, "The default rollout strategy to use when rolling out the cluster")
 
 	cmd.Run = func(cmd *cobra.Command, args []string) {
-		err := rootCommand.ProcessArgs(args)
-		if err != nil {
+		if err := rootCommand.ProcessArgs(args); err != nil {
 			exitWithError(err)
 			return
 		}
-
 		clusterName := rootCommand.ClusterName()
 		if clusterName == "" {
 			exitWithError(fmt.Errorf("--name is required"))
 			return
 		}
-
 		options.ClusterName = clusterName
+		options.Drain = &drainOption
 
-		err = RunRollingUpdateCluster(f, os.Stdout, &options)
-		if err != nil {
+		if err := runRollingUpdateCluster(f, os.Stdout, &options); err != nil {
 			exitWithError(err)
 			return
 		}
-
 	}
 
 	return cmd
 }
 
-func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpdateOptions) error {
-
+// runRollingUpdateCluster is responsible for performing an rolling update on the kops cluster
+func runRollingUpdateCluster(f *util.Factory, out io.Writer, options *rollingUpdateOptions) error {
+	// @step: create a clientset for the kops cluster
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
 
+	// retrieve the kops cluster configuration
 	cluster, err := GetCluster(f, options.ClusterName)
 	if err != nil {
 		return err
@@ -236,6 +241,9 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 
 	var nodes []v1.Node
 	var k8sClient kubernetes.Interface
+
+	// @step: if we are not doing a cloudonly rollout, lets grab a list of nodes - it's debatable as to
+	// whether this should be shifted into the rollout code itself.
 	if !options.CloudOnly {
 		k8sClient, err = kubernetes.NewForConfig(config)
 		if err != nil {
@@ -245,7 +253,7 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		nodeList, err := k8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Unable to reach the kubernetes API.\n")
-			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a rolling-update without confirming progress with the k8s API\n\n")
+			fmt.Fprintf(os.Stderr, "Use --cloudonly to do a rolling-update without confirming progress with the kubernetes API\n\n")
 			return fmt.Errorf("error listing nodes in cluster: %v", err)
 		}
 
@@ -318,6 +326,17 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return err
 	}
 
+	// @NOTE: we need to add a warning for those choosing to validate but have a low node interval
+	// as its unlikely kubernetes will detect the errors
+	lowInterval := time.Second * 60
+	logIntervalWaring := "Note: the %s interval on %s is low, kubernetes might not have time to detect node errors causing issues with validation"
+	if options.MasterInterval < lowInterval {
+		glog.Warningf(fmt.Sprintf(logIntervalWaring, "master", options.MasterInterval.String()))
+	}
+	if options.NodeInterval < lowInterval {
+		glog.Warningf(fmt.Sprintf(logIntervalWaring, "node", options.NodeInterval.String()))
+	}
+
 	{
 		t := &tables.Table{}
 		t.AddColumn("NAME", func(r *cloudinstances.CloudInstanceGroup) string {
@@ -361,8 +380,8 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		if !options.CloudOnly {
 			columns = append(columns, "NODES")
 		}
-		err := t.Render(l, out, columns...)
-		if err != nil {
+
+		if err := t.Render(l, out, columns...); err != nil {
 			return err
 		}
 	}
@@ -384,24 +403,45 @@ func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpd
 		return nil
 	}
 
-	if featureflag.DrainAndValidateRollingUpdate.Enabled() {
-		glog.V(2).Infof("Rolling update with drain and validate enabled.")
-	}
 	d := &instancegroups.RollingUpdateCluster{
-		MasterInterval:    options.MasterInterval,
-		NodeInterval:      options.NodeInterval,
-		BastionInterval:   options.BastionInterval,
+		BastionInterval:       options.BastionInterval,
+		Batch:                 options.Batch,
+		Client:                k8sClient,
+		ClientConfig:          kutil.NewClientConfig(config, "kube-system"),
+		Clientset:             clientset,
+		Cloud:                 cloud,
+		CloudOnly:             options.CloudOnly,
+		Cluster:               cluster,
+		ClusterName:           options.ClusterName,
+		Count:                 options.Count,
+		Drain:                 options.Drain,
+		DrainTimeout:          options.DrainTimeout,
+		FailOnDrainError:      options.FailOnDrainError,
+		FailOnValidate:        options.FailOnValidate,
+		FailOnValidateTimeout: options.ValidationTimeout,
+		Force:          options.Force,
+		InstanceGroups: options.InstanceGroups,
 		Interactive:       options.Interactive,
-		Force:             options.Force,
-		Cloud:             cloud,
-		K8sClient:         k8sClient,
-		ClientConfig:      kutil.NewClientConfig(config, "kube-system"),
-		FailOnDrainError:  options.FailOnDrainError,
-		FailOnValidate:    options.FailOnValidate,
-		CloudOnly:         options.CloudOnly,
-		ClusterName:       options.ClusterName,
-		PostDrainDelay:    options.PostDrainDelay,
-		ValidationTimeout: options.ValidationTimeout,
+		MasterInterval: options.MasterInterval,
+		NodeBatch:      options.NodeBatch,
+		NodeInterval:   options.NodeInterval,
+		PostDrainDelay: options.PostDrainDelay,
+		Strategy:       api.RolloutStrategy(options.Strategy),
 	}
-	return d.RollingUpdate(groups, cluster, list)
+
+	ctx, _ := context.WithCancel(context.Background())
+	resultCh := d.RollingUpdate(ctx, &instancegroups.RollingUpdateOptions{
+		InstanceGroups: groups,
+		List:           list,
+	})
+	for {
+		select {
+		case err := <-resultCh:
+			if err != nil {
+				return err
+			}
+			glog.Infof("Completed the kops cluster rollout")
+			return nil
+		}
+	}
 }
