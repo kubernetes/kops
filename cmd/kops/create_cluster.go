@@ -1009,6 +1009,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		if err != nil {
 			return err
 		}
+		fullGroup.AddInstanceGroupNodeLabel()
 		fullInstanceGroups = append(fullInstanceGroups, fullGroup)
 	}
 

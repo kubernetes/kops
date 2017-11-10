@@ -149,6 +149,9 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 	ig.Spec.Subnets = options.Subnets
 
 	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
+
+	ig.AddInstanceGroupNodeLabel()
+
 	if err != nil {
 		return err
 	}
