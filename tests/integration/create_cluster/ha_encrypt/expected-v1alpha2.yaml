@@ -80,6 +80,8 @@ spec:
   machineType: m3.medium
   maxSize: 1
   minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1a
   role: Master
   subnets:
   - us-test-1a
@@ -98,6 +100,8 @@ spec:
   machineType: m3.medium
   maxSize: 1
   minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1b
   role: Master
   subnets:
   - us-test-1b
@@ -116,6 +120,8 @@ spec:
   machineType: m3.medium
   maxSize: 1
   minSize: 1
+  nodeLabels:
+    kops.k8s.io/instancegroup: master-us-test-1c
   role: Master
   subnets:
   - us-test-1c
@@ -134,6 +140,8 @@ spec:
   machineType: t2.medium
   maxSize: 2
   minSize: 2
+  nodeLabels:
+    kops.k8s.io/instancegroup: nodes
   role: Node
   subnets:
   - us-test-1a
