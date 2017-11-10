@@ -28,7 +28,11 @@ and NAT gateways are single AZ, multiple route tables are needed to use each NAT
 
 ### Supported CNI Networking
 
-Several different providers are currently built into kops:
+[Container Network Interface](https://github.com/containernetworking/cni)  provides a specification
+and libraries for writing plugins to configure network interfaces in Linux containers.  Kubernetes
+has built in support for CNI networking components.
+
+Several different CNI providers are currently built into kops:
 
 * [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/)
 * [Canal (Flannel + Calico)](https://github.com/projectcalico/canal)
@@ -46,18 +50,7 @@ to install `kopeio-vxlan` execute the following:
 $ kops create cluster --networking kopeio-vxlan
 ```
 
-### CNI Networking
-
-[Container Network Interface](https://github.com/containernetworking/cni)  provides a specification
-and libraries for writing plugins to configure network interfaces in Linux containers.  Kubernetes
-has built in support for CNI networking components.  Various solutions exist that
-support Kubernetes CNI networking, listed in alphabetical order:
-
-- [Romana](https://github.com/romana/romana/tree/master/containerize#using-kops)
-
-This is not an all comprehensive list. At the time of writing this documentation, weave has
-been tested and used in the example below.  This project has no bias over the CNI provider
-that you run, we care that we provide the correct setup to run CNI providers.
+This project has no bias over the CNI provider that you run, we care that we provide the correct setup to run CNI providers.
 
 Both `kubenet` and `classic` networking options are completely baked into kops, while since
 CNI networking providers are not part of the Kubernetes project, we do not maintain
@@ -153,7 +146,7 @@ This full node-to-node mesh per L2 network has its scaling challenges for larger
 BGP route reflectors can be used as a replacement to a full mesh, and is useful for scaling up a cluster.
 The setup of BGP route reflectors is currently out of the scope of kops.
 
-Read more here: [BGP route reflectors](http://docs.projectcalico.org/v2.2/usage/routereflector/calico-routereflector)
+Read more here: [BGP route reflectors](http://docs.projectcalico.org/latest/usage/routereflector/calico-routereflector)
 
 
 To enable this mode in a cluster, with Calico as the CNI and Network Policy provider, you must edit the cluster after the previous `kops create ...` command.
@@ -184,7 +177,7 @@ Only the masters have the IAM policy (`ec2:*`) to allow k8s-ec2-srcdst to execut
 
 #### More information about Calico
 
-For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/).
+For Calico specific documentation please visit the [Calico Docs](http://docs.projectcalico.org/latest/getting-started/kubernetes/).
 
 #### Getting help with Calico
 
@@ -199,7 +192,7 @@ Calico currently uses etcd as a backend for storing information about workloads 
 
 ### Canal Example for CNI and Network Policy
 
-Canal is a project that combines [Flannel](https://github.com/coreos/flannel) and [Calico](http://docs.projectcalico.org/v2.0/getting-started/kubernetes/installation/hosted/) for CNI Networking.  It uses Flannel for networking pod traffic between hosts via VXLAN and Calico for network policy enforcement and pod to pod traffic.
+Canal is a project that combines [Flannel](https://github.com/coreos/flannel) and [Calico](http://docs.projectcalico.org/latest/getting-started/kubernetes/installation/hosted/) for CNI Networking.  It uses Flannel for networking pod traffic between hosts via VXLAN and Calico for network policy enforcement and pod to pod traffic.
 
 #### Installing Canal on a new Cluster
 
