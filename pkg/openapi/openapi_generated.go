@@ -21374,6 +21374,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "",
 							},
 						},
+						"additionalSans": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AdditionalSANs adds additional Subject Alternate Names to apiserver cert that kops generates",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
 						"clusterDNSDomain": {
 							SchemaProps: spec.SchemaProps{
 								Description: "ClusterDNSDomain is the suffix we use for internal DNS names (normally cluster.local)",
@@ -24586,6 +24600,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "DNSZone is the DNS zone we should use when configuring DNS This is because some clouds let us define a managed zone foo.bar, and then have kubernetes.dev.foo.bar, without needing to define dev.foo.bar as a hosted zone. DNSZone will probably be a suffix of the MasterPublicName and MasterInternalName Note that DNSZone can either by the host name of the zone (containing dots), or can be an identifier for the zone.",
 								Type:        []string{"string"},
 								Format:      "",
+							},
+						},
+						"additionalSans": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AdditionalSANs adds additional Subject Alternate Names to apiserver cert that kops generates",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 						"clusterDNSDomain": {
