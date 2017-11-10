@@ -273,6 +273,8 @@ type KubeAPIServerConfig struct {
 	RequestheaderClientCAFile string `json:"requestheaderClientCAFile,omitempty" flag:"requestheader-client-ca-file"`
 	// List of client certificate common names to allow to provide usernames in headers specified by --requestheader-username-headers. If empty, any client certificate validated by the authorities in --requestheader-client-ca-file is allowed.
 	RequestheaderAllowedNames []string `json:"requestheaderAllowedNames,omitempty" flag:"requestheader-allowed-names"`
+	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
+	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
 
 // KubeControllerManagerConfig is the configuration for the controller
@@ -313,6 +315,8 @@ type KubeControllerManagerConfig struct {
 	// During each period, the controller manager queries the resource utilization
 	// against the metrics specified in each HorizontalPodAutoscaler definition
 	HorizontalPodAutoscalerSyncPeriod *metav1.Duration `json:"horizontalPodAutoscalerSyncPeriod,omitempty" flag:"horizontal-pod-autoscaler-sync-period"`
+	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
+	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
 
 type CloudControllerManagerConfig struct {
@@ -351,6 +355,8 @@ type KubeSchedulerConfig struct {
 	LeaderElection *LeaderElectionConfiguration `json:"leaderElection,omitempty"`
 	// UsePolicyConfigMap enable setting the scheduler policy from a configmap
 	UsePolicyConfigMap *bool `json:"usePolicyConfigMap,omitempty"`
+	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
+	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
 
 // LeaderElectionConfiguration defines the configuration of leader election
