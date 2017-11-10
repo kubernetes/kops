@@ -33,7 +33,7 @@ in alpha, and other platforms planned.
 To replicate the above demo, check out our [tutorial](/docs/aws.md) for
 launching a Kubernetes cluster hosted on AWS.
 
-To install a Kuberentes cluster on GCE please follow this [guide](/docs/tutorial/gce.md).
+To install a Kubernetes cluster on GCE please follow this [guide](/docs/tutorial/gce.md).
 
 
 ## Features
@@ -47,9 +47,9 @@ To install a Kuberentes cluster on GCE please follow this [guide](/docs/tutorial
 * YAML Manifest Based API [Configuration](/docs/manifests_and_customizing_via_api.md)
 * [Templating](/docs/cluster_template.md) and dry-run modes for creating
  Manifests
-* Choose from eight different CNI [Networking](/docs/networking) providers out-of-the-box
+* Choose from eight different CNI [Networking](/docs/networking.md) providers out-of-the-box
 * Supports upgrading from [kube-up](/docs/upgrade_from_kubeup.md)
-* Capability to add containers, as hooks, and files to nodes via cluster manifest
+* Capability to add containers, as hooks, and files to nodes via a [cluster manifest](/docs/cluster_spec.md)
 
 
 ## Documentation
@@ -59,16 +59,53 @@ Documentation is in the `/docs` directory, [and the index is here.](docs/README.
 
 ## Kubernetes Release Compatibility
 
-`kops` is intended to be backward compatible.  It is always recommended to use the 
-latest version of kop with whatever version of Kuberentes you are using. This 
-project does not follow the Kubernetes release schedule but typically releases 
-after Kubernetes does.  `kops` supports the matching Kubernetes minor release.  
-For instance kops, 1.8.x does not support Kubernetes 1.9.x, but kops 1.9.x 
-supports Kubernetes 1.9.x.  Moreover, kops 1.8.x attempts to be backward compatible 
-and support Kubernetes 1.4.x.
+
+### Kubernetes Version Support
+
+kops is intended to be backward compatible.  It is always recommended to use the
+latest version of kops with whatever version of Kubernetes you are using.  Always
+use the latest version of kops.
+
+One exception, in regards to compatibility, kops supports the equivalent
+Kubernetes minor release number.  A minor version is the second digit in the
+release number.  kops version 1.8.0 has a minor version of 8. The numbering
+follows the semantic versioning specification, MAJOR.MINOR.PATCH.
+
+For example kops, 1.8.0 does not support Kubernetes 1.9.2, but kops 1.9.0
+supports Kubernetes 1.9.2 and previous Kubernetes versions. Only when kops minor
+version matches, the Kubernetes minor version does kops officially support the
+Kubernetes release.  kops does not stop a user from installing mismatching
+versions of K8s, but Kubernetes releases always require kops to install specific
+versions of components like docker, that tested against the particular
+Kuberenetes version.
+
+#### Compatibility Matrix
+
+| kops version | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x |
+|--------------|-----------|-----------|-----------|-----------|
+| 1.8.x        | Y         | Y         | Y         | Y         |
+| 1.7.x        | Y         | Y         | Y         | N         |
+| 1.6.x        | Y         | Y         | N         | N         |
+
+Use the latest version of kops for all releases of Kubernetes, with the caveat
+that higher versions of Kubernetes are not _officially_ supported by kops.
+
+### kops Release Schedule
+
+This project does not follow the Kubernetes release schedule.  `kops` aims to
+provide a reliable installation experience for kubernetes, and typically
+releases about a month after the corresponding Kubernetes release. This time
+allows for the Kubernetes project to resolve any issues introduced by the new
+version and ensures that we can support the latest features. kops will release
+alpha and beta pre-releases for people that are eager to try the latest
+Kubernetes release.  Please only use pre-GA kops releases in environments that
+can tolerate the quirks of new releases, and please do report any issues
+encountered.
 
 
 ## Installing
+
+### Prerequisite
 
 `kubectl` is required, see [here](http://kubernetes.io/docs/user-guide/prereqs/).
 
