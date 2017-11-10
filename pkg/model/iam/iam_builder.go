@@ -348,6 +348,17 @@ func (b *PolicyBuilder) AddS3Permissions(p *Policy) (*Policy, error) {
 							strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/secrets/dockerconfig"}, ""),
 						),
 					})
+
+					if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.Kuberouter != nil {
+						p.Statement = append(p.Statement, &Statement{
+							Sid:    "kopsK8sS3NodeBucketGetKuberouter",
+							Effect: StatementEffectAllow,
+							Action: stringorslice.Slice([]string{"s3:Get*"}),
+							Resource: stringorslice.Of(
+								strings.Join([]string{b.IAMPrefix(), ":s3:::", iamS3Path, "/pki/private/kube-router/*"}, ""),
+							),
+						})
+					}
 				}
 			}
 		} else if _, ok := vfsPath.(*vfs.MemFSPath); ok {
