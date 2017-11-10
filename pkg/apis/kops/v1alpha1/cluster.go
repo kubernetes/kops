@@ -239,8 +239,11 @@ type RBACAuthorizationSpec struct {
 type AlwaysAllowAuthorizationSpec struct {
 }
 
+// AccessSpec provides configuration details related to kubeapi dns and ELB access
 type AccessSpec struct {
-	DNS          *DNSAccessSpec          `json:"dns,omitempty"`
+	// DNS wil be used to provide config on kube-apiserver elb dns
+	DNS *DNSAccessSpec `json:"dns,omitempty"`
+	// LoadBalancer is the configuration for the kube-apiserver ELB
 	LoadBalancer *LoadBalancerAccessSpec `json:"loadBalancer,omitempty"`
 }
 
@@ -280,6 +283,8 @@ type KubeDNSConfig struct {
 
 // ExternalDNSConfig are options of the dns-controller
 type ExternalDNSConfig struct {
+	// Disable indicates we do not wish to run the dns-controller addon
+	Disable bool `json:"disable,omitempty"`
 	// WatchIngress indicates you want the dns-controller to watch and create dns entries for ingress resources
 	WatchIngress *bool `json:"watchIngress,omitempty"`
 	// WatchNamespace is namespace to watch, detaults to all (use to control whom can creates dns entries)
