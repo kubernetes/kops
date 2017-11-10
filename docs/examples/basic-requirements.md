@@ -14,7 +14,7 @@ As root (either ssh directly to root, local root console, or by using "sudo su -
 ```bash
 cd ~
 curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-curl -LO https://github.com/kubernetes/kops/releases/download/1.7.0/kops-linux-amd64
+curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
 chmod 755 kubectl kops-linux-amd64
 mv kops-linux-amd64 kops
 mv kubectl kops  /usr/local/bin
@@ -25,7 +25,7 @@ If you are not root and/or do you want to keep the kops/kubectl utilities in you
 ```bash
 cd ~
 curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl
-curl -LO https://github.com/kubernetes/kops/releases/download/1.7.0/kops-linux-amd64
+curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
 chmod 755 kubectl kops-linux-amd64
 mv kops-linux-amd64 kops
 mkdir ~/bin
