@@ -153,6 +153,11 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		return err
 	}
 
+	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	if err != nil {
+		return err
+	}
+
 	secretStore, err := clientset.SecretStore(cluster)
 	if err != nil {
 		return err
@@ -166,7 +171,7 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		if err != nil {
 			return fmt.Errorf("error reading SSH key file %q: %v", c.SSHPublicKey, err)
 		}
-		err = keyStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, authorized)
+		err = sshCredentialStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, authorized)
 		if err != nil {
 			return fmt.Errorf("error adding SSH public key: %v", err)
 		}
