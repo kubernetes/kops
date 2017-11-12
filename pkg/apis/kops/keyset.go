@@ -24,7 +24,6 @@ import (
 type KeysetType string
 
 const (
-	// TODO: Move CA to use these values
 	SecretTypeKeypair KeysetType = "Keypair"
 	SecretTypeSecret  KeysetType = "Secret"
 )
