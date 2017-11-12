@@ -363,8 +363,8 @@ func (c *VFSCAStore) FindCertificatePool(id string) (*CertificatePool, error) {
 }
 
 // ListKeysets implements CAStore::ListKeysets
-func (c *VFSCAStore) ListKeysets() ([]*KeystoreItem, error) {
-	var items []*KeystoreItem
+func (c *VFSCAStore) ListKeysets() ([]*kops.Keyset, error) {
+	keysets := make(map[string]*kops.Keyset)
 
 	{
 		baseDir := c.basedir.Join("issued")
@@ -385,15 +385,25 @@ func (c *VFSCAStore) ListKeysets() ([]*KeystoreItem, error) {
 				continue
 			}
 
-			item := &KeystoreItem{
-				Name: tokens[0],
-				Id:   strings.TrimSuffix(tokens[1], ".crt"),
-				Type: SecretTypeKeypair,
+			name := tokens[0]
+			keyset := keysets[name]
+			if keyset == nil {
+				keyset = &kops.Keyset{}
+				keyset.Name = tokens[0]
+				keyset.Spec.Type = kops.SecretTypeKeypair
+				keysets[name] = keyset
 			}
-			items = append(items, item)
+
+			keyset.Spec.Keys = append(keyset.Spec.Keys, kops.KeysetItem{
+				Id: strings.TrimSuffix(tokens[1], ".crt"),
+			})
 		}
 	}
 
+	var items []*kops.Keyset
+	for _, v := range keysets {
+		items = append(items, v)
+	}
 	return items, nil
 }
 
@@ -781,13 +791,13 @@ func (c *VFSCAStore) loadData(p vfs.Path) (*pki.PrivateKey, error) {
 	return k, err
 }
 
-// DeleteKeyset implements CAStore::DeleteKeyset
-func (c *VFSCAStore) DeleteKeyset(item *KeystoreItem) error {
-	switch item.Type {
-	case SecretTypeKeypair:
-		version, ok := big.NewInt(0).SetString(item.Id, 10)
+// DeleteKeysetItem implements CAStore::DeleteKeysetItem
+func (c *VFSCAStore) DeleteKeysetItem(item *kops.Keyset, id string) error {
+	switch item.Spec.Type {
+	case kops.SecretTypeKeypair:
+		version, ok := big.NewInt(0).SetString(id, 10)
 		if !ok {
-			return fmt.Errorf("keypair had non-integer version: %q", item.Id)
+			return fmt.Errorf("keypair had non-integer version: %q", id)
 		}
 		p := c.buildCertificatePath(item.Name, version)
 		if err := p.Remove(); err != nil {
@@ -801,7 +811,7 @@ func (c *VFSCAStore) DeleteKeyset(item *KeystoreItem) error {
 
 	default:
 		// Primarily because we need to make sure users can recreate them!
-		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Type)
+		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Spec.Type)
 	}
 }
 
