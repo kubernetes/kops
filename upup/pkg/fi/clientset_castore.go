@@ -135,6 +135,42 @@ type keysetItem struct {
 	privateKey  *pki.PrivateKey
 }
 
+func parseKeyset(o *kops.Keyset) (*keyset, error) {
+	name := o.Name
+
+	keyset := &keyset{
+		items: make(map[string]*keysetItem),
+	}
+
+	for _, key := range o.Spec.Keys {
+		ki := &keysetItem{
+			id: key.Id,
+		}
+		if len(key.PublicMaterial) != 0 {
+			cert, err := pki.LoadPEMCertificate(key.PublicMaterial)
+			if err != nil {
+				glog.Warningf("key public material was %s", key.PublicMaterial)
+				return nil, fmt.Errorf("error loading certificate %s/%s: %v", name, key.Id, err)
+			}
+			ki.certificate = cert
+		}
+
+		if len(key.PrivateMaterial) != 0 {
+			privateKey, err := pki.ParsePEMPrivateKey(key.PrivateMaterial)
+			if err != nil {
+				return nil, fmt.Errorf("error loading private key %s/%s: %v", name, key.Id, err)
+			}
+			ki.privateKey = privateKey
+		}
+
+		keyset.items[key.Id] = ki
+	}
+
+	keyset.primary = keyset.findPrimary()
+
+	return keyset, nil
+}
+
 // loadKeyset gets the named keyset
 func (c *ClientsetCAStore) loadKeyset(name string) (*keyset, error) {
 	o, err := c.clientset.Keysets(c.namespace).Get(name, v1.GetOptions{})
@@ -145,33 +181,26 @@ func (c *ClientsetCAStore) loadKeyset(name string) (*keyset, error) {
 		return nil, fmt.Errorf("error reading keyset %q: %v", name, err)
 	}
 
-	keyset := &keyset{
-		items: make(map[string]*keysetItem),
-	}
+	return parseKeyset(o)
+}
 
-	for _, key := range o.Spec.Keys {
-		cert, err := pki.LoadPEMCertificate(key.PublicMaterial)
-		if err != nil {
-			glog.Warningf("key public material was %s", key.PublicMaterial)
-			return nil, fmt.Errorf("error loading certificate %s/%s: %v", name, key.Id, err)
+// findPrimary returns the primary keysetItem in the keyset
+func (k *keyset) findPrimary() *keysetItem {
+	var primary *keysetItem
+	var primaryVersion *big.Int
+	for _, item := range k.items {
+		version, ok := big.NewInt(0).SetString(item.id, 10)
+		if !ok {
+			glog.Warningf("Ignoring key item with non-integer version: %q", item.id)
+			continue
 		}
-		privateKey, err := pki.ParsePEMPrivateKey(key.PrivateMaterial)
-		if err != nil {
-			return nil, fmt.Errorf("error loading private key %s/%s: %v", name, key.Id, err)
-		}
-		keyset.items[key.Id] = &keysetItem{
-			id:          key.Id,
-			certificate: cert,
-			privateKey:  privateKey,
+
+		if primaryVersion == nil || version.Cmp(primaryVersion) > 0 {
+			primary = item
+			primaryVersion = version
 		}
 	}
-
-	primary := FindPrimary(o)
-	if primary != nil {
-		keyset.primary = keyset.items[primary.Id]
-	}
-
-	return keyset, nil
+	return primary
 }
 
 // FindPrimary returns the primary KeysetItem in the Keyset
