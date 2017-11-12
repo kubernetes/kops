@@ -63,16 +63,18 @@ type HasVFSPath interface {
 type CAStore interface {
 	Keystore
 
-	// Cert returns the primary specified certificate
-	// For createIfMissing=false, using FindCert is preferred
-	Cert(name string, createIfMissing bool) (*pki.Certificate, error)
 	// CertificatePool returns all active certificates with the specified id
+	// Deprecated: prefer FindCertificatePool
 	CertificatePool(name string, createIfMissing bool) (*CertificatePool, error)
-	PrivateKey(name string, createIfMissing bool) (*pki.PrivateKey, error)
+
+	// FindCertificatePool returns the named CertificatePool, or (nil,nil) if not found
+	FindCertificatePool(name string) (*CertificatePool, error)
+
+	// FindPrivateKey returns the named private key, or (nil,nil) if not found
+	FindPrivateKey(name string) (*pki.PrivateKey, error)
 
 	// FindCert returns the specified certificate, if it exists, or nil if not found
 	FindCert(name string) (*pki.Certificate, error)
-	FindPrivateKey(name string) (*pki.PrivateKey, error)
 
 	// ListKeysets will return all the KeySets
 	// The key material is not guaranteed to be populated - metadata like the name will be.

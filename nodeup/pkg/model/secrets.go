@@ -42,9 +42,12 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	// retrieve the platform ca
 	{
-		ca, err := b.KeyStore.CertificatePool(fi.CertificateId_CA, false)
+		ca, err := b.KeyStore.FindCertificatePool(fi.CertificateId_CA)
 		if err != nil {
 			return err
+		}
+		if ca == nil {
+			return fmt.Errorf("certificate %q not found", fi.CertificateId_CA)
 		}
 
 		serialized, err := ca.AsString()
@@ -81,9 +84,12 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		cert, err := b.KeyStore.Cert("master", false)
+		cert, err := b.KeyStore.FindCert("master")
 		if err != nil {
 			return err
+		}
+		if cert == nil {
+			return fmt.Errorf("certificate %q not found", "master")
 		}
 
 		serialized, err := cert.AsString()
@@ -100,11 +106,13 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	{
-		k, err := b.KeyStore.PrivateKey("master", false)
+		k, err := b.KeyStore.FindPrivateKey("master")
 		if err != nil {
 			return err
 		}
-
+		if k == nil {
+			return fmt.Errorf("private key %q not found", "master")
+		}
 		serialized, err := k.AsString()
 		if err != nil {
 			return err
@@ -121,9 +129,12 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	if b.IsKubernetesGTE("1.7") {
 		// TODO: Remove - we use the apiserver-aggregator keypair instead (which is signed by a different CA)
-		cert, err := b.KeyStore.Cert("apiserver-proxy-client", false)
+		cert, err := b.KeyStore.FindCert("apiserver-proxy-client")
 		if err != nil {
 			return fmt.Errorf("apiserver proxy client cert lookup failed: %v", err.Error())
+		}
+		if cert == nil {
+			return fmt.Errorf("certificate %q not found", "apiserver-proxy-client")
 		}
 
 		serialized, err := cert.AsString()
@@ -138,9 +149,12 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(t)
 
-		key, err := b.KeyStore.PrivateKey("apiserver-proxy-client", false)
+		key, err := b.KeyStore.FindPrivateKey("apiserver-proxy-client")
 		if err != nil {
 			return fmt.Errorf("apiserver proxy client private key lookup failed: %v", err.Error())
+		}
+		if key == nil {
+			return fmt.Errorf("private key %q not found", "apiserver-proxy-client")
 		}
 
 		serialized, err = key.AsString()
@@ -249,6 +263,9 @@ func (b *SecretBuilder) writePrivateKey(c *fi.ModelBuilderContext, id string) er
 	key, err := b.KeyStore.FindPrivateKey(id)
 	if err != nil {
 		return fmt.Errorf("private key lookup failed for %q: %v", id, err)
+	}
+	if key == nil {
+		return fmt.Errorf("private key %q not found", id)
 	}
 
 	serialized, err := key.AsString()
