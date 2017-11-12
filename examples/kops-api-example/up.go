@@ -28,7 +28,8 @@ import (
 )
 
 func up() error {
-	clientset := vfsclientset.NewVFSClientset(registryBase)
+	allowList := true
+	clientset := vfsclientset.NewVFSClientset(registryBase, allowList)
 
 	cluster := &api.Cluster{}
 	cluster.ObjectMeta.Name = clusterName
