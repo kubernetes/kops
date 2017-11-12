@@ -48,6 +48,7 @@ go_library(
         "//pkg/cloudinstances:go_default_library",
         "//pkg/diff:go_default_library",
         "//pkg/pki:go_default_library",
+        "//pkg/sshcredentials:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
         "//util/pkg/hashing:go_default_library",
         "//util/pkg/vfs:go_default_library",

@@ -90,7 +90,12 @@ func (c *DescribeSecretsCommand) Run(args []string) error {
 		return err
 	}
 
-	items, err := listSecrets(keyStore, secretStore, c.Type, args)
+	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	items, err := listSecrets(keyStore, secretStore, sshCredentialStore, c.Type, args)
 	if err != nil {
 		return err
 	}
@@ -119,7 +124,7 @@ func (c *DescribeSecretsCommand) Run(args []string) error {
 				return err
 			}
 
-		case fi.SecretTypeSSHPublicKey:
+		case SecretTypeSSHPublicKey:
 			err = describeSSHPublicKey(i, &b)
 			if err != nil {
 				return err

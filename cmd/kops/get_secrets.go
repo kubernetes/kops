@@ -22,13 +22,19 @@ import (
 	"os"
 	"strings"
 
+	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
+
+// SecretTypeSSHPublicKey is set in a KeysetItem.Type for an SSH public keypair
+// As we move fully to using API objects this should go away.
+const SecretTypeSSHPublicKey = "SSHPublicKey"
 
 var (
 	get_secret_long = templates.LongDesc(i18n.T(`
@@ -71,7 +77,7 @@ func NewCmdGetSecrets(f *util.Factory, out io.Writer, getOptions *GetOptions) *c
 	return cmd
 }
 
-func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, secretType string, names []string) ([]*fi.KeystoreItem, error) {
+func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialStore fi.SSHCredentialStore, secretType string, names []string) ([]*fi.KeystoreItem, error) {
 	var items []*fi.KeystoreItem
 
 	findType := strings.ToLower(secretType)
@@ -85,9 +91,9 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, secretType str
 	}
 
 	{
-		l, err := keyStore.List()
+		l, err := keyStore.ListKeysets()
 		if err != nil {
-			return nil, fmt.Errorf("error listing CA store items %v", err)
+			return nil, fmt.Errorf("error listing Keysets: %v", err)
 		}
 
 		for _, i := range l {
@@ -114,6 +120,33 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, secretType str
 			}
 
 			items = append(items, i)
+		}
+	}
+
+	if findType == "" || findType == strings.ToLower(SecretTypeSSHPublicKey) {
+		l, err := sshCredentialStore.ListSSHCredentials()
+		if err != nil {
+			return nil, fmt.Errorf("error listing SSH credentials %v", err)
+		}
+
+		for i := range l {
+			id, err := sshcredentials.Fingerprint(l[i].Spec.PublicKey)
+			if err != nil {
+				glog.Warningf("unable to compute fingerprint for public key %q", l[i].Name)
+			}
+			item := &fi.KeystoreItem{
+				Name: l[i].Name,
+				Id:   id,
+				Type: SecretTypeSSHPublicKey,
+			}
+			if l[i].Spec.PublicKey != "" {
+				item.Data = []byte(l[i].Spec.PublicKey)
+			}
+			if findType != "" && findType != strings.ToLower(item.Type) {
+				continue
+			}
+
+			items = append(items, item)
 		}
 	}
 
@@ -161,7 +194,12 @@ func RunGetSecrets(options *GetSecretsOptions, args []string) error {
 		return err
 	}
 
-	items, err := listSecrets(keyStore, secretStore, options.Type, args)
+	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	items, err := listSecrets(keyStore, secretStore, sshCredentialStore, options.Type, args)
 	if err != nil {
 		return err
 	}

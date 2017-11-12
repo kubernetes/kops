@@ -117,6 +117,11 @@ func (c *RESTClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
 	return fi.NewClientsetCAStore(cluster, c.KopsClient, namespace), nil
 }
 
+func (c *RESTClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredentialStore, error) {
+	namespace := restNamespaceForClusterName(cluster.Name)
+	return fi.NewClientsetSSHCredentialStore(cluster, c.KopsClient, namespace), nil
+}
+
 func (c *RESTClientset) DeleteCluster(cluster *kops.Cluster) error {
 	configBase, err := registry.ConfigBase(cluster)
 	if err != nil {

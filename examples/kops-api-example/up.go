@@ -101,7 +101,7 @@ func up() error {
 		}
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
+	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func up() error {
 		if err != nil {
 			return fmt.Errorf("error reading SSH key file %q: %v", f, err)
 		}
-		err = keyStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, pubKey)
+		err = sshCredentialStore.AddSSHPublicKey(fi.SecretNameSSHPrimary, pubKey)
 		if err != nil {
 			return fmt.Errorf("error adding SSH public key: %v", err)
 		}

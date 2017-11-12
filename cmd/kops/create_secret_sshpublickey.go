@@ -103,7 +103,7 @@ func RunCreateSecretPublicKey(f *util.Factory, out io.Writer, options *CreateSec
 		return err
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
+	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
 	if err != nil {
 		return err
 	}
@@ -113,7 +113,7 @@ func RunCreateSecretPublicKey(f *util.Factory, out io.Writer, options *CreateSec
 		return fmt.Errorf("error reading SSH public key %v: %v", options.PublicKeyPath, err)
 	}
 
-	err = keyStore.AddSSHPublicKey(options.Name, data)
+	err = sshCredentialStore.AddSSHPublicKey(options.Name, data)
 	if err != nil {
 		return fmt.Errorf("error adding SSH public key: %v", err)
 	}
