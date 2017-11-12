@@ -139,7 +139,7 @@ func RunDeleteSecret(f *util.Factory, out io.Writer, options *DeleteSecretOption
 
 	switch secrets[0].Type {
 	case kops.SecretTypeSecret:
-		err = secretStore.DeleteSecret(secrets[0])
+		err = secretStore.DeleteSecret(secrets[0].Name)
 	case SecretTypeSSHPublicKey:
 		sshCredential := &kops.SSHCredential{}
 		sshCredential.Name = secrets[0].Name
