@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/tokens"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
@@ -193,16 +194,13 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	if b.SecretStore != nil {
-		allTokens, err := b.allTokens()
+		allTokens, err := b.allAuthTokens()
 		if err != nil {
 			return err
 		}
 
 		var lines []string
 		for id, token := range allTokens {
-			if id == "dockerconfig" || id == "encryptionconfig" {
-				continue
-			}
 			lines = append(lines, token+","+id+","+id)
 		}
 		csv := strings.Join(lines, "\n")
@@ -269,19 +267,19 @@ func (b *SecretBuilder) writePrivateKey(c *fi.ModelBuilderContext, id string) er
 	return nil
 }
 
-// allTokens returns a map of all tokens
-func (b *SecretBuilder) allTokens() (map[string]string, error) {
+// allTokens returns a map of all auth tokens that are present
+func (b *SecretBuilder) allAuthTokens() (map[string]string, error) {
+	possibleTokens := tokens.GetKubernetesAuthTokens_Deprecated()
+
 	tokens := make(map[string]string)
-	ids, err := b.SecretStore.ListSecrets()
-	if err != nil {
-		return nil, err
-	}
-	for _, id := range ids {
+	for _, id := range possibleTokens {
 		token, err := b.SecretStore.FindSecret(id)
 		if err != nil {
 			return nil, err
 		}
-		tokens[id] = string(token.Data)
+		if token != nil {
+			tokens[id] = string(token.Data)
+		}
 	}
 	return tokens, nil
 }
