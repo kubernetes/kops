@@ -108,7 +108,10 @@ func (f *Factory) Clientset() (simple.Clientset, error) {
 				return nil, field.Invalid(field.NewPath("State Store"), registryPath, INVALID_STATE_ERROR)
 			}
 
-			f.clientset = vfsclientset.NewVFSClientset(basePath)
+			// For kops CLI / controller, we do allow vfs list (unlike nodeup!)
+			allowVFSList := true
+
+			f.clientset = vfsclientset.NewVFSClientset(basePath, allowVFSList)
 		}
 	}
 
