@@ -279,19 +279,6 @@ func (c *VFSCAStore) loadOneCertificate(p vfs.Path) (*pki.Certificate, error) {
 	return cert, nil
 }
 
-func (c *VFSCAStore) Cert(id string, createIfMissing bool) (*pki.Certificate, error) {
-	cert, err := c.FindCert(id)
-	if err == nil && cert == nil {
-		if !createIfMissing {
-			glog.Warningf("using empty certificate, because running with DryRun")
-			return &pki.Certificate{}, err
-		}
-		return nil, fmt.Errorf("cannot find certificate %q", id)
-	}
-	return cert, err
-
-}
-
 func (c *VFSCAStore) CertificatePool(id string, createIfMissing bool) (*CertificatePool, error) {
 	cert, err := c.FindCertificatePool(id)
 	if err == nil && cert == nil {
@@ -630,19 +617,6 @@ func (c *VFSCAStore) FindPrivateKey(id string) (*pki.PrivateKey, error) {
 		key = keys.keys[keys.primary]
 	}
 	return key, nil
-}
-
-func (c *VFSCAStore) PrivateKey(id string, createIfMissing bool) (*pki.PrivateKey, error) {
-	key, err := c.FindPrivateKey(id)
-	if err == nil && key == nil {
-		if !createIfMissing {
-			glog.Warningf("using empty certificate, because running with DryRun")
-			return &pki.PrivateKey{}, err
-		}
-		return nil, fmt.Errorf("cannot find SSL key %q", id)
-	}
-	return key, err
-
 }
 
 func (c *VFSCAStore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {
