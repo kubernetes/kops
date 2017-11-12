@@ -129,6 +129,7 @@ go_binary(
 
 go_test(
     name = "go_default_test",
+    size = "small",
     srcs = [
         "create_cluster_integration_test.go",
         "create_cluster_test.go",
