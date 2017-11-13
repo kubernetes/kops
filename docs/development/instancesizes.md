@@ -4,7 +4,7 @@ Note these are only _requests_, not limits.
 
 ```
 50m  dns-controller
-150m etcd main
+200m etcd main
 100m etcd events
 150m kube-apiserver
 100m kube-controller-manager
@@ -13,7 +13,10 @@ Note these are only _requests_, not limits.
 
 ====
 
-750m total
-
-(leaving 250m for misc services e.g. CNI controller, log infrastructure etc)
+800m total
 ```
+
+* One a 1 core master, this leaves 200m for misc services e.g. CNI controller, log infrastructure etc.  That will be
+less if we start reserving capacity on the master.
+
+* kube-dns is relatively CPU hungry, and runs on the nodes.
