@@ -51,7 +51,7 @@ spec:
               fieldPath: spec.nodeName
         resources:
           requests:
-            cpu: 250m
+            cpu: 100m
             memory: 250Mi
         securityContext:
           privileged: true

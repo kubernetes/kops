@@ -20,3 +20,7 @@ Note these are only _requests_, not limits.
 less if we start reserving capacity on the master.
 
 * kube-dns is relatively CPU hungry, and runs on the nodes.
+
+* We restrict CNI controllers to 100m.  If a controller needs more, it can support a user-settable option.
+
+* Setting a resource limit is a bad idea: https://github.com/kubernetes/kubernetes/issues/51135
