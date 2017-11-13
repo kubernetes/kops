@@ -228,9 +228,11 @@ This block contains configurations for the `controller-manager`.
 spec:
   kubeControllerManager:
     horizontalPodAutoscalerSyncPeriod: 15s
+    horizontalPodAutoscalerDownscaleDelay: 5m0s
+    horizontalPodAutoscalerUpscaleDelay: 3m0s
 ```
 
-For more details on `horizontalPodAutoscalerSyncPeriod` see the [HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/)
+For more details on `horizontalPodAutoscaler` flags see the [HPA docs](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/).
 
 ####  Feature Gates
 
