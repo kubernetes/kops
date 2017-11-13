@@ -79,9 +79,6 @@ func buildCloudupTags(cluster *api.Cluster) (sets.String, error) {
 		// No tags
 
 	case api.CloudProviderOpenstack:
-		{
-			tags.Insert("_openstack")
-		}
 
 	default:
 		return nil, fmt.Errorf("unknown CloudProvider %q", cluster.Spec.CloudProvider)
