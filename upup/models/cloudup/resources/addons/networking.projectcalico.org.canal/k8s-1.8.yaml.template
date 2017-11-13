@@ -149,10 +149,8 @@ spec:
           securityContext:
             privileged: true
           resources:
-            limits:
-              cpu: 250m
             requests:
-              cpu: 250m
+              cpu: 50m
           livenessProbe:
             httpGet:
               path: /liveness
@@ -221,10 +219,9 @@ spec:
                   key: masquerade
           resources:
             limits:
-              cpu: 100m
               memory: 100Mi
             requests:
-              cpu: 100m
+              cpu: 50m
               memory: 100Mi
           volumeMounts:
           - name: run
