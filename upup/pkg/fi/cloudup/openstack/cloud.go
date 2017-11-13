@@ -44,21 +44,21 @@ func (c *openstackCloud) ProviderID() kops.CloudProviderID {
 }
 
 func (c *openstackCloud) DNS() (dnsprovider.Interface, error) {
-	return nil, fmt.Errorf("has not implemented this method")
+	return nil, fmt.Errorf("openstackCloud::DNS not implemented")
 }
 
 func (c *openstackCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	return nil, fmt.Errorf("has not implemented this method")
+	return nil, fmt.Errorf("openstackCloud::FindVPCInfo not implemented")
 }
 
 func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
-	return fmt.Errorf("has not implemented this method")
+	return fmt.Errorf("openstackCloud::DeleteInstance not implemented")
 }
 
 func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
-	return fmt.Errorf("has not implemented this method")
+	return fmt.Errorf("openstackCloud::DeleteGroup not implemented")
 }
 
 func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
-	return nil, fmt.Errorf("has not implemented this method")
+	return nil, fmt.Errorf("openstackCloud::GetCloudGroups not implemented")
 }
