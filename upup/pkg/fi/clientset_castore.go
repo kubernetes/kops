@@ -30,11 +30,9 @@ import (
 	"golang.org/x/crypto/ssh"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/pkg/pki"
-	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -628,80 +626,25 @@ func (c *ClientsetCAStore) DeleteSSHCredential(item *kops.SSHCredential) error {
 }
 
 func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
-	list, err := c.clientset.Keysets(c.namespace).List(v1.ListOptions{})
+	keysets, err := c.ListKeysets()
 	if err != nil {
-		return fmt.Errorf("error listing keysets: %v", err)
+		return err
 	}
 
-	for i := range list.Items {
-		keyset := &list.Items[i]
-
-		if keyset.Spec.Type == kops.SecretTypeSecret {
-			continue
-		}
-
-		primary := FindPrimary(keyset)
-		if primary == nil {
-			return fmt.Errorf("found keyset with no primary data: %s", keyset.Name)
-		}
-
-		switch keyset.Spec.Type {
-		case kops.SecretTypeKeypair:
-			for i := range keyset.Spec.Keys {
-				item := &keyset.Spec.Keys[i]
-				{
-					p := basedir.Join("issued", keyset.Name, item.Id+".crt")
-					acl, err := acls.GetACL(p, c.cluster)
-					if err != nil {
-						return err
-					}
-
-					err = p.WriteFile(item.PublicMaterial, acl)
-					if err != nil {
-						return fmt.Errorf("error writing %q: %v", p, err)
-					}
-				}
-				{
-					p := basedir.Join("private", keyset.Name, item.Id+".key")
-					acl, err := acls.GetACL(p, c.cluster)
-					if err != nil {
-						return err
-					}
-
-					err = p.WriteFile(item.PrivateMaterial, acl)
-					if err != nil {
-						return fmt.Errorf("error writing %q: %v", p, err)
-					}
-				}
-			}
-
-		default:
-			return fmt.Errorf("Ignoring unknown secret type: %q", keyset.Spec.Type)
+	for _, keyset := range keysets {
+		if err := mirrorKeyset(c.cluster, basedir, keyset); err != nil {
+			return err
 		}
 	}
 
-	sshCredentials, err := c.clientset.SSHCredentials(c.namespace).List(v1.ListOptions{})
+	sshCredentials, err := c.ListSSHCredentials()
 	if err != nil {
 		return fmt.Errorf("error listing SSHCredentials: %v", err)
 	}
 
-	for i := range sshCredentials.Items {
-		sshCredential := &sshCredentials.Items[i]
-
-		id, err := sshcredentials.Fingerprint(sshCredential.Spec.PublicKey)
-		if err != nil {
-			return fmt.Errorf("error fingerprinting SSH public key %q: %v", sshCredential.Name, err)
-		}
-
-		p := basedir.Join("ssh", "public", sshCredential.Name, id)
-		acl, err := acls.GetACL(p, c.cluster)
-		if err != nil {
+	for _, sshCredential := range sshCredentials {
+		if err := mirrorSSHCredential(c.cluster, basedir, sshCredential); err != nil {
 			return err
-		}
-
-		err = p.WriteFile([]byte(sshCredential.Spec.PublicKey), acl)
-		if err != nil {
-			return fmt.Errorf("error writing %q: %v", p, err)
 		}
 	}
 
