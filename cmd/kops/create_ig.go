@@ -43,8 +43,8 @@ type CreateInstanceGroupOptions struct {
 	DryRun bool
 	// Output type during a DryRun
 	Output string
-	// Do not launch editor when creating an instance group
-	NoEditor bool
+	// Launch editor when creating an instance group
+	Editor bool
 }
 
 var (
@@ -70,7 +70,8 @@ var (
 // NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
 func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateInstanceGroupOptions{
-		Role: string(api.InstanceGroupRoleNode),
+		Role:   string(api.InstanceGroupRoleNode),
+		Editor: true,
 	}
 
 	cmd := &cobra.Command{
@@ -98,7 +99,7 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	// DryRun mode that will print YAML or JSON
 	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Ouput format. One of json|yaml")
-	cmd.Flags().BoolVar(&options.NoEditor, "no-editor", options.NoEditor, "If true, The instance group will be created by default with no option of editing it")
+	cmd.Flags().BoolVar(&options.Editor, "editor", options.Editor, "Default true. If true, an editor will be opened to edit default values.")
 
 	return cmd
 }
@@ -182,7 +183,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		}
 	}
 
-	if !options.NoEditor {
+	if options.Editor {
 		var (
 			edit = editor.NewDefaultEditor(editorEnvs)
 		)
