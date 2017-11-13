@@ -97,9 +97,23 @@ spec:
       serviceAccountName: flannel
       tolerations:
       - operator: Exists
+      initContainers:
+      - name: install-cni
+        image: quay.io/coreos/flannel:v0.9.0-amd64
+        command:
+        - cp
+        args:
+        - -f
+        - /etc/kube-flannel/cni-conf.json
+        - /etc/cni/net.d/10-flannel.conf
+        volumeMounts:
+        - name: cni
+          mountPath: /etc/cni/net.d
+        - name: flannel-cfg
+          mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-        image: quay.io/coreos/flannel:v0.7.1
+        image: quay.io/coreos/flannel:v0.9.0-amd64
         command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
         securityContext:
           privileged: true
@@ -114,29 +128,12 @@ spec:
               fieldPath: metadata.namespace
         resources:
           limits:
-            cpu: 100m
             memory: 100Mi
           requests:
-            cpu: 100m
-            memory: 100Mi
+            cpu: 100Mi
         volumeMounts:
         - name: run
           mountPath: /run
-        - name: flannel-cfg
-          mountPath: /etc/kube-flannel/
-      - name: install-cni
-        image: quay.io/coreos/flannel:v0.7.1
-        command: [ "/bin/sh", "-c", "set -e -x; cp -f /etc/kube-flannel/cni-conf.json /etc/cni/net.d/10-flannel.conf; while true; do sleep 3600; done" ]
-        resources:
-          limits:
-            cpu: 10m
-            memory: 25Mi
-          requests:
-            cpu: 10m
-            memory: 25Mi
-        volumeMounts:
-        - name: cni
-          mountPath: /etc/cni/net.d
         - name: flannel-cfg
           mountPath: /etc/kube-flannel/
       volumes:

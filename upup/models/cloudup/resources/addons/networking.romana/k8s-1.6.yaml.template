@@ -144,7 +144,6 @@ spec:
             cpu: 10m
             memory: 64Mi
           limits:
-            cpu: 10m
             memory: 64Mi
         args:
         - --cloud=aws
@@ -178,7 +177,6 @@ spec:
             cpu: 10m
             memory: 64Mi
           limits:
-            cpu: 10m
             memory: 64Mi
 ---
 apiVersion: extensions/v1beta1
@@ -209,7 +207,6 @@ spec:
             cpu: 25m
             memory: 128Mi
           limits:
-            cpu: 25m
             memory: 128Mi
         env:
         - name: NODENAME
@@ -309,7 +306,6 @@ spec:
             cpu: 10m
             memory: 64Mi
           limits:
-            cpu: 10m
             memory: 64Mi
 ---
 apiVersion: extensions/v1beta1
@@ -336,10 +332,9 @@ spec:
         imagePullPolicy: Always
         resources:
           requests:
-            cpu: 50m
+            cpu: 45m
             memory: 128Mi
           limits:
-            cpu: 50m
             memory: 128Mi
         args:
         - --etcd_use_v2
