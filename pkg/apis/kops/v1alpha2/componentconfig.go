@@ -197,7 +197,7 @@ type KubeAPIServerConfig struct {
 	EtcdCAFile string `json:"etcdCaFile,omitempty" flag:"etcd-cafile"`
 	// EtcdCertFile is the path to a certificate
 	EtcdCertFile string `json:"etcdCertFile,omitempty" flag:"etcd-certfile"`
-	// EtcdKeyFile is the path to a orivate key
+	// EtcdKeyFile is the path to a private key
 	EtcdKeyFile string `json:"etcdKeyFile,omitempty" flag:"etcd-keyfile"`
 	// TODO: Remove unused BasicAuthFile
 	BasicAuthFile string `json:"basicAuthFile,omitempty" flag:"basic-auth-file"`
@@ -313,8 +313,16 @@ type KubeControllerManagerConfig struct {
 	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
 	// HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs
 	// During each period, the controller manager queries the resource utilization
-	// against the metrics specified in each HorizontalPodAutoscaler definition
+	// against the metrics specified in each HorizontalPodAutoscaler definition.
 	HorizontalPodAutoscalerSyncPeriod *metav1.Duration `json:"horizontalPodAutoscalerSyncPeriod,omitempty" flag:"horizontal-pod-autoscaler-sync-period"`
+	// HorizontalPodAutoscalerDownscaleDelay is a duration that specifies
+	// how long the autoscaler has to wait before another downscale
+	// operation can be performed after the current one has completed.
+	HorizontalPodAutoscalerDownscaleDelay *metav1.Duration `json:"horizontalPodAutoscalerDownscaleDelay,omitempty" flag:"horizontal-pod-autoscaler-downscale-delay"`
+	// HorizontalPodAutoscalerUpscaleDelay is a duration that specifies how
+	// long the autoscaler has to wait before another upscale operation can
+	// be performed after the current one has completed.
+	HorizontalPodAutoscalerUpscaleDelay *metav1.Duration `json:"horizontalPodAutoscalerUpscaleDelay,omitempty" flag:"horizontal-pod-autoscaler-downscale-delay"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
