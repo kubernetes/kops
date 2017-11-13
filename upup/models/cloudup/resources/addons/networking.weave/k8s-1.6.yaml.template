@@ -92,10 +92,9 @@ spec:
             initialDelaySeconds: 30
           resources:
             requests:
-              cpu: 100m
+              cpu: 50m
               memory: 200Mi
             limits:
-              cpu: 100m
               memory: 200Mi
           securityContext:
             privileged: true
@@ -122,10 +121,9 @@ spec:
           image: 'weaveworks/weave-npc:2.0.5'
           resources:
             requests:
-              cpu: 100m
+              cpu: 50m
               memory: 200Mi
             limits:
-              cpu: 100m
               memory: 200Mi
           securityContext:
             privileged: true

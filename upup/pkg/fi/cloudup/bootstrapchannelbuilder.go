@@ -341,6 +341,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	// TODO: Create configuration object for cni providers (maybe create it but orphan it)?
 
+	// NOTE: we try to suffix with -kops.1, so that we can increment versions even if the upstream version
+	// hasn't changed.  The problem with semver is that there is nothing > 1.0.0 other than 1.0.1-pre.1
 	networkingSelector := map[string]string{"role.kubernetes.io/networking": "1"}
 
 	if b.cluster.Spec.Networking.Kopeio != nil {
@@ -380,8 +382,8 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Weave != nil {
 		key := "networking.weave"
-
-		version := "2.0.5"
+		// 2.0.6-kops.1 = 2.0.5 with kops manifest tweaks.  This should go away with the next version bump.
+		version := "2.0.6-kops.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -431,9 +433,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
-
-		// 0.7.2-kops.1 = 0.7.1 + hairpinMode fix
-		version := "0.7.2-kops.1"
+		version := "0.9.0-kops.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"
@@ -503,10 +503,11 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Canal != nil {
 		key := "networking.projectcalico.org.canal"
+		// 2.6.3-kops.1 = 2.6.2 with kops manifest tweaks.  This should go away with the next version bump.
 		versions := map[string]string{
-			"pre-k8s-1.6": "2.4.1",
-			"k8s-1.6":     "2.4.1",
-			"k8s-1.8":     "2.6.2",
+			"pre-k8s-1.6": "2.4.2-kops.1",
+			"k8s-1.6":     "2.4.2-kops.1",
+			"k8s-1.8":     "2.6.3-kops.1",
 		}
 
 		{
@@ -557,8 +558,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Kuberouter != nil {
 		key := "networking.kuberouter"
-
-		version := "0.1.0"
+		version := "0.1.1-kops.1"
 
 		{
 			location := key + "/k8s-1.6.yaml"
@@ -578,8 +578,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Romana != nil {
 		key := "networking.romana"
-
-		version := "v2.0-preview.2"
+		version := "v2.0-preview.3"
 
 		{
 			location := key + "/k8s-1.6.yaml"
