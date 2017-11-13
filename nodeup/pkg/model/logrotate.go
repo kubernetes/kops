@@ -89,8 +89,7 @@ func (b *LogrotateBuilder) Build(c *fi.ModelBuilderContext) error {
 // addLogrotateService creates a logrotate systemd task to act as target for the timer, if one is needed
 func (b *LogrotateBuilder) addLogrotateService(c *fi.ModelBuilderContext) error {
 	switch b.Distribution {
-	case distros.DistributionCoreOS:
-	case distros.DistributionContainerOS:
+	case distros.DistributionCoreOS, distros.DistributionContainerOS:
 		// logrotate service already exists
 		return nil
 	}
