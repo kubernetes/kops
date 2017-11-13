@@ -103,7 +103,7 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *etcd.EtcdClusterSpec
 		// @TODO we need to deprecate this port and use 2379, but that would be a breaking change
 		ClientPort:        4001,
 		ClusterName:       "etcd-" + spec.ClusterKey,
-		CPURequest:        resource.MustParse("200m"),
+		CPURequest:        resource.MustParse("100m"),
 		DataDirName:       "data-" + spec.ClusterKey,
 		ImageSource:       kubeBoot.EtcdImageSource,
 		TLSCA:             kubeBoot.TLSCA,
