@@ -22785,7 +22785,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"etcdKeyFile": {
 							SchemaProps: spec.SchemaProps{
-								Description: "EtcdKeyFile is the path to a orivate key",
+								Description: "EtcdKeyFile is the path to a private key",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -23194,7 +23194,19 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"horizontalPodAutoscalerSyncPeriod": {
 							SchemaProps: spec.SchemaProps{
-								Description: "HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition",
+								Description: "HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"horizontalPodAutoscalerDownscaleDelay": {
+							SchemaProps: spec.SchemaProps{
+								Description: "HorizontalPodAutoscalerDownscaleDelay is a duration that specifies how long the autoscaler has to wait before another downscale operation can be performed after the current one has completed.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"horizontalPodAutoscalerUpscaleDelay": {
+							SchemaProps: spec.SchemaProps{
+								Description: "HorizontalPodAutoscalerUpscaleDelay is a duration that specifies how long the autoscaler has to wait before another upscale operation can be performed after the current one has completed.",
 								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
 							},
 						},
@@ -26288,7 +26300,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"etcdKeyFile": {
 							SchemaProps: spec.SchemaProps{
-								Description: "EtcdKeyFile is the path to a orivate key",
+								Description: "EtcdKeyFile is the path to a private key",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -26697,7 +26709,19 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"horizontalPodAutoscalerSyncPeriod": {
 							SchemaProps: spec.SchemaProps{
-								Description: "HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition",
+								Description: "HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"horizontalPodAutoscalerDownscaleDelay": {
+							SchemaProps: spec.SchemaProps{
+								Description: "HorizontalPodAutoscalerDownscaleDelay is a duration that specifies how long the autoscaler has to wait before another downscale operation can be performed after the current one has completed.",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"horizontalPodAutoscalerUpscaleDelay": {
+							SchemaProps: spec.SchemaProps{
+								Description: "HorizontalPodAutoscalerUpscaleDelay is a duration that specifies how long the autoscaler has to wait before another upscale operation can be performed after the current one has completed.",
 								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
 							},
 						},
