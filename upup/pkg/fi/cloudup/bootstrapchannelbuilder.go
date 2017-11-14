@@ -468,10 +468,11 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Calico != nil {
 		key := "networking.projectcalico.org"
+		// 2.6.3-kops.1 = 2.6.2 with kops manifest tweaks.  This should go away with the next version bump.
 		versions := map[string]string{
 			"pre-k8s-1.6": "2.4.1",
-			"k8s-1.6":     "2.4.1",
-			"k8s-1.8":     "2.6.2",
+			"k8s-1.6":     "2.4.2-kops.1",
+			"k8s-1.8":     "2.6.3-kops.1",
 		}
 
 		{
