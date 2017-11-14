@@ -101,6 +101,9 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	case kops.CloudProviderAWS:
 	case kops.CloudProviderVSphere:
+	case kops.CloudProviderOpenstack:
+		requiresNetworkCIDR = false
+		requiresSubnetCIDR = false
 
 	default:
 		return field.Invalid(fieldSpec.Child("CloudProvider"), c.Spec.CloudProvider, "CloudProvider not recognized")
@@ -280,6 +283,8 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 			k8sCloudProvider = "vsphere"
 		case kops.CloudProviderBareMetal:
 			k8sCloudProvider = ""
+		case kops.CloudProviderOpenstack:
+			k8sCloudProvider = "openstack"
 		default:
 			return field.Invalid(fieldSpec.Child("CloudProvider"), c.Spec.CloudProvider, "unknown cloudprovider")
 		}

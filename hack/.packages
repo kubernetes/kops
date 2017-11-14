@@ -122,6 +122,7 @@ k8s.io/kops/upup/pkg/fi/cloudup/do
 k8s.io/kops/upup/pkg/fi/cloudup/dotasks
 k8s.io/kops/upup/pkg/fi/cloudup/gce
 k8s.io/kops/upup/pkg/fi/cloudup/gcetasks
+k8s.io/kops/upup/pkg/fi/cloudup/openstack
 k8s.io/kops/upup/pkg/fi/cloudup/terraform
 k8s.io/kops/upup/pkg/fi/cloudup/vsphere
 k8s.io/kops/upup/pkg/fi/cloudup/vspheretasks
