@@ -178,6 +178,10 @@ spec:
             - mountPath: /var/run/calico
               name: var-run-calico
               readOnly: false
+            # Necessary for gossip based DNS
+            - mountPath: /etc/hosts
+              name: etc-hosts
+              readOnly: true
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
@@ -208,6 +212,10 @@ spec:
               name: cni-bin-dir
             - mountPath: /host/etc/cni/net.d
               name: cni-net-dir
+            # Necessary for gossip based DNS
+            - mountPath: /etc/hosts
+              name: etc-hosts
+              readOnly: true
       volumes:
         # Used by calico/node.
         - name: lib-modules
@@ -223,6 +231,9 @@ spec:
         - name: cni-net-dir
           hostPath:
             path: /etc/cni/net.d
+        - name: etc-hosts
+          hostPath:
+            path: /etc/hosts
 
 ---
 
@@ -280,6 +291,16 @@ spec:
             # kubernetes.default to the correct service clusterIP.
             - name: CONFIGURE_ETC_HOSTS
               value: "true"
+
+          volumeMounts:
+            # Necessary for gossip based DNS
+            - mountPath: /etc/hosts
+              name: etc-hosts
+              readOnly: true
+      volumes:
+        - name: etc-hosts
+          hostPath:
+            path: /etc/hosts
 
 {{ if and (eq .CloudProvider "aws") (.Networking.Calico.CrossSubnet) -}}
 # This manifest installs the k8s-ec2-srcdst container, which disables
