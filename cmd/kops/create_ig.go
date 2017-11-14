@@ -43,15 +43,18 @@ type CreateInstanceGroupOptions struct {
 	DryRun bool
 	// Output type during a DryRun
 	Output string
-	// Launch editor when creating an instance group
-	Editor bool
+	// Edit will launch an editor when creating an instance group
+	Edit bool
 }
 
 var (
 	create_ig_long = templates.LongDesc(i18n.T(`
-		Create an instancegroup configuration.  kops has the concept of "instance groups",
-		which are a group of similar virtual machines. On AWS, they map to an
-		AutoScalingGroup. An ig work either as a Kubernetes master or a node.`))
+		Create an InstanceGroup configuration.
+
+	    An InstanceGroup is a group of similar virtual machines.
+		On AWS, an InstanceGroup maps to an AutoScalingGroup.
+
+		The Role of an InstanceGroup defines whether machines will act as a Kubernetes master or node.`))
 
 	create_ig_example = templates.Examples(i18n.T(`
 
@@ -70,8 +73,8 @@ var (
 // NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
 func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateInstanceGroupOptions{
-		Role:   string(api.InstanceGroupRoleNode),
-		Editor: true,
+		Role: string(api.InstanceGroupRoleNode),
+		Edit: true,
 	}
 
 	cmd := &cobra.Command{
@@ -99,7 +102,7 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	// DryRun mode that will print YAML or JSON
 	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Ouput format. One of json|yaml")
-	cmd.Flags().BoolVar(&options.Editor, "editor", options.Editor, "Default true. If true, an editor will be opened to edit default values.")
+	cmd.Flags().BoolVar(&options.Edit, "edit", options.Edit, "If true, an editor will be opened to edit default values.")
 
 	return cmd
 }
@@ -186,7 +189,7 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		}
 	}
 
-	if options.Editor {
+	if options.Edit {
 		var (
 			edit = editor.NewDefaultEditor(editorEnvs)
 		)
