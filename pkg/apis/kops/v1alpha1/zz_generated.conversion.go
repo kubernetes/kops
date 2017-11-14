@@ -1940,6 +1940,8 @@ func autoConvert_v1alpha1_KubeControllerManagerConfig_To_kops_KubeControllerMana
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	out.HorizontalPodAutoscalerSyncPeriod = in.HorizontalPodAutoscalerSyncPeriod
+	out.HorizontalPodAutoscalerDownscaleDelay = in.HorizontalPodAutoscalerDownscaleDelay
+	out.HorizontalPodAutoscalerUpscaleDelay = in.HorizontalPodAutoscalerUpscaleDelay
 	out.FeatureGates = in.FeatureGates
 	return nil
 }
@@ -1973,6 +1975,8 @@ func autoConvert_kops_KubeControllerManagerConfig_To_v1alpha1_KubeControllerMana
 	out.TerminatedPodGCThreshold = in.TerminatedPodGCThreshold
 	out.UseServiceAccountCredentials = in.UseServiceAccountCredentials
 	out.HorizontalPodAutoscalerSyncPeriod = in.HorizontalPodAutoscalerSyncPeriod
+	out.HorizontalPodAutoscalerDownscaleDelay = in.HorizontalPodAutoscalerDownscaleDelay
+	out.HorizontalPodAutoscalerUpscaleDelay = in.HorizontalPodAutoscalerUpscaleDelay
 	out.FeatureGates = in.FeatureGates
 	return nil
 }
