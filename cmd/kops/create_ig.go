@@ -43,6 +43,8 @@ type CreateInstanceGroupOptions struct {
 	DryRun bool
 	// Output type during a DryRun
 	Output string
+	// Launch editor when creating an instance group
+	Editor bool
 }
 
 var (
@@ -68,7 +70,8 @@ var (
 // NewCmdCreateInstanceGroup create a new cobra command object for creating a instancegroup.
 func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &CreateInstanceGroupOptions{
-		Role: string(api.InstanceGroupRoleNode),
+		Role:   string(api.InstanceGroupRoleNode),
+		Editor: true,
 	}
 
 	cmd := &cobra.Command{
@@ -96,6 +99,7 @@ func NewCmdCreateInstanceGroup(f *util.Factory, out io.Writer) *cobra.Command {
 	// DryRun mode that will print YAML or JSON
 	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Ouput format. One of json|yaml")
+	cmd.Flags().BoolVar(&options.Editor, "editor", options.Editor, "Default true. If true, an editor will be opened to edit default values.")
 
 	return cmd
 }
@@ -182,42 +186,46 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 		}
 	}
 
-	var (
-		edit = editor.NewDefaultEditor(editorEnvs)
-	)
+	if options.Editor {
+		var (
+			edit = editor.NewDefaultEditor(editorEnvs)
+		)
 
-	raw, err := kopscodecs.ToVersionedYaml(ig)
-	if err != nil {
-		return err
-	}
-	ext := "yaml"
-
-	// launch the editor
-	edited, file, err := edit.LaunchTempFile(fmt.Sprintf("%s-edit-", filepath.Base(os.Args[0])), ext, bytes.NewReader(raw))
-	defer func() {
-		if file != "" {
-			os.Remove(file)
+		raw, err := kopscodecs.ToVersionedYaml(ig)
+		if err != nil {
+			return err
 		}
-	}()
-	if err != nil {
-		return fmt.Errorf("error launching editor: %v", err)
+		ext := "yaml"
+
+		// launch the editor
+		edited, file, err := edit.LaunchTempFile(fmt.Sprintf("%s-edit-", filepath.Base(os.Args[0])), ext, bytes.NewReader(raw))
+		defer func() {
+			if file != "" {
+				os.Remove(file)
+			}
+		}()
+		if err != nil {
+			return fmt.Errorf("error launching editor: %v", err)
+		}
+
+		obj, _, err := kopscodecs.ParseVersionedYaml(edited)
+		if err != nil {
+			return fmt.Errorf("error parsing yaml: %v", err)
+		}
+		group, ok := obj.(*api.InstanceGroup)
+		if !ok {
+			return fmt.Errorf("unexpected object type: %T", obj)
+		}
+
+		err = validation.ValidateInstanceGroup(group)
+		if err != nil {
+			return err
+		}
+
+		ig = group
 	}
 
-	obj, _, err := kopscodecs.ParseVersionedYaml(edited)
-	if err != nil {
-		return fmt.Errorf("error parsing yaml: %v", err)
-	}
-	group, ok := obj.(*api.InstanceGroup)
-	if !ok {
-		return fmt.Errorf("unexpected object type: %T", obj)
-	}
-
-	err = validation.ValidateInstanceGroup(group)
-	if err != nil {
-		return err
-	}
-
-	_, err = clientset.InstanceGroupsFor(cluster).Create(group)
+	_, err = clientset.InstanceGroupsFor(cluster).Create(ig)
 	if err != nil {
 		return fmt.Errorf("error storing InstanceGroup: %v", err)
 	}
