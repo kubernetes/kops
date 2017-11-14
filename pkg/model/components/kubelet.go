@@ -172,6 +172,10 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		clusterSpec.Kubelet.HairpinMode = "promiscuous-bridge"
 	}
 
+	if cloudProvider == kops.CloudProviderOpenstack {
+		clusterSpec.Kubelet.CloudProvider = "openstack"
+	}
+
 	if clusterSpec.ExternalCloudControllerManager != nil {
 		clusterSpec.Kubelet.CloudProvider = "external"
 	}
