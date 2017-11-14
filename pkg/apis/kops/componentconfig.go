@@ -171,7 +171,7 @@ type KubeProxyConfig struct {
 
 // KubeAPIServerConfig defines the configuration for the kube api
 type KubeAPIServerConfig struct {
-	// Image is the docker container usedrun
+	// Image is the docker container used
 	Image string `json:"image,omitempty"`
 	// LogLevel is the logging level of the api
 	LogLevel int32 `json:"logLevel,omitempty" flag:"v" flag-empty:"0"`
@@ -313,8 +313,16 @@ type KubeControllerManagerConfig struct {
 	UseServiceAccountCredentials *bool `json:"useServiceAccountCredentials,omitempty" flag:"use-service-account-credentials"`
 	// HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs
 	// During each period, the controller manager queries the resource utilization
-	// against the metrics specified in each HorizontalPodAutoscaler definition
+	// against the metrics specified in each HorizontalPodAutoscaler definition.
 	HorizontalPodAutoscalerSyncPeriod *metav1.Duration `json:"horizontalPodAutoscalerSyncPeriod,omitempty" flag:"horizontal-pod-autoscaler-sync-period"`
+	// HorizontalPodAutoscalerDownscaleDelay is a duration that specifies
+	// how long the autoscaler has to wait before another downscale
+	// operation can be performed after the current one has completed.
+	HorizontalPodAutoscalerDownscaleDelay *metav1.Duration `json:"horizontalPodAutoscalerDownscaleDelay,omitempty" flag:"horizontal-pod-autoscaler-downscale-delay"`
+	// HorizontalPodAutoscalerUpscaleDelay is a duration that specifies how
+	// long the autoscaler has to wait before another upscale operation can
+	// be performed after the current one has completed.
+	HorizontalPodAutoscalerUpscaleDelay *metav1.Duration `json:"horizontalPodAutoscalerUpscaleDelay,omitempty" flag:"horizontal-pod-autoscaler-downscale-delay"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }

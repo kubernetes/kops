@@ -2155,6 +2155,24 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			**out = **in
 		}
 	}
+	if in.HorizontalPodAutoscalerDownscaleDelay != nil {
+		in, out := &in.HorizontalPodAutoscalerDownscaleDelay, &out.HorizontalPodAutoscalerDownscaleDelay
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
+	if in.HorizontalPodAutoscalerUpscaleDelay != nil {
+		in, out := &in.HorizontalPodAutoscalerUpscaleDelay, &out.HorizontalPodAutoscalerUpscaleDelay
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
 	if in.FeatureGates != nil {
 		in, out := &in.FeatureGates, &out.FeatureGates
 		*out = make(map[string]string, len(*in))
