@@ -22616,6 +22616,19 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								},
 							},
 						},
+						"additionalUserData": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AdditionalUserData is any aditional user-data to be passed to the host",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha1.UserData"),
+										},
+									},
+								},
+							},
+						},
 						"zones": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Zones is the names of the Zones where machines in this instance group should be placed This is needed for regional subnets (e.g. GCE), to restrict placement to particular zones",
@@ -22634,7 +22647,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha1.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeletConfigSpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha1.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.UserData"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.KopeioAuthenticationSpec": {
 			Schema: spec.Schema{
@@ -23058,6 +23071,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								},
 							},
 						},
+						"featureGates": {
+							SchemaProps: spec.SchemaProps{
+								Description: "FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -23169,6 +23196,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 							SchemaProps: spec.SchemaProps{
 								Description: "HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition",
 								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"featureGates": {
+							SchemaProps: spec.SchemaProps{
+								Description: "FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -23324,6 +23365,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "UsePolicyConfigMap enable setting the scheduler policy from a configmap",
 								Type:        []string{"boolean"},
 								Format:      "",
+							},
+						},
+						"featureGates": {
+							SchemaProps: spec.SchemaProps{
+								Description: "FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -24034,6 +24089,37 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{
 				"k8s.io/kops/pkg/apis/kops/v1alpha1.BastionSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.DNSSpec"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha1.UserData": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "UserData defines a user-data section",
+					Properties: map[string]spec.Schema{
+						"name": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Name is the name of the user-data",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"type": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Type is the type of user-data",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"content": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Content is the user-data content",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.WeaveNetworkingSpec": {
 			Schema: spec.Schema{
@@ -25907,11 +25993,24 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								},
 							},
 						},
+						"additionalUserData": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AdditionalUserData is any aditional user-data to be passed to the host",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.UserData"),
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha2.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeletConfigSpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha2.FileAssetSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.HookSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubeletConfigSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.UserData"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.Keyset": {
 			Schema: spec.Schema{
@@ -26475,6 +26574,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								},
 							},
 						},
+						"featureGates": {
+							SchemaProps: spec.SchemaProps{
+								Description: "FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
+							},
+						},
 					},
 				},
 			},
@@ -26586,6 +26699,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 							SchemaProps: spec.SchemaProps{
 								Description: "HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition",
 								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"featureGates": {
+							SchemaProps: spec.SchemaProps{
+								Description: "FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -26738,6 +26865,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "UsePolicyConfigMap enable setting the scheduler policy from a configmap",
 								Type:        []string{"boolean"},
 								Format:      "",
+							},
+						},
+						"featureGates": {
+							SchemaProps: spec.SchemaProps{
+								Description: "FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.",
+								Type:        []string{"object"},
+								AdditionalProperties: &spec.SchemaOrBool{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -27448,6 +27589,37 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{
 				"k8s.io/kops/pkg/apis/kops/v1alpha2.BastionSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.DNSSpec"},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.UserData": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "UserData defines a user-data section",
+					Properties: map[string]spec.Schema{
+						"name": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Name is the name of the user-data",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"type": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Type is the type of user-data",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"content": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Content is the user-data content",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+					},
+				},
+			},
+			Dependencies: []string{},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.WeaveNetworkingSpec": {
 			Schema: spec.Schema{
