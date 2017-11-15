@@ -2389,7 +2389,7 @@ Appears In:
 </tr>
 <tr>
 <td>etcdKeyFile <br /> <em>string</em></td>
-<td>EtcdKeyFile is the path to a orivate key</td>
+<td>EtcdKeyFile is the path to a private key</td>
 </tr>
 <tr>
 <td>etcdServers <br /> <em>string array</em></td>
@@ -2575,8 +2575,16 @@ Appears In:
 <td>FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.</td>
 </tr>
 <tr>
+<td>horizontalPodAutoscalerDownscaleDelay <br /> <em><a href="#duration-v1-meta">Duration</a></em></td>
+<td>HorizontalPodAutoscalerDownscaleDelay is a duration that specifies how long the autoscaler has to wait before another downscale operation can be performed after the current one has completed.</td>
+</tr>
+<tr>
 <td>horizontalPodAutoscalerSyncPeriod <br /> <em><a href="#duration-v1-meta">Duration</a></em></td>
-<td>HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition</td>
+<td>HorizontalPodAutoscalerSyncPeriod is the amount of time between syncs During each period, the controller manager queries the resource utilization against the metrics specified in each HorizontalPodAutoscaler definition.</td>
+</tr>
+<tr>
+<td>horizontalPodAutoscalerUpscaleDelay <br /> <em><a href="#duration-v1-meta">Duration</a></em></td>
+<td>HorizontalPodAutoscalerUpscaleDelay is a duration that specifies how long the autoscaler has to wait before another upscale operation can be performed after the current one has completed.</td>
 </tr>
 <tr>
 <td>image <br /> <em>string</em></td>
