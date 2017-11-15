@@ -26,11 +26,11 @@ import (
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/vfs"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
 const TagNameEtcdClusterPrefix = "k8s.io/etcd/"

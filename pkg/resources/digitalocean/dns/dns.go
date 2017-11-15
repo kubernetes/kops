@@ -24,8 +24,8 @@ import (
 
 	"github.com/golang/glog"
 
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )
 
 const ipPlaceholder = "203.0.113.123"

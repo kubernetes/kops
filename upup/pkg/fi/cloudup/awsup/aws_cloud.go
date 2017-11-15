@@ -40,12 +40,12 @@ import (
 
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	dnsproviderroute53 "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/model"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	dnsproviderroute53 "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 	k8s_aws "k8s.io/kubernetes/pkg/cloudprovider/providers/aws"
 )
 

@@ -21,6 +21,8 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -29,8 +31,6 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
 )
 
 func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {

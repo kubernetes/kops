@@ -30,14 +30,14 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/kops/dns-controller/pkg/dns"
 	"k8s.io/kops/dns-controller/pkg/watchers"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
+	k8scoredns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns"
+	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	gossipdnsprovider "k8s.io/kops/protokube/pkg/gossip/dns/provider"
 	"k8s.io/kops/protokube/pkg/gossip/mesh"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
-	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
-	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
 )
 
 var (
