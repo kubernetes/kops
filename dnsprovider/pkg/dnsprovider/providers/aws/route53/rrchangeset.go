@@ -76,51 +76,93 @@ func buildChange(action string, rrs dnsprovider.ResourceRecordSet) *route53.Chan
 func (c *ResourceRecordChangeset) Apply() error {
 	hostedZoneID := c.zone.impl.Id
 
-	var changes []*route53.Change
-
+	removals := make(map[string]*route53.Change)
 	for _, removal := range c.removals {
-		change := buildChange(route53.ChangeActionDelete, removal)
-		changes = append(changes, change)
+		removals[string(removal.Type())+"::"+removal.Name()] = buildChange(route53.ChangeActionDelete, removal)
 	}
 
+	additions := make(map[string]*route53.Change)
 	for _, addition := range c.additions {
-		change := buildChange(route53.ChangeActionCreate, addition)
-		changes = append(changes, change)
+		additions[string(addition.Type())+"::"+addition.Name()] = buildChange(route53.ChangeActionCreate, addition)
 	}
 
+	upserts := make(map[string]*route53.Change)
 	for _, upsert := range c.upserts {
-		change := buildChange(route53.ChangeActionUpsert, upsert)
-		changes = append(changes, change)
+		upserts[string(upsert.Type())+"::"+upsert.Name()] = buildChange(route53.ChangeActionUpsert, upsert)
 	}
 
-	if len(changes) == 0 {
-		return nil
+	doneKeys := make(map[string]bool)
+
+	keys := make(map[string]bool)
+	for k := range removals {
+		keys[k] = true
+	}
+	for k := range additions {
+		keys[k] = true
+	}
+	for k := range upserts {
+		keys[k] = true
 	}
 
-	if glog.V(8) {
-		var sb bytes.Buffer
-		for _, change := range changes {
-			sb.WriteString(fmt.Sprintf("\t%s %s %s\n", aws.StringValue(change.Action), aws.StringValue(change.ResourceRecordSet.Type), aws.StringValue(change.ResourceRecordSet.Name)))
+	for {
+		// Limit batch size
+		maxBatchSize := 900
+
+		var batch []*route53.Change
+		// We group the changes so that changes with the same key are in the same batch
+		for k := range keys {
+			if doneKeys[k] {
+				continue
+			}
+
+			if len(batch)+3 >= maxBatchSize {
+				break
+			}
+
+			if change := removals[k]; change != nil {
+				batch = append(batch, change)
+			}
+			if change := additions[k]; change != nil {
+				batch = append(batch, change)
+			}
+			if change := upserts[k]; change != nil {
+				batch = append(batch, change)
+			}
+			doneKeys[k] = true
 		}
 
-		glog.V(8).Infof("Route53 Changeset:\n%s", sb.String())
+		if len(batch) == 0 {
+			// Nothing left to do
+			break
+		}
+
+		if glog.V(8) {
+			var sb bytes.Buffer
+			for _, change := range batch {
+				sb.WriteString(fmt.Sprintf("\t%s %s %s\n", aws.StringValue(change.Action), aws.StringValue(change.ResourceRecordSet.Type), aws.StringValue(change.ResourceRecordSet.Name)))
+			}
+
+			glog.V(8).Infof("Route53 Changeset:\n%s", sb.String())
+		}
+
+		service := c.zone.zones.interface_.service
+
+		request := &route53.ChangeResourceRecordSetsInput{
+			ChangeBatch: &route53.ChangeBatch{
+				Changes: batch,
+			},
+			HostedZoneId: hostedZoneID,
+		}
+
+		// The aws-sdk-go does backoff for PriorRequestNotComplete
+		_, err := service.ChangeResourceRecordSets(request)
+		if err != nil {
+			// Cast err to awserr.Error to get the Code and
+			// Message from an error.
+			return err
+		}
 	}
 
-	service := c.zone.zones.interface_.service
-
-	request := &route53.ChangeResourceRecordSetsInput{
-		ChangeBatch: &route53.ChangeBatch{
-			Changes: changes,
-		},
-		HostedZoneId: hostedZoneID,
-	}
-
-	_, err := service.ChangeResourceRecordSets(request)
-	if err != nil {
-		// Cast err to awserr.Error to get the Code and
-		// Message from an error.
-		return err
-	}
 	return nil
 }
 
