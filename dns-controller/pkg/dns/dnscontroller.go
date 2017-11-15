@@ -567,14 +567,9 @@ func (o *dnsOp) updateRecords(k recordKey, newRecords []string, ttl int64) error
 		return err
 	}
 
-	if existing != nil {
-		glog.V(2).Infof("will replace existing dns record %s %s", existing.Type(), FixWildcards(existing.Name()))
-		cs.Remove(existing)
-	}
-
 	glog.V(2).Infof("Adding DNS changes to batch %s %s", k, newRecords)
 	rr := rrsProvider.New(fqdn, newRecords, ttl, rrstype.RrsType(k.RecordType))
-	cs.Add(rr)
+	cs.Upsert(rr)
 
 	return nil
 }
