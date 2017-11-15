@@ -20,7 +20,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/route53"
 
 	"k8s.io/apimachinery/pkg/util/uuid"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 
 // Compile time check for interface adherence

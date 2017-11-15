@@ -16,7 +16,7 @@ limitations under the License.
 
 package stubs
 
-import "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns/internal/interfaces"
+import "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/interfaces"
 
 // Compile time check for interface adherence
 var _ interfaces.ManagedZonesService = &ManagedZonesService{}

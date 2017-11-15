@@ -17,8 +17,8 @@ limitations under the License.
 package route53
 
 import (
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53/stubs"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53/stubs"
 )
 
 // Compile time check for interface adherence
