@@ -23,6 +23,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/ghodss/yaml"
@@ -146,7 +147,10 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 
 	// @step: render each of the templates, splitting on the documents
 	r := templater.NewTemplater()
-	var documents []string
+	var (
+		output    []string
+		documents []map[string]interface{}
+	)
 	for _, x := range templates {
 		content, err := ioutil.ReadFile(x)
 		if err != nil {
@@ -163,7 +167,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		}
 
 		if !options.formatYAML {
-			documents = append(documents, strings.Split(rendered, "---\n")...)
+			output = append(output, strings.Split(rendered, "---\n")...)
 			continue
 		}
 
@@ -175,15 +179,22 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 			if len(data) <= 0 {
 				continue
 			}
-			formatted, err := yaml.Marshal(&data)
-			if err != nil {
-				return fmt.Errorf("unable to marhshal formated content to yaml: %s", err)
-			}
-			documents = append(documents, string(formatted))
+			documents = append(documents, data)
 		}
 	}
+	sort.Slice(documents, func(i, j int) bool {
+		kind, ok := documents[i]["kind"]
+		return ok && kind.(string) == "Cluster"
+	})
+	for _, doc := range documents {
+		formatted, err := yaml.Marshal(&doc)
+		if err != nil {
+			return fmt.Errorf("unable to marhshal formated content to yaml: %s", err)
+		}
+		output = append(output, string(formatted))
+	}
 	// join in harmony all the YAML documents back together
-	content := strings.Join(documents, "---\n")
+	content := strings.Join(output, "---\n")
 
 	iowriter := out
 	// @check if we are writing to a file rather than stdout
