@@ -29,22 +29,28 @@ import (
 )
 
 var wellKnownCertificateTypes = map[string]string{
-	"client": "ExtKeyUsageClientAuth,KeyUsageDigitalSignature",
-	"server": "ExtKeyUsageServerAuth,KeyUsageDigitalSignature,KeyUsageKeyEncipherment",
-	"ca":     "CA,KeyUsageCRLSign,KeyUsageCertSign",
+	"ca":           "CA,KeyUsageCRLSign,KeyUsageCertSign",
+	"client":       "ExtKeyUsageClientAuth,KeyUsageDigitalSignature",
+	"clientServer": "ExtKeyUsageServerAuth,KeyUsageDigitalSignature,ExtKeyUsageClientAuth,KeyUsageKeyEncipherment",
+	"server":       "ExtKeyUsageServerAuth,KeyUsageDigitalSignature,KeyUsageKeyEncipherment",
 }
 
 //go:generate fitask -type=Keypair
 type Keypair struct {
-	Name               *string
-	Lifecycle          *fi.Lifecycle
-	Subject            string    `json:"subject"`
-	Type               string    `json:"type"`
-	AlternateNames     []string  `json:"alternateNames"`
+	// Name is the name of the keypair
+	Name *string
+	// AlternateNames a list of alternative names for this certificate
+	AlternateNames []string `json:"alternateNames"`
+	// AlternateNameTasks is a collection of subtask
 	AlternateNameTasks []fi.Task `json:"alternateNameTasks"`
-
+	// Lifecycle is context for a task
+	Lifecycle *fi.Lifecycle
 	// Signer is the keypair to use to sign, for when we want to use an alternative CA
 	Signer *Keypair
+	// Subject is the cerificate subject
+	Subject string `json:"subject"`
+	// Type the type of certificate i.e. CA, server, client etc
+	Type string `json:"type"`
 }
 
 var _ fi.HasCheckExisting = &Keypair{}
@@ -74,7 +80,6 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 	if cert == nil {
 		return nil, nil
 	}
-
 	if key == nil {
 		return nil, fmt.Errorf("found cert in store, but did not find private key: %q", name)
 	}
@@ -89,8 +94,8 @@ func (e *Keypair) Find(c *fi.Context) (*Keypair, error) {
 
 	actual := &Keypair{
 		Name:           &name,
-		Subject:        pkixNameToString(&cert.Subject),
 		AlternateNames: alternateNames,
+		Subject:        pkixNameToString(&cert.Subject),
 		Type:           buildTypeDescription(cert.Certificate),
 	}
 
@@ -173,6 +178,8 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 			createCertificate = true
 		} else if changes.Subject != "" {
 			createCertificate = true
+		} else if changes.Type != "" {
+			createCertificate = true
 		} else {
 			glog.Warningf("Ignoring changes in key: %v", fi.DebugAsJsonString(changes))
 		}
@@ -213,6 +220,7 @@ func (_ *Keypair) Render(c *fi.Context, a, e, changes *Keypair) error {
 	return nil
 }
 
+// BuildCertificateTemplate is responsible for constructing a certificate template
 func (e *Keypair) BuildCertificateTemplate() (*x509.Certificate, error) {
 	template, err := buildCertificateTemplateForType(e.Type)
 	if err != nil {
@@ -282,6 +290,7 @@ func buildCertificateTemplateForType(certificateType string) (*x509.Certificate,
 	return template, nil
 }
 
+// buildTypeDescription extracts the type based on the certificate extensions
 func buildTypeDescription(cert *x509.Certificate) string {
 	var options []string
 
