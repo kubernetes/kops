@@ -111,7 +111,7 @@ func runToolBoxTemplate(f *util.Factory, out io.Writer, options *toolboxTemplate
 		v, found := context[options.configValue]
 		switch found {
 		case true:
-			fmt.Fprintf(out, "%s\n", v)
+			fmt.Fprintf(out, "%v\n", v)
 		default:
 			fmt.Fprintf(out, "null\n")
 		}
