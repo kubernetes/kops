@@ -616,6 +616,18 @@ func (s *DNSControllerScope) Replace(recordName string, records []Record) {
 	s.parent.recordChange()
 }
 
+// AllKeys implements Scope::AllKeys, returns all the keys in the current scope
+func (s *DNSControllerScope) AllKeys() []string {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	var keys []string
+	for k := range s.Records {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
 // recordsSliceEquals compares two []Record
 func recordsSliceEquals(l, r []Record) bool {
 	if len(l) != len(r) {

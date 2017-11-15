@@ -69,14 +69,24 @@ func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 		glog.V(4).Infof("querying without field filter")
 
 		// Note we need to watch all the nodes, to set up alias targets
+		allKeys := c.scope.AllKeys()
 		nodeList, err := c.client.CoreV1().Nodes().List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing nodes: %v", err)
 		}
+		foundKeys := make(map[string]bool)
 		for i := range nodeList.Items {
 			node := &nodeList.Items[i]
-			glog.V(4).Infof("node: %v", node.Name)
-			c.updateNodeRecords(node)
+			glog.V(4).Infof("found node: %v", node.Name)
+			key := c.updateNodeRecords(node)
+			foundKeys[key] = true
+		}
+		for _, key := range allKeys {
+			if !foundKeys[key] {
+				// The node previously existed, but no longer exists; delete it from the scope
+				glog.V(2).Infof("removing node not found in list: %s", key)
+				c.scope.Replace(key, nil)
+			}
 		}
 		c.scope.MarkReady()
 
@@ -125,7 +135,8 @@ func (c *NodeController) runWatcher(stopCh <-chan struct{}) {
 	}
 }
 
-func (c *NodeController) updateNodeRecords(node *v1.Node) {
+// updateNodeRecords will apply the records for the specified node.  It returns the key that was set.
+func (c *NodeController) updateNodeRecords(node *v1.Node) string {
 	var records []dns.Record
 
 	//dnsLabel := node.Labels[LabelNameDns]
@@ -231,5 +242,7 @@ func (c *NodeController) updateNodeRecords(node *v1.Node) {
 		}
 	}
 
-	c.scope.Replace( /* no namespace for nodes */ node.Name, records)
+	key := /* no namespace for nodes */ node.Name
+	c.scope.Replace(key, records)
+	return key
 }
