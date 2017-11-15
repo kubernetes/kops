@@ -70,14 +70,26 @@ func (c *PodController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
 		var listOpts metav1.ListOptions
 		glog.V(4).Infof("querying without label filter")
+
+		allKeys := c.scope.AllKeys()
+
 		podList, err := c.client.CoreV1().Pods(c.namespace).List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing pods: %v", err)
 		}
+		foundKeys := make(map[string]bool)
 		for i := range podList.Items {
 			pod := &podList.Items[i]
 			glog.V(4).Infof("found pod: %v", pod.Name)
-			c.updatePodRecords(pod)
+			key := c.updatePodRecords(pod)
+			foundKeys[key] = true
+		}
+		for _, key := range allKeys {
+			if !foundKeys[key] {
+				// The pod previous existed, but no longer exists; delete it from the scope
+				glog.V(2).Infof("removing pod not found in list: %s", key)
+				c.scope.Replace(key, nil)
+			}
 		}
 		c.scope.MarkReady()
 
@@ -129,7 +141,8 @@ func (c *PodController) runWatcher(stopCh <-chan struct{}) {
 	}
 }
 
-func (c *PodController) updatePodRecords(pod *v1.Pod) {
+// updatePodRecords will apply the records for the specified pod.  It returns the key that was set.
+func (c *PodController) updatePodRecords(pod *v1.Pod) string {
 	var records []dns.Record
 
 	specExternal := pod.Annotations[AnnotationNameDNSExternal]
@@ -188,5 +201,7 @@ func (c *PodController) updatePodRecords(pod *v1.Pod) {
 		glog.V(4).Infof("Pod %q did not have %s label", pod.Name, AnnotationNameDNSInternal)
 	}
 
-	c.scope.Replace(pod.Namespace+"/"+pod.Name, records)
+	key := pod.Namespace + "/" + pod.Name
+	c.scope.Replace(key, records)
+	return key
 }

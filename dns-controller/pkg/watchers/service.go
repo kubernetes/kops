@@ -69,14 +69,25 @@ func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 	runOnce := func() (bool, error) {
 		var listOpts metav1.ListOptions
 		glog.V(4).Infof("querying without label filter")
+
+		allKeys := c.scope.AllKeys()
 		serviceList, err := c.client.CoreV1().Services(c.namespace).List(listOpts)
 		if err != nil {
 			return false, fmt.Errorf("error listing services: %v", err)
 		}
+		foundKeys := make(map[string]bool)
 		for i := range serviceList.Items {
 			service := &serviceList.Items[i]
 			glog.V(4).Infof("found service: %v", service.Name)
-			c.updateServiceRecords(service)
+			key := c.updateServiceRecords(service)
+			foundKeys[key] = true
+		}
+		for _, key := range allKeys {
+			if !foundKeys[key] {
+				// The service previously existed, but no longer exists; delete it from the scope
+				glog.V(2).Infof("removing service not found in list: %s", key)
+				c.scope.Replace(key, nil)
+			}
 		}
 		c.scope.MarkReady()
 
@@ -128,7 +139,9 @@ func (c *ServiceController) runWatcher(stopCh <-chan struct{}) {
 	}
 }
 
-func (c *ServiceController) updateServiceRecords(service *v1.Service) {
+// updateServiceRecords will apply the records for the specified service.
+// It returns the key that was set (or "" if no key was set)
+func (c *ServiceController) updateServiceRecords(service *v1.Service) string {
 	var records []dns.Record
 
 	specExternal := service.Annotations[AnnotationNameDNSExternal]
@@ -159,7 +172,7 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 			var roleType string
 			if len(specExternal) != 0 && len(specInternal) != 0 {
 				glog.Warningln("DNS Records not possible for both Internal and Externals IPs.")
-				return
+				return ""
 			} else if len(specInternal) != 0 {
 				roleType = dns.RoleTypeInternal
 			} else {
@@ -200,5 +213,7 @@ func (c *ServiceController) updateServiceRecords(service *v1.Service) {
 		glog.V(8).Infof("Service %s/%s did not have %s annotation", service.Namespace, service.Name, AnnotationNameDNSExternal)
 	}
 
-	c.scope.Replace(service.Namespace+"/"+service.Name, records)
+	key := service.Namespace + "/" + service.Name
+	c.scope.Replace(key, records)
+	return key
 }

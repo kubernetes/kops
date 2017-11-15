@@ -33,4 +33,7 @@ type Scope interface {
 
 	// MarkReady should be called when a controller has populated all the records for a particular scope
 	MarkReady()
+
+	// AllKeys gets the set of all keys currently in the scope
+	AllKeys() []string
 }

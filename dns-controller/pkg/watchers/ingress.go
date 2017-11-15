@@ -69,14 +69,24 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 		var listOpts metav1.ListOptions
 		glog.V(4).Infof("querying without label filter")
 
+		allKeys := c.scope.AllKeys()
 		ingressList, err := c.client.ExtensionsV1beta1().Ingresses(c.namespace).List(listOpts)
 		if err != nil {
-			return false, fmt.Errorf("error listing ingresss: %v", err)
+			return false, fmt.Errorf("error listing ingresses: %v", err)
 		}
+		foundKeys := make(map[string]bool)
 		for i := range ingressList.Items {
 			ingress := &ingressList.Items[i]
 			glog.V(4).Infof("found ingress: %v", ingress.Name)
-			c.updateIngressRecords(ingress)
+			key := c.updateIngressRecords(ingress)
+			foundKeys[key] = true
+		}
+		for _, key := range allKeys {
+			if !foundKeys[key] {
+				// The ingress previously existed, but no longer exists; delete it from the scope
+				glog.V(2).Infof("removing ingress not found in list: %s", key)
+				c.scope.Replace(key, nil)
+			}
 		}
 		c.scope.MarkReady()
 
@@ -84,7 +94,7 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 		listOpts.ResourceVersion = ingressList.ResourceVersion
 		watcher, err := c.client.ExtensionsV1beta1().Ingresses(c.namespace).Watch(listOpts)
 		if err != nil {
-			return false, fmt.Errorf("error watching ingresss: %v", err)
+			return false, fmt.Errorf("error watching ingresses: %v", err)
 		}
 		ch := watcher.ResultChan()
 		for {
@@ -128,7 +138,8 @@ func (c *IngressController) runWatcher(stopCh <-chan struct{}) {
 	}
 }
 
-func (c *IngressController) updateIngressRecords(ingress *v1beta1.Ingress) {
+// updateIngressRecords will apply the records for the specified ingress.  It returns the key that was set.
+func (c *IngressController) updateIngressRecords(ingress *v1beta1.Ingress) string {
 	var records []dns.Record
 
 	var ingresses []dns.Record
@@ -163,5 +174,7 @@ func (c *IngressController) updateIngressRecords(ingress *v1beta1.Ingress) {
 		}
 	}
 
-	c.scope.Replace(ingress.Namespace+"/"+ingress.Name, records)
+	key := ingress.Namespace + "/" + ingress.Name
+	c.scope.Replace(key, records)
+	return key
 }
