@@ -9,6 +9,7 @@ go_library(
     importpath = "k8s.io/kops/upup/pkg/fi/cloudup/openstack",
     visibility = ["//visibility:public"],
     deps = [
+        "//dnsprovider/pkg/dnsprovider:go_default_library",
         "//pkg/apis/kops:go_default_library",
         "//pkg/cloudinstances:go_default_library",
         "//upup/pkg/fi:go_default_library",
@@ -18,7 +19,5 @@ go_library(
         "//vendor/github.com/gophercloud/gophercloud/openstack:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
-        "//vendor/k8s.io/apimachinery/pkg/util/wait:go_default_library",
-        "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider:go_default_library",
     ],
 )

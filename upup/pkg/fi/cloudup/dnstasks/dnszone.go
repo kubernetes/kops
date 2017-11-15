@@ -22,8 +22,8 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
 // DNSZone is a zone object in a dns provider

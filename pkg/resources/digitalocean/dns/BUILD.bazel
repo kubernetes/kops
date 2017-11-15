@@ -6,11 +6,11 @@ go_library(
     importpath = "k8s.io/kops/pkg/resources/digitalocean/dns",
     visibility = ["//visibility:public"],
     deps = [
+        "//dnsprovider/pkg/dnsprovider:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
         "//vendor/github.com/digitalocean/godo:go_default_library",
         "//vendor/github.com/digitalocean/godo/context:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider:go_default_library",
-        "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype:go_default_library",
     ],
 )
 
@@ -21,8 +21,8 @@ go_test(
     importpath = "k8s.io/kops/pkg/resources/digitalocean/dns",
     library = ":go_default_library",
     deps = [
+        "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
         "//vendor/github.com/digitalocean/godo:go_default_library",
         "//vendor/github.com/digitalocean/godo/context:go_default_library",
-        "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype:go_default_library",
     ],
 )
