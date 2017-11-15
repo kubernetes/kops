@@ -23,7 +23,7 @@ import (
 	"github.com/golang/glog"
 	"gopkg.in/gcfg.v1"
 	"io"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"strconv"
 	"strings"
 )

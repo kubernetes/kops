@@ -19,7 +19,7 @@ package internal
 import (
 	dns "google.golang.org/api/dns/v1"
 	"google.golang.org/api/googleapi"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns/internal/interfaces"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/interfaces"
 )
 
 // Compile time check for interface adherence

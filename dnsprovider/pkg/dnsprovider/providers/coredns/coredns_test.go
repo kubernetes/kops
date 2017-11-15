@@ -23,11 +23,11 @@ import (
 	"strconv"
 	"testing"
 
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	corednstesting "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns/stubs"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	corednstesting "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns/stubs"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/tests"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/tests"
 	"strings"
 )
 

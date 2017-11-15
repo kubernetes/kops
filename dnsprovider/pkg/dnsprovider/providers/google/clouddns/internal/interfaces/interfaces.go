@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"google.golang.org/api/googleapi"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )
 
 // Interfaces to directly mirror the Google Cloud DNS API structures.

@@ -1,0 +1,12 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["corednsapi.go"],
+    importpath = "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns/stubs",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/coreos/etcd/client:go_default_library",
+        "//vendor/golang.org/x/net/context:go_default_library",
+    ],
+)

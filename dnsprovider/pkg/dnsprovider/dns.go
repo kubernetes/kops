@@ -19,7 +19,7 @@ package dnsprovider
 import (
 	"reflect"
 
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
 )
 
 // Interface is an abstract, pluggable interface for DNS providers.

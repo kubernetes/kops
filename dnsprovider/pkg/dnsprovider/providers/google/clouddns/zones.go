@@ -17,8 +17,8 @@ limitations under the License.
 package clouddns
 
 import (
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns/internal/interfaces"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/interfaces"
 )
 
 // Compile time check for interface adherence
