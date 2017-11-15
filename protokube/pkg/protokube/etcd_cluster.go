@@ -61,6 +61,8 @@ type EtcdCluster struct {
 	Spec *etcd.EtcdClusterSpec
 	// VolumeMountPath is the mount path
 	VolumeMountPath string
+	// TLSAuth indicates we should enforce peer and client verification
+	TLSAuth bool
 	// TLSCA is the path to a client ca for etcd clients
 	TLSCA string
 	// TLSCert is the path to a client certificate for etcd
@@ -100,24 +102,24 @@ func newEtcdController(kubeBoot *KubeBoot, v *Volume, spec *etcd.EtcdClusterSpec
 	}
 
 	cluster := &EtcdCluster{
-		// @TODO we need to deprecate this port and use 2379, but that would be a breaking change
+		CPURequest:        resource.MustParse("100m"),
 		ClientPort:        4001,
 		ClusterName:       "etcd-" + spec.ClusterKey,
-		CPURequest:        resource.MustParse("100m"),
 		DataDirName:       "data-" + spec.ClusterKey,
+		ElectionTimeout:   kubeBoot.EtcdElectionTimeout,
+		HeartbeatInterval: kubeBoot.EtcdHeartbeatInterval,
 		ImageSource:       kubeBoot.EtcdImageSource,
-		TLSCA:             kubeBoot.TLSCA,
-		TLSCert:           kubeBoot.TLSCert,
-		TLSKey:            kubeBoot.TLSKey,
 		PeerCA:            kubeBoot.PeerCA,
 		PeerCert:          kubeBoot.PeerCert,
 		PeerKey:           kubeBoot.PeerKey,
 		PeerPort:          2380,
 		PodName:           "etcd-server-" + spec.ClusterKey,
 		Spec:              spec,
+		TLSAuth:           kubeBoot.TLSAuth,
+		TLSCA:             kubeBoot.TLSCA,
+		TLSCert:           kubeBoot.TLSCert,
+		TLSKey:            kubeBoot.TLSKey,
 		VolumeMountPath:   v.Mountpoint,
-		ElectionTimeout:   kubeBoot.EtcdElectionTimeout,
-		HeartbeatInterval: kubeBoot.EtcdHeartbeatInterval,
 	}
 
 	// We used to build this through text files ... it turns out to just be more complicated than code!

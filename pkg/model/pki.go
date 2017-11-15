@@ -117,7 +117,7 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				Lifecycle:      b.Lifecycle,
 				Name:           fi.String("etcd"),
 				Subject:        "cn=etcd",
-				Type:           "server",
+				Type:           "clientServer",
 				Signer:         defaultCA,
 			})
 		}

@@ -59,7 +59,7 @@ func main() {
 // run is responsible for running the protokube service controller
 func run() error {
 	var zones []string
-	var applyTaints, initializeRBAC, containerized, master bool
+	var applyTaints, initializeRBAC, containerized, master, tlsAuth bool
 	var cloud, clusterID, dnsServer, dnsProviderID, dnsInternalSuffix, gossipSecret, gossipListen string
 	var flagChannels, tlsCert, tlsKey, tlsCA, peerCert, peerKey, peerCA string
 	var etcdImageSource, etcdElectionTimeout, etcdHeartbeatInterval string
@@ -77,6 +77,7 @@ func run() error {
 	flag.StringVar(&peerCA, "peer-ca", peerCA, "Path to a file containing the peer ca in PEM format")
 	flag.StringVar(&peerCert, "peer-cert", peerCert, "Path to a file containing the peer certificate")
 	flag.StringVar(&peerKey, "peer-key", peerKey, "Path to a file containing the private key for the peers")
+	flag.BoolVar(&tlsAuth, "tls-auth", peerAuth, "Indicates the peers and client should enforce authentication via CA")
 	flag.StringVar(&tlsCA, "tls-ca", tlsCA, "Path to a file containing the ca for client certificates")
 	flag.StringVar(&tlsCert, "tls-cert", tlsCert, "Path to a file containing the certificate for etcd server")
 	flag.StringVar(&tlsKey, "tls-key", tlsKey, "Path to a file containing the private key for etcd server")
@@ -295,9 +296,9 @@ func run() error {
 		ApplyTaints:           applyTaints,
 		Channels:              channels,
 		DNS:                   dnsProvider,
-		EtcdImageSource:       etcdImageSource,
 		EtcdElectionTimeout:   etcdElectionTimeout,
 		EtcdHeartbeatInterval: etcdHeartbeatInterval,
+		EtcdImageSource:       etcdImageSource,
 		InitializeRBAC:        initializeRBAC,
 		InternalDNSSuffix:     dnsInternalSuffix,
 		InternalIP:            internalIP,
@@ -307,6 +308,7 @@ func run() error {
 		PeerCA:                peerCA,
 		PeerCert:              peerCert,
 		PeerKey:               peerKey,
+		TLSAuth:               tlsAuth,
 		TLSCA:                 tlsCA,
 		TLSCert:               tlsCert,
 		TLSKey:                tlsKey,

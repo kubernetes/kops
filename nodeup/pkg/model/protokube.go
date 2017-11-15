@@ -210,6 +210,7 @@ type ProtokubeFlags struct {
 	PeerTLSCaFile             *string  `json:"peer-ca,omitempty" flag:"peer-ca"`
 	PeerTLSCertFile           *string  `json:"peer-cert,omitempty" flag:"peer-cert"`
 	PeerTLSKeyFile            *string  `json:"peer-key,omitempty" flag:"peer-key"`
+	TLSAuth                   *bool    `json:"tls-auth,omitempty" flag:"tls-auth"`
 	TLSCAFile                 *string  `json:"tls-ca,omitempty" flag:"tls-ca"`
 	TLSCertFile               *string  `json:"tls-cert,omitempty" flag:"tls-cert"`
 	TLSKeyFile                *string  `json:"tls-key,omitempty" flag:"tls-key"`
@@ -271,6 +272,11 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		f.TLSCAFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
 		f.TLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
 		f.TLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
+
+		enableAuth := true
+		if t.UseTLSAuth() {
+			f.TLSAuth = b(enableAuth)
+		}
 	}
 
 	zone := t.Cluster.Spec.DNSZone
