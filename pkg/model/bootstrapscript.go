@@ -106,6 +106,11 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 			spec["kubeProxy"] = cs.KubeProxy
 
 			if ig.IsMaster() {
+				etcdSum, err := b.computeFingerprintOnStruct(cs.EtcdClusters)
+				if err != nil {
+					return "", err
+				}
+				spec["etcdFingerprint"] = etcdSum
 				spec["encryptionConfig"] = cs.EncryptionConfig
 				spec["kubeAPIServer"] = cs.KubeAPIServer
 				spec["kubeControllerManager"] = cs.KubeControllerManager
@@ -271,6 +276,16 @@ func (b *BootstrapScript) getRelevantFileAssets(allFileAssets []kops.FileAssetSp
 	}
 
 	return fileAssets, nil
+}
+
+// computeFingerprintOnStruct is computed on the struct pointer
+func (b *BootstrapScript) computeFingerprintOnStruct(v interface{}) (string, error) {
+	content, err := yaml.Marshal(v)
+	if err != nil {
+		return "", err
+	}
+
+	return b.computeFingerprint(string(content))
 }
 
 // computeFingerprint takes a string and returns a base64 encoded fingerprint
