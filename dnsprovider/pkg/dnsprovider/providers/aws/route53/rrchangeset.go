@@ -125,7 +125,7 @@ func (c *ResourceRecordChangeset) Apply() error {
 }
 
 func (c *ResourceRecordChangeset) IsEmpty() bool {
-	return len(c.removals) == 0 && len(c.additions) == 0
+	return len(c.removals) == 0 && len(c.additions) == 0 && len(c.upserts) == 0
 }
 
 // ResourceRecordSets returns the parent ResourceRecordSets
