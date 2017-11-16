@@ -77,7 +77,7 @@ version matches, the Kubernetes minor version does kops officially support the
 Kubernetes release.  kops does not stop a user from installing mismatching
 versions of K8s, but Kubernetes releases always require kops to install specific
 versions of components like docker, that tested against the particular
-Kuberenetes version.
+Kubernetes version.
 
 #### Compatibility Matrix
 
@@ -169,7 +169,7 @@ __Pull Requests__
   - Also verify that the new feature seems sane, follows best architectural patterns, and includes tests.
 
 This repository uses the Kubernetes bots.  See a full list of the commands [here](
-https://github.com/kubernetes/test-infra/blob/master/commands.md)
+https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
 
 ## Office Hours
