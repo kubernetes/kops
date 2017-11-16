@@ -101,6 +101,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 			spec["kubeProxy"] = cs.KubeProxy
 
 			if ig.IsMaster() {
+				spec["encryptionConfig"] = cs.EncryptionConfig
 				spec["kubeAPIServer"] = cs.KubeAPIServer
 				spec["kubeControllerManager"] = cs.KubeControllerManager
 				spec["kubeScheduler"] = cs.KubeScheduler
