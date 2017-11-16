@@ -242,3 +242,26 @@ spec:
               - http://local-mirror.mydomain
               - http://archive.ubuntu.com
 ```
+
+## Add Tags on AWS autoscalling group and instance
+
+If you need to add tags on auto scaling groups or instnaces (propagate ASG tags), you can add it in the instance group specs with *cloudLabels*.
+
+```
+# Exemple for nodes
+apiVersion: kops/v1alpha2
+kind: InstanceGroup
+metadata:
+  labels: 
+    kops.k8s.io/cluster: k8s.dev.local
+  name: nodes
+spec:
+  cloudLabels:
+    billing: infra
+    environment: dev
+  associatePublicIp: false
+  machineType: m4.xlarge
+  maxSize: 20
+  minSize: 2
+  role: Node
+```
