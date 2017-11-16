@@ -1,4 +1,4 @@
-# Kubernetes Operations (kops)
+# kops - Kubernetes Operations
 
 [![Build Status](https://travis-ci.org/kubernetes/kops.svg?branch=master)](https://travis-ci.org/kubernetes/kops) [![Go Report Card](https://goreportcard.com/badge/k8s.io/kops)](https://goreportcard.com/report/k8s.io/kops)  [![GoDoc Widget]][GoDoc]
 
@@ -13,7 +13,10 @@ The easiest way to get a production grade Kubernetes cluster up and running.
 
 We like to think of it as `kubectl` for clusters.
 
-`kops` helps you create, destroy, upgrade and maintain production-grade, highly available, Kubernetes clusters from the command line. AWS (Amazon Web Services) is currently officially supported, with GCE and VMware vSphere in alpha and other platforms planned.
+`kops` helps you create, destroy, upgrade and maintain production-grade, highly
+available, Kubernetes clusters from the command line. AWS (Amazon Web Services)
+is currently officially supported, with GCE in beta support , and VMware vSphere
+in alpha, and other platforms planned.
 
 
 ## Can I see it in action?
@@ -24,68 +27,134 @@ We like to think of it as `kubectl` for clusters.
   </a>
 </p>
 
-## Launching a Kubernetes cluster hosted on AWS
+
+## Launching a Kubernetes cluster hosted on AWS or GCE
 
 To replicate the above demo, check out our [tutorial](/docs/aws.md) for
 launching a Kubernetes cluster hosted on AWS.
 
+To install a Kubernetes cluster on GCE please follow this [guide](/docs/tutorial/gce.md).
+
 
 ## Features
 
-* Automates the provisioning of Kubernetes clusters in ([AWS](/docs/aws.md))
+* Automates the provisioning of Kubernetes clusters in [AWS](/docs/aws.md) and [GCE](/docs/tutorial/gce.md)
 * Deploys Highly Available (HA) Kubernetes Masters
-* Supports upgrading from [kube-up](/docs/upgrade_from_kubeup.md)
 * Built on a state-sync model for **dry-runs** and automatic **idempotency**
-* Ability to generate configuration files for AWS [CloudFormation](https://aws.amazon.com/cloudformation/) and Terraform [Terraform configuration](/docs/terraform.md)
+* Ability to generate [Terraform](/docs/terraform.md)
 * Supports custom Kubernetes [add-ons](/docs/addons.md)
 * Command line [autocompletion](/docs/cli/kops_completion.md)
-* Manifest Based API [Configuration](/docs/manifests_and_customizing_via_api.md)
-* Community supported!
+* YAML Manifest Based API [Configuration](/docs/manifests_and_customizing_via_api.md)
+* [Templating](/docs/cluster_template.md) and dry-run modes for creating
+ Manifests
+* Choose from eight different CNI [Networking](/docs/networking.md) providers out-of-the-box
+* Supports upgrading from [kube-up](/docs/upgrade_from_kubeup.md)
+* Capability to add containers, as hooks, and files to nodes via a [cluster manifest](/docs/cluster_spec.md)
 
 
-## Documentations
+## Documentation
 
 Documentation is in the `/docs` directory, [and the index is here.](docs/README.md)
 
 
+## Kubernetes Release Compatibility
+
+
+### Kubernetes Version Support
+
+kops is intended to be backward compatible.  It is always recommended to use the
+latest version of kops with whatever version of Kubernetes you are using.  Always
+use the latest version of kops.
+
+One exception, in regards to compatibility, kops supports the equivalent
+Kubernetes minor release number.  A minor version is the second digit in the
+release number.  kops version 1.8.0 has a minor version of 8. The numbering
+follows the semantic versioning specification, MAJOR.MINOR.PATCH.
+
+For example kops, 1.8.0 does not support Kubernetes 1.9.2, but kops 1.9.0
+supports Kubernetes 1.9.2 and previous Kubernetes versions. Only when kops minor
+version matches, the Kubernetes minor version does kops officially support the
+Kubernetes release.  kops does not stop a user from installing mismatching
+versions of K8s, but Kubernetes releases always require kops to install specific
+versions of components like docker, that tested against the particular
+Kubernetes version.
+
+#### Compatibility Matrix
+
+| kops version | k8s 1.5.x | k8s 1.6.x | k8s 1.7.x | k8s 1.8.x |
+|--------------|-----------|-----------|-----------|-----------|
+| 1.8.x        | Y         | Y         | Y         | Y         |
+| 1.7.x        | Y         | Y         | Y         | N         |
+| 1.6.x        | Y         | Y         | N         | N         |
+
+Use the latest version of kops for all releases of Kubernetes, with the caveat
+that higher versions of Kubernetes are not _officially_ supported by kops.
+
+### kops Release Schedule
+
+This project does not follow the Kubernetes release schedule.  `kops` aims to
+provide a reliable installation experience for kubernetes, and typically
+releases about a month after the corresponding Kubernetes release. This time
+allows for the Kubernetes project to resolve any issues introduced by the new
+version and ensures that we can support the latest features. kops will release
+alpha and beta pre-releases for people that are eager to try the latest
+Kubernetes release.  Please only use pre-GA kops releases in environments that
+can tolerate the quirks of new releases, and please do report any issues
+encountered.
+
+
 ## Installing
+
+### Prerequisite
 
 `kubectl` is required, see [here](http://kubernetes.io/docs/user-guide/prereqs/).
 
 
-### OSX From Homebrew (Latest Stable Release)
+### OSX From Homebrew
 
 ```console
-$ brew update && brew install kops
-
+brew update && brew install kops
 ```
 
 The `kops` binary is also available via our [releases](https://github.com/kubernetes/kops/releases/latest).
 
+
 ### Linux
 
-Download the [latest release](https://github.com/kubernetes/kops/releases/latest), then:
-
 ```console
-$ chmod +x kops-linux-amd64                 # Add execution permissions
-$ mv kops-linux-amd64 /usr/local/bin/kops   # Move the kops to /usr/local/bin
+curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+chmod +x kops-linux-amd64
+sudo mv kops-linux-amd64 /usr/local/bin/kops
 ```
 
-## History
+
+## Release History
 
 See the [releases](https://github.com/kubernetes/kops/releases) for more
 information on changes between releases.
 
 
-## Getting involved and contributing!
+## Getting Involved and Contributing
 
-Are you interested in contributing to kops? We, the maintainers and community, would love your suggestions, contributions, and help! We have a quick-start guide on [adding a feature](/docs/development/adding_a_feature.md). Also, the maintainers can be contacted at any time to learn more about how to get involved.
+Are you interested in contributing to kops? We, the maintainers and community,
+would love your suggestions, contributions, and help! We have a quick-start
+guide on [adding a feature](/docs/development/adding_a_feature.md). Also, the
+maintainers can be contacted at any time to learn more about how to get
+involved.
 
-In the interest of getting more new folks involved with kops, we are starting to tag issues with `good-starter-issue`. These are typically issues that have smaller scope but are good ways to start to get acquainted with the codebase.
+In the interest of getting more new folks involved with kops, we are starting to
+tag issues with `good-starter-issue`. These are typically issues that have
+smaller scope but are good ways to start to get acquainted with the codebase.
 
-We also encourage ALL active community participants to act as if they are maintainers, even if you don't have "official" write permissions. This is a community effort, we are here to serve the Kubernetes community. If you have an active interest and you want to get involved, you have real power! Don't assume that the only people who can get things done around here are the "maintainers".
+We also encourage ALL active community participants to act as if they are
+maintainers, even if you don't have "official" write permissions. This is a
+community effort, we are here to serve the Kubernetes community. If you have an
+active interest and you want to get involved, you have real power! Don't assume
+that the only people who can get things done around here are the "maintainers".
 
-We also would love to add more "official" maintainers, so show us what you can do!
+We also would love to add more "official" maintainers, so show us what you can
+do!
+
 
 What this means:
 
@@ -99,14 +168,8 @@ __Pull Requests__
 * Download, compile, and run the code and make sure the tests pass (make test).
   - Also verify that the new feature seems sane, follows best architectural patterns, and includes tests.
 
-
-### Maintainers
-
-* [@justinsb](https://github.com/justinsb)
-* [@chrislovecnm](https://github.com/chrislovecnm)
-* [@kris-nova](https://github.com/kris-nova)
-* [@geojaz](https://github.com/geojaz)
-* [@yissachar](https://github.com/yissachar)
+This repository uses the Kubernetes bots.  See a full list of the commands [here](
+https://github.com/kubernetes/test-infra/blob/master/commands.md).
 
 
 ## Office Hours
@@ -140,6 +203,7 @@ The maintainers and other community members are generally available on the [kube
 
 
 ## GitHub Issues
+
 
 ### Bugs
 
