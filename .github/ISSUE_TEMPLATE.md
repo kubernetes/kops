@@ -1,24 +1,35 @@
-Thanks for submitting an issue! 
+Thanks for submitting an issue! Please fill in as much of the template below as
+you can.
 
--------------BUG REPORT --------------------
-1. Fill in as much of the template below as you can. 
+------------- BUG REPORT TEMPLATE --------------------
 
-2. What kops version are you running? use `kops version`
+1. What `kops` version are you running? The command `kops version`, will display
+ this information.
 
-3. What Kubernetes version are you running? use `kubectl version`
+2. What Kubernetes version are you running? `kubectl version` will print the
+ version if a cluster is running or provide the Kubernetes version specified as
+ a `kops` flag.
 
-4. What cloud provider are you using?
+3. What cloud provider are you using?
 
-5. What commands did you execute (Please provide cluster manifest `kops get --name my.example.com`, if available) and what happened after commands executed?
+4. What commands did you run?  What is the simplest way to reproduce this issue?
 
-6. What you expected to happen:
+5. What happened after the commands executed?
 
-7. How can we to reproduce it (as minimally and precisely as possible):
+6. What did you expect to happen?
 
-8. Anything else do we need to know:
+7. Please provide your cluster manifest. Execute
+  `kops get --name my.example.com -oyaml` to display your cluster manifest.
+  You may want to remove your cluster name and other sensitive information.
 
--------------FEATURE REQUEST --------------------
+8. Please run the commands with most verbose logging by adding the `-v 10` flag.
+  Paste the logs into this report, or in a gist and provide the gist link here.
+
+9. Anything else do we need to know?
+
+
+------------- FEATURE REQUEST TEMPLATE --------------------
 
 1. Describe IN DETAIL the feature/behavior/change you would like to see.
 
-2. Feel free to submit an issue documentating a design supporting your feature request.
+2. Feel free to provide a design supporting your feature request.
