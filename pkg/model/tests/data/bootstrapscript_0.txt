@@ -158,6 +158,7 @@ cloudConfig:
   nodeTags: something
 docker:
   logLevel: INFO
+encryptionConfig: null
 kubeAPIServer:
   image: CoreOS
 kubeControllerManager:
