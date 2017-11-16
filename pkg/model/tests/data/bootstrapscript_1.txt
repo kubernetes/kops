@@ -158,6 +158,7 @@ cloudConfig:
   nodeTags: something
 docker:
   logLevel: INFO
+encryptionConfig: null
 fileAssets:
 - content: E1oeAbrnQsSldrIP1BpoP2SDykM= (fingerprint)
   name: iptables-restore

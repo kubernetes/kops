@@ -147,6 +147,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
     logLevel: warn
     storage: overlay,aufs
     version: 1.11.2
+  encryptionConfig: null
   kubeAPIServer:
     address: 127.0.0.1
     admissionControl:
