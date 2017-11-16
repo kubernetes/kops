@@ -252,7 +252,7 @@ If you need to add tags on auto scaling groups or instnaces (propagate ASG tags)
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
-  labels:
+  labels: 
     kops.k8s.io/cluster: k8s.dev.local
   name: nodes
 spec:
