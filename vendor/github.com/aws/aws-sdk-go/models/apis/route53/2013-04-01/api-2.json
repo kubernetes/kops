@@ -214,6 +214,7 @@
       },
       "output":{"shape":"CreateVPCAssociationAuthorizationResponse"},
       "errors":[
+        {"shape":"ConcurrentModification"},
         {"shape":"TooManyVPCAssociationAuthorizations"},
         {"shape":"NoSuchHostedZone"},
         {"shape":"InvalidVPCId"},
@@ -307,6 +308,7 @@
       },
       "output":{"shape":"DeleteVPCAssociationAuthorizationResponse"},
       "errors":[
+        {"shape":"ConcurrentModification"},
         {"shape":"VPCAssociationAuthorizationNotFound"},
         {"shape":"NoSuchHostedZone"},
         {"shape":"InvalidVPCId"},
@@ -971,8 +973,10 @@
         "us-east-2",
         "us-west-1",
         "us-west-2",
+        "ca-central-1",
         "eu-central-1",
         "eu-west-1",
+        "eu-west-2",
         "ap-south-1",
         "ap-southeast-1",
         "ap-southeast-2",
@@ -1799,6 +1803,7 @@
       "members":{
         "message":{"shape":"ErrorMessage"}
       },
+      "deprecated":true,
       "error":{"httpStatusCode":400},
       "exception":true
     },
@@ -1844,7 +1849,7 @@
         "locationName":"Region"
       },
       "max":64,
-      "min":1
+      "min":3
     },
     "HealthCheckType":{
       "type":"string",
@@ -1968,7 +1973,8 @@
     "InvalidChangeBatch":{
       "type":"structure",
       "members":{
-        "messages":{"shape":"ErrorMessages"}
+        "messages":{"shape":"ErrorMessages"},
+        "message":{"shape":"ErrorMessage"}
       },
       "exception":true
     },
@@ -2677,7 +2683,8 @@
         "PTR",
         "SRV",
         "SPF",
-        "AAAA"
+        "AAAA",
+        "CAA"
       ]
     },
     "RecordData":{
@@ -2730,6 +2737,7 @@
         "Region":{"shape":"ResourceRecordSetRegion"},
         "GeoLocation":{"shape":"GeoLocation"},
         "Failover":{"shape":"ResourceRecordSetFailover"},
+        "MultiValueAnswer":{"shape":"ResourceRecordSetMultiValueAnswer"},
         "TTL":{"shape":"TTL"},
         "ResourceRecords":{"shape":"ResourceRecords"},
         "AliasTarget":{"shape":"AliasTarget"},
@@ -2749,6 +2757,7 @@
       "max":128,
       "min":1
     },
+    "ResourceRecordSetMultiValueAnswer":{"type":"boolean"},
     "ResourceRecordSetRegion":{
       "type":"string",
       "enum":[
@@ -2834,7 +2843,7 @@
     },
     "SubnetMask":{
       "type":"string",
-      "max":2,
+      "max":3,
       "min":0
     },
     "TTL":{

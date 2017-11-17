@@ -1,3 +1,5 @@
+// +build example
+
 package main
 
 import (
@@ -52,11 +54,10 @@ func main() {
 		emailPtr, userPtr = nil, nil
 	}
 
-	sess, err := session.NewSession(
-		&aws.Config{
-			Region: regionPtr,
-		},
-	)
+	sess := session.Must(session.NewSession(&aws.Config{
+		Region: regionPtr,
+	}))
+
 	svc := s3.New(sess)
 
 	resp, err := svc.PutObjectAcl(&s3.PutObjectAclInput{

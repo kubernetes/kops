@@ -71,11 +71,19 @@
     ],
     "CreateKey": [
       {
+        "input": {
+          "Tags": [
+            {
+              "TagKey": "CreatedBy",
+              "TagValue": "ExampleUser"
+            }
+          ]
+        },
         "output": {
           "KeyMetadata": {
             "AWSAccountId": "111122223333",
             "Arn": "arn:aws:kms:us-east-2:111122223333:key/1234abcd-12ab-34cd-56ef-1234567890ab",
-            "CreationDate": "2016-11-01T10:15:42-07:00",
+            "CreationDate": "2017-01-09T12:00:07-08:00",
             "Description": "",
             "Enabled": true,
             "KeyId": "1234abcd-12ab-34cd-56ef-1234567890ab",
@@ -85,6 +93,9 @@
           }
         },
         "comments": {
+          "input": {
+            "Tags": "One or more tags. Each tag consists of a tag key and a tag value."
+          },
           "output": {
             "KeyMetadata": "An object that contains information about the CMK created by this operation."
           }
@@ -636,6 +647,42 @@
         "title": "To list customer master keys (CMKs)"
       }
     ],
+    "ListResourceTags": [
+      {
+        "input": {
+          "KeyId": "1234abcd-12ab-34cd-56ef-1234567890ab"
+        },
+        "output": {
+          "Tags": [
+            {
+              "TagKey": "CostCenter",
+              "TagValue": "87654"
+            },
+            {
+              "TagKey": "CreatedBy",
+              "TagValue": "ExampleUser"
+            },
+            {
+              "TagKey": "Purpose",
+              "TagValue": "Test"
+            }
+          ],
+          "Truncated": false
+        },
+        "comments": {
+          "input": {
+            "KeyId": "The identifier of the CMK whose tags you are listing. You can use the key ID or the Amazon Resource Name (ARN) of the CMK."
+          },
+          "output": {
+            "Tags": "A list of tags.",
+            "Truncated": "A boolean that indicates whether there are more items in the list. Returns true when there are more items, or false when there are not."
+          }
+        },
+        "description": "The following example lists tags for a CMK.",
+        "id": "to-list-tags-for-a-cmk-1483996855796",
+        "title": "To list tags for a customer master key (CMK)"
+      }
+    ],
     "ListRetirableGrants": [
       {
         "input": {
@@ -775,6 +822,48 @@
         "description": "The following example schedules the specified CMK for deletion.",
         "id": "to-schedule-a-cmk-for-deletion-1481331111094",
         "title": "To schedule a customer master key (CMK) for deletion"
+      }
+    ],
+    "TagResource": [
+      {
+        "input": {
+          "KeyId": "1234abcd-12ab-34cd-56ef-1234567890ab",
+          "Tags": [
+            {
+              "TagKey": "Purpose",
+              "TagValue": "Test"
+            }
+          ]
+        },
+        "comments": {
+          "input": {
+            "KeyId": "The identifier of the CMK you are tagging. You can use the key ID or the Amazon Resource Name (ARN) of the CMK.",
+            "Tags": "A list of tags."
+          }
+        },
+        "description": "The following example tags a CMK.",
+        "id": "to-tag-a-cmk-1483997246518",
+        "title": "To tag a customer master key (CMK)"
+      }
+    ],
+    "UntagResource": [
+      {
+        "input": {
+          "KeyId": "1234abcd-12ab-34cd-56ef-1234567890ab",
+          "TagKeys": [
+            "Purpose",
+            "CostCenter"
+          ]
+        },
+        "comments": {
+          "input": {
+            "KeyId": "The identifier of the CMK whose tags you are removing.",
+            "TagKeys": "A list of tag keys. Provide only the tag keys, not the tag values."
+          }
+        },
+        "description": "The following example removes tags from a CMK.",
+        "id": "to-remove-tags-from-a-cmk-1483997590962",
+        "title": "To remove tags from a customer master key (CMK)"
       }
     ],
     "UpdateAlias": [
