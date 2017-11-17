@@ -48,7 +48,7 @@ var (
 func main() {
 	fmt.Printf("dns-controller version %s\n", BuildVersion)
 	var dnsServer, dnsProviderID, gossipListen, gossipSecret, watchNamespace string
-	var gossipSeeds, zones []string
+	var gossipSeeds, whiteLists, zones []string
 	var watchIngress bool
 
 	// Be sure to get the glog flags
@@ -58,6 +58,7 @@ func main() {
 	flags.BoolVar(&watchIngress, "watch-ingress", true, "Configure hostnames found in ingress resources")
 	flags.StringSliceVar(&gossipSeeds, "gossip-seed", gossipSeeds, "If set, will enable gossip zones and seed using the provided addresses")
 	flags.StringSliceVarP(&zones, "zone", "z", []string{}, "Configure permitted zones and their mappings")
+	flags.StringSliceVarP(&whiteLists, "whitelist", "w", []string{}, "Configure permitted records")
 	flags.StringVar(&dnsProviderID, "dns", "aws-route53", "DNS provider we should use (aws-route53, google-clouddns, coredns, gossip)")
 	flags.StringVar(&gossipListen, "gossip-listen", "0.0.0.0:3998", "The address on which to listen if gossip is enabled")
 	flags.StringVar(&gossipSecret, "gossip-secret", gossipSecret, "Secret to use to secure gossip")
@@ -69,7 +70,7 @@ func main() {
 	flags.AddGoFlagSet(flag.CommandLine)
 	flags.Parse(os.Args)
 
-	zoneRules, err := dns.ParseZoneRules(zones)
+	zoneRules, err := dns.ParseZoneRules(zones, whiteLists)
 	if err != nil {
 		glog.Errorf("unexpected zone flags: %q", err)
 		os.Exit(1)
