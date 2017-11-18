@@ -133,8 +133,11 @@ func (c *MockAWSCloud) BuildTags(name *string) map[string]string {
 }
 
 func (c *MockAWSCloud) Tags() map[string]string {
-	glog.Fatalf("MockAWSCloud Tags not implemented")
-	return nil
+	tags := make(map[string]string)
+	for k, v := range c.tags {
+		tags[k] = v
+	}
+	return tags
 }
 
 func (c *MockAWSCloud) CreateTags(resourceId string, tags map[string]string) error {
