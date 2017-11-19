@@ -58,7 +58,7 @@ func ParseRecordWhiteList(s string) (*RecordWhiteList, error) {
 	s = strings.TrimSpace(s)
 	g, err := glob.Compile(s, '.')
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("error parsing %q: %v", s, err)
 	}
 	return &RecordWhiteList{Name: s, Pattern: g}, nil
 }
@@ -99,11 +99,12 @@ func ParseZoneRules(zones []string, whitelists []string) (*ZoneRules, error) {
 			return nil, fmt.Errorf("error parsing %q: %v", s, err)
 		}
 
+		glog.V(2).Infof("Adding whitelist %q", s)
 		r.WhiteLists = append(r.WhiteLists, whiteList)
 	}
 
 	if len(whitelists) == 0 {
-		glog.Infof("No whitelist rules specified, will permit management of any record")
+		glog.V(2).Infof("No whitelist rules specified, will permit management of any record")
 	}
 
 	return r, nil
