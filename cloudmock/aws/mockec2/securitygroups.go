@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
@@ -27,6 +28,11 @@ import (
 
 func (m *MockEC2) CreateSecurityGroupRequest(*ec2.CreateSecurityGroupInput) (*request.Request, *ec2.CreateSecurityGroupOutput) {
 	panic("MockEC2 CreateSecurityGroupRequest not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateSecurityGroupWithContext(aws.Context, *ec2.CreateSecurityGroupInput, ...request.Option) (*ec2.CreateSecurityGroupOutput, error) {
+	panic("Not implemented")
 	return nil, nil
 }
 
@@ -53,6 +59,10 @@ func (m *MockEC2) DeleteSecurityGroupRequest(*ec2.DeleteSecurityGroupInput) (*re
 	panic("MockEC2 DeleteSecurityGroupRequest not implemented")
 	return nil, nil
 }
+func (m *MockEC2) DeleteSecurityGroupWithContext(aws.Context, *ec2.DeleteSecurityGroupInput, ...request.Option) (*ec2.DeleteSecurityGroupOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
 func (m *MockEC2) DeleteSecurityGroup(*ec2.DeleteSecurityGroupInput) (*ec2.DeleteSecurityGroupOutput, error) {
 	panic("MockEC2 DeleteSecurityGroup not implemented")
 	return nil, nil
@@ -62,11 +72,19 @@ func (m *MockEC2) DescribeSecurityGroupReferencesRequest(*ec2.DescribeSecurityGr
 	panic("Not implemented")
 	return nil, nil
 }
+func (m *MockEC2) DescribeSecurityGroupReferencesWithContext(aws.Context, *ec2.DescribeSecurityGroupReferencesInput, ...request.Option) (*ec2.DescribeSecurityGroupReferencesOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
 func (m *MockEC2) DescribeSecurityGroupReferences(*ec2.DescribeSecurityGroupReferencesInput) (*ec2.DescribeSecurityGroupReferencesOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
 func (m *MockEC2) DescribeSecurityGroupsRequest(*ec2.DescribeSecurityGroupsInput) (*request.Request, *ec2.DescribeSecurityGroupsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeSecurityGroupsWithContext(aws.Context, *ec2.DescribeSecurityGroupsInput, ...request.Option) (*ec2.DescribeSecurityGroupsOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -128,11 +146,19 @@ func (m *MockEC2) DescribeStaleSecurityGroupsRequest(*ec2.DescribeStaleSecurityG
 	panic("Not implemented")
 	return nil, nil
 }
+func (m *MockEC2) DescribeStaleSecurityGroupsWithContext(aws.Context, *ec2.DescribeStaleSecurityGroupsInput, ...request.Option) (*ec2.DescribeStaleSecurityGroupsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
 func (m *MockEC2) DescribeStaleSecurityGroups(*ec2.DescribeStaleSecurityGroupsInput) (*ec2.DescribeStaleSecurityGroupsOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
 func (m *MockEC2) RevokeSecurityGroupEgressRequest(*ec2.RevokeSecurityGroupEgressInput) (*request.Request, *ec2.RevokeSecurityGroupEgressOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) RevokeSecurityGroupEgressWithContext(aws.Context, *ec2.RevokeSecurityGroupEgressInput, ...request.Option) (*ec2.RevokeSecurityGroupEgressOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -144,6 +170,10 @@ func (m *MockEC2) RevokeSecurityGroupIngressRequest(*ec2.RevokeSecurityGroupIngr
 	panic("Not implemented")
 	return nil, nil
 }
+func (m *MockEC2) RevokeSecurityGroupIngressWithContext(aws.Context, *ec2.RevokeSecurityGroupIngressInput, ...request.Option) (*ec2.RevokeSecurityGroupIngressOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
 func (m *MockEC2) RevokeSecurityGroupIngress(*ec2.RevokeSecurityGroupIngressInput) (*ec2.RevokeSecurityGroupIngressOutput, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -152,11 +182,19 @@ func (m *MockEC2) AuthorizeSecurityGroupEgressRequest(*ec2.AuthorizeSecurityGrou
 	panic("Not implemented")
 	return nil, nil
 }
+func (m *MockEC2) AuthorizeSecurityGroupEgressWithContext(aws.Context, *ec2.AuthorizeSecurityGroupEgressInput, ...request.Option) (*ec2.AuthorizeSecurityGroupEgressOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
 func (m *MockEC2) AuthorizeSecurityGroupEgress(*ec2.AuthorizeSecurityGroupEgressInput) (*ec2.AuthorizeSecurityGroupEgressOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
 func (m *MockEC2) AuthorizeSecurityGroupIngressRequest(*ec2.AuthorizeSecurityGroupIngressInput) (*request.Request, *ec2.AuthorizeSecurityGroupIngressOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) AuthorizeSecurityGroupIngressWithContext(aws.Context, *ec2.AuthorizeSecurityGroupIngressInput, ...request.Option) (*ec2.AuthorizeSecurityGroupIngressOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
