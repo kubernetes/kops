@@ -33,6 +33,10 @@ import (
 	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
+const TagNameEtcdClusterPrefix = "k8s.io/etcd/"
+const TagNameRolePrefix = "k8s.io/role/"
+const TagClusterName = "KubernetesCluster"
+
 // readBackoff is the backoff strategy for openstack read retries.
 var readBackoff = wait.Backoff{
 	Duration: time.Second,
@@ -165,7 +169,7 @@ func (c *openstackCloud) ListVolumes(opt cinder.ListOpts) ([]cinder.Volume, erro
 
 		vs, err := cinder.ExtractVolumes(allPages)
 		if err != nil {
-			return false, fmt.Errorf("error extracting volumes: %v", err)
+			return false, fmt.Errorf("error extracting volumes from pages: %v", err)
 		}
 		volumes = vs
 		return true, nil
@@ -197,5 +201,4 @@ func (c *openstackCloud) CreateVolume(opt cinder.CreateOpts) (*cinder.Volume, er
 	} else {
 		return volume, wait.ErrWaitTimeout
 	}
-
 }
