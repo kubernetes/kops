@@ -431,6 +431,57 @@ var dockerVersions = []dockerVersion{
 		Hash:          "4659c937b66519c88ef2a82a906bb156db29d191",
 		Dependencies:  []string{"policycoreutils-python"},
 	},
+	// 17.09.0 - k8s 1.8
+
+	// 17.09.0 - Jessie
+	{
+		DockerVersion: "17.09.0",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.09.0~ce-0~debian",
+		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_17.09.0~ce-0~debian_amd64.deb",
+		Hash:          "430ba87f8aa36fedcac1a48e909cbe1830b53845",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 17.09.0 - Jessie on ARM
+	{
+		DockerVersion: "17.09.0",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionJessie},
+		Architectures: []Architecture{ArchitectureArm},
+		Version:       "17.09.0~ce-0~debian",
+		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/armhf/docker-ce_17.09.0~ce-0~debian_armhf.deb",
+		Hash:          "5001a1defec7c33aa58ddebbd3eae6ebb5f36479",
+		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
+	},
+
+	// 17.09.0 - Xenial
+	{
+		DockerVersion: "17.09.0",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionXenial},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.09.0~ce-0~ubuntu",
+		Source:        "http://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_17.09.0~ce-0~ubuntu_amd64.deb",
+		Hash:          "94f6e89be6d45d9988269a237eb27c7d6a844d7f",
+		Dependencies:  []string{"bridge-utils", "iptables", "libapparmor1", "libltdl7", "perl"},
+		//Depends: iptables, init-system-helpers, lsb-base, libapparmor1, libc6, libdevmapper1.02.1, libltdl7, libeseccomp2, libsystemd0
+		//Recommends: aufs-tools, ca-certificates, cgroupfs-mount | cgroup-lite, git, xz-utils, apparmor
+	},
+
+	// 17.09.0 - Centos / Rhel7
+	{
+		DockerVersion: "17.09.0",
+		Name:          "docker-ce",
+		Distros:       []distros.Distribution{distros.DistributionRhel7, distros.DistributionCentos7},
+		Architectures: []Architecture{ArchitectureAmd64},
+		Version:       "17.09.0.ce",
+		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.09.0.ce-1.el7.centos.x86_64.rpm",
+		Hash:          "b4ce72e80ff02926de943082821bbbe73958f87a",
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libgcroup"},
+	},
 }
 
 func (d *dockerVersion) matches(arch Architecture, dockerVersion string, distro distros.Distribution) bool {

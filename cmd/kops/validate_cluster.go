@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime"
 	"strings"
 
 	"github.com/golang/glog"
@@ -31,9 +32,17 @@ import (
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	apiutil "k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/util/pkg/tables"
 )
+
+func init() {
+	if runtime.GOOS == "darwin" {
+		// In order for  net.LookupHost(apiAddr.Host) to lookup our placeholder address on darwin, we have to
+		os.Setenv("GODEBUG", "netdns=go")
+	}
+}
 
 type ValidateClusterOptions struct {
 	// No options yet
@@ -103,6 +112,25 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	k8sClient, err := kubernetes.NewForConfig(config)
 	if err != nil {
 		return fmt.Errorf("Cannot build kube api client for %q: %v\n", contextName, err)
+	}
+
+	// Do not use if we are running gossip
+	if !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
+		hasPlaceHolderIPAddress, err := validation.HasPlaceHolderIP(contextName)
+		if err != nil {
+			return err
+		}
+
+		if hasPlaceHolderIPAddress {
+			fmt.Println(
+				"Validation Failed\n\n" +
+					"The dns-controller Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address." +
+					"  The API DNS IP address is the placeholder address that kops creates: 203.0.113.123." +
+					"  Please wait about 5-10 minutes for a master to start, dns-controller to launch, and DNS to propagate." +
+					"  The protokube container and dns-controller deployment logs may contain more diagnostic information." +
+					"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start.")
+			return fmt.Errorf("\nCannot reach cluster's API server: unable to Validate Cluster: %s", cluster.ObjectMeta.Name)
+		}
 	}
 
 	validationCluster, validationFailed := validation.ValidateCluster(cluster.ObjectMeta.Name, list, k8sClient)

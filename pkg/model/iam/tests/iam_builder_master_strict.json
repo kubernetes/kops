@@ -75,7 +75,7 @@
       ],
       "Condition": {
         "StringEquals": {
-          "ec2:ResourceTag/KubernetesCluster": "iam-builder-test.k8s.local"
+          "autoscaling:ResourceTag/KubernetesCluster": "iam-builder-test.k8s.local"
         }
       }
     },

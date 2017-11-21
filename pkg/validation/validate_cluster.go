@@ -18,11 +18,15 @@ package validation
 
 import (
 	"fmt"
+	"net/url"
 	"time"
+
+	"net"
 
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/upup/pkg/fi"
@@ -52,6 +56,32 @@ type ValidationNode struct {
 	Role     string             `json:"role,omitempty"`
 	Hostname string             `json:"hostname,omitempty"`
 	Status   v1.ConditionStatus `json:"status,omitempty"`
+}
+
+// HasPlaceHolderIP checks if the API DNS has been updated
+func HasPlaceHolderIP(clusterName string) (bool, error) {
+
+	config, err := clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+		clientcmd.NewDefaultClientConfigLoadingRules(),
+		&clientcmd.ConfigOverrides{CurrentContext: clusterName}).ClientConfig()
+
+	apiAddr, err := url.Parse(config.Host)
+	if err != nil {
+		return true, fmt.Errorf("unable to parse Kubernetes cluster API URL: %v", err)
+	}
+
+	hostAddrs, err := net.LookupHost(apiAddr.Host)
+	if err != nil {
+		return true, fmt.Errorf("unable to resolve Kubernetes cluster API URL dns: %v", err)
+	}
+
+	for _, h := range hostAddrs {
+		if h == "203.0.113.123" {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 // ValidateCluster validate a k8s cluster with a provided instance group list
