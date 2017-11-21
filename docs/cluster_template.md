@@ -1,6 +1,6 @@
 # Cluster Templating
 
-The command `kops replace` can replace a cluster desired configuration from the config in a yaml file (see [/cli/kops_replace.md](/cli/kops_replace.md)).
+The command `kops replace` can replace a cluster desired configuration from the config in a yaml file (see [cli/kops_replace.md](cli/kops_replace.md)).
 
 It is possible to generate that yaml file from a template, using the command `kops toolbox template` (see [cli/kops_toolbox_template.md](cli/kops_toolbox_template.md)).
 
@@ -45,7 +45,7 @@ Running `kops toolbox template` replaces the placeholders in the template by val
 
 Note: when creating a cluster desired configuration template, you can
 
-- use `kops get k8s-cluster.example.com -o yaml > cluster-desired-config.yaml` to create the cluster desired configuration file (see [cli/kops_get.md](cli/kops_get.md)). The values in this file are defined in [cli/cluster_spec.md](cli/cluster_spec.md).
+- use `kops get k8s-cluster.example.com -o yaml > cluster-desired-config.yaml` to create the cluster desired configuration file (see [cli/kops_get.md](cli/kops_get.md)). The values in this file are defined in [cluster_spec.md](cluster_spec.md).
 - replace values by placeholders in that file to create the template.
 
 ### Templates
