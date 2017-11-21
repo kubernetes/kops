@@ -754,6 +754,11 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 			}
 		}
 	}
+	if in.AdditionalNetworkCIDRs != nil {
+		in, out := &in.AdditionalNetworkCIDRs, &out.AdditionalNetworkCIDRs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.Topology != nil {
 		in, out := &in.Topology, &out.Topology
 		if *in == nil {
