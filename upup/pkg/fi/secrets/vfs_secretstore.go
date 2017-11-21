@@ -127,7 +127,7 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Se
 			return nil, false, err
 		}
 
-		err = c.createSecret(secret, p, acl)
+		err = c.createSecret(secret, p, acl, false)
 		if err != nil {
 			if os.IsExist(err) && i == 0 {
 				glog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
@@ -151,6 +151,27 @@ func (c *VFSSecretStore) GetOrCreateSecret(id string, secret *fi.Secret) (*fi.Se
 	return s, true, nil
 }
 
+func (c *VFSSecretStore) ReplaceSecret(id string, secret *fi.Secret) (*fi.Secret, error) {
+	p := c.buildSecretPath(id)
+
+	acl, err := acls.GetACL(p, c.cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	err = c.createSecret(secret, p, acl, true)
+	if err != nil {
+		return nil, fmt.Errorf("unable to write secret: %v", err)
+	}
+
+	// Confirm the secret exists
+	s, err := c.loadSecret(p)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load secret immmediately after creation %v: %v", p, err)
+	}
+	return s, nil
+}
+
 func (c *VFSSecretStore) loadSecret(p vfs.Path) (*fi.Secret, error) {
 	data, err := p.ReadFile()
 	if err != nil {
@@ -166,11 +187,15 @@ func (c *VFSSecretStore) loadSecret(p vfs.Path) (*fi.Secret, error) {
 	return s, nil
 }
 
-// createSecret writes the secret, but only if it does not exists
-func (c *VFSSecretStore) createSecret(s *fi.Secret, p vfs.Path, acl vfs.ACL) error {
+// createSecret will create the Secret, overwriting an existing secret if replace is true
+func (c *VFSSecretStore) createSecret(s *fi.Secret, p vfs.Path, acl vfs.ACL, replace bool) error {
 	data, err := json.Marshal(s)
 	if err != nil {
 		return fmt.Errorf("error serializing secret: %v", err)
+	}
+
+	if replace {
+		return p.WriteFile(data, acl)
 	}
 	return p.CreateFile(data, acl)
 }
