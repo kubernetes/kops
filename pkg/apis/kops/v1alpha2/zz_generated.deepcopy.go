@@ -763,6 +763,11 @@ func (in *ClusterSpec) DeepCopyInto(out *ClusterSpec) {
 		*out = make([]ClusterSubnetSpec, len(*in))
 		copy(*out, *in)
 	}
+	if in.AdditionalNetworkCIDRs != nil {
+		in, out := &in.AdditionalNetworkCIDRs, &out.AdditionalNetworkCIDRs
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	if in.Topology != nil {
 		in, out := &in.Topology, &out.Topology
 		if *in == nil {
@@ -2275,6 +2280,24 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 	}
 	if in.HorizontalPodAutoscalerSyncPeriod != nil {
 		in, out := &in.HorizontalPodAutoscalerSyncPeriod, &out.HorizontalPodAutoscalerSyncPeriod
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
+	if in.HorizontalPodAutoscalerDownscaleDelay != nil {
+		in, out := &in.HorizontalPodAutoscalerDownscaleDelay, &out.HorizontalPodAutoscalerDownscaleDelay
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
+	if in.HorizontalPodAutoscalerUpscaleDelay != nil {
+		in, out := &in.HorizontalPodAutoscalerUpscaleDelay, &out.HorizontalPodAutoscalerUpscaleDelay
 		if *in == nil {
 			*out = nil
 		} else {
