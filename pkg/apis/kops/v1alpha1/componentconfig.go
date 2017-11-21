@@ -322,7 +322,7 @@ type KubeControllerManagerConfig struct {
 	// HorizontalPodAutoscalerUpscaleDelay is a duration that specifies how
 	// long the autoscaler has to wait before another upscale operation can
 	// be performed after the current one has completed.
-	HorizontalPodAutoscalerUpscaleDelay *metav1.Duration `json:"horizontalPodAutoscalerUpscaleDelay,omitempty" flag:"horizontal-pod-autoscaler-downscale-delay"`
+	HorizontalPodAutoscalerUpscaleDelay *metav1.Duration `json:"horizontalPodAutoscalerUpscaleDelay,omitempty" flag:"horizontal-pod-autoscaler-upscale-delay"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }
