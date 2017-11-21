@@ -40,6 +40,9 @@ var (
 	# Create a new encryption config.
 	kops create secret encryptionconfig -f config.yaml \
 		--name k8s-cluster.example.com --state s3://example.com
+	# Replace an existing encryption config secret.
+	kops create secret encryptionconfig -f config.yaml --force \
+		--name k8s-cluster.example.com --state s3://example.com
 	`))
 
 	create_secret_encryptionconfig_short = i18n.T(`Create an encryption config.`)
@@ -48,6 +51,7 @@ var (
 type CreateSecretEncryptionConfigOptions struct {
 	ClusterName          string
 	EncryptionConfigPath string
+	Force                bool
 }
 
 func NewCmdCreateSecretEncryptionConfig(f *util.Factory, out io.Writer) *cobra.Command {
@@ -78,6 +82,7 @@ func NewCmdCreateSecretEncryptionConfig(f *util.Factory, out io.Writer) *cobra.C
 	}
 
 	cmd.Flags().StringVarP(&options.EncryptionConfigPath, "", "f", "", "Path to encryption config yaml file")
+	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kops secret if it already exists")
 
 	return cmd
 }
@@ -120,9 +125,19 @@ func RunCreateSecretEncryptionConfig(f *util.Factory, out io.Writer, options *Cr
 
 	secret.Data = data
 
-	_, _, err = secretStore.GetOrCreateSecret("encryptionconfig", secret)
-	if err != nil {
-		return fmt.Errorf("error adding encryption config secret: %v", err)
+	if !options.Force {
+		_, created, err := secretStore.GetOrCreateSecret("encryptionconfig", secret)
+		if err != nil {
+			return fmt.Errorf("error adding encryptionconfig secret: %v", err)
+		}
+		if !created {
+			return fmt.Errorf("failed to create the encryptionconfig secret as it already exists. The `--force` flag can be passed to replace an existing secret.")
+		}
+	} else {
+		_, err := secretStore.ReplaceSecret("encryptionconfig", secret)
+		if err != nil {
+			return fmt.Errorf("error updating encryptionconfig secret: %v", err)
+		}
 	}
 
 	return nil
