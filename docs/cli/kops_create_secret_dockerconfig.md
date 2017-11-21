@@ -20,12 +20,16 @@ kops create secret dockerconfig
   # Create an new docker config.
   kops create secret dockerconfig -f /path/to/docker/config.json \
   --name k8s-cluster.example.com --state s3://example.com
+  # Replace an existing docker config secret.
+  kops create secret dockerconfig -f /path/to/docker/config.json --force \
+  --name k8s-cluster.example.com --state s3://example.com
 ```
 
 ### Options
 
 ```
   -f, -- string   Path to docker config JSON file
+      --force     Force replace the kops secret if it already exists
 ```
 
 ### Options inherited from parent commands
