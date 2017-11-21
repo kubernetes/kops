@@ -30,6 +30,8 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/dotasks"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gcetasks"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
+	"k8s.io/kops/upup/pkg/fi/cloudup/openstacktasks"
 )
 
 const (
@@ -95,6 +97,11 @@ func (b *MasterVolumeBuilder) Build(c *fi.ModelBuilderContext) error {
 				b.addVSphereVolume(c, name, volumeSize, zone, etcd, m, allMembers)
 			case kops.CloudProviderBareMetal:
 				glog.Fatalf("BareMetal not implemented")
+			case kops.CloudProviderOpenstack:
+				err = b.addOpenstackVolume(c, name, volumeSize, zone, etcd, m, allMembers)
+				if err != nil {
+					return err
+				}
 			default:
 				return fmt.Errorf("unknown cloudprovider %q", b.Cluster.Spec.CloudProvider)
 			}
@@ -204,4 +211,34 @@ func (b *MasterVolumeBuilder) addGCEVolume(c *fi.ModelBuilderContext, name strin
 
 func (b *MasterVolumeBuilder) addVSphereVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) {
 	fmt.Print("addVSphereVolume to be implemented")
+}
+
+func (b *MasterVolumeBuilder) addOpenstackVolume(c *fi.ModelBuilderContext, name string, volumeSize int32, zone string, etcd *kops.EtcdClusterSpec, m *kops.EtcdMemberSpec, allMembers []string) error {
+	volumeType := fi.StringValue(m.VolumeType)
+	if volumeType == "" {
+		return fmt.Errorf("must set ETCDMemberSpec.VolumeType on Openstack platform")
+	}
+
+	// The tags are how protokube knows to mount the volume and use it for etcd
+	tags := make(map[string]string)
+	// Apply all user defined labels on the volumes
+	for k, v := range b.Cluster.Spec.CloudLabels {
+		tags[k] = v
+	}
+	// This is the configuration of the etcd cluster
+	tags[openstack.TagNameEtcdClusterPrefix+etcd.Name] = m.Name + "/" + strings.Join(allMembers, ",")
+	// This says "only mount on a master"
+	tags[openstack.TagNameRolePrefix+"master"] = "1"
+
+	t := &openstacktasks.Volume{
+		Name:             s(name),
+		AvailabilityZone: s(zone),
+		VolumeType:       s(volumeType),
+		SizeGB:           fi.Int64(int64(volumeSize)),
+		Tags:             tags,
+		Lifecycle:        b.Lifecycle,
+	}
+	c.AddTask(t)
+
+	return nil
 }
