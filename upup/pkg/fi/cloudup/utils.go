@@ -133,7 +133,8 @@ func BuildCloud(cluster *kops.Cluster) (fi.Cloud, error) {
 		}
 	case kops.CloudProviderOpenstack:
 		{
-			osc, err := openstack.NewOpenstackCloud()
+			cloudTags := map[string]string{openstack.TagClusterName: cluster.ObjectMeta.Name}
+			osc, err := openstack.NewOpenstackCloud(cloudTags)
 			if err != nil {
 				return nil, err
 			}

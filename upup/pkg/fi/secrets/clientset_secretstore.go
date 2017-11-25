@@ -157,7 +157,7 @@ func (c *ClientsetSecretStore) GetOrCreateSecret(name string, secret *fi.Secret)
 			return s, false, nil
 		}
 
-		_, err = c.createSecret(secret, name)
+		_, err = c.createSecret(secret, name, false)
 		if err != nil {
 			if errors.IsAlreadyExists(err) && i == 0 {
 				glog.Infof("Got already-exists error when writing secret; likely due to concurrent creation.  Will retry")
@@ -179,6 +179,21 @@ func (c *ClientsetSecretStore) GetOrCreateSecret(name string, secret *fi.Secret)
 		return nil, false, err
 	}
 	return s, true, nil
+}
+
+// ReplaceSecret implements fi.SecretStore::ReplaceSecret
+func (c *ClientsetSecretStore) ReplaceSecret(name string, secret *fi.Secret) (*fi.Secret, error) {
+	_, err := c.createSecret(secret, name, true)
+	if err != nil {
+		return nil, fmt.Errorf("unable to write secret: %v", err)
+	}
+
+	// Confirm the secret exists
+	s, err := c.loadSecret(name)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load secret immmediately after creation: %v", err)
+	}
+	return s, nil
 }
 
 // loadSecret returns the named secret, if it exists, otherwise returns nil
@@ -207,8 +222,8 @@ func parseSecret(keyset *kops.Keyset) (*fi.Secret, error) {
 	return s, nil
 }
 
-// createSecret writes the secret, but only if it does not exist
-func (c *ClientsetSecretStore) createSecret(s *fi.Secret, name string) (*kops.Keyset, error) {
+// createSecret will create the Secret, overwriting an existing secret if replace is true
+func (c *ClientsetSecretStore) createSecret(s *fi.Secret, name string, replace bool) (*kops.Keyset, error) {
 	keyset := &kops.Keyset{}
 	keyset.Name = NamePrefix + name
 	keyset.Spec.Type = kops.SecretTypeSecret
@@ -221,5 +236,8 @@ func (c *ClientsetSecretStore) createSecret(s *fi.Secret, name string) (*kops.Ke
 		PrivateMaterial: s.Data,
 	})
 
+	if replace {
+		return c.clientset.Keysets(c.namespace).Update(keyset)
+	}
 	return c.clientset.Keysets(c.namespace).Create(keyset)
 }

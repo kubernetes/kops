@@ -468,11 +468,10 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Calico != nil {
 		key := "networking.projectcalico.org"
-		// 2.6.3-kops.1 = 2.6.2 with kops manifest tweaks.  This should go away with the next version bump.
 		versions := map[string]string{
 			"pre-k8s-1.6": "2.4.1",
-			"k8s-1.6":     "2.4.2-kops.1",
-			"k8s-1.8":     "2.6.3-kops.1",
+			"k8s-1.6":     "2.6.2",
+			"k8s-1.7":     "2.6.2",
 		}
 
 		{
@@ -499,14 +498,14 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				Version:           fi.String(versions[id]),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.6.0 <1.8.0",
+				KubernetesVersion: ">=1.6.0 <1.7.0",
 				Id:                id,
 			})
 			manifests[key+"-"+id] = "addons/" + location
 		}
 
 		{
-			id := "k8s-1.8"
+			id := "k8s-1.7"
 			location := key + "/" + id + ".yaml"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
@@ -514,7 +513,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 				Version:           fi.String(versions[id]),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.8.0",
+				KubernetesVersion: ">=1.7.0",
 				Id:                id,
 			})
 			manifests[key+"-"+id] = "addons/" + location
@@ -598,18 +597,18 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Romana != nil {
 		key := "networking.romana"
-		version := "v2.0-preview.3"
+		version := "v2.0.0"
 
 		{
-			location := key + "/k8s-1.6.yaml"
-			id := "k8s-1.6"
+			location := key + "/k8s-1.7.yaml"
+			id := "k8s-1.7"
 
 			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
 				Name:              fi.String(key),
 				Version:           fi.String(version),
 				Selector:          networkingSelector,
 				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.6.0",
+				KubernetesVersion: ">=1.7.0",
 				Id:                id,
 			})
 			manifests[key+"-"+id] = "addons/" + location

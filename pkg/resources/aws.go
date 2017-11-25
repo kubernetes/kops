@@ -220,7 +220,7 @@ func addUntaggedRouteTables(cloud awsup.AWSCloud, clusterName string, resources 
 			continue
 		}
 
-		t := buildTrackerForRouteTable(rt)
+		t := buildTrackerForRouteTable(rt, clusterName)
 		if resources[t.Type+":"+t.ID] == nil {
 			resources[t.Type+":"+t.ID] = t
 		}
@@ -973,19 +973,20 @@ func ListRouteTables(cloud fi.Cloud, clusterName string) ([]*Resource, error) {
 	var resourceTrackers []*Resource
 
 	for _, rt := range routeTables {
-		resourceTracker := buildTrackerForRouteTable(rt)
+		resourceTracker := buildTrackerForRouteTable(rt, clusterName)
 		resourceTrackers = append(resourceTrackers, resourceTracker)
 	}
 
 	return resourceTrackers, nil
 }
 
-func buildTrackerForRouteTable(rt *ec2.RouteTable) *Resource {
+func buildTrackerForRouteTable(rt *ec2.RouteTable, clusterName string) *Resource {
 	resourceTracker := &Resource{
 		Name:    FindName(rt.Tags),
 		ID:      aws.StringValue(rt.RouteTableId),
 		Type:    ec2.ResourceTypeRouteTable,
 		Deleter: DeleteRouteTable,
+		Shared:  HasSharedTag(ec2.ResourceTypeRouteTable+":"+*rt.RouteTableId, rt.Tags, clusterName),
 	}
 
 	var blocks []string

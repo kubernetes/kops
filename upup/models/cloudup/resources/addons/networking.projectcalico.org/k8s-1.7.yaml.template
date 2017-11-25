@@ -16,11 +16,10 @@ data:
   calico_backend: "bird"
 
   # The CNI network configuration to install on each node.
-  # cniVersion should be 0.1.0 on k8s: https://github.com/projectcalico/calico/issues/742
   cni_network_config: |-
     {
       "name": "k8s-pod-network",
-      "cniVersion": "0.1.0",
+      "cniVersion": "0.3.0",
       "plugins": [
         {
           "type": "calico",

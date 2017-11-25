@@ -8,6 +8,8 @@ From Homebrew:
 brew update && brew install kops
 ```
 
+Developers can also easily install [development releases](development/homebrew.md).
+
 From Github:
 
 ```bash

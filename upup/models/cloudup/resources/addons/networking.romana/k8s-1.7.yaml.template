@@ -137,7 +137,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: romana-daemon
-        image: quay.io/romana/daemon:v2.0-preview.2
+        image: quay.io/romana/daemon:v2.0.0
         imagePullPolicy: Always
         resources:
           requests:
@@ -170,7 +170,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: romana-listener
-        image: quay.io/romana/listener:v2.0-preview.2
+        image: quay.io/romana/listener:v2.0.0
         imagePullPolicy: Always
         resources:
           requests:
@@ -185,6 +185,8 @@ metadata:
   name: romana-agent
   namespace: kube-system
 spec:
+  updateStrategy:
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -200,7 +202,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: romana-agent
-        image: quay.io/romana/agent:v2.0-preview.2
+        image: quay.io/romana/agent:v2.0.0
         imagePullPolicy: Always
         resources:
           requests:
@@ -213,6 +215,10 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        - name: NODEIP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
         args:
         - --service-cluster-ip-range={{ .ServiceClusterIPRange }}
         securityContext:
@@ -299,7 +305,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: romana-aws
-        image: quay.io/romana/aws:v2.0-preview.2
+        image: quay.io/romana/aws:v2.0.0
         imagePullPolicy: Always
         resources:
           requests:
@@ -328,7 +334,7 @@ spec:
         effect: NoSchedule
       containers:
       - name: romana-vpcrouter
-        image: quay.io/romana/vpcrouter-romana-plugin
+        image: quay.io/romana/vpcrouter-romana-plugin:1.1.12
         imagePullPolicy: Always
         resources:
           requests:
