@@ -28,21 +28,19 @@ When defining a new function:
 package cloudup
 
 import (
-	"encoding/base64"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
 	"text/template"
 
+	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/dns"
 	"k8s.io/kops/pkg/model"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-
-	"github.com/golang/glog"
-	"k8s.io/apimachinery/pkg/util/sets"
 )
 
 type TemplateFunctions struct {
@@ -64,9 +62,6 @@ func (tf *TemplateFunctions) AddTo(dest template.FuncMap) {
 	// Remember that we may be on a different arch from the target.  Hard-code for now.
 	dest["Arch"] = func() string { return "amd64" }
 
-	dest["Base64Encode"] = func(s string) string {
-		return base64.StdEncoding.EncodeToString([]byte(s))
-	}
 	dest["replace"] = func(s, find, replace string) string {
 		return strings.Replace(s, find, replace, -1)
 	}
