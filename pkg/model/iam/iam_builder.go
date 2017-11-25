@@ -661,7 +661,7 @@ func addMasterASPolicies(p *Policy, resource stringorslice.StringOrSlice, legacy
 				Resource: resource,
 				Condition: Condition{
 					"StringEquals": map[string]string{
-						"ec2:ResourceTag/KubernetesCluster": clusterName,
+						"autoscaling:ResourceTag/KubernetesCluster": clusterName,
 					},
 				},
 			},
