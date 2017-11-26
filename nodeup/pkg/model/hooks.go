@@ -53,12 +53,12 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 			var name string
 			switch hook.Name {
 			case "":
-				name = fmt.Sprintf("kops-hook-%d", j)
+				name = fmt.Sprintf("kops-hook-%d.service", j)
 				if isInstanceGroup {
-					name = fmt.Sprintf("%s-ig", name)
+					name = fmt.Sprintf("%s-ig.service", name)
 				}
 			default:
-				name = hook.Name
+				name = fmt.Sprintf("%s.service", hook.Name)
 			}
 
 			if _, found := hookNames[name]; found {
