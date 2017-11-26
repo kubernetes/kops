@@ -3,6 +3,9 @@ load("@io_bazel_rules_go//go:def.bzl", "go_test")
 go_test(
     name = "go_default_test",
     srcs = ["integration_test.go"],
+    data = [
+        "exported_testdata",  # keep
+    ],
     importpath = "k8s.io/kops/tests/integration/conversion",
     deps = [
         "//pkg/apis/kops:go_default_library",
@@ -13,4 +16,10 @@ go_test(
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
     ],
+)
+
+filegroup(
+    name = "exported_testdata",
+    srcs = glob(["minimal/**"]),
+    visibility = ["//visibility:public"],
 )
