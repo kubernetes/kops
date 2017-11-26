@@ -62,7 +62,8 @@ func NewClientsetCAStore(cluster *kops.Cluster, clientset kopsinternalversion.Ko
 	return c
 }
 
-// readCAKeypairs retrieves the CA keypair, generating a new keypair if not found
+// readCAKeypairs retrieves the CA keypair.
+// (No longer generates a keypair if not found.)
 func (c *ClientsetCAStore) readCAKeypairs(id string) (*keyset, error) {
 	c.mutex.Lock()
 	defer c.mutex.Unlock()
@@ -78,14 +79,9 @@ func (c *ClientsetCAStore) readCAKeypairs(id string) (*keyset, error) {
 	}
 
 	if keyset == nil {
-		keyset, err = c.generateCACertificate(id)
-		if err != nil {
-			return nil, err
-		}
-
+		return nil, nil
 	}
 	c.cachedCaKeysets[id] = keyset
-
 	return keyset, nil
 }
 

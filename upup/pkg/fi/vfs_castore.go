@@ -68,7 +68,7 @@ func (s *VFSCAStore) VFSPath() vfs.Path {
 	return s.basedir
 }
 
-// Retrieves the CA keypair, generating a new keypair if not found
+// Retrieves the CA keypair.  No longer generates keypairs if not found.
 func (s *VFSCAStore) readCAKeypairs(id string) (*certificates, *privateKeys, error) {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -98,16 +98,15 @@ func (s *VFSCAStore) readCAKeypairs(id string) (*certificates, *privateKeys, err
 	}
 
 	if caPrivateKeys == nil {
-		caCertificates, caPrivateKeys, err = s.generateCACertificate(id)
-		if err != nil {
-			return nil, nil, err
-		}
-
+		// We no longer generate CA certificates automatically - too race-prone
+		return caCertificates, caPrivateKeys, nil
 	}
+
 	cached = &cachedEntry{certificates: caCertificates, privateKeys: caPrivateKeys}
 	s.cachedCAs[id] = cached
 
 	return cached.certificates, cached.privateKeys, nil
+
 }
 
 func BuildCAX509Template() *x509.Certificate {
