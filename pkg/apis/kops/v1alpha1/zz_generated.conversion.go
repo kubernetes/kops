@@ -1264,6 +1264,7 @@ func Convert_kops_ExecContainerAction_To_v1alpha1_ExecContainerAction(in *kops.E
 }
 
 func autoConvert_v1alpha1_ExternalDNSConfig_To_kops_ExternalDNSConfig(in *ExternalDNSConfig, out *kops.ExternalDNSConfig, s conversion.Scope) error {
+	out.Disable = in.Disable
 	out.WatchIngress = in.WatchIngress
 	out.WatchNamespace = in.WatchNamespace
 	return nil
@@ -1275,6 +1276,7 @@ func Convert_v1alpha1_ExternalDNSConfig_To_kops_ExternalDNSConfig(in *ExternalDN
 }
 
 func autoConvert_kops_ExternalDNSConfig_To_v1alpha1_ExternalDNSConfig(in *kops.ExternalDNSConfig, out *ExternalDNSConfig, s conversion.Scope) error {
+	out.Disable = in.Disable
 	out.WatchIngress = in.WatchIngress
 	out.WatchNamespace = in.WatchNamespace
 	return nil

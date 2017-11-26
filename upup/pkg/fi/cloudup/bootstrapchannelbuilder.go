@@ -29,6 +29,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/utils"
 )
 
+// BootstrapChannelBuilder is responsible for handling the addons in channels
 type BootstrapChannelBuilder struct {
 	cluster      *kops.Cluster
 	Lifecycle    *fi.Lifecycle
@@ -38,6 +39,7 @@ type BootstrapChannelBuilder struct {
 
 var _ fi.ModelBuilder = &BootstrapChannelBuilder{}
 
+// Build is responsible for adding the addons to the channel
 func (b *BootstrapChannelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 	addons, manifests, err := b.buildManifest()
@@ -184,38 +186,42 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		manifests[key] = "addons/" + location
 	}
 
-	{
-		key := "dns-controller.addons.k8s.io"
-		version := "1.8.0-beta.1"
-
+	// @check the dns-controller has not been disabled
+	externalDNS := b.cluster.Spec.ExternalDNS
+	if externalDNS == nil || !externalDNS.Disable {
 		{
-			location := key + "/pre-k8s-1.6.yaml"
-			id := "pre-k8s-1.6"
+			key := "dns-controller.addons.k8s.io"
+			version := "1.8.0-beta.1"
 
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          map[string]string{"k8s-addon": key},
-				Manifest:          fi.String(location),
-				KubernetesVersion: "<1.6.0",
-				Id:                id,
-			})
-			manifests[key+"-"+id] = "addons/" + location
-		}
+			{
+				location := key + "/pre-k8s-1.6.yaml"
+				id := "pre-k8s-1.6"
 
-		{
-			location := key + "/k8s-1.6.yaml"
-			id := "k8s-1.6"
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: "<1.6.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
 
-			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
-				Name:              fi.String(key),
-				Version:           fi.String(version),
-				Selector:          map[string]string{"k8s-addon": key},
-				Manifest:          fi.String(location),
-				KubernetesVersion: ">=1.6.0",
-				Id:                id,
-			})
-			manifests[key+"-"+id] = "addons/" + location
+			{
+				location := key + "/k8s-1.6.yaml"
+				id := "k8s-1.6"
+
+				addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+					Name:              fi.String(key),
+					Version:           fi.String(version),
+					Selector:          map[string]string{"k8s-addon": key},
+					Manifest:          fi.String(location),
+					KubernetesVersion: ">=1.6.0",
+					Id:                id,
+				})
+				manifests[key+"-"+id] = "addons/" + location
+			}
 		}
 	}
 
