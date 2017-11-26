@@ -40,7 +40,7 @@ func (f *FileAssetsBuilder) Build(c *fi.ModelBuilderContext) error {
 	// used to keep track of previous file, so a instanceGroup can override a cluster wide one
 	tracker := make(map[string]bool, 0)
 	// ensure the default path exists
-	c.AddTask(&nodetasks.File{
+	c.EnsureTask(&nodetasks.File{
 		Path: f.FileAssetsDefaultPath(),
 		Type: nodetasks.FileType_Directory,
 		Mode: s("0755"),
@@ -88,8 +88,8 @@ func (f *FileAssetsBuilder) buildFileAssets(c *fi.ModelBuilderContext, assets []
 			content = string(decoded)
 		}
 
-		// @check if the directory structure exist or create it
-		c.AddTask(&nodetasks.File{
+		// We use EnsureTask so that we don't have to check if the asset directories have already been done
+		c.EnsureTask(&nodetasks.File{
 			Path: filepath.Dir(assetPath),
 			Type: nodetasks.FileType_Directory,
 			Mode: s("0755"),
