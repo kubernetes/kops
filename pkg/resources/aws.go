@@ -436,6 +436,14 @@ func DumpInstance(op *DumpOperation, r *Resource) error {
 			}
 		}
 	}
+	for _, tag := range ec2Instance.Tags {
+		key := aws.StringValue(tag.Key)
+		if !strings.HasPrefix(key, awsup.TagNameRolePrefix) {
+			continue
+		}
+		role := strings.TrimPrefix(key, awsup.TagNameRolePrefix)
+		i.Roles = append(i.Roles, role)
+	}
 	op.Dump.Instances = append(op.Dump.Instances, i)
 
 	return nil

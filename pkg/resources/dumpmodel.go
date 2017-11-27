@@ -20,6 +20,7 @@ package resources
 type Instance struct {
 	Name            string   `json:"name,omitempty"`
 	PublicAddresses []string `json:"publicAddresses,omitempty"`
+	Roles           []string `json:"roles,omitempty"`
 }
 
 // Dump is the type for a dump result
