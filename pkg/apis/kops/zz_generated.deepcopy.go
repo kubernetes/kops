@@ -2518,6 +2518,15 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			**out = **in
 		}
 	}
+	if in.HorizontalPodAutoscalerUseRestClients != nil {
+		in, out := &in.HorizontalPodAutoscalerUseRestClients, &out.HorizontalPodAutoscalerUseRestClients
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	if in.FeatureGates != nil {
 		in, out := &in.FeatureGates, &out.FeatureGates
 		*out = make(map[string]string, len(*in))
