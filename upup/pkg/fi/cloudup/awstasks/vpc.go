@@ -36,6 +36,7 @@ type VPC struct {
 
 	ID                 *string
 	CIDR               *string
+	AdditionalCIDR     *[]string
 	EnableDNSHostnames *bool
 	EnableDNSSupport   *bool
 
@@ -75,10 +76,11 @@ func (e *VPC) Find(c *fi.Context) (*VPC, error) {
 	}
 	vpc := response.Vpcs[0]
 	actual := &VPC{
-		ID:   vpc.VpcId,
-		CIDR: vpc.CidrBlock,
-		Name: findNameTag(vpc.Tags),
-		Tags: intersectTags(vpc.Tags, e.Tags),
+		ID:             vpc.VpcId,
+		CIDR:           vpc.CidrBlock,
+		AdditionalCIDR: getAdditionalCIDR(vpc.CidrBlock, vpc.CidrBlockAssociationSet),
+		Name:           findNameTag(vpc.Tags),
+		Tags:           intersectTags(vpc.Tags, e.Tags),
 	}
 
 	glog.V(4).Infof("found matching VPC %v", actual)
@@ -272,4 +274,16 @@ func (e *VPC) CloudformationLink() *cloudformation.Literal {
 	}
 
 	return cloudformation.Ref("AWS::EC2::VPC", *e.Name)
+}
+
+func getAdditionalCIDR(CIDR *string, additionalCIDRSet []*ec2.VpcCidrBlockAssociation) *[]string {
+	var additionalCIDRs []string
+
+	for _, CIDRSet := range additionalCIDRSet {
+		if *CIDRSet.CidrBlock != *CIDR {
+			additionalCIDRs = append(additionalCIDRs, *CIDRSet.CidrBlock)
+		}
+	}
+
+	return &additionalCIDRs
 }

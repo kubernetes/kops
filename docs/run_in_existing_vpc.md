@@ -76,6 +76,36 @@ probably remove that tag to indicate that the resources are not owned by that cl
 deleting the cluster won't try to delete the VPC.  (Deleting the VPC won't succeed anyway, because it's in use,
 but it's better to avoid the later confusion!)
 
+
+### VPC with multiple CIDRs
+
+AWS now allows you to add more CIDRs to a VPC, the param `AdditionalNetworkCIDRs` allows you to specify any additional CIDRs added to the VPC.
+
+```
+metadata:
+  creationTimestamp: "2016-06-27T14:23:34Z"
+  name: ${CLUSTER_NAME}
+spec:
+  cloudProvider: aws
+  networkCIDR: 10.1.0.0/16
+  AdditionalNetworkCIDRs:
+  - 10.2.0.0/16
+  networkID: vpc-00aa5577
+  subnets:
+  - cidr: 10.1.0.0/19
+    name: us-east-1b
+    type: Public
+    zone: us-east-1b
+    id: subnet-1234567
+  - cidr: 10.2.0.0/19
+    name: us-east-1b
+    type: Public
+    zone: us-east-1b
+    id: subnet-1234568
+```
+
+
+
 ## Advanced Options for Creating Clusters in Existing VPCs
 
 ### Shared Subnets

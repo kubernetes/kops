@@ -496,7 +496,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	return nil
 }
 
-// validateEtcdClusterSpec is responsible for validating the etcd cluster spec
+// validateSubnetCIDR is responsible for validating subnets are part of the CIRDs assigned to the cluster.
 func validateSubnetCIDR(networkCIDR *net.IPNet, additionalNetworkCIDRs []*net.IPNet, subnetCIDR *net.IPNet) bool {
 	if isSubnet(networkCIDR, subnetCIDR) {
 		return true
