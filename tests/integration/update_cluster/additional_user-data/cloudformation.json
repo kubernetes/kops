@@ -266,7 +266,7 @@
         "CidrIp": "0.0.0.0/0"
       }
     },
-    "AWSEC2SecurityGroupIngressnodetomastertcp14000": {
+    "AWSEC2SecurityGroupIngressnodetomastertcp12379": {
       "Type": "AWS::EC2::SecurityGroupIngress",
       "Properties": {
         "GroupId": {
@@ -276,6 +276,20 @@
           "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
         },
         "FromPort": 1,
+        "ToPort": 2379,
+        "IpProtocol": "tcp"
+      }
+    },
+    "AWSEC2SecurityGroupIngressnodetomastertcp23824000": {
+      "Type": "AWS::EC2::SecurityGroupIngress",
+      "Properties": {
+        "GroupId": {
+          "Ref": "AWSEC2SecurityGroupmastersadditionaluserdataexamplecom"
+        },
+        "SourceSecurityGroupId": {
+          "Ref": "AWSEC2SecurityGroupnodesadditionaluserdataexamplecom"
+        },
+        "FromPort": 2382,
         "ToPort": 4000,
         "IpProtocol": "tcp"
       }
