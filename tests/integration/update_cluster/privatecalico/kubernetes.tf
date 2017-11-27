@@ -591,11 +591,20 @@ resource "aws_security_group_rule" "node-to-master-protocol-ipip" {
   protocol                 = "4"
 }
 
-resource "aws_security_group_rule" "node-to-master-tcp-1-4001" {
+resource "aws_security_group_rule" "node-to-master-tcp-1-2379" {
   type                     = "ingress"
   security_group_id        = "${aws_security_group.masters-privatecalico-example-com.id}"
   source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
   from_port                = 1
+  to_port                  = 2379
+  protocol                 = "tcp"
+}
+
+resource "aws_security_group_rule" "node-to-master-tcp-2382-4001" {
+  type                     = "ingress"
+  security_group_id        = "${aws_security_group.masters-privatecalico-example-com.id}"
+  source_security_group_id = "${aws_security_group.nodes-privatecalico-example-com.id}"
+  from_port                = 2382
   to_port                  = 4001
   protocol                 = "tcp"
 }
