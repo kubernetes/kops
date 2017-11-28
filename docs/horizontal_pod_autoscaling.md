@@ -74,7 +74,7 @@ spec:
   --proxy-client-cert-file=<path to aggregator proxy cert>
   --proxy-client-key-file=<path to aggregator proxy key>
   ```
-* [kubernetes/kops#3679][4] - add config option to set `--horizontal-pod-autoscaler-use-rest-clients` kube-controller-manager flag required to enable custom metrics
+* [kubernetes/kops#3939][4] - add config option to set `--horizontal-pod-autoscaler-use-rest-clients` kube-controller-manager flag required to enable custom metrics
 * [kubernetes/kops#1574][6] - add config options to set `--enable-custom-metrics` flag on master and node kubelets required to enable custom metrics
 
 [1]: https://kubernetes.io/docs/tasks/access-kubernetes-api/configure-aggregation-layer/
