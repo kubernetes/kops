@@ -36,12 +36,12 @@ We now include both major and development releases in homebrew.  A development v
 Example usage:
 ```bash
 # Major Version
-brew bump-formula-pr \
+brew bump-formula-pr kops \
        --url=https://github.com/kubernetes/kops/archive/1.7.1.tar.gz \
        --sha256=044c5c7a737ed3acf53517e64bb27d3da8f7517d2914df89efeeaf84bc8a722a
 
 # Development Version
-brew bump-formula-pr \
+brew bump-formula-pr kops \
        --devel \
        --url=https://github.com/kubernetes/kops/archive/1.8.0-beta.1.tar.gz \
        --sha256=81026d6c1cd7b3898a88275538a7842b4bd8387775937e0528ccb7b83948abf1
