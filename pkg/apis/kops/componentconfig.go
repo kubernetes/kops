@@ -323,6 +323,9 @@ type KubeControllerManagerConfig struct {
 	// long the autoscaler has to wait before another upscale operation can
 	// be performed after the current one has completed.
 	HorizontalPodAutoscalerUpscaleDelay *metav1.Duration `json:"horizontalPodAutoscalerUpscaleDelay,omitempty" flag:"horizontal-pod-autoscaler-upscale-delay"`
+	// HorizontalPodAutoscalerUseRestClients determines if the new-style clients
+	// should be used if support for custom metrics is enabled.
+	HorizontalPodAutoscalerUseRestClients *bool `json:"horizontalPodAutoscalerUseRestClients,omitempty" flag:"horizontal-pod-autoscaler-use-rest-clients"`
 	// FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.
 	FeatureGates map[string]string `json:"featureGates,omitempty" flag:"feature-gates"`
 }

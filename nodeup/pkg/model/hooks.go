@@ -55,7 +55,7 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 			case "":
 				name = fmt.Sprintf("kops-hook-%d", j)
 				if isInstanceGroup {
-					name = fmt.Sprintf("%s-ig", name)
+					name += "-ig"
 				}
 			default:
 				name = hook.Name
@@ -72,7 +72,7 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 				enabled := false
 				managed := true
 				c.AddTask(&nodetasks.Service{
-					Name:        hook.Name,
+					Name:        ensureSystemdSuffix(name),
 					ManageState: &managed,
 					Enabled:     &enabled,
 					Running:     &enabled,
@@ -92,6 +92,14 @@ func (h *HookBuilder) Build(c *fi.ModelBuilderContext) error {
 	}
 
 	return nil
+}
+
+// ensureSystemdSuffix makes sure that we have a .service suffix on the name, needed on needed versions of systems
+func ensureSystemdSuffix(name string) string {
+	if !strings.HasSuffix(name, ".service") && !strings.HasSuffix(name, ".timer") {
+		name += ".service"
+	}
+	return name
 }
 
 // buildSystemdService is responsible for generating the service
@@ -130,7 +138,7 @@ func (h *HookBuilder) buildSystemdService(name string, hook *kops.HookSpec) (*no
 	}
 
 	service := &nodetasks.Service{
-		Name:       name,
+		Name:       ensureSystemdSuffix(name),
 		Definition: s(unit.Render()),
 	}
 
