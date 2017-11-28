@@ -32,13 +32,16 @@ import (
 
 var (
 	create_secret_dockerconfig_long = templates.LongDesc(i18n.T(`
-	Create a new docker config, and store it in the state store. 
+	Create a new docker config, and store it in the state store.
 	Used to configure docker on each master or node (ie. for auth)
 	Use update to modify it, this command will only create a new entry.`))
 
 	create_secret_dockerconfig_example = templates.Examples(i18n.T(`
 	# Create an new docker config.
 	kops create secret dockerconfig -f /path/to/docker/config.json \
+		--name k8s-cluster.example.com --state s3://example.com
+	# Replace an existing docker config secret.
+	kops create secret dockerconfig -f /path/to/docker/config.json --force \
 		--name k8s-cluster.example.com --state s3://example.com
 	`))
 
@@ -48,6 +51,7 @@ var (
 type CreateSecretDockerConfigOptions struct {
 	ClusterName      string
 	DockerConfigPath string
+	Force            bool
 }
 
 func NewCmdCreateSecretDockerConfig(f *util.Factory, out io.Writer) *cobra.Command {
@@ -78,6 +82,7 @@ func NewCmdCreateSecretDockerConfig(f *util.Factory, out io.Writer) *cobra.Comma
 	}
 
 	cmd.Flags().StringVarP(&options.DockerConfigPath, "", "f", "", "Path to docker config JSON file")
+	cmd.Flags().BoolVar(&options.Force, "force", options.Force, "Force replace the kops secret if it already exists")
 
 	return cmd
 }
@@ -119,9 +124,19 @@ func RunCreateSecretDockerConfig(f *util.Factory, out io.Writer, options *Create
 
 	secret.Data = data
 
-	_, _, err = secretStore.GetOrCreateSecret("dockerconfig", secret)
-	if err != nil {
-		return fmt.Errorf("error adding docker config secret: %v", err)
+	if !options.Force {
+		_, created, err := secretStore.GetOrCreateSecret("dockerconfig", secret)
+		if err != nil {
+			return fmt.Errorf("error adding dockerconfig secret: %v", err)
+		}
+		if !created {
+			return fmt.Errorf("failed to create the dockerconfig secret as it already exists. The `--force` flag can be passed to replace an existing secret.")
+		}
+	} else {
+		_, err := secretStore.ReplaceSecret("dockerconfig", secret)
+		if err != nil {
+			return fmt.Errorf("error updating dockerconfig secret: %v", err)
+		}
 	}
 
 	return nil

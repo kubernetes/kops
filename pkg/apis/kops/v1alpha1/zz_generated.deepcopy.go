@@ -21,11 +21,10 @@ limitations under the License.
 package v1alpha1
 
 import (
-	reflect "reflect"
-
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	conversion "k8s.io/apimachinery/pkg/conversion"
 	runtime "k8s.io/apimachinery/pkg/runtime"
+	reflect "reflect"
 )
 
 func init() {
@@ -2176,6 +2175,15 @@ func (in *KubeControllerManagerConfig) DeepCopyInto(out *KubeControllerManagerCo
 			*out = nil
 		} else {
 			*out = new(v1.Duration)
+			**out = **in
+		}
+	}
+	if in.HorizontalPodAutoscalerUseRestClients != nil {
+		in, out := &in.HorizontalPodAutoscalerUseRestClients, &out.HorizontalPodAutoscalerUseRestClients
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
 			**out = **in
 		}
 	}
