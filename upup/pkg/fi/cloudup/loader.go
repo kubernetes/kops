@@ -450,7 +450,7 @@ func (l *Loader) populateResource(rh *fi.ResourceHolder, resource fi.Resource, a
 		}
 		resource = templateResource.Curry(args)
 	}
-	rh.Resource = resource
+	rh.Resource = &resource
 
 	return nil
 }

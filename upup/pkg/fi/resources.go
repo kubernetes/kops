@@ -197,7 +197,7 @@ func (r *VFSResource) Open() (io.Reader, error) {
 // After unmarshalling, the resource should be found by Name, and set on Resource
 type ResourceHolder struct {
 	Name     string
-	Resource Resource
+	Resource *Resource
 }
 
 var _ Resource = &ResourceHolder{}
@@ -207,7 +207,9 @@ func (o *ResourceHolder) Open() (io.Reader, error) {
 	if o.Resource == nil {
 		return nil, fmt.Errorf("ResourceHolder %q is not bound", o.Name)
 	}
-	return o.Resource.Open()
+
+	r := *o.Resource
+	return r.Open()
 }
 
 // UnmarshalJSON implements the special JSON marshalling for the resource, rendering the name
@@ -222,23 +224,34 @@ func (o *ResourceHolder) UnmarshalJSON(data []byte) error {
 }
 
 // Unwrap returns the underlying resource
-func (o *ResourceHolder) Unwrap() Resource {
-	return o.Resource
+func (o *ResourceHolder) Unwrap() (Resource, error) {
+	if o.Resource == nil {
+		return nil, fmt.Errorf("unable to unwrap resource as it is nil")
+	}
+	return *o.Resource, nil
 }
 
 // AsString returns the value of the resource as a string
 func (o *ResourceHolder) AsString() (string, error) {
-	return ResourceAsString(o.Unwrap())
+	r, err := o.Unwrap()
+	if err != nil {
+		return "", err
+	}
+	return ResourceAsString(r)
 }
 
 // AsString returns the value of the resource as a byte-slice
 func (o *ResourceHolder) AsBytes() ([]byte, error) {
-	return ResourceAsBytes(o.Unwrap())
+	r, err := o.Unwrap()
+	if err != nil {
+		return []byte{}, err
+	}
+	return ResourceAsBytes(r)
 }
 
 // WrapResource creates a ResourceHolder for the specified resource
 func WrapResource(r Resource) *ResourceHolder {
 	return &ResourceHolder{
-		Resource: r,
+		Resource: &r,
 	}
 }
