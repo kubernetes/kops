@@ -50,6 +50,46 @@ subjects:
     name: weave-net
     namespace: kube-system
 ---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: Role
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+rules:
+  - apiGroups:
+      - ''
+    resources:
+      - configmaps
+    resourceNames:
+      - weave-net
+    verbs:
+      - get
+      - update
+  - apiGroups:
+      - ''
+    resources:
+      - configmaps
+    verbs:
+      - create
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: RoleBinding
+metadata:
+  name: weave-net
+  namespace: kube-system
+  labels:
+    name: weave-net
+roleRef:
+  kind: Role
+  name: weave-net
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+  - kind: ServiceAccount
+    name: weave-net
+    namespace: kube-system
+---
 apiVersion: extensions/v1beta1
 kind: DaemonSet
 metadata:
@@ -83,7 +123,7 @@ spec:
             - name: WEAVE_MTU
               value: "{{ .Networking.Weave.MTU }}"
             {{- end }}
-          image: 'weaveworks/weave-kube:2.0.5'
+          image: 'weaveworks/weave-kube:2.1.2'
           livenessProbe:
             httpGet:
               host: 127.0.0.1
@@ -118,7 +158,7 @@ spec:
                 fieldRef:
                   apiVersion: v1
                   fieldPath: spec.nodeName
-          image: 'weaveworks/weave-npc:2.0.5'
+          image: 'weaveworks/weave-npc:2.1.2'
           resources:
             requests:
               cpu: 50m
