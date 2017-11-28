@@ -52,6 +52,10 @@ rules:
 - apiGroups: [""]
   resources: ["secrets"]
   verbs: ["create"]
+  # Allow Dashboard to create 'kubernetes-dashboard-settings' config map.
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["create"]
   # Allow Dashboard to get, update and delete Dashboard exclusive secrets.
 - apiGroups: [""]
   resources: ["secrets"]
