@@ -8,8 +8,8 @@ metrics).
 Kops can assist in setting up HPA and recommends Kubernetes `>= 1.7` and Kops
 `>=1.8`. Relevant reading you will need to go through:
 
-* [Configure The Aggregation Layer][1].
-* [Horizontal Pod Autoscaling][5].
+* [Configure The Aggregation Layer][1]
+* [Horizontal Pod Autoscaling][5]
 
 ## Required API Versions
 
