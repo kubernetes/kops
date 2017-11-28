@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM alpine:3.5
+FROM alpine:3.6
 
 # KUBECTL_SOURCE: Change to kubernetes-dev/ci for CI
 ARG KUBECTL_SOURCE=kubernetes-release/release
