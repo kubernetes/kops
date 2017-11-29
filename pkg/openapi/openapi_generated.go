@@ -20811,15 +20811,18 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.AccessSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
+					Description: "AccessSpec provides configuration details related to kubeapi dns and ELB access",
 					Properties: map[string]spec.Schema{
 						"dns": {
 							SchemaProps: spec.SchemaProps{
-								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha1.DNSAccessSpec"),
+								Description: "DNS wil be used to provide config on kube-apiserver elb dns",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.DNSAccessSpec"),
 							},
 						},
 						"loadBalancer": {
 							SchemaProps: spec.SchemaProps{
-								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha1.LoadBalancerAccessSpec"),
+								Description: "LoadBalancer is the configuration for the kube-apiserver ELB",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha1.LoadBalancerAccessSpec"),
 							},
 						},
 					},
@@ -22023,6 +22026,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 				SchemaProps: spec.SchemaProps{
 					Description: "ExternalDNSConfig are options of the dns-controller",
 					Properties: map[string]spec.Schema{
+						"disable": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Disable indicates we do not wish to run the dns-controller addon",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
 						"watchIngress": {
 							SchemaProps: spec.SchemaProps{
 								Description: "WatchIngress indicates you want the dns-controller to watch and create dns entries for ingress resources",
@@ -23210,6 +23220,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
 							},
 						},
+						"horizontalPodAutoscalerUseRestClients": {
+							SchemaProps: spec.SchemaProps{
+								Description: "HorizontalPodAutoscalerUseRestClients determines if the new-style clients should be used if support for custom metrics is enabled.",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
 						"featureGates": {
 							SchemaProps: spec.SchemaProps{
 								Description: "FeatureGates is set of key=value pairs that describe feature gates for alpha/experimental features.",
@@ -24152,15 +24169,18 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.AccessSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
+					Description: "AccessSpec provides configuration details related to kubeapi dns and ELB access",
 					Properties: map[string]spec.Schema{
 						"dns": {
 							SchemaProps: spec.SchemaProps{
-								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.DNSAccessSpec"),
+								Description: "DNS wil be used to provide config on kube-apiserver elb dns",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.DNSAccessSpec"),
 							},
 						},
 						"loadBalancer": {
 							SchemaProps: spec.SchemaProps{
-								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.LoadBalancerAccessSpec"),
+								Description: "LoadBalancer is the configuration for the kube-apiserver ELB",
+								Ref:         ref("k8s.io/kops/pkg/apis/kops/v1alpha2.LoadBalancerAccessSpec"),
 							},
 						},
 					},
@@ -25384,6 +25404,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 				SchemaProps: spec.SchemaProps{
 					Description: "ExternalDNSConfig are options of the dns-controller",
 					Properties: map[string]spec.Schema{
+						"disable": {
+							SchemaProps: spec.SchemaProps{
+								Description: "Disable indicates we do not wish to run the dns-controller addon",
+								Type:        []string{"boolean"},
+								Format:      "",
+							},
+						},
 						"watchIngress": {
 							SchemaProps: spec.SchemaProps{
 								Description: "WatchIngress indicates you want the dns-controller to watch and create dns entries for ingress resources",
@@ -26723,6 +26750,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 							SchemaProps: spec.SchemaProps{
 								Description: "HorizontalPodAutoscalerUpscaleDelay is a duration that specifies how long the autoscaler has to wait before another upscale operation can be performed after the current one has completed.",
 								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
+						"horizontalPodAutoscalerUseRestClients": {
+							SchemaProps: spec.SchemaProps{
+								Description: "HorizontalPodAutoscalerUseRestClients determines if the new-style clients should be used if support for custom metrics is enabled.",
+								Type:        []string{"boolean"},
+								Format:      "",
 							},
 						},
 						"featureGates": {
