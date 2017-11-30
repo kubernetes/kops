@@ -18,14 +18,13 @@ package protokube
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
-
-	"k8s.io/kops/protokube/pkg/gossip"
-	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -33,7 +32,11 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
+	"k8s.io/kops/pkg/nvme"
 	"k8s.io/kops/protokube/pkg/etcd"
+	"k8s.io/kops/protokube/pkg/gossip"
+	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 var devices = []string{"/dev/xvdu", "/dev/xvdv", "/dev/xvdx", "/dev/xvdx", "/dev/xvdy", "/dev/xvdz"}
@@ -205,14 +208,14 @@ func (a *AWSVolumes) findVolumes(request *ec2.DescribeVolumesInput) ([]*Volume, 
 					{
 						// Ignore
 					}
-				//case TagNameMasterId:
-				//	id, err := strconv.Atoi(v)
-				//	if err != nil {
-				//		glog.Warningf("error parsing master-id tag on volume %q %s=%s; skipping volume", volumeID, k, v)
-				//		skipVolume = true
-				//	} else {
-				//		vol.Info.MasterID = id
-				//	}
+					//case TagNameMasterId:
+					//	id, err := strconv.Atoi(v)
+					//	if err != nil {
+					//		glog.Warningf("error parsing master-id tag on volume %q %s=%s; skipping volume", volumeID, k, v)
+					//		skipVolume = true
+					//	} else {
+					//		vol.Info.MasterID = id
+					//	}
 				default:
 					if strings.HasPrefix(k, awsup.TagNameEtcdClusterPrefix) {
 						etcdClusterName := strings.TrimPrefix(k, awsup.TagNameEtcdClusterPrefix)
@@ -275,6 +278,101 @@ func (a *AWSVolumes) FindVolumes() ([]*Volume, error) {
 	}
 
 	return a.findVolumes(request)
+}
+
+// FindMountedVolume implements Volumes::FindMountedVolume
+func (v *AWSVolumes) FindMountedVolume(volume *Volume) (string, error) {
+	device := volume.LocalDevice
+
+	_, err := os.Stat(pathFor(device))
+	if err == nil {
+		return device, nil
+	}
+	if !os.IsNotExist(err) {
+		return "", fmt.Errorf("error checking for device %q: %v", device, err)
+	}
+
+	if volume.ID != "" {
+		expected := volume.ID
+		expected = strings.Replace(expected, "-", "", -1)
+
+		// Look for nvme devices
+		// On AWS, nvme volumes are not mounted on a device path, but are instead mounted on an nvme device
+		// We must identify the correct volume by matching the nvme info
+		device, err := findNvmeVolume(expected)
+		if err != nil {
+			return "", fmt.Errorf("error checking for nvme volume %q: %v", expected, err)
+		}
+		if device != "" {
+			glog.Infof("found nvme volume %q at %q", expected, device)
+			return device, nil
+		}
+	}
+
+	return "", nil
+}
+
+func findNvmeVolume(findName string) (device string, err error) {
+	devices, err := ioutil.ReadDir(pathFor("/dev"))
+	if err != nil {
+		return "", fmt.Errorf("error listing /dev directory: %v", err)
+	}
+	for _, device := range devices {
+		name := device.Name()
+		if !strings.HasPrefix(name, "nvme") {
+			continue
+		}
+		glog.V(6).Infof("found nvme %q", name)
+
+		// Skip partition devices
+		{
+			num := 0
+			ns := 0
+			partition := 0
+			tokens, err := fmt.Sscanf(name, "nvme%dn%dp%d", &num, &ns, &partition)
+			if err == nil && tokens == 3 {
+				glog.V(4).Infof("skipping nvme partition device %q", name)
+				continue
+			}
+		}
+
+		p := pathFor(filepath.Join("/dev", name))
+
+		// Skip non-block devices
+		{
+			s, err := os.Stat(p)
+			if err != nil {
+				glog.Warningf("ignoring error doing stat on %q: %v", p, err)
+				continue
+			}
+			mode := s.Mode()
+			if (mode&os.ModeDevice == 0) || (mode&os.ModeCharDevice != 0) {
+				glog.V(2).Infof("ignoring nvme device %q because of mode %v", p, s.Mode())
+				continue
+			}
+			glog.V(6).Infof("%q had mode %v", p, mode)
+		}
+
+		glog.V(4).Infof("found nvme candidate %q", p)
+
+		info, found, err := nvme.Identify(p)
+		if err != nil {
+			glog.Warningf("ignoring error identifying nvme device %q: %v", p, err)
+			continue
+		}
+		if !found {
+			glog.Warningf("identification not supported for nvme device %q", p)
+			continue
+		}
+
+		glog.V(4).Infof("got info for %q: %q", p, info)
+		if info != "" && findName == info {
+			glog.Infof("found matching nvme volume %q at %q", info, p)
+			return filepath.Join("/dev", name), nil
+		}
+	}
+
+	return "", nil
 }
 
 // assignDevice picks a hopefully unused device and reserves it for the volume attachment
@@ -364,7 +462,7 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) error {
 		switch v.Status {
 		case "attaching":
 			glog.V(2).Infof("Waiting for volume %q to be attached (currently %q)", volumeID, v.Status)
-		// continue looping
+			// continue looping
 
 		default:
 			return fmt.Errorf("Observed unexpected volume state %q", v.Status)
