@@ -311,7 +311,7 @@ func (v *AWSVolumes) FindMountedVolume(volume *Volume) (string, error) {
 }
 
 func findNvmeVolume(findName string) (device string, err error) {
-	p := pathFor("/dev/disk/by-id/" + findName)
+	p := pathFor(filepath.Join("/dev/disk/by-id", findName))
 	stat, err := os.Lstat(p)
 	if err != nil {
 		if os.IsNotExist(err) {
