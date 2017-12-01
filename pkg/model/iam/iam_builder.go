@@ -617,6 +617,23 @@ func addMasterELBPolicies(p *Policy, resource stringorslice.StringOrSlice, legac
 			),
 			Resource: resource,
 		})
+
+		p.Statement = append(p.Statement, &Statement{
+			Sid:    "kopsK8sNLBMasterPermsRestrictive",
+			Effect: StatementEffectAllow,
+			Action: stringorslice.Of(
+				"elasticloadbalancing:CreateListener",       // aws_loadbalancer.go
+				"elasticloadbalancing:DescribeListeners",    // aws_loadbalancer.go
+				"elasticloadbalancing:CreateTargetGroup",    // aws_loadbalancer.go
+				"elasticloadbalancing:DescribeTargetGroups", // aws_loadbalancer.go
+				"elasticloadbalancing:RegisterTargets",      // aws_loadbalancer.go
+				"elasticloadbalancing:DescribeTargetHealth", // aws_loadbalancer.go
+				"elasticloadbalancing:AddTags",              // aws_loadbalancer.go
+				"elasticloadbalancing:ModifyTargetGroup",    // aws_loadbalancer.go
+				"ec2:DescribeVpcs",                          // aws_loadbalancer.go
+			),
+			Resource: resource,
+		})
 	}
 }
 
