@@ -115,13 +115,10 @@ func (b *SysctlBuilder) Build(c *fi.ModelBuilderContext) error {
 			"")
 	}
 
-	if b.Cluster.Spec.CloudProvider == string(kops.CloudProviderGCE) {
-		sysctls = append(sysctls,
-			"# GCE settings",
-			"",
-			"net.ipv4.ip_forward=1",
-			"")
-	}
+	sysctls = append(sysctls,
+		"# Prevent docker from changing iptables: https://github.com/kubernetes/kubernetes/issues/40182",
+		"net.ipv4.ip_forward=1",
+		"")
 
 	t := &nodetasks.File{
 		Path:            "/etc/sysctl.d/99-k8s-general.conf",
