@@ -20,8 +20,10 @@ import (
 	"fmt"
 
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/kops/pkg/apis/kops"
@@ -94,14 +96,13 @@ func (c *InstanceGroupVFS) Get(name string, options metav1.GetOptions) (*api.Ins
 		return nil, fmt.Errorf("ResourceVersion not supported in InstanceGroupVFS::Get")
 	}
 
-	o, err := c.get(name)
+	o, err := c.find(name)
 	if err != nil {
 		return nil, err
 	}
 	if o == nil {
-		return nil, nil
+		return nil, errors.NewNotFound(schema.GroupResource{Group: api.GroupName, Resource: "InstanceGroup"}, name)
 	}
-
 	ig := o.(*api.InstanceGroup)
 	c.addLabels(ig)
 
