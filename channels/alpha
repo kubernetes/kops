@@ -7,15 +7,19 @@ spec:
     - name: kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-07-28
       providerID: aws
       kubernetesVersion: ">=1.5.0 <1.6.0"
-    - name: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-07-28
+    - name: kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2017-12-01
       providerID: aws
       kubernetesVersion: ">=1.6.0 <1.7.0"
-    - name: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-07-28
+    - name: kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2017-12-01
       providerID: aws
       kubernetesVersion: ">=1.7.0"
-    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2017-11-27
+    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2017-12-01
       providerID: aws
       kubernetesVersion: ">=1.8.0"
+    # Moving to stretch in 1.9 (if goes well)
+    - name: kope.io/k8s-1.8-debian-stretch-amd64-hvm-ebs-2017-12-01
+      providerID: aws
+      kubernetesVersion: ">=1.9.0"
     - providerID: gce
       name: "cos-cloud/cos-stable-60-9592-90-0"
   cluster:
