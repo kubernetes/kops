@@ -28,7 +28,7 @@ kops replace -f FILENAME
 
 ```
   -f, --filename stringSlice   A list of one or more files separated by a comma.
-      --force                  Force any changes, which will also create any non-existing respurce (defaults to instancegroups only)
+      --force                  Force any changes, which will also create any non-existing resource
 ```
 
 ### Options inherited from parent commands
