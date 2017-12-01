@@ -19,6 +19,7 @@ package resources
 import (
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
@@ -59,6 +60,8 @@ func BuildDump(ctx context.Context, cloud fi.Cloud, resources map[string]*Resour
 			return nil, fmt.Errorf("error dumping %q: %v", k, err)
 		}
 	}
+
+	sort.SliceStable(dump.Instances, func(i, j int) bool { return dump.Instances[i].Name < dump.Instances[j].Name })
 
 	return dump, nil
 }
