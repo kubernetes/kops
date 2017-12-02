@@ -68,6 +68,11 @@ func PerformAssignments(c *kops.Cluster) error {
 			// TODO: Choose non-overlapping networking CIDRs for VPCs, using vpcInfo
 			c.Spec.NetworkCIDR = "172.20.0.0/16"
 		}
+
+		// Amazon VPC CNI uses the same network
+		if c.Spec.Networking != nil && c.Spec.Networking.AmazonVPC != nil {
+			c.Spec.NonMasqueradeCIDR = c.Spec.NetworkCIDR
+		}
 	}
 
 	if c.Spec.NonMasqueradeCIDR == "" {
