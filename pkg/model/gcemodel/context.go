@@ -28,8 +28,18 @@ type GCEModelContext struct {
 	*model.KopsModelContext
 }
 
-func (b *GCEModelContext) LinkToNetwork() *gcetasks.Network {
-	return &gcetasks.Network{Name: s("default")}
+// LinkToNetwork returns the GCE Network object the cluster is located in
+func (c *GCEModelContext) LinkToNetwork() *gcetasks.Network {
+	return &gcetasks.Network{Name: s(c.NameForNetwork())}
+}
+
+// NameForNetwork returns the name for the GCE Network the cluster is located in
+func (c *GCEModelContext) NameForNetwork() string {
+	networkName := c.Cluster.Spec.NetworkID
+	if networkName == "" {
+		networkName = "default"
+	}
+	return networkName
 }
 
 // SafeObjectName returns the object name and cluster name escaped for GCE
