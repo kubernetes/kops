@@ -138,6 +138,9 @@ func (_ *Network) RenderGCE(t *gce.GCEAPITarget, a, e, changes *Network) error {
 			return fmt.Errorf("error creating Network: %v", err)
 		}
 	} else {
+		if a.Mode == "legacy" {
+			return fmt.Errorf("GCE networks in legacy mode are not supported.  Please convert to auto mode or specify a different network.")
+		}
 		empty := &Network{}
 		if !reflect.DeepEqual(empty, changes) {
 			return fmt.Errorf("cannot apply changes to Network: %v", changes)
