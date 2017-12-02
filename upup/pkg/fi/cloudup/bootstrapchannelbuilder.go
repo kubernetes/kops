@@ -621,6 +621,26 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 		}
 	}
 
+	if b.cluster.Spec.Networking.AmazonVPC != nil {
+		key := "networking.amazon-vpc-routed-eni"
+		version := "0.1.1-kops.1"
+
+		{
+			location := fmt.Sprintf("%v/%v.yaml", key, version)
+			id := "k8s-1.7"
+
+			addons.Spec.Addons = append(addons.Spec.Addons, &channelsapi.AddonSpec{
+				Name:              fi.String(key),
+				Version:           fi.String(version),
+				Selector:          networkingSelector,
+				Manifest:          fi.String(location),
+				KubernetesVersion: ">=1.7.0",
+				Id:                id,
+			})
+			manifests[key+"-"+id] = "addons/" + location
+		}
+	}
+
 	authenticationSelector := map[string]string{"role.kubernetes.io/authentication": "1"}
 
 	if b.cluster.Spec.Authentication != nil && b.cluster.Spec.Authentication.Kopeio != nil {
