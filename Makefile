@@ -43,10 +43,10 @@ SOURCES:=$(shell find . -name "*.go")
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.8.0-beta.2
+DNS_CONTROLLER_TAG=1.8.0
 
-KOPS_RELEASE_VERSION = 1.8.0-beta.2
-KOPS_CI_VERSION      = 1.8.0-beta.3
+KOPS_RELEASE_VERSION = 1.8.0
+KOPS_CI_VERSION      = 1.8.1-beta.1
 
 # kops local location
 KOPS                 = ${LOCAL}/kops
