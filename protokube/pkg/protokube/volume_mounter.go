@@ -71,7 +71,7 @@ func (k *VolumeMountController) mountMasterVolumes() ([]*Volume, error) {
 
 		glog.Infof("Doing safe-format-and-mount of %s to %s", v.LocalDevice, mountpoint)
 		fstype := ""
-		err = k.safeFormatAndMount(v.LocalDevice, mountpoint, fstype)
+		err = k.safeFormatAndMount(v, mountpoint, fstype)
 		if err != nil {
 			glog.Warningf("unable to mount master volume: %q", err)
 			continue
@@ -90,20 +90,24 @@ func (k *VolumeMountController) mountMasterVolumes() ([]*Volume, error) {
 	return volumes, nil
 }
 
-func (k *VolumeMountController) safeFormatAndMount(device string, mountpoint string, fstype string) error {
+func (k *VolumeMountController) safeFormatAndMount(volume *Volume, mountpoint string, fstype string) error {
 	// Wait for the device to show up
+	device := ""
 	for {
-		_, err := os.Stat(pathFor(device))
-		if err == nil {
+		found, err := k.provider.FindMountedVolume(volume)
+		if err != nil {
+			return err
+		}
+
+		if found != "" {
+			device = found
 			break
 		}
-		if !os.IsNotExist(err) {
-			return fmt.Errorf("error checking for device %q: %v", device, err)
-		}
-		glog.Infof("Waiting for device %q to be attached", device)
+
+		glog.Infof("Waiting for volume %q to be attached", volume.ID)
 		time.Sleep(1 * time.Second)
 	}
-	glog.Infof("Found device %q", device)
+	glog.Infof("Found volume %q mounted at device %q", volume.ID, device)
 
 	safeFormatAndMount := &mount.SafeFormatAndMount{}
 

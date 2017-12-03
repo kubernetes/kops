@@ -64,7 +64,7 @@ var (
 //   and any modifications that you require.
 //
 //   Use the following command to retrieve only the required elements:
-//   $ kop get cluster -o yaml
+//   $ kops get cluster -o yaml
 //
 
 `)

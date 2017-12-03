@@ -23,7 +23,9 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/apimachinery/pkg/watch"
@@ -50,6 +52,7 @@ func (c *ClusterVFS) Get(name string, options metav1.GetOptions) (*api.Cluster, 
 	if options.ResourceVersion != "" {
 		return nil, fmt.Errorf("ResourceVersion not supported in ClusterVFS::Get")
 	}
+	// TODO: Return not found
 	return c.find(name)
 }
 
@@ -121,6 +124,10 @@ func (r *ClusterVFS) Update(c *api.Cluster, status *api.ClusterStatus) (*api.Clu
 	old, err := r.Get(clusterName, metav1.GetOptions{})
 	if err != nil {
 		return nil, err
+	}
+
+	if old == nil {
+		return nil, errors.NewNotFound(schema.GroupResource{Group: api.GroupName, Resource: "Cluster"}, clusterName)
 	}
 
 	if err := validation.ValidateClusterUpdate(c, status, old).ToAggregate(); err != nil {

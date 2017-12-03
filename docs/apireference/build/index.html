@@ -662,6 +662,7 @@ Appears In:
 </tr>
 </tbody>
 </table>
+<p>AccessSpec provides configuration details related to kubeapi dns and ELB access</p>
 <aside class="notice">
 Appears In:
 
@@ -679,11 +680,11 @@ Appears In:
 <tbody>
 <tr>
 <td>dns <br /> <em><a href="#dnsaccessspec-v1alpha2-kops">DNSAccessSpec</a></em></td>
-<td></td>
+<td>DNS wil be used to provide config on kube-apiserver elb dns</td>
 </tr>
 <tr>
 <td>loadBalancer <br /> <em><a href="#loadbalanceraccessspec-v1alpha2-kops">LoadBalancerAccessSpec</a></em></td>
-<td></td>
+<td>LoadBalancer is the configuration for the kube-apiserver ELB</td>
 </tr>
 </tbody>
 </table>
@@ -1787,6 +1788,10 @@ Appears In:
 </thead>
 <tbody>
 <tr>
+<td>disable <br /> <em>boolean</em></td>
+<td>Disable indicates we do not wish to run the dns-controller addon</td>
+</tr>
+<tr>
 <td>watchIngress <br /> <em>boolean</em></td>
 <td>WatchIngress indicates you want the dns-controller to watch and create dns entries for ingress resources</td>
 </tr>
@@ -2585,6 +2590,10 @@ Appears In:
 <tr>
 <td>horizontalPodAutoscalerUpscaleDelay <br /> <em><a href="#duration-v1-meta">Duration</a></em></td>
 <td>HorizontalPodAutoscalerUpscaleDelay is a duration that specifies how long the autoscaler has to wait before another upscale operation can be performed after the current one has completed.</td>
+</tr>
+<tr>
+<td>horizontalPodAutoscalerUseRestClients <br /> <em>boolean</em></td>
+<td>HorizontalPodAutoscalerUseRestClients determines if the new-style clients should be used if support for custom metrics is enabled.</td>
 </tr>
 <tr>
 <td>image <br /> <em>string</em></td>

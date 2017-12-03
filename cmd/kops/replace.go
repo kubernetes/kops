@@ -23,12 +23,12 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
-	"k8s.io/kops/cmd/kops/util"
-	"k8s.io/kops/util/pkg/vfs"
-
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/kops/cmd/kops/util"
 	kopsapi "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/kopscodecs"
+	"k8s.io/kops/util/pkg/vfs"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 	"k8s.io/kubernetes/pkg/kubectl/resource"
@@ -77,7 +77,7 @@ func NewCmdReplace(f *util.Factory, out io.Writer) *cobra.Command {
 		},
 	}
 	cmd.Flags().StringSliceVarP(&options.Filenames, "filename", "f", options.Filenames, "A list of one or more files separated by a comma.")
-	cmd.Flags().BoolVarP(&options.force, "force", "", false, "Force any changes, which will also create any non-existing respurce (defaults to instancegroups only)")
+	cmd.Flags().BoolVarP(&options.force, "force", "", false, "Force any changes, which will also create any non-existing resource")
 	cmd.MarkFlagRequired("filename")
 
 	return cmd
@@ -124,9 +124,29 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 						return err
 					}
 
-					_, err = clientset.UpdateCluster(v, status)
+					// Check if the cluster exists already
+					clusterName := v.Name
+					cluster, err := clientset.GetCluster(clusterName)
 					if err != nil {
-						return fmt.Errorf("error replacing cluster: %v", err)
+						if errors.IsNotFound(err) {
+							cluster = nil
+						} else {
+							return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
+						}
+					}
+					if cluster == nil {
+						if !c.force {
+							return fmt.Errorf("cluster %v does not exist (try adding --force flag)", clusterName)
+						}
+						_, err = clientset.CreateCluster(v)
+						if err != nil {
+							return fmt.Errorf("error creating cluster: %v", err)
+						}
+					} else {
+						_, err = clientset.UpdateCluster(v, status)
+						if err != nil {
+							return fmt.Errorf("error replacing cluster: %v", err)
+						}
 					}
 				}
 
@@ -137,7 +157,11 @@ func RunReplace(f *util.Factory, cmd *cobra.Command, out io.Writer, c *replaceOp
 				}
 				cluster, err := clientset.GetCluster(clusterName)
 				if err != nil {
-					return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
+					if errors.IsNotFound(err) {
+						cluster = nil
+					} else {
+						return fmt.Errorf("error fetching cluster %q: %v", clusterName, err)
+					}
 				}
 				if cluster == nil {
 					return fmt.Errorf("cluster %q not found", clusterName)
