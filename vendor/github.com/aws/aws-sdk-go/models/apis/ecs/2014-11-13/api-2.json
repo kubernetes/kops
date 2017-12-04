@@ -435,6 +435,21 @@
         {"shape":"MissingVersionException"}
       ]
     },
+    "UpdateContainerInstancesState":{
+      "name":"UpdateContainerInstancesState",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateContainerInstancesStateRequest"},
+      "output":{"shape":"UpdateContainerInstancesStateResponse"},
+      "errors":[
+        {"shape":"ServerException"},
+        {"shape":"ClientException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ClusterNotFoundException"}
+      ]
+    },
     "UpdateService":{
       "name":"UpdateService",
       "http":{
@@ -596,8 +611,16 @@
         "runningTasksCount":{"shape":"Integer"},
         "pendingTasksCount":{"shape":"Integer"},
         "agentUpdateStatus":{"shape":"AgentUpdateStatus"},
-        "attributes":{"shape":"Attributes"}
+        "attributes":{"shape":"Attributes"},
+        "registeredAt":{"shape":"Timestamp"}
       }
+    },
+    "ContainerInstanceStatus":{
+      "type":"string",
+      "enum":[
+        "ACTIVE",
+        "DRAINING"
+      ]
     },
     "ContainerInstances":{
       "type":"list",
@@ -608,7 +631,10 @@
       "members":{
         "name":{"shape":"String"},
         "command":{"shape":"StringList"},
-        "environment":{"shape":"EnvironmentVariables"}
+        "environment":{"shape":"EnvironmentVariables"},
+        "cpu":{"shape":"BoxedInteger"},
+        "memory":{"shape":"BoxedInteger"},
+        "memoryReservation":{"shape":"BoxedInteger"}
       }
     },
     "ContainerOverrides":{
@@ -938,7 +964,8 @@
         "cluster":{"shape":"String"},
         "filter":{"shape":"String"},
         "nextToken":{"shape":"String"},
-        "maxResults":{"shape":"BoxedInteger"}
+        "maxResults":{"shape":"BoxedInteger"},
+        "status":{"shape":"ContainerInstanceStatus"}
       }
     },
     "ListContainerInstancesResponse":{
@@ -1524,6 +1551,25 @@
       "type":"structure",
       "members":{
         "containerInstance":{"shape":"ContainerInstance"}
+      }
+    },
+    "UpdateContainerInstancesStateRequest":{
+      "type":"structure",
+      "required":[
+        "containerInstances",
+        "status"
+      ],
+      "members":{
+        "cluster":{"shape":"String"},
+        "containerInstances":{"shape":"StringList"},
+        "status":{"shape":"ContainerInstanceStatus"}
+      }
+    },
+    "UpdateContainerInstancesStateResponse":{
+      "type":"structure",
+      "members":{
+        "containerInstances":{"shape":"ContainerInstances"},
+        "failures":{"shape":"Failures"}
       }
     },
     "UpdateInProgressException":{

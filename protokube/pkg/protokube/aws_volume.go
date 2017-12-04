@@ -19,13 +19,11 @@ package protokube
 import (
 	"fmt"
 	"net"
+	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
-
-	"k8s.io/kops/protokube/pkg/gossip"
-	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
-	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/ec2metadata"
@@ -34,6 +32,9 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"k8s.io/kops/protokube/pkg/etcd"
+	"k8s.io/kops/protokube/pkg/gossip"
+	gossipaws "k8s.io/kops/protokube/pkg/gossip/aws"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 var devices = []string{"/dev/xvdu", "/dev/xvdv", "/dev/xvdx", "/dev/xvdx", "/dev/xvdy", "/dev/xvdz"}
@@ -277,6 +278,72 @@ func (a *AWSVolumes) FindVolumes() ([]*Volume, error) {
 	return a.findVolumes(request)
 }
 
+// FindMountedVolume implements Volumes::FindMountedVolume
+func (v *AWSVolumes) FindMountedVolume(volume *Volume) (string, error) {
+	device := volume.LocalDevice
+
+	_, err := os.Stat(pathFor(device))
+	if err == nil {
+		return device, nil
+	}
+	if !os.IsNotExist(err) {
+		return "", fmt.Errorf("error checking for device %q: %v", device, err)
+	}
+
+	if volume.ID != "" {
+		expected := volume.ID
+		expected = "nvme-Amazon_Elastic_Block_Store_" + strings.Replace(expected, "-", "", -1)
+
+		// Look for nvme devices
+		// On AWS, nvme volumes are not mounted on a device path, but are instead mounted on an nvme device
+		// We must identify the correct volume by matching the nvme info
+		device, err := findNvmeVolume(expected)
+		if err != nil {
+			return "", fmt.Errorf("error checking for nvme volume %q: %v", expected, err)
+		}
+		if device != "" {
+			glog.Infof("found nvme volume %q at %q", expected, device)
+			return device, nil
+		}
+	}
+
+	return "", nil
+}
+
+func findNvmeVolume(findName string) (device string, err error) {
+	p := pathFor(filepath.Join("/dev/disk/by-id", findName))
+	stat, err := os.Lstat(p)
+	if err != nil {
+		if os.IsNotExist(err) {
+			glog.V(4).Infof("nvme path not found %q", p)
+			return "", nil
+		}
+		return "", fmt.Errorf("error getting stat of %q: %v", p, err)
+	}
+
+	if stat.Mode()&os.ModeSymlink != os.ModeSymlink {
+		glog.Warningf("nvme file %q found, but was not a symlink", p)
+		return "", nil
+	}
+
+	resolved, err := filepath.EvalSymlinks(p)
+	if err != nil {
+		return "", fmt.Errorf("error reading target of symlink %q: %v", p, err)
+	}
+
+	// Reverse pathFor
+	devPath := pathFor("/dev")
+	if strings.HasPrefix(resolved, devPath) {
+		resolved = strings.Replace(resolved, devPath, "/dev", 1)
+	}
+
+	if !strings.HasPrefix(resolved, "/dev") {
+		return "", fmt.Errorf("resolved symlink for %q was unexpected: %q", p, resolved)
+	}
+
+	return resolved, nil
+}
+
 // assignDevice picks a hopefully unused device and reserves it for the volume attachment
 func (a *AWSVolumes) assignDevice(volumeID string) (string, error) {
 	a.mutex.Lock()
@@ -364,7 +431,7 @@ func (a *AWSVolumes) AttachVolume(volume *Volume) error {
 		switch v.Status {
 		case "attaching":
 			glog.V(2).Infof("Waiting for volume %q to be attached (currently %q)", volumeID, v.Status)
-		// continue looping
+			// continue looping
 
 		default:
 			return fmt.Errorf("Observed unexpected volume state %q", v.Status)

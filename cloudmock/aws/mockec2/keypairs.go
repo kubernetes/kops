@@ -28,8 +28,16 @@ import (
 func (m *MockEC2) DescribeKeyPairsRequest(*ec2.DescribeKeyPairsInput) (*request.Request, *ec2.DescribeKeyPairsOutput) {
 	panic("MockEC2 DescribeKeyPairsRequest not implemented")
 }
+func (m *MockEC2) DescribeKeyPairsWithContext(aws.Context, *ec2.DescribeKeyPairsInput, ...request.Option) (*ec2.DescribeKeyPairsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
 func (m *MockEC2) ImportKeyPairRequest(*ec2.ImportKeyPairInput) (*request.Request, *ec2.ImportKeyPairOutput) {
 	panic("MockEC2 ImportKeyPairRequest not implemented")
+}
+func (m *MockEC2) ImportKeyPairWithContext(aws.Context, *ec2.ImportKeyPairInput, ...request.Option) (*ec2.ImportKeyPairOutput, error) {
+	panic("Not implemented")
+	return nil, nil
 }
 func (m *MockEC2) ImportKeyPair(request *ec2.ImportKeyPairInput) (*ec2.ImportKeyPairOutput, error) {
 	glog.Infof("ImportKeyPair: %v", request)
@@ -49,6 +57,10 @@ func (m *MockEC2) ImportKeyPair(request *ec2.ImportKeyPairInput) (*ec2.ImportKey
 }
 func (m *MockEC2) CreateKeyPairRequest(*ec2.CreateKeyPairInput) (*request.Request, *ec2.CreateKeyPairOutput) {
 	panic("MockEC2 CreateKeyPairRequest not implemented")
+}
+func (m *MockEC2) CreateKeyPairWithContext(aws.Context, *ec2.CreateKeyPairInput, ...request.Option) (*ec2.CreateKeyPairOutput, error) {
+	panic("Not implemented")
+	return nil, nil
 }
 func (m *MockEC2) CreateKeyPair(*ec2.CreateKeyPairInput) (*ec2.CreateKeyPairOutput, error) {
 	panic("MockEC2 CreateKeyPair not implemented")

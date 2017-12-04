@@ -1,14 +1,14 @@
 {
   "version":"2.0",
   "metadata":{
-    "uid":"opsworks-2013-02-18",
     "apiVersion":"2013-02-18",
     "endpointPrefix":"opsworks",
     "jsonVersion":"1.1",
     "protocol":"json",
     "serviceFullName":"AWS OpsWorks",
     "signatureVersion":"v4",
-    "targetPrefix":"OpsWorks_20130218"
+    "targetPrefix":"OpsWorks_20130218",
+    "uid":"opsworks-2013-02-18"
   },
   "operations":{
     "AssignInstance":{
@@ -585,6 +585,19 @@
         {"shape":"ResourceNotFoundException"}
       ]
     },
+    "ListTags":{
+      "name":"ListTags",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsRequest"},
+      "output":{"shape":"ListTagsResult"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ]
+    },
     "RebootInstance":{
       "name":"RebootInstance",
       "http":{
@@ -745,6 +758,18 @@
         {"shape":"ResourceNotFoundException"}
       ]
     },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ]
+    },
     "UnassignInstance":{
       "name":"UnassignInstance",
       "http":{
@@ -764,6 +789,18 @@
         "requestUri":"/"
       },
       "input":{"shape":"UnassignVolumeRequest"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"ResourceNotFoundException"}
+      ]
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
       "errors":[
         {"shape":"ValidationException"},
         {"shape":"ResourceNotFoundException"}
@@ -1063,6 +1100,144 @@
         "StackId":{"shape":"String"}
       }
     },
+    "CloudWatchLogsConfiguration":{
+      "type":"structure",
+      "members":{
+        "Enabled":{"shape":"Boolean"},
+        "LogStreams":{"shape":"CloudWatchLogsLogStreams"}
+      }
+    },
+    "CloudWatchLogsEncoding":{
+      "type":"string",
+      "enum":[
+        "ascii",
+        "big5",
+        "big5hkscs",
+        "cp037",
+        "cp424",
+        "cp437",
+        "cp500",
+        "cp720",
+        "cp737",
+        "cp775",
+        "cp850",
+        "cp852",
+        "cp855",
+        "cp856",
+        "cp857",
+        "cp858",
+        "cp860",
+        "cp861",
+        "cp862",
+        "cp863",
+        "cp864",
+        "cp865",
+        "cp866",
+        "cp869",
+        "cp874",
+        "cp875",
+        "cp932",
+        "cp949",
+        "cp950",
+        "cp1006",
+        "cp1026",
+        "cp1140",
+        "cp1250",
+        "cp1251",
+        "cp1252",
+        "cp1253",
+        "cp1254",
+        "cp1255",
+        "cp1256",
+        "cp1257",
+        "cp1258",
+        "euc_jp",
+        "euc_jis_2004",
+        "euc_jisx0213",
+        "euc_kr",
+        "gb2312",
+        "gbk",
+        "gb18030",
+        "hz",
+        "iso2022_jp",
+        "iso2022_jp_1",
+        "iso2022_jp_2",
+        "iso2022_jp_2004",
+        "iso2022_jp_3",
+        "iso2022_jp_ext",
+        "iso2022_kr",
+        "latin_1",
+        "iso8859_2",
+        "iso8859_3",
+        "iso8859_4",
+        "iso8859_5",
+        "iso8859_6",
+        "iso8859_7",
+        "iso8859_8",
+        "iso8859_9",
+        "iso8859_10",
+        "iso8859_13",
+        "iso8859_14",
+        "iso8859_15",
+        "iso8859_16",
+        "johab",
+        "koi8_r",
+        "koi8_u",
+        "mac_cyrillic",
+        "mac_greek",
+        "mac_iceland",
+        "mac_latin2",
+        "mac_roman",
+        "mac_turkish",
+        "ptcp154",
+        "shift_jis",
+        "shift_jis_2004",
+        "shift_jisx0213",
+        "utf_32",
+        "utf_32_be",
+        "utf_32_le",
+        "utf_16",
+        "utf_16_be",
+        "utf_16_le",
+        "utf_7",
+        "utf_8",
+        "utf_8_sig"
+      ]
+    },
+    "CloudWatchLogsInitialPosition":{
+      "type":"string",
+      "enum":[
+        "start_of_file",
+        "end_of_file"
+      ]
+    },
+    "CloudWatchLogsLogStream":{
+      "type":"structure",
+      "members":{
+        "LogGroupName":{"shape":"String"},
+        "DatetimeFormat":{"shape":"String"},
+        "TimeZone":{"shape":"CloudWatchLogsTimeZone"},
+        "File":{"shape":"String"},
+        "FileFingerprintLines":{"shape":"String"},
+        "MultiLineStartPattern":{"shape":"String"},
+        "InitialPosition":{"shape":"CloudWatchLogsInitialPosition"},
+        "Encoding":{"shape":"CloudWatchLogsEncoding"},
+        "BufferDuration":{"shape":"Integer"},
+        "BatchCount":{"shape":"Integer"},
+        "BatchSize":{"shape":"Integer"}
+      }
+    },
+    "CloudWatchLogsLogStreams":{
+      "type":"list",
+      "member":{"shape":"CloudWatchLogsLogStream"}
+    },
+    "CloudWatchLogsTimeZone":{
+      "type":"string",
+      "enum":[
+        "LOCAL",
+        "UTC"
+      ]
+    },
     "Command":{
       "type":"structure",
       "members":{
@@ -1180,6 +1355,7 @@
         "Name":{"shape":"String"},
         "Shortname":{"shape":"String"},
         "Attributes":{"shape":"LayerAttributes"},
+        "CloudWatchLogsConfiguration":{"shape":"CloudWatchLogsConfiguration"},
         "CustomInstanceProfileArn":{"shape":"String"},
         "CustomJson":{"shape":"String"},
         "CustomSecurityGroupIds":{"shape":"Strings"},
@@ -1798,6 +1974,7 @@
         "AgentVersion":{"shape":"String"},
         "AmiId":{"shape":"String"},
         "Architecture":{"shape":"Architecture"},
+        "Arn":{"shape":"String"},
         "AutoScalingType":{"shape":"AutoScalingType"},
         "AvailabilityZone":{"shape":"String"},
         "BlockDeviceMappings":{"shape":"BlockDeviceMappings"},
@@ -1879,12 +2056,14 @@
     "Layer":{
       "type":"structure",
       "members":{
+        "Arn":{"shape":"String"},
         "StackId":{"shape":"String"},
         "LayerId":{"shape":"String"},
         "Type":{"shape":"LayerType"},
         "Name":{"shape":"String"},
         "Shortname":{"shape":"String"},
         "Attributes":{"shape":"LayerAttributes"},
+        "CloudWatchLogsConfiguration":{"shape":"CloudWatchLogsConfiguration"},
         "CustomInstanceProfileArn":{"shape":"String"},
         "CustomJson":{"shape":"String"},
         "CustomSecurityGroupIds":{"shape":"Strings"},
@@ -1964,6 +2143,22 @@
         "Shutdown":{"shape":"ShutdownEventConfiguration"}
       }
     },
+    "ListTagsRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{"shape":"ResourceArn"},
+        "MaxResults":{"shape":"MaxResults"},
+        "NextToken":{"shape":"NextToken"}
+      }
+    },
+    "ListTagsResult":{
+      "type":"structure",
+      "members":{
+        "Tags":{"shape":"Tags"},
+        "NextToken":{"shape":"NextToken"}
+      }
+    },
     "LoadBasedAutoScalingConfiguration":{
       "type":"structure",
       "members":{
@@ -1977,12 +2172,14 @@
       "type":"list",
       "member":{"shape":"LoadBasedAutoScalingConfiguration"}
     },
+    "MaxResults":{"type":"integer"},
     "Minute":{
       "type":"integer",
       "box":true,
       "max":100,
       "min":1
     },
+    "NextToken":{"type":"string"},
     "Parameters":{
       "type":"map",
       "key":{"shape":"String"},
@@ -2149,6 +2346,7 @@
         "Version":{"shape":"String"}
       }
     },
+    "ResourceArn":{"type":"string"},
     "ResourceNotFoundException":{
       "type":"structure",
       "members":{
@@ -2350,6 +2548,28 @@
       "member":{"shape":"String"}
     },
     "Switch":{"type":"string"},
+    "TagKey":{"type":"string"},
+    "TagKeys":{
+      "type":"list",
+      "member":{"shape":"TagKey"}
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{"shape":"ResourceArn"},
+        "Tags":{"shape":"Tags"}
+      }
+    },
+    "TagValue":{"type":"string"},
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"}
+    },
     "TemporaryCredential":{
       "type":"structure",
       "members":{
@@ -2382,6 +2602,17 @@
       "required":["VolumeId"],
       "members":{
         "VolumeId":{"shape":"String"}
+      }
+    },
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{"shape":"ResourceArn"},
+        "TagKeys":{"shape":"TagKeys"}
       }
     },
     "UpdateAppRequest":{
@@ -2435,6 +2666,7 @@
         "Name":{"shape":"String"},
         "Shortname":{"shape":"String"},
         "Attributes":{"shape":"LayerAttributes"},
+        "CloudWatchLogsConfiguration":{"shape":"CloudWatchLogsConfiguration"},
         "CustomInstanceProfileArn":{"shape":"String"},
         "CustomJson":{"shape":"String"},
         "CustomSecurityGroupIds":{"shape":"Strings"},

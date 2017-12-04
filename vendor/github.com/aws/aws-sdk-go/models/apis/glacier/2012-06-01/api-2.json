@@ -1,13 +1,13 @@
 {
   "version":"2.0",
   "metadata":{
-    "uid":"glacier-2012-06-01",
     "apiVersion":"2012-06-01",
     "checksumFormat":"sha256",
     "endpointPrefix":"glacier",
     "protocol":"rest-json",
     "serviceFullName":"Amazon Glacier",
-    "signatureVersion":"v4"
+    "signatureVersion":"v4",
+    "uid":"glacier-2012-06-01"
   },
   "operations":{
     "AbortMultipartUpload":{

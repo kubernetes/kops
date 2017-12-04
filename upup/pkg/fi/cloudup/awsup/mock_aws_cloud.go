@@ -24,7 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
-	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
 	"github.com/golang/glog"
@@ -74,6 +74,7 @@ type MockCloud struct {
 	MockCloudFormation *cloudformation.CloudFormation
 	MockEC2            ec2iface.EC2API
 	MockRoute53        route53iface.Route53API
+	MockELB            elbiface.ELBAPI
 }
 
 func (c *MockAWSCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
@@ -194,9 +195,11 @@ func (c *MockAWSCloud) IAM() *iam.IAM {
 	return nil
 }
 
-func (c *MockAWSCloud) ELB() *elb.ELB {
-	glog.Fatalf("MockAWSCloud ELB not implemented")
-	return nil
+func (c *MockAWSCloud) ELB() elbiface.ELBAPI {
+	if c.MockELB == nil {
+		glog.Fatalf("MockAWSCloud MockELB not set")
+	}
+	return c.MockELB
 }
 
 func (c *MockAWSCloud) Autoscaling() autoscalingiface.AutoScalingAPI {

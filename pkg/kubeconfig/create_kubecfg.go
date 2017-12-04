@@ -35,7 +35,9 @@ func BuildKubecfg(cluster *kops.Cluster, keyStore fi.Keystore, secretStore fi.Se
 	}
 
 	server := "https://" + master
-	if dns.IsGossipHostname(master) {
+	topology := cluster.Spec.Topology
+
+	if dns.IsGossipHostname(master) || topology.DNS.Type == kops.DNSTypePrivate {
 		ingresses, err := status.GetApiIngressStatus(cluster)
 		if err != nil {
 			return nil, fmt.Errorf("error getting ingress status: %v", err)

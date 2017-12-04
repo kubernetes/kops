@@ -17,12 +17,10 @@ limitations under the License.
 package model
 
 import (
-	"k8s.io/kops/nodeup/pkg/distros"
+	"github.com/golang/glog"
 	"k8s.io/kops/pkg/systemd"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
-
-	"github.com/golang/glog"
 )
 
 // FirewallBuilder configures the firewall (iptables)
@@ -34,10 +32,9 @@ var _ fi.ModelBuilder = &FirewallBuilder{}
 
 // Build is responsible for generating any node firewall rules
 func (b *FirewallBuilder) Build(c *fi.ModelBuilderContext) error {
-	if b.Distribution == distros.DistributionContainerOS {
-		c.AddTask(b.buildFirewallScript())
-		c.AddTask(b.buildSystemdService())
-	}
+	// We need forwarding enabled (https://github.com/kubernetes/kubernetes/issues/40182)
+	c.AddTask(b.buildFirewallScript())
+	c.AddTask(b.buildSystemdService())
 
 	return nil
 }
