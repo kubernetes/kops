@@ -119,6 +119,42 @@
         {"shape":"InvalidImageFormatException"}
       ]
     },
+    "DetectModerationLabels":{
+      "name":"DetectModerationLabels",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DetectModerationLabelsRequest"},
+      "output":{"shape":"DetectModerationLabelsResponse"},
+      "errors":[
+        {"shape":"InvalidS3ObjectException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"ImageTooLargeException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ProvisionedThroughputExceededException"},
+        {"shape":"InvalidImageFormatException"}
+      ]
+    },
+    "GetCelebrityInfo":{
+      "name":"GetCelebrityInfo",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetCelebrityInfoRequest"},
+      "output":{"shape":"GetCelebrityInfoResponse"},
+      "errors":[
+        {"shape":"InvalidParameterException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ProvisionedThroughputExceededException"},
+        {"shape":"ResourceNotFoundException"}
+      ]
+    },
     "IndexFaces":{
       "name":"IndexFaces",
       "http":{
@@ -175,6 +211,26 @@
         {"shape":"ResourceNotFoundException"}
       ]
     },
+    "RecognizeCelebrities":{
+      "name":"RecognizeCelebrities",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RecognizeCelebritiesRequest"},
+      "output":{"shape":"RecognizeCelebritiesResponse"},
+      "errors":[
+        {"shape":"InvalidS3ObjectException"},
+        {"shape":"InvalidParameterException"},
+        {"shape":"InvalidImageFormatException"},
+        {"shape":"ImageTooLargeException"},
+        {"shape":"AccessDeniedException"},
+        {"shape":"InternalServerError"},
+        {"shape":"ThrottlingException"},
+        {"shape":"ProvisionedThroughputExceededException"},
+        {"shape":"InvalidImageFormatException"}
+      ]
+    },
     "SearchFaces":{
       "name":"SearchFaces",
       "http":{
@@ -220,6 +276,13 @@
       },
       "exception":true
     },
+    "AgeRange":{
+      "type":"structure",
+      "members":{
+        "Low":{"shape":"UInteger"},
+        "High":{"shape":"UInteger"}
+      }
+    },
     "Attribute":{
       "type":"string",
       "enum":[
@@ -247,6 +310,20 @@
         "Left":{"shape":"Float"},
         "Top":{"shape":"Float"}
       }
+    },
+    "Celebrity":{
+      "type":"structure",
+      "members":{
+        "Urls":{"shape":"Urls"},
+        "Name":{"shape":"String"},
+        "Id":{"shape":"RekognitionUniqueId"},
+        "Face":{"shape":"ComparedFace"},
+        "MatchConfidence":{"shape":"Percent"}
+      }
+    },
+    "CelebrityList":{
+      "type":"list",
+      "member":{"shape":"Celebrity"}
     },
     "CollectionId":{
       "type":"string",
@@ -285,15 +362,29 @@
       "type":"structure",
       "members":{
         "SourceImageFace":{"shape":"ComparedSourceImageFace"},
-        "FaceMatches":{"shape":"CompareFacesMatchList"}
+        "FaceMatches":{"shape":"CompareFacesMatchList"},
+        "UnmatchedFaces":{"shape":"CompareFacesUnmatchList"},
+        "SourceImageOrientationCorrection":{"shape":"OrientationCorrection"},
+        "TargetImageOrientationCorrection":{"shape":"OrientationCorrection"}
       }
+    },
+    "CompareFacesUnmatchList":{
+      "type":"list",
+      "member":{"shape":"ComparedFace"}
     },
     "ComparedFace":{
       "type":"structure",
       "members":{
         "BoundingBox":{"shape":"BoundingBox"},
-        "Confidence":{"shape":"Percent"}
+        "Confidence":{"shape":"Percent"},
+        "Landmarks":{"shape":"Landmarks"},
+        "Pose":{"shape":"Pose"},
+        "Quality":{"shape":"ImageQuality"}
       }
+    },
+    "ComparedFaceList":{
+      "type":"list",
+      "member":{"shape":"ComparedFace"}
     },
     "ComparedSourceImageFace":{
       "type":"structure",
@@ -382,6 +473,20 @@
         "OrientationCorrection":{"shape":"OrientationCorrection"}
       }
     },
+    "DetectModerationLabelsRequest":{
+      "type":"structure",
+      "required":["Image"],
+      "members":{
+        "Image":{"shape":"Image"},
+        "MinConfidence":{"shape":"Percent"}
+      }
+    },
+    "DetectModerationLabelsResponse":{
+      "type":"structure",
+      "members":{
+        "ModerationLabels":{"shape":"ModerationLabels"}
+      }
+    },
     "Emotion":{
       "type":"structure",
       "members":{
@@ -440,6 +545,7 @@
       "type":"structure",
       "members":{
         "BoundingBox":{"shape":"BoundingBox"},
+        "AgeRange":{"shape":"AgeRange"},
         "Smile":{"shape":"Smile"},
         "Eyeglasses":{"shape":"Eyeglasses"},
         "Sunglasses":{"shape":"Sunglasses"},
@@ -506,9 +612,23 @@
     "GenderType":{
       "type":"string",
       "enum":[
-        "MALE",
-        "FEMALE"
+        "Male",
+        "Female"
       ]
+    },
+    "GetCelebrityInfoRequest":{
+      "type":"structure",
+      "required":["Id"],
+      "members":{
+        "Id":{"shape":"RekognitionUniqueId"}
+      }
+    },
+    "GetCelebrityInfoResponse":{
+      "type":"structure",
+      "members":{
+        "Urls":{"shape":"Urls"},
+        "Name":{"shape":"String"}
+      }
     },
     "Image":{
       "type":"structure",
@@ -612,31 +732,31 @@
     "LandmarkType":{
       "type":"string",
       "enum":[
-        "EYE_LEFT",
-        "EYE_RIGHT",
-        "NOSE",
-        "MOUTH_LEFT",
-        "MOUTH_RIGHT",
-        "LEFT_EYEBROW_LEFT",
-        "LEFT_EYEBROW_RIGHT",
-        "LEFT_EYEBROW_UP",
-        "RIGHT_EYEBROW_LEFT",
-        "RIGHT_EYEBROW_RIGHT",
-        "RIGHT_EYEBROW_UP",
-        "LEFT_EYE_LEFT",
-        "LEFT_EYE_RIGHT",
-        "LEFT_EYE_UP",
-        "LEFT_EYE_DOWN",
-        "RIGHT_EYE_LEFT",
-        "RIGHT_EYE_RIGHT",
-        "RIGHT_EYE_UP",
-        "RIGHT_EYE_DOWN",
-        "NOSE_LEFT",
-        "NOSE_RIGHT",
-        "MOUTH_UP",
-        "MOUTH_DOWN",
-        "LEFT_PUPIL",
-        "RIGHT_PUPIL"
+        "eyeLeft",
+        "eyeRight",
+        "nose",
+        "mouthLeft",
+        "mouthRight",
+        "leftEyeBrowLeft",
+        "leftEyeBrowRight",
+        "leftEyeBrowUp",
+        "rightEyeBrowLeft",
+        "rightEyeBrowRight",
+        "rightEyeBrowUp",
+        "leftEyeLeft",
+        "leftEyeRight",
+        "leftEyeUp",
+        "leftEyeDown",
+        "rightEyeLeft",
+        "rightEyeRight",
+        "rightEyeUp",
+        "rightEyeDown",
+        "noseLeft",
+        "noseRight",
+        "mouthUp",
+        "mouthDown",
+        "leftPupil",
+        "rightPupil"
       ]
     },
     "Landmarks":{
@@ -677,6 +797,18 @@
       "type":"integer",
       "max":4096,
       "min":1
+    },
+    "ModerationLabel":{
+      "type":"structure",
+      "members":{
+        "Confidence":{"shape":"Percent"},
+        "Name":{"shape":"String"},
+        "ParentName":{"shape":"String"}
+      }
+    },
+    "ModerationLabels":{
+      "type":"list",
+      "member":{"shape":"ModerationLabel"}
     },
     "MouthOpen":{
       "type":"structure",
@@ -728,6 +860,25 @@
       "members":{
       },
       "exception":true
+    },
+    "RecognizeCelebritiesRequest":{
+      "type":"structure",
+      "required":["Image"],
+      "members":{
+        "Image":{"shape":"Image"}
+      }
+    },
+    "RecognizeCelebritiesResponse":{
+      "type":"structure",
+      "members":{
+        "CelebrityFaces":{"shape":"CelebrityList"},
+        "UnrecognizedFaces":{"shape":"ComparedFaceList"},
+        "OrientationCorrection":{"shape":"OrientationCorrection"}
+      }
+    },
+    "RekognitionUniqueId":{
+      "type":"string",
+      "pattern":"[0-9A-Za-z]*"
     },
     "ResourceAlreadyExistsException":{
       "type":"structure",
@@ -831,6 +982,11 @@
     "UInteger":{
       "type":"integer",
       "min":0
+    },
+    "Url":{"type":"string"},
+    "Urls":{
+      "type":"list",
+      "member":{"shape":"Url"}
     }
   }
 }

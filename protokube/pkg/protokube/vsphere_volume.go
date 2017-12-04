@@ -30,6 +30,7 @@ import (
 	"github.com/golang/glog"
 	etcdmanager "k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
+	"os"
 )
 
 const VolumeMetaDataFile = "/vol-metadata/metadata.json"
@@ -95,6 +96,20 @@ func (v *VSphereVolumes) FindVolumes() ([]*Volume, error) {
 	}
 	glog.V(4).Infof("Found volumes: %v", volumes)
 	return volumes, nil
+}
+
+// FindMountedVolume implements Volumes::FindMountedVolume
+func (v *VSphereVolumes) FindMountedVolume(volume *Volume) (string, error) {
+	device := volume.LocalDevice
+
+	_, err := os.Stat(pathFor(device))
+	if err == nil {
+		return device, nil
+	}
+	if os.IsNotExist(err) {
+		return "", nil
+	}
+	return "", fmt.Errorf("error checking for device %q: %v", device, err)
 }
 
 func getDevice(mountPoint string) (string, error) {

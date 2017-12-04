@@ -21,12 +21,18 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 )
 
 func (m *MockEC2) AllocateAddressRequest(*ec2.AllocateAddressInput) (*request.Request, *ec2.AllocateAddressOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) AllocateAddressWithContext(aws.Context, *ec2.AllocateAddressInput, ...request.Option) (*ec2.AllocateAddressOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -64,12 +70,22 @@ func (m *MockEC2) AssignPrivateIpAddressesRequest(*ec2.AssignPrivateIpAddressesI
 	return nil, nil
 }
 
+func (m *MockEC2) AssignPrivateIpAddressesWithContext(aws.Context, *ec2.AssignPrivateIpAddressesInput, ...request.Option) (*ec2.AssignPrivateIpAddressesOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
 func (m *MockEC2) AssignPrivateIpAddresses(*ec2.AssignPrivateIpAddressesInput) (*ec2.AssignPrivateIpAddressesOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
 
 func (m *MockEC2) AssociateAddressRequest(*ec2.AssociateAddressInput) (*request.Request, *ec2.AssociateAddressOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) AssociateAddressWithContext(aws.Context, *ec2.AssociateAddressInput, ...request.Option) (*ec2.AssociateAddressOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -83,6 +99,12 @@ func (m *MockEC2) DescribeAddressesRequest(*ec2.DescribeAddressesInput) (*reques
 	panic("Not implemented")
 	return nil, nil
 }
+
+func (m *MockEC2) DescribeAddressesWithContext(aws.Context, *ec2.DescribeAddressesInput, ...request.Option) (*ec2.DescribeAddressesOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
 func (m *MockEC2) DescribeAddresses(request *ec2.DescribeAddressesInput) (*ec2.DescribeAddressesOutput, error) {
 	glog.Infof("DescribeAddresses: %v", request)
 
@@ -136,6 +158,10 @@ func (m *MockEC2) DescribeAddresses(request *ec2.DescribeAddressesInput) (*ec2.D
 	return response, nil
 }
 func (m *MockEC2) ReleaseAddressRequest(*ec2.ReleaseAddressInput) (*request.Request, *ec2.ReleaseAddressOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) ReleaseAddressWithContext(aws.Context, *ec2.ReleaseAddressInput, ...request.Option) (*ec2.ReleaseAddressOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }

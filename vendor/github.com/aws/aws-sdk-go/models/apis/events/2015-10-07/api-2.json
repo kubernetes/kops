@@ -1,14 +1,14 @@
 {
   "version":"2.0",
   "metadata":{
-    "uid":"events-2015-10-07",
     "apiVersion":"2015-10-07",
     "endpointPrefix":"events",
     "jsonVersion":"1.1",
+    "protocol":"json",
     "serviceFullName":"Amazon CloudWatch Events",
     "signatureVersion":"v4",
     "targetPrefix":"AWSEvents",
-    "protocol":"json"
+    "uid":"events-2015-10-07"
   },
   "operations":{
     "DeleteRule":{
@@ -19,15 +19,21 @@
       },
       "input":{"shape":"DeleteRuleRequest"},
       "errors":[
-        {
-          "shape":"ConcurrentModificationException",
-          "exception":true
-        },
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalException"}
+      ]
+    },
+    "DescribeEventBus":{
+      "name":"DescribeEventBus",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeEventBusRequest"},
+      "output":{"shape":"DescribeEventBusResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalException"}
       ]
     },
     "DescribeRule":{
@@ -39,15 +45,8 @@
       "input":{"shape":"DescribeRuleRequest"},
       "output":{"shape":"DescribeRuleResponse"},
       "errors":[
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalException"}
       ]
     },
     "DisableRule":{
@@ -58,19 +57,9 @@
       },
       "input":{"shape":"DisableRuleRequest"},
       "errors":[
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"ConcurrentModificationException",
-          "exception":true
-        },
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalException"}
       ]
     },
     "EnableRule":{
@@ -81,19 +70,9 @@
       },
       "input":{"shape":"EnableRuleRequest"},
       "errors":[
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"ConcurrentModificationException",
-          "exception":true
-        },
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalException"}
       ]
     },
     "ListRuleNamesByTarget":{
@@ -105,11 +84,7 @@
       "input":{"shape":"ListRuleNamesByTargetRequest"},
       "output":{"shape":"ListRuleNamesByTargetResponse"},
       "errors":[
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"InternalException"}
       ]
     },
     "ListRules":{
@@ -121,11 +96,7 @@
       "input":{"shape":"ListRulesRequest"},
       "output":{"shape":"ListRulesResponse"},
       "errors":[
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"InternalException"}
       ]
     },
     "ListTargetsByRule":{
@@ -137,15 +108,8 @@
       "input":{"shape":"ListTargetsByRuleRequest"},
       "output":{"shape":"ListTargetsByRuleResponse"},
       "errors":[
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalException"}
       ]
     },
     "PutEvents":{
@@ -157,11 +121,20 @@
       "input":{"shape":"PutEventsRequest"},
       "output":{"shape":"PutEventsResponse"},
       "errors":[
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"InternalException"}
+      ]
+    },
+    "PutPermission":{
+      "name":"PutPermission",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"PutPermissionRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"PolicyLengthExceededException"},
+        {"shape":"InternalException"}
       ]
     },
     "PutRule":{
@@ -173,23 +146,10 @@
       "input":{"shape":"PutRuleRequest"},
       "output":{"shape":"PutRuleResponse"},
       "errors":[
-        {
-          "shape":"InvalidEventPatternException",
-          "exception":true
-        },
-        {
-          "shape":"LimitExceededException",
-          "exception":true
-        },
-        {
-          "shape":"ConcurrentModificationException",
-          "exception":true
-        },
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"InvalidEventPatternException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalException"}
       ]
     },
     "PutTargets":{
@@ -201,23 +161,22 @@
       "input":{"shape":"PutTargetsRequest"},
       "output":{"shape":"PutTargetsResponse"},
       "errors":[
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"ConcurrentModificationException",
-          "exception":true
-        },
-        {
-          "shape":"LimitExceededException",
-          "exception":true
-        },
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"InternalException"}
+      ]
+    },
+    "RemovePermission":{
+      "name":"RemovePermission",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"RemovePermissionRequest"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InternalException"}
       ]
     },
     "RemoveTargets":{
@@ -229,19 +188,9 @@
       "input":{"shape":"RemoveTargetsRequest"},
       "output":{"shape":"RemoveTargetsResponse"},
       "errors":[
-        {
-          "shape":"ResourceNotFoundException",
-          "exception":true
-        },
-        {
-          "shape":"ConcurrentModificationException",
-          "exception":true
-        },
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InternalException"}
       ]
     },
     "TestEventPattern":{
@@ -253,19 +202,23 @@
       "input":{"shape":"TestEventPatternRequest"},
       "output":{"shape":"TestEventPatternResponse"},
       "errors":[
-        {
-          "shape":"InvalidEventPatternException",
-          "exception":true
-        },
-        {
-          "shape":"InternalException",
-          "exception":true,
-          "fault":true
-        }
+        {"shape":"InvalidEventPatternException"},
+        {"shape":"InternalException"}
       ]
     }
   },
   "shapes":{
+    "Action":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"events:[a-zA-Z]+"
+    },
+    "Arn":{
+      "type":"string",
+      "max":1600,
+      "min":1
+    },
     "Boolean":{"type":"boolean"},
     "ConcurrentModificationException":{
       "type":"structure",
@@ -278,6 +231,19 @@
       "required":["Name"],
       "members":{
         "Name":{"shape":"RuleName"}
+      }
+    },
+    "DescribeEventBusRequest":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DescribeEventBusResponse":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"String"},
+        "Arn":{"shape":"String"},
+        "Policy":{"shape":"String"}
       }
     },
     "DescribeRuleRequest":{
@@ -306,6 +272,14 @@
         "Name":{"shape":"RuleName"}
       }
     },
+    "EcsParameters":{
+      "type":"structure",
+      "required":["TaskDefinitionArn"],
+      "members":{
+        "TaskDefinitionArn":{"shape":"Arn"},
+        "TaskCount":{"shape":"LimitMin1"}
+      }
+    },
     "EnableRuleRequest":{
       "type":"structure",
       "required":["Name"],
@@ -326,6 +300,20 @@
       "member":{"shape":"EventResource"}
     },
     "EventTime":{"type":"timestamp"},
+    "InputTransformer":{
+      "type":"structure",
+      "required":["InputTemplate"],
+      "members":{
+        "InputPathsMap":{"shape":"TransformerPaths"},
+        "InputTemplate":{"shape":"TransformerInput"}
+      }
+    },
+    "InputTransformerPathKey":{
+      "type":"string",
+      "max":256,
+      "min":1,
+      "pattern":"[A-Za-z0-9\\_\\-]+"
+    },
     "Integer":{"type":"integer"},
     "InternalException":{
       "type":"structure",
@@ -340,6 +328,13 @@
       },
       "exception":true
     },
+    "KinesisParameters":{
+      "type":"structure",
+      "required":["PartitionKeyPath"],
+      "members":{
+        "PartitionKeyPath":{"shape":"TargetPartitionKeyPath"}
+      }
+    },
     "LimitExceededException":{
       "type":"structure",
       "members":{
@@ -348,8 +343,12 @@
     },
     "LimitMax100":{
       "type":"integer",
-      "min":1,
-      "max":100
+      "max":100,
+      "min":1
+    },
+    "LimitMin1":{
+      "type":"integer",
+      "min":1
     },
     "ListRuleNamesByTargetRequest":{
       "type":"structure",
@@ -400,8 +399,20 @@
     },
     "NextToken":{
       "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "PolicyLengthExceededException":{
+      "type":"structure",
+      "members":{
+      },
+      "exception":true
+    },
+    "Principal":{
+      "type":"string",
+      "max":12,
       "min":1,
-      "max":2048
+      "pattern":"(\\d{12}|\\*)"
     },
     "PutEventsRequest":{
       "type":"structure",
@@ -423,8 +434,8 @@
     "PutEventsRequestEntryList":{
       "type":"list",
       "member":{"shape":"PutEventsRequestEntry"},
-      "min":1,
-      "max":10
+      "max":10,
+      "min":1
     },
     "PutEventsResponse":{
       "type":"structure",
@@ -444,6 +455,19 @@
     "PutEventsResultEntryList":{
       "type":"list",
       "member":{"shape":"PutEventsResultEntry"}
+    },
+    "PutPermissionRequest":{
+      "type":"structure",
+      "required":[
+        "Action",
+        "Principal",
+        "StatementId"
+      ],
+      "members":{
+        "Action":{"shape":"Action"},
+        "Principal":{"shape":"Principal"},
+        "StatementId":{"shape":"StatementId"}
+      }
     },
     "PutRuleRequest":{
       "type":"structure",
@@ -493,6 +517,13 @@
       "type":"list",
       "member":{"shape":"PutTargetsResultEntry"}
     },
+    "RemovePermissionRequest":{
+      "type":"structure",
+      "required":["StatementId"],
+      "members":{
+        "StatementId":{"shape":"StatementId"}
+      }
+    },
     "RemoveTargetsRequest":{
       "type":"structure",
       "required":[
@@ -531,8 +562,8 @@
     },
     "RoleArn":{
       "type":"string",
-      "min":1,
-      "max":1600
+      "max":1600,
+      "min":1
     },
     "Rule":{
       "type":"structure",
@@ -548,8 +579,8 @@
     },
     "RuleArn":{
       "type":"string",
-      "min":1,
-      "max":1600
+      "max":1600,
+      "min":1
     },
     "RuleDescription":{
       "type":"string",
@@ -557,8 +588,8 @@
     },
     "RuleName":{
       "type":"string",
-      "min":1,
       "max":64,
+      "min":1,
       "pattern":"[\\.\\-_A-Za-z0-9]+"
     },
     "RuleNameList":{
@@ -576,9 +607,56 @@
         "DISABLED"
       ]
     },
+    "RunCommandParameters":{
+      "type":"structure",
+      "required":["RunCommandTargets"],
+      "members":{
+        "RunCommandTargets":{"shape":"RunCommandTargets"}
+      }
+    },
+    "RunCommandTarget":{
+      "type":"structure",
+      "required":[
+        "Key",
+        "Values"
+      ],
+      "members":{
+        "Key":{"shape":"RunCommandTargetKey"},
+        "Values":{"shape":"RunCommandTargetValues"}
+      }
+    },
+    "RunCommandTargetKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^[\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*$"
+    },
+    "RunCommandTargetValue":{
+      "type":"string",
+      "max":256,
+      "min":1
+    },
+    "RunCommandTargetValues":{
+      "type":"list",
+      "member":{"shape":"RunCommandTargetValue"},
+      "max":50,
+      "min":1
+    },
+    "RunCommandTargets":{
+      "type":"list",
+      "member":{"shape":"RunCommandTarget"},
+      "max":5,
+      "min":1
+    },
     "ScheduleExpression":{
       "type":"string",
       "max":256
+    },
+    "StatementId":{
+      "type":"string",
+      "max":64,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-_]+"
     },
     "String":{"type":"string"},
     "Target":{
@@ -590,26 +668,31 @@
       "members":{
         "Id":{"shape":"TargetId"},
         "Arn":{"shape":"TargetArn"},
+        "RoleArn":{"shape":"RoleArn"},
         "Input":{"shape":"TargetInput"},
-        "InputPath":{"shape":"TargetInputPath"}
+        "InputPath":{"shape":"TargetInputPath"},
+        "InputTransformer":{"shape":"InputTransformer"},
+        "KinesisParameters":{"shape":"KinesisParameters"},
+        "RunCommandParameters":{"shape":"RunCommandParameters"},
+        "EcsParameters":{"shape":"EcsParameters"}
       }
     },
     "TargetArn":{
       "type":"string",
-      "min":1,
-      "max":1600
+      "max":1600,
+      "min":1
     },
     "TargetId":{
       "type":"string",
-      "min":1,
       "max":64,
+      "min":1,
       "pattern":"[\\.\\-_A-Za-z0-9]+"
     },
     "TargetIdList":{
       "type":"list",
       "member":{"shape":"TargetId"},
-      "min":1,
-      "max":100
+      "max":100,
+      "min":1
     },
     "TargetInput":{
       "type":"string",
@@ -621,7 +704,13 @@
     },
     "TargetList":{
       "type":"list",
-      "member":{"shape":"Target"}
+      "member":{"shape":"Target"},
+      "max":100,
+      "min":1
+    },
+    "TargetPartitionKeyPath":{
+      "type":"string",
+      "max":256
     },
     "TestEventPatternRequest":{
       "type":"structure",
@@ -639,6 +728,17 @@
       "members":{
         "Result":{"shape":"Boolean"}
       }
+    },
+    "TransformerInput":{
+      "type":"string",
+      "max":8192,
+      "min":1
+    },
+    "TransformerPaths":{
+      "type":"map",
+      "key":{"shape":"InputTransformerPathKey"},
+      "value":{"shape":"TargetInputPath"},
+      "max":10
     }
   }
 }

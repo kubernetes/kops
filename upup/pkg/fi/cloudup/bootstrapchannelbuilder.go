@@ -191,7 +191,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 	if externalDNS == nil || !externalDNS.Disable {
 		{
 			key := "dns-controller.addons.k8s.io"
-			version := "1.8.0-beta.1"
+			version := "1.8.0-beta.2"
 
 			{
 				location := key + "/pre-k8s-1.6.yaml"
@@ -439,7 +439,7 @@ func (b *BootstrapChannelBuilder) buildManifest() (*channelsapi.Addons, map[stri
 
 	if b.cluster.Spec.Networking.Flannel != nil {
 		key := "networking.flannel"
-		version := "0.9.0-kops.1"
+		version := "0.9.1-kops.1"
 
 		{
 			location := key + "/pre-k8s-1.6.yaml"

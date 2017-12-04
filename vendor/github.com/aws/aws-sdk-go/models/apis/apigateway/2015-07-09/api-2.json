@@ -150,6 +150,23 @@
         {"shape":"TooManyRequestsException"}
       ]
     },
+    "CreateRequestValidator":{
+      "name":"CreateRequestValidator",
+      "http":{
+        "method":"POST",
+        "requestUri":"/restapis/{restapi_id}/requestvalidators",
+        "responseCode":201
+      },
+      "input":{"shape":"CreateRequestValidatorRequest"},
+      "output":{"shape":"RequestValidator"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
     "CreateResource":{
       "name":"CreateResource",
       "http":{
@@ -357,6 +374,22 @@
         {"shape":"TooManyRequestsException"}
       ]
     },
+    "DeleteGatewayResponse":{
+      "name":"DeleteGatewayResponse",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/restapis/{restapi_id}/gatewayresponses/{response_type}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteGatewayResponseRequest"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ConflictException"}
+      ]
+    },
     "DeleteIntegration":{
       "name":"DeleteIntegration",
       "http":{
@@ -427,6 +460,22 @@
         "responseCode":202
       },
       "input":{"shape":"DeleteModelRequest"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"},
+        {"shape":"BadRequestException"},
+        {"shape":"ConflictException"}
+      ]
+    },
+    "DeleteRequestValidator":{
+      "name":"DeleteRequestValidator",
+      "http":{
+        "method":"DELETE",
+        "requestUri":"/restapis/{restapi_id}/requestvalidators/{requestvalidator_id}",
+        "responseCode":202
+      },
+      "input":{"shape":"DeleteRequestValidatorRequest"},
       "errors":[
         {"shape":"UnauthorizedException"},
         {"shape":"NotFoundException"},
@@ -814,6 +863,36 @@
         {"shape":"UnauthorizedException"},
         {"shape":"NotFoundException"},
         {"shape":"BadRequestException"},
+        {"shape":"ConflictException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
+    "GetGatewayResponse":{
+      "name":"GetGatewayResponse",
+      "http":{
+        "method":"GET",
+        "requestUri":"/restapis/{restapi_id}/gatewayresponses/{response_type}"
+      },
+      "input":{"shape":"GetGatewayResponseRequest"},
+      "output":{"shape":"GatewayResponse"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
+    "GetGatewayResponses":{
+      "name":"GetGatewayResponses",
+      "http":{
+        "method":"GET",
+        "requestUri":"/restapis/{restapi_id}/gatewayresponses"
+      },
+      "input":{"shape":"GetGatewayResponsesRequest"},
+      "output":{"shape":"GatewayResponses"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
         {"shape":"TooManyRequestsException"}
       ]
     },
@@ -917,6 +996,35 @@
         {"shape":"TooManyRequestsException"}
       ]
     },
+    "GetRequestValidator":{
+      "name":"GetRequestValidator",
+      "http":{
+        "method":"GET",
+        "requestUri":"/restapis/{restapi_id}/requestvalidators/{requestvalidator_id}"
+      },
+      "input":{"shape":"GetRequestValidatorRequest"},
+      "output":{"shape":"RequestValidator"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
+    "GetRequestValidators":{
+      "name":"GetRequestValidators",
+      "http":{
+        "method":"GET",
+        "requestUri":"/restapis/{restapi_id}/requestvalidators"
+      },
+      "input":{"shape":"GetRequestValidatorsRequest"},
+      "output":{"shape":"RequestValidators"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
     "GetResource":{
       "name":"GetResource",
       "http":{
@@ -987,6 +1095,7 @@
         {"shape":"UnauthorizedException"},
         {"shape":"NotFoundException"},
         {"shape":"BadRequestException"},
+        {"shape":"ConflictException"},
         {"shape":"TooManyRequestsException"}
       ]
     },
@@ -1171,6 +1280,23 @@
         {"shape":"BadRequestException"},
         {"shape":"TooManyRequestsException"},
         {"shape":"ConflictException"}
+      ]
+    },
+    "PutGatewayResponse":{
+      "name":"PutGatewayResponse",
+      "http":{
+        "method":"PUT",
+        "requestUri":"/restapis/{restapi_id}/gatewayresponses/{response_type}",
+        "responseCode":201
+      },
+      "input":{"shape":"PutGatewayResponseRequest"},
+      "output":{"shape":"GatewayResponse"},
+      "errors":[
+        {"shape":"BadRequestException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"TooManyRequestsException"}
       ]
     },
     "PutIntegration":{
@@ -1433,6 +1559,21 @@
         {"shape":"TooManyRequestsException"}
       ]
     },
+    "UpdateGatewayResponse":{
+      "name":"UpdateGatewayResponse",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/restapis/{restapi_id}/gatewayresponses/{response_type}"
+      },
+      "input":{"shape":"UpdateGatewayResponseRequest"},
+      "output":{"shape":"GatewayResponse"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
     "UpdateIntegration":{
       "name":"UpdateIntegration",
       "http":{
@@ -1512,6 +1653,21 @@
         {"shape":"NotFoundException"},
         {"shape":"BadRequestException"},
         {"shape":"ConflictException"},
+        {"shape":"TooManyRequestsException"}
+      ]
+    },
+    "UpdateRequestValidator":{
+      "name":"UpdateRequestValidator",
+      "http":{
+        "method":"PATCH",
+        "requestUri":"/restapis/{restapi_id}/requestvalidators/{requestvalidator_id}"
+      },
+      "input":{"shape":"UpdateRequestValidatorRequest"},
+      "output":{"shape":"RequestValidator"},
+      "errors":[
+        {"shape":"UnauthorizedException"},
+        {"shape":"NotFoundException"},
+        {"shape":"BadRequestException"},
         {"shape":"TooManyRequestsException"}
       ]
     },
@@ -1873,19 +2029,14 @@
     },
     "CreateDomainNameRequest":{
       "type":"structure",
-      "required":[
-        "domainName",
-        "certificateName",
-        "certificateBody",
-        "certificatePrivateKey",
-        "certificateChain"
-      ],
+      "required":["domainName"],
       "members":{
         "domainName":{"shape":"String"},
         "certificateName":{"shape":"String"},
         "certificateBody":{"shape":"String"},
         "certificatePrivateKey":{"shape":"String"},
-        "certificateChain":{"shape":"String"}
+        "certificateChain":{"shape":"String"},
+        "certificateArn":{"shape":"String"}
       }
     },
     "CreateModelRequest":{
@@ -1905,6 +2056,20 @@
         "description":{"shape":"String"},
         "schema":{"shape":"String"},
         "contentType":{"shape":"String"}
+      }
+    },
+    "CreateRequestValidatorRequest":{
+      "type":"structure",
+      "required":["restApiId"],
+      "members":{
+        "restApiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"restapi_id"
+        },
+        "name":{"shape":"String"},
+        "validateRequestBody":{"shape":"Boolean"},
+        "validateRequestParameters":{"shape":"Boolean"}
       }
     },
     "CreateResourceRequest":{
@@ -2117,6 +2282,25 @@
         }
       }
     },
+    "DeleteGatewayResponseRequest":{
+      "type":"structure",
+      "required":[
+        "restApiId",
+        "responseType"
+      ],
+      "members":{
+        "restApiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"restapi_id"
+        },
+        "responseType":{
+          "shape":"GatewayResponseType",
+          "location":"uri",
+          "locationName":"response_type"
+        }
+      }
+    },
     "DeleteIntegrationRequest":{
       "type":"structure",
       "required":[
@@ -2245,6 +2429,25 @@
           "shape":"String",
           "location":"uri",
           "locationName":"model_name"
+        }
+      }
+    },
+    "DeleteRequestValidatorRequest":{
+      "type":"structure",
+      "required":[
+        "restApiId",
+        "requestValidatorId"
+      ],
+      "members":{
+        "restApiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"restapi_id"
+        },
+        "requestValidatorId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"requestvalidator_id"
         }
       }
     },
@@ -2426,6 +2629,7 @@
       "members":{
         "domainName":{"shape":"String"},
         "certificateName":{"shape":"String"},
+        "certificateArn":{"shape":"String"},
         "certificateUploadDate":{"shape":"Timestamp"},
         "distributionDomainName":{"shape":"String"}
       }
@@ -2493,6 +2697,51 @@
           "shape":"String",
           "location":"uri",
           "locationName":"stage_name"
+        }
+      }
+    },
+    "GatewayResponse":{
+      "type":"structure",
+      "members":{
+        "responseType":{"shape":"GatewayResponseType"},
+        "statusCode":{"shape":"StatusCode"},
+        "responseParameters":{"shape":"MapOfStringToString"},
+        "responseTemplates":{"shape":"MapOfStringToString"},
+        "defaultResponse":{"shape":"Boolean"}
+      }
+    },
+    "GatewayResponseType":{
+      "type":"string",
+      "enum":[
+        "DEFAULT_4XX",
+        "DEFAULT_5XX",
+        "RESOURCE_NOT_FOUND",
+        "UNAUTHORIZED",
+        "INVALID_API_KEY",
+        "ACCESS_DENIED",
+        "AUTHORIZER_FAILURE",
+        "AUTHORIZER_CONFIGURATION_ERROR",
+        "INVALID_SIGNATURE",
+        "EXPIRED_TOKEN",
+        "MISSING_AUTHENTICATION_TOKEN",
+        "INTEGRATION_FAILURE",
+        "INTEGRATION_TIMEOUT",
+        "API_CONFIGURATION_ERROR",
+        "UNSUPPORTED_MEDIA_TYPE",
+        "BAD_REQUEST_PARAMETERS",
+        "BAD_REQUEST_BODY",
+        "REQUEST_TOO_LARGE",
+        "THROTTLED",
+        "QUOTA_EXCEEDED"
+      ]
+    },
+    "GatewayResponses":{
+      "type":"structure",
+      "members":{
+        "position":{"shape":"String"},
+        "items":{
+          "shape":"ListOfGatewayResponse",
+          "locationName":"item"
         }
       }
     },
@@ -2675,6 +2924,11 @@
           "shape":"String",
           "location":"uri",
           "locationName":"deployment_id"
+        },
+        "embed":{
+          "shape":"ListOfString",
+          "location":"querystring",
+          "locationName":"embed"
         }
       }
     },
@@ -2854,6 +3108,46 @@
         }
       }
     },
+    "GetGatewayResponseRequest":{
+      "type":"structure",
+      "required":[
+        "restApiId",
+        "responseType"
+      ],
+      "members":{
+        "restApiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"restapi_id"
+        },
+        "responseType":{
+          "shape":"GatewayResponseType",
+          "location":"uri",
+          "locationName":"response_type"
+        }
+      }
+    },
+    "GetGatewayResponsesRequest":{
+      "type":"structure",
+      "required":["restApiId"],
+      "members":{
+        "restApiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"restapi_id"
+        },
+        "position":{
+          "shape":"String",
+          "location":"querystring",
+          "locationName":"position"
+        },
+        "limit":{
+          "shape":"NullableInteger",
+          "location":"querystring",
+          "locationName":"limit"
+        }
+      }
+    },
     "GetIntegrationRequest":{
       "type":"structure",
       "required":[
@@ -3030,6 +3324,46 @@
         }
       }
     },
+    "GetRequestValidatorRequest":{
+      "type":"structure",
+      "required":[
+        "restApiId",
+        "requestValidatorId"
+      ],
+      "members":{
+        "restApiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"restapi_id"
+        },
+        "requestValidatorId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"requestvalidator_id"
+        }
+      }
+    },
+    "GetRequestValidatorsRequest":{
+      "type":"structure",
+      "required":["restApiId"],
+      "members":{
+        "restApiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"restapi_id"
+        },
+        "position":{
+          "shape":"String",
+          "location":"querystring",
+          "locationName":"position"
+        },
+        "limit":{
+          "shape":"NullableInteger",
+          "location":"querystring",
+          "locationName":"limit"
+        }
+      }
+    },
     "GetResourceRequest":{
       "type":"structure",
       "required":[
@@ -3046,6 +3380,11 @@
           "shape":"String",
           "location":"uri",
           "locationName":"resource_id"
+        },
+        "embed":{
+          "shape":"ListOfString",
+          "location":"querystring",
+          "locationName":"embed"
         }
       }
     },
@@ -3067,6 +3406,11 @@
           "shape":"NullableInteger",
           "location":"querystring",
           "locationName":"limit"
+        },
+        "embed":{
+          "shape":"ListOfString",
+          "location":"querystring",
+          "locationName":"embed"
         }
       }
     },
@@ -3456,6 +3800,10 @@
       "type":"list",
       "member":{"shape":"DomainName"}
     },
+    "ListOfGatewayResponse":{
+      "type":"list",
+      "member":{"shape":"GatewayResponse"}
+    },
     "ListOfLong":{
       "type":"list",
       "member":{"shape":"Long"}
@@ -3467,6 +3815,10 @@
     "ListOfPatchOperation":{
       "type":"list",
       "member":{"shape":"PatchOperation"}
+    },
+    "ListOfRequestValidator":{
+      "type":"list",
+      "member":{"shape":"RequestValidator"}
     },
     "ListOfResource":{
       "type":"list",
@@ -3566,6 +3918,7 @@
         "authorizationType":{"shape":"String"},
         "authorizerId":{"shape":"String"},
         "apiKeyRequired":{"shape":"NullableBoolean"},
+        "requestValidatorId":{"shape":"String"},
         "operationName":{"shape":"String"},
         "requestParameters":{"shape":"MapOfStringToBoolean"},
         "requestModels":{"shape":"MapOfStringToString"},
@@ -3659,6 +4012,28 @@
       "value":{"shape":"MapOfMethodSnapshot"}
     },
     "ProviderARN":{"type":"string"},
+    "PutGatewayResponseRequest":{
+      "type":"structure",
+      "required":[
+        "restApiId",
+        "responseType"
+      ],
+      "members":{
+        "restApiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"restapi_id"
+        },
+        "responseType":{
+          "shape":"GatewayResponseType",
+          "location":"uri",
+          "locationName":"response_type"
+        },
+        "statusCode":{"shape":"StatusCode"},
+        "responseParameters":{"shape":"MapOfStringToString"},
+        "responseTemplates":{"shape":"MapOfStringToString"}
+      }
+    },
     "PutIntegrationRequest":{
       "type":"structure",
       "required":[
@@ -3762,7 +4137,8 @@
         "apiKeyRequired":{"shape":"Boolean"},
         "operationName":{"shape":"String"},
         "requestParameters":{"shape":"MapOfStringToBoolean"},
-        "requestModels":{"shape":"MapOfStringToString"}
+        "requestModels":{"shape":"MapOfStringToString"},
+        "requestValidatorId":{"shape":"String"}
       }
     },
     "PutMethodResponseRequest":{
@@ -3849,6 +4225,25 @@
         "limit":{"shape":"Integer"},
         "offset":{"shape":"Integer"},
         "period":{"shape":"QuotaPeriodType"}
+      }
+    },
+    "RequestValidator":{
+      "type":"structure",
+      "members":{
+        "id":{"shape":"String"},
+        "name":{"shape":"String"},
+        "validateRequestBody":{"shape":"Boolean"},
+        "validateRequestParameters":{"shape":"Boolean"}
+      }
+    },
+    "RequestValidators":{
+      "type":"structure",
+      "members":{
+        "position":{"shape":"String"},
+        "items":{
+          "shape":"ListOfRequestValidator",
+          "locationName":"item"
+        }
       }
     },
     "Resource":{
@@ -4249,6 +4644,26 @@
         "patchOperations":{"shape":"ListOfPatchOperation"}
       }
     },
+    "UpdateGatewayResponseRequest":{
+      "type":"structure",
+      "required":[
+        "restApiId",
+        "responseType"
+      ],
+      "members":{
+        "restApiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"restapi_id"
+        },
+        "responseType":{
+          "shape":"GatewayResponseType",
+          "location":"uri",
+          "locationName":"response_type"
+        },
+        "patchOperations":{"shape":"ListOfPatchOperation"}
+      }
+    },
     "UpdateIntegrationRequest":{
       "type":"structure",
       "required":[
@@ -4381,6 +4796,26 @@
           "shape":"String",
           "location":"uri",
           "locationName":"model_name"
+        },
+        "patchOperations":{"shape":"ListOfPatchOperation"}
+      }
+    },
+    "UpdateRequestValidatorRequest":{
+      "type":"structure",
+      "required":[
+        "restApiId",
+        "requestValidatorId"
+      ],
+      "members":{
+        "restApiId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"restapi_id"
+        },
+        "requestValidatorId":{
+          "shape":"String",
+          "location":"uri",
+          "locationName":"requestvalidator_id"
         },
         "patchOperations":{"shape":"ListOfPatchOperation"}
       }

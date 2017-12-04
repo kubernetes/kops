@@ -23,13 +23,18 @@ import (
 type Volumes interface {
 	AttachVolume(volume *Volume) error
 	FindVolumes() ([]*Volume, error)
+
+	// FindMountedVolume returns the device (e.g. /dev/sda) where the volume is mounted
+	// If not found, it returns "", nil
+	// On error, it returns "", err
+	FindMountedVolume(volume *Volume) (device string, err error)
 }
 
 type Volume struct {
 	// ID is the cloud-provider identifier for the volume
 	ID string
 
-	// Device is set if the volume is attached to the local machine
+	// LocalDevice is set if the volume is attached to the local machine
 	LocalDevice string
 
 	// AttachedTo is set to the ID of the machine the volume is attached to, or "" if not attached

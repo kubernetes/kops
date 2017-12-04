@@ -19,16 +19,16 @@ package mockautoscaling
 import (
 	"log"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/autoscaling"
 )
 
-func (m *MockAutoscaling) AttachInstancesRequest(*autoscaling.AttachInstancesInput) (*request.Request, *autoscaling.AttachInstancesOutput) {
+func (m *MockAutoscaling) AttachInstancesWithContext(aws.Context, *autoscaling.AttachInstancesInput, ...request.Option) (*autoscaling.AttachInstancesOutput, error) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) AttachLoadBalancerTargetGroupsRequest(*autoscaling.AttachLoadBalancerTargetGroupsInput) (*request.Request, *autoscaling.AttachLoadBalancerTargetGroupsOutput) {
+func (m *MockAutoscaling) AttachInstancesRequest(*autoscaling.AttachInstancesInput) (*request.Request, *autoscaling.AttachInstancesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -37,8 +37,11 @@ func (m *MockAutoscaling) AttachLoadBalancerTargetGroups(*autoscaling.AttachLoad
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) AttachLoadBalancersRequest(*autoscaling.AttachLoadBalancersInput) (*request.Request, *autoscaling.AttachLoadBalancersOutput) {
+func (m *MockAutoscaling) AttachLoadBalancerTargetGroupsWithContext(aws.Context, *autoscaling.AttachLoadBalancerTargetGroupsInput, ...request.Option) (*autoscaling.AttachLoadBalancerTargetGroupsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) AttachLoadBalancerTargetGroupsRequest(*autoscaling.AttachLoadBalancerTargetGroupsInput) (*request.Request, *autoscaling.AttachLoadBalancerTargetGroupsOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -47,8 +50,11 @@ func (m *MockAutoscaling) AttachLoadBalancers(*autoscaling.AttachLoadBalancersIn
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) CompleteLifecycleActionRequest(*autoscaling.CompleteLifecycleActionInput) (*request.Request, *autoscaling.CompleteLifecycleActionOutput) {
+func (m *MockAutoscaling) AttachLoadBalancersWithContext(aws.Context, *autoscaling.AttachLoadBalancersInput, ...request.Option) (*autoscaling.AttachLoadBalancersOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) AttachLoadBalancersRequest(*autoscaling.AttachLoadBalancersInput) (*request.Request, *autoscaling.AttachLoadBalancersOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -57,13 +63,20 @@ func (m *MockAutoscaling) CompleteLifecycleAction(*autoscaling.CompleteLifecycle
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) CreateAutoScalingGroupRequest(*autoscaling.CreateAutoScalingGroupInput) (*request.Request, *autoscaling.CreateAutoScalingGroupOutput) {
+func (m *MockAutoscaling) CompleteLifecycleActionWithContext(aws.Context, *autoscaling.CompleteLifecycleActionInput, ...request.Option) (*autoscaling.CompleteLifecycleActionOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) CompleteLifecycleActionRequest(*autoscaling.CompleteLifecycleActionInput) (*request.Request, *autoscaling.CompleteLifecycleActionOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
 
-func (m *MockAutoscaling) CreateLaunchConfigurationRequest(*autoscaling.CreateLaunchConfigurationInput) (*request.Request, *autoscaling.CreateLaunchConfigurationOutput) {
+func (m *MockAutoscaling) CreateAutoScalingGroupWithContext(aws.Context, *autoscaling.CreateAutoScalingGroupInput, ...request.Option) (*autoscaling.CreateAutoScalingGroupOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) CreateAutoScalingGroupRequest(*autoscaling.CreateAutoScalingGroupInput) (*request.Request, *autoscaling.CreateAutoScalingGroupOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -72,8 +85,11 @@ func (m *MockAutoscaling) CreateLaunchConfiguration(*autoscaling.CreateLaunchCon
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) CreateOrUpdateTagsRequest(*autoscaling.CreateOrUpdateTagsInput) (*request.Request, *autoscaling.CreateOrUpdateTagsOutput) {
+func (m *MockAutoscaling) CreateLaunchConfigurationWithContext(aws.Context, *autoscaling.CreateLaunchConfigurationInput, ...request.Option) (*autoscaling.CreateLaunchConfigurationOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) CreateLaunchConfigurationRequest(*autoscaling.CreateLaunchConfigurationInput) (*request.Request, *autoscaling.CreateLaunchConfigurationOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -82,8 +98,11 @@ func (m *MockAutoscaling) CreateOrUpdateTags(*autoscaling.CreateOrUpdateTagsInpu
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DeleteAutoScalingGroupRequest(*autoscaling.DeleteAutoScalingGroupInput) (*request.Request, *autoscaling.DeleteAutoScalingGroupOutput) {
+func (m *MockAutoscaling) CreateOrUpdateTagsWithContext(aws.Context, *autoscaling.CreateOrUpdateTagsInput, ...request.Option) (*autoscaling.CreateOrUpdateTagsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) CreateOrUpdateTagsRequest(*autoscaling.CreateOrUpdateTagsInput) (*request.Request, *autoscaling.CreateOrUpdateTagsOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -92,8 +111,11 @@ func (m *MockAutoscaling) DeleteAutoScalingGroup(*autoscaling.DeleteAutoScalingG
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DeleteLaunchConfigurationRequest(*autoscaling.DeleteLaunchConfigurationInput) (*request.Request, *autoscaling.DeleteLaunchConfigurationOutput) {
+func (m *MockAutoscaling) DeleteAutoScalingGroupWithContext(aws.Context, *autoscaling.DeleteAutoScalingGroupInput, ...request.Option) (*autoscaling.DeleteAutoScalingGroupOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DeleteAutoScalingGroupRequest(*autoscaling.DeleteAutoScalingGroupInput) (*request.Request, *autoscaling.DeleteAutoScalingGroupOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -102,8 +124,11 @@ func (m *MockAutoscaling) DeleteLaunchConfiguration(*autoscaling.DeleteLaunchCon
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DeleteLifecycleHookRequest(*autoscaling.DeleteLifecycleHookInput) (*request.Request, *autoscaling.DeleteLifecycleHookOutput) {
+func (m *MockAutoscaling) DeleteLaunchConfigurationWithContext(aws.Context, *autoscaling.DeleteLaunchConfigurationInput, ...request.Option) (*autoscaling.DeleteLaunchConfigurationOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DeleteLaunchConfigurationRequest(*autoscaling.DeleteLaunchConfigurationInput) (*request.Request, *autoscaling.DeleteLaunchConfigurationOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -112,8 +137,11 @@ func (m *MockAutoscaling) DeleteLifecycleHook(*autoscaling.DeleteLifecycleHookIn
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DeleteNotificationConfigurationRequest(*autoscaling.DeleteNotificationConfigurationInput) (*request.Request, *autoscaling.DeleteNotificationConfigurationOutput) {
+func (m *MockAutoscaling) DeleteLifecycleHookWithContext(aws.Context, *autoscaling.DeleteLifecycleHookInput, ...request.Option) (*autoscaling.DeleteLifecycleHookOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DeleteLifecycleHookRequest(*autoscaling.DeleteLifecycleHookInput) (*request.Request, *autoscaling.DeleteLifecycleHookOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -122,8 +150,11 @@ func (m *MockAutoscaling) DeleteNotificationConfiguration(*autoscaling.DeleteNot
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DeletePolicyRequest(*autoscaling.DeletePolicyInput) (*request.Request, *autoscaling.DeletePolicyOutput) {
+func (m *MockAutoscaling) DeleteNotificationConfigurationWithContext(aws.Context, *autoscaling.DeleteNotificationConfigurationInput, ...request.Option) (*autoscaling.DeleteNotificationConfigurationOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DeleteNotificationConfigurationRequest(*autoscaling.DeleteNotificationConfigurationInput) (*request.Request, *autoscaling.DeleteNotificationConfigurationOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -132,8 +163,11 @@ func (m *MockAutoscaling) DeletePolicy(*autoscaling.DeletePolicyInput) (*autosca
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DeleteScheduledActionRequest(*autoscaling.DeleteScheduledActionInput) (*request.Request, *autoscaling.DeleteScheduledActionOutput) {
+func (m *MockAutoscaling) DeletePolicyWithContext(aws.Context, *autoscaling.DeletePolicyInput, ...request.Option) (*autoscaling.DeletePolicyOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DeletePolicyRequest(*autoscaling.DeletePolicyInput) (*request.Request, *autoscaling.DeletePolicyOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -142,8 +176,11 @@ func (m *MockAutoscaling) DeleteScheduledAction(*autoscaling.DeleteScheduledActi
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DeleteTagsRequest(*autoscaling.DeleteTagsInput) (*request.Request, *autoscaling.DeleteTagsOutput) {
+func (m *MockAutoscaling) DeleteScheduledActionWithContext(aws.Context, *autoscaling.DeleteScheduledActionInput, ...request.Option) (*autoscaling.DeleteScheduledActionOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DeleteScheduledActionRequest(*autoscaling.DeleteScheduledActionInput) (*request.Request, *autoscaling.DeleteScheduledActionOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -152,8 +189,11 @@ func (m *MockAutoscaling) DeleteTags(*autoscaling.DeleteTagsInput) (*autoscaling
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DescribeAccountLimitsRequest(*autoscaling.DescribeAccountLimitsInput) (*request.Request, *autoscaling.DescribeAccountLimitsOutput) {
+func (m *MockAutoscaling) DeleteTagsWithContext(aws.Context, *autoscaling.DeleteTagsInput, ...request.Option) (*autoscaling.DeleteTagsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DeleteTagsRequest(*autoscaling.DeleteTagsInput) (*request.Request, *autoscaling.DeleteTagsOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -162,8 +202,11 @@ func (m *MockAutoscaling) DescribeAccountLimits(*autoscaling.DescribeAccountLimi
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DescribeAdjustmentTypesRequest(*autoscaling.DescribeAdjustmentTypesInput) (*request.Request, *autoscaling.DescribeAdjustmentTypesOutput) {
+func (m *MockAutoscaling) DescribeAccountLimitsWithContext(aws.Context, *autoscaling.DescribeAccountLimitsInput, ...request.Option) (*autoscaling.DescribeAccountLimitsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeAccountLimitsRequest(*autoscaling.DescribeAccountLimitsInput) (*request.Request, *autoscaling.DescribeAccountLimitsOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -172,7 +215,19 @@ func (m *MockAutoscaling) DescribeAdjustmentTypes(*autoscaling.DescribeAdjustmen
 	log.Fatal("Not implemented")
 	return nil, nil
 }
+func (m *MockAutoscaling) DescribeAdjustmentTypesWithContext(aws.Context, *autoscaling.DescribeAdjustmentTypesInput, ...request.Option) (*autoscaling.DescribeAdjustmentTypesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeAdjustmentTypesRequest(*autoscaling.DescribeAdjustmentTypesInput) (*request.Request, *autoscaling.DescribeAdjustmentTypesOutput) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
 
+func (m *MockAutoscaling) DescribeAutoScalingGroupsWithContext(aws.Context, *autoscaling.DescribeAutoScalingGroupsInput, ...request.Option) (*autoscaling.DescribeAutoScalingGroupsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
 func (m *MockAutoscaling) DescribeAutoScalingGroupsRequest(*autoscaling.DescribeAutoScalingGroupsInput) (*request.Request, *autoscaling.DescribeAutoScalingGroupsOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
@@ -182,13 +237,20 @@ func (m *MockAutoscaling) DescribeAutoScalingGroupsPages(*autoscaling.DescribeAu
 	log.Fatal("Not implemented")
 	return nil
 }
-
-func (m *MockAutoscaling) DescribeAutoScalingInstancesRequest(*autoscaling.DescribeAutoScalingInstancesInput) (*request.Request, *autoscaling.DescribeAutoScalingInstancesOutput) {
+func (m *MockAutoscaling) DescribeAutoScalingGroupsPagesWithContext(aws.Context, *autoscaling.DescribeAutoScalingGroupsInput, func(*autoscaling.DescribeAutoScalingGroupsOutput, bool) bool, ...request.Option) error {
 	log.Fatal("Not implemented")
-	return nil, nil
+	return nil
 }
 
 func (m *MockAutoscaling) DescribeAutoScalingInstances(*autoscaling.DescribeAutoScalingInstancesInput) (*autoscaling.DescribeAutoScalingInstancesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeAutoScalingInstancesWithContext(aws.Context, *autoscaling.DescribeAutoScalingInstancesInput, ...request.Option) (*autoscaling.DescribeAutoScalingInstancesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeAutoScalingInstancesRequest(*autoscaling.DescribeAutoScalingInstancesInput) (*request.Request, *autoscaling.DescribeAutoScalingInstancesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -197,18 +259,20 @@ func (m *MockAutoscaling) DescribeAutoScalingInstancesPages(*autoscaling.Describ
 	log.Fatal("Not implemented")
 	return nil
 }
-
-func (m *MockAutoscaling) DescribeAutoScalingNotificationTypesRequest(*autoscaling.DescribeAutoScalingNotificationTypesInput) (*request.Request, *autoscaling.DescribeAutoScalingNotificationTypesOutput) {
+func (m *MockAutoscaling) DescribeAutoScalingInstancesPagesWithContext(aws.Context, *autoscaling.DescribeAutoScalingInstancesInput, func(*autoscaling.DescribeAutoScalingInstancesOutput, bool) bool, ...request.Option) error {
 	log.Fatal("Not implemented")
-	return nil, nil
+	return nil
 }
 
 func (m *MockAutoscaling) DescribeAutoScalingNotificationTypes(*autoscaling.DescribeAutoScalingNotificationTypesInput) (*autoscaling.DescribeAutoScalingNotificationTypesOutput, error) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DescribeLaunchConfigurationsRequest(*autoscaling.DescribeLaunchConfigurationsInput) (*request.Request, *autoscaling.DescribeLaunchConfigurationsOutput) {
+func (m *MockAutoscaling) DescribeAutoScalingNotificationTypesWithContext(aws.Context, *autoscaling.DescribeAutoScalingNotificationTypesInput, ...request.Option) (*autoscaling.DescribeAutoScalingNotificationTypesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeAutoScalingNotificationTypesRequest(*autoscaling.DescribeAutoScalingNotificationTypesInput) (*request.Request, *autoscaling.DescribeAutoScalingNotificationTypesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -217,23 +281,33 @@ func (m *MockAutoscaling) DescribeLaunchConfigurations(*autoscaling.DescribeLaun
 	log.Fatal("Not implemented")
 	return nil, nil
 }
+func (m *MockAutoscaling) DescribeLaunchConfigurationsWithContext(aws.Context, *autoscaling.DescribeLaunchConfigurationsInput, ...request.Option) (*autoscaling.DescribeLaunchConfigurationsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeLaunchConfigurationsRequest(*autoscaling.DescribeLaunchConfigurationsInput) (*request.Request, *autoscaling.DescribeLaunchConfigurationsOutput) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
 
 func (m *MockAutoscaling) DescribeLaunchConfigurationsPages(*autoscaling.DescribeLaunchConfigurationsInput, func(*autoscaling.DescribeLaunchConfigurationsOutput, bool) bool) error {
 	log.Fatal("Not implemented")
 	return nil
 }
-
-func (m *MockAutoscaling) DescribeLifecycleHookTypesRequest(*autoscaling.DescribeLifecycleHookTypesInput) (*request.Request, *autoscaling.DescribeLifecycleHookTypesOutput) {
+func (m *MockAutoscaling) DescribeLaunchConfigurationsPagesWithContext(aws.Context, *autoscaling.DescribeLaunchConfigurationsInput, func(*autoscaling.DescribeLaunchConfigurationsOutput, bool) bool, ...request.Option) error {
 	log.Fatal("Not implemented")
-	return nil, nil
+	return nil
 }
 
 func (m *MockAutoscaling) DescribeLifecycleHookTypes(*autoscaling.DescribeLifecycleHookTypesInput) (*autoscaling.DescribeLifecycleHookTypesOutput, error) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DescribeLifecycleHooksRequest(*autoscaling.DescribeLifecycleHooksInput) (*request.Request, *autoscaling.DescribeLifecycleHooksOutput) {
+func (m *MockAutoscaling) DescribeLifecycleHookTypesWithContext(aws.Context, *autoscaling.DescribeLifecycleHookTypesInput, ...request.Option) (*autoscaling.DescribeLifecycleHookTypesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeLifecycleHookTypesRequest(*autoscaling.DescribeLifecycleHookTypesInput) (*request.Request, *autoscaling.DescribeLifecycleHookTypesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -242,8 +316,11 @@ func (m *MockAutoscaling) DescribeLifecycleHooks(*autoscaling.DescribeLifecycleH
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DescribeLoadBalancerTargetGroupsRequest(*autoscaling.DescribeLoadBalancerTargetGroupsInput) (*request.Request, *autoscaling.DescribeLoadBalancerTargetGroupsOutput) {
+func (m *MockAutoscaling) DescribeLifecycleHooksWithContext(aws.Context, *autoscaling.DescribeLifecycleHooksInput, ...request.Option) (*autoscaling.DescribeLifecycleHooksOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeLifecycleHooksRequest(*autoscaling.DescribeLifecycleHooksInput) (*request.Request, *autoscaling.DescribeLifecycleHooksOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -252,8 +329,11 @@ func (m *MockAutoscaling) DescribeLoadBalancerTargetGroups(*autoscaling.Describe
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DescribeLoadBalancersRequest(*autoscaling.DescribeLoadBalancersInput) (*request.Request, *autoscaling.DescribeLoadBalancersOutput) {
+func (m *MockAutoscaling) DescribeLoadBalancerTargetGroupsWithContext(aws.Context, *autoscaling.DescribeLoadBalancerTargetGroupsInput, ...request.Option) (*autoscaling.DescribeLoadBalancerTargetGroupsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeLoadBalancerTargetGroupsRequest(*autoscaling.DescribeLoadBalancerTargetGroupsInput) (*request.Request, *autoscaling.DescribeLoadBalancerTargetGroupsOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -262,8 +342,11 @@ func (m *MockAutoscaling) DescribeLoadBalancers(*autoscaling.DescribeLoadBalance
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DescribeMetricCollectionTypesRequest(*autoscaling.DescribeMetricCollectionTypesInput) (*request.Request, *autoscaling.DescribeMetricCollectionTypesOutput) {
+func (m *MockAutoscaling) DescribeLoadBalancersWithContext(aws.Context, *autoscaling.DescribeLoadBalancersInput, ...request.Option) (*autoscaling.DescribeLoadBalancersOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeLoadBalancersRequest(*autoscaling.DescribeLoadBalancersInput) (*request.Request, *autoscaling.DescribeLoadBalancersOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -272,8 +355,11 @@ func (m *MockAutoscaling) DescribeMetricCollectionTypes(*autoscaling.DescribeMet
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DescribeNotificationConfigurationsRequest(*autoscaling.DescribeNotificationConfigurationsInput) (*request.Request, *autoscaling.DescribeNotificationConfigurationsOutput) {
+func (m *MockAutoscaling) DescribeMetricCollectionTypesWithContext(aws.Context, *autoscaling.DescribeMetricCollectionTypesInput, ...request.Option) (*autoscaling.DescribeMetricCollectionTypesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeMetricCollectionTypesRequest(*autoscaling.DescribeMetricCollectionTypesInput) (*request.Request, *autoscaling.DescribeMetricCollectionTypesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -282,18 +368,33 @@ func (m *MockAutoscaling) DescribeNotificationConfigurations(*autoscaling.Descri
 	log.Fatal("Not implemented")
 	return nil, nil
 }
+func (m *MockAutoscaling) DescribeNotificationConfigurationsWithContext(aws.Context, *autoscaling.DescribeNotificationConfigurationsInput, ...request.Option) (*autoscaling.DescribeNotificationConfigurationsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeNotificationConfigurationsRequest(*autoscaling.DescribeNotificationConfigurationsInput) (*request.Request, *autoscaling.DescribeNotificationConfigurationsOutput) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
 
 func (m *MockAutoscaling) DescribeNotificationConfigurationsPages(*autoscaling.DescribeNotificationConfigurationsInput, func(*autoscaling.DescribeNotificationConfigurationsOutput, bool) bool) error {
 	log.Fatal("Not implemented")
 	return nil
 }
-
-func (m *MockAutoscaling) DescribePoliciesRequest(*autoscaling.DescribePoliciesInput) (*request.Request, *autoscaling.DescribePoliciesOutput) {
+func (m *MockAutoscaling) DescribeNotificationConfigurationsPagesWithContext(aws.Context, *autoscaling.DescribeNotificationConfigurationsInput, func(*autoscaling.DescribeNotificationConfigurationsOutput, bool) bool, ...request.Option) error {
 	log.Fatal("Not implemented")
-	return nil, nil
+	return nil
 }
 
 func (m *MockAutoscaling) DescribePolicies(*autoscaling.DescribePoliciesInput) (*autoscaling.DescribePoliciesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribePoliciesWithContext(aws.Context, *autoscaling.DescribePoliciesInput, ...request.Option) (*autoscaling.DescribePoliciesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribePoliciesRequest(*autoscaling.DescribePoliciesInput) (*request.Request, *autoscaling.DescribePoliciesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -302,13 +403,20 @@ func (m *MockAutoscaling) DescribePoliciesPages(*autoscaling.DescribePoliciesInp
 	log.Fatal("Not implemented")
 	return nil
 }
-
-func (m *MockAutoscaling) DescribeScalingActivitiesRequest(*autoscaling.DescribeScalingActivitiesInput) (*request.Request, *autoscaling.DescribeScalingActivitiesOutput) {
+func (m *MockAutoscaling) DescribePoliciesPagesWithContext(aws.Context, *autoscaling.DescribePoliciesInput, func(*autoscaling.DescribePoliciesOutput, bool) bool, ...request.Option) error {
 	log.Fatal("Not implemented")
-	return nil, nil
+	return nil
 }
 
 func (m *MockAutoscaling) DescribeScalingActivities(*autoscaling.DescribeScalingActivitiesInput) (*autoscaling.DescribeScalingActivitiesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeScalingActivitiesWithContext(aws.Context, *autoscaling.DescribeScalingActivitiesInput, ...request.Option) (*autoscaling.DescribeScalingActivitiesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeScalingActivitiesRequest(*autoscaling.DescribeScalingActivitiesInput) (*request.Request, *autoscaling.DescribeScalingActivitiesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -317,18 +425,20 @@ func (m *MockAutoscaling) DescribeScalingActivitiesPages(*autoscaling.DescribeSc
 	log.Fatal("Not implemented")
 	return nil
 }
-
-func (m *MockAutoscaling) DescribeScalingProcessTypesRequest(*autoscaling.DescribeScalingProcessTypesInput) (*request.Request, *autoscaling.DescribeScalingProcessTypesOutput) {
+func (m *MockAutoscaling) DescribeScalingActivitiesPagesWithContext(aws.Context, *autoscaling.DescribeScalingActivitiesInput, func(*autoscaling.DescribeScalingActivitiesOutput, bool) bool, ...request.Option) error {
 	log.Fatal("Not implemented")
-	return nil, nil
+	return nil
 }
 
 func (m *MockAutoscaling) DescribeScalingProcessTypes(*autoscaling.DescribeScalingProcessTypesInput) (*autoscaling.DescribeScalingProcessTypesOutput, error) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DescribeScheduledActionsRequest(*autoscaling.DescribeScheduledActionsInput) (*request.Request, *autoscaling.DescribeScheduledActionsOutput) {
+func (m *MockAutoscaling) DescribeScalingProcessTypesWithContext(aws.Context, *autoscaling.DescribeScalingProcessTypesInput, ...request.Option) (*autoscaling.DescribeScalingProcessTypesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeScalingProcessTypesRequest(*autoscaling.DescribeScalingProcessTypesInput) (*request.Request, *autoscaling.DescribeScalingProcessTypesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -337,18 +447,33 @@ func (m *MockAutoscaling) DescribeScheduledActions(*autoscaling.DescribeSchedule
 	log.Fatal("Not implemented")
 	return nil, nil
 }
+func (m *MockAutoscaling) DescribeScheduledActionsWithContext(aws.Context, *autoscaling.DescribeScheduledActionsInput, ...request.Option) (*autoscaling.DescribeScheduledActionsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeScheduledActionsRequest(*autoscaling.DescribeScheduledActionsInput) (*request.Request, *autoscaling.DescribeScheduledActionsOutput) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
 
 func (m *MockAutoscaling) DescribeScheduledActionsPages(*autoscaling.DescribeScheduledActionsInput, func(*autoscaling.DescribeScheduledActionsOutput, bool) bool) error {
 	log.Fatal("Not implemented")
 	return nil
 }
-
-func (m *MockAutoscaling) DescribeTagsRequest(*autoscaling.DescribeTagsInput) (*request.Request, *autoscaling.DescribeTagsOutput) {
+func (m *MockAutoscaling) DescribeScheduledActionsPagesWithContext(aws.Context, *autoscaling.DescribeScheduledActionsInput, func(*autoscaling.DescribeScheduledActionsOutput, bool) bool, ...request.Option) error {
 	log.Fatal("Not implemented")
-	return nil, nil
+	return nil
 }
 
 func (m *MockAutoscaling) DescribeTags(*autoscaling.DescribeTagsInput) (*autoscaling.DescribeTagsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeTagsWithContext(aws.Context, *autoscaling.DescribeTagsInput, ...request.Option) (*autoscaling.DescribeTagsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeTagsRequest(*autoscaling.DescribeTagsInput) (*request.Request, *autoscaling.DescribeTagsOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -357,18 +482,20 @@ func (m *MockAutoscaling) DescribeTagsPages(*autoscaling.DescribeTagsInput, func
 	log.Fatal("Not implemented")
 	return nil
 }
-
-func (m *MockAutoscaling) DescribeTerminationPolicyTypesRequest(*autoscaling.DescribeTerminationPolicyTypesInput) (*request.Request, *autoscaling.DescribeTerminationPolicyTypesOutput) {
+func (m *MockAutoscaling) DescribeTagsPagesWithContext(aws.Context, *autoscaling.DescribeTagsInput, func(*autoscaling.DescribeTagsOutput, bool) bool, ...request.Option) error {
 	log.Fatal("Not implemented")
-	return nil, nil
+	return nil
 }
 
 func (m *MockAutoscaling) DescribeTerminationPolicyTypes(*autoscaling.DescribeTerminationPolicyTypesInput) (*autoscaling.DescribeTerminationPolicyTypesOutput, error) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DetachInstancesRequest(*autoscaling.DetachInstancesInput) (*request.Request, *autoscaling.DetachInstancesOutput) {
+func (m *MockAutoscaling) DescribeTerminationPolicyTypesWithContext(aws.Context, *autoscaling.DescribeTerminationPolicyTypesInput, ...request.Option) (*autoscaling.DescribeTerminationPolicyTypesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DescribeTerminationPolicyTypesRequest(*autoscaling.DescribeTerminationPolicyTypesInput) (*request.Request, *autoscaling.DescribeTerminationPolicyTypesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -377,8 +504,11 @@ func (m *MockAutoscaling) DetachInstances(*autoscaling.DetachInstancesInput) (*a
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DetachLoadBalancerTargetGroupsRequest(*autoscaling.DetachLoadBalancerTargetGroupsInput) (*request.Request, *autoscaling.DetachLoadBalancerTargetGroupsOutput) {
+func (m *MockAutoscaling) DetachInstancesWithContext(aws.Context, *autoscaling.DetachInstancesInput, ...request.Option) (*autoscaling.DetachInstancesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DetachInstancesRequest(*autoscaling.DetachInstancesInput) (*request.Request, *autoscaling.DetachInstancesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -387,8 +517,11 @@ func (m *MockAutoscaling) DetachLoadBalancerTargetGroups(*autoscaling.DetachLoad
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DetachLoadBalancersRequest(*autoscaling.DetachLoadBalancersInput) (*request.Request, *autoscaling.DetachLoadBalancersOutput) {
+func (m *MockAutoscaling) DetachLoadBalancerTargetGroupsWithContext(aws.Context, *autoscaling.DetachLoadBalancerTargetGroupsInput, ...request.Option) (*autoscaling.DetachLoadBalancerTargetGroupsOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DetachLoadBalancerTargetGroupsRequest(*autoscaling.DetachLoadBalancerTargetGroupsInput) (*request.Request, *autoscaling.DetachLoadBalancerTargetGroupsOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -397,8 +530,11 @@ func (m *MockAutoscaling) DetachLoadBalancers(*autoscaling.DetachLoadBalancersIn
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) DisableMetricsCollectionRequest(*autoscaling.DisableMetricsCollectionInput) (*request.Request, *autoscaling.DisableMetricsCollectionOutput) {
+func (m *MockAutoscaling) DetachLoadBalancersWithContext(aws.Context, *autoscaling.DetachLoadBalancersInput, ...request.Option) (*autoscaling.DetachLoadBalancersOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DetachLoadBalancersRequest(*autoscaling.DetachLoadBalancersInput) (*request.Request, *autoscaling.DetachLoadBalancersOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -407,8 +543,11 @@ func (m *MockAutoscaling) DisableMetricsCollection(*autoscaling.DisableMetricsCo
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) EnableMetricsCollectionRequest(*autoscaling.EnableMetricsCollectionInput) (*request.Request, *autoscaling.EnableMetricsCollectionOutput) {
+func (m *MockAutoscaling) DisableMetricsCollectionWithContext(aws.Context, *autoscaling.DisableMetricsCollectionInput, ...request.Option) (*autoscaling.DisableMetricsCollectionOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) DisableMetricsCollectionRequest(*autoscaling.DisableMetricsCollectionInput) (*request.Request, *autoscaling.DisableMetricsCollectionOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -417,8 +556,11 @@ func (m *MockAutoscaling) EnableMetricsCollection(*autoscaling.EnableMetricsColl
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) EnterStandbyRequest(*autoscaling.EnterStandbyInput) (*request.Request, *autoscaling.EnterStandbyOutput) {
+func (m *MockAutoscaling) EnableMetricsCollectionWithContext(aws.Context, *autoscaling.EnableMetricsCollectionInput, ...request.Option) (*autoscaling.EnableMetricsCollectionOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) EnableMetricsCollectionRequest(*autoscaling.EnableMetricsCollectionInput) (*request.Request, *autoscaling.EnableMetricsCollectionOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -427,8 +569,11 @@ func (m *MockAutoscaling) EnterStandby(*autoscaling.EnterStandbyInput) (*autosca
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) ExecutePolicyRequest(*autoscaling.ExecutePolicyInput) (*request.Request, *autoscaling.ExecutePolicyOutput) {
+func (m *MockAutoscaling) EnterStandbyWithContext(aws.Context, *autoscaling.EnterStandbyInput, ...request.Option) (*autoscaling.EnterStandbyOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) EnterStandbyRequest(*autoscaling.EnterStandbyInput) (*request.Request, *autoscaling.EnterStandbyOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -437,8 +582,11 @@ func (m *MockAutoscaling) ExecutePolicy(*autoscaling.ExecutePolicyInput) (*autos
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) ExitStandbyRequest(*autoscaling.ExitStandbyInput) (*request.Request, *autoscaling.ExitStandbyOutput) {
+func (m *MockAutoscaling) ExecutePolicyWithContext(aws.Context, *autoscaling.ExecutePolicyInput, ...request.Option) (*autoscaling.ExecutePolicyOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) ExecutePolicyRequest(*autoscaling.ExecutePolicyInput) (*request.Request, *autoscaling.ExecutePolicyOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -447,8 +595,11 @@ func (m *MockAutoscaling) ExitStandby(*autoscaling.ExitStandbyInput) (*autoscali
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) PutLifecycleHookRequest(*autoscaling.PutLifecycleHookInput) (*request.Request, *autoscaling.PutLifecycleHookOutput) {
+func (m *MockAutoscaling) ExitStandbyWithContext(aws.Context, *autoscaling.ExitStandbyInput, ...request.Option) (*autoscaling.ExitStandbyOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) ExitStandbyRequest(*autoscaling.ExitStandbyInput) (*request.Request, *autoscaling.ExitStandbyOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -457,8 +608,11 @@ func (m *MockAutoscaling) PutLifecycleHook(*autoscaling.PutLifecycleHookInput) (
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) PutNotificationConfigurationRequest(*autoscaling.PutNotificationConfigurationInput) (*request.Request, *autoscaling.PutNotificationConfigurationOutput) {
+func (m *MockAutoscaling) PutLifecycleHookWithContext(aws.Context, *autoscaling.PutLifecycleHookInput, ...request.Option) (*autoscaling.PutLifecycleHookOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) PutLifecycleHookRequest(*autoscaling.PutLifecycleHookInput) (*request.Request, *autoscaling.PutLifecycleHookOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -467,8 +621,11 @@ func (m *MockAutoscaling) PutNotificationConfiguration(*autoscaling.PutNotificat
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) PutScalingPolicyRequest(*autoscaling.PutScalingPolicyInput) (*request.Request, *autoscaling.PutScalingPolicyOutput) {
+func (m *MockAutoscaling) PutNotificationConfigurationWithContext(aws.Context, *autoscaling.PutNotificationConfigurationInput, ...request.Option) (*autoscaling.PutNotificationConfigurationOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) PutNotificationConfigurationRequest(*autoscaling.PutNotificationConfigurationInput) (*request.Request, *autoscaling.PutNotificationConfigurationOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -477,8 +634,11 @@ func (m *MockAutoscaling) PutScalingPolicy(*autoscaling.PutScalingPolicyInput) (
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) PutScheduledUpdateGroupActionRequest(*autoscaling.PutScheduledUpdateGroupActionInput) (*request.Request, *autoscaling.PutScheduledUpdateGroupActionOutput) {
+func (m *MockAutoscaling) PutScalingPolicyWithContext(aws.Context, *autoscaling.PutScalingPolicyInput, ...request.Option) (*autoscaling.PutScalingPolicyOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) PutScalingPolicyRequest(*autoscaling.PutScalingPolicyInput) (*request.Request, *autoscaling.PutScalingPolicyOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -487,8 +647,11 @@ func (m *MockAutoscaling) PutScheduledUpdateGroupAction(*autoscaling.PutSchedule
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) RecordLifecycleActionHeartbeatRequest(*autoscaling.RecordLifecycleActionHeartbeatInput) (*request.Request, *autoscaling.RecordLifecycleActionHeartbeatOutput) {
+func (m *MockAutoscaling) PutScheduledUpdateGroupActionWithContext(aws.Context, *autoscaling.PutScheduledUpdateGroupActionInput, ...request.Option) (*autoscaling.PutScheduledUpdateGroupActionOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) PutScheduledUpdateGroupActionRequest(*autoscaling.PutScheduledUpdateGroupActionInput) (*request.Request, *autoscaling.PutScheduledUpdateGroupActionOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -497,8 +660,11 @@ func (m *MockAutoscaling) RecordLifecycleActionHeartbeat(*autoscaling.RecordLife
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) ResumeProcessesRequest(*autoscaling.ScalingProcessQuery) (*request.Request, *autoscaling.ResumeProcessesOutput) {
+func (m *MockAutoscaling) RecordLifecycleActionHeartbeatWithContext(aws.Context, *autoscaling.RecordLifecycleActionHeartbeatInput, ...request.Option) (*autoscaling.RecordLifecycleActionHeartbeatOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) RecordLifecycleActionHeartbeatRequest(*autoscaling.RecordLifecycleActionHeartbeatInput) (*request.Request, *autoscaling.RecordLifecycleActionHeartbeatOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -507,8 +673,11 @@ func (m *MockAutoscaling) ResumeProcesses(*autoscaling.ScalingProcessQuery) (*au
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) SetDesiredCapacityRequest(*autoscaling.SetDesiredCapacityInput) (*request.Request, *autoscaling.SetDesiredCapacityOutput) {
+func (m *MockAutoscaling) ResumeProcessesWithContext(aws.Context, *autoscaling.ScalingProcessQuery, ...request.Option) (*autoscaling.ResumeProcessesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) ResumeProcessesRequest(*autoscaling.ScalingProcessQuery) (*request.Request, *autoscaling.ResumeProcessesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -517,8 +686,11 @@ func (m *MockAutoscaling) SetDesiredCapacity(*autoscaling.SetDesiredCapacityInpu
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) SetInstanceHealthRequest(*autoscaling.SetInstanceHealthInput) (*request.Request, *autoscaling.SetInstanceHealthOutput) {
+func (m *MockAutoscaling) SetDesiredCapacityWithContext(aws.Context, *autoscaling.SetDesiredCapacityInput, ...request.Option) (*autoscaling.SetDesiredCapacityOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) SetDesiredCapacityRequest(*autoscaling.SetDesiredCapacityInput) (*request.Request, *autoscaling.SetDesiredCapacityOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -527,8 +699,11 @@ func (m *MockAutoscaling) SetInstanceHealth(*autoscaling.SetInstanceHealthInput)
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) SetInstanceProtectionRequest(*autoscaling.SetInstanceProtectionInput) (*request.Request, *autoscaling.SetInstanceProtectionOutput) {
+func (m *MockAutoscaling) SetInstanceHealthWithContext(aws.Context, *autoscaling.SetInstanceHealthInput, ...request.Option) (*autoscaling.SetInstanceHealthOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) SetInstanceHealthRequest(*autoscaling.SetInstanceHealthInput) (*request.Request, *autoscaling.SetInstanceHealthOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -537,8 +712,11 @@ func (m *MockAutoscaling) SetInstanceProtection(*autoscaling.SetInstanceProtecti
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) SuspendProcessesRequest(*autoscaling.ScalingProcessQuery) (*request.Request, *autoscaling.SuspendProcessesOutput) {
+func (m *MockAutoscaling) SetInstanceProtectionWithContext(aws.Context, *autoscaling.SetInstanceProtectionInput, ...request.Option) (*autoscaling.SetInstanceProtectionOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) SetInstanceProtectionRequest(*autoscaling.SetInstanceProtectionInput) (*request.Request, *autoscaling.SetInstanceProtectionOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -547,13 +725,20 @@ func (m *MockAutoscaling) SuspendProcesses(*autoscaling.ScalingProcessQuery) (*a
 	log.Fatal("Not implemented")
 	return nil, nil
 }
-
-func (m *MockAutoscaling) TerminateInstanceInAutoScalingGroupRequest(*autoscaling.TerminateInstanceInAutoScalingGroupInput) (*request.Request, *autoscaling.TerminateInstanceInAutoScalingGroupOutput) {
+func (m *MockAutoscaling) SuspendProcessesWithContext(aws.Context, *autoscaling.ScalingProcessQuery, ...request.Option) (*autoscaling.SuspendProcessesOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) SuspendProcessesRequest(*autoscaling.ScalingProcessQuery) (*request.Request, *autoscaling.SuspendProcessesOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
 
-func (m *MockAutoscaling) UpdateAutoScalingGroupRequest(*autoscaling.UpdateAutoScalingGroupInput) (*request.Request, *autoscaling.UpdateAutoScalingGroupOutput) {
+func (m *MockAutoscaling) TerminateInstanceInAutoScalingGroupWithContext(aws.Context, *autoscaling.TerminateInstanceInAutoScalingGroupInput, ...request.Option) (*autoscaling.TerminateInstanceInAutoScalingGroupOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) TerminateInstanceInAutoScalingGroupRequest(*autoscaling.TerminateInstanceInAutoScalingGroupInput) (*request.Request, *autoscaling.TerminateInstanceInAutoScalingGroupOutput) {
 	log.Fatal("Not implemented")
 	return nil, nil
 }
@@ -562,8 +747,20 @@ func (m *MockAutoscaling) UpdateAutoScalingGroup(*autoscaling.UpdateAutoScalingG
 	log.Fatal("Not implemented")
 	return nil, nil
 }
+func (m *MockAutoscaling) UpdateAutoScalingGroupWithContext(aws.Context, *autoscaling.UpdateAutoScalingGroupInput, ...request.Option) (*autoscaling.UpdateAutoScalingGroupOutput, error) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
+func (m *MockAutoscaling) UpdateAutoScalingGroupRequest(*autoscaling.UpdateAutoScalingGroupInput) (*request.Request, *autoscaling.UpdateAutoScalingGroupOutput) {
+	log.Fatal("Not implemented")
+	return nil, nil
+}
 
 func (m *MockAutoscaling) WaitUntilGroupExists(*autoscaling.DescribeAutoScalingGroupsInput) error {
+	log.Fatal("Not implemented")
+	return nil
+}
+func (m *MockAutoscaling) WaitUntilGroupExistsWithContext(aws.Context, *autoscaling.DescribeAutoScalingGroupsInput, ...request.WaiterOption) error {
 	log.Fatal("Not implemented")
 	return nil
 }
@@ -572,8 +769,16 @@ func (m *MockAutoscaling) WaitUntilGroupInService(*autoscaling.DescribeAutoScali
 	log.Fatal("Not implemented")
 	return nil
 }
+func (m *MockAutoscaling) WaitUntilGroupInServiceWithContext(aws.Context, *autoscaling.DescribeAutoScalingGroupsInput, ...request.WaiterOption) error {
+	log.Fatal("Not implemented")
+	return nil
+}
 
 func (m *MockAutoscaling) WaitUntilGroupNotExists(*autoscaling.DescribeAutoScalingGroupsInput) error {
+	log.Fatal("Not implemented")
+	return nil
+}
+func (m *MockAutoscaling) WaitUntilGroupNotExistsWithContext(aws.Context, *autoscaling.DescribeAutoScalingGroupsInput, ...request.WaiterOption) error {
 	log.Fatal("Not implemented")
 	return nil
 }

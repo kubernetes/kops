@@ -4,7 +4,7 @@
   "operations": {
     "AddTags": "<p>Adds the specified tags to the specified resource. You can tag your Application Load Balancers and your target groups.</p> <p>Each tag consists of a key and an optional value. If a resource already has a tag with the same key, <code>AddTags</code> updates its value.</p> <p>To list the current tags for your resources, use <a>DescribeTags</a>. To remove tags from your resources, use <a>RemoveTags</a>.</p>",
     "CreateListener": "<p>Creates a listener for the specified Application Load Balancer.</p> <p>You can create up to 10 listeners per load balancer.</p> <p>To update a listener, use <a>ModifyListener</a>. When you are finished with a listener, you can delete it using <a>DeleteListener</a>. If you are finished with both the listener and the load balancer, you can delete them both using <a>DeleteLoadBalancer</a>.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html\">Listeners for Your Application Load Balancers</a> in the <i>Application Load Balancers Guide</i>.</p>",
-    "CreateLoadBalancer": "<p>Creates an Application Load Balancer.</p> <p>To create listeners for your load balancer, use <a>CreateListener</a>. You can add security groups, subnets, and tags when you create your load balancer, or you can add them later using <a>SetSecurityGroups</a>, <a>SetSubnets</a>, and <a>AddTags</a>.</p> <p>To describe your current load balancers, see <a>DescribeLoadBalancers</a>. When you are finished with a load balancer, you can delete it using <a>DeleteLoadBalancer</a>.</p> <p>You can create up to 20 load balancers per region per account. You can request an increase for the number of load balancers for your account. For more information, see <a href=\"http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html\">Limits for Your Application Load Balancer</a> in the <i>Application Load Balancers Guide</i>.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html\">Application Load Balancers</a> in the <i>Application Load Balancers Guide</i>.</p>",
+    "CreateLoadBalancer": "<p>Creates an Application Load Balancer.</p> <p>When you create a load balancer, you can specify security groups, subnets, IP address type, and tags. Otherwise, you could do so later using <a>SetSecurityGroups</a>, <a>SetSubnets</a>, <a>SetIpAddressType</a>, and <a>AddTags</a>.</p> <p>To create listeners for your load balancer, use <a>CreateListener</a>. To describe your current load balancers, see <a>DescribeLoadBalancers</a>. When you are finished with a load balancer, you can delete it using <a>DeleteLoadBalancer</a>.</p> <p>You can create up to 20 load balancers per region per account. You can request an increase for the number of load balancers for your account. For more information, see <a href=\"http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html\">Limits for Your Application Load Balancer</a> in the <i>Application Load Balancers Guide</i>.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/elasticloadbalancing/latest/application/application-load-balancers.html\">Application Load Balancers</a> in the <i>Application Load Balancers Guide</i>.</p>",
     "CreateRule": "<p>Creates a rule for the specified listener.</p> <p>Each rule can have one action and one condition. Rules are evaluated in priority order, from the lowest value to the highest value. When the condition for a rule is met, the specified action is taken. If no conditions are met, the default action for the default rule is taken. For more information, see <a href=\"http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-listeners.html#listener-rules\">Listener Rules</a> in the <i>Application Load Balancers Guide</i>.</p> <p>To view your current rules, use <a>DescribeRules</a>. To update a rule, use <a>ModifyRule</a>. To set the priorities of your rules, use <a>SetRulePriorities</a>. To delete a rule, use <a>DeleteRule</a>.</p>",
     "CreateTargetGroup": "<p>Creates a target group.</p> <p>To register targets with the target group, use <a>RegisterTargets</a>. To update the health check settings for the target group, use <a>ModifyTargetGroup</a>. To monitor the health of targets in the target group, use <a>DescribeTargetHealth</a>.</p> <p>To route traffic to the targets in a target group, specify the target group in an action using <a>CreateListener</a> or <a>CreateRule</a>.</p> <p>To delete a target group, use <a>DeleteTargetGroup</a>.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-target-groups.html\">Target Groups for Your Application Load Balancers</a> in the <i>Application Load Balancers Guide</i>.</p>",
     "DeleteListener": "<p>Deletes the specified listener.</p> <p>Alternatively, your listener is deleted when you delete the load balancer it is attached to using <a>DeleteLoadBalancer</a>.</p>",
@@ -12,22 +12,24 @@
     "DeleteRule": "<p>Deletes the specified rule.</p>",
     "DeleteTargetGroup": "<p>Deletes the specified target group.</p> <p>You can delete a target group if it is not referenced by any actions. Deleting a target group also deletes any associated health checks.</p>",
     "DeregisterTargets": "<p>Deregisters the specified targets from the specified target group. After the targets are deregistered, they no longer receive traffic from the load balancer.</p>",
+    "DescribeAccountLimits": "<p>Describes the current Elastic Load Balancing resource limits for your AWS account.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-limits.html\">Limits for Your Application Load Balancer</a> in the <i>Application Load Balancer Guide</i>.</p>",
     "DescribeListeners": "<p>Describes the specified listeners or the listeners for the specified Application Load Balancer. You must specify either a load balancer or one or more listeners.</p>",
     "DescribeLoadBalancerAttributes": "<p>Describes the attributes for the specified Application Load Balancer.</p>",
     "DescribeLoadBalancers": "<p>Describes the specified Application Load Balancers or all of your Application Load Balancers.</p> <p>To describe the listeners for a load balancer, use <a>DescribeListeners</a>. To describe the attributes for a load balancer, use <a>DescribeLoadBalancerAttributes</a>.</p>",
     "DescribeRules": "<p>Describes the specified rules or the rules for the specified listener. You must specify either a listener or one or more rules.</p>",
-    "DescribeSSLPolicies": "<p>Describes the specified policies or all policies used for SSL negotiation.</p> <p>Note that the only supported policy at this time is ELBSecurityPolicy-2015-05.</p>",
-    "DescribeTags": "<p>Describes the tags for the specified resources.</p>",
+    "DescribeSSLPolicies": "<p>Describes the specified policies or all policies used for SSL negotiation.</p> <p>For more information, see <a href=\"http://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies\">Security Policies</a> in the <i>Application Load Balancers Guide</i>.</p>",
+    "DescribeTags": "<p>Describes the tags for the specified resources. You can describe the tags for one or more Application Load Balancers and target groups.</p>",
     "DescribeTargetGroupAttributes": "<p>Describes the attributes for the specified target group.</p>",
     "DescribeTargetGroups": "<p>Describes the specified target groups or all of your target groups. By default, all target groups are described. Alternatively, you can specify one of the following to filter the results: the ARN of the load balancer, the names of one or more target groups, or the ARNs of one or more target groups.</p> <p>To describe the targets for a target group, use <a>DescribeTargetHealth</a>. To describe the attributes of a target group, use <a>DescribeTargetGroupAttributes</a>.</p>",
     "DescribeTargetHealth": "<p>Describes the health of the specified targets or all of your targets.</p>",
-    "ModifyListener": "<p>Modifies the specified properties of the specified listener.</p> <p>Any properties that you do not specify retain their current values. However, changing the protocol from HTTPS to HTTP removes the security policy and SSL certificate properties. If you change the protocol from HTTP to HTTPS, you must add the security policy.</p>",
+    "ModifyListener": "<p>Modifies the specified properties of the specified listener.</p> <p>Any properties that you do not specify retain their current values. However, changing the protocol from HTTPS to HTTP removes the security policy and SSL certificate properties. If you change the protocol from HTTP to HTTPS, you must add the security policy and server certificate.</p>",
     "ModifyLoadBalancerAttributes": "<p>Modifies the specified attributes of the specified Application Load Balancer.</p> <p>If any of the specified attributes can't be modified as requested, the call fails. Any existing attributes that you do not modify retain their current values.</p>",
     "ModifyRule": "<p>Modifies the specified rule.</p> <p>Any existing properties that you do not modify retain their current values.</p> <p>To modify the default action, use <a>ModifyListener</a>.</p>",
     "ModifyTargetGroup": "<p>Modifies the health checks used when evaluating the health state of the targets in the specified target group.</p> <p>To monitor the health of the targets, use <a>DescribeTargetHealth</a>.</p>",
     "ModifyTargetGroupAttributes": "<p>Modifies the specified attributes of the specified target group.</p>",
-    "RegisterTargets": "<p>Registers the specified targets with the specified target group.</p> <p>By default, the load balancer routes requests to registered targets using the protocol and port number for the target group. Alternatively, you can override the port for a target when you register it.</p> <p>The target must be in the virtual private cloud (VPC) that you specified for the target group. If the target is an EC2 instance, it can't be in the <code>stopped</code> or <code>running</code> state when you register it.</p> <p>To remove a target from a target group, use <a>DeregisterTargets</a>.</p>",
+    "RegisterTargets": "<p>Registers the specified targets with the specified target group.</p> <p>By default, the load balancer routes requests to registered targets using the protocol and port number for the target group. Alternatively, you can override the port for a target when you register it.</p> <p>The target must be in the virtual private cloud (VPC) that you specified for the target group. If the target is an EC2 instance, it must be in the <code>running</code> state when you register it.</p> <p>To remove a target from a target group, use <a>DeregisterTargets</a>.</p>",
     "RemoveTags": "<p>Removes the specified tags from the specified resource.</p> <p>To list the current tags for your resources, use <a>DescribeTags</a>.</p>",
+    "SetIpAddressType": "<p>Sets the type of IP addresses used by the subnets of the specified Application Load Balancer.</p>",
     "SetRulePriorities": "<p>Sets the priorities of the specified rules.</p> <p>You can reorder the rules as long as there are no priority conflicts in the new order. Any existing rules that you do not specify retain their current priority.</p>",
     "SetSecurityGroups": "<p>Associates the specified security groups with the specified load balancer. The specified security groups override the previously associated security groups.</p>",
     "SetSubnets": "<p>Enables the Availability Zone for the specified subnets for the specified load balancer. The specified subnets replace the previously enabled subnets.</p>"
@@ -57,12 +59,12 @@
       }
     },
     "AddTagsInput": {
-      "base": "<p>Contains the parameters for AddTags.</p>",
+      "base": null,
       "refs": {
       }
     },
     "AddTagsOutput": {
-      "base": "<p>Contains the output of AddTags.</p>",
+      "base": null,
       "refs": {
       }
     },
@@ -137,46 +139,46 @@
     "ConditionFieldName": {
       "base": null,
       "refs": {
-        "RuleCondition$Field": "<p>The only possible value is <code>path-pattern</code>.</p>"
+        "RuleCondition$Field": "<p>The name of the field. The possible values are <code>host-header</code> and <code>path-pattern</code>.</p>"
       }
     },
     "CreateListenerInput": {
-      "base": "<p>Contains the parameters for CreateListener.</p>",
+      "base": null,
       "refs": {
       }
     },
     "CreateListenerOutput": {
-      "base": "<p>Contains the output of CreateListener.</p>",
+      "base": null,
       "refs": {
       }
     },
     "CreateLoadBalancerInput": {
-      "base": "<p>Contains the parameters for CreateLoadBalancer.</p>",
+      "base": null,
       "refs": {
       }
     },
     "CreateLoadBalancerOutput": {
-      "base": "<p>Contains the output of CreateLoadBalancer.</p>",
+      "base": null,
       "refs": {
       }
     },
     "CreateRuleInput": {
-      "base": "<p>Contains the parameters for CreateRule.</p>",
+      "base": null,
       "refs": {
       }
     },
     "CreateRuleOutput": {
-      "base": "<p>Contains the output of CreateRule.</p>",
+      "base": null,
       "refs": {
       }
     },
     "CreateTargetGroupInput": {
-      "base": "<p>Contains the parameters for CreateTargetGroup.</p>",
+      "base": null,
       "refs": {
       }
     },
     "CreateTargetGroupOutput": {
-      "base": "<p>Contains the output of CreateTargetGroup.</p>",
+      "base": null,
       "refs": {
       }
     },
@@ -193,142 +195,152 @@
       }
     },
     "DeleteListenerInput": {
-      "base": "<p>Contains the parameters for DeleteListener.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DeleteListenerOutput": {
-      "base": "<p>Contains the output of DeleteListener.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DeleteLoadBalancerInput": {
-      "base": "<p>Contains the parameters for DeleteLoadBalancer.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DeleteLoadBalancerOutput": {
-      "base": "<p>Contains the output of DeleteLoadBalancer.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DeleteRuleInput": {
-      "base": "<p>Contains the parameters for DeleteRule.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DeleteRuleOutput": {
-      "base": "<p>Contains the output of DeleteRule.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DeleteTargetGroupInput": {
-      "base": "<p>Contains the parameters for DeleteTargetGroup.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DeleteTargetGroupOutput": {
-      "base": "<p>Contains the output of DeleteTargetGroup.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DeregisterTargetsInput": {
-      "base": "<p>Contains the parameters for DeregisterTargets.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DeregisterTargetsOutput": {
-      "base": "<p>Contains the output of DeregisterTargets.</p>",
+      "base": null,
+      "refs": {
+      }
+    },
+    "DescribeAccountLimitsInput": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "DescribeAccountLimitsOutput": {
+      "base": null,
       "refs": {
       }
     },
     "DescribeListenersInput": {
-      "base": "<p>Contains the parameters for DescribeListeners.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeListenersOutput": {
-      "base": "<p>Contains the output of DescribeListeners.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeLoadBalancerAttributesInput": {
-      "base": "<p>Contains the parameters for DescribeLoadBalancerAttributes.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeLoadBalancerAttributesOutput": {
-      "base": "<p>Contains the output of DescribeLoadBalancerAttributes.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeLoadBalancersInput": {
-      "base": "<p>Contains the parameters for DescribeLoadBalancers.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeLoadBalancersOutput": {
-      "base": "<p>Contains the output of DescribeLoadBalancers.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeRulesInput": {
-      "base": "<p>Contains the parameters for DescribeRules.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeRulesOutput": {
-      "base": "<p>Contains the output of DescribeRules.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeSSLPoliciesInput": {
-      "base": "<p>Contains the parameters for DescribeSSLPolicies.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeSSLPoliciesOutput": {
-      "base": "<p>Contains the output of DescribeSSLPolicies.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeTagsInput": {
-      "base": "<p>Contains the parameters for DescribeTags.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeTagsOutput": {
-      "base": "<p>Contains the output of DescribeTags.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeTargetGroupAttributesInput": {
-      "base": "<p>Contains the parameters for DescribeTargetGroupAttributes.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeTargetGroupAttributesOutput": {
-      "base": "<p>Contains the output of DescribeTargetGroupAttributes.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeTargetGroupsInput": {
-      "base": "<p>Contains the parameters for DescribeTargetGroups.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeTargetGroupsOutput": {
-      "base": "<p>Contains the output of DescribeTargetGroups.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeTargetHealthInput": {
-      "base": "<p>Contains the parameters for DescribeTargetHealth.</p>",
+      "base": null,
       "refs": {
       }
     },
     "DescribeTargetHealthOutput": {
-      "base": "<p>Contains the output of DescribeTargetHealth.</p>",
+      "base": null,
       "refs": {
       }
     },
@@ -344,7 +356,7 @@
       }
     },
     "DuplicateLoadBalancerNameException": {
-      "base": "<p>A load balancer with the specified name already exists for this account.</p>",
+      "base": "<p>A load balancer with the specified name already exists.</p>",
       "refs": {
       }
     },
@@ -402,7 +414,7 @@
     "HttpCode": {
       "base": null,
       "refs": {
-        "Matcher$HttpCode": "<p>The HTTP codes. The default value is 200. You can specify multiple values (for example, \"200,202\") or a range of values (for example, \"200-299\").</p>"
+        "Matcher$HttpCode": "<p>The HTTP codes. You can specify values between 200 and 499. The default value is 200. You can specify multiple values (for example, \"200,202\") or a range of values (for example, \"200-299\").</p>"
       }
     },
     "IncompatibleProtocolsException": {
@@ -435,16 +447,37 @@
       "refs": {
       }
     },
+    "IpAddressType": {
+      "base": null,
+      "refs": {
+        "CreateLoadBalancerInput$IpAddressType": "<p>The type of IP addresses used by the subnets for your load balancer. The possible values are <code>ipv4</code> (for IPv4 addresses) and <code>dualstack</code> (for IPv4 and IPv6 addresses). Internal load balancers must use <code>ipv4</code>.</p>",
+        "LoadBalancer$IpAddressType": "<p>The type of IP addresses used by the subnets for your load balancer. The possible values are <code>ipv4</code> (for IPv4 addresses) and <code>dualstack</code> (for IPv4 and IPv6 addresses).</p>",
+        "SetIpAddressTypeInput$IpAddressType": "<p>The IP address type. The possible values are <code>ipv4</code> (for IPv4 addresses) and <code>dualstack</code> (for IPv4 and IPv6 addresses). Internal load balancers must use <code>ipv4</code>.</p>",
+        "SetIpAddressTypeOutput$IpAddressType": "<p>The IP address type.</p>"
+      }
+    },
     "IsDefault": {
       "base": null,
       "refs": {
         "Rule$IsDefault": "<p>Indicates whether this is the default rule.</p>"
       }
     },
+    "Limit": {
+      "base": "<p>Information about an Elastic Load Balancing resource limit for your AWS account.</p>",
+      "refs": {
+        "Limits$member": null
+      }
+    },
+    "Limits": {
+      "base": null,
+      "refs": {
+        "DescribeAccountLimitsOutput$Limits": "<p>Information about the limits.</p>"
+      }
+    },
     "ListOfString": {
       "base": null,
       "refs": {
-        "RuleCondition$Values": "<p>The path pattern. You can specify a single path pattern.</p> <p>A path pattern is case sensitive, can be up to 255 characters in length, and can contain any of the following characters:</p> <ul> <li> <p>A-Z, a-z, 0-9</p> </li> <li> <p>_ - . $ / ~ \" ' @ : +</p> </li> <li> <p>&amp; (using &amp;amp;)</p> </li> <li> <p>* (matches 0 or more characters)</p> </li> <li> <p>? (matches exactly 1 character)</p> </li> </ul>"
+        "RuleCondition$Values": "<p>The condition value.</p> <p>If the field name is <code>host-header</code>, you can specify a single host name (for example, my.example.com). A host name is case insensitive, can be up to 128 characters in length, and can contain any of the following characters. Note that you can include up to three wildcard characters.</p> <ul> <li> <p>A-Z, a-z, 0-9</p> </li> <li> <p>- .</p> </li> <li> <p>* (matches 0 or more characters)</p> </li> <li> <p>? (matches exactly 1 character)</p> </li> </ul> <p>If the field name is <code>path-pattern</code>, you can specify a single path pattern (for example, /img/*). A path pattern is case sensitive, can be up to 128 characters in length, and can contain any of the following characters. Note that you can include up to three wildcard characters.</p> <ul> <li> <p>A-Z, a-z, 0-9</p> </li> <li> <p>_ - . $ / ~ \" ' @ : +</p> </li> <li> <p>&amp; (using &amp;amp;)</p> </li> <li> <p>* (matches 0 or more characters)</p> </li> <li> <p>? (matches exactly 1 character)</p> </li> </ul>"
       }
     },
     "Listener": {
@@ -501,6 +534,7 @@
         "LoadBalancer$LoadBalancerArn": "<p>The Amazon Resource Name (ARN) of the load balancer.</p>",
         "LoadBalancerArns$member": null,
         "ModifyLoadBalancerAttributesInput$LoadBalancerArn": "<p>The Amazon Resource Name (ARN) of the load balancer.</p>",
+        "SetIpAddressTypeInput$LoadBalancerArn": "<p>The Amazon Resource Name (ARN) of the load balancer.</p>",
         "SetSecurityGroupsInput$LoadBalancerArn": "<p>The Amazon Resource Name (ARN) of the load balancer.</p>",
         "SetSubnetsInput$LoadBalancerArn": "<p>The Amazon Resource Name (ARN) of the load balancer.</p>"
       }
@@ -508,7 +542,7 @@
     "LoadBalancerArns": {
       "base": null,
       "refs": {
-        "DescribeLoadBalancersInput$LoadBalancerArns": "<p>The Amazon Resource Names (ARN) of the load balancers.</p>",
+        "DescribeLoadBalancersInput$LoadBalancerArns": "<p>The Amazon Resource Names (ARN) of the load balancers. You can specify up to 20 load balancers in a single call.</p>",
         "TargetGroup$LoadBalancerArns": "<p>The Amazon Resource Names (ARN) of the load balancers that route traffic to this target group.</p>"
       }
     },
@@ -541,7 +575,7 @@
     "LoadBalancerName": {
       "base": null,
       "refs": {
-        "CreateLoadBalancerInput$Name": "<p>The name of the load balancer.</p> <p>This name must be unique within your AWS account, can have a maximum of 32 characters, must contain only alphanumeric characters or hyphens, and must not begin or end with a hyphen.</p>",
+        "CreateLoadBalancerInput$Name": "<p>The name of the load balancer.</p> <p>This name must be unique per region per account, can have a maximum of 32 characters, must contain only alphanumeric characters or hyphens, and must not begin or end with a hyphen.</p>",
         "LoadBalancer$LoadBalancerName": "<p>The name of the load balancer.</p>",
         "LoadBalancerNames$member": null
       }
@@ -592,10 +626,14 @@
     "Marker": {
       "base": null,
       "refs": {
+        "DescribeAccountLimitsInput$Marker": "<p>The marker for the next set of results. (You received this marker from a previous call.)</p>",
+        "DescribeAccountLimitsOutput$NextMarker": "<p>The marker to use when requesting the next set of results. If there are no additional results, the string is empty.</p>",
         "DescribeListenersInput$Marker": "<p>The marker for the next set of results. (You received this marker from a previous call.)</p>",
         "DescribeListenersOutput$NextMarker": "<p>The marker to use when requesting the next set of results. If there are no additional results, the string is empty.</p>",
         "DescribeLoadBalancersInput$Marker": "<p>The marker for the next set of results. (You received this marker from a previous call.)</p>",
         "DescribeLoadBalancersOutput$NextMarker": "<p>The marker to use when requesting the next set of results. If there are no additional results, the string is empty.</p>",
+        "DescribeRulesInput$Marker": "<p>The marker for the next set of results. (You received this marker from a previous call.)</p>",
+        "DescribeRulesOutput$NextMarker": "<p>The marker to use when requesting the next set of results. If there are no additional results, the string is empty.</p>",
         "DescribeSSLPoliciesInput$Marker": "<p>The marker for the next set of results. (You received this marker from a previous call.)</p>",
         "DescribeSSLPoliciesOutput$NextMarker": "<p>The marker to use when requesting the next set of results. If there are no additional results, the string is empty.</p>",
         "DescribeTargetGroupsInput$Marker": "<p>The marker for the next set of results. (You received this marker from a previous call.)</p>",
@@ -610,54 +648,66 @@
         "TargetGroup$Matcher": "<p>The HTTP codes to use when checking for a successful response from a target.</p>"
       }
     },
+    "Max": {
+      "base": null,
+      "refs": {
+        "Limit$Max": "<p>The maximum value of the limit.</p>"
+      }
+    },
     "ModifyListenerInput": {
-      "base": "<p>Contains the parameters for ModifyListener.</p>",
+      "base": null,
       "refs": {
       }
     },
     "ModifyListenerOutput": {
-      "base": "<p>Contains the output of ModifyListener.</p>",
+      "base": null,
       "refs": {
       }
     },
     "ModifyLoadBalancerAttributesInput": {
-      "base": "<p>Contains the parameters for ModifyLoadBalancerAttributes.</p>",
+      "base": null,
       "refs": {
       }
     },
     "ModifyLoadBalancerAttributesOutput": {
-      "base": "<p>Contains the output of ModifyLoadBalancerAttributes.</p>",
+      "base": null,
       "refs": {
       }
     },
     "ModifyRuleInput": {
-      "base": "<p>Contains the parameters for ModifyRules.</p>",
+      "base": null,
       "refs": {
       }
     },
     "ModifyRuleOutput": {
-      "base": "<p>Contains the output of ModifyRules.</p>",
+      "base": null,
       "refs": {
       }
     },
     "ModifyTargetGroupAttributesInput": {
-      "base": "<p>Contains the parameters for ModifyTargetGroupAttributes.</p>",
+      "base": null,
       "refs": {
       }
     },
     "ModifyTargetGroupAttributesOutput": {
-      "base": "<p>Contains the output of ModifyTargetGroupAttributes.</p>",
+      "base": null,
       "refs": {
       }
     },
     "ModifyTargetGroupInput": {
-      "base": "<p>Contains the parameters for ModifyTargetGroup.</p>",
+      "base": null,
       "refs": {
       }
     },
     "ModifyTargetGroupOutput": {
-      "base": "<p>Contains the output of ModifyTargetGroup.</p>",
+      "base": null,
       "refs": {
+      }
+    },
+    "Name": {
+      "base": null,
+      "refs": {
+        "Limit$Name": "<p>The name of the limit. The possible values are:</p> <ul> <li> <p>application-load-balancers</p> </li> <li> <p>listeners-per-application-load-balancer</p> </li> <li> <p>rules-per-application-load-balancer</p> </li> <li> <p>target-groups</p> </li> <li> <p>targets-per-application-load-balancer</p> </li> </ul>"
       }
     },
     "OperationNotPermittedException": {
@@ -668,8 +718,10 @@
     "PageSize": {
       "base": null,
       "refs": {
+        "DescribeAccountLimitsInput$PageSize": "<p>The maximum number of results to return with this call.</p>",
         "DescribeListenersInput$PageSize": "<p>The maximum number of results to return with this call.</p>",
         "DescribeLoadBalancersInput$PageSize": "<p>The maximum number of results to return with this call.</p>",
+        "DescribeRulesInput$PageSize": "<p>The maximum number of results to return with this call.</p>",
         "DescribeSSLPoliciesInput$PageSize": "<p>The maximum number of results to return with this call.</p>",
         "DescribeTargetGroupsInput$PageSize": "<p>The maximum number of results to return with this call.</p>"
       }
@@ -712,22 +764,22 @@
       }
     },
     "RegisterTargetsInput": {
-      "base": "<p>Contains the parameters for RegisterTargets.</p>",
+      "base": null,
       "refs": {
       }
     },
     "RegisterTargetsOutput": {
-      "base": "<p>Contains the output of RegisterTargets.</p>",
+      "base": null,
       "refs": {
       }
     },
     "RemoveTagsInput": {
-      "base": "<p>Contains the parameters for RemoveTags.</p>",
+      "base": null,
       "refs": {
       }
     },
     "RemoveTagsOutput": {
-      "base": "<p>Contains the output of RemoveTags.</p>",
+      "base": null,
       "refs": {
       }
     },
@@ -782,7 +834,7 @@
     "RuleConditionList": {
       "base": null,
       "refs": {
-        "CreateRuleInput$Conditions": "<p>A condition. Each condition has the field <code>path-pattern</code> and specifies one path pattern. A path pattern is case sensitive, can be up to 255 characters in length, and can contain any of the following characters:</p> <ul> <li> <p>A-Z, a-z, 0-9</p> </li> <li> <p>_ - . $ / ~ \" ' @ : +</p> </li> <li> <p>&amp; (using &amp;amp;)</p> </li> <li> <p>* (matches 0 or more characters)</p> </li> <li> <p>? (matches exactly 1 character)</p> </li> </ul>",
+        "CreateRuleInput$Conditions": "<p>A condition. Each condition specifies a field name and a single value.</p> <p>If the field name is <code>host-header</code>, you can specify a single host name (for example, my.example.com). A host name is case insensitive, can be up to 128 characters in length, and can contain any of the following characters. Note that you can include up to three wildcard characters.</p> <ul> <li> <p>A-Z, a-z, 0-9</p> </li> <li> <p>- .</p> </li> <li> <p>* (matches 0 or more characters)</p> </li> <li> <p>? (matches exactly 1 character)</p> </li> </ul> <p>If the field name is <code>path-pattern</code>, you can specify a single path pattern. A path pattern is case sensitive, can be up to 128 characters in length, and can contain any of the following characters. Note that you can include up to three wildcard characters.</p> <ul> <li> <p>A-Z, a-z, 0-9</p> </li> <li> <p>_ - . $ / ~ \" ' @ : +</p> </li> <li> <p>&amp; (using &amp;amp;)</p> </li> <li> <p>* (matches 0 or more characters)</p> </li> <li> <p>? (matches exactly 1 character)</p> </li> </ul>",
         "ModifyRuleInput$Conditions": "<p>The conditions.</p>",
         "Rule$Conditions": "<p>The conditions.</p>"
       }
@@ -840,33 +892,43 @@
         "SetSecurityGroupsOutput$SecurityGroupIds": "<p>The IDs of the security groups associated with the load balancer.</p>"
       }
     },
+    "SetIpAddressTypeInput": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "SetIpAddressTypeOutput": {
+      "base": null,
+      "refs": {
+      }
+    },
     "SetRulePrioritiesInput": {
-      "base": "<p>Contains the parameters for SetRulePriorities.</p>",
+      "base": null,
       "refs": {
       }
     },
     "SetRulePrioritiesOutput": {
-      "base": "<p>Contains the output of SetRulePriorities.</p>",
+      "base": null,
       "refs": {
       }
     },
     "SetSecurityGroupsInput": {
-      "base": "<p>Contains the parameters for SetSecurityGroups.</p>",
+      "base": null,
       "refs": {
       }
     },
     "SetSecurityGroupsOutput": {
-      "base": "<p>Contains the output of SetSecurityGroups.</p>",
+      "base": null,
       "refs": {
       }
     },
     "SetSubnetsInput": {
-      "base": "<p>Contains the parameters for SetSubnets.</p>",
+      "base": null,
       "refs": {
       }
     },
     "SetSubnetsOutput": {
-      "base": "<p>Contains the output of SetSubnets.</p>",
+      "base": null,
       "refs": {
       }
     },
@@ -887,7 +949,7 @@
       "refs": {
         "CreateListenerInput$SslPolicy": "<p>The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</p>",
         "Listener$SslPolicy": "<p>The security policy that defines which ciphers and protocols are supported. The default is the current predefined security policy.</p>",
-        "ModifyListenerInput$SslPolicy": "<p>The security policy that defines which ciphers and protocols are supported.</p>",
+        "ModifyListenerInput$SslPolicy": "<p>The security policy that defines which protocols and ciphers are supported. For more information, see <a href=\"http://docs.aws.amazon.com/elasticloadbalancing/latest/application/create-https-listener.html#describe-ssl-policies\">Security Policies</a> in the <i>Application Load Balancers Guide</i>.</p>",
         "SslPolicy$Name": "<p>The name of the policy.</p>",
         "SslPolicyNames$member": null
       }
@@ -1068,7 +1130,7 @@
     "TargetGroupName": {
       "base": null,
       "refs": {
-        "CreateTargetGroupInput$Name": "<p>The name of the target group.</p>",
+        "CreateTargetGroupInput$Name": "<p>The name of the target group.</p> <p>This name must be unique per region per account, can have a maximum of 32 characters, must contain only alphanumeric characters or hyphens, and must not begin or end with a hyphen.</p>",
         "TargetGroup$TargetGroupName": "<p>The name of the target group.</p>",
         "TargetGroupNames$member": null
       }

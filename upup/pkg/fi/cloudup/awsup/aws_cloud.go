@@ -32,6 +32,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/aws/aws-sdk-go/service/ec2/ec2iface"
 	"github.com/aws/aws-sdk-go/service/elb"
+	"github.com/aws/aws-sdk-go/service/elb/elbiface"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/route53"
 	"github.com/aws/aws-sdk-go/service/route53/route53iface"
@@ -86,7 +87,7 @@ type AWSCloud interface {
 	CloudFormation() *cloudformation.CloudFormation
 	EC2() ec2iface.EC2API
 	IAM() *iam.IAM
-	ELB() *elb.ELB
+	ELB() elbiface.ELBAPI
 	Autoscaling() autoscalingiface.AutoScalingAPI
 	Route53() route53iface.Route53API
 
@@ -1021,7 +1022,7 @@ func (c *awsCloudImplementation) IAM() *iam.IAM {
 	return c.iam
 }
 
-func (c *awsCloudImplementation) ELB() *elb.ELB {
+func (c *awsCloudImplementation) ELB() elbiface.ELBAPI {
 	return c.elb
 }
 

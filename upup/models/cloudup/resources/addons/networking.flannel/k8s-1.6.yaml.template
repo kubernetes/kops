@@ -130,7 +130,8 @@ spec:
           limits:
             memory: 100Mi
           requests:
-            cpu: 100Mi
+            cpu: 100m
+            memory: 100Mi
         volumeMounts:
         - name: run
           mountPath: /run
