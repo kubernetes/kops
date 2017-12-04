@@ -1,16 +1,31 @@
 {
   "version":"2.0",
   "metadata":{
-    "uid":"gamelift-2015-10-01",
     "apiVersion":"2015-10-01",
     "endpointPrefix":"gamelift",
     "jsonVersion":"1.1",
     "protocol":"json",
     "serviceFullName":"Amazon GameLift",
     "signatureVersion":"v4",
-    "targetPrefix":"GameLift"
+    "targetPrefix":"GameLift",
+    "uid":"gamelift-2015-10-01"
   },
   "operations":{
+    "AcceptMatch":{
+      "name":"AcceptMatch",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"AcceptMatchInput"},
+      "output":{"shape":"AcceptMatchOutput"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"UnsupportedRegionException"}
+      ]
+    },
     "CreateAlias":{
       "name":"CreateAlias",
       "http":{
@@ -78,6 +93,51 @@
         {"shape":"FleetCapacityExceededException"},
         {"shape":"LimitExceededException"},
         {"shape":"IdempotentParameterMismatchException"}
+      ]
+    },
+    "CreateGameSessionQueue":{
+      "name":"CreateGameSessionQueue",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateGameSessionQueueInput"},
+      "output":{"shape":"CreateGameSessionQueueOutput"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"UnauthorizedException"},
+        {"shape":"LimitExceededException"}
+      ]
+    },
+    "CreateMatchmakingConfiguration":{
+      "name":"CreateMatchmakingConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateMatchmakingConfigurationInput"},
+      "output":{"shape":"CreateMatchmakingConfigurationOutput"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"LimitExceededException"},
+        {"shape":"NotFoundException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"UnsupportedRegionException"}
+      ]
+    },
+    "CreateMatchmakingRuleSet":{
+      "name":"CreateMatchmakingRuleSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateMatchmakingRuleSetInput"},
+      "output":{"shape":"CreateMatchmakingRuleSetOutput"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"UnsupportedRegionException"}
       ]
     },
     "CreatePlayerSession":{
@@ -157,6 +217,36 @@
         {"shape":"InvalidFleetStatusException"},
         {"shape":"UnauthorizedException"},
         {"shape":"InvalidRequestException"}
+      ]
+    },
+    "DeleteGameSessionQueue":{
+      "name":"DeleteGameSessionQueue",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteGameSessionQueueInput"},
+      "output":{"shape":"DeleteGameSessionQueueOutput"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"}
+      ]
+    },
+    "DeleteMatchmakingConfiguration":{
+      "name":"DeleteMatchmakingConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteMatchmakingConfigurationInput"},
+      "output":{"shape":"DeleteMatchmakingConfigurationOutput"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"UnsupportedRegionException"}
       ]
     },
     "DeleteScalingPolicy":{
@@ -308,6 +398,36 @@
         {"shape":"TerminalRoutingStrategyException"}
       ]
     },
+    "DescribeGameSessionPlacement":{
+      "name":"DescribeGameSessionPlacement",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeGameSessionPlacementInput"},
+      "output":{"shape":"DescribeGameSessionPlacementOutput"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"}
+      ]
+    },
+    "DescribeGameSessionQueues":{
+      "name":"DescribeGameSessionQueues",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeGameSessionQueuesInput"},
+      "output":{"shape":"DescribeGameSessionQueuesOutput"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"}
+      ]
+    },
     "DescribeGameSessions":{
       "name":"DescribeGameSessions",
       "http":{
@@ -337,6 +457,49 @@
         {"shape":"InvalidRequestException"},
         {"shape":"NotFoundException"},
         {"shape":"InternalServiceException"}
+      ]
+    },
+    "DescribeMatchmaking":{
+      "name":"DescribeMatchmaking",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeMatchmakingInput"},
+      "output":{"shape":"DescribeMatchmakingOutput"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"UnsupportedRegionException"}
+      ]
+    },
+    "DescribeMatchmakingConfigurations":{
+      "name":"DescribeMatchmakingConfigurations",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeMatchmakingConfigurationsInput"},
+      "output":{"shape":"DescribeMatchmakingConfigurationsOutput"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"UnsupportedRegionException"}
+      ]
+    },
+    "DescribeMatchmakingRuleSets":{
+      "name":"DescribeMatchmakingRuleSets",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeMatchmakingRuleSetsInput"},
+      "output":{"shape":"DescribeMatchmakingRuleSetsOutput"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnsupportedRegionException"}
       ]
     },
     "DescribePlayerSessions":{
@@ -519,6 +682,66 @@
         {"shape":"TerminalRoutingStrategyException"}
       ]
     },
+    "StartGameSessionPlacement":{
+      "name":"StartGameSessionPlacement",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartGameSessionPlacementInput"},
+      "output":{"shape":"StartGameSessionPlacementOutput"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"}
+      ]
+    },
+    "StartMatchmaking":{
+      "name":"StartMatchmaking",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartMatchmakingInput"},
+      "output":{"shape":"StartMatchmakingOutput"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"UnsupportedRegionException"}
+      ]
+    },
+    "StopGameSessionPlacement":{
+      "name":"StopGameSessionPlacement",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StopGameSessionPlacementInput"},
+      "output":{"shape":"StopGameSessionPlacementOutput"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"}
+      ]
+    },
+    "StopMatchmaking":{
+      "name":"StopMatchmaking",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StopMatchmakingInput"},
+      "output":{"shape":"StopMatchmakingOutput"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"UnsupportedRegionException"}
+      ]
+    },
     "UpdateAlias":{
       "name":"UpdateAlias",
       "http":{
@@ -620,6 +843,36 @@
         {"shape":"InvalidRequestException"}
       ]
     },
+    "UpdateGameSessionQueue":{
+      "name":"UpdateGameSessionQueue",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateGameSessionQueueInput"},
+      "output":{"shape":"UpdateGameSessionQueueOutput"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"InvalidRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"UnauthorizedException"}
+      ]
+    },
+    "UpdateMatchmakingConfiguration":{
+      "name":"UpdateMatchmakingConfiguration",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateMatchmakingConfigurationInput"},
+      "output":{"shape":"UpdateMatchmakingConfigurationOutput"},
+      "errors":[
+        {"shape":"InvalidRequestException"},
+        {"shape":"NotFoundException"},
+        {"shape":"InternalServiceException"},
+        {"shape":"UnsupportedRegionException"}
+      ]
+    },
     "UpdateRuntimeConfiguration":{
       "name":"UpdateRuntimeConfiguration",
       "http":{
@@ -635,14 +888,54 @@
         {"shape":"InvalidRequestException"},
         {"shape":"InvalidFleetStatusException"}
       ]
+    },
+    "ValidateMatchmakingRuleSet":{
+      "name":"ValidateMatchmakingRuleSet",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ValidateMatchmakingRuleSetInput"},
+      "output":{"shape":"ValidateMatchmakingRuleSetOutput"},
+      "errors":[
+        {"shape":"InternalServiceException"},
+        {"shape":"UnsupportedRegionException"},
+        {"shape":"InvalidRequestException"}
+      ]
     }
   },
   "shapes":{
+    "AcceptMatchInput":{
+      "type":"structure",
+      "required":[
+        "TicketId",
+        "PlayerIds",
+        "AcceptanceType"
+      ],
+      "members":{
+        "TicketId":{"shape":"MatchmakingIdStringModel"},
+        "PlayerIds":{"shape":"MatchmakingPlayerIdList"},
+        "AcceptanceType":{"shape":"AcceptanceType"}
+      }
+    },
+    "AcceptMatchOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "AcceptanceType":{
+      "type":"string",
+      "enum":[
+        "ACCEPT",
+        "REJECT"
+      ]
+    },
     "Alias":{
       "type":"structure",
       "members":{
         "AliasId":{"shape":"AliasId"},
         "Name":{"shape":"NonBlankAndLengthConstraintString"},
+        "AliasArn":{"shape":"ArnStringModel"},
         "Description":{"shape":"FreeText"},
         "RoutingStrategy":{"shape":"RoutingStrategy"},
         "CreationTime":{"shape":"Timestamp"},
@@ -663,6 +956,15 @@
       "min":1,
       "pattern":"[a-zA-Z0-9:/-]+"
     },
+    "AttributeValue":{
+      "type":"structure",
+      "members":{
+        "S":{"shape":"NonZeroAndMaxString"},
+        "N":{"shape":"DoubleObject"},
+        "SL":{"shape":"StringList"},
+        "SDM":{"shape":"StringDoubleMap"}
+      }
+    },
     "AwsCredentials":{
       "type":"structure",
       "members":{
@@ -672,6 +974,7 @@
       },
       "sensitive":true
     },
+    "Boolean":{"type":"boolean"},
     "Build":{
       "type":"structure",
       "members":{
@@ -769,7 +1072,8 @@
         "EC2InboundPermissions":{"shape":"IpPermissionsList"},
         "NewGameSessionProtectionPolicy":{"shape":"ProtectionPolicy"},
         "RuntimeConfiguration":{"shape":"RuntimeConfiguration"},
-        "ResourceCreationLimitPolicy":{"shape":"ResourceCreationLimitPolicy"}
+        "ResourceCreationLimitPolicy":{"shape":"ResourceCreationLimitPolicy"},
+        "MetricGroups":{"shape":"MetricGroupList"}
       }
     },
     "CreateFleetOutput":{
@@ -788,13 +1092,79 @@
         "Name":{"shape":"NonZeroAndMaxString"},
         "GameProperties":{"shape":"GamePropertyList"},
         "CreatorId":{"shape":"NonZeroAndMaxString"},
-        "GameSessionId":{"shape":"IdStringModel"}
+        "GameSessionId":{"shape":"IdStringModel"},
+        "IdempotencyToken":{"shape":"IdStringModel"},
+        "GameSessionData":{"shape":"GameSessionData"}
       }
     },
     "CreateGameSessionOutput":{
       "type":"structure",
       "members":{
         "GameSession":{"shape":"GameSession"}
+      }
+    },
+    "CreateGameSessionQueueInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"GameSessionQueueName"},
+        "TimeoutInSeconds":{"shape":"WholeNumber"},
+        "PlayerLatencyPolicies":{"shape":"PlayerLatencyPolicyList"},
+        "Destinations":{"shape":"GameSessionQueueDestinationList"}
+      }
+    },
+    "CreateGameSessionQueueOutput":{
+      "type":"structure",
+      "members":{
+        "GameSessionQueue":{"shape":"GameSessionQueue"}
+      }
+    },
+    "CreateMatchmakingConfigurationInput":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "GameSessionQueueArns",
+        "RequestTimeoutSeconds",
+        "AcceptanceRequired",
+        "RuleSetName"
+      ],
+      "members":{
+        "Name":{"shape":"MatchmakingIdStringModel"},
+        "Description":{"shape":"NonZeroAndMaxString"},
+        "GameSessionQueueArns":{"shape":"QueueArnsList"},
+        "RequestTimeoutSeconds":{"shape":"MatchmakingRequestTimeoutInteger"},
+        "AcceptanceTimeoutSeconds":{"shape":"MatchmakingAcceptanceTimeoutInteger"},
+        "AcceptanceRequired":{"shape":"Boolean"},
+        "RuleSetName":{"shape":"MatchmakingIdStringModel"},
+        "NotificationTarget":{"shape":"SnsArnStringModel"},
+        "AdditionalPlayerCount":{"shape":"WholeNumber"},
+        "CustomEventData":{"shape":"CustomEventData"},
+        "GameProperties":{"shape":"GamePropertyList"},
+        "GameSessionData":{"shape":"GameSessionData"}
+      }
+    },
+    "CreateMatchmakingConfigurationOutput":{
+      "type":"structure",
+      "members":{
+        "Configuration":{"shape":"MatchmakingConfiguration"}
+      }
+    },
+    "CreateMatchmakingRuleSetInput":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "RuleSetBody"
+      ],
+      "members":{
+        "Name":{"shape":"MatchmakingIdStringModel"},
+        "RuleSetBody":{"shape":"RuleSetBody"}
+      }
+    },
+    "CreateMatchmakingRuleSetOutput":{
+      "type":"structure",
+      "required":["RuleSet"],
+      "members":{
+        "RuleSet":{"shape":"MatchmakingRuleSet"}
       }
     },
     "CreatePlayerSessionInput":{
@@ -805,7 +1175,8 @@
       ],
       "members":{
         "GameSessionId":{"shape":"ArnStringModel"},
-        "PlayerId":{"shape":"NonZeroAndMaxString"}
+        "PlayerId":{"shape":"NonZeroAndMaxString"},
+        "PlayerData":{"shape":"PlayerData"}
       }
     },
     "CreatePlayerSessionOutput":{
@@ -822,7 +1193,8 @@
       ],
       "members":{
         "GameSessionId":{"shape":"ArnStringModel"},
-        "PlayerIds":{"shape":"PlayerIdList"}
+        "PlayerIds":{"shape":"PlayerIdList"},
+        "PlayerDataMap":{"shape":"PlayerDataMap"}
       }
     },
     "CreatePlayerSessionsOutput":{
@@ -830,6 +1202,11 @@
       "members":{
         "PlayerSessions":{"shape":"PlayerSessionList"}
       }
+    },
+    "CustomEventData":{
+      "type":"string",
+      "max":256,
+      "min":1
     },
     "DeleteAliasInput":{
       "type":"structure",
@@ -850,6 +1227,30 @@
       "required":["FleetId"],
       "members":{
         "FleetId":{"shape":"FleetId"}
+      }
+    },
+    "DeleteGameSessionQueueInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"GameSessionQueueName"}
+      }
+    },
+    "DeleteGameSessionQueueOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "DeleteMatchmakingConfigurationInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"MatchmakingIdStringModel"}
+      }
+    },
+    "DeleteMatchmakingConfigurationOutput":{
+      "type":"structure",
+      "members":{
       }
     },
     "DeleteScalingPolicyInput":{
@@ -995,6 +1396,34 @@
         "NextToken":{"shape":"NonZeroAndMaxString"}
       }
     },
+    "DescribeGameSessionPlacementInput":{
+      "type":"structure",
+      "required":["PlacementId"],
+      "members":{
+        "PlacementId":{"shape":"IdStringModel"}
+      }
+    },
+    "DescribeGameSessionPlacementOutput":{
+      "type":"structure",
+      "members":{
+        "GameSessionPlacement":{"shape":"GameSessionPlacement"}
+      }
+    },
+    "DescribeGameSessionQueuesInput":{
+      "type":"structure",
+      "members":{
+        "Names":{"shape":"GameSessionQueueNameList"},
+        "Limit":{"shape":"PositiveInteger"},
+        "NextToken":{"shape":"NonZeroAndMaxString"}
+      }
+    },
+    "DescribeGameSessionQueuesOutput":{
+      "type":"structure",
+      "members":{
+        "GameSessionQueues":{"shape":"GameSessionQueueList"},
+        "NextToken":{"shape":"NonZeroAndMaxString"}
+      }
+    },
     "DescribeGameSessionsInput":{
       "type":"structure",
       "members":{
@@ -1027,6 +1456,51 @@
       "type":"structure",
       "members":{
         "Instances":{"shape":"InstanceList"},
+        "NextToken":{"shape":"NonZeroAndMaxString"}
+      }
+    },
+    "DescribeMatchmakingConfigurationsInput":{
+      "type":"structure",
+      "members":{
+        "Names":{"shape":"MatchmakingIdList"},
+        "RuleSetName":{"shape":"MatchmakingIdStringModel"},
+        "Limit":{"shape":"PositiveInteger"},
+        "NextToken":{"shape":"NonZeroAndMaxString"}
+      }
+    },
+    "DescribeMatchmakingConfigurationsOutput":{
+      "type":"structure",
+      "members":{
+        "Configurations":{"shape":"MatchmakingConfigurationList"},
+        "NextToken":{"shape":"NonZeroAndMaxString"}
+      }
+    },
+    "DescribeMatchmakingInput":{
+      "type":"structure",
+      "required":["TicketIds"],
+      "members":{
+        "TicketIds":{"shape":"MatchmakingIdList"}
+      }
+    },
+    "DescribeMatchmakingOutput":{
+      "type":"structure",
+      "members":{
+        "TicketList":{"shape":"MatchmakingTicketList"}
+      }
+    },
+    "DescribeMatchmakingRuleSetsInput":{
+      "type":"structure",
+      "members":{
+        "Names":{"shape":"MatchmakingRuleSetNameList"},
+        "Limit":{"shape":"RuleSetLimit"},
+        "NextToken":{"shape":"NonZeroAndMaxString"}
+      }
+    },
+    "DescribeMatchmakingRuleSetsOutput":{
+      "type":"structure",
+      "required":["RuleSets"],
+      "members":{
+        "RuleSets":{"shape":"MatchmakingRuleSetList"},
         "NextToken":{"shape":"NonZeroAndMaxString"}
       }
     },
@@ -1078,7 +1552,19 @@
         "NextToken":{"shape":"NonZeroAndMaxString"}
       }
     },
+    "DesiredPlayerSession":{
+      "type":"structure",
+      "members":{
+        "PlayerId":{"shape":"NonZeroAndMaxString"},
+        "PlayerData":{"shape":"PlayerData"}
+      }
+    },
+    "DesiredPlayerSessionList":{
+      "type":"list",
+      "member":{"shape":"DesiredPlayerSession"}
+    },
     "Double":{"type":"double"},
+    "DoubleObject":{"type":"double"},
     "EC2InstanceCounts":{
       "type":"structure",
       "members":{
@@ -1143,7 +1629,8 @@
         "ResourceId":{"shape":"NonZeroAndMaxString"},
         "EventCode":{"shape":"EventCode"},
         "Message":{"shape":"NonEmptyString"},
-        "EventTime":{"shape":"Timestamp"}
+        "EventTime":{"shape":"Timestamp"},
+        "PreSignedLogUrl":{"shape":"NonZeroAndMaxString"}
       }
     },
     "EventCode":{
@@ -1173,7 +1660,11 @@
         "SERVER_PROCESS_CRASHED",
         "SERVER_PROCESS_TERMINATED_UNHEALTHY",
         "SERVER_PROCESS_FORCE_TERMINATED",
-        "SERVER_PROCESS_PROCESS_EXIT_TIMEOUT"
+        "SERVER_PROCESS_PROCESS_EXIT_TIMEOUT",
+        "GAME_SESSION_ACTIVATION_TIMEOUT",
+        "FLEET_CREATION_EXTRACTING_BUILD",
+        "FLEET_CREATION_RUNNING_INSTALLER",
+        "FLEET_CREATION_VALIDATING_RUNTIME_CONFIG"
       ]
     },
     "EventList":{
@@ -1184,6 +1675,7 @@
       "type":"structure",
       "members":{
         "FleetId":{"shape":"FleetId"},
+        "FleetArn":{"shape":"ArnStringModel"},
         "Description":{"shape":"NonZeroAndMaxString"},
         "Name":{"shape":"NonZeroAndMaxString"},
         "CreationTime":{"shape":"Timestamp"},
@@ -1195,7 +1687,8 @@
         "LogPaths":{"shape":"StringList"},
         "NewGameSessionProtectionPolicy":{"shape":"ProtectionPolicy"},
         "OperatingSystem":{"shape":"OperatingSystem"},
-        "ResourceCreationLimitPolicy":{"shape":"ResourceCreationLimitPolicy"}
+        "ResourceCreationLimitPolicy":{"shape":"ResourceCreationLimitPolicy"},
+        "MetricGroups":{"shape":"MetricGroupList"}
       }
     },
     "FleetAttributesList":{
@@ -1258,6 +1751,7 @@
       "type":"list",
       "member":{"shape":"FleetUtilization"}
     },
+    "Float":{"type":"float"},
     "FreeText":{"type":"string"},
     "GameProperty":{
       "type":"structure",
@@ -1298,8 +1792,28 @@
         "IpAddress":{"shape":"IpAddress"},
         "Port":{"shape":"PortNumber"},
         "PlayerSessionCreationPolicy":{"shape":"PlayerSessionCreationPolicy"},
-        "CreatorId":{"shape":"NonZeroAndMaxString"}
+        "CreatorId":{"shape":"NonZeroAndMaxString"},
+        "GameSessionData":{"shape":"GameSessionData"}
       }
+    },
+    "GameSessionActivationTimeoutSeconds":{
+      "type":"integer",
+      "max":600,
+      "min":1
+    },
+    "GameSessionConnectionInfo":{
+      "type":"structure",
+      "members":{
+        "GameSessionArn":{"shape":"ArnStringModel"},
+        "IpAddress":{"shape":"StringModel"},
+        "Port":{"shape":"PositiveInteger"},
+        "MatchedPlayerSessions":{"shape":"MatchedPlayerSessionList"}
+      }
+    },
+    "GameSessionData":{
+      "type":"string",
+      "max":4096,
+      "min":1
     },
     "GameSessionDetail":{
       "type":"structure",
@@ -1322,6 +1836,70 @@
     "GameSessionList":{
       "type":"list",
       "member":{"shape":"GameSession"}
+    },
+    "GameSessionPlacement":{
+      "type":"structure",
+      "members":{
+        "PlacementId":{"shape":"IdStringModel"},
+        "GameSessionQueueName":{"shape":"GameSessionQueueName"},
+        "Status":{"shape":"GameSessionPlacementState"},
+        "GameProperties":{"shape":"GamePropertyList"},
+        "MaximumPlayerSessionCount":{"shape":"WholeNumber"},
+        "GameSessionName":{"shape":"NonZeroAndMaxString"},
+        "GameSessionId":{"shape":"NonZeroAndMaxString"},
+        "GameSessionArn":{"shape":"NonZeroAndMaxString"},
+        "GameSessionRegion":{"shape":"NonZeroAndMaxString"},
+        "PlayerLatencies":{"shape":"PlayerLatencyList"},
+        "StartTime":{"shape":"Timestamp"},
+        "EndTime":{"shape":"Timestamp"},
+        "IpAddress":{"shape":"IpAddress"},
+        "Port":{"shape":"PortNumber"},
+        "PlacedPlayerSessions":{"shape":"PlacedPlayerSessionList"},
+        "GameSessionData":{"shape":"GameSessionData"}
+      }
+    },
+    "GameSessionPlacementState":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "FULFILLED",
+        "CANCELLED",
+        "TIMED_OUT"
+      ]
+    },
+    "GameSessionQueue":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"GameSessionQueueName"},
+        "GameSessionQueueArn":{"shape":"ArnStringModel"},
+        "TimeoutInSeconds":{"shape":"WholeNumber"},
+        "PlayerLatencyPolicies":{"shape":"PlayerLatencyPolicyList"},
+        "Destinations":{"shape":"GameSessionQueueDestinationList"}
+      }
+    },
+    "GameSessionQueueDestination":{
+      "type":"structure",
+      "members":{
+        "DestinationArn":{"shape":"ArnStringModel"}
+      }
+    },
+    "GameSessionQueueDestinationList":{
+      "type":"list",
+      "member":{"shape":"GameSessionQueueDestination"}
+    },
+    "GameSessionQueueList":{
+      "type":"list",
+      "member":{"shape":"GameSessionQueue"}
+    },
+    "GameSessionQueueName":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-]+"
+    },
+    "GameSessionQueueNameList":{
+      "type":"list",
+      "member":{"shape":"GameSessionQueueName"}
     },
     "GameSessionStatus":{
       "type":"string",
@@ -1480,6 +2058,11 @@
         "UDP"
       ]
     },
+    "LatencyMap":{
+      "type":"map",
+      "key":{"shape":"NonEmptyString"},
+      "value":{"shape":"PositiveInteger"}
+    },
     "LimitExceededException":{
       "type":"structure",
       "members":{
@@ -1533,15 +2116,141 @@
         "NextToken":{"shape":"NonZeroAndMaxString"}
       }
     },
+    "MatchedPlayerSession":{
+      "type":"structure",
+      "members":{
+        "PlayerId":{"shape":"NonZeroAndMaxString"},
+        "PlayerSessionId":{"shape":"PlayerSessionId"}
+      }
+    },
+    "MatchedPlayerSessionList":{
+      "type":"list",
+      "member":{"shape":"MatchedPlayerSession"}
+    },
+    "MatchmakingAcceptanceTimeoutInteger":{
+      "type":"integer",
+      "max":600,
+      "min":1
+    },
+    "MatchmakingConfiguration":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"MatchmakingIdStringModel"},
+        "Description":{"shape":"NonZeroAndMaxString"},
+        "GameSessionQueueArns":{"shape":"QueueArnsList"},
+        "RequestTimeoutSeconds":{"shape":"MatchmakingRequestTimeoutInteger"},
+        "AcceptanceTimeoutSeconds":{"shape":"MatchmakingAcceptanceTimeoutInteger"},
+        "AcceptanceRequired":{"shape":"Boolean"},
+        "RuleSetName":{"shape":"MatchmakingIdStringModel"},
+        "NotificationTarget":{"shape":"SnsArnStringModel"},
+        "AdditionalPlayerCount":{"shape":"WholeNumber"},
+        "CustomEventData":{"shape":"CustomEventData"},
+        "CreationTime":{"shape":"Timestamp"},
+        "GameProperties":{"shape":"GamePropertyList"},
+        "GameSessionData":{"shape":"GameSessionData"}
+      }
+    },
+    "MatchmakingConfigurationList":{
+      "type":"list",
+      "member":{"shape":"MatchmakingConfiguration"}
+    },
+    "MatchmakingConfigurationStatus":{
+      "type":"string",
+      "enum":[
+        "CANCELLED",
+        "COMPLETED",
+        "FAILED",
+        "PLACING",
+        "QUEUED",
+        "REQUIRES_ACCEPTANCE",
+        "SEARCHING",
+        "TIMED_OUT"
+      ]
+    },
+    "MatchmakingIdList":{
+      "type":"list",
+      "member":{"shape":"MatchmakingIdStringModel"}
+    },
+    "MatchmakingIdStringModel":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-\\.]+"
+    },
+    "MatchmakingPlayerIdList":{
+      "type":"list",
+      "member":{"shape":"PlayerIdStringModel"}
+    },
+    "MatchmakingRequestTimeoutInteger":{
+      "type":"integer",
+      "max":43200,
+      "min":1
+    },
+    "MatchmakingRuleSet":{
+      "type":"structure",
+      "required":["RuleSetBody"],
+      "members":{
+        "RuleSetName":{"shape":"MatchmakingIdStringModel"},
+        "RuleSetBody":{"shape":"RuleSetBody"},
+        "CreationTime":{"shape":"Timestamp"}
+      }
+    },
+    "MatchmakingRuleSetList":{
+      "type":"list",
+      "member":{"shape":"MatchmakingRuleSet"}
+    },
+    "MatchmakingRuleSetNameList":{
+      "type":"list",
+      "member":{"shape":"MatchmakingIdStringModel"},
+      "max":10,
+      "min":1
+    },
+    "MatchmakingTicket":{
+      "type":"structure",
+      "members":{
+        "TicketId":{"shape":"MatchmakingIdStringModel"},
+        "ConfigurationName":{"shape":"MatchmakingIdStringModel"},
+        "Status":{"shape":"MatchmakingConfigurationStatus"},
+        "StatusReason":{"shape":"StringModel"},
+        "StatusMessage":{"shape":"StringModel"},
+        "StartTime":{"shape":"Timestamp"},
+        "Players":{"shape":"PlayerList"},
+        "GameSessionConnectionInfo":{"shape":"GameSessionConnectionInfo"}
+      }
+    },
+    "MatchmakingTicketList":{
+      "type":"list",
+      "member":{"shape":"MatchmakingTicket"}
+    },
+    "MaxConcurrentGameSessionActivations":{
+      "type":"integer",
+      "max":2147483647,
+      "min":1
+    },
+    "MetricGroup":{
+      "type":"string",
+      "max":255,
+      "min":1
+    },
+    "MetricGroupList":{
+      "type":"list",
+      "member":{"shape":"MetricGroup"},
+      "max":1
+    },
     "MetricName":{
       "type":"string",
       "enum":[
         "ActivatingGameSessions",
         "ActiveGameSessions",
         "ActiveInstances",
+        "AvailableGameSessions",
         "AvailablePlayerSessions",
         "CurrentPlayerSessions",
-        "IdleInstances"
+        "IdleInstances",
+        "PercentAvailableGameSessions",
+        "PercentIdleInstances",
+        "QueueDepth",
+        "WaitTime"
       ]
     },
     "NonBlankAndLengthConstraintString":{
@@ -1577,11 +2286,79 @@
         "AMAZON_LINUX"
       ]
     },
+    "PlacedPlayerSession":{
+      "type":"structure",
+      "members":{
+        "PlayerId":{"shape":"NonZeroAndMaxString"},
+        "PlayerSessionId":{"shape":"PlayerSessionId"}
+      }
+    },
+    "PlacedPlayerSessionList":{
+      "type":"list",
+      "member":{"shape":"PlacedPlayerSession"}
+    },
+    "Player":{
+      "type":"structure",
+      "members":{
+        "PlayerId":{"shape":"PlayerIdStringModel"},
+        "PlayerAttributes":{"shape":"PlayerAttributeMap"},
+        "Team":{"shape":"NonZeroAndMaxString"},
+        "LatencyInMs":{"shape":"LatencyMap"}
+      }
+    },
+    "PlayerAttributeMap":{
+      "type":"map",
+      "key":{"shape":"NonZeroAndMaxString"},
+      "value":{"shape":"AttributeValue"}
+    },
+    "PlayerData":{
+      "type":"string",
+      "max":2048,
+      "min":1
+    },
+    "PlayerDataMap":{
+      "type":"map",
+      "key":{"shape":"NonZeroAndMaxString"},
+      "value":{"shape":"PlayerData"}
+    },
     "PlayerIdList":{
       "type":"list",
       "member":{"shape":"NonZeroAndMaxString"},
       "max":25,
       "min":1
+    },
+    "PlayerIdStringModel":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"[a-zA-Z0-9-\\.]+"
+    },
+    "PlayerLatency":{
+      "type":"structure",
+      "members":{
+        "PlayerId":{"shape":"NonZeroAndMaxString"},
+        "RegionIdentifier":{"shape":"NonZeroAndMaxString"},
+        "LatencyInMilliseconds":{"shape":"Float"}
+      }
+    },
+    "PlayerLatencyList":{
+      "type":"list",
+      "member":{"shape":"PlayerLatency"}
+    },
+    "PlayerLatencyPolicy":{
+      "type":"structure",
+      "members":{
+        "MaximumIndividualPlayerLatencyMilliseconds":{"shape":"WholeNumber"},
+        "PolicyDurationSeconds":{"shape":"WholeNumber"}
+      }
+    },
+    "PlayerLatencyPolicyList":{
+      "type":"list",
+      "member":{"shape":"PlayerLatencyPolicy"}
+    },
+    "PlayerList":{
+      "type":"list",
+      "member":{"shape":"Player"}
     },
     "PlayerSession":{
       "type":"structure",
@@ -1594,7 +2371,8 @@
         "TerminationTime":{"shape":"Timestamp"},
         "Status":{"shape":"PlayerSessionStatus"},
         "IpAddress":{"shape":"IpAddress"},
-        "Port":{"shape":"PortNumber"}
+        "Port":{"shape":"PortNumber"},
+        "PlayerData":{"shape":"PlayerData"}
       }
     },
     "PlayerSessionCreationPolicy":{
@@ -1670,6 +2448,10 @@
         "Name":{"shape":"NonZeroAndMaxString"}
       }
     },
+    "QueueArnsList":{
+      "type":"list",
+      "member":{"shape":"ArnStringModel"}
+    },
     "RequestUploadCredentialsInput":{
       "type":"structure",
       "required":["BuildId"],
@@ -1719,10 +2501,22 @@
         "TERMINAL"
       ]
     },
+    "RuleSetBody":{
+      "type":"string",
+      "max":65535,
+      "min":1
+    },
+    "RuleSetLimit":{
+      "type":"integer",
+      "max":10,
+      "min":1
+    },
     "RuntimeConfiguration":{
       "type":"structure",
       "members":{
-        "ServerProcesses":{"shape":"ServerProcessList"}
+        "ServerProcesses":{"shape":"ServerProcessList"},
+        "MaxConcurrentGameSessionActivations":{"shape":"MaxConcurrentGameSessionActivations"},
+        "GameSessionActivationTimeoutSeconds":{"shape":"GameSessionActivationTimeoutSeconds"}
       }
     },
     "S3Location":{
@@ -1807,10 +2601,89 @@
       "max":50,
       "min":1
     },
+    "SnsArnStringModel":{
+      "type":"string",
+      "max":300,
+      "min":1,
+      "pattern":"[a-zA-Z0-9:_/-]+"
+    },
+    "StartGameSessionPlacementInput":{
+      "type":"structure",
+      "required":[
+        "PlacementId",
+        "GameSessionQueueName",
+        "MaximumPlayerSessionCount"
+      ],
+      "members":{
+        "PlacementId":{"shape":"IdStringModel"},
+        "GameSessionQueueName":{"shape":"GameSessionQueueName"},
+        "GameProperties":{"shape":"GamePropertyList"},
+        "MaximumPlayerSessionCount":{"shape":"WholeNumber"},
+        "GameSessionName":{"shape":"NonZeroAndMaxString"},
+        "PlayerLatencies":{"shape":"PlayerLatencyList"},
+        "DesiredPlayerSessions":{"shape":"DesiredPlayerSessionList"},
+        "GameSessionData":{"shape":"GameSessionData"}
+      }
+    },
+    "StartGameSessionPlacementOutput":{
+      "type":"structure",
+      "members":{
+        "GameSessionPlacement":{"shape":"GameSessionPlacement"}
+      }
+    },
+    "StartMatchmakingInput":{
+      "type":"structure",
+      "required":[
+        "ConfigurationName",
+        "Players"
+      ],
+      "members":{
+        "TicketId":{"shape":"MatchmakingIdStringModel"},
+        "ConfigurationName":{"shape":"MatchmakingIdStringModel"},
+        "Players":{"shape":"PlayerList"}
+      }
+    },
+    "StartMatchmakingOutput":{
+      "type":"structure",
+      "members":{
+        "MatchmakingTicket":{"shape":"MatchmakingTicket"}
+      }
+    },
+    "StopGameSessionPlacementInput":{
+      "type":"structure",
+      "required":["PlacementId"],
+      "members":{
+        "PlacementId":{"shape":"IdStringModel"}
+      }
+    },
+    "StopGameSessionPlacementOutput":{
+      "type":"structure",
+      "members":{
+        "GameSessionPlacement":{"shape":"GameSessionPlacement"}
+      }
+    },
+    "StopMatchmakingInput":{
+      "type":"structure",
+      "required":["TicketId"],
+      "members":{
+        "TicketId":{"shape":"MatchmakingIdStringModel"}
+      }
+    },
+    "StopMatchmakingOutput":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "StringDoubleMap":{
+      "type":"map",
+      "key":{"shape":"NonZeroAndMaxString"},
+      "value":{"shape":"DoubleObject"}
+    },
     "StringList":{
       "type":"list",
       "member":{"shape":"NonZeroAndMaxString"}
     },
+    "StringModel":{"type":"string"},
     "TerminalRoutingStrategyException":{
       "type":"structure",
       "members":{
@@ -1820,6 +2693,13 @@
     },
     "Timestamp":{"type":"timestamp"},
     "UnauthorizedException":{
+      "type":"structure",
+      "members":{
+        "Message":{"shape":"NonEmptyString"}
+      },
+      "exception":true
+    },
+    "UnsupportedRegionException":{
       "type":"structure",
       "members":{
         "Message":{"shape":"NonEmptyString"}
@@ -1865,7 +2745,8 @@
         "Name":{"shape":"NonZeroAndMaxString"},
         "Description":{"shape":"NonZeroAndMaxString"},
         "NewGameSessionProtectionPolicy":{"shape":"ProtectionPolicy"},
-        "ResourceCreationLimitPolicy":{"shape":"ResourceCreationLimitPolicy"}
+        "ResourceCreationLimitPolicy":{"shape":"ResourceCreationLimitPolicy"},
+        "MetricGroups":{"shape":"MetricGroupList"}
       }
     },
     "UpdateFleetAttributesOutput":{
@@ -1922,6 +2803,46 @@
         "GameSession":{"shape":"GameSession"}
       }
     },
+    "UpdateGameSessionQueueInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"GameSessionQueueName"},
+        "TimeoutInSeconds":{"shape":"WholeNumber"},
+        "PlayerLatencyPolicies":{"shape":"PlayerLatencyPolicyList"},
+        "Destinations":{"shape":"GameSessionQueueDestinationList"}
+      }
+    },
+    "UpdateGameSessionQueueOutput":{
+      "type":"structure",
+      "members":{
+        "GameSessionQueue":{"shape":"GameSessionQueue"}
+      }
+    },
+    "UpdateMatchmakingConfigurationInput":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"MatchmakingIdStringModel"},
+        "Description":{"shape":"NonZeroAndMaxString"},
+        "GameSessionQueueArns":{"shape":"QueueArnsList"},
+        "RequestTimeoutSeconds":{"shape":"MatchmakingRequestTimeoutInteger"},
+        "AcceptanceTimeoutSeconds":{"shape":"MatchmakingAcceptanceTimeoutInteger"},
+        "AcceptanceRequired":{"shape":"Boolean"},
+        "RuleSetName":{"shape":"MatchmakingIdStringModel"},
+        "NotificationTarget":{"shape":"SnsArnStringModel"},
+        "AdditionalPlayerCount":{"shape":"WholeNumber"},
+        "CustomEventData":{"shape":"CustomEventData"},
+        "GameProperties":{"shape":"GamePropertyList"},
+        "GameSessionData":{"shape":"GameSessionData"}
+      }
+    },
+    "UpdateMatchmakingConfigurationOutput":{
+      "type":"structure",
+      "members":{
+        "Configuration":{"shape":"MatchmakingConfiguration"}
+      }
+    },
     "UpdateRuntimeConfigurationInput":{
       "type":"structure",
       "required":[
@@ -1937,6 +2858,19 @@
       "type":"structure",
       "members":{
         "RuntimeConfiguration":{"shape":"RuntimeConfiguration"}
+      }
+    },
+    "ValidateMatchmakingRuleSetInput":{
+      "type":"structure",
+      "required":["RuleSetBody"],
+      "members":{
+        "RuleSetBody":{"shape":"RuleSetBody"}
+      }
+    },
+    "ValidateMatchmakingRuleSetOutput":{
+      "type":"structure",
+      "members":{
+        "Valid":{"shape":"Boolean"}
       }
     },
     "WholeNumber":{

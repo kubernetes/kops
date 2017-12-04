@@ -84,7 +84,8 @@
       "output":{"shape":"DescribeComplianceByConfigRuleResponse"},
       "errors":[
         {"shape":"InvalidParameterValueException"},
-        {"shape":"NoSuchConfigRuleException"}
+        {"shape":"NoSuchConfigRuleException"},
+        {"shape":"InvalidNextTokenException"}
       ]
     },
     "DescribeComplianceByResource":{
@@ -110,7 +111,8 @@
       "output":{"shape":"DescribeConfigRuleEvaluationStatusResponse"},
       "errors":[
         {"shape":"NoSuchConfigRuleException"},
-        {"shape":"InvalidParameterValueException"}
+        {"shape":"InvalidParameterValueException"},
+        {"shape":"InvalidNextTokenException"}
       ]
     },
     "DescribeConfigRules":{
@@ -122,7 +124,8 @@
       "input":{"shape":"DescribeConfigRulesRequest"},
       "output":{"shape":"DescribeConfigRulesResponse"},
       "errors":[
-        {"shape":"NoSuchConfigRuleException"}
+        {"shape":"NoSuchConfigRuleException"},
+        {"shape":"InvalidNextTokenException"}
       ]
     },
     "DescribeConfigurationRecorderStatus":{
@@ -217,6 +220,20 @@
       "output":{"shape":"GetComplianceSummaryByResourceTypeResponse"},
       "errors":[
         {"shape":"InvalidParameterValueException"}
+      ]
+    },
+    "GetDiscoveredResourceCounts":{
+      "name":"GetDiscoveredResourceCounts",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"GetDiscoveredResourceCountsRequest"},
+      "output":{"shape":"GetDiscoveredResourceCountsResponse"},
+      "errors":[
+        {"shape":"ValidationException"},
+        {"shape":"InvalidLimitException"},
+        {"shape":"InvalidNextTokenException"}
       ]
     },
     "GetResourceConfigHistory":{
@@ -356,6 +373,11 @@
     "AllSupported":{"type":"boolean"},
     "AvailabilityZone":{"type":"string"},
     "AwsRegion":{"type":"string"},
+    "BaseResourceId":{
+      "type":"string",
+      "max":768,
+      "min":1
+    },
     "Boolean":{"type":"boolean"},
     "ChannelName":{
       "type":"string",
@@ -391,7 +413,7 @@
       "type":"structure",
       "members":{
         "ResourceType":{"shape":"StringWithCharLimit256"},
-        "ResourceId":{"shape":"StringWithCharLimit256"},
+        "ResourceId":{"shape":"BaseResourceId"},
         "Compliance":{"shape":"Compliance"}
       }
     },
@@ -704,7 +726,7 @@
       "type":"structure",
       "members":{
         "ResourceType":{"shape":"StringWithCharLimit256"},
-        "ResourceId":{"shape":"StringWithCharLimit256"},
+        "ResourceId":{"shape":"BaseResourceId"},
         "ComplianceTypes":{"shape":"ComplianceTypes"},
         "Limit":{"shape":"Limit"},
         "NextToken":{"shape":"NextToken"}
@@ -810,7 +832,7 @@
       ],
       "members":{
         "ComplianceResourceType":{"shape":"StringWithCharLimit256"},
-        "ComplianceResourceId":{"shape":"StringWithCharLimit256"},
+        "ComplianceResourceId":{"shape":"BaseResourceId"},
         "ComplianceType":{"shape":"ComplianceType"},
         "Annotation":{"shape":"StringWithCharLimit256"},
         "OrderingTimestamp":{"shape":"OrderingTimestamp"}
@@ -839,7 +861,7 @@
       "members":{
         "ConfigRuleName":{"shape":"StringWithCharLimit64"},
         "ResourceType":{"shape":"StringWithCharLimit256"},
-        "ResourceId":{"shape":"StringWithCharLimit256"}
+        "ResourceId":{"shape":"BaseResourceId"}
       }
     },
     "EvaluationResults":{
@@ -881,7 +903,7 @@
       ],
       "members":{
         "ResourceType":{"shape":"StringWithCharLimit256"},
-        "ResourceId":{"shape":"StringWithCharLimit256"},
+        "ResourceId":{"shape":"BaseResourceId"},
         "ComplianceTypes":{"shape":"ComplianceTypes"},
         "NextToken":{"shape":"String"}
       }
@@ -909,6 +931,22 @@
       "type":"structure",
       "members":{
         "ComplianceSummariesByResourceType":{"shape":"ComplianceSummariesByResourceType"}
+      }
+    },
+    "GetDiscoveredResourceCountsRequest":{
+      "type":"structure",
+      "members":{
+        "resourceTypes":{"shape":"ResourceTypes"},
+        "limit":{"shape":"Limit"},
+        "nextToken":{"shape":"NextToken"}
+      }
+    },
+    "GetDiscoveredResourceCountsResponse":{
+      "type":"structure",
+      "members":{
+        "totalDiscoveredResources":{"shape":"Long"},
+        "resourceCounts":{"shape":"ResourceCounts"},
+        "nextToken":{"shape":"NextToken"}
       }
     },
     "GetResourceConfigHistoryRequest":{
@@ -1051,6 +1089,7 @@
         "nextToken":{"shape":"NextToken"}
       }
     },
+    "Long":{"type":"long"},
     "MaxNumberOfConfigRulesExceededException":{
       "type":"structure",
       "members":{
@@ -1166,7 +1205,8 @@
       "required":["ResultToken"],
       "members":{
         "Evaluations":{"shape":"Evaluations"},
-        "ResultToken":{"shape":"String"}
+        "ResultToken":{"shape":"String"},
+        "TestMode":{"shape":"Boolean"}
       }
     },
     "PutEvaluationsResponse":{
@@ -1221,6 +1261,17 @@
       "member":{"shape":"Relationship"}
     },
     "RelationshipName":{"type":"string"},
+    "ResourceCount":{
+      "type":"structure",
+      "members":{
+        "resourceType":{"shape":"ResourceType"},
+        "count":{"shape":"Long"}
+      }
+    },
+    "ResourceCounts":{
+      "type":"list",
+      "member":{"shape":"ResourceCount"}
+    },
     "ResourceCreationTime":{"type":"timestamp"},
     "ResourceDeletionTime":{"type":"timestamp"},
     "ResourceId":{"type":"string"},
@@ -1290,7 +1341,9 @@
         "AWS::Redshift::ClusterParameterGroup",
         "AWS::Redshift::ClusterSecurityGroup",
         "AWS::Redshift::ClusterSubnetGroup",
-        "AWS::Redshift::EventSubscription"
+        "AWS::Redshift::EventSubscription",
+        "AWS::CloudWatch::Alarm",
+        "AWS::CloudFormation::Stack"
       ]
     },
     "ResourceTypeList":{
@@ -1314,7 +1367,7 @@
         "ComplianceResourceTypes":{"shape":"ComplianceResourceTypes"},
         "TagKey":{"shape":"StringWithCharLimit128"},
         "TagValue":{"shape":"StringWithCharLimit256"},
-        "ComplianceResourceId":{"shape":"StringWithCharLimit256"}
+        "ComplianceResourceId":{"shape":"BaseResourceId"}
       }
     },
     "Source":{

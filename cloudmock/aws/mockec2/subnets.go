@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
@@ -53,6 +54,11 @@ func (m *MockEC2) CreateSubnetRequest(*ec2.CreateSubnetInput) (*request.Request,
 	return nil, nil
 }
 
+func (m *MockEC2) CreateSubnetWithContext(aws.Context, *ec2.CreateSubnetInput, ...request.Option) (*ec2.CreateSubnetOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
 func (m *MockEC2) CreateSubnet(request *ec2.CreateSubnetInput) (*ec2.CreateSubnetOutput, error) {
 	glog.Infof("CreateSubnet: %v", request)
 
@@ -79,6 +85,11 @@ func (m *MockEC2) CreateSubnet(request *ec2.CreateSubnetInput) (*ec2.CreateSubne
 }
 
 func (m *MockEC2) DescribeSubnetsRequest(*ec2.DescribeSubnetsInput) (*request.Request, *ec2.DescribeSubnetsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeSubnetsWithContext(aws.Context, *ec2.DescribeSubnetsInput, ...request.Option) (*ec2.DescribeSubnetsOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
