@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/request"
 	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
@@ -27,6 +28,10 @@ import (
 
 func (m *MockEC2) DescribeVolumeAttributeRequest(*ec2.DescribeVolumeAttributeInput) (*request.Request, *ec2.DescribeVolumeAttributeOutput) {
 	panic("MockEC2 DescribeVolumeAttributeRequest not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeVolumeAttributeWithContext(aws.Context, *ec2.DescribeVolumeAttributeInput, ...request.Option) (*ec2.DescribeVolumeAttributeOutput, error) {
+	panic("Not implemented")
 	return nil, nil
 }
 func (m *MockEC2) DescribeVolumeAttribute(*ec2.DescribeVolumeAttributeInput) (*ec2.DescribeVolumeAttributeOutput, error) {
@@ -37,6 +42,10 @@ func (m *MockEC2) DescribeVolumeStatusRequest(*ec2.DescribeVolumeStatusInput) (*
 	panic("MockEC2 DescribeVolumeStatusRequest not implemented")
 	return nil, nil
 }
+func (m *MockEC2) DescribeVolumeStatusWithContext(aws.Context, *ec2.DescribeVolumeStatusInput, ...request.Option) (*ec2.DescribeVolumeStatusOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
 func (m *MockEC2) DescribeVolumeStatus(*ec2.DescribeVolumeStatusInput) (*ec2.DescribeVolumeStatusOutput, error) {
 	panic("MockEC2 DescribeVolumeStatus not implemented")
 	return nil, nil
@@ -45,8 +54,16 @@ func (m *MockEC2) DescribeVolumeStatusPages(*ec2.DescribeVolumeStatusInput, func
 	panic("MockEC2 DescribeVolumeStatusPages not implemented")
 	return nil
 }
+func (m *MockEC2) DescribeVolumeStatusPagesWithContext(aws.Context, *ec2.DescribeVolumeStatusInput, func(*ec2.DescribeVolumeStatusOutput, bool) bool, ...request.Option) error {
+	panic("Not implemented")
+	return nil
+}
 func (m *MockEC2) DescribeVolumesRequest(*ec2.DescribeVolumesInput) (*request.Request, *ec2.DescribeVolumesOutput) {
 	panic("MockEC2 DescribeVolumesRequest not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeVolumesWithContext(aws.Context, *ec2.DescribeVolumesInput, ...request.Option) (*ec2.DescribeVolumesOutput, error) {
+	panic("Not implemented")
 	return nil, nil
 }
 func (m *MockEC2) DescribeVolumes(request *ec2.DescribeVolumesInput) (*ec2.DescribeVolumesOutput, error) {
@@ -93,4 +110,21 @@ func (m *MockEC2) DescribeVolumes(request *ec2.DescribeVolumesInput) (*ec2.Descr
 func (m *MockEC2) DescribeVolumesPages(*ec2.DescribeVolumesInput, func(*ec2.DescribeVolumesOutput, bool) bool) error {
 	panic("MockEC2 DescribeVolumesPages not implemented")
 	return nil
+}
+func (m *MockEC2) DescribeVolumesPagesWithContext(aws.Context, *ec2.DescribeVolumesInput, func(*ec2.DescribeVolumesOutput, bool) bool, ...request.Option) error {
+	panic("Not implemented")
+	return nil
+}
+
+func (m *MockEC2) DescribeVolumesModifications(*ec2.DescribeVolumesModificationsInput) (*ec2.DescribeVolumesModificationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeVolumesModificationsWithContext(aws.Context, *ec2.DescribeVolumesModificationsInput, ...request.Option) (*ec2.DescribeVolumesModificationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeVolumesModificationsRequest(*ec2.DescribeVolumesModificationsInput) (*request.Request, *ec2.DescribeVolumesModificationsOutput) {
+	panic("Not implemented")
+	return nil, nil
 }

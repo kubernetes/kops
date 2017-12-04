@@ -1,13 +1,13 @@
 {
   "version":"2.0",
   "metadata":{
-    "uid":"elasticloadbalancingv2-2015-12-01",
     "apiVersion":"2015-12-01",
     "endpointPrefix":"elasticloadbalancing",
     "protocol":"query",
     "serviceAbbreviation":"Elastic Load Balancing v2",
     "serviceFullName":"Elastic Load Balancing",
     "signatureVersion":"v4",
+    "uid":"elasticloadbalancingv2-2015-12-01",
     "xmlNamespace":"http://elasticloadbalancing.amazonaws.com/doc/2015-12-01/"
   },
   "operations":{
@@ -193,6 +193,18 @@
         {"shape":"TargetGroupNotFoundException"},
         {"shape":"InvalidTargetException"}
       ]
+    },
+    "DescribeAccountLimits":{
+      "name":"DescribeAccountLimits",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeAccountLimitsInput"},
+      "output":{
+        "shape":"DescribeAccountLimitsOutput",
+        "resultWrapper":"DescribeAccountLimitsResult"
+      }
     },
     "DescribeListeners":{
       "name":"DescribeListeners",
@@ -394,7 +406,9 @@
         {"shape":"TargetGroupAssociationLimitException"},
         {"shape":"RuleNotFoundException"},
         {"shape":"OperationNotPermittedException"},
-        {"shape":"TooManyRegistrationsForTargetIdException"}
+        {"shape":"TooManyRegistrationsForTargetIdException"},
+        {"shape":"TooManyTargetsException"},
+        {"shape":"TargetGroupNotFoundException"}
       ]
     },
     "ModifyTargetGroup":{
@@ -462,6 +476,23 @@
         {"shape":"ListenerNotFoundException"},
         {"shape":"RuleNotFoundException"},
         {"shape":"TooManyTagsException"}
+      ]
+    },
+    "SetIpAddressType":{
+      "name":"SetIpAddressType",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"SetIpAddressTypeInput"},
+      "output":{
+        "shape":"SetIpAddressTypeOutput",
+        "resultWrapper":"SetIpAddressTypeResult"
+      },
+      "errors":[
+        {"shape":"LoadBalancerNotFoundException"},
+        {"shape":"InvalidConfigurationRequestException"},
+        {"shape":"InvalidSubnetException"}
       ]
     },
     "SetRulePriorities":{
@@ -638,7 +669,8 @@
         "Subnets":{"shape":"Subnets"},
         "SecurityGroups":{"shape":"SecurityGroups"},
         "Scheme":{"shape":"LoadBalancerSchemeEnum"},
-        "Tags":{"shape":"TagList"}
+        "Tags":{"shape":"TagList"},
+        "IpAddressType":{"shape":"IpAddressType"}
       }
     },
     "CreateLoadBalancerOutput":{
@@ -763,6 +795,20 @@
       "members":{
       }
     },
+    "DescribeAccountLimitsInput":{
+      "type":"structure",
+      "members":{
+        "Marker":{"shape":"Marker"},
+        "PageSize":{"shape":"PageSize"}
+      }
+    },
+    "DescribeAccountLimitsOutput":{
+      "type":"structure",
+      "members":{
+        "Limits":{"shape":"Limits"},
+        "NextMarker":{"shape":"Marker"}
+      }
+    },
     "DescribeListenersInput":{
       "type":"structure",
       "members":{
@@ -812,13 +858,16 @@
       "type":"structure",
       "members":{
         "ListenerArn":{"shape":"ListenerArn"},
-        "RuleArns":{"shape":"RuleArns"}
+        "RuleArns":{"shape":"RuleArns"},
+        "Marker":{"shape":"Marker"},
+        "PageSize":{"shape":"PageSize"}
       }
     },
     "DescribeRulesOutput":{
       "type":"structure",
       "members":{
-        "Rules":{"shape":"Rules"}
+        "Rules":{"shape":"Rules"},
+        "NextMarker":{"shape":"Marker"}
       }
     },
     "DescribeSSLPoliciesInput":{
@@ -1031,7 +1080,25 @@
       },
       "exception":true
     },
+    "IpAddressType":{
+      "type":"string",
+      "enum":[
+        "ipv4",
+        "dualstack"
+      ]
+    },
     "IsDefault":{"type":"boolean"},
+    "Limit":{
+      "type":"structure",
+      "members":{
+        "Name":{"shape":"Name"},
+        "Max":{"shape":"Max"}
+      }
+    },
+    "Limits":{
+      "type":"list",
+      "member":{"shape":"Limit"}
+    },
     "ListOfString":{
       "type":"list",
       "member":{"shape":"StringValue"}
@@ -1081,7 +1148,8 @@
         "State":{"shape":"LoadBalancerState"},
         "Type":{"shape":"LoadBalancerTypeEnum"},
         "AvailabilityZones":{"shape":"AvailabilityZones"},
-        "SecurityGroups":{"shape":"SecurityGroups"}
+        "SecurityGroups":{"shape":"SecurityGroups"},
+        "IpAddressType":{"shape":"IpAddressType"}
       }
     },
     "LoadBalancerArn":{"type":"string"},
@@ -1164,6 +1232,7 @@
         "HttpCode":{"shape":"HttpCode"}
       }
     },
+    "Max":{"type":"string"},
     "ModifyListenerInput":{
       "type":"structure",
       "required":["ListenerArn"],
@@ -1252,6 +1321,7 @@
         "TargetGroups":{"shape":"TargetGroups"}
       }
     },
+    "Name":{"type":"string"},
     "OperationNotPermittedException":{
       "type":"structure",
       "members":{
@@ -1416,6 +1486,23 @@
     "SecurityGroups":{
       "type":"list",
       "member":{"shape":"SecurityGroupId"}
+    },
+    "SetIpAddressTypeInput":{
+      "type":"structure",
+      "required":[
+        "LoadBalancerArn",
+        "IpAddressType"
+      ],
+      "members":{
+        "LoadBalancerArn":{"shape":"LoadBalancerArn"},
+        "IpAddressType":{"shape":"IpAddressType"}
+      }
+    },
+    "SetIpAddressTypeOutput":{
+      "type":"structure",
+      "members":{
+        "IpAddressType":{"shape":"IpAddressType"}
+      }
     },
     "SetRulePrioritiesInput":{
       "type":"structure",

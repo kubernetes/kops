@@ -32,6 +32,11 @@ func (m *MockEC2) CreateTagsRequest(*ec2.CreateTagsInput) (*request.Request, *ec
 	return nil, nil
 }
 
+func (m *MockEC2) CreateTagsWithContext(aws.Context, *ec2.CreateTagsInput, ...request.Option) (*ec2.CreateTagsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
 func (m *MockEC2) CreateTags(request *ec2.CreateTagsInput) (*ec2.CreateTagsOutput, error) {
 	glog.Infof("CreateTags %v", request)
 
@@ -65,6 +70,11 @@ func (m *MockEC2) CreateTags(request *ec2.CreateTagsInput) (*ec2.CreateTagsOutpu
 }
 
 func (m *MockEC2) DescribeTagsRequest(*ec2.DescribeTagsInput) (*request.Request, *ec2.DescribeTagsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeTagsWithContext(aws.Context, *ec2.DescribeTagsInput, ...request.Option) (*ec2.DescribeTagsOutput, error) {
 	panic("Not implemented")
 	return nil, nil
 }
@@ -165,6 +175,10 @@ func (m *MockEC2) DescribeTags(request *ec2.DescribeTagsInput) (*ec2.DescribeTag
 	return response, nil
 }
 func (m *MockEC2) DescribeTagsPages(*ec2.DescribeTagsInput, func(*ec2.DescribeTagsOutput, bool) bool) error {
+	panic("Not implemented")
+	return nil
+}
+func (m *MockEC2) DescribeTagsPagesWithContext(aws.Context, *ec2.DescribeTagsInput, func(*ec2.DescribeTagsOutput, bool) bool, ...request.Option) error {
 	panic("Not implemented")
 	return nil
 }
