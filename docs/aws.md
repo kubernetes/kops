@@ -241,7 +241,7 @@ subdomain.example.com.        172800  IN  NS  ns-4.awsdns-4.co.uk.
 
 This is a critical component of setting up clusters. If you are experiencing
 problems with the Kubernetes API not coming up, chances are something is wrong
-with the clusters DNS.
+with the cluster's DNS.
 
 **Please DO NOT MOVE ON until you have validated your NS records! This is not be required if a gossip-based cluster is created.**
 
