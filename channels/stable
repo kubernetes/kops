@@ -17,11 +17,13 @@ spec:
       providerID: aws
       kubernetesVersion: ">=1.8.0 <1.9.0"
     # Moving to stretch in 1.9 (if goes well)
-    - name: kope.io/k8s-1.8-debian-stretch-amd64-hvm-ebs-2017-12-02
+    # BUT... this is causing the submit queue to block, so back to jessie temporarily: https://github.com/kubernetes/kubernetes/issues/56763
+    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2017-12-02
       providerID: aws
       kubernetesVersion: ">=1.9.0 <1.10.0"
     # Need stretch as default in 1.10 (for nvme)
-    - name: kope.io/k8s-1.8-debian-stretch-amd64-hvm-ebs-2017-12-02
+    # BUT... this is causing the submit queue to block, so back to jessie temporarily: https://github.com/kubernetes/kubernetes/issues/56763
+    - name: kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2017-12-02
       providerID: aws
       kubernetesVersion: ">=1.10.0"
     - providerID: gce
