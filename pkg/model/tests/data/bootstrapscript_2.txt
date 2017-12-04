@@ -159,6 +159,7 @@ cloudConfig:
 docker:
   logLevel: INFO
 encryptionConfig: null
+etcdFingerprint: KHw9Ueaxn7Me4pNyQuDpNPK0Gbw=
 fileAssets:
 - content: E1oeAbrnQsSldrIP1BpoP2SDykM= (fingerprint)
   name: iptables-restore

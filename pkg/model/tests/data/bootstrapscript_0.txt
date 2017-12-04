@@ -159,6 +159,7 @@ cloudConfig:
 docker:
   logLevel: INFO
 encryptionConfig: null
+etcdFingerprint: KHw9Ueaxn7Me4pNyQuDpNPK0Gbw=
 kubeAPIServer:
   image: CoreOS
 kubeControllerManager:

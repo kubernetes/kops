@@ -148,6 +148,7 @@ Resources.AWSAutoScalingLaunchConfigurationmasterustest1amastersminimalexampleco
     storage: overlay,aufs
     version: 1.11.2
   encryptionConfig: null
+  etcdFingerprint: NojTRrSDVU/tKuLoge+q+haK8yo=
   kubeAPIServer:
     address: 127.0.0.1
     admissionControl:
