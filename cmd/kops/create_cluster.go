@@ -1054,20 +1054,22 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("error writing updated configuration: %v", err)
 	}
 
-	keyStore, err := clientset.KeyStore(cluster)
-	if err != nil {
-		return err
-	}
-
 	err = registry.WriteConfigDeprecated(cluster, configBase.Join(registry.PathClusterCompleted), fullCluster)
 	if err != nil {
 		return fmt.Errorf("error writing completed cluster spec: %v", err)
 	}
 
-	for k, data := range sshPublicKeys {
-		err = keyStore.AddSSHPublicKey(k, data)
+	if len(sshPublicKeys) != 0 {
+		keyStore, err := clientset.KeyStore(cluster)
 		if err != nil {
-			return fmt.Errorf("error adding SSH public key: %v", err)
+			return err
+		}
+
+		for k, data := range sshPublicKeys {
+			err = keyStore.AddSSHPublicKey(k, data)
+			if err != nil {
+				return fmt.Errorf("error adding SSH public key: %v", err)
+			}
 		}
 	}
 
