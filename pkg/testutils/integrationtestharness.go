@@ -29,6 +29,7 @@ import (
 	"github.com/golang/glog"
 	kopsroot "k8s.io/kops"
 	"k8s.io/kops/cloudmock/aws/mockec2"
+	"k8s.io/kops/cloudmock/aws/mockelb"
 	"k8s.io/kops/cloudmock/aws/mockroute53"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
@@ -98,6 +99,8 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 	cloud.MockEC2 = mockEC2
 	mockRoute53 := &mockroute53.MockRoute53{}
 	cloud.MockRoute53 = mockRoute53
+	mockELB := &mockelb.MockELB{}
+	cloud.MockELB = mockELB
 
 	mockRoute53.MockCreateZone(&route53.HostedZone{
 		Id:   aws.String("/hostedzone/Z1AFAKE1ZON3YO"),
