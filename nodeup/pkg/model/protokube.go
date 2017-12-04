@@ -286,11 +286,10 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 		f.TLSCAFile = s(filepath.Join(t.PathSrvKubernetes(), "ca.crt"))
 		f.TLSCertFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd.pem"))
 		f.TLSKeyFile = s(filepath.Join(t.PathSrvKubernetes(), "etcd-key.pem"))
-
+	}
+	if t.UseTLSAuth() {
 		enableAuth := true
-		if t.UseTLSAuth() {
-			f.TLSAuth = b(enableAuth)
-		}
+		f.TLSAuth = b(enableAuth)
 	}
 
 	zone := t.Cluster.Spec.DNSZone

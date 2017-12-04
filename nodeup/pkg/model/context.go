@@ -226,11 +226,17 @@ func (c *NodeupModelContext) UseEtcdTLS() bool {
 // @NOTE: in retrospect i think we should have consolidated the common config in the wrapper struct; it
 // feels wierd we set things like version, tls etc per cluster since they both have to be the same.
 func (c *NodeupModelContext) UseTLSAuth() bool {
-	if len(c.Cluster.Spec.EtcdClusters) != 2 {
+	if !c.UseEtcdTLS() {
 		return false
 	}
 
-	return c.Cluster.Spec.EtcdClusters[0].EnableTLSAuth && c.Cluster.Spec.EtcdClusters[1].EnableTLSAuth
+	for _, x := range c.Cluster.Spec.EtcdClusters {
+		if x.EnableTLSAuth {
+			return true
+		}
+	}
+
+	return false
 }
 
 // UsesCNI checks if the cluster has CNI configured
