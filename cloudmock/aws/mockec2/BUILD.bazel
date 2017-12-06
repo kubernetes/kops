@@ -7,6 +7,7 @@ go_library(
         "api.go",
         "convenience.go",
         "images.go",
+        "internetgateways.go",
         "keypairs.go",
         "routetable.go",
         "securitygroups.go",
