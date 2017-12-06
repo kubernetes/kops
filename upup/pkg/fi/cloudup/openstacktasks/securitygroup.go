@@ -25,6 +25,7 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup/openstack"
 )
 
+//go:generate fitask -type=SecurityGroup
 type SecurityGroup struct {
 	ID          *string
 	Name        *string
