@@ -369,7 +369,7 @@ var dockerVersions = []dockerVersion{
 		Distros:       []distros.Distribution{distros.DistributionDebian9},
 		Architectures: []Architecture{ArchitectureAmd64},
 		Version:       "17.03.2~ce-0~debian-stretch",
-		Source:        "http://download.docker.com/linux/debian/dists/jessie/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-stretch_amd64.deb",
+		Source:        "http://download.docker.com/linux/debian/dists/stretch/pool/stable/amd64/docker-ce_17.03.2~ce-0~debian-stretch_amd64.deb",
 		Hash:          "36773361cf44817371770cb4e6e6823590d10297",
 		Dependencies:  []string{"bridge-utils", "libapparmor1", "libltdl7", "perl"},
 	},
