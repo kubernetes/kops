@@ -24,7 +24,7 @@ For this tutorial I assume you have GNU sed installed, if not read
 commands with `sed` to modify the files according to the `sed` command
 being run. If you are running BSD or MacOS you can use `gsed`.
 
-## Create Kops cluster with cloud labels
+## Kops cluster with cloud labels
 
 Cloud Labels are required to make Kube AWS Ingress Controller work,
 because it has to find the AWS Application Load Balancers it manages
@@ -39,6 +39,12 @@ export S3_BUCKET=kops-aws-workshop-<your-name>
 export KOPS_CLUSTER_NAME=example.cluster.k8s.local
 ```
 
+You have two options, please skip the section, which does not apply:
+
+1. You can create a new cluster with cloud labels
+2. You can modify an existing cluster and add cloud labels
+
+### Create a new cluster
 
 Next, you create the Kops cluster and validate that everything is set up properly.
 
@@ -46,6 +52,29 @@ Next, you create the Kops cluster and validate that everything is set up properl
 export KOPS_STATE_STORE=s3://${S3_BUCKET}
 kops create cluster --name $KOPS_CLUSTER_NAME --zones $AWS_AVAILABILITY_ZONES --cloud-labels kubernetes.io/cluster/$KOPS_CLUSTER_NAME=owned --yes
 kops validate cluster
+```
+
+### Modify an existing cluster
+
+Next, you modify your existing Kops cluster and update it.
+
+```
+export KOPS_STATE_STORE=s3://${S3_BUCKET}
+kops edit cluster $KOPS_CLUSTER_NAME
+```
+
+Add `cloudLabels` dependent on your `$KOPS_CLUSTER_NAME`, here `example.cluster.k8s.local`
+
+```
+ spec:
+   cloudLabels:
+     kubernetes.io/cluster/example.cluster.k8s.local: owned
+```
+
+Update the cluster with the new configuration:
+
+```
+kops update cluster $KOPS_CLUSTER_NAME --yes
 ```
 
 ### IAM role
