@@ -116,7 +116,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 			PrivateZone: aws.Bool(true),
 		},
 	}, []*route53.VPC{{
-		VPCId: aws.String("vpc-234"),
+		VPCId: aws.String("vpc-23456789"),
 	}})
 	mockRoute53.MockCreateZone(&route53.HostedZone{
 		Id:   aws.String("/hostedzone/Z3AFAKE1ZOMORE"),
@@ -125,7 +125,7 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 			PrivateZone: aws.Bool(true),
 		},
 	}, []*route53.VPC{{
-		VPCId: aws.String("vpc-123"),
+		VPCId: aws.String("vpc-12345678"),
 	}})
 
 	mockEC2.Images = append(mockEC2.Images, &ec2.Image{
@@ -140,6 +140,11 @@ func (h *IntegrationTestHarness) SetupMockAWS() {
 		Name:           aws.String("k8s-1.5-debian-jessie-amd64-hvm-ebs-2017-01-09"),
 		OwnerId:        aws.String(awsup.WellKnownAccountKopeio),
 		RootDeviceName: aws.String("/dev/xvda"),
+	})
+	mockEC2.CreateInternetGateway(&ec2.CreateInternetGatewayInput{})
+	mockEC2.AttachInternetGateway(&ec2.AttachInternetGatewayInput{
+		InternetGatewayId: aws.String("igw-1"),
+		VpcId:             aws.String("vpc-12345678"),
 	})
 }
 
