@@ -45,6 +45,7 @@ spec:
       name: skipper-ingress
       labels:
         component: ingress
+    spec:
       hostNetwork: true
       containers:
       - name: skipper-ingress
