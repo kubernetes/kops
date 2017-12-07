@@ -74,8 +74,8 @@ aws configure           # Use your new access and secret key here
 aws iam list-users      # you should see a list of all your IAM users here
 
 # Because "aws configure" doesn't export these vars for kops to use, we export them now
-export AWS_ACCESS_KEY_ID=`aws configure get aws_access_key_id`
-export AWS_SECRET_ACCESS_KEY=`aws configure get aws_secret_access_key`
+export AWS_ACCESS_KEY_ID=$(aws configure get aws_access_key_id)
+export AWS_SECRET_ACCESS_KEY=$(aws configure get aws_secret_access_key)
 ```
 
 ## Configure DNS
@@ -241,7 +241,7 @@ subdomain.example.com.        172800  IN  NS  ns-4.awsdns-4.co.uk.
 
 This is a critical component of setting up clusters. If you are experiencing
 problems with the Kubernetes API not coming up, chances are something is wrong
-with the clusters DNS.
+with the cluster's DNS.
 
 **Please DO NOT MOVE ON until you have validated your NS records! This is not be required if a gossip-based cluster is created.**
 
