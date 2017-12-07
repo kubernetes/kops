@@ -113,6 +113,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 			Path:     filepath.Join(b.PathSrvKubernetes(), "server.key"),
 			Contents: fi.NewStringResource(serialized),
 			Type:     nodetasks.FileType_File,
+			Mode:     s("0600"),
 		}
 		c.AddTask(t)
 	}
@@ -150,6 +151,7 @@ func (b *SecretBuilder) Build(c *fi.ModelBuilderContext) error {
 			Path:     filepath.Join(b.PathSrvKubernetes(), "proxy-client.key"),
 			Contents: fi.NewStringResource(serialized),
 			Type:     nodetasks.FileType_File,
+			Mode:     s("0600"),
 		}
 		c.AddTask(t)
 	}
@@ -260,6 +262,7 @@ func (b *SecretBuilder) writePrivateKey(c *fi.ModelBuilderContext, id string) er
 		Path:     filepath.Join(b.PathSrvKubernetes(), id+".key"),
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
+		Mode:     s("0600"),
 	}
 	c.AddTask(t)
 
