@@ -274,7 +274,7 @@ spec:
       terminationGracePeriodSeconds: 60
       serviceAccountName: nginx-ingress-controller
       containers:
-      - image: gcr.io/google_containers/nginx-ingress-controller:0.9.0
+      - image: quay.io/kubernetes-ingress-controller/nginx-ingress-controller:0.9.0
         name: nginx-ingress-controller
         imagePullPolicy: Always
         ports:
