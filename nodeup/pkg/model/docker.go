@@ -419,7 +419,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "17.03.2.ce",
 		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.03.2.ce-1.el7.centos.x86_64.rpm",
 		Hash:          "494ca888f5b1553f93b9d9a5dad4a67f76cf9eb5",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libgcroup"},
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
 	},
 	{
 		DockerVersion: "17.03.2",
@@ -480,7 +480,7 @@ var dockerVersions = []dockerVersion{
 		Version:       "17.09.0.ce",
 		Source:        "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/docker-ce-17.09.0.ce-1.el7.centos.x86_64.rpm",
 		Hash:          "b4ce72e80ff02926de943082821bbbe73958f87a",
-		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libgcroup"},
+		Dependencies:  []string{"libtool-ltdl", "libseccomp", "libcgroup"},
 	},
 }
 
