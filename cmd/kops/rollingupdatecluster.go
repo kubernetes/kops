@@ -26,12 +26,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/golang/glog"
-	"github.com/spf13/cobra"
-	"k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/cmd/kops/util"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
@@ -40,6 +34,13 @@ import (
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 	"k8s.io/kops/upup/pkg/kutil"
 	"k8s.io/kops/util/pkg/tables"
+
+	"github.com/golang/glog"
+	"github.com/spf13/cobra"
+	"k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
 )
@@ -442,7 +443,7 @@ func runRollingUpdateCluster(f *util.Factory, out io.Writer, options *rollingUpd
 	for {
 		select {
 		case <-signalCh:
-			glog.Infof("recieved termination siganl, cancelling the rollout")
+			glog.Infof("Recieved termination siganl, cancelling the rollout")
 			cancel()
 		case err := <-resultCh:
 			if err != nil {

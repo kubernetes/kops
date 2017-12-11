@@ -94,7 +94,7 @@ func (c *RollingUpdateCluster) invokeInstanceGroupUpdate(ctx context.Context, gr
 
 	// @NOTES:
 	// - Since we are not passing the errors upstream we have a local context used to cancel the rollout on
-	// any errors or from a cancellation above.
+	//   any errors or from a cancellation above.
 	// - The control routine below listens for a cancellation, and error from the worker routines or a done signal
 	// - The worker simply iterates the groups in the role passes the context to the group rollout implementation.
 	//   On any errors the error is as indicated above picked up by the controller routine; whom immediately cancels
