@@ -299,6 +299,8 @@ type KubeDNSConfig struct {
 	CacheMaxSize int `json:"cacheMaxSize,omitempty"`
 	// CacheMaxConcurrent is the maximum number of concurrent queries for dnsmasq
 	CacheMaxConcurrent int `json:"cacheMaxConcurrent,omitempty"`
+	// Provider indicates whether CoreDNS or kube-dns will be the default service discovery.
+	Provider string `json:"provider,omitempty"`
 }
 
 // ExternalDNSConfig are options of the dns-controller

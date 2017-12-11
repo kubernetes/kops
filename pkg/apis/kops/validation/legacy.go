@@ -33,7 +33,7 @@ import (
 
 // legacy contains validation functions that don't match the apimachinery style
 
-// ValidateCluster is responsible for checking the validitity of the Cluster spec
+// ValidateCluster is responsible for checking the validity of the Cluster spec
 func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	fieldSpec := field.NewPath("Spec")
 	var err error
@@ -263,24 +263,22 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	// Check KubeDNS.ServerIP
 	if c.Spec.KubeDNS != nil {
 		serverIPString := c.Spec.KubeDNS.ServerIP
-		if serverIPString == "" {
-			return field.Required(fieldSpec.Child("KubeDNS", "ServerIP"), "Cluster did not have KubeDNS.ServerIP set")
-		}
+		if serverIPString != "" {
+			dnsServiceIP := net.ParseIP(serverIPString)
+			if dnsServiceIP == nil {
+				return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, "Cluster had an invalid KubeDNS.ServerIP")
+			}
 
-		dnsServiceIP := net.ParseIP(serverIPString)
-		if dnsServiceIP == nil {
-			return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, "Cluster had an invalid KubeDNS.ServerIP")
-		}
+			if !serviceClusterIPRange.Contains(dnsServiceIP) {
+				return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, fmt.Sprintf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.ServiceClusterIPRange, serverIPString))
+			}
 
-		if !serviceClusterIPRange.Contains(dnsServiceIP) {
-			return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, fmt.Sprintf("ServiceClusterIPRange %q must contain the DNS Server IP %q", c.Spec.ServiceClusterIPRange, serverIPString))
-		}
-
-		if c.Spec.Kubelet != nil && c.Spec.Kubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
-			return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, "Kubelet ClusterDNS did not match cluster KubeDNS.ServerIP")
-		}
-		if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
-			return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, "MasterKubelet ClusterDNS did not match cluster KubeDNS.ServerIP")
+			if c.Spec.Kubelet != nil && c.Spec.Kubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
+				return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, "Kubelet ClusterDNS did not match cluster KubeDNS.ServerIP")
+			}
+			if c.Spec.MasterKubelet != nil && c.Spec.MasterKubelet.ClusterDNS != c.Spec.KubeDNS.ServerIP {
+				return field.Invalid(fieldSpec.Child("KubeDNS", "ServerIP"), serverIPString, "MasterKubelet ClusterDNS did not match cluster KubeDNS.ServerIP")
+			}
 		}
 	}
 
