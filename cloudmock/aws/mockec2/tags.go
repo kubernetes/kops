@@ -51,6 +51,8 @@ func (m *MockEC2) CreateTags(request *ec2.CreateTagsInput) (*ec2.CreateTagsOutpu
 			resourceType = ec2.ResourceTypeSecurityGroup
 		} else if strings.HasPrefix(resourceId, "vol-") {
 			resourceType = ec2.ResourceTypeVolume
+		} else if strings.HasPrefix(resourceId, "igw-") {
+			resourceType = ec2.ResourceTypeInternetGateway
 		} else {
 			glog.Fatalf("Unknown resource-type in create tags: %v", resourceId)
 		}

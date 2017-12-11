@@ -23,7 +23,7 @@ spec:
   masterInternalName: api.internal.privatedns2.example.com
   masterPublicName: api.privatedns2.example.com
   networkCIDR: 172.20.0.0/16
-  networkID: vpc-123
+  networkID: vpc-12345678
   networking:
     weave: {}
   nonMasqueradeCIDR: 100.64.0.0/10

@@ -44,6 +44,9 @@ type MockEC2 struct {
 
 	vpcNumber int
 	Vpcs      map[string]*vpcInfo
+
+	internetGatewayNumber int
+	InternetGateways      map[string]*internetGatewayInfo
 }
 
 var _ ec2iface.EC2API = &MockEC2{}
