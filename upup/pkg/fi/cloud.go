@@ -23,28 +23,27 @@ import (
 	"k8s.io/kops/pkg/cloudinstances"
 )
 
+// Cloud is a generic interface to the cloud provider
 type Cloud interface {
-	ProviderID() kops.CloudProviderID
-
+	// DNS returns a DNS interface to the cloud provider
 	DNS() (dnsprovider.Interface, error)
-
+	// DeleteGroup deletes the cloud resources that make up a CloudInstanceGroup, including the instances
+	DeleteGroup(*cloudinstances.CloudInstanceGroup) error
+	// DeleteInstance deletes a cloud instance
+	DeleteInstance(*cloudinstances.CloudInstanceGroupMember) error
 	// FindVPCInfo looks up the specified VPC by id, returning info if found, otherwise (nil, nil)
 	FindVPCInfo(id string) (*VPCInfo, error)
-
-	// DeleteInstance deletes a cloud instance
-	DeleteInstance(instance *cloudinstances.CloudInstanceGroupMember) error
-
-	// DeleteGroup deletes the cloud resources that make up a CloudInstanceGroup, including the instances
-	DeleteGroup(group *cloudinstances.CloudInstanceGroup) error
-
 	// GetCloudGroups returns a map of cloud instances that back a kops cluster
-	GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
+	GetCloudGroups(*kops.Cluster, []*kops.InstanceGroup, bool, []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error)
+	// GetCloudGroupStatus returns the group size, ready, updated or an error
+	GetCloudGroupStatus(*kops.Cluster, string) (int, int, error)
+	// ProviderID returns the cloud provider ID
+	ProviderID() kops.CloudProviderID
 }
 
 type VPCInfo struct {
 	// CIDR is the IP address range for the VPC
 	CIDR string
-
 	// Subnets is a list of subnets that are part of the VPC
 	Subnets []*SubnetInfo
 }

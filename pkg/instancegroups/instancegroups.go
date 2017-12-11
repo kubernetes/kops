@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"strings"
 	"sync"
 	"time"
 
@@ -28,8 +29,6 @@ import (
 	"k8s.io/kops/pkg/validation"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
 
-	"github.com/spf13/cobra"
-	"k8s.io/apimachinery/pkg/conversion"
 	"k8s.io/kubernetes/pkg/kubectl/cmd"
 	cmdutil "k8s.io/kubernetes/pkg/kubectl/cmd/util"
 )
@@ -85,17 +84,18 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 	bucket := newRateBucket(options.Batch)
 	errorCh := make(ResultCh, options.Batch)
 	groupName := r.CloudGroup.InstanceGroup.Name
+	update := r.Update
 	worker := &sync.WaitGroup{}
 
 	if options.CloudOnly {
-		r.Infof("performing a cloudonly rollout on instancegroup: %s", groupName)
+		update.Infof("performing a cloudonly rollout on instancegroup: %s", groupName)
 	}
 
 	err := func() error {
 		for i, x := range r.CloudGroup.NeedUpdate {
 			select {
 			case <-ctx.Done():
-				r.Infof("recieved termination signal while draining instancegroup: %s", groupName)
+				update.Infof("recieved termination signal while draining instancegroup: %s", groupName)
 				return ErrRolloutCancelled
 			case err := <-errorCh:
 				return err
@@ -104,7 +104,7 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 
 			// @check if we are only rolling out x instances
 			if options.Count > 0 && i > options.Count {
-				r.Infof("stopping rollout in instancegroup: %s, max count: %d, skipped: %d",
+				update.Infof("stopping rollout in instancegroup: %s, max count: %d, skipped: %d",
 					groupName, options.Count, len(r.CloudGroup.NeedUpdate)-options.Count)
 				return nil
 			}
@@ -127,16 +127,16 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 					if options.DrainPods {
 						// @check this is a known kubernetes node
 						if node.Node == nil {
-							r.Infof("unknown node: %s found in instancegroup: %s, skipping the drain", node.ID, groupName)
+							update.Infof("unknown node: %s found in instancegroup: %s, skipping the drain", node.ID, groupName)
 						} else {
-							r.Infof("draining node: %s from instancegroup: %s", nodeName, groupName)
+							update.Infof("draining node: %s from instancegroup: %s", nodeName, groupName)
 							if err := r.DrainNode(ctx, node, options); err != nil {
-								return r.Errorf("failed to drain the node: %s in instancegroup: %s", nodeName, groupName)
+								return update.Errorf("failed to drain the node: %s in instancegroup: %s", nodeName, groupName)
 							}
 
 							// @step: should be add a delay post the drain?
 							if options.PostDelay > 0 {
-								r.Infof("waiting on pods to stabilize in instancegroup: %s, waiting: %s", groupName, options.PostDelay)
+								update.Infof("waiting on pods to stabilize in instancegroup: %s, waiting: %s", groupName, options.PostDelay)
 								if err := r.WaitFor(ctx, options.PostDelay); err != nil {
 									return err
 								}
@@ -146,15 +146,15 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 
 					// @check if we should delete this node
 					if options.Delete {
-						r.Infof("deleting the node: %s from instancegroup: %s", nodeName, groupName)
+						update.Infof("deleting the node: %s from instancegroup: %s", nodeName, groupName)
 						if err := r.DeleteInstance(ctx, node); err != nil {
-							return r.Errorf("failed to delete node: %s, instancegroup: %s, error: %v", nodeName, groupName, err)
+							return update.Errorf("failed to delete node: %s, instancegroup: %s, error: %v", nodeName, groupName, err)
 						}
 					}
 
 					// @check if we should wait for a certain time before moving on
 					if options.Interval > 0 {
-						r.Infof("waiting for %s before moving to next instance in instancegroup: %s", options.Interval, groupName)
+						update.Infof("waiting for %s before moving to next instance in instancegroup: %s", options.Interval, groupName)
 						if err := r.WaitFor(ctx, options.Interval); err != nil {
 							return err
 						}
@@ -162,14 +162,14 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 
 					// @check if we should validate the cluster
 					if options.ValidateCluster {
-						r.Infof("validating cluster post update on node: %s, timeout: %s, fail-on-error: %t",
+						update.Infof("validating cluster post update on node: %s, timeout: %s, fail-on-error: %t",
 							nodeName, options.ValidationTimeout, options.FailOnValidation)
 						if err := r.ValidateClusterWithTimeout(ctx, list, options.ValidationTimeout); err != nil {
 							if options.FailOnValidation {
-								return r.Errorf("failed validating after removing member, error: %v", err)
+								return update.Errorf("failed validating after removing member, error: %v", err)
 							}
 
-							r.Errorf("cluster validation failed but skipping since fail-on-validate is false: %v", err)
+							update.Errorf("cluster validation failed but skipping since fail-on-validate is false: %v", err)
 						}
 					}
 
@@ -207,7 +207,7 @@ func (r *RollingUpdateInstanceGroup) DrainNode(ctx context.Context, u *cloudinst
 		Timeout:          options.Timeout,
 	}
 
-	cmd := &cobra.Command{Use: "cordon NODE"}
+	cmd := cmd.NewCmdDrain(f, out, errOut)
 	args := []string{u.Node.Name}
 
 	if err := cmdOptions.SetupDrain(cmd, args); err != nil {
@@ -232,16 +232,7 @@ func (r *RollingUpdateInstanceGroup) DuplicateGroup(name string) (*api.InstanceG
 	cluster := r.Update.Cluster
 	group := r.CloudGroup.InstanceGroup
 
-	obj, err := conversion.NewCloner().DeepCopy(group)
-	if err != nil {
-		return nil, fmt.Errorf("unable to clone instance group: %v", err)
-	}
-
-	ig, ok := obj.(*api.InstanceGroup)
-	if !ok {
-		return nil, fmt.Errorf("unexpected object type: %T", obj)
-	}
-
+	ig := group.DeepCopy()
 	// DeepCopy does not get the maps need to copy those through
 	ig.ObjectMeta.Annotations = group.ObjectMeta.Annotations
 	ig.ObjectMeta.Labels = group.ObjectMeta.Labels
@@ -274,6 +265,8 @@ func (r *RollingUpdateInstanceGroup) ValidateCluster(list *api.InstanceGroupList
 
 // ValidateClusterWithRetries is responsible for attempting to validate the cluster
 func (r *RollingUpdateInstanceGroup) ValidateClusterWithRetries(ctx context.Context, list *api.InstanceGroupList, retries int) error {
+	update := r.Update
+
 	// @step: try to validate cluster at least once, this will handle durations that are lower than our tick time
 	if r.tryValidateCluster(list) {
 		return nil
@@ -283,14 +276,14 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithRetries(ctx context.Cont
 	for i := 1; i < retries; i++ {
 		select {
 		case <-ctx.Done():
-			r.Infof("terminating the rollout, recieved cancellation signal")
+			update.Infof("terminating the rollout, recieved cancellation signal")
 			return ErrRolloutCancelled
 		case <-ticker.C:
 			if r.tryValidateCluster(list) {
 				r.Update.Infof("successfully validated cluster: %s", r.Update.ClusterName)
 				return nil
 			}
-			r.Errorf("cluster has failed validation, attempt: %d, retries: %d", i, retries)
+			update.Errorf("cluster has failed validation, attempt: %d, retries: %d", i, retries)
 		}
 	}
 
@@ -299,9 +292,10 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithRetries(ctx context.Cont
 
 // ValidateClusterWithTimeout runs validation.ValidateCluster until either we get positive result or the timeout expires
 func (r *RollingUpdateInstanceGroup) ValidateClusterWithTimeout(ctx context.Context, list *api.InstanceGroupList, waitTime time.Duration) error {
+	update := r.Update
 	// @step: try to validate cluster at least once, this will handle durations that are lower than our tick time
 	if r.tryValidateCluster(list) {
-		r.Infof("cluster: %s alidation successfully", r.Update.ClusterName)
+		update.Infof("cluster: %s validation successfully", r.Update.ClusterName)
 		return nil
 	}
 	expires := time.Now().Add(waitTime)
@@ -313,16 +307,16 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithTimeout(ctx context.Cont
 	for {
 		select {
 		case <-ctx.Done():
-			r.Infof("terminating the rollout, recieved cancellation signal")
+			update.Infof("terminating the rollout, recieved cancellation signal")
 			return ErrRolloutCancelled
 		case <-timeout:
 			return fmt.Errorf("cluster did not pass validation within: %s", waitTime)
 		case <-tick.C:
 			if r.tryValidateCluster(list) {
-				r.Infof("cluster: %s validation successfully", r.Update.ClusterName)
+				update.Infof("cluster: %s validation successfully", r.Update.ClusterName)
 				return nil
 			}
-			r.Infof("cluster has not passed validation yet, expiration: %s", expires.Sub(time.Now()))
+			update.Infof("cluster has not passed validation yet, expiration: %s", expires.Sub(time.Now()))
 		}
 	}
 }
@@ -338,14 +332,52 @@ func (r *RollingUpdateInstanceGroup) tryValidateCluster(list *api.InstanceGroupL
 
 // WaitFor is responsible for convenience method used to wait for a certain time or cancel
 func (r *RollingUpdateInstanceGroup) WaitFor(ctx context.Context, waitTime time.Duration) error {
+	update := r.Update
 	select {
 	case <-ctx.Done():
-		r.Infof("terminating the rollout, recieved cancellation signal in waitfor")
+		update.Infof("terminating the rollout, recieved cancellation signal in waitfor")
 		return ErrRolloutCancelled
 	case <-time.After(waitTime):
 	}
 
 	return nil
+}
+
+// WaitForGroupSize is responsible for waiting for the instancegroup to reach new size (normally after a scaling event)
+func (r *RollingUpdateInstanceGroup) WaitForGroupSize(ctx context.Context, name string, size int, maxTime time.Duration) error {
+	expires := time.Now().Add(maxTime)
+	ticker := time.NewTicker(validationCheckInterval * 2)
+	timeout := time.NewTimer(maxTime)
+	update := r.Update
+	defer timeout.Stop()
+
+	groupName := name
+	// @check the name include the cluster
+	if !strings.HasSuffix(groupName, fmt.Sprintf(".%s", update.ClusterName)) {
+		groupName = fmt.Sprintf("%s.%s", groupName, update.ClusterName)
+	}
+
+	update.Infof("waiting for instancegroup: %s to reach size: %d, timeout: %s", name, size, maxTime)
+	for {
+		select {
+		case <-ctx.Done():
+			return ErrRolloutCancelled
+		case <-timeout.C:
+			return fmt.Errorf("timed out waiting for instancegroup: %s to reach size: %d, after: %s", name, size, maxTime)
+		case <-ticker.C:
+			ready, updates, err := update.Cloud.GetCloudGroupStatus(update.Cluster, groupName)
+			if err != nil {
+				update.Errorf("unable to check status on instancegroup: %s, error: %v, retrying", name, err)
+				continue
+			}
+			total := ready + updates
+			if total >= size {
+				update.Infof("instancegroup: %s has reached size: %d", name, size)
+				return nil
+			}
+			update.Errorf("instancegroup: %s has not yet reached size: %d, current size: %d, timeout expires: %s", name, size, total, expires.Sub(time.Now()))
+		}
+	}
 }
 
 // Delete is responsible for deleting a cloudinstanceGroup
@@ -358,22 +390,23 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(ctx context.Context, u *clou
 	id := u.ID
 	nodeName := ""
 	groupName := r.CloudGroup.InstanceGroup.Name
+	update := r.Update
 
 	if u.Node != nil {
 		nodeName = u.Node.Name
 	}
 	if nodeName != "" {
-		r.Infof("stopping instance %s, node %s, instancegroup: %s", id, nodeName, groupName)
+		update.Infof("stopping instance %s, node %s, instancegroup: %s", id, nodeName, groupName)
 	} else {
-		r.Infof("stopping instance %s, in instancegroup %s", id, groupName)
+		update.Infof("stopping instance %s, in instancegroup %s", id, groupName)
 	}
 
 	if err := r.Update.Cloud.DeleteInstance(u); err != nil {
 		if nodeName != "" {
-			return r.Errorf("error deleting instance %q, node %q: %v", id, nodeName, err)
+			return update.Errorf("error deleting instance %q, node %q: %v", id, nodeName, err)
 		}
 
-		return r.Errorf("error deleting instance %q: %v", id, err)
+		return update.Errorf("error deleting instance %q: %v", id, err)
 	}
 
 	return nil
@@ -401,16 +434,6 @@ func (r *RollingUpdateInstanceGroup) NewRollout() Rollout {
 	default:
 		return NewDefaultRollout(r)
 	}
-}
-
-// Infof is used to provide details about the on-going rollout
-func (r *RollingUpdateInstanceGroup) Infof(message string, opts ...interface{}) {
-	r.Update.Infof(message, opts...)
-}
-
-// Errorf provides an error log for the rolling update
-func (r *RollingUpdateInstanceGroup) Errorf(message string, opts ...interface{}) error {
-	return r.Update.Errorf(message, opts...)
 }
 
 // newRateBucket returns a bucket of x size

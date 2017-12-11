@@ -56,12 +56,6 @@ var AllInstanceGroupRoles = []InstanceGroupRole{
 // RolloutStrategy defines the strategy to use when performing rollouts on this instance group
 type RolloutStrategy string
 
-// DuplicatStrategy contains options for the duplication rollout
-type DuplicatStrategy struct {
-	// DuplicateInstanceGroup indicate we should copy the entire group
-	DuplicatInstanceGroup bool `json:"duplicateInstanceGroup,omitempty"`
-}
-
 const (
 	// DefaultRollout indicates the default one by one with a time interval and or drain
 	DefaultRollout = "default"

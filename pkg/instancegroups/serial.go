@@ -40,8 +40,7 @@ func (p *defaultProvider) RollingUpdate(ctx context.Context, list *api.InstanceG
 	update := p.GroupUpdate.Update
 	interval := strategy.Interval.Duration
 
-	p.GroupUpdate.Infof("using stratergy: %s, instancegroup: %s, batch: %d, interval: %s",
-		strategy.Name, name, strategy.Batch, interval)
+	update.Infof("using stratergy: %s, instancegroup: %s, batch: %d, interval: %s", strategy.Name, name, strategy.Batch, interval)
 
 	return p.GroupUpdate.DrainGroup(ctx, &DrainOptions{
 		Batch:             strategy.Batch,

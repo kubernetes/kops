@@ -128,9 +128,6 @@ func (c *RollingUpdateCluster) invokeInstanceGroupUpdate(ctx context.Context, gr
 				if !c.IsGroupUpdating(name) {
 					continue
 				}
-				// @step: wait for a slot to operate
-				<-bucket
-
 				// @step: determine the update strategy for this instancegroup
 				if err := c.DetermineGroupStratergy(x); err != nil {
 					return c.Errorf("unable to determine rollout strategy on instancegroup: %s, error: %v", name, err)
@@ -140,6 +137,14 @@ func (c *RollingUpdateCluster) invokeInstanceGroupUpdate(ctx context.Context, gr
 				if len(x.NeedUpdate) == 0 {
 					c.Infof("skipping instancegroup: %s as no members have pending updates", name)
 					continue
+				}
+
+				// @step: wait for a slot to operate
+				select {
+				case <-ctx.Done():
+					return ErrRolloutCancelled
+				case <-bucket:
+					c.Infof("acquired batch token, proceeding to rollout on instancegroup: %s", name)
 				}
 
 				worker.Add(1)
@@ -224,8 +229,8 @@ func (c *RollingUpdateCluster) DetermineGroupStratergy(group *cloudinstances.Clo
 	}
 	// @check if rollout options overrides the ig strategy
 	if c.Strategy != "" {
-		c.Infof("using rollout strategy: %s on instancegroup: %s", strategy.Name, groupName)
 		strategy.Name = c.Strategy
+		c.Infof("using rollout strategy: %s on instancegroup: %s", strategy.Name, groupName)
 	}
 	// @check is rollout options override post delay
 	if c.PostDrainDelay > 0 {

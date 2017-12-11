@@ -43,7 +43,7 @@ func (p *duplicateProvider) RollingUpdate(ctx context.Context, list *api.Instanc
 	strategy := ig.Spec.Strategy
 	update := p.GroupUpdate.Update
 
-	update.Infof("rolling out via %s strategy to instancegroups: %s, batch: %d", strategy.Name, name, strategy.Batch)
+	update.Infof("rolling out with strategy: %s, instancegroups: %s, batch: %d", strategy.Name, name, strategy.Batch)
 
 	// @check the instancegroup is not already a duplicate
 	if _, found := ig.GetAnnotations()[DuplicateParentAnnotation]; found {
@@ -61,9 +61,7 @@ func (p *duplicateProvider) RollingUpdate(ctx context.Context, list *api.Instanc
 	}
 
 	// @step: we need to update from cloud knowlegde, not from the spec as runtime might have changed
-	// @BUG we need to fix this, as runtime changes (i.e. desired) to the ASG will not be reflected; potentially
-	// causing the new instancegroup to be smaller than the original
-	min, max := int32(group.MinSize), int32(group.MaxSize)
+	min, max := int32(p.GroupUpdate.CloudGroup.Size()), int32(group.MaxSize)
 	duplicate.Spec.MinSize = &min
 	duplicate.Spec.MaxSize = &max
 
@@ -71,6 +69,12 @@ func (p *duplicateProvider) RollingUpdate(ctx context.Context, list *api.Instanc
 	update.Infof("reconfiguring the cluster with the new instancegroup: %s", newName)
 	if err = update.UpdateCluster(ctx); err != nil {
 		return update.Errorf("unable to update the cluster, error: %v", err)
+	}
+
+	// @step: wait for the instancegroup
+	update.Infof("waiting for instancegroup: %s to scale", newName)
+	if err := p.GroupUpdate.WaitForGroupSize(ctx, newName, int(min), update.ScaleTimeout); err != nil {
+		return update.Errorf("instancegroup: %s has not reached size: %d within: %s", newName, min, update.ScaleTimeout)
 	}
 
 	// @step: get an updated list of instancegroups
@@ -81,12 +85,12 @@ func (p *duplicateProvider) RollingUpdate(ctx context.Context, list *api.Instanc
 
 	// @step: validate the cluster again post creation of new instancegroup
 	update.Infof("validating the cluster post creation of new instancegroup: %s", newName)
-	if err := p.GroupUpdate.ValidateClusterWithTimeout(ctx, newList, update.FailOnValidateTimeout); err != nil {
+	if err = p.GroupUpdate.ValidateClusterWithTimeout(ctx, newList, update.FailOnValidateTimeout); err != nil {
 		return update.Errorf("unable to validate cluster after %s", update.FailOnValidateTimeout)
 	}
 
 	// @step: if not cloudonly we drain all the nodes and then delete the instance group
-	if !update.CloudOnly {
+	if !update.CloudOnly && strategy.Drain {
 		options := &DrainOptions{
 			Batch:             strategy.Batch,
 			CloudOnly:         update.CloudOnly,
@@ -100,32 +104,42 @@ func (p *duplicateProvider) RollingUpdate(ctx context.Context, list *api.Instanc
 			ValidationTimeout: update.FailOnValidateTimeout,
 		}
 		// @step: drain the instancegroup of the pods
-		if err := p.GroupUpdate.DrainGroup(ctx, options, newList); err != nil {
+		if err = p.GroupUpdate.DrainGroup(ctx, options, newList); err != nil {
 			return update.Errorf("unable to drain parent instancegroup: %s, error: %v", name, err)
 		}
 		// @step: validate the cluster once more
-		if err := p.GroupUpdate.ValidateClusterWithTimeout(ctx, newList, strategy.Interval.Duration); err != nil {
+		if err = p.GroupUpdate.ValidateClusterWithTimeout(ctx, newList, strategy.Interval.Duration); err != nil {
 			return update.Errorf("unable to validate cluster post drain after %s, error: %v", update.FailOnValidateTimeout, err)
 		}
 	}
 
 	// @step: delete the instancegroup and rename the other one
 	update.Infof("deleting the parent instancegroup: %s from kops cluster", name)
-	if err := update.Cloud.DeleteGroup(group); err != nil {
+	if err = update.Cloud.DeleteGroup(group); err != nil {
 		return update.Errorf("unable to delete group: %s, error: %v", name, err)
 	}
 
 	// @step: delete the instance group from configuration
 	update.Infof("deleting the parent instancegroup: %s configuration from kops cluster specification", name)
-	if err := update.Clientset.InstanceGroupsFor(update.Cluster).Delete(name, &v1.DeleteOptions{}); err != nil {
+	if err = update.Clientset.InstanceGroupsFor(update.Cluster).Delete(name, &v1.DeleteOptions{}); err != nil {
 		return update.Errorf("unable to delete instancegroup: %s from configuration, error: %v", name, err)
 	}
 
 	// @step: remove the child annotation from the new instancegroup
 	update.Infof("updating the duplicate instancegroup: %s with source name: %s", newName, name)
 	delete(duplicate.ObjectMeta.Annotations, DuplicateParentAnnotation)
-	if _, err := update.Clientset.InstanceGroupsFor(update.Cluster).Create(duplicate); err != nil {
+	if _, err = update.Clientset.InstanceGroupsFor(update.Cluster).Create(duplicate); err != nil {
 		return update.Errorf("unable to update name of new instancegroup: %s in configuration, error: %v", name, err)
+	}
+
+	// @step: we need to revert the min size of the group from the desired size back to the min
+	min = int32(group.MinSize)
+	duplicate.Spec.MinSize = &min
+	if _, err = update.Clientset.InstanceGroupsFor(update.Cluster).Update(duplicate); err != nil {
+		return update.Errorf("unable to delete instancegroup: %s from configuration, error: %v", name, err)
+	}
+	if err = update.UpdateCluster(ctx); err != nil {
+		return update.Errorf("unable to update the cluster, error: %v", err)
 	}
 
 	return nil

@@ -107,9 +107,15 @@ func NewVSphereCloud(spec *kops.ClusterSpec) (*VSphereCloud, error) {
 }
 
 // GetCloudGroups is not implemented yet, that needs to return the instances and groups that back a kops cluster.
-func (c *VSphereCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (c *VSphereCloud) GetCloudGroups(*kops.Cluster, []*kops.InstanceGroup, bool, []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	glog.V(8).Infof("vSphere cloud provider GetCloudGroups not implemented yet")
 	return nil, fmt.Errorf("vSphere cloud provider does not support getting cloud groups at this time")
+}
+
+// GetCloudGroupStatus is not implemented yet, that needs to return the instances and groups that back a kops cluster.
+func (c *VSphereCloud) GetCloudGroupStatus(*kops.Cluster, string) (int, int, error) {
+	glog.V(8).Infof("vSphere cloud provider GetCloudGroupStatus not implemented yet")
+	return 0, 0, fmt.Errorf("vSphere cloud provider does not support getting cloud groups status at this time")
 }
 
 // DeleteGroup is not implemented yet, is a func that needs to delete a vSphere instance group.

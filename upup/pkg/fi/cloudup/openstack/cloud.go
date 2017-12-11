@@ -201,16 +201,20 @@ func (c *openstackCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
 	return nil, fmt.Errorf("openstackCloud::FindVPCInfo not implemented")
 }
 
-func (c *openstackCloud) DeleteInstance(i *cloudinstances.CloudInstanceGroupMember) error {
+func (c *openstackCloud) DeleteInstance(*cloudinstances.CloudInstanceGroupMember) error {
 	return fmt.Errorf("openstackCloud::DeleteInstance not implemented")
 }
 
-func (c *openstackCloud) DeleteGroup(g *cloudinstances.CloudInstanceGroup) error {
+func (c *openstackCloud) DeleteGroup(*cloudinstances.CloudInstanceGroup) error {
 	return fmt.Errorf("openstackCloud::DeleteGroup not implemented")
 }
 
-func (c *openstackCloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
+func (c *openstackCloud) GetCloudGroups(*kops.Cluster, []*kops.InstanceGroup, bool, []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	return nil, fmt.Errorf("openstackCloud::GetCloudGroups not implemented")
+
+}
+func (c *openstackCloud) GetCloudGroupStatus(*kops.Cluster, string) (int, int, error) {
+	return 0, 0, fmt.Errorf("openstackCloud::GetCloudGroupStatus not implemented")
 }
 
 func (c *openstackCloud) SetVolumeTags(id string, tags map[string]string) error {

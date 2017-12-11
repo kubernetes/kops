@@ -43,9 +43,10 @@ func (p *scaleProvider) RollingUpdate(ctx context.Context, list *api.InstanceGro
 
 	// @step: increase the size of the instancegroup by x percent
 	var newMinSize, newMaxSize, oldMinSize, oldMaxSize int32
+	total := int32(p.GroupUpdate.CloudGroup.Size())
 	oldMinSize = int32(p.GroupUpdate.CloudGroup.MinSize)
 	oldMaxSize = int32(p.GroupUpdate.CloudGroup.MaxSize)
-	newMinSize = int32(p.GroupUpdate.CloudGroup.MinSize * 2)
+	newMinSize = int32(p.GroupUpdate.CloudGroup.Size() * 2)
 	newMaxSize = int32(p.GroupUpdate.CloudGroup.MaxSize)
 	if newMinSize > newMaxSize {
 		newMaxSize = newMinSize
@@ -73,7 +74,17 @@ func (p *scaleProvider) RollingUpdate(ctx context.Context, list *api.InstanceGro
 	update.Infof("successfully update the configuration for instancegroup: %s", name)
 
 	// @step: we need to wait for a node interval and then attempt to validate cluster
-	update.Infof("waiting to %s while the instancegroup: %s is updated", strategy.Interval.Duration, name)
+	update.Infof("waiting to %s while the instancegroup: %s to rescale", update.ScaleTimeout, name)
+	if err := p.GroupUpdate.WaitForGroupSize(ctx, name, int(newMinSize), update.ScaleTimeout); err != nil {
+		return err
+	}
+	update.Infof("instancegroup: %s has successfully rescaled", name)
+
+	// @step: we need to wait for a node interval for the instances to register otherwise a cluster validation will
+	// pass successfully as the nodes haven't yet some into cluster
+	// @TODO look at a better way of doing, we should probably just get the instancegroup count and wait for
+	// the same count of nodes to be registered
+	update.Infof("waiting to %s for new nodes to register", strategy.Interval.Duration)
 	if err := p.GroupUpdate.WaitFor(ctx, strategy.Interval.Duration); err != nil {
 		return err
 	}
@@ -86,7 +97,7 @@ func (p *scaleProvider) RollingUpdate(ctx context.Context, list *api.InstanceGro
 
 	// @check if we need to drain the nodes
 	if !update.CloudOnly && strategy.Drain {
-		update.Infof("attempting to drian the nodes from instancegroup: %s, batch: %d", name, strategy.Batch)
+		update.Infof("attempting to drain the nodes from instancegroup: %s, batch: %d", name, strategy.Batch)
 		options := &DrainOptions{
 			Batch:             strategy.Batch,
 			CloudOnly:         update.CloudOnly,
@@ -111,17 +122,19 @@ func (p *scaleProvider) RollingUpdate(ctx context.Context, list *api.InstanceGro
 
 	// @step: everything is looking good we need to shrink the instancegroup back to the original size by
 	// fiddling with the max size
-	update.Infof("adjusting the size on instancegroup: %s back to original min/max (%d/%d)", name, oldMinSize, oldMaxSize)
-	config.Spec.MinSize = &oldMinSize
-	config.Spec.MaxSize = &oldMinSize
+	{
+		update.Infof("adjusting the size on instancegroup: %s back to original min/max (%d/%d)", name, oldMinSize, oldMaxSize)
+		config.Spec.MinSize = &oldMinSize
+		config.Spec.MaxSize = &total
 
-	if _, err := update.Clientset.InstanceGroupsFor(update.Cluster).Update(config); err != nil {
-		return update.Errorf("unable to update instancegroup: %s configuration, error: %v", name, err)
+		if _, err := update.Clientset.InstanceGroupsFor(update.Cluster).Update(config); err != nil {
+			return update.Errorf("unable to update instancegroup: %s configuration, error: %v", name, err)
+		}
+		if err := update.UpdateCluster(ctx); err != nil {
+			return update.Errorf("unable to update the cluster, error: %v", err)
+		}
+		update.Infof("successfully reverted the size of instancegroup: %s", name)
 	}
-	if err := update.UpdateCluster(ctx); err != nil {
-		return update.Errorf("unable to update the cluster, error: %v", err)
-	}
-	update.Infof("successfully reverted the size of instancegroup: %s", name)
 
 	// @step: we need to revert the max size back to the original and then update the configuration
 	// Note: this is all due to us not having control of the DesiredSize
@@ -136,6 +149,8 @@ func (p *scaleProvider) RollingUpdate(ctx context.Context, list *api.InstanceGro
 			return update.Errorf("unable to update the cluster, error: %v", err)
 		}
 	}
+
+	// @TODO we need to add method to check waits for the CloudInstanceGroup to
 
 	// Wait for a moment and validate the cluster again
 	{

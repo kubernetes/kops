@@ -68,16 +68,23 @@ kops rolling-update cluster [flags]
 
 ```
       --bastion-interval duration      Time to wait between restarting bastions (default 5m0s)
+      --batch int                      Perform the rollout in batches, i.e. rollout to x at a time
       --cloudonly                      Perform rolling update without confirming progress with k8s
+      --count int                      Perform the rollout on only x instancegroup members, zero means all member
+      --drain                          Indicates we should drain the node perform terminating
       --fail-on-drain-error            The rolling-update will fail if draining a node fails. (default true)
       --fail-on-validate-error         The rolling-update will fail if the cluster fails to validate. (default true)
       --force                          Force rolling update, even if no changes
-  -h, --help                           help for cluster
-      --instance-group strings         List of instance groups to update (defaults to all if not specified)
-      --instance-group-roles strings   If specified, only instance groups of the specified role will be updated
+      --instance-group stringSlice     List of instance groups to update (defaults to all if not specified)
+      --instance-group-roles strings   If specified, only instance groups of the specified role will be updated	
   -i, --interactive                    Prompt to continue after each instance is updated
       --master-interval duration       Time to wait between restarting masters (default 5m0s)
+      --node-batch int                 The number of node instancegroup to run concurrently (default 1)
       --node-interval duration         Time to wait between restarting nodes (default 4m0s)
+      --post-drain-delay duration      Time to wait post draining a node to allow pods to settle
+      --scale-timeout duration         The max time to wait  (default 4m0s)
+      --strategy string                The default rollout strategy to use when rolling out the cluster
+      --valiation-timeout duration     Maxiumum time to wait for cluster validation (default 5m0s)
   -y, --yes                            Perform rolling update immediately, without --yes rolling-update executes a dry-run
 ```
 

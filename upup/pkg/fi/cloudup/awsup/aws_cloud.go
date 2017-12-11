@@ -382,6 +382,47 @@ func (c *awsCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
+// GetCloudGroupStatus returns the ready, update instance for a group
+func (c *awsCloudImplementation) GetCloudGroupStatus(cluster *kops.Cluster, name string) (int, int, error) {
+	return getCloudGroupStatus(c, cluster, name)
+}
+
+func getCloudGroupStatus(c AWSCloud, cluster *kops.Cluster, name string) (int, int, error) {
+	var ready, needsupdate int
+
+	groups, err := FindAutoscalingGroups(c, c.Tags())
+	if err != nil {
+		return ready, needsupdate, fmt.Errorf("unable to find autoscale groups: %v", err)
+	}
+
+	// @step: find the asg which is backing this instancegroup
+	var resource *autoscaling.Group
+	for _, x := range groups {
+		if aws.StringValue(x.AutoScalingGroupName) == name {
+			resource = x
+			break
+		}
+	}
+	if resource == nil {
+		return ready, needsupdate, fmt.Errorf("did not find an autoscaling group for instancegroup: %s", name)
+	}
+
+	// @step: work out the instances which require updating:
+	// - to find those requiring update we get the intended ASG launch config and then we find instances
+	//   which are not using that config
+	lc := aws.StringValue(resource.LaunchConfigurationName)
+	for _, x := range resource.Instances {
+		switch aws.StringValue(x.LaunchConfigurationName) {
+		case lc:
+			ready++
+		default:
+			needsupdate++
+		}
+	}
+
+	return ready, needsupdate, nil
+}
+
 func getCloudGroups(c AWSCloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	nodeMap := cloudinstances.GetNodeMap(nodes, cluster)
 
@@ -505,8 +546,8 @@ func awsBuildCloudInstanceGroup(c AWSCloud, ig *kops.InstanceGroup, g *autoscali
 	cg := &cloudinstances.CloudInstanceGroup{
 		HumanName:     aws.StringValue(g.AutoScalingGroupName),
 		InstanceGroup: ig,
-		MinSize:       int(aws.Int64Value(g.MinSize)),
 		MaxSize:       int(aws.Int64Value(g.MaxSize)),
+		MinSize:       int(aws.Int64Value(g.MinSize)),
 		Raw:           g,
 	}
 

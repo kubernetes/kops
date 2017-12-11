@@ -18,36 +18,38 @@ package awstasks
 
 import (
 	"fmt"
-
 	"reflect"
 	"sort"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/autoscaling"
-	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
+
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/autoscaling"
+	"github.com/golang/glog"
 )
 
 const CloudTagInstanceGroupRolePrefix = "k8s.io/role/"
+
+var (
+	// terminationPolicies is the termination policy of a ASG
+	terminationPolicies = []string{"OldestInstance", "OldestLaunchConfiguration"}
+)
 
 //go:generate fitask -type=AutoscalingGroup
 type AutoscalingGroup struct {
 	Name      *string
 	Lifecycle *fi.Lifecycle
 
-	MinSize *int64
-	MaxSize *int64
-
-	Subnets []*Subnet
-	Tags    map[string]string
-
-	Granularity *string
-	Metrics     []string
-
+	Granularity         *string
+	MaxSize             *int64
+	Metrics             []string
+	MinSize             *int64
+	Subnets             []*Subnet
+	Tags                map[string]string
 	LaunchConfiguration *LaunchConfiguration
 
 	SuspendProcesses []string
@@ -55,52 +57,47 @@ type AutoscalingGroup struct {
 
 var _ fi.CompareWithID = &AutoscalingGroup{}
 
+// CompareWithID returns the ASG name
 func (e *AutoscalingGroup) CompareWithID() *string {
 	return e.Name
 }
 
+// findAutoscalingGroup is responsible for finding the ASG
 func findAutoscalingGroup(cloud awsup.AWSCloud, name string) (*autoscaling.Group, error) {
-	request := &autoscaling.DescribeAutoScalingGroupsInput{
-		AutoScalingGroupNames: []*string{&name},
-	}
-
 	var found []*autoscaling.Group
-	err := cloud.Autoscaling().DescribeAutoScalingGroupsPages(request, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool) {
+
+	if err := cloud.Autoscaling().DescribeAutoScalingGroupsPages(&autoscaling.DescribeAutoScalingGroupsInput{
+		AutoScalingGroupNames: []*string{&name},
+	}, func(p *autoscaling.DescribeAutoScalingGroupsOutput, lastPage bool) (shouldContinue bool) {
 		for _, g := range p.AutoScalingGroups {
-			// Check for "Delete in progress" (the only use of
-			// .Status). We won't be able to update or create while
-			// this is true, but filtering it out here makes the error
-			// messages slightly clearer.
+			// Check for "Delete in progress" (the only use of .Status). We won't be able to update or create while
+			// this is true, but filtering it out here makes the error messages slightly clearer.
 			if g.Status != nil {
 				glog.Warningf("Skipping AutoScalingGroup %v: %v", *g.AutoScalingGroupName, *g.Status)
 				continue
 			}
-
 			if aws.StringValue(g.AutoScalingGroupName) == name {
 				found = append(found, g)
 			} else {
 				glog.Warningf("Got ASG with unexpected name %q", aws.StringValue(g.AutoScalingGroupName))
 			}
 		}
-
 		return true
-	})
-
-	if err != nil {
+	}); err != nil {
 		return nil, fmt.Errorf("error listing AutoscalingGroups: %v", err)
 	}
 
-	if len(found) == 0 {
+	switch len(found) {
+	case 0:
 		return nil, nil
-	}
-
-	if len(found) != 1 {
+	case 1:
+		return found[0], nil
+	default:
 		return nil, fmt.Errorf("Found multiple AutoscalingGroups with name %q", name)
 	}
-
-	return found[0], nil
 }
 
+// Find is responsible for finding the ASG
 func (e *AutoscalingGroup) Find(c *fi.Context) (*AutoscalingGroup, error) {
 	cloud := c.Cloud.(awsup.AWSCloud)
 
@@ -185,6 +182,7 @@ func (e *AutoscalingGroup) buildTags(cloud fi.Cloud) map[string]string {
 	return tags
 }
 
+// RenderAWS is responsible for applying the ASG via API
 func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *AutoscalingGroup) error {
 	tags := []*autoscaling.Tag{}
 	for k, v := range e.buildTags(t.Cloud) {
@@ -205,33 +203,31 @@ func (_ *AutoscalingGroup) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Autos
 		request.LaunchConfigurationName = e.LaunchConfiguration.ID
 		request.MinSize = e.MinSize
 		request.MaxSize = e.MaxSize
-		request.SetTerminationPolicies(aws.StringSlice([]string{"OldestLaunchConfiguration"}))
+		request.SetTerminationPolicies(aws.StringSlice(terminationPolicies))
 
 		var subnetIDs []string
 		for _, s := range e.Subnets {
 			subnetIDs = append(subnetIDs, *s.ID)
 		}
+		request.Tags = tags
 		request.VPCZoneIdentifier = aws.String(strings.Join(subnetIDs, ","))
 
-		request.Tags = tags
-
-		_, err := t.Cloud.Autoscaling().CreateAutoScalingGroup(request)
-		if err != nil {
+		if _, err := t.Cloud.Autoscaling().CreateAutoScalingGroup(request); err != nil {
 			return fmt.Errorf("error creating AutoscalingGroup: %v", err)
 		}
 
-		_, err = t.Cloud.Autoscaling().EnableMetricsCollection(&autoscaling.EnableMetricsCollectionInput{
+		if _, err := t.Cloud.Autoscaling().EnableMetricsCollection(&autoscaling.EnableMetricsCollectionInput{
 			AutoScalingGroupName: e.Name,
 			Granularity:          e.Granularity,
 			Metrics:              aws.StringSlice(e.Metrics),
-		})
-		if err != nil {
+		}); err != nil {
 			return fmt.Errorf("error enabling metrics collection for AutoscalingGroup: %v", err)
 		}
 
 	} else {
 		request := &autoscaling.UpdateAutoScalingGroupInput{
 			AutoScalingGroupName: e.Name,
+			TerminationPolicies:  aws.StringSlice(terminationPolicies),
 		}
 
 		if changes.LaunchConfiguration != nil {

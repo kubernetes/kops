@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -79,6 +79,8 @@ type RollingUpdateCluster struct {
 	Force bool
 	// InstanceGroups is a list of groups to rollout on
 	InstanceGroups []string
+	// Interactive indicates the user should be prompted
+	Interactive bool
 	// MasterInterval is the delay between master node terminations
 	MasterInterval time.Duration
 	// NodeBatch is the number of nodes groups to run concurrently
@@ -89,6 +91,8 @@ type RollingUpdateCluster struct {
 	PostDrainDelay time.Duration
 	// Strategy is the default strategy to employ
 	Strategy api.RolloutStrategy
+	// ScaleTimeout is a generic time given for scaling operating (such as duplication or scale-up)
+	ScaleTimeout time.Duration
 }
 
 // RollingUpdateOptions are the options for a rolling update

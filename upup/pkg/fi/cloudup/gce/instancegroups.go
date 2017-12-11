@@ -95,6 +95,63 @@ func (c *gceCloudImplementation) GetCloudGroups(cluster *kops.Cluster, instanceg
 	return getCloudGroups(c, cluster, instancegroups, warnUnmatched, nodes)
 }
 
+// GetCloudGroupStatus returns the group status
+func (c *gceCloudImplementation) GetCloudGroupStatus(cluster *kops.Cluster, name string) (int, int, error) {
+	var ready, needsupdate int
+
+	ctx := context.Background()
+
+	// The strategy:
+	// * Find the InstanceTemplates, matching on tags
+	// * Find InstanceGroupManagers attached to those templates
+
+	its := make(map[string]*compute.InstanceTemplate)
+	templates, err := FindInstanceTemplates(c, cluster.Name)
+	if err != nil {
+		return ready, needsupdate, err
+	}
+	for _, t := range templates {
+		its[t.SelfLink] = t
+	}
+	zones, err := c.Zones()
+	if err != nil {
+		return ready, needsupdate, err
+	}
+
+	for _, zone := range zones {
+		err := c.Compute().InstanceGroupManagers.List(c.Project(), zone).Pages(ctx, func(page *compute.InstanceGroupManagerList) error {
+			for _, mig := range page.Items {
+				instanceTemplate := its[mig.InstanceTemplate]
+				if instanceTemplate == nil {
+					continue
+				}
+				latestInstanceTemplate := mig.InstanceTemplate
+				instances, err := ListManagedInstances(c, mig)
+				if err != nil {
+					return err
+				}
+
+				for _, i := range instances {
+					if i.Version != nil {
+						switch latestInstanceTemplate {
+						case i.Version.InstanceTemplate:
+							ready++
+						default:
+							needsupdate++
+						}
+					}
+				}
+			}
+			return nil
+		})
+		if err != nil {
+			return ready, needsupdate, err
+		}
+	}
+
+	return ready, needsupdate, nil
+}
+
 func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.InstanceGroup, warnUnmatched bool, nodes []v1.Node) (map[string]*cloudinstances.CloudInstanceGroup, error) {
 	groups := make(map[string]*cloudinstances.CloudInstanceGroup)
 
@@ -151,8 +208,8 @@ func getCloudGroups(c GCECloud, cluster *kops.Cluster, instancegroups []*kops.In
 				g := &cloudinstances.CloudInstanceGroup{
 					HumanName:     mig.Name,
 					InstanceGroup: ig,
-					MinSize:       int(mig.TargetSize),
 					MaxSize:       int(mig.TargetSize),
+					MinSize:       int(mig.TargetSize),
 					Raw:           mig,
 				}
 				groups[mig.Name] = g

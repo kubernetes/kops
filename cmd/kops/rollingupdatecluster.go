@@ -101,8 +101,8 @@ var (
 	rollingupdateShort = i18n.T(`Rolling update a cluster.`)
 )
 
-// rollingUpdateOptions is the command Object for a Rolling Update.
-type rollingUpdateOptions struct {
+// RollingUpdateOptions is the command Object for a Rolling Update.
+type RollingUpdateOptions struct {
 	// BastionInterval is the minimum time to wait after stopping a bastion.  This does not include drain and validate time.
 	BastionInterval time.Duration
 	// Batch indicates the size of the batch to rollout i.e. rollout 2 at a time
@@ -111,7 +111,7 @@ type rollingUpdateOptions struct {
 	CloudOnly bool
 	// ClusterName is the name of the kops cluster
 	ClusterName string
-	// Count provides a optional argument to indicate to only perform a subnet of instances with one or remove instancegroups
+	// Count is an optional argument to perform an update on a subset of instances within an instancegroup
 	Count int
 	// Drain indicates we should drain the node between deleting it
 	Drain *bool
@@ -138,6 +138,8 @@ type rollingUpdateOptions struct {
 	NodeInterval time.Duration
 	// PostDrainDelay is the duration of a pause after a drain operation
 	PostDrainDelay time.Duration
+	// ScaleTimeout is the duration to wait for a rescaling operation
+	ScaleTimeout time.Duration
 	// Strategy is the name of the rollout strategy to use
 	Strategy string
 	// ValidationTimeout is the timeout for validation to succeed after the drain and pause
@@ -147,7 +149,7 @@ type rollingUpdateOptions struct {
 }
 
 // InitDefaults are some sane defaults for the rollouts
-func (o *rollingUpdateOptions) initDefaults() {
+func (o *RollingUpdateOptions) initDefaults() {
 	o.BastionInterval = 5 * time.Minute
 	o.Batch = 0
 	o.CloudOnly = false
@@ -157,17 +159,19 @@ func (o *rollingUpdateOptions) initDefaults() {
 	o.FailOnDrainError = false
 	o.FailOnValidate = true
 	o.Force = false
+	o.Interactive = false
 	o.MasterInterval = 5 * time.Minute
 	o.NodeBatch = 1
 	o.NodeInterval = 4 * time.Minute
 	o.PostDrainDelay = 0
+	o.ScaleTimeout = 4 * time.Minute
 	o.ValidationTimeout = 5 * time.Minute
 	o.Yes = false
 }
 
 // NewCmdRollingUpdateCluster creates and returns the rollout command
 func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
-	var options rollingUpdateOptions
+	var options RollingUpdateOptions
 	var drainOption bool
 
 	options.initDefaults()
@@ -189,6 +193,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().DurationVar(&options.BastionInterval, "bastion-interval", options.BastionInterval, "Time to wait between restarting bastions")
 	cmd.Flags().DurationVar(&options.MasterInterval, "master-interval", options.MasterInterval, "Time to wait between restarting masters")
 	cmd.Flags().DurationVar(&options.NodeInterval, "node-interval", options.NodeInterval, "Time to wait between restarting nodes")
+	cmd.Flags().DurationVar(&options.ScaleTimeout, "scale-timeout", options.ScaleTimeout, "The max time to wait ")
 	cmd.Flags().DurationVar(&options.PostDrainDelay, "post-drain-delay", options.PostDrainDelay, "Time to wait post draining a node to allow pods to settle")
 	cmd.Flags().DurationVar(&options.ValidationTimeout, "valiation-timeout", options.ValidationTimeout, "Maxiumum time to wait for cluster validation")
 	cmd.Flags().IntVar(&options.Batch, "batch", options.Batch, "Perform the rollout in batches, i.e. rollout to x at a time")
@@ -198,6 +203,7 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringSliceVar(&options.InstanceGroupRoles, "instance-group-roles", options.InstanceGroupRoles, "If specified, only instance groups of the specified role will be updated")
 	cmd.Flags().StringVar(&options.Strategy, "strategy", options.Strategy, "The default rollout strategy to use when rolling out the cluster")
 
+	// @check if the drain option was toggle as its the only way to find out if default false or actually set to false
 	cmd.Run = func(cmd *cobra.Command, args []string) {
 		if err := rootCommand.ProcessArgs(args); err != nil {
 			exitWithError(err)
@@ -209,9 +215,11 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 			return
 		}
 		options.ClusterName = clusterName
-		options.Drain = &drainOption
+		if cmd.Flags().Changed("drain") {
+			options.Drain = &drainOption
+		}
 
-		if err := runRollingUpdateCluster(f, os.Stdout, &options); err != nil {
+		if err := RunRollingUpdateCluster(f, os.Stdout, &options); err != nil {
 			exitWithError(err)
 			return
 		}
@@ -220,14 +228,13 @@ func NewCmdRollingUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	return cmd
 }
 
-// runRollingUpdateCluster is responsible for performing an rolling update on the kops cluster
-func runRollingUpdateCluster(f *util.Factory, out io.Writer, options *rollingUpdateOptions) error {
+// RunRollingUpdateCluster is responsible for performing an rolling update on the kops cluster
+func RunRollingUpdateCluster(f *util.Factory, out io.Writer, options *RollingUpdateOptions) error {
 	// @step: create a clientset for the kops cluster
 	clientset, err := f.Clientset()
 	if err != nil {
 		return err
 	}
-
 	// retrieve the kops cluster configuration
 	cluster, err := GetCluster(f, options.ClusterName)
 	if err != nil {
@@ -334,10 +341,10 @@ func runRollingUpdateCluster(f *util.Factory, out io.Writer, options *rollingUpd
 	lowInterval := time.Second * 60
 	logIntervalWaring := "Note: the %s interval on %s is low, kubernetes might not have time to detect node errors causing issues with validation"
 	if options.MasterInterval < lowInterval {
-		glog.Warningf(fmt.Sprintf(logIntervalWaring, "master", options.MasterInterval.String()))
+		glog.Warningf(fmt.Sprintf(logIntervalWaring, "master", options.MasterInterval))
 	}
 	if options.NodeInterval < lowInterval {
-		glog.Warningf(fmt.Sprintf(logIntervalWaring, "node", options.NodeInterval.String()))
+		glog.Warningf(fmt.Sprintf(logIntervalWaring, "node", options.NodeInterval))
 	}
 
 	{
@@ -424,11 +431,12 @@ func runRollingUpdateCluster(f *util.Factory, out io.Writer, options *rollingUpd
 		FailOnValidateTimeout: options.ValidationTimeout,
 		Force:          options.Force,
 		InstanceGroups: options.InstanceGroups,
-		Interactive:       options.Interactive,
+		Interactive:    options.Interactive,
 		MasterInterval: options.MasterInterval,
 		NodeBatch:      options.NodeBatch,
 		NodeInterval:   options.NodeInterval,
 		PostDrainDelay: options.PostDrainDelay,
+		ScaleTimeout:   options.ScaleTimeout,
 		Strategy:       api.RolloutStrategy(options.Strategy),
 	}
 
@@ -439,7 +447,7 @@ func runRollingUpdateCluster(f *util.Factory, out io.Writer, options *rollingUpd
 	})
 	signalCh := make(chan os.Signal)
 	signal.Notify(signalCh, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-
+	defer cancel()
 	for {
 		select {
 		case <-signalCh:

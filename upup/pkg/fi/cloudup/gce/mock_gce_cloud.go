@@ -59,6 +59,12 @@ func (c *mockGCECloud) GetCloudGroups(cluster *kops.Cluster, instancegroups []*k
 	return nil, fmt.Errorf("mockGCECloud cloud provider does not support getting cloud groups at this time")
 }
 
+// GetCloudGroupStatus is not implemented yet
+func (c *mockGCECloud) GetCloudGroupStatus(*kops.Cluster, string) (int, int, error) {
+	glog.V(8).Infof("mockGCECloud cloud provider GetCloudGroupStatus not implemented yet")
+	return 0, 0, fmt.Errorf("mockGCECloud cloud provider does not support getting cloud groups at this time")
+}
+
 // Zones is not implemented yet
 func (c *mockGCECloud) Zones() ([]string, error) {
 	return nil, fmt.Errorf("not yet implemented")

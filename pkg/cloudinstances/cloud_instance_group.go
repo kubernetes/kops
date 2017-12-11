@@ -29,20 +29,20 @@ import (
 
 // CloudInstanceGroup is the cloud backing of InstanceGroup.
 type CloudInstanceGroup struct {
-	// InstanceGroup is a reference to the actual instanceGroup
-	InstanceGroup *api.InstanceGroup
 	// HumanName is a user-friendly name for the group
 	HumanName string
-	// Ready is the number of instances ready
-	Ready []*CloudInstanceGroupMember
-	// NeedUpdate is the number of instances which are required to be updated
-	NeedUpdate []*CloudInstanceGroupMember
-	// MinSize is the minimum size of the instanceGroup
-	MinSize int
+	// InstanceGroup is a reference to the actual instanceGroup
+	InstanceGroup *api.InstanceGroup
 	// MaxSize is the maximum size of the instanceGroup
 	MaxSize int
+	// MinSize is the minimum size of the instanceGroup
+	MinSize int
+	// NeedUpdate is the number of instances which are required to be updated
+	NeedUpdate []*CloudInstanceGroupMember
 	// Raw allows for the implementer to attach an object, for tracking additional state
 	Raw interface{}
+	// Ready is the number of instances ready
+	Ready []*CloudInstanceGroupMember
 }
 
 // CloudInstanceGroupMember describes an instance in a CloudInstanceGroup group.
@@ -76,6 +76,11 @@ func (c *CloudInstanceGroup) NewCloudInstanceGroupMember(id string, newGroupName
 	}
 
 	return nil
+}
+
+// Size returns the size of the group
+func (c *CloudInstanceGroup) Size() int {
+	return len(c.Ready) + len(c.NeedUpdate)
 }
 
 // Status returns a human-readable Status indicating whether an update is needed
