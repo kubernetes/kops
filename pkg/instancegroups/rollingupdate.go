@@ -83,34 +83,53 @@ func (c *RollingUpdateCluster) invokeInstanceGroupUpdate(ctx context.Context, gr
 	bucket := newRateBucket(batch)
 	// used to recieve the errors from each rollout
 	errorCh := make(ResultCh, batch)
+	// doneCh is used to internal signal an end of work
+	doneCh := make(SignalCh, 0)
 	// a channel used to hand pass result upstream
 	resultCh := make(ResultCh, 0)
 	// a wait group used to wait for child routines to finish
 	worker := sync.WaitGroup{}
-	// a inline context used to pass down a cancellation on errors
-	// @TODO we could pass the decision up the chain to the caller via an error channel?
-	inctx, cancel := context.WithCancel(context.Background())
+	// a cascaded context
+	rctx, cancel := context.WithCancel(context.Background())
 
+	// @NOTES:
+	// - Since we are not passing the errors upstream we have a local context used to cancel the rollout on
+	// any errors or from a cancellation above.
+	// - The control routine below listens for a cancellation, and error from the worker routines or a done signal
+	// - The worker simply iterates the groups in the role passes the context to the group rollout implementation.
+	//   On any errors the error is as indicated above picked up by the controller routine; whom immediately cancels
+	//   the context. Everything underneath cancels on the context and records and error.
+	// - On exit of the loop, we sit and wait for the worker jobs to finish, either by finishing the work or being
+	//   cancel via context.
+
+	// @step: create a controller routine
 	go func() {
 		err := func() error {
-			// iterate the instancegroups one by one
-			for _, x := range groups {
-				select {
-				case <-ctx.Done():
-					cancel()
-					return ErrRolloutCancelled
-				case e := <-errorCh:
-					// we have recieved an error while performing a rollout, we should stop
-					cancel()
-					return e
-				case <-bucket:
-				}
+			select {
+			case <-ctx.Done():
+				cancel()
+				return ErrRolloutCancelled
+			case err := <-errorCh:
+				cancel()
+				return err
+			case <-doneCh:
+				return nil
+			}
+		}()
+		resultCh <- err
+	}()
 
-				name := x.InstanceGroup.Name
+	// @step: we iterate the groups within the role and kick off a rollout if required
+	go func() {
+		if err := func() error {
+			for _, x := range groups {
 				// @check if the instancegroup is being filtered out
+				name := x.InstanceGroup.Name
 				if !c.IsGroupUpdating(name) {
 					continue
 				}
+				// @step: wait for a slot to operate
+				<-bucket
 
 				// @step: determine the update strategy for this instancegroup
 				if err := c.DetermineGroupStratergy(x); err != nil {
@@ -131,7 +150,7 @@ func (c *RollingUpdateCluster) invokeInstanceGroupUpdate(ctx context.Context, gr
 					}()
 					update := &RollingUpdateInstanceGroup{Update: c, CloudGroup: group}
 					// @step: perform a rollout on the group
-					if err := update.RollingUpdate(inctx, list); err != nil {
+					if err := update.RollingUpdate(rctx, list); err != nil {
 						// return the error for the next iteration to pick up; so the channel is
 						// buffered so non-blocking here
 						errorCh <- err
@@ -140,10 +159,13 @@ func (c *RollingUpdateCluster) invokeInstanceGroupUpdate(ctx context.Context, gr
 			}
 
 			return nil
-		}()
+		}(); err != nil {
+			errorCh <- err
+			return
+		}
 		// @step: wait for all the routines to finish
 		worker.Wait()
-		resultCh <- err
+		doneCh <- Signal
 	}()
 
 	return resultCh
@@ -188,9 +210,9 @@ func (c *RollingUpdateCluster) DetermineGroupStratergy(group *cloudinstances.Clo
 	// @check if nil and if so give it a default stratergy
 	if strategy == nil {
 		strategy = &api.UpdateStrategy{
-			Batch:   1,
-			Drain:   false,
-			Rollout: api.DefaultRollout,
+			Batch: 1,
+			Drain: false,
+			Name:  api.DefaultRollout,
 		}
 		group.InstanceGroup.Spec.Strategy = strategy
 	}
@@ -202,8 +224,8 @@ func (c *RollingUpdateCluster) DetermineGroupStratergy(group *cloudinstances.Clo
 	}
 	// @check if rollout options overrides the ig strategy
 	if c.Strategy != "" {
-		c.Infof("using rollout strategy: %s on instancegroup: %s", strategy.Rollout, groupName)
-		strategy.Rollout = c.Strategy
+		c.Infof("using rollout strategy: %s on instancegroup: %s", strategy.Name, groupName)
+		strategy.Name = c.Strategy
 	}
 	// @check is rollout options override post delay
 	if c.PostDrainDelay > 0 {
@@ -215,8 +237,8 @@ func (c *RollingUpdateCluster) DetermineGroupStratergy(group *cloudinstances.Clo
 		group.Ready = make([]*cloudinstances.CloudInstanceGroupMember, 0)
 	}
 	// @check if rollout strategy is nothing an default
-	if strategy.Rollout == "" {
-		strategy.Rollout = api.DefaultRollout
+	if strategy.Name == "" {
+		strategy.Name = api.DefaultRollout
 	}
 	// @check if the batch size is at least one
 	if strategy.Batch <= 0 {
@@ -249,19 +271,19 @@ func (c *RollingUpdateCluster) DetermineGroupStratergy(group *cloudinstances.Clo
 	// @step: check the stratergy is compatible with the role
 	switch role {
 	case api.InstanceGroupRoleMaster, api.InstanceGroupRoleBastion:
-		if strategy.Rollout != api.DefaultRollout {
-			return fmt.Errorf("rollout strategy: %s is not supported for role: %s", strategy.Rollout, role)
+		if strategy.Name != api.DefaultRollout {
+			return fmt.Errorf("rollout strategy: %s is not supported for role: %s", strategy.Name, role)
 		}
 	}
 
 	// @check the rollout stratergy
-	switch strategy.Rollout {
-	case api.DuplicateRollout:
+	switch strategy.Name {
+	case api.DuplicateRollout, api.ScaleUpRollout:
 		if role != api.InstanceGroupRoleNode {
 			return c.Errorf("rollout strategy: %s is only supported on node instancegroups", api.DuplicateRollout)
 		}
 		if len(group.NeedUpdate) > 0 {
-			c.Infof("toggling the force flag given we are using a duplication strategy")
+			c.Infof("toggling the force flag given we are using a %s strategy", strategy.Name)
 			c.Force = true
 		}
 	}

@@ -43,7 +43,7 @@ func (p *duplicateProvider) RollingUpdate(ctx context.Context, list *api.Instanc
 	strategy := ig.Spec.Strategy
 	update := p.GroupUpdate.Update
 
-	update.Infof("rolling out via %s strategy to instancegroups: %s, batch: %d", strategy.Rollout, name, strategy.Batch)
+	update.Infof("rolling out via %s strategy to instancegroups: %s, batch: %d", strategy.Name, name, strategy.Batch)
 
 	// @check the instancegroup is not already a duplicate
 	if _, found := ig.GetAnnotations()[DuplicateParentAnnotation]; found {

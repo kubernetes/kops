@@ -99,10 +99,10 @@ type UpdateStrategy struct {
 	DrainTimeout *metav1.Duration `json:"drainTimeout,omitempty"`
 	// Interval is the time to given between iterations
 	Interval *metav1.Duration `json:"interval,omitempty"`
+	// Name defines the strategy to use when performing a rollout on this instance group
+	Name RolloutStrategy `json:"name,omitempty"`
 	// PostDrainDelay is the duration we wait after draining each node
 	PostDrainDelay *metav1.Duration `json:"postDrainDelay,omitempty"`
-	// Rollout defines the strategy to use when performing a rollout on this instance group
-	Rollout RolloutStrategy `json:"rollout,omitempty"`
 }
 
 // InstanceGroupSpec is the specification for a instanceGroup

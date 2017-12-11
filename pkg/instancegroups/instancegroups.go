@@ -95,6 +95,7 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 		for i, x := range r.CloudGroup.NeedUpdate {
 			select {
 			case <-ctx.Done():
+				r.Infof("recieved termination signal while draining instancegroup: %s", groupName)
 				return ErrRolloutCancelled
 			case err := <-errorCh:
 				return err
@@ -126,7 +127,7 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 					if options.DrainPods {
 						// @check this is a known kubernetes node
 						if node.Node == nil {
-							r.Infof("unknown node: %s found in instancegroup: %s, skipping the drain", x.ID, groupName)
+							r.Infof("unknown node: %s found in instancegroup: %s, skipping the drain", node.ID, groupName)
 						} else {
 							r.Infof("draining node: %s from instancegroup: %s", nodeName, groupName)
 							if err := r.DrainNode(ctx, node, options); err != nil {
@@ -135,7 +136,7 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 
 							// @step: should be add a delay post the drain?
 							if options.PostDelay > 0 {
-								r.Infof("waiting on pods to stabilize in instancegroup: %s, waiting: %s", groupName, options.PostDelay.String())
+								r.Infof("waiting on pods to stabilize in instancegroup: %s, waiting: %s", groupName, options.PostDelay)
 								if err := r.WaitFor(ctx, options.PostDelay); err != nil {
 									return err
 								}
@@ -153,7 +154,7 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 
 					// @check if we should wait for a certain time before moving on
 					if options.Interval > 0 {
-						r.Infof("waiting for %s before moving to next instance in instancegroup: %s", options.Interval.String(), groupName)
+						r.Infof("waiting for %s before moving to next instance in instancegroup: %s", options.Interval, groupName)
 						if err := r.WaitFor(ctx, options.Interval); err != nil {
 							return err
 						}
@@ -162,7 +163,7 @@ func (r *RollingUpdateInstanceGroup) DrainGroup(ctx context.Context, options *Dr
 					// @check if we should validate the cluster
 					if options.ValidateCluster {
 						r.Infof("validating cluster post update on node: %s, timeout: %s, fail-on-error: %t",
-							nodeName, options.ValidationTimeout.String(), options.FailOnValidation)
+							nodeName, options.ValidationTimeout, options.FailOnValidation)
 						if err := r.ValidateClusterWithTimeout(ctx, list, options.ValidationTimeout); err != nil {
 							if options.FailOnValidation {
 								return r.Errorf("failed validating after removing member, error: %v", err)
@@ -282,6 +283,7 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithRetries(ctx context.Cont
 	for i := 1; i < retries; i++ {
 		select {
 		case <-ctx.Done():
+			r.Infof("terminating the rollout, recieved cancellation signal")
 			return ErrRolloutCancelled
 		case <-ticker.C:
 			if r.tryValidateCluster(list) {
@@ -299,6 +301,7 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithRetries(ctx context.Cont
 func (r *RollingUpdateInstanceGroup) ValidateClusterWithTimeout(ctx context.Context, list *api.InstanceGroupList, waitTime time.Duration) error {
 	// @step: try to validate cluster at least once, this will handle durations that are lower than our tick time
 	if r.tryValidateCluster(list) {
+		r.Infof("cluster: %s alidation successfully", r.Update.ClusterName)
 		return nil
 	}
 	expires := time.Now().Add(waitTime)
@@ -310,15 +313,16 @@ func (r *RollingUpdateInstanceGroup) ValidateClusterWithTimeout(ctx context.Cont
 	for {
 		select {
 		case <-ctx.Done():
+			r.Infof("terminating the rollout, recieved cancellation signal")
 			return ErrRolloutCancelled
 		case <-timeout:
-			return fmt.Errorf("cluster did not pass validation within: %s", waitTime.String())
+			return fmt.Errorf("cluster did not pass validation within: %s", waitTime)
 		case <-tick.C:
 			if r.tryValidateCluster(list) {
-				r.Infof("cluster validation successfully")
+				r.Infof("cluster: %s validation successfully", r.Update.ClusterName)
 				return nil
 			}
-			r.Infof("cluster has not passed validation yet, expiration: %s", expires.Sub(time.Now()).String())
+			r.Infof("cluster has not passed validation yet, expiration: %s", expires.Sub(time.Now()))
 		}
 	}
 }
@@ -336,6 +340,7 @@ func (r *RollingUpdateInstanceGroup) tryValidateCluster(list *api.InstanceGroupL
 func (r *RollingUpdateInstanceGroup) WaitFor(ctx context.Context, waitTime time.Duration) error {
 	select {
 	case <-ctx.Done():
+		r.Infof("terminating the rollout, recieved cancellation signal in waitfor")
 		return ErrRolloutCancelled
 	case <-time.After(waitTime):
 	}
@@ -386,7 +391,7 @@ func (r *RollingUpdateInstanceGroup) Role() api.InstanceGroupRole {
 
 // NewRollout creates and returns a rollout provider
 func (r *RollingUpdateInstanceGroup) NewRollout() Rollout {
-	switch name := r.CloudGroup.InstanceGroup.Spec.Strategy.Rollout; name {
+	switch name := r.CloudGroup.InstanceGroup.Spec.Strategy.Name; name {
 	case api.DefaultRollout:
 		return NewDefaultRollout(r)
 	case api.DuplicateRollout:

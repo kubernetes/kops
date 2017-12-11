@@ -3057,8 +3057,8 @@ func autoConvert_v1alpha1_UpdateStrategy_To_kops_UpdateStrategy(in *UpdateStrate
 	out.Drain = in.Drain
 	out.DrainTimeout = in.DrainTimeout
 	out.Interval = in.Interval
+	out.Name = kops.RolloutStrategy(in.Name)
 	out.PostDrainDelay = in.PostDrainDelay
-	out.Rollout = kops.RolloutStrategy(in.Rollout)
 	return nil
 }
 
@@ -3072,8 +3072,8 @@ func autoConvert_kops_UpdateStrategy_To_v1alpha1_UpdateStrategy(in *kops.UpdateS
 	out.Drain = in.Drain
 	out.DrainTimeout = in.DrainTimeout
 	out.Interval = in.Interval
+	out.Name = RolloutStrategy(in.Name)
 	out.PostDrainDelay = in.PostDrainDelay
-	out.Rollout = RolloutStrategy(in.Rollout)
 	return nil
 }
 

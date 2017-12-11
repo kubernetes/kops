@@ -21,7 +21,9 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 	"time"
 
 	"github.com/golang/glog"
@@ -429,13 +431,19 @@ func runRollingUpdateCluster(f *util.Factory, out io.Writer, options *rollingUpd
 		Strategy:       api.RolloutStrategy(options.Strategy),
 	}
 
-	ctx, _ := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 	resultCh := d.RollingUpdate(ctx, &instancegroups.RollingUpdateOptions{
 		InstanceGroups: groups,
 		List:           list,
 	})
+	signalCh := make(chan os.Signal)
+	signal.Notify(signalCh, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+
 	for {
 		select {
+		case <-signalCh:
+			glog.Infof("recieved termination siganl, cancelling the rollout")
+			cancel()
 		case err := <-resultCh:
 			if err != nil {
 				return err
@@ -444,4 +452,6 @@ func runRollingUpdateCluster(f *util.Factory, out io.Writer, options *rollingUpd
 			return nil
 		}
 	}
+
+	return nil
 }
