@@ -116,6 +116,9 @@ type KubeletConfigSpec struct {
 	// image garbage collection is never run. Lowest disk usage to garbage
 	// collect to.
 	ImageGCLowThresholdPercent *int32 `json:"imageGCLowThresholdPercent,omitempty" flag:"image-gc-low-threshold"`
+	// imagePullProgressDeadline is the timeout for image pulls
+	// If no pulling progress is made before this deadline, the image pulling will be cancelled. (default 1m0s)
+	ImagePullProgressDeadline *metav1.Duration `json:"imagePullProgressDeadline,omitempty" flag:"image-pull-progress-deadline"`
 	// Comma-delimited list of hard eviction expressions.  For example, 'memory.available<300Mi'.
 	EvictionHard *string `json:"evictionHard,omitempty" flag:"eviction-hard"`
 	// Comma-delimited list of soft eviction expressions.  For example, 'memory.available<300Mi'.
