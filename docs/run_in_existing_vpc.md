@@ -47,19 +47,6 @@ kops update cluster ${CLUSTER_NAME}
 Review the changes to make sure they are OK -  the Kubernetes settings might not be ones you want on a shared VPC (in which case,
 open an issue!)
 
-There is currently a [bug](https://github.com/kubernetes/kops/issues/476) where kops will tell you that it will modify the VPC and InternetGateway names:
-
-```
-Will modify resources:
-  VPC    vpc/k8s.somefoo.com
-    Name baz -> k8s.somefoo.com
-
-  InternetGateway    internetGateway/k8s.somefoo.com
-    Name baz -> k8s.somefoo.com
-```
-
-This will not actually happen and you can safely ignore the message.
-
 Note also the Kubernetes VPCs (currently) require `EnableDNSHostnames=true`.  kops will detect the required change,
  but refuse to make it automatically because it is a shared VPC.  Please review the implications and make the change
  to the VPC manually.

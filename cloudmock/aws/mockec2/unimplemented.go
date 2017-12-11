@@ -152,19 +152,6 @@ func (m *MockEC2) AttachClassicLinkVpcRequest(*ec2.AttachClassicLinkVpcInput) (*
 	return nil, nil
 }
 
-func (m *MockEC2) AttachInternetGateway(*ec2.AttachInternetGatewayInput) (*ec2.AttachInternetGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) AttachInternetGatewayWithContext(aws.Context, *ec2.AttachInternetGatewayInput, ...request.Option) (*ec2.AttachInternetGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) AttachInternetGatewayRequest(*ec2.AttachInternetGatewayInput) (*request.Request, *ec2.AttachInternetGatewayOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
 func (m *MockEC2) AttachNetworkInterface(*ec2.AttachNetworkInterfaceInput) (*ec2.AttachNetworkInterfaceOutput, error) {
 	panic("Not implemented")
 	return nil, nil
@@ -447,19 +434,6 @@ func (m *MockEC2) CreateInstanceExportTaskWithContext(aws.Context, *ec2.CreateIn
 	return nil, nil
 }
 func (m *MockEC2) CreateInstanceExportTaskRequest(*ec2.CreateInstanceExportTaskInput) (*request.Request, *ec2.CreateInstanceExportTaskOutput) {
-	panic("Not implemented")
-	return nil, nil
-}
-
-func (m *MockEC2) CreateInternetGateway(*ec2.CreateInternetGatewayInput) (*ec2.CreateInternetGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateInternetGatewayWithContext(aws.Context, *ec2.CreateInternetGatewayInput, ...request.Option) (*ec2.CreateInternetGatewayOutput, error) {
-	panic("Not implemented")
-	return nil, nil
-}
-func (m *MockEC2) CreateInternetGatewayRequest(*ec2.CreateInternetGatewayInput) (*request.Request, *ec2.CreateInternetGatewayOutput) {
 	panic("Not implemented")
 	return nil, nil
 }
