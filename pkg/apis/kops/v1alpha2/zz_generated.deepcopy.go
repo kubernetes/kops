@@ -2742,6 +2742,11 @@ func (in *LoadBalancerAccessSpec) DeepCopyInto(out *LoadBalancerAccessSpec) {
 			**out = **in
 		}
 	}
+	if in.AdditionalSecurityGroups != nil {
+		in, out := &in.AdditionalSecurityGroups, &out.AdditionalSecurityGroups
+		*out = make([]string, len(*in))
+		copy(*out, *in)
+	}
 	return
 }
 
