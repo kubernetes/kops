@@ -184,6 +184,21 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
+	// Add precreated additional security groups to the ELB
+	{
+		for _, id := range b.Cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups {
+			t := &awstasks.SecurityGroup{
+				Name:   fi.String(id),
+				ID:     fi.String(id),
+				Shared: fi.Bool(true),
+			}
+			if err := c.EnsureTask(t); err != nil {
+				return err
+			}
+			elb.SecurityGroups = append(elb.SecurityGroups, t)
+		}
+	}
+
 	// Allow HTTPS to the master instances from the ELB
 	{
 		t := &awstasks.SecurityGroupRule{

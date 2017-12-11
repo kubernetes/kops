@@ -113,6 +113,9 @@ type CreateClusterOptions struct {
 	// Specify API loadbalancer as public or internal
 	APILoadBalancerType string
 
+	// Add precreated additional security groups to the ELB
+	APILoadBalancerSecurityGroups []string
+
 	// Allow custom public master name
 	MasterPublicName string
 
@@ -310,6 +313,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.NodeTenancy, "node-tenancy", options.NodeTenancy, "The tenancy of the node group on AWS. Can be either default or dedicated.")
 
 	cmd.Flags().StringVar(&options.APILoadBalancerType, "api-loadbalancer-type", options.APILoadBalancerType, "Sets the API loadbalancer type to either 'public' or 'internal'")
+
+	cmd.Flags().StringSliceVar(&options.APILoadBalancerSecurityGroups, "api-loadbalancer-security-groups", options.APILoadBalancerSecurityGroups, "Add precreated additional security groups to the API loadbalancer.")
 
 	// Allow custom public master name
 	cmd.Flags().StringVar(&options.MasterPublicName, "master-public-name", options.MasterPublicName, "Sets the public master public name")
@@ -942,6 +947,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			}
 		}
 	}
+	if len(c.APILoadBalancerSecurityGroups) > 0 && cluster.Spec.API.LoadBalancer == nil {
+		return fmt.Errorf("unable to add security groups to nonexistent API loadbalancer")
+	}
 	if cluster.Spec.API.LoadBalancer != nil && cluster.Spec.API.LoadBalancer.Type == "" {
 		switch c.APILoadBalancerType {
 		case "", "public":
@@ -950,6 +958,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			cluster.Spec.API.LoadBalancer.Type = api.LoadBalancerTypeInternal
 		default:
 			return fmt.Errorf("unknown api-loadbalancer-type: %q", c.APILoadBalancerType)
+		}
+		if len(c.APILoadBalancerSecurityGroups) > 0 {
+			cluster.Spec.API.LoadBalancer.AdditionalSecurityGroups = c.APILoadBalancerSecurityGroups
 		}
 	}
 
