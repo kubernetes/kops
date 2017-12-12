@@ -3,7 +3,7 @@
 # This manifest includes the following component versions:
 #   calico/node:v2.6.2
 #   calico/cni:v1.11.0
-#   coreos/flannel:v0.9.1
+#   coreos/flannel:v0.9.0 (bug with v0.9.1: https://github.com/kubernetes/kops/issues/4037)
 
 # This ConfigMap can be used to configure a self-hosted Canal installation.
 kind: ConfigMap
@@ -194,7 +194,7 @@ spec:
         # This container runs flannel using the kube-subnet-mgr backend
         # for allocating subnets.
         - name: kube-flannel
-          image: quay.io/coreos/flannel:v0.9.1
+          image: quay.io/coreos/flannel:v0.9.0
           command: [ "/opt/bin/flanneld", "--ip-masq", "--kube-subnet-mgr" ]
           securityContext:
             privileged: true
