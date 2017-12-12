@@ -4,6 +4,12 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
   name: complex.example.com
 spec:
+  api:
+    loadBalancer:
+      type: Public
+      additionalSecurityGroups:
+      - sg-exampleid3
+      - sg-exampleid4
   kubernetesApiAccess:
   - 0.0.0.0/0
   channel: stable
@@ -84,5 +90,3 @@ spec:
   role: Master
   subnets:
   - us-test-1a
-
-
