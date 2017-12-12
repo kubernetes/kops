@@ -50,16 +50,6 @@ etcdClusters:
   enableEtcdTLS: true
   name: main
   version: 3.0.17
-- etcdMembers:
-  - instanceGroup: master0-az0
-    name: a-1
-  - instanceGroup: master1-az0
-    name: a-2
-  - instanceGroup: master0-az1
-    name: b-1
-  enableEtcdTLS: true
-  name: events
-  version: 3.0.17
 ```
 
 ### sshAccess
