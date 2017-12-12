@@ -29,7 +29,6 @@ import (
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
-	"k8s.io/kops/upup/pkg/fi"
 )
 
 // A cluster to validate
@@ -92,11 +91,6 @@ func ValidateCluster(clusterName string, instanceGroupList *kops.InstanceGroupLi
 	for i := range instanceGroupList.Items {
 		ig := &instanceGroupList.Items[i]
 		instanceGroups = append(instanceGroups, ig)
-		if ig.Spec.Role == kops.InstanceGroupRoleMaster {
-			validationCluster.MastersCount += int(fi.Int32Value(ig.Spec.MinSize))
-		} else if ig.Spec.Role == kops.InstanceGroupRoleNode {
-			validationCluster.NodesCount += int(fi.Int32Value(ig.Spec.MinSize))
-		}
 	}
 
 	if len(instanceGroups) == 0 {
@@ -169,7 +163,9 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 	if nodes == nil || len(nodes.Items) == 0 {
 		return validationCluster, fmt.Errorf("No nodes found in validationCluster")
 	}
-
+	// Needed for when NodesCount and MastersCounts are predefined, i.e tests
+	presetNodeCount := validationCluster.NodesCount == 0
+	presetMasterCount := validationCluster.MastersCount == 0
 	for i := range nodes.Items {
 		node := &nodes.Items[i]
 
@@ -189,12 +185,18 @@ func validateTheNodes(clusterName string, validationCluster *ValidationCluster) 
 
 		// TODO: Use instance group role instead...
 		if n.Role == "master" {
+			if presetMasterCount {
+				validationCluster.MastersCount++
+			}
 			if ready {
 				validationCluster.MastersReadyArray = append(validationCluster.MastersReadyArray, n)
 			} else {
 				validationCluster.MastersNotReadyArray = append(validationCluster.MastersNotReadyArray, n)
 			}
 		} else if n.Role == "node" {
+			if presetNodeCount {
+				validationCluster.NodesCount++
+			}
 			if ready {
 				validationCluster.NodesReadyArray = append(validationCluster.NodesReadyArray, n)
 			} else {
