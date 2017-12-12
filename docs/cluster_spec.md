@@ -179,7 +179,8 @@ The current external-DNS provider is the kops `dns-controller`, which can set up
 
 ```yaml
 spec:
-  watchIngress: true
+  externalDns:
+    watchIngress: true
 ```
 
 Default _kops_ behavior is false. `watchIngress: true` uses the default _dns-controller_ behavior which is to watch the ingress controller for changes. Set this option at risk of interrupting Service updates in some cases.
