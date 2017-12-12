@@ -28,7 +28,11 @@ import (
 func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(field.NewPath("spec", "api", "loadBalancer", "additionalSecurityGroups"), c.Spec.API.LoadBalancer.AdditionalSecurityGroups)...)
+	if c.Spec.API != nil {
+		if c.Spec.API.LoadBalancer != nil {
+			allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(field.NewPath("spec", "api", "loadBalancer", "additionalSecurityGroups"), c.Spec.API.LoadBalancer.AdditionalSecurityGroups)...)
+		}
+	}
 
 	return allErrs
 }
