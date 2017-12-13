@@ -23,6 +23,18 @@ spec:
 When configuring a LoadBalancer, you can also choose to have a public ELB or an internal (VPC only) ELB.  The `type`
 field should be `Public` or `Internal`.
 
+Also, you can add precreated additional security groups to the load balancer by setting `additionalSecurityGroups`.
+
+```yaml
+spec:
+  api:
+    loadBalancer:
+      type: Public
+      additionalSecurityGroups:
+      - sg-xxxxxxxx
+      - sg-xxxxxxxx
+```
+
 Additionally, you can increase idle timeout of the load balancer by setting its `idleTimeoutSeconds`. The default idle timeout is 5 minutes, with a maximum of 3600 seconds (60 minutes) being allowed by AWS.
 For more information see [configuring idle timeouts](http://docs.aws.amazon.com/elasticloadbalancing/latest/classic/config-idle-timeout.html).
 
