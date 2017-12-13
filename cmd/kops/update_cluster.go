@@ -307,11 +307,11 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 				if bastionPublicName != "" {
 					fmt.Fprintf(sb, " * ssh to the bastion: ssh -A -i ~/.ssh/id_rsa admin@%s\n", bastionPublicName)
 				} else {
-					fmt.Fprintf(sb, " * to ssh to the bastion, you probably want to configure a bastionPublicName")
+					fmt.Fprintf(sb, " * to ssh to the bastion, you probably want to configure a bastionPublicName.\n")
 				}
 			}
-			fmt.Fprintf(sb, "The admin user is specific to Debian. If not using Debian please use the appropriate user based on your OS.\n")
-			fmt.Fprintf(sb, " * read about installing addons: https://github.com/kubernetes/kops/blob/master/docs/addons.md\n")
+			fmt.Fprintf(sb, " * the admin user is specific to Debian. If not using Debian please use the appropriate user based on your OS.\n")
+			fmt.Fprintf(sb, " * read about installing addons at: https://github.com/kubernetes/kops/blob/master/docs/addons.md.\n")
 			fmt.Fprintf(sb, "\n")
 		}
 
