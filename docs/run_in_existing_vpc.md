@@ -88,7 +88,7 @@ metadata:
 spec:
   cloudProvider: aws
   networkCIDR: 10.1.0.0/16
-  AdditionalNetworkCIDRs:
+  additionalNetworkCIDRs:
   - 10.2.0.0/16
   networkID: vpc-00aa5577
   subnets:
