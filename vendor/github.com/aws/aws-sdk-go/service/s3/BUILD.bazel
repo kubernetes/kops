@@ -7,6 +7,9 @@ go_library(
         "bucket_location.go",
         "content_md5.go",
         "customizations.go",
+        "doc.go",
+        "doc_custom.go",
+        "errors.go",
         "host_style_bucket.go",
         "platform_handlers.go",
         "platform_handlers_go1.6.go",
@@ -28,7 +31,6 @@ go_library(
         "//vendor/github.com/aws/aws-sdk-go/aws/signer/v4:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/restxml:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/private/waiter:go_default_library",
     ],
 )
 
