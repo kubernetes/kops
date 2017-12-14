@@ -41,6 +41,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
@@ -73,6 +74,8 @@ type CreateClusterOptions struct {
 	Image                string
 	SSHPublicKey         string
 	VPCID                string
+	SubnetIDs            []string
+	UtilitySubnetIDs     []string
 	NetworkCIDR          string
 	DNSZone              string
 	AdminAccess          []string
@@ -267,6 +270,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Int32Var(&options.NodeVolumeSize, "node-volume-size", options.NodeVolumeSize, "Set instance volume size (in GB) for nodes")
 
 	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
+	cmd.Flags().StringSliceVar(&options.SubnetIDs, "subnets", options.SubnetIDs, "Set to use shared subnets")
+	cmd.Flags().StringSliceVar(&options.UtilitySubnetIDs, "utility-subnets", options.UtilitySubnetIDs, "Set to use shared utility subnets")
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
 
 	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set the number of masters.  Defaults to one master per master-zone")
@@ -497,6 +502,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 		zoneToSubnetMap[region] = subnet
 	} else {
+		var zoneToSubnetProviderID map[string]string
+		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 {
+			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(c.VPCID, c.Zones[0][:len(c.Zones[0])-1], c.SubnetIDs)
+			if err != nil {
+				return err
+			}
+		}
 		for _, zoneName := range allZones.List() {
 			// We create default subnets named the same as the zones
 			subnetName := zoneName
@@ -507,6 +519,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 					Name:   subnetName,
 					Zone:   subnetName,
 					Egress: c.Egress,
+				}
+				if subnetID, ok := zoneToSubnetProviderID[zoneName]; ok {
+					subnet.ProviderID = subnetID
 				}
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 			}
@@ -860,6 +875,15 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 
 		var utilitySubnets []api.ClusterSubnetSpec
+
+		var zoneToSubnetProviderID map[string]string
+		if len(c.Zones) > 0 && len(c.UtilitySubnetIDs) > 0 {
+			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(c.VPCID, c.Zones[0][:len(c.Zones[0])-1], c.UtilitySubnetIDs)
+			if err != nil {
+				return err
+			}
+		}
+
 		for _, s := range cluster.Spec.Subnets {
 			if s.Type == api.SubnetTypeUtility {
 				continue
@@ -868,6 +892,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				Name: "utility-" + s.Name,
 				Zone: s.Zone,
 				Type: api.SubnetTypeUtility,
+			}
+			if subnetID, ok := zoneToSubnetProviderID[s.Zone]; ok {
+				subnet.ProviderID = subnetID
 			}
 			utilitySubnets = append(utilitySubnets, subnet)
 		}
@@ -1202,4 +1229,38 @@ func setOverrides(overrides []string, cluster *api.Cluster, instanceGroups []*ap
 		}
 	}
 	return nil
+}
+
+func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) (map[string]string, error) {
+	res := make(map[string]string)
+	if VPCID == "" {
+		return res, fmt.Errorf("must specify vpc when specifying subnets")
+	}
+	cloudTags := map[string]string{}
+	awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
+	if err != nil {
+		return res, fmt.Errorf("error loading cloud: %v", err)
+	}
+	vpcInfo, err := awsCloud.FindVPCInfo(VPCID)
+	if err != nil {
+		return res, fmt.Errorf("error describing VPC: %v", err)
+	}
+	if vpcInfo == nil {
+		return res, fmt.Errorf("VPC %q not found", VPCID)
+	}
+	subnetByID := make(map[string]*fi.SubnetInfo)
+	for _, subnetInfo := range vpcInfo.Subnets {
+		subnetByID[subnetInfo.ID] = subnetInfo
+	}
+	for _, subnetID := range subnetIDs {
+		subnet, ok := subnetByID[subnetID]
+		if !ok {
+			return res, fmt.Errorf("subnet %s not found in VPC %s", subnetID, VPCID)
+		}
+		if res[subnet.Zone] != "" {
+			return res, fmt.Errorf("subnet %s and %s have the same zone", subnetID, res[subnet.Zone])
+		}
+		res[subnet.Zone] = subnetID
+	}
+	return res, nil
 }
