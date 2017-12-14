@@ -24,6 +24,7 @@ import (
 	"github.com/gophercloud/gophercloud"
 	os "github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
+	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/pkg/apis/kops"
@@ -67,11 +68,18 @@ type OpenstackCloud interface {
 
 	// CreateVolume will create a new Cinder Volume
 	CreateVolume(opt cinder.CreateOpts) (*cinder.Volume, error)
+
+	//ListSecurityGroups will return the Neutron security groups which match the options
+	ListSecurityGroups(opt sg.ListOpts) ([]sg.SecGroup, error)
+
+	//CreateSecurityGroup will create a new Neutron security group
+	CreateSecurityGroup(opt sg.CreateOpts) (*sg.SecGroup, error)
 }
 
 type openstackCloud struct {
-	cinderClient *gophercloud.ServiceClient
-	tags         map[string]string
+	cinderClient  *gophercloud.ServiceClient
+	neutronClient *gophercloud.ServiceClient
+	tags          map[string]string
 }
 
 var _ fi.Cloud = &openstackCloud{}
@@ -94,12 +102,22 @@ func NewOpenstackCloud(tags map[string]string) (OpenstackCloud, error) {
 	}
 	cinderClient, err := os.NewBlockStorageV2(provider, endpointOpt)
 	if err != nil {
-		return nil, fmt.Errorf("error building swift client: %v", err)
+		return nil, fmt.Errorf("error building cinder client: %v", err)
+	}
+
+	endpointOpt, err = config.GetServiceConfig("Neutron")
+	if err != nil {
+		return nil, err
+	}
+	neutronClient, err := os.NewNetworkV2(provider, endpointOpt)
+	if err != nil {
+		return nil, fmt.Errorf("error building neutron client: %v", err)
 	}
 
 	c := &openstackCloud{
-		cinderClient: cinderClient,
-		tags:         tags,
+		cinderClient:  cinderClient,
+		neutronClient: neutronClient,
+		tags:          tags,
 	}
 	return c, nil
 }
@@ -200,5 +218,50 @@ func (c *openstackCloud) CreateVolume(opt cinder.CreateOpts) (*cinder.Volume, er
 		return volume, nil
 	} else {
 		return volume, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) ListSecurityGroups(opt sg.ListOpts) ([]sg.SecGroup, error) {
+	var groups []sg.SecGroup
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := sg.List(c.neutronClient, opt).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("error listing security groups %v: %v", opt, err)
+		}
+
+		gs, err := sg.ExtractGroups(allPages)
+		if err != nil {
+			return false, fmt.Errorf("error extracting security groups from pages: %v", err)
+		}
+		groups = gs
+		return true, nil
+	})
+	if err != nil {
+		return groups, err
+	} else if done {
+		return groups, nil
+	} else {
+		return groups, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateSecurityGroup(opt sg.CreateOpts) (*sg.SecGroup, error) {
+	var group *sg.SecGroup
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		g, err := sg.Create(c.neutronClient, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating security group %v: %v", opt, err)
+		}
+		group = g
+		return true, nil
+	})
+	if err != nil {
+		return group, err
+	} else if done {
+		return group, nil
+	} else {
+		return group, wait.ErrWaitTimeout
 	}
 }
