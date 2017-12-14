@@ -34,7 +34,7 @@ PROTOKUBE=$(LOCAL)/protokube
 UPLOAD=$(BUILD)/upload
 UID:=$(shell id -u)
 GID:=$(shell id -g)
-TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages) 
+TESTABLE_PACKAGES:=$(shell egrep -v "k8s.io/kops/cloudmock|k8s.io/kops/vendor" hack/.packages)
 BAZEL_OPTIONS?=
 
 SOURCES:=$(shell find . -name "*.go")
@@ -43,10 +43,10 @@ SOURCES:=$(shell find . -name "*.go")
 MAKEDIR:=$(strip $(shell dirname "$(realpath $(lastword $(MAKEFILE_LIST)))"))
 
 # Keep in sync with upup/models/cloudup/resources/addons/dns-controller/
-DNS_CONTROLLER_TAG=1.8.0-beta.2
+DNS_CONTROLLER_TAG=1.8.0
 
-KOPS_RELEASE_VERSION = 1.8.0-beta.2
-KOPS_CI_VERSION      = 1.8.0-beta.3
+KOPS_RELEASE_VERSION = 1.8.0
+KOPS_CI_VERSION      = 1.8.0
 
 # kops local location
 KOPS                 = ${LOCAL}/kops
@@ -142,7 +142,7 @@ help: # Show this help
 
 .PHONY: clean
 clean: # Remove build directory and bindata-generated files
-	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -fv $$t; fi; done 
+	for t in ${BINDATA_TARGETS}; do if test -e $$t; then rm -fv $$t; fi; done
 	if test -e ${BUILD}; then rm -rfv ${BUILD}; fi
 
 .PHONY: kops
