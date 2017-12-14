@@ -115,6 +115,7 @@ func buildCertificateRequest(c *fi.ModelBuilderContext, b *NodeupModelContext, n
 		Path:     location,
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
+		Mode:     s("0600"),
 	})
 
 	return nil
@@ -141,6 +142,7 @@ func buildPrivateKeyRequest(c *fi.ModelBuilderContext, b *NodeupModelContext, na
 		Path:     location,
 		Contents: fi.NewStringResource(serialized),
 		Type:     nodetasks.FileType_File,
+		Mode:     s("0600"),
 	})
 
 	return nil
