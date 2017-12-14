@@ -134,6 +134,20 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				RouteTable:      publicRouteTable,
 				InternetGateway: igw,
 			})
+
+			for _, r := range b.Cluster.Spec.AdditionalRoutes {
+				t := &awstasks.Route{}
+				if r.VpcPeeringConnection != "" {
+					t = &awstasks.Route{
+						Name:                 s(r.CIDR),
+						Lifecycle:            b.Lifecycle,
+						CIDR:                 s(r.CIDR),
+						RouteTable:           publicRouteTable,
+						VpcPeeringConnection: s(r.VpcPeeringConnection),
+					}
+				}
+				c.EnsureTask(t)
+			}
 		}
 	}
 

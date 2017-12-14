@@ -58,7 +58,7 @@ type ClusterSpec struct {
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 	// Configuration of subnets we are targeting
 	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
-	// AdditionalRoutes is used to add more precreated additional routes to the routing table
+	// AdditionalRoutes is used to add more routes of precreated nat instance or VPC peering connection
 	AdditionalRoutes []AdditionalRoutesSpec `json:"additionalRoutes,omitempty"`
 	// Project is the cloud project we should use, required on GCE
 	Project string `json:"project,omitempty"`
@@ -362,11 +362,11 @@ type ClusterSubnetSpec struct {
 	Type SubnetType `json:"type,omitempty"`
 }
 
-// AdditionalRoutesSpec defines precreated additional routes
+// AdditionalRoutesSpec defines routes of precreated nat instance or VPC peering connection
 type AdditionalRoutesSpec struct {
-	CIDR                 *string `json:"cidr,omitempty"`
-	Instance             *string `json:"instance,omitempty"`
-	VpcPeeringConnection *string `json:"vpcPeeringConnection,omitempty"`
+	CIDR                 string `json:"cidr,omitempty"`
+	Instance             string `json:"instance,omitempty"`
+	VpcPeeringConnection string `json:"vpcPeeringConnection,omitempty"`
 }
 
 type EgressProxySpec struct {
