@@ -149,7 +149,10 @@ func (b *KubeletOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 
 		// Use the hostname from the AWS metadata service
-		clusterSpec.Kubelet.HostnameOverride = "@aws"
+		// if hostnameOverride is not set.
+		if clusterSpec.Kubelet.HostnameOverride == "" {
+			clusterSpec.Kubelet.HostnameOverride = "@aws"
+		}
 	}
 
 	if cloudProvider == kops.CloudProviderDO {
