@@ -263,7 +263,7 @@ const (
 	LoadBalancerTypeInternal LoadBalancerType = "Internal"
 )
 
-// LoadBalancerAccessSpec provides configuration details related to API LoadBalancer and it access
+// LoadBalancerAccessSpec provides configuration details related to API LoadBalancer and its access
 type LoadBalancerAccessSpec struct {
 	Type                     LoadBalancerType `json:"type,omitempty"`
 	IdleTimeoutSeconds       *int64           `json:"idleTimeoutSeconds,omitempty"`
