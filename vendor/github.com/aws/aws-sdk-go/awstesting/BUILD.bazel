@@ -5,6 +5,7 @@ go_library(
     srcs = [
         "assert.go",
         "client.go",
+        "custom_ca_bundle.go",
         "util.go",
     ],
     importpath = "github.com/aws/aws-sdk-go/awstesting",

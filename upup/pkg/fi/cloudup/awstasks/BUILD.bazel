@@ -91,6 +91,7 @@ go_test(
         "autoscalinggroup_test.go",
         "ebsvolume_test.go",
         "elastic_ip_test.go",
+        "internetgateway_test.go",
         "securitygroup_test.go",
         "sshkey_test.go",
         "subnet_test.go",

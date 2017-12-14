@@ -1,0 +1,8 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library")
+
+go_library(
+    name = "go_default_library",
+    srcs = ["list_of_shame.go"],
+    importpath = "github.com/aws/aws-sdk-go/private/model/api",
+    visibility = ["//visibility:public"],
+)
