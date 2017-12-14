@@ -23,3 +23,14 @@ go_test(
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
     ],
 )
+
+go_test(
+    name = "go_default_test",
+    srcs = ["unmarshal_test.go"],
+    importpath = "github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil",
+    library = ":go_default_library",
+    deps = [
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/awsutil:go_default_library",
+    ],
+)
