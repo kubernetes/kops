@@ -26,9 +26,9 @@ data:
     }
   net-conf.json: |
     {
-      "Network": "100.64.0.0/10",
+      "Network": "{{ .NonMasqueradeCIDR }}",
       "Backend": {
-        "Type": "{{FlannelBackendType}}"
+        "Type": "{{ FlannelBackendType }}"
       }
     }
 ---
