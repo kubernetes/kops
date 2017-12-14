@@ -71,6 +71,11 @@ func validateClusterSpec(spec *kops.ClusterSpec, fieldPath *field.Path) field.Er
 		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("nodePortAccess").Index(i))...)
 	}
 
+	// AdditionalNetworkCIDRs
+	for i, cidr := range spec.AdditionalNetworkCIDRs {
+		allErrs = append(allErrs, validateCIDR(cidr, fieldPath.Child("additionalNetworkCIDRs").Index(i))...)
+	}
+
 	for i := range spec.Hooks {
 		allErrs = append(allErrs, validateHookSpec(&spec.Hooks[i], fieldPath.Child("hooks").Index(i))...)
 	}
