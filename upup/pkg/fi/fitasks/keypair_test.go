@@ -17,9 +17,10 @@ limitations under the License.
 package fitasks
 
 import (
-	"k8s.io/kops/upup/pkg/fi"
 	"strings"
 	"testing"
+
+	"k8s.io/kops/upup/pkg/fi"
 )
 
 func TestKeypairDeps(t *testing.T) {
