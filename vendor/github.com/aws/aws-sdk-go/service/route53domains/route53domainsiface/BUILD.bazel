@@ -6,6 +6,7 @@ go_library(
     importpath = "github.com/aws/aws-sdk-go/service/route53domains/route53domainsiface",
     visibility = ["//visibility:public"],
     deps = [
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/route53domains:go_default_library",
     ],
