@@ -308,7 +308,7 @@ func evaluateSpec(c *api.Cluster) error {
 }
 
 func evaluateHostnameOverride(hostnameOverride string) (string, error) {
-	if hostnameOverride == "" {
+	if hostnameOverride == "" || hostnameOverride == "@hostname" {
 		return "", nil
 	}
 	k := strings.TrimSpace(hostnameOverride)
