@@ -157,6 +157,20 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 		}
 	}
 
+	// Check AdditionalNetworkCIDRs
+	var additionalNetworkCIDRs []*net.IPNet
+	{
+		if len(c.Spec.AdditionalNetworkCIDRs) > 0 {
+			for _, AdditionalNetworkCIDR := range c.Spec.AdditionalNetworkCIDRs {
+				_, IPNetAdditionalNetworkCIDR, err := net.ParseCIDR(AdditionalNetworkCIDR)
+				if err != nil {
+					return field.Invalid(fieldSpec.Child("AdditionalNetworkCIDRs"), AdditionalNetworkCIDR, fmt.Sprintf("Cluster had an invalid AdditionalNetworkCIDRs"))
+				}
+				additionalNetworkCIDRs = append(additionalNetworkCIDRs, IPNetAdditionalNetworkCIDR)
+			}
+		}
+	}
+
 	// Check NonMasqueradeCIDR
 	var nonMasqueradeCIDR *net.IPNet
 	{
@@ -326,7 +340,7 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 					return field.Invalid(fieldSubnet.Child("CIDR"), s.CIDR, "Subnet had an invalid CIDR")
 				}
 
-				if networkCIDR != nil && !isSubnet(networkCIDR, subnetCIDR) {
+				if networkCIDR != nil && !validateSubnetCIDR(networkCIDR, additionalNetworkCIDRs, subnetCIDR) {
 					return field.Invalid(fieldSubnet.Child("CIDR"), s.CIDR, fmt.Sprintf("Subnet %q had a CIDR %q that was not a subnet of the NetworkCIDR %q", s.Name, s.CIDR, c.Spec.NetworkCIDR))
 				}
 			}
@@ -480,6 +494,21 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	}
 
 	return nil
+}
+
+// validateSubnetCIDR is responsible for validating subnets are part of the CIRDs assigned to the cluster.
+func validateSubnetCIDR(networkCIDR *net.IPNet, additionalNetworkCIDRs []*net.IPNet, subnetCIDR *net.IPNet) bool {
+	if isSubnet(networkCIDR, subnetCIDR) {
+		return true
+	}
+
+	for _, additionalNetworkCIDR := range additionalNetworkCIDRs {
+		if isSubnet(additionalNetworkCIDR, subnetCIDR) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // validateEtcdClusterSpec is responsible for validating the etcd cluster spec
