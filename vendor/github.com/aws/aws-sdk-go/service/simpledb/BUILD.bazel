@@ -5,6 +5,8 @@ go_library(
     srcs = [
         "api.go",
         "customizations.go",
+        "doc.go",
+        "errors.go",
         "service.go",
         "unmarshall_error.go",
     ],
@@ -38,17 +40,13 @@ go_test(
 
 go_test(
     name = "go_default_xtest",
-    srcs = [
-        "examples_test.go",
-        "unmarshall_error_test.go",
-    ],
+    srcs = ["unmarshall_error_test.go"],
     importpath = "github.com/aws/aws-sdk-go/service/simpledb_test",
     deps = [
         ":go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/awserr:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
-        "//vendor/github.com/aws/aws-sdk-go/aws/session:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/awstesting/unit:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
     ],
