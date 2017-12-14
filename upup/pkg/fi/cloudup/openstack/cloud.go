@@ -25,6 +25,7 @@ import (
 	os "github.com/gophercloud/gophercloud/openstack"
 	cinder "github.com/gophercloud/gophercloud/openstack/blockstorage/v2/volumes"
 	sg "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/groups"
+	sgr "github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/kops/pkg/apis/kops"
@@ -74,6 +75,12 @@ type OpenstackCloud interface {
 
 	//CreateSecurityGroup will create a new Neutron security group
 	CreateSecurityGroup(opt sg.CreateOpts) (*sg.SecGroup, error)
+
+	//ListSecurityGroupRules will return the Neutron security group rules which match the options
+	ListSecurityGroupRules(opt sgr.ListOpts) ([]sgr.SecGroupRule, error)
+
+	//CreateSecurityGroupRule will create a new Neutron security group rule
+	CreateSecurityGroupRule(opt sgr.CreateOpts) (*sgr.SecGroupRule, error)
 }
 
 type openstackCloud struct {
@@ -263,5 +270,50 @@ func (c *openstackCloud) CreateSecurityGroup(opt sg.CreateOpts) (*sg.SecGroup, e
 		return group, nil
 	} else {
 		return group, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) ListSecurityGroupRules(opt sgr.ListOpts) ([]sgr.SecGroupRule, error) {
+	var rules []sgr.SecGroupRule
+
+	done, err := vfs.RetryWithBackoff(readBackoff, func() (bool, error) {
+		allPages, err := sgr.List(c.neutronClient, opt).AllPages()
+		if err != nil {
+			return false, fmt.Errorf("error listing security group rules %v: %v", opt, err)
+		}
+
+		rs, err := sgr.ExtractRules(allPages)
+		if err != nil {
+			return false, fmt.Errorf("error extracting security group rules from pages: %v", err)
+		}
+		rules = rs
+		return true, nil
+	})
+	if err != nil {
+		return rules, err
+	} else if done {
+		return rules, nil
+	} else {
+		return rules, wait.ErrWaitTimeout
+	}
+}
+
+func (c *openstackCloud) CreateSecurityGroupRule(opt sgr.CreateOpts) (*sgr.SecGroupRule, error) {
+	var rule *sgr.SecGroupRule
+
+	done, err := vfs.RetryWithBackoff(writeBackoff, func() (bool, error) {
+		r, err := sgr.Create(c.neutronClient, opt).Extract()
+		if err != nil {
+			return false, fmt.Errorf("error creating security group rule %v: %v", opt, err)
+		}
+		rule = r
+		return true, nil
+	})
+	if err != nil {
+		return rule, err
+	} else if done {
+		return rule, nil
+	} else {
+		return rule, wait.ErrWaitTimeout
 	}
 }
