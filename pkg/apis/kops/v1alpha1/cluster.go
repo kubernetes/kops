@@ -333,9 +333,9 @@ type EtcdMemberSpec struct {
 
 // AdditionalRoutesSpec defines routes of precreated nat instance or VPC peering connection
 type AdditionalRoutesSpec struct {
-  CIDR                 string `json:"cidr,omitempty"`
-  Instance             string `json:"instance,omitempty"`
-  VpcPeeringConnection string `json:"vpcPeeringConnection,omitempty"`
+	CIDR                 string `json:"cidr,omitempty"`
+	Instance             string `json:"instance,omitempty"`
+	VpcPeeringConnection string `json:"vpcPeeringConnection,omitempty"`
 }
 
 type ClusterZoneSpec struct {
