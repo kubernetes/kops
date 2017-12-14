@@ -55,6 +55,8 @@ type ClusterSpec struct {
 	CloudProvider string `json:"cloudProvider,omitempty"`
 	// The version of kubernetes to install (optional, and can be a "spec" like stable)
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
+	// AdditionalRoutes is used to add more precreated additional routes to the routing table
+	AdditionalRoutes []AdditionalRoutesSpec `json:"additionalRoutes,omitempty"`
 	// Configuration of zones we are targeting
 	Zones []*ClusterZoneSpec `json:"zones,omitempty"`
 	// Project is the cloud project we should use, required on GCE
@@ -327,6 +329,13 @@ type EtcdMemberSpec struct {
 	KmsKeyId *string `json:"kmsKeyId,omitempty"`
 	// EncryptedVolume indicates you want to encrypt the volume
 	EncryptedVolume *bool `json:"encryptedVolume,omitempty"`
+}
+
+// AdditionalRoutesSpec defines precreated additional routes
+type AdditionalRoutesSpec struct {
+  CIDR                 *string `json:"cidr,omitempty"`
+  Instance             *string `json:"instance,omitempty"`
+  VpcPeeringConnection *string `json:"vpcPeeringConnection,omitempty"`
 }
 
 type ClusterZoneSpec struct {

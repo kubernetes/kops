@@ -55,6 +55,8 @@ type ClusterSpec struct {
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 	// Configuration of subnets we are targeting
 	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
+	// AdditionalRoutes is used to add more precreated additional routes to the routing table
+	AdditionalRoutes []AdditionalRoutesSpec `json:"additionalRoutes,omitempty"`
 	// Project is the cloud project we should use, required on GCE
 	Project string `json:"project,omitempty"`
 	// MasterPublicName is the external DNS name for the master nodes
@@ -353,6 +355,13 @@ type ClusterSubnetSpec struct {
 	Egress string `json:"egress,omitempty"`
 
 	Type SubnetType `json:"type,omitempty"`
+}
+
+// AdditionalRoutesSpec defines precreated additional routes
+type AdditionalRoutesSpec struct {
+	CIDR                 *string `json:"cidr,omitempty"`
+	Instance             *string `json:"instance,omitempty"`
+	VpcPeeringConnection *string `json:"vpcPeeringConnection,omitempty"`
 }
 
 type EgressProxySpec struct {
