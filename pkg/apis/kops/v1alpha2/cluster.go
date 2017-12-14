@@ -267,9 +267,11 @@ const (
 	LoadBalancerTypeInternal LoadBalancerType = "Internal"
 )
 
+// LoadBalancerAccessSpec provides configuration details related to API LoadBalancer and its access
 type LoadBalancerAccessSpec struct {
-	Type               LoadBalancerType `json:"type,omitempty"`
-	IdleTimeoutSeconds *int64           `json:"idleTimeoutSeconds,omitempty"`
+	Type                     LoadBalancerType `json:"type,omitempty"`
+	IdleTimeoutSeconds       *int64           `json:"idleTimeoutSeconds,omitempty"`
+	AdditionalSecurityGroups []string         `json:"additionalSecurityGroups,omitempty"`
 }
 
 type KubeDNSConfig struct {

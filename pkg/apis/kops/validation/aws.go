@@ -19,13 +19,22 @@ package validation
 import (
 	"strings"
 
+	"k8s.io/apimachinery/pkg/util/sets"
 	"k8s.io/apimachinery/pkg/util/validation/field"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 func awsValidateCluster(c *kops.Cluster) field.ErrorList {
-	return nil
+	allErrs := field.ErrorList{}
+
+	if c.Spec.API != nil {
+		if c.Spec.API.LoadBalancer != nil {
+			allErrs = append(allErrs, awsValidateAdditionalSecurityGroups(field.NewPath("spec", "api", "loadBalancer", "additionalSecurityGroups"), c.Spec.API.LoadBalancer.AdditionalSecurityGroups)...)
+		}
+	}
+
+	return allErrs
 }
 
 func awsValidateInstanceGroup(ig *kops.InstanceGroup) field.ErrorList {
@@ -41,7 +50,12 @@ func awsValidateInstanceGroup(ig *kops.InstanceGroup) field.ErrorList {
 func awsValidateAdditionalSecurityGroups(fieldPath *field.Path, groups []string) field.ErrorList {
 	allErrs := field.ErrorList{}
 
+	names := sets.NewString()
 	for i, s := range groups {
+		if names.Has(s) {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Index(i), s, "security groups with duplicate name found"))
+		}
+		names.Insert(s)
 		if strings.TrimSpace(s) == "" {
 			allErrs = append(allErrs, field.Invalid(fieldPath.Index(i), s, "security group cannot be empty, if specified"))
 			continue
