@@ -15,6 +15,17 @@ k8s.io/kops/dns-controller/cmd/dns-controller
 k8s.io/kops/dns-controller/pkg/dns
 k8s.io/kops/dns-controller/pkg/util
 k8s.io/kops/dns-controller/pkg/watchers
+k8s.io/kops/dnsprovider/pkg/dnsprovider
+k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53
+k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53/stubs
+k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns
+k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns/stubs
+k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns
+k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal
+k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/interfaces
+k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns/internal/stubs
+k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype
+k8s.io/kops/dnsprovider/pkg/dnsprovider/tests
 k8s.io/kops/examples/kops-api-example
 k8s.io/kops/federation
 k8s.io/kops/federation/model
