@@ -137,8 +137,11 @@ spec:
     oidcIssuerURL: https://your-oidc-provider.svc.cluster.local
     oidcClientID: kubernetes
     oidcUsernameClaim: sub
+    oidcUsernamePrefix: "oidc:"
     oidcGroupsClaim: user_roles
+    oidcGroupsPrefix: "oidc:"
     oidcCAFile: /etc/kubernetes/ssl/kc-ca.pem
+
 ```
 
 #### audit logging
