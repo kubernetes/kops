@@ -145,11 +145,9 @@ func run() error {
 	}
 
 	if clusterID == "" {
-		if clusterID == "" {
-			return fmt.Errorf("cluster-id is required (cannot be determined from cloud)")
-		}
-		glog.Infof("Setting cluster-id from cloud: %s", clusterID)
+		return fmt.Errorf("cluster-id is required (cannot be determined from cloud)")
 	}
+	glog.Infof("cluster-id: %s", clusterID)
 
 	if internalIP == nil {
 		glog.Errorf("Cannot determine internal IP")
