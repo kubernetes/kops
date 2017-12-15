@@ -27,17 +27,17 @@ import (
 	"strings"
 
 	"k8s.io/kops/dns-controller/pkg/dns"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipdns "k8s.io/kops/protokube/pkg/gossip/dns"
 	"k8s.io/kops/protokube/pkg/gossip/mesh"
 	"k8s.io/kops/protokube/pkg/protokube"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 	// Load DNS plugins
 	"github.com/golang/glog"
 	"github.com/spf13/pflag"
-	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/aws/route53"
-	k8scoredns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns"
-	_ "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
+	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/aws/route53"
+	k8scoredns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns"
+	_ "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 )
 
 var (

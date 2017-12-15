@@ -13,10 +13,10 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//dns-controller/pkg/util:go_default_library",
+        "//dnsprovider/pkg/dnsprovider:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/providers/coredns:go_default_library",
+        "//dnsprovider/pkg/dnsprovider/rrstype:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider:go_default_library",
-        "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns:go_default_library",
-        "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider/rrstype:go_default_library",
     ],
 )
 

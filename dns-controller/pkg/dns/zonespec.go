@@ -21,7 +21,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 
 type ZoneSpec struct {

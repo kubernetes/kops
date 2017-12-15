@@ -24,10 +24,10 @@ import (
 	"github.com/golang/glog"
 	compute "google.golang.org/api/compute/v0.beta"
 	"k8s.io/apimachinery/pkg/util/sets"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/pkg/resources"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
 type gceListFn func() ([]*resources.Resource, error)

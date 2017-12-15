@@ -17,7 +17,7 @@ limitations under the License.
 package provider
 
 import (
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 
 type resourceRecordChangeset struct {
