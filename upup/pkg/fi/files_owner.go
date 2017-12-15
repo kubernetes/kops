@@ -37,10 +37,16 @@ func EnsureFileOwner(destPath string, owner string, groupName string) (bool, err
 	if err != nil {
 		return changed, fmt.Errorf("error looking up user %q: %v", owner, err)
 	}
+	if user == nil {
+		return changed, fmt.Errorf("user %q not found", owner)
+	}
 
 	group, err := LookupGroup(groupName)
 	if err != nil {
 		return changed, fmt.Errorf("error looking up group %q: %v", groupName, err)
+	}
+	if group == nil {
+		return changed, fmt.Errorf("group %q not found", owner)
 	}
 
 	if int(stat.Sys().(*syscall.Stat_t).Uid) == user.Uid && int(stat.Sys().(*syscall.Stat_t).Gid) == group.Gid {
