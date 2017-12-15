@@ -26,6 +26,9 @@ import (
 
 	"github.com/golang/glog"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/kops/cmd/kops/util"
@@ -33,6 +36,7 @@ import (
 	"k8s.io/kops/pkg/diff"
 	"k8s.io/kops/pkg/kopscodecs"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 )
 
 var MagicTimestamp = metav1.Time{Time: time.Date(2017, 1, 1, 0, 0, 0, 0, time.UTC)}
@@ -84,6 +88,24 @@ func TestCreateClusterWithNGWSpecified(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/ngwspecified", "v1alpha2")
 }
 
+// TestCreateClusterSharedVPC runs kops create cluster vpc.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678
+func TestCreateClusterSharedVPC(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_vpc", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_vpc", "v1alpha2")
+}
+
+// TestCreateClusterSharedSubnets runs kops create cluster subnet.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678 --subnets subnet-1
+func TestCreateClusterSharedSubnets(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets", "v1alpha2")
+}
+
+// TestCreateClusterPrivateSharedSubnets runs kops create cluster private-subnet.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678 --subnets subnet-1 --utility-subnets subnet-2
+func TestCreateClusterPrivateSharedSubnets(t *testing.T) {
+	// Cannot be expressed in v1alpha1 API: runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private_shared_subnets", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private_shared_subnets", "v1alpha2")
+}
+
 func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string) {
 	var stdout bytes.Buffer
 
@@ -98,6 +120,24 @@ func runCreateClusterIntegrationTest(t *testing.T, srcDir string, version string
 
 	h.SetupMockAWS()
 	h.SetupMockGCE()
+
+	cloudTags := map[string]string{}
+	awsCloud, _ := awsup.NewAWSCloud("us-test-1", cloudTags)
+	awsCloud.EC2().CreateVpc(&ec2.CreateVpcInput{
+		CidrBlock: aws.String("10.0.0.0/12"),
+	})
+
+	awsCloud.EC2().CreateSubnet(&ec2.CreateSubnetInput{
+		AvailabilityZone: aws.String("us-test-1a"),
+		VpcId:            aws.String("vpc-12345678"),
+		CidrBlock:        aws.String("10.10.0.0/24"),
+	})
+
+	awsCloud.EC2().CreateSubnet(&ec2.CreateSubnetInput{
+		AvailabilityZone: aws.String("us-test-1a"),
+		VpcId:            aws.String("vpc-12345678"),
+		CidrBlock:        aws.String("10.11.0.0/24"),
+	})
 
 	publicKeyPath := path.Join(h.TempDir, "id_rsa.pub")
 	privateKeyPath := path.Join(h.TempDir, "id_rsa")
