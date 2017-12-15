@@ -2265,8 +2265,26 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 			**out = **in
 		}
 	}
+	if in.OIDCUsernamePrefix != nil {
+		in, out := &in.OIDCUsernamePrefix, &out.OIDCUsernamePrefix
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	if in.OIDCGroupsClaim != nil {
 		in, out := &in.OIDCGroupsClaim, &out.OIDCGroupsClaim
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
+	if in.OIDCGroupsPrefix != nil {
+		in, out := &in.OIDCGroupsPrefix, &out.OIDCGroupsPrefix
 		if *in == nil {
 			*out = nil
 		} else {
