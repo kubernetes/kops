@@ -503,7 +503,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		zoneToSubnetMap[region] = subnet
 	} else {
 		var zoneToSubnetProviderID map[string]string
-		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 {
+		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
 			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(c.VPCID, c.Zones[0][:len(c.Zones[0])-1], c.SubnetIDs)
 			if err != nil {
 				return err
@@ -877,7 +877,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		var utilitySubnets []api.ClusterSubnetSpec
 
 		var zoneToSubnetProviderID map[string]string
-		if len(c.Zones) > 0 && len(c.UtilitySubnetIDs) > 0 {
+		if len(c.Zones) > 0 && len(c.UtilitySubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
 			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(c.VPCID, c.Zones[0][:len(c.Zones[0])-1], c.UtilitySubnetIDs)
 			if err != nil {
 				return err
