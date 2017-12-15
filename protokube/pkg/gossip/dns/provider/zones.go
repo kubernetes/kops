@@ -19,8 +19,8 @@ package provider
 import (
 	"fmt"
 
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/protokube/pkg/gossip/dns"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
 )
 
 type zones struct {

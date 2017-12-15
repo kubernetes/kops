@@ -24,11 +24,11 @@ import (
 	"google.golang.org/api/iam/v1"
 	"google.golang.org/api/storage/v1"
 	"k8s.io/api/core/v1"
+	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
+	dnsproviderclouddns "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/google/clouddns"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/cloudinstances"
 	"k8s.io/kops/upup/pkg/fi"
-	"k8s.io/kubernetes/federation/pkg/dnsprovider"
-	dnsproviderclouddns "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/google/clouddns"
 )
 
 // mockGCECloud is a mock implementation of GCECloud for testing
