@@ -139,6 +139,15 @@ func run() error {
 			internalIP = vsphereVolumes.InternalIp()
 		}
 
+	} else if cloud == "baremetal" {
+		if internalIP == nil {
+			ip, err := findInternalIP()
+			if err != nil {
+				glog.Errorf("error finding internal IP: %v", err)
+				os.Exit(1)
+			}
+			internalIP = ip
+		}
 	} else {
 		glog.Errorf("Unknown cloud %q", cloud)
 		os.Exit(1)
@@ -316,7 +325,7 @@ func run() error {
 	return fmt.Errorf("Unexpected exit")
 }
 
-// TODO: run with --net=host ??
+// findInternalIP attempts to discover the internal IP address by inspecting the network interfaces
 func findInternalIP() (net.IP, error) {
 	var ips []net.IP
 
@@ -336,7 +345,7 @@ func findInternalIP() (net.IP, error) {
 		}
 
 		// Not a lot else to go on...
-		if !strings.HasPrefix(name, "eth") {
+		if !strings.HasPrefix(name, "eth") && !strings.HasPrefix(name, "en") {
 			glog.V(2).Infof("Ignoring interface %s - name does not look like ethernet device", name)
 			continue
 		}
@@ -370,11 +379,32 @@ func findInternalIP() (net.IP, error) {
 		return nil, fmt.Errorf("unable to determine internal ip (no adddresses found)")
 	}
 
-	if len(ips) != 1 {
-		glog.Warningf("Found multiple internal IPs; making arbitrary choice")
-		for _, ip := range ips {
-			glog.Warningf("\tip: %s", ip.String())
+	if len(ips) == 1 {
+		return ips[0], nil
+	}
+
+	var ipv4s []net.IP
+	for _, ip := range ips {
+		if ip.To4() != nil {
+			ipv4s = append(ipv4s, ip)
 		}
 	}
+
+	glog.Warningf("Found multiple internal IPs")
+	for _, ip := range ips {
+		glog.Warningf("\tip: %s", ip.String())
+	}
+
+	if len(ipv4s) != 0 {
+		// TODO: sort?
+		if len(ipv4s) == 1 {
+			glog.Warningf("choosing IPv4 address: %s", ipv4s[0].String())
+		} else {
+			glog.Warningf("arbitrarily choosing IPv4 address: %s", ipv4s[0].String())
+		}
+		return ipv4s[0], nil
+	}
+
+	glog.Warningf("arbitrarily choosing address: %s", ips[0].String())
 	return ips[0], nil
 }
