@@ -52,8 +52,14 @@ func (c *ClusterVFS) Get(name string, options metav1.GetOptions) (*api.Cluster, 
 	if options.ResourceVersion != "" {
 		return nil, fmt.Errorf("ResourceVersion not supported in ClusterVFS::Get")
 	}
-	// TODO: Return not found
-	return c.find(name)
+	o, err := c.find(name)
+	if err != nil {
+		return nil, err
+	}
+	if o == nil {
+		return nil, errors.NewNotFound(schema.GroupResource{Group: api.GroupName, Resource: "Cluster"}, name)
+	}
+	return o, nil
 }
 
 // Deprecated, but we need this for now..
