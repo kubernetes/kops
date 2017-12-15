@@ -150,18 +150,14 @@ func RunCreateInstanceGroup(f *util.Factory, cmd *cobra.Command, args []string, 
 	}
 	ig.Spec.Role = role
 
-	if len(options.Subnets) == 0 {
-		return fmt.Errorf("cannot create instance group without subnets; specify --subnet flag(s)")
-	}
 	ig.Spec.Subnets = options.Subnets
 
 	ig, err = cloudup.PopulateInstanceGroupSpec(cluster, ig, channel)
-
-	ig.AddInstanceGroupNodeLabel()
-
 	if err != nil {
 		return err
 	}
+
+	ig.AddInstanceGroupNodeLabel()
 
 	if options.DryRun {
 
