@@ -28,6 +28,11 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
+	"github.com/blang/semver"
+	"github.com/golang/glog"
+	"k8s.io/kops/pkg/pki"
+	"os"
+	"strings"
 )
 
 // NodeupModelContext is the context supplied the nodeup tasks
@@ -129,6 +134,13 @@ func (c *NodeupModelContext) buildPKIKubeconfig(id string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error fetching %q private key from keystore: %v", id, err)
 	}
+
+	return c.buildKubeconfigFromClientCertificate(id, caCertificate, certificate, privateKey)
+}
+
+// buildKubeconfigFromClientCertificate generates a kubeconfig that uses client certificate authentication
+func (c *NodeupModelContext) buildKubeconfigFromClientCertificate(id string, caCertificate *pki.Certificate, certificate *pki.Certificate, privateKey *pki.PrivateKey) (string, error) {
+	var err error
 
 	user := kubeconfig.KubectlUser{}
 	user.ClientCertificateData, err = certificate.AsBytes()
@@ -257,4 +269,21 @@ func (c *NodeupModelContext) KubectlPath() string {
 		kubeletCommand = "/home/kubernetes/bin"
 	}
 	return kubeletCommand
+}
+
+// NodeName returns the name of the local Node, as it will be created in k8s
+func (c *NodeupModelContext) NodeName() string {
+	// This mirrors nodeutil.GetHostName
+	nodeName := c.Cluster.Spec.Kubelet.HostnameOverride
+	if c.IsMaster && c.Cluster.Spec.MasterKubelet.HostnameOverride != "" {
+		nodeName = c.Cluster.Spec.MasterKubelet.HostnameOverride
+	}
+	if nodeName == "" {
+		hostname, err := os.Hostname()
+		if err != nil {
+			glog.Fatalf("Couldn't determine hostname: %v", err)
+		}
+		nodeName = hostname
+	}
+	return strings.ToLower(strings.TrimSpace(nodeName))
 }

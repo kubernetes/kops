@@ -27,6 +27,7 @@ import (
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/flagbuilder"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/secrets"
 	"k8s.io/kops/util/pkg/vfs"
@@ -116,6 +117,21 @@ func (t *templateFunctions) populate(dest template.FuncMap) {
 	dest["ClusterName"] = func() string {
 		return t.cluster.ObjectMeta.Name
 	}
+}
+
+// CACertificate returns the primary CA certificate for the cluster
+func (t *templateFunctions) CACertificate() (*pki.Certificate, error) {
+	return t.keyStore.Cert(fi.CertificateId_CA)
+}
+
+// PrivateKey returns the specified private key
+func (t *templateFunctions) PrivateKey(id string) (*pki.PrivateKey, error) {
+	return t.keyStore.PrivateKey(id)
+}
+
+// Certificate returns the specified private key
+func (t *templateFunctions) Certificate(id string) (*pki.Certificate, error) {
+	return t.keyStore.Cert(id)
 }
 
 // GetToken returns the specified token
