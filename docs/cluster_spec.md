@@ -126,15 +126,15 @@ spec:
 ### cluster.spec additionalRoutes Keys
 
 #### cidr
-The IPv4 CIDR address block used for the destination match of the route. For example, 0.0.0.0/0. You must specify the destination CIDR block.
+The IPv4 CIDR address block used for the destination match of the route. For example, `0.0.0.0/0`. You must specify the destination CIDR block.
 
 #### instance
-The ID of a NAT instance in your VPC. For example, "i-1a2b3c4d".
+The ID of a NAT instance in your VPC. For example, `i-1a2b3c4d`.
 
 #### vpcPeeringConnection
-The ID of a VPC peering connection. For example, "pcx-1a2b3c4d".
+The ID of a VPC peering connection. For example, `pcx-1a2b3c4d`.
 
-On AWS, this feature add more route extensions of precreated VPC peering connections and nat instances. This will allow to route traffic to specific CIDR through a customised nat instances. Furthermore, it will allow to route traffic to another peered VPC. You must specify either "instance" or "vpcPeeringConnection" for the additional routes.
+On AWS, this feature add more route extensions of precreated VPC peering connections and nat instances. This will allow to route traffic to specific CIDR through a customised nat instances. Furthermore, it will allow to route traffic to another peered VPC. You must specify either `instance` or `vpcPeeringConnection` for the additional routes.
 
 ```yaml
 spec:
