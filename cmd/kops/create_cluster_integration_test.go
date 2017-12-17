@@ -100,6 +100,12 @@ func TestCreateClusterSharedSubnets(t *testing.T) {
 	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets", "v1alpha2")
 }
 
+// TestCreateClusterSharedSubnetsVpcLookup runs kops create cluster subnet.example.com --zones us-test-1a --master-zones us-test-1a --vpc --subnets subnet-1
+func TestCreateClusterSharedSubnetsVpcLookup(t *testing.T) {
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets_vpc_lookup", "v1alpha1")
+	runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/shared_subnets_vpc_lookup", "v1alpha2")
+}
+
 // TestCreateClusterPrivateSharedSubnets runs kops create cluster private-subnet.example.com --zones us-test-1a --master-zones us-test-1a --vpc vpc-12345678 --subnets subnet-1 --utility-subnets subnet-2
 func TestCreateClusterPrivateSharedSubnets(t *testing.T) {
 	// Cannot be expressed in v1alpha1 API: runCreateClusterIntegrationTest(t, "../../tests/integration/create_cluster/private_shared_subnets", "v1alpha1")
