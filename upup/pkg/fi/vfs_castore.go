@@ -18,7 +18,6 @@ package fi
 
 import (
 	"bytes"
-	"crypto/md5"
 	crypto_rand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -31,11 +30,10 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"golang.org/x/crypto/ssh"
-
 	"k8s.io/kops/pkg/acls"
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -53,8 +51,21 @@ type cachedEntry struct {
 }
 
 var _ CAStore = &VFSCAStore{}
+var _ SSHCredentialStore = &VFSCAStore{}
 
 func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path) CAStore {
+	c := &VFSCAStore{
+		basedir:   basedir,
+		cluster:   cluster,
+		cachedCAs: make(map[string]*cachedEntry),
+	}
+
+	return c
+}
+
+// NewVFSSSHCredentialStore creates a SSHCredentialStore backed by VFS
+func NewVFSSSHCredentialStore(cluster *kops.Cluster, basedir vfs.Path) SSHCredentialStore {
+	// Note currently identical to NewVFSCAStore
 	c := &VFSCAStore{
 		basedir:   basedir,
 		cluster:   cluster,
@@ -351,7 +362,8 @@ func (c *VFSCAStore) FindCertificatePool(id string) (*CertificatePool, error) {
 	return pool, nil
 }
 
-func (c *VFSCAStore) List() ([]*KeystoreItem, error) {
+// ListKeysets implements CAStore::ListKeysets
+func (c *VFSCAStore) ListKeysets() ([]*KeystoreItem, error) {
 	var items []*KeystoreItem
 
 	{
@@ -382,6 +394,13 @@ func (c *VFSCAStore) List() ([]*KeystoreItem, error) {
 		}
 	}
 
+	return items, nil
+}
+
+// ListSSHCredentials implements SSHCredentialStore::ListSSHCredentials
+func (c *VFSCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
+	var items []*kops.SSHCredential
+
 	{
 		baseDir := c.basedir.Join("ssh", "public")
 		files, err := baseDir.ReadTree()
@@ -401,11 +420,14 @@ func (c *VFSCAStore) List() ([]*KeystoreItem, error) {
 				continue
 			}
 
-			item := &KeystoreItem{
-				Name: tokens[0],
-				Id:   insertFingerprintColons(tokens[1]),
-				Type: SecretTypeSSHPublicKey,
+			pubkey, err := f.ReadFile()
+			if err != nil {
+				return nil, fmt.Errorf("error reading SSH credential %q: %v", f, err)
 			}
+
+			item := &kops.SSHCredential{}
+			item.Name = tokens[0]
+			item.Spec.PublicKey = string(pubkey)
 			items = append(items, item)
 		}
 	}
@@ -658,58 +680,11 @@ func (c *VFSCAStore) buildSerial() *big.Int {
 	return pki.BuildPKISerial(t)
 }
 
-func formatFingerprint(data []byte) string {
-	var buf bytes.Buffer
-
-	for i, b := range data {
-		s := fmt.Sprintf("%0.2x", b)
-		if i != 0 {
-			buf.WriteString(":")
-		}
-		buf.WriteString(s)
-	}
-	return buf.String()
-}
-
-func insertFingerprintColons(id string) string {
-	remaining := id
-
-	var buf bytes.Buffer
-	for {
-		if remaining == "" {
-			break
-		}
-		if buf.Len() != 0 {
-			buf.WriteString(":")
-		}
-		if len(remaining) < 2 {
-			glog.Warningf("unexpected format for SSH public key id: %q", id)
-			buf.WriteString(remaining)
-			break
-		} else {
-			buf.WriteString(remaining[0:2])
-			remaining = remaining[2:]
-		}
-	}
-	return buf.String()
-}
-
 // AddSSHPublicKey stores an SSH public key
 func (c *VFSCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
-	var id string
-	{
-		sshPublicKey, _, _, _, err := ssh.ParseAuthorizedKey(pubkey)
-		if err != nil {
-			return fmt.Errorf("error parsing public key: %v", err)
-		}
-
-		// compute fingerprint to serve as id
-		h := md5.New()
-		_, err = h.Write(sshPublicKey.Marshal())
-		if err != nil {
-			return err
-		}
-		id = formatFingerprint(h.Sum(nil))
+	id, err := sshcredentials.Fingerprint(string(pubkey))
+	if err != nil {
+		return fmt.Errorf("error fingerprinting SSH public key %q: %v", name, err)
 	}
 
 	p := c.buildSSHPublicKeyPath(name, id)
@@ -728,20 +703,35 @@ func (c *VFSCAStore) buildSSHPublicKeyPath(name string, id string) vfs.Path {
 	return c.basedir.Join("ssh", "public", name, id)
 }
 
-func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*KeystoreItem, error) {
+func (c *VFSCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, error) {
 	p := c.basedir.Join("ssh", "public", name)
 
-	items, err := c.loadPath(p)
+	files, err := p.ReadDir()
 	if err != nil {
+		if os.IsNotExist(err) {
+			return nil, nil
+		}
 		return nil, err
 	}
-	for _, item := range items {
-		// Fill in the missing fields
-		item.Type = SecretTypeSSHPublicKey
-		item.Name = name
 
-		item.Id = insertFingerprintColons(item.Id)
+	var items []*kops.SSHCredential
+
+	for _, f := range files {
+		data, err := f.ReadFile()
+		if err != nil {
+			if os.IsNotExist(err) {
+				glog.V(2).Infof("Ignoring not-found issue reading %q", f)
+				continue
+			}
+			return nil, fmt.Errorf("error loading SSH item %q: %v", f, err)
+		}
+
+		item := &kops.SSHCredential{}
+		item.Name = name
+		item.Spec.PublicKey = string(data)
+		items = append(items, item)
 	}
+
 	return items, nil
 }
 
@@ -791,12 +781,9 @@ func (c *VFSCAStore) loadData(p vfs.Path) (*pki.PrivateKey, error) {
 	return k, err
 }
 
-func (c *VFSCAStore) DeleteSecret(item *KeystoreItem) error {
+// DeleteKeyset implements CAStore::DeleteKeyset
+func (c *VFSCAStore) DeleteKeyset(item *KeystoreItem) error {
 	switch item.Type {
-	case SecretTypeSSHPublicKey:
-		p := c.buildSSHPublicKeyPath(item.Name, item.Id)
-		return p.Remove()
-
 	case SecretTypeKeypair:
 		version, ok := big.NewInt(0).SetString(item.Id, 10)
 		if !ok {
@@ -816,4 +803,16 @@ func (c *VFSCAStore) DeleteSecret(item *KeystoreItem) error {
 		// Primarily because we need to make sure users can recreate them!
 		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Type)
 	}
+}
+
+func (c *VFSCAStore) DeleteSSHCredential(item *kops.SSHCredential) error {
+	if item.Spec.PublicKey == "" {
+		return fmt.Errorf("must specific public key to delete SSHCredential")
+	}
+	id, err := sshcredentials.Fingerprint(item.Spec.PublicKey)
+	if err != nil {
+		return fmt.Errorf("invalid PublicKey when deleting SSHCredential: %v", err)
+	}
+	p := c.buildSSHPublicKeyPath(item.Name, id)
+	return p.Remove()
 }

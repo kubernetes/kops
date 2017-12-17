@@ -1060,13 +1060,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	}
 
 	if len(sshPublicKeys) != 0 {
-		keyStore, err := clientset.KeyStore(cluster)
+		sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
 		if err != nil {
 			return err
 		}
 
 		for k, data := range sshPublicKeys {
-			err = keyStore.AddSSHPublicKey(k, data)
+			err = sshCredentialStore.AddSSHPublicKey(k, data)
 			if err != nil {
 				return fmt.Errorf("error adding SSH public key: %v", err)
 			}

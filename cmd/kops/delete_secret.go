@@ -22,6 +22,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
 	"k8s.io/kubernetes/pkg/kubectl/util/i18n"
@@ -107,7 +108,12 @@ func RunDeleteSecret(f *util.Factory, out io.Writer, options *DeleteSecretOption
 		return err
 	}
 
-	secrets, err := listSecrets(keyStore, secretStore, options.SecretType, []string{options.SecretName})
+	sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
+	if err != nil {
+		return err
+	}
+
+	secrets, err := listSecrets(keyStore, secretStore, sshCredentialStore, options.SecretType, []string{options.SecretName})
 	if err != nil {
 		return err
 	}
@@ -134,8 +140,15 @@ func RunDeleteSecret(f *util.Factory, out io.Writer, options *DeleteSecretOption
 	switch secrets[0].Type {
 	case fi.SecretTypeSecret:
 		err = secretStore.DeleteSecret(secrets[0])
+	case SecretTypeSSHPublicKey:
+		sshCredential := &kops.SSHCredential{}
+		sshCredential.Name = secrets[0].Name
+		if secrets[0].Data != nil {
+			sshCredential.Spec.PublicKey = string(secrets[0].Data)
+		}
+		err = sshCredentialStore.DeleteSSHCredential(sshCredential)
 	default:
-		err = keyStore.DeleteSecret(secrets[0])
+		err = keyStore.DeleteKeyset(secrets[0])
 	}
 	if err != nil {
 		return fmt.Errorf("error deleting secret: %v", err)

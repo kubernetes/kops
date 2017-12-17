@@ -18,7 +18,6 @@ package fi
 
 import (
 	"bytes"
-	"crypto/md5"
 	crypto_rand "crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -35,6 +34,7 @@ import (
 	"k8s.io/kops/pkg/apis/kops"
 	kopsinternalversion "k8s.io/kops/pkg/client/clientset_generated/clientset/typed/kops/internalversion"
 	"k8s.io/kops/pkg/pki"
+	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/util/pkg/vfs"
 )
 
@@ -49,9 +49,23 @@ type ClientsetCAStore struct {
 }
 
 var _ CAStore = &ClientsetCAStore{}
+var _ SSHCredentialStore = &ClientsetCAStore{}
 
 // NewClientsetCAStore is the constructor for ClientsetCAStore
 func NewClientsetCAStore(cluster *kops.Cluster, clientset kopsinternalversion.KopsInterface, namespace string) CAStore {
+	c := &ClientsetCAStore{
+		cluster:         cluster,
+		clientset:       clientset,
+		namespace:       namespace,
+		cachedCaKeysets: make(map[string]*keyset),
+	}
+
+	return c
+}
+
+// NewClientsetSSHCredentialStore creates an SSHCredentialStore backed by an API client
+func NewClientsetSSHCredentialStore(cluster *kops.Cluster, clientset kopsinternalversion.KopsInterface, namespace string) SSHCredentialStore {
+	// Note: currently identical to NewClientsetCAStore
 	c := &ClientsetCAStore{
 		cluster:         cluster,
 		clientset:       clientset,
@@ -261,8 +275,8 @@ func (c *ClientsetCAStore) FindCertificatePool(name string) (*CertificatePool, e
 	return pool, nil
 }
 
-// List implements CAStore::List
-func (c *ClientsetCAStore) List() ([]*KeystoreItem, error) {
+// ListKeysets implements CAStore::ListKeysets
+func (c *ClientsetCAStore) ListKeysets() ([]*KeystoreItem, error) {
 	var items []*KeystoreItem
 
 	{
@@ -292,18 +306,21 @@ func (c *ClientsetCAStore) List() ([]*KeystoreItem, error) {
 		}
 	}
 
+	return items, nil
+}
+
+// ListSSHCredentials implements SSHCredentialStore::ListSSHCredentials
+func (c *ClientsetCAStore) ListSSHCredentials() ([]*kops.SSHCredential, error) {
+	var items []*kops.SSHCredential
+
 	{
 		list, err := c.clientset.SSHCredentials(c.namespace).List(v1.ListOptions{})
 		if err != nil {
 			return nil, fmt.Errorf("error listing SSHCredentials: %v", err)
 		}
 
-		for _, sshCredential := range list.Items {
-			ki := &KeystoreItem{
-				Name: sshCredential.Name,
-				Type: SecretTypeSSHPublicKey,
-			}
-			items = append(items, ki)
+		for i := range list.Items {
+			items = append(items, &list.Items[i])
 		}
 	}
 
@@ -585,30 +602,22 @@ func (c *ClientsetCAStore) AddSSHPublicKey(name string, pubkey []byte) error {
 }
 
 // FindSSHPublicKeys implements CAStore::FindSSHPublicKeys
-func (c *ClientsetCAStore) FindSSHPublicKeys(name string) ([]*KeystoreItem, error) {
+func (c *ClientsetCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential, error) {
 	o, err := c.clientset.SSHCredentials(c.namespace).Get(name, v1.GetOptions{})
 	if err != nil {
+		if errors.IsNotFound(err) {
+			return nil, nil
+		}
 		return nil, fmt.Errorf("error reading SSHCredential %q: %v", name, err)
 	}
 
-	var items []*KeystoreItem
-	item := &KeystoreItem{
-		Type: SecretTypeSSHPublicKey,
-		Name: name,
-		//Id:   insertFingerprintColons(k.Id),
-		Data: []byte(o.Spec.PublicKey),
-	}
-	items = append(items, item)
-
+	items := []*kops.SSHCredential{o}
 	return items, nil
 }
 
-// DeleteSecret implements CAStore::DeleteSecret
-func (c *ClientsetCAStore) DeleteSecret(item *KeystoreItem) error {
+// DeleteKeyset implements CAStore::DeleteKeyset
+func (c *ClientsetCAStore) DeleteKeyset(item *KeystoreItem) error {
 	switch item.Type {
-	case SecretTypeSSHPublicKey:
-		return c.deleteSSHCredential(item.Name)
-
 	case SecretTypeKeypair:
 		client := c.clientset.Keysets(c.namespace)
 		return DeleteKeysetItem(client, item.Name, kops.SecretTypeKeypair, item.Id)
@@ -616,6 +625,11 @@ func (c *ClientsetCAStore) DeleteSecret(item *KeystoreItem) error {
 		// Primarily because we need to make sure users can recreate them!
 		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Type)
 	}
+}
+
+// DeleteSSHCredential implements SSHCredentialStore::DeleteSSHCredential
+func (c *ClientsetCAStore) DeleteSSHCredential(item *kops.SSHCredential) error {
+	return c.deleteSSHCredential(item.Name)
 }
 
 func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
@@ -679,18 +693,10 @@ func (c *ClientsetCAStore) MirrorTo(basedir vfs.Path) error {
 	for i := range sshCredentials.Items {
 		sshCredential := &sshCredentials.Items[i]
 
-		sshPublicKey, _, _, _, err := ssh.ParseAuthorizedKey([]byte(sshCredential.Spec.PublicKey))
+		id, err := sshcredentials.Fingerprint(sshCredential.Spec.PublicKey)
 		if err != nil {
-			return fmt.Errorf("error parsing SSH public key %q: %v", sshCredential.Name, err)
+			return fmt.Errorf("error fingerprinting SSH public key %q: %v", sshCredential.Name, err)
 		}
-
-		// compute fingerprint to serve as id
-		h := md5.New()
-		_, err = h.Write(sshPublicKey.Marshal())
-		if err != nil {
-			return fmt.Errorf("error fingerprinting SSH public key: %v", err)
-		}
-		id := formatFingerprint(h.Sum(nil))
 
 		p := basedir.Join("ssh", "public", sshCredential.Name, id)
 		acl, err := acls.GetACL(p, c.cluster)

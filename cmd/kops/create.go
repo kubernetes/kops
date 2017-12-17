@@ -209,13 +209,13 @@ func RunCreate(f *util.Factory, out io.Writer, c *CreateOptions) error {
 					return err
 				}
 
-				keyStore, err := clientset.KeyStore(cluster)
+				sshCredentialStore, err := clientset.SSHCredentialStore(cluster)
 				if err != nil {
 					return err
 				}
 
 				sshKeyArr := []byte(v.Spec.PublicKey)
-				err = keyStore.AddSSHPublicKey("admin", sshKeyArr)
+				err = sshCredentialStore.AddSSHPublicKey("admin", sshKeyArr)
 				if err != nil {
 					return err
 				} else {
