@@ -163,7 +163,7 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		request.RouteTableId = checkNotNil(e.RouteTable.ID)
 		request.DestinationCidrBlock = checkNotNil(e.CIDR)
 
-		if e.InternetGateway == nil && e.NatGateway == nil && e.VpcPeeringConnection == nil {
+		if e.InternetGateway == nil && e.NatGateway == nil && e.VpcPeeringConnection == nil && e.Instance == nil {
 			return fmt.Errorf("missing target for route")
 		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
@@ -198,7 +198,7 @@ func (_ *Route) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Route) error {
 		request.RouteTableId = checkNotNil(e.RouteTable.ID)
 		request.DestinationCidrBlock = checkNotNil(e.CIDR)
 
-		if e.InternetGateway == nil && e.NatGateway == nil && e.VpcPeeringConnection == nil {
+		if e.InternetGateway == nil && e.NatGateway == nil && e.VpcPeeringConnection == nil && e.Instance == nil {
 			return fmt.Errorf("missing target for route")
 		} else if e.InternetGateway != nil {
 			request.GatewayId = checkNotNil(e.InternetGateway.ID)
@@ -251,7 +251,7 @@ func (_ *Route) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Rou
 		RouteTableID: e.RouteTable.TerraformLink(),
 	}
 
-	if e.InternetGateway == nil && e.NatGateway == nil && e.VpcPeeringConnection == nil {
+	if e.InternetGateway == nil && e.NatGateway == nil && e.VpcPeeringConnection == nil && e.Instance == nil {
 		return fmt.Errorf("missing target for route")
 	} else if e.InternetGateway != nil {
 		tf.InternetGatewayID = e.InternetGateway.TerraformLink()
@@ -285,7 +285,7 @@ func (_ *Route) RenderCloudformation(t *cloudformation.CloudformationTarget, a, 
 		RouteTableID: e.RouteTable.CloudformationLink(),
 	}
 
-	if e.InternetGateway == nil && e.NatGateway == nil && e.VpcPeeringConnection == nil {
+	if e.InternetGateway == nil && e.NatGateway == nil && e.VpcPeeringConnection == nil && e.Instance == nil {
 		return fmt.Errorf("missing target for route")
 	} else if e.InternetGateway != nil {
 		tf.InternetGatewayID = e.InternetGateway.CloudformationLink()
@@ -294,8 +294,7 @@ func (_ *Route) RenderCloudformation(t *cloudformation.CloudformationTarget, a, 
 	}
 
 	if e.Instance != nil {
-		return fmt.Errorf("instance cloudformation routes not yet implemented")
-		//tf.InstanceID = e.Instance.CloudformationLink()
+		tf.InstanceID = e.Instance.CloudformationLink()
 	}
 
 	if e.VpcPeeringConnection != nil {

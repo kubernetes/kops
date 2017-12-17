@@ -34,6 +34,8 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 		}
 	}
 
+	allErrs = append(allErrs, awsValidateAdditionalRoutes(field.NewPath("spec", "additionalRoutes"), c.Spec.AdditionalRoutes)...)
+
 	return allErrs
 }
 
@@ -74,6 +76,59 @@ func awsValidateMachineType(fieldPath *field.Path, machineType string) field.Err
 	if machineType != "" {
 		if _, err := awsup.GetMachineTypeInfo(machineType); err != nil {
 			allErrs = append(allErrs, field.Invalid(fieldPath, machineType, "machine type specified is invalid"))
+		}
+	}
+
+	return allErrs
+}
+
+func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.AdditionalRoutesSpec) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// Each route must be valid
+	for i := range routes {
+		allErrs = append(allErrs, awsValidateRoute(&routes[i], fieldPath.Index(i))...)
+	}
+
+	// cannot duplicate route CIDR
+	{
+		cidrs := sets.NewString()
+		for i := range routes {
+			cidr := routes[i].CIDR
+			if cidrs.Has(cidr) {
+				allErrs = append(allErrs, field.Invalid(fieldPath, routes, "routes with duplicate destination cidr block found"))
+			}
+			cidrs.Insert(cidr)
+		}
+	}
+
+	return allErrs
+}
+
+func awsValidateRoute(route *kops.AdditionalRoutesSpec, fieldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// CIDR is required
+	if strings.TrimSpace(route.CIDR) == "" {
+		allErrs = append(allErrs, field.Required(fieldPath.Child("CIDR"), "You must set destination CIDR block for a route"))
+	}
+
+	allErrs = append(allErrs, validateCIDR(route.CIDR, fieldPath.Child("CIDR"))...)
+
+	// vpcPeeringConnection or instance is required
+	if strings.TrimSpace(route.Instance) == "" && strings.TrimSpace(route.VpcPeeringConnection) == "" {
+		allErrs = append(allErrs, field.Required(fieldPath, "You must set either vpcPeeringConnection or instance for a route"))
+	}
+
+	if strings.TrimSpace(route.Instance) != "" {
+		if !strings.HasPrefix(route.Instance, "i-") {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("Instance"), route, "instance does not match the expected AWS format"))
+		}
+	}
+
+	if strings.TrimSpace(route.VpcPeeringConnection) != "" {
+		if !strings.HasPrefix(route.VpcPeeringConnection, "pcx-") {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("VpcPeeringConnection"), route, "vpcPeeringConnection does not match the expected AWS format"))
 		}
 	}
 

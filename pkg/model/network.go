@@ -145,6 +145,23 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 						RouteTable:           publicRouteTable,
 						VpcPeeringConnection: s(r.VpcPeeringConnection),
 					}
+				} else if r.Instance != "" {
+					inst := &awstasks.Instance{
+						Name:      s(r.Instance),
+						Lifecycle: b.Lifecycle,
+						ID:        s(r.Instance),
+						Shared:    fi.Bool(true),
+					}
+					if err := c.EnsureTask(inst); err != nil {
+						return err
+					}
+					t = &awstasks.Route{
+						Name:       s(r.CIDR),
+						Lifecycle:  b.Lifecycle,
+						CIDR:       s(r.CIDR),
+						RouteTable: publicRouteTable,
+						Instance:   inst,
+					}
 				}
 				c.EnsureTask(t)
 			}

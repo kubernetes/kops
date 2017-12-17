@@ -27,13 +27,16 @@ import (
 	"github.com/golang/glog"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/cloudformation"
 	"k8s.io/kops/upup/pkg/fi/cloudup/terraform"
 )
 
+//go:generate fitask -type=Instance
 const MaxUserDataSize = 16384
 
 type Instance struct {
-	ID *string
+	ID        *string
+	Lifecycle *fi.Lifecycle
 
 	UserData fi.Resource
 
@@ -49,6 +52,9 @@ type Instance struct {
 	SecurityGroups     []*SecurityGroup
 	AssociatePublicIP  *bool
 	IAMInstanceProfile *IAMInstanceProfile
+
+	// Shared is set if this is a shared instance (one we don't create or own)
+	Shared *bool
 }
 
 var _ fi.CompareWithID = &Instance{}
@@ -180,9 +186,11 @@ func nameFromIAMARN(arn *string) *string {
 }
 
 func (e *Instance) Run(c *fi.Context) error {
-	cloud := c.Cloud.(awsup.AWSCloud)
-
-	cloud.AddTags(e.Name, e.Tags)
+	shared := fi.BoolValue(e.Shared)
+	if !shared {
+		cloud := c.Cloud.(awsup.AWSCloud)
+		cloud.AddTags(e.Name, e.Tags)
+	}
 
 	return fi.DefaultDeltaRunMethod(e, c)
 }
@@ -280,6 +288,49 @@ func (_ *Instance) RenderAWS(t *awsup.AWSAPITarget, a, e, changes *Instance) err
 	return t.AddAWSTags(*e.ID, e.Tags)
 }
 
+func (_ *Instance) RenderTerraform(t *terraform.TerraformTarget, a, e, changes *Instance) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not terraform owned / managed
+		return nil
+	}
+	// Always not terraform owned / managed
+	return nil
+}
+
 func (e *Instance) TerraformLink() *terraform.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		if e.ID == nil {
+			glog.Fatalf("ID must be set, if instance is shared: %s", e)
+		}
+
+		glog.V(2).Infof("reusing existing instance with id %q", *e.ID)
+		return terraform.LiteralFromStringValue(*e.ID)
+	}
 	return terraform.LiteralSelfLink("aws_instance", *e.Name)
+}
+
+func (_ *Instance) RenderCloudformation(t *cloudformation.CloudformationTarget, a, e, changes *Instance) error {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		// Not cloudformation owned / managed
+		return nil
+	}
+	// Always not cloudformation owned / managed
+	return nil
+}
+
+func (e *Instance) CloudformationLink() *cloudformation.Literal {
+	shared := fi.BoolValue(e.Shared)
+	if shared {
+		if e.ID == nil {
+			glog.Fatalf("ID must be set, if instance is shared: %s", e)
+		}
+
+		glog.V(2).Infof("reusing existing instance with id %q", *e.ID)
+		return cloudformation.LiteralString(*e.ID)
+	}
+
+	return cloudformation.Ref("AWS::EC2::Instance", *e.Name)
 }
