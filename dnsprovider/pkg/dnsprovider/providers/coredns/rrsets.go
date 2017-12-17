@@ -19,13 +19,14 @@ package coredns
 import (
 	"encoding/json"
 	"fmt"
+	"net"
+
 	etcdc "github.com/coreos/etcd/client"
 	"github.com/golang/glog"
 	dnsmsg "github.com/miekg/coredns/middleware/etcd/msg"
 	"golang.org/x/net/context"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
-	"net"
 )
 
 // Compile time check for interface adherence

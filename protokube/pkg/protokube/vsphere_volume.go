@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
+	"os"
 	"os/exec"
 	"runtime"
 	"strings"
@@ -30,7 +31,6 @@ import (
 	"github.com/golang/glog"
 	etcdmanager "k8s.io/kops/protokube/pkg/etcd"
 	"k8s.io/kops/upup/pkg/fi/cloudup/vsphere"
-	"os"
 )
 
 const VolumeMetaDataFile = "/vol-metadata/metadata.json"
