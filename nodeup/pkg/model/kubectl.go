@@ -74,29 +74,64 @@ func (b *KubectlBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 		c.AddTask(t)
 
-		switch b.Distribution {
-		case distros.DistributionJessie, distros.DistributionDebian9:
+		adminUser, adminGroup, err := b.findKubeconfigUser()
+		if err != nil {
+			return err
+		}
+
+		if adminUser != nil && adminUser.Home != "" {
 			c.AddTask(&nodetasks.File{
-				Path:  "/home/admin/.kube/",
+				Path:  adminUser.Home + "/.kube/",
 				Type:  nodetasks.FileType_Directory,
 				Mode:  s("0700"),
-				Owner: s("admin"),
-				Group: s("admin"),
+				Owner: s(adminUser.Name),
+				Group: s(adminGroup.Name),
 			})
 
 			c.AddTask(&nodetasks.File{
-				Path:     "/home/admin/.kube/config",
+				Path:     adminUser.Home + "/.kube/config",
 				Contents: fi.NewStringResource(kubeconfig),
 				Type:     nodetasks.FileType_File,
 				Mode:     s("0400"),
-				Owner:    s("admin"),
-				Group:    s("admin"),
+				Owner:    s(adminUser.Name),
+				Group:    s(adminGroup.Name),
 			})
-
-		default:
-			glog.Warningf("Unknown distro; won't write kubeconfig to homedir %s", b.Distribution)
 		}
 	}
 
 	return nil
+}
+
+// findKubeconfigUser finds the default user for whom we should create a kubeconfig
+func (b *KubectlBuilder) findKubeconfigUser() (*fi.User, *fi.Group, error) {
+	var users []string
+	switch b.Distribution {
+	case distros.DistributionJessie, distros.DistributionDebian9:
+		users = []string{"admin", "root"}
+	default:
+		glog.Warningf("Unknown distro; won't write kubeconfig to homedir %s", b.Distribution)
+		return nil, nil, nil
+	}
+
+	for _, s := range users {
+		user, err := fi.LookupUser(s)
+		if err != nil {
+			glog.Warningf("error looking up user %q: %v", s, err)
+			continue
+		}
+		if user == nil {
+			continue
+		}
+		group, err := fi.LookupGroupById(user.Gid)
+		if err != nil {
+			glog.Warningf("unable to find group %d for user %q", user.Gid, s)
+			continue
+		}
+		if group == nil {
+			continue
+		}
+		return user, group, nil
+	}
+
+	return nil, nil, nil
 }
