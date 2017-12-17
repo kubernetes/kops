@@ -108,7 +108,7 @@ The resource identifier (ID) of something in your existing VPC that you would li
 
 This feature was originally envisioned to allow re-use of NAT Gateways. In this case, the usage is as follows. Although NAT gateways are "public"-facing resources, in the Cluster spec, you must specify them in the private subnet section. One way to think about this is that you are specifying "egress", which is the default route out from this private subnet.
 
-```
+```yaml
 spec:
   subnets:
   - cidr: 10.20.64.0/21
@@ -136,7 +136,7 @@ The ID of a VPC peering connection. For example, "pcx-1a2b3c4d".
 
 On AWS, this feature add more route extensions of precreated VPC peering connections and nat instances. This will allow to route traffic to specific CIDR through a customised nat instances. Furthermore, it will allow to route traffic to another peered VPC. You must specify either "instance" or "vpcPeeringConnection" for the additional routes.
 
-```
+```yaml
 spec:
   additionalRoutes:
   - cidr: 10.20.64.0/21
