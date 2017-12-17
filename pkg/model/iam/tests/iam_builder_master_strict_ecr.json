@@ -1,4 +1,4 @@
-{
+  {
   "Version": "2012-10-17",
   "Statement": [
     {
@@ -84,6 +84,7 @@
       "Sid": "kopsK8sELBMasterPermsRestrictive",
       "Effect": "Allow",
       "Action": [
+        "elasticloadbalancing:AddTags",
         "elasticloadbalancing:AttachLoadBalancerToSubnets",
         "elasticloadbalancing:ApplySecurityGroupsToLoadBalancer",
         "elasticloadbalancing:CreateLoadBalancer",
@@ -108,15 +109,20 @@
       "Sid": "kopsK8sNLBMasterPermsRestrictive",
       "Effect": "Allow",
       "Action": [
-        "elasticloadbalancing:CreateListener",
-        "elasticloadbalancing:DescribeListeners",
-        "elasticloadbalancing:CreateTargetGroup",
-        "elasticloadbalancing:DescribeTargetGroups",
-        "elasticloadbalancing:RegisterTargets",
-        "elasticloadbalancing:DescribeTargetHealth",
+        "ec2:DescribeVpcs",
         "elasticloadbalancing:AddTags",
+        "elasticloadbalancing:CreateListener",
+        "elasticloadbalancing:CreateTargetGroup",
+        "elasticloadbalancing:DeleteListener",
+        "elasticloadbalancing:DeleteTargetGroup",
+        "elasticloadbalancing:DescribeListeners",
+        "elasticloadbalancing:DescribeLoadBalancerPolicies",
+        "elasticloadbalancing:DescribeTargetGroups",
+        "elasticloadbalancing:DescribeTargetHealth",
+        "elasticloadbalancing:ModifyListener",
         "elasticloadbalancing:ModifyTargetGroup",
-        "ec2:DescribeVpcs"
+        "elasticloadbalancing:RegisterTargets",
+        "elasticloadbalancing:SetLoadBalancerPoliciesOfListener"
       ],
       "Resource": [
         "*"
