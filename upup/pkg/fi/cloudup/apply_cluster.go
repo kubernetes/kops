@@ -491,13 +491,17 @@ func (c *ApplyClusterCmd) Run() error {
 		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseSecurity:
+		if c.TargetName == TargetDryRun {
+			networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
+		} else {
+			networkLifecycle = fi.LifecycleExistsAndValidates
+		}
 		stageAssetsLifecycle = fi.LifecycleIgnore
-		networkLifecycle = fi.LifecycleIgnore
 		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseCluster:
 		if c.TargetName == TargetDryRun {
-			stageAssetsLifecycle = fi.LifecycleExistsAndWarnIfChanges
+			stageAssetsLifecycle = fi.LifecycleIgnore
 			securityLifecycle = fi.LifecycleExistsAndWarnIfChanges
 			networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
 		} else {
