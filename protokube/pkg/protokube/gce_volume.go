@@ -19,6 +19,7 @@ package protokube
 import (
 	"fmt"
 	"net"
+	"os"
 	"strings"
 
 	"cloud.google.com/go/compute/metadata"
@@ -30,7 +31,6 @@ import (
 	"k8s.io/kops/protokube/pkg/gossip"
 	gossipgce "k8s.io/kops/protokube/pkg/gossip/gce"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
-	"os"
 )
 
 // GCEVolumes is the Volumes implementation for GCE
