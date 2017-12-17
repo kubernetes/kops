@@ -82,9 +82,23 @@ but it's better to avoid the later confusion!)
 
 `kops` can create a cluster in shared subnets in both public and private network [topologies](topology.md). Doing so is not recommended unless you are using [external networking](networking.md#supported-cni-networking)
 
-After creating a basic cluster spec, edit your cluster to add the ID of the subnet:
+Use kops create cluster with the `--subnets` argument for your existing subnets:
 
-`kops edit cluster ${CLUSTER_NAME}`
+```
+export KOPS_STATE_STORE=s3://<somes3bucket>
+export CLUSTER_NAME=<sharedvpc.mydomain.com>
+export VPC_ID=vpc-12345678 # replace with your VPC id
+export NETWORK_CIDR=10.100.0.0/16 # replace with the cidr for the VPC ${VPC_ID}
+export SUBNET_ID=subnet-12345678 # replace with your subnet id
+export SUBNET_CIDR=10.100.0.0/24 # replace with your subnet CIDR
+export SUBNET_IDS=$SUBNET_IDS # replace with your comma separated subnet ids
+
+kops create cluster --zones=us-east-1b --name=${CLUSTER_NAME} --subnets=${SUBNET_IDS}
+```
+
+`--vpc` is optional when specifying `--subnets`. When creating a cluster with a private topology and shared subnets, the utility subnets should be specified similarly with `--utility-subnets`.
+
+Then `kops edit cluster ${CLUSTER_NAME}` will show you something like:
 
 ```
 metadata:
@@ -96,21 +110,16 @@ spec:
   networkID: ${VPC_ID}
   nonMasqueradeCIDR: 100.64.0.0/10
   subnets:
-  - cidr: 172.20.32.0/19 # You can delete the CIDR here; it will be queried
+  - cidr: ${SUBNET_CIDR}
+    id: ${SUBNET_ID}
     name: us-east-1b
     type: Public
     zone: us-east-1b
-    id: subnet-1234567 # Replace this with the ID of your subnet
 ```
 
-If you specify the CIDR, it must match the CIDR for the subnet; otherwise it will be populated by querying the subnet.
-It is probably easier to specify the `id` and remove the `cidr`!  Remember also that the zone must match the subnet Zone.
-
-Then update your cluster through the normal update procedure:
+Once you're happy, you can create the cluster using:
 
 ```
-kops update cluster ${CLUSTER_NAME}
-# Review changes
 kops update cluster ${CLUSTER_NAME} --yes
 ```
 
