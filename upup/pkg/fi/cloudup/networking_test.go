@@ -20,21 +20,19 @@ import (
 	"os"
 	"testing"
 
-	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/assets"
 )
 
 func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 
 	desiredCNIVersion := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-TEST-VERSION.tar.gz"
-	os.Setenv(ENV_VAR_CNI_VERSION_URL, desiredCNIVersion)
+	os.Setenv("CNI_VERSION_URL", desiredCNIVersion)
 	defer func() {
-		os.Unsetenv(ENV_VAR_CNI_VERSION_URL)
+		os.Unsetenv("CNI_VERSION_URL")
 	}()
 
-	cluster := &api.Cluster{}
 	assetBuilder := assets.NewAssetBuilder(nil, "")
-	cniAsset, cniAssetHashString, err := findCNIAssets(cluster, assetBuilder)
+	cniAsset, cniAssetHashString, err := CNISource(assetBuilder, "")
 
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)
@@ -44,17 +42,15 @@ func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
 		t.Errorf("Expected CNI version from Environment variable %q, but got %q instead", desiredCNIVersion, cniAsset)
 	}
 
-	if cniAssetHashString != "" {
+	if cniAssetHashString.String() != "" {
 		t.Errorf("Expected Empty CNI Version Hash String, but got %q instead", cniAssetHashString)
 	}
 }
 
 func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 
-	cluster := &api.Cluster{Spec: api.ClusterSpec{}}
-	cluster.Spec.KubernetesVersion = "v1.7.0"
 	assetBuilder := assets.NewAssetBuilder(nil, "")
-	cniAsset, cniAssetHashString, err := findCNIAssets(cluster, assetBuilder)
+	cniAsset, _, err := CNISource(assetBuilder, "v1.7.0")
 
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)
@@ -64,18 +60,26 @@ func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAssetK8s1_5, cniAsset)
 	}
 
-	if cniAssetHashString != defaultCNIAssetHashStringK8s1_6 {
-		t.Errorf("Expected default CNI Version Hash String %q and got %q", defaultCNIAssetHashStringK8s1_5, cniAssetHashString)
+}
+func Test_FindCNIAssetDefaultValue1_9(t *testing.T) {
+
+	assetBuilder := assets.NewAssetBuilder(nil, "")
+	cniAsset, _, err := CNISource(assetBuilder, "v1.9.0")
+
+	if err != nil {
+		t.Errorf("Unable to parse k8s version %s", err)
+	}
+
+	if cniAsset.String() != defaultCNIAssetK8s1_9 {
+		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAssetK8s1_9, cniAsset)
 	}
 
 }
 
 func Test_FindCNIAssetDefaultValue1_5(t *testing.T) {
 
-	cluster := &api.Cluster{Spec: api.ClusterSpec{}}
-	cluster.Spec.KubernetesVersion = "v1.5.12"
 	assetBuilder := assets.NewAssetBuilder(nil, "")
-	cniAsset, cniAssetHashString, err := findCNIAssets(cluster, assetBuilder)
+	cniAsset, _, err := CNISource(assetBuilder, "v1.5.12")
 
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)
@@ -83,10 +87,6 @@ func Test_FindCNIAssetDefaultValue1_5(t *testing.T) {
 
 	if cniAsset.String() != defaultCNIAssetK8s1_5 {
 		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAssetK8s1_5, cniAsset)
-	}
-
-	if cniAssetHashString != defaultCNIAssetHashStringK8s1_5 {
-		t.Errorf("Expected default CNI Version Hash String %q and got %q", defaultCNIAssetHashStringK8s1_5, cniAssetHashString)
 	}
 
 }
