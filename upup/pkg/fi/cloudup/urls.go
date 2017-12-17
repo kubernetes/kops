@@ -190,7 +190,7 @@ func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashin
 	return protokubeLocation, protokubeHash, nil
 }
 
-// CNISource returns the source for the cni tarball.
+// CNISource returns the URL and hash for the cni tarball.
 func CNISource(assetsBuilder *assets.AssetBuilder, kubernetesVersion string) (*url.URL, *hashing.Hash, error) {
 	// Avoid repeated logging
 	if cniLocation != nil && cniHash != nil {
@@ -218,7 +218,11 @@ func CNISource(assetsBuilder *assets.AssetBuilder, kubernetesVersion string) (*u
 			glog.V(2).Infof("Adding default CNI asset for k8s 1.5: %s", defaultCNIAssetK8s1_5)
 		}
 
-		cniLocation, cniHash, err = KopsFileUrl(cniAsset, assetsBuilder)
+		u, err := url.Parse(cniAsset)
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to parse CNI asset URL: %q", cniAsset)
+		}
+		cniLocation, cniHash, err = assetsBuilder.RemapFileAndSHA(u)
 		if err != nil {
 			return nil, nil, err
 		}
@@ -226,7 +230,7 @@ func CNISource(assetsBuilder *assets.AssetBuilder, kubernetesVersion string) (*u
 	} else {
 		cniLocation, err := url.Parse(env)
 		if err != nil {
-			return nil, nil, fmt.Errorf("unable to parse env var PROTOKUBE_IMAGE %q as an url: %v", env, err)
+			return nil, nil, fmt.Errorf("unable to parse env var CNI_VERSION_URL %q as an url: %v", env, err)
 		}
 
 		cniLocation, cniHash, err = assetsBuilder.RemapFileAndSHA(cniLocation)
