@@ -301,7 +301,7 @@ func TestRunApplyViewLastApplied(t *testing.T) {
 		f, tf, codec, _ := cmdtesting.NewAPIFactory()
 		tf.Printer = &testPrinter{}
 		tf.UnstructuredClient = &fake.RESTClient{
-			APIRegistry:          api.Registry,
+			GroupVersion:         schema.GroupVersion{Version: "v1"},
 			NegotiatedSerializer: unstructuredSerializer,
 			Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 				switch p, m := req.URL.Path, req.Method; {
@@ -357,7 +357,7 @@ func TestApplyObjectWithoutAnnotation(t *testing.T) {
 	f, tf, _, _ := cmdtesting.NewAPIFactory()
 	tf.Printer = &testPrinter{}
 	tf.UnstructuredClient = &fake.RESTClient{
-		APIRegistry:          api.Registry,
+		GroupVersion:         schema.GroupVersion{Version: "v1"},
 		NegotiatedSerializer: unstructuredSerializer,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch p, m := req.URL.Path, req.Method; {
@@ -402,7 +402,7 @@ func TestApplyObject(t *testing.T) {
 	f, tf, _, _ := cmdtesting.NewAPIFactory()
 	tf.Printer = &testPrinter{}
 	tf.UnstructuredClient = &fake.RESTClient{
-		APIRegistry:          api.Registry,
+		GroupVersion:         schema.GroupVersion{Version: "v1"},
 		NegotiatedSerializer: unstructuredSerializer,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch p, m := req.URL.Path, req.Method; {
@@ -459,7 +459,7 @@ func TestApplyObjectOutput(t *testing.T) {
 	f, tf, _, _ := cmdtesting.NewAPIFactory()
 	tf.Printer = &printers.YAMLPrinter{}
 	tf.UnstructuredClient = &fake.RESTClient{
-		APIRegistry:          api.Registry,
+		GroupVersion:         schema.GroupVersion{Version: "v1"},
 		NegotiatedSerializer: unstructuredSerializer,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch p, m := req.URL.Path, req.Method; {
@@ -504,7 +504,7 @@ func TestApplyRetry(t *testing.T) {
 	f, tf, _, _ := cmdtesting.NewAPIFactory()
 	tf.Printer = &testPrinter{}
 	tf.UnstructuredClient = &fake.RESTClient{
-		APIRegistry:          api.Registry,
+		GroupVersion:         schema.GroupVersion{Version: "v1"},
 		NegotiatedSerializer: unstructuredSerializer,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch p, m := req.URL.Path, req.Method; {
@@ -558,7 +558,7 @@ func TestApplyNonExistObject(t *testing.T) {
 	f, tf, _, _ := cmdtesting.NewAPIFactory()
 	tf.Printer = &testPrinter{}
 	tf.UnstructuredClient = &fake.RESTClient{
-		APIRegistry:          api.Registry,
+		GroupVersion:         schema.GroupVersion{Version: "v1"},
 		NegotiatedSerializer: unstructuredSerializer,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch p, m := req.URL.Path, req.Method; {
@@ -591,6 +591,75 @@ func TestApplyNonExistObject(t *testing.T) {
 	}
 }
 
+func TestApplyEmptyPatch(t *testing.T) {
+	initTestErrorHandler(t)
+	nameRC, _ := readAndAnnotateReplicationController(t, filenameRC)
+	pathRC := "/namespaces/test/replicationcontrollers"
+	pathNameRC := pathRC + "/" + nameRC
+
+	verifyPost := false
+
+	var body []byte
+
+	f, tf, _, _ := cmdtesting.NewAPIFactory()
+	tf.Printer = &testPrinter{}
+	tf.UnstructuredClient = &fake.RESTClient{
+		GroupVersion:         schema.GroupVersion{Version: "v1"},
+		NegotiatedSerializer: unstructuredSerializer,
+		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
+			switch p, m := req.URL.Path, req.Method; {
+			case p == "/api/v1/namespaces/test" && m == "GET":
+				return &http.Response{StatusCode: 404, Header: defaultHeader(), Body: ioutil.NopCloser(bytes.NewReader(nil))}, nil
+			case p == pathNameRC && m == "GET":
+				if body == nil {
+					return &http.Response{StatusCode: 404, Header: defaultHeader(), Body: ioutil.NopCloser(bytes.NewReader(nil))}, nil
+				}
+				bodyRC := ioutil.NopCloser(bytes.NewReader(body))
+				return &http.Response{StatusCode: 200, Header: defaultHeader(), Body: bodyRC}, nil
+			case p == pathRC && m == "POST":
+				body, _ = ioutil.ReadAll(req.Body)
+				verifyPost = true
+				bodyRC := ioutil.NopCloser(bytes.NewReader(body))
+				return &http.Response{StatusCode: 201, Header: defaultHeader(), Body: bodyRC}, nil
+			default:
+				t.Fatalf("unexpected request: %#v\n%#v", req.URL, req)
+				return nil, nil
+			}
+		}),
+	}
+	tf.Namespace = "test"
+
+	// 1. apply non exist object
+	buf := bytes.NewBuffer([]byte{})
+	errBuf := bytes.NewBuffer([]byte{})
+
+	cmd := NewCmdApply("kubectl", f, buf, errBuf)
+	cmd.Flags().Set("filename", filenameRC)
+	cmd.Flags().Set("output", "name")
+	cmd.Run(cmd, []string{})
+
+	expectRC := "replicationcontroller/" + nameRC + "\n"
+	if buf.String() != expectRC {
+		t.Fatalf("unexpected output: %s\nexpected: %s", buf.String(), expectRC)
+	}
+	if !verifyPost {
+		t.Fatal("No server-side post call detected")
+	}
+
+	// 2. test apply already exist object, will not send empty patch request
+	buf = bytes.NewBuffer([]byte{})
+	errBuf = bytes.NewBuffer([]byte{})
+
+	cmd = NewCmdApply("kubectl", f, buf, errBuf)
+	cmd.Flags().Set("filename", filenameRC)
+	cmd.Flags().Set("output", "name")
+	cmd.Run(cmd, []string{})
+
+	if buf.String() != expectRC {
+		t.Fatalf("unexpected output: %s\nexpected: %s", buf.String(), expectRC)
+	}
+}
+
 func TestApplyMultipleObjectsAsList(t *testing.T) {
 	testApplyMultipleObjects(t, true)
 }
@@ -609,7 +678,7 @@ func testApplyMultipleObjects(t *testing.T, asList bool) {
 	f, tf, _, _ := cmdtesting.NewAPIFactory()
 	tf.Printer = &testPrinter{}
 	tf.UnstructuredClient = &fake.RESTClient{
-		APIRegistry:          api.Registry,
+		GroupVersion:         api.Registry.GroupOrDie(api.GroupName).GroupVersion,
 		NegotiatedSerializer: unstructuredSerializer,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch p, m := req.URL.Path, req.Method; {
@@ -687,7 +756,7 @@ func TestApplyNULLPreservation(t *testing.T) {
 
 	f, tf, _, _ := cmdtesting.NewTestFactory()
 	tf.UnstructuredClient = &fake.RESTClient{
-		APIRegistry:          api.Registry,
+		GroupVersion:         api.Registry.GroupOrDie(api.GroupName).GroupVersion,
 		NegotiatedSerializer: unstructuredSerializer,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch p, m := req.URL.Path, req.Method; {
@@ -756,7 +825,7 @@ func TestUnstructuredApply(t *testing.T) {
 	f, tf, _, _ := cmdtesting.NewAPIFactory()
 	tf.Printer = &testPrinter{}
 	tf.UnstructuredClient = &fake.RESTClient{
-		APIRegistry:          api.Registry,
+		GroupVersion:         schema.GroupVersion{Version: "v1"},
 		NegotiatedSerializer: unstructuredSerializer,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch p, m := req.URL.Path, req.Method; {
@@ -820,7 +889,7 @@ func TestUnstructuredIdempotentApply(t *testing.T) {
 	f, tf, _, _ := cmdtesting.NewAPIFactory()
 	tf.Printer = &testPrinter{}
 	tf.UnstructuredClient = &fake.RESTClient{
-		APIRegistry:          api.Registry,
+		GroupVersion:         schema.GroupVersion{Version: "v1"},
 		NegotiatedSerializer: unstructuredSerializer,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch p, m := req.URL.Path, req.Method; {
@@ -945,7 +1014,7 @@ func TestRunApplySetLastApplied(t *testing.T) {
 		f, tf, codec, _ := cmdtesting.NewAPIFactory()
 		tf.Printer = &testPrinter{}
 		tf.UnstructuredClient = &fake.RESTClient{
-			APIRegistry:          api.Registry,
+			GroupVersion:         schema.GroupVersion{Version: "v1"},
 			NegotiatedSerializer: unstructuredSerializer,
 			Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 				switch p, m := req.URL.Path, req.Method; {
@@ -1034,7 +1103,7 @@ func TestForceApply(t *testing.T) {
 	f, tf, _, _ := cmdtesting.NewAPIFactory()
 	tf.Printer = &testPrinter{}
 	tf.UnstructuredClient = &fake.RESTClient{
-		APIRegistry:          api.Registry,
+		GroupVersion:         schema.GroupVersion{Version: "v1"},
 		NegotiatedSerializer: unstructuredSerializer,
 		Client: fake.CreateHTTPClient(func(req *http.Request) (*http.Response, error) {
 			switch p, m := req.URL.Path, req.Method; {

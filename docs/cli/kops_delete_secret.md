@@ -11,13 +11,19 @@ Delete a secret
 Delete a secret.
 
 ```
-kops delete secret
+kops delete secret [flags]
 ```
 
 ### Examples
 
 ```
   
+```
+
+### Options
+
+```
+  -h, --help   help for secret
 ```
 
 ### Options inherited from parent commands

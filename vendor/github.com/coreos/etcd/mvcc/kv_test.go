@@ -25,6 +25,9 @@ import (
 	"github.com/coreos/etcd/mvcc/backend"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/coreos/etcd/pkg/testutil"
+
+	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 )
 
 // Functional tests for features implemented in v3 store. It treats v3 store
@@ -43,35 +46,27 @@ var (
 		return kv.Range(key, end, ro)
 	}
 	txnRangeFunc = func(kv KV, key, end []byte, ro RangeOptions) (*RangeResult, error) {
-		id := kv.TxnBegin()
-		defer kv.TxnEnd(id)
-		return kv.TxnRange(id, key, end, ro)
+		txn := kv.Read()
+		defer txn.End()
+		return txn.Range(key, end, ro)
 	}
 
 	normalPutFunc = func(kv KV, key, value []byte, lease lease.LeaseID) int64 {
 		return kv.Put(key, value, lease)
 	}
 	txnPutFunc = func(kv KV, key, value []byte, lease lease.LeaseID) int64 {
-		id := kv.TxnBegin()
-		defer kv.TxnEnd(id)
-		rev, err := kv.TxnPut(id, key, value, lease)
-		if err != nil {
-			panic("txn put error")
-		}
-		return rev
+		txn := kv.Write()
+		defer txn.End()
+		return txn.Put(key, value, lease)
 	}
 
 	normalDeleteRangeFunc = func(kv KV, key, end []byte) (n, rev int64) {
 		return kv.DeleteRange(key, end)
 	}
 	txnDeleteRangeFunc = func(kv KV, key, end []byte) (n, rev int64) {
-		id := kv.TxnBegin()
-		defer kv.TxnEnd(id)
-		n, rev, err := kv.TxnDeleteRange(id, key, end)
-		if err != nil {
-			panic("txn delete error")
-		}
-		return n, rev
+		txn := kv.Write()
+		defer txn.End()
+		return txn.DeleteRange(key, end)
 	}
 )
 
@@ -142,7 +137,7 @@ func testKVRange(t *testing.T, f rangeFunc) {
 }
 
 func TestKVRangeRev(t *testing.T)    { testKVRangeRev(t, normalRangeFunc) }
-func TestKVTxnRangeRev(t *testing.T) { testKVRangeRev(t, normalRangeFunc) }
+func TestKVTxnRangeRev(t *testing.T) { testKVRangeRev(t, txnRangeFunc) }
 
 func testKVRangeRev(t *testing.T, f rangeFunc) {
 	b, tmpPath := backend.NewDefaultTmpBackend()
@@ -178,7 +173,7 @@ func testKVRangeRev(t *testing.T, f rangeFunc) {
 }
 
 func TestKVRangeBadRev(t *testing.T)    { testKVRangeBadRev(t, normalRangeFunc) }
-func TestKVTxnRangeBadRev(t *testing.T) { testKVRangeBadRev(t, normalRangeFunc) }
+func TestKVTxnRangeBadRev(t *testing.T) { testKVRangeBadRev(t, txnRangeFunc) }
 
 func testKVRangeBadRev(t *testing.T, f rangeFunc) {
 	b, tmpPath := backend.NewDefaultTmpBackend()
@@ -404,17 +399,16 @@ func TestKVOperationInSequence(t *testing.T) {
 	}
 }
 
-func TestKVTxnBlockNonTxnOperations(t *testing.T) {
+func TestKVTxnBlockWriteOperations(t *testing.T) {
 	b, tmpPath := backend.NewDefaultTmpBackend()
 	s := NewStore(b, &lease.FakeLessor{}, nil)
 
 	tests := []func(){
-		func() { s.Range([]byte("foo"), nil, RangeOptions{}) },
 		func() { s.Put([]byte("foo"), nil, lease.NoLease) },
 		func() { s.DeleteRange([]byte("foo"), nil) },
 	}
 	for i, tt := range tests {
-		id := s.TxnBegin()
+		txn := s.Write()
 		done := make(chan struct{}, 1)
 		go func() {
 			tt()
@@ -426,7 +420,7 @@ func TestKVTxnBlockNonTxnOperations(t *testing.T) {
 		case <-time.After(10 * time.Millisecond):
 		}
 
-		s.TxnEnd(id)
+		txn.End()
 		select {
 		case <-done:
 		case <-time.After(10 * time.Second):
@@ -438,39 +432,23 @@ func TestKVTxnBlockNonTxnOperations(t *testing.T) {
 	cleanup(s, b, tmpPath)
 }
 
-func TestKVTxnWrongID(t *testing.T) {
+func TestKVTxnNonBlockRange(t *testing.T) {
 	b, tmpPath := backend.NewDefaultTmpBackend()
 	s := NewStore(b, &lease.FakeLessor{}, nil)
 	defer cleanup(s, b, tmpPath)
 
-	id := s.TxnBegin()
-	wrongid := id + 1
+	txn := s.Write()
+	defer txn.End()
 
-	tests := []func() error{
-		func() error {
-			_, err := s.TxnRange(wrongid, []byte("foo"), nil, RangeOptions{})
-			return err
-		},
-		func() error {
-			_, err := s.TxnPut(wrongid, []byte("foo"), nil, lease.NoLease)
-			return err
-		},
-		func() error {
-			_, _, err := s.TxnDeleteRange(wrongid, []byte("foo"), nil)
-			return err
-		},
-		func() error { return s.TxnEnd(wrongid) },
-	}
-	for i, tt := range tests {
-		err := tt()
-		if err != ErrTxnIDMismatch {
-			t.Fatalf("#%d: err = %+v, want %+v", i, err, ErrTxnIDMismatch)
-		}
-	}
-
-	err := s.TxnEnd(id)
-	if err != nil {
-		t.Fatalf("end err = %+v, want %+v", err, nil)
+	donec := make(chan struct{})
+	go func() {
+		defer close(donec)
+		s.Range([]byte("foo"), nil, RangeOptions{})
+	}()
+	select {
+	case <-donec:
+	case <-time.After(100 * time.Millisecond):
+		t.Fatalf("range operation blocked on write txn")
 	}
 }
 
@@ -481,19 +459,16 @@ func TestKVTxnOperationInSequence(t *testing.T) {
 	defer cleanup(s, b, tmpPath)
 
 	for i := 0; i < 10; i++ {
-		id := s.TxnBegin()
+		txn := s.Write()
 		base := int64(i + 1)
 
 		// put foo
-		rev, err := s.TxnPut(id, []byte("foo"), []byte("bar"), lease.NoLease)
-		if err != nil {
-			t.Fatal(err)
-		}
+		rev := txn.Put([]byte("foo"), []byte("bar"), lease.NoLease)
 		if rev != base+1 {
 			t.Errorf("#%d: put rev = %d, want %d", i, rev, base+1)
 		}
 
-		r, err := s.TxnRange(id, []byte("foo"), nil, RangeOptions{Rev: base + 1})
+		r, err := txn.Range([]byte("foo"), nil, RangeOptions{Rev: base + 1})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -508,15 +483,12 @@ func TestKVTxnOperationInSequence(t *testing.T) {
 		}
 
 		// delete foo
-		n, rev, err := s.TxnDeleteRange(id, []byte("foo"), nil)
-		if err != nil {
-			t.Fatal(err)
-		}
+		n, rev := txn.DeleteRange([]byte("foo"), nil)
 		if n != 1 || rev != base+1 {
 			t.Errorf("#%d: n = %d, rev = %d, want (%d, %d)", i, n, rev, 1, base+1)
 		}
 
-		r, err = s.TxnRange(id, []byte("foo"), nil, RangeOptions{Rev: base + 1})
+		r, err = txn.Range([]byte("foo"), nil, RangeOptions{Rev: base + 1})
 		if err != nil {
 			t.Errorf("#%d: range error (%v)", i, err)
 		}
@@ -527,7 +499,7 @@ func TestKVTxnOperationInSequence(t *testing.T) {
 			t.Errorf("#%d: range rev = %d, want %d", i, r.Rev, base+1)
 		}
 
-		s.TxnEnd(id)
+		txn.End()
 	}
 }
 
@@ -643,6 +615,7 @@ func TestKVRestore(t *testing.T) {
 			kv.Put([]byte("foo"), []byte("bar0"), 1)
 			kv.Put([]byte("foo"), []byte("bar1"), 2)
 			kv.Put([]byte("foo"), []byte("bar2"), 3)
+			kv.Put([]byte("foo2"), []byte("bar0"), 1)
 		},
 		func(kv KV) {
 			kv.Put([]byte("foo"), []byte("bar0"), 1)
@@ -664,10 +637,17 @@ func TestKVRestore(t *testing.T) {
 			r, _ := s.Range([]byte("a"), []byte("z"), RangeOptions{Rev: k})
 			kvss = append(kvss, r.KVs)
 		}
+
+		keysBefore := readGaugeInt(&keysGauge)
 		s.Close()
 
 		// ns should recover the the previous state from backend.
 		ns := NewStore(b, &lease.FakeLessor{}, nil)
+
+		if keysRestore := readGaugeInt(&keysGauge); keysBefore != keysRestore {
+			t.Errorf("#%d: got %d key count, expected %d", i, keysRestore, keysBefore)
+		}
+
 		// wait for possible compaction to finish
 		testutil.WaitSchedule()
 		var nkvss [][]mvccpb.KeyValue
@@ -681,6 +661,15 @@ func TestKVRestore(t *testing.T) {
 			t.Errorf("#%d: kvs history = %+v, want %+v", i, nkvss, kvss)
 		}
 	}
+}
+
+func readGaugeInt(g *prometheus.Gauge) int {
+	ch := make(chan prometheus.Metric, 1)
+	keysGauge.Collect(ch)
+	m := <-ch
+	mm := &dto.Metric{}
+	m.Write(mm)
+	return int(mm.GetGauge().GetValue())
 }
 
 func TestKVSnapshot(t *testing.T) {

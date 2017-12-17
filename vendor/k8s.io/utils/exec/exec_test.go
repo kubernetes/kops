@@ -17,8 +17,10 @@ limitations under the License.
 package exec
 
 import (
+	"context"
 	osexec "os/exec"
 	"testing"
+	"time"
 )
 
 func TestExecutorNoArgs(t *testing.T) {
@@ -95,9 +97,45 @@ func TestLookPath(t *testing.T) {
 
 func TestExecutableNotFound(t *testing.T) {
 	exec := New()
+
 	cmd := exec.Command("fake_executable_name")
 	_, err := cmd.CombinedOutput()
 	if err != ErrExecutableNotFound {
-		t.Errorf("Expected error ErrExecutableNotFound but got %v", err)
+		t.Errorf("cmd.CombinedOutput(): Expected error ErrExecutableNotFound but got %v", err)
+	}
+
+	cmd = exec.Command("fake_executable_name")
+	_, err = cmd.Output()
+	if err != ErrExecutableNotFound {
+		t.Errorf("cmd.Output(): Expected error ErrExecutableNotFound but got %v", err)
+	}
+
+	cmd = exec.Command("fake_executable_name")
+	err = cmd.Run()
+	if err != ErrExecutableNotFound {
+		t.Errorf("cmd.Run(): Expected error ErrExecutableNotFound but got %v", err)
+	}
+}
+
+func TestStopBeforeStart(t *testing.T) {
+	cmd := New().Command("echo", "hello")
+
+	// no panic calling Stop before calling Run
+	cmd.Stop()
+
+	cmd.Run()
+
+	// no panic calling Stop after command is done
+	cmd.Stop()
+}
+
+func TestTimeout(t *testing.T) {
+	exec := New()
+	ctx, cancel := context.WithTimeout(context.Background(), time.Nanosecond)
+	defer cancel()
+
+	err := exec.CommandContext(ctx, "sleep", "2").Run()
+	if err != context.DeadlineExceeded {
+		t.Errorf("expected %v but got %v", context.DeadlineExceeded, err)
 	}
 }

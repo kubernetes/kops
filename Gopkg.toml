@@ -1,0 +1,87 @@
+
+# Gopkg.toml example
+#
+# Refer to https://github.com/golang/dep/blob/master/docs/Gopkg.toml.md
+# for detailed Gopkg.toml documentation.
+#
+# required = ["github.com/user/thing/cmd/thing"]
+# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
+#
+# [[constraint]]
+#   name = "github.com/user/project"
+#   version = "1.0.0"
+#
+# [[constraint]]
+#   name = "github.com/user/project2"
+#   branch = "dev"
+#   source = "github.com/myfork/project2"
+#
+# [[override]]
+#  name = "github.com/x/y"
+#  version = "2.4.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/golang/glog"
+
+[[constraint]]
+  name = "github.com/prometheus/client_golang"
+  version = "0.8.0"
+
+[[constraint]]
+  name = "github.com/spf13/pflag"
+  version = "1.0.0"
+
+[[constraint]]
+  name = "github.com/aws/aws-sdk-go"
+  revision = "5b4d64c21c9af31b5c870528001cd2e3ef37bfe0"
+
+# dependencies with specific versions
+[[override]]
+  name = "github.com/coreos/etcd"
+  version = "3.1.11"
+
+[[override]]
+  name = "github.com/ugorji/go"
+  revision = "ded73eae5db7e7a0ef6f55aace87a2873c5d2b74"
+
+[[override]]
+  name = "github.com/cpuguy83/go-md2man"
+  revision = "71acacd42f85e5e82f70a55327789582a5200a90"
+
+[[override]]
+  name = "github.com/russross/blackfriday"
+  revision = "300106c228d52c8941d4b3de6054a6062a86dda3"
+
+[[override]]
+  name = "github.com/docker/engine-api"
+  revision = "dea108d3aa0c67d7162a3fd8aa65f38a430019fd"
+
+[[override]]
+  name = "github.com/docker/distribution"
+  revision = "edc3ab29cdff8694dd6feb85cfeb4b5f1b38ed9c"
+
+[[override]]
+  name = "github.com/weaveworks/mesh"
+  revision = "1f158d31de55abf9f97bbaa0a260e2b8023a3785"
+
+# kubernetes dependencies
+[[constraint]]
+  name = "k8s.io/apiserver"
+  branch = "release-1.8"
+
+[[constraint]]
+  name = "k8s.io/api"
+  branch = "release-1.8"
+
+[[constraint]]
+  name = "k8s.io/apimachinery"
+  branch = "release-1.8"
+
+[[constraint]]
+  name = "k8s.io/client-go"
+  version = "v5.0.1"
+
+[[constraint]]
+  name = "k8s.io/kubernetes"
+  version = "1.8.5"

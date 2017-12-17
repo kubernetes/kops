@@ -1,11 +1,11 @@
 package jsoniter
 
 import (
+	"bytes"
 	"encoding/json"
 	"github.com/stretchr/testify/require"
 	"io"
 	"testing"
-	"bytes"
 )
 
 func Test_missing_object_end(t *testing.T) {
@@ -129,4 +129,10 @@ func Test_invalid_number(t *testing.T) {
 	result2, err := json.Marshal(invalidStr)
 	should.Nil(err)
 	should.Equal(string(result2), string(result))
+}
+
+func Test_valid(t *testing.T) {
+	should := require.New(t)
+	should.True(Valid([]byte(`{}`)))
+	should.False(Valid([]byte(`{`)))
 }

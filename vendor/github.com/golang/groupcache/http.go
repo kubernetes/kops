@@ -74,7 +74,7 @@ type HTTPPoolOptions struct {
 
 // NewHTTPPool initializes an HTTP pool of peers, and registers itself as a PeerPicker.
 // For convenience, it also registers itself as an http.Handler with http.DefaultServeMux.
-// The self argument be a valid base URL that points to the current server,
+// The self argument should be a valid base URL that points to the current server,
 // for example "http://example.net:8000".
 func NewHTTPPool(self string) *HTTPPool {
 	p := NewHTTPPoolOpts(self, nil)

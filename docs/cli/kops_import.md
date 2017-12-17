@@ -18,6 +18,12 @@ Imports a kubernetes cluster created by kube-up.sh into a state store.  This com
   --state=s3://k8s-cluster.example.com
 ```
 
+### Options
+
+```
+  -h, --help   help for import
+```
+
 ### Options inherited from parent commands
 
 ```

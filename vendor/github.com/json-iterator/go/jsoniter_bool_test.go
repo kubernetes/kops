@@ -82,3 +82,32 @@ func Test_decode_string_bool(t *testing.T) {
 	err = Unmarshal([]byte(`{"Field":true}`), &obj)
 	should.NotNil(err)
 }
+
+func Test_bool_can_be_null(t *testing.T) {
+	type TestData struct {
+		Field bool `json:"field"`
+	}
+	should := require.New(t)
+
+	obj := TestData{}
+	data1 := []byte(`{"field": true}`)
+	err := Unmarshal(data1, &obj)
+	should.NoError(err)
+	should.Equal(true, obj.Field)
+
+	data2 := []byte(`{"field": null}`)
+	err = Unmarshal(data2, &obj)
+	should.NoError(err)
+	// Same behavior as stdlib, not touching the existing value.
+	should.Equal(true, obj.Field)
+
+	// Checking stdlib behavior as well
+	obj2 := TestData{}
+	err = json.Unmarshal(data1, &obj2)
+	should.NoError(err)
+	should.Equal(true, obj2.Field)
+
+	err = json.Unmarshal(data2, &obj2)
+	should.NoError(err)
+	should.Equal(true, obj2.Field)
+}

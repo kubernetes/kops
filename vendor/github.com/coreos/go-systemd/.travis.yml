@@ -1,3 +1,5 @@
+language: shell # We do everything inside Docker and don't want travis fiddling with steps or environment variables
+
 sudo: required
 
 services:
@@ -13,7 +15,7 @@ env:
 
 before_install:
  - docker pull ${DOCKER_BASE}
- - docker run --privileged -e GOPATH=${GOPATH} --cidfile=/tmp/cidfile ${DOCKER_BASE} /bin/bash -c "apt-get update && apt-get install -y build-essential git golang dbus libsystemd-dev libpam-systemd && go get github.com/coreos/pkg/dlopen && go get github.com/godbus/dbus"
+ - docker run --privileged -e GOPATH=${GOPATH} --cidfile=/tmp/cidfile ${DOCKER_BASE} /bin/bash -c "apt-get update && apt-get install -y build-essential git golang dbus libsystemd-dev libpam-systemd systemd-container && go get github.com/coreos/pkg/dlopen && go get github.com/godbus/dbus"
  - docker commit `cat /tmp/cidfile` go-systemd/container-tests
  - rm -f /tmp/cidfile
 

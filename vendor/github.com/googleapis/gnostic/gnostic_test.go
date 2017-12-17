@@ -147,7 +147,7 @@ func testPlugin(t *testing.T, plugin string, inputFile string, outputFile string
 
 func TestSamplePluginWithPetstore(t *testing.T) {
 	testPlugin(t,
-		"go-sample",
+		"summary",
 		"examples/v2.0/yaml/petstore.yaml",
 		"sample-petstore.out",
 		"test/v2.0/yaml/sample-petstore.out")
@@ -189,16 +189,16 @@ func TestValidPluginInvocations(t *testing.T) {
 		"examples/v2.0/yaml/petstore.yaml",
 		"--errors-out=-",
 		// verify an invocation with no parameters
-		"--go-sample-out=!", // "!" indicates that no output should be generated
+		"--summary-out=!", // "!" indicates that no output should be generated
 		// verify single pair of parameters
-		"--go-sample-out=a=b:!",
+		"--summary-out=a=b:!",
 		// verify multiple parameters
-		"--go-sample-out=a=b,c=123,xyz=alphabetagammadelta:!",
+		"--summary-out=a=b,c=123,xyz=alphabetagammadelta:!",
 		// verify that special characters / . - _ can be included in parameter keys and values
-		"--go-sample-out=a/b/c=x/y/z:!",
-		"--go-sample-out=a.b.c=x.y.z:!",
-		"--go-sample-out=a-b-c=x-y-z:!",
-		"--go-sample-out=a_b_c=x_y_z:!",
+		"--summary-out=a/b/c=x/y/z:!",
+		"--summary-out=a.b.c=x.y.z:!",
+		"--summary-out=a-b-c=x-y-z:!",
+		"--summary-out=a_b_c=x_y_z:!",
 	).Output()
 	if len(output) != 0 {
 		t.Logf("Valid invocations generated invalid errors\n%s", string(output))

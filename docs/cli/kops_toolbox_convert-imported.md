@@ -11,7 +11,7 @@ Convert an imported cluster into a kops cluster.
 Convert an imported cluster into a kops cluster.
 
 ```
-kops toolbox convert-imported
+kops toolbox convert-imported [flags]
 ```
 
 ### Examples
@@ -29,6 +29,7 @@ kops toolbox convert-imported
 
 ```
       --channel string   Channel to use for upgrade (default "stable")
+  -h, --help             help for convert-imported
       --newname string   new cluster name
 ```
 

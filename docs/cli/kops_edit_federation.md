@@ -18,7 +18,7 @@ This command changes the federation cloud desired configuration in the registry.
 kops edit does not update the cloud resources, to apply the changes use `kops update cluster`.
 
 ```
-kops edit federation
+kops edit federation [flags]
 ```
 
 ### Examples
@@ -26,6 +26,12 @@ kops edit federation
 ```
   # Edit a cluster federation configuration.
   kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
+```
+
+### Options
+
+```
+  -h, --help   help for federation
 ```
 
 ### Options inherited from parent commands

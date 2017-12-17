@@ -1,7 +1,0 @@
-note: Poseidon Example
-sample: |
-  apiVersion: olympus.k8s.io/v1beta1
-  kind: Poseidon
-  metadata:
-    name: poseidon-example
-  spec:

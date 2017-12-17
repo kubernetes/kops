@@ -78,11 +78,9 @@ func BenchmarkStoreTxnPut(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		id := s.TxnBegin()
-		if _, err := s.TxnPut(id, keys[i], vals[i], lease.NoLease); err != nil {
-			plog.Fatalf("txn put error: %v", err)
-		}
-		s.TxnEnd(id)
+		txn := s.Write()
+		txn.Put(keys[i], vals[i], lease.NoLease)
+		txn.End()
 	}
 }
 
@@ -91,7 +89,8 @@ func benchmarkStoreRestore(revsPerKey int, b *testing.B) {
 	var i fakeConsistentIndex
 	be, tmpPath := backend.NewDefaultTmpBackend()
 	s := NewStore(be, &lease.FakeLessor{}, &i)
-	defer cleanup(s, be, tmpPath)
+	// use closure to capture 's' to pick up the reassignment
+	defer func() { cleanup(s, be, tmpPath) }()
 
 	// arbitrary number of bytes
 	bytesN := 64
@@ -100,13 +99,14 @@ func benchmarkStoreRestore(revsPerKey int, b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		for j := 0; j < revsPerKey; j++ {
-			id := s.TxnBegin()
-			if _, err := s.TxnPut(id, keys[i], vals[i], lease.NoLease); err != nil {
-				plog.Fatalf("txn put error: %v", err)
-			}
-			s.TxnEnd(id)
+			txn := s.Write()
+			txn.Put(keys[i], vals[i], lease.NoLease)
+			txn.End()
 		}
 	}
+	s.Close()
+
+	b.ReportAllocs()
 	b.ResetTimer()
 	s = NewStore(be, &lease.FakeLessor{}, &i)
 }

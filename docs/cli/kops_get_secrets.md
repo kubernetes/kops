@@ -11,7 +11,7 @@ Get one or many secrets.
 Display one or many secrets.
 
 ```
-kops get secrets
+kops get secrets [flags]
 ```
 
 ### Examples
@@ -27,6 +27,7 @@ kops get secrets
 ### Options
 
 ```
+  -h, --help          help for secrets
       --type string   Filter by secret type
 ```
 

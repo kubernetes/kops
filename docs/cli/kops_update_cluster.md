@@ -13,7 +13,7 @@ Create or update cloud or cluster resources to match current cluster state.  If 
 If nodes need updating such as during a Kubernetes upgrade, a rolling-update may be required as well.
 
 ```
-kops update cluster
+kops update cluster [flags]
 ```
 
 ### Examples
@@ -27,6 +27,7 @@ kops update cluster
 
 ```
       --create-kube-config      Will control automatically creating the kube config file on your local filesystem (default true)
+  -h, --help                    help for cluster
       --model string            Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
       --out string              Path to write any local output
       --phase string            Subset of tasks to run: assets, cluster, network, security

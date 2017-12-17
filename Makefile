@@ -23,7 +23,7 @@ UNIQUE:=$(shell date +%s)
 GOVERSION=1.8.3
 BUILD=$(GOPATH_1ST)/src/k8s.io/kops/.build
 LOCAL=$(BUILD)/local
-BINDATA_TARGETS=upup/models/bindata.go #federation/model/bindata.go
+BINDATA_TARGETS=upup/models/bindata.go federation/model/bindata.go
 ARTIFACTS=$(BUILD)/artifacts
 DIST=$(BUILD)/dist
 IMAGES=$(DIST)/images
@@ -165,9 +165,9 @@ UPUP_MODELS_BINDATA_SOURCES:=$(shell find upup/models/ | egrep -v "upup/models/b
 upup/models/bindata.go: ${GOBINDATA} ${UPUP_MODELS_BINDATA_SOURCES}
 	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg models -ignore="\\.DS_Store" -ignore="bindata\\.go" -ignore="vfs\\.go" -prefix upup/models/ upup/models/...
 
-#FEDERATION_MODELS_BINDATA_SOURCES:=$(shell find federation/model/ | egrep -v "federation/model/bindata.go")
-#federation/model/bindata.go: ${GOBINDATA} ${FEDERATION_MODELS_BINDATA_SOURCES}
-#	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
+FEDERATION_MODELS_BINDATA_SOURCES:=$(shell find federation/model/ | egrep -v "federation/model/bindata.go")
+federation/model/bindata.go: ${GOBINDATA} ${FEDERATION_MODELS_BINDATA_SOURCES}
+	cd ${GOPATH_1ST}/src/k8s.io/kops; ${GOBINDATA} -o $@ -pkg model -ignore="\\.DS_Store" -ignore="bindata\\.go" -prefix federation/model/ federation/model/...
 
 # Build in a docker container with golang 1.X
 # Used to test we have not broken 1.X
@@ -433,24 +433,8 @@ utils-dist:
 # See docs/development/dependencies.md
 .PHONY: copydeps
 copydeps:
-	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git --exclude BUILD --exclude BUILD.bazel
-	mkdir -p vendor/k8s.io/
-	rm -rf vendor/k8s.io/api
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/api vendor/k8s.io/api
-	rm -rf vendor/k8s.io/apiextensions-apiserver
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
-	rm -rf vendor/k8s.io/apimachinery
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
-	rm -rf vendor/k8s.io/apiserver
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
-	rm -rf vendor/k8s.io/client-go
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
-	rm -rf vendor/k8s.io/code-generator
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/code-generator vendor/k8s.io/code-generator
-	rm -rf vendor/k8s.io/metrics
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
-	find vendor/k8s.io/kubernetes -type f -name "*.go" | xargs sed -i -e 's-k8s.io/kubernetes/staging/src/k8s.io/apimachinery-k8s.io/apimachinery-g'
-	bazel run //:gazelle -- -proto disable
+	cp --archive _vendor/* vendor/
+	rm vendor/github.com/jteeuwen/go-bindata/.git
 
 .PHONY: gofmt
 gofmt:

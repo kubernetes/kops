@@ -11,7 +11,7 @@ Replace cluster resources.
 Replace a resource desired configuration by filename or stdin.
 
 ```
-kops replace -f FILENAME
+kops replace -f FILENAME [flags]
 ```
 
 ### Examples
@@ -29,6 +29,7 @@ kops replace -f FILENAME
 ```
   -f, --filename stringSlice   A list of one or more files separated by a comma.
       --force                  Force any changes, which will also create any non-existing resource
+  -h, --help                   help for replace
 ```
 
 ### Options inherited from parent commands

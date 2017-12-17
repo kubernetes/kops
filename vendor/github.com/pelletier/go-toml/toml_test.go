@@ -70,12 +70,12 @@ func TestTomlHasPath(t *testing.T) {
 }
 
 func TestTomlGetPath(t *testing.T) {
-	node := newTomlTree()
+	node := newTree()
 	//TODO: set other node data
 
 	for idx, item := range []struct {
 		Path     []string
-		Expected *TomlTree
+		Expected *Tree
 	}{
 		{ // empty path test
 			[]string{},
@@ -94,35 +94,13 @@ func TestTomlGetPath(t *testing.T) {
 	}
 }
 
-func TestTomlQuery(t *testing.T) {
-	tree, err := Load("[foo.bar]\na=1\nb=2\n[baz.foo]\na=3\nb=4\n[gorf.foo]\na=5\nb=6")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	result, err := tree.Query("$.foo.bar")
-	if err != nil {
-		t.Error(err)
-		return
-	}
-	values := result.Values()
-	if len(values) != 1 {
-		t.Errorf("Expected resultset of 1, got %d instead: %v", len(values), values)
-	}
-
-	if tt, ok := values[0].(*TomlTree); !ok {
-		t.Errorf("Expected type of TomlTree: %T", values[0])
-	} else if tt.Get("a") != int64(1) {
-		t.Errorf("Expected 'a' with a value 1: %v", tt.Get("a"))
-	} else if tt.Get("b") != int64(2) {
-		t.Errorf("Expected 'b' with a value 2: %v", tt.Get("b"))
-	}
-}
-
 func TestTomlFromMap(t *testing.T) {
 	simpleMap := map[string]interface{}{"hello": 42}
-	tree := TreeFromMap(simpleMap)
-	if tree.Get("hello") != 42 {
+	tree, err := TreeFromMap(simpleMap)
+	if err != nil {
+		t.Fatal("unexpected error:", err)
+	}
+	if tree.Get("hello") != int64(42) {
 		t.Fatal("hello should be 42, not", tree.Get("hello"))
 	}
 }

@@ -1,5 +1,19 @@
 package autorest
 
+// Copyright 2017 Microsoft Corporation
+//
+//  Licensed under the Apache License, Version 2.0 (the "License");
+//  you may not use this file except in compliance with the License.
+//  You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+//  Unless required by applicable law or agreed to in writing, software
+//  distributed under the License is distributed on an "AS IS" BASIS,
+//  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//  See the License for the specific language governing permissions and
+//  limitations under the License.
+
 import (
 	"bytes"
 	"encoding/json"
@@ -92,6 +106,28 @@ func WithHeader(header string, value string) PrepareDecorator {
 					r.Header = make(http.Header)
 				}
 				r.Header.Set(http.CanonicalHeaderKey(header), value)
+			}
+			return r, err
+		})
+	}
+}
+
+// WithHeaders returns a PrepareDecorator that sets the specified HTTP headers of the http.Request to
+// the passed value. It canonicalizes the passed headers name (via http.CanonicalHeaderKey) before
+// adding them.
+func WithHeaders(headers map[string]interface{}) PrepareDecorator {
+	h := ensureValueStrings(headers)
+	return func(p Preparer) Preparer {
+		return PreparerFunc(func(r *http.Request) (*http.Request, error) {
+			r, err := p.Prepare(r)
+			if err == nil {
+				if r.Header == nil {
+					r.Header = make(http.Header)
+				}
+
+				for name, value := range h {
+					r.Header.Set(http.CanonicalHeaderKey(name), value)
+				}
 			}
 			return r, err
 		})
@@ -201,6 +237,11 @@ func WithFormData(v url.Values) PrepareDecorator {
 			r, err := p.Prepare(r)
 			if err == nil {
 				s := v.Encode()
+
+				if r.Header == nil {
+					r.Header = make(http.Header)
+				}
+				r.Header.Set(http.CanonicalHeaderKey(headerContentType), mimeTypeFormPost)
 				r.ContentLength = int64(len(s))
 				r.Body = ioutil.NopCloser(strings.NewReader(s))
 			}
@@ -416,11 +457,16 @@ func WithQueryParameters(queryParameters map[string]interface{}) PrepareDecorato
 				if r.URL == nil {
 					return r, NewError("autorest", "WithQueryParameters", "Invoked with a nil URL")
 				}
+
 				v := r.URL.Query()
 				for key, value := range parameters {
-					v.Add(key, value)
+					d, err := url.QueryUnescape(value)
+					if err != nil {
+						return r, err
+					}
+					v.Add(key, d)
 				}
-				r.URL.RawQuery = createQuery(v)
+				r.URL.RawQuery = v.Encode()
 			}
 			return r, err
 		})

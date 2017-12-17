@@ -15,7 +15,7 @@ An InstanceGroup is a group of similar virtual machines. On AWS, an InstanceGrou
 The Role of an InstanceGroup defines whether machines will act as a Kubernetes master or node.
 
 ```
-kops create instancegroup
+kops create instancegroup [flags]
 ```
 
 ### Examples
@@ -35,6 +35,7 @@ kops create instancegroup
 ```
       --dry-run              If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --edit                 If true, an editor will be opened to edit default values. (default true)
+  -h, --help                 help for instancegroup
   -o, --output string        Ouput format. One of json|yaml
       --role string          Type of instance group to create (Node,Master,Bastion) (default "Node")
       --subnet stringSlice   Subnets in which to create instance group

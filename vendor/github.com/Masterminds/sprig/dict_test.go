@@ -125,26 +125,22 @@ func TestSet(t *testing.T) {
 	}
 }
 
-func TestCompact(t *testing.T) {
-	tests := map[string]string{
-		`{{ list 1 0 "" "hello" | compact }}`: `[1 hello]`,
-		`{{ list "" "" | compact }}`:          `[]`,
-		`{{ list | compact }}`:                `[]`,
-	}
-	for tpl, expect := range tests {
-		assert.NoError(t, runt(tpl, expect))
-	}
-}
-
 func TestMerge(t *testing.T) {
 	dict := map[string]interface{}{
-		"src": map[string]interface{}{
+		"src2": map[string]interface{}{
+			"h": 10,
+			"i": "i",
+			"j": "j",
+		},
+		"src1": map[string]interface{}{
 			"a": 1,
 			"b": 2,
 			"d": map[string]interface{}{
 				"e": "four",
 			},
 			"g": []int{6, 7},
+			"i": "aye",
+			"j": "jay",
 		},
 		"dst": map[string]interface{}{
 			"a": "one",
@@ -153,22 +149,26 @@ func TestMerge(t *testing.T) {
 				"f": 5,
 			},
 			"g": []int{8, 9},
+			"i": "eye",
 		},
 	}
-	tpl := `{{merge .dst .src}}`
+	tpl := `{{merge .dst .src1 .src2}}`
 	_, err := runRaw(tpl, dict)
 	if err != nil {
 		t.Error(err)
 	}
 	expected := map[string]interface{}{
 		"a": "one", // key overridden
-		"b": 2,     // merged from src
+		"b": 2,     // merged from src1
 		"c": 3,     // merged from dst
 		"d": map[string]interface{}{ // deep merge
 			"e": "four",
 			"f": 5,
 		},
 		"g": []int{8, 9}, // overridden - arrays are not merged
+		"h": 10,          // merged from src2
+		"i": "eye",       // overridden twice
+		"j": "jay",       // overridden and merged
 	}
 	assert.Equal(t, expected, dict["dst"])
 }

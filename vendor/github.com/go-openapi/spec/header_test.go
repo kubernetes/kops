@@ -29,6 +29,9 @@ func int64Ptr(f int64) *int64 {
 }
 
 var header = Header{
+	VendorExtensible: VendorExtensible{Extensions: map[string]interface{}{
+		"x-framework": "swagger-go",
+	}},
 	HeaderProps: HeaderProps{Description: "the description of this header"},
 	SimpleSchema: SimpleSchema{
 		Items: &Items{
@@ -58,6 +61,7 @@ var headerJSON = `{
   "items": {
     "$ref": "Cat"
   },
+  "x-framework": "swagger-go",
   "description": "the description of this header",
   "maximum": 100,
   "minimum": 5,

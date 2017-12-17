@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -30,6 +31,9 @@ type Object struct {
 
 	// Name is the unique name for the object.
 	Name string `json:"name"`
+
+	// Subdir denotes if the result contains a subdir.
+	Subdir string `json:"subdir"`
 }
 
 func (r *Object) UnmarshalJSON(b []byte) error {
@@ -66,14 +70,7 @@ func (r ObjectPage) IsEmpty() (bool, error) {
 
 // LastMarker returns the last object name in a ListResult.
 func (r ObjectPage) LastMarker() (string, error) {
-	names, err := ExtractNames(r)
-	if err != nil {
-		return "", err
-	}
-	if len(names) == 0 {
-		return "", nil
-	}
-	return names[len(names)-1], nil
+	return extractLastMarker(r)
 }
 
 // ExtractInfo is a function that takes a page of objects and returns their
@@ -98,7 +95,11 @@ func ExtractNames(r pagination.Page) ([]string, error) {
 
 		names := make([]string, 0, len(parsed))
 		for _, object := range parsed {
-			names = append(names, object.Name)
+			if object.Subdir != "" {
+				names = append(names, object.Subdir)
+			} else {
+				names = append(names, object.Name)
+			}
 		}
 
 		return names, nil
@@ -493,4 +494,60 @@ func (r CopyResult) Extract() (*CopyHeader, error) {
 	var s *CopyHeader
 	err := r.ExtractInto(&s)
 	return s, err
+}
+
+// extractLastMarker is a function that takes a page of objects and returns the
+// marker for the page. This can either be a subdir or the last object's name.
+func extractLastMarker(r pagination.Page) (string, error) {
+	casted := r.(ObjectPage)
+
+	// If a delimiter was requested, check if a subdir exists.
+	queryParams, err := url.ParseQuery(casted.URL.RawQuery)
+	if err != nil {
+		return "", err
+	}
+
+	var delimeter bool
+	if v, ok := queryParams["delimiter"]; ok && len(v) > 0 {
+		delimeter = true
+	}
+
+	ct := casted.Header.Get("Content-Type")
+	switch {
+	case strings.HasPrefix(ct, "application/json"):
+		parsed, err := ExtractInfo(r)
+		if err != nil {
+			return "", err
+		}
+
+		var lastObject Object
+		if len(parsed) > 0 {
+			lastObject = parsed[len(parsed)-1]
+		}
+
+		if !delimeter {
+			return lastObject.Name, nil
+		}
+
+		if lastObject.Name != "" {
+			return lastObject.Name, nil
+		}
+
+		return lastObject.Subdir, nil
+	case strings.HasPrefix(ct, "text/plain"):
+		names := make([]string, 0, 50)
+
+		body := string(r.(ObjectPage).Body.([]uint8))
+		for _, name := range strings.Split(body, "\n") {
+			if len(name) > 0 {
+				names = append(names, name)
+			}
+		}
+
+		return names[len(names)-1], err
+	case strings.HasPrefix(ct, "text/html"):
+		return "", nil
+	default:
+		return "", fmt.Errorf("Cannot extract names from response with content-type: [%s]", ct)
+	}
 }

@@ -15,7 +15,7 @@ func ExampleCreate() {
 	// this-is-a-header
 }
 
-func ExampleCreate2() {
+func ExampleCreate_two() {
 	fmt.Println(sanitized_anchor_name.Create("This is a header"))
 	fmt.Println(sanitized_anchor_name.Create("This is also          a header"))
 	fmt.Println(sanitized_anchor_name.Create("main.go"))

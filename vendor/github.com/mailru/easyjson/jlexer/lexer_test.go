@@ -1,6 +1,8 @@
 package jlexer
 
 import (
+	"bytes"
+	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -17,12 +19,15 @@ func TestString(t *testing.T) {
 		{toParse: `"\u0020"`, want: " "},
 		{toParse: `"\u0020-\t"`, want: " -\t"},
 		{toParse: `"\ufffd\uFFFD"`, want: "\ufffd\ufffd"},
+		{toParse: `"\ud83d\ude00"`, want: "😀"},
+		{toParse: `"\ud83d\ude08"`, want: "😈"},
+		{toParse: `"\ud8"`, wantError: true},
 
 		{toParse: `"test"junk`, want: "test"},
 
 		{toParse: `5`, wantError: true},        // not a string
 		{toParse: `"\x"`, wantError: true},     // invalid escape
-		{toParse: `"\ud800"`, wantError: true}, // invalid utf-8 char
+		{toParse: `"\ud800"`, want: "�"},      // invalid utf-8 char; return replacement char
 	} {
 		l := Lexer{Data: []byte(test.toParse)}
 
@@ -35,6 +40,34 @@ func TestString(t *testing.T) {
 			t.Errorf("[%d, %q] String() error: %v", i, test.toParse, err)
 		} else if err == nil && test.wantError {
 			t.Errorf("[%d, %q] String() ok; want error", i, test.toParse)
+		}
+	}
+}
+
+func TestBytes(t *testing.T) {
+	for i, test := range []struct {
+		toParse   string
+		want      string
+		wantError bool
+	}{
+		{toParse: `"c2ltcGxlIHN0cmluZw=="`, want: "simple string"},
+		{toParse: " \r\r\n\t  " + `"dGVzdA=="`, want: "test"},
+
+		{toParse: `5`, wantError: true},                     // not a JSON string
+		{toParse: `"foobar"`, wantError: true},              // not base64 encoded
+		{toParse: `"c2ltcGxlIHN0cmluZw="`, wantError: true}, // invalid base64 padding
+	} {
+		l := Lexer{Data: []byte(test.toParse)}
+
+		got := l.Bytes()
+		if bytes.Compare(got, []byte(test.want)) != 0 {
+			t.Errorf("[%d, %q] Bytes() = %v; want: %v", i, test.toParse, got, []byte(test.want))
+		}
+		err := l.Error()
+		if err != nil && !test.wantError {
+			t.Errorf("[%d, %q] Bytes() error: %v", i, test.toParse, err)
+		} else if err == nil && test.wantError {
+			t.Errorf("[%d, %q] Bytes() ok; want error", i, test.toParse)
 		}
 	}
 }
@@ -128,6 +161,9 @@ func TestSkipRecursive(t *testing.T) {
 		{toParse: `{"a\"}":1}, 4`, left: ", 4"},
 		{toParse: `{"a{":1}, 4`, left: ", 4"},
 		{toParse: `{"a\"{":1}, 4`, left: ", 4"},
+
+		// object with double slashes at the end of string
+		{toParse: `{"a":"hey\\"}, 4`, left: ", 4"},
 	} {
 		l := Lexer{Data: []byte(test.toParse)}
 
@@ -187,6 +223,89 @@ func TestInterface(t *testing.T) {
 			t.Errorf("[%d, %q] Interface() error: %v", i, test.toParse, err)
 		} else if err == nil && test.wantError {
 			t.Errorf("[%d, %q] Interface() ok; want error", i, test.toParse)
+		}
+	}
+}
+
+func TestConsumed(t *testing.T) {
+	for i, test := range []struct {
+		toParse   string
+		wantError bool
+	}{
+		{toParse: "", wantError: false},
+		{toParse: "   ", wantError: false},
+		{toParse: "\r\n", wantError: false},
+		{toParse: "\t\t", wantError: false},
+
+		{toParse: "{", wantError: true},
+	} {
+		l := Lexer{Data: []byte(test.toParse)}
+		l.Consumed()
+
+		err := l.Error()
+		if err != nil && !test.wantError {
+			t.Errorf("[%d, %q] Consumed() error: %v", i, test.toParse, err)
+		} else if err == nil && test.wantError {
+			t.Errorf("[%d, %q] Consumed() ok; want error", i, test.toParse)
+		}
+	}
+}
+
+func TestJsonNumber(t *testing.T) {
+	for i, test := range []struct {
+		toParse        string
+		want           json.Number
+		wantLexerError bool
+		wantValue      interface{}
+		wantValueError bool
+	}{
+		{toParse: `10`, want: json.Number("10"), wantValue: int64(10)},
+		{toParse: `0`, want: json.Number("0"), wantValue: int64(0)},
+		{toParse: `0.12`, want: json.Number("0.12"), wantValue: 0.12},
+		{toParse: `25E-4`, want: json.Number("25E-4"), wantValue: 25E-4},
+
+		{toParse: `"10"`, want: json.Number("10"), wantValue: int64(10)},
+		{toParse: `"0"`, want: json.Number("0"), wantValue: int64(0)},
+		{toParse: `"0.12"`, want: json.Number("0.12"), wantValue: 0.12},
+		{toParse: `"25E-4"`, want: json.Number("25E-4"), wantValue: 25E-4},
+
+		{toParse: `"a""`, wantValueError: true},
+
+		{toParse: `[1]`, wantLexerError: true},
+		{toParse: `{}`, wantLexerError: true},
+		{toParse: `a`, wantLexerError: true},
+	} {
+		l := Lexer{Data: []byte(test.toParse)}
+
+		got := l.JsonNumber()
+		if got != test.want && !test.wantLexerError && !test.wantValueError {
+			t.Errorf("[%d, %q] JsonNumber() = %v; want %v", i, test.toParse, got, test.want)
+		}
+
+		err := l.Error()
+		if err != nil && !test.wantLexerError {
+			t.Errorf("[%d, %q] JsonNumber() lexer error: %v", i, test.toParse, err)
+		} else if err == nil && test.wantLexerError {
+			t.Errorf("[%d, %q] JsonNumber() ok; want lexer error", i, test.toParse)
+		}
+
+		var valueErr error
+		var gotValue interface{}
+		switch test.wantValue.(type) {
+		case float64:
+			gotValue, valueErr = got.Float64()
+		default:
+			gotValue, valueErr = got.Int64()
+		}
+
+		if !reflect.DeepEqual(gotValue, test.wantValue) && !test.wantLexerError && !test.wantValueError {
+			t.Errorf("[%d, %q] JsonNumber() = %v; want %v", i, test.toParse, gotValue, test.wantValue)
+		}
+
+		if valueErr != nil && !test.wantValueError {
+			t.Errorf("[%d, %q] JsonNumber() value error: %v", i, test.toParse, err)
+		} else if valueErr == nil && test.wantValueError {
+			t.Errorf("[%d, %q] JsonNumber() ok; want value error", i, test.toParse)
 		}
 	}
 }

@@ -11,7 +11,7 @@ Delete clusters,instancegroups, or secrets.
 Delete Kubernetes clusters, instancegroups, and secrets, or a combination of the before mentioned.
 
 ```
-kops delete -f FILENAME [--yes]
+kops delete -f FILENAME [--yes] [flags]
 ```
 
 ### Examples
@@ -32,6 +32,7 @@ kops delete -f FILENAME [--yes]
 
 ```
   -f, --filename stringSlice   Filename to use to delete the resource
+  -h, --help                   help for delete
   -y, --yes                    Specify --yes to delete the resource
 ```
 

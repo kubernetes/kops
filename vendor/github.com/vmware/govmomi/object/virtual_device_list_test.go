@@ -322,13 +322,13 @@ var devices = VirtualDeviceList([]types.BaseVirtualDevice{
 		},
 		StorageIOAllocation: &types.StorageIOAllocationInfo{
 			DynamicData: types.DynamicData{},
-			Limit:       -1,
+			Limit:       types.NewInt64(-1),
 			Shares: &types.SharesInfo{
 				DynamicData: types.DynamicData{},
 				Shares:      1000,
 				Level:       "normal",
 			},
-			Reservation: 0,
+			Reservation: types.NewInt32(0),
 		},
 		DiskObjectId:          "3-3000",
 		VFlashCacheConfigInfo: (*types.VirtualDiskVFlashCacheConfigInfo)(nil),
@@ -376,13 +376,13 @@ var devices = VirtualDeviceList([]types.BaseVirtualDevice{
 		},
 		StorageIOAllocation: &types.StorageIOAllocationInfo{
 			DynamicData: types.DynamicData{},
-			Limit:       -1,
+			Limit:       types.NewInt64(-1),
 			Shares: &types.SharesInfo{
 				DynamicData: types.DynamicData{},
 				Shares:      1000,
 				Level:       "normal",
 			},
-			Reservation: 0,
+			Reservation: types.NewInt32(0),
 		},
 		DiskObjectId:          "3-3002",
 		VFlashCacheConfigInfo: (*types.VirtualDiskVFlashCacheConfigInfo)(nil),
@@ -792,6 +792,10 @@ func TestBootOrder(t *testing.T) {
 
 	if len(list.BootOrder([]string{DeviceTypeDisk})) != 0 {
 		t.Error("expected 0 disks")
+	}
+
+	if len(list.BootOrder([]string{DeviceTypeNone})) != 1 {
+		t.Error("expected 1")
 	}
 }
 

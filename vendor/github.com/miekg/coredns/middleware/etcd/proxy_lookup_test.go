@@ -3,20 +3,19 @@
 package etcd
 
 import (
-	"sort"
 	"testing"
 
-	"github.com/miekg/coredns/middleware/etcd/msg"
-	"github.com/miekg/coredns/middleware/pkg/dnsrecorder"
-	"github.com/miekg/coredns/middleware/proxy"
-	"github.com/miekg/coredns/middleware/test"
+	"github.com/coredns/coredns/middleware/etcd/msg"
+	"github.com/coredns/coredns/middleware/pkg/dnsrecorder"
+	"github.com/coredns/coredns/middleware/proxy"
+	"github.com/coredns/coredns/middleware/test"
 
 	"github.com/miekg/dns"
 )
 
 func TestProxyLookupFailDebug(t *testing.T) {
 	etc := newEtcdMiddleware()
-	etc.Proxy = proxy.New([]string{"127.0.0.1:154"})
+	etc.Proxy = proxy.NewLookup([]string{"127.0.0.1:154"})
 	etc.Debugging = true
 
 	for _, serv := range servicesProxy {
@@ -35,23 +34,7 @@ func TestProxyLookupFailDebug(t *testing.T) {
 		}
 
 		resp := rec.Msg
-		sort.Sort(test.RRSet(resp.Answer))
-		sort.Sort(test.RRSet(resp.Ns))
-		sort.Sort(test.RRSet(resp.Extra))
-
-		if !test.Header(t, tc, resp) {
-			t.Logf("%v\n", resp)
-			continue
-		}
-		if !test.Section(t, tc, test.Answer, resp.Answer) {
-			t.Logf("%v\n", resp)
-		}
-		if !test.Section(t, tc, test.Ns, resp.Ns) {
-			t.Logf("%v\n", resp)
-		}
-		if !test.Section(t, tc, test.Extra, resp.Extra) {
-			t.Logf("%v\n", resp)
-		}
+		test.SortAndCheck(t, resp, tc)
 	}
 }
 
@@ -67,8 +50,8 @@ var dnsTestCasesProxy = []test.Case{
 		},
 		Extra: []dns.RR{
 			test.TXT("a.dom.skydns.test.	300	CH	TXT	\"www.example.org:0(10,0,,false)[0,]\""),
-			test.TXT("www.example.org.	0	CH	TXT	\"www.example.org.:0(0,0, IN A: unreachable backend,false)[0,]\""),
-			test.TXT("www.example.org.	0	CH	TXT	\"www.example.org.:0(0,0, IN AAAA: unreachable backend,false)[0,]\""),
+			test.TXT("www.example.org.	0	CH	TXT	\"www.example.org.:0(0,0, IN A: unreachable backend: no upstream host,false)[0,]\""),
+			test.TXT("www.example.org.	0	CH	TXT	\"www.example.org.:0(0,0, IN AAAA: unreachable backend: no upstream host,false)[0,]\""),
 		},
 	},
 }

@@ -185,7 +185,7 @@ func _getTypeDecoderFromExtension(typ reflect.Type) ValDecoder {
 	if typ.Kind() == reflect.Ptr {
 		decoder := typeDecoders[typ.Elem().String()]
 		if decoder != nil {
-			return &optionalDecoder{typ.Elem(), decoder}
+			return &OptionalDecoder{typ.Elem(), decoder}
 		}
 	}
 	return nil
@@ -216,7 +216,7 @@ func _getTypeEncoderFromExtension(typ reflect.Type) ValEncoder {
 	if typ.Kind() == reflect.Ptr {
 		encoder := typeEncoders[typ.Elem().String()]
 		if encoder != nil {
-			return &optionalEncoder{encoder}
+			return &OptionalEncoder{encoder}
 		}
 	}
 	return nil
@@ -254,7 +254,7 @@ func describeStruct(cfg *frozenConfig, typ reflect.Type) (*StructDescriptor, err
 				for _, binding := range structDescriptor.Fields {
 					binding.levels = append([]int{i}, binding.levels...)
 					omitempty := binding.Encoder.(*structFieldEncoder).omitempty
-					binding.Encoder = &optionalEncoder{binding.Encoder}
+					binding.Encoder = &OptionalEncoder{binding.Encoder}
 					binding.Encoder = &structFieldEncoder{&field, binding.Encoder, omitempty}
 					binding.Decoder = &deferenceDecoder{field.Type.Elem(), binding.Decoder}
 					binding.Decoder = &structFieldDecoder{&field, binding.Decoder}
@@ -269,7 +269,7 @@ func describeStruct(cfg *frozenConfig, typ reflect.Type) (*StructDescriptor, err
 		if decoder == nil {
 			var err error
 			decoder, err = decoderOfType(cfg, field.Type)
-			if err != nil {
+			if len(fieldNames) > 0 && err != nil {
 				return nil, err
 			}
 		}
@@ -277,12 +277,13 @@ func describeStruct(cfg *frozenConfig, typ reflect.Type) (*StructDescriptor, err
 		if encoder == nil {
 			var err error
 			encoder, err = encoderOfType(cfg, field.Type)
-			if err != nil {
+			if len(fieldNames) > 0 && err != nil {
 				return nil, err
 			}
-			// map is stored as pointer in the struct
-			if field.Type.Kind() == reflect.Map {
-				encoder = &optionalEncoder{encoder}
+			// map is stored as pointer in the struct,
+			// and treat nil or empty map as empty field
+			if encoder != nil && field.Type.Kind() == reflect.Map {
+				encoder = &optionalMapEncoder{encoder}
 			}
 		}
 		binding := &Binding{

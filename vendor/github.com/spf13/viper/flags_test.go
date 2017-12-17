@@ -22,7 +22,7 @@ func TestBindFlagValueSet(t *testing.T) {
 		"endpoint": "/public",
 	}
 
-	for name, _ := range testValues {
+	for name := range testValues {
 		testValues[name] = flagSet.String(name, "", "test")
 	}
 
@@ -62,5 +62,4 @@ func TestBindFlagValue(t *testing.T) {
 	flag.Changed = true //hack for pflag usage
 
 	assert.Equal(t, "testing_mutate", Get("testvalue"))
-
 }

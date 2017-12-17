@@ -18,7 +18,7 @@ Create a resource:
 Create a cluster, instancegroup or secret using command line parameters or YAML configuration specification files. (Note: secrets cannot be created from YAML config files yet).
 
 ```
-kops create -f FILENAME
+kops create -f FILENAME [flags]
 ```
 
 ### Examples
@@ -49,6 +49,7 @@ kops create -f FILENAME
 
 ```
   -f, --filename stringSlice   Filename to use to create the resource
+  -h, --help                   help for create
 ```
 
 ### Options inherited from parent commands

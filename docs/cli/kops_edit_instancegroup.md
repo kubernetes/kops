@@ -18,7 +18,7 @@ This command changes the instancegroup desired configuration in the registry.
 kops edit does not update the cloud resources, to apply the changes use "kops update cluster".
 
 ```
-kops edit instancegroup
+kops edit instancegroup [flags]
 ```
 
 ### Examples
@@ -26,6 +26,12 @@ kops edit instancegroup
 ```
   # Edit an instancegroup desired configuration.
   kops edit ig --name k8s-cluster.example.com node --state=s3://kops-state-1234
+```
+
+### Options
+
+```
+  -h, --help   help for instancegroup
 ```
 
 ### Options inherited from parent commands

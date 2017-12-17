@@ -18,9 +18,9 @@ func TestPositionString(t *testing.T) {
 
 func TestInvalid(t *testing.T) {
 	for i, v := range []Position{
-		Position{0, 1234},
-		Position{1234, 0},
-		Position{0, 0},
+		{0, 1234},
+		{1234, 0},
+		{0, 0},
 	} {
 		if !v.Invalid() {
 			t.Errorf("Position at %v is valid: %v", i, v)

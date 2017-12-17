@@ -29,6 +29,12 @@ Edit a resource configuration. This command changes the desired configuration in
   kops edit federation k8s-cluster.example.com --state=s3://kops-state-1234
 ```
 
+### Options
+
+```
+  -h, --help   help for edit
+```
+
 ### Options inherited from parent commands
 
 ```

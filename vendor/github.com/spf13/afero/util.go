@@ -157,7 +157,7 @@ func UnicodeSanitize(s string) string {
 	return string(target)
 }
 
-// Transform characters with accents into plan forms
+// Transform characters with accents into plain forms.
 func NeuterAccents(s string) string {
 	t := transform.Chain(norm.NFD, transform.RemoveFunc(isMn), norm.NFC)
 	result, _, _ := transform.String(t, string(s))
@@ -295,10 +295,10 @@ func IsEmpty(fs Fs, path string) (bool, error) {
 	}
 	if fi.IsDir() {
 		f, err := fs.Open(path)
-		defer f.Close()
 		if err != nil {
 			return false, err
 		}
+		defer f.Close()
 		list, err := f.Readdir(-1)
 		return len(list) == 0, nil
 	}

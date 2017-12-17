@@ -1,3 +1,8 @@
+# 1.4.0 (2017-10-04)
+
+## Changed
+- #61: Update NewVersion to parse ints with a 64bit int size (thanks @zknill)
+
 # 1.3.1 (2017-07-10)
 
 ## Fixed

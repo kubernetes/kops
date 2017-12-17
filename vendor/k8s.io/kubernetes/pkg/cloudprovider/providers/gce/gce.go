@@ -35,13 +35,16 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/server/options/encryptionconfig"
 	"k8s.io/apiserver/pkg/storage/value/encrypt/envelope"
+	"k8s.io/client-go/informers"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
 	v1core "k8s.io/client-go/kubernetes/typed/core/v1"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/client-go/util/flowcontrol"
 	"k8s.io/kubernetes/pkg/cloudprovider"
 	"k8s.io/kubernetes/pkg/controller"
+	kubeletapis "k8s.io/kubernetes/pkg/kubelet/apis"
 
 	"github.com/golang/glog"
 	"golang.org/x/oauth2"
@@ -100,20 +103,24 @@ type GCECloud struct {
 	// for the cloudprovider to start watching the configmap.
 	ClusterID ClusterID
 
-	service                  *compute.Service
-	serviceBeta              *computebeta.Service
-	serviceAlpha             *computealpha.Service
-	containerService         *container.Service
-	cloudkmsService          *cloudkms.Service
-	client                   clientset.Interface
-	clientBuilder            controller.ControllerClientBuilder
-	eventBroadcaster         record.EventBroadcaster
-	eventRecorder            record.EventRecorder
-	projectID                string
-	region                   string
-	localZone                string   // The zone in which we are running
-	managedZones             []string // List of zones we are spanning (for multi-AZ clusters, primarily when running on master)
+	service          *compute.Service
+	serviceBeta      *computebeta.Service
+	serviceAlpha     *computealpha.Service
+	containerService *container.Service
+	cloudkmsService  *cloudkms.Service
+	client           clientset.Interface
+	clientBuilder    controller.ControllerClientBuilder
+	eventBroadcaster record.EventBroadcaster
+	eventRecorder    record.EventRecorder
+	projectID        string
+	region           string
+	localZone        string // The zone in which we are running
+	// managedZones will be set to the 1 zone if running a single zone cluster
+	// it will be set to ALL zones in region for any multi-zone cluster
+	// Use GetAllCurrentZones to get only zones that contain nodes
+	managedZones             []string
 	networkURL               string
+	isLegacyNetwork          bool
 	subnetworkURL            string
 	secondaryRangeName       string
 	networkProjectID         string
@@ -126,6 +133,12 @@ type GCECloud struct {
 	useMetadataServer        bool
 	operationPollRateLimiter flowcontrol.RateLimiter
 	manager                  ServiceManager
+	// Lock for access to nodeZones
+	nodeZonesLock sync.Mutex
+	// nodeZones is a mapping from Zone to a sets.String of Node's names in the Zone
+	// it is updated by the nodeInformer
+	nodeZones          map[string]sets.String
+	nodeInformerSynced cache.InformerSynced
 	// sharedResourceLock is used to serialize GCE operations that may mutate shared state to
 	// prevent inconsistencies. For example, load balancers manipulation methods will take the
 	// lock to prevent shared resources from being prematurely deleted while the operation is
@@ -191,6 +204,7 @@ type GCEServiceManager struct {
 	gce *GCECloud
 }
 
+// TODO: replace gcfg with json
 type ConfigGlobal struct {
 	TokenURL  string `gcfg:"token-url"`
 	TokenBody string `gcfg:"token-body"`
@@ -215,7 +229,7 @@ type ConfigGlobal struct {
 	// located in (i.e. where the controller will be running). If this is
 	// blank, then the local zone will be discovered via the metadata server.
 	LocalZone string `gcfg:"local-zone"`
-	// Possible values: List of api names separated by comma. Default to none.
+	// Default to none.
 	// For example: MyFeatureFlag
 	AlphaFeatures []string `gcfg:"alpha-features"`
 }
@@ -324,6 +338,13 @@ func generateCloudConfig(configFile *ConfigFile) (cloudConfig *CloudConfig, err 
 		alphaFeatureGate, err := NewAlphaFeatureGate(configFile.Global.AlphaFeatures)
 		if err != nil {
 			glog.Errorf("Encountered error for creating alpha feature gate: %v", err)
+		}
+		cloudConfig.AlphaFeatureGate = alphaFeatureGate
+	} else {
+		// initialize AlphaFeatureGate when no AlphaFeatures are configured.
+		alphaFeatureGate, err := NewAlphaFeatureGate([]string{})
+		if err != nil {
+			glog.Errorf("Encountered error for initializing alpha feature gate: %v", err)
 		}
 		cloudConfig.AlphaFeatureGate = alphaFeatureGate
 	}
@@ -450,31 +471,49 @@ func CreateGCECloud(config *CloudConfig) (*GCECloud, error) {
 
 	// ProjectID and.NetworkProjectID may be project number or name.
 	projID, netProjID := tryConvertToProjectNames(config.ProjectID, config.NetworkProjectID, service)
-
 	onXPN := projID != netProjID
 
 	var networkURL string
 	var subnetURL string
+	var isLegacyNetwork bool
 
-	if config.NetworkName == "" && config.NetworkURL == "" {
-		// TODO: Stop using this call and return an error.
-		// This function returns the first network in a list of networks for a project. The project
-		// should be set via configuration instead of randomly taking the first.
-		networkName, err := getNetworkNameViaAPICall(service, config.NetworkProjectID)
-		if err != nil {
-			return nil, err
-		}
-		networkURL = gceNetworkURL(config.ApiEndpoint, netProjID, networkName)
-	} else if config.NetworkURL != "" {
+	if config.NetworkURL != "" {
 		networkURL = config.NetworkURL
-	} else {
+	} else if config.NetworkName != "" {
 		networkURL = gceNetworkURL(config.ApiEndpoint, netProjID, config.NetworkName)
+	} else {
+		// Other consumers may use the cloudprovider without utilizing the wrapped GCE API functions
+		// or functions requiring network/subnetwork URLs (e.g. Kubelet).
+		glog.Warningf("No network name or URL specified.")
 	}
 
 	if config.SubnetworkURL != "" {
 		subnetURL = config.SubnetworkURL
 	} else if config.SubnetworkName != "" {
 		subnetURL = gceSubnetworkURL(config.ApiEndpoint, netProjID, config.Region, config.SubnetworkName)
+	} else {
+		// Attempt to determine the subnetwork in case it's an automatic network.
+		// Legacy networks will not have a subnetwork, so subnetworkURL should remain empty.
+		if networkName := lastComponent(networkURL); networkName != "" {
+			if n, err := getNetwork(service, netProjID, networkName); err != nil {
+				// Gracefully fail because kubelet calls CreateGCECloud without any config, and API calls will fail coming from minions.
+				glog.Warningf("Could not retrieve network %q in attempt to determine if legacy network or see list of subnets, err %v", networkURL, err)
+			} else {
+				// Legacy networks have a non-empty IPv4Range
+				if len(n.IPv4Range) > 0 {
+					glog.Infof("Determined network %q is type legacy", networkURL)
+					isLegacyNetwork = true
+				} else {
+					// Try to find the subnet in the list of subnets
+					subnetURL = findSubnetForRegion(n.Subnetworks, config.Region)
+					if len(subnetURL) > 0 {
+						glog.Infof("Using subnet %q within network %q & region %q because none was specified.", subnetURL, n.Name, config.Region)
+					} else {
+						glog.Warningf("Could not find any subnet in region %q within list %v.", config.Region, n.Subnetworks)
+					}
+				}
+			}
+		}
 	}
 
 	if len(config.ManagedZones) == 0 {
@@ -502,6 +541,7 @@ func CreateGCECloud(config *CloudConfig) (*GCECloud, error) {
 		localZone:                config.Zone,
 		managedZones:             config.ManagedZones,
 		networkURL:               networkURL,
+		isLegacyNetwork:          isLegacyNetwork,
 		subnetworkURL:            subnetURL,
 		secondaryRangeName:       config.SecondaryRangeName,
 		nodeTags:                 config.NodeTags,
@@ -509,6 +549,7 @@ func CreateGCECloud(config *CloudConfig) (*GCECloud, error) {
 		useMetadataServer:        config.UseMetadataServer,
 		operationPollRateLimiter: operationPollRateLimiter,
 		AlphaFeatureGate:         config.AlphaFeatureGate,
+		nodeZones:                map[string]sets.String{},
 	}
 
 	gce.manager = &GCEServiceManager{gce}
@@ -625,6 +666,72 @@ func (gce *GCECloud) SubnetworkURL() string {
 	return gce.subnetworkURL
 }
 
+func (gce *GCECloud) IsLegacyNetwork() bool {
+	return gce.isLegacyNetwork
+}
+
+func (gce *GCECloud) SetInformers(informerFactory informers.SharedInformerFactory) {
+	glog.Infof("Setting up informers for GCECloud")
+	nodeInformer := informerFactory.Core().V1().Nodes().Informer()
+	nodeInformer.AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: func(obj interface{}) {
+			node := obj.(*v1.Node)
+			gce.updateNodeZones(nil, node)
+		},
+		UpdateFunc: func(prev, obj interface{}) {
+			prevNode := prev.(*v1.Node)
+			newNode := obj.(*v1.Node)
+			if newNode.Labels[kubeletapis.LabelZoneFailureDomain] ==
+				prevNode.Labels[kubeletapis.LabelZoneFailureDomain] {
+				return
+			}
+			gce.updateNodeZones(prevNode, newNode)
+		},
+		DeleteFunc: func(obj interface{}) {
+			node, isNode := obj.(*v1.Node)
+			// We can get DeletedFinalStateUnknown instead of *v1.Node here
+			// and we need to handle that correctly.
+			if !isNode {
+				deletedState, ok := obj.(cache.DeletedFinalStateUnknown)
+				if !ok {
+					glog.Errorf("Received unexpected object: %v", obj)
+					return
+				}
+				node, ok = deletedState.Obj.(*v1.Node)
+				if !ok {
+					glog.Errorf("DeletedFinalStateUnknown contained non-Node object: %v", deletedState.Obj)
+					return
+				}
+			}
+			gce.updateNodeZones(node, nil)
+		},
+	})
+	gce.nodeInformerSynced = nodeInformer.HasSynced
+}
+
+func (gce *GCECloud) updateNodeZones(prevNode, newNode *v1.Node) {
+	gce.nodeZonesLock.Lock()
+	defer gce.nodeZonesLock.Unlock()
+	if prevNode != nil {
+		prevZone, ok := prevNode.ObjectMeta.Labels[kubeletapis.LabelZoneFailureDomain]
+		if ok {
+			gce.nodeZones[prevZone].Delete(prevNode.ObjectMeta.Name)
+			if gce.nodeZones[prevZone].Len() == 0 {
+				gce.nodeZones[prevZone] = nil
+			}
+		}
+	}
+	if newNode != nil {
+		newZone, ok := newNode.ObjectMeta.Labels[kubeletapis.LabelZoneFailureDomain]
+		if ok {
+			if gce.nodeZones[newZone] == nil {
+				gce.nodeZones[newZone] = sets.NewString()
+			}
+			gce.nodeZones[newZone].Insert(newNode.ObjectMeta.Name)
+		}
+	}
+}
+
 // Known-useless DNS search path.
 var uselessDNSSearchRE = regexp.MustCompile(`^[0-9]+.google.internal.$`)
 
@@ -668,7 +775,7 @@ func gceSubnetworkURL(apiEndpoint, project, region, subnetwork string) string {
 	return apiEndpoint + strings.Join([]string{"projects", project, "regions", region, "subnetworks", subnetwork}, "/")
 }
 
-// getProjectIDInURL parses typical full resource URLS and shorter URLS
+// getProjectIDInURL parses full resource URLS and shorter URLS
 // https://www.googleapis.com/compute/v1/projects/myproject/global/networks/mycustom
 // projects/myproject/global/networks/mycustom
 // All return "myproject"
@@ -680,6 +787,20 @@ func getProjectIDInURL(urlStr string) (string, error) {
 		}
 	}
 	return "", fmt.Errorf("could not find project field in url: %v", urlStr)
+}
+
+// getRegionInURL parses full resource URLS and shorter URLS
+// https://www.googleapis.com/compute/v1/projects/myproject/regions/us-central1/subnetworks/a
+// projects/myproject/regions/us-central1/subnetworks/a
+// All return "us-central1"
+func getRegionInURL(urlStr string) string {
+	fields := strings.Split(urlStr, "/")
+	for i, v := range fields {
+		if v == "regions" && i < len(fields)-1 {
+			return fields[i+1]
+		}
+	}
+	return ""
 }
 
 func getNetworkNameViaMetadata() (string, error) {
@@ -694,18 +815,9 @@ func getNetworkNameViaMetadata() (string, error) {
 	return parts[3], nil
 }
 
-func getNetworkNameViaAPICall(svc *compute.Service, projectID string) (string, error) {
-	// TODO: use PageToken to list all not just the first 500
-	networkList, err := svc.Networks.List(projectID).Do()
-	if err != nil {
-		return "", err
-	}
-
-	if networkList == nil || len(networkList.Items) <= 0 {
-		return "", fmt.Errorf("GCE Network List call returned no networks for project %q", projectID)
-	}
-
-	return networkList.Items[0].Name, nil
+// getNetwork returns a GCP network
+func getNetwork(svc *compute.Service, networkProjectID, networkID string) (*compute.Network, error) {
+	return svc.Networks.Get(networkProjectID, networkID).Do()
 }
 
 // getProjectID returns the project's string ID given a project number or string
@@ -738,6 +850,15 @@ func getZonesForRegion(svc *compute.Service, projectID, region string) ([]string
 		}
 	}
 	return zones, nil
+}
+
+func findSubnetForRegion(subnetURLs []string, region string) string {
+	for _, url := range subnetURLs {
+		if thisRegion := getRegionInURL(url); thisRegion == region {
+			return url
+		}
+	}
+	return ""
 }
 
 func newOauthClient(tokenSource oauth2.TokenSource) (*http.Client, error) {

@@ -95,6 +95,12 @@ func (s *Scanner) next() rune {
 		s.srcPos.Column = 0
 	}
 
+	// If we see a null character with data left, then that is an error
+	if ch == '\x00' && s.buf.Len() > 0 {
+		s.err("unexpected null character (0x00)")
+		return eof
+	}
+
 	// debug
 	// fmt.Printf("ch: %q, offset:column: %d:%d\n", ch, s.srcPos.Offset, s.srcPos.Column)
 	return ch
@@ -224,6 +230,11 @@ func (s *Scanner) Scan() token.Token {
 func (s *Scanner) scanComment(ch rune) {
 	// single line comments
 	if ch == '#' || (ch == '/' && s.peek() != '*') {
+		if ch == '/' && s.peek() != '/' {
+			s.err("expected '/' for comment")
+			return
+		}
+
 		ch = s.next()
 		for ch != '\n' && ch >= 0 && ch != eof {
 			ch = s.next()
@@ -340,7 +351,7 @@ func (s *Scanner) scanNumber(ch rune) token.Type {
 	return token.NUMBER
 }
 
-// scanMantissa scans the mantissa begining from the rune. It returns the next
+// scanMantissa scans the mantissa beginning from the rune. It returns the next
 // non decimal rune. It's used to determine wheter it's a fraction or exponent.
 func (s *Scanner) scanMantissa(ch rune) rune {
 	scanned := false
@@ -469,7 +480,7 @@ func (s *Scanner) scanString() {
 		// read character after quote
 		ch := s.next()
 
-		if ch < 0 || ch == eof {
+		if (ch == '\n' && braces == 0) || ch < 0 || ch == eof {
 			s.err("literal not terminated")
 			return
 		}

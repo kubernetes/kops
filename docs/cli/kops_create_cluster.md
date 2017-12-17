@@ -13,7 +13,7 @@ Create a kubernetes cluster using command line flags. This command creates cloud
 These operations are done in parallel and rely on eventual consistency.
 
 ```
-kops create cluster
+kops create cluster [flags]
 ```
 
 ### Examples
@@ -77,6 +77,7 @@ kops create cluster
       --dns-zone string                      DNS hosted zone to use (defaults to longest matching zone)
       --dry-run                              If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.
       --encrypt-etcd-storage                 Generate key in aws kms and use it for encrypt etcd volumes
+  -h, --help                                 help for cluster
       --image string                         Image to use for all instances.
       --kubernetes-version string            Version of kubernetes to run (defaults to version in channel)
       --master-count int32                   Set the number of masters.  Defaults to one master per master-zone

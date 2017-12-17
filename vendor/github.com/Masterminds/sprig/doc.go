@@ -48,6 +48,10 @@ String Functions
 	- randAlpha: Given a length, generate an alphabetic string
 	- randAscii: Given a length, generate a random ASCII string (symbols included)
 	- randNumeric: Given a length, generate a string of digits.
+	- swapcase: SwapCase swaps the case of a string using a word based algorithm. see https://godoc.org/github.com/Masterminds/goutils#SwapCase
+	- shuffle: Shuffle randomizes runes in a string and returns the result. It uses default random source in `math/rand`
+	- snakecase: convert all upper case characters in a string to underscore format.
+	- camelcase: convert all lower case characters behind underscores to upper case character
 	- wrap: Force a line wrap at the given width. `wrap 80 "imagine a longer string"`
 	- wrapWith: Wrap a line at the given length, but using 'sep' instead of a newline. `wrapWith 50, "<br>", $html`
 	- contains: strings.Contains, but with the arguments switched: `contains substr str`. (This simplifies common pipelines)
@@ -57,6 +61,7 @@ String Functions
 	- squote: Wrap string(s) in double quotation marks, does not escape content.
 	- cat: Concatenate strings, separating them by spaces. `cat $a $b $c`.
 	- indent: Indent a string using space characters. `indent 4 "foo\nbar"` produces "    foo\n    bar"
+	- nindent: Indent a string using space characters and prepend a new line. `indent 4 "foo\nbar"` produces "\n    foo\n    bar"
 	- replace: Replace an old with a new in a string: `$name | replace " " "-"`
 	- plural: Choose singular or plural based on length: `len $fish | plural "one anchovy" "many anchovies"`
 	- sha256sum: Generate a hex encoded sha256 hash of the input
@@ -84,7 +89,7 @@ Integer Slice Functions:
 Conversions:
 
 	- atoi: Convert a string to an integer. 0 if the integer could not be parsed.
-	- in64: Convert a string or another numeric type to an int64.
+	- int64: Convert a string or another numeric type to an int64.
 	- int: Convert a string or another numeric type to an int.
 	- float64: Convert a string or another numeric type to a float64.
 

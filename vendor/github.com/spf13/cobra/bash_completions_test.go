@@ -2,15 +2,11 @@ package cobra
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"os/exec"
 	"strings"
 	"testing"
 )
-
-var _ = fmt.Println
-var _ = os.Stderr
 
 func checkOmit(t *testing.T, found, unexpected string) {
 	if strings.Contains(found, unexpected) {
@@ -121,6 +117,8 @@ func TestBashCompletions(t *testing.T) {
 	// check for filename extension flags
 	check(t, str, `flags_completion+=("_filedir")`)
 	// check for filename extension flags
+	check(t, str, `must_have_one_noun+=("three")`)
+	// check for filename extension flags
 	check(t, str, `flags_completion+=("__handle_filename_extension_flag json|yaml|yml")`)
 	// check for custom flags
 	check(t, str, `flags_completion+=("__complete_custom")`)
@@ -136,5 +134,61 @@ func TestBashCompletions(t *testing.T) {
 	err := runShellCheck(str)
 	if err != nil {
 		t.Fatalf("shellcheck failed: %v", err)
+	}
+}
+
+func TestBashCompletionHiddenFlag(t *testing.T) {
+	var cmdTrue = &Command{
+		Use: "does nothing",
+		Run: func(cmd *Command, args []string) {},
+	}
+
+	const flagName = "hidden-foo-bar-baz"
+
+	var flagValue bool
+	cmdTrue.Flags().BoolVar(&flagValue, flagName, false, "hidden flag")
+	cmdTrue.Flags().MarkHidden(flagName)
+
+	out := new(bytes.Buffer)
+	cmdTrue.GenBashCompletion(out)
+	bashCompletion := out.String()
+	if strings.Contains(bashCompletion, flagName) {
+		t.Errorf("expected completion to not include %q flag: Got %v", flagName, bashCompletion)
+	}
+}
+
+func TestBashCompletionDeprecatedFlag(t *testing.T) {
+	var cmdTrue = &Command{
+		Use: "does nothing",
+		Run: func(cmd *Command, args []string) {},
+	}
+
+	const flagName = "deprecated-foo-bar-baz"
+
+	var flagValue bool
+	cmdTrue.Flags().BoolVar(&flagValue, flagName, false, "hidden flag")
+	cmdTrue.Flags().MarkDeprecated(flagName, "use --does-not-exist instead")
+
+	out := new(bytes.Buffer)
+	cmdTrue.GenBashCompletion(out)
+	bashCompletion := out.String()
+	if strings.Contains(bashCompletion, flagName) {
+		t.Errorf("expected completion to not include %q flag: Got %v", flagName, bashCompletion)
+	}
+}
+
+func BenchmarkBashCompletion(b *testing.B) {
+	c := initializeWithRootCmd()
+	cmdEcho.AddCommand(cmdTimes)
+	c.AddCommand(cmdEcho, cmdPrint, cmdDeprecated, cmdColon)
+
+	buf := new(bytes.Buffer)
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		buf.Reset()
+		if err := c.GenBashCompletion(buf); err != nil {
+			b.Fatal(err)
+		}
 	}
 }

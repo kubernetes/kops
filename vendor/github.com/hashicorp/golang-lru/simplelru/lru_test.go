@@ -108,7 +108,7 @@ func TestLRU_GetOldest_RemoveOldest(t *testing.T) {
 	}
 }
 
-// Test that Add returns true/false if an eviction occured
+// Test that Add returns true/false if an eviction occurred
 func TestLRU_Add(t *testing.T) {
 	evictCounter := 0
 	onEvicted := func(k interface{}, v interface{}) {

@@ -11,7 +11,7 @@ Create a docker config.
 Create a new docker config, and store it in the state store. Used to configure docker on each master or node (ie. for auth) Use update to modify it, this command will only create a new entry.
 
 ```
-kops create secret dockerconfig
+kops create secret dockerconfig [flags]
 ```
 
 ### Examples
@@ -30,6 +30,7 @@ kops create secret dockerconfig
 ```
   -f, -- string   Path to docker config JSON file
       --force     Force replace the kops secret if it already exists
+  -h, --help      help for dockerconfig
 ```
 
 ### Options inherited from parent commands

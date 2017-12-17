@@ -25,11 +25,12 @@ import (
 
 var sentinels = []string{
 	"Copyright",
-	"Google Inc",
+	"Google",
 	`Licensed under the Apache License, Version 2.0 (the "License");`,
 }
 
 func TestLicense(t *testing.T) {
+	t.Parallel()
 	err := filepath.Walk(".", func(path string, fi os.FileInfo, err error) error {
 		if err != nil {
 			return err
@@ -52,7 +53,7 @@ func TestLicense(t *testing.T) {
 		if err != nil {
 			return nil
 		}
-		src = src[:120] // Ensure all of the sentinel values are at the top of the file.
+		src = src[:140] // Ensure all of the sentinel values are at the top of the file.
 
 		// Find license
 		for _, sentinel := range sentinels {

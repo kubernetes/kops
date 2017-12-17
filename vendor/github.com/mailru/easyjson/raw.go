@@ -5,8 +5,8 @@ import (
 	"github.com/mailru/easyjson/jwriter"
 )
 
-// RawMessage is a raw piece of JSON (number, string, bool, object, array or null) that is extracted
-// without parsing and output as is during marshalling.
+// RawMessage is a raw piece of JSON (number, string, bool, object, array or
+// null) that is extracted without parsing and output as is during marshaling.
 type RawMessage []byte
 
 // MarshalEasyJSON does JSON marshaling using easyjson interface.

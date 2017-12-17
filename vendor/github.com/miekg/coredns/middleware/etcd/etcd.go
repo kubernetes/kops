@@ -7,11 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/miekg/coredns/middleware"
-	"github.com/miekg/coredns/middleware/etcd/msg"
-	"github.com/miekg/coredns/middleware/pkg/singleflight"
-	"github.com/miekg/coredns/middleware/proxy"
-	"github.com/miekg/coredns/request"
+	"github.com/coredns/coredns/middleware"
+	"github.com/coredns/coredns/middleware/etcd/msg"
+	"github.com/coredns/coredns/middleware/pkg/cache"
+	"github.com/coredns/coredns/middleware/pkg/singleflight"
+	"github.com/coredns/coredns/middleware/proxy"
+	"github.com/coredns/coredns/request"
 
 	etcdc "github.com/coreos/etcd/client"
 	"github.com/miekg/dns"
@@ -20,22 +21,23 @@ import (
 
 // Etcd is a middleware talks to an etcd cluster.
 type Etcd struct {
-	Next       middleware.Handler
-	Zones      []string
-	PathPrefix string
-	Proxy      proxy.Proxy // Proxy for looking up names during the resolution process
-	Client     etcdc.KeysAPI
-	Ctx        context.Context
-	Inflight   *singleflight.Group
-	Stubmap    *map[string]proxy.Proxy // list of proxies for stub resolving.
-	Debugging  bool                    // Do we allow debug queries.
+	Next        middleware.Handler
+	Fallthrough bool
+	Zones       []string
+	PathPrefix  string
+	Proxy       proxy.Proxy // Proxy for looking up names during the resolution process
+	Client      etcdc.KeysAPI
+	Ctx         context.Context
+	Inflight    *singleflight.Group
+	Stubmap     *map[string]proxy.Proxy // list of proxies for stub resolving.
+	Debugging   bool                    // Do we allow debug queries.
 
 	endpoints []string // Stored here as well, to aid in testing.
 }
 
 // Services implements the ServiceBackend interface.
 func (e *Etcd) Services(state request.Request, exact bool, opt middleware.Options) (services, debug []msg.Service, err error) {
-	services, err = e.Records(state.Name(), exact)
+	services, err = e.Records(state, exact)
 	if err != nil {
 		return
 	}
@@ -71,7 +73,9 @@ func (e *Etcd) Debug() string {
 
 // Records looks up records in etcd. If exact is true, it will lookup just this
 // name. This is used when find matches when completing SRV lookups for instance.
-func (e *Etcd) Records(name string, exact bool) ([]msg.Service, error) {
+func (e *Etcd) Records(state request.Request, exact bool) ([]msg.Service, error) {
+	name := state.Name()
+
 	path, star := msg.PathWithWildcard(name, e.PathPrefix)
 	r, err := e.get(path, true)
 	if err != nil {
@@ -90,7 +94,10 @@ func (e *Etcd) Records(name string, exact bool) ([]msg.Service, error) {
 
 // get is a wrapper for client.Get that uses SingleInflight to suppress multiple outstanding queries.
 func (e *Etcd) get(path string, recursive bool) (*etcdc.Response, error) {
-	resp, err := e.Inflight.Do(path, func() (interface{}, error) {
+
+	hash := cache.Hash([]byte(path))
+
+	resp, err := e.Inflight.Do(hash, func() (interface{}, error) {
 		ctx, cancel := context.WithTimeout(e.Ctx, etcdTimeout)
 		defer cancel()
 		r, e := e.Client.Get(ctx, path, &etcdc.GetOptions{Sort: false, Recursive: recursive})

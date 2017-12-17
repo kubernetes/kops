@@ -104,6 +104,11 @@ func Test_skip_and_return_bytes_with_reader(t *testing.T) {
 	should.Equal(`{"a" : [{"stream": "c"}], "d": 102 }`, string(skipped))
 }
 
+func Test_skip_empty(t *testing.T) {
+	should := require.New(t)
+	should.NotNil(Get([]byte("")).LastError())
+}
+
 type TestResp struct {
 	Code uint64
 }

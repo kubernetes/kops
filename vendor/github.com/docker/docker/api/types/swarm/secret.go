@@ -12,8 +12,7 @@ type Secret struct {
 // SecretSpec represents a secret specification from a secret in swarm
 type SecretSpec struct {
 	Annotations
-	Data   []byte  `json:",omitempty"`
-	Driver *Driver `json:",omitempty"` // name of the secrets driver used to fetch the secret's value from an external secret store
+	Data []byte `json:",omitempty"`
 }
 
 // SecretReferenceFileTarget is a file target in a secret reference

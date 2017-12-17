@@ -26,7 +26,7 @@ Note: terraform users will need to run all of the following commands from the sa
 `terraform apply` prior to running `kops rolling-update cluster`.
 
 ```
-kops rolling-update cluster
+kops rolling-update cluster [flags]
 ```
 
 ### Examples
@@ -73,6 +73,7 @@ kops rolling-update cluster
       --fail-on-drain-error          The rolling-update will fail if draining a node fails. (default true)
       --fail-on-validate-error       The rolling-update will fail if the cluster fails to validate. (default true)
       --force                        Force rolling update, even if no changes
+  -h, --help                         help for cluster
       --instance-group stringSlice   List of instance groups to update (defaults to all if not specified)
       --master-interval duration     Time to wait between restarting masters (default 5m0s)
       --node-interval duration       Time to wait between restarting nodes (default 4m0s)

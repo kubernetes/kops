@@ -1,16 +1,36 @@
+// Copyright 2013-2015 CoreOS, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package semver
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
+	"flag"
+	"fmt"
 	"math/rand"
 	"reflect"
 	"testing"
 	"time"
+
+	"gopkg.in/yaml.v2"
 )
 
 type fixture struct {
-	greaterVersion string
-	lesserVersion  string
+	GreaterVersion string
+	LesserVersion  string
 }
 
 var fixtures = []fixture{
@@ -56,18 +76,33 @@ var fixtures = []fixture{
 
 func TestCompare(t *testing.T) {
 	for _, v := range fixtures {
-		gt, err := NewVersion(v.greaterVersion)
+		gt, err := NewVersion(v.GreaterVersion)
 		if err != nil {
 			t.Error(err)
 		}
 
-		lt, err := NewVersion(v.lesserVersion)
+		lt, err := NewVersion(v.LesserVersion)
 		if err != nil {
 			t.Error(err)
 		}
 
-		if gt.LessThan(*lt) == true {
+		if gt.LessThan(*lt) {
 			t.Errorf("%s should not be less than %s", gt, lt)
+		}
+		if gt.Equal(*lt) {
+			t.Errorf("%s should not be equal to %s", gt, lt)
+		}
+		if gt.Compare(*lt) <= 0 {
+			t.Errorf("%s should be greater than %s", gt, lt)
+		}
+		if !lt.LessThan(*gt) {
+			t.Errorf("%s should be less than %s", lt, gt)
+		}
+		if !lt.Equal(*lt) {
+			t.Errorf("%s should be equal to %s", lt, lt)
+		}
+		if lt.Compare(*gt) > 0 {
+			t.Errorf("%s should not be greater than %s", lt, gt)
 		}
 	}
 }
@@ -80,17 +115,17 @@ func testString(t *testing.T, orig string, version *Version) {
 
 func TestString(t *testing.T) {
 	for _, v := range fixtures {
-		gt, err := NewVersion(v.greaterVersion)
+		gt, err := NewVersion(v.GreaterVersion)
 		if err != nil {
 			t.Error(err)
 		}
-		testString(t, v.greaterVersion, gt)
+		testString(t, v.GreaterVersion, gt)
 
-		lt, err := NewVersion(v.lesserVersion)
+		lt, err := NewVersion(v.LesserVersion)
 		if err != nil {
 			t.Error(err)
 		}
-		testString(t, v.lesserVersion, lt)
+		testString(t, v.LesserVersion, lt)
 	}
 }
 
@@ -220,4 +255,116 @@ func TestMust(t *testing.T) {
 			}
 		}()
 	}
+}
+
+type fixtureJSON struct {
+	GreaterVersion *Version
+	LesserVersion  *Version
+}
+
+func TestJSON(t *testing.T) {
+	fj := make([]fixtureJSON, len(fixtures))
+	for i, v := range fixtures {
+		var err error
+		fj[i].GreaterVersion, err = NewVersion(v.GreaterVersion)
+		if err != nil {
+			t.Fatal(err)
+		}
+		fj[i].LesserVersion, err = NewVersion(v.LesserVersion)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	fromStrings, err := json.Marshal(fixtures)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fromVersions, err := json.Marshal(fj)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Equal(fromStrings, fromVersions) {
+		t.Errorf("Expected:   %s", fromStrings)
+		t.Errorf("Unexpected: %s", fromVersions)
+	}
+
+	fromJson := make([]fixtureJSON, 0, len(fj))
+	err = json.Unmarshal(fromStrings, &fromJson)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(fromJson, fj) {
+		t.Error("Expected:   ", fj)
+		t.Error("Unexpected: ", fromJson)
+	}
+}
+
+func TestYAML(t *testing.T) {
+	document, err := yaml.Marshal(fixtures)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := make([]fixtureJSON, len(fixtures))
+	for i, v := range fixtures {
+		var err error
+		expected[i].GreaterVersion, err = NewVersion(v.GreaterVersion)
+		if err != nil {
+			t.Fatal(err)
+		}
+		expected[i].LesserVersion, err = NewVersion(v.LesserVersion)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	fromYAML := make([]fixtureJSON, 0, len(fixtures))
+	err = yaml.Unmarshal(document, &fromYAML)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(fromYAML, expected) {
+		t.Error("Expected:   ", expected)
+		t.Error("Unexpected: ", fromYAML)
+	}
+}
+
+func TestBadInput(t *testing.T) {
+	bad := []string{
+		"1.2",
+		"1.2.3x",
+		"0x1.3.4",
+		"-1.2.3",
+		"1.2.3.4",
+	}
+	for _, b := range bad {
+		if _, err := NewVersion(b); err == nil {
+			t.Error("Improperly accepted value: ", b)
+		}
+	}
+}
+
+func TestFlag(t *testing.T) {
+	v := Version{}
+	f := flag.NewFlagSet("version", flag.ContinueOnError)
+	f.Var(&v, "version", "set version")
+
+	if err := f.Set("version", "1.2.3"); err != nil {
+		t.Fatal(err)
+	}
+
+	if v.String() != "1.2.3" {
+		t.Errorf("Set wrong value %q", v)
+	}
+}
+
+func ExampleVersion_LessThan() {
+	vA := New("1.2.3")
+	vB := New("3.2.1")
+
+	fmt.Printf("%s < %s == %t\n", vA, vB, vA.LessThan(*vB))
+	// Output:
+	// 1.2.3 < 3.2.1 == true
 }

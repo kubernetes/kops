@@ -1,5 +1,22 @@
 # Changelog
 
+### 0.28.3 (2017-12-7)
+- Add timeout for docker calls
+- Fix prometheus label consistency
+
+### 0.28.2 (2017-11-21)
+- Fix GPU init race condition
+
+### 0.28.1 (2017-11-20)
+- Add containerd support
+- Fix fsnotify regression from 0.28.0
+- Add on demand metrics
+
+### 0.28.0 (2017-11-06)
+- Add container nvidia GPU metrics
+- Expose container memory max_usage_in_bytes
+- Add container memory reservation to prometheus
+
 ### 0.27.1 (2017-09-06)
 - Add CRI-O support
 

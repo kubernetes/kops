@@ -17,6 +17,12 @@ Misc infrequently used commands.
   kops toolbox dump --name k8s-cluster.example.com
 ```
 
+### Options
+
+```
+  -h, --help   help for toolbox
+```
+
 ### Options inherited from parent commands
 
 ```

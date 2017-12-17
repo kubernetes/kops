@@ -7,6 +7,7 @@ import (
 
 func testResult(t *testing.T, key string, expected []string) {
 	parsed, err := parseKey(key)
+	t.Logf("key=%s expected=%s parsed=%s", key, expected, parsed)
 	if err != nil {
 		t.Fatal("Unexpected error:", err)
 	}
@@ -43,7 +44,13 @@ func TestBaseKeyPound(t *testing.T) {
 	testError(t, "hello#world", "invalid bare character: #")
 }
 
+func TestQuotedKeys(t *testing.T) {
+	testResult(t, `hello."foo".bar`, []string{"hello", "foo", "bar"})
+	testResult(t, `"hello!"`, []string{"hello!"})
+}
+
 func TestEmptyKey(t *testing.T) {
 	testError(t, "", "empty key")
 	testError(t, " ", "empty key")
+	testResult(t, `""`, []string{""})
 }

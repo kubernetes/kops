@@ -328,3 +328,15 @@ func Test_decode_nested(t *testing.T) {
 		t.Fatal(slice[2])
 	}
 }
+
+func Test_decode_field_with_escape(t *testing.T) {
+	should := require.New(t)
+	type TestObject struct {
+		Field1 string
+	}
+	var obj TestObject
+	should.Nil(ConfigCompatibleWithStandardLibrary.Unmarshal([]byte(`{"Field\"1":"hello"}`), &obj))
+	should.Equal("", obj.Field1)
+	should.Nil(ConfigCompatibleWithStandardLibrary.Unmarshal([]byte(`{"\u0046ield1":"hello"}`), &obj))
+	should.Equal("hello", obj.Field1)
+}

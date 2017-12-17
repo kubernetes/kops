@@ -1,9 +1,30 @@
 ## Changelog
 
+### [1.7.4](https://github.com/magiconair/properties/tags/v1.7.4) - 31 Oct 2017
+
+ * [Issue #23](https://github.com/magiconair/properties/issues/23): Ignore blank lines with whitespaces
+ * [PR #24](https://github.com/magiconair/properties/pull/24): Update keys when DisableExpansion is enabled
+   Thanks to @mgurov for the fix.
+
+### [1.7.3](https://github.com/magiconair/properties/tags/v1.7.3) - 10 Jul 2017
+
+ * [Issue #17](https://github.com/magiconair/properties/issues/17): Add [SetValue()](http://godoc.org/github.com/magiconair/properties#Properties.SetValue) method to set values generically
+ * [Issue #22](https://github.com/magiconair/properties/issues/22): Add [LoadMap()](http://godoc.org/github.com/magiconair/properties#LoadMap) function to load properties from a string map
+
+### [1.7.2](https://github.com/magiconair/properties/tags/v1.7.2) - 20 Mar 2017
+
+ * [Issue #15](https://github.com/magiconair/properties/issues/15): Drop gocheck dependency
+ * [PR #21](https://github.com/magiconair/properties/pull/21): Add [Map()](http://godoc.org/github.com/magiconair/properties#Properties.Map) and [FilterFunc()](http://godoc.org/github.com/magiconair/properties#Properties.FilterFunc)
+
+### [1.7.1](https://github.com/magiconair/properties/tags/v1.7.1) - 13 Jan 2017
+
+ * [PR #16](https://github.com/magiconair/properties/pull/16): Keep gofmt happy
+ * [PR #18](https://github.com/magiconair/properties/pull/18): Fix Delete() function
+
 ### [1.7.0](https://github.com/magiconair/properties/tags/v1.7.0) - 20 Mar 2016
 
- * [Issue #10](https://github.com/magiconair/properties/issues/10): Add [LoadURL,LoadURLs,MustLoadURL,MustLoadURLs](http://godoc.org/github.com/magiconair/properties#Properties.LoadURL) method to load properties from a URL.
- * [Issue #11](https://github.com/magiconair/properties/issues/11): Add [LoadString,MustLoadString](http://godoc.org/github.com/magiconair/properties#Properties.LoadString) method to load properties from an UTF8 string.
+ * [Issue #10](https://github.com/magiconair/properties/issues/10): Add [LoadURL,LoadURLs,MustLoadURL,MustLoadURLs](http://godoc.org/github.com/magiconair/properties#LoadURL) method to load properties from a URL.
+ * [Issue #11](https://github.com/magiconair/properties/issues/11): Add [LoadString,MustLoadString](http://godoc.org/github.com/magiconair/properties#LoadString) method to load properties from an UTF8 string.
  * [PR #8](https://github.com/magiconair/properties/pull/8): Add [MustFlag](http://godoc.org/github.com/magiconair/properties#Properties.MustFlag) method to provide overrides via command line flags. (@pascaldekloe)
 
 ### [1.6.0](https://github.com/magiconair/properties/tags/v1.6.0) - 11 Dec 2015

@@ -1,4 +1,4 @@
-// Copyright 2016 Frank Schroeder. All rights reserved.
+// Copyright 2017 Frank Schroeder. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -31,6 +31,15 @@ func Load(buf []byte, enc Encoding) (*Properties, error) {
 // LoadString reads an UTF8 string into a properties struct.
 func LoadString(s string) (*Properties, error) {
 	return loadBuf([]byte(s), UTF8)
+}
+
+// LoadMap creates a new Properties struct from a string map.
+func LoadMap(m map[string]string) *Properties {
+	p := NewProperties()
+	for k, v := range m {
+		p.Set(k, v)
+	}
+	return p
 }
 
 // LoadFile reads a file into a Properties struct.
@@ -98,7 +107,7 @@ func MustLoadURL(url string) *Properties {
 	return must(LoadURL(url))
 }
 
-// MustLoadFiles reads the content of multiple URLs in the given order into a
+// MustLoadURLs reads the content of multiple URLs in the given order into a
 // Properties struct and panics on error. If 'ignoreMissing' is true then a 404
 // status code will not be reported as error.
 func MustLoadURLs(urls []string, ignoreMissing bool) *Properties {
@@ -172,8 +181,10 @@ func loadURL(url string, ignoreMissing bool) (*Properties, error) {
 		return nil, fmt.Errorf("properties: %s returned %d", url, resp.StatusCode)
 	}
 	body, err := ioutil.ReadAll(resp.Body)
-	resp.Body.Close()
 	if err != nil {
+		return nil, fmt.Errorf("properties: %s error reading response. %s", url, err)
+	}
+	if err = resp.Body.Close(); err != nil {
 		return nil, fmt.Errorf("properties: %s error reading response. %s", url, err)
 	}
 

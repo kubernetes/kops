@@ -1,5 +1,9 @@
 sudo: false
+
 language: go
+
 go:
-    - 1.6.4
-    - 1.7.4
+- 1.9.x
+- 1.x
+
+go_import_path: github.com/prometheus/procfs

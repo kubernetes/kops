@@ -11,7 +11,7 @@ Import a cluster.
 Imports a kubernetes cluster created by kube-up.sh into a state store.  This command only support AWS clusters at this time.
 
 ```
-kops import cluster
+kops import cluster [flags]
 ```
 
 ### Examples
@@ -25,6 +25,7 @@ kops import cluster
 ### Options
 
 ```
+  -h, --help            help for cluster
       --region string   region
 ```
 
