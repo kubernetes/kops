@@ -21,6 +21,7 @@ import (
 	"crypto/x509"
 	"fmt"
 
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/util/pkg/vfs"
 )
@@ -28,9 +29,8 @@ import (
 const CertificateId_CA = "ca"
 
 const (
-	SecretTypeSSHPublicKey = "SSHPublicKey"
-	SecretTypeKeypair      = "Keypair"
-	SecretTypeSecret       = "Secret"
+	SecretTypeKeypair = "Keypair"
+	SecretTypeSecret  = "Secret"
 
 	// Name for the primary SSH key
 	SecretNameSSHPrimary = "admin"
@@ -77,20 +77,30 @@ type CAStore interface {
 	FindCert(name string) (*pki.Certificate, error)
 	FindPrivateKey(name string) (*pki.PrivateKey, error)
 
-	// List will list all the items, but will not fetch the data
-	List() ([]*KeystoreItem, error)
+	// ListKeysets will return all the KeySets
+	// The key material is not guaranteed to be populated - metadata like the name will be.
+	ListKeysets() ([]*KeystoreItem, error)
 
 	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
 	AddCert(name string, cert *pki.Certificate) error
+
+	// DeleteKeyset will delete the specified Keyset
+	DeleteKeyset(item *KeystoreItem) error
+}
+
+// SSHCredentialStore holds SSHCredential objects
+type SSHCredentialStore interface {
+	// DeleteSSHCredential deletes the specified SSH credential
+	DeleteSSHCredential(item *kops.SSHCredential) error
+
+	// ListSSHCredentials will list all the SSH credentials
+	ListSSHCredentials() ([]*kops.SSHCredential, error)
 
 	// AddSSHPublicKey adds an SSH public key
 	AddSSHPublicKey(name string, data []byte) error
 
 	// FindSSHPublicKeys retrieves the SSH public keys with the specific name
-	FindSSHPublicKeys(name string) ([]*KeystoreItem, error)
-
-	// DeleteSecret will delete the specified item
-	DeleteSecret(item *KeystoreItem) error
+	FindSSHPublicKeys(name string) ([]*kops.SSHCredential, error)
 }
 
 type CertificatePool struct {

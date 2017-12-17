@@ -110,6 +110,15 @@ func (c *VFSClientset) KeyStore(cluster *kops.Cluster) (fi.CAStore, error) {
 	return fi.NewVFSCAStore(cluster, basedir), nil
 }
 
+func (c *VFSClientset) SSHCredentialStore(cluster *kops.Cluster) (fi.SSHCredentialStore, error) {
+	configBase, err := registry.ConfigBase(cluster)
+	if err != nil {
+		return nil, err
+	}
+	basedir := configBase.Join("pki")
+	return fi.NewVFSSSHCredentialStore(cluster, basedir), nil
+}
+
 func DeleteAllClusterState(basePath vfs.Path) error {
 	paths, err := basePath.ReadTree()
 	if err != nil {

@@ -197,6 +197,11 @@ func (c *ApplyClusterCmd) Run() error {
 		return err
 	}
 
+	sshCredentialStore, err := c.Clientset.SSHCredentialStore(cluster)
+	if err != nil {
+		return err
+	}
+
 	secretStore, err := c.Clientset.SecretStore(cluster)
 	if err != nil {
 		return err
@@ -309,13 +314,13 @@ func (c *ApplyClusterCmd) Run() error {
 
 	var sshPublicKeys [][]byte
 	{
-		keys, err := keyStore.FindSSHPublicKeys(fi.SecretNameSSHPrimary)
+		keys, err := sshCredentialStore.FindSSHPublicKeys(fi.SecretNameSSHPrimary)
 		if err != nil {
 			return fmt.Errorf("error retrieving SSH public key %q: %v", fi.SecretNameSSHPrimary, err)
 		}
 
 		for _, k := range keys {
-			sshPublicKeys = append(sshPublicKeys, k.Data)
+			sshPublicKeys = append(sshPublicKeys, []byte(k.Spec.PublicKey))
 		}
 	}
 
