@@ -23,8 +23,10 @@ import (
 
 	"path"
 
+	"github.com/blang/semver"
 	"github.com/golang/glog"
 	"k8s.io/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/assets"
 	"k8s.io/kops/util/pkg/hashing"
 )
@@ -44,6 +46,28 @@ var protokubeLocation *url.URL
 
 // protokubeHash caches the hash for protokube
 var protokubeHash *hashing.Hash
+
+// cniLocation caches the cniLocation url
+var cniLocation *url.URL
+
+// cniHash caches the hash for cni tarball
+var cniHash *hashing.Hash
+
+const (
+	// TODO: we really need to sort this out:
+	// https://github.com/kubernetes/kops/issues/724
+	// https://github.com/kubernetes/kops/issues/626
+	// https://github.com/kubernetes/kubernetes/issues/30338
+
+	// defaultCNIAssetK8s1_5 is the CNI tarball for for 1.5.x k8s.
+	defaultCNIAssetK8s1_5 = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-07a8a28637e97b22eb8dfe710eeae1344f69d16e.tar.gz"
+
+	// defaultCNIAssetK8s1_6 is the CNI tarball for for 1.6.x k8s.
+	defaultCNIAssetK8s1_6 = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz"
+
+	// defaultCNIAssetK8s1_9 is the CNI tarball for for 1.9.x k8s.
+	defaultCNIAssetK8s1_9 = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-201d934018af9097d6719d70688dabd578ee2b2e.tar.gz"
+)
 
 // BaseUrl returns the base url for the distribution of kops - in particular for nodeup & docker images
 func BaseUrl() (*url.URL, error) {
@@ -164,6 +188,56 @@ func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashin
 	}
 
 	return protokubeLocation, protokubeHash, nil
+}
+
+// CNISource returns the source for the cni tarball.
+func CNISource(assetsBuilder *assets.AssetBuilder, kubernetesVersion string) (*url.URL, *hashing.Hash, error) {
+	// Avoid repeated logging
+	if cniLocation != nil && cniHash != nil {
+		glog.V(8).Infof("Using cached cni location: %q", cniLocation)
+		return cniLocation, cniHash, nil
+	}
+	env := os.Getenv("CNI_VERSION_URL")
+	if env == "" {
+		sv, err := util.ParseKubernetesVersion(kubernetesVersion)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to lookup kubernetes version: %v", err)
+		}
+		sv.Pre = nil
+		sv.Build = nil
+
+		var cniAsset string
+		if sv.GTE(semver.Version{Major: 1, Minor: 6, Patch: 0, Pre: nil, Build: nil}) {
+			cniAsset = defaultCNIAssetK8s1_6
+			glog.V(2).Infof("Adding default CNI asset for k8s 1.6.x and higher: %s", defaultCNIAssetK8s1_6)
+		} else if sv.GTE(semver.Version{Major: 1, Minor: 9, Patch: 0, Pre: nil, Build: nil}) {
+			cniAsset = defaultCNIAssetK8s1_9
+			glog.V(2).Infof("Adding default CNI asset for k8s 1.9.x and higher: %s", defaultCNIAssetK8s1_9)
+		} else {
+			cniAsset = defaultCNIAssetK8s1_5
+			glog.V(2).Infof("Adding default CNI asset for k8s 1.5: %s", defaultCNIAssetK8s1_5)
+		}
+
+		cniLocation, cniHash, err = KopsFileUrl(cniAsset, assetsBuilder)
+		if err != nil {
+			return nil, nil, err
+		}
+		glog.V(8).Infof("Using default cni location: %q", cniLocation)
+	} else {
+		cniLocation, err := url.Parse(env)
+		if err != nil {
+			return nil, nil, fmt.Errorf("unable to parse env var PROTOKUBE_IMAGE %q as an url: %v", env, err)
+		}
+
+		cniLocation, cniHash, err = assetsBuilder.RemapFileAndSHA(cniLocation)
+		if err != nil {
+			return nil, nil, err
+		}
+		glog.Warningf("Using cni location from CNI_VERSION_URL env var: %q", cniLocation.String())
+
+	}
+
+	return cniLocation, cniHash, nil
 }
 
 // KopsFileUrl returns the base url for the distribution of kops - in particular for nodeup & docker images

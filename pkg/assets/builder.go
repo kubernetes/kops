@@ -181,36 +181,6 @@ func (a *AssetBuilder) RemapFileAndSHA(fileURL *url.URL) (*url.URL, *hashing.Has
 	return fileAsset.FileURL, h, nil
 }
 
-// TODO - remove this method as CNI does now have a SHA file
-
-// RemapFileAndSHAValue is used exclusively to remap the cni tarball, as the tarball does not have a sha file in object storage.
-func (a *AssetBuilder) RemapFileAndSHAValue(fileURL *url.URL, shaValue string) (*url.URL, error) {
-	if fileURL == nil {
-		return nil, fmt.Errorf("unable to remap a nil URL")
-	}
-
-	fileAsset := &FileAsset{
-		FileURL:  fileURL,
-		SHAValue: shaValue,
-	}
-
-	if a.AssetsLocation != nil && a.AssetsLocation.FileRepository != nil {
-		fileAsset.CanonicalFileURL = fileURL
-
-		normalizedFile, err := a.normalizeURL(fileURL)
-		if err != nil {
-			return nil, err
-		}
-
-		fileAsset.FileURL = normalizedFile
-		glog.V(4).Infof("adding remapped file: %q", fileAsset.FileURL.String())
-	}
-
-	a.FileAssets = append(a.FileAssets, fileAsset)
-
-	return fileAsset.FileURL, nil
-}
-
 // FindHash returns the hash value of a FileAsset.
 func (a *AssetBuilder) findHash(file *FileAsset) (*hashing.Hash, error) {
 
