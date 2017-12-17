@@ -25,6 +25,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -437,6 +439,26 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	allZones.Insert(c.Zones...)
 	allZones.Insert(c.MasterZones...)
 
+	if c.VPCID != "" {
+		cluster.Spec.NetworkID = c.VPCID
+	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS && len(c.SubnetIDs) > 0 {
+		cloudTags := map[string]string{}
+		awsCloud, err := awsup.NewAWSCloud(c.Zones[0][:len(c.Zones[0])-1], cloudTags)
+		if err != nil {
+			return fmt.Errorf("error loading cloud: %v", err)
+		}
+		res, err := awsCloud.EC2().DescribeSubnets(&ec2.DescribeSubnetsInput{
+			SubnetIds: []*string{aws.String(c.SubnetIDs[0])},
+		})
+		if err != nil {
+			return fmt.Errorf("error describing subnet %s", c.SubnetIDs[0])
+		}
+		if len(res.Subnets) == 0 || res.Subnets[0].VpcId == nil {
+			return fmt.Errorf("failed to determine VPC id of subnet %s", c.SubnetIDs[0])
+		}
+		cluster.Spec.NetworkID = *res.Subnets[0].VpcId
+	}
+
 	if cluster.Spec.CloudProvider == "" {
 		for _, zone := range allZones.List() {
 			cloud, known := fi.GuessCloudForZone(zone)
@@ -504,7 +526,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	} else {
 		var zoneToSubnetProviderID map[string]string
 		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
-			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(c.VPCID, c.Zones[0][:len(c.Zones[0])-1], c.SubnetIDs)
+			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.SubnetIDs)
 			if err != nil {
 				return err
 			}
@@ -830,10 +852,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
 
-	if c.VPCID != "" {
-		cluster.Spec.NetworkID = c.VPCID
-	}
-
 	if c.NetworkCIDR != "" {
 		cluster.Spec.NetworkCIDR = c.NetworkCIDR
 	}
@@ -878,7 +896,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 
 		var zoneToSubnetProviderID map[string]string
 		if len(c.Zones) > 0 && len(c.UtilitySubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
-			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(c.VPCID, c.Zones[0][:len(c.Zones[0])-1], c.UtilitySubnetIDs)
+			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.UtilitySubnetIDs)
 			if err != nil {
 				return err
 			}
@@ -1233,9 +1251,6 @@ func setOverrides(overrides []string, cluster *api.Cluster, instanceGroups []*ap
 
 func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) (map[string]string, error) {
 	res := make(map[string]string)
-	if VPCID == "" {
-		return res, fmt.Errorf("must specify vpc when specifying subnets")
-	}
 	cloudTags := map[string]string{}
 	awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
 	if err != nil {
