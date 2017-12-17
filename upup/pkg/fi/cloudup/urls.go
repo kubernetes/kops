@@ -66,7 +66,7 @@ const (
 	defaultCNIAssetK8s1_6 = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz"
 
 	// defaultCNIAssetK8s1_9 is the CNI tarball for for 1.9.x k8s.
-	defaultCNIAssetK8s1_9 = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-201d934018af9097d6719d70688dabd578ee2b2e.tar.gz"
+	defaultCNIAssetK8s1_9 = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.6.0.tgz"
 )
 
 // BaseUrl returns the base url for the distribution of kops - in particular for nodeup & docker images
@@ -207,12 +207,12 @@ func CNISource(assetsBuilder *assets.AssetBuilder, kubernetesVersion string) (*u
 		sv.Build = nil
 
 		var cniAsset string
-		if sv.GTE(semver.Version{Major: 1, Minor: 6, Patch: 0, Pre: nil, Build: nil}) {
-			cniAsset = defaultCNIAssetK8s1_6
-			glog.V(2).Infof("Adding default CNI asset for k8s 1.6.x and higher: %s", defaultCNIAssetK8s1_6)
-		} else if sv.GTE(semver.Version{Major: 1, Minor: 9, Patch: 0, Pre: nil, Build: nil}) {
+		if sv.GTE(semver.Version{Major: 1, Minor: 9, Patch: 0, Pre: nil, Build: nil}) {
 			cniAsset = defaultCNIAssetK8s1_9
 			glog.V(2).Infof("Adding default CNI asset for k8s 1.9.x and higher: %s", defaultCNIAssetK8s1_9)
+		} else if sv.GTE(semver.Version{Major: 1, Minor: 6, Patch: 0, Pre: nil, Build: nil}) {
+			cniAsset = defaultCNIAssetK8s1_6
+			glog.V(2).Infof("Adding default CNI asset for k8s 1.6.x and higher: %s", defaultCNIAssetK8s1_6)
 		} else {
 			cniAsset = defaultCNIAssetK8s1_5
 			glog.V(2).Infof("Adding default CNI asset for k8s 1.5: %s", defaultCNIAssetK8s1_5)

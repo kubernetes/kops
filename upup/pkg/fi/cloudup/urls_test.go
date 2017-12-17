@@ -17,35 +17,10 @@ limitations under the License.
 package cloudup
 
 import (
-	"os"
 	"testing"
 
 	"k8s.io/kops/pkg/assets"
 )
-
-func Test_FindCNIAssetFromEnvironmentVariable(t *testing.T) {
-
-	desiredCNIVersion := "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-TEST-VERSION.tar.gz"
-	os.Setenv("CNI_VERSION_URL", desiredCNIVersion)
-	defer func() {
-		os.Unsetenv("CNI_VERSION_URL")
-	}()
-
-	assetBuilder := assets.NewAssetBuilder(nil, "")
-	cniAsset, cniAssetHashString, err := CNISource(assetBuilder, "")
-
-	if err != nil {
-		t.Errorf("Unable to parse k8s version %s", err)
-	}
-
-	if cniAsset.String() != desiredCNIVersion {
-		t.Errorf("Expected CNI version from Environment variable %q, but got %q instead", desiredCNIVersion, cniAsset)
-	}
-
-	if cniAssetHashString.String() != "" {
-		t.Errorf("Expected Empty CNI Version Hash String, but got %q instead", cniAssetHashString)
-	}
-}
 
 func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 
@@ -54,6 +29,10 @@ func Test_FindCNIAssetDefaultValue1_6(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)
+	}
+
+	if cniAsset == nil {
+		t.Errorf("unable to find cni asset")
 	}
 
 	if cniAsset.String() != defaultCNIAssetK8s1_6 {
@@ -69,6 +48,9 @@ func Test_FindCNIAssetDefaultValue1_9(t *testing.T) {
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)
 	}
+	if cniAsset == nil {
+		t.Errorf("unable to find cni asset")
+	}
 
 	if cniAsset.String() != defaultCNIAssetK8s1_9 {
 		t.Errorf("Expected default CNI version %q and got %q", defaultCNIAssetK8s1_9, cniAsset)
@@ -83,6 +65,10 @@ func Test_FindCNIAssetDefaultValue1_5(t *testing.T) {
 
 	if err != nil {
 		t.Errorf("Unable to parse k8s version %s", err)
+	}
+
+	if cniAsset == nil {
+		t.Errorf("unable to find cni asset")
 	}
 
 	if cniAsset.String() != defaultCNIAssetK8s1_5 {
