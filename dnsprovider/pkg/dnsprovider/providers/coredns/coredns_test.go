@@ -21,14 +21,13 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"testing"
 
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 	corednstesting "k8s.io/kops/dnsprovider/pkg/dnsprovider/providers/coredns/stubs"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/rrstype"
-
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider/tests"
-	"strings"
 )
 
 func newTestInterface() (dnsprovider.Interface, error) {
