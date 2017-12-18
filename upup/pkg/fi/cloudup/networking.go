@@ -18,12 +18,14 @@ package cloudup
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
 	api "k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/apis/kops/util"
+	"k8s.io/kops/pkg/assets"
 )
 
 func usesCNI(c *api.Cluster) bool {
@@ -106,26 +108,45 @@ const (
 	ENV_VAR_CNI_VERSION_URL = "CNI_VERSION_URL"
 )
 
-func findCNIAssets(c *api.Cluster) (string, string, error) {
+func findCNIAssets(c *api.Cluster, assetBuilder *assets.AssetBuilder) (*url.URL, string, error) {
 
 	if cniVersionURL := os.Getenv(ENV_VAR_CNI_VERSION_URL); cniVersionURL != "" {
+		u, err := url.Parse(cniVersionURL)
+		if err != nil {
+			return nil, "", fmt.Errorf("unable to parse %q as a URL: %v", cniVersionURL, err)
+		}
 		glog.Infof("Using CNI asset version %q, as set in %s", cniVersionURL, ENV_VAR_CNI_VERSION_URL)
-		return cniVersionURL, "", nil
+		return u, "", nil
 	}
 
 	sv, err := util.ParseKubernetesVersion(c.Spec.KubernetesVersion)
 	if err != nil {
-		return "", "", fmt.Errorf("Failed to lookup kubernetes version: %v", err)
+		return nil, "", fmt.Errorf("failed to lookup kubernetes version: %v", err)
 	}
 
 	sv.Pre = nil
 	sv.Build = nil
 
+	var cniAsset, cniAssetHash string
 	if sv.GTE(semver.Version{Major: 1, Minor: 6, Patch: 0, Pre: nil, Build: nil}) {
-		glog.V(2).Infof("Adding default CNI asset: %s", defaultCNIAssetK8s1_6)
-		return defaultCNIAssetK8s1_6, defaultCNIAssetHashStringK8s1_6, nil
+		cniAsset = defaultCNIAssetK8s1_6
+		cniAssetHash = defaultCNIAssetHashStringK8s1_6
+		glog.V(2).Infof("Adding default CNI asset for k8s 1.6.x and higher: %s", defaultCNIAssetK8s1_6)
+	} else {
+		cniAsset = defaultCNIAssetK8s1_5
+		cniAssetHash = defaultCNIAssetHashStringK8s1_5
+		glog.V(2).Infof("Adding default CNI asset for k8s 1.5: %s", defaultCNIAssetK8s1_5)
 	}
 
-	glog.V(2).Infof("Adding default CNI asset: %s", defaultCNIAssetK8s1_5)
-	return defaultCNIAssetK8s1_5, defaultCNIAssetHashStringK8s1_5, nil
+	u, err := url.Parse(cniAsset)
+	if err != nil {
+		return nil, "", nil
+	}
+
+	u, err = assetBuilder.RemapFileAndSHAValue(u, cniAssetHash)
+	if err != nil {
+		return nil, "", err
+	}
+
+	return u, cniAssetHash, nil
 }
