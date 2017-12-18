@@ -289,7 +289,7 @@ func (c *UpgradeClusterCmd) Run(args []string) error {
 			return fmt.Errorf("error populating configuration: %v", err)
 		}
 
-		assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets, "")
+		assetBuilder := assets.NewAssetBuilder(cluster.Spec.Assets)
 		fullCluster, err := cloudup.PopulateClusterSpec(clientset, cluster, assetBuilder)
 		if err != nil {
 			return err

@@ -34,7 +34,7 @@ func buildSpec() *kops.ClusterSpec {
 }
 
 func buildOptions(spec *kops.ClusterSpec) error {
-	ab := assets.NewAssetBuilder(nil, "")
+	ab := assets.NewAssetBuilder(nil)
 
 	ver, err := KubernetesVersion(spec)
 	if err != nil {

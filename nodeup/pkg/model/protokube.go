@@ -244,7 +244,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 
 	// TODO this is dupicate code with etcd model
 	image := fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)
-	assets := assets.NewAssetBuilder(t.Cluster.Spec.Assets, "")
+	assets := assets.NewAssetBuilder(t.Cluster.Spec.Assets)
 	remapped, err := assets.RemapImage(image)
 	if err != nil {
 		return nil, fmt.Errorf("unable to remap container %q: %v", image, err)
