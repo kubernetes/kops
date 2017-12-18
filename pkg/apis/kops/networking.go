@@ -29,6 +29,7 @@ type NetworkingSpec struct {
 	Canal      *CanalNetworkingSpec      `json:"canal,omitempty"`
 	Kuberouter *KuberouterNetworkingSpec `json:"kuberouter,omitempty"`
 	Romana     *RomanaNetworkingSpec     `json:"romana,omitempty"`
+	AmazonVPC  *AmazonVPCNetworkingSpec  `json:"amazonvpc,omitempty"`
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
@@ -102,4 +103,8 @@ type RomanaNetworkingSpec struct {
 	DaemonServiceIP string `json:"daemonServiceIP,omitempty"`
 	// EtcdServiceIP is the Kubernetes Service IP for the etcd backend used by Romana
 	EtcdServiceIP string `json:"etcdServiceIP,omitempty"`
+}
+
+// AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking
+type AmazonVPCNetworkingSpec struct {
 }

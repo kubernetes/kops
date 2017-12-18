@@ -80,6 +80,11 @@ func usesCNI(c *api.Cluster) bool {
 		return true
 	}
 
+	if networkConfig.AmazonVPC != nil {
+		//  AmazonVPC uses CNI
+		return true
+	}
+
 	if networkConfig.CNI != nil {
 		// CNI definitely uses CNI!
 		return true
