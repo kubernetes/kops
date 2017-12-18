@@ -86,6 +86,20 @@ func (b *FirewallModelBuilder) buildNodeRules(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
+	// Pods running in Nodes could need to reach pods in master/s
+	if b.Cluster.Spec.Networking != nil && b.Cluster.Spec.Networking.AmazonVPC != nil {
+		// Nodes can talk to masters
+		{
+			t := &awstasks.SecurityGroupRule{
+				Name:          s("all-nodes-to-master"),
+				Lifecycle:     b.Lifecycle,
+				SecurityGroup: b.LinkToSecurityGroup(kops.InstanceGroupRoleMaster),
+				SourceGroup:   b.LinkToSecurityGroup(kops.InstanceGroupRoleNode),
+			}
+			c.AddTask(t)
+		}
+	}
+
 	// We _should_ block per port... but:
 	// * It causes e2e tests to break
 	// * Users expect to be able to reach pods

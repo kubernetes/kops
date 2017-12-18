@@ -41,6 +41,7 @@ Several different CNI providers are currently built into kops:
 * [kube-router](./networking.md#kube-router-example-for-cni-ipvs-based-service-proxy-and-network-policy-enforcer)
 * [romana](https://github.com/romana/romana)
 * [weave](https://github.com/weaveworks/weave-kube)
+* [amazon-vpc-routed-eni](./networking.md#amazon-vpc-backend)
 
 The manifests for the providers are included with kops, and you simply use `--networking provider-name`.
 Replace the provider name with the names listed above with you `kops cluster create`.  For instance
@@ -289,6 +290,38 @@ You can also contact the Romana team on Slack
 Romana uses the cluster's etcd as a backend for storing information about routes, hosts, host-groups and IP allocations.
 This does not affect normal etcd operations or require special treatment when upgrading etcd.
 The etcd port (4001) is opened between masters and nodes when using this networking option.
+
+#### Amazon VPC Backend
+
+The [Amazon VPC CNI](https://github.com/aws/amazon-vpc-cni-k8s) plugin
+requires no additional configurations to be done by user. 
+
+**Important:** the pods uses the VPC CIDR, i.e. there is no isolation between the master, node/s and the internal k8s network.
+
+**Note:** The following permissions are added to all nodes by kops to run the provider:
+
+```json
+  {
+    "Sid": "kopsK8sEC2NodeAmazonVPCPerms",
+    "Effect": "Allow",
+    "Action": [
+      "ec2:CreateNetworkInterface",
+      "ec2:AttachNetworkInterface",
+      "ec2:DeleteNetworkInterface",
+      "ec2:DetachNetworkInterface",
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:DescribeInstances",
+      "ec2:ModifyNetworkInterfaceAttribute",
+      "ec2:AssignPrivateIpAddresses",
+      "tag:TagResources"
+    ],
+    "Resource": [
+      "*"
+    ]
+  }
+```
+
+In case of any issues the directory `/var/log/aws-routed-eni` contains the log files of the CNI plugin. This directory is located in all the nodes in the cluster.
 
 ### Validating CNI Installation
 
