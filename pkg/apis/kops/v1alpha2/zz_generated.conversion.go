@@ -2113,7 +2113,9 @@ func autoConvert_v1alpha2_KubeAPIServerConfig_To_kops_KubeAPIServerConfig(in *Ku
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
 	out.StorageBackend = in.StorageBackend
 	out.OIDCUsernameClaim = in.OIDCUsernameClaim
+	out.OIDCUsernamePrefix = in.OIDCUsernamePrefix
 	out.OIDCGroupsClaim = in.OIDCGroupsClaim
+	out.OIDCGroupsPrefix = in.OIDCGroupsPrefix
 	out.OIDCIssuerURL = in.OIDCIssuerURL
 	out.OIDCClientID = in.OIDCClientID
 	out.OIDCCAFile = in.OIDCCAFile
@@ -2172,7 +2174,9 @@ func autoConvert_kops_KubeAPIServerConfig_To_v1alpha2_KubeAPIServerConfig(in *ko
 	out.KubeletPreferredAddressTypes = in.KubeletPreferredAddressTypes
 	out.StorageBackend = in.StorageBackend
 	out.OIDCUsernameClaim = in.OIDCUsernameClaim
+	out.OIDCUsernamePrefix = in.OIDCUsernamePrefix
 	out.OIDCGroupsClaim = in.OIDCGroupsClaim
+	out.OIDCGroupsPrefix = in.OIDCGroupsPrefix
 	out.OIDCIssuerURL = in.OIDCIssuerURL
 	out.OIDCClientID = in.OIDCClientID
 	out.OIDCCAFile = in.OIDCCAFile
