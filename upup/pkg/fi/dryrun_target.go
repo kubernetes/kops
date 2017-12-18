@@ -254,6 +254,17 @@ func (t *DryRunTarget) PrintReport(taskMap map[string]Task, out io.Writer) error
 		}
 	}
 
+	if len(t.assetBuilder.FileAssets) != 0 {
+		glog.V(4).Infof("FileAssets:")
+		for _, a := range t.assetBuilder.FileAssets {
+			if a.FileURL != nil && a.CanonicalFileURL != nil {
+				glog.V(4).Infof("  %s %s", a.FileURL.String(), a.CanonicalFileURL.String())
+			} else if a.FileURL != nil {
+				glog.V(4).Infof("  %s", a.FileURL.String())
+			}
+		}
+	}
+
 	_, err := out.Write(b.Bytes())
 	return err
 }
