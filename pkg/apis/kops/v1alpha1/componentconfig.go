@@ -228,18 +228,29 @@ type KubeAPIServerConfig struct {
 	KubeletPreferredAddressTypes []string `json:"kubeletPreferredAddressTypes,omitempty" flag:"kubelet-preferred-address-types"`
 	// StorageBackend is the backend storage
 	StorageBackend *string `json:"storageBackend,omitempty" flag:"storage-backend"`
-	// The OpenID claim to use as the user name.
-	// Note that claims other than the default ('sub') is not guaranteed to be unique and immutable.
+	// OIDCUsernameClaim is the OpenID claim to use as the user name.
+	// Note that claims other than the default ('sub') is not guaranteed to be
+	// unique and immutable.
 	OIDCUsernameClaim *string `json:"oidcUsernameClaim,omitempty" flag:"oidc-username-claim"`
-	// If provided, the name of a custom OpenID Connect claim for specifying user groups.
+	// OIDCUsernamePrefix is the prefix prepended to username claims to prevent
+	// clashes with existing names (such as 'system:' users).
+	OIDCUsernamePrefix *string `json:"oidcUsernamePrefix,omitempty" flag:"oidc-username-prefix"`
+	// OIDCGroupsClaim if provided, the name of a custom OpenID Connect claim for
+	// specifying user groups.
 	// The claim value is expected to be a string or array of strings.
 	OIDCGroupsClaim *string `json:"oidcGroupsClaim,omitempty" flag:"oidc-groups-claim"`
-	// The URL of the OpenID issuer, only HTTPS scheme will be accepted.
+	// OIDCGroupsPrefix is the prefix prepended to group claims to prevent
+	// clashes with existing names (such as 'system:' groups)
+	OIDCGroupsPrefix *string `json:"oidcGroupsPrefix,omitempty" flag:"oidc-groups-prefix"`
+	// OIDCIssuerURL is the URL of the OpenID issuer, only HTTPS scheme will
+	// be accepted.
 	// If set, it will be used to verify the OIDC JSON Web Token (JWT).
 	OIDCIssuerURL *string `json:"oidcIssuerURL,omitempty" flag:"oidc-issuer-url"`
-	// The client ID for the OpenID Connect client, must be set if oidc-issuer-url is set.
+	// OIDCClientID is the client ID for the OpenID Connect client, must be set
+	// if oidc-issuer-url is set.
 	OIDCClientID *string `json:"oidcClientID,omitempty" flag:"oidc-client-id"`
-	// If set, the OpenID server's certificate will be verified by one of the authorities in the oidc-ca-file
+	// OIDCCAFile if set, the OpenID server's certificate will be verified by one
+	// of the authorities in the oidc-ca-file
 	OIDCCAFile *string `json:"oidcCAFile,omitempty" flag:"oidc-ca-file"`
 	// The apiserver's client certificate used for outbound requests.
 	ProxyClientCertFile *string `json:"proxyClientCertFile,omitempty" flag:"proxy-client-cert-file"`
