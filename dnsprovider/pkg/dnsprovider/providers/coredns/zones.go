@@ -18,6 +18,7 @@ package coredns
 
 import (
 	"fmt"
+
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
 )
 

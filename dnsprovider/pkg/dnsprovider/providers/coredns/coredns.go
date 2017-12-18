@@ -19,13 +19,14 @@ package coredns
 
 import (
 	"fmt"
+	"io"
+	"strconv"
+	"strings"
+
 	etcdc "github.com/coreos/etcd/client"
 	"github.com/golang/glog"
 	"gopkg.in/gcfg.v1"
-	"io"
 	"k8s.io/kops/dnsprovider/pkg/dnsprovider"
-	"strconv"
-	"strings"
 )
 
 // "coredns" should be used to use this DNS provider
