@@ -66,9 +66,10 @@ func (m *MockEC2) CreateSubnet(request *ec2.CreateSubnetInput) (*ec2.CreateSubne
 	n := m.subnetNumber
 
 	subnet := &ec2.Subnet{
-		SubnetId:  s(fmt.Sprintf("subnet-%d", n)),
-		VpcId:     request.VpcId,
-		CidrBlock: request.CidrBlock,
+		SubnetId:         s(fmt.Sprintf("subnet-%d", n)),
+		VpcId:            request.VpcId,
+		CidrBlock:        request.CidrBlock,
+		AvailabilityZone: request.AvailabilityZone,
 	}
 
 	if m.subnets == nil {
@@ -104,7 +105,10 @@ func (m *MockEC2) DescribeSubnets(request *ec2.DescribeSubnetsInput) (*ec2.Descr
 		for _, filter := range request.Filters {
 			match := false
 			switch *filter.Name {
-
+			case "vpc-id":
+				if *subnet.main.VpcId == *filter.Values[0] {
+					match = true
+				}
 			default:
 				if strings.HasPrefix(*filter.Name, "tag:") {
 					match = m.hasTag(ec2.ResourceTypeSubnet, *subnet.main.SubnetId, filter)

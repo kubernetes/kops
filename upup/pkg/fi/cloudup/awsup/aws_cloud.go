@@ -873,6 +873,10 @@ func (c *awsCloudImplementation) DescribeInstance(instanceID string) (*ec2.Insta
 
 // DescribeVPC is a helper that queries for the specified vpc by id
 func (c *awsCloudImplementation) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
+	return describeVPC(c, vpcID)
+}
+
+func describeVPC(c AWSCloud, vpcID string) (*ec2.Vpc, error) {
 	glog.V(2).Infof("Calling DescribeVPC for VPC %q", vpcID)
 	request := &ec2.DescribeVpcsInput{
 		VpcIds: []*string{&vpcID},
@@ -1035,6 +1039,10 @@ func (c *awsCloudImplementation) Route53() route53iface.Route53API {
 }
 
 func (c *awsCloudImplementation) FindVPCInfo(vpcID string) (*fi.VPCInfo, error) {
+	return findVPCInfo(c, vpcID)
+}
+
+func findVPCInfo(c AWSCloud, vpcID string) (*fi.VPCInfo, error) {
 	vpc, err := c.DescribeVPC(vpcID)
 	if err != nil {
 		return nil, err
@@ -1054,7 +1062,7 @@ func (c *awsCloudImplementation) FindVPCInfo(vpcID string) (*fi.VPCInfo, error) 
 			Filters: []*ec2.Filter{NewEC2Filter("vpc-id", vpcID)},
 		}
 
-		response, err := c.ec2.DescribeSubnets(request)
+		response, err := c.EC2().DescribeSubnets(request)
 		if err != nil {
 			return nil, fmt.Errorf("error listing subnets in VPC %q: %v", vpcID, err)
 		}

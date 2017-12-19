@@ -25,6 +25,8 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/aws/aws-sdk-go/aws"
+	"github.com/aws/aws-sdk-go/service/ec2"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -41,6 +43,7 @@ import (
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/awsup"
 	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 	"k8s.io/kops/upup/pkg/fi/utils"
 	"k8s.io/kubernetes/pkg/kubectl/cmd/templates"
@@ -73,6 +76,8 @@ type CreateClusterOptions struct {
 	Image                string
 	SSHPublicKey         string
 	VPCID                string
+	SubnetIDs            []string
+	UtilitySubnetIDs     []string
 	NetworkCIDR          string
 	DNSZone              string
 	AdminAccess          []string
@@ -267,6 +272,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().Int32Var(&options.NodeVolumeSize, "node-volume-size", options.NodeVolumeSize, "Set instance volume size (in GB) for nodes")
 
 	cmd.Flags().StringVar(&options.VPCID, "vpc", options.VPCID, "Set to use a shared VPC")
+	cmd.Flags().StringSliceVar(&options.SubnetIDs, "subnets", options.SubnetIDs, "Set to use shared subnets")
+	cmd.Flags().StringSliceVar(&options.UtilitySubnetIDs, "utility-subnets", options.UtilitySubnetIDs, "Set to use shared utility subnets")
 	cmd.Flags().StringVar(&options.NetworkCIDR, "network-cidr", options.NetworkCIDR, "Set to override the default network CIDR")
 
 	cmd.Flags().Int32Var(&options.MasterCount, "master-count", options.MasterCount, "Set the number of masters.  Defaults to one master per master-zone")
@@ -432,6 +439,26 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 	allZones.Insert(c.Zones...)
 	allZones.Insert(c.MasterZones...)
 
+	if c.VPCID != "" {
+		cluster.Spec.NetworkID = c.VPCID
+	} else if api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS && len(c.SubnetIDs) > 0 {
+		cloudTags := map[string]string{}
+		awsCloud, err := awsup.NewAWSCloud(c.Zones[0][:len(c.Zones[0])-1], cloudTags)
+		if err != nil {
+			return fmt.Errorf("error loading cloud: %v", err)
+		}
+		res, err := awsCloud.EC2().DescribeSubnets(&ec2.DescribeSubnetsInput{
+			SubnetIds: []*string{aws.String(c.SubnetIDs[0])},
+		})
+		if err != nil {
+			return fmt.Errorf("error describing subnet %s", c.SubnetIDs[0])
+		}
+		if len(res.Subnets) == 0 || res.Subnets[0].VpcId == nil {
+			return fmt.Errorf("failed to determine VPC id of subnet %s", c.SubnetIDs[0])
+		}
+		cluster.Spec.NetworkID = *res.Subnets[0].VpcId
+	}
+
 	if cluster.Spec.CloudProvider == "" {
 		for _, zone := range allZones.List() {
 			cloud, known := fi.GuessCloudForZone(zone)
@@ -497,6 +524,13 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 		zoneToSubnetMap[region] = subnet
 	} else {
+		var zoneToSubnetProviderID map[string]string
+		if len(c.Zones) > 0 && len(c.SubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.SubnetIDs)
+			if err != nil {
+				return err
+			}
+		}
 		for _, zoneName := range allZones.List() {
 			// We create default subnets named the same as the zones
 			subnetName := zoneName
@@ -507,6 +541,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 					Name:   subnetName,
 					Zone:   subnetName,
 					Egress: c.Egress,
+				}
+				if subnetID, ok := zoneToSubnetProviderID[zoneName]; ok {
+					subnet.ProviderID = subnetID
 				}
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 			}
@@ -817,10 +854,6 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		return fmt.Errorf("unknown networking mode %q", c.Networking)
 	}
 
-	if c.VPCID != "" {
-		cluster.Spec.NetworkID = c.VPCID
-	}
-
 	if c.NetworkCIDR != "" {
 		cluster.Spec.NetworkCIDR = c.NetworkCIDR
 	}
@@ -862,6 +895,15 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		}
 
 		var utilitySubnets []api.ClusterSubnetSpec
+
+		var zoneToSubnetProviderID map[string]string
+		if len(c.Zones) > 0 && len(c.UtilitySubnetIDs) > 0 && api.CloudProviderID(cluster.Spec.CloudProvider) == api.CloudProviderAWS {
+			zoneToSubnetProviderID, err = getZoneToSubnetProviderID(cluster.Spec.NetworkID, c.Zones[0][:len(c.Zones[0])-1], c.UtilitySubnetIDs)
+			if err != nil {
+				return err
+			}
+		}
+
 		for _, s := range cluster.Spec.Subnets {
 			if s.Type == api.SubnetTypeUtility {
 				continue
@@ -870,6 +912,9 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				Name: "utility-" + s.Name,
 				Zone: s.Zone,
 				Type: api.SubnetTypeUtility,
+			}
+			if subnetID, ok := zoneToSubnetProviderID[s.Zone]; ok {
+				subnet.ProviderID = subnetID
 			}
 			utilitySubnets = append(utilitySubnets, subnet)
 		}
@@ -1206,4 +1251,35 @@ func setOverrides(overrides []string, cluster *api.Cluster, instanceGroups []*ap
 		}
 	}
 	return nil
+}
+
+func getZoneToSubnetProviderID(VPCID string, region string, subnetIDs []string) (map[string]string, error) {
+	res := make(map[string]string)
+	cloudTags := map[string]string{}
+	awsCloud, err := awsup.NewAWSCloud(region, cloudTags)
+	if err != nil {
+		return res, fmt.Errorf("error loading cloud: %v", err)
+	}
+	vpcInfo, err := awsCloud.FindVPCInfo(VPCID)
+	if err != nil {
+		return res, fmt.Errorf("error describing VPC: %v", err)
+	}
+	if vpcInfo == nil {
+		return res, fmt.Errorf("VPC %q not found", VPCID)
+	}
+	subnetByID := make(map[string]*fi.SubnetInfo)
+	for _, subnetInfo := range vpcInfo.Subnets {
+		subnetByID[subnetInfo.ID] = subnetInfo
+	}
+	for _, subnetID := range subnetIDs {
+		subnet, ok := subnetByID[subnetID]
+		if !ok {
+			return res, fmt.Errorf("subnet %s not found in VPC %s", subnetID, VPCID)
+		}
+		if res[subnet.Zone] != "" {
+			return res, fmt.Errorf("subnet %s and %s have the same zone", subnetID, res[subnet.Zone])
+		}
+		res[subnet.Zone] = subnetID
+	}
+	return res, nil
 }
