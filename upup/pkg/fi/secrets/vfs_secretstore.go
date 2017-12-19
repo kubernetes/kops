@@ -76,7 +76,7 @@ func (c *VFSSecretStore) FindSecret(id string) (*fi.Secret, error) {
 // DeleteSecret implements fi.SecretStore DeleteSecret
 func (c *VFSSecretStore) DeleteSecret(item *fi.KeystoreItem) error {
 	switch item.Type {
-	case fi.SecretTypeSecret:
+	case kops.SecretTypeSecret:
 		p := c.buildSecretPath(item.Name)
 		return p.Remove()
 

@@ -29,15 +29,12 @@ import (
 const CertificateId_CA = "ca"
 
 const (
-	SecretTypeKeypair = "Keypair"
-	SecretTypeSecret  = "Secret"
-
-	// Name for the primary SSH key
+	// SecretNameSSHPrimary is the Name for the primary SSH key
 	SecretNameSSHPrimary = "admin"
 )
 
 type KeystoreItem struct {
-	Type string
+	Type kops.KeysetType
 	Name string
 	Id   string
 	Data []byte
@@ -79,13 +76,13 @@ type CAStore interface {
 
 	// ListKeysets will return all the KeySets
 	// The key material is not guaranteed to be populated - metadata like the name will be.
-	ListKeysets() ([]*KeystoreItem, error)
+	ListKeysets() ([]*kops.Keyset, error)
 
 	// AddCert adds an alternative certificate to the pool (primarily useful for CAs)
 	AddCert(name string, cert *pki.Certificate) error
 
-	// DeleteKeyset will delete the specified Keyset
-	DeleteKeyset(item *KeystoreItem) error
+	// DeleteKeysetItem will delete the specified item from the Keyset
+	DeleteKeysetItem(item *kops.Keyset, id string) error
 }
 
 // SSHCredentialStore holds SSHCredential objects
