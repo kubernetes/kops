@@ -28,6 +28,12 @@ kops validate cluster
   kops validate cluster
 ```
 
+### Options
+
+```
+  -o, --output string   Ouput format. One of json|yaml|table. (default "table")
+```
+
 ### Options inherited from parent commands
 
 ```
