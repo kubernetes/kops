@@ -411,7 +411,7 @@ spec:
         operator: Exists
       serviceAccountName: k8s-ec2-srcdst
       containers:
-        - image: ottoyiu/k8s-ec2-srcdst:v0.1.0
+        - image: ottoyiu/k8s-ec2-srcdst:v0.2.0-3-gc0c26eca
           name: k8s-ec2-srcdst
           resources:
             requests:
