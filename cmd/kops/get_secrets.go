@@ -25,6 +25,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/kops/cmd/kops/util"
+	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/sshcredentials"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/util/pkg/tables"
@@ -34,7 +35,7 @@ import (
 
 // SecretTypeSSHPublicKey is set in a KeysetItem.Type for an SSH public keypair
 // As we move fully to using API objects this should go away.
-const SecretTypeSSHPublicKey = "SSHPublicKey"
+const SecretTypeSSHPublicKey = kops.KeysetType("SSHPublicKey")
 
 var (
 	get_secret_long = templates.LongDesc(i18n.T(`
@@ -96,15 +97,22 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialS
 			return nil, fmt.Errorf("error listing Keysets: %v", err)
 		}
 
-		for _, i := range l {
-			if findType != "" && findType != strings.ToLower(i.Type) {
+		for _, keyset := range l {
+			if findType != "" && findType != strings.ToLower(string(keyset.Spec.Type)) {
 				continue
 			}
-			items = append(items, i)
+			for _, key := range keyset.Spec.Keys {
+				item := &fi.KeystoreItem{
+					Name: keyset.Name,
+					Type: keyset.Spec.Type,
+					Id:   key.Id,
+				}
+				items = append(items, item)
+			}
 		}
 	}
 
-	if findType == "" || findType == strings.ToLower(fi.SecretTypeSecret) {
+	if findType == "" || findType == strings.ToLower(string(kops.SecretTypeSecret)) {
 		l, err := secretStore.ListSecrets()
 		if err != nil {
 			return nil, fmt.Errorf("error listing secrets %v", err)
@@ -113,9 +121,9 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialS
 		for _, id := range l {
 			i := &fi.KeystoreItem{
 				Name: id,
-				Type: fi.SecretTypeSecret,
+				Type: kops.SecretTypeSecret,
 			}
-			if findType != "" && findType != strings.ToLower(i.Type) {
+			if findType != "" && findType != strings.ToLower(string(i.Type)) {
 				continue
 			}
 
@@ -123,7 +131,7 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialS
 		}
 	}
 
-	if findType == "" || findType == strings.ToLower(SecretTypeSSHPublicKey) {
+	if findType == "" || findType == strings.ToLower(string(SecretTypeSSHPublicKey)) {
 		l, err := sshCredentialStore.ListSSHCredentials()
 		if err != nil {
 			return nil, fmt.Errorf("error listing SSH credentials %v", err)
@@ -142,7 +150,7 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialS
 			if l[i].Spec.PublicKey != "" {
 				item.Data = []byte(l[i].Spec.PublicKey)
 			}
-			if findType != "" && findType != strings.ToLower(item.Type) {
+			if findType != "" && findType != strings.ToLower(string(item.Type)) {
 				continue
 			}
 
@@ -219,7 +227,7 @@ func RunGetSecrets(options *GetSecretsOptions, args []string) error {
 			return i.Id
 		})
 		t.AddColumn("TYPE", func(i *fi.KeystoreItem) string {
-			return i.Type
+			return string(i.Type)
 		})
 		return t.Render(items, os.Stdout, "TYPE", "NAME", "ID")
 
@@ -231,7 +239,7 @@ func RunGetSecrets(options *GetSecretsOptions, args []string) error {
 		for _, i := range items {
 			var data string
 			switch i.Type {
-			case fi.SecretTypeSecret:
+			case kops.SecretTypeSecret:
 				secret, err := secretStore.FindSecret(i.Name)
 				if err != nil {
 					return fmt.Errorf("error getting secret %q: %v", i.Name, err)

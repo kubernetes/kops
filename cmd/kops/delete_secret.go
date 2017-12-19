@@ -138,7 +138,7 @@ func RunDeleteSecret(f *util.Factory, out io.Writer, options *DeleteSecretOption
 	}
 
 	switch secrets[0].Type {
-	case fi.SecretTypeSecret:
+	case kops.SecretTypeSecret:
 		err = secretStore.DeleteSecret(secrets[0])
 	case SecretTypeSSHPublicKey:
 		sshCredential := &kops.SSHCredential{}
@@ -148,7 +148,10 @@ func RunDeleteSecret(f *util.Factory, out io.Writer, options *DeleteSecretOption
 		}
 		err = sshCredentialStore.DeleteSSHCredential(sshCredential)
 	default:
-		err = keyStore.DeleteKeyset(secrets[0])
+		keyset := &kops.Keyset{}
+		keyset.Name = secrets[0].Name
+		keyset.Spec.Type = secrets[0].Type
+		err = keyStore.DeleteKeysetItem(keyset, secrets[0].Id)
 	}
 	if err != nil {
 		return fmt.Errorf("error deleting secret: %v", err)

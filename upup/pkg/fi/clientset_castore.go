@@ -276,8 +276,8 @@ func (c *ClientsetCAStore) FindCertificatePool(name string) (*CertificatePool, e
 }
 
 // ListKeysets implements CAStore::ListKeysets
-func (c *ClientsetCAStore) ListKeysets() ([]*KeystoreItem, error) {
-	var items []*KeystoreItem
+func (c *ClientsetCAStore) ListKeysets() ([]*kops.Keyset, error) {
+	var items []*kops.Keyset
 
 	{
 		list, err := c.clientset.Keysets(c.namespace).List(v1.ListOptions{})
@@ -285,23 +285,16 @@ func (c *ClientsetCAStore) ListKeysets() ([]*KeystoreItem, error) {
 			return nil, fmt.Errorf("error listing Keysets: %v", err)
 		}
 
-		for _, keyset := range list.Items {
-			for _, item := range keyset.Spec.Keys {
-				ki := &KeystoreItem{
-					Name: keyset.Name,
-					Id:   item.Id,
-				}
+		for i := range list.Items {
+			keyset := &list.Items[i]
+			switch keyset.Spec.Type {
+			case kops.SecretTypeKeypair:
+				items = append(items, &list.Items[i])
 
-				switch keyset.Spec.Type {
-				case kops.SecretTypeKeypair:
-					ki.Type = SecretTypeKeypair
-				case kops.SecretTypeSecret:
-					//ki.Type = SecretTypeSecret
-					continue // Ignore - this is handled by ClientsetSecretStore
-				default:
-					return nil, fmt.Errorf("unhandled secret type %q: %v", ki.Type, err)
-				}
-				items = append(items, ki)
+			case kops.SecretTypeSecret:
+				continue // Ignore - this is handled by ClientsetSecretStore
+			default:
+				return nil, fmt.Errorf("unhandled secret type %q: %v", keyset.Spec.Type, err)
 			}
 		}
 	}
@@ -615,15 +608,15 @@ func (c *ClientsetCAStore) FindSSHPublicKeys(name string) ([]*kops.SSHCredential
 	return items, nil
 }
 
-// DeleteKeyset implements CAStore::DeleteKeyset
-func (c *ClientsetCAStore) DeleteKeyset(item *KeystoreItem) error {
-	switch item.Type {
-	case SecretTypeKeypair:
+// DeleteKeysetItem implements CAStore::DeleteKeysetItem
+func (c *ClientsetCAStore) DeleteKeysetItem(item *kops.Keyset, id string) error {
+	switch item.Spec.Type {
+	case kops.SecretTypeKeypair:
 		client := c.clientset.Keysets(c.namespace)
-		return DeleteKeysetItem(client, item.Name, kops.SecretTypeKeypair, item.Id)
+		return DeleteKeysetItem(client, item.Name, kops.SecretTypeKeypair, id)
 	default:
 		// Primarily because we need to make sure users can recreate them!
-		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Type)
+		return fmt.Errorf("deletion of keystore items of type %v not (yet) supported", item.Spec.Type)
 	}
 }
 
