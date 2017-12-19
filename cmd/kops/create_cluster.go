@@ -504,8 +504,8 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 			subnet := model.FindSubnet(cluster, subnetName)
 			if subnet == nil {
 				subnet = &api.ClusterSubnetSpec{
-					Name:   subnetName,
-					Zone:   subnetName,
+					Name: subnetName,
+					Zone: subnetName,
 					// Egress: c.Egress,
 				}
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
