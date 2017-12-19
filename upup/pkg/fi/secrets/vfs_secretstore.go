@@ -74,15 +74,9 @@ func (c *VFSSecretStore) FindSecret(id string) (*fi.Secret, error) {
 }
 
 // DeleteSecret implements fi.SecretStore DeleteSecret
-func (c *VFSSecretStore) DeleteSecret(item *fi.KeystoreItem) error {
-	switch item.Type {
-	case kops.SecretTypeSecret:
-		p := c.buildSecretPath(item.Name)
-		return p.Remove()
-
-	default:
-		return fmt.Errorf("deletion of secretstore items of type %v not (yet) supported", item.Type)
-	}
+func (c *VFSSecretStore) DeleteSecret(name string) error {
+	p := c.buildSecretPath(name)
+	return p.Remove()
 }
 
 func (c *VFSSecretStore) ListSecrets() ([]string, error) {

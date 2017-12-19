@@ -113,14 +113,14 @@ func listSecrets(keyStore fi.CAStore, secretStore fi.SecretStore, sshCredentialS
 	}
 
 	if findType == "" || findType == strings.ToLower(string(kops.SecretTypeSecret)) {
-		l, err := secretStore.ListSecrets()
+		names, err := secretStore.ListSecrets()
 		if err != nil {
 			return nil, fmt.Errorf("error listing secrets %v", err)
 		}
 
-		for _, id := range l {
+		for _, name := range names {
 			i := &fi.KeystoreItem{
-				Name: id,
+				Name: name,
 				Type: kops.SecretTypeSecret,
 			}
 			if findType != "" && findType != strings.ToLower(string(i.Type)) {
