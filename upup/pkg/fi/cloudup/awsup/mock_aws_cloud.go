@@ -162,7 +162,7 @@ func (c *MockAWSCloud) DescribeInstance(instanceID string) (*ec2.Instance, error
 }
 
 func (c *MockAWSCloud) DescribeVPC(vpcID string) (*ec2.Vpc, error) {
-	return nil, fmt.Errorf("MockAWSCloud DescribeVPC not implemented")
+	return describeVPC(c, vpcID)
 }
 
 func (c *MockAWSCloud) ResolveImage(name string) (*ec2.Image, error) {
@@ -217,7 +217,7 @@ func (c *MockAWSCloud) Route53() route53iface.Route53API {
 }
 
 func (c *MockAWSCloud) FindVPCInfo(id string) (*fi.VPCInfo, error) {
-	return nil, fmt.Errorf("MockAWSCloud FindVPCInfo not implemented")
+	return findVPCInfo(c, id)
 }
 
 // DefaultInstanceType determines an instance type for the specified cluster & instance group
