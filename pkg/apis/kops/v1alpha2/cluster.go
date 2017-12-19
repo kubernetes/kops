@@ -55,8 +55,6 @@ type ClusterSpec struct {
 	KubernetesVersion string `json:"kubernetesVersion,omitempty"`
 	// Configuration of subnets we are targeting
 	Subnets []ClusterSubnetSpec `json:"subnets,omitempty"`
-	// AdditionalRoutes is used to add more routes of precreated nat instance or VPC peering connection
-	AdditionalRoutes []AdditionalRoutesSpec `json:"additionalRoutes,omitempty"`
 	// Project is the cloud project we should use, required on GCE
 	Project string `json:"project,omitempty"`
 	// MasterPublicName is the external DNS name for the master nodes
@@ -351,15 +349,17 @@ type ClusterSubnetSpec struct {
 	// ProviderID is the cloud provider id for the objects associated with the zone (the subnet on AWS)
 	ProviderID string `json:"id,omitempty"`
 
-	// Egress defines the method of traffic egress for this subnet
-	Egress string `json:"egress,omitempty"`
+	// Egress is used to add more routes of precreated NAT gateways or NAT instances or VPC peering connections
+	Egress []EgressSpec `json:"egress,omitempty"`
 
+	// Type define which one if the internal types (public, utility, private) the network is
 	Type SubnetType `json:"type,omitempty"`
 }
 
-// AdditionalRoutesSpec defines routes of precreated nat instance or VPC peering connection
-type AdditionalRoutesSpec struct {
+// EgressSpec defines routes of precreated NAT gateways or NAT instances or VPC peering connections
+type EgressSpec struct {
 	CIDR                 string `json:"cidr,omitempty"`
+	NatGateway           string `json:"natGateway,omitempty"`
 	Instance             string `json:"instance,omitempty"`
 	VpcPeeringConnection string `json:"vpcPeeringConnection,omitempty"`
 }

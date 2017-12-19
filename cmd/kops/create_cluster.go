@@ -104,7 +104,7 @@ type CreateClusterOptions struct {
 	CloudLabels string
 
 	// Egress configuration - FOR TESTING ONLY
-	Egress string
+	// Egress string
 
 	// Specify tenancy (default or dedicated) for masters and nodes
 	MasterTenancy string
@@ -506,7 +506,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 				subnet = &api.ClusterSubnetSpec{
 					Name:   subnetName,
 					Zone:   subnetName,
-					Egress: c.Egress,
+					// Egress: c.Egress,
 				}
 				cluster.Spec.Subnets = append(cluster.Spec.Subnets, *subnet)
 			}

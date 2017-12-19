@@ -59,33 +59,57 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 			if topologyPrivate {
 				// A private zone is mapped to a private- and a utility- subnet
 				if z.PrivateCIDR != "" {
+
+					var route []kops.EgressSpec
+
+					route = append(route, kops.EgressSpec{
+						CIDR:       "0.0.0.0/0",
+						NatGateway: z.Egress,
+					})
+
 					out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
 						Name:       z.Name,
 						CIDR:       z.PrivateCIDR,
 						ProviderID: z.ProviderID,
 						Zone:       z.Name,
 						Type:       kops.SubnetTypePrivate,
-						Egress:     z.Egress,
+						Egress:     route,
 					})
 				}
 
 				if z.CIDR != "" {
+
+					var route []kops.EgressSpec
+
+					route = append(route, kops.EgressSpec{
+						CIDR:       "0.0.0.0/0",
+						NatGateway: z.Egress,
+					})
+
 					out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
 						Name:   "utility-" + z.Name,
 						CIDR:   z.CIDR,
 						Zone:   z.Name,
 						Type:   kops.SubnetTypeUtility,
-						Egress: z.Egress,
+						Egress: route,
 					})
 				}
 			} else {
+
+				var route []kops.EgressSpec
+
+				route = append(route, kops.EgressSpec{
+					CIDR:       "0.0.0.0/0",
+					NatGateway: z.Egress,
+				})
+
 				out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
 					Name:       z.Name,
 					CIDR:       z.CIDR,
 					ProviderID: z.ProviderID,
 					Zone:       z.Name,
 					Type:       kops.SubnetTypePublic,
-					Egress:     z.Egress,
+					Egress:     route,
 				})
 			}
 		}
@@ -157,7 +181,12 @@ func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out 
 						return fmt.Errorf("cannot convert to v1alpha1: duplicate zone: %v", zone)
 					}
 					zone.PrivateCIDR = s.CIDR
-					zone.Egress = s.Egress
+					for _, r := range s.Egress {
+						if r.NatGateway != "" {
+							zone.Egress = r.NatGateway
+							break
+						}
+					}
 					zone.ProviderID = s.ProviderID
 
 				case kops.SubnetTypeUtility:
@@ -182,7 +211,12 @@ func Convert_kops_ClusterSpec_To_v1alpha1_ClusterSpec(in *kops.ClusterSpec, out 
 					return fmt.Errorf("cannot convert to v1alpha1: duplicate zone: %v", zone)
 				}
 				zone.CIDR = s.CIDR
-				zone.Egress = s.Egress
+				for _, r := range s.Egress {
+					if r.NatGateway != "" {
+						zone.Egress = r.NatGateway
+						break
+					}
+				}
 				zone.ProviderID = s.ProviderID
 			}
 		}

@@ -18,7 +18,7 @@ package model
 
 import (
 	"fmt"
-	"strings"
+	//"strings"
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -96,77 +96,23 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		// TODO: would be good to create these as shared, to verify them
 	}
 
-	allSubnetsShared := true
-	for i := range b.Cluster.Spec.Subnets {
-		subnetSpec := &b.Cluster.Spec.Subnets[i]
-		sharedSubnet := subnetSpec.ProviderID != ""
-		if !sharedSubnet {
-			allSubnetsShared = false
-		}
+	//allSubnetsShared := true
+	//for i := range b.Cluster.Spec.Subnets {
+	//	subnetSpec := &b.Cluster.Spec.Subnets[i]
+	//	sharedSubnet := subnetSpec.ProviderID != ""
+	//	if !sharedSubnet {
+	//		allSubnetsShared = false
+	//	}
+	//}
+
+	// The internet gateway is the main entry point to the cluster.
+	igw := &awstasks.InternetGateway{
+		Name:      s(b.ClusterName()),
+		Lifecycle: b.Lifecycle,
+		VPC:       b.LinkToVPC(),
+		Shared:    fi.Bool(sharedVPC),
 	}
-
-	// We always have a public route table, though for private networks it is only used for NGWs and ELBs
-	var publicRouteTable *awstasks.RouteTable
-	{
-		// The internet gateway is the main entry point to the cluster.
-		igw := &awstasks.InternetGateway{
-			Name:      s(b.ClusterName()),
-			Lifecycle: b.Lifecycle,
-			VPC:       b.LinkToVPC(),
-			Shared:    fi.Bool(sharedVPC),
-		}
-		c.AddTask(igw)
-
-		if !allSubnetsShared {
-			publicRouteTable = &awstasks.RouteTable{
-				Name:      s(b.ClusterName()),
-				Lifecycle: b.Lifecycle,
-
-				VPC: b.LinkToVPC(),
-			}
-			c.AddTask(publicRouteTable)
-
-			// TODO: Validate when allSubnetsShared
-			c.AddTask(&awstasks.Route{
-				Name:            s("0.0.0.0/0"),
-				Lifecycle:       b.Lifecycle,
-				CIDR:            s("0.0.0.0/0"),
-				RouteTable:      publicRouteTable,
-				InternetGateway: igw,
-			})
-
-			for _, r := range b.Cluster.Spec.AdditionalRoutes {
-				t := &awstasks.Route{}
-				if r.VpcPeeringConnection != "" {
-					t = &awstasks.Route{
-						Name:                 s(r.CIDR),
-						Lifecycle:            b.Lifecycle,
-						CIDR:                 s(r.CIDR),
-						RouteTable:           publicRouteTable,
-						VpcPeeringConnection: s(r.VpcPeeringConnection),
-					}
-				} else if r.Instance != "" {
-					inst := &awstasks.Instance{
-						Name:      s(r.Instance),
-						Lifecycle: b.Lifecycle,
-						ID:        s(r.Instance),
-						Shared:    fi.Bool(true),
-					}
-					if err := c.EnsureTask(inst); err != nil {
-						return err
-					}
-					t = &awstasks.Route{
-						Name:       s(r.CIDR),
-						Lifecycle:  b.Lifecycle,
-						CIDR:       s(r.CIDR),
-						RouteTable: publicRouteTable,
-						Instance:   inst,
-					}
-				}
-				c.EnsureTask(t)
-			}
-		}
-	}
+	c.AddTask(igw)
 
 	privateZones := sets.NewString()
 
@@ -205,11 +151,61 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		switch subnetSpec.Type {
 		case kops.SubnetTypePublic, kops.SubnetTypeUtility:
+
+			// We always have a public route table, though for private networks it is only used for NGWs and ELBs
+			routeTable := &awstasks.RouteTable{}
+
 			if !sharedSubnet {
+				routeTable = &awstasks.RouteTable{
+					Name:      s(subnetSpec.Zone + "." + b.ClusterName()),
+					Lifecycle: b.Lifecycle,
+
+					VPC: b.LinkToVPC(),
+				}
+				c.AddTask(routeTable)
+
+				// TODO: Validate when allSubnetsShared
+				c.AddTask(&awstasks.Route{
+					Name:            s(string(subnetSpec.Type) + subnetSpec.Zone + "-0.0.0.0/0"),
+					Lifecycle:       b.Lifecycle,
+					CIDR:            s("0.0.0.0/0"),
+					RouteTable:      routeTable,
+					InternetGateway: igw,
+				})
+				for _, r := range b.Cluster.Spec.Subnets[i].Egress {
+					t := &awstasks.Route{}
+					if r.VpcPeeringConnection != "" {
+						t = &awstasks.Route{
+							Name:                 s(string(subnetSpec.Type) + subnetSpec.Zone + r.CIDR),
+							Lifecycle:            b.Lifecycle,
+							CIDR:                 s(r.CIDR),
+							RouteTable:           routeTable,
+							VpcPeeringConnection: s(r.VpcPeeringConnection),
+						}
+					} else if r.Instance != "" {
+						inst := &awstasks.Instance{
+							Name:      s(r.Instance),
+							Lifecycle: b.Lifecycle,
+							ID:        s(r.Instance),
+							Shared:    fi.Bool(true),
+						}
+						if err := c.EnsureTask(inst); err != nil {
+							return err
+						}
+						t = &awstasks.Route{
+							Name:       s(string(subnetSpec.Type) + subnetSpec.Zone + r.CIDR),
+							Lifecycle:  b.Lifecycle,
+							CIDR:       s(r.CIDR),
+							RouteTable: routeTable,
+							Instance:   inst,
+						}
+					}
+					c.EnsureTask(t)
+				}
 				c.AddTask(&awstasks.RouteTableAssociation{
 					Name:       s(subnetSpec.Name + "." + b.ClusterName()),
 					Lifecycle:  b.Lifecycle,
-					RouteTable: publicRouteTable,
+					RouteTable: routeTable,
 					Subnet:     subnet,
 				})
 			}
@@ -236,7 +232,7 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		}
 	}
 
-	// Loop over zones
+	// Loop over private zones
 	for i, zone := range privateZones.List() {
 
 		utilitySubnet, err := b.LinkToUtilitySubnetInZone(zone)
@@ -244,28 +240,73 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			return err
 		}
 
-		var ngw *awstasks.NatGateway
-		if b.Cluster.Spec.Subnets[i].Egress != "" {
-			if strings.Contains(b.Cluster.Spec.Subnets[i].Egress, "nat-") {
+		// Private Route Table
+		rt := &awstasks.RouteTable{
+			Name:      s(b.NamePrivateRouteTableInZone(zone)),
+			VPC:       b.LinkToVPC(),
+			Lifecycle: b.Lifecycle,
+		}
+		c.AddTask(rt)
 
+		// Check if Egress does not contain any NAT gateway
+		ngwCount := 0
+
+		var ngw *awstasks.NatGateway
+
+		for _, r := range b.Cluster.Spec.Subnets[i].Egress {
+
+			t := &awstasks.Route{}
+
+			if r.VpcPeeringConnection != "" {
+				t = &awstasks.Route{
+					Name:                 s("private-" + zone + r.CIDR),
+					Lifecycle:            b.Lifecycle,
+					CIDR:                 s(r.CIDR),
+					RouteTable:           rt,
+					VpcPeeringConnection: s(r.VpcPeeringConnection),
+				}
+			} else if r.Instance != "" {
+				inst := &awstasks.Instance{
+					Name:      s(r.Instance),
+					Lifecycle: b.Lifecycle,
+					ID:        s(r.Instance),
+					Shared:    fi.Bool(true),
+				}
+				if err := c.EnsureTask(inst); err != nil {
+					return err
+				}
+				t = &awstasks.Route{
+					Name:       s("Private-" + zone + r.CIDR),
+					Lifecycle:  b.Lifecycle,
+					CIDR:       s(r.CIDR),
+					RouteTable: rt,
+					Instance:   inst,
+				}
+			} else if r.NatGateway != "" {
 				ngw = &awstasks.NatGateway{
 					Name:                 s(zone + "." + b.ClusterName()),
 					Lifecycle:            b.Lifecycle,
 					Subnet:               utilitySubnet,
-					ID:                   s(b.Cluster.Spec.Subnets[i].Egress),
+					ID:                   s(r.NatGateway),
 					AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 					// If we're here, it means this NatGateway was specified, so we are Shared
 					Shared: fi.Bool(true),
 				}
-
 				c.AddTask(ngw)
-
-			} else {
-				return fmt.Errorf("kops currently only supports re-use of NAT Gateways. We will support more eventually! Please see https://github.com/kubernetes/kops/issues/1530")
+				// Will route to the NAT Gateway
+				c.AddTask(&awstasks.Route{
+					Name:       s("private-" + zone + "-0.0.0.0/0"),
+					Lifecycle:  b.Lifecycle,
+					CIDR:       s("0.0.0.0/0"),
+					RouteTable: rt,
+					NatGateway: ngw,
+				})
+				ngwCount = 1
 			}
+			c.EnsureTask(t)
+		}
 
-		} else {
-
+		if ngwCount == 0 {
 			// Every NGW needs a public (Elastic) IP address, every private
 			// subnet needs a NGW, lets create it. We tie it to a subnet
 			// so we can track it in AWS
@@ -295,30 +336,19 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				AssociatedRouteTable: b.LinkToPrivateRouteTableInZone(zone),
 			}
 			c.AddTask(ngw)
+
+			// Private Routes
+			//
+			// Routes for the private route table.
+			// Will route to the NAT Gateway
+			c.AddTask(&awstasks.Route{
+				Name:       s("private-" + zone + "-0.0.0.0/0"),
+				Lifecycle:  b.Lifecycle,
+				CIDR:       s("0.0.0.0/0"),
+				RouteTable: rt,
+				NatGateway: ngw,
+			})
 		}
-
-		// Private Route Table
-		//
-		// The private route table that will route to the NAT Gateway
-		rt := &awstasks.RouteTable{
-			Name:      s(b.NamePrivateRouteTableInZone(zone)),
-			VPC:       b.LinkToVPC(),
-			Lifecycle: b.Lifecycle,
-		}
-		c.AddTask(rt)
-
-		// Private Routes
-		//
-		// Routes for the private route table.
-		// Will route to the NAT Gateway
-		c.AddTask(&awstasks.Route{
-			Name:       s("private-" + zone + "-0.0.0.0/0"),
-			Lifecycle:  b.Lifecycle,
-			CIDR:       s("0.0.0.0/0"),
-			RouteTable: rt,
-			NatGateway: ngw,
-		})
-
 	}
 
 	return nil

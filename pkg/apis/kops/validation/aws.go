@@ -34,7 +34,10 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 		}
 	}
 
-	allErrs = append(allErrs, awsValidateAdditionalRoutes(field.NewPath("spec", "additionalRoutes"), c.Spec.AdditionalRoutes)...)
+	for i, subnet := range c.Spec.Subnets {
+		f := field.NewPath("spec", "Subnets").Index(i)
+		allErrs = append(allErrs, awsValidateRoutes(f.Child("Egress"), subnet.Egress)...)
+	}
 
 	return allErrs
 }
@@ -82,7 +85,7 @@ func awsValidateMachineType(fieldPath *field.Path, machineType string) field.Err
 	return allErrs
 }
 
-func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.AdditionalRoutesSpec) field.ErrorList {
+func awsValidateRoutes(fieldPath *field.Path, routes []kops.EgressSpec) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	// Each route must be valid
@@ -96,7 +99,7 @@ func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.Additional
 		for i := range routes {
 			cidr := routes[i].CIDR
 			if cidrs.Has(cidr) {
-				allErrs = append(allErrs, field.Invalid(fieldPath, routes, "routes with duplicate destination cidr block found"))
+				allErrs = append(allErrs, field.Invalid(fieldPath, routes, "routes with duplicate destination CIDR block found"))
 			}
 			cidrs.Insert(cidr)
 		}
@@ -105,7 +108,7 @@ func awsValidateAdditionalRoutes(fieldPath *field.Path, routes []kops.Additional
 	return allErrs
 }
 
-func awsValidateRoute(route *kops.AdditionalRoutesSpec, fieldPath *field.Path) field.ErrorList {
+func awsValidateRoute(route *kops.EgressSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	// CIDR is required

@@ -447,12 +447,14 @@ func ValidateCluster(c *kops.Cluster, strict bool) *field.Error {
 	// Egress specification support
 	{
 		for i, s := range c.Spec.Subnets {
-			fieldSubnet := fieldSpec.Child("Subnets").Index(i)
-			if s.Egress != "" && !strings.HasPrefix(s.Egress, "nat-") {
-				return field.Invalid(fieldSubnet.Child("Egress"), s.Egress, "egress must be of type NAT Gateway")
-			}
-			if s.Egress != "" && !(s.Type == "Private") {
-				return field.Invalid(fieldSubnet.Child("Egress"), s.Egress, "egress can only be specified for Private subnets")
+			for k, r := range s.Egress {
+				fieldRoute := fieldSpec.Child("Subnets").Index(i).Child("Egress").Index(k)
+				if r.NatGateway != "" && !strings.HasPrefix(r.NatGateway, "nat-") {
+					return field.Invalid(fieldRoute.Child("NatGateway"), r.NatGateway, "NAT Gateway does not match the expected AWS format")
+				}
+				if r.NatGateway != "" && !(s.Type == "Private") {
+					return field.Invalid(fieldRoute.Child("NatGateway"), r.NatGateway, "NAT Gateway egress of can only be specified for Private subnets")
+				}
 			}
 		}
 	}
