@@ -70,7 +70,7 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		// retrieve the etcd peer certificates and private keys from the keystore
 		if t.UseEtcdTLS() {
 			for _, x := range []string{"etcd", "etcd-client"} {
-				if err := t.buildCeritificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
+				if err := t.buildCertificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
 					return err
 				}
 			}
@@ -376,10 +376,14 @@ func (t *ProtokubeBuilder) writeProxyEnvVars(buffer *bytes.Buffer) {
 }
 
 // buildCertificateTask is responsible for build a certificate request task
-func (t *ProtokubeBuilder) buildCeritificateTask(c *fi.ModelBuilderContext, name, filename string) error {
-	cert, err := t.KeyStore.Cert(name, false)
+func (t *ProtokubeBuilder) buildCertificateTask(c *fi.ModelBuilderContext, name, filename string) error {
+	cert, err := t.KeyStore.FindCert(name)
 	if err != nil {
 		return err
+	}
+
+	if cert == nil {
+		return fmt.Errorf("certificate %q not found", name)
 	}
 
 	serialized, err := cert.AsString()
@@ -399,9 +403,13 @@ func (t *ProtokubeBuilder) buildCeritificateTask(c *fi.ModelBuilderContext, name
 
 // buildPrivateKeyTask is responsible for build a certificate request task
 func (t *ProtokubeBuilder) buildPrivateTask(c *fi.ModelBuilderContext, name, filename string) error {
-	cert, err := t.KeyStore.PrivateKey(name, false)
+	cert, err := t.KeyStore.FindPrivateKey(name)
 	if err != nil {
 		return err
+	}
+
+	if cert == nil {
+		return fmt.Errorf("private key %q not found", name)
 	}
 
 	serialized, err := cert.AsString()

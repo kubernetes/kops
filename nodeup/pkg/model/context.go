@@ -120,14 +120,24 @@ func (c *NodeupModelContext) buildPKIKubeconfig(id string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error fetching CA certificate from keystore: %v", err)
 	}
+	if caCertificate == nil {
+		return "", fmt.Errorf("CA certificate %q not found", fi.CertificateId_CA)
+	}
 
-	certificate, err := c.KeyStore.Cert(id, false)
+	certificate, err := c.KeyStore.FindCert(id)
 	if err != nil {
 		return "", fmt.Errorf("error fetching %q certificate from keystore: %v", id, err)
 	}
-	privateKey, err := c.KeyStore.PrivateKey(id, false)
+	if certificate == nil {
+		return "", fmt.Errorf("certificate %q not found", id)
+	}
+
+	privateKey, err := c.KeyStore.FindPrivateKey(id)
 	if err != nil {
 		return "", fmt.Errorf("error fetching %q private key from keystore: %v", id, err)
+	}
+	if privateKey == nil {
+		return "", fmt.Errorf("private key %q not found", id)
 	}
 
 	user := kubeconfig.KubectlUser{}

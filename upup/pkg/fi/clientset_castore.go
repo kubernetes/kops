@@ -194,20 +194,6 @@ func FindPrimary(keyset *kops.Keyset) *kops.KeysetItem {
 	return primary
 }
 
-// Cert implements CAStore::Cert
-func (c *ClientsetCAStore) Cert(name string, createIfMissing bool) (*pki.Certificate, error) {
-	cert, err := c.FindCert(name)
-	if err == nil && cert == nil {
-		if !createIfMissing {
-			glog.Warningf("using empty certificate, because running with DryRun")
-			return &pki.Certificate{}, err
-		}
-		return nil, fmt.Errorf("cannot find certificate %q", name)
-	}
-	return cert, err
-
-}
-
 // CertificatePool implements CAStore::CertificatePool
 func (c *ClientsetCAStore) CertificatePool(id string, createIfMissing bool) (*CertificatePool, error) {
 	cert, err := c.FindCertificatePool(id)
@@ -411,19 +397,6 @@ func (c *ClientsetCAStore) FindPrivateKey(name string) (*pki.PrivateKey, error) 
 		return keyset.primary.privateKey, nil
 	}
 	return nil, nil
-}
-
-// PrivateKey implements CAStore::PrivateKey
-func (c *ClientsetCAStore) PrivateKey(name string, createIfMissing bool) (*pki.PrivateKey, error) {
-	key, err := c.FindPrivateKey(name)
-	if err == nil && key == nil {
-		if !createIfMissing {
-			glog.Warningf("using empty certificate, because running with DryRun")
-			return &pki.PrivateKey{}, err
-		}
-		return nil, fmt.Errorf("cannot find SSL key %q", name)
-	}
-	return key, err
 }
 
 // CreateKeypair implements CAStore::CreateKeypair
