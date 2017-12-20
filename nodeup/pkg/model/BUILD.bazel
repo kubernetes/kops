@@ -43,6 +43,7 @@ go_library(
         "//pkg/kubeconfig:go_default_library",
         "//pkg/kubemanifest:go_default_library",
         "//pkg/systemd:go_default_library",
+        "//pkg/tokens:go_default_library",
         "//upup/pkg/fi:go_default_library",
         "//upup/pkg/fi/nodeup/nodetasks:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
