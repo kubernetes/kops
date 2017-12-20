@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"k8s.io/apiserver/pkg/authentication/user"
+	"k8s.io/kops/pkg/tokens"
 	"k8s.io/kops/upup/pkg/fi"
 	"k8s.io/kops/upup/pkg/fi/fitasks"
 	"k8s.io/kops/util/pkg/vfs"
@@ -232,12 +233,8 @@ func (b *PKIModelBuilder) Build(c *fi.ModelBuilderContext) error {
 		c.AddTask(t)
 	}
 
-	// @@ The following are deprecated for > 1.6 and should be dropped at the appropreciate time
-	deprecated := []string{
-		"kubelet", "kube-proxy", "system:scheduler", "system:controller_manager",
-		"system:logging", "system:monitoring", "system:dns", "kube", "admin"}
-
-	for _, x := range deprecated {
+	// Create auth tokens (though this is deprecated)
+	for _, x := range tokens.GetKubernetesAuthTokens_Deprecated() {
 		t := &fitasks.Secret{Name: fi.String(x), Lifecycle: b.Lifecycle}
 		c.AddTask(t)
 	}
