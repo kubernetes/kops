@@ -735,4 +735,20 @@ var MachineTypes []AWSMachineTypeInfo = []AWSMachineTypeInfo{
 		EphemeralDisks: nil,
 		GPU:            true,
 	},
+
+	// f1 family
+	{
+		Name:           "f1.2xlarge",
+		MemoryGB:       122,
+		ECU:            94,
+		Cores:          8,
+		EphemeralDisks: nil,
+	},
+	{
+		Name:           "f1.16xlarge",
+		MemoryGB:       976,
+		ECU:            376,
+		Cores:          64,
+		EphemeralDisks: nil,
+	},
 }
