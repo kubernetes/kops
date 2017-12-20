@@ -95,7 +95,7 @@ func awsValidateEgress(fieldPath *field.Path, routes []kops.EgressSpec, t kops.S
 
 		f := fieldPath.Index(i).Child("NatGateway")
 
-		if t != kops.SubnetTypePrivate && r.NatGateway != ""  {
+		if t != kops.SubnetTypePrivate && r.NatGateway != "" {
 			// NAT gateway routes are only for private subnet
 			allErrs = append(allErrs, field.Invalid(f, r, "non-private subnet can't have NAT gateway"))
 		} else if t == kops.SubnetTypePrivate && r.NatGateway != "" && ngwCount == 1 {
@@ -139,7 +139,7 @@ func awsValidateRoute(route *kops.EgressSpec, fieldPath *field.Path) field.Error
 		allErrs = append(allErrs, validateCIDR(route.CIDR, fieldPath.Child("CIDR"))...)
 	}
 
-	// instance or vpcPeeringConnection or NAT gateway is required
+	// instance or vpcPeeringConnection or natGateway is required
 	if strings.TrimSpace(route.Instance) == "" && strings.TrimSpace(route.VpcPeeringConnection) == "" && strings.TrimSpace(route.NatGateway) == "" {
 		allErrs = append(allErrs, field.Required(fieldPath, "You must set either vpcPeeringConnection or instance for a route"))
 	}
