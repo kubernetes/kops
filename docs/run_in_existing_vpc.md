@@ -140,7 +140,24 @@ Once you're happy, you can create the cluster using:
 kops update cluster ${CLUSTER_NAME} --yes
 ```
 
-If you run in AWS private topology with shared subnets, and you would like Kubernetes to provision resources in these shared subnets, you must create tags on them with Key=value `KubernetesCluster=<clustername>`. This is important, for example, if your `utility` subnets are shared, you will not be able to launch any services that create Elastic Load Balancers (ELBs).
+If you run in AWS private topology with shared subnets, and you would like Kubernetes to provision resources in these shared subnets, you must create tags on them.
+This is important, for example, if your `utility` subnets are shared, you will not be able to launch any services that create Elastic Load Balancers (ELBs).
+Prior to kops 1.8 KubernetesCluster tag was used for this. This lead to several problems if there were more than one Kubernetes Cluster in a subnet.
+After you upgraded to kops 1.8 remove KubernetesCluster Tag from Subnets as it is prioritized against "kubernetes.io/cluster/<clustername>"
+
+These are currently needed Tags on shared resources:
+
+Public Subnets:
+- "kubernetes.io/cluster/<cluster-name>" = "shared"
+- "kubernetes.io/role/elb" = "1"
+
+Private Subnets:
+- "kubernetes.io/cluster/<cluster-name>" = "shared"
+- "kubernetes.io/role/internal-elb"         = "1"
+
+VPC:
+- "kubernetes.io/cluster/<cluster-name>" = "shared"
+
 
 ### Shared NAT Gateways
 
