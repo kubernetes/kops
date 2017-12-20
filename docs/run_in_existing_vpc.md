@@ -148,15 +148,21 @@ After you upgraded to kops 1.8 remove KubernetesCluster Tag from Subnets as it i
 These are currently needed Tags on shared resources:
 
 Public Subnets:
+```
 - "kubernetes.io/cluster/<cluster-name>" = "shared"
 - "kubernetes.io/role/elb" = "1"
+```
 
 Private Subnets:
+```
 - "kubernetes.io/cluster/<cluster-name>" = "shared"
 - "kubernetes.io/role/internal-elb"         = "1"
+```
 
 VPC:
+```
 - "kubernetes.io/cluster/<cluster-name>" = "shared"
+```
 
 
 ### Shared NAT Gateways
