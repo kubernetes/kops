@@ -100,49 +100,36 @@ spec:
 
 ### cluster.spec Subnet Keys
 
-#### id
-ID of a subnet to share in an existing VPC.
+#### cidr
+The CIDR block of a subnet in an existing VPC.
 
 #### egress
-The resource identifier (ID) of something in your existing VPC that you would like to use as "egress" to the outside world.
+This array configures the routes of the subnet through precreated resources (NAT gateway, NAT instances and VPC peering connections). The traffic of specific destination CIDR block will be routed through that resources.
 
-This feature was originally envisioned to allow re-use of NAT Gateways. In this case, the usage is as follows. Although NAT gateways are "public"-facing resources, in the Cluster spec, you must specify them in the private subnet section. One way to think about this is that you are specifying "egress", which is the default route out from this private subnet.
+You must specify either `instance`, `natGateway` or `vpcPeeringConnection` for the additional routes. Also, you should specify the destination CIDR block in case of `instance` or `vpcPeeringConnection` routes. For `natGateway` the `cidr` will be `0.0.0.0/0`
+
+NAT gateway is allowed only for private subnets, and for every private subnet only one NAT gateway is allowed. Other resources (`instance` and `vpcPeeringconnection`) are allowed for all types of subnets (private, utility and public)
+
+Although NAT gateways are "public"-facing resources, in the Cluster spec, you must specify them in the private subnet section. One way to think about this is that you are specifying "route", which is the default route out from this private subnet.
 
 ```yaml
 spec:
   subnets:
   - cidr: 10.20.64.0/21
     name: us-east-1a
-    egress: nat-987654321
+    egress:
+    - natGateway: nat-987654321
+    - vpcPeeringConnection: pcx-987654321
+      cidr: 10.0.0.0/16
     type: Private
     zone: us-east-1a
   - cidr: 10.20.32.0/21
     name: utility-us-east-1a
-    id: subnet-12345
+    egress:
+    - instance: i-987654321
+      cidr: 10.1.1.1/16
     type: Utility
     zone: us-east-1a
-```
-
-### cluster.spec additionalRoutes Keys
-
-#### cidr
-The IPv4 CIDR address block used for the destination match of the route. For example, `0.0.0.0/0`. You must specify the destination CIDR block.
-
-#### instance
-The ID of a NAT instance in your VPC. For example, `i-1a2b3c4d`.
-
-#### vpcPeeringConnection
-The ID of a VPC peering connection. For example, `pcx-1a2b3c4d`.
-
-On AWS, this feature add more route extensions of precreated VPC peering connections and nat instances. This will allow to route traffic to specific CIDR through a customised nat instances. Furthermore, it will allow to route traffic to another peered VPC. You must specify either `instance` or `vpcPeeringConnection` for the additional routes.
-
-```yaml
-spec:
-  additionalRoutes:
-  - cidr: 10.20.64.0/21
-    instance: i-1a2b3c4d
-  - cidr: 10.20.32.0/21
-    vpcPeeringConnection: pcx-1a2b3c4d
 ```
 
 ### kubeAPIServer
