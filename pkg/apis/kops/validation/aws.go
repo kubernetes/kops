@@ -36,7 +36,7 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 
 	for i, subnet := range c.Spec.Subnets {
 		f := field.NewPath("spec", "Subnets").Index(i)
-		allErrs = append(allErrs, awsValidateRoutes(f.Child("Egress"), subnet.Egress)...)
+		allErrs = append(allErrs, awsValidateEgress(f.Child("Egress"), subnet.Egress, subnet.Type)...)
 	}
 
 	return allErrs
@@ -85,12 +85,28 @@ func awsValidateMachineType(fieldPath *field.Path, machineType string) field.Err
 	return allErrs
 }
 
-func awsValidateRoutes(fieldPath *field.Path, routes []kops.EgressSpec) field.ErrorList {
+func awsValidateEgress(fieldPath *field.Path, routes []kops.EgressSpec, t kops.SubnetType) field.ErrorList {
 	allErrs := field.ErrorList{}
 
+	ngwCount := 0
+
 	// Each route must be valid
-	for i := range routes {
+	for i, r := range routes {
+
+		f := fieldPath.Index(i).Child("NatGateway")
+
+		if t != kops.SubnetTypePrivate && r.NatGateway != ""  {
+			// NAT gateway routes are only for private subnet
+			allErrs = append(allErrs, field.Invalid(f, r, "non-private subnet can't have NAT gateway"))
+		} else if t == kops.SubnetTypePrivate && r.NatGateway != "" && ngwCount == 1 {
+			// private subnet can't have multiple NAT gateway
+			allErrs = append(allErrs, field.Invalid(f, r, "private subnet can't have multiple NAT gateway"))
+		} else if t == kops.SubnetTypePrivate && r.NatGateway != "" && ngwCount == 0 {
+			ngwCount = 1
+		}
+
 		allErrs = append(allErrs, awsValidateRoute(&routes[i], fieldPath.Index(i))...)
+
 	}
 
 	// cannot duplicate route CIDR
@@ -111,15 +127,20 @@ func awsValidateRoutes(fieldPath *field.Path, routes []kops.EgressSpec) field.Er
 func awsValidateRoute(route *kops.EgressSpec, fieldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
-	// CIDR is required
-	if strings.TrimSpace(route.CIDR) == "" {
-		allErrs = append(allErrs, field.Required(fieldPath.Child("CIDR"), "You must set destination CIDR block for a route"))
+	if strings.TrimSpace(route.CIDR) == "" && route.NatGateway == "" {
+		// CIDR is required for NAT instance and VPC peering routes
+		allErrs = append(allErrs, field.Required(fieldPath, "You must set destination CIDR block for the route"))
+	} else if route.CIDR != "" && route.NatGateway != "" {
+		// CIDR is not allowed for NAT gateway. Deafult: 0.0.0.0/0
+		allErrs = append(allErrs, field.Invalid(fieldPath.Child("CIDR"), route, "You can't set destination CIDR block for the NAT gateway. Deafult: 0.0.0.0/0"))
 	}
 
-	allErrs = append(allErrs, validateCIDR(route.CIDR, fieldPath.Child("CIDR"))...)
+	if route.CIDR != "" {
+		allErrs = append(allErrs, validateCIDR(route.CIDR, fieldPath.Child("CIDR"))...)
+	}
 
-	// vpcPeeringConnection or instance is required
-	if strings.TrimSpace(route.Instance) == "" && strings.TrimSpace(route.VpcPeeringConnection) == "" {
+	// instance or vpcPeeringConnection or NAT gateway is required
+	if strings.TrimSpace(route.Instance) == "" && strings.TrimSpace(route.VpcPeeringConnection) == "" && strings.TrimSpace(route.NatGateway) == "" {
 		allErrs = append(allErrs, field.Required(fieldPath, "You must set either vpcPeeringConnection or instance for a route"))
 	}
 
@@ -132,6 +153,12 @@ func awsValidateRoute(route *kops.EgressSpec, fieldPath *field.Path) field.Error
 	if strings.TrimSpace(route.VpcPeeringConnection) != "" {
 		if !strings.HasPrefix(route.VpcPeeringConnection, "pcx-") {
 			allErrs = append(allErrs, field.Invalid(fieldPath.Child("VpcPeeringConnection"), route, "vpcPeeringConnection does not match the expected AWS format"))
+		}
+	}
+
+	if strings.TrimSpace(route.NatGateway) != "" {
+		if !strings.HasPrefix(route.NatGateway, "nat-") {
+			allErrs = append(allErrs, field.Invalid(fieldPath.Child("NatGateway"), route, "natGateway does not match the expected AWS format"))
 		}
 	}
 
