@@ -242,6 +242,8 @@ type KubeAPIServerConfig struct {
 	ProxyClientCertFile *string `json:"proxyClientCertFile,omitempty" flag:"proxy-client-cert-file"`
 	// The apiserver's client key used for outbound requests.
 	ProxyClientKeyFile *string `json:"proxyClientKeyFile,omitempty" flag:"proxy-client-key-file"`
+	// AuditLogFormat flag specifies the format type for audit log files.
+	AuditLogFormat *string `json:"auditLogFormat,omitempty" flag:"audit-log-format"`
 	// If set, all requests coming to the apiserver will be logged to this file.
 	AuditLogPath *string `json:"auditLogPath,omitempty" flag:"audit-log-path"`
 	// The maximum number of days to retain old audit log files based on the timestamp encoded in their filename.
