@@ -44,10 +44,12 @@ go_library(
         "//dnsprovider/pkg/dnsprovider:go_default_library",
         "//pkg/acls:go_default_library",
         "//pkg/apis/kops:go_default_library",
+        "//pkg/apis/kops/v1alpha2:go_default_library",
         "//pkg/assets:go_default_library",
         "//pkg/client/clientset_generated/clientset/typed/kops/internalversion:go_default_library",
         "//pkg/cloudinstances:go_default_library",
         "//pkg/diff:go_default_library",
+        "//pkg/kopscodecs:go_default_library",
         "//pkg/pki:go_default_library",
         "//pkg/sshcredentials:go_default_library",
         "//upup/pkg/fi/utils:go_default_library",
@@ -59,12 +61,14 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/validation:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/validation/field:go_default_library",
     ],
 )
 
 go_test(
     name = "go_default_test",
+    size = "small",
     srcs = [
         "dryruntarget_test.go",
         "vfs_castore_test.go",
