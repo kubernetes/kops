@@ -60,7 +60,7 @@ kops update cluster ${CLUSTER_NAME} --yes
 This will add an additional Tag to your aws vpc resource. This tag
 will be removed automatically if you delete your kops cluster.
 ```
-- "kubernetes.io/cluster/<cluster-name>" = "shared"
+"kubernetes.io/cluster/<cluster-name>" = "shared"
 ```
 
 Prior to kops 1.8 this Tag Key was `KubernetesCluster` which is obsolete and should
@@ -152,14 +152,14 @@ These are currently needed Tags on shared resources:
 
 Public Subnets:
 ```
-- "kubernetes.io/cluster/<cluster-name>" = "shared"
-- "kubernetes.io/role/elb"               = "1"
+"kubernetes.io/cluster/<cluster-name>" = "shared"
+"kubernetes.io/role/elb"               = "1"
 ```
 
 Private Subnets:
 ```
-- "kubernetes.io/cluster/<cluster-name>" = "shared"
-- "kubernetes.io/role/internal-elb"      = "1"
+"kubernetes.io/cluster/<cluster-name>" = "shared"
+"kubernetes.io/role/internal-elb"      = "1"
 ```
 
 
