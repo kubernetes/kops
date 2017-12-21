@@ -2357,6 +2357,15 @@ func (in *KubeAPIServerConfig) DeepCopyInto(out *KubeAPIServerConfig) {
 			**out = **in
 		}
 	}
+	if in.AuditLogFormat != nil {
+		in, out := &in.AuditLogFormat, &out.AuditLogFormat
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(string)
+			**out = **in
+		}
+	}
 	if in.AuditLogPath != nil {
 		in, out := &in.AuditLogPath, &out.AuditLogPath
 		if *in == nil {
