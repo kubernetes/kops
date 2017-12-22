@@ -41,8 +41,9 @@ import (
 )
 
 type VFSCAStore struct {
-	basedir vfs.Path
-	cluster *kops.Cluster
+	basedir   vfs.Path
+	cluster   *kops.Cluster
+	allowList bool
 
 	mutex     sync.Mutex
 	cachedCAs map[string]*cachedEntry
@@ -56,11 +57,12 @@ type cachedEntry struct {
 var _ CAStore = &VFSCAStore{}
 var _ SSHCredentialStore = &VFSCAStore{}
 
-func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path) CAStore {
+func NewVFSCAStore(cluster *kops.Cluster, basedir vfs.Path, allowList bool) CAStore {
 	c := &VFSCAStore{
 		basedir:   basedir,
 		cluster:   cluster,
 		cachedCAs: make(map[string]*cachedEntry),
+		allowList: allowList,
 	}
 
 	return c
@@ -314,10 +316,14 @@ func (c *VFSCAStore) loadCertificates(p vfs.Path, useBundle bool) (*keyset, erro
 	if useBundle {
 		bundlePath := p.Join("keyset.yaml")
 		bundle, err := c.loadKeysetBundle(bundlePath)
+		if !c.allowList {
+			return bundle, err
+		}
+
 		if err != nil {
 			glog.Warningf("unable to read bundle %q, falling back to directory-list method: %v", bundlePath, err)
 		} else if bundle == nil {
-			glog.Infof("no certificate bundle %q, falling back to directory-list method", bundlePath)
+			glog.V(2).Infof("no certificate bundle %q, falling back to directory-list method", bundlePath)
 		} else {
 			return bundle, nil
 		}
@@ -647,10 +653,15 @@ func (c *VFSCAStore) loadPrivateKeys(p vfs.Path, useBundle bool) (*keyset, error
 	if useBundle {
 		bundlePath := p.Join("keyset.yaml")
 		bundle, err := c.loadKeysetBundle(bundlePath)
+
+		if !c.allowList {
+			return bundle, err
+		}
+
 		if err != nil {
 			glog.Warningf("unable to read bundle %q, falling back to directory-list method: %v", bundlePath, err)
 		} else if bundle == nil {
-			glog.V(2).Infof("no certificate bundle %q, falling back to directory-list method", bundlePath)
+			glog.V(2).Infof("no private key bundle %q, falling back to directory-list method", bundlePath)
 		} else {
 			return bundle, nil
 		}

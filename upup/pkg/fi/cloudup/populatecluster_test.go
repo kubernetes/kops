@@ -109,7 +109,7 @@ func mockedPopulateClusterSpec(c *api.Cluster) (*api.Cluster, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error building vfspath: %v", err)
 	}
-	clientset := vfsclientset.NewVFSClientset(basePath)
+	clientset := vfsclientset.NewVFSClientset(basePath, true)
 	return PopulateClusterSpec(clientset, c, assetBuilder)
 }
 
