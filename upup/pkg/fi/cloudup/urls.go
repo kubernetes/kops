@@ -156,11 +156,11 @@ func ProtokubeImageSource(assetsBuilder *assets.AssetBuilder) (*url.URL, *hashin
 			return nil, nil, fmt.Errorf("unable to parse env var PROTOKUBE_IMAGE %q as an url: %v", env, err)
 		}
 
-		protokubeImageSource, protokubeHash, err = assetsBuilder.RemapFileAndSHA(protokubeImageSource)
+		protokubeLocation, protokubeHash, err = assetsBuilder.RemapFileAndSHA(protokubeImageSource)
 		if err != nil {
 			return nil, nil, err
 		}
-		glog.Warningf("Using protokube location from PROTOKUBE_IMAGE env var: %q", protokubeImageSource)
+		glog.Warningf("Using protokube location from PROTOKUBE_IMAGE env var: %q", protokubeLocation)
 	}
 
 	return protokubeLocation, protokubeHash, nil
