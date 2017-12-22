@@ -34,7 +34,8 @@ spec:
   - cidr: 172.20.32.0/19
     name: us-test-1a
     type: Private
-    egress: nat-12345678
+    egress:
+    - natGateway: nat-12345678
     zone: us-test-1a
   - cidr: 172.20.4.0/22
     name: utility-us-test-1a

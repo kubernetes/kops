@@ -366,8 +366,8 @@ resource "aws_nat_gateway" "us-test-1a-privatecanal-example-com" {
   subnet_id     = "${aws_subnet.utility-us-test-1a-privatecanal-example-com.id}"
 }
 
-resource "aws_route" "0-0-0-0--0" {
-  route_table_id         = "${aws_route_table.privatecanal-example-com.id}"
+resource "aws_route" "Utilityus-test-1a-0-0-0-0--0" {
+  route_table_id         = "${aws_route_table.us-test-1a-privatecanal-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.privatecanal-example-com.id}"
 }
@@ -400,12 +400,12 @@ resource "aws_route_table" "private-us-test-1a-privatecanal-example-com" {
   }
 }
 
-resource "aws_route_table" "privatecanal-example-com" {
+resource "aws_route_table" "us-test-1a-privatecanal-example-com" {
   vpc_id = "${aws_vpc.privatecanal-example-com.id}"
 
   tags = {
     KubernetesCluster = "privatecanal.example.com"
-    Name              = "privatecanal.example.com"
+    Name              = "us-test-1a.privatecanal.example.com"
   }
 }
 
@@ -416,7 +416,7 @@ resource "aws_route_table_association" "private-us-test-1a-privatecanal-example-
 
 resource "aws_route_table_association" "utility-us-test-1a-privatecanal-example-com" {
   subnet_id      = "${aws_subnet.utility-us-test-1a-privatecanal-example-com.id}"
-  route_table_id = "${aws_route_table.privatecanal-example-com.id}"
+  route_table_id = "${aws_route_table.us-test-1a-privatecanal-example-com.id}"
 }
 
 resource "aws_security_group" "api-elb-privatecanal-example-com" {

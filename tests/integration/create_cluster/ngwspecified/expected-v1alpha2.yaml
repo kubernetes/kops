@@ -36,7 +36,8 @@ spec:
   - 0.0.0.0/0
   subnets:
   - cidr: 172.20.32.0/19
-    egress: nat-09123456
+    egress:
+    - natGateway: nat-09123456
     name: us-test-1a
     type: Private
     zone: us-test-1a

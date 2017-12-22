@@ -4,11 +4,6 @@ metadata:
   creationTimestamp: "2016-12-10T22:42:27Z"
   name: complex.example.com
 spec:
-  additionalRoutes:
-  - cidr: 10.0.0.0/16
-    instance: i-1a2b3c4d
-  - cidr: 10.0.0.1/16
-    vpcPeeringConnection: pcx-1a2b3c4d
   api:
     loadBalancer:
       type: Public
@@ -54,6 +49,11 @@ spec:
     name: us-test-1a
     type: Public
     zone: us-test-1a
+    egress:
+    - instance: i-1a2b3c4d
+      cidr: 10.0.0.0/16
+    - vpcPeeringConnection: pcx-1a2b3c4d
+      cidr: 10.0.0.1/16
 
 ---
 

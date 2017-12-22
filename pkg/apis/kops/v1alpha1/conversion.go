@@ -62,10 +62,11 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 
 					var route []kops.EgressSpec
 
-					route = append(route, kops.EgressSpec{
-						CIDR:       "0.0.0.0/0",
-						NatGateway: z.Egress,
-					})
+					if z.Egress != "" {
+						route = append(route, kops.EgressSpec{
+							NatGateway: z.Egress,
+						})
+					}
 
 					out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
 						Name:       z.Name,
@@ -81,10 +82,11 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 
 					var route []kops.EgressSpec
 
-					route = append(route, kops.EgressSpec{
-						CIDR:       "0.0.0.0/0",
-						NatGateway: z.Egress,
-					})
+					if z.Egress != "" {
+						route = append(route, kops.EgressSpec{
+							NatGateway: z.Egress,
+						})
+					}
 
 					out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
 						Name:   "utility-" + z.Name,
@@ -98,10 +100,11 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 
 				var route []kops.EgressSpec
 
-				route = append(route, kops.EgressSpec{
-					CIDR:       "0.0.0.0/0",
-					NatGateway: z.Egress,
-				})
+				if z.Egress != "" {
+					route = append(route, kops.EgressSpec{
+						NatGateway: z.Egress,
+					})
+				}
 
 				out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
 					Name:       z.Name,

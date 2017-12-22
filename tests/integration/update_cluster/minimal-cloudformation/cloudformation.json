@@ -158,11 +158,11 @@
         ]
       }
     },
-    "AWSEC2Route00000": {
+    "AWSEC2RoutePublicustest1a00000": {
       "Type": "AWS::EC2::Route",
       "Properties": {
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTableminimalexamplecom"
+          "Ref": "AWSEC2RouteTableustest1aminimalexamplecom"
         },
         "DestinationCidrBlock": "0.0.0.0/0",
         "GatewayId": {
@@ -170,7 +170,7 @@
         }
       }
     },
-    "AWSEC2RouteTableminimalexamplecom": {
+    "AWSEC2RouteTableustest1aminimalexamplecom": {
       "Type": "AWS::EC2::RouteTable",
       "Properties": {
         "VpcId": {
@@ -183,7 +183,7 @@
           },
           {
             "Key": "Name",
-            "Value": "minimal.example.com"
+            "Value": "us-test-1a.minimal.example.com"
           }
         ]
       }
@@ -391,7 +391,7 @@
           "Ref": "AWSEC2Subnetustest1aminimalexamplecom"
         },
         "RouteTableId": {
-          "Ref": "AWSEC2RouteTableminimalexamplecom"
+          "Ref": "AWSEC2RouteTableustest1aminimalexamplecom"
         }
       }
     },

@@ -36,7 +36,9 @@ func awsValidateCluster(c *kops.Cluster) field.ErrorList {
 
 	for i, subnet := range c.Spec.Subnets {
 		f := field.NewPath("spec", "Subnets").Index(i)
-		allErrs = append(allErrs, awsValidateEgress(f.Child("Egress"), subnet.Egress, subnet.Type)...)
+		if c.Spec.Subnets[i].Egress != nil {
+			allErrs = append(allErrs, awsValidateEgress(f.Child("Egress"), subnet.Egress, subnet.Type)...)
+		}
 	}
 
 	return allErrs
@@ -100,7 +102,7 @@ func awsValidateEgress(fieldPath *field.Path, routes []kops.EgressSpec, t kops.S
 			allErrs = append(allErrs, field.Invalid(f, r, "non-private subnet can't have NAT gateway"))
 		} else if t == kops.SubnetTypePrivate && r.NatGateway != "" && ngwCount == 1 {
 			// private subnet can't have multiple NAT gateway
-			allErrs = append(allErrs, field.Invalid(f, r, "private subnet can't have multiple NAT gateway"))
+			allErrs = append(allErrs, field.Invalid(f, routes, "private subnet can't have multiple NAT gateway"))
 		} else if t == kops.SubnetTypePrivate && r.NatGateway != "" && ngwCount == 0 {
 			ngwCount = 1
 		}
@@ -141,7 +143,7 @@ func awsValidateRoute(route *kops.EgressSpec, fieldPath *field.Path) field.Error
 
 	// instance or vpcPeeringConnection or natGateway is required
 	if strings.TrimSpace(route.Instance) == "" && strings.TrimSpace(route.VpcPeeringConnection) == "" && strings.TrimSpace(route.NatGateway) == "" {
-		allErrs = append(allErrs, field.Required(fieldPath, "You must set either vpcPeeringConnection or instance for a route"))
+		allErrs = append(allErrs, field.Required(fieldPath, "You must set either instance or NAT gateway or vpcPeeringConnection for a egress route"))
 	}
 
 	if strings.TrimSpace(route.Instance) != "" {

@@ -215,24 +215,24 @@ resource "aws_launch_configuration" "nodes-minimal-example-com" {
   }
 }
 
-resource "aws_route" "0-0-0-0--0" {
-  route_table_id         = "${aws_route_table.minimal-example-com.id}"
+resource "aws_route" "Publicus-test-1a-0-0-0-0--0" {
+  route_table_id         = "${aws_route_table.us-test-1a-minimal-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.minimal-example-com.id}"
 }
 
-resource "aws_route_table" "minimal-example-com" {
+resource "aws_route_table" "us-test-1a-minimal-example-com" {
   vpc_id = "${aws_vpc.minimal-example-com.id}"
 
   tags = {
     KubernetesCluster = "minimal.example.com"
-    Name              = "minimal.example.com"
+    Name              = "us-test-1a.minimal.example.com"
   }
 }
 
 resource "aws_route_table_association" "us-test-1a-minimal-example-com" {
   subnet_id      = "${aws_subnet.us-test-1a-minimal-example-com.id}"
-  route_table_id = "${aws_route_table.minimal-example-com.id}"
+  route_table_id = "${aws_route_table.us-test-1a-minimal-example-com.id}"
 }
 
 resource "aws_security_group" "masters-minimal-example-com" {

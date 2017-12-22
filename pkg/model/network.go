@@ -173,15 +173,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					InternetGateway: igw,
 				})
 				for _, r := range b.Cluster.Spec.Subnets[i].Egress {
-					t := &awstasks.Route{}
 					if r.VpcPeeringConnection != "" {
-						t = &awstasks.Route{
+						t := &awstasks.Route{
 							Name:                 s(string(subnetSpec.Type) + subnetSpec.Zone + r.CIDR),
 							Lifecycle:            b.Lifecycle,
 							CIDR:                 s(r.CIDR),
 							RouteTable:           routeTable,
 							VpcPeeringConnection: s(r.VpcPeeringConnection),
 						}
+						c.EnsureTask(t)
 					} else if r.Instance != "" {
 						inst := &awstasks.Instance{
 							Name:      s(r.Instance),
@@ -192,15 +192,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 						if err := c.EnsureTask(inst); err != nil {
 							return err
 						}
-						t = &awstasks.Route{
+						t := &awstasks.Route{
 							Name:       s(string(subnetSpec.Type) + subnetSpec.Zone + r.CIDR),
 							Lifecycle:  b.Lifecycle,
 							CIDR:       s(r.CIDR),
 							RouteTable: routeTable,
 							Instance:   inst,
 						}
+						c.EnsureTask(t)
 					}
-					c.EnsureTask(t)
 				}
 				c.AddTask(&awstasks.RouteTableAssociation{
 					Name:       s(subnetSpec.Name + "." + b.ClusterName()),
@@ -255,16 +255,15 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 
 		for _, r := range b.Cluster.Spec.Subnets[i].Egress {
 
-			t := &awstasks.Route{}
-
 			if r.VpcPeeringConnection != "" {
-				t = &awstasks.Route{
+				t := &awstasks.Route{
 					Name:                 s("private-" + zone + r.CIDR),
 					Lifecycle:            b.Lifecycle,
 					CIDR:                 s(r.CIDR),
 					RouteTable:           rt,
 					VpcPeeringConnection: s(r.VpcPeeringConnection),
 				}
+				c.EnsureTask(t)
 			} else if r.Instance != "" {
 				inst := &awstasks.Instance{
 					Name:      s(r.Instance),
@@ -275,13 +274,14 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				if err := c.EnsureTask(inst); err != nil {
 					return err
 				}
-				t = &awstasks.Route{
+				t := &awstasks.Route{
 					Name:       s("Private-" + zone + r.CIDR),
 					Lifecycle:  b.Lifecycle,
 					CIDR:       s(r.CIDR),
 					RouteTable: rt,
 					Instance:   inst,
 				}
+				c.EnsureTask(t)
 			} else if r.NatGateway != "" {
 				ngw = &awstasks.NatGateway{
 					Name:                 s(zone + "." + b.ClusterName()),
@@ -303,7 +303,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 				})
 				ngwCount = 1
 			}
-			c.EnsureTask(t)
 		}
 
 		if ngwCount == 0 {

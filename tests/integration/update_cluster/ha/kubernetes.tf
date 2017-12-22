@@ -375,34 +375,64 @@ resource "aws_launch_configuration" "nodes-ha-example-com" {
   }
 }
 
-resource "aws_route" "0-0-0-0--0" {
-  route_table_id         = "${aws_route_table.ha-example-com.id}"
+resource "aws_route" "Publicus-test-1a-0-0-0-0--0" {
+  route_table_id         = "${aws_route_table.us-test-1a-ha-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.ha-example-com.id}"
 }
 
-resource "aws_route_table" "ha-example-com" {
+resource "aws_route" "Publicus-test-1b-0-0-0-0--0" {
+  route_table_id         = "${aws_route_table.us-test-1b-ha-example-com.id}"
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = "${aws_internet_gateway.ha-example-com.id}"
+}
+
+resource "aws_route" "Publicus-test-1c-0-0-0-0--0" {
+  route_table_id         = "${aws_route_table.us-test-1c-ha-example-com.id}"
+  destination_cidr_block = "0.0.0.0/0"
+  gateway_id             = "${aws_internet_gateway.ha-example-com.id}"
+}
+
+resource "aws_route_table" "us-test-1a-ha-example-com" {
   vpc_id = "${aws_vpc.ha-example-com.id}"
 
   tags = {
     KubernetesCluster = "ha.example.com"
-    Name              = "ha.example.com"
+    Name              = "us-test-1a.ha.example.com"
+  }
+}
+
+resource "aws_route_table" "us-test-1b-ha-example-com" {
+  vpc_id = "${aws_vpc.ha-example-com.id}"
+
+  tags = {
+    KubernetesCluster = "ha.example.com"
+    Name              = "us-test-1b.ha.example.com"
+  }
+}
+
+resource "aws_route_table" "us-test-1c-ha-example-com" {
+  vpc_id = "${aws_vpc.ha-example-com.id}"
+
+  tags = {
+    KubernetesCluster = "ha.example.com"
+    Name              = "us-test-1c.ha.example.com"
   }
 }
 
 resource "aws_route_table_association" "us-test-1a-ha-example-com" {
   subnet_id      = "${aws_subnet.us-test-1a-ha-example-com.id}"
-  route_table_id = "${aws_route_table.ha-example-com.id}"
+  route_table_id = "${aws_route_table.us-test-1a-ha-example-com.id}"
 }
 
 resource "aws_route_table_association" "us-test-1b-ha-example-com" {
   subnet_id      = "${aws_subnet.us-test-1b-ha-example-com.id}"
-  route_table_id = "${aws_route_table.ha-example-com.id}"
+  route_table_id = "${aws_route_table.us-test-1b-ha-example-com.id}"
 }
 
 resource "aws_route_table_association" "us-test-1c-ha-example-com" {
   subnet_id      = "${aws_subnet.us-test-1c-ha-example-com.id}"
-  route_table_id = "${aws_route_table.ha-example-com.id}"
+  route_table_id = "${aws_route_table.us-test-1c-ha-example-com.id}"
 }
 
 resource "aws_security_group" "masters-ha-example-com" {

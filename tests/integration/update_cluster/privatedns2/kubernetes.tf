@@ -357,8 +357,8 @@ resource "aws_nat_gateway" "us-test-1a-privatedns2-example-com" {
   subnet_id     = "${aws_subnet.utility-us-test-1a-privatedns2-example-com.id}"
 }
 
-resource "aws_route" "0-0-0-0--0" {
-  route_table_id         = "${aws_route_table.privatedns2-example-com.id}"
+resource "aws_route" "Utilityus-test-1a-0-0-0-0--0" {
+  route_table_id         = "${aws_route_table.us-test-1a-privatedns2-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "igw-1"
 }
@@ -391,12 +391,12 @@ resource "aws_route_table" "private-us-test-1a-privatedns2-example-com" {
   }
 }
 
-resource "aws_route_table" "privatedns2-example-com" {
+resource "aws_route_table" "us-test-1a-privatedns2-example-com" {
   vpc_id = "vpc-12345678"
 
   tags = {
     KubernetesCluster = "privatedns2.example.com"
-    Name              = "privatedns2.example.com"
+    Name              = "us-test-1a.privatedns2.example.com"
   }
 }
 
@@ -407,7 +407,7 @@ resource "aws_route_table_association" "private-us-test-1a-privatedns2-example-c
 
 resource "aws_route_table_association" "utility-us-test-1a-privatedns2-example-com" {
   subnet_id      = "${aws_subnet.utility-us-test-1a-privatedns2-example-com.id}"
-  route_table_id = "${aws_route_table.privatedns2-example-com.id}"
+  route_table_id = "${aws_route_table.us-test-1a-privatedns2-example-com.id}"
 }
 
 resource "aws_security_group" "api-elb-privatedns2-example-com" {

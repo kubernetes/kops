@@ -366,8 +366,8 @@ resource "aws_nat_gateway" "us-test-1a-privateflannel-example-com" {
   subnet_id     = "${aws_subnet.utility-us-test-1a-privateflannel-example-com.id}"
 }
 
-resource "aws_route" "0-0-0-0--0" {
-  route_table_id         = "${aws_route_table.privateflannel-example-com.id}"
+resource "aws_route" "Utilityus-test-1a-0-0-0-0--0" {
+  route_table_id         = "${aws_route_table.us-test-1a-privateflannel-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.privateflannel-example-com.id}"
 }
@@ -400,12 +400,12 @@ resource "aws_route_table" "private-us-test-1a-privateflannel-example-com" {
   }
 }
 
-resource "aws_route_table" "privateflannel-example-com" {
+resource "aws_route_table" "us-test-1a-privateflannel-example-com" {
   vpc_id = "${aws_vpc.privateflannel-example-com.id}"
 
   tags = {
     KubernetesCluster = "privateflannel.example.com"
-    Name              = "privateflannel.example.com"
+    Name              = "us-test-1a.privateflannel.example.com"
   }
 }
 
@@ -416,7 +416,7 @@ resource "aws_route_table_association" "private-us-test-1a-privateflannel-exampl
 
 resource "aws_route_table_association" "utility-us-test-1a-privateflannel-example-com" {
   subnet_id      = "${aws_subnet.utility-us-test-1a-privateflannel-example-com.id}"
-  route_table_id = "${aws_route_table.privateflannel-example-com.id}"
+  route_table_id = "${aws_route_table.us-test-1a-privateflannel-example-com.id}"
 }
 
 resource "aws_security_group" "api-elb-privateflannel-example-com" {

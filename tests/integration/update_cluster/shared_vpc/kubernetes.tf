@@ -206,24 +206,24 @@ resource "aws_launch_configuration" "nodes-sharedvpc-example-com" {
   }
 }
 
-resource "aws_route" "0-0-0-0--0" {
-  route_table_id         = "${aws_route_table.sharedvpc-example-com.id}"
+resource "aws_route" "Publicus-test-1a-0-0-0-0--0" {
+  route_table_id         = "${aws_route_table.us-test-1a-sharedvpc-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "igw-1"
 }
 
-resource "aws_route_table" "sharedvpc-example-com" {
+resource "aws_route_table" "us-test-1a-sharedvpc-example-com" {
   vpc_id = "vpc-12345678"
 
   tags = {
     KubernetesCluster = "sharedvpc.example.com"
-    Name              = "sharedvpc.example.com"
+    Name              = "us-test-1a.sharedvpc.example.com"
   }
 }
 
 resource "aws_route_table_association" "us-test-1a-sharedvpc-example-com" {
   subnet_id      = "${aws_subnet.us-test-1a-sharedvpc-example-com.id}"
-  route_table_id = "${aws_route_table.sharedvpc-example-com.id}"
+  route_table_id = "${aws_route_table.us-test-1a-sharedvpc-example-com.id}"
 }
 
 resource "aws_security_group" "masters-sharedvpc-example-com" {

@@ -277,20 +277,20 @@ resource "aws_launch_configuration" "nodes-complex-example-com" {
   }
 }
 
-resource "aws_route" "0-0-0-0--0" {
-  route_table_id         = "${aws_route_table.complex-example-com.id}"
+resource "aws_route" "Publicus-test-1a-0-0-0-0--0" {
+  route_table_id         = "${aws_route_table.us-test-1a-complex-example-com.id}"
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = "${aws_internet_gateway.complex-example-com.id}"
 }
 
-resource "aws_route" "10-0-0-0--16" {
-  route_table_id         = "${aws_route_table.complex-example-com.id}"
+resource "aws_route" "Publicus-test-1a10-0-0-0--16" {
+  route_table_id         = "${aws_route_table.us-test-1a-complex-example-com.id}"
   destination_cidr_block = "10.0.0.0/16"
   instance_id            = "i-1a2b3c4d"
 }
 
-resource "aws_route" "10-0-0-1--16" {
-  route_table_id            = "${aws_route_table.complex-example-com.id}"
+resource "aws_route" "Publicus-test-1a10-0-0-1--16" {
+  route_table_id            = "${aws_route_table.us-test-1a-complex-example-com.id}"
   destination_cidr_block    = "10.0.0.1/16"
   vpc_peering_connection_id = "pcx-1a2b3c4d"
 }
@@ -308,18 +308,18 @@ resource "aws_route53_record" "api-complex-example-com" {
   zone_id = "/hostedzone/Z1AFAKE1ZON3YO"
 }
 
-resource "aws_route_table" "complex-example-com" {
+resource "aws_route_table" "us-test-1a-complex-example-com" {
   vpc_id = "${aws_vpc.complex-example-com.id}"
 
   tags = {
     KubernetesCluster = "complex.example.com"
-    Name              = "complex.example.com"
+    Name              = "us-test-1a.complex.example.com"
   }
 }
 
 resource "aws_route_table_association" "us-test-1a-complex-example-com" {
   subnet_id      = "${aws_subnet.us-test-1a-complex-example-com.id}"
-  route_table_id = "${aws_route_table.complex-example-com.id}"
+  route_table_id = "${aws_route_table.us-test-1a-complex-example-com.id}"
 }
 
 resource "aws_security_group" "api-elb-complex-example-com" {
