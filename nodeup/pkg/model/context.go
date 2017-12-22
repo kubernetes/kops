@@ -18,7 +18,9 @@ package model
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/blang/semver"
 	"github.com/golang/glog"
@@ -27,7 +29,9 @@ import (
 	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/kubeconfig"
+	"k8s.io/kops/pkg/pki"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/util/pkg/vfs"
 )
 
 // NodeupModelContext is the context supplied the nodeup tasks
@@ -129,6 +133,13 @@ func (c *NodeupModelContext) buildPKIKubeconfig(id string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("error fetching %q private key from keystore: %v", id, err)
 	}
+
+	return c.buildKubeconfigFromClientCertificate(id, caCertificate, certificate, privateKey)
+}
+
+// buildKubeconfigFromClientCertificate generates a kubeconfig that uses client certificate authentication
+func (c *NodeupModelContext) buildKubeconfigFromClientCertificate(id string, caCertificate *pki.Certificate, certificate *pki.Certificate, privateKey *pki.PrivateKey) (string, error) {
+	var err error
 
 	user := kubeconfig.KubectlUser{}
 	user.ClientCertificateData, err = certificate.AsBytes()
@@ -257,4 +268,58 @@ func (c *NodeupModelContext) KubectlPath() string {
 		kubeletCommand = "/home/kubernetes/bin"
 	}
 	return kubeletCommand
+}
+
+// NodeName returns the name of the local Node, as it will be created in k8s
+func (c *NodeupModelContext) NodeName() (string, error) {
+	// This mirrors nodeutil.GetHostName
+	hostnameOverride := c.Cluster.Spec.Kubelet.HostnameOverride
+	if c.IsMaster && c.Cluster.Spec.MasterKubelet.HostnameOverride != "" {
+		hostnameOverride = c.Cluster.Spec.MasterKubelet.HostnameOverride
+	}
+	nodeName, err := EvaluateHostnameOverride(hostnameOverride)
+	if err != nil {
+		return "", fmt.Errorf("error evaluating hostname: %v", err)
+	}
+	if nodeName == "" {
+		hostname, err := os.Hostname()
+		if err != nil {
+			glog.Fatalf("Couldn't determine hostname: %v", err)
+		}
+		nodeName = hostname
+	}
+	return strings.ToLower(strings.TrimSpace(nodeName)), nil
+}
+
+// EvaluateHostnameOverride returns the hostname after replacing some well-known placeholders
+func EvaluateHostnameOverride(hostnameOverride string) (string, error) {
+	if hostnameOverride == "" || hostnameOverride == "@hostname" {
+		return "", nil
+	}
+	k := strings.TrimSpace(hostnameOverride)
+	k = strings.ToLower(k)
+
+	if k != "@aws" {
+		return hostnameOverride, nil
+	}
+
+	// We recognize @aws as meaning "the local-hostname from the aws metadata service"
+	vBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
+	if err != nil {
+		return "", fmt.Errorf("error reading local hostname from AWS metadata: %v", err)
+	}
+
+	// The local-hostname gets it's hostname from the AWS DHCP Option Set, which
+	// may provide multiple hostnames separated by spaces. For now just choose
+	// the first one as the hostname.
+	domains := strings.Fields(string(vBytes))
+	if len(domains) == 0 {
+		glog.Warningf("Local hostname from AWS metadata service was empty")
+		return "", nil
+	} else {
+		domain := domains[0]
+		glog.Infof("Using hostname from AWS metadata service: %s", domain)
+
+		return domain, nil
+	}
 }

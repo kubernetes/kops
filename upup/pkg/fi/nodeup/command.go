@@ -299,18 +299,18 @@ func (c *NodeUpCommand) Run(out io.Writer) error {
 func evaluateSpec(c *api.Cluster) error {
 	var err error
 
-	c.Spec.Kubelet.HostnameOverride, err = evaluateHostnameOverride(c.Spec.Kubelet.HostnameOverride)
+	c.Spec.Kubelet.HostnameOverride, err = model.EvaluateHostnameOverride(c.Spec.Kubelet.HostnameOverride)
 	if err != nil {
 		return err
 	}
 
-	c.Spec.MasterKubelet.HostnameOverride, err = evaluateHostnameOverride(c.Spec.MasterKubelet.HostnameOverride)
+	c.Spec.MasterKubelet.HostnameOverride, err = model.EvaluateHostnameOverride(c.Spec.MasterKubelet.HostnameOverride)
 	if err != nil {
 		return err
 	}
 
 	if c.Spec.KubeProxy != nil {
-		c.Spec.KubeProxy.HostnameOverride, err = evaluateHostnameOverride(c.Spec.KubeProxy.HostnameOverride)
+		c.Spec.KubeProxy.HostnameOverride, err = model.EvaluateHostnameOverride(c.Spec.KubeProxy.HostnameOverride)
 		if err != nil {
 			return err
 		}
@@ -324,38 +324,6 @@ func evaluateSpec(c *api.Cluster) error {
 	}
 
 	return nil
-}
-
-func evaluateHostnameOverride(hostnameOverride string) (string, error) {
-	if hostnameOverride == "" || hostnameOverride == "@hostname" {
-		return "", nil
-	}
-	k := strings.TrimSpace(hostnameOverride)
-	k = strings.ToLower(k)
-
-	if k != "@aws" {
-		return hostnameOverride, nil
-	}
-
-	// We recognize @aws as meaning "the local-hostname from the aws metadata service"
-	vBytes, err := vfs.Context.ReadFile("metadata://aws/meta-data/local-hostname")
-	if err != nil {
-		return "", fmt.Errorf("error reading local hostname from AWS metadata: %v", err)
-	}
-
-	// The local-hostname gets it's hostname from the AWS DHCP Option Set, which
-	// may provide multiple hostnames separated by spaces. For now just choose
-	// the first one as the hostname.
-	domains := strings.Fields(string(vBytes))
-	if len(domains) == 0 {
-		glog.Warningf("Local hostname from AWS metadata service was empty")
-		return "", nil
-	} else {
-		domain := domains[0]
-		glog.Infof("Using hostname from AWS metadata service: %s", domain)
-
-		return domain, nil
-	}
 }
 
 // evaluateDockerSpec selects the first supported storage mode, if it is a list
