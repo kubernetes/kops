@@ -243,7 +243,7 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 	}
 
 	// TODO this is dupicate code with etcd model
-	image := fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)
+	image := fmt.Sprintf("k8s.gcr.io/etcd:%s", imageVersion)
 	// override image if set as API value
 	if etcdContainerImage != "" {
 		image = etcdContainerImage

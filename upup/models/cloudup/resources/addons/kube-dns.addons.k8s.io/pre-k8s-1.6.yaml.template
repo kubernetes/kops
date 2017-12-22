@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
       - name: autoscaler
-        image: gcr.io/google_containers/cluster-proportional-autoscaler-{{Arch}}:1.0.0
+        image: k8s.gcr.io/cluster-proportional-autoscaler-{{Arch}}:1.0.0
         resources:
             requests:
                 cpu: "20m"
@@ -83,7 +83,7 @@ spec:
     spec:
       containers:
       - name: kubedns
-        image: gcr.io/google_containers/kubedns-{{Arch}}:1.9
+        image: k8s.gcr.io/kubedns-{{Arch}}:1.9
         resources:
           # TODO: Set memory limits when we've profiled the container for large
           # clusters, then set request = limit to keep this container in
@@ -131,7 +131,7 @@ spec:
           name: metrics
           protocol: TCP
       - name: dnsmasq
-        image: gcr.io/google_containers/k8s-dns-dnsmasq-{{Arch}}:1.14.5
+        image: k8s.gcr.io/k8s-dns-dnsmasq-{{Arch}}:1.14.5
         livenessProbe:
           httpGet:
             path: /healthz-dnsmasq
@@ -159,7 +159,7 @@ spec:
             cpu: 150m
             memory: 10Mi
       - name: dnsmasq-metrics
-        image: gcr.io/google_containers/dnsmasq-metrics-{{Arch}}:1.0
+        image: k8s.gcr.io/dnsmasq-metrics-{{Arch}}:1.0
         livenessProbe:
           httpGet:
             path: /metrics
@@ -180,7 +180,7 @@ spec:
           requests:
             memory: 10Mi
       - name: healthz
-        image: gcr.io/google_containers/exechealthz-{{Arch}}:1.2
+        image: k8s.gcr.io/exechealthz-{{Arch}}:1.2
         resources:
           limits:
             memory: 50Mi
