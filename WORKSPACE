@@ -55,7 +55,7 @@ container_pull(
     name = "debian_hyperkube_base_amd64",
     # 'tag' is also supported, but digest is encouraged for reproducibility.
     digest = "sha256:fc1b461367730660ac5a40c1eb2d1b23221829acf8a892981c12361383b3742b",
-    registry = "gcr.io",
-    repository = "google_containers/debian-hyperkube-base-amd64",
+    registry = "k8s.gcr.io",
+    repository = "debian-hyperkube-base-amd64",
     tag = "0.8",
 )

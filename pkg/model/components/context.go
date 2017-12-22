@@ -131,11 +131,11 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	// TODO remove this, as it is an addon now
 	if component == "kube-dns" {
 		// TODO: Once we are shipping different versions, start to use them
-		return "gcr.io/google_containers/kubedns-amd64:1.3", nil
+		return "k8s.gcr.io/kubedns-amd64:1.3", nil
 	}
 
 	if !IsBaseURL(clusterSpec.KubernetesVersion) {
-		image := "gcr.io/google_containers/" + component + ":" + "v" + clusterSpec.KubernetesVersion
+		image := "k8s.gcr.io/" + component + ":" + "v" + clusterSpec.KubernetesVersion
 
 		image, err := assetsBuilder.RemapImage(image)
 		if err != nil {
@@ -158,7 +158,7 @@ func Image(component string, clusterSpec *kops.ClusterSpec, assetsBuilder *asset
 	tag := strings.TrimSpace(string(b))
 	glog.V(2).Infof("Found tag %q for %q", tag, component)
 
-	return "gcr.io/google_containers/" + component + ":" + tag, nil
+	return "k8s.gcr.io/" + component + ":" + tag, nil
 }
 
 func GCETagForRole(clusterName string, role kops.InstanceGroupRole) string {
