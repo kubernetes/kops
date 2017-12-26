@@ -60,6 +60,7 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 				// A private zone is mapped to a private- and a utility- subnet
 				if z.PrivateCIDR != "" {
 
+					// NAT gateway allowed only for private subnet
 					var route []kops.EgressSpec
 
 					if z.Egress != "" {
@@ -79,40 +80,20 @@ func Convert_v1alpha1_ClusterSpec_To_kops_ClusterSpec(in *ClusterSpec, out *kops
 				}
 
 				if z.CIDR != "" {
-
-					var route []kops.EgressSpec
-
-					if z.Egress != "" {
-						route = append(route, kops.EgressSpec{
-							NatGateway: z.Egress,
-						})
-					}
-
 					out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
-						Name:   "utility-" + z.Name,
-						CIDR:   z.CIDR,
-						Zone:   z.Name,
-						Type:   kops.SubnetTypeUtility,
-						Egress: route,
+						Name: "utility-" + z.Name,
+						CIDR: z.CIDR,
+						Zone: z.Name,
+						Type: kops.SubnetTypeUtility,
 					})
 				}
 			} else {
-
-				var route []kops.EgressSpec
-
-				if z.Egress != "" {
-					route = append(route, kops.EgressSpec{
-						NatGateway: z.Egress,
-					})
-				}
-
 				out.Subnets = append(out.Subnets, kops.ClusterSubnetSpec{
 					Name:       z.Name,
 					CIDR:       z.CIDR,
 					ProviderID: z.ProviderID,
 					Zone:       z.Name,
 					Type:       kops.SubnetTypePublic,
-					Egress:     route,
 				})
 			}
 		}

@@ -18,7 +18,6 @@ package model
 
 import (
 	"fmt"
-	//"strings"
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/sets"
@@ -95,15 +94,6 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 	} else {
 		// TODO: would be good to create these as shared, to verify them
 	}
-
-	//allSubnetsShared := true
-	//for i := range b.Cluster.Spec.Subnets {
-	//	subnetSpec := &b.Cluster.Spec.Subnets[i]
-	//	sharedSubnet := subnetSpec.ProviderID != ""
-	//	if !sharedSubnet {
-	//		allSubnetsShared = false
-	//	}
-	//}
 
 	// The internet gateway is the main entry point to the cluster.
 	igw := &awstasks.InternetGateway{
