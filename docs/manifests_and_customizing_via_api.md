@@ -45,6 +45,8 @@ kops get $NAME -o yaml > $NAME.yaml
 
 The above command exports a YAML document which contains the definition of the cluster, `kind: Cluster`, and the definitions of the instance groups, `kind: InstanceGroup`.
 
+NOTE: If you run `kops get cluster $NAME -o yaml > $NAME.yaml`, you will only get a cluster spec. Use the command above (`kops get $NAME ...`)for both the cluster spec and all instance groups.
+
 The following is the contents of the exported YAML file.
 
 ```yaml
