@@ -180,7 +180,7 @@ func (c *ApplyClusterCmd) Run() error {
 
 	case PhaseSecurity:
 		stageAssetsLifecycle = fi.LifecycleIgnore
-		networkLifecycle = fi.LifecycleIgnore
+		networkLifecycle = fi.LifecycleExistsAndWarnIfChanges
 		clusterLifecycle = fi.LifecycleIgnore
 
 	case PhaseCluster:
