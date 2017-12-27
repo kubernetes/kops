@@ -191,6 +191,8 @@ func (b *APILoadBalancerBuilder) Build(c *fi.ModelBuilderContext) error {
 				Name:   fi.String(id),
 				ID:     fi.String(id),
 				Shared: fi.Bool(true),
+
+				Lifecycle: b.SecurityLifecycle,
 			}
 			if err := c.EnsureTask(t); err != nil {
 				return err
