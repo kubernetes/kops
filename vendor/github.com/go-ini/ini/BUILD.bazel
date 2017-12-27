@@ -1,0 +1,42 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "error.go",
+        "file.go",
+        "ini.go",
+        "key.go",
+        "parser.go",
+        "section.go",
+        "struct.go",
+    ],
+    importpath = "github.com/go-ini/ini",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["ini_internal_test.go"],
+    embed = [":go_default_library"],
+    importpath = "github.com/go-ini/ini",
+    deps = ["//vendor/github.com/smartystreets/goconvey/convey:go_default_library"],
+)
+
+go_test(
+    name = "go_default_xtest",
+    srcs = [
+        "bench_test.go",
+        "file_test.go",
+        "ini_test.go",
+        "key_test.go",
+        "parser_test.go",
+        "section_test.go",
+        "struct_test.go",
+    ],
+    importpath = "github.com/go-ini/ini_test",
+    deps = [
+        "//vendor/github.com/smartystreets/goconvey/convey:go_default_library",
+        "//vendor/gopkg.in/ini.v1:go_default_library",
+    ],
+)

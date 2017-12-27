@@ -13,13 +13,14 @@ go_library(
         "generated_expansion.go",
         "horizontalpodautoscaler.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/autoscaling/internalversion",
     deps = [
-        "//pkg/apis/autoscaling:go_default_library",
-        "//pkg/client/clientset_generated/internalclientset/scheme:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/autoscaling:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme:go_default_library",
     ],
 )
 

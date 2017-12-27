@@ -22,7 +22,8 @@ go_test(
         "store_test.go",
         "undelta_store_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/client-go/tools/cache",
     deps = [
         "//vendor/github.com/google/gofuzz:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
@@ -61,6 +62,7 @@ go_library(
         "thread_safe_store.go",
         "undelta_store.go",
     ],
+    importpath = "k8s.io/client-go/tools/cache",
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",

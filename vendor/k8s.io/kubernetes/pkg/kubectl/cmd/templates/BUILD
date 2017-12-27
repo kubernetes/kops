@@ -12,15 +12,16 @@ go_library(
         "templater.go",
         "templates.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/templates",
     visibility = [
         "//build/visible_to:pkg_kubectl_cmd_templates_CONSUMERS",
     ],
     deps = [
-        "//pkg/kubectl/util/term:go_default_library",
         "//vendor/github.com/MakeNowJust/heredoc:go_default_library",
         "//vendor/github.com/russross/blackfriday:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/github.com/spf13/pflag:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/term:go_default_library",
     ],
 )
 

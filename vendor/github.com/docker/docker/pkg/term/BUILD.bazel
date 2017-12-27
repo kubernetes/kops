@@ -1,0 +1,86 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "ascii.go",
+    ] + select({
+        "@io_bazel_rules_go//go/platform:android": [
+            "tc_other.go",
+            "term.go",
+            "term_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "tc_other.go",
+            "term.go",
+            "term_unix.go",
+            "termios_darwin.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "tc_other.go",
+            "term.go",
+            "term_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "tc_other.go",
+            "term.go",
+            "term_unix.go",
+            "termios_freebsd.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "tc_linux_cgo.go",
+            "tc_other.go",
+            "term.go",
+            "term_unix.go",
+            "termios_linux.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "tc_other.go",
+            "term.go",
+            "term_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "tc_other.go",
+            "term.go",
+            "term_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "tc_other.go",
+            "term.go",
+            "term_unix.go",
+            "termios_openbsd.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "tc_other.go",
+            "term.go",
+            "term_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "tc_other.go",
+            "tc_solaris_cgo.go",
+            "term.go",
+            "term_solaris.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
+            "term_windows.go",
+        ],
+        "//conditions:default": [],
+    }),
+    cgo = True,
+    importpath = "github.com/docker/docker/pkg/term",
+    visibility = ["//visibility:public"],
+    deps = select({
+        "@io_bazel_rules_go//go/platform:windows": [
+            "//vendor/github.com/Azure/go-ansiterm/winterm:go_default_library",
+            "//vendor/github.com/docker/docker/pkg/term/windows:go_default_library",
+        ],
+        "//conditions:default": [],
+    }),
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["ascii_test.go"],
+    embed = [":go_default_library"],
+    importpath = "github.com/docker/docker/pkg/term",
+)

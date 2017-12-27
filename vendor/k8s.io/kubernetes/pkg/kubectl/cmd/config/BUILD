@@ -23,14 +23,11 @@ go_library(
         "use_context.go",
         "view.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/config",
     visibility = [
         "//build/visible_to:pkg_kubectl_cmd_config_CONSUMERS",
     ],
     deps = [
-        "//pkg/kubectl/cmd/templates:go_default_library",
-        "//pkg/kubectl/cmd/util:go_default_library",
-        "//pkg/kubectl/util/i18n:go_default_library",
-        "//pkg/printers:go_default_library",
         "//vendor/github.com/spf13/cobra:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
@@ -40,6 +37,10 @@ go_library(
         "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
         "//vendor/k8s.io/client-go/tools/clientcmd/api:go_default_library",
         "//vendor/k8s.io/client-go/tools/clientcmd/api/latest:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/templates:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/util/i18n:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/printers:go_default_library",
     ],
 )
 
@@ -62,14 +63,15 @@ go_test(
         "use_context_test.go",
         "view_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/config",
     deps = [
-        "//pkg/kubectl/cmd/util:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/util/flag:go_default_library",
         "//vendor/k8s.io/client-go/tools/clientcmd:go_default_library",
         "//vendor/k8s.io/client-go/tools/clientcmd/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util:go_default_library",
     ],
 )
 

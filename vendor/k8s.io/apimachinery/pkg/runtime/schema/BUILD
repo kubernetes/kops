@@ -1,3 +1,5 @@
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+
 package(default_visibility = ["//visibility:public"])
 
 load(
@@ -9,17 +11,18 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["group_version_test.go"],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/apimachinery/pkg/runtime/schema",
 )
 
 go_library(
     name = "go_default_library",
     srcs = [
-        "generated.pb.go",
         "group_version.go",
         "interfaces.go",
     ],
-    deps = ["//vendor/github.com/gogo/protobuf/proto:go_default_library"],
+    embed = [":schema_go_proto"],
+    importpath = "k8s.io/apimachinery/pkg/runtime/schema",
 )
 
 filegroup(
@@ -35,8 +38,15 @@ filegroup(
     tags = ["automanaged"],
 )
 
-filegroup(
-    name = "go_default_library_protos",
+proto_library(
+    name = "schema_proto",
     srcs = ["generated.proto"],
-    visibility = ["//visibility:public"],
+    deps = ["//k8s.io/apimachinery/pkg/util/intstr:intstr_proto"],
+)
+
+go_proto_library(
+    name = "schema_go_proto",
+    importpath = "k8s.io/apimachinery/pkg/runtime/schema",
+    proto = ":schema_proto",
+    deps = ["//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library"],
 )

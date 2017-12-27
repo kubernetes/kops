@@ -12,7 +12,8 @@ go_test(
         "webhook_test.go",
         "webhook_v1alpha1_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/apiserver/plugin/pkg/audit/webhook",
     deps = [
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",
@@ -30,6 +31,7 @@ go_test(
 go_library(
     name = "go_default_library",
     srcs = ["webhook.go"],
+    importpath = "k8s.io/apiserver/plugin/pkg/audit/webhook",
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/apimachinery/announced:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apimachinery/registered:go_default_library",

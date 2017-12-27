@@ -9,10 +9,9 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["controller_history_test.go"],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/kubernetes/pkg/controller/history",
     deps = [
-        "//pkg/api/testapi:go_default_library",
-        "//pkg/controller:go_default_library",
         "//vendor/k8s.io/api/apps/v1beta1:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
@@ -25,14 +24,16 @@ go_test(
         "//vendor/k8s.io/client-go/informers:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/fake:go_default_library",
         "//vendor/k8s.io/client-go/testing:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/testapi:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/controller:go_default_library",
     ],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["controller_history.go"],
+    importpath = "k8s.io/kubernetes/pkg/controller/history",
     deps = [
-        "//pkg/util/hash:go_default_library",
         "//vendor/k8s.io/api/apps/v1beta1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
@@ -47,6 +48,7 @@ go_library(
         "//vendor/k8s.io/client-go/listers/apps/v1beta1:go_default_library",
         "//vendor/k8s.io/client-go/tools/cache:go_default_library",
         "//vendor/k8s.io/client-go/util/retry:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/hash:go_default_library",
     ],
 )
 

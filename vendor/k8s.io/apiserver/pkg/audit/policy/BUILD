@@ -12,7 +12,8 @@ go_test(
         "checker_test.go",
         "reader_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/apiserver/pkg/audit/policy",
     deps = [
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",
@@ -30,6 +31,7 @@ go_library(
         "checker.go",
         "reader.go",
     ],
+    importpath = "k8s.io/apiserver/pkg/audit/policy",
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",

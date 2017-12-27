@@ -9,6 +9,7 @@ load(
 go_library(
     name = "go_default_library",
     srcs = ["discovery.go"],
+    importpath = "k8s.io/client-go/discovery/fake",
     deps = [
         "//vendor/github.com/emicklei/go-restful-swagger12:go_default_library",
         "//vendor/github.com/googleapis/gnostic/OpenAPIv2:go_default_library",
@@ -38,9 +39,10 @@ filegroup(
 go_test(
     name = "go_default_xtest",
     srcs = ["discovery_test.go"],
+    importpath = "k8s.io/client-go/discovery/fake_test",
     deps = [
+        ":go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/version:go_default_library",
-        "//vendor/k8s.io/client-go/discovery/fake:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/fake:go_default_library",
     ],
 )

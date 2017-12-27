@@ -9,7 +9,8 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["httpstream_test.go"],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/apimachinery/pkg/util/httpstream",
 )
 
 go_library(
@@ -18,6 +19,7 @@ go_library(
         "doc.go",
         "httpstream.go",
     ],
+    importpath = "k8s.io/apimachinery/pkg/util/httpstream",
 )
 
 filegroup(

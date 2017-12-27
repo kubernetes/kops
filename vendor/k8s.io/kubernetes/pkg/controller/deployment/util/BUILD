@@ -13,10 +13,8 @@ go_library(
         "pod_util.go",
         "replicaset_util.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/controller/deployment/util",
     deps = [
-        "//pkg/apis/extensions:go_default_library",
-        "//pkg/controller:go_default_library",
-        "//pkg/util/labels:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/api/extensions/v1beta1:go_default_library",
@@ -35,6 +33,9 @@ go_library(
         "//vendor/k8s.io/client-go/listers/extensions/v1beta1:go_default_library",
         "//vendor/k8s.io/client-go/util/integer:go_default_library",
         "//vendor/k8s.io/client-go/util/retry:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/extensions:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/controller:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/labels:go_default_library",
     ],
 )
 
@@ -44,11 +45,9 @@ go_test(
         "deployment_util_test.go",
         "hash_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/kubernetes/pkg/controller/deployment/util",
     deps = [
-        "//pkg/api/v1:go_default_library",
-        "//pkg/controller:go_default_library",
-        "//pkg/util/hash:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/api/extensions/v1beta1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/equality:go_default_library",
@@ -58,6 +57,9 @@ go_test(
         "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes/fake:go_default_library",
         "//vendor/k8s.io/client-go/testing:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/v1:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/controller:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/hash:go_default_library",
     ],
 )
 

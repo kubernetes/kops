@@ -14,13 +14,14 @@ go_library(
         "doc.go",
         "generated_expansion.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/certificates/internalversion",
     deps = [
-        "//pkg/apis/certificates:go_default_library",
-        "//pkg/client/clientset_generated/internalclientset/scheme:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/certificates:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme:go_default_library",
     ],
 )
 

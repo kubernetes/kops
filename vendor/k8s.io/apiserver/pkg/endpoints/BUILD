@@ -15,7 +15,8 @@ go_test(
         "proxy_test.go",
         "watch_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/apiserver/pkg/endpoints",
     deps = [
         "//vendor/github.com/emicklei/go-restful:go_default_library",
         "//vendor/golang.org/x/net/websocket:go_default_library",
@@ -64,6 +65,7 @@ go_library(
         "groupversion.go",
         "installer.go",
     ],
+    importpath = "k8s.io/apiserver/pkg/endpoints",
     deps = [
         "//vendor/github.com/emicklei/go-restful:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",

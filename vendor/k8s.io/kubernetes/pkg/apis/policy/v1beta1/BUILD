@@ -13,14 +13,15 @@ go_library(
         "zz_generated.conversion.go",
         "zz_generated.defaults.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/apis/policy/v1beta1",
     deps = [
-        "//pkg/apis/policy:go_default_library",
         "//vendor/k8s.io/api/policy/v1beta1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/conversion:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/policy:go_default_library",
     ],
 )
 

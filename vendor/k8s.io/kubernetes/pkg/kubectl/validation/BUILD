@@ -33,34 +33,36 @@ go_test(
         ":testdata",
         "//api/swagger-spec",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/validation",
     tags = ["automanaged"],
     deps = [
-        "//pkg/api:go_default_library",
-        "//pkg/api/testapi:go_default_library",
-        "//pkg/api/testing:go_default_library",
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/api/extensions/v1beta1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/testing/fuzzer:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/yaml:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/testapi:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/testing:go_default_library",
     ],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["schema.go"],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/validation",
     tags = ["automanaged"],
     visibility = ["//build/visible_to:pkg_kubectl_validation_CONSUMERS"],
     deps = [
-        "//pkg/api/util:go_default_library",
         "//vendor/github.com/emicklei/go-restful-swagger12:go_default_library",
         "//vendor/github.com/exponent-io/jsonpath:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1/unstructured:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/yaml:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/util:go_default_library",
     ],
 )
 

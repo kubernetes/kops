@@ -15,13 +15,14 @@ go_library(
         "poddisruptionbudget.go",
         "policy_client.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/typed/policy/internalversion",
     deps = [
-        "//pkg/apis/policy:go_default_library",
-        "//pkg/client/clientset_generated/internalclientset/scheme:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
         "//vendor/k8s.io/client-go/rest:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/policy:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/client/clientset_generated/internalclientset/scheme:go_default_library",
     ],
 )
 

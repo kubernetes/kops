@@ -13,6 +13,7 @@ go_library(
         "plugins.go",
         "types.go",
     ],
+    importpath = "k8s.io/apiserver/pkg/server/options/encryptionconfig",
     deps = [
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
@@ -28,7 +29,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["encryptionconfig_test.go"],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/apiserver/pkg/server/options/encryptionconfig",
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/storage/value:go_default_library",

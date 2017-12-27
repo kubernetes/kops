@@ -1,3 +1,4 @@
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
@@ -5,19 +6,31 @@ go_library(
     srcs = [
         "glogger.go",
         "gossip.go",
-        "mesh.pb.go",
         "peer.go",
         "state.go",
     ],
+    embed = [":mesh_go_proto"],
     importpath = "k8s.io/kops/protokube/pkg/gossip/mesh",
     visibility = ["//visibility:public"],
     deps = [
         "//protokube/pkg/gossip:go_default_library",
-        "//vendor/github.com/gogo/protobuf/gogoproto:go_default_library",
         "//vendor/github.com/gogo/protobuf/proto:go_default_library",
-        "//vendor/github.com/gogo/protobuf/sortkeys:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
-        "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/github.com/weaveworks/mesh:go_default_library",
     ],
+)
+
+proto_library(
+    name = "mesh_proto",
+    srcs = ["mesh.proto"],
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/gogo/protobuf/gogoproto:gogoproto_proto"],
+)
+
+go_proto_library(
+    name = "mesh_go_proto",
+    importpath = "k8s.io/kops/protokube/pkg/gossip/mesh",
+    proto = ":mesh_proto",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/gogo/protobuf/gogoproto:go_default_library"],
 )

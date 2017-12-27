@@ -13,7 +13,8 @@ go_test(
         "store_test.go",
         "watcher_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/apiserver/pkg/storage/etcd3",
     deps = [
         "//vendor/github.com/coreos/etcd/clientv3:go_default_library",
         "//vendor/github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes:go_default_library",
@@ -47,6 +48,7 @@ go_library(
         "store.go",
         "watcher.go",
     ],
+    importpath = "k8s.io/apiserver/pkg/storage/etcd3",
     deps = [
         "//vendor/github.com/coreos/etcd/clientv3:go_default_library",
         "//vendor/github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes:go_default_library",

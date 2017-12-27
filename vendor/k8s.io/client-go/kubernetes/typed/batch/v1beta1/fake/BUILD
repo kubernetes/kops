@@ -14,6 +14,7 @@ go_library(
         "fake_batch_client.go",
         "fake_cronjob.go",
     ],
+    importpath = "k8s.io/client-go/kubernetes/typed/batch/v1beta1/fake",
     tags = ["automanaged"],
     deps = [
         "//vendor/k8s.io/api/batch/v1beta1:go_default_library",

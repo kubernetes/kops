@@ -1,3 +1,5 @@
+load("@io_bazel_rules_go//proto:def.bzl", "go_proto_library")
+
 package(default_visibility = ["//visibility:public"])
 
 load(
@@ -18,7 +20,8 @@ go_test(
         "time_test.go",
         "types_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/apimachinery/pkg/apis/meta/v1",
     deps = [
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/github.com/json-iterator/go:go_default_library",
@@ -34,7 +37,6 @@ go_library(
         "conversion.go",
         "doc.go",
         "duration.go",
-        "generated.pb.go",
         "group_version.go",
         "helpers.go",
         "labels.go",
@@ -50,10 +52,10 @@ go_library(
         "zz_generated.deepcopy.go",
         "zz_generated.defaults.go",
     ],
+    embed = [":v1_go_proto"],
+    importpath = "k8s.io/apimachinery/pkg/apis/meta/v1",
     deps = [
         "//vendor/github.com/go-openapi/spec:go_default_library",
-        "//vendor/github.com/gogo/protobuf/proto:go_default_library",
-        "//vendor/github.com/gogo/protobuf/sortkeys:go_default_library",
         "//vendor/github.com/google/gofuzz:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/conversion:go_default_library",
@@ -86,8 +88,23 @@ filegroup(
     tags = ["automanaged"],
 )
 
-filegroup(
-    name = "go_default_library_protos",
+proto_library(
+    name = "v1_proto",
     srcs = ["generated.proto"],
-    visibility = ["//visibility:public"],
+    deps = [
+        "//k8s.io/apimachinery/pkg/runtime:runtime_proto",
+        "//k8s.io/apimachinery/pkg/runtime/schema:schema_proto",
+        "//k8s.io/apimachinery/pkg/util/intstr:intstr_proto",
+    ],
+)
+
+go_proto_library(
+    name = "v1_go_proto",
+    importpath = "k8s.io/apimachinery/pkg/apis/meta/v1",
+    proto = ":v1_proto",
+    deps = [
+        "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/apimachinery/pkg/util/intstr:go_default_library",
+    ],
 )

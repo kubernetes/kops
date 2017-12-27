@@ -9,7 +9,8 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["errors_test.go"],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/apimachinery/pkg/util/errors",
 )
 
 go_library(
@@ -18,6 +19,7 @@ go_library(
         "doc.go",
         "errors.go",
     ],
+    importpath = "k8s.io/apimachinery/pkg/util/errors",
 )
 
 filegroup(

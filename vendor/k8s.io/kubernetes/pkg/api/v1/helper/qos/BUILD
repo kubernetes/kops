@@ -9,25 +9,27 @@ load(
 go_test(
     name = "go_default_test",
     srcs = ["qos_test.go"],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/kubernetes/pkg/api/v1/helper/qos",
     deps = [
-        "//pkg/api:go_default_library",
-        "//pkg/api/helper/qos:go_default_library",
-        "//pkg/api/v1:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/helper/qos:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/v1:go_default_library",
     ],
 )
 
 go_library(
     name = "go_default_library",
     srcs = ["qos.go"],
+    importpath = "k8s.io/kubernetes/pkg/api/v1/helper/qos",
     deps = [
-        "//pkg/api/v1/helper:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/v1/helper:go_default_library",
     ],
 )
 

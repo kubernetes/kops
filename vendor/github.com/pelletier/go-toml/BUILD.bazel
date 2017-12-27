@@ -1,0 +1,49 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "doc.go",
+        "keysparsing.go",
+        "lexer.go",
+        "marshal.go",
+        "parser.go",
+        "position.go",
+        "token.go",
+        "toml.go",
+        "tomltree_create.go",
+        "tomltree_write.go",
+    ],
+    importpath = "github.com/pelletier/go-toml",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "benchmark_test.go",
+        "keysparsing_test.go",
+        "lexer_test.go",
+        "marshal_test.go",
+        "parser_test.go",
+        "position_test.go",
+        "token_test.go",
+        "toml_test.go",
+        "tomltree_create_test.go",
+        "tomltree_write_test.go",
+    ],
+    embed = [":go_default_library"],
+    importpath = "github.com/pelletier/go-toml",
+    deps = [
+        "//vendor/github.com/BurntSushi/toml:go_default_library",
+        "//vendor/github.com/davecgh/go-spew/spew:go_default_library",
+        "//vendor/gopkg.in/yaml.v2:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_xtest",
+    srcs = ["doc_test.go"],
+    importpath = "github.com/pelletier/go-toml_test",
+    deps = [":go_default_library"],
+)

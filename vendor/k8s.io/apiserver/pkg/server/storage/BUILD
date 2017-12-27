@@ -12,7 +12,8 @@ go_test(
         "resource_config_test.go",
         "storage_factory_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/apiserver/pkg/server/storage",
     deps = [
         "//vendor/k8s.io/apimachinery/pkg/apimachinery/announced:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apimachinery/registered:go_default_library",
@@ -36,6 +37,7 @@ go_library(
         "storage_codec.go",
         "storage_factory.go",
     ],
+    importpath = "k8s.io/apiserver/pkg/server/storage",
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apimachinery/registered:go_default_library",

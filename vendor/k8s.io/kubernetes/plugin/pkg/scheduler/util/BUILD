@@ -12,11 +12,12 @@ go_test(
         "backoff_utils_test.go",
         "utils_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/kubernetes/plugin/pkg/scheduler/util",
     deps = [
-        "//pkg/apis/scheduling:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/scheduling:go_default_library",
     ],
 )
 
@@ -27,15 +28,16 @@ go_library(
         "testutil.go",
         "utils.go",
     ],
+    importpath = "k8s.io/kubernetes/plugin/pkg/scheduler/util",
     deps = [
-        "//pkg/api:go_default_library",
-        "//pkg/api/install:go_default_library",
-        "//pkg/apis/scheduling:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/install:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/scheduling:go_default_library",
     ],
 )
 

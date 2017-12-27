@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "base.go",
+        "enum.go",
+        "fault.go",
+        "helpers.go",
+        "if.go",
+        "registry.go",
+        "types.go",
+    ],
+    importpath = "github.com/vmware/govmomi/vim25/types",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "base_test.go",
+        "registry_test.go",
+        "types_test.go",
+    ],
+    embed = [":go_default_library"],
+    importpath = "github.com/vmware/govmomi/vim25/types",
+    deps = ["//vendor/github.com/vmware/govmomi/vim25/xml:go_default_library"],
+)

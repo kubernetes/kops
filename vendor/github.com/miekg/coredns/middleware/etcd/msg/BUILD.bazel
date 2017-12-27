@@ -1,0 +1,28 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "path.go",
+        "service.go",
+        "type.go",
+    ],
+    importpath = "github.com/miekg/coredns/middleware/etcd/msg",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/coredns/coredns/middleware/pkg/dnsutil:go_default_library",
+        "//vendor/github.com/miekg/dns:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "path_test.go",
+        "service_test.go",
+        "type_test.go",
+    ],
+    embed = [":go_default_library"],
+    importpath = "github.com/miekg/coredns/middleware/etcd/msg",
+    deps = ["//vendor/github.com/miekg/dns:go_default_library"],
+)

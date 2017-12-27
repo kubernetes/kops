@@ -1,0 +1,27 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "block.go",
+        "html.go",
+        "inline.go",
+        "latex.go",
+        "markdown.go",
+        "smartypants.go",
+    ],
+    importpath = "github.com/russross/blackfriday",
+    visibility = ["//visibility:public"],
+    deps = ["//vendor/github.com/shurcooL/sanitized_anchor_name:go_default_library"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "block_test.go",
+        "inline_test.go",
+        "ref_test.go",
+    ],
+    embed = [":go_default_library"],
+    importpath = "github.com/russross/blackfriday",
+)

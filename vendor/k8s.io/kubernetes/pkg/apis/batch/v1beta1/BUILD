@@ -18,32 +18,34 @@ go_library(
         "zz_generated.conversion.go",
         "zz_generated.defaults.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/apis/batch/v1beta1",
     tags = ["automanaged"],
     deps = [
-        "//pkg/api:go_default_library",
-        "//pkg/api/v1:go_default_library",
-        "//pkg/apis/batch:go_default_library",
-        "//pkg/apis/batch/v1:go_default_library",
         "//vendor/k8s.io/api/batch/v1beta1:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/conversion:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/v1:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/batch:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/batch/v1:go_default_library",
     ],
 )
 
 go_test(
     name = "go_default_xtest",
     srcs = ["defaults_test.go"],
+    importpath = "k8s.io/kubernetes/pkg/apis/batch/v1beta1_test",
     tags = ["automanaged"],
     deps = [
         ":go_default_library",
-        "//pkg/api:go_default_library",
-        "//pkg/api/install:go_default_library",
-        "//pkg/apis/batch/install:go_default_library",
         "//vendor/k8s.io/api/batch/v1beta1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/install:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/batch/install:go_default_library",
     ],
 )
 

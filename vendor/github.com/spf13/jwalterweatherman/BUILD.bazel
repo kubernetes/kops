@@ -1,0 +1,23 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "default_notepad.go",
+        "log_counter.go",
+        "notepad.go",
+    ],
+    importpath = "github.com/spf13/jwalterweatherman",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = [
+        "default_notepad_test.go",
+        "notepad_test.go",
+    ],
+    embed = [":go_default_library"],
+    importpath = "github.com/spf13/jwalterweatherman",
+    deps = ["//vendor/github.com/stretchr/testify/require:go_default_library"],
+)

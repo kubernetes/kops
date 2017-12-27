@@ -18,18 +18,44 @@ go_library(
         "plugins.go",
         "util.go",
         "volume.go",
-        "volume_unsupported.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
+            "volume_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "volume_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "volume_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "volume_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
             "volume_linux.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "volume_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "volume_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "volume_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "volume_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "volume_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
+            "volume_unsupported.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "k8s.io/kubernetes/pkg/volume",
     deps = [
-        "//pkg/cloudprovider:go_default_library",
-        "//pkg/util/io:go_default_library",
-        "//pkg/util/mount:go_default_library",
-        "//pkg/volume/util:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
@@ -42,6 +68,10 @@ go_library(
         "//vendor/k8s.io/apimachinery/pkg/util/validation:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
         "//vendor/k8s.io/client-go/kubernetes:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/cloudprovider:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/io:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/mount:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/volume/util:go_default_library",
     ],
 )
 
@@ -52,10 +82,9 @@ go_test(
         "plugins_test.go",
         "util_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/kubernetes/pkg/volume",
     deps = [
-        "//pkg/api:go_default_library",
-        "//pkg/util/slice:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",
@@ -63,6 +92,8 @@ go_test(
         "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/sets:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/watch:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/util/slice:go_default_library",
     ],
 )
 
@@ -71,17 +102,18 @@ go_test(
     srcs = [
         "metrics_statfs_test.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "metrics_du_test.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "k8s.io/kubernetes/pkg/volume_test",
     deps = [
         ":go_default_library",
-        "//pkg/volume/testing:go_default_library",
         "//vendor/k8s.io/client-go/util/testing:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/volume/testing:go_default_library",
     ] + select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],
         "//conditions:default": [],

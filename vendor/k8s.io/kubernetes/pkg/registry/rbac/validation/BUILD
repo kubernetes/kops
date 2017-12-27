@@ -13,12 +13,13 @@ go_test(
         "policy_comparator_test.go",
         "rule_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/kubernetes/pkg/registry/rbac/validation",
     deps = [
-        "//pkg/apis/rbac:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/diff:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/authentication/user:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/rbac:go_default_library",
     ],
 )
 
@@ -29,14 +30,15 @@ go_library(
         "policy_comparator.go",
         "rule.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/registry/rbac/validation",
     deps = [
-        "//pkg/apis/rbac:go_default_library",
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/errors:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/authentication/serviceaccount:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/authentication/user:go_default_library",
         "//vendor/k8s.io/apiserver/pkg/endpoints/request:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/apis/rbac:go_default_library",
     ],
 )
 

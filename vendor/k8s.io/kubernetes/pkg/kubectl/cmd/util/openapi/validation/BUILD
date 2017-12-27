@@ -15,15 +15,16 @@ go_library(
         "types.go",
         "validation.go",
     ],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi/validation",
     tags = ["automanaged"],
     deps = [
-        "//pkg/api:go_default_library",
-        "//pkg/api/util:go_default_library",
-        "//pkg/kubectl/cmd/util/openapi:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/runtime/schema:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/errors:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/json:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/yaml:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/util:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi:go_default_library",
     ],
 )
 
@@ -34,17 +35,18 @@ go_test(
         "validation_test.go",
     ],
     data = ["//api/openapi-spec:swagger-spec"],
+    importpath = "k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi/validation_test",
     tags = ["automanaged"],
     deps = [
         ":go_default_library",
-        "//pkg/api/testapi:go_default_library",
-        "//pkg/kubectl/cmd/util/openapi:go_default_library",
-        "//pkg/kubectl/cmd/util/openapi/testing:go_default_library",
         "//vendor/github.com/onsi/ginkgo:go_default_library",
         "//vendor/github.com/onsi/ginkgo/config:go_default_library",
         "//vendor/github.com/onsi/ginkgo/types:go_default_library",
         "//vendor/github.com/onsi/gomega:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/util/errors:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/api/testapi:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi:go_default_library",
+        "//vendor/k8s.io/kubernetes/pkg/kubectl/cmd/util/openapi/testing:go_default_library",
     ],
 )
 

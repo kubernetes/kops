@@ -13,7 +13,8 @@ go_test(
         "config_test.go",
         "genericapiserver_test.go",
     ],
-    library = ":go_default_library",
+    embed = [":go_default_library"],
+    importpath = "k8s.io/apiserver/pkg/server",
     deps = [
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/meta:go_default_library",
@@ -53,13 +54,43 @@ go_library(
         "plugins.go",
         "serve.go",
         "signal.go",
-        "signal_posix.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
+            "signal_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "signal_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "signal_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "signal_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "signal_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "signal_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "signal_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "signal_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "signal_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "signal_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "signal_windows.go",
         ],
         "//conditions:default": [],
     }),
+    importpath = "k8s.io/apiserver/pkg/server",
     deps = [
         "//vendor/github.com/coreos/go-systemd/daemon:go_default_library",
         "//vendor/github.com/emicklei/go-restful:go_default_library",
