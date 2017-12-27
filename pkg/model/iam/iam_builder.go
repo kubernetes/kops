@@ -252,6 +252,8 @@ func (b *PolicyBuilder) IAMPrefix() string {
 	switch b.Region {
 	case "cn-north-1":
 		return "arn:aws-cn"
+	case "cn-northwest-1":
+		return "arn:aws-cn"
 	case "us-gov-west-1":
 		return "arn:aws-us-gov"
 	default:
