@@ -191,6 +191,8 @@ func (b *IAMModelBuilder) buildAWSIAMRolePolicy() (fi.Resource, error) {
 			switch b.Region {
 			case "cn-north-1":
 				return "ec2.amazonaws.com.cn"
+			case "cn-northwest-1":
+				return "ec2.amazonaws.com.cn"
 			default:
 				return "ec2.amazonaws.com"
 			}
