@@ -26,13 +26,14 @@ kops update cluster
 ### Options
 
 ```
-      --create-kube-config      Will control automatically creating the kube config file on your local filesystem (default true)
-      --model string            Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
-      --out string              Path to write any local output
-      --phase string            Subset of tasks to run: assets, cluster, network, security
-      --ssh-public-key string   SSH public key to use (deprecated: use kops create secret instead)
-      --target string           Target - direct, terraform, cloudformation (default "direct")
-  -y, --yes                     Create cloud resources, without --yes update is in dry run mode
+      --create-kube-config            Will control automatically creating the kube config file on your local filesystem (default true)
+      --model string                  Models to apply (separate multiple models with commas) (default "config,proto,cloudup")
+      --out string                    Path to write any local output
+      --phase string                  Subset of tasks to run: assets, cluster, network, security
+      --phase-overrides stringSlice   comma separated list of phase overrides, example: assets=ExistsAndWarnIfChanges,network=ExistsAndValidates
+      --ssh-public-key string         SSH public key to use (deprecated: use kops create secret instead)
+      --target string                 Target - direct, terraform, cloudformation (default "direct")
+  -y, --yes                           Create cloud resources, without --yes update is in dry run mode
 ```
 
 ### Options inherited from parent commands

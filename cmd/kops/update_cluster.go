@@ -65,7 +65,8 @@ type UpdateClusterOptions struct {
 	MaxTaskDuration time.Duration
 	CreateKubecfg   bool
 
-	Phase string
+	Phase          string
+	PhaseOverrides []string
 }
 
 func (o *UpdateClusterOptions) InitDefaults() {
@@ -109,6 +110,7 @@ func NewCmdUpdateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	cmd.Flags().StringVar(&options.OutDir, "out", options.OutDir, "Path to write any local output")
 	cmd.Flags().BoolVar(&options.CreateKubecfg, "create-kube-config", options.CreateKubecfg, "Will control automatically creating the kube config file on your local filesystem")
 	cmd.Flags().StringVar(&options.Phase, "phase", options.Phase, "Subset of tasks to run: "+strings.Join(cloudup.Phases.List(), ", "))
+	cmd.Flags().StringSliceVar(&options.PhaseOverrides, "phase-overrides", options.PhaseOverrides, "comma separated list of phase overrides, example: assets=ExistsAndWarnIfChanges,network=ExistsAndValidates")
 	return cmd
 }
 
@@ -181,17 +183,9 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 
 	var phase cloudup.Phase
 	if c.Phase != "" {
-		switch strings.ToLower(c.Phase) {
-		case string(cloudup.PhaseStageAssets):
-			phase = cloudup.PhaseStageAssets
-		case string(cloudup.PhaseNetwork):
-			phase = cloudup.PhaseNetwork
-		case string(cloudup.PhaseSecurity), "iam": // keeping IAM for backwards compatibility
-			phase = cloudup.PhaseSecurity
-		case string(cloudup.PhaseCluster):
-			phase = cloudup.PhaseCluster
-		default:
-			return fmt.Errorf("unknown phase %q, available phases: %s", c.Phase, strings.Join(cloudup.Phases.List(), ","))
+		phase, err = getPhase(c.Phase)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -206,6 +200,34 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		}
 	}
 
+	lifecycleOverrideMap := make(map[cloudup.Phase]fi.Lifecycle)
+
+	for _, override := range c.PhaseOverrides {
+
+		values := strings.Split(override, "=")
+		phaseName := values[0]
+		lifecycle := values[1]
+
+		phaseOverride, err := getPhase(phaseName)
+		if err != nil {
+			return fmt.Errorf("incorrect phase name in overides: %v", err)
+		}
+
+		switch lifecycle {
+		case string(fi.LifecycleExistsAndValidates):
+			lifecycleOverrideMap[phaseOverride] = fi.LifecycleExistsAndValidates
+		case string(fi.LifecycleIgnore):
+			lifecycleOverrideMap[phaseOverride] = fi.LifecycleIgnore
+		case string(fi.LifecycleWarnIfInsufficientAccess):
+			lifecycleOverrideMap[phaseOverride] = fi.LifecycleWarnIfInsufficientAccess
+		case string(fi.LifecycleExistsAndWarnIfChanges):
+			lifecycleOverrideMap[phaseOverride] = fi.LifecycleExistsAndWarnIfChanges
+		default:
+			return fmt.Errorf("overrides error, unknown lifecycle %q, available lifecycles: %s", lifecycle, strings.Join(fi.Lifecycles.List(), ","))
+		}
+
+	}
+
 	applyCmd := &cloudup.ApplyClusterCmd{
 		Cluster:         cluster,
 		Models:          strings.Split(c.Models, ","),
@@ -216,6 +238,8 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 		MaxTaskDuration: c.MaxTaskDuration,
 		InstanceGroups:  instanceGroups,
 		Phase:           phase,
+
+		LifecycleOverrides: lifecycleOverrideMap,
 	}
 
 	err = applyCmd.Run()
@@ -334,6 +358,21 @@ func RunUpdateCluster(f *util.Factory, clusterName string, out io.Writer, c *Upd
 	}
 
 	return nil
+}
+
+func getPhase(phase string) (cloudup.Phase, error) {
+	switch strings.ToLower(phase) {
+	case string(cloudup.PhaseStageAssets):
+		return cloudup.PhaseStageAssets, nil
+	case string(cloudup.PhaseNetwork):
+		return cloudup.PhaseNetwork, nil
+	case string(cloudup.PhaseSecurity), "iam": // keeping IAM for backwards compatibility
+		return cloudup.PhaseSecurity, nil
+	case string(cloudup.PhaseCluster):
+		return cloudup.PhaseCluster, nil
+	default:
+		return "", fmt.Errorf("unknown phase %q, available phases: %s", phase, strings.Join(cloudup.Phases.List(), ","))
+	}
 }
 
 func usesBastion(instanceGroups []*kops.InstanceGroup) bool {

@@ -16,6 +16,8 @@ limitations under the License.
 
 package fi
 
+import "k8s.io/apimachinery/pkg/util/sets"
+
 type Lifecycle string
 
 const (
@@ -39,3 +41,12 @@ const (
 type HasLifecycle interface {
 	GetLifecycle() *Lifecycle
 }
+
+// Phases are used for validation and cli help.
+var Lifecycles = sets.NewString(
+	string(LifecycleSync),
+	string(LifecycleIgnore),
+	string(LifecycleWarnIfInsufficientAccess),
+	string(LifecycleExistsAndValidates),
+	string(LifecycleExistsAndWarnIfChanges),
+)
