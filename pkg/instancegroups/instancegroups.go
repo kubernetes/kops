@@ -65,6 +65,11 @@ func NewRollingUpdateInstanceGroup(cloud fi.Cloud, cloudGroup *cloudinstances.Cl
 	}, nil
 }
 
+func PromptInteractive(upgradedHost string) {
+  glog.Infof("Pausing after finished %q", upgradedHost)
+  return
+}
+
 // TODO: Temporarily increase size of ASG?
 // TODO: Remove from ASG first so status is immediately updated?
 // TODO: Batch termination, like a rolling-update
@@ -169,6 +174,9 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 
 				glog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
 			}
+      if rollingUpdateData.Interactive {
+        PromptInteractive(nodeName)
+      }
 		}
 	}
 
@@ -247,6 +255,7 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 		}
 	}
 
+			nodeName = u.Node.Name
 	return nil
 
 }
