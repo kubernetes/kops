@@ -120,9 +120,6 @@ So the procedure is:
 Follow the normal procedure for reconfiguring an InstanceGroup, but set the maxPrice property to your bid.
 For example, "0.10" represents a spot-price bid of $0.10 (10 cents) per hour.
 
-Warning: the t2 family is not currently supported with spot pricing.  You'll need to choose a different
-instance type.
-
 An example spec looks like this:
 
 ```
@@ -130,14 +127,12 @@ metadata:
   creationTimestamp: "2016-07-10T15:47:14Z"
   name: nodes
 spec:
-  machineType: m3.medium
-  maxPrice: "0.1"
+  machineType: t2.medium
+  maxPrice: "0.01"
   maxSize: 3
   minSize: 3
   role: Node
 ```
-
-($0.10 per hour is a huge over-bid for an m3.medium - this is only an example!)
 
 So the procedure is:
 
