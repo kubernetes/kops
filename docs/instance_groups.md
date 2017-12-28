@@ -48,9 +48,7 @@ See a preview with: `kops rolling-update cluster`
 
 Then restart the machines with: `kops rolling-update cluster --yes`
 
-NOTE: rolling-update does not yet perform a real rolling update - it just shuts down machines in sequence with a delay;
- there will be downtime [Issue #37](https://github.com/kubernetes/kops/issues/37)
-We have implemented a new feature that does drain and validate nodes.  This feature is experimental, and you can use the new feature by setting `export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"`.
+This will drain nodes, restart them with the new instance type, and validate them after startup.
 
 ## Resize an instance group
 
