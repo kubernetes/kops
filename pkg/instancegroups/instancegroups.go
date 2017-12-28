@@ -17,11 +17,11 @@ limitations under the License.
 package instancegroups
 
 import (
+	"bufio"
 	"fmt"
 	"os"
-	"time"
-	"bufio"
 	"strings"
+	"time"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -74,15 +74,15 @@ func PromptInteractive(upgradedHost string) (stop_prompting bool) {
 	glog.Infof("Pausing after finished %q", upgradedHost)
 	fmt.Printf("Continue? (Y)es, (N)o, (A)lwaysYes: [Y] ")
 	val := ""
-	var err error;
+	var err error
 	if val, err = reader.ReadString('\n'); err != nil {
 		glog.Fatalf("unable to interpret input: %v", err)
 	}
 	val = strings.TrimSpace(val)
 	val = strings.ToLower(val)
 	switch val {
-	case "y","","\n":
-		glog.V(4).Infof("Continuing with next host (response %q)\n",val)
+	case "y", "", "\n":
+		glog.V(4).Infof("Continuing with next host (response %q)\n", val)
 	case "n":
 		glog.Infof("User signaled to stop")
 		os.Exit(3)
