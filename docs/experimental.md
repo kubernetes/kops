@@ -7,5 +7,9 @@ Enable experimental features with:
 The following experimental features are currently available:
 
 * `+VSphereCloudProvider` - Enable vSphere cloud provider.
-* `+DrainAndValidateRollingUpdate` - Enable drain and validate for rolling updates.
 * `+EnableExternalDNS` - Enable external-dns with default settings (ingress sources only).
+* `+VPCSkipEnableDNSSupport` - Enables creation of a VPC that does not need DNSSupport enabled.
+* `+SkipTerraformFormat` - Do not `terraform fmt` the generated terraform files.
+* `+EnableExternalCloudController` - Enables the use of cloud-controller-manager introduced in v1.7.
+* `+EnableSeparateConfigBase` - Allow a config-base that is different from the state store.
+* `+SpecOverrideFlag` - Allow setting spec values on `kops create`.
