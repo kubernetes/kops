@@ -9,7 +9,7 @@ Both are specified at the InstanceGroup level.
 
 A nice use for cloudLabels is to specify [AWS cost allocation tags](http://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/cost-alloc-tags.html).
 
-A good use for nodeLables is to implement [nodeSelector labels](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#step-two-add-a-nodeselector-field-to-your-pod-configuration). 
+A good use for nodeLabels is to implement [nodeSelector labels](https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#step-two-add-a-nodeselector-field-to-your-pod-configuration).
 CloudLabels and nodeLabels are automatically applied to new nodes created by [AWS EC2 auto scaling groups](https://aws.amazon.com/autoscaling/).
 
 An example:
