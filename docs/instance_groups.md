@@ -193,7 +193,7 @@ spec:
 
 If you want to minimize downtime, scale the master ASG up to size 2, then wait for that new master to
 be Ready in `kubectl get nodes`, then delete the old master instance, and scale the ASG back down to size 1.  (A
-future of rolling-update will probably do this automatically)
+future version of rolling-update will probably do this automatically)
 
 
 ## Deleting an instance group
