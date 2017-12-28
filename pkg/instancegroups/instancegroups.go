@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"os"
 	"time"
+	"bufio"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
@@ -65,9 +67,30 @@ func NewRollingUpdateInstanceGroup(cloud fi.Cloud, cloudGroup *cloudinstances.Cl
 	}, nil
 }
 
-func PromptInteractive(upgradedHost string) {
-  glog.Infof("Pausing after finished %q", upgradedHost)
-  return
+// User input routine copied from vendor/google.golang.org/api/examples/gmail.go
+func PromptInteractive(upgradedHost string) (stop_prompting bool) {
+	stop_prompting = false
+	reader := bufio.NewReader(os.Stdin)
+	glog.Infof("Pausing after finished %q", upgradedHost)
+	fmt.Printf("Continue? (Y)es, (N)o, (A)lwaysYes: [Y] ")
+	val := ""
+	var err error;
+	if val, err = reader.ReadString('\n'); err != nil {
+		glog.Fatalf("unable to interpret input: %v", err)
+	}
+	val = strings.TrimSpace(val)
+	val = strings.ToLower(val)
+	switch val {
+	case "y","","\n":
+		glog.V(4).Infof("Continuing with next host (response %q)\n",val)
+	case "n":
+		glog.Infof("User signaled to stop")
+		os.Exit(3)
+	case "a":
+		glog.Infof("Always Yes, stop prompting for rest of hosts")
+		stop_prompting = true
+	}
+	return stop_prompting
 }
 
 // TODO: Temporarily increase size of ASG?
@@ -174,9 +197,13 @@ func (r *RollingUpdateInstanceGroup) RollingUpdate(rollingUpdateData *RollingUpd
 
 				glog.Warningf("Cluster validation failed after removing instance, proceeding since fail-on-validate is set to false: %v", err)
 			}
-      if rollingUpdateData.Interactive {
-        PromptInteractive(nodeName)
-      }
+			if rollingUpdateData.Interactive {
+				var stop_prompting bool = PromptInteractive(nodeName)
+				if stop_prompting {
+					// Is a pointer to a struct, changes here push back into the original
+					rollingUpdateData.Interactive = false
+				}
+			}
 		}
 	}
 
