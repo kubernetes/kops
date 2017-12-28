@@ -142,11 +142,13 @@ So the procedure is:
 * Rolling-update, only if you want to apply changes immediately: `kops rolling-update cluster`
 
 
-## Adding Taints to an Instance Group
+## Adding Taints or Labels to an Instance Group
 
 If you're running Kubernetes 1.6.0 or later, you can also control taints in the InstanceGroup.
 The taints property takes a list of strings. The following example would add two taints to an IG,
 using the same `edit` -> `update` -> `rolling-update` process as above.
+
+Additionally, `nodeLabels` can be added to an IG in order to take advantage of Pod Affinity. Every node in the IG will be assigned the desired labels. For more information see the [labels](./labels.md) documentation.
 
 ```
 metadata:
@@ -160,6 +162,8 @@ spec:
   taints:
   - dedicated=gpu:NoSchedule
   - team=search:PreferNoSchedule
+  nodeLabels:
+    spot: "false"
 ```
 
 
@@ -236,12 +240,12 @@ spec:
               - http://archive.ubuntu.com
 ```
 
-## Add Tags on AWS autoscalling group and instance
+## Add Tags on AWS autoscalling groups and instances
 
 If you need to add tags on auto scaling groups or instnaces (propagate ASG tags), you can add it in the instance group specs with *cloudLabels*.
 
 ```
-# Exemple for nodes
+# Example for nodes
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
