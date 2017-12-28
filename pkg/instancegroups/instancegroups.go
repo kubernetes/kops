@@ -255,7 +255,6 @@ func (r *RollingUpdateInstanceGroup) DeleteInstance(u *cloudinstances.CloudInsta
 		}
 	}
 
-			nodeName = u.Node.Name
 	return nil
 
 }
