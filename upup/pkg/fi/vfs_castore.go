@@ -256,31 +256,28 @@ func (c *VFSCAStore) loadKeysetBundle(p vfs.Path) (*keyset, error) {
 	return keyset, nil
 }
 
-// writeKeysetBundle writes a keyset bundle to VFS
-func (c *VFSCAStore) writeKeysetBundle(p vfs.Path, name string, keyset *keyset, includePrivateMaterial bool) error {
-	p = p.Join("keyset.yaml")
-
-	o := &v1alpha2.Keyset{}
+func (k *keyset) ToAPIObject(name string) (*kops.Keyset, error) {
+	o := &kops.Keyset{}
 	o.Name = name
-	o.Spec.Type = v1alpha2.SecretTypeKeypair
+	o.Spec.Type = kops.SecretTypeKeypair
 
-	for _, ki := range keyset.items {
-		oki := v1alpha2.KeysetItem{
+	for _, ki := range k.items {
+		oki := kops.KeysetItem{
 			Id: ki.id,
 		}
 
 		if ki.certificate != nil {
 			var publicMaterial bytes.Buffer
 			if _, err := ki.certificate.WriteTo(&publicMaterial); err != nil {
-				return err
+				return nil, err
 			}
 			oki.PublicMaterial = publicMaterial.Bytes()
 		}
 
-		if includePrivateMaterial && ki.privateKey != nil {
+		if ki.privateKey != nil {
 			var privateMaterial bytes.Buffer
 			if _, err := ki.privateKey.WriteTo(&privateMaterial); err != nil {
-				return err
+				return nil, err
 			}
 
 			oki.PrivateMaterial = privateMaterial.Bytes()
@@ -289,25 +286,59 @@ func (c *VFSCAStore) writeKeysetBundle(p vfs.Path, name string, keyset *keyset, 
 		o.Spec.Keys = append(o.Spec.Keys, oki)
 	}
 
-	var objectData bytes.Buffer
-	{
-		codecs := kopscodecs.Codecs
-		yaml, ok := runtime.SerializerInfoForMediaType(codecs.SupportedMediaTypes(), "application/yaml")
-		if !ok {
-			glog.Fatalf("no YAML serializer registered")
-		}
-		encoder := codecs.EncoderForVersion(yaml.Serializer, v1alpha2.SchemeGroupVersion)
+	return o, nil
+}
 
-		if err := encoder.Encode(o, &objectData); err != nil {
-			return fmt.Errorf("error serializing keyset: %v", err)
-		}
+// writeKeysetBundle writes a keyset bundle to VFS
+func (c *VFSCAStore) writeKeysetBundle(p vfs.Path, name string, keyset *keyset, includePrivateMaterial bool) error {
+	p = p.Join("keyset.yaml")
+
+	o, err := keyset.ToAPIObject(name)
+	if err != nil {
+		return err
+	}
+
+	if !includePrivateMaterial {
+		o = removePrivateKeyMaterial(o)
+	}
+
+	objectData, err := serializeKeysetBundle(o)
+	if err != nil {
+		return err
 	}
 
 	acl, err := acls.GetACL(p, c.cluster)
 	if err != nil {
 		return err
 	}
-	return p.WriteFile(objectData.Bytes(), acl)
+	return p.WriteFile(objectData, acl)
+}
+
+// serializeKeysetBundle converts a keyset bundle to yaml, for writing to VFS
+func serializeKeysetBundle(o *kops.Keyset) ([]byte, error) {
+	var objectData bytes.Buffer
+	codecs := kopscodecs.Codecs
+	yaml, ok := runtime.SerializerInfoForMediaType(codecs.SupportedMediaTypes(), "application/yaml")
+	if !ok {
+		glog.Fatalf("no YAML serializer registered")
+	}
+	encoder := codecs.EncoderForVersion(yaml.Serializer, v1alpha2.SchemeGroupVersion)
+
+	if err := encoder.Encode(o, &objectData); err != nil {
+		return nil, fmt.Errorf("error serializing keyset: %v", err)
+	}
+	return objectData.Bytes(), nil
+}
+
+// removePrivateKeyMaterial returns a copy of the Keyset with the private key data removed
+func removePrivateKeyMaterial(o *kops.Keyset) *kops.Keyset {
+	copy := o.DeepCopy()
+
+	for i := range copy.Spec.Keys {
+		copy.Spec.Keys[i].PrivateMaterial = nil
+	}
+
+	return copy
 }
 
 func (c *VFSCAStore) loadCertificates(p vfs.Path, useBundle bool) (*keyset, error) {
@@ -552,10 +583,100 @@ func (c *VFSCAStore) MirrorTo(basedir vfs.Path) error {
 	}
 	glog.V(2).Infof("Mirroring key store from %q to %q", c.basedir, basedir)
 
-	aclOracle := func(p vfs.Path) (vfs.ACL, error) {
-		return acls.GetACL(p, c.cluster)
+	keysets, err := c.ListKeysets()
+	if err != nil {
+		return err
 	}
-	return vfs.CopyTree(c.basedir, basedir, aclOracle)
+
+	for _, keyset := range keysets {
+		if err := mirrorKeyset(c.cluster, basedir, keyset); err != nil {
+			return err
+		}
+	}
+
+	sshCredentials, err := c.ListSSHCredentials()
+	if err != nil {
+		return fmt.Errorf("error listing SSHCredentials: %v", err)
+	}
+
+	for _, sshCredential := range sshCredentials {
+		if err := mirrorSSHCredential(c.cluster, basedir, sshCredential); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// mirrorKeyset writes keyset bundles for the certificates & privatekeys
+func mirrorKeyset(cluster *kops.Cluster, basedir vfs.Path, keyset *kops.Keyset) error {
+	primary := FindPrimary(keyset)
+	if primary == nil {
+		return fmt.Errorf("found keyset with no primary data: %s", keyset.Name)
+	}
+
+	switch keyset.Spec.Type {
+	case kops.SecretTypeKeypair:
+		{
+			data, err := serializeKeysetBundle(removePrivateKeyMaterial(keyset))
+			if err != nil {
+				return err
+			}
+			p := basedir.Join("issued", keyset.Name, "keyset.yaml")
+			acl, err := acls.GetACL(p, cluster)
+			if err != nil {
+				return err
+			}
+
+			err = p.WriteFile(data, acl)
+			if err != nil {
+				return fmt.Errorf("error writing %q: %v", p, err)
+			}
+		}
+
+		{
+			data, err := serializeKeysetBundle(keyset)
+			if err != nil {
+				return err
+			}
+			p := basedir.Join("private", keyset.Name, "keyset.yaml")
+			acl, err := acls.GetACL(p, cluster)
+			if err != nil {
+				return err
+			}
+
+			err = p.WriteFile(data, acl)
+			if err != nil {
+				return fmt.Errorf("error writing %q: %v", p, err)
+			}
+		}
+
+	default:
+		return fmt.Errorf("unknown secret type: %q", keyset.Spec.Type)
+	}
+
+	return nil
+}
+
+// mirrorSSHCredential writes the SSH credential file to the mirror location
+func mirrorSSHCredential(cluster *kops.Cluster, basedir vfs.Path, sshCredential *kops.SSHCredential) error {
+	id, err := sshcredentials.Fingerprint(sshCredential.Spec.PublicKey)
+	if err != nil {
+		return fmt.Errorf("error fingerprinting SSH public key %q: %v", sshCredential.Name, err)
+	}
+
+	p := basedir.Join("ssh", "public", sshCredential.Name, id)
+	acl, err := acls.GetACL(p, cluster)
+	if err != nil {
+		return err
+	}
+
+	err = p.WriteFile([]byte(sshCredential.Spec.PublicKey), acl)
+	if err != nil {
+		return fmt.Errorf("error writing %q: %v", p, err)
+	}
+
+	return nil
 }
 
 func (c *VFSCAStore) IssueCert(signer string, id string, serial *big.Int, privateKey *pki.PrivateKey, template *x509.Certificate) (*pki.Certificate, error) {
