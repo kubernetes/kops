@@ -384,7 +384,11 @@ spec:
     disableSecurityGroupIngress: true
 ```
 
-### registryMirrors
+### docker
+
+It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://godoc.org/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.
+
+#### registryMirrors
 
 If you have a bunch of Docker instances (physicsal or vm) running, each time one of them pulls an image that is not present on the host, it will fetch it from the internet (DockerHub). By caching these images, you can keep the traffic within your local network and avoid egress bandwidth usage.
 This setting benefits not only cluster provisioning but also image pulling.
@@ -397,6 +401,19 @@ spec:
   docker:
     registryMirrors:
     - https://registry.example.com
+```
+
+#### storage
+
+The Docker [Storage Driver](https://docs.docker.com/engine/reference/commandline/dockerd/#daemon-storage-driver) can be specified in order to override the default. Be sure the driver you choose is supported by your operating system and docker version.
+
+```yaml
+docker:
+  storage: devicemapper
+  storageOpts:
+    - "dm.thinpooldev=/dev/mapper/thin-pool"
+    - "dm.use_deferred_deletion=true"
+    - "dm.use_deferred_removal=true"
 ```
 
 #### WARNING: this works only for Kubernetes version above 1.7.0.

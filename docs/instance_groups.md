@@ -48,9 +48,7 @@ See a preview with: `kops rolling-update cluster`
 
 Then restart the machines with: `kops rolling-update cluster --yes`
 
-NOTE: rolling-update does not yet perform a real rolling update - it just shuts down machines in sequence with a delay;
- there will be downtime [Issue #37](https://github.com/kubernetes/kops/issues/37)
-We have implemented a new feature that does drain and validate nodes.  This feature is experimental, and you can use the new feature by setting `export KOPS_FEATURE_FLAGS="+DrainAndValidateRollingUpdate"`.
+This will drain nodes, restart them with the new instance type, and validate them after startup.
 
 ## Resize an instance group
 
@@ -122,9 +120,6 @@ So the procedure is:
 Follow the normal procedure for reconfiguring an InstanceGroup, but set the maxPrice property to your bid.
 For example, "0.10" represents a spot-price bid of $0.10 (10 cents) per hour.
 
-Warning: the t2 family is not currently supported with spot pricing.  You'll need to choose a different
-instance type.
-
 An example spec looks like this:
 
 ```
@@ -132,14 +127,12 @@ metadata:
   creationTimestamp: "2016-07-10T15:47:14Z"
   name: nodes
 spec:
-  machineType: m3.medium
-  maxPrice: "0.1"
+  machineType: t2.medium
+  maxPrice: "0.01"
   maxSize: 3
   minSize: 3
   role: Node
 ```
-
-($0.10 per hour is a huge over-bid for an m3.medium - this is only an example!)
 
 So the procedure is:
 
@@ -149,11 +142,13 @@ So the procedure is:
 * Rolling-update, only if you want to apply changes immediately: `kops rolling-update cluster`
 
 
-## Adding Taints to an Instance Group
+## Adding Taints or Labels to an Instance Group
 
 If you're running Kubernetes 1.6.0 or later, you can also control taints in the InstanceGroup.
 The taints property takes a list of strings. The following example would add two taints to an IG,
 using the same `edit` -> `update` -> `rolling-update` process as above.
+
+Additionally, `nodeLabels` can be added to an IG in order to take advantage of Pod Affinity. Every node in the IG will be assigned the desired labels. For more information see the [labels](./labels.md) documentation.
 
 ```
 metadata:
@@ -167,6 +162,8 @@ spec:
   taints:
   - dedicated=gpu:NoSchedule
   - team=search:PreferNoSchedule
+  nodeLabels:
+    spot: "false"
 ```
 
 
@@ -193,7 +190,7 @@ spec:
 
 If you want to minimize downtime, scale the master ASG up to size 2, then wait for that new master to
 be Ready in `kubectl get nodes`, then delete the old master instance, and scale the ASG back down to size 1.  (A
-future of rolling-update will probably do this automatically)
+future version of rolling-update will probably do this automatically)
 
 
 ## Deleting an instance group
@@ -243,12 +240,12 @@ spec:
               - http://archive.ubuntu.com
 ```
 
-## Add Tags on AWS autoscalling group and instance
+## Add Tags on AWS autoscalling groups and instances
 
 If you need to add tags on auto scaling groups or instnaces (propagate ASG tags), you can add it in the instance group specs with *cloudLabels*.
 
 ```
-# Exemple for nodes
+# Example for nodes
 apiVersion: kops/v1alpha2
 kind: InstanceGroup
 metadata:
