@@ -35,6 +35,6 @@ go_test(
         "form_test.go",
         "httputils_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/docker/docker/api/server/httputils",
-    library = ":go_default_library",
 )

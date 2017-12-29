@@ -18,8 +18,8 @@ go_test(
         "all_test.go",
         "fixtures_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/matttproud/golang_protobuf_extensions/pbutil",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/github.com/golang/protobuf/proto/testdata:go_default_library",

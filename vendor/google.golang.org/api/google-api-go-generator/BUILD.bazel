@@ -13,8 +13,8 @@ go_library(
 
 go_binary(
     name = "google-api-go-generator",
+    embed = [":go_default_library"],
     importpath = "google.golang.org/api/google-api-go-generator",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
 
@@ -26,8 +26,8 @@ go_test(
         "paging_test.go",
     ],
     data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
     importpath = "google.golang.org/api/google-api-go-generator",
-    library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/google.golang.org/api/cloudresourcemanager/v1:go_default_library",

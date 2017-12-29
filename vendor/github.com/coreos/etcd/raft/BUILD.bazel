@@ -42,8 +42,8 @@ go_test(
         "storage_test.go",
         "util_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/etcd/raft",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/coreos/etcd/pkg/testutil:go_default_library",
         "//vendor/github.com/coreos/etcd/raft/raftpb:go_default_library",

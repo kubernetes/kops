@@ -18,8 +18,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["conversion_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/google/cadvisor/info/v2",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/google/cadvisor/info/v1:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",

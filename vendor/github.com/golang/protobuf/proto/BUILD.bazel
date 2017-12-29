@@ -25,8 +25,8 @@ go_test(
         "message_set_test.go",
         "size2_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/golang/protobuf/proto",
-    library = ":go_default_library",
 )
 
 go_test(

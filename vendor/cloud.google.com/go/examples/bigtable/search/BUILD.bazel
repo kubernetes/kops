@@ -13,7 +13,7 @@ go_library(
 
 go_binary(
     name = "search",
+    embed = [":go_default_library"],
     importpath = "cloud.google.com/go/examples/bigtable/search",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

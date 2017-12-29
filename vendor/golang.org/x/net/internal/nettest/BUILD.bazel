@@ -7,17 +7,48 @@ go_library(
         "rlimit.go",
         "stack.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
             "helper_bsd.go",
             "helper_posix.go",
             "helper_unix.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "helper_bsd.go",
+            "helper_posix.go",
+            "helper_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "helper_bsd.go",
+            "helper_posix.go",
+            "helper_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
             "helper_nobsd.go",
             "helper_posix.go",
             "helper_unix.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "helper_stub.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "helper_bsd.go",
+            "helper_posix.go",
+            "helper_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "helper_bsd.go",
+            "helper_posix.go",
+            "helper_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "helper_stub.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "helper_nobsd.go",
+            "helper_posix.go",
+            "helper_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "helper_posix.go",
             "helper_windows.go",
         ],

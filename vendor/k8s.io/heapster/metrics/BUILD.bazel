@@ -37,7 +37,7 @@ go_library(
 
 go_binary(
     name = "metrics",
+    embed = [":go_default_library"],
     importpath = "k8s.io/heapster/metrics",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

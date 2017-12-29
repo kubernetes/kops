@@ -8,17 +8,43 @@ go_library(
         "blake2x.go",
         "register.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:386": [
+            "blake2s_386.go",
+            "blake2s_386.s",
+        ],
+        "@io_bazel_rules_go//go/platform:amd64": [
             "blake2s_amd64.go",
             "blake2s_amd64.s",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
-            "blake2s_amd64.go",
-            "blake2s_amd64.s",
+        "@io_bazel_rules_go//go/platform:amd64p32": [
+            "blake2s_ref.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
-            "blake2s_amd64.go",
-            "blake2s_amd64.s",
+        "@io_bazel_rules_go//go/platform:arm": [
+            "blake2s_ref.go",
+        ],
+        "@io_bazel_rules_go//go/platform:arm64": [
+            "blake2s_ref.go",
+        ],
+        "@io_bazel_rules_go//go/platform:mips": [
+            "blake2s_ref.go",
+        ],
+        "@io_bazel_rules_go//go/platform:mips64": [
+            "blake2s_ref.go",
+        ],
+        "@io_bazel_rules_go//go/platform:mips64le": [
+            "blake2s_ref.go",
+        ],
+        "@io_bazel_rules_go//go/platform:mipsle": [
+            "blake2s_ref.go",
+        ],
+        "@io_bazel_rules_go//go/platform:ppc64": [
+            "blake2s_ref.go",
+        ],
+        "@io_bazel_rules_go//go/platform:ppc64le": [
+            "blake2s_ref.go",
+        ],
+        "@io_bazel_rules_go//go/platform:s390x": [
+            "blake2s_ref.go",
         ],
         "//conditions:default": [],
     }),
@@ -29,6 +55,6 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["blake2s_test.go"],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/crypto/blake2s",
-    library = ":go_default_library",
 )

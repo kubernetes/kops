@@ -18,7 +18,7 @@ go_test(
         "catmsg_test.go",
         "varint_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/text/internal/catmsg",
-    library = ":go_default_library",
     deps = ["//vendor/golang.org/x/text/language:go_default_library"],
 )

@@ -30,8 +30,8 @@ go_test(
         "errors_test.go",
         "repository_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/docker/distribution/registry/client",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/distribution:go_default_library",
         "//vendor/github.com/docker/distribution/context:go_default_library",

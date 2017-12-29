@@ -5,7 +5,7 @@ go_library(
     srcs = [
         "zvhd.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:windows": [
             "vhd.go",
         ],
         "//conditions:default": [],

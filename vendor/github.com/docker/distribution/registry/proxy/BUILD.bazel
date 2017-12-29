@@ -35,8 +35,8 @@ go_test(
         "proxymanifeststore_test.go",
         "proxytagservice_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/docker/distribution/registry/proxy",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/distribution:go_default_library",
         "//vendor/github.com/docker/distribution/context:go_default_library",

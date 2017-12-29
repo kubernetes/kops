@@ -14,8 +14,8 @@ go_library(
 
 go_binary(
     name = "increment-only-counter",
+    embed = [":go_default_library"],
     importpath = "github.com/weaveworks/mesh/examples/increment-only-counter",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
 
@@ -25,7 +25,7 @@ go_test(
         "peer_test.go",
         "state_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/weaveworks/mesh/examples/increment-only-counter",
-    library = ":go_default_library",
     deps = ["//vendor/github.com/weaveworks/mesh:go_default_library"],
 )

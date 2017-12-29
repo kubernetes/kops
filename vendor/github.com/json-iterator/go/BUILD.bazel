@@ -90,8 +90,8 @@ go_test(
         "jsoniter_wrap_test.go",
         "unmarshal_input_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/json-iterator/go",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/google/gofuzz:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",

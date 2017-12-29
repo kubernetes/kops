@@ -18,22 +18,70 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "printer_test.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "printer_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "printer_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "printer_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "printer_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "printer_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "printer_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "printer_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "printer_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
             "printer_test.go",
         ],
         "//conditions:default": [],
     }),
     data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
     importpath = "github.com/hashicorp/hcl/hcl/printer",
-    library = ":go_default_library",
     deps = select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
             "//vendor/github.com/hashicorp/hcl/hcl/parser:go_default_library",
         ],
         "//conditions:default": [],

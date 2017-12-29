@@ -20,7 +20,7 @@ go_library(
 
 go_binary(
     name = "etcd-dump-db",
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/etcd/tools/etcd-dump-db",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

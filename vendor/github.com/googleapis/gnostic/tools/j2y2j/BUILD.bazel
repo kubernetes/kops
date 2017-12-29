@@ -13,7 +13,7 @@ go_library(
 
 go_binary(
     name = "j2y2j",
+    embed = [":go_default_library"],
     importpath = "github.com/googleapis/gnostic/tools/j2y2j",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

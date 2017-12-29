@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "format-schema",
+    embed = [":go_default_library"],
     importpath = "github.com/googleapis/gnostic/tools/format-schema",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

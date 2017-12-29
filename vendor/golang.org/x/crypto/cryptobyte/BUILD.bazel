@@ -17,8 +17,8 @@ go_test(
         "asn1_test.go",
         "cryptobyte_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/crypto/cryptobyte",
-    library = ":go_default_library",
 )
 
 go_test(

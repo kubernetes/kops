@@ -30,8 +30,8 @@ go_test(
         "token_test.go",
     ],
     data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
     importpath = "golang.org/x/net/html",
-    library = ":go_default_library",
     deps = ["//vendor/golang.org/x/net/html/atom:go_default_library"],
 )
 

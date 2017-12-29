@@ -11,6 +11,6 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["testing_test.go"],
+    embed = [":go_default_library"],
     importpath = "google.golang.org/api/iterator/testing",
-    library = ":go_default_library",
 )

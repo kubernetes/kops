@@ -28,8 +28,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["coredns_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns",
-    library = ":go_default_library",
     deps = [
         "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider:go_default_library",
         "//vendor/k8s.io/kubernetes/federation/pkg/dnsprovider/providers/coredns/stubs:go_default_library",

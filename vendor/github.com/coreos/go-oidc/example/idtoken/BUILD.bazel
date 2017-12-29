@@ -14,7 +14,7 @@ go_library(
 
 go_binary(
     name = "idtoken",
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/go-oidc/example/idtoken",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

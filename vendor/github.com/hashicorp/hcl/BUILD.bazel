@@ -25,8 +25,8 @@ go_test(
         "hcl_test.go",
         "lex_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/hashicorp/hcl",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/hashicorp/hcl/hcl/ast:go_default_library",
         "//vendor/github.com/hashicorp/hcl/testhelper:go_default_library",

@@ -20,8 +20,8 @@ go_test(
         "hybi_test.go",
         "websocket_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/net/websocket",
-    library = ":go_default_library",
 )
 
 go_test(

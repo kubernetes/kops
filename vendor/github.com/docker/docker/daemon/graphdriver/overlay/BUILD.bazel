@@ -3,14 +3,38 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
 go_library(
     name = "go_default_library",
     srcs = select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "overlay_unsupported.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "overlay_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "overlay_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "overlay_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
             "copy.go",
             "overlay.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "overlay_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "overlay_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "overlay_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "overlay_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "overlay_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "overlay_unsupported.go",
         ],
         "//conditions:default": [],
@@ -18,7 +42,7 @@ go_library(
     importpath = "github.com/docker/docker/daemon/graphdriver/overlay",
     visibility = ["//visibility:public"],
     deps = select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "//vendor/github.com/docker/docker/daemon/graphdriver:go_default_library",
             "//vendor/github.com/docker/docker/daemon/graphdriver/overlayutils:go_default_library",
             "//vendor/github.com/docker/docker/pkg/archive:go_default_library",
@@ -40,15 +64,15 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "overlay_test.go",
         ],
         "//conditions:default": [],
     }),
+    embed = [":go_default_library"],
     importpath = "github.com/docker/docker/daemon/graphdriver/overlay",
-    library = ":go_default_library",
     deps = select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "//vendor/github.com/docker/docker/daemon/graphdriver:go_default_library",
             "//vendor/github.com/docker/docker/daemon/graphdriver/graphtest:go_default_library",
             "//vendor/github.com/docker/docker/pkg/archive:go_default_library",

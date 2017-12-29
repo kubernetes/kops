@@ -30,8 +30,8 @@ go_test(
         "map_test.go",
         "tables_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/text/cases",
-    library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/text/internal/testtext:go_default_library",
         "//vendor/golang.org/x/text/language:go_default_library",

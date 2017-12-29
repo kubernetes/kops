@@ -8,14 +8,14 @@ go_library(
         "colcmp.go",
         "gen.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
             "darwin.go",
         ],
         "//conditions:default": [],
     }),
     cgo = True,
     clinkopts = select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
             "-framework CoreFoundation",
         ],
         "//conditions:default": [],
@@ -31,7 +31,7 @@ go_library(
 
 go_binary(
     name = "colcmp",
+    embed = [":go_default_library"],
     importpath = "golang.org/x/text/collate/tools/colcmp",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
