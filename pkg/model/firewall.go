@@ -474,6 +474,7 @@ func CreateSecurityGroups(instanceGroups []*kops.InstanceGroup, role kops.Instan
 // GetGroupSuffix returns the name of the security groups suffix.
 func GetGroupSuffix(name string, groups map[string]*awstasks.SecurityGroup) string {
 	if len(groups) != 1 {
+		glog.V(8).Infof("adding group suffix: %q", name)
 		return "-" + name
 	}
 

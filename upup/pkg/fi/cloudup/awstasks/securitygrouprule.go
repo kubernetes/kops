@@ -47,6 +47,9 @@ type SecurityGroupRule struct {
 	SourceGroup *SecurityGroup
 
 	Egress *bool
+
+	// Shared is set if this rule belongs to a shared security group (one we don't create or own)
+	Shared *bool
 }
 
 func (e *SecurityGroupRule) Find(c *fi.Context) (*SecurityGroupRule, error) {
