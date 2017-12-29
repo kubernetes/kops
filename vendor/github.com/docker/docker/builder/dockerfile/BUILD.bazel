@@ -18,21 +18,77 @@ go_library(
         "shell_parser.go",
         "support.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "builder_unix.go",
             "copy_unix.go",
             "dispatchers_unix.go",
             "evaluator_unix.go",
             "internals_unix.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
             "builder_unix.go",
             "copy_unix.go",
             "dispatchers_unix.go",
             "evaluator_unix.go",
             "internals_unix.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "builder_unix.go",
+            "copy_unix.go",
+            "dispatchers_unix.go",
+            "evaluator_unix.go",
+            "internals_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "builder_unix.go",
+            "copy_unix.go",
+            "dispatchers_unix.go",
+            "evaluator_unix.go",
+            "internals_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "builder_unix.go",
+            "copy_unix.go",
+            "dispatchers_unix.go",
+            "evaluator_unix.go",
+            "internals_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "builder_unix.go",
+            "copy_unix.go",
+            "dispatchers_unix.go",
+            "evaluator_unix.go",
+            "internals_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "builder_unix.go",
+            "copy_unix.go",
+            "dispatchers_unix.go",
+            "evaluator_unix.go",
+            "internals_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "builder_unix.go",
+            "copy_unix.go",
+            "dispatchers_unix.go",
+            "evaluator_unix.go",
+            "internals_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "builder_unix.go",
+            "copy_unix.go",
+            "dispatchers_unix.go",
+            "evaluator_unix.go",
+            "internals_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "builder_unix.go",
+            "copy_unix.go",
+            "dispatchers_unix.go",
+            "evaluator_unix.go",
+            "internals_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "builder_windows.go",
             "copy_windows.go",
             "dispatchers_windows.go",
@@ -95,20 +151,44 @@ go_test(
         "support_test.go",
         "utils_test.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "dispatchers_unix_test.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
             "dispatchers_unix_test.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "dispatchers_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "dispatchers_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "dispatchers_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "dispatchers_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "dispatchers_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "dispatchers_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "dispatchers_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "dispatchers_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "dispatchers_windows_test.go",
             "internals_windows_test.go",
         ],
         "//conditions:default": [],
     }),
+    embed = [":go_default_library"],
     importpath = "github.com/docker/docker/builder/dockerfile",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/docker/api/types:go_default_library",
         "//vendor/github.com/docker/docker/api/types/backend:go_default_library",

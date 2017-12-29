@@ -16,8 +16,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["context_test.go"],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/net/context",
-    library = ":go_default_library",
 )
 
 go_test(

@@ -19,8 +19,8 @@ go_test(
         "oldnew_test.go",
         "unrecognizedgrouppb_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/gogo/protobuf/test/unrecognizedgroup",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/gogo/protobuf/gogoproto:go_default_library",
         "//vendor/github.com/gogo/protobuf/jsonpb:go_default_library",

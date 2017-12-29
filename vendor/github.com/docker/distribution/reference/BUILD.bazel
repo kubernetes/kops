@@ -23,8 +23,8 @@ go_test(
         "reference_test.go",
         "regexp_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/docker/distribution/reference",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/distribution/digestset:go_default_library",
         "//vendor/github.com/opencontainers/go-digest:go_default_library",

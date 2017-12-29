@@ -10,8 +10,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["transform_test.go"],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/text/transform",
-    library = ":go_default_library",
     deps = ["//vendor/golang.org/x/text/internal/testtext:go_default_library"],
 )
 

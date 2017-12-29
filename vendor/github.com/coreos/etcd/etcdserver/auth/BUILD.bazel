@@ -22,8 +22,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["auth_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/etcd/etcdserver/auth",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/coreos/etcd/error:go_default_library",
         "//vendor/github.com/coreos/etcd/etcdserver:go_default_library",

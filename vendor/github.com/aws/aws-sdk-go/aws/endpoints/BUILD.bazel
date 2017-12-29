@@ -21,8 +21,8 @@ go_test(
         "endpoints_test.go",
         "v3model_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/aws/aws-sdk-go/aws/endpoints",
-    library = ":go_default_library",
     deps = ["//vendor/github.com/stretchr/testify/assert:go_default_library"],
 )
 

@@ -24,8 +24,8 @@ go_test(
         "keep_alive_test.go",
         "manager_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/vmware/govmomi/session",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/vmware/govmomi/test:go_default_library",
         "//vendor/github.com/vmware/govmomi/vim25:go_default_library",

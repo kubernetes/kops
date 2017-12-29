@@ -14,7 +14,7 @@ go_library(
 
 go_binary(
     name = "nonce",
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/go-oidc/example/nonce",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

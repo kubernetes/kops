@@ -35,8 +35,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["pattern_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/grpc-ecosystem/grpc-gateway/runtime",
-    library = ":go_default_library",
     deps = ["//vendor/github.com/grpc-ecosystem/grpc-gateway/utilities:go_default_library"],
 )
 

@@ -20,7 +20,7 @@ go_library(
 
 go_binary(
     name = "kube-apiserver",
+    embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/cmd/kube-apiserver",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

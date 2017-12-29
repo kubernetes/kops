@@ -17,8 +17,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["rootless_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/opencontainers/runc/libcontainer/configs/validate",
-    library = ":go_default_library",
     deps = ["//vendor/github.com/opencontainers/runc/libcontainer/configs:go_default_library"],
 )
 

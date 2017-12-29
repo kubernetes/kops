@@ -9,7 +9,7 @@ go_library(
 
 go_binary(
     name = "reference-docs",
+    embed = [":go_default_library"],
     importpath = "github.com/kubernetes-incubator/reference-docs",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

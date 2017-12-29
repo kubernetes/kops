@@ -29,8 +29,8 @@ go_test(
         "manifest_test.go",
         "reference_builder_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/docker/distribution/manifest/schema1",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/distribution:go_default_library",
         "//vendor/github.com/docker/distribution/context:go_default_library",

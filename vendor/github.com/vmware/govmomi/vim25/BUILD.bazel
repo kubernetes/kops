@@ -22,8 +22,8 @@ go_test(
         "client_test.go",
         "retry_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/vmware/govmomi/vim25",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/vmware/govmomi/vim25/methods:go_default_library",
         "//vendor/github.com/vmware/govmomi/vim25/mo:go_default_library",

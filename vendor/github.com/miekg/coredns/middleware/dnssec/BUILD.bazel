@@ -37,8 +37,8 @@ go_test(
         "handler_test.go",
         "setup_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/miekg/coredns/middleware/dnssec",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/hashicorp/golang-lru:go_default_library",
         "//vendor/github.com/mholt/caddy:go_default_library",

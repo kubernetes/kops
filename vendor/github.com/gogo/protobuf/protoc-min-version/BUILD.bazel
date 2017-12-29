@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "protoc-min-version",
+    embed = [":go_default_library"],
     importpath = "github.com/gogo/protobuf/protoc-min-version",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

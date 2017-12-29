@@ -42,8 +42,8 @@ go_test(
         "container_test.go",
         "manager_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/google/cadvisor/manager",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/google/cadvisor/cache/memory:go_default_library",
         "//vendor/github.com/google/cadvisor/collector:go_default_library",

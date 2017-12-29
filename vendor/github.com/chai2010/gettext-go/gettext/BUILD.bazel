@@ -29,8 +29,8 @@ go_test(
         "testdata_test.go",
         "tr_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/chai2010/gettext-go/gettext",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/chai2010/gettext-go/gettext/mo:go_default_library",
         "//vendor/github.com/chai2010/gettext-go/gettext/po:go_default_library",

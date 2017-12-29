@@ -29,22 +29,78 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "filter_test.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "filter_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "filter_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "filter_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "filter_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "filter_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "filter_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "filter_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "filter_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
             "filter_test.go",
         ],
         "//conditions:default": [],
     }),
+    embed = [":go_default_library"],
     importpath = "github.com/docker/docker/api/server/router/network",
-    library = ":go_default_library",
     deps = select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "//vendor/github.com/docker/docker/api/types:go_default_library",
             "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "//vendor/github.com/docker/docker/api/types:go_default_library",
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "//vendor/github.com/docker/docker/api/types:go_default_library",
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "//vendor/github.com/docker/docker/api/types:go_default_library",
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "//vendor/github.com/docker/docker/api/types:go_default_library",
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "//vendor/github.com/docker/docker/api/types:go_default_library",
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "//vendor/github.com/docker/docker/api/types:go_default_library",
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "//vendor/github.com/docker/docker/api/types:go_default_library",
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "//vendor/github.com/docker/docker/api/types:go_default_library",
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
             "//vendor/github.com/docker/docker/api/types:go_default_library",
             "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
         ],

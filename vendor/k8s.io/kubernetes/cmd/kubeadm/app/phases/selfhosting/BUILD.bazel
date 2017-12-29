@@ -31,8 +31,8 @@ go_test(
         "selfhosting_test.go",
         "selfhosting_volumes_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/cmd/kubeadm/app/phases/selfhosting",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/ghodss/yaml:go_default_library",
         "//vendor/k8s.io/api/core/v1:go_default_library",

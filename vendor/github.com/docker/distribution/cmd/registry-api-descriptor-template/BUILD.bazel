@@ -13,7 +13,7 @@ go_library(
 
 go_binary(
     name = "registry-api-descriptor-template",
+    embed = [":go_default_library"],
     importpath = "github.com/docker/distribution/cmd/registry-api-descriptor-template",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

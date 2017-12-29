@@ -10,8 +10,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["choose_version_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/gophercloud/gophercloud/openstack/utils/testing",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/openstack/utils:go_default_library",

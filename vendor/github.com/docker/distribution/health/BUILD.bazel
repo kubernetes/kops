@@ -17,6 +17,6 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["health_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/docker/distribution/health",
-    library = ":go_default_library",
 )

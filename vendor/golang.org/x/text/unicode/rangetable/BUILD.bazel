@@ -17,6 +17,6 @@ go_test(
         "merge_test.go",
         "rangetable_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/text/unicode/rangetable",
-    library = ":go_default_library",
 )

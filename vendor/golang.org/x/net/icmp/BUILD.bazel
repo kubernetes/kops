@@ -18,15 +18,42 @@ go_library(
         "paramprob.go",
         "timeexceeded.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
             "helper_posix.go",
             "listen_posix.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:dragonfly": [
             "helper_posix.go",
             "listen_posix.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "helper_posix.go",
+            "listen_posix.go",
+            "sys_freebsd.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "helper_posix.go",
+            "listen_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "listen_stub.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "helper_posix.go",
+            "listen_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "helper_posix.go",
+            "listen_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "listen_stub.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "helper_posix.go",
+            "listen_posix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "helper_posix.go",
             "listen_posix.go",
         ],
@@ -48,8 +75,8 @@ go_test(
         "extension_test.go",
         "ipv4_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/net/icmp",
-    library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/net/internal/iana:go_default_library",
         "//vendor/golang.org/x/net/internal/socket:go_default_library",

@@ -59,8 +59,8 @@ go_test(
         "urlpick_test.go",
         "util_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/etcd/rafthttp",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/coreos/etcd/etcdserver/stats:go_default_library",
         "//vendor/github.com/coreos/etcd/pkg/pbutil:go_default_library",

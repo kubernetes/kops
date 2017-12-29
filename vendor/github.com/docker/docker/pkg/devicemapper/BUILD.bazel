@@ -5,7 +5,7 @@ go_library(
     srcs = [
         "log.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "devmapper.go",
             "devmapper_log.go",
             "devmapper_wrapper.go",
@@ -16,7 +16,7 @@ go_library(
     }),
     cgo = True,
     clinkopts = select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "-Lvendor/github.com/docker/docker/pkg/devicemapper -ldevmapper",
             "-Lvendor/github.com/docker/docker/pkg/devicemapper -ldevmapper",
         ],
@@ -25,7 +25,7 @@ go_library(
     importpath = "github.com/docker/docker/pkg/devicemapper",
     visibility = ["//visibility:public"],
     deps = select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "//vendor/github.com/sirupsen/logrus:go_default_library",
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],

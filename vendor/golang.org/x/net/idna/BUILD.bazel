@@ -23,8 +23,8 @@ go_test(
         "idna_test.go",
         "punycode_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/net/idna",
-    library = ":go_default_library",
 )
 
 go_test(
