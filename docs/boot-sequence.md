@@ -22,7 +22,7 @@ On both AWS & GCE, everything (nodes & masters) runs in an ASG/MIG; this means t
 nodeup is the component that installs packages and sets up the OS, sufficiently for
 Kubelet.  The core requirements are:
 
-* Docker must be installed.  nodeup will install Docker 1.11.2, the version of Docker tested with 1.3
+* Docker must be installed.  nodeup will install Docker 1.13.1, the version of Docker tested with Kubernetes 1.8
 * Kubelet, which is installed a systemd service
 
 In addition, nodeup installs:
