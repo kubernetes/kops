@@ -20839,6 +20839,15 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			},
 			Dependencies: []string{},
 		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha1.AmazonVPCNetworkingSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking",
+					Properties:  map[string]spec.Schema{},
+				},
+			},
+			Dependencies: []string{},
+		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.Assets": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
@@ -21334,6 +21343,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "NetworkCIDR is the CIDR used for the AWS VPC Network, or otherwise allocated to k8s This is a real CIDR, not the internal k8s network On AWS, it maps to the VPC CIDR.  It is not required on GCE.",
 								Type:        []string{"string"},
 								Format:      "",
+							},
+						},
+						"additionalNetworkCIDRs": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AdditionalNetworkCIDRs is a list of aditional CIDR used for the AWS VPC or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network On AWS, it maps to any aditional CIDRs added to a VPC.",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 						"networkID": {
@@ -22902,35 +22925,49 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"oidcUsernameClaim": {
 							SchemaProps: spec.SchemaProps{
-								Description: "The OpenID claim to use as the user name. Note that claims other than the default ('sub') is not guaranteed to be unique and immutable.",
+								Description: "OIDCUsernameClaim is the OpenID claim to use as the user name. Note that claims other than the default ('sub') is not guaranteed to be unique and immutable.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"oidcUsernamePrefix": {
+							SchemaProps: spec.SchemaProps{
+								Description: "OIDCUsernamePrefix is the prefix prepended to username claims to prevent clashes with existing names (such as 'system:' users).",
 								Type:        []string{"string"},
 								Format:      "",
 							},
 						},
 						"oidcGroupsClaim": {
 							SchemaProps: spec.SchemaProps{
-								Description: "If provided, the name of a custom OpenID Connect claim for specifying user groups. The claim value is expected to be a string or array of strings.",
+								Description: "OIDCGroupsClaim if provided, the name of a custom OpenID Connect claim for specifying user groups. The claim value is expected to be a string or array of strings.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"oidcGroupsPrefix": {
+							SchemaProps: spec.SchemaProps{
+								Description: "OIDCGroupsPrefix is the prefix prepended to group claims to prevent clashes with existing names (such as 'system:' groups)",
 								Type:        []string{"string"},
 								Format:      "",
 							},
 						},
 						"oidcIssuerURL": {
 							SchemaProps: spec.SchemaProps{
-								Description: "The URL of the OpenID issuer, only HTTPS scheme will be accepted. If set, it will be used to verify the OIDC JSON Web Token (JWT).",
+								Description: "OIDCIssuerURL is the URL of the OpenID issuer, only HTTPS scheme will be accepted. If set, it will be used to verify the OIDC JSON Web Token (JWT).",
 								Type:        []string{"string"},
 								Format:      "",
 							},
 						},
 						"oidcClientID": {
 							SchemaProps: spec.SchemaProps{
-								Description: "The client ID for the OpenID Connect client, must be set if oidc-issuer-url is set.",
+								Description: "OIDCClientID is the client ID for the OpenID Connect client, must be set if oidc-issuer-url is set.",
 								Type:        []string{"string"},
 								Format:      "",
 							},
 						},
 						"oidcCAFile": {
 							SchemaProps: spec.SchemaProps{
-								Description: "If set, the OpenID server's certificate will be verified by one of the authorities in the oidc-ca-file",
+								Description: "OIDCCAFile if set, the OpenID server's certificate will be verified by one of the authorities in the oidc-ca-file",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -22945,6 +22982,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						"proxyClientKeyFile": {
 							SchemaProps: spec.SchemaProps{
 								Description: "The apiserver's client key used for outbound requests.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"auditLogFormat": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AuditLogFormat flag specifies the format type for audit log files.",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -23694,6 +23738,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "int32",
 							},
 						},
+						"imagePullProgressDeadline": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ImagePullProgressDeadline is the timeout for image pulls If no pulling progress is made before this deadline, the image pulling will be cancelled. (default 1m0s)",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
 						"evictionHard": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Comma-delimited list of hard eviction expressions.  For example, 'memory.available<300Mi'.",
@@ -23875,6 +23925,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.LoadBalancerAccessSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
+					Description: "LoadBalancerAccessSpec provides configuration details related to API LoadBalancer and its access",
 					Properties: map[string]spec.Schema{
 						"type": {
 							SchemaProps: spec.SchemaProps{
@@ -23886,6 +23937,19 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 							SchemaProps: spec.SchemaProps{
 								Type:   []string{"integer"},
 								Format: "int64",
+							},
+						},
+						"additionalSecurityGroups": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -23953,11 +24017,16 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha1.RomanaNetworkingSpec"),
 							},
 						},
+						"amazonvpc": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha1.AmazonVPCNetworkingSpec"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha1.CNINetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CalicoNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CanalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ClassicNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ExternalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.FlannelNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KopeioNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubenetNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KuberouterNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.RomanaNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.WeaveNetworkingSpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha1.AmazonVPCNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CNINetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CalicoNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.CanalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ClassicNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.ExternalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.FlannelNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KopeioNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KubenetNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.KuberouterNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.RomanaNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha1.WeaveNetworkingSpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha1.RBACAuthorizationSpec": {
 			Schema: spec.Schema{
@@ -24193,6 +24262,15 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
 					Properties: map[string]spec.Schema{},
+				},
+			},
+			Dependencies: []string{},
+		},
+		"k8s.io/kops/pkg/apis/kops/v1alpha2.AmazonVPCNetworkingSpec": {
+			Schema: spec.Schema{
+				SchemaProps: spec.SchemaProps{
+					Description: "AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking",
+					Properties:  map[string]spec.Schema{},
 				},
 			},
 			Dependencies: []string{},
@@ -24677,6 +24755,20 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Description: "NetworkCIDR is the CIDR used for the AWS VPC / GCE Network, or otherwise allocated to k8s This is a real CIDR, not the internal k8s network On AWS, it maps to the VPC CIDR.  It is not required on GCE.",
 								Type:        []string{"string"},
 								Format:      "",
+							},
+						},
+						"additionalNetworkCIDRs": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AdditionalNetworkCIDRs is a list of aditional CIDR used for the AWS VPC or otherwise allocated to k8s. This is a real CIDR, not the internal k8s network On AWS, it maps to any aditional CIDRs added to a VPC.",
+								Type:        []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 						"networkID": {
@@ -26434,35 +26526,49 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						},
 						"oidcUsernameClaim": {
 							SchemaProps: spec.SchemaProps{
-								Description: "The OpenID claim to use as the user name. Note that claims other than the default ('sub') is not guaranteed to be unique and immutable.",
+								Description: "OIDCUsernameClaim is the OpenID claim to use as the user name. Note that claims other than the default ('sub') is not guaranteed to be unique and immutable.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"oidcUsernamePrefix": {
+							SchemaProps: spec.SchemaProps{
+								Description: "OIDCUsernamePrefix is the prefix prepended to username claims to prevent clashes with existing names (such as 'system:' users).",
 								Type:        []string{"string"},
 								Format:      "",
 							},
 						},
 						"oidcGroupsClaim": {
 							SchemaProps: spec.SchemaProps{
-								Description: "If provided, the name of a custom OpenID Connect claim for specifying user groups. The claim value is expected to be a string or array of strings.",
+								Description: "OIDCGroupsClaim if provided, the name of a custom OpenID Connect claim for specifying user groups. The claim value is expected to be a string or array of strings.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"oidcGroupsPrefix": {
+							SchemaProps: spec.SchemaProps{
+								Description: "OIDCGroupsPrefix is the prefix prepended to group claims to prevent clashes with existing names (such as 'system:' groups)",
 								Type:        []string{"string"},
 								Format:      "",
 							},
 						},
 						"oidcIssuerURL": {
 							SchemaProps: spec.SchemaProps{
-								Description: "The URL of the OpenID issuer, only HTTPS scheme will be accepted. If set, it will be used to verify the OIDC JSON Web Token (JWT).",
+								Description: "OIDCIssuerURL is the URL of the OpenID issuer, only HTTPS scheme will be accepted. If set, it will be used to verify the OIDC JSON Web Token (JWT).",
 								Type:        []string{"string"},
 								Format:      "",
 							},
 						},
 						"oidcClientID": {
 							SchemaProps: spec.SchemaProps{
-								Description: "The client ID for the OpenID Connect client, must be set if oidc-issuer-url is set.",
+								Description: "OIDCClientID is the client ID for the OpenID Connect client, must be set if oidc-issuer-url is set.",
 								Type:        []string{"string"},
 								Format:      "",
 							},
 						},
 						"oidcCAFile": {
 							SchemaProps: spec.SchemaProps{
-								Description: "If set, the OpenID server's certificate will be verified by one of the authorities in the oidc-ca-file",
+								Description: "OIDCCAFile if set, the OpenID server's certificate will be verified by one of the authorities in the oidc-ca-file",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -26477,6 +26583,13 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 						"proxyClientKeyFile": {
 							SchemaProps: spec.SchemaProps{
 								Description: "The apiserver's client key used for outbound requests.",
+								Type:        []string{"string"},
+								Format:      "",
+							},
+						},
+						"auditLogFormat": {
+							SchemaProps: spec.SchemaProps{
+								Description: "AuditLogFormat flag specifies the format type for audit log files.",
 								Type:        []string{"string"},
 								Format:      "",
 							},
@@ -27223,6 +27336,12 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Format:      "int32",
 							},
 						},
+						"imagePullProgressDeadline": {
+							SchemaProps: spec.SchemaProps{
+								Description: "ImagePullProgressDeadline is the timeout for image pulls If no pulling progress is made before this deadline, the image pulling will be cancelled. (default 1m0s)",
+								Ref:         ref("k8s.io/apimachinery/pkg/apis/meta/v1.Duration"),
+							},
+						},
 						"evictionHard": {
 							SchemaProps: spec.SchemaProps{
 								Description: "Comma-delimited list of hard eviction expressions.  For example, 'memory.available<300Mi'.",
@@ -27404,6 +27523,7 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.LoadBalancerAccessSpec": {
 			Schema: spec.Schema{
 				SchemaProps: spec.SchemaProps{
+					Description: "LoadBalancerAccessSpec provides configuration details related to API LoadBalancer and its access",
 					Properties: map[string]spec.Schema{
 						"type": {
 							SchemaProps: spec.SchemaProps{
@@ -27415,6 +27535,19 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 							SchemaProps: spec.SchemaProps{
 								Type:   []string{"integer"},
 								Format: "int64",
+							},
+						},
+						"additionalSecurityGroups": {
+							SchemaProps: spec.SchemaProps{
+								Type: []string{"array"},
+								Items: &spec.SchemaOrArray{
+									Schema: &spec.Schema{
+										SchemaProps: spec.SchemaProps{
+											Type:   []string{"string"},
+											Format: "",
+										},
+									},
+								},
 							},
 						},
 					},
@@ -27482,11 +27615,16 @@ func GetOpenAPIDefinitions(ref common.ReferenceCallback) map[string]common.OpenA
 								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.RomanaNetworkingSpec"),
 							},
 						},
+						"amazonvpc": {
+							SchemaProps: spec.SchemaProps{
+								Ref: ref("k8s.io/kops/pkg/apis/kops/v1alpha2.AmazonVPCNetworkingSpec"),
+							},
+						},
 					},
 				},
 			},
 			Dependencies: []string{
-				"k8s.io/kops/pkg/apis/kops/v1alpha2.CNINetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CalicoNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CanalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ClassicNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ExternalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.FlannelNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KopeioNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubenetNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KuberouterNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.RomanaNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.WeaveNetworkingSpec"},
+				"k8s.io/kops/pkg/apis/kops/v1alpha2.AmazonVPCNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CNINetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CalicoNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.CanalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ClassicNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.ExternalNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.FlannelNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KopeioNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KubenetNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.KuberouterNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.RomanaNetworkingSpec", "k8s.io/kops/pkg/apis/kops/v1alpha2.WeaveNetworkingSpec"},
 		},
 		"k8s.io/kops/pkg/apis/kops/v1alpha2.RBACAuthorizationSpec": {
 			Schema: spec.Schema{
