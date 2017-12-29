@@ -68,8 +68,12 @@ bazel-genfiles
 bazel-kops
 bazel-out
 bazel-testlogs
+
 # Ignore default apiserver config
 apiserver.local.config
+
+# Ignore etcd
+default.etcd
 
 # Ignore awesome_bot markdown links check output
 ab-results-*.json
