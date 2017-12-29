@@ -53,6 +53,10 @@ func (c *MemFSContext) MarkClusterReadable() {
 	c.clusterReadable = true
 }
 
+func (c *MemFSPath) HasChildren() bool {
+	return len(c.children) != 0
+}
+
 func (c *MemFSPath) IsClusterReadable() bool {
 	return c.context.clusterReadable
 }
