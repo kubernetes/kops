@@ -39,6 +39,8 @@ type AutoscalingGroupModelBuilder struct {
 
 	BootstrapScript *model.BootstrapScript
 	Lifecycle       *fi.Lifecycle
+
+	SecurityLifecycle *fi.Lifecycle
 }
 
 var _ fi.ModelBuilder = &AutoscalingGroupModelBuilder{}
@@ -99,6 +101,8 @@ func (b *AutoscalingGroupModelBuilder) Build(c *fi.ModelBuilderContext) error {
 					Name:   fi.String(id),
 					ID:     fi.String(id),
 					Shared: fi.Bool(true),
+
+					Lifecycle: b.SecurityLifecycle,
 				}
 				if err := c.EnsureTask(sgTask); err != nil {
 					return err
