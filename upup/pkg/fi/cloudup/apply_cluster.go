@@ -652,6 +652,8 @@ func (c *ApplyClusterCmd) Run() error {
 			AWSModelContext: awsModelContext,
 			BootstrapScript: bootstrapScriptBuilder,
 			Lifecycle:       &clusterLifecycle,
+
+			SecurityLifecycle: &securityLifecycle,
 		})
 	case kops.CloudProviderDO:
 		doModelContext := &domodel.DOModelContext{
