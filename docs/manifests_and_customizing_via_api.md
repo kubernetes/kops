@@ -2,6 +2,17 @@
 
 This document also applies to using the `kops` API to customize a Kubernetes cluster with or without using YAML or JSON.
 
+## Table of Contents
+
+   * [Using A Manifest to Manage kops Clusters](#using-a-manifest-to-manage-kops-clusters)
+   * [Background](#background)
+   * [Exporting a Cluster](#exporting-a-cluster)
+   * [YAML Examples](#yaml-examples)
+   * [Further References](#further-references)
+   * [Cluster Spec](#cluster-spec)
+   * [Instance Groups](#instance-groups)
+   * [Closing Thoughts](#closing-thoughts)
+
 ## Background
 
 > We like to think of it as `kubectl` for Clusters.
@@ -34,13 +45,9 @@ export KOPS_STATE_STORE=s3://example-state-store
     --node-size m4.xlarge \
     --kubernetes-version v1.6.6 \
     --master-size m4.large \
-    --vpc vpc-6335dd1a
-```
-
-The next step is to export the configuration to a YAML document. `kops` has a command that allows the export in a single YAML document, but since JSON files need to separate documents, we only export YAML with a single command. You can export JSON with multiple commands.
-
-```shell
-kops get $NAME -o yaml > $NAME.yaml
+    --vpc vpc-6335dd1a \
+    --dry-run \
+    -o yaml > $NAME.yaml
 ```
 
 The above command exports a YAML document which contains the definition of the cluster, `kind: Cluster`, and the definitions of the instance groups, `kind: InstanceGroup`.
@@ -222,14 +229,6 @@ spec:
   - us-east-2d
   - us-east-2b
   - us-east-2c
-```
-
-Next, delete the cluster from the state store. (**Note:** An alternative to deleting and then creating again from the new manifest might be to replace with `kops replace -f $NAME.yaml`)
-
-```console
-kops delete -f $NAME.yaml
-# validate that you want to remove the cluster
-kops delete -f $NAME.yaml --yes
 ```
 
 ## YAML Examples
