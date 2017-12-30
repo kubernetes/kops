@@ -1007,12 +1007,12 @@ func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error
 	}
 
 	if usesCNI(c.Cluster) {
-		cniAsset, cniAssetHashString, err := findCNIAssets(c.Cluster, assetBuilder)
+		cniAsset, cniAssetHashString, err := CNISource(assetBuilder, c.Cluster.Spec.KubernetesVersion)
 		if err != nil {
 			return err
 		}
 
-		c.Assets = append(c.Assets, cniAssetHashString+"@"+cniAsset.String())
+		c.Assets = append(c.Assets, cniAssetHashString.String()+"@"+cniAsset.String())
 	}
 
 	// TODO figure out if we can only do this for CoreOS only and GCE Container OS
