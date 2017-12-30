@@ -2,12 +2,12 @@
 
 ## Quick start
 * [Getting started on AWS](aws.md)
+* [Getting started on GCE](tutorial/gce.md)
 * [CLI reference](cli/kops.md)
 
 
 ## Overview
 
-* [Getting started on AWS](aws.md)
 * [Command-line interface](#command-line-interface)
 * [Inspection](#inspection)
 * [`kops` design documents](#kops-design-documents)
@@ -60,6 +60,8 @@
     * for cluster nodes
 * [Secret management](secrets.md)
 * [Moving from a Single Master to Multiple HA Masters](single-to-multi-master.md)
+* [Upgrading Kubernetes](tutorial/upgrading-kubernetes.md)
+* [Working with Instance Groups](tutorial/working-with-instancegroups.md)
 * [Developers guide for vSphere support](vsphere-dev.md)
 * [vSphere support status](vsphere-development-status.md)
 
