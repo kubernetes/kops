@@ -203,7 +203,10 @@ func (a *AssetStore) addURL(url string, hash *hashing.Hash) error {
 	glog.V(2).Infof("added asset %q for %q", asset.Key, asset.resource)
 	a.assets = append(a.assets, asset)
 
-	if strings.HasSuffix(assetPath, ".tar.gz") {
+	// normalize filename suffix
+	file := strings.ToLower(assetPath)
+	// pickup both tar.gz and tgz files
+	if strings.HasSuffix(file, ".tar.gz") || strings.HasSuffix(file, ".tgz") {
 		err = a.addArchive(source, localFile)
 		if err != nil {
 			return err
