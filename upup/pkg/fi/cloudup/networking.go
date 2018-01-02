@@ -109,6 +109,10 @@ const (
 	defaultCNIAssetK8s1_6           = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-0799f5732f2a11b329d9e3d51b9c8f2e3759f2ff.tar.gz"
 	defaultCNIAssetHashStringK8s1_6 = "1d9788b0f5420e1a219aad2cb8681823fc515e7c"
 
+	// defaultCNIAssetK8s1_9 is the CNI tarball for for 1.9.x k8s.
+	defaultCNIAssetK8s1_9           = "https://storage.googleapis.com/kubernetes-release/network-plugins/cni-plugins-amd64-v0.6.0.tgz"
+	defaultCNIAssetHashStringK8s1_9 = "d595d3ded6499a64e8dac02466e2f5f2ce257c9f"
+
 	// Environment variable for overriding CNI url
 	ENV_VAR_CNI_VERSION_URL = "CNI_VERSION_URL"
 )
@@ -133,7 +137,11 @@ func findCNIAssets(c *api.Cluster, assetBuilder *assets.AssetBuilder) (*url.URL,
 	sv.Build = nil
 
 	var cniAsset, cniAssetHash string
-	if sv.GTE(semver.Version{Major: 1, Minor: 6, Patch: 0, Pre: nil, Build: nil}) {
+	if sv.GTE(semver.Version{Major: 1, Minor: 9, Patch: 0, Pre: nil, Build: nil}) {
+		cniAsset = defaultCNIAssetK8s1_9
+		cniAssetHash = defaultCNIAssetHashStringK8s1_9
+		glog.V(2).Infof("Adding default CNI asset for k8s 1.9.x and higher: %s", defaultCNIAssetK8s1_9)
+	} else if sv.GTE(semver.Version{Major: 1, Minor: 6, Patch: 0, Pre: nil, Build: nil}) {
 		cniAsset = defaultCNIAssetK8s1_6
 		cniAssetHash = defaultCNIAssetHashStringK8s1_6
 		glog.V(2).Infof("Adding default CNI asset for k8s 1.6.x and higher: %s", defaultCNIAssetK8s1_6)
