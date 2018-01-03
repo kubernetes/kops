@@ -23,6 +23,7 @@ import (
 
 	"github.com/golang/glog"
 	"k8s.io/kops/pkg/apis/kops"
+	"k8s.io/kops/pkg/apis/kops/util"
 	"k8s.io/kops/util/pkg/vfs"
 
 	kopsversion "k8s.io/kops"
@@ -98,7 +99,17 @@ func PerformAssignments(c *kops.Cluster) error {
 		return err
 	}
 
-	return ensureKubernetesVersion(c)
+	err = ensureKubernetesVersion(c)
+	if err != nil {
+		return err
+	}
+
+	err = setupEctdVersion(c)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // ensureKubernetesVersion populates KubernetesVersion, if it is not already set
@@ -226,4 +237,37 @@ func incrementIP(ip net.IP, cidr string) (string, error) {
 		return "", fmt.Errorf("overflowed CIDR while incrementing IP")
 	}
 	return ip.String(), nil
+}
+
+// setupEctdVersion enables the supported Etcd version, if not set.
+func setupEctdVersion(cluster *kops.Cluster) error {
+	parsedVersion, err := util.ParseKubernetesVersion(cluster.Spec.KubernetesVersion)
+	if err != nil {
+		return fmt.Errorf("error parsing version: %v", cluster.Spec.KubernetesVersion)
+	}
+
+	version := ""
+	// as more versions are release we can add more if else statements here to set version.
+	if util.IsKubernetesGTE("1.9.0", *parsedVersion) {
+		// https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.9.md#external-dependencies
+		// lists 3.1.10 as the supported version for 1.9.x
+		version = "3.1.10"
+	}
+
+	// TODO - do we want to do this with new 1.8 clusters?
+	// else if util.IsKubernetesGTE("1.8.0", *parsedVersion) {
+	// 	version = "3.0.17"
+	// }
+
+	if version == "" {
+		return nil
+	}
+
+	for _, etcd := range cluster.Spec.EtcdClusters {
+		if etcd.Version == "" {
+			etcd.Version = version
+		}
+	}
+
+	return nil
 }
