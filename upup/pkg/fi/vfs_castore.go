@@ -108,7 +108,7 @@ func (s *VFSCAStore) readCAKeypairs(id string) (*keyset, *keyset, error) {
 		}
 
 		if caPrivateKeys == nil {
-			glog.Warningf("CA private key was not found; will generate new key")
+			glog.Warningf("CA private key was not found")
 			//return nil, fmt.Errorf("error loading CA private key - key not found")
 		}
 	}
@@ -256,7 +256,7 @@ func (c *VFSCAStore) loadKeysetBundle(p vfs.Path) (*keyset, error) {
 	return keyset, nil
 }
 
-func (k *keyset) ToAPIObject(name string) (*kops.Keyset, error) {
+func (k *keyset) ToAPIObject(name string, includePrivateKeyMaterial bool) (*kops.Keyset, error) {
 	o := &kops.Keyset{}
 	o.Name = name
 	o.Spec.Type = kops.SecretTypeKeypair
@@ -274,7 +274,7 @@ func (k *keyset) ToAPIObject(name string) (*kops.Keyset, error) {
 			oki.PublicMaterial = publicMaterial.Bytes()
 		}
 
-		if ki.privateKey != nil {
+		if includePrivateKeyMaterial && ki.privateKey != nil {
 			var privateMaterial bytes.Buffer
 			if _, err := ki.privateKey.WriteTo(&privateMaterial); err != nil {
 				return nil, err
@@ -285,21 +285,16 @@ func (k *keyset) ToAPIObject(name string) (*kops.Keyset, error) {
 
 		o.Spec.Keys = append(o.Spec.Keys, oki)
 	}
-
 	return o, nil
 }
 
 // writeKeysetBundle writes a keyset bundle to VFS
-func (c *VFSCAStore) writeKeysetBundle(p vfs.Path, name string, keyset *keyset, includePrivateMaterial bool) error {
+func (c *VFSCAStore) writeKeysetBundle(p vfs.Path, name string, keyset *keyset, includePrivateKeyMaterial bool) error {
 	p = p.Join("keyset.yaml")
 
-	o, err := keyset.ToAPIObject(name)
+	o, err := keyset.ToAPIObject(name, includePrivateKeyMaterial)
 	if err != nil {
 		return err
-	}
-
-	if !includePrivateMaterial {
-		o = removePrivateKeyMaterial(o)
 	}
 
 	objectData, err := serializeKeysetBundle(o)
@@ -339,6 +334,24 @@ func removePrivateKeyMaterial(o *kops.Keyset) *kops.Keyset {
 	}
 
 	return copy
+}
+
+func SerializeKeyset(o *kops.Keyset) ([]byte, error) {
+	var objectData bytes.Buffer
+	{
+		codecs := kopscodecs.Codecs
+		yaml, ok := runtime.SerializerInfoForMediaType(codecs.SupportedMediaTypes(), "application/yaml")
+		if !ok {
+			glog.Fatalf("no YAML serializer registered")
+		}
+		encoder := codecs.EncoderForVersion(yaml.Serializer, v1alpha2.SchemeGroupVersion)
+
+		if err := encoder.Encode(o, &objectData); err != nil {
+			return nil, fmt.Errorf("error serializing keyset: %v", err)
+		}
+	}
+
+	return objectData.Bytes(), nil
 }
 
 func (c *VFSCAStore) loadCertificates(p vfs.Path, useBundle bool) (*keyset, error) {
@@ -422,7 +435,7 @@ func (c *VFSCAStore) CertificatePool(id string, createIfMissing bool) (*Certific
 	cert, err := c.FindCertificatePool(id)
 	if err == nil && cert == nil {
 		if !createIfMissing {
-			glog.Warningf("using empty certificate, because running with DryRun")
+			glog.Warningf("using empty certificate pool for %q, because createIfMissing=false", id)
 			return &CertificatePool{}, err
 		}
 		return nil, fmt.Errorf("cannot find certificate pool %q", id)
@@ -491,6 +504,25 @@ func (c *VFSCAStore) FindCertificatePool(name string) (*CertificatePool, error) 
 		}
 	}
 	return pool, nil
+}
+
+func (c *VFSCAStore) FindCertificateKeyset(name string) (*kops.Keyset, error) {
+	p := c.buildCertificatePoolPath(name)
+	certs, err := c.loadCertificates(p, true)
+	if err != nil {
+		return nil, fmt.Errorf("error in 'FindCertificatePool' attempting to load cert %q: %v", name, err)
+	}
+
+	if certs == nil {
+		return nil, nil
+	}
+
+	o, err := certs.ToAPIObject(name, false)
+	if err != nil {
+		return nil, err
+	}
+
+	return o, nil
 }
 
 // ListKeysets implements CAStore::ListKeysets
@@ -842,7 +874,7 @@ func (c *VFSCAStore) loadOnePrivateKey(p vfs.Path) (*pki.PrivateKey, error) {
 	return k, err
 }
 
-func (c *VFSCAStore) FindPrivateKey(id string) (*pki.PrivateKey, error) {
+func (c *VFSCAStore) findPrivateKeyset(id string) (*keyset, error) {
 	var keys *keyset
 	if id == CertificateId_CA {
 		_, caPrivateKeys, err := c.readCAKeypairs(id)
@@ -859,11 +891,34 @@ func (c *VFSCAStore) FindPrivateKey(id string) (*pki.PrivateKey, error) {
 		}
 	}
 
+	return keys, nil
+}
+
+func (c *VFSCAStore) FindPrivateKey(id string) (*pki.PrivateKey, error) {
+	keys, err := c.findPrivateKeyset(id)
+	if err != nil {
+		return nil, err
+	}
+
 	var key *pki.PrivateKey
 	if keys != nil && keys.primary != nil {
 		key = keys.primary.privateKey
 	}
 	return key, nil
+}
+
+func (c *VFSCAStore) FindPrivateKeyset(name string) (*kops.Keyset, error) {
+	keys, err := c.findPrivateKeyset(name)
+	if err != nil {
+		return nil, err
+	}
+
+	o, err := keys.ToAPIObject(name, true)
+	if err != nil {
+		return nil, err
+	}
+
+	return o, nil
 }
 
 func (c *VFSCAStore) CreateKeypair(signer string, id string, template *x509.Certificate, privateKey *pki.PrivateKey) (*pki.Certificate, error) {

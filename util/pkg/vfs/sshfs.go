@@ -37,6 +37,10 @@ type SSHPath struct {
 	path   string
 }
 
+type SSHAcl struct {
+	Mode os.FileMode
+}
+
 var _ Path = &SSHPath{}
 
 func NewSSHPath(client *ssh.Client, server string, path string, sudo bool) *SSHPath {
@@ -175,10 +179,38 @@ func (p *SSHPath) WriteFile(data []byte, acl ACL) error {
 	}
 
 	if err == nil {
-		err = sftpClient.Rename(tempfile, p.path)
-		if err != nil {
-			err = fmt.Errorf("error during file write of %q: rename failed: %v", p.path, err)
+		if acl != nil {
+			sshAcl, ok := acl.(*SSHAcl)
+			if !ok {
+				err = fmt.Errorf("unexpected acl type %T", acl)
+			} else {
+				err = sftpClient.Chmod(tempfile, sshAcl.Mode)
+				if err != nil {
+					err = fmt.Errorf("error during chmod of %q: %v", tempfile, err)
+				}
+			}
 		}
+	}
+
+	if err == nil {
+		session, err := p.client.NewSession()
+		if err != nil {
+			err = fmt.Errorf("error creating session for rename: %v", err)
+		} else {
+			cmd := "mv " + tempfile + " " + p.path
+			if p.sudo {
+				cmd = "sudo " + cmd
+			}
+			err = session.Run(cmd)
+			if err != nil {
+				err = fmt.Errorf("error renaming file %q -> %q: %v", tempfile, p.path, err)
+			}
+		}
+		// sftp rename seems to fail if dest file exists
+		//err = sftpClient.Rename(tempfile, p.path)
+		//if err != nil {
+		//	err = fmt.Errorf("error during file write of %q: rename failed: %v", p.path, err)
+		//}
 	}
 
 	if err == nil {
