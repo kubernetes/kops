@@ -27,8 +27,8 @@ go_test(
         "groupcache_test.go",
         "http_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/golang/groupcache",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/golang/groupcache/groupcachepb:go_default_library",
         "//vendor/github.com/golang/groupcache/testpb:go_default_library",

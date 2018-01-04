@@ -28,8 +28,8 @@ go_test(
         "transfer_test.go",
         "upload_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/docker/docker/distribution/xfer",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/distribution:go_default_library",
         "//vendor/github.com/docker/docker/image:go_default_library",

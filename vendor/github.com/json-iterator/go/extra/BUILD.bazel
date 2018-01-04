@@ -21,8 +21,8 @@ go_test(
         "private_fields_test.go",
         "time_as_int64_codec_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/json-iterator/go/extra",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/json-iterator/go:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",

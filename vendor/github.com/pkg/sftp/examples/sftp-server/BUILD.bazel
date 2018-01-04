@@ -13,7 +13,7 @@ go_library(
 
 go_binary(
     name = "sftp-server",
+    embed = [":go_default_library"],
     importpath = "github.com/pkg/sftp/examples/sftp-server",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

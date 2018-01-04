@@ -17,8 +17,8 @@ go_test(
         "dec_go1_2_test.go",
         "dec_internal_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "gopkg.in/inf.v0",
-    library = ":go_default_library",
 )
 
 go_test(

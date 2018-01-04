@@ -6,15 +6,47 @@ go_library(
         "signal.go",
         "trap.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
+            "signal_unix.go",
+            "signal_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:darwin": [
             "signal_darwin.go",
             "signal_unix.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "signal_unix.go",
+            "signal_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "signal_freebsd.go",
+            "signal_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
             "signal_linux.go",
             "signal_unix.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "signal_unix.go",
+            "signal_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "signal_unix.go",
+            "signal_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "signal_unix.go",
+            "signal_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "signal_unix.go",
+            "signal_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "signal_solaris.go",
+            "signal_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "signal_windows.go",
         ],
         "//conditions:default": [],
@@ -25,7 +57,7 @@ go_library(
         "//vendor/github.com/pkg/errors:go_default_library",
         "//vendor/github.com/sirupsen/logrus:go_default_library",
     ] + select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],
         "//conditions:default": [],
@@ -37,12 +69,14 @@ go_test(
     srcs = [
         "signal_test.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "signal_linux_test.go",
         ],
         "//conditions:default": [],
     }),
+    embed = [":go_default_library"],
     importpath = "github.com/docker/docker/pkg/signal",
-    library = ":go_default_library",
-    deps = ["//vendor/github.com/stretchr/testify/assert:go_default_library"],
+    deps = [
+        "//vendor/github.com/stretchr/testify/assert:go_default_library",
+    ],
 )

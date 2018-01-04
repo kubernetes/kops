@@ -12,7 +12,7 @@ go_library(
 
 go_binary(
     name = "bridge",
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/etcd/tools/local-tester/bridge",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

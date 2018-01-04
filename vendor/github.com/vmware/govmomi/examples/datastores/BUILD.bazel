@@ -17,7 +17,7 @@ go_library(
 
 go_binary(
     name = "datastores",
+    embed = [":go_default_library"],
     importpath = "github.com/vmware/govmomi/examples/datastores",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

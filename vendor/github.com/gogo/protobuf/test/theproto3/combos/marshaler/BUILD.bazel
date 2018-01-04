@@ -22,8 +22,8 @@ go_test(
         "proto3_test.go",
         "theproto3pb_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/gogo/protobuf/test/theproto3/combos/marshaler",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/gogo/protobuf/gogoproto:go_default_library",
         "//vendor/github.com/gogo/protobuf/jsonpb:go_default_library",

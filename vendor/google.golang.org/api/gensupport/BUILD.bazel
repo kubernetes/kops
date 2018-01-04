@@ -38,8 +38,8 @@ go_test(
         "send_test.go",
         "util_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "google.golang.org/api/gensupport",
-    library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/net/context:go_default_library",
         "//vendor/google.golang.org/api/googleapi:go_default_library",

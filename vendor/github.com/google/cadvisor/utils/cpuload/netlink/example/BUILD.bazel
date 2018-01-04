@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "example",
+    embed = [":go_default_library"],
     importpath = "github.com/google/cadvisor/utils/cpuload/netlink/example",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

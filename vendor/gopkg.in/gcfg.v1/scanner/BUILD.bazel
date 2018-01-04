@@ -14,8 +14,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["scanner_test.go"],
+    embed = [":go_default_library"],
     importpath = "gopkg.in/gcfg.v1/scanner",
-    library = ":go_default_library",
     deps = ["//vendor/gopkg.in/gcfg.v1/token:go_default_library"],
 )
 

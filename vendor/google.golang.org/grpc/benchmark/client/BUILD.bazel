@@ -17,7 +17,7 @@ go_library(
 
 go_binary(
     name = "client",
+    embed = [":go_default_library"],
     importpath = "google.golang.org/grpc/benchmark/client",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

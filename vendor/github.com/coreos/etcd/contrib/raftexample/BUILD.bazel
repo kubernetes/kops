@@ -28,8 +28,8 @@ go_library(
 
 go_binary(
     name = "raftexample",
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/etcd/contrib/raftexample",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
 
@@ -39,7 +39,7 @@ go_test(
         "kvstore_test.go",
         "raftexample_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/etcd/contrib/raftexample",
-    library = ":go_default_library",
     deps = ["//vendor/github.com/coreos/etcd/raft/raftpb:go_default_library"],
 )

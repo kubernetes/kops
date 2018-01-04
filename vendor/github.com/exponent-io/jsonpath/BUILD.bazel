@@ -19,8 +19,8 @@ go_test(
         "path_test.go",
         "pathaction_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/exponent-io/jsonpath",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",

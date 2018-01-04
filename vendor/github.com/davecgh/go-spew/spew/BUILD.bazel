@@ -22,8 +22,8 @@ go_test(
         "internalunsafe_test.go",
     ],
     data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
     importpath = "github.com/davecgh/go-spew/spew",
-    library = ":go_default_library",
 )
 
 go_test(

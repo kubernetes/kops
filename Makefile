@@ -588,11 +588,15 @@ kops-server-push: kops-server-build
 
 .PHONY: bazel-test
 bazel-test:
-	bazel ${BAZEL_OPTIONS} test //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/... //tests/... //upup/... //util/... //hack:verify-all --test_output=errors
+	bazel ${BAZEL_OPTIONS} test //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //tests/... //upup/... //util/... //federation/... //hack:verify-all --test_output=errors
 
 .PHONY: bazel-build
 bazel-build:
-	bazel build //cmd/... //pkg/... //channels/... //nodeup/... //channels/... //protokube/... //dns-controller/...
+	bazel build //cmd/... //pkg/... //channels/... //nodeup/... //protokube/... //dns-controller/... //util/... //federation/...
+
+.PHONY: bazel-build-cli
+bazel-build-cli:
+	bazel build //cmd/kops/...
 
 # Not working yet, but we can hope
 #.PHONY: bazel-crossbuild-kops

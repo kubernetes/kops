@@ -15,8 +15,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["empty_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/gogo/protobuf/test/empty-issue70",
-    library = ":go_default_library",
 )
 
 proto_library(

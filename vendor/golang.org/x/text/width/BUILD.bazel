@@ -22,8 +22,8 @@ go_test(
         "tables_test.go",
         "transform_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/text/width",
-    library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/text/internal/gen:go_default_library",
         "//vendor/golang.org/x/text/internal/testtext:go_default_library",

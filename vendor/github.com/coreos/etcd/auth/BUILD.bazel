@@ -27,8 +27,8 @@ go_test(
         "range_perm_cache_test.go",
         "store_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/etcd/auth",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/coreos/etcd/etcdserver/etcdserverpb:go_default_library",
         "//vendor/github.com/coreos/etcd/mvcc/backend:go_default_library",

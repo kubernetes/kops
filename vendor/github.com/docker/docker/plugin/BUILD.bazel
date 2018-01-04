@@ -9,14 +9,39 @@ go_library(
         "manager.go",
         "store.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "backend_unsupported.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "backend_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "backend_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "backend_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
             "backend_linux.go",
             "manager_linux.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "backend_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "backend_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "backend_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "backend_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "backend_unsupported.go",
+            "manager_solaris.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "backend_unsupported.go",
             "manager_windows.go",
         ],
@@ -48,10 +73,19 @@ go_library(
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/golang.org/x/net/context:go_default_library",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
             "//vendor/github.com/docker/distribution/manifest/schema2:go_default_library",
             "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
             "//vendor/github.com/docker/docker/daemon/initlayer:go_default_library",
@@ -65,7 +99,23 @@ go_library(
             "//vendor/github.com/opencontainers/runtime-spec/specs-go:go_default_library",
             "//vendor/golang.org/x/sys/unix:go_default_library",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
+            "//vendor/github.com/opencontainers/runtime-spec/specs-go:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "//vendor/github.com/docker/docker/api/types/filters:go_default_library",
             "//vendor/github.com/opencontainers/runtime-spec/specs-go:go_default_library",
         ],
@@ -79,8 +129,8 @@ go_test(
         "manager_test.go",
         "store_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/docker/docker/plugin",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/docker/api/types:go_default_library",
         "//vendor/github.com/docker/docker/plugin/v2:go_default_library",

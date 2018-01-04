@@ -18,8 +18,8 @@ go_test(
         "unmarshalmerge_test.go",
         "unmarshalmergepb_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/gogo/protobuf/test/unmarshalmerge",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/gogo/protobuf/gogoproto:go_default_library",
         "//vendor/github.com/gogo/protobuf/jsonpb:go_default_library",

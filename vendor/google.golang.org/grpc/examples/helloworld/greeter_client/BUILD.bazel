@@ -14,7 +14,7 @@ go_library(
 
 go_binary(
     name = "greeter_client",
+    embed = [":go_default_library"],
     importpath = "google.golang.org/grpc/examples/helloworld/greeter_client",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

@@ -11,6 +11,6 @@ go_test(
     name = "go_default_test",
     srcs = ["disco_test.go"],
     data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
     importpath = "google.golang.org/api/google-api-go-generator/internal/disco",
-    library = ":go_default_library",
 )

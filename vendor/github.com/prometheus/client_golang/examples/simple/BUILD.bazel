@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "simple",
+    embed = [":go_default_library"],
     importpath = "github.com/prometheus/client_golang/examples/simple",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

@@ -52,8 +52,8 @@ go_test(
         "testdata_test.go",
         "transport_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/crypto/ssh",
-    library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/crypto/ed25519:go_default_library",
         "//vendor/golang.org/x/crypto/ssh/terminal:go_default_library",

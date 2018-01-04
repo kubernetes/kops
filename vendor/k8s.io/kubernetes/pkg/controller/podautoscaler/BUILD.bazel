@@ -50,8 +50,8 @@ go_test(
         "legacy_replica_calculator_test.go",
         "replica_calculator_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/pkg/controller/podautoscaler",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",

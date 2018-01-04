@@ -10,20 +10,54 @@ go_library(
         "shake.go",
         "xor_generic.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:386": [
+            "keccakf.go",
+            "xor_unaligned.go",
+        ],
+        "@io_bazel_rules_go//go/platform:amd64": [
             "keccakf_amd64.go",
             "keccakf_amd64.s",
             "xor_unaligned.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
-            "keccakf_amd64.go",
-            "keccakf_amd64.s",
+        "@io_bazel_rules_go//go/platform:amd64p32": [
+            "keccakf.go",
+            "xor.go",
+        ],
+        "@io_bazel_rules_go//go/platform:arm": [
+            "keccakf.go",
+            "xor.go",
+        ],
+        "@io_bazel_rules_go//go/platform:arm64": [
+            "keccakf.go",
+            "xor.go",
+        ],
+        "@io_bazel_rules_go//go/platform:mips": [
+            "keccakf.go",
+            "xor.go",
+        ],
+        "@io_bazel_rules_go//go/platform:mips64": [
+            "keccakf.go",
+            "xor.go",
+        ],
+        "@io_bazel_rules_go//go/platform:mips64le": [
+            "keccakf.go",
+            "xor.go",
+        ],
+        "@io_bazel_rules_go//go/platform:mipsle": [
+            "keccakf.go",
+            "xor.go",
+        ],
+        "@io_bazel_rules_go//go/platform:ppc64": [
+            "keccakf.go",
+            "xor.go",
+        ],
+        "@io_bazel_rules_go//go/platform:ppc64le": [
+            "keccakf.go",
             "xor_unaligned.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
-            "keccakf_amd64.go",
-            "keccakf_amd64.s",
-            "xor_unaligned.go",
+        "@io_bazel_rules_go//go/platform:s390x": [
+            "keccakf.go",
+            "xor.go",
         ],
         "//conditions:default": [],
     }),
@@ -35,6 +69,6 @@ go_test(
     name = "go_default_test",
     srcs = ["sha3_test.go"],
     data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
     importpath = "golang.org/x/crypto/sha3",
-    library = ":go_default_library",
 )

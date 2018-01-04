@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "kubefed",
+    embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/federation/cmd/kubefed",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

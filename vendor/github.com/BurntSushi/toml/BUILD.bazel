@@ -24,6 +24,6 @@ go_test(
         "decode_test.go",
         "encode_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/BurntSushi/toml",
-    library = ":go_default_library",
 )

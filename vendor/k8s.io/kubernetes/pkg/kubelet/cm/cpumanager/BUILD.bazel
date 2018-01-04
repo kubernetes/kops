@@ -36,8 +36,8 @@ go_test(
         "policy_static_test.go",
         "policy_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/pkg/kubelet/cm/cpumanager",
-    library = ":go_default_library",
     deps = [
         "//vendor/k8s.io/api/core/v1:go_default_library",
         "//vendor/k8s.io/apimachinery/pkg/api/resource:go_default_library",

@@ -90,8 +90,8 @@ go_test(
         "virtual_device_list_test.go",
         "virtual_machine_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/vmware/govmomi/object",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/vmware/govmomi/test:go_default_library",
         "//vendor/github.com/vmware/govmomi/vim25/mo:go_default_library",

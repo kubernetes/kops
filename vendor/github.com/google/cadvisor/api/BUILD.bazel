@@ -21,8 +21,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["versions_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/google/cadvisor/api",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/google/cadvisor/events:go_default_library",
         "//vendor/github.com/google/cadvisor/info/v1:go_default_library",

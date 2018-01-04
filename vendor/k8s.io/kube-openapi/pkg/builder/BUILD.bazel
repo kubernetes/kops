@@ -20,8 +20,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["openapi_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/kube-openapi/pkg/builder",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/emicklei/go-restful:go_default_library",
         "//vendor/github.com/go-openapi/spec:go_default_library",

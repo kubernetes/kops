@@ -35,8 +35,8 @@ go_test(
         "util_test.go",
         "verification_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/go-oidc/oidc",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/coreos/go-oidc/jose:go_default_library",
         "//vendor/github.com/coreos/go-oidc/key:go_default_library",

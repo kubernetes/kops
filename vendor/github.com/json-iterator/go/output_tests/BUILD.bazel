@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "output_tests",
+    embed = [":go_default_library"],
     importpath = "github.com/json-iterator/go/output_tests",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
