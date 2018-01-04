@@ -80,6 +80,10 @@ type Route53API interface {
 	CreateHostedZoneWithContext(aws.Context, *route53.CreateHostedZoneInput, ...request.Option) (*route53.CreateHostedZoneOutput, error)
 	CreateHostedZoneRequest(*route53.CreateHostedZoneInput) (*request.Request, *route53.CreateHostedZoneOutput)
 
+	CreateQueryLoggingConfig(*route53.CreateQueryLoggingConfigInput) (*route53.CreateQueryLoggingConfigOutput, error)
+	CreateQueryLoggingConfigWithContext(aws.Context, *route53.CreateQueryLoggingConfigInput, ...request.Option) (*route53.CreateQueryLoggingConfigOutput, error)
+	CreateQueryLoggingConfigRequest(*route53.CreateQueryLoggingConfigInput) (*request.Request, *route53.CreateQueryLoggingConfigOutput)
+
 	CreateReusableDelegationSet(*route53.CreateReusableDelegationSetInput) (*route53.CreateReusableDelegationSetOutput, error)
 	CreateReusableDelegationSetWithContext(aws.Context, *route53.CreateReusableDelegationSetInput, ...request.Option) (*route53.CreateReusableDelegationSetOutput, error)
 	CreateReusableDelegationSetRequest(*route53.CreateReusableDelegationSetInput) (*request.Request, *route53.CreateReusableDelegationSetOutput)
@@ -108,6 +112,10 @@ type Route53API interface {
 	DeleteHostedZoneWithContext(aws.Context, *route53.DeleteHostedZoneInput, ...request.Option) (*route53.DeleteHostedZoneOutput, error)
 	DeleteHostedZoneRequest(*route53.DeleteHostedZoneInput) (*request.Request, *route53.DeleteHostedZoneOutput)
 
+	DeleteQueryLoggingConfig(*route53.DeleteQueryLoggingConfigInput) (*route53.DeleteQueryLoggingConfigOutput, error)
+	DeleteQueryLoggingConfigWithContext(aws.Context, *route53.DeleteQueryLoggingConfigInput, ...request.Option) (*route53.DeleteQueryLoggingConfigOutput, error)
+	DeleteQueryLoggingConfigRequest(*route53.DeleteQueryLoggingConfigInput) (*request.Request, *route53.DeleteQueryLoggingConfigOutput)
+
 	DeleteReusableDelegationSet(*route53.DeleteReusableDelegationSetInput) (*route53.DeleteReusableDelegationSetOutput, error)
 	DeleteReusableDelegationSetWithContext(aws.Context, *route53.DeleteReusableDelegationSetInput, ...request.Option) (*route53.DeleteReusableDelegationSetOutput, error)
 	DeleteReusableDelegationSetRequest(*route53.DeleteReusableDelegationSetInput) (*request.Request, *route53.DeleteReusableDelegationSetOutput)
@@ -127,6 +135,10 @@ type Route53API interface {
 	DisassociateVPCFromHostedZone(*route53.DisassociateVPCFromHostedZoneInput) (*route53.DisassociateVPCFromHostedZoneOutput, error)
 	DisassociateVPCFromHostedZoneWithContext(aws.Context, *route53.DisassociateVPCFromHostedZoneInput, ...request.Option) (*route53.DisassociateVPCFromHostedZoneOutput, error)
 	DisassociateVPCFromHostedZoneRequest(*route53.DisassociateVPCFromHostedZoneInput) (*request.Request, *route53.DisassociateVPCFromHostedZoneOutput)
+
+	GetAccountLimit(*route53.GetAccountLimitInput) (*route53.GetAccountLimitOutput, error)
+	GetAccountLimitWithContext(aws.Context, *route53.GetAccountLimitInput, ...request.Option) (*route53.GetAccountLimitOutput, error)
+	GetAccountLimitRequest(*route53.GetAccountLimitInput) (*request.Request, *route53.GetAccountLimitOutput)
 
 	GetChange(*route53.GetChangeInput) (*route53.GetChangeOutput, error)
 	GetChangeWithContext(aws.Context, *route53.GetChangeInput, ...request.Option) (*route53.GetChangeOutput, error)
@@ -164,9 +176,21 @@ type Route53API interface {
 	GetHostedZoneCountWithContext(aws.Context, *route53.GetHostedZoneCountInput, ...request.Option) (*route53.GetHostedZoneCountOutput, error)
 	GetHostedZoneCountRequest(*route53.GetHostedZoneCountInput) (*request.Request, *route53.GetHostedZoneCountOutput)
 
+	GetHostedZoneLimit(*route53.GetHostedZoneLimitInput) (*route53.GetHostedZoneLimitOutput, error)
+	GetHostedZoneLimitWithContext(aws.Context, *route53.GetHostedZoneLimitInput, ...request.Option) (*route53.GetHostedZoneLimitOutput, error)
+	GetHostedZoneLimitRequest(*route53.GetHostedZoneLimitInput) (*request.Request, *route53.GetHostedZoneLimitOutput)
+
+	GetQueryLoggingConfig(*route53.GetQueryLoggingConfigInput) (*route53.GetQueryLoggingConfigOutput, error)
+	GetQueryLoggingConfigWithContext(aws.Context, *route53.GetQueryLoggingConfigInput, ...request.Option) (*route53.GetQueryLoggingConfigOutput, error)
+	GetQueryLoggingConfigRequest(*route53.GetQueryLoggingConfigInput) (*request.Request, *route53.GetQueryLoggingConfigOutput)
+
 	GetReusableDelegationSet(*route53.GetReusableDelegationSetInput) (*route53.GetReusableDelegationSetOutput, error)
 	GetReusableDelegationSetWithContext(aws.Context, *route53.GetReusableDelegationSetInput, ...request.Option) (*route53.GetReusableDelegationSetOutput, error)
 	GetReusableDelegationSetRequest(*route53.GetReusableDelegationSetInput) (*request.Request, *route53.GetReusableDelegationSetOutput)
+
+	GetReusableDelegationSetLimit(*route53.GetReusableDelegationSetLimitInput) (*route53.GetReusableDelegationSetLimitOutput, error)
+	GetReusableDelegationSetLimitWithContext(aws.Context, *route53.GetReusableDelegationSetLimitInput, ...request.Option) (*route53.GetReusableDelegationSetLimitOutput, error)
+	GetReusableDelegationSetLimitRequest(*route53.GetReusableDelegationSetLimitInput) (*request.Request, *route53.GetReusableDelegationSetLimitOutput)
 
 	GetTrafficPolicy(*route53.GetTrafficPolicyInput) (*route53.GetTrafficPolicyOutput, error)
 	GetTrafficPolicyWithContext(aws.Context, *route53.GetTrafficPolicyInput, ...request.Option) (*route53.GetTrafficPolicyOutput, error)
@@ -201,6 +225,10 @@ type Route53API interface {
 	ListHostedZonesByName(*route53.ListHostedZonesByNameInput) (*route53.ListHostedZonesByNameOutput, error)
 	ListHostedZonesByNameWithContext(aws.Context, *route53.ListHostedZonesByNameInput, ...request.Option) (*route53.ListHostedZonesByNameOutput, error)
 	ListHostedZonesByNameRequest(*route53.ListHostedZonesByNameInput) (*request.Request, *route53.ListHostedZonesByNameOutput)
+
+	ListQueryLoggingConfigs(*route53.ListQueryLoggingConfigsInput) (*route53.ListQueryLoggingConfigsOutput, error)
+	ListQueryLoggingConfigsWithContext(aws.Context, *route53.ListQueryLoggingConfigsInput, ...request.Option) (*route53.ListQueryLoggingConfigsOutput, error)
+	ListQueryLoggingConfigsRequest(*route53.ListQueryLoggingConfigsInput) (*request.Request, *route53.ListQueryLoggingConfigsOutput)
 
 	ListResourceRecordSets(*route53.ListResourceRecordSetsInput) (*route53.ListResourceRecordSetsOutput, error)
 	ListResourceRecordSetsWithContext(aws.Context, *route53.ListResourceRecordSetsInput, ...request.Option) (*route53.ListResourceRecordSetsOutput, error)

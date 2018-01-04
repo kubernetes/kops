@@ -226,9 +226,17 @@ type CloudFormationAPI interface {
 	UpdateStackWithContext(aws.Context, *cloudformation.UpdateStackInput, ...request.Option) (*cloudformation.UpdateStackOutput, error)
 	UpdateStackRequest(*cloudformation.UpdateStackInput) (*request.Request, *cloudformation.UpdateStackOutput)
 
+	UpdateStackInstances(*cloudformation.UpdateStackInstancesInput) (*cloudformation.UpdateStackInstancesOutput, error)
+	UpdateStackInstancesWithContext(aws.Context, *cloudformation.UpdateStackInstancesInput, ...request.Option) (*cloudformation.UpdateStackInstancesOutput, error)
+	UpdateStackInstancesRequest(*cloudformation.UpdateStackInstancesInput) (*request.Request, *cloudformation.UpdateStackInstancesOutput)
+
 	UpdateStackSet(*cloudformation.UpdateStackSetInput) (*cloudformation.UpdateStackSetOutput, error)
 	UpdateStackSetWithContext(aws.Context, *cloudformation.UpdateStackSetInput, ...request.Option) (*cloudformation.UpdateStackSetOutput, error)
 	UpdateStackSetRequest(*cloudformation.UpdateStackSetInput) (*request.Request, *cloudformation.UpdateStackSetOutput)
+
+	UpdateTerminationProtection(*cloudformation.UpdateTerminationProtectionInput) (*cloudformation.UpdateTerminationProtectionOutput, error)
+	UpdateTerminationProtectionWithContext(aws.Context, *cloudformation.UpdateTerminationProtectionInput, ...request.Option) (*cloudformation.UpdateTerminationProtectionOutput, error)
+	UpdateTerminationProtectionRequest(*cloudformation.UpdateTerminationProtectionInput) (*request.Request, *cloudformation.UpdateTerminationProtectionOutput)
 
 	ValidateTemplate(*cloudformation.ValidateTemplateInput) (*cloudformation.ValidateTemplateOutput, error)
 	ValidateTemplateWithContext(aws.Context, *cloudformation.ValidateTemplateInput, ...request.Option) (*cloudformation.ValidateTemplateOutput, error)

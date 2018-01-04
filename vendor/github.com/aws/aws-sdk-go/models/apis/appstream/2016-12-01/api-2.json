@@ -6,6 +6,7 @@
     "jsonVersion":"1.1",
     "protocol":"json",
     "serviceFullName":"Amazon AppStream",
+    "serviceId":"AppStream",
     "signatureVersion":"v4",
     "signingName":"appstream",
     "targetPrefix":"PhotonAdminProxyService",
@@ -58,6 +59,38 @@
         {"shape":"ConcurrentModificationException"},
         {"shape":"InvalidParameterCombinationException"},
         {"shape":"IncompatibleImageException"}
+      ]
+    },
+    "CreateImageBuilder":{
+      "name":"CreateImageBuilder",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateImageBuilderRequest"},
+      "output":{"shape":"CreateImageBuilderResult"},
+      "errors":[
+        {"shape":"LimitExceededException"},
+        {"shape":"ResourceAlreadyExistsException"},
+        {"shape":"ResourceNotAvailableException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"InvalidRoleException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"InvalidParameterCombinationException"},
+        {"shape":"IncompatibleImageException"}
+      ]
+    },
+    "CreateImageBuilderStreamingURL":{
+      "name":"CreateImageBuilderStreamingURL",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"CreateImageBuilderStreamingURLRequest"},
+      "output":{"shape":"CreateImageBuilderStreamingURLResult"},
+      "errors":[
+        {"shape":"OperationNotPermittedException"},
+        {"shape":"ResourceNotFoundException"}
       ]
     },
     "CreateStack":{
@@ -119,6 +152,35 @@
         {"shape":"ConcurrentModificationException"}
       ]
     },
+    "DeleteImage":{
+      "name":"DeleteImage",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteImageRequest"},
+      "output":{"shape":"DeleteImageResult"},
+      "errors":[
+        {"shape":"ResourceInUseException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"OperationNotPermittedException"},
+        {"shape":"ConcurrentModificationException"}
+      ]
+    },
+    "DeleteImageBuilder":{
+      "name":"DeleteImageBuilder",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DeleteImageBuilderRequest"},
+      "output":{"shape":"DeleteImageBuilderResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"OperationNotPermittedException"},
+        {"shape":"ConcurrentModificationException"}
+      ]
+    },
     "DeleteStack":{
       "name":"DeleteStack",
       "http":{
@@ -153,6 +215,18 @@
       },
       "input":{"shape":"DescribeFleetsRequest"},
       "output":{"shape":"DescribeFleetsResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ]
+    },
+    "DescribeImageBuilders":{
+      "name":"DescribeImageBuilders",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"DescribeImageBuildersRequest"},
+      "output":{"shape":"DescribeImageBuildersResult"},
       "errors":[
         {"shape":"ResourceNotFoundException"}
       ]
@@ -234,6 +308,18 @@
       "input":{"shape":"ListAssociatedStacksRequest"},
       "output":{"shape":"ListAssociatedStacksResult"}
     },
+    "ListTagsForResource":{
+      "name":"ListTagsForResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"ListTagsForResourceRequest"},
+      "output":{"shape":"ListTagsForResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
+      ]
+    },
     "StartFleet":{
       "name":"StartFleet",
       "http":{
@@ -249,6 +335,21 @@
         {"shape":"ConcurrentModificationException"}
       ]
     },
+    "StartImageBuilder":{
+      "name":"StartImageBuilder",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StartImageBuilderRequest"},
+      "output":{"shape":"StartImageBuilderResult"},
+      "errors":[
+        {"shape":"ResourceNotAvailableException"},
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"ConcurrentModificationException"},
+        {"shape":"IncompatibleImageException"}
+      ]
+    },
     "StopFleet":{
       "name":"StopFleet",
       "http":{
@@ -260,6 +361,45 @@
       "errors":[
         {"shape":"ResourceNotFoundException"},
         {"shape":"ConcurrentModificationException"}
+      ]
+    },
+    "StopImageBuilder":{
+      "name":"StopImageBuilder",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"StopImageBuilderRequest"},
+      "output":{"shape":"StopImageBuilderResult"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"},
+        {"shape":"OperationNotPermittedException"},
+        {"shape":"ConcurrentModificationException"}
+      ]
+    },
+    "TagResource":{
+      "name":"TagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"TagResourceRequest"},
+      "output":{"shape":"TagResourceResponse"},
+      "errors":[
+        {"shape":"LimitExceededException"},
+        {"shape":"ResourceNotFoundException"}
+      ]
+    },
+    "UntagResource":{
+      "name":"UntagResource",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UntagResourceRequest"},
+      "output":{"shape":"UntagResourceResponse"},
+      "errors":[
+        {"shape":"ResourceNotFoundException"}
       ]
     },
     "UpdateDirectoryConfig":{
@@ -341,6 +481,11 @@
     "Applications":{
       "type":"list",
       "member":{"shape":"Application"}
+    },
+    "AppstreamAgentVersion":{
+      "type":"string",
+      "max":100,
+      "min":1
     },
     "Arn":{
       "type":"string",
@@ -427,6 +572,7 @@
         "Name":{"shape":"Name"},
         "ImageName":{"shape":"String"},
         "InstanceType":{"shape":"String"},
+        "FleetType":{"shape":"FleetType"},
         "ComputeCapacity":{"shape":"ComputeCapacity"},
         "VpcConfig":{"shape":"VpcConfig"},
         "MaxUserDurationInSeconds":{"shape":"Integer"},
@@ -441,6 +587,46 @@
       "type":"structure",
       "members":{
         "Fleet":{"shape":"Fleet"}
+      }
+    },
+    "CreateImageBuilderRequest":{
+      "type":"structure",
+      "required":[
+        "Name",
+        "ImageName",
+        "InstanceType"
+      ],
+      "members":{
+        "Name":{"shape":"Name"},
+        "ImageName":{"shape":"String"},
+        "InstanceType":{"shape":"String"},
+        "Description":{"shape":"Description"},
+        "DisplayName":{"shape":"DisplayName"},
+        "VpcConfig":{"shape":"VpcConfig"},
+        "EnableDefaultInternetAccess":{"shape":"BooleanObject"},
+        "DomainJoinInfo":{"shape":"DomainJoinInfo"},
+        "AppstreamAgentVersion":{"shape":"AppstreamAgentVersion"}
+      }
+    },
+    "CreateImageBuilderResult":{
+      "type":"structure",
+      "members":{
+        "ImageBuilder":{"shape":"ImageBuilder"}
+      }
+    },
+    "CreateImageBuilderStreamingURLRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"String"},
+        "Validity":{"shape":"Long"}
+      }
+    },
+    "CreateImageBuilderStreamingURLResult":{
+      "type":"structure",
+      "members":{
+        "StreamingURL":{"shape":"String"},
+        "Expires":{"shape":"Timestamp"}
       }
     },
     "CreateStackRequest":{
@@ -506,6 +692,32 @@
       "members":{
       }
     },
+    "DeleteImageBuilderRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"Name"}
+      }
+    },
+    "DeleteImageBuilderResult":{
+      "type":"structure",
+      "members":{
+        "ImageBuilder":{"shape":"ImageBuilder"}
+      }
+    },
+    "DeleteImageRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"Name"}
+      }
+    },
+    "DeleteImageResult":{
+      "type":"structure",
+      "members":{
+        "Image":{"shape":"Image"}
+      }
+    },
     "DeleteStackRequest":{
       "type":"structure",
       "required":["Name"],
@@ -544,6 +756,21 @@
       "type":"structure",
       "members":{
         "Fleets":{"shape":"FleetList"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "DescribeImageBuildersRequest":{
+      "type":"structure",
+      "members":{
+        "Names":{"shape":"StringList"},
+        "MaxResults":{"shape":"Integer"},
+        "NextToken":{"shape":"String"}
+      }
+    },
+    "DescribeImageBuildersResult":{
+      "type":"structure",
+      "members":{
+        "ImageBuilders":{"shape":"ImageBuilderList"},
         "NextToken":{"shape":"String"}
       }
     },
@@ -675,6 +902,7 @@
         "Description":{"shape":"String"},
         "ImageName":{"shape":"String"},
         "InstanceType":{"shape":"String"},
+        "FleetType":{"shape":"FleetType"},
         "ComputeCapacityStatus":{"shape":"ComputeCapacityStatus"},
         "MaxUserDurationInSeconds":{"shape":"Integer"},
         "DisconnectTimeoutInSeconds":{"shape":"Integer"},
@@ -720,6 +948,7 @@
         "IMAGE_NOT_FOUND",
         "INVALID_SUBNET_CONFIGURATION",
         "SECURITY_GROUPS_NOT_FOUND",
+        "IGW_NOT_ATTACHED",
         "IAM_SERVICE_ROLE_MISSING_DESCRIBE_SECURITY_GROUPS_ACTION",
         "DOMAIN_JOIN_ERROR_FILE_NOT_FOUND",
         "DOMAIN_JOIN_ERROR_ACCESS_DENIED",
@@ -752,6 +981,13 @@
         "STOPPED"
       ]
     },
+    "FleetType":{
+      "type":"string",
+      "enum":[
+        "ALWAYS_ON",
+        "ON_DEMAND"
+      ]
+    },
     "Image":{
       "type":"structure",
       "required":["Name"],
@@ -768,8 +1004,62 @@
         "StateChangeReason":{"shape":"ImageStateChangeReason"},
         "Applications":{"shape":"Applications"},
         "CreatedTime":{"shape":"Timestamp"},
-        "PublicBaseImageReleasedDate":{"shape":"Timestamp"}
+        "PublicBaseImageReleasedDate":{"shape":"Timestamp"},
+        "AppstreamAgentVersion":{"shape":"AppstreamAgentVersion"}
       }
+    },
+    "ImageBuilder":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"String"},
+        "Arn":{"shape":"Arn"},
+        "ImageArn":{"shape":"Arn"},
+        "Description":{"shape":"String"},
+        "DisplayName":{"shape":"String"},
+        "VpcConfig":{"shape":"VpcConfig"},
+        "InstanceType":{"shape":"String"},
+        "Platform":{"shape":"PlatformType"},
+        "State":{"shape":"ImageBuilderState"},
+        "StateChangeReason":{"shape":"ImageBuilderStateChangeReason"},
+        "CreatedTime":{"shape":"Timestamp"},
+        "EnableDefaultInternetAccess":{"shape":"BooleanObject"},
+        "DomainJoinInfo":{"shape":"DomainJoinInfo"},
+        "ImageBuilderErrors":{"shape":"ResourceErrors"},
+        "AppstreamAgentVersion":{"shape":"AppstreamAgentVersion"}
+      }
+    },
+    "ImageBuilderList":{
+      "type":"list",
+      "member":{"shape":"ImageBuilder"}
+    },
+    "ImageBuilderState":{
+      "type":"string",
+      "enum":[
+        "PENDING",
+        "UPDATING_AGENT",
+        "RUNNING",
+        "STOPPING",
+        "STOPPED",
+        "REBOOTING",
+        "SNAPSHOTTING",
+        "DELETING",
+        "FAILED"
+      ]
+    },
+    "ImageBuilderStateChangeReason":{
+      "type":"structure",
+      "members":{
+        "Code":{"shape":"ImageBuilderStateChangeReasonCode"},
+        "Message":{"shape":"String"}
+      }
+    },
+    "ImageBuilderStateChangeReasonCode":{
+      "type":"string",
+      "enum":[
+        "INTERNAL_ERROR",
+        "IMAGE_UNAVAILABLE"
+      ]
     },
     "ImageList":{
       "type":"list",
@@ -857,6 +1147,19 @@
         "NextToken":{"shape":"String"}
       }
     },
+    "ListTagsForResourceRequest":{
+      "type":"structure",
+      "required":["ResourceArn"],
+      "members":{
+        "ResourceArn":{"shape":"Arn"}
+      }
+    },
+    "ListTagsForResourceResponse":{
+      "type":"structure",
+      "members":{
+        "Tags":{"shape":"Tags"}
+      }
+    },
     "Long":{"type":"long"},
     "Metadata":{
       "type":"map",
@@ -892,6 +1195,18 @@
         "Message":{"shape":"ErrorMessage"}
       },
       "exception":true
+    },
+    "ResourceError":{
+      "type":"structure",
+      "members":{
+        "ErrorCode":{"shape":"FleetErrorCode"},
+        "ErrorMessage":{"shape":"String"},
+        "ErrorTimestamp":{"shape":"Timestamp"}
+      }
+    },
+    "ResourceErrors":{
+      "type":"list",
+      "member":{"shape":"ResourceError"}
     },
     "ResourceIdentifier":{
       "type":"string",
@@ -1011,6 +1326,20 @@
       "members":{
       }
     },
+    "StartImageBuilderRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"String"},
+        "AppstreamAgentVersion":{"shape":"AppstreamAgentVersion"}
+      }
+    },
+    "StartImageBuilderResult":{
+      "type":"structure",
+      "members":{
+        "ImageBuilder":{"shape":"ImageBuilder"}
+      }
+    },
     "StopFleetRequest":{
       "type":"structure",
       "required":["Name"],
@@ -1021,6 +1350,19 @@
     "StopFleetResult":{
       "type":"structure",
       "members":{
+      }
+    },
+    "StopImageBuilderRequest":{
+      "type":"structure",
+      "required":["Name"],
+      "members":{
+        "Name":{"shape":"String"}
+      }
+    },
+    "StopImageBuilderResult":{
+      "type":"structure",
+      "members":{
+        "ImageBuilder":{"shape":"ImageBuilder"}
       }
     },
     "StorageConnector":{
@@ -1057,7 +1399,64 @@
       "type":"list",
       "member":{"shape":"String"}
     },
+    "TagKey":{
+      "type":"string",
+      "max":128,
+      "min":1,
+      "pattern":"^(^(?!aws:).[\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "TagKeyList":{
+      "type":"list",
+      "member":{"shape":"TagKey"},
+      "max":50,
+      "min":1
+    },
+    "TagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "Tags"
+      ],
+      "members":{
+        "ResourceArn":{"shape":"Arn"},
+        "Tags":{"shape":"Tags"}
+      }
+    },
+    "TagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
+    "TagValue":{
+      "type":"string",
+      "max":256,
+      "min":0,
+      "pattern":"^([\\p{L}\\p{Z}\\p{N}_.:/=+\\-@]*)$"
+    },
+    "Tags":{
+      "type":"map",
+      "key":{"shape":"TagKey"},
+      "value":{"shape":"TagValue"},
+      "max":50,
+      "min":1
+    },
     "Timestamp":{"type":"timestamp"},
+    "UntagResourceRequest":{
+      "type":"structure",
+      "required":[
+        "ResourceArn",
+        "TagKeys"
+      ],
+      "members":{
+        "ResourceArn":{"shape":"Arn"},
+        "TagKeys":{"shape":"TagKeyList"}
+      }
+    },
+    "UntagResourceResponse":{
+      "type":"structure",
+      "members":{
+      }
+    },
     "UpdateDirectoryConfigRequest":{
       "type":"structure",
       "required":["DirectoryName"],
