@@ -1246,6 +1246,10 @@ func setOverrides(overrides []string, cluster *api.Cluster, instanceGroups []*ap
 		switch kv[0] {
 		case "cluster.spec.nodePortAccess":
 			cluster.Spec.NodePortAccess = append(cluster.Spec.NodePortAccess, kv[1])
+		case "cluster.spec.etcdClusters[*].version":
+			for _, etcd := range cluster.Spec.EtcdClusters {
+				etcd.Version = kv[1]
+			}
 		default:
 			return fmt.Errorf("unhandled override: %q", override)
 		}
