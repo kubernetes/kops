@@ -147,7 +147,7 @@ func (mux *ServeMux) match(q string, t uint16) Handler {
 				b[i] |= ('a' - 'A')
 			}
 		}
-		if h, ok := mux.z[string(b[:l])]; ok { // 'causes garbage, might want to change the map key
+		if h, ok := mux.z[string(b[:l])]; ok { // causes garbage, might want to change the map key
 			if t != TypeDS {
 				return h
 			}
@@ -285,7 +285,7 @@ type Server struct {
 	WriteTimeout time.Duration
 	// TCP idle timeout for multiple queries, if nil, defaults to 8 * time.Second (RFC 5966).
 	IdleTimeout func() time.Duration
-	// Secret(s) for Tsig map[<zonename>]<base64 secret>.
+	// Secret(s) for Tsig map[<zonename>]<base64 secret>. The zonename must be in canonical form (lowercase, fqdn, see RFC 4034 Section 6.2).
 	TsigSecret map[string]string
 	// Unsafe instructs the server to disregard any sanity checks and directly hand the message to
 	// the handler. It will specifically not check if the query has the QR bit not set.
@@ -297,10 +297,7 @@ type Server struct {
 	// DecorateWriter is optional, allows customization of the process that writes raw DNS messages.
 	DecorateWriter DecorateWriter
 
-	// Graceful shutdown handling
-
-	inFlight sync.WaitGroup
-
+	// Shutdown handling
 	lock    sync.RWMutex
 	started bool
 }
@@ -339,7 +336,7 @@ func (srv *Server) ListenAndServe() error {
 		network := "tcp"
 		if srv.Net == "tcp4-tls" {
 			network = "tcp4"
-		} else if srv.Net == "tcp6" {
+		} else if srv.Net == "tcp6-tls" {
 			network = "tcp6"
 		}
 
@@ -389,7 +386,9 @@ func (srv *Server) ActivateAndServe() error {
 		if srv.UDPSize == 0 {
 			srv.UDPSize = MinMsgSize
 		}
-		if t, ok := pConn.(*net.UDPConn); ok {
+		// Check PacketConn interface's type is valid and value
+		// is not nil
+		if t, ok := pConn.(*net.UDPConn); ok && t != nil {
 			if e := setUDPSocketOptions(t); e != nil {
 				return e
 			}
@@ -410,10 +409,8 @@ func (srv *Server) ActivateAndServe() error {
 	return &Error{err: "bad listeners"}
 }
 
-// Shutdown gracefully shuts down a server. After a call to Shutdown, ListenAndServe and
-// ActivateAndServe will return. All in progress queries are completed before the server
-// is taken down. If the Shutdown is taking longer than the reading timeout an error
-// is returned.
+// Shutdown shuts down a server. After a call to Shutdown, ListenAndServe and
+// ActivateAndServe will return.
 func (srv *Server) Shutdown() error {
 	srv.lock.Lock()
 	if !srv.started {
@@ -429,19 +426,7 @@ func (srv *Server) Shutdown() error {
 	if srv.Listener != nil {
 		srv.Listener.Close()
 	}
-
-	fin := make(chan bool)
-	go func() {
-		srv.inFlight.Wait()
-		fin <- true
-	}()
-
-	select {
-	case <-time.After(srv.getReadTimeout()):
-		return &Error{err: "server shutdown is pending"}
-	case <-fin:
-		return nil
-	}
+	return nil
 }
 
 // getReadTimeout is a helper func to use system timeout if server did not intend to change it.
@@ -491,7 +476,6 @@ func (srv *Server) serveTCP(l net.Listener) error {
 		if err != nil {
 			continue
 		}
-		srv.inFlight.Add(1)
 		go srv.serve(rw.RemoteAddr(), handler, m, nil, nil, rw)
 	}
 }
@@ -527,15 +511,12 @@ func (srv *Server) serveUDP(l *net.UDPConn) error {
 		if err != nil {
 			continue
 		}
-		srv.inFlight.Add(1)
 		go srv.serve(s.RemoteAddr(), handler, m, l, s, nil)
 	}
 }
 
 // Serve a new connection.
 func (srv *Server) serve(a net.Addr, h Handler, m []byte, u *net.UDPConn, s *SessionUDP, t net.Conn) {
-	defer srv.inFlight.Done()
-
 	w := &response{tsigSecret: srv.TsigSecret, udp: u, tcp: t, remoteAddr: a, udpSession: s}
 	if srv.DecorateWriter != nil {
 		w.writer = srv.DecorateWriter(w)

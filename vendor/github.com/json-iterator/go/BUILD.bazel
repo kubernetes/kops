@@ -49,6 +49,7 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
+        "compatible_test.go",
         "example_test.go",
         "jsoniter_1dot8_only_test.go",
         "jsoniter_adapter_test.go",
@@ -66,6 +67,7 @@ go_test(
         "jsoniter_customize_test.go",
         "jsoniter_demo_test.go",
         "jsoniter_encode_interface_test.go",
+        "jsoniter_enum_marshaler_test.go",
         "jsoniter_fixed_array_test.go",
         "jsoniter_float_test.go",
         "jsoniter_int_test.go",
@@ -87,11 +89,12 @@ go_test(
         "jsoniter_stream_test.go",
         "jsoniter_string_test.go",
         "jsoniter_struct_decoder_test.go",
+        "jsoniter_struct_encoder_test.go",
         "jsoniter_wrap_test.go",
         "unmarshal_input_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/json-iterator/go",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/google/gofuzz:go_default_library",
         "//vendor/github.com/stretchr/testify/require:go_default_library",

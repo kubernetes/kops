@@ -3,9 +3,10 @@ package jsoniter
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/stretchr/testify/require"
 	"io"
 	"testing"
+
+	"github.com/stretchr/testify/require"
 )
 
 func Test_read_null(t *testing.T) {
@@ -134,4 +135,34 @@ func Test_encode_nil_array(t *testing.T) {
 	output, err = Marshal(&obj1)
 	should.Nil(err)
 	should.Equal("null", string(output))
+}
+
+func Test_decode_nil_num(t *testing.T) {
+	type TestData struct {
+		Field int `json:"field"`
+	}
+	should := require.New(t)
+
+	data1 := []byte(`{"field": 42}`)
+	data2 := []byte(`{"field": null}`)
+
+	// Checking stdlib behavior as well
+	obj2 := TestData{}
+	err := json.Unmarshal(data1, &obj2)
+	should.Equal(nil, err)
+	should.Equal(42, obj2.Field)
+
+	err = json.Unmarshal(data2, &obj2)
+	should.Equal(nil, err)
+	should.Equal(42, obj2.Field)
+
+	obj := TestData{}
+
+	err = Unmarshal(data1, &obj)
+	should.Equal(nil, err)
+	should.Equal(42, obj.Field)
+
+	err = Unmarshal(data2, &obj)
+	should.Equal(nil, err)
+	should.Equal(42, obj.Field)
 }

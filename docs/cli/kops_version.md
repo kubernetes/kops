@@ -11,13 +11,19 @@ Print the kops version information.
 Print the kops version and git SHA.
 
 ```
-kops version
+kops version [flags]
 ```
 
 ### Examples
 
 ```
   kops version
+```
+
+### Options
+
+```
+  -h, --help   help for version
 ```
 
 ### Options inherited from parent commands

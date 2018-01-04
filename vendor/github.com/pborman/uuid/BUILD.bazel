@@ -6,8 +6,9 @@ go_library(
         "dce.go",
         "doc.go",
         "hash.go",
-        "json.go",
+        "marshal.go",
         "node.go",
+        "sql.go",
         "time.go",
         "util.go",
         "uuid.go",
@@ -21,10 +22,11 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = [
-        "json_test.go",
+        "marshal_test.go",
         "seq_test.go",
+        "sql_test.go",
         "uuid_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/pborman/uuid",
-    library = ":go_default_library",
 )

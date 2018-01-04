@@ -1,59 +1,16 @@
 // code examples for godoc
 
-package toml
+package toml_test
 
 import (
 	"fmt"
+	"log"
+
+	toml "github.com/pelletier/go-toml"
 )
 
-func ExampleNodeFilterFn_filterExample() {
-	tree, _ := Load(`
-      [struct_one]
-      foo = "foo"
-      bar = "bar"
-
-      [struct_two]
-      baz = "baz"
-      gorf = "gorf"
-    `)
-
-	// create a query that references a user-defined-filter
-	query, _ := CompileQuery("$[?(bazOnly)]")
-
-	// define the filter, and assign it to the query
-	query.SetFilter("bazOnly", func(node interface{}) bool {
-		if tree, ok := node.(*TomlTree); ok {
-			return tree.Has("baz")
-		}
-		return false // reject all other node types
-	})
-
-	// results contain only the 'struct_two' TomlTree
-	query.Execute(tree)
-}
-
-func ExampleQuery_queryExample() {
-	config, _ := Load(`
-      [[book]]
-      title = "The Stand"
-      author = "Stephen King"
-      [[book]]
-      title = "For Whom the Bell Tolls"
-      author = "Ernest Hemmingway"
-      [[book]]
-      title = "Neuromancer"
-      author = "William Gibson"
-    `)
-
-	// find and print all the authors in the document
-	authors, _ := config.Query("$.book.author")
-	for _, name := range authors.Values() {
-		fmt.Println(name)
-	}
-}
-
-func Example_comprehensiveExample() {
-	config, err := LoadFile("config.toml")
+func Example_tree() {
+	config, err := toml.LoadFile("config.toml")
 
 	if err != nil {
 		fmt.Println("Error ", err.Error())
@@ -63,19 +20,81 @@ func Example_comprehensiveExample() {
 		password := config.Get("postgres.password").(string)
 
 		// or using an intermediate object
-		configTree := config.Get("postgres").(*TomlTree)
+		configTree := config.Get("postgres").(*toml.Tree)
 		user = configTree.Get("user").(string)
 		password = configTree.Get("password").(string)
-		fmt.Println("User is ", user, ". Password is ", password)
+		fmt.Println("User is", user, " and password is", password)
 
 		// show where elements are in the file
 		fmt.Printf("User position: %v\n", configTree.GetPosition("user"))
 		fmt.Printf("Password position: %v\n", configTree.GetPosition("password"))
-
-		// use a query to gather elements without walking the tree
-		results, _ := config.Query("$..[user,password]")
-		for ii, item := range results.Values() {
-			fmt.Printf("Query result %d: %v\n", ii, item)
-		}
 	}
+}
+
+func Example_unmarshal() {
+	type Employer struct {
+		Name  string
+		Phone string
+	}
+	type Person struct {
+		Name     string
+		Age      int64
+		Employer Employer
+	}
+
+	document := []byte(`
+	name = "John"
+	age = 30
+	[employer]
+		name = "Company Inc."
+		phone = "+1 234 567 89012"
+	`)
+
+	person := Person{}
+	toml.Unmarshal(document, &person)
+	fmt.Println(person.Name, "is", person.Age, "and works at", person.Employer.Name)
+	// Output:
+	// John is 30 and works at Company Inc.
+}
+
+func ExampleMarshal() {
+	type Postgres struct {
+		User     string `toml:"user"`
+		Password string `toml:"password"`
+	}
+	type Config struct {
+		Postgres Postgres `toml:"postgres"`
+	}
+
+	config := Config{Postgres{User: "pelletier", Password: "mypassword"}}
+	b, err := toml.Marshal(config)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(string(b))
+	// Output:
+	// [postgres]
+	//   password = "mypassword"
+	//   user = "pelletier"
+}
+
+func ExampleUnmarshal() {
+	type Postgres struct {
+		User     string
+		Password string
+	}
+	type Config struct {
+		Postgres Postgres
+	}
+
+	doc := []byte(`
+	[postgres]
+	user = "pelletier"
+	password = "mypassword"`)
+
+	config := Config{}
+	toml.Unmarshal(doc, &config)
+	fmt.Println("user=", config.Postgres.User)
+	// Output:
+	// user= pelletier
 }

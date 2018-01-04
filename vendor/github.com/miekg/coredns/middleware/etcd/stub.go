@@ -4,11 +4,12 @@ import (
 	"log"
 	"net"
 	"strconv"
-	"strings"
 	"time"
 
-	"github.com/miekg/coredns/middleware/etcd/msg"
-	"github.com/miekg/coredns/middleware/proxy"
+	"github.com/coredns/coredns/middleware/etcd/msg"
+	"github.com/coredns/coredns/middleware/pkg/dnsutil"
+	"github.com/coredns/coredns/middleware/proxy"
+	"github.com/coredns/coredns/request"
 
 	"github.com/miekg/dns"
 )
@@ -29,7 +30,11 @@ func (e *Etcd) UpdateStubZones() {
 // Only the first zone configured on e is used for the lookup.
 func (e *Etcd) updateStubZones() {
 	zone := e.Zones[0]
-	services, err := e.Records(stubDomain+"."+zone, false)
+
+	fakeState := request.Request{W: nil, Req: new(dns.Msg)}
+	fakeState.Req.SetQuestion(stubDomain+"."+zone, dns.TypeA)
+
+	services, err := e.Records(fakeState, false)
 	if err != nil {
 		return
 	}
@@ -57,7 +62,7 @@ Services:
 			// Chop of left most label, because that is used as the nameserver place holder
 			// and drop the right most labels that belong to zone.
 			// We must *also* chop of dns.stub. which means cutting two more labels.
-			domain = dns.Fqdn(strings.Join(labels[1:len(labels)-dns.CountLabel(z)-2], "."))
+			domain = dnsutil.Join(labels[1 : len(labels)-dns.CountLabel(z)-2])
 			if domain == z {
 				log.Printf("[WARNING] Skipping nameserver for domain we are authoritative for: %s", domain)
 				continue Services
@@ -67,7 +72,7 @@ Services:
 	}
 
 	for domain, nss := range nameservers {
-		stubmap[domain] = proxy.New(nss)
+		stubmap[domain] = proxy.NewLookup(nss)
 	}
 	// atomic swap (at least that's what we hope it is)
 	if len(stubmap) > 0 {

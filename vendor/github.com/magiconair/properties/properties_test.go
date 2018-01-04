@@ -1,4 +1,4 @@
-// Copyright 2016 Frank Schroeder. All rights reserved.
+// Copyright 2017 Frank Schroeder. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -10,35 +10,18 @@ import (
 	"fmt"
 	"math"
 	"os"
+	"reflect"
 	"strings"
 	"testing"
 	"time"
 
-	. "github.com/magiconair/properties/_third_party/gopkg.in/check.v1"
+	"github.com/magiconair/properties/assert"
 )
 
-func Test(t *testing.T) { TestingT(t) }
+var verbose = flag.Bool("verbose", false, "Verbose output")
 
-type TestSuite struct {
-	prevHandler ErrorHandlerFunc
-}
-
-var (
-	_       = Suite(&TestSuite{})
-	verbose = flag.Bool("verbose", false, "Verbose output")
-)
-
-// --------------------------------------------------------------------
-
-func (s *TestSuite) SetUpSuite(c *C) {
-	s.prevHandler = ErrorHandler
+func init() {
 	ErrorHandler = PanicHandler
-}
-
-// --------------------------------------------------------------------
-
-func (s *TestSuite) TearDownSuite(c *C) {
-	ErrorHandler = s.prevHandler
 }
 
 // ----------------------------------------------------------------------------
@@ -61,6 +44,8 @@ var complexTests = [][]string{
 	{"\nkey=value\n", "key", "value"},
 	{"\rkey=value\r", "key", "value"},
 	{"\r\nkey=value\r\n", "key", "value"},
+	{"\nkey=value\n \nkey2=value2", "key", "value", "key2", "value2"},
+	{"\nkey=value\n\t\nkey2=value2", "key", "value", "key2", "value2"},
 
 	// escaped chars in key
 	{"k\\ ey = value", "k ey", "value"},
@@ -441,318 +426,338 @@ var setTests = []struct {
 
 // TestBasic tests basic single key/value combinations with all possible
 // whitespace, delimiter and newline permutations.
-func (s *TestSuite) TestBasic(c *C) {
-	testWhitespaceAndDelimiterCombinations(c, "key", "")
-	testWhitespaceAndDelimiterCombinations(c, "key", "value")
-	testWhitespaceAndDelimiterCombinations(c, "key", "value   ")
+func TestBasic(t *testing.T) {
+	testWhitespaceAndDelimiterCombinations(t, "key", "")
+	testWhitespaceAndDelimiterCombinations(t, "key", "value")
+	testWhitespaceAndDelimiterCombinations(t, "key", "value   ")
 }
 
-func (s *TestSuite) TestComplex(c *C) {
+func TestComplex(t *testing.T) {
 	for _, test := range complexTests {
-		testKeyValue(c, test[0], test[1:]...)
+		testKeyValue(t, test[0], test[1:]...)
 	}
 }
 
-func (s *TestSuite) TestErrors(c *C) {
+func TestErrors(t *testing.T) {
 	for _, test := range errorTests {
 		_, err := Load([]byte(test.input), ISO_8859_1)
-		c.Assert(err, NotNil)
-		c.Assert(strings.Contains(err.Error(), test.msg), Equals, true, Commentf("Expected %q got %q", test.msg, err.Error()))
+		assert.Equal(t, err != nil, true, "want error")
+		assert.Equal(t, strings.Contains(err.Error(), test.msg), true)
 	}
 }
 
-func (s *TestSuite) TestDisableExpansion(c *C) {
+func TestDisableExpansion(t *testing.T) {
 	input := "key=value\nkey2=${key}"
-	p, err := parse(input)
+	p := mustParse(t, input)
 	p.DisableExpansion = true
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGet("key"), Equals, "value")
-	c.Assert(p.MustGet("key2"), Equals, "${key}")
+	assert.Equal(t, p.MustGet("key"), "value")
+	assert.Equal(t, p.MustGet("key2"), "${key}")
 
 	// with expansion disabled we can introduce circular references
-	p.Set("keyA", "${keyB}")
-	p.Set("keyB", "${keyA}")
-	c.Assert(p.MustGet("keyA"), Equals, "${keyB}")
-	c.Assert(p.MustGet("keyB"), Equals, "${keyA}")
+	p.MustSet("keyA", "${keyB}")
+	p.MustSet("keyB", "${keyA}")
+	assert.Equal(t, p.MustGet("keyA"), "${keyB}")
+	assert.Equal(t, p.MustGet("keyB"), "${keyA}")
 }
 
-func (s *TestSuite) TestMustGet(c *C) {
+func TestDisableExpansionStillUpdatesKeys(t *testing.T) {
+	p := NewProperties()
+	p.MustSet("p1", "a")
+	assert.Equal(t, p.Keys(), []string{"p1"})
+	assert.Equal(t, p.String(), "p1 = a\n")
+
+	p.DisableExpansion = true
+	p.MustSet("p2", "b")
+
+	assert.Equal(t, p.Keys(), []string{"p1", "p2"})
+	assert.Equal(t, p.String(), "p1 = a\np2 = b\n")
+}
+
+func TestMustGet(t *testing.T) {
 	input := "key = value\nkey2 = ghi"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGet("key"), Equals, "value")
-	c.Assert(func() { p.MustGet("invalid") }, PanicMatches, "unknown property: invalid")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGet("key"), "value")
+	assert.Panic(t, func() { p.MustGet("invalid") }, "unknown property: invalid")
 }
 
-func (s *TestSuite) TestGetBool(c *C) {
+func TestGetBool(t *testing.T) {
 	for _, test := range boolTests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
-		c.Assert(p.Len(), Equals, 1)
-		c.Assert(p.GetBool(test.key, test.def), Equals, test.value)
+		p := mustParse(t, test.input)
+		assert.Equal(t, p.Len(), 1)
+		assert.Equal(t, p.GetBool(test.key, test.def), test.value)
 	}
 }
 
-func (s *TestSuite) TestMustGetBool(c *C) {
+func TestMustGetBool(t *testing.T) {
 	input := "key = true\nkey2 = ghi"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGetBool("key"), Equals, true)
-	c.Assert(func() { p.MustGetBool("invalid") }, PanicMatches, "unknown property: invalid")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGetBool("key"), true)
+	assert.Panic(t, func() { p.MustGetBool("invalid") }, "unknown property: invalid")
 }
 
-func (s *TestSuite) TestGetDuration(c *C) {
+func TestGetDuration(t *testing.T) {
 	for _, test := range durationTests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
-		c.Assert(p.Len(), Equals, 1)
-		c.Assert(p.GetDuration(test.key, test.def), Equals, test.value)
+		p := mustParse(t, test.input)
+		assert.Equal(t, p.Len(), 1)
+		assert.Equal(t, p.GetDuration(test.key, test.def), test.value)
 	}
 }
 
-func (s *TestSuite) TestMustGetDuration(c *C) {
+func TestMustGetDuration(t *testing.T) {
 	input := "key = 123\nkey2 = ghi"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGetDuration("key"), Equals, time.Duration(123))
-	c.Assert(func() { p.MustGetDuration("key2") }, PanicMatches, "strconv.ParseInt: parsing.*")
-	c.Assert(func() { p.MustGetDuration("invalid") }, PanicMatches, "unknown property: invalid")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGetDuration("key"), time.Duration(123))
+	assert.Panic(t, func() { p.MustGetDuration("key2") }, "strconv.ParseInt: parsing.*")
+	assert.Panic(t, func() { p.MustGetDuration("invalid") }, "unknown property: invalid")
 }
 
-func (s *TestSuite) TestGetParsedDuration(c *C) {
+func TestGetParsedDuration(t *testing.T) {
 	for _, test := range parsedDurationTests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
-		c.Assert(p.Len(), Equals, 1)
-		c.Assert(p.GetParsedDuration(test.key, test.def), Equals, test.value)
+		p := mustParse(t, test.input)
+		assert.Equal(t, p.Len(), 1)
+		assert.Equal(t, p.GetParsedDuration(test.key, test.def), test.value)
 	}
 }
 
-func (s *TestSuite) TestMustGetParsedDuration(c *C) {
+func TestMustGetParsedDuration(t *testing.T) {
 	input := "key = 123ms\nkey2 = ghi"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGetParsedDuration("key"), Equals, 123*time.Millisecond)
-	c.Assert(func() { p.MustGetParsedDuration("key2") }, PanicMatches, "time: invalid duration ghi")
-	c.Assert(func() { p.MustGetParsedDuration("invalid") }, PanicMatches, "unknown property: invalid")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGetParsedDuration("key"), 123*time.Millisecond)
+	assert.Panic(t, func() { p.MustGetParsedDuration("key2") }, "time: invalid duration ghi")
+	assert.Panic(t, func() { p.MustGetParsedDuration("invalid") }, "unknown property: invalid")
 }
 
-func (s *TestSuite) TestGetFloat64(c *C) {
+func TestGetFloat64(t *testing.T) {
 	for _, test := range floatTests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
-		c.Assert(p.Len(), Equals, 1)
-		c.Assert(p.GetFloat64(test.key, test.def), Equals, test.value)
+		p := mustParse(t, test.input)
+		assert.Equal(t, p.Len(), 1)
+		assert.Equal(t, p.GetFloat64(test.key, test.def), test.value)
 	}
 }
 
-func (s *TestSuite) TestMustGetFloat64(c *C) {
+func TestMustGetFloat64(t *testing.T) {
 	input := "key = 123\nkey2 = ghi"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGetFloat64("key"), Equals, float64(123))
-	c.Assert(func() { p.MustGetFloat64("key2") }, PanicMatches, "strconv.ParseFloat: parsing.*")
-	c.Assert(func() { p.MustGetFloat64("invalid") }, PanicMatches, "unknown property: invalid")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGetFloat64("key"), float64(123))
+	assert.Panic(t, func() { p.MustGetFloat64("key2") }, "strconv.ParseFloat: parsing.*")
+	assert.Panic(t, func() { p.MustGetFloat64("invalid") }, "unknown property: invalid")
 }
 
-func (s *TestSuite) TestGetInt(c *C) {
+func TestGetInt(t *testing.T) {
 	for _, test := range int64Tests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
-		c.Assert(p.Len(), Equals, 1)
-		c.Assert(p.GetInt(test.key, int(test.def)), Equals, int(test.value))
+		p := mustParse(t, test.input)
+		assert.Equal(t, p.Len(), 1)
+		assert.Equal(t, p.GetInt(test.key, int(test.def)), int(test.value))
 	}
 }
 
-func (s *TestSuite) TestMustGetInt(c *C) {
+func TestMustGetInt(t *testing.T) {
 	input := "key = 123\nkey2 = ghi"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGetInt("key"), Equals, int(123))
-	c.Assert(func() { p.MustGetInt("key2") }, PanicMatches, "strconv.ParseInt: parsing.*")
-	c.Assert(func() { p.MustGetInt("invalid") }, PanicMatches, "unknown property: invalid")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGetInt("key"), int(123))
+	assert.Panic(t, func() { p.MustGetInt("key2") }, "strconv.ParseInt: parsing.*")
+	assert.Panic(t, func() { p.MustGetInt("invalid") }, "unknown property: invalid")
 }
 
-func (s *TestSuite) TestGetInt64(c *C) {
+func TestGetInt64(t *testing.T) {
 	for _, test := range int64Tests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
-		c.Assert(p.Len(), Equals, 1)
-		c.Assert(p.GetInt64(test.key, test.def), Equals, test.value)
+		p := mustParse(t, test.input)
+		assert.Equal(t, p.Len(), 1)
+		assert.Equal(t, p.GetInt64(test.key, test.def), test.value)
 	}
 }
 
-func (s *TestSuite) TestMustGetInt64(c *C) {
+func TestMustGetInt64(t *testing.T) {
 	input := "key = 123\nkey2 = ghi"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGetInt64("key"), Equals, int64(123))
-	c.Assert(func() { p.MustGetInt64("key2") }, PanicMatches, "strconv.ParseInt: parsing.*")
-	c.Assert(func() { p.MustGetInt64("invalid") }, PanicMatches, "unknown property: invalid")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGetInt64("key"), int64(123))
+	assert.Panic(t, func() { p.MustGetInt64("key2") }, "strconv.ParseInt: parsing.*")
+	assert.Panic(t, func() { p.MustGetInt64("invalid") }, "unknown property: invalid")
 }
 
-func (s *TestSuite) TestGetUint(c *C) {
+func TestGetUint(t *testing.T) {
 	for _, test := range uint64Tests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
-		c.Assert(p.Len(), Equals, 1)
-		c.Assert(p.GetUint(test.key, uint(test.def)), Equals, uint(test.value))
+		p := mustParse(t, test.input)
+		assert.Equal(t, p.Len(), 1)
+		assert.Equal(t, p.GetUint(test.key, uint(test.def)), uint(test.value))
 	}
 }
 
-func (s *TestSuite) TestMustGetUint(c *C) {
+func TestMustGetUint(t *testing.T) {
 	input := "key = 123\nkey2 = ghi"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGetUint("key"), Equals, uint(123))
-	c.Assert(func() { p.MustGetUint64("key2") }, PanicMatches, "strconv.ParseUint: parsing.*")
-	c.Assert(func() { p.MustGetUint64("invalid") }, PanicMatches, "unknown property: invalid")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGetUint("key"), uint(123))
+	assert.Panic(t, func() { p.MustGetUint64("key2") }, "strconv.ParseUint: parsing.*")
+	assert.Panic(t, func() { p.MustGetUint64("invalid") }, "unknown property: invalid")
 }
 
-func (s *TestSuite) TestGetUint64(c *C) {
+func TestGetUint64(t *testing.T) {
 	for _, test := range uint64Tests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
-		c.Assert(p.Len(), Equals, 1)
-		c.Assert(p.GetUint64(test.key, test.def), Equals, test.value)
+		p := mustParse(t, test.input)
+		assert.Equal(t, p.Len(), 1)
+		assert.Equal(t, p.GetUint64(test.key, test.def), test.value)
 	}
 }
 
-func (s *TestSuite) TestMustGetUint64(c *C) {
+func TestMustGetUint64(t *testing.T) {
 	input := "key = 123\nkey2 = ghi"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGetUint64("key"), Equals, uint64(123))
-	c.Assert(func() { p.MustGetUint64("key2") }, PanicMatches, "strconv.ParseUint: parsing.*")
-	c.Assert(func() { p.MustGetUint64("invalid") }, PanicMatches, "unknown property: invalid")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGetUint64("key"), uint64(123))
+	assert.Panic(t, func() { p.MustGetUint64("key2") }, "strconv.ParseUint: parsing.*")
+	assert.Panic(t, func() { p.MustGetUint64("invalid") }, "unknown property: invalid")
 }
 
-func (s *TestSuite) TestGetString(c *C) {
+func TestGetString(t *testing.T) {
 	for _, test := range stringTests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
-		c.Assert(p.Len(), Equals, 1)
-		c.Assert(p.GetString(test.key, test.def), Equals, test.value)
+		p := mustParse(t, test.input)
+		assert.Equal(t, p.Len(), 1)
+		assert.Equal(t, p.GetString(test.key, test.def), test.value)
 	}
 }
 
-func (s *TestSuite) TestMustGetString(c *C) {
+func TestMustGetString(t *testing.T) {
 	input := `key = value`
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGetString("key"), Equals, "value")
-	c.Assert(func() { p.MustGetString("invalid") }, PanicMatches, "unknown property: invalid")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGetString("key"), "value")
+	assert.Panic(t, func() { p.MustGetString("invalid") }, "unknown property: invalid")
 }
 
-func (s *TestSuite) TestComment(c *C) {
+func TestComment(t *testing.T) {
 	for _, test := range commentTests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
-		c.Assert(p.MustGetString(test.key), Equals, test.value)
-		c.Assert(p.GetComments(test.key), DeepEquals, test.comments)
+		p := mustParse(t, test.input)
+		assert.Equal(t, p.MustGetString(test.key), test.value)
+		assert.Equal(t, p.GetComments(test.key), test.comments)
 		if test.comments != nil {
-			c.Assert(p.GetComment(test.key), Equals, test.comments[len(test.comments)-1])
+			assert.Equal(t, p.GetComment(test.key), test.comments[len(test.comments)-1])
 		} else {
-			c.Assert(p.GetComment(test.key), Equals, "")
+			assert.Equal(t, p.GetComment(test.key), "")
 		}
 
 		// test setting comments
 		if len(test.comments) > 0 {
 			// set single comment
 			p.ClearComments()
-			c.Assert(len(p.c), Equals, 0)
+			assert.Equal(t, len(p.c), 0)
 			p.SetComment(test.key, test.comments[0])
-			c.Assert(p.GetComment(test.key), Equals, test.comments[0])
+			assert.Equal(t, p.GetComment(test.key), test.comments[0])
 
 			// set multiple comments
 			p.ClearComments()
-			c.Assert(len(p.c), Equals, 0)
+			assert.Equal(t, len(p.c), 0)
 			p.SetComments(test.key, test.comments)
-			c.Assert(p.GetComments(test.key), DeepEquals, test.comments)
+			assert.Equal(t, p.GetComments(test.key), test.comments)
 
 			// clear comments for a key
 			p.SetComments(test.key, nil)
-			c.Assert(p.GetComment(test.key), Equals, "")
-			c.Assert(p.GetComments(test.key), IsNil)
+			assert.Equal(t, p.GetComment(test.key), "")
+			assert.Equal(t, p.GetComments(test.key), ([]string)(nil))
 		}
 	}
 }
 
-func (s *TestSuite) TestFilter(c *C) {
+func TestFilter(t *testing.T) {
 	for _, test := range filterTests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
+		p := mustParse(t, test.input)
 		pp, err := p.Filter(test.pattern)
 		if err != nil {
-			c.Assert(err, ErrorMatches, test.err)
+			assert.Matches(t, err.Error(), test.err)
 			continue
 		}
-		c.Assert(pp, NotNil)
-		c.Assert(pp.Len(), Equals, len(test.keys))
+		assert.Equal(t, pp != nil, true, "want properties")
+		assert.Equal(t, pp.Len(), len(test.keys))
 		for _, key := range test.keys {
 			v1, ok1 := p.Get(key)
 			v2, ok2 := pp.Get(key)
-			c.Assert(ok1, Equals, true)
-			c.Assert(ok2, Equals, true)
-			c.Assert(v1, Equals, v2)
+			assert.Equal(t, ok1, true)
+			assert.Equal(t, ok2, true)
+			assert.Equal(t, v1, v2)
 		}
 	}
 }
 
-func (s *TestSuite) TestFilterPrefix(c *C) {
+func TestFilterPrefix(t *testing.T) {
 	for _, test := range filterPrefixTests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
+		p := mustParse(t, test.input)
 		pp := p.FilterPrefix(test.prefix)
-		c.Assert(pp, NotNil)
-		c.Assert(pp.Len(), Equals, len(test.keys))
+		assert.Equal(t, pp != nil, true, "want properties")
+		assert.Equal(t, pp.Len(), len(test.keys))
 		for _, key := range test.keys {
 			v1, ok1 := p.Get(key)
 			v2, ok2 := pp.Get(key)
-			c.Assert(ok1, Equals, true)
-			c.Assert(ok2, Equals, true)
-			c.Assert(v1, Equals, v2)
+			assert.Equal(t, ok1, true)
+			assert.Equal(t, ok2, true)
+			assert.Equal(t, v1, v2)
 		}
 	}
 }
 
-func (s *TestSuite) TestKeys(c *C) {
-	for _, test := range keysTests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
-		c.Assert(p.Len(), Equals, len(test.keys))
-		c.Assert(len(p.Keys()), Equals, len(test.keys))
-		c.Assert(p.Keys(), DeepEquals, test.keys)
+func TestFilterStripPrefix(t *testing.T) {
+	for _, test := range filterStripPrefixTests {
+		p := mustParse(t, test.input)
+		pp := p.FilterPrefix(test.prefix)
+		assert.Equal(t, pp != nil, true, "want properties")
+		assert.Equal(t, pp.Len(), len(test.keys))
+		for _, key := range test.keys {
+			v1, ok1 := p.Get(key)
+			v2, ok2 := pp.Get(key)
+			assert.Equal(t, ok1, true)
+			assert.Equal(t, ok2, true)
+			assert.Equal(t, v1, v2)
+		}
 	}
 }
 
-func (s *TestSuite) TestSet(c *C) {
+func TestKeys(t *testing.T) {
+	for _, test := range keysTests {
+		p := mustParse(t, test.input)
+		assert.Equal(t, p.Len(), len(test.keys))
+		assert.Equal(t, len(p.Keys()), len(test.keys))
+		assert.Equal(t, p.Keys(), test.keys)
+	}
+}
+
+func TestSet(t *testing.T) {
 	for _, test := range setTests {
-		p, err := parse(test.input)
-		c.Assert(err, IsNil)
+		p := mustParse(t, test.input)
 		prev, ok, err := p.Set(test.key, test.value)
 		if test.err != "" {
-			c.Assert(err, ErrorMatches, test.err)
+			assert.Matches(t, err.Error(), test.err)
 			continue
 		}
 
-		c.Assert(err, IsNil)
-		c.Assert(ok, Equals, test.ok)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, ok, test.ok)
 		if ok {
-			c.Assert(prev, Equals, test.prev)
+			assert.Equal(t, prev, test.prev)
 		}
-		c.Assert(p.Keys(), DeepEquals, test.keys)
+		assert.Equal(t, p.Keys(), test.keys)
 	}
 }
 
-func (s *TestSuite) TestMustSet(c *C) {
-	input := "key=${key}"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(func() { p.MustSet("key", "${key}") }, PanicMatches, "circular reference .*")
+func TestSetValue(t *testing.T) {
+	tests := []interface{}{
+		true, false,
+		int8(123), int16(123), int32(123), int64(123), int(123),
+		uint8(123), uint16(123), uint32(123), uint64(123), uint(123),
+		float32(1.23), float64(1.23),
+		"abc",
+	}
+
+	for _, v := range tests {
+		p := NewProperties()
+		err := p.SetValue("x", v)
+		assert.Equal(t, err, nil)
+		assert.Equal(t, p.GetString("x", ""), fmt.Sprintf("%v", v))
+	}
 }
 
-func (s *TestSuite) TestWrite(c *C) {
+func TestMustSet(t *testing.T) {
+	input := "key=${key}"
+	p := mustParse(t, input)
+	assert.Panic(t, func() { p.MustSet("key", "${key}") }, "circular reference .*")
+}
+
+func TestWrite(t *testing.T) {
 	for _, test := range writeTests {
 		p, err := parse(test.input)
 
@@ -764,14 +769,14 @@ func (s *TestSuite) TestWrite(c *C) {
 		case "ISO-8859-1":
 			n, err = p.Write(buf, ISO_8859_1)
 		}
-		c.Assert(err, IsNil)
+		assert.Equal(t, err, nil)
 		s := string(buf.Bytes())
-		c.Assert(n, Equals, len(test.output), Commentf("input=%q expected=%q obtained=%q", test.input, test.output, s))
-		c.Assert(s, Equals, test.output, Commentf("input=%q expected=%q obtained=%q", test.input, test.output, s))
+		assert.Equal(t, n, len(test.output), fmt.Sprintf("input=%q expected=%q obtained=%q", test.input, test.output, s))
+		assert.Equal(t, s, test.output, fmt.Sprintf("input=%q expected=%q obtained=%q", test.input, test.output, s))
 	}
 }
 
-func (s *TestSuite) TestWriteComment(c *C) {
+func TestWriteComment(t *testing.T) {
 	for _, test := range writeCommentTests {
 		p, err := parse(test.input)
 
@@ -783,83 +788,97 @@ func (s *TestSuite) TestWriteComment(c *C) {
 		case "ISO-8859-1":
 			n, err = p.WriteComment(buf, "# ", ISO_8859_1)
 		}
-		c.Assert(err, IsNil)
+		assert.Equal(t, err, nil)
 		s := string(buf.Bytes())
-		c.Assert(n, Equals, len(test.output), Commentf("input=%q expected=%q obtained=%q", test.input, test.output, s))
-		c.Assert(s, Equals, test.output, Commentf("input=%q expected=%q obtained=%q", test.input, test.output, s))
+		assert.Equal(t, n, len(test.output), fmt.Sprintf("input=%q expected=%q obtained=%q", test.input, test.output, s))
+		assert.Equal(t, s, test.output, fmt.Sprintf("input=%q expected=%q obtained=%q", test.input, test.output, s))
 	}
 }
 
-func (s *TestSuite) TestCustomExpansionExpression(c *C) {
-	testKeyValuePrePostfix(c, "*[", "]*", "key=value\nkey2=*[key]*", "key", "value", "key2", "value")
+func TestCustomExpansionExpression(t *testing.T) {
+	testKeyValuePrePostfix(t, "*[", "]*", "key=value\nkey2=*[key]*", "key", "value", "key2", "value")
 }
 
-func (s *TestSuite) TestPanicOn32BitIntOverflow(c *C) {
+func TestPanicOn32BitIntOverflow(t *testing.T) {
 	is32Bit = true
 	var min, max int64 = math.MinInt32 - 1, math.MaxInt32 + 1
 	input := fmt.Sprintf("min=%d\nmax=%d", min, max)
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGetInt64("min"), Equals, min)
-	c.Assert(p.MustGetInt64("max"), Equals, max)
-	c.Assert(func() { p.MustGetInt("min") }, PanicMatches, ".* out of range")
-	c.Assert(func() { p.MustGetInt("max") }, PanicMatches, ".* out of range")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGetInt64("min"), min)
+	assert.Equal(t, p.MustGetInt64("max"), max)
+	assert.Panic(t, func() { p.MustGetInt("min") }, ".* out of range")
+	assert.Panic(t, func() { p.MustGetInt("max") }, ".* out of range")
 }
 
-func (s *TestSuite) TestPanicOn32BitUintOverflow(c *C) {
+func TestPanicOn32BitUintOverflow(t *testing.T) {
 	is32Bit = true
 	var max uint64 = math.MaxUint32 + 1
 	input := fmt.Sprintf("max=%d", max)
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Assert(p.MustGetUint64("max"), Equals, max)
-	c.Assert(func() { p.MustGetUint("max") }, PanicMatches, ".* out of range")
+	p := mustParse(t, input)
+	assert.Equal(t, p.MustGetUint64("max"), max)
+	assert.Panic(t, func() { p.MustGetUint("max") }, ".* out of range")
 }
 
-func (s *TestSuite) TestDeleteKey(c *C) {
+func TestDeleteKey(t *testing.T) {
 	input := "#comments should also be gone\nkey=to-be-deleted\nsecond=key"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Check(len(p.m), Equals, 2)
-	c.Check(len(p.c), Equals, 1)
-	c.Check(len(p.k), Equals, 2)
+	p := mustParse(t, input)
+	assert.Equal(t, len(p.m), 2)
+	assert.Equal(t, len(p.c), 1)
+	assert.Equal(t, len(p.k), 2)
 	p.Delete("key")
-	c.Check(len(p.m), Equals, 1)
-	c.Check(len(p.c), Equals, 0)
-	c.Check(len(p.k), Equals, 1)
+	assert.Equal(t, len(p.m), 1)
+	assert.Equal(t, len(p.c), 0)
+	assert.Equal(t, len(p.k), 1)
+	assert.Equal(t, p.k[0], "second")
+	assert.Equal(t, p.m["second"], "key")
 }
 
-func (s *TestSuite) TestDeleteUnknownKey(c *C) {
+func TestDeleteUnknownKey(t *testing.T) {
 	input := "#comments should also be gone\nkey=to-be-deleted"
-	p, err := parse(input)
-	c.Assert(err, IsNil)
-	c.Check(len(p.m), Equals, 1)
-	c.Check(len(p.c), Equals, 1)
-	c.Check(len(p.k), Equals, 1)
+	p := mustParse(t, input)
+	assert.Equal(t, len(p.m), 1)
+	assert.Equal(t, len(p.c), 1)
+	assert.Equal(t, len(p.k), 1)
 	p.Delete("wrong-key")
-	c.Check(len(p.m), Equals, 1)
-	c.Check(len(p.c), Equals, 1)
-	c.Check(len(p.k), Equals, 1)
+	assert.Equal(t, len(p.m), 1)
+	assert.Equal(t, len(p.c), 1)
+	assert.Equal(t, len(p.k), 1)
 }
 
-func (s *TestSuite) TestMerge(c *C) {
+func TestMerge(t *testing.T) {
 	input1 := "#comment\nkey=value\nkey2=value2"
 	input2 := "#another comment\nkey=another value\nkey3=value3"
-	p1, err := parse(input1)
-	c.Assert(err, IsNil)
-	p2, err := parse(input2)
+	p1 := mustParse(t, input1)
+	p2 := mustParse(t, input2)
 	p1.Merge(p2)
-	c.Check(len(p1.m), Equals, 3)
-	c.Check(len(p1.c), Equals, 1)
-	c.Check(len(p1.k), Equals, 3)
-	c.Check(p1.MustGet("key"), Equals, "another value")
-	c.Check(p1.GetComment("key"), Equals, "another comment")
+	assert.Equal(t, len(p1.m), 3)
+	assert.Equal(t, len(p1.c), 1)
+	assert.Equal(t, len(p1.k), 3)
+	assert.Equal(t, p1.MustGet("key"), "another value")
+	assert.Equal(t, p1.GetComment("key"), "another comment")
+}
+
+func TestMap(t *testing.T) {
+	input := "key=value\nabc=def"
+	p := mustParse(t, input)
+	m := map[string]string{"key": "value", "abc": "def"}
+	assert.Equal(t, p.Map(), m)
+}
+
+func TestFilterFunc(t *testing.T) {
+	input := "key=value\nabc=def"
+	p := mustParse(t, input)
+	pp := p.FilterFunc(func(k, v string) bool {
+		return k != "abc"
+	})
+	m := map[string]string{"key": "value"}
+	assert.Equal(t, pp.Map(), m)
 }
 
 // ----------------------------------------------------------------------------
 
 // tests all combinations of delimiters, leading and/or trailing whitespace and newlines.
-func testWhitespaceAndDelimiterCombinations(c *C, key, value string) {
+func testWhitespaceAndDelimiterCombinations(t *testing.T, key, value string) {
 	whitespace := []string{"", " ", "\f", "\t"}
 	delimiters := []string{"", " ", "=", ":"}
 	newlines := []string{"", "\r", "\n", "\r\n"}
@@ -873,7 +892,7 @@ func testWhitespaceAndDelimiterCombinations(c *C, key, value string) {
 					}
 
 					input := fmt.Sprintf("%s%s%s%s%s%s", key, ws1, dl, ws2, value, nl)
-					testKeyValue(c, input, key, value)
+					testKeyValue(t, input, key, value)
 				}
 			}
 		}
@@ -882,34 +901,44 @@ func testWhitespaceAndDelimiterCombinations(c *C, key, value string) {
 
 // tests whether key/value pairs exist for a given input.
 // keyvalues is expected to be an even number of strings of "key", "value", ...
-func testKeyValue(c *C, input string, keyvalues ...string) {
-	testKeyValuePrePostfix(c, "${", "}", input, keyvalues...)
+func testKeyValue(t *testing.T, input string, keyvalues ...string) {
+	testKeyValuePrePostfix(t, "${", "}", input, keyvalues...)
 }
 
 // tests whether key/value pairs exist for a given input.
 // keyvalues is expected to be an even number of strings of "key", "value", ...
-func testKeyValuePrePostfix(c *C, prefix, postfix, input string, keyvalues ...string) {
-	printf("%q\n", input)
-
+func testKeyValuePrePostfix(t *testing.T, prefix, postfix, input string, keyvalues ...string) {
 	p, err := Load([]byte(input), ISO_8859_1)
-	c.Assert(err, IsNil)
+	assert.Equal(t, err, nil)
 	p.Prefix = prefix
 	p.Postfix = postfix
-	assertKeyValues(c, input, p, keyvalues...)
+	assertKeyValues(t, input, p, keyvalues...)
 }
 
 // tests whether key/value pairs exist for a given input.
 // keyvalues is expected to be an even number of strings of "key", "value", ...
-func assertKeyValues(c *C, input string, p *Properties, keyvalues ...string) {
-	c.Assert(p, NotNil)
-	c.Assert(2*p.Len(), Equals, len(keyvalues), Commentf("Odd number of key/value pairs."))
+func assertKeyValues(t *testing.T, input string, p *Properties, keyvalues ...string) {
+	assert.Equal(t, p != nil, true, "want properties")
+	assert.Equal(t, 2*p.Len(), len(keyvalues), "Odd number of key/value pairs.")
 
 	for i := 0; i < len(keyvalues); i += 2 {
 		key, value := keyvalues[i], keyvalues[i+1]
 		v, ok := p.Get(key)
-		c.Assert(ok, Equals, true, Commentf("No key %q found (input=%q)", key, input))
-		c.Assert(v, Equals, value, Commentf("Value %q does not match %q (input=%q)", v, value, input))
+		if !ok {
+			t.Errorf("No key %q found (input=%q)", key, input)
+		}
+		if got, want := v, value; !reflect.DeepEqual(got, want) {
+			t.Errorf("Value %q does not match %q (input=%q)", v, value, input)
+		}
 	}
+}
+
+func mustParse(t *testing.T, s string) *Properties {
+	p, err := parse(s)
+	if err != nil {
+		t.Fatalf("parse failed with %s", err)
+	}
+	return p
 }
 
 // prints to stderr if the -verbose flag was given.

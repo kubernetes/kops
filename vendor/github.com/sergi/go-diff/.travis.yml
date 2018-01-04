@@ -1,7 +1,12 @@
 language: go
 
+os:
+  - linux
+  - osx
+
 go:
-  - 1.7.1
+  - 1.8.x
+  - 1.9.x
 
 sudo: false
 

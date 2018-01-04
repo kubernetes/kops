@@ -22,8 +22,8 @@ go_test(
         "read_test.go",
         "xml_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/vmware/govmomi/vim25/xml",
-    library = ":go_default_library",
 )
 
 go_test(

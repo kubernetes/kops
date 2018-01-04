@@ -120,6 +120,17 @@ func setup() {
 		w.Write([]byte("Some text content"))
 	}))
 
+	mux.HandleFunc("/cachederror", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		etag := "abc"
+		if r.Header.Get("if-none-match") == etag {
+			w.WriteHeader(http.StatusNotModified)
+			return
+		}
+		w.Header().Set("etag", etag)
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Not found"))
+	}))
+
 	updateFieldsCounter := 0
 	mux.HandleFunc("/updatefields", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Counter", strconv.Itoa(updateFieldsCounter))
@@ -215,6 +226,30 @@ func TestCacheableMethod(t *testing.T) {
 		if resp.Header.Get(XFromCache) != "" {
 			t.Errorf("XFromCache header isn't blank")
 		}
+	}
+}
+
+func TestDontServeHeadResponseToGetRequest(t *testing.T) {
+	resetTest()
+	url := s.server.URL + "/"
+	req, err := http.NewRequest(http.MethodHead, url, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, err = s.client.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	req, err = http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	resp, err := s.client.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.Header.Get(XFromCache) != "" {
+		t.Errorf("Cache should not match")
 	}
 }
 
@@ -849,6 +884,35 @@ func TestUpdateFields(t *testing.T) {
 	}
 }
 
+// This tests the fix for https://github.com/gregjones/httpcache/issues/74.
+// Previously, after validating a cached response, its StatusCode
+// was incorrectly being replaced.
+func TestCachedErrorsKeepStatus(t *testing.T) {
+	resetTest()
+	req, err := http.NewRequest("GET", s.server.URL+"/cachederror", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	{
+		resp, err := s.client.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		io.Copy(ioutil.Discard, resp.Body)
+	}
+	{
+		resp, err := s.client.Do(req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer resp.Body.Close()
+		if resp.StatusCode != http.StatusNotFound {
+			t.Fatalf("Status code isn't 404: %d", resp.StatusCode)
+		}
+	}
+}
+
 func TestParseCacheControl(t *testing.T) {
 	resetTest()
 	h := http.Header{}
@@ -1328,6 +1392,57 @@ func TestStaleIfErrorResponseLifetime(t *testing.T) {
 	_, err = tp.RoundTrip(r)
 	if err != tmock.err {
 		t.Fatalf("got err %v, want %v", err, tmock.err)
+	}
+}
+
+// This tests the fix for https://github.com/gregjones/httpcache/issues/74.
+// Previously, after a stale response was used after encountering an error,
+// its StatusCode was being incorrectly replaced.
+func TestStaleIfErrorKeepsStatus(t *testing.T) {
+	resetTest()
+	now := time.Now()
+	tmock := transportMock{
+		response: &http.Response{
+			Status:     http.StatusText(http.StatusNotFound),
+			StatusCode: http.StatusNotFound,
+			Header: http.Header{
+				"Date":          []string{now.Format(time.RFC1123)},
+				"Cache-Control": []string{"no-cache"},
+			},
+			Body: ioutil.NopCloser(bytes.NewBuffer([]byte("some data"))),
+		},
+		err: nil,
+	}
+	tp := NewMemoryCacheTransport()
+	tp.Transport = &tmock
+
+	// First time, response is cached on success
+	r, _ := http.NewRequest("GET", "http://somewhere.com/", nil)
+	r.Header.Set("Cache-Control", "stale-if-error")
+	resp, err := tp.RoundTrip(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp == nil {
+		t.Fatal("resp is nil")
+	}
+	_, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// On failure, response is returned from the cache
+	tmock.response = nil
+	tmock.err = errors.New("some error")
+	resp, err = tp.RoundTrip(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp == nil {
+		t.Fatal("resp is nil")
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("Status wasn't 404: %d", resp.StatusCode)
 	}
 }
 

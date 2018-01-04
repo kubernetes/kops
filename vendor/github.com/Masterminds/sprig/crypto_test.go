@@ -1,8 +1,18 @@
 package sprig
 
 import (
+	"crypto/x509"
+	"encoding/pem"
+	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+const (
+	beginCertificate = "-----BEGIN CERTIFICATE-----"
+	endCertificate   = "-----END CERTIFICATE-----"
 )
 
 func TestSha256Sum(t *testing.T) {
@@ -107,4 +117,111 @@ func TestUUIDGeneration(t *testing.T) {
 	if out == out2 {
 		t.Error("Expected subsequent UUID generations to be different")
 	}
+}
+
+func TestGenCA(t *testing.T) {
+	const cn = "foo-ca"
+
+	tpl := fmt.Sprintf(
+		`{{- $ca := genCA "%s" 365 }}
+{{ $ca.Cert }}
+`,
+		cn,
+	)
+	out, err := runRaw(tpl, nil)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Contains(t, out, beginCertificate)
+	assert.Contains(t, out, endCertificate)
+
+	decodedCert, _ := pem.Decode([]byte(out))
+	assert.Nil(t, err)
+	cert, err := x509.ParseCertificate(decodedCert.Bytes)
+	assert.Nil(t, err)
+
+	assert.Equal(t, cn, cert.Subject.CommonName)
+	assert.True(t, cert.IsCA)
+}
+
+func TestGenSelfSignedCert(t *testing.T) {
+	const (
+		cn   = "foo.com"
+		ip1  = "10.0.0.1"
+		ip2  = "10.0.0.2"
+		dns1 = "bar.com"
+		dns2 = "bat.com"
+	)
+
+	tpl := fmt.Sprintf(
+		`{{- $cert := genSelfSignedCert "%s" (list "%s" "%s") (list "%s" "%s") 365 }}
+{{ $cert.Cert }}`,
+		cn,
+		ip1,
+		ip2,
+		dns1,
+		dns2,
+	)
+
+	out, err := runRaw(tpl, nil)
+	if err != nil {
+		t.Error(err)
+	}
+	assert.Contains(t, out, beginCertificate)
+	assert.Contains(t, out, endCertificate)
+
+	decodedCert, _ := pem.Decode([]byte(out))
+	assert.Nil(t, err)
+	cert, err := x509.ParseCertificate(decodedCert.Bytes)
+	assert.Nil(t, err)
+
+	assert.Equal(t, cn, cert.Subject.CommonName)
+	assert.Equal(t, 2, len(cert.IPAddresses))
+	assert.Equal(t, ip1, cert.IPAddresses[0].String())
+	assert.Equal(t, ip2, cert.IPAddresses[1].String())
+	assert.Contains(t, cert.DNSNames, dns1)
+	assert.Contains(t, cert.DNSNames, dns2)
+	assert.False(t, cert.IsCA)
+}
+
+func TestGenSignedCert(t *testing.T) {
+	const (
+		cn   = "foo.com"
+		ip1  = "10.0.0.1"
+		ip2  = "10.0.0.2"
+		dns1 = "bar.com"
+		dns2 = "bat.com"
+	)
+
+	tpl := fmt.Sprintf(
+		`{{- $ca := genCA "foo" 365 }}
+{{- $cert := genSignedCert "%s" (list "%s" "%s") (list "%s" "%s") 365 $ca }}
+{{ $cert.Cert }}
+`,
+		cn,
+		ip1,
+		ip2,
+		dns1,
+		dns2,
+	)
+	out, err := runRaw(tpl, nil)
+	if err != nil {
+		t.Error(err)
+	}
+
+	assert.Contains(t, out, beginCertificate)
+	assert.Contains(t, out, endCertificate)
+
+	decodedCert, _ := pem.Decode([]byte(out))
+	assert.Nil(t, err)
+	cert, err := x509.ParseCertificate(decodedCert.Bytes)
+	assert.Nil(t, err)
+
+	assert.Equal(t, cn, cert.Subject.CommonName)
+	assert.Equal(t, 2, len(cert.IPAddresses))
+	assert.Equal(t, ip1, cert.IPAddresses[0].String())
+	assert.Equal(t, ip2, cert.IPAddresses[1].String())
+	assert.Contains(t, cert.DNSNames, dns1)
+	assert.Contains(t, cert.DNSNames, dns2)
+	assert.False(t, cert.IsCA)
 }

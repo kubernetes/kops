@@ -8,7 +8,7 @@ import (
 	w "gopkg.in/warnings.v0"
 )
 
-var _ error = List{}
+var _ error = w.List{}
 
 type warn string
 

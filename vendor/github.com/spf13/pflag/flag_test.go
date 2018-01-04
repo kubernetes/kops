@@ -335,7 +335,7 @@ func testParse(f *FlagSet, t *testing.T) {
 
 func testParseAll(f *FlagSet, t *testing.T) {
 	if f.Parsed() {
-		fmt.Errorf("f.Parse() = true before Parse")
+		t.Error("f.Parse() = true before Parse")
 	}
 	f.BoolP("boola", "a", false, "bool value")
 	f.BoolP("boolb", "b", false, "bool2 value")
@@ -374,7 +374,7 @@ func testParseAll(f *FlagSet, t *testing.T) {
 		return nil
 	}
 	if err := f.ParseAll(args, store); err != nil {
-		t.Errorf("expected no error, got ", err)
+		t.Errorf("expected no error, got %s", err)
 	}
 	if !f.Parsed() {
 		t.Errorf("f.Parse() = false after Parse")
@@ -444,6 +444,42 @@ func TestShorthand(t *testing.T) {
 	if f.ArgsLenAtDash() != 1 {
 		t.Errorf("expected argsLenAtDash %d got %d", f.ArgsLenAtDash(), 1)
 	}
+}
+
+func TestShorthandLookup(t *testing.T) {
+	f := NewFlagSet("shorthand", ContinueOnError)
+	if f.Parsed() {
+		t.Error("f.Parse() = true before Parse")
+	}
+	f.BoolP("boola", "a", false, "bool value")
+	f.BoolP("boolb", "b", false, "bool2 value")
+	args := []string{
+		"-ab",
+	}
+	f.SetOutput(ioutil.Discard)
+	if err := f.Parse(args); err != nil {
+		t.Error("expected no error, got ", err)
+	}
+	if !f.Parsed() {
+		t.Error("f.Parse() = false after Parse")
+	}
+	flag := f.ShorthandLookup("a")
+	if flag == nil {
+		t.Errorf("f.ShorthandLookup(\"a\") returned nil")
+	}
+	if flag.Name != "boola" {
+		t.Errorf("f.ShorthandLookup(\"a\") found %q instead of \"boola\"", flag.Name)
+	}
+	flag = f.ShorthandLookup("")
+	if flag != nil {
+		t.Errorf("f.ShorthandLookup(\"\") did not return nil")
+	}
+	defer func() {
+		recover()
+	}()
+	flag = f.ShorthandLookup("ab")
+	// should NEVER get here. lookup should panic. defer'd func should recover it.
+	t.Errorf("f.ShorthandLookup(\"ab\") did not panic")
 }
 
 func TestParse(t *testing.T) {
@@ -936,6 +972,7 @@ const defaultOutput = `      --A                         for bootstrapping, allo
       --Alongflagname             disable bounds checking
   -C, --CCC                       a boolean defaulting to true (default true)
       --D path                    set relative path for local imports
+  -E, --EEE num[=1234]            a num with NoOptDefVal (default 4321)
       --F number                  a non-zero number (default 2.7)
       --G float                   a float that defaults to zero
       --IP ip                     IP address with no default
@@ -987,6 +1024,8 @@ func TestPrintDefaults(t *testing.T) {
 	fs.Lookup("ND1").NoOptDefVal = "bar"
 	fs.Int("ND2", 1234, "a `num` with NoOptDefVal")
 	fs.Lookup("ND2").NoOptDefVal = "4321"
+	fs.IntP("EEE", "E", 4321, "a `num` with NoOptDefVal")
+	fs.ShorthandLookup("E").NoOptDefVal = "1234"
 	fs.StringSlice("StringSlice", []string{}, "string slice with zero default")
 	fs.StringArray("StringArray", []string{}, "string array with zero default")
 
@@ -1003,4 +1042,44 @@ func TestPrintDefaults(t *testing.T) {
 		fmt.Println("\n" + defaultOutput)
 		t.Errorf("got %q want %q\n", got, defaultOutput)
 	}
+}
+
+func TestVisitAllFlagOrder(t *testing.T) {
+	fs := NewFlagSet("TestVisitAllFlagOrder", ContinueOnError)
+	fs.SortFlags = false
+	// https://github.com/spf13/pflag/issues/120
+	fs.SetNormalizeFunc(func(f *FlagSet, name string) NormalizedName {
+		return NormalizedName(name)
+	})
+
+	names := []string{"C", "B", "A", "D"}
+	for _, name := range names {
+		fs.Bool(name, false, "")
+	}
+
+	i := 0
+	fs.VisitAll(func(f *Flag) {
+		if names[i] != f.Name {
+			t.Errorf("Incorrect order. Expected %v, got %v", names[i], f.Name)
+		}
+		i++
+	})
+}
+
+func TestVisitFlagOrder(t *testing.T) {
+	fs := NewFlagSet("TestVisitFlagOrder", ContinueOnError)
+	fs.SortFlags = false
+	names := []string{"C", "B", "A", "D"}
+	for _, name := range names {
+		fs.Bool(name, false, "")
+		fs.Set(name, "true")
+	}
+
+	i := 0
+	fs.Visit(func(f *Flag) {
+		if names[i] != f.Name {
+			t.Errorf("Incorrect order. Expected %v, got %v", names[i], f.Name)
+		}
+		i++
+	})
 }

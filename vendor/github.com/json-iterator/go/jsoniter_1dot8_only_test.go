@@ -22,7 +22,7 @@ func Test_new_encoder(t *testing.T) {
 	encoder2 := NewEncoder(buf2)
 	encoder2.SetEscapeHTML(false)
 	encoder2.Encode([]int{1})
-	should.Equal("[1]", buf2.String())
+	should.Equal("[1]\n", buf2.String())
 }
 
 func Test_string_encode_with_std_without_html_escape(t *testing.T) {

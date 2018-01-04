@@ -11,7 +11,7 @@ Get federation.
 Display one or many federation resources.
 
 ```
-kops get federations
+kops get federations [flags]
 ```
 
 ### Examples
@@ -19,6 +19,12 @@ kops get federations
 ```
   # Get a cluster
   kops get federation --name k8s-cluster.example.com
+```
+
+### Options
+
+```
+  -h, --help   help for federations
 ```
 
 ### Options inherited from parent commands

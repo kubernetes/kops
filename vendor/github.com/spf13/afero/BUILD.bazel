@@ -9,23 +9,46 @@ go_library(
         "copyOnWriteFs.go",
         "httpFs.go",
         "ioutil.go",
+        "match.go",
         "memmap.go",
-        "memradix.go",
         "os.go",
         "path.go",
         "readonlyfs.go",
         "regexpfs.go",
-        "sftp.go",
         "unionFile.go",
         "util.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
-            "const_bsds.go",
-        ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "const_win_unix.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "const_bsds.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "const_bsds.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "const_bsds.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "const_win_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "const_win_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "const_bsds.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "const_bsds.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "const_win_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "const_win_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "const_win_unix.go",
         ],
         "//conditions:default": [],
@@ -33,9 +56,7 @@ go_library(
     importpath = "github.com/spf13/afero",
     visibility = ["//visibility:public"],
     deps = [
-        "//vendor/github.com/pkg/sftp:go_default_library",
         "//vendor/github.com/spf13/afero/mem:go_default_library",
-        "//vendor/github.com/spf13/afero/sftp:go_default_library",
         "//vendor/golang.org/x/text/transform:go_default_library",
         "//vendor/golang.org/x/text/unicode/norm:go_default_library",
     ],
@@ -49,11 +70,12 @@ go_test(
         "composite_test.go",
         "copyOnWriteFs_test.go",
         "ioutil_test.go",
+        "match_test.go",
         "memmap_test.go",
         "path_test.go",
         "ro_regexp_test.go",
         "util_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/spf13/afero",
-    library = ":go_default_library",
 )

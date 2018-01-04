@@ -186,13 +186,13 @@ func TestFlattenObjects(t *testing.T) {
 	}{
 		{
 			`{
-				"foo": [
-					{
-						"foo": "svh",
-						"bar": "fatih"
-					}
-				]
-			}`,
+					"foo": [
+						{
+							"foo": "svh",
+							"bar": "fatih"
+						}
+					]
+				}`,
 			[]ast.Node{
 				&ast.ObjectType{},
 				&ast.LiteralType{},
@@ -202,12 +202,30 @@ func TestFlattenObjects(t *testing.T) {
 		},
 		{
 			`{
-				"variable": {
-					"foo": {}
-				}
-			}`,
+					"variable": {
+						"foo": {}
+					}
+				}`,
 			[]ast.Node{
 				&ast.ObjectType{},
+			},
+			1,
+		},
+		{
+			`{
+				"empty": []
+			}`,
+			[]ast.Node{
+				&ast.ListType{},
+			},
+			1,
+		},
+		{
+			`{
+				"basic": [1, 2, 3]
+			}`,
+			[]ast.Node{
+				&ast.ListType{},
 			},
 			1,
 		},
@@ -315,6 +333,14 @@ func TestParse(t *testing.T) {
 			"bad_input_128.json",
 			true,
 		},
+		{
+			"bad_input_tf_8110.json",
+			true,
+		},
+		{
+			"good_input_tf_8110.json",
+			false,
+		},
 	}
 
 	const fixtureDir = "./test-fixtures"
@@ -352,7 +378,7 @@ func TestParse_inline(t *testing.T) {
 func equals(tb testing.TB, exp, act interface{}) {
 	if !reflect.DeepEqual(exp, act) {
 		_, file, line, _ := runtime.Caller(1)
-		fmt.Printf("\033[31m%s:%d:\n\n\texp: %#v\n\n\tgot: %#v\033[39m\n\n", filepath.Base(file), line, exp, act)
+		fmt.Printf("\033[31m%s:%d:\n\n\texp: %s\n\n\tgot: %s\033[39m\n\n", filepath.Base(file), line, exp, act)
 		tb.FailNow()
 	}
 }

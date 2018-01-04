@@ -11,7 +11,7 @@ Get one or many clusters.
 Display one or many cluster resources.
 
 ```
-kops get clusters
+kops get clusters [flags]
 ```
 
 ### Examples
@@ -34,6 +34,7 @@ kops get clusters
 
 ```
       --full   Show fully populated configuration
+  -h, --help   help for clusters
 ```
 
 ### Options inherited from parent commands

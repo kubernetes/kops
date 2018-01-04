@@ -17,6 +17,12 @@ Export configurations from a cluster.
   kops export kubecfg kubernetes-cluster.example.com
 ```
 
+### Options
+
+```
+  -h, --help   help for export
+```
+
 ### Options inherited from parent commands
 
 ```

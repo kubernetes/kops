@@ -22,8 +22,8 @@ go_test(
         "token_test.go",
         "transport_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/oauth2",
-    library = ":go_default_library",
     deps = ["//vendor/golang.org/x/net/context:go_default_library"],
 )
 

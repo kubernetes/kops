@@ -2,10 +2,28 @@ package jsoniter
 
 import (
 	"encoding/json"
-	"github.com/stretchr/testify/require"
+	"fmt"
 	"testing"
 	"unsafe"
+
+	"github.com/stretchr/testify/require"
+	"reflect"
 )
+
+func Test_write_empty_interface_via_placeholder(t *testing.T) {
+	fmt.Println(^uint(0) >> 1)
+	should := require.New(t)
+	m := map[uint32]interface{}{1: "hello"}
+	inf := reflect.ValueOf(m).MapIndex(reflect.ValueOf(uint32(1))).Interface()
+	encoder := &placeholderEncoder{
+		cfg:      ConfigFastest.(*frozenConfig),
+		cacheKey: reflect.TypeOf(m).Elem(),
+	}
+	stream := ConfigFastest.BorrowStream(nil)
+	encoderOfType(ConfigFastest.(*frozenConfig), reflect.TypeOf(m).Elem())
+	encoder.EncodeInterface(inf, stream)
+	should.Equal(`"hello"`, string(stream.Buffer()))
+}
 
 func Test_write_array_of_interface(t *testing.T) {
 	should := require.New(t)
@@ -296,4 +314,263 @@ func Test_array_with_nothing(t *testing.T) {
 	output, err := MarshalToString(obj)
 	should.Nil(err)
 	should.Equal(`[null,null]`, output)
+}
+
+func Test_unmarshal_ptr_to_interface(t *testing.T) {
+	type TestData struct {
+		Name string `json:"name"`
+	}
+	should := require.New(t)
+	var obj interface{} = &TestData{}
+	err := json.Unmarshal([]byte(`{"name":"value"}`), &obj)
+	should.Nil(err)
+	should.Equal("&{value}", fmt.Sprintf("%v", obj))
+	obj = interface{}(&TestData{})
+	err = Unmarshal([]byte(`{"name":"value"}`), &obj)
+	should.Nil(err)
+	should.Equal("&{value}", fmt.Sprintf("%v", obj))
+}
+
+func Test_nil_out_null_interface(t *testing.T) {
+	type TestData struct {
+		Field interface{} `json:"field"`
+	}
+	should := require.New(t)
+
+	var boolVar bool
+	obj := TestData{
+		Field: &boolVar,
+	}
+
+	data1 := []byte(`{"field": true}`)
+
+	err := Unmarshal(data1, &obj)
+	should.NoError(err)
+	should.Equal(true, *(obj.Field.(*bool)))
+
+	data2 := []byte(`{"field": null}`)
+
+	err = Unmarshal(data2, &obj)
+	should.NoError(err)
+	should.Equal(nil, obj.Field)
+
+	// Checking stdlib behavior matches.
+	obj2 := TestData{
+		Field: &boolVar,
+	}
+
+	err = json.Unmarshal(data1, &obj2)
+	should.NoError(err)
+	should.Equal(true, *(obj2.Field.(*bool)))
+
+	err = json.Unmarshal(data2, &obj2)
+	should.NoError(err)
+	should.Equal(nil, obj2.Field)
+}
+
+func Test_omitempty_nil_interface(t *testing.T) {
+	type TestData struct {
+		Field interface{} `json:"field,omitempty"`
+	}
+	should := require.New(t)
+
+	obj := TestData{
+		Field: nil,
+	}
+
+	js, err := json.Marshal(obj)
+	should.NoError(err)
+	should.Equal("{}", string(js))
+
+	str, err := MarshalToString(obj)
+	should.NoError(err)
+	should.Equal(string(js), str)
+}
+
+func Test_omitempty_nil_nonempty_interface(t *testing.T) {
+	type TestData struct {
+		Field MyInterface `json:"field,omitempty"`
+	}
+	should := require.New(t)
+
+	obj := TestData{
+		Field: nil,
+	}
+
+	js, err := json.Marshal(obj)
+	should.NoError(err)
+	should.Equal("{}", string(js))
+
+	str, err := MarshalToString(obj)
+	should.NoError(err)
+	should.Equal(string(js), str)
+
+	obj.Field = MyString("hello")
+	err = UnmarshalFromString(`{"field":null}`, &obj)
+	should.NoError(err)
+	should.Equal(nil, obj.Field)
+}
+
+func Test_marshal_nil_marshaler_interface(t *testing.T) {
+	type TestData struct {
+		Field json.Marshaler `json:"field"`
+	}
+	should := require.New(t)
+
+	obj := TestData{
+		Field: nil,
+	}
+
+	js, err := json.Marshal(obj)
+	should.NoError(err)
+	should.Equal(`{"field":null}`, string(js))
+
+	str, err := MarshalToString(obj)
+	should.NoError(err)
+	should.Equal(string(js), str)
+}
+
+func Test_marshal_nil_nonempty_interface(t *testing.T) {
+	type TestData struct {
+		Field MyInterface `json:"field"`
+	}
+	should := require.New(t)
+
+	obj := TestData{
+		Field: nil,
+	}
+
+	js, err := json.Marshal(obj)
+	should.NoError(err)
+	should.Equal(`{"field":null}`, string(js))
+
+	str, err := MarshalToString(obj)
+	should.NoError(err)
+	should.Equal(string(js), str)
+
+	obj.Field = MyString("hello")
+	err = Unmarshal(js, &obj)
+	should.NoError(err)
+	should.Equal(nil, obj.Field)
+}
+
+func Test_overwrite_interface_ptr_value_with_nil(t *testing.T) {
+	type Wrapper struct {
+		Payload interface{} `json:"payload,omitempty"`
+	}
+	type Payload struct {
+		Value int `json:"val,omitempty"`
+	}
+
+	should := require.New(t)
+
+	payload := &Payload{}
+	wrapper := &Wrapper{
+		Payload: &payload,
+	}
+
+	err := json.Unmarshal([]byte(`{"payload": {"val": 42}}`), &wrapper)
+	should.Equal(nil, err)
+	should.Equal(&payload, wrapper.Payload)
+	should.Equal(42, (*(wrapper.Payload.(**Payload))).Value)
+
+	err = json.Unmarshal([]byte(`{"payload": null}`), &wrapper)
+	should.Equal(nil, err)
+	should.Equal(&payload, wrapper.Payload)
+	should.Equal((*Payload)(nil), payload)
+
+	payload = &Payload{}
+	wrapper = &Wrapper{
+		Payload: &payload,
+	}
+
+	err = Unmarshal([]byte(`{"payload": {"val": 42}}`), &wrapper)
+	should.Equal(nil, err)
+	should.Equal(&payload, wrapper.Payload)
+	should.Equal(42, (*(wrapper.Payload.(**Payload))).Value)
+
+	err = Unmarshal([]byte(`{"payload": null}`), &wrapper)
+	should.Equal(nil, err)
+	should.Equal(&payload, wrapper.Payload)
+	should.Equal((*Payload)(nil), payload)
+}
+
+func Test_overwrite_interface_value_with_nil(t *testing.T) {
+	type Wrapper struct {
+		Payload interface{} `json:"payload,omitempty"`
+	}
+	type Payload struct {
+		Value int `json:"val,omitempty"`
+	}
+
+	should := require.New(t)
+
+	payload := &Payload{}
+	wrapper := &Wrapper{
+		Payload: payload,
+	}
+
+	err := json.Unmarshal([]byte(`{"payload": {"val": 42}}`), &wrapper)
+	should.Equal(nil, err)
+	should.Equal(42, (*(wrapper.Payload.(*Payload))).Value)
+
+	err = json.Unmarshal([]byte(`{"payload": null}`), &wrapper)
+	should.Equal(nil, err)
+	should.Equal(nil, wrapper.Payload)
+	should.Equal(42, payload.Value)
+
+	payload = &Payload{}
+	wrapper = &Wrapper{
+		Payload: payload,
+	}
+
+	err = Unmarshal([]byte(`{"payload": {"val": 42}}`), &wrapper)
+	should.Equal(nil, err)
+	should.Equal(42, (*(wrapper.Payload.(*Payload))).Value)
+
+	err = Unmarshal([]byte(`{"payload": null}`), &wrapper)
+	should.Equal(nil, err)
+	should.Equal(nil, wrapper.Payload)
+	should.Equal(42, payload.Value)
+}
+
+func Test_unmarshal_into_nil(t *testing.T) {
+	type Payload struct {
+		Value int `json:"val,omitempty"`
+	}
+	type Wrapper struct {
+		Payload interface{} `json:"payload,omitempty"`
+	}
+
+	should := require.New(t)
+
+	var payload *Payload
+	wrapper := &Wrapper{
+		Payload: payload,
+	}
+
+	err := json.Unmarshal([]byte(`{"payload": {"val": 42}}`), &wrapper)
+	should.Nil(err)
+	should.NotNil(wrapper.Payload)
+	should.Nil(payload)
+
+	err = json.Unmarshal([]byte(`{"payload": null}`), &wrapper)
+	should.Nil(err)
+	should.Nil(wrapper.Payload)
+	should.Nil(payload)
+
+	payload = nil
+	wrapper = &Wrapper{
+		Payload: payload,
+	}
+
+	err = Unmarshal([]byte(`{"payload": {"val": 42}}`), &wrapper)
+	should.Nil(err)
+	should.NotNil(wrapper.Payload)
+	should.Nil(payload)
+
+	err = Unmarshal([]byte(`{"payload": null}`), &wrapper)
+	should.Nil(err)
+	should.Nil(wrapper.Payload)
+	should.Nil(payload)
 }

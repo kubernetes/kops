@@ -24,6 +24,12 @@ Create a secret
   --name k8s-cluster.example.com --state s3://example.com
 ```
 
+### Options
+
+```
+  -h, --help   help for secret
+```
+
 ### Options inherited from parent commands
 
 ```

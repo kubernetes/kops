@@ -113,11 +113,9 @@ func BenchmarkUnmarshalText(b *testing.B) {
 	}
 }
 
-var sink string
-
 func BenchmarkMarshalToString(b *testing.B) {
 	u := NewV4()
 	for i := 0; i < b.N; i++ {
-		sink = u.String()
+		u.String()
 	}
 }

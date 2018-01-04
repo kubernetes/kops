@@ -1,36 +1,46 @@
+// +build !cgo
+
 package term
 
 import (
-	"golang.org/x/sys/unix"
+	"syscall"
+	"unsafe"
 )
 
 const (
-	getTermios = unix.TCGETS
-	setTermios = unix.TCSETS
+	getTermios = syscall.TCGETS
+	setTermios = syscall.TCSETS
 )
 
 // Termios is the Unix API for terminal I/O.
-type Termios unix.Termios
+type Termios struct {
+	Iflag  uint32
+	Oflag  uint32
+	Cflag  uint32
+	Lflag  uint32
+	Cc     [20]byte
+	Ispeed uint32
+	Ospeed uint32
+}
 
 // MakeRaw put the terminal connected to the given file descriptor into raw
 // mode and returns the previous state of the terminal so that it can be
 // restored.
 func MakeRaw(fd uintptr) (*State, error) {
-	termios, err := unix.IoctlGetTermios(int(fd), getTermios)
-	if err != nil {
+	var oldState State
+	if _, _, err := syscall.Syscall(syscall.SYS_IOCTL, fd, getTermios, uintptr(unsafe.Pointer(&oldState.termios))); err != 0 {
 		return nil, err
 	}
 
-	var oldState State
-	oldState.termios = Termios(*termios)
+	newState := oldState.termios
 
-	termios.Iflag &^= (unix.IGNBRK | unix.BRKINT | unix.PARMRK | unix.ISTRIP | unix.INLCR | unix.IGNCR | unix.ICRNL | unix.IXON)
-	termios.Oflag &^= unix.OPOST
-	termios.Lflag &^= (unix.ECHO | unix.ECHONL | unix.ICANON | unix.ISIG | unix.IEXTEN)
-	termios.Cflag &^= (unix.CSIZE | unix.PARENB)
-	termios.Cflag |= unix.CS8
+	newState.Iflag &^= (syscall.IGNBRK | syscall.BRKINT | syscall.PARMRK | syscall.ISTRIP | syscall.INLCR | syscall.IGNCR | syscall.ICRNL | syscall.IXON)
+	newState.Oflag &^= syscall.OPOST
+	newState.Lflag &^= (syscall.ECHO | syscall.ECHONL | syscall.ICANON | syscall.ISIG | syscall.IEXTEN)
+	newState.Cflag &^= (syscall.CSIZE | syscall.PARENB)
+	newState.Cflag |= syscall.CS8
 
-	if err := unix.IoctlSetTermios(int(fd), setTermios, termios); err != nil {
+	if _, _, err := syscall.Syscall(syscall.SYS_IOCTL, fd, setTermios, uintptr(unsafe.Pointer(&newState))); err != 0 {
 		return nil, err
 	}
 	return &oldState, nil

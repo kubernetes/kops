@@ -113,6 +113,11 @@ func (iter *Iterator) ReadUint32() (ret uint32) {
 }
 
 func (iter *Iterator) readUint32(c byte) (ret uint32) {
+	defer func() {
+		if iter.head < len(iter.buf) && iter.buf[iter.head] == '.' {
+			iter.ReportError("readUint32", "can not decode float as int")
+		}
+	}()
 	ind := intDigits[c]
 	if ind == 0 {
 		return 0 // single zero
@@ -224,6 +229,11 @@ func (iter *Iterator) ReadUint64() uint64 {
 }
 
 func (iter *Iterator) readUint64(c byte) (ret uint64) {
+	defer func() {
+		if iter.head < len(iter.buf) && iter.buf[iter.head] == '.' {
+			iter.ReportError("readUint64", "can not decode float as int")
+		}
+	}()
 	ind := intDigits[c]
 	if ind == 0 {
 		return 0 // single zero

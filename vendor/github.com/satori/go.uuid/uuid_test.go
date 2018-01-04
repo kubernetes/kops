@@ -491,7 +491,7 @@ func TestNullUUIDScanNil(t *testing.T) {
 	}
 
 	if !Equal(u.UUID, Nil) {
-		t.Errorf("NullUUID value should be equal to Nil: %v", u)
+		t.Errorf("NullUUID value should be equal to Nil: %s", u)
 	}
 }
 

@@ -17,6 +17,7 @@ limitations under the License.
 package groupcache
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -46,6 +47,10 @@ func TestByteView(t *testing.T) {
 			}
 			if got, err := ioutil.ReadAll(io.NewSectionReader(v, 0, int64(len(s)))); err != nil || string(got) != s {
 				t.Errorf("%s: SectionReader of ReaderAt = %q, %v; want %q", name, got, err, s)
+			}
+			var dest bytes.Buffer
+			if _, err := v.WriteTo(&dest); err != nil || !bytes.Equal(dest.Bytes(), []byte(s)) {
+				t.Errorf("%s: WriteTo = %q, %v; want %q", name, dest.Bytes(), err, s)
 			}
 		}
 	}

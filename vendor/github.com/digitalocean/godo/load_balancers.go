@@ -48,6 +48,32 @@ func (l LoadBalancer) String() string {
 	return Stringify(l)
 }
 
+// AsRequest creates a LoadBalancerRequest that can be submitted to Update with the current values of the LoadBalancer.
+// Modifying the returned LoadBalancerRequest will not modify the original LoadBalancer.
+func (l LoadBalancer) AsRequest() *LoadBalancerRequest {
+	r := LoadBalancerRequest{
+		Name:                l.Name,
+		Algorithm:           l.Algorithm,
+		ForwardingRules:     append([]ForwardingRule(nil), l.ForwardingRules...),
+		DropletIDs:          append([]int(nil), l.DropletIDs...),
+		Tag:                 l.Tag,
+		RedirectHttpToHttps: l.RedirectHttpToHttps,
+		HealthCheck:         l.HealthCheck,
+	}
+	if l.HealthCheck != nil {
+		r.HealthCheck = &HealthCheck{}
+		*r.HealthCheck = *l.HealthCheck
+	}
+	if l.StickySessions != nil {
+		r.StickySessions = &StickySessions{}
+		*r.StickySessions = *l.StickySessions
+	}
+	if l.Region != nil {
+		r.Region = l.Region.Slug
+	}
+	return &r
+}
+
 // ForwardingRule represents load balancer forwarding rules.
 type ForwardingRule struct {
 	EntryProtocol  string `json:"entry_protocol,omitempty"`

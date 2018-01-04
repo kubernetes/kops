@@ -1,6 +1,6 @@
 # xstrings #
 
-[![Build Status](https://travis-ci.org/huandu/xstrings.png?branch=master)](https://travis-ci.org/huandu/xstrings)
+[![Build Status](https://travis-ci.org/huandu/xstrings.svg?branch=master)](https://travis-ci.org/huandu/xstrings)
 [![GoDoc](https://godoc.org/github.com/huandu/xstrings?status.svg)](https://godoc.org/github.com/huandu/xstrings)
 
 Go package [xstrings](https://godoc.org/github.com/huandu/xstrings) is a collection of string functions, which are widely used in other languages but absent in Go package [strings](http://golang.org/pkg/strings).

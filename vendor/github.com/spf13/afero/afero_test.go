@@ -20,7 +20,6 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -300,7 +299,6 @@ func TestRemove(t *testing.T) {
 func TestTruncate(t *testing.T) {
 	defer removeAllTestFiles(t)
 	for _, fs := range Fss {
-		// f := newFile("TestTruncate", fs, t)
 		f := tmpFile(fs)
 		defer f.Close()
 
@@ -381,7 +379,6 @@ func TestReadAt(t *testing.T) {
 func TestWriteAt(t *testing.T) {
 	defer removeAllTestFiles(t)
 	for _, fs := range Fss {
-		// f := newFile("TestWriteAt", fs, t)
 		f := tmpFile(fs)
 		defer f.Close()
 
@@ -394,13 +391,13 @@ func TestWriteAt(t *testing.T) {
 		}
 
 		f2, err := fs.Open(f.Name())
+		if err != nil {
+			t.Fatalf("%v: ReadFile %s: %v", fs.Name(), f.Name(), err)
+		}
 		defer f2.Close()
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(f2)
 		b := buf.Bytes()
-		if err != nil {
-			t.Fatalf("%v: ReadFile %s: %v", fs.Name(), f.Name(), err)
-		}
 		if string(b) != "hello, WORLD\n" {
 			t.Fatalf("after write: have %q want %q", string(b), "hello, WORLD\n")
 		}
@@ -679,39 +676,6 @@ func removeAllTestFiles(t *testing.T) {
 		}
 	}
 	testRegistry = make(map[Fs][]string)
-}
-
-func newFile(testName string, fs Fs, t *testing.T) (f File) {
-	// Use a local file system, not NFS.
-	// On Unix, override $TMPDIR in case the user
-	// has it set to an NFS-mounted directory.
-	dir := ""
-	if runtime.GOOS != "windows" {
-		dir = "/tmp"
-	}
-	fs.MkdirAll(dir, 0777)
-	f, err := fs.Create(path.Join(dir, testName))
-	if err != nil {
-		t.Fatalf("%v: open %s: %s", fs.Name(), testName, err)
-	}
-	return f
-}
-
-func writeFile(t *testing.T, fs Fs, fname string, flag int, text string) string {
-	f, err := fs.OpenFile(fname, flag, 0666)
-	if err != nil {
-		t.Fatalf("Unable to Open file %q for writing: %v", fname, err)
-	}
-	n, err := io.WriteString(f, text)
-	if err != nil {
-		t.Fatalf("WriteString: %d, %v", n, err)
-	}
-	f.Close()
-	data, err := ioutil.ReadFile(fname)
-	if err != nil {
-		t.Fatalf("ReadFile: %v", err)
-	}
-	return string(data)
 }
 
 func equal(name1, name2 string) (r bool) {

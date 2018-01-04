@@ -176,6 +176,10 @@ func (kl *Kubelet) updateDefaultLabels(initialNode, existingNode *v1.Node) bool 
 	var needsUpdate bool = false
 	//Set default labels but make sure to not set labels with empty values
 	for _, label := range defaultLabels {
+		if _, hasInitialValue := initialNode.Labels[label]; !hasInitialValue {
+			continue
+		}
+
 		if existingNode.Labels[label] != initialNode.Labels[label] {
 			existingNode.Labels[label] = initialNode.Labels[label]
 			needsUpdate = true
@@ -604,15 +608,6 @@ func (kl *Kubelet) setNodeStatusMachineInfo(node *v1.Node) {
 				if v1helper.IsExtendedResourceName(k) {
 					glog.V(2).Infof("Update capacity for %s to %d", k, v.Value())
 					node.Status.Capacity[k] = v
-				}
-			}
-			// Remove stale extended resources.
-			for k := range node.Status.Capacity {
-				if v1helper.IsExtendedResourceName(k) {
-					if _, ok := currentCapacity[k]; !ok {
-						glog.V(2).Infof("delete capacity for %s", k)
-						delete(node.Status.Capacity, k)
-					}
 				}
 			}
 		}

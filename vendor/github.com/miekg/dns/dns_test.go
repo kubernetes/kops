@@ -1,6 +1,7 @@
 package dns
 
 import (
+	"bytes"
 	"encoding/hex"
 	"net"
 	"testing"
@@ -126,57 +127,17 @@ func TestBailiwick(t *testing.T) {
 	}
 }
 
-func TestPack(t *testing.T) {
-	rr := []string{"US.    86400	IN	NSEC	0-.us. NS SOA RRSIG NSEC DNSKEY TYPE65534"}
-	m := new(Msg)
-	var err error
-	m.Answer = make([]RR, 1)
-	for _, r := range rr {
-		m.Answer[0], err = NewRR(r)
-		if err != nil {
-			t.Errorf("failed to create RR: %v", err)
-			continue
-		}
-		if _, err := m.Pack(); err != nil {
-			t.Errorf("packing failed: %v", err)
-		}
-	}
-	x := new(Msg)
-	ns, _ := NewRR("pool.ntp.org.   390 IN  NS  a.ntpns.org")
-	ns.(*NS).Ns = "a.ntpns.org"
-	x.Ns = append(m.Ns, ns)
-	x.Ns = append(m.Ns, ns)
-	x.Ns = append(m.Ns, ns)
-	// This crashes due to the fact the a.ntpns.org isn't a FQDN
-	// How to recover() from a remove panic()?
-	if _, err := x.Pack(); err == nil {
-		t.Error("packing should fail")
-	}
-	x.Answer = make([]RR, 1)
-	x.Answer[0], err = NewRR(rr[0])
-	if _, err := x.Pack(); err == nil {
-		t.Error("packing should fail")
-	}
-	x.Question = make([]Question, 1)
-	x.Question[0] = Question{";sd#eddddséâèµâââ¥âxzztsestxssweewwsssstx@s@Zåµe@cn.pool.ntp.org.", TypeA, ClassINET}
-	if _, err := x.Pack(); err == nil {
-		t.Error("packing should fail")
-	}
-}
-
 func TestPackNAPTR(t *testing.T) {
 	for _, n := range []string{
 		`apple.com. IN NAPTR   100 50 "se" "SIP+D2U" "" _sip._udp.apple.com.`,
 		`apple.com. IN NAPTR   90 50 "se" "SIP+D2T" "" _sip._tcp.apple.com.`,
 		`apple.com. IN NAPTR   50 50 "se" "SIPS+D2T" "" _sips._tcp.apple.com.`,
 	} {
-		rr, _ := NewRR(n)
+		rr := testRR(n)
 		msg := make([]byte, rr.len())
 		if off, err := PackRR(rr, msg, 0, nil, false); err != nil {
 			t.Errorf("packing failed: %v", err)
 			t.Errorf("length %d, need more than %d", rr.len(), off)
-		} else {
-			t.Logf("buf size needed: %d", off)
 		}
 	}
 }
@@ -204,8 +165,8 @@ func TestMsgCompressLength(t *testing.T) {
 	}
 
 	name1 := "12345678901234567890123456789012345.12345678.123."
-	rrA, _ := NewRR(name1 + " 3600 IN A 192.0.2.1")
-	rrMx, _ := NewRR(name1 + " 3600 IN MX 10 " + name1)
+	rrA := testRR(name1 + " 3600 IN A 192.0.2.1")
+	rrMx := testRR(name1 + " 3600 IN MX 10 " + name1)
 	tests := []*Msg{
 		makeMsg(name1, []RR{rrA}, nil, nil),
 		makeMsg(name1, []RR{rrMx, rrMx}, nil, nil)}
@@ -234,8 +195,8 @@ func TestMsgLength(t *testing.T) {
 	}
 
 	name1 := "12345678901234567890123456789012345.12345678.123."
-	rrA, _ := NewRR(name1 + " 3600 IN A 192.0.2.1")
-	rrMx, _ := NewRR(name1 + " 3600 IN MX 10 " + name1)
+	rrA := testRR(name1 + " 3600 IN A 192.0.2.1")
+	rrMx := testRR(name1 + " 3600 IN MX 10 " + name1)
 	tests := []*Msg{
 		makeMsg(name1, []RR{rrA}, nil, nil),
 		makeMsg(name1, []RR{rrMx, rrMx}, nil, nil)}
@@ -310,15 +271,32 @@ func TestMsgLengthCompressionMalformed(t *testing.T) {
 	m.Len() // Should not crash.
 }
 
+func TestMsgCompressLength2(t *testing.T) {
+	msg := new(Msg)
+	msg.Compress = true
+	msg.SetQuestion(Fqdn("bliep."), TypeANY)
+	msg.Answer = append(msg.Answer, &SRV{Hdr: RR_Header{Name: "blaat.", Rrtype: 0x21, Class: 0x1, Ttl: 0x3c}, Port: 0x4c57, Target: "foo.bar."})
+	msg.Extra = append(msg.Extra, &A{Hdr: RR_Header{Name: "foo.bar.", Rrtype: 0x1, Class: 0x1, Ttl: 0x3c}, A: net.IP{0xac, 0x11, 0x0, 0x3}})
+	predicted := msg.Len()
+	buf, err := msg.Pack()
+	if err != nil {
+		t.Error(err)
+	}
+	if predicted != len(buf) {
+		t.Errorf("predicted compressed length is wrong: predicted %s (len=%d) %d, actual %d",
+			msg.Question[0].Name, len(msg.Answer), predicted, len(buf))
+	}
+}
+
 func TestToRFC3597(t *testing.T) {
-	a, _ := NewRR("miek.nl. IN A 10.0.1.1")
+	a := testRR("miek.nl. IN A 10.0.1.1")
 	x := new(RFC3597)
 	x.ToRFC3597(a)
 	if x.String() != `miek.nl.	3600	CLASS1	TYPE1	\# 4 0a000101` {
 		t.Errorf("string mismatch, got: %s", x)
 	}
 
-	b, _ := NewRR("miek.nl. IN MX 10 mx.miek.nl.")
+	b := testRR("miek.nl. IN MX 10 mx.miek.nl.")
 	x.ToRFC3597(b)
 	if x.String() != `miek.nl.	3600	CLASS1	TYPE15	\# 14 000a026d78046d69656b026e6c00` {
 		t.Errorf("string mismatch, got: %s", x)
@@ -340,8 +318,9 @@ func TestNoRdataPack(t *testing.T) {
 func TestNoRdataUnpack(t *testing.T) {
 	data := make([]byte, 1024)
 	for typ, fn := range TypeToRR {
-		if typ == TypeSOA || typ == TypeTSIG {
+		if typ == TypeSOA || typ == TypeTSIG || typ == TypeTKEY {
 			// SOA, TSIG will not be seen (like this) in dyn. updates?
+			// TKEY requires length fields to be present for the Key and OtherData fields
 			continue
 		}
 		r := fn()
@@ -352,11 +331,9 @@ func TestNoRdataUnpack(t *testing.T) {
 			t.Errorf("failed to pack RR: %v", err)
 			continue
 		}
-		rr, _, err := UnpackRR(data[:off], 0)
-		if err != nil {
+		if _, _, err := UnpackRR(data[:off], 0); err != nil {
 			t.Errorf("failed to unpack RR with zero rdata: %s: %v", TypeToString[typ], err)
 		}
-		t.Log(rr)
 	}
 }
 
@@ -377,7 +354,7 @@ func TestRdataOverflow(t *testing.T) {
 }
 
 func TestCopy(t *testing.T) {
-	rr, _ := NewRR("miek.nl. 2311 IN A 127.0.0.1") // Weird TTL to avoid catching TTL
+	rr := testRR("miek.nl. 2311 IN A 127.0.0.1") // Weird TTL to avoid catching TTL
 	rr1 := Copy(rr)
 	if rr.String() != rr1.String() {
 		t.Fatalf("Copy() failed %s != %s", rr.String(), rr1.String())
@@ -387,9 +364,9 @@ func TestCopy(t *testing.T) {
 func TestMsgCopy(t *testing.T) {
 	m := new(Msg)
 	m.SetQuestion("miek.nl.", TypeA)
-	rr, _ := NewRR("miek.nl. 2311 IN A 127.0.0.1")
+	rr := testRR("miek.nl. 2311 IN A 127.0.0.1")
 	m.Answer = []RR{rr}
-	rr, _ = NewRR("miek.nl. 2311 IN NS 127.0.0.1")
+	rr = testRR("miek.nl. 2311 IN NS 127.0.0.1")
 	m.Ns = []RR{rr}
 
 	m1 := m.Copy()
@@ -397,12 +374,12 @@ func TestMsgCopy(t *testing.T) {
 		t.Fatalf("Msg.Copy() failed %s != %s", m.String(), m1.String())
 	}
 
-	m1.Answer[0], _ = NewRR("somethingelse.nl. 2311 IN A 127.0.0.1")
+	m1.Answer[0] = testRR("somethingelse.nl. 2311 IN A 127.0.0.1")
 	if m.String() == m1.String() {
 		t.Fatalf("Msg.Copy() failed; change to copy changed template %s", m.String())
 	}
 
-	rr, _ = NewRR("miek.nl. 2311 IN A 127.0.0.2")
+	rr = testRR("miek.nl. 2311 IN A 127.0.0.2")
 	m1.Answer = append(m1.Answer, rr)
 	if m1.Ns[0].String() == m1.Answer[1].String() {
 		t.Fatalf("Msg.Copy() failed; append changed underlying array %s", m1.Ns[0].String())
@@ -428,6 +405,54 @@ func TestMsgPackBuffer(t *testing.T) {
 			t.Errorf("packet %d failed to unpack", i)
 			continue
 		}
-		t.Logf("packet %d %s", i, m.String())
 	}
+}
+
+// Make sure we can decode a TKEY packet from the string, modify the RR, and then pack it again.
+func TestTKEY(t *testing.T) {
+	// An example TKEY RR captured.  There is no known accepted standard text format for a TKEY
+	// record so we do this from a hex string instead of from a text readable string.
+	tkeyStr := "0737362d6d732d370932322d3332633233332463303439663961662d633065612d313165372d363839362d6463333937396666656666640000f900ff0000000000d2086773732d747369670059fd01f359fe53730003000000b8a181b53081b2a0030a0100a10b06092a864882f712010202a2819d04819a60819706092a864886f71201020202006f8187308184a003020105a10302010fa2783076a003020112a26f046db29b1b1d2625da3b20b49dafef930dd1e9aad335e1c5f45dcd95e0005d67a1100f3e573d70506659dbed064553f1ab890f68f65ae10def0dad5b423b39f240ebe666f2886c5fe03819692d29182bbed87b83e1f9d16b7334ec16a3c4fc5ad4a990088e0be43f0c6957916f5fe60000"
+	tkeyBytes, err := hex.DecodeString(tkeyStr)
+	if err != nil {
+		t.Fatal("unable to decode TKEY string ", err)
+	}
+	// Decode the RR
+	rr, tkeyLen, unPackErr := UnpackRR(tkeyBytes, 0)
+	if unPackErr != nil {
+		t.Fatal("unable to decode TKEY RR", unPackErr)
+	}
+	// make space for it with some fudge room
+	msg := make([]byte, tkeyLen+1000)
+	offset, packErr := PackRR(rr, msg, 0, nil, false)
+	if packErr != nil {
+		t.Fatal("unable to pack TKEY RR", packErr)
+	}
+	if offset != len(tkeyBytes) {
+		t.Fatalf("mismatched TKEY RR size %d != %d", len(tkeyBytes), offset)
+	}
+	if bytes.Compare(tkeyBytes, msg[0:offset]) != 0 {
+		t.Fatal("mismatched TKEY data after rewriting bytes")
+	}
+	t.Logf("got TKEY of: " + rr.String())
+	// Now add some bytes to this and make sure we can encode OtherData properly
+	tkey := rr.(*TKEY)
+	tkey.OtherData = "abcd"
+	tkey.OtherLen = 2
+	offset, packErr = PackRR(tkey, msg, 0, nil, false)
+	if packErr != nil {
+		t.Fatal("unable to pack TKEY RR after modification", packErr)
+	}
+	if offset != (len(tkeyBytes) + 2) {
+		t.Fatalf("mismatched TKEY RR size %d != %d", offset, len(tkeyBytes)+2)
+	}
+	t.Logf("modified to TKEY of: " + rr.String())
+
+	// Make sure we can parse our string output
+	tkey.Hdr.Class = ClassINET // https://github.com/miekg/dns/issues/577
+	newRR, newError := NewRR(tkey.String())
+	if newError != nil {
+		t.Fatalf("unable to parse TKEY string: %s", newError)
+	}
+	t.Log("got reparsed TKEY of newRR: " + newRR.String())
 }

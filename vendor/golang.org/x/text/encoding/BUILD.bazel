@@ -17,7 +17,6 @@ go_test(
         "encoding_test.go",
         "example_test.go",
     ],
-    data = glob(["testdata/**"]),
     importpath = "golang.org/x/text/encoding_test",
     deps = [
         ":go_default_library",

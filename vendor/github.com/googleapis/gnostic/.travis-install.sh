@@ -14,21 +14,14 @@ cd
 mkdir -p local
 
 # Install swift
-SWIFT_BRANCH=swift-3.0.2-release
-SWIFT_VERSION=swift-3.0.2-RELEASE
-SWIFT_PLATFORM=ubuntu14.04
-SWIFT_URL=https://swift.org/builds/$SWIFT_BRANCH/$(echo "$SWIFT_PLATFORM" | tr -d .)/$SWIFT_VERSION/$SWIFT_VERSION-$SWIFT_PLATFORM.tar.gz
-
+SWIFT_URL=https://swift.org/builds/swift-4.0-branch/ubuntu1404/swift-4.0-DEVELOPMENT-SNAPSHOT-2017-09-01-a/swift-4.0-DEVELOPMENT-SNAPSHOT-2017-09-01-a-ubuntu14.04.tar.gz
 echo $SWIFT_URL
-
 curl -fSsL $SWIFT_URL -o swift.tar.gz 
 tar -xzf swift.tar.gz --strip-components=2 --directory=local
 
 # Install protoc
-PROTOC_URL=https://github.com/google/protobuf/releases/download/v3.2.0rc2/protoc-3.2.0rc2-linux-x86_64.zip
-
+PROTOC_URL=https://github.com/google/protobuf/releases/download/v3.4.0/protoc-3.4.0-linux-x86_64.zip
 echo $PROTOC_URL
-
 curl -fSsL $PROTOC_URL -o protoc.zip
 unzip protoc.zip -d local
 

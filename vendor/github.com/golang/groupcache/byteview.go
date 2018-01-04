@@ -158,3 +158,18 @@ func (v ByteView) ReadAt(p []byte, off int64) (n int, err error) {
 	}
 	return
 }
+
+// WriteTo implements io.WriterTo on the bytes in v.
+func (v ByteView) WriteTo(w io.Writer) (n int64, err error) {
+	var m int
+	if v.b != nil {
+		m, err = w.Write(v.b)
+	} else {
+		m, err = io.WriteString(w, v.s)
+	}
+	if err == nil && m < v.Len() {
+		err = io.ErrShortWrite
+	}
+	n = int64(m)
+	return
+}

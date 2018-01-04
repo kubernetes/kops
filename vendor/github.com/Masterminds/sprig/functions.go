@@ -98,6 +98,8 @@ var genericMap = map[string]interface{}{
 	"htmlDateInZone": htmlDateInZone,
 	"dateInZone":     dateInZone,
 	"dateModify":     dateModify,
+	"ago":            dateAgo,
+	"toDate":         toDate,
 
 	// Strings
 	"abbrev":     abbrev,
@@ -137,6 +139,7 @@ var genericMap = map[string]interface{}{
 	"squote":    squote,
 	"cat":       cat,
 	"indent":    indent,
+	"nindent":   nindent,
 	"replace":   replace,
 	"plural":    plural,
 	"sha256sum": sha256sum,
@@ -246,11 +249,14 @@ var genericMap = map[string]interface{}{
 	"reverse": reverse,
 	"uniq":    uniq,
 	"without": without,
-	"has":     func(needle interface{}, haystack []interface{}) bool { return inList(haystack, needle) },
+	"has":     has,
 
 	// Crypto:
-	"genPrivateKey":  generatePrivateKey,
-	"derivePassword": derivePassword,
+	"genPrivateKey":     generatePrivateKey,
+	"derivePassword":    derivePassword,
+	"genCA":             generateCertificateAuthority,
+	"genSelfSignedCert": generateSelfSignedCertificate,
+	"genSignedCert":     generateSignedCertificate,
 
 	// UUIDs:
 	"uuidv4": uuidv4,
@@ -263,10 +269,10 @@ var genericMap = map[string]interface{}{
 	"fail": func(msg string) (string, error) { return "", errors.New(msg) },
 
 	// Regex
-	"regexMatch": regexMatch,
-	"regexFindAll": regexFindAll,
-	"regexFind": regexFind,
-	"regexReplaceAll": regexReplaceAll,
+	"regexMatch":             regexMatch,
+	"regexFindAll":           regexFindAll,
+	"regexFind":              regexFind,
+	"regexReplaceAll":        regexReplaceAll,
 	"regexReplaceAllLiteral": regexReplaceAllLiteral,
-	"regexSplit": regexSplit,
+	"regexSplit":             regexSplit,
 }

@@ -302,8 +302,8 @@ type Bucket struct {
 }
 
 func (s *Bucket) MarshalJSON() ([]byte, error) {
-	type noMethod Bucket
-	raw := noMethod(*s)
+	type NoMethod Bucket
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -330,8 +330,8 @@ type BucketBilling struct {
 }
 
 func (s *BucketBilling) MarshalJSON() ([]byte, error) {
-	type noMethod BucketBilling
-	raw := noMethod(*s)
+	type NoMethod BucketBilling
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -373,8 +373,8 @@ type BucketCors struct {
 }
 
 func (s *BucketCors) MarshalJSON() ([]byte, error) {
-	type noMethod BucketCors
-	raw := noMethod(*s)
+	type NoMethod BucketCors
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -402,8 +402,8 @@ type BucketEncryption struct {
 }
 
 func (s *BucketEncryption) MarshalJSON() ([]byte, error) {
-	type noMethod BucketEncryption
-	raw := noMethod(*s)
+	type NoMethod BucketEncryption
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -432,8 +432,8 @@ type BucketLifecycle struct {
 }
 
 func (s *BucketLifecycle) MarshalJSON() ([]byte, error) {
-	type noMethod BucketLifecycle
-	raw := noMethod(*s)
+	type NoMethod BucketLifecycle
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -462,8 +462,8 @@ type BucketLifecycleRule struct {
 }
 
 func (s *BucketLifecycleRule) MarshalJSON() ([]byte, error) {
-	type noMethod BucketLifecycleRule
-	raw := noMethod(*s)
+	type NoMethod BucketLifecycleRule
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -495,8 +495,8 @@ type BucketLifecycleRuleAction struct {
 }
 
 func (s *BucketLifecycleRuleAction) MarshalJSON() ([]byte, error) {
-	type noMethod BucketLifecycleRuleAction
-	raw := noMethod(*s)
+	type NoMethod BucketLifecycleRuleAction
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -546,8 +546,8 @@ type BucketLifecycleRuleCondition struct {
 }
 
 func (s *BucketLifecycleRuleCondition) MarshalJSON() ([]byte, error) {
-	type noMethod BucketLifecycleRuleCondition
-	raw := noMethod(*s)
+	type NoMethod BucketLifecycleRuleCondition
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -580,8 +580,8 @@ type BucketLogging struct {
 }
 
 func (s *BucketLogging) MarshalJSON() ([]byte, error) {
-	type noMethod BucketLogging
-	raw := noMethod(*s)
+	type NoMethod BucketLogging
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -612,8 +612,8 @@ type BucketOwner struct {
 }
 
 func (s *BucketOwner) MarshalJSON() ([]byte, error) {
-	type noMethod BucketOwner
-	raw := noMethod(*s)
+	type NoMethod BucketOwner
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -641,8 +641,8 @@ type BucketVersioning struct {
 }
 
 func (s *BucketVersioning) MarshalJSON() ([]byte, error) {
-	type noMethod BucketVersioning
-	raw := noMethod(*s)
+	type NoMethod BucketVersioning
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -681,8 +681,8 @@ type BucketWebsite struct {
 }
 
 func (s *BucketWebsite) MarshalJSON() ([]byte, error) {
-	type noMethod BucketWebsite
-	raw := noMethod(*s)
+	type NoMethod BucketWebsite
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -758,8 +758,8 @@ type BucketAccessControl struct {
 }
 
 func (s *BucketAccessControl) MarshalJSON() ([]byte, error) {
-	type noMethod BucketAccessControl
-	raw := noMethod(*s)
+	type NoMethod BucketAccessControl
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -790,8 +790,8 @@ type BucketAccessControlProjectTeam struct {
 }
 
 func (s *BucketAccessControlProjectTeam) MarshalJSON() ([]byte, error) {
-	type noMethod BucketAccessControlProjectTeam
-	raw := noMethod(*s)
+	type NoMethod BucketAccessControlProjectTeam
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -826,8 +826,8 @@ type BucketAccessControls struct {
 }
 
 func (s *BucketAccessControls) MarshalJSON() ([]byte, error) {
-	type noMethod BucketAccessControls
-	raw := noMethod(*s)
+	type NoMethod BucketAccessControls
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -867,8 +867,8 @@ type Buckets struct {
 }
 
 func (s *Buckets) MarshalJSON() ([]byte, error) {
-	type noMethod Buckets
-	raw := noMethod(*s)
+	type NoMethod Buckets
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -933,8 +933,8 @@ type Channel struct {
 }
 
 func (s *Channel) MarshalJSON() ([]byte, error) {
-	type noMethod Channel
-	raw := noMethod(*s)
+	type NoMethod Channel
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -968,8 +968,8 @@ type ComposeRequest struct {
 }
 
 func (s *ComposeRequest) MarshalJSON() ([]byte, error) {
-	type noMethod ComposeRequest
-	raw := noMethod(*s)
+	type NoMethod ComposeRequest
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1003,8 +1003,8 @@ type ComposeRequestSourceObjects struct {
 }
 
 func (s *ComposeRequestSourceObjects) MarshalJSON() ([]byte, error) {
-	type noMethod ComposeRequestSourceObjects
-	raw := noMethod(*s)
+	type NoMethod ComposeRequestSourceObjects
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1036,8 +1036,8 @@ type ComposeRequestSourceObjectsObjectPreconditions struct {
 }
 
 func (s *ComposeRequestSourceObjectsObjectPreconditions) MarshalJSON() ([]byte, error) {
-	type noMethod ComposeRequestSourceObjectsObjectPreconditions
-	raw := noMethod(*s)
+	type NoMethod ComposeRequestSourceObjectsObjectPreconditions
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1101,8 +1101,8 @@ type Notification struct {
 }
 
 func (s *Notification) MarshalJSON() ([]byte, error) {
-	type noMethod Notification
-	raw := noMethod(*s)
+	type NoMethod Notification
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1137,8 +1137,8 @@ type Notifications struct {
 }
 
 func (s *Notifications) MarshalJSON() ([]byte, error) {
-	type noMethod Notifications
-	raw := noMethod(*s)
+	type NoMethod Notifications
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1168,9 +1168,8 @@ type Object struct {
 	// ContentLanguage: Content-Language of the object data.
 	ContentLanguage string `json:"contentLanguage,omitempty"`
 
-	// ContentType: Content-Type of the object data. If contentType is not
-	// specified, object downloads will be served as
-	// application/octet-stream.
+	// ContentType: Content-Type of the object data. If an object is stored
+	// without a Content-Type, it is served as application/octet-stream.
 	ContentType string `json:"contentType,omitempty"`
 
 	// Crc32c: CRC32c checksum, as described in RFC 4960, Appendix B;
@@ -1275,8 +1274,8 @@ type Object struct {
 }
 
 func (s *Object) MarshalJSON() ([]byte, error) {
-	type noMethod Object
-	raw := noMethod(*s)
+	type NoMethod Object
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1308,8 +1307,8 @@ type ObjectCustomerEncryption struct {
 }
 
 func (s *ObjectCustomerEncryption) MarshalJSON() ([]byte, error) {
-	type noMethod ObjectCustomerEncryption
-	raw := noMethod(*s)
+	type NoMethod ObjectCustomerEncryption
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1340,8 +1339,8 @@ type ObjectOwner struct {
 }
 
 func (s *ObjectOwner) MarshalJSON() ([]byte, error) {
-	type noMethod ObjectOwner
-	raw := noMethod(*s)
+	type NoMethod ObjectOwner
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1424,8 +1423,8 @@ type ObjectAccessControl struct {
 }
 
 func (s *ObjectAccessControl) MarshalJSON() ([]byte, error) {
-	type noMethod ObjectAccessControl
-	raw := noMethod(*s)
+	type NoMethod ObjectAccessControl
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1456,8 +1455,8 @@ type ObjectAccessControlProjectTeam struct {
 }
 
 func (s *ObjectAccessControlProjectTeam) MarshalJSON() ([]byte, error) {
-	type noMethod ObjectAccessControlProjectTeam
-	raw := noMethod(*s)
+	type NoMethod ObjectAccessControlProjectTeam
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1492,8 +1491,8 @@ type ObjectAccessControls struct {
 }
 
 func (s *ObjectAccessControls) MarshalJSON() ([]byte, error) {
-	type noMethod ObjectAccessControls
-	raw := noMethod(*s)
+	type NoMethod ObjectAccessControls
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1537,8 +1536,8 @@ type Objects struct {
 }
 
 func (s *Objects) MarshalJSON() ([]byte, error) {
-	type noMethod Objects
-	raw := noMethod(*s)
+	type NoMethod Objects
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1556,10 +1555,11 @@ type Policy struct {
 	Kind string `json:"kind,omitempty"`
 
 	// ResourceId: The ID of the resource to which this policy belongs. Will
-	// be of the form buckets/bucket for buckets, and
-	// buckets/bucket/objects/object for objects. A specific generation may
-	// be specified by appending #generationNumber to the end of the object
-	// name, e.g. buckets/my-bucket/objects/data.txt#17. The current
+	// be of the form projects/_/buckets/bucket for buckets, and
+	// projects/_/buckets/bucket/objects/object for objects. A specific
+	// generation may be specified by appending #generationNumber to the end
+	// of the object name, e.g.
+	// projects/_/buckets/my-bucket/objects/data.txt#17. The current
 	// generation can be denoted with #0. This field is ignored on input.
 	ResourceId string `json:"resourceId,omitempty"`
 
@@ -1585,12 +1585,14 @@ type Policy struct {
 }
 
 func (s *Policy) MarshalJSON() ([]byte, error) {
-	type noMethod Policy
-	raw := noMethod(*s)
+	type NoMethod Policy
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
 type PolicyBindings struct {
+	Condition interface{} `json:"condition,omitempty"`
+
 	// Members: A collection of identifiers for members who may assume the
 	// provided role. Recognized identifiers are as follows:
 	// - allUsers — A special identifier that represents anyone on the
@@ -1648,7 +1650,7 @@ type PolicyBindings struct {
 	// an ACL entry on a bucket with the OWNER role.
 	Role string `json:"role,omitempty"`
 
-	// ForceSendFields is a list of field names (e.g. "Members") to
+	// ForceSendFields is a list of field names (e.g. "Condition") to
 	// unconditionally include in API requests. By default, fields with
 	// empty values are omitted from API requests. However, any non-pointer,
 	// non-interface field appearing in ForceSendFields will be sent to the
@@ -1656,7 +1658,7 @@ type PolicyBindings struct {
 	// used to include empty fields in Patch requests.
 	ForceSendFields []string `json:"-"`
 
-	// NullFields is a list of field names (e.g. "Members") to include in
+	// NullFields is a list of field names (e.g. "Condition") to include in
 	// API requests with the JSON null value. By default, fields with empty
 	// values are omitted from API requests. However, any field with an
 	// empty value appearing in NullFields will be sent to the server as
@@ -1666,8 +1668,8 @@ type PolicyBindings struct {
 }
 
 func (s *PolicyBindings) MarshalJSON() ([]byte, error) {
-	type noMethod PolicyBindings
-	raw := noMethod(*s)
+	type NoMethod PolicyBindings
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1721,8 +1723,8 @@ type RewriteResponse struct {
 }
 
 func (s *RewriteResponse) MarshalJSON() ([]byte, error) {
-	type noMethod RewriteResponse
-	raw := noMethod(*s)
+	type NoMethod RewriteResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1758,8 +1760,8 @@ type ServiceAccount struct {
 }
 
 func (s *ServiceAccount) MarshalJSON() ([]byte, error) {
-	type noMethod ServiceAccount
-	raw := noMethod(*s)
+	type NoMethod ServiceAccount
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1811,8 +1813,8 @@ type TestIamPermissionsResponse struct {
 }
 
 func (s *TestIamPermissionsResponse) MarshalJSON() ([]byte, error) {
-	type noMethod TestIamPermissionsResponse
-	raw := noMethod(*s)
+	type NoMethod TestIamPermissionsResponse
+	raw := NoMethod(*s)
 	return gensupport.MarshalJSON(raw, s.ForceSendFields, s.NullFields)
 }
 
@@ -1837,7 +1839,7 @@ func (r *BucketAccessControlsService) Delete(bucket string, entity string) *Buck
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketAccessControlsDeleteCall) UserProject(userProject string) *BucketAccessControlsDeleteCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -1921,7 +1923,7 @@ func (c *BucketAccessControlsDeleteCall) Do(opts ...googleapi.CallOption) error 
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -1957,7 +1959,7 @@ func (r *BucketAccessControlsService) Get(bucket string, entity string) *BucketA
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketAccessControlsGetCall) UserProject(userProject string) *BucketAccessControlsGetCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -2053,7 +2055,7 @@ func (c *BucketAccessControlsGetCall) Do(opts ...googleapi.CallOption) (*BucketA
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2079,7 +2081,7 @@ func (c *BucketAccessControlsGetCall) Do(opts ...googleapi.CallOption) (*BucketA
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -2116,7 +2118,7 @@ func (r *BucketAccessControlsService) Insert(bucket string, bucketaccesscontrol 
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketAccessControlsInsertCall) UserProject(userProject string) *BucketAccessControlsInsertCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -2203,7 +2205,7 @@ func (c *BucketAccessControlsInsertCall) Do(opts ...googleapi.CallOption) (*Buck
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2222,7 +2224,7 @@ func (c *BucketAccessControlsInsertCall) Do(opts ...googleapi.CallOption) (*Buck
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -2261,7 +2263,7 @@ func (r *BucketAccessControlsService) List(bucket string) *BucketAccessControlsL
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketAccessControlsListCall) UserProject(userProject string) *BucketAccessControlsListCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -2356,7 +2358,7 @@ func (c *BucketAccessControlsListCall) Do(opts ...googleapi.CallOption) (*Bucket
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2375,7 +2377,7 @@ func (c *BucketAccessControlsListCall) Do(opts ...googleapi.CallOption) (*Bucket
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -2415,7 +2417,7 @@ func (r *BucketAccessControlsService) Patch(bucket string, entity string, bucket
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketAccessControlsPatchCall) UserProject(userProject string) *BucketAccessControlsPatchCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -2503,7 +2505,7 @@ func (c *BucketAccessControlsPatchCall) Do(opts ...googleapi.CallOption) (*Bucke
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2529,7 +2531,7 @@ func (c *BucketAccessControlsPatchCall) Do(opts ...googleapi.CallOption) (*Bucke
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -2571,7 +2573,7 @@ func (r *BucketAccessControlsService) Update(bucket string, entity string, bucke
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketAccessControlsUpdateCall) UserProject(userProject string) *BucketAccessControlsUpdateCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -2659,7 +2661,7 @@ func (c *BucketAccessControlsUpdateCall) Do(opts ...googleapi.CallOption) (*Buck
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -2685,7 +2687,7 @@ func (c *BucketAccessControlsUpdateCall) Do(opts ...googleapi.CallOption) (*Buck
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -2739,7 +2741,7 @@ func (c *BucketsDeleteCall) IfMetagenerationNotMatch(ifMetagenerationNotMatch in
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketsDeleteCall) UserProject(userProject string) *BucketsDeleteCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -2827,7 +2829,7 @@ func (c *BucketsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -2890,7 +2892,7 @@ func (c *BucketsGetCall) Projection(projection string) *BucketsGetCall {
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketsGetCall) UserProject(userProject string) *BucketsGetCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -2985,7 +2987,7 @@ func (c *BucketsGetCall) Do(opts ...googleapi.CallOption) (*Bucket, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3029,7 +3031,7 @@ func (c *BucketsGetCall) Do(opts ...googleapi.CallOption) (*Bucket, error) {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -3068,7 +3070,7 @@ func (r *BucketsService) GetIamPolicy(bucket string) *BucketsGetIamPolicyCall {
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketsGetIamPolicyCall) UserProject(userProject string) *BucketsGetIamPolicyCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -3163,7 +3165,7 @@ func (c *BucketsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, err
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3182,7 +3184,7 @@ func (c *BucketsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, err
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -3272,6 +3274,13 @@ func (c *BucketsInsertCall) Projection(projection string) *BucketsInsertCall {
 	return c
 }
 
+// UserProject sets the optional parameter "userProject": The project to
+// be billed for this request.
+func (c *BucketsInsertCall) UserProject(userProject string) *BucketsInsertCall {
+	c.urlParams_.Set("userProject", userProject)
+	return c
+}
+
 // Fields allows partial responses to be retrieved. See
 // https://developers.google.com/gdata/docs/2.0/basics#PartialResponse
 // for more information.
@@ -3350,7 +3359,7 @@ func (c *BucketsInsertCall) Do(opts ...googleapi.CallOption) (*Bucket, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3420,6 +3429,11 @@ func (c *BucketsInsertCall) Do(opts ...googleapi.CallOption) (*Bucket, error) {
 	//       ],
 	//       "location": "query",
 	//       "type": "string"
+	//     },
+	//     "userProject": {
+	//       "description": "The project to be billed for this request.",
+	//       "location": "query",
+	//       "type": "string"
 	//     }
 	//   },
 	//   "path": "b",
@@ -3486,6 +3500,13 @@ func (c *BucketsListCall) Prefix(prefix string) *BucketsListCall {
 //   "noAcl" - Omit owner, acl and defaultObjectAcl properties.
 func (c *BucketsListCall) Projection(projection string) *BucketsListCall {
 	c.urlParams_.Set("projection", projection)
+	return c
+}
+
+// UserProject sets the optional parameter "userProject": The project to
+// be billed for this request.
+func (c *BucketsListCall) UserProject(userProject string) *BucketsListCall {
+	c.urlParams_.Set("userProject", userProject)
 	return c
 }
 
@@ -3575,7 +3596,7 @@ func (c *BucketsListCall) Do(opts ...googleapi.CallOption) (*Buckets, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3621,6 +3642,11 @@ func (c *BucketsListCall) Do(opts ...googleapi.CallOption) (*Buckets, error) {
 	//         "Include all properties.",
 	//         "Omit owner, acl and defaultObjectAcl properties."
 	//       ],
+	//       "location": "query",
+	//       "type": "string"
+	//     },
+	//     "userProject": {
+	//       "description": "The project to be billed for this request.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -3751,7 +3777,7 @@ func (c *BucketsPatchCall) Projection(projection string) *BucketsPatchCall {
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketsPatchCall) UserProject(userProject string) *BucketsPatchCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -3838,7 +3864,7 @@ func (c *BucketsPatchCall) Do(opts ...googleapi.CallOption) (*Bucket, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -3922,7 +3948,7 @@ func (c *BucketsPatchCall) Do(opts ...googleapi.CallOption) (*Bucket, error) {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -3962,7 +3988,7 @@ func (r *BucketsService) SetIamPolicy(bucket string, policy *Policy) *BucketsSet
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketsSetIamPolicyCall) UserProject(userProject string) *BucketsSetIamPolicyCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -4049,7 +4075,7 @@ func (c *BucketsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, err
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4068,7 +4094,7 @@ func (c *BucketsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, err
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -4110,7 +4136,7 @@ func (r *BucketsService) TestIamPermissions(bucket string, permissions []string)
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketsTestIamPermissionsCall) UserProject(userProject string) *BucketsTestIamPermissionsCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -4205,7 +4231,7 @@ func (c *BucketsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestI
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4232,7 +4258,7 @@ func (c *BucketsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestI
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -4342,7 +4368,7 @@ func (c *BucketsUpdateCall) Projection(projection string) *BucketsUpdateCall {
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *BucketsUpdateCall) UserProject(userProject string) *BucketsUpdateCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -4429,7 +4455,7 @@ func (c *BucketsUpdateCall) Do(opts ...googleapi.CallOption) (*Bucket, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4513,7 +4539,7 @@ func (c *BucketsUpdateCall) Do(opts ...googleapi.CallOption) (*Bucket, error) {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -4648,7 +4674,7 @@ func (r *DefaultObjectAccessControlsService) Delete(bucket string, entity string
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *DefaultObjectAccessControlsDeleteCall) UserProject(userProject string) *DefaultObjectAccessControlsDeleteCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -4732,7 +4758,7 @@ func (c *DefaultObjectAccessControlsDeleteCall) Do(opts ...googleapi.CallOption)
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -4768,7 +4794,7 @@ func (r *DefaultObjectAccessControlsService) Get(bucket string, entity string) *
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *DefaultObjectAccessControlsGetCall) UserProject(userProject string) *DefaultObjectAccessControlsGetCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -4864,7 +4890,7 @@ func (c *DefaultObjectAccessControlsGetCall) Do(opts ...googleapi.CallOption) (*
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -4890,7 +4916,7 @@ func (c *DefaultObjectAccessControlsGetCall) Do(opts ...googleapi.CallOption) (*
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -4928,7 +4954,7 @@ func (r *DefaultObjectAccessControlsService) Insert(bucket string, objectaccessc
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *DefaultObjectAccessControlsInsertCall) UserProject(userProject string) *DefaultObjectAccessControlsInsertCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -5015,7 +5041,7 @@ func (c *DefaultObjectAccessControlsInsertCall) Do(opts ...googleapi.CallOption)
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5034,7 +5060,7 @@ func (c *DefaultObjectAccessControlsInsertCall) Do(opts ...googleapi.CallOption)
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -5090,7 +5116,7 @@ func (c *DefaultObjectAccessControlsListCall) IfMetagenerationNotMatch(ifMetagen
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *DefaultObjectAccessControlsListCall) UserProject(userProject string) *DefaultObjectAccessControlsListCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -5185,7 +5211,7 @@ func (c *DefaultObjectAccessControlsListCall) Do(opts ...googleapi.CallOption) (
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5216,7 +5242,7 @@ func (c *DefaultObjectAccessControlsListCall) Do(opts ...googleapi.CallOption) (
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -5256,7 +5282,7 @@ func (r *DefaultObjectAccessControlsService) Patch(bucket string, entity string,
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *DefaultObjectAccessControlsPatchCall) UserProject(userProject string) *DefaultObjectAccessControlsPatchCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -5344,7 +5370,7 @@ func (c *DefaultObjectAccessControlsPatchCall) Do(opts ...googleapi.CallOption) 
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5370,7 +5396,7 @@ func (c *DefaultObjectAccessControlsPatchCall) Do(opts ...googleapi.CallOption) 
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -5412,7 +5438,7 @@ func (r *DefaultObjectAccessControlsService) Update(bucket string, entity string
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *DefaultObjectAccessControlsUpdateCall) UserProject(userProject string) *DefaultObjectAccessControlsUpdateCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -5500,7 +5526,7 @@ func (c *DefaultObjectAccessControlsUpdateCall) Do(opts ...googleapi.CallOption)
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5526,7 +5552,7 @@ func (c *DefaultObjectAccessControlsUpdateCall) Do(opts ...googleapi.CallOption)
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -5566,7 +5592,7 @@ func (r *NotificationsService) Delete(bucket string, notification string) *Notif
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *NotificationsDeleteCall) UserProject(userProject string) *NotificationsDeleteCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -5650,7 +5676,7 @@ func (c *NotificationsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -5686,7 +5712,7 @@ func (r *NotificationsService) Get(bucket string, notification string) *Notifica
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *NotificationsGetCall) UserProject(userProject string) *NotificationsGetCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -5782,7 +5808,7 @@ func (c *NotificationsGetCall) Do(opts ...googleapi.CallOption) (*Notification, 
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5808,7 +5834,7 @@ func (c *NotificationsGetCall) Do(opts ...googleapi.CallOption) (*Notification, 
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -5848,7 +5874,7 @@ func (r *NotificationsService) Insert(bucket string, notification *Notification)
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *NotificationsInsertCall) UserProject(userProject string) *NotificationsInsertCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -5935,7 +5961,7 @@ func (c *NotificationsInsertCall) Do(opts ...googleapi.CallOption) (*Notificatio
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -5954,7 +5980,7 @@ func (c *NotificationsInsertCall) Do(opts ...googleapi.CallOption) (*Notificatio
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -5995,7 +6021,7 @@ func (r *NotificationsService) List(bucket string) *NotificationsListCall {
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *NotificationsListCall) UserProject(userProject string) *NotificationsListCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -6090,7 +6116,7 @@ func (c *NotificationsListCall) Do(opts ...googleapi.CallOption) (*Notifications
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6103,13 +6129,13 @@ func (c *NotificationsListCall) Do(opts ...googleapi.CallOption) (*Notifications
 	//   ],
 	//   "parameters": {
 	//     "bucket": {
-	//       "description": "Name of a GCS bucket.",
+	//       "description": "Name of a Google Cloud Storage bucket.",
 	//       "location": "path",
 	//       "required": true,
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -6160,7 +6186,7 @@ func (c *ObjectAccessControlsDeleteCall) Generation(generation int64) *ObjectAcc
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectAccessControlsDeleteCall) UserProject(userProject string) *ObjectAccessControlsDeleteCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -6258,7 +6284,7 @@ func (c *ObjectAccessControlsDeleteCall) Do(opts ...googleapi.CallOption) error 
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -6304,7 +6330,7 @@ func (c *ObjectAccessControlsGetCall) Generation(generation int64) *ObjectAccess
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectAccessControlsGetCall) UserProject(userProject string) *ObjectAccessControlsGetCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -6401,7 +6427,7 @@ func (c *ObjectAccessControlsGetCall) Do(opts ...googleapi.CallOption) (*ObjectA
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6440,7 +6466,7 @@ func (c *ObjectAccessControlsGetCall) Do(opts ...googleapi.CallOption) (*ObjectA
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -6487,7 +6513,7 @@ func (c *ObjectAccessControlsInsertCall) Generation(generation int64) *ObjectAcc
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectAccessControlsInsertCall) UserProject(userProject string) *ObjectAccessControlsInsertCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -6575,7 +6601,7 @@ func (c *ObjectAccessControlsInsertCall) Do(opts ...googleapi.CallOption) (*Obje
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6607,7 +6633,7 @@ func (c *ObjectAccessControlsInsertCall) Do(opts ...googleapi.CallOption) (*Obje
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -6656,7 +6682,7 @@ func (c *ObjectAccessControlsListCall) Generation(generation int64) *ObjectAcces
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectAccessControlsListCall) UserProject(userProject string) *ObjectAccessControlsListCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -6752,7 +6778,7 @@ func (c *ObjectAccessControlsListCall) Do(opts ...googleapi.CallOption) (*Object
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6784,7 +6810,7 @@ func (c *ObjectAccessControlsListCall) Do(opts ...googleapi.CallOption) (*Object
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -6834,7 +6860,7 @@ func (c *ObjectAccessControlsPatchCall) Generation(generation int64) *ObjectAcce
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectAccessControlsPatchCall) UserProject(userProject string) *ObjectAccessControlsPatchCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -6923,7 +6949,7 @@ func (c *ObjectAccessControlsPatchCall) Do(opts ...googleapi.CallOption) (*Objec
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -6962,7 +6988,7 @@ func (c *ObjectAccessControlsPatchCall) Do(opts ...googleapi.CallOption) (*Objec
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -7014,7 +7040,7 @@ func (c *ObjectAccessControlsUpdateCall) Generation(generation int64) *ObjectAcc
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectAccessControlsUpdateCall) UserProject(userProject string) *ObjectAccessControlsUpdateCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -7103,7 +7129,7 @@ func (c *ObjectAccessControlsUpdateCall) Do(opts ...googleapi.CallOption) (*Obje
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7142,7 +7168,7 @@ func (c *ObjectAccessControlsUpdateCall) Do(opts ...googleapi.CallOption) (*Obje
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -7207,7 +7233,8 @@ func (c *ObjectsComposeCall) DestinationPredefinedAcl(destinationPredefinedAcl s
 
 // IfGenerationMatch sets the optional parameter "ifGenerationMatch":
 // Makes the operation conditional on whether the object's current
-// generation matches the given value.
+// generation matches the given value. Setting to 0 makes the operation
+// succeed only if there are no live versions of the object.
 func (c *ObjectsComposeCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsComposeCall {
 	c.urlParams_.Set("ifGenerationMatch", fmt.Sprint(ifGenerationMatch))
 	return c
@@ -7232,7 +7259,7 @@ func (c *ObjectsComposeCall) KmsKeyName(kmsKeyName string) *ObjectsComposeCall {
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsComposeCall) UserProject(userProject string) *ObjectsComposeCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -7246,9 +7273,9 @@ func (c *ObjectsComposeCall) Fields(s ...googleapi.Field) *ObjectsComposeCall {
 	return c
 }
 
-// Context sets the context to be used in this call's Do and Download
-// methods. Any pending HTTP request will be aborted if the provided
-// context is canceled.
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
 func (c *ObjectsComposeCall) Context(ctx context.Context) *ObjectsComposeCall {
 	c.ctx_ = ctx
 	return c
@@ -7287,22 +7314,6 @@ func (c *ObjectsComposeCall) doRequest(alt string) (*http.Response, error) {
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
-// Download fetches the API endpoint's "media" value, instead of the normal
-// API response value. If the returned error is nil, the Response is guaranteed to
-// have a 2xx status code. Callers must close the Response.Body as usual.
-func (c *ObjectsComposeCall) Download(opts ...googleapi.CallOption) (*http.Response, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("media")
-	if err != nil {
-		return nil, err
-	}
-	if err := googleapi.CheckMediaResponse(res); err != nil {
-		res.Body.Close()
-		return nil, err
-	}
-	return res, nil
-}
-
 // Do executes the "storage.objects.compose" call.
 // Exactly one of *Object or error will be non-nil. Any non-2xx status
 // code is an error. Response headers are in either
@@ -7336,7 +7347,7 @@ func (c *ObjectsComposeCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7383,7 +7394,7 @@ func (c *ObjectsComposeCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "ifGenerationMatch": {
-	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value. Setting to 0 makes the operation succeed only if there are no live versions of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
@@ -7400,7 +7411,7 @@ func (c *ObjectsComposeCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -7416,9 +7427,7 @@ func (c *ObjectsComposeCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//     "https://www.googleapis.com/auth/cloud-platform",
 	//     "https://www.googleapis.com/auth/devstorage.full_control",
 	//     "https://www.googleapis.com/auth/devstorage.read_write"
-	//   ],
-	//   "supportsMediaDownload": true,
-	//   "useMediaDownloadService": true
+	//   ]
 	// }
 
 }
@@ -7472,7 +7481,8 @@ func (c *ObjectsCopyCall) DestinationPredefinedAcl(destinationPredefinedAcl stri
 
 // IfGenerationMatch sets the optional parameter "ifGenerationMatch":
 // Makes the operation conditional on whether the destination object's
-// current generation matches the given value.
+// current generation matches the given value. Setting to 0 makes the
+// operation succeed only if there are no live versions of the object.
 func (c *ObjectsCopyCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsCopyCall {
 	c.urlParams_.Set("ifGenerationMatch", fmt.Sprint(ifGenerationMatch))
 	return c
@@ -7481,7 +7491,9 @@ func (c *ObjectsCopyCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsCop
 // IfGenerationNotMatch sets the optional parameter
 // "ifGenerationNotMatch": Makes the operation conditional on whether
 // the destination object's current generation does not match the given
-// value.
+// value. If no live object exists, the precondition fails. Setting to 0
+// makes the operation succeed only if there is a live version of the
+// object.
 func (c *ObjectsCopyCall) IfGenerationNotMatch(ifGenerationNotMatch int64) *ObjectsCopyCall {
 	c.urlParams_.Set("ifGenerationNotMatch", fmt.Sprint(ifGenerationNotMatch))
 	return c
@@ -7507,7 +7519,7 @@ func (c *ObjectsCopyCall) IfMetagenerationNotMatch(ifMetagenerationNotMatch int6
 
 // IfSourceGenerationMatch sets the optional parameter
 // "ifSourceGenerationMatch": Makes the operation conditional on whether
-// the source object's generation matches the given value.
+// the source object's current generation matches the given value.
 func (c *ObjectsCopyCall) IfSourceGenerationMatch(ifSourceGenerationMatch int64) *ObjectsCopyCall {
 	c.urlParams_.Set("ifSourceGenerationMatch", fmt.Sprint(ifSourceGenerationMatch))
 	return c
@@ -7515,8 +7527,8 @@ func (c *ObjectsCopyCall) IfSourceGenerationMatch(ifSourceGenerationMatch int64)
 
 // IfSourceGenerationNotMatch sets the optional parameter
 // "ifSourceGenerationNotMatch": Makes the operation conditional on
-// whether the source object's generation does not match the given
-// value.
+// whether the source object's current generation does not match the
+// given value.
 func (c *ObjectsCopyCall) IfSourceGenerationNotMatch(ifSourceGenerationNotMatch int64) *ObjectsCopyCall {
 	c.urlParams_.Set("ifSourceGenerationNotMatch", fmt.Sprint(ifSourceGenerationNotMatch))
 	return c
@@ -7561,7 +7573,7 @@ func (c *ObjectsCopyCall) SourceGeneration(sourceGeneration int64) *ObjectsCopyC
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsCopyCall) UserProject(userProject string) *ObjectsCopyCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -7575,9 +7587,9 @@ func (c *ObjectsCopyCall) Fields(s ...googleapi.Field) *ObjectsCopyCall {
 	return c
 }
 
-// Context sets the context to be used in this call's Do and Download
-// methods. Any pending HTTP request will be aborted if the provided
-// context is canceled.
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
 func (c *ObjectsCopyCall) Context(ctx context.Context) *ObjectsCopyCall {
 	c.ctx_ = ctx
 	return c
@@ -7618,22 +7630,6 @@ func (c *ObjectsCopyCall) doRequest(alt string) (*http.Response, error) {
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
-// Download fetches the API endpoint's "media" value, instead of the normal
-// API response value. If the returned error is nil, the Response is guaranteed to
-// have a 2xx status code. Callers must close the Response.Body as usual.
-func (c *ObjectsCopyCall) Download(opts ...googleapi.CallOption) (*http.Response, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("media")
-	if err != nil {
-		return nil, err
-	}
-	if err := googleapi.CheckMediaResponse(res); err != nil {
-		res.Body.Close()
-		return nil, err
-	}
-	return res, nil
-}
-
 // Do executes the "storage.objects.copy" call.
 // Exactly one of *Object or error will be non-nil. Any non-2xx status
 // code is an error. Response headers are in either
@@ -7667,7 +7663,7 @@ func (c *ObjectsCopyCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -7716,13 +7712,13 @@ func (c *ObjectsCopyCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "ifGenerationMatch": {
-	//       "description": "Makes the operation conditional on whether the destination object's current generation matches the given value.",
+	//       "description": "Makes the operation conditional on whether the destination object's current generation matches the given value. Setting to 0 makes the operation succeed only if there are no live versions of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "ifGenerationNotMatch": {
-	//       "description": "Makes the operation conditional on whether the destination object's current generation does not match the given value.",
+	//       "description": "Makes the operation conditional on whether the destination object's current generation does not match the given value. If no live object exists, the precondition fails. Setting to 0 makes the operation succeed only if there is a live version of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
@@ -7740,13 +7736,13 @@ func (c *ObjectsCopyCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "ifSourceGenerationMatch": {
-	//       "description": "Makes the operation conditional on whether the source object's generation matches the given value.",
+	//       "description": "Makes the operation conditional on whether the source object's current generation matches the given value.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "ifSourceGenerationNotMatch": {
-	//       "description": "Makes the operation conditional on whether the source object's generation does not match the given value.",
+	//       "description": "Makes the operation conditional on whether the source object's current generation does not match the given value.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
@@ -7795,7 +7791,7 @@ func (c *ObjectsCopyCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -7811,9 +7807,7 @@ func (c *ObjectsCopyCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//     "https://www.googleapis.com/auth/cloud-platform",
 	//     "https://www.googleapis.com/auth/devstorage.full_control",
 	//     "https://www.googleapis.com/auth/devstorage.read_write"
-	//   ],
-	//   "supportsMediaDownload": true,
-	//   "useMediaDownloadService": true
+	//   ]
 	// }
 
 }
@@ -7849,7 +7843,8 @@ func (c *ObjectsDeleteCall) Generation(generation int64) *ObjectsDeleteCall {
 
 // IfGenerationMatch sets the optional parameter "ifGenerationMatch":
 // Makes the operation conditional on whether the object's current
-// generation matches the given value.
+// generation matches the given value. Setting to 0 makes the operation
+// succeed only if there are no live versions of the object.
 func (c *ObjectsDeleteCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsDeleteCall {
 	c.urlParams_.Set("ifGenerationMatch", fmt.Sprint(ifGenerationMatch))
 	return c
@@ -7857,7 +7852,9 @@ func (c *ObjectsDeleteCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsD
 
 // IfGenerationNotMatch sets the optional parameter
 // "ifGenerationNotMatch": Makes the operation conditional on whether
-// the object's current generation does not match the given value.
+// the object's current generation does not match the given value. If no
+// live object exists, the precondition fails. Setting to 0 makes the
+// operation succeed only if there is a live version of the object.
 func (c *ObjectsDeleteCall) IfGenerationNotMatch(ifGenerationNotMatch int64) *ObjectsDeleteCall {
 	c.urlParams_.Set("ifGenerationNotMatch", fmt.Sprint(ifGenerationNotMatch))
 	return c
@@ -7881,7 +7878,7 @@ func (c *ObjectsDeleteCall) IfMetagenerationNotMatch(ifMetagenerationNotMatch in
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsDeleteCall) UserProject(userProject string) *ObjectsDeleteCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -7965,13 +7962,13 @@ func (c *ObjectsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//       "type": "string"
 	//     },
 	//     "ifGenerationMatch": {
-	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value. Setting to 0 makes the operation succeed only if there are no live versions of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "ifGenerationNotMatch": {
-	//       "description": "Makes the operation conditional on whether the object's current generation does not match the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation does not match the given value. If no live object exists, the precondition fails. Setting to 0 makes the operation succeed only if there is a live version of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
@@ -7995,7 +7992,7 @@ func (c *ObjectsDeleteCall) Do(opts ...googleapi.CallOption) error {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -8039,8 +8036,9 @@ func (c *ObjectsGetCall) Generation(generation int64) *ObjectsGetCall {
 }
 
 // IfGenerationMatch sets the optional parameter "ifGenerationMatch":
-// Makes the operation conditional on whether the object's generation
-// matches the given value.
+// Makes the operation conditional on whether the object's current
+// generation matches the given value. Setting to 0 makes the operation
+// succeed only if there are no live versions of the object.
 func (c *ObjectsGetCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsGetCall {
 	c.urlParams_.Set("ifGenerationMatch", fmt.Sprint(ifGenerationMatch))
 	return c
@@ -8048,7 +8046,9 @@ func (c *ObjectsGetCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsGetC
 
 // IfGenerationNotMatch sets the optional parameter
 // "ifGenerationNotMatch": Makes the operation conditional on whether
-// the object's generation does not match the given value.
+// the object's current generation does not match the given value. If no
+// live object exists, the precondition fails. Setting to 0 makes the
+// operation succeed only if there is a live version of the object.
 func (c *ObjectsGetCall) IfGenerationNotMatch(ifGenerationNotMatch int64) *ObjectsGetCall {
 	c.urlParams_.Set("ifGenerationNotMatch", fmt.Sprint(ifGenerationNotMatch))
 	return c
@@ -8083,7 +8083,7 @@ func (c *ObjectsGetCall) Projection(projection string) *ObjectsGetCall {
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsGetCall) UserProject(userProject string) *ObjectsGetCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -8195,7 +8195,7 @@ func (c *ObjectsGetCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -8221,13 +8221,13 @@ func (c *ObjectsGetCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "ifGenerationMatch": {
-	//       "description": "Makes the operation conditional on whether the object's generation matches the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value. Setting to 0 makes the operation succeed only if there are no live versions of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "ifGenerationNotMatch": {
-	//       "description": "Makes the operation conditional on whether the object's generation does not match the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation does not match the given value. If no live object exists, the precondition fails. Setting to 0 makes the operation succeed only if there is a live version of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
@@ -8264,7 +8264,7 @@ func (c *ObjectsGetCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -8315,7 +8315,7 @@ func (c *ObjectsGetIamPolicyCall) Generation(generation int64) *ObjectsGetIamPol
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsGetIamPolicyCall) UserProject(userProject string) *ObjectsGetIamPolicyCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -8411,7 +8411,7 @@ func (c *ObjectsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, err
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -8443,7 +8443,7 @@ func (c *ObjectsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, err
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -8466,17 +8466,13 @@ func (c *ObjectsGetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, err
 // method id "storage.objects.insert":
 
 type ObjectsInsertCall struct {
-	s                *Service
-	bucket           string
-	object           *Object
-	urlParams_       gensupport.URLParams
-	media_           io.Reader
-	mediaBuffer_     *gensupport.MediaBuffer
-	mediaType_       string
-	mediaSize_       int64 // mediaSize, if known.  Used only for calls to progressUpdater_.
-	progressUpdater_ googleapi.ProgressUpdater
-	ctx_             context.Context
-	header_          http.Header
+	s          *Service
+	bucket     string
+	object     *Object
+	urlParams_ gensupport.URLParams
+	mediaInfo_ *gensupport.MediaInfo
+	ctx_       context.Context
+	header_    http.Header
 }
 
 // Insert: Stores a new object and metadata.
@@ -8500,7 +8496,8 @@ func (c *ObjectsInsertCall) ContentEncoding(contentEncoding string) *ObjectsInse
 
 // IfGenerationMatch sets the optional parameter "ifGenerationMatch":
 // Makes the operation conditional on whether the object's current
-// generation matches the given value.
+// generation matches the given value. Setting to 0 makes the operation
+// succeed only if there are no live versions of the object.
 func (c *ObjectsInsertCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsInsertCall {
 	c.urlParams_.Set("ifGenerationMatch", fmt.Sprint(ifGenerationMatch))
 	return c
@@ -8508,7 +8505,9 @@ func (c *ObjectsInsertCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsI
 
 // IfGenerationNotMatch sets the optional parameter
 // "ifGenerationNotMatch": Makes the operation conditional on whether
-// the object's current generation does not match the given value.
+// the object's current generation does not match the given value. If no
+// live object exists, the precondition fails. Setting to 0 makes the
+// operation succeed only if there is a live version of the object.
 func (c *ObjectsInsertCall) IfGenerationNotMatch(ifGenerationNotMatch int64) *ObjectsInsertCall {
 	c.urlParams_.Set("ifGenerationNotMatch", fmt.Sprint(ifGenerationNotMatch))
 	return c
@@ -8583,7 +8582,7 @@ func (c *ObjectsInsertCall) Projection(projection string) *ObjectsInsertCall {
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsInsertCall) UserProject(userProject string) *ObjectsInsertCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -8601,12 +8600,7 @@ func (c *ObjectsInsertCall) Media(r io.Reader, options ...googleapi.MediaOption)
 	if ct := c.object.ContentType; ct != "" {
 		options = append([]googleapi.MediaOption{googleapi.ContentType(ct)}, options...)
 	}
-	opts := googleapi.ProcessMediaOptions(options)
-	chunkSize := opts.ChunkSize
-	if !opts.ForceEmptyContentType {
-		r, c.mediaType_ = gensupport.DetermineContentType(r, opts.ContentType)
-	}
-	c.media_, c.mediaBuffer_ = gensupport.PrepareUpload(r, chunkSize)
+	c.mediaInfo_ = gensupport.NewInfoFromMedia(r, options)
 	return c
 }
 
@@ -8621,11 +8615,7 @@ func (c *ObjectsInsertCall) Media(r io.Reader, options ...googleapi.MediaOption)
 // supersede any context previously provided to the Context method.
 func (c *ObjectsInsertCall) ResumableMedia(ctx context.Context, r io.ReaderAt, size int64, mediaType string) *ObjectsInsertCall {
 	c.ctx_ = ctx
-	rdr := gensupport.ReaderAtToReader(r, size)
-	rdr, c.mediaType_ = gensupport.DetermineContentType(rdr, mediaType)
-	c.mediaBuffer_ = gensupport.NewMediaBuffer(rdr, googleapi.DefaultUploadChunkSize)
-	c.media_ = nil
-	c.mediaSize_ = size
+	c.mediaInfo_ = gensupport.NewInfoFromResumableMedia(r, size, mediaType)
 	return c
 }
 
@@ -8634,7 +8624,7 @@ func (c *ObjectsInsertCall) ResumableMedia(ctx context.Context, r io.ReaderAt, s
 // not slow down the upload operation. This should only be called when
 // using ResumableMedia (as opposed to Media).
 func (c *ObjectsInsertCall) ProgressUpdater(pu googleapi.ProgressUpdater) *ObjectsInsertCall {
-	c.progressUpdater_ = pu
+	c.mediaInfo_.SetProgressUpdater(pu)
 	return c
 }
 
@@ -8679,27 +8669,16 @@ func (c *ObjectsInsertCall) doRequest(alt string) (*http.Response, error) {
 	reqHeaders.Set("Content-Type", "application/json")
 	c.urlParams_.Set("alt", alt)
 	urls := googleapi.ResolveRelative(c.s.BasePath, "b/{bucket}/o")
-	if c.media_ != nil || c.mediaBuffer_ != nil {
+	if c.mediaInfo_ != nil {
 		urls = strings.Replace(urls, "https://www.googleapis.com/", "https://www.googleapis.com/upload/", 1)
-		protocol := "multipart"
-		if c.mediaBuffer_ != nil {
-			protocol = "resumable"
-		}
-		c.urlParams_.Set("uploadType", protocol)
+		c.urlParams_.Set("uploadType", c.mediaInfo_.UploadType())
 	}
 	if body == nil {
 		body = new(bytes.Buffer)
 		reqHeaders.Set("Content-Type", "application/json")
 	}
-	if c.media_ != nil {
-		combined, ctype := gensupport.CombineBodyMedia(body, "application/json", c.media_, c.mediaType_)
-		defer combined.Close()
-		reqHeaders.Set("Content-Type", ctype)
-		body = combined
-	}
-	if c.mediaBuffer_ != nil && c.mediaType_ != "" {
-		reqHeaders.Set("X-Upload-Content-Type", c.mediaType_)
-	}
+	body, cleanup := c.mediaInfo_.UploadRequest(reqHeaders, body)
+	defer cleanup()
 	urls += "?" + c.urlParams_.Encode()
 	req, _ := http.NewRequest("POST", urls, body)
 	req.Header = reqHeaders
@@ -8735,20 +8714,10 @@ func (c *ObjectsInsertCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	if err := googleapi.CheckResponse(res); err != nil {
 		return nil, err
 	}
-	if c.mediaBuffer_ != nil {
-		loc := res.Header.Get("Location")
-		rx := &gensupport.ResumableUpload{
-			Client:    c.s.client,
-			UserAgent: c.s.userAgent(),
-			URI:       loc,
-			Media:     c.mediaBuffer_,
-			MediaType: c.mediaType_,
-			Callback: func(curr int64) {
-				if c.progressUpdater_ != nil {
-					c.progressUpdater_(curr, c.mediaSize_)
-				}
-			},
-		}
+	rx := c.mediaInfo_.ResumableUpload(res.Header.Get("Location"))
+	if rx != nil {
+		rx.Client = c.s.client
+		rx.UserAgent = c.s.userAgent()
 		ctx := c.ctx_
 		if ctx == nil {
 			ctx = context.TODO()
@@ -8769,7 +8738,7 @@ func (c *ObjectsInsertCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -8808,13 +8777,13 @@ func (c *ObjectsInsertCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "ifGenerationMatch": {
-	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value. Setting to 0 makes the operation succeed only if there are no live versions of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "ifGenerationNotMatch": {
-	//       "description": "Makes the operation conditional on whether the object's current generation does not match the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation does not match the given value. If no live object exists, the precondition fails. Setting to 0 makes the operation succeed only if there is a live version of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
@@ -8876,7 +8845,7 @@ func (c *ObjectsInsertCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -8893,9 +8862,7 @@ func (c *ObjectsInsertCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//     "https://www.googleapis.com/auth/devstorage.full_control",
 	//     "https://www.googleapis.com/auth/devstorage.read_write"
 	//   ],
-	//   "supportsMediaDownload": true,
-	//   "supportsMediaUpload": true,
-	//   "useMediaDownloadService": true
+	//   "supportsMediaUpload": true
 	// }
 
 }
@@ -8966,7 +8933,7 @@ func (c *ObjectsListCall) Projection(projection string) *ObjectsListCall {
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsListCall) UserProject(userProject string) *ObjectsListCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -9069,7 +9036,7 @@ func (c *ObjectsListCall) Do(opts ...googleapi.CallOption) (*Objects, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -9124,7 +9091,7 @@ func (c *ObjectsListCall) Do(opts ...googleapi.CallOption) (*Objects, error) {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -9183,8 +9150,7 @@ type ObjectsPatchCall struct {
 	header_    http.Header
 }
 
-// Patch: Updates an object's metadata. This method supports patch
-// semantics.
+// Patch: Patches an object's metadata.
 func (r *ObjectsService) Patch(bucket string, object string, object2 *Object) *ObjectsPatchCall {
 	c := &ObjectsPatchCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.bucket = bucket
@@ -9203,7 +9169,8 @@ func (c *ObjectsPatchCall) Generation(generation int64) *ObjectsPatchCall {
 
 // IfGenerationMatch sets the optional parameter "ifGenerationMatch":
 // Makes the operation conditional on whether the object's current
-// generation matches the given value.
+// generation matches the given value. Setting to 0 makes the operation
+// succeed only if there are no live versions of the object.
 func (c *ObjectsPatchCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsPatchCall {
 	c.urlParams_.Set("ifGenerationMatch", fmt.Sprint(ifGenerationMatch))
 	return c
@@ -9211,7 +9178,9 @@ func (c *ObjectsPatchCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsPa
 
 // IfGenerationNotMatch sets the optional parameter
 // "ifGenerationNotMatch": Makes the operation conditional on whether
-// the object's current generation does not match the given value.
+// the object's current generation does not match the given value. If no
+// live object exists, the precondition fails. Setting to 0 makes the
+// operation succeed only if there is a live version of the object.
 func (c *ObjectsPatchCall) IfGenerationNotMatch(ifGenerationNotMatch int64) *ObjectsPatchCall {
 	c.urlParams_.Set("ifGenerationNotMatch", fmt.Sprint(ifGenerationNotMatch))
 	return c
@@ -9354,12 +9323,12 @@ func (c *ObjectsPatchCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
 	// {
-	//   "description": "Updates an object's metadata. This method supports patch semantics.",
+	//   "description": "Patches an object's metadata.",
 	//   "httpMethod": "PATCH",
 	//   "id": "storage.objects.patch",
 	//   "parameterOrder": [
@@ -9380,13 +9349,13 @@ func (c *ObjectsPatchCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "ifGenerationMatch": {
-	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value. Setting to 0 makes the operation succeed only if there are no live versions of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "ifGenerationNotMatch": {
-	//       "description": "Makes the operation conditional on whether the object's current generation does not match the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation does not match the given value. If no live object exists, the precondition fails. Setting to 0 makes the operation succeed only if there is a live version of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
@@ -9523,8 +9492,9 @@ func (c *ObjectsRewriteCall) DestinationPredefinedAcl(destinationPredefinedAcl s
 }
 
 // IfGenerationMatch sets the optional parameter "ifGenerationMatch":
-// Makes the operation conditional on whether the destination object's
-// current generation matches the given value.
+// Makes the operation conditional on whether the object's current
+// generation matches the given value. Setting to 0 makes the operation
+// succeed only if there are no live versions of the object.
 func (c *ObjectsRewriteCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsRewriteCall {
 	c.urlParams_.Set("ifGenerationMatch", fmt.Sprint(ifGenerationMatch))
 	return c
@@ -9532,8 +9502,9 @@ func (c *ObjectsRewriteCall) IfGenerationMatch(ifGenerationMatch int64) *Objects
 
 // IfGenerationNotMatch sets the optional parameter
 // "ifGenerationNotMatch": Makes the operation conditional on whether
-// the destination object's current generation does not match the given
-// value.
+// the object's current generation does not match the given value. If no
+// live object exists, the precondition fails. Setting to 0 makes the
+// operation succeed only if there is a live version of the object.
 func (c *ObjectsRewriteCall) IfGenerationNotMatch(ifGenerationNotMatch int64) *ObjectsRewriteCall {
 	c.urlParams_.Set("ifGenerationNotMatch", fmt.Sprint(ifGenerationNotMatch))
 	return c
@@ -9559,7 +9530,7 @@ func (c *ObjectsRewriteCall) IfMetagenerationNotMatch(ifMetagenerationNotMatch i
 
 // IfSourceGenerationMatch sets the optional parameter
 // "ifSourceGenerationMatch": Makes the operation conditional on whether
-// the source object's generation matches the given value.
+// the source object's current generation matches the given value.
 func (c *ObjectsRewriteCall) IfSourceGenerationMatch(ifSourceGenerationMatch int64) *ObjectsRewriteCall {
 	c.urlParams_.Set("ifSourceGenerationMatch", fmt.Sprint(ifSourceGenerationMatch))
 	return c
@@ -9567,8 +9538,8 @@ func (c *ObjectsRewriteCall) IfSourceGenerationMatch(ifSourceGenerationMatch int
 
 // IfSourceGenerationNotMatch sets the optional parameter
 // "ifSourceGenerationNotMatch": Makes the operation conditional on
-// whether the source object's generation does not match the given
-// value.
+// whether the source object's current generation does not match the
+// given value.
 func (c *ObjectsRewriteCall) IfSourceGenerationNotMatch(ifSourceGenerationNotMatch int64) *ObjectsRewriteCall {
 	c.urlParams_.Set("ifSourceGenerationNotMatch", fmt.Sprint(ifSourceGenerationNotMatch))
 	return c
@@ -9638,7 +9609,7 @@ func (c *ObjectsRewriteCall) SourceGeneration(sourceGeneration int64) *ObjectsRe
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsRewriteCall) UserProject(userProject string) *ObjectsRewriteCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -9728,7 +9699,7 @@ func (c *ObjectsRewriteCall) Do(opts ...googleapi.CallOption) (*RewriteResponse,
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -9782,13 +9753,13 @@ func (c *ObjectsRewriteCall) Do(opts ...googleapi.CallOption) (*RewriteResponse,
 	//       "type": "string"
 	//     },
 	//     "ifGenerationMatch": {
-	//       "description": "Makes the operation conditional on whether the destination object's current generation matches the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value. Setting to 0 makes the operation succeed only if there are no live versions of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "ifGenerationNotMatch": {
-	//       "description": "Makes the operation conditional on whether the destination object's current generation does not match the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation does not match the given value. If no live object exists, the precondition fails. Setting to 0 makes the operation succeed only if there is a live version of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
@@ -9806,13 +9777,13 @@ func (c *ObjectsRewriteCall) Do(opts ...googleapi.CallOption) (*RewriteResponse,
 	//       "type": "string"
 	//     },
 	//     "ifSourceGenerationMatch": {
-	//       "description": "Makes the operation conditional on whether the source object's generation matches the given value.",
+	//       "description": "Makes the operation conditional on whether the source object's current generation matches the given value.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "ifSourceGenerationNotMatch": {
-	//       "description": "Makes the operation conditional on whether the source object's generation does not match the given value.",
+	//       "description": "Makes the operation conditional on whether the source object's current generation does not match the given value.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
@@ -9872,7 +9843,7 @@ func (c *ObjectsRewriteCall) Do(opts ...googleapi.CallOption) (*RewriteResponse,
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -9923,7 +9894,7 @@ func (c *ObjectsSetIamPolicyCall) Generation(generation int64) *ObjectsSetIamPol
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsSetIamPolicyCall) UserProject(userProject string) *ObjectsSetIamPolicyCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -10011,7 +9982,7 @@ func (c *ObjectsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, err
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -10043,7 +10014,7 @@ func (c *ObjectsSetIamPolicyCall) Do(opts ...googleapi.CallOption) (*Policy, err
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -10095,7 +10066,7 @@ func (c *ObjectsTestIamPermissionsCall) Generation(generation int64) *ObjectsTes
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsTestIamPermissionsCall) UserProject(userProject string) *ObjectsTestIamPermissionsCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -10191,7 +10162,7 @@ func (c *ObjectsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestI
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -10231,7 +10202,7 @@ func (c *ObjectsTestIamPermissionsCall) Do(opts ...googleapi.CallOption) (*TestI
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -10282,7 +10253,8 @@ func (c *ObjectsUpdateCall) Generation(generation int64) *ObjectsUpdateCall {
 
 // IfGenerationMatch sets the optional parameter "ifGenerationMatch":
 // Makes the operation conditional on whether the object's current
-// generation matches the given value.
+// generation matches the given value. Setting to 0 makes the operation
+// succeed only if there are no live versions of the object.
 func (c *ObjectsUpdateCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsUpdateCall {
 	c.urlParams_.Set("ifGenerationMatch", fmt.Sprint(ifGenerationMatch))
 	return c
@@ -10290,7 +10262,9 @@ func (c *ObjectsUpdateCall) IfGenerationMatch(ifGenerationMatch int64) *ObjectsU
 
 // IfGenerationNotMatch sets the optional parameter
 // "ifGenerationNotMatch": Makes the operation conditional on whether
-// the object's current generation does not match the given value.
+// the object's current generation does not match the given value. If no
+// live object exists, the precondition fails. Setting to 0 makes the
+// operation succeed only if there is a live version of the object.
 func (c *ObjectsUpdateCall) IfGenerationNotMatch(ifGenerationNotMatch int64) *ObjectsUpdateCall {
 	c.urlParams_.Set("ifGenerationNotMatch", fmt.Sprint(ifGenerationNotMatch))
 	return c
@@ -10345,7 +10319,7 @@ func (c *ObjectsUpdateCall) Projection(projection string) *ObjectsUpdateCall {
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsUpdateCall) UserProject(userProject string) *ObjectsUpdateCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -10359,9 +10333,9 @@ func (c *ObjectsUpdateCall) Fields(s ...googleapi.Field) *ObjectsUpdateCall {
 	return c
 }
 
-// Context sets the context to be used in this call's Do and Download
-// methods. Any pending HTTP request will be aborted if the provided
-// context is canceled.
+// Context sets the context to be used in this call's Do method. Any
+// pending HTTP request will be aborted if the provided context is
+// canceled.
 func (c *ObjectsUpdateCall) Context(ctx context.Context) *ObjectsUpdateCall {
 	c.ctx_ = ctx
 	return c
@@ -10400,22 +10374,6 @@ func (c *ObjectsUpdateCall) doRequest(alt string) (*http.Response, error) {
 	return gensupport.SendRequest(c.ctx_, c.s.client, req)
 }
 
-// Download fetches the API endpoint's "media" value, instead of the normal
-// API response value. If the returned error is nil, the Response is guaranteed to
-// have a 2xx status code. Callers must close the Response.Body as usual.
-func (c *ObjectsUpdateCall) Download(opts ...googleapi.CallOption) (*http.Response, error) {
-	gensupport.SetOptions(c.urlParams_, opts...)
-	res, err := c.doRequest("media")
-	if err != nil {
-		return nil, err
-	}
-	if err := googleapi.CheckMediaResponse(res); err != nil {
-		res.Body.Close()
-		return nil, err
-	}
-	return res, nil
-}
-
 // Do executes the "storage.objects.update" call.
 // Exactly one of *Object or error will be non-nil. Any non-2xx status
 // code is an error. Response headers are in either
@@ -10449,7 +10407,7 @@ func (c *ObjectsUpdateCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -10475,13 +10433,13 @@ func (c *ObjectsUpdateCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "ifGenerationMatch": {
-	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation matches the given value. Setting to 0 makes the operation succeed only if there are no live versions of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
 	//     "ifGenerationNotMatch": {
-	//       "description": "Makes the operation conditional on whether the object's current generation does not match the given value.",
+	//       "description": "Makes the operation conditional on whether the object's current generation does not match the given value. If no live object exists, the precondition fails. Setting to 0 makes the operation succeed only if there is a live version of the object.",
 	//       "format": "int64",
 	//       "location": "query",
 	//       "type": "string"
@@ -10539,7 +10497,7 @@ func (c *ObjectsUpdateCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     }
@@ -10554,9 +10512,7 @@ func (c *ObjectsUpdateCall) Do(opts ...googleapi.CallOption) (*Object, error) {
 	//   "scopes": [
 	//     "https://www.googleapis.com/auth/cloud-platform",
 	//     "https://www.googleapis.com/auth/devstorage.full_control"
-	//   ],
-	//   "supportsMediaDownload": true,
-	//   "useMediaDownloadService": true
+	//   ]
 	// }
 
 }
@@ -10628,7 +10584,7 @@ func (c *ObjectsWatchAllCall) Projection(projection string) *ObjectsWatchAllCall
 }
 
 // UserProject sets the optional parameter "userProject": The project to
-// be billed for this request, for Requester Pays buckets.
+// be billed for this request. Required for Requester Pays buckets.
 func (c *ObjectsWatchAllCall) UserProject(userProject string) *ObjectsWatchAllCall {
 	c.urlParams_.Set("userProject", userProject)
 	return c
@@ -10723,7 +10679,7 @@ func (c *ObjectsWatchAllCall) Do(opts ...googleapi.CallOption) (*Channel, error)
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
@@ -10778,7 +10734,7 @@ func (c *ObjectsWatchAllCall) Do(opts ...googleapi.CallOption) (*Channel, error)
 	//       "type": "string"
 	//     },
 	//     "userProject": {
-	//       "description": "The project to be billed for this request, for Requester Pays buckets.",
+	//       "description": "The project to be billed for this request. Required for Requester Pays buckets.",
 	//       "location": "query",
 	//       "type": "string"
 	//     },
@@ -10819,10 +10775,18 @@ type ProjectsServiceAccountGetCall struct {
 	header_      http.Header
 }
 
-// Get: Get the email address of this project's GCS service account.
+// Get: Get the email address of this project's Google Cloud Storage
+// service account.
 func (r *ProjectsServiceAccountService) Get(projectId string) *ProjectsServiceAccountGetCall {
 	c := &ProjectsServiceAccountGetCall{s: r.s, urlParams_: make(gensupport.URLParams)}
 	c.projectId = projectId
+	return c
+}
+
+// UserProject sets the optional parameter "userProject": The project to
+// be billed for this request.
+func (c *ProjectsServiceAccountGetCall) UserProject(userProject string) *ProjectsServiceAccountGetCall {
+	c.urlParams_.Set("userProject", userProject)
 	return c
 }
 
@@ -10915,12 +10879,12 @@ func (c *ProjectsServiceAccountGetCall) Do(opts ...googleapi.CallOption) (*Servi
 		},
 	}
 	target := &ret
-	if err := json.NewDecoder(res.Body).Decode(target); err != nil {
+	if err := gensupport.DecodeResponse(target, res); err != nil {
 		return nil, err
 	}
 	return ret, nil
 	// {
-	//   "description": "Get the email address of this project's GCS service account.",
+	//   "description": "Get the email address of this project's Google Cloud Storage service account.",
 	//   "httpMethod": "GET",
 	//   "id": "storage.projects.serviceAccount.get",
 	//   "parameterOrder": [
@@ -10931,6 +10895,11 @@ func (c *ProjectsServiceAccountGetCall) Do(opts ...googleapi.CallOption) (*Servi
 	//       "description": "Project ID",
 	//       "location": "path",
 	//       "required": true,
+	//       "type": "string"
+	//     },
+	//     "userProject": {
+	//       "description": "The project to be billed for this request.",
+	//       "location": "query",
 	//       "type": "string"
 	//     }
 	//   },

@@ -111,6 +111,23 @@ func (kl *Kubelet) makeDevices(pod *v1.Pod, container *v1.Container) ([]kubecont
 	return devices, nil
 }
 
+func makeAbsolutePath(goos, path string) string {
+	if goos != "windows" {
+		return "/" + path
+	}
+	// These are all for windows
+	// If there is a colon, give up.
+	if strings.Contains(path, ":") {
+		return path
+	}
+	// If there is a slash, but no drive, add 'c:'
+	if strings.HasPrefix(path, "/") || strings.HasPrefix(path, "\\") {
+		return "c:" + path
+	}
+	// Otherwise, add 'c:\'
+	return "c:\\" + path
+}
+
 // makeMounts determines the mount points for the given container.
 func makeMounts(pod *v1.Pod, podDir string, container *v1.Container, hostName, hostDomain, podIP string, podVolumes kubecontainer.VolumeMap) ([]kubecontainer.Mount, error) {
 	// Kubernetes only mounts on /etc/hosts if:
@@ -187,9 +204,9 @@ func makeMounts(pod *v1.Pod, podDir string, container *v1.Container, hostName, h
 			if (strings.HasPrefix(hostPath, "/") || strings.HasPrefix(hostPath, "\\")) && !strings.Contains(hostPath, ":") {
 				hostPath = "c:" + hostPath
 			}
-			if (strings.HasPrefix(containerPath, "/") || strings.HasPrefix(containerPath, "\\")) && !strings.Contains(containerPath, ":") {
-				containerPath = "c:" + containerPath
-			}
+		}
+		if !filepath.IsAbs(containerPath) {
+			containerPath = makeAbsolutePath(runtime.GOOS, containerPath)
 		}
 
 		propagation, err := translateMountPropagation(mount.MountPropagation)
@@ -820,6 +837,16 @@ func (kl *Kubelet) podIsTerminated(pod *v1.Pod) bool {
 	return status.Phase == v1.PodFailed || status.Phase == v1.PodSucceeded || (pod.DeletionTimestamp != nil && notRunning(status.ContainerStatuses))
 }
 
+// IsPodTerminated returns trus if the pod with the provided UID is in a terminated state ("Failed" or "Succeeded")
+// or if the pod has been deleted or removed
+func (kl *Kubelet) IsPodTerminated(uid types.UID) bool {
+	pod, podFound := kl.podManager.GetPodByUID(uid)
+	if !podFound {
+		return true
+	}
+	return kl.podIsTerminated(pod)
+}
+
 // IsPodDeleted returns true if the pod is deleted.  For the pod to be deleted, either:
 // 1. The pod object is deleted
 // 2. The pod's status is evicted
@@ -1338,16 +1365,21 @@ func (kl *Kubelet) convertStatusToAPIStatus(pod *v1.Pod, podStatus *kubecontaine
 	// set status for Pods created on versions of kube older than 1.6
 	apiPodStatus.QOSClass = v1qos.GetPodQOS(pod)
 
+	oldPodStatus, found := kl.statusManager.GetPodStatus(pod.UID)
+	if !found {
+		oldPodStatus = pod.Status
+	}
+
 	apiPodStatus.ContainerStatuses = kl.convertToAPIContainerStatuses(
 		pod, podStatus,
-		pod.Status.ContainerStatuses,
+		oldPodStatus.ContainerStatuses,
 		pod.Spec.Containers,
 		len(pod.Spec.InitContainers) > 0,
 		false,
 	)
 	apiPodStatus.InitContainerStatuses = kl.convertToAPIContainerStatuses(
 		pod, podStatus,
-		pod.Status.InitContainerStatuses,
+		oldPodStatus.InitContainerStatuses,
 		pod.Spec.InitContainers,
 		len(pod.Spec.InitContainers) > 0,
 		true,
@@ -1414,7 +1446,7 @@ func (kl *Kubelet) convertToAPIContainerStatuses(pod *v1.Pod, podStatus *kubecon
 		}
 		oldStatus, found := oldStatuses[container.Name]
 		if found {
-			if isInitContainer && oldStatus.State.Terminated != nil {
+			if oldStatus.State.Terminated != nil {
 				// Do not update status on terminated init containers as
 				// they be removed at any time.
 				status = &oldStatus

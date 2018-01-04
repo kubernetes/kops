@@ -3655,7 +3655,6 @@ func TestValidateVolumeMounts(t *testing.T) {
 		"empty name":                             {{Name: "", MountPath: "/foo"}},
 		"name not found":                         {{Name: "", MountPath: "/foo"}},
 		"empty mountpath":                        {{Name: "abc", MountPath: ""}},
-		"relative mountpath":                     {{Name: "abc", MountPath: "bar"}},
 		"mountpath collision":                    {{Name: "foo", MountPath: "/path/a"}, {Name: "bar", MountPath: "/path/a"}},
 		"absolute subpath":                       {{Name: "abc", MountPath: "/bar", SubPath: "/baz"}},
 		"subpath in ..":                          {{Name: "abc", MountPath: "/bar", SubPath: "../baz"}},
@@ -7047,42 +7046,6 @@ func TestValidateService(t *testing.T) {
 				s.Spec.Type = api.ServiceTypeClusterIP
 				s.Spec.Ports = append(s.Spec.Ports, api.ServicePort{Name: "q", Port: 12345, Protocol: "TCP", TargetPort: intstr.FromInt(8080)})
 				s.Spec.Ports = append(s.Spec.Ports, api.ServicePort{Name: "r", Port: 12345, Protocol: "UDP", TargetPort: intstr.FromInt(80)})
-			},
-			numErrs: 0,
-		},
-		{
-			name: "invalid duplicate targetports (number with same protocol)",
-			tweakSvc: func(s *api.Service) {
-				s.Spec.Type = api.ServiceTypeClusterIP
-				s.Spec.Ports = append(s.Spec.Ports, api.ServicePort{Name: "q", Port: 1, Protocol: "TCP", TargetPort: intstr.FromInt(8080)})
-				s.Spec.Ports = append(s.Spec.Ports, api.ServicePort{Name: "r", Port: 2, Protocol: "TCP", TargetPort: intstr.FromInt(8080)})
-			},
-			numErrs: 1,
-		},
-		{
-			name: "invalid duplicate targetports (name with same protocol)",
-			tweakSvc: func(s *api.Service) {
-				s.Spec.Type = api.ServiceTypeClusterIP
-				s.Spec.Ports = append(s.Spec.Ports, api.ServicePort{Name: "q", Port: 1, Protocol: "TCP", TargetPort: intstr.FromString("http")})
-				s.Spec.Ports = append(s.Spec.Ports, api.ServicePort{Name: "r", Port: 2, Protocol: "TCP", TargetPort: intstr.FromString("http")})
-			},
-			numErrs: 1,
-		},
-		{
-			name: "valid duplicate targetports (number with different protocols)",
-			tweakSvc: func(s *api.Service) {
-				s.Spec.Type = api.ServiceTypeClusterIP
-				s.Spec.Ports = append(s.Spec.Ports, api.ServicePort{Name: "q", Port: 1, Protocol: "TCP", TargetPort: intstr.FromInt(8080)})
-				s.Spec.Ports = append(s.Spec.Ports, api.ServicePort{Name: "r", Port: 2, Protocol: "UDP", TargetPort: intstr.FromInt(8080)})
-			},
-			numErrs: 0,
-		},
-		{
-			name: "valid duplicate targetports (name with different protocols)",
-			tweakSvc: func(s *api.Service) {
-				s.Spec.Type = api.ServiceTypeClusterIP
-				s.Spec.Ports = append(s.Spec.Ports, api.ServicePort{Name: "q", Port: 1, Protocol: "TCP", TargetPort: intstr.FromString("http")})
-				s.Spec.Ports = append(s.Spec.Ports, api.ServicePort{Name: "r", Port: 2, Protocol: "UDP", TargetPort: intstr.FromString("http")})
 			},
 			numErrs: 0,
 		},

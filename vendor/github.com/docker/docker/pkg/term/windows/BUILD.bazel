@@ -5,7 +5,7 @@ go_library(
     srcs = [
         "windows.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:windows": [
             "ansi_reader.go",
             "ansi_writer.go",
             "console.go",
@@ -16,9 +16,9 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/Azure/go-ansiterm:go_default_library",
-        "//vendor/github.com/sirupsen/logrus:go_default_library",
+        "//vendor/github.com/Sirupsen/logrus:go_default_library",
     ] + select({
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:windows": [
             "//vendor/github.com/Azure/go-ansiterm/winterm:go_default_library",
         ],
         "//conditions:default": [],
@@ -28,6 +28,6 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["windows_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/docker/docker/pkg/term/windows",
-    library = ":go_default_library",
 )

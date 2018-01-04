@@ -22,5 +22,6 @@ go_test(
         "//vendor/google.golang.org/grpc:go_default_library",
         "//vendor/google.golang.org/grpc/metadata:go_default_library",
         "//vendor/google.golang.org/grpc/stats/grpc_testing:go_default_library",
+        "//vendor/google.golang.org/grpc/status:go_default_library",
     ],
 )

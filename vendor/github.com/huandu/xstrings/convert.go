@@ -43,19 +43,26 @@ func ToCamelCase(str string) string {
 	if len(str) == 0 {
 		return buf.String()
 	}
-
-	buf.WriteRune(unicode.ToUpper(r0))
-	r0, size = utf8.DecodeRuneInString(str)
-	str = str[size:]
+	
+	r0 = unicode.ToUpper(r0)
 
 	for len(str) > 0 {
 		r1 = r0
 		r0, size = utf8.DecodeRuneInString(str)
 		str = str[size:]
 
-		if r1 == '_' && r0 != '_' {
+		if r1 == '_' && r0 == '_' {
+			buf.WriteRune(r1)
+			continue
+		}
+
+		if r1 == '_' {
 			r0 = unicode.ToUpper(r0)
 		} else {
+			r0 = unicode.ToLower(r0)
+		}
+
+		if r1 != '_' {
 			buf.WriteRune(r1)
 		}
 	}

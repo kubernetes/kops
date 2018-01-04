@@ -4,7 +4,8 @@ go_library(
     name = "go_default_library",
     srcs = [
         "kind_string.go",
-        "tables.go",
+        "tables10.0.0.go",
+        "tables9.0.0.go",
         "transform.go",
         "trieval.go",
         "width.go",
@@ -22,8 +23,8 @@ go_test(
         "tables_test.go",
         "transform_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/text/width",
-    library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/text/internal/gen:go_default_library",
         "//vendor/golang.org/x/text/internal/testtext:go_default_library",

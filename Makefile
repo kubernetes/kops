@@ -433,24 +433,8 @@ utils-dist:
 # See docs/development/dependencies.md
 .PHONY: copydeps
 copydeps:
-	rsync -avz _vendor/ vendor/ --delete --exclude vendor/  --exclude .git --exclude BUILD --exclude BUILD.bazel
-	mkdir -p vendor/k8s.io/
-	rm -rf vendor/k8s.io/api
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/api vendor/k8s.io/api
-	rm -rf vendor/k8s.io/apiextensions-apiserver
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apiextensions-apiserver vendor/k8s.io/apiextensions-apiserver
-	rm -rf vendor/k8s.io/apimachinery
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apimachinery vendor/k8s.io/apimachinery
-	rm -rf vendor/k8s.io/apiserver
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/apiserver vendor/k8s.io/apiserver
-	rm -rf vendor/k8s.io/client-go
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/client-go vendor/k8s.io/client-go
-	rm -rf vendor/k8s.io/code-generator
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/code-generator vendor/k8s.io/code-generator
-	rm -rf vendor/k8s.io/metrics
-	mv vendor/k8s.io/kubernetes/staging/src/k8s.io/metrics vendor/k8s.io/metrics
-	find vendor/k8s.io/kubernetes -type f -name "*.go" | xargs sed -i -e 's-k8s.io/kubernetes/staging/src/k8s.io/apimachinery-k8s.io/apimachinery-g'
-	bazel run //:gazelle -- -proto disable
+	cp --archive _vendor/* vendor/
+	rm vendor/github.com/jteeuwen/go-bindata/.git
 
 .PHONY: gofmt
 gofmt:
@@ -458,7 +442,7 @@ gofmt:
 	gofmt -w -s cloudmock/
 	gofmt -w -s cmd/
 	gofmt -w -s examples/
-	gofmt -w -s federation/
+	#gofmt -w -s federation/
 	gofmt -w -s nodeup/
 	gofmt -w -s util/
 	gofmt -w -s upup/pkg/

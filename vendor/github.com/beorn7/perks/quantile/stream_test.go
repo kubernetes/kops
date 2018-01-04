@@ -33,6 +33,9 @@ func verifyPercsWithAbsoluteEpsilon(t *testing.T, a []float64, s *Stream) {
 	for quantile, epsilon := range Targets {
 		n := float64(len(a))
 		k := int(quantile * n)
+		if k < 1 {
+			k = 1
+		}
 		lower := int((quantile - epsilon) * n)
 		if lower < 1 {
 			lower = 1
@@ -97,6 +100,30 @@ func TestTargetedQuery(t *testing.T) {
 	s := NewTargeted(Targets)
 	a := populateStream(s)
 	verifyPercsWithAbsoluteEpsilon(t, a, s)
+}
+
+func TestTargetedQuerySmallSampleSize(t *testing.T) {
+	rand.Seed(42)
+	s := NewTargeted(TargetsSmallEpsilon)
+	a := []float64{1, 2, 3, 4, 5}
+	for _, v := range a {
+		s.Insert(v)
+	}
+	verifyPercsWithAbsoluteEpsilon(t, a, s)
+	// If not yet flushed, results should be precise:
+	if !s.flushed() {
+		for φ, want := range map[float64]float64{
+			0.01: 1,
+			0.10: 1,
+			0.50: 3,
+			0.90: 5,
+			0.99: 5,
+		} {
+			if got := s.Query(φ); got != want {
+				t.Errorf("want %f for φ=%f, got %f", want, φ, got)
+			}
+		}
+	}
 }
 
 func TestLowBiasedQuery(t *testing.T) {

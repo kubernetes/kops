@@ -18,7 +18,7 @@ This command changes the desired cluster configuration in the registry.
 kops edit does not update the cloud resources, to apply the changes use "kops update cluster".
 
 ```
-kops edit cluster
+kops edit cluster [flags]
 ```
 
 ### Examples
@@ -26,6 +26,12 @@ kops edit cluster
 ```
   # Edit a cluster configuration in AWS.
   kops edit cluster k8s.cluster.site --state=s3://kops-state-1234
+```
+
+### Options
+
+```
+  -h, --help   help for cluster
 ```
 
 ### Options inherited from parent commands

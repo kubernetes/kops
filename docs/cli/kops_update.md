@@ -17,6 +17,12 @@ Creates or updates cloud resources to match cluster desired configuration.
   kops update cluster k8s.cluster.site --yes --state=s3://kops-state-1234
 ```
 
+### Options
+
+```
+  -h, --help   help for update
+```
+
 ### Options inherited from parent commands
 
 ```
@@ -35,5 +41,4 @@ Creates or updates cloud resources to match cluster desired configuration.
 ### SEE ALSO
 * [kops](kops.md)	 - kops is Kubernetes ops.
 * [kops update cluster](kops_update_cluster.md)	 - Update a cluster.
-* [kops update federation](kops_update_federation.md)	 - Update federation cluster resources.
 

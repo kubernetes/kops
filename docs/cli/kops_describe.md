@@ -16,6 +16,12 @@ Get additional information about cloud and cluster resources.
   
 ```
 
+### Options
+
+```
+  -h, --help   help for describe
+```
+
 ### Options inherited from parent commands
 
 ```

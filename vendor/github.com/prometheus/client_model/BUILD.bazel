@@ -16,7 +16,7 @@ go_proto_library(
 
 go_library(
     name = "go_default_library",
+    embed = [":io_prometheus_client_go_proto"],
     importpath = "github.com/prometheus/client_model",
-    library = ":io_prometheus_client_go_proto",
     visibility = ["//visibility:public"],
 )

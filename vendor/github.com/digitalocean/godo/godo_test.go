@@ -106,7 +106,7 @@ func testClientDefaultBaseURL(t *testing.T, c *Client) {
 
 func testClientDefaultUserAgent(t *testing.T, c *Client) {
 	if c.UserAgent != userAgent {
-		t.Errorf("NewClick UserAgent = %v, expected %v", c.UserAgent, userAgent)
+		t.Errorf("NewClient UserAgent = %v, expected %v", c.UserAgent, userAgent)
 	}
 }
 
@@ -193,7 +193,7 @@ func TestNewRequest_badURL(t *testing.T) {
 }
 
 func TestNewRequest_withCustomUserAgent(t *testing.T) {
-	ua := "testing"
+	ua := "testing/0.0.1"
 	c, err := New(nil, SetUserAgent(ua))
 
 	if err != nil {
@@ -202,7 +202,7 @@ func TestNewRequest_withCustomUserAgent(t *testing.T) {
 
 	req, _ := c.NewRequest(ctx, http.MethodGet, "/foo", nil)
 
-	expected := fmt.Sprintf("%s+%s", ua, userAgent)
+	expected := fmt.Sprintf("%s %s", ua, userAgent)
 	if got := req.Header.Get("User-Agent"); got != expected {
 		t.Errorf("New() UserAgent = %s; expected %s", got, expected)
 	}
@@ -506,13 +506,14 @@ func TestAddOptions(t *testing.T) {
 }
 
 func TestCustomUserAgent(t *testing.T) {
-	c, err := New(nil, SetUserAgent("testing"))
+	ua := "testing/0.0.1"
+	c, err := New(nil, SetUserAgent(ua))
 
 	if err != nil {
 		t.Fatalf("New() unexpected error: %v", err)
 	}
 
-	expected := fmt.Sprintf("%s+%s", "testing", userAgent)
+	expected := fmt.Sprintf("%s %s", ua, userAgent)
 	if got := c.UserAgent; got != expected {
 		t.Errorf("New() UserAgent = %s; expected %s", got, expected)
 	}

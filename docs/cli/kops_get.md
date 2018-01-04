@@ -16,7 +16,7 @@ Display one or many resources.
   * federation
 
 ```
-kops get
+kops get [flags]
 ```
 
 ### Examples
@@ -44,6 +44,7 @@ kops get
 ### Options
 
 ```
+  -h, --help            help for get
   -o, --output string   output format.  One of: table, yaml, json (default "table")
 ```
 

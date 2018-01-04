@@ -7,6 +7,7 @@ go_library(
     visibility = ["//visibility:public"],
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes:go_default_library",
         "//vendor/google.golang.org/genproto/googleapis/rpc/status:go_default_library",
         "//vendor/google.golang.org/grpc/codes:go_default_library",
     ],
@@ -15,11 +16,15 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["status_test.go"],
+    embed = [":go_default_library"],
     importpath = "google.golang.org/grpc/status",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes:go_default_library",
         "//vendor/github.com/golang/protobuf/ptypes/any:go_default_library",
+        "//vendor/github.com/golang/protobuf/ptypes/duration:go_default_library",
+        "//vendor/google.golang.org/genproto/googleapis/rpc/code:go_default_library",
+        "//vendor/google.golang.org/genproto/googleapis/rpc/errdetails:go_default_library",
         "//vendor/google.golang.org/genproto/googleapis/rpc/status:go_default_library",
         "//vendor/google.golang.org/grpc/codes:go_default_library",
     ],

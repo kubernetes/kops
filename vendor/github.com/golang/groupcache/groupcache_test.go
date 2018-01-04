@@ -27,6 +27,7 @@ import (
 	"sync"
 	"testing"
 	"time"
+	"unsafe"
 
 	"github.com/golang/protobuf/proto"
 
@@ -440,6 +441,14 @@ func TestNoDedup(t *testing.T) {
 	const wantBytes = int64(len(testkey) + len(testval))
 	if g.mainCache.nbytes != wantBytes {
 		t.Errorf("cache has %d bytes, want %d", g.mainCache.nbytes, wantBytes)
+	}
+}
+
+func TestGroupStatsAlignment(t *testing.T) {
+	var g Group
+	off := unsafe.Offsetof(g.Stats)
+	if off%8 != 0 {
+		t.Fatal("Stats structure is not 8-byte aligned.")
 	}
 }
 

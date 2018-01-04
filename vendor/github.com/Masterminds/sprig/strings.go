@@ -106,6 +106,10 @@ func indent(spaces int, v string) string {
 	return pad + strings.Replace(v, "\n", "\n"+pad, -1)
 }
 
+func nindent(spaces int, v string) string {
+	return "\n" + indent(spaces, v)
+}
+
 func replace(old, new, src string) string {
 	return strings.Replace(src, old, new, -1)
 }

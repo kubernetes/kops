@@ -15,7 +15,7 @@ Note: this requires the bash-completion framework, which is not installed by def
 Note for zsh users: zsh completions are only supported in versions of zsh >= 5.2
 
 ```
-kops completion
+kops completion [flags]
 ```
 
 ### Examples
@@ -43,6 +43,7 @@ kops completion
 ### Options
 
 ```
+  -h, --help           help for completion
       --shell string   target shell (bash).
 ```
 

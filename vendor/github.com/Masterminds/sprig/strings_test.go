@@ -161,7 +161,7 @@ func TestGoutils(t *testing.T) {
 	for k, v := range tests {
 		t.Log(k)
 		if err := runt(k, v); err != nil {
-			t.Errorf("Error on tpl %s: %s", err)
+			t.Errorf("Error on tpl %q: %s", k, err)
 		}
 	}
 }
@@ -173,16 +173,16 @@ func TestRandom(t *testing.T) {
 	// Because we're using a random number generator, we need these to go in
 	// a predictable sequence:
 	if err := runt(`{{randAlphaNum 5}}`, "9bzRv"); err != nil {
-		t.Errorf("Error on tpl %s: %s", err)
+		t.Errorf("Error on tpl: %s", err)
 	}
 	if err := runt(`{{randAlpha 5}}`, "VjwGe"); err != nil {
-		t.Errorf("Error on tpl %s: %s", err)
+		t.Errorf("Error on tpl: %s", err)
 	}
 	if err := runt(`{{randAscii 5}}`, "1KA5p"); err != nil {
-		t.Errorf("Error on tpl %s: %s", err)
+		t.Errorf("Error on tpl: %s", err)
 	}
 	if err := runt(`{{randNumeric 5}}`, "26018"); err != nil {
-		t.Errorf("Error on tpl %s: %s", err)
+		t.Errorf("Error on tpl: %s", err)
 	}
 
 }
@@ -197,6 +197,13 @@ func TestCat(t *testing.T) {
 func TestIndent(t *testing.T) {
 	tpl := `{{indent 4 "a\nb\nc"}}`
 	if err := runt(tpl, "    a\n    b\n    c"); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestNindent(t *testing.T) {
+	tpl := `{{nindent 4 "a\nb\nc"}}`
+	if err := runt(tpl, "\n    a\n    b\n    c"); err != nil {
 		t.Error(err)
 	}
 }

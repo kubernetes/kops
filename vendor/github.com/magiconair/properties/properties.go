@@ -1,4 +1,4 @@
-// Copyright 2016 Frank Schroeder. All rights reserved.
+// Copyright 2017 Frank Schroeder. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -28,8 +28,10 @@ type ErrorHandlerFunc func(error)
 // functions. The default is LogFatalHandler.
 var ErrorHandler ErrorHandlerFunc = LogFatalHandler
 
+// LogHandlerFunc defines the function prototype for logging errors.
 type LogHandlerFunc func(fmt string, args ...interface{})
 
+// LogPrintf defines a log handler which uses log.Printf.
 var LogPrintf LogHandlerFunc = log.Printf
 
 // LogFatalHandler handles the error by logging a fatal error and exiting.
@@ -444,6 +446,8 @@ func (p *Properties) FilterRegexp(re *regexp.Regexp) *Properties {
 	pp := NewProperties()
 	for _, k := range p.k {
 		if re.MatchString(k) {
+			// TODO(fs): we are ignoring the error which flags a circular reference.
+			// TODO(fs): since we are just copying a subset of keys this cannot happen (fingers crossed)
 			pp.Set(k, p.m[k])
 		}
 	}
@@ -456,6 +460,8 @@ func (p *Properties) FilterPrefix(prefix string) *Properties {
 	pp := NewProperties()
 	for _, k := range p.k {
 		if strings.HasPrefix(k, prefix) {
+			// TODO(fs): we are ignoring the error which flags a circular reference.
+			// TODO(fs): since we are just copying a subset of keys this cannot happen (fingers crossed)
 			pp.Set(k, p.m[k])
 		}
 	}
@@ -469,6 +475,9 @@ func (p *Properties) FilterStripPrefix(prefix string) *Properties {
 	n := len(prefix)
 	for _, k := range p.k {
 		if len(k) > len(prefix) && strings.HasPrefix(k, prefix) {
+			// TODO(fs): we are ignoring the error which flags a circular reference.
+			// TODO(fs): since we are modifying keys I am not entirely sure whether we can create a circular reference
+			// TODO(fs): this function should probably return an error but the signature is fixed
 			pp.Set(k[n:], p.m[k])
 		}
 	}
@@ -483,9 +492,7 @@ func (p *Properties) Len() int {
 // Keys returns all keys in the same order as in the input.
 func (p *Properties) Keys() []string {
 	keys := make([]string, len(p.k))
-	for i, k := range p.k {
-		keys[i] = k
-	}
+	copy(keys, p.k)
 	return keys
 }
 
@@ -504,6 +511,9 @@ func (p *Properties) Set(key, value string) (prev string, ok bool, err error) {
 	if p.DisableExpansion {
 		prev, ok = p.Get(key)
 		p.m[key] = value
+		if !ok {
+			p.k = append(p.k, key)
+		}
 		return prev, ok, nil
 	}
 
@@ -533,6 +543,13 @@ func (p *Properties) Set(key, value string) (prev string, ok bool, err error) {
 	}
 
 	return prev, ok, nil
+}
+
+// SetValue sets property key to the default string value
+// as defined by fmt.Sprintf("%v").
+func (p *Properties) SetValue(key string, value interface{}) error {
+	_, _, err := p.Set(key, fmt.Sprintf("%v", value))
+	return err
 }
 
 // MustSet sets the property key to the corresponding value.
@@ -615,6 +632,30 @@ func (p *Properties) WriteComment(w io.Writer, prefix string, enc Encoding) (n i
 	return
 }
 
+// Map returns a copy of the properties as a map.
+func (p *Properties) Map() map[string]string {
+	m := make(map[string]string)
+	for k, v := range p.m {
+		m[k] = v
+	}
+	return m
+}
+
+// FilterFunc returns a copy of the properties which includes the values which passed all filters.
+func (p *Properties) FilterFunc(filters ...func(k, v string) bool) *Properties {
+	pp := NewProperties()
+outer:
+	for k, v := range p.m {
+		for _, f := range filters {
+			if !f(k, v) {
+				continue outer
+			}
+			pp.Set(k, v)
+		}
+	}
+	return pp
+}
+
 // ----------------------------------------------------------------------------
 
 // Delete removes the key and its comments.
@@ -624,7 +665,7 @@ func (p *Properties) Delete(key string) {
 	newKeys := []string{}
 	for _, k := range p.k {
 		if k != key {
-			newKeys = append(newKeys, key)
+			newKeys = append(newKeys, k)
 		}
 	}
 	p.k = newKeys
@@ -632,14 +673,14 @@ func (p *Properties) Delete(key string) {
 
 // Merge merges properties, comments and keys from other *Properties into p
 func (p *Properties) Merge(other *Properties) {
-	for k,v := range other.m {
+	for k, v := range other.m {
 		p.m[k] = v
 	}
-	for k,v := range other.c {
+	for k, v := range other.c {
 		p.c[k] = v
 	}
 
-	outer:
+outer:
 	for _, otherKey := range other.k {
 		for _, key := range p.k {
 			if otherKey == key {

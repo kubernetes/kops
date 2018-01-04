@@ -75,10 +75,12 @@ func dict(v ...interface{}) map[string]interface{} {
 	return dict
 }
 
-func merge(dst map[string]interface{}, src map[string]interface{}) interface{} {
-	if err := mergo.Merge(&dst, src); err != nil {
-		// Swallow errors inside of a template.
-		return ""
+func merge(dst map[string]interface{}, srcs ...map[string]interface{}) interface{} {
+	for _, src := range srcs {
+		if err := mergo.Merge(&dst, src); err != nil {
+			// Swallow errors inside of a template.
+			return ""
+		}
 	}
 	return dst
 }

@@ -13,9 +13,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var _ = fmt.Println
-var _ = os.Stderr
-
 func translate(in string) string {
 	return strings.Replace(in, "-", "\\-", -1)
 }
@@ -153,7 +150,7 @@ func TestGenManTree(t *testing.T) {
 	header := &GenManHeader{Section: "2"}
 	tmpdir, err := ioutil.TempDir("", "test-gen-man-tree")
 	if err != nil {
-		t.Fatalf("Failed to create tempdir: %s", err.Error())
+		t.Fatalf("Failed to create tmpdir: %s", err.Error())
 	}
 	defer os.RemoveAll(tmpdir)
 
@@ -199,4 +196,21 @@ func AssertNextLineEquals(scanner *bufio.Scanner, expectedLine string) error {
 	}
 
 	return fmt.Errorf("AssertNextLineEquals: hit EOF before finding %#v", expectedLine)
+}
+
+func BenchmarkGenManToFile(b *testing.B) {
+	c := initializeWithRootCmd()
+	file, err := ioutil.TempFile("", "")
+	if err != nil {
+		b.Fatal(err)
+	}
+	defer os.Remove(file.Name())
+	defer file.Close()
+
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		if err := GenMan(c, nil, file); err != nil {
+			b.Fatal(err)
+		}
+	}
 }

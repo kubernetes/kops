@@ -17,6 +17,12 @@ Automates checking for and applying Kubernetes updates. This upgrades a cluster 
   kops upgrade cluster kubernetes-cluster.example.com --yes --state=s3://kops-state-1234
 ```
 
+### Options
+
+```
+  -h, --help   help for upgrade
+```
+
 ### Options inherited from parent commands
 
 ```

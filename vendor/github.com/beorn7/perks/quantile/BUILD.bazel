@@ -13,8 +13,8 @@ go_test(
         "bench_test.go",
         "stream_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/beorn7/perks/quantile",
-    library = ":go_default_library",
 )
 
 go_test(

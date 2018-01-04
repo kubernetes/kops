@@ -5,9 +5,9 @@ go_library(
     name = "go_default_library",
     srcs = [
         "doc.go",
-        "gogo.pb.go",
         "helper.go",
     ],
+    embed = [":gogoproto_go_proto"],
     importpath = "github.com/gogo/protobuf/gogoproto",
     visibility = ["//visibility:public"],
     deps = [

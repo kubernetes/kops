@@ -1,4 +1,4 @@
-// Copyright 2016 Frank Schroeder. All rights reserved.
+// Copyright 2017 Frank Schroeder. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -17,8 +17,8 @@ func TestFlag(t *testing.T) {
 	gotI := f.Int("i", -1, "int flag")
 
 	p := NewProperties()
-	p.Set("s", "t")
-	p.Set("i", "9")
+	p.MustSet("s", "t")
+	p.MustSet("i", "9")
 	p.MustFlag(f)
 
 	if want := "t"; *gotS != want {
@@ -36,11 +36,13 @@ func TestFlagOverride(t *testing.T) {
 	gotB := f.Int("b", 2, "customized")
 	gotC := f.Int("c", 3, "overridden")
 
-	f.Parse([]string{"-c", "4"})
+	if err := f.Parse([]string{"-c", "4"}); err != nil {
+		t.Fatal(err)
+	}
 
 	p := NewProperties()
-	p.Set("b", "5")
-	p.Set("c", "6")
+	p.MustSet("b", "5")
+	p.MustSet("c", "6")
 	p.MustFlag(f)
 
 	if want := 1; *gotA != want {
@@ -63,8 +65,8 @@ func ExampleProperties_MustFlag() {
 	fmt.Printf("flagged as x=%d, y=%d\n", *x, *y)
 
 	p := NewProperties()
-	p.Set("x", "7")
-	p.Set("y", "42") // note discard
+	p.MustSet("x", "7")
+	p.MustSet("y", "42") // note discard
 	p.MustFlag(flag.CommandLine)
 	fmt.Printf("configured to x=%d, y=%d\n", *x, *y)
 

@@ -61,6 +61,12 @@ Note: terraform users will need to run all of the following commands from the sa
   --instance-group nodes
 ```
 
+### Options
+
+```
+  -h, --help   help for rolling-update
+```
+
 ### Options inherited from parent commands
 
 ```

@@ -44,7 +44,7 @@ Available Loggers are:
  * FATAL
 
 These each are loggers based on the log standard library and follow the
-standard usage. Eg..
+standard usage. Eg.
 
 ```go
     import (
@@ -77,6 +77,13 @@ standard usage. Eg..
 
     jww.INFO.Printf("information %q", response)
 
+```
+
+NOTE: You can also use the library in a non-global setting by creating an instance of a Notebook:
+
+```go
+notepad = jww.NewNotepad(jww.LevelInfo, jww.LevelTrace, os.Stdout, ioutil.Discard, "", log.Ldate|log.Ltime)
+notepad.WARN.Println("Some warning"")
 ```
 
 _Why 7 levels?_
@@ -118,35 +125,15 @@ verbosity.
 Note that JWW's own internal output uses log levels as well, so set the log
 level before making any other calls if you want to see what it's up to.
 
-### Using a temp log file
-
-JWW conveniently creates a temporary file and sets the log Handle to
-a io.Writer created for it. You should call this early in your application
-initialization routine as it will only log calls made after it is executed. 
-When this option is used, the library will fmt.Println where to find the
-log file.
-
-```go
-    import (
-        jww "github.com/spf13/jwalterweatherman"
-    )
-
-    jww.UseTempLogFile("YourAppName") 
-
-```
 
 ### Setting a log file
 
-JWW can log to any file you provide a path to (provided it’s writable).
-Will only append to this file.
+JWW can log to any `io.Writer`:
 
 
 ```go
-    import (
-        jww "github.com/spf13/jwalterweatherman"
-    )
 
-    jww.SetLogFile("/path/to/logfile") 
+    jww.SetLogOutput(customWriter) 
 
 ```
 

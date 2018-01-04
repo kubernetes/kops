@@ -38,7 +38,6 @@ import (
 	"io"
 	"os"
 	"os/exec"
-	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
@@ -47,32 +46,39 @@ import (
 	"github.com/googleapis/gnostic/OpenAPIv2"
 	"github.com/googleapis/gnostic/OpenAPIv3"
 	"github.com/googleapis/gnostic/compiler"
+	"github.com/googleapis/gnostic/discovery"
 	"github.com/googleapis/gnostic/jsonwriter"
 	plugins "github.com/googleapis/gnostic/plugins"
+	surface "github.com/googleapis/gnostic/surface"
 	"gopkg.in/yaml.v2"
 )
 
-const ( // OpenAPI Version
-	openAPIvUnknown = 0
-	openAPIv2       = 2
-	openAPIv3       = 3
+const ( // Source Format
+	SourceFormatUnknown   = 0
+	SourceFormatOpenAPI2  = 2
+	SourceFormatOpenAPI3  = 3
+	SourceFormatDiscovery = 4
 )
 
 // Determine the version of an OpenAPI description read from JSON or YAML.
 func getOpenAPIVersionFromInfo(info interface{}) int {
 	m, ok := compiler.UnpackMap(info)
 	if !ok {
-		return openAPIvUnknown
+		return SourceFormatUnknown
 	}
 	swagger, ok := compiler.MapValueForKey(m, "swagger").(string)
 	if ok && strings.HasPrefix(swagger, "2.0") {
-		return openAPIv2
+		return SourceFormatOpenAPI2
 	}
 	openapi, ok := compiler.MapValueForKey(m, "openapi").(string)
 	if ok && strings.HasPrefix(openapi, "3.0") {
-		return openAPIv3
+		return SourceFormatOpenAPI3
 	}
-	return openAPIvUnknown
+	kind, ok := compiler.MapValueForKey(m, "kind").(string)
+	if ok && kind == "discovery#restDescription" {
+		return SourceFormatDiscovery
+	}
+	return SourceFormatUnknown
 }
 
 const (
@@ -86,7 +92,7 @@ type pluginCall struct {
 }
 
 // Invokes a plugin.
-func (p *pluginCall) perform(document proto.Message, openAPIVersion int, sourceName string) error {
+func (p *pluginCall) perform(document proto.Message, sourceFormat int, sourceName string) error {
 	if p.Name != "" {
 		request := &plugins.Request{}
 
@@ -136,22 +142,20 @@ func (p *pluginCall) perform(document proto.Message, openAPIVersion int, sourceN
 
 		request.OutputPath = outputLocation
 
-		wrapper := &plugins.Wrapper{}
-		wrapper.Name = sourceName
-		switch openAPIVersion {
-		case openAPIv2:
-			wrapper.Version = "v2"
-		case openAPIv3:
-			wrapper.Version = "v3"
+		request.SourceName = sourceName
+		switch sourceFormat {
+		case SourceFormatOpenAPI2:
+			request.Openapi2 = document.(*openapi_v2.Document)
+			request.Surface, _ = surface.NewModelFromOpenAPI2(request.Openapi2)
+		case SourceFormatOpenAPI3:
+			request.Openapi3 = document.(*openapi_v3.Document)
+			request.Surface, _ = surface.NewModelFromOpenAPI3(request.Openapi3)
 		default:
-			wrapper.Version = "unknown"
 		}
-		protoBytes, _ := proto.Marshal(document)
-		wrapper.Value = protoBytes
-		request.Wrapper = wrapper
+
 		requestBytes, _ := proto.Marshal(request)
 
-		cmd := exec.Command(executableName)
+		cmd := exec.Command(executableName, "-plugin")
 		cmd.Stdin = bytes.NewReader(requestBytes)
 		cmd.Stderr = os.Stderr
 		output, err := cmd.Output()
@@ -164,36 +168,7 @@ func (p *pluginCall) perform(document proto.Message, openAPIVersion int, sourceN
 			return err
 		}
 
-		if response.Errors != nil {
-			return fmt.Errorf("Plugin error: %+v", response.Errors)
-		}
-
-		// Write files to the specified directory.
-		var writer io.Writer
-		switch {
-		case outputLocation == "!":
-			// Write nothing.
-		case outputLocation == "-":
-			writer = os.Stdout
-			for _, file := range response.Files {
-				writer.Write([]byte("\n\n" + file.Name + " -------------------- \n"))
-				writer.Write(file.Data)
-			}
-		case isFile(outputLocation):
-			return fmt.Errorf("unable to overwrite %s", outputLocation)
-		default: // write files into a directory named by outputLocation
-			if !isDirectory(outputLocation) {
-				os.Mkdir(outputLocation, 0755)
-			}
-			for _, file := range response.Files {
-				p := outputLocation + "/" + file.Name
-				dir := path.Dir(p)
-				os.MkdirAll(dir, 0755)
-				f, _ := os.Create(p)
-				defer f.Close()
-				f.Write(file.Data)
-			}
-		}
+		plugins.HandleResponse(response, outputLocation)
 	}
 	return nil
 }
@@ -261,7 +236,7 @@ type Gnostic struct {
 	resolveReferences bool
 	pluginCalls       []*pluginCall
 	extensionHandlers []compiler.ExtensionHandler
-	openAPIVersion    int
+	sourceFormat      int
 }
 
 // Initialize a structure to store global application state.
@@ -369,19 +344,25 @@ func (g *Gnostic) readOpenAPIText(bytes []byte) (message proto.Message, err erro
 		return nil, err
 	}
 	// Determine the OpenAPI version.
-	g.openAPIVersion = getOpenAPIVersionFromInfo(info)
-	if g.openAPIVersion == openAPIvUnknown {
+	g.sourceFormat = getOpenAPIVersionFromInfo(info)
+	if g.sourceFormat == SourceFormatUnknown {
 		return nil, errors.New("unable to identify OpenAPI version")
 	}
 	// Compile to the proto model.
-	if g.openAPIVersion == openAPIv2 {
+	if g.sourceFormat == SourceFormatOpenAPI2 {
 		document, err := openapi_v2.NewDocument(info, compiler.NewContextWithExtensions("$root", nil, &g.extensionHandlers))
 		if err != nil {
 			return nil, err
 		}
 		message = document
-	} else if g.openAPIVersion == openAPIv3 {
+	} else if g.sourceFormat == SourceFormatOpenAPI3 {
 		document, err := openapi_v3.NewDocument(info, compiler.NewContextWithExtensions("$root", nil, &g.extensionHandlers))
+		if err != nil {
+			return nil, err
+		}
+		message = document
+	} else {
+		document, err := discovery_v1.NewDocument(info, compiler.NewContextWithExtensions("$root", nil, &g.extensionHandlers))
 		if err != nil {
 			return nil, err
 		}
@@ -396,15 +377,22 @@ func (g *Gnostic) readOpenAPIBinary(data []byte) (message proto.Message, err err
 	documentV3 := &openapi_v3.Document{}
 	err = proto.Unmarshal(data, documentV3)
 	if err == nil && strings.HasPrefix(documentV3.Openapi, "3.0") {
-		g.openAPIVersion = openAPIv3
+		g.sourceFormat = SourceFormatOpenAPI3
 		return documentV3, nil
 	}
 	// if that failed, try to read an OpenAPI v2 document
 	documentV2 := &openapi_v2.Document{}
 	err = proto.Unmarshal(data, documentV2)
 	if err == nil && strings.HasPrefix(documentV2.Swagger, "2.0") {
-		g.openAPIVersion = openAPIv2
+		g.sourceFormat = SourceFormatOpenAPI2
 		return documentV2, nil
+	}
+	// if that failed, try to read a Discovery Format document
+	discoveryDocument := &discovery_v1.Document{}
+	err = proto.Unmarshal(data, discoveryDocument)
+	if err == nil { // && strings.HasPrefix(documentV2.Swagger, "2.0") {
+		g.sourceFormat = SourceFormatDiscovery
+		return discoveryDocument, nil
 	}
 	return nil, err
 }
@@ -432,14 +420,20 @@ func (g *Gnostic) writeJSONYAMLOutput(message proto.Message) {
 	var rawInfo yaml.MapSlice
 	var ok bool
 	var err error
-	if g.openAPIVersion == openAPIv2 {
+	if g.sourceFormat == SourceFormatOpenAPI2 {
 		document := message.(*openapi_v2.Document)
 		rawInfo, ok = document.ToRawInfo().(yaml.MapSlice)
 		if !ok {
 			rawInfo = nil
 		}
-	} else if g.openAPIVersion == openAPIv3 {
+	} else if g.sourceFormat == SourceFormatOpenAPI3 {
 		document := message.(*openapi_v3.Document)
+		rawInfo, ok = document.ToRawInfo().(yaml.MapSlice)
+		if !ok {
+			rawInfo = nil
+		}
+	} else if g.sourceFormat == SourceFormatDiscovery {
+		document := message.(*discovery_v1.Document)
 		rawInfo, ok = document.ToRawInfo().(yaml.MapSlice)
 		if !ok {
 			rawInfo = nil
@@ -477,10 +471,10 @@ func (g *Gnostic) writeJSONYAMLOutput(message proto.Message) {
 func (g *Gnostic) performActions(message proto.Message) (err error) {
 	// Optionally resolve internal references.
 	if g.resolveReferences {
-		if g.openAPIVersion == openAPIv2 {
+		if g.sourceFormat == SourceFormatOpenAPI2 {
 			document := message.(*openapi_v2.Document)
 			_, err = document.ResolveReferences(g.sourceName)
-		} else if g.openAPIVersion == openAPIv3 {
+		} else if g.sourceFormat == SourceFormatOpenAPI3 {
 			document := message.(*openapi_v3.Document)
 			_, err = document.ResolveReferences(g.sourceName)
 		}
@@ -502,7 +496,7 @@ func (g *Gnostic) performActions(message proto.Message) (err error) {
 	}
 	// Call all specified plugins.
 	for _, p := range g.pluginCalls {
-		err := p.perform(message, g.openAPIVersion, g.sourceName)
+		err := p.perform(message, g.sourceFormat, g.sourceName)
 		if err != nil {
 			writeFile(g.errorOutputPath, g.errorBytes(err), g.sourceName, "errors")
 			defer os.Exit(-1) // run all plugins, even when some have errors

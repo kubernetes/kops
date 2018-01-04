@@ -13,6 +13,13 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["exec_test.go"],
+    embed = [":go_default_library"],
     importpath = "k8s.io/utils/exec",
-    library = ":go_default_library",
+)
+
+go_test(
+    name = "go_default_xtest",
+    srcs = ["new_test.go"],
+    importpath = "k8s.io/utils/exec_test",
+    deps = [":go_default_library"],
 )

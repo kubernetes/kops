@@ -77,10 +77,8 @@ func TestNaturalLess(t *testing.T) {
 var testEquivalence = flag.Bool("equivalence", false, "Test equivalence with handysort")
 
 func TestEquivalenceToXlabStringLess(t *testing.T) {
-	t.Skip("Skipping equivalence test due to bug in handysort")
-
 	if !*testEquivalence {
-		t.Skip("Skipping exhaustive test with -short")
+		t.Skip("Skipping exhaustive test without -equivalence")
 	}
 
 	set := testSet(300)
@@ -98,25 +96,31 @@ func TestEquivalenceToXlabStringLess(t *testing.T) {
 	}
 }
 
-func BenchmarkStringSort(b *testing.B) {
+func BenchmarkStdStringSort(b *testing.B) {
 	set := testSet(300)
 	arr := make([]string, len(set[0]))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for _, list := range set {
+			b.StopTimer()
 			copy(arr, list)
+			b.StartTimer()
+
 			sort.Strings(arr)
 		}
 	}
 }
 
-func BenchmarkUtilStringSort(b *testing.B) {
+func BenchmarkNaturalStringSort(b *testing.B) {
 	set := testSet(300)
 	arr := make([]string, len(set[0]))
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for _, list := range set {
+			b.StopTimer()
 			copy(arr, list)
+			b.StartTimer()
+
 			sort.Sort(Natural(arr))
 		}
 	}
@@ -128,19 +132,22 @@ func BenchmarkHandyStringSort(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for _, list := range set {
+			b.StopTimer()
 			copy(arr, list)
+			b.StartTimer()
+
 			sort.Sort(handysort.Strings(arr))
 		}
 	}
 }
 
-func BenchmarkStringLess(b *testing.B) {
+func BenchmarkStdStringLess(b *testing.B) {
 	set := testSet(300)
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		for j := range set[0] {
 			k := (j + 1) % len(set[0])
-			_ = handysort.StringLess(set[0][j], set[0][k])
+			_ = set[0][j] < set[0][k]
 		}
 	}
 }
@@ -156,18 +163,33 @@ func BenchmarkNaturalLess(b *testing.B) {
 	}
 }
 
-// Get 1000 arrays of 10000-string-arrays.
+func BenchmarkHandyStringLess(b *testing.B) {
+	set := testSet(300)
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		for j := range set[0] {
+			k := (j + 1) % len(set[0])
+			_ = handysort.StringLess(set[0][j], set[0][k])
+		}
+	}
+}
+
+// Get 1000 arrays of 10000-string-arrays (less if -short is specified).
 func testSet(seed int) [][]string {
 	gen := &generator{
 		src: rand.New(rand.NewSource(
 			int64(seed),
 		)),
 	}
-	set := make([][]string, 1000)
+	n := 1000
+	if testing.Short() {
+		n = 1
+	}
+	set := make([][]string, n)
 	for i := range set {
 		strings := make([]string, 10000)
 		for idx := range strings {
-			// random length
+			// Generate a random string
 			strings[idx] = gen.NextString()
 		}
 		set[i] = strings
@@ -185,16 +207,18 @@ func (g *generator) NextInt(max int) int {
 
 // Gets random random-length alphanumeric string.
 func (g *generator) NextString() (str string) {
-	// random-length 3-8 chars part
+	// Random-length 3-8 chars part
 	strlen := g.src.Intn(6) + 3
-	// random-length 1-3 num
+	// Random-length 1-3 num
 	numlen := g.src.Intn(3) + 1
-	// random position for num in string
+	// Random position for num in string
 	numpos := g.src.Intn(strlen + 1)
+	// Generate the number
 	var num string
 	for i := 0; i < numlen; i++ {
 		num += strconv.Itoa(g.src.Intn(10))
 	}
+	// Put it all together
 	for i := 0; i < strlen+1; i++ {
 		if i == numpos {
 			str += num

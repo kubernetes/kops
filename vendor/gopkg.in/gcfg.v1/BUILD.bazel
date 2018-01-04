@@ -26,15 +26,13 @@ go_test(
         "issues_test.go",
         "read_test.go",
     ],
-    data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
     importpath = "gopkg.in/gcfg.v1",
-    library = ":go_default_library",
 )
 
 go_test(
     name = "go_default_xtest",
     srcs = ["example_test.go"],
-    data = glob(["testdata/**"]),
     importpath = "gopkg.in/gcfg.v1_test",
     deps = [":go_default_library"],
 )

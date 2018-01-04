@@ -11,7 +11,7 @@ Get one or many instancegroups
 Display one or many instancegroup resources.
 
 ```
-kops get instancegroups
+kops get instancegroups [flags]
 ```
 
 ### Examples
@@ -25,6 +25,12 @@ kops get instancegroups
   
   # Save a cluster's instancegroups desired configuration to YAML file
   kops get ig --name k8s-cluster.example.com -o yaml > instancegroups-desired-config.yaml
+```
+
+### Options
+
+```
+  -h, --help   help for instancegroups
 ```
 
 ### Options inherited from parent commands

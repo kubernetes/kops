@@ -3,10 +3,9 @@ load("@io_bazel_rules_go//go:def.bzl", "go_library")
 
 go_library(
     name = "go_default_library",
-    srcs = ["auth.pb.go"],
+    embed = [":authpb_go_proto"],
     importpath = "github.com/coreos/etcd/auth/authpb",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/golang/protobuf/proto:go_default_library"],
 )
 
 proto_library(

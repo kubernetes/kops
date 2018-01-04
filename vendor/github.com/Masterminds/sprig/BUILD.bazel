@@ -45,8 +45,8 @@ go_test(
         "semver_test.go",
         "strings_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/Masterminds/sprig",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/aokoli/goutils:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",

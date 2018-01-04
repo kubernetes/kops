@@ -1,6 +1,7 @@
 package afero
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -23,9 +24,9 @@ func NewTempOsBaseFs(t *testing.T) Fs {
 
 func CleanupTempDirs(t *testing.T) {
 	osfs := NewOsFs()
-	type ev struct{
+	type ev struct {
 		path string
-		e error
+		e    error
 	}
 
 	errs := []ev{}
@@ -33,7 +34,7 @@ func CleanupTempDirs(t *testing.T) {
 	for _, x := range tempDirs {
 		err := osfs.RemoveAll(x)
 		if err != nil {
-			errs = append(errs, ev{path:x,e: err})
+			errs = append(errs, ev{path: x, e: err})
 		}
 	}
 
@@ -187,7 +188,7 @@ func TestNestedDirBaseReaddir(t *testing.T) {
 	fh, _ = ufs.Open("/home/test/foo")
 	list, err := fh.Readdir(-1)
 	if err != nil {
-		t.Errorf("Readdir failed", err)
+		t.Errorf("Readdir failed %s", err)
 	}
 	if len(list) != 2 {
 		for _, x := range list {
@@ -220,7 +221,7 @@ func TestNestedDirOverlayReaddir(t *testing.T) {
 	fh, _ = ufs.Open("/home/test/foo")
 	list, err := fh.Readdir(-1)
 	if err != nil {
-		t.Errorf("Readdir failed", err)
+		t.Errorf("Readdir failed %s", err)
 	}
 	if len(list) != 2 {
 		for _, x := range list {
@@ -255,7 +256,7 @@ func TestNestedDirOverlayOsFsReaddir(t *testing.T) {
 	list, err := fh.Readdir(-1)
 	fh.Close()
 	if err != nil {
-		t.Errorf("Readdir failed", err)
+		t.Errorf("Readdir failed %s", err)
 	}
 	if len(list) != 2 {
 		for _, x := range list {
@@ -365,4 +366,39 @@ func TestUnionCacheExpire(t *testing.T) {
 	if string(data) != "Another test" {
 		t.Errorf("cache time failed: <%s>", data)
 	}
+}
+
+func TestCacheOnReadFsNotInLayer(t *testing.T) {
+	base := NewMemMapFs()
+	layer := NewMemMapFs()
+	fs := NewCacheOnReadFs(base, layer, 0)
+
+	fh, err := base.Create("/file.txt")
+	if err != nil {
+		t.Fatal("unable to create file: ", err)
+	}
+
+	txt := []byte("This is a test")
+	fh.Write(txt)
+	fh.Close()
+
+	fh, err = fs.Open("/file.txt")
+	if err != nil {
+		t.Fatal("could not open file: ", err)
+	}
+
+	b, err := ReadAll(fh)
+	fh.Close()
+
+	if err != nil {
+		t.Fatal("could not read file: ", err)
+	} else if !bytes.Equal(txt, b) {
+		t.Fatalf("wanted file text %q, got %q", txt, b)
+	}
+
+	fh, err = layer.Open("/file.txt")
+	if err != nil {
+		t.Fatal("could not open file from layer: ", err)
+	}
+	fh.Close()
 }

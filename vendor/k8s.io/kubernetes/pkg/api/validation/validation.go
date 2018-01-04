@@ -1233,6 +1233,20 @@ func validateScaleIOVolumeSource(sio *api.ScaleIOVolumeSource, fldPath *field.Pa
 	return allErrs
 }
 
+func validateScaleIOPersistentVolumeSource(sio *api.ScaleIOPersistentVolumeSource, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+	if sio.Gateway == "" {
+		allErrs = append(allErrs, field.Required(fldPath.Child("gateway"), ""))
+	}
+	if sio.System == "" {
+		allErrs = append(allErrs, field.Required(fldPath.Child("system"), ""))
+	}
+	if sio.VolumeName == "" {
+		allErrs = append(allErrs, field.Required(fldPath.Child("volumeName"), ""))
+	}
+	return allErrs
+}
+
 func validateLocalVolumeSource(ls *api.LocalVolumeSource, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 	if ls.Path == "" {
@@ -1477,7 +1491,7 @@ func ValidatePersistentVolume(pv *api.PersistentVolume) field.ErrorList {
 			allErrs = append(allErrs, field.Forbidden(specPath.Child("scaleIO"), "may not specify more than 1 volume type"))
 		} else {
 			numVolumes++
-			allErrs = append(allErrs, validateScaleIOVolumeSource(pv.Spec.ScaleIO, specPath.Child("scaleIO"))...)
+			allErrs = append(allErrs, validateScaleIOPersistentVolumeSource(pv.Spec.ScaleIO, specPath.Child("scaleIO"))...)
 		}
 	}
 	if pv.Spec.Local != nil {
@@ -1921,9 +1935,6 @@ func ValidateVolumeMounts(mounts []api.VolumeMount, volumes sets.String, contain
 		}
 		if mountpoints.Has(mnt.MountPath) {
 			allErrs = append(allErrs, field.Invalid(idxPath.Child("mountPath"), mnt.MountPath, "must be unique"))
-		}
-		if !path.IsAbs(mnt.MountPath) {
-			allErrs = append(allErrs, field.Invalid(idxPath.Child("mountPath"), mnt.MountPath, "must be an absolute path"))
 		}
 		mountpoints.Insert(mnt.MountPath)
 		if len(mnt.SubPath) > 0 {
@@ -3146,22 +3157,6 @@ func ValidateService(service *api.Service) field.ErrorList {
 			allErrs = append(allErrs, field.Duplicate(portPath, key))
 		}
 		ports[key] = true
-	}
-
-	// Check for duplicate TargetPort
-	portsPath = specPath.Child("ports")
-	targetPorts := make(map[api.ServicePort]bool)
-	for i, port := range service.Spec.Ports {
-		if (port.TargetPort.Type == intstr.Int && port.TargetPort.IntVal == 0) || (port.TargetPort.Type == intstr.String && port.TargetPort.StrVal == "") {
-			continue
-		}
-		portPath := portsPath.Index(i)
-		key := api.ServicePort{Protocol: port.Protocol, TargetPort: port.TargetPort}
-		_, found := targetPorts[key]
-		if found {
-			allErrs = append(allErrs, field.Duplicate(portPath.Child("targetPort"), port.TargetPort))
-		}
-		targetPorts[key] = true
 	}
 
 	// Validate SourceRange field and annotation

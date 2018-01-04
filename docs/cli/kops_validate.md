@@ -24,6 +24,12 @@ This commands validates the following components:
   kops validate cluster
 ```
 
+### Options
+
+```
+  -h, --help   help for validate
+```
+
 ### Options inherited from parent commands
 
 ```

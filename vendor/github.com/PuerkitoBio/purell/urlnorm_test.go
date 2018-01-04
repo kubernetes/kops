@@ -35,6 +35,7 @@ func TestUrlnorm(t *testing.T) {
 		"http://XBLA\u306eXbox.com": "http://xn--xblaxbox-jf4g.com", //test utf8 and unicode
 		"http://президент.рф":       "http://xn--d1abbgf6aiiy.xn--p1ai",
 		"http://ПРЕЗИДЕНТ.РФ":       "http://xn--d1abbgf6aiiy.xn--p1ai",
+		"http://ａｂ￥ヲ￦○.com":         "http://xn--ab-ida8983azmfnvs.com", //test width folding
 		"http://\u00e9.com":         "http://xn--9ca.com",
 		"http://e\u0301.com":        "http://xn--9ca.com",
 		"http://ja.wikipedia.org/wiki/%E3%82%AD%E3%83%A3%E3%82%BF%E3%83%94%E3%83%A9%E3%83%BC%E3%82%B8%E3%83%A3%E3%83%91%E3%83%B3": "http://ja.wikipedia.org/wiki/%E3%82%AD%E3%83%A3%E3%82%BF%E3%83%94%E3%83%A9%E3%83%BC%E3%82%B8%E3%83%A3%E3%83%91%E3%83%B3",

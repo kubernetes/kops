@@ -16,7 +16,7 @@ This commands validates the following components:
   4. All pods in the kube-system namespace are running and healthy.
 
 ```
-kops validate cluster
+kops validate cluster [flags]
 ```
 
 ### Examples
@@ -26,6 +26,12 @@ kops validate cluster
   # This command uses the currently selected kops cluster as
   # set by the kubectl config.
   kops validate cluster
+```
+
+### Options
+
+```
+  -h, --help   help for cluster
 ```
 
 ### Options inherited from parent commands
