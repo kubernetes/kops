@@ -14,7 +14,7 @@ go_library(
 
 go_binary(
     name = "streaming-write-benchmark",
+    embed = [":go_default_library"],
     importpath = "github.com/pkg/sftp/examples/streaming-write-benchmark",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

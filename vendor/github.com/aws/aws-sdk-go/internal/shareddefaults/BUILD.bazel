@@ -12,7 +12,7 @@ go_test(
     srcs = [
         "shared_config_other_test.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:windows": [
             "shared_config_windows_test.go",
         ],
         "//conditions:default": [],

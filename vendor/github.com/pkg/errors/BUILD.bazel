@@ -18,8 +18,8 @@ go_test(
         "format_test.go",
         "stack_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/pkg/errors",
-    library = ":go_default_library",
 )
 
 go_test(

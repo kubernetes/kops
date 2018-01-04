@@ -13,8 +13,8 @@ go_test(
         "client_test.go",
         "main_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/etcd/client/integration",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/coreos/etcd/client:go_default_library",
         "//vendor/github.com/coreos/etcd/integration:go_default_library",

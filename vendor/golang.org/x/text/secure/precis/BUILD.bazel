@@ -36,8 +36,8 @@ go_test(
         "profile_test.go",
         "tables_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "golang.org/x/text/secure/precis",
-    library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/text/internal/testtext:go_default_library",
         "//vendor/golang.org/x/text/runes:go_default_library",

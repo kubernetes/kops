@@ -13,8 +13,8 @@ go_test(
         "main_test.go",
         "metrics_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/test/integration/metrics",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/golang/glog:go_default_library",
         "//vendor/github.com/golang/protobuf/proto:go_default_library",

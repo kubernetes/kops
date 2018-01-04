@@ -27,8 +27,8 @@ go_test(
         "read_test.go",
     ],
     data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
     importpath = "gopkg.in/gcfg.v1",
-    library = ":go_default_library",
 )
 
 go_test(

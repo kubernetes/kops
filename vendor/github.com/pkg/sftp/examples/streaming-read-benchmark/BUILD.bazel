@@ -14,7 +14,7 @@ go_library(
 
 go_binary(
     name = "streaming-read-benchmark",
+    embed = [":go_default_library"],
     importpath = "github.com/pkg/sftp/examples/streaming-read-benchmark",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

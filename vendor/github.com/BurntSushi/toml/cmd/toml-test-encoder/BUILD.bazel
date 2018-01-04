@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "toml-test-encoder",
+    embed = [":go_default_library"],
     importpath = "github.com/BurntSushi/toml/cmd/toml-test-encoder",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

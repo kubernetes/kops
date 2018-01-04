@@ -22,8 +22,8 @@ go_test(
         "speed_test.go",
         "stream_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/peterbourgon/diskv",
-    library = ":go_default_library",
 )
 
 go_test(

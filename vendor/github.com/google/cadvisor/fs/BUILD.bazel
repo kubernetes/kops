@@ -5,7 +5,7 @@ go_library(
     srcs = [
         "types.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "fs.go",
         ],
         "//conditions:default": [],
@@ -13,7 +13,7 @@ go_library(
     importpath = "github.com/google/cadvisor/fs",
     visibility = ["//visibility:public"],
     deps = select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "//vendor/github.com/docker/docker/pkg/mount:go_default_library",
             "//vendor/github.com/golang/glog:go_default_library",
             "//vendor/github.com/google/cadvisor/devicemapper:go_default_library",
@@ -27,8 +27,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["fs_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/google/cadvisor/fs",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/docker/docker/pkg/mount:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",

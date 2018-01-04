@@ -30,8 +30,8 @@ go_test(
         "factory_test.go",
         "handler_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/google/cadvisor/container/crio",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/google/cadvisor/container:go_default_library",
         "//vendor/github.com/google/cadvisor/container/libcontainer:go_default_library",

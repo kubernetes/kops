@@ -23,8 +23,8 @@ go_test(
         "man_docs_test.go",
         "md_docs_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/spf13/cobra/doc",
-    library = ":go_default_library",
     deps = ["//vendor/github.com/spf13/cobra:go_default_library"],
 )
 

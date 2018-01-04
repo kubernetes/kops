@@ -10,6 +10,6 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["encode_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/google/go-querystring/query",
-    library = ":go_default_library",
 )

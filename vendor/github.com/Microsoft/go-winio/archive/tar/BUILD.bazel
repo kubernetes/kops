@@ -7,11 +7,31 @@ go_library(
         "reader.go",
         "writer.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
             "stat_atimespec.go",
             "stat_unix.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "stat_atim.go",
+            "stat_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "stat_atimespec.go",
+            "stat_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "stat_atim.go",
+            "stat_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "stat_atimespec.go",
+            "stat_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "stat_atim.go",
+            "stat_unix.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
             "stat_atim.go",
             "stat_unix.go",
         ],
@@ -29,8 +49,8 @@ go_test(
         "writer_test.go",
     ],
     data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
     importpath = "github.com/Microsoft/go-winio/archive/tar",
-    library = ":go_default_library",
 )
 
 go_test(

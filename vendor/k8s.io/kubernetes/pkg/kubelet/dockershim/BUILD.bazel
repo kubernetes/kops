@@ -20,13 +20,37 @@ go_library(
         "security_context.go",
         "selinux_util.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "helpers_unsupported.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "helpers_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "helpers_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "helpers_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
             "helpers_linux.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "helpers_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "helpers_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "helpers_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "helpers_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "helpers_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "helpers_windows.go",
         ],
         "//conditions:default": [],
@@ -91,13 +115,13 @@ go_test(
         "security_context_test.go",
         "selinux_util_test.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:linux": [
             "helpers_linux_test.go",
         ],
         "//conditions:default": [],
     }),
+    embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/pkg/kubelet/dockershim",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/blang/semver:go_default_library",
         "//vendor/github.com/docker/docker/api/types:go_default_library",

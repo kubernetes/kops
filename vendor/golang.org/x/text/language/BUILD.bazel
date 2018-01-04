@@ -31,8 +31,8 @@ go_test(
         "parse_test.go",
     ],
     data = glob(["testdata/**"]),
+    embed = [":go_default_library"],
     importpath = "golang.org/x/text/language",
-    library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/text/internal/tag:go_default_library",
         "//vendor/golang.org/x/text/internal/testtext:go_default_library",

@@ -20,8 +20,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["compactor_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/etcd/compactor",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/coreos/etcd/etcdserver/etcdserverpb:go_default_library",
         "//vendor/github.com/coreos/etcd/pkg/testutil:go_default_library",

@@ -12,7 +12,11 @@ go_test(
     srcs = [
         "testdata_test.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
+            "dial_unix_test.go",
+            "session_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:darwin": [
             "agent_unix_test.go",
             "cert_test.go",
             "dial_unix_test.go",
@@ -20,26 +24,83 @@ go_test(
             "session_test.go",
             "test_unix_test.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:dragonfly": [
             "agent_unix_test.go",
             "cert_test.go",
             "dial_unix_test.go",
             "forward_unix_test.go",
             "session_test.go",
             "test_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "agent_unix_test.go",
+            "cert_test.go",
+            "dial_unix_test.go",
+            "forward_unix_test.go",
+            "session_test.go",
+            "test_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "agent_unix_test.go",
+            "cert_test.go",
+            "dial_unix_test.go",
+            "forward_unix_test.go",
+            "session_test.go",
+            "test_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "dial_unix_test.go",
+            "session_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "agent_unix_test.go",
+            "cert_test.go",
+            "dial_unix_test.go",
+            "forward_unix_test.go",
+            "session_test.go",
+            "test_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "agent_unix_test.go",
+            "cert_test.go",
+            "dial_unix_test.go",
+            "forward_unix_test.go",
+            "session_test.go",
+            "test_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "dial_unix_test.go",
+            "session_test.go",
+            "test_unix_test.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "dial_unix_test.go",
+            "session_test.go",
         ],
         "//conditions:default": [],
     }),
+    embed = [":go_default_library"],
     importpath = "golang.org/x/crypto/ssh/test",
-    library = ":go_default_library",
     deps = [
         "//vendor/golang.org/x/crypto/ssh:go_default_library",
         "//vendor/golang.org/x/crypto/ssh/testdata:go_default_library",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
             "//vendor/golang.org/x/crypto/ssh/agent:go_default_library",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "//vendor/golang.org/x/crypto/ssh/agent:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "//vendor/golang.org/x/crypto/ssh/agent:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
+            "//vendor/golang.org/x/crypto/ssh/agent:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "//vendor/golang.org/x/crypto/ssh/agent:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
             "//vendor/golang.org/x/crypto/ssh/agent:go_default_library",
         ],
         "//conditions:default": [],

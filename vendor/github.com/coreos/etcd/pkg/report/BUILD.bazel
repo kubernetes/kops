@@ -17,6 +17,6 @@ go_test(
         "report_test.go",
         "timeseries_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/coreos/etcd/pkg/report",
-    library = ":go_default_library",
 )

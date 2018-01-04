@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "kubeadm",
+    embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/cmd/kubeadm",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

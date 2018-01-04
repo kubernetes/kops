@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "emulator",
+    embed = [":go_default_library"],
     importpath = "cloud.google.com/go/bigtable/cmd/emulator",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

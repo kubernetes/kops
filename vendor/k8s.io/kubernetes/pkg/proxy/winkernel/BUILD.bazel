@@ -5,7 +5,7 @@ go_library(
     srcs = [
         "metrics.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:windows": [
             "proxier.go",
         ],
         "//conditions:default": [],
@@ -15,7 +15,7 @@ go_library(
     deps = [
         "//vendor/github.com/prometheus/client_golang/prometheus:go_default_library",
     ] + select({
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:windows": [
             "//vendor/github.com/Microsoft/hcsshim:go_default_library",
             "//vendor/github.com/davecgh/go-spew/spew:go_default_library",
             "//vendor/github.com/golang/glog:go_default_library",
@@ -39,15 +39,15 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = select({
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:windows": [
             "proxier_test.go",
         ],
         "//conditions:default": [],
     }),
+    embed = [":go_default_library"],
     importpath = "k8s.io/kubernetes/pkg/proxy/winkernel",
-    library = ":go_default_library",
     deps = select({
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:windows": [
             "//vendor/github.com/davecgh/go-spew/spew:go_default_library",
             "//vendor/k8s.io/apimachinery/pkg/apis/meta/v1:go_default_library",
             "//vendor/k8s.io/apimachinery/pkg/types:go_default_library",

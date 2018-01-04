@@ -18,8 +18,8 @@ go_library(
 go_test(
     name = "go_default_test",
     srcs = ["fault_test.go"],
+    embed = [":go_default_library"],
     importpath = "github.com/vmware/govmomi/vim25/methods",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/vmware/govmomi/vim25/soap:go_default_library",
         "//vendor/github.com/vmware/govmomi/vim25/types:go_default_library",

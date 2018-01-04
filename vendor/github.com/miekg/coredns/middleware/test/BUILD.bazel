@@ -23,6 +23,6 @@ go_test(
         "file_test.go",
         "helpers_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/miekg/coredns/middleware/test",
-    library = ":go_default_library",
 )

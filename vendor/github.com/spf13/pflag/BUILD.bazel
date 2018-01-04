@@ -51,8 +51,8 @@ go_test(
         "string_slice_test.go",
         "uint_slice_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/spf13/pflag",
-    library = ":go_default_library",
 )
 
 go_test(

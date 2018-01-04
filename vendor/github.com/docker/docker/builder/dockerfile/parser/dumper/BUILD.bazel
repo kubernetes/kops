@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "dumper",
+    embed = [":go_default_library"],
     importpath = "github.com/docker/docker/builder/dockerfile/parser/dumper",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

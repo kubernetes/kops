@@ -17,8 +17,8 @@ go_test(
         "service_client_test.go",
         "util_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/gophercloud/gophercloud/testing",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/gophercloud/gophercloud:go_default_library",
         "//vendor/github.com/gophercloud/gophercloud/testhelper:go_default_library",

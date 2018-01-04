@@ -9,13 +9,37 @@ go_library(
         "plugin.go",
         "proxy.go",
     ] + select({
-        "@io_bazel_rules_go//go/platform:darwin_amd64": [
+        "@io_bazel_rules_go//go/platform:android": [
             "driver_unsupported.go",
         ],
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:darwin": [
+            "driver_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:dragonfly": [
+            "driver_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "driver_freebsd.go",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
             "driver_linux.go",
         ],
-        "@io_bazel_rules_go//go/platform:windows_amd64": [
+        "@io_bazel_rules_go//go/platform:nacl": [
+            "driver_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:netbsd": [
+            "driver_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:openbsd": [
+            "driver_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:plan9": [
+            "driver_unsupported.go",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "driver_solaris.go",
+        ],
+        "@io_bazel_rules_go//go/platform:windows": [
             "driver_windows.go",
         ],
         "//conditions:default": [],
@@ -34,9 +58,15 @@ go_library(
         "//vendor/github.com/sirupsen/logrus:go_default_library",
         "//vendor/github.com/vbatts/tar-split/tar/storage:go_default_library",
     ] + select({
-        "@io_bazel_rules_go//go/platform:linux_amd64": [
+        "@io_bazel_rules_go//go/platform:freebsd": [
+            "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:linux": [
             "//vendor/github.com/docker/docker/pkg/mount:go_default_library",
             "//vendor/golang.org/x/sys/unix:go_default_library",
+        ],
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "//vendor/github.com/docker/docker/pkg/mount:go_default_library",
         ],
         "//conditions:default": [],
     }),

@@ -1,0 +1,38 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "address.go",
+            "binary.go",
+            "lif.go",
+            "link.go",
+            "sys.go",
+            "syscall.go",
+        ],
+        "//conditions:default": [],
+    }) + select({
+        "@io_bazel_rules_go//go/platform:solaris_amd64": [
+            "sys_solaris_amd64.s",
+            "zsys_solaris_amd64.go",
+        ],
+        "//conditions:default": [],
+    }),
+    cgo = True,
+    importpath = "golang.org/x/net/lif",
+    visibility = ["//visibility:public"],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = select({
+        "@io_bazel_rules_go//go/platform:solaris": [
+            "address_test.go",
+            "link_test.go",
+        ],
+        "//conditions:default": [],
+    }),
+    embed = [":go_default_library"],
+    importpath = "golang.org/x/net/lif",
+)

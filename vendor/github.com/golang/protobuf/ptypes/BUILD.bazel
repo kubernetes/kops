@@ -25,8 +25,8 @@ go_test(
         "duration_test.go",
         "timestamp_test.go",
     ],
+    embed = [":go_default_library"],
     importpath = "github.com/golang/protobuf/ptypes",
-    library = ":go_default_library",
     deps = [
         "//vendor/github.com/golang/protobuf/proto:go_default_library",
         "//vendor/github.com/golang/protobuf/protoc-gen-go/descriptor:go_default_library",

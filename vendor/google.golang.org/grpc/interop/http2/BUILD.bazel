@@ -18,7 +18,7 @@ go_library(
 
 go_binary(
     name = "http2",
+    embed = [":go_default_library"],
     importpath = "google.golang.org/grpc/interop/http2",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )

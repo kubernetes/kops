@@ -10,7 +10,7 @@ go_library(
 
 go_binary(
     name = "tomll",
+    embed = [":go_default_library"],
     importpath = "github.com/pelletier/go-toml/cmd/tomll",
-    library = ":go_default_library",
     visibility = ["//visibility:public"],
 )
