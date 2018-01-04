@@ -259,8 +259,6 @@ No additional configurations are required to be done by user. Kube-router automa
 
 The following command sets up a cluster with Romana as the CNI.
 
-**NOTE** This currently deploys v2.0 Preview 2, and will be updated when the 2.0 release is completed.
-
 ```console
 $ export $ZONES=mylistofzones
 $ kops create cluster \
