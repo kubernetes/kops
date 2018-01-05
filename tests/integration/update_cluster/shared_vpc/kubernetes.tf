@@ -364,6 +364,7 @@ resource "aws_subnet" "us-test-1a-sharedvpc-example-com" {
   tags = {
     KubernetesCluster                             = "sharedvpc.example.com"
     Name                                          = "us-test-1a.sharedvpc.example.com"
+    SubnetType                                    = "Public"
     "kubernetes.io/cluster/sharedvpc.example.com" = "owned"
     "kubernetes.io/role/elb"                      = "1"
   }

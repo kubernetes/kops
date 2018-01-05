@@ -543,6 +543,7 @@ resource "aws_subnet" "us-test-1a-ha-example-com" {
   tags = {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "us-test-1a.ha.example.com"
+    SubnetType                             = "Public"
     "kubernetes.io/cluster/ha.example.com" = "owned"
     "kubernetes.io/role/elb"               = "1"
   }
@@ -556,6 +557,7 @@ resource "aws_subnet" "us-test-1b-ha-example-com" {
   tags = {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "us-test-1b.ha.example.com"
+    SubnetType                             = "Public"
     "kubernetes.io/cluster/ha.example.com" = "owned"
     "kubernetes.io/role/elb"               = "1"
   }
@@ -569,6 +571,7 @@ resource "aws_subnet" "us-test-1c-ha-example-com" {
   tags = {
     KubernetesCluster                      = "ha.example.com"
     Name                                   = "us-test-1c.ha.example.com"
+    SubnetType                             = "Public"
     "kubernetes.io/cluster/ha.example.com" = "owned"
     "kubernetes.io/role/elb"               = "1"
   }
