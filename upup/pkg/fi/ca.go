@@ -70,8 +70,14 @@ type CAStore interface {
 	// FindCertificatePool returns the named CertificatePool, or (nil,nil) if not found
 	FindCertificatePool(name string) (*CertificatePool, error)
 
+	// FindCertificateKeyset will return the keyset for a certificate
+	FindCertificateKeyset(name string) (*kops.Keyset, error)
+
 	// FindPrivateKey returns the named private key, or (nil,nil) if not found
 	FindPrivateKey(name string) (*pki.PrivateKey, error)
+
+	// FindPrivateKeyset will return the keyset for a private key
+	FindPrivateKeyset(name string) (*kops.Keyset, error)
 
 	// FindCert returns the specified certificate, if it exists, or nil if not found
 	FindCert(name string) (*pki.Certificate, error)
@@ -105,6 +111,17 @@ type SSHCredentialStore interface {
 type CertificatePool struct {
 	Secondary []*pki.Certificate
 	Primary   *pki.Certificate
+}
+
+func (c *CertificatePool) All() []*pki.Certificate {
+	var certs []*pki.Certificate
+	if c.Primary != nil {
+		certs = append(certs, c.Primary)
+	}
+	if len(c.Secondary) != 0 {
+		certs = append(certs, c.Secondary...)
+	}
+	return certs
 }
 
 func (c *CertificatePool) AsString() (string, error) {
