@@ -159,7 +159,7 @@ spec:
 
 ```
 
-### profiling flag
+#### profiling flag
 
 ```yaml
 spec:
@@ -187,7 +187,7 @@ You could use the [fileAssets](https://github.com/kubernetes/kops/blob/master/do
 
 Example policy file can be found [here]( https://raw.githubusercontent.com/kubernetes/website/master/docs/tasks/debug-application-cluster/audit-policy.yaml)
 
-#### Max Requests Inflight 
+#### Max Requests Inflight
 
 The maximum number of non-mutating requests in flight at a given time. When the server exceeds this, it rejects requests. Zero for no limit. (default 400)
 
@@ -221,6 +221,26 @@ This value is passed as `--service-node-port-range` for `kube-apiserver`.
 spec:
   kubeAPIServer:
     serviceNodePortRange: 30000-33000
+```
+
+#### Disable Basic Auth
+
+This will disable the passing of the `--basic-auth-file` flag.
+
+```yaml
+spec:
+  kubeAPIServer:
+    disableBasicAuth: true
+```
+
+#### Disable Token Auth
+
+This will disable the passing of the `--token-auth-file` flag.
+
+```yaml
+spec:
+  kubeAPIServer:
+    disableTokenAuth: true
 ```
 
 ### externalDns
