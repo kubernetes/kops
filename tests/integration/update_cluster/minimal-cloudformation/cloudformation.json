@@ -413,6 +413,10 @@
             "Value": "us-test-1a.minimal.example.com"
           },
           {
+            "Key": "SubnetType",
+            "Value": "Public"
+          },
+          {
             "Key": "kubernetes.io/cluster/minimal.example.com",
             "Value": "owned"
           },

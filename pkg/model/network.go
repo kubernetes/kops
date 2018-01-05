@@ -157,6 +157,8 @@ func (b *NetworkModelBuilder) Build(c *fi.ModelBuilderContext) error {
 			glog.V(2).Infof("unable to properly tag subnet %q because it has unknown type %q. Load balancers may be created in incorrect subnets", subnetSpec.Name, subnetSpec.Type)
 		}
 
+		tags["SubnetType"] = string(subnetSpec.Type)
+
 		subnet := &awstasks.Subnet{
 			Name:             s(subnetName),
 			Lifecycle:        b.Lifecycle,
