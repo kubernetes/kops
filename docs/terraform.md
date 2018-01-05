@@ -107,7 +107,7 @@ Ps: You don't have to `kops delete cluster` if you just want to recreate from sc
 
 #### Workaround for Terraform <0.7
 
-Before terraform version 0.7, there was a bug where it could not create AWS tags containing a dot. We recommend upgrading to version 0.7 or laster, which will fix this bug. Please note that this issue only affects the volumes.
+Before terraform version 0.7, there was a bug where it could not create AWS tags containing a dot. We recommend upgrading to version 0.7 or later, which will fix this bug. Please note that this issue only affects the volumes.
 
 There's a workaround if you need to use an earlier version. We divide the cloudup model into three parts:
 
