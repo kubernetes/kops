@@ -31,6 +31,7 @@ k8s.io/kops/federation
 k8s.io/kops/federation/model
 k8s.io/kops/federation/targets/kubernetestarget
 k8s.io/kops/federation/tasks
+k8s.io/kops/kube-discovery/cmd/kube-discovery
 k8s.io/kops/nodeup/pkg/bootstrap
 k8s.io/kops/nodeup/pkg/distros
 k8s.io/kops/nodeup/pkg/model
