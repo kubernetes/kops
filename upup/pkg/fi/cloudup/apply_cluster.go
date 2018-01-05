@@ -255,10 +255,6 @@ func (c *ApplyClusterCmd) Run() error {
 		return err
 	}
 
-	channels := []string{
-		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
-	}
-
 	// Normalize k8s version
 	versionWithoutV := strings.TrimSpace(cluster.Spec.KubernetesVersion)
 	if strings.HasPrefix(versionWithoutV, "v") {
@@ -269,7 +265,7 @@ func (c *ApplyClusterCmd) Run() error {
 		cluster.Spec.KubernetesVersion = versionWithoutV
 	}
 
-	if err := c.addFileAssets(assetBuilder); err != nil {
+	if err := c.AddFileAssets(assetBuilder); err != nil {
 		return err
 	}
 
@@ -561,86 +557,10 @@ func (c *ApplyClusterCmd) Run() error {
 		return secretStore
 	}
 
-	// RenderNodeUpConfig returns the NodeUp config, in YAML format
-	// @@NOTE
-	renderNodeUpConfig := func(ig *kops.InstanceGroup) (*nodeup.Config, error) {
-		if ig == nil {
-			return nil, fmt.Errorf("instanceGroup cannot be nil")
-		}
-
-		role := ig.Spec.Role
-		if role == "" {
-			return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
-		}
-
-		nodeUpTags, err := buildNodeupTags(role, tf.cluster, tf.tags)
-		if err != nil {
-			return nil, err
-		}
-
-		config := &nodeup.Config{}
-		for _, tag := range nodeUpTags.List() {
-			config.Tags = append(config.Tags, tag)
-		}
-
-		config.Assets = c.Assets
-		config.ClusterName = cluster.ObjectMeta.Name
-		config.ConfigBase = fi.String(configBase.Path())
-		config.InstanceGroupName = ig.ObjectMeta.Name
-
-		var images []*nodeup.Image
-
-		if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
-			// When using a custom version, we want to preload the images over http
-			components := []string{"kube-proxy"}
-			if role == kops.InstanceGroupRoleMaster {
-				components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
-			}
-
-			for _, component := range components {
-				baseURL, err := url.Parse(cluster.Spec.KubernetesVersion)
-				if err != nil {
-					return nil, err
-				}
-
-				baseURL.Path = path.Join(baseURL.Path, "/bin/linux/amd64/", component+".tar")
-
-				u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
-				if err != nil {
-					return nil, err
-				}
-
-				image := &nodeup.Image{
-					Source: u.String(),
-					Hash:   hash.Hex(),
-				}
-				images = append(images, image)
-			}
-		}
-
-		{
-			location, hash, err := ProtokubeImageSource(assetBuilder)
-			if err != nil {
-				return nil, err
-			}
-
-			config.ProtokubeImage = &nodeup.Image{
-				Name:   kopsbase.DefaultProtokubeImageName(),
-				Source: location.String(),
-				Hash:   hash.Hex(),
-			}
-		}
-
-		config.Images = images
-		config.Channels = channels
-
-		return config, nil
-	}
-
 	bootstrapScriptBuilder := &model.BootstrapScript{
-		NodeUpConfigBuilder: renderNodeUpConfig,
-		NodeUpSourceHash:    c.NodeUpHash,
+		NodeUpConfigBuilder: func(ig *kops.InstanceGroup) (*nodeup.Config, error) { return c.BuildNodeUpConfig(assetBuilder, ig) },
 		NodeUpSource:        c.NodeUpSource,
+		NodeUpSourceHash:    c.NodeUpHash,
 	}
 	switch kops.CloudProviderID(cluster.Spec.CloudProvider) {
 	case kops.CloudProviderAWS:
@@ -973,8 +893,8 @@ func (c *ApplyClusterCmd) validateKubernetesVersion() error {
 	return nil
 }
 
-// addFileAssets adds the file assets within the assetBuilder
-func (c *ApplyClusterCmd) addFileAssets(assetBuilder *assets.AssetBuilder) error {
+// AddFileAssets adds the file assets within the assetBuilder
+func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error {
 
 	var baseURL string
 	var err error
@@ -1072,4 +992,96 @@ func needsKubernetesManifests(c *kops.Cluster, instanceGroups []*kops.InstanceGr
 	default:
 		return false
 	}
+}
+
+// BuildNodeUpConfig returns the NodeUp config, in YAML format
+func (c *ApplyClusterCmd) BuildNodeUpConfig(assetBuilder *assets.AssetBuilder, ig *kops.InstanceGroup) (*nodeup.Config, error) {
+	if ig == nil {
+		return nil, fmt.Errorf("instanceGroup cannot be nil")
+	}
+
+	cluster := c.Cluster
+
+	configBase, err := vfs.Context.BuildVfsPath(cluster.Spec.ConfigBase)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing config base %q: %v", cluster.Spec.ConfigBase, err)
+	}
+
+	// TODO: Remove
+	clusterTags, err := buildCloudupTags(cluster)
+	if err != nil {
+		return nil, err
+	}
+
+	channels := []string{
+		configBase.Join("addons", "bootstrap-channel.yaml").Path(),
+	}
+
+	role := ig.Spec.Role
+	if role == "" {
+		return nil, fmt.Errorf("cannot determine role for instance group: %v", ig.ObjectMeta.Name)
+	}
+
+	nodeUpTags, err := buildNodeupTags(role, cluster, clusterTags)
+	if err != nil {
+		return nil, err
+	}
+
+	config := &nodeup.Config{}
+	for _, tag := range nodeUpTags.List() {
+		config.Tags = append(config.Tags, tag)
+	}
+
+	config.Assets = c.Assets
+	config.ClusterName = cluster.ObjectMeta.Name
+	config.ConfigBase = fi.String(configBase.Path())
+	config.InstanceGroupName = ig.ObjectMeta.Name
+
+	var images []*nodeup.Image
+
+	if components.IsBaseURL(cluster.Spec.KubernetesVersion) {
+		// When using a custom version, we want to preload the images over http
+		components := []string{"kube-proxy"}
+		if role == kops.InstanceGroupRoleMaster {
+			components = append(components, "kube-apiserver", "kube-controller-manager", "kube-scheduler")
+		}
+
+		for _, component := range components {
+			baseURL, err := url.Parse(c.Cluster.Spec.KubernetesVersion)
+			if err != nil {
+				return nil, err
+			}
+
+			baseURL.Path = path.Join(baseURL.Path, "/bin/linux/amd64/", component+".tar")
+
+			u, hash, err := assetBuilder.RemapFileAndSHA(baseURL)
+			if err != nil {
+				return nil, err
+			}
+
+			image := &nodeup.Image{
+				Source: u.String(),
+				Hash:   hash.Hex(),
+			}
+			images = append(images, image)
+		}
+	}
+
+	{
+		location, hash, err := ProtokubeImageSource(assetBuilder)
+		if err != nil {
+			return nil, err
+		}
+
+		config.ProtokubeImage = &nodeup.Image{
+			Name:   kopsbase.DefaultProtokubeImageName(),
+			Source: location.String(),
+			Hash:   hash.Hex(),
+		}
+	}
+
+	config.Images = images
+	config.Channels = channels
+
+	return config, nil
 }

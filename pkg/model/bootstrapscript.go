@@ -41,6 +41,21 @@ type BootstrapScript struct {
 	NodeUpConfigBuilder func(ig *kops.InstanceGroup) (*nodeup.Config, error)
 }
 
+// KubeEnv returns the nodeup config for the instance group
+func (b *BootstrapScript) KubeEnv(ig *kops.InstanceGroup) (string, error) {
+	config, err := b.NodeUpConfigBuilder(ig)
+	if err != nil {
+		return "", err
+	}
+
+	data, err := kops.ToRawYaml(config)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
+}
+
 // ResourceNodeUp generates and returns a nodeup (bootstrap) script from a
 // template file, substituting in specific env vars & cluster spec configuration
 func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.ClusterSpec) (*fi.ResourceHolder, error) {
@@ -57,17 +72,7 @@ func (b *BootstrapScript) ResourceNodeUp(ig *kops.InstanceGroup, cs *kops.Cluste
 			return b.NodeUpSourceHash
 		},
 		"KubeEnv": func() (string, error) {
-			config, err := b.NodeUpConfigBuilder(ig)
-			if err != nil {
-				return "", err
-			}
-
-			data, err := kops.ToRawYaml(config)
-			if err != nil {
-				return "", err
-			}
-
-			return string(data), nil
+			return b.KubeEnv(ig)
 		},
 
 		// Pass in extra environment variables for user-defined S3 service
