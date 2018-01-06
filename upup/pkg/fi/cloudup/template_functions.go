@@ -178,27 +178,26 @@ func (tf *TemplateFunctions) DnsControllerArgv() ([]string, error) {
 	}
 
 	if dns.IsGossipHostname(tf.cluster.Spec.MasterInternalName) {
-		argv = append(argv, "--dns=gossip")
 		argv = append(argv, "--gossip-seed=127.0.0.1:3999")
-	} else {
-		switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
-		case kops.CloudProviderAWS:
-			if strings.HasPrefix(os.Getenv("AWS_REGION"), "cn-") {
-				argv = append(argv, "--dns=gossip")
-			} else {
-				argv = append(argv, "--dns=aws-route53")
-			}
-		case kops.CloudProviderGCE:
-			argv = append(argv, "--dns=google-clouddns")
-		case kops.CloudProviderDO:
-			argv = append(argv, "--dns=digitalocean")
-		case kops.CloudProviderVSphere:
-			argv = append(argv, "--dns=coredns")
-			argv = append(argv, "--dns-server="+*tf.cluster.Spec.CloudConfig.VSphereCoreDNSServer)
+	}
 
-		default:
-			return nil, fmt.Errorf("unhandled cloudprovider %q", tf.cluster.Spec.CloudProvider)
+	switch kops.CloudProviderID(tf.cluster.Spec.CloudProvider) {
+	case kops.CloudProviderAWS:
+		if strings.HasPrefix(os.Getenv("AWS_REGION"), "cn-") {
+			argv = append(argv, "--dns=gossip")
+		} else {
+			argv = append(argv, "--dns=aws-route53")
 		}
+	case kops.CloudProviderGCE:
+		argv = append(argv, "--dns=google-clouddns")
+	case kops.CloudProviderDO:
+		argv = append(argv, "--dns=digitalocean")
+	case kops.CloudProviderVSphere:
+		argv = append(argv, "--dns=coredns")
+		argv = append(argv, "--dns-server="+*tf.cluster.Spec.CloudConfig.VSphereCoreDNSServer)
+
+	default:
+		return nil, fmt.Errorf("unhandled cloudprovider %q", tf.cluster.Spec.CloudProvider)
 	}
 
 	zone := tf.cluster.Spec.DNSZone
