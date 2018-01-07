@@ -644,3 +644,12 @@ check-markdown-links:
 		-e LANGUAGE=en_US.UTF-8 \
 		rubygem/awesome_bot --allow-dupe --allow-redirect \
 		$(shell find $$PWD -name "*.md" -mindepth 1 -printf '%P\n' | grep -v vendor | grep -v _vendor | grep -v Changelog.md)
+
+#-----------------------------------------------------------
+# kube-discovery
+
+.PHONY: push-kube-discovery
+push-kube-discovery:
+	bazel run //kube-discovery/images:kube-discovery
+	docker tag bazel/kube-discovery/images:kube-discovery ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
+	docker push ${DOCKER_REGISTRY}/kube-discovery:${DOCKER_TAG}
