@@ -247,26 +247,31 @@ func (p *SSHPath) CreateFile(data []byte, acl ACL) error {
 	return p.WriteFile(data, acl)
 }
 
+// ReadFile implements Path::ReadFile
 func (p *SSHPath) ReadFile() ([]byte, error) {
-	sftpClient, err := p.newClient()
+	var b bytes.Buffer
+	_, err := p.WriteTo(&b)
 	if err != nil {
 		return nil, err
+	}
+	return b.Bytes(), nil
+}
+
+// WriteTo implements io.WriterTo
+func (p *SSHPath) WriteTo(out io.Writer) (int64, error) {
+	sftpClient, err := p.newClient()
+	if err != nil {
+		return 0, err
 	}
 	defer sftpClient.Close()
 
 	f, err := sftpClient.Open(p.path)
 	if err != nil {
-		return nil, fmt.Errorf("error opening file %s over sftp: %v", p, err)
+		return 0, fmt.Errorf("error opening file %s over sftp: %v", p, err)
 	}
 	defer f.Close()
 
-	var b bytes.Buffer
-	_, err = f.WriteTo(&b)
-	if err != nil {
-		return nil, fmt.Errorf("error reading file %s over sftp: %v", p, err)
-	}
-
-	return b.Bytes(), nil
+	return f.WriteTo(out)
 }
 
 func (p *SSHPath) ReadDir() ([]Path, error) {

@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
+	"io"
 	"os"
 	"path"
 	"path/filepath"
@@ -325,31 +326,47 @@ func (p *SwiftPath) createBucket() error {
 	}
 }
 
-// ReadFile implements Path::ReadFile.
+// ReadFile implements Path::ReadFile
 func (p *SwiftPath) ReadFile() ([]byte, error) {
-	var ret []byte
+	var b bytes.Buffer
 	done, err := RetryWithBackoff(swiftReadBackoff, func() (bool, error) {
-		glog.V(4).Infof("Reading file %q", p)
-
-		opt := swiftobject.DownloadOpts{}
-		result := swiftobject.Download(p.client, p.bucket, p.key, opt)
-		data, err := (&result).ExtractContent()
-		if err == nil {
-			ret = data
-			return true, nil
-		} else if isSwiftNotFound(err) {
-			return true, os.ErrNotExist
-		} else {
-			return false, fmt.Errorf("error reading %s: %v", p, err)
+		b.Reset()
+		_, err := p.WriteTo(&b)
+		if err != nil {
+			if os.IsNotExist(err) {
+				// Not recoverable
+				return true, err
+			}
+			return false, err
 		}
+		// Success!
+		return true, nil
 	})
 	if err != nil {
 		return nil, err
 	} else if done {
-		return ret, nil
+		return b.Bytes(), nil
 	} else {
+		// Shouldn't happen - we always return a non-nil error with false
 		return nil, wait.ErrWaitTimeout
 	}
+}
+
+// WriteTo implements io.WriterTo
+func (p *SwiftPath) WriteTo(out io.Writer) (int64, error) {
+	glog.V(4).Infof("Reading file %q", p)
+
+	opt := swiftobject.DownloadOpts{}
+	result := swiftobject.Download(p.client, p.bucket, p.key, opt)
+	if result.Err != nil {
+		if isSwiftNotFound(result.Err) {
+			return 0, os.ErrNotExist
+		}
+		return 0, fmt.Errorf("error reading %s: %v", p, result.Err)
+	}
+	defer result.Body.Close()
+
+	return io.Copy(out, result.Body)
 }
 
 func (p *SwiftPath) readPath(opt swiftobject.ListOpts) ([]Path, error) {
