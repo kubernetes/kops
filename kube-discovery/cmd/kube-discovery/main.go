@@ -245,13 +245,23 @@ func discoverKubernetesClusters(timeout time.Duration) (map[string][]net.IP, err
 		for _, srv := range srvs[ptr.Ptr] {
 			// TODO: Ignore if port is not 443?
 			for _, a := range as[srv.Target] {
-				addrs[instance] = append(addrs[instance], a.A)
+				ensureInMap(addrs, instance, a.A)
 			}
 			for _, aaaa := range aaaas[srv.Target] {
-				addrs[instance] = append(addrs[instance], aaaa.AAAA)
+				ensureInMap(addrs, instance, aaaa.AAAA)
 			}
 		}
 	}
 
 	return addrs, nil
+}
+
+func ensureInMap(addrs map[string][]net.IP, name string, ip net.IP) {
+	// Avoid duplicates
+	for _, existing := range addrs[name] {
+		if ip.Equal(existing) {
+			return
+		}
+	}
+	addrs[name] = append(addrs[name], ip)
 }
