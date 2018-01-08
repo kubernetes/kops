@@ -384,6 +384,17 @@ spec:
     disableSecurityGroupIngress: true
 ```
 
+#### WARNING: this works only for Kubernetes version above 1.7.0.
+
+For avoid to create security group per each elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name. Also, security group must be empty, because Kubernetes will add rules per ports that are specified in service file.
+This can be usefull to avoid AWS limits: 500 security groups per region and 50 rules per security group.
+
+```yaml
+spec:
+  cloudConfig:
+    elbSecurityGroup: sg-123445678
+```
+
 ### docker
 
 It is possible to override Docker daemon options for all masters and nodes in the cluster. See the [API docs](https://godoc.org/k8s.io/kops/pkg/apis/kops#DockerConfig) for the full list of options.
@@ -414,17 +425,6 @@ docker:
     - "dm.thinpooldev=/dev/mapper/thin-pool"
     - "dm.use_deferred_deletion=true"
     - "dm.use_deferred_removal=true"
-```
-
-#### WARNING: this works only for Kubernetes version above 1.7.0.
-
-For avoid to create security group per each elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name. Also, security group must be empty, because Kubernetes will add rules per ports that are specified in service file.
-This can be usefull to avoid AWS limits: 500 security groups per region and 50 rules per security group.
-
-```yaml
-spec:
-  cloudConfig:
-    elbSecurityGroup: sg-123445678
 ```
 
 ### sshKeyName
