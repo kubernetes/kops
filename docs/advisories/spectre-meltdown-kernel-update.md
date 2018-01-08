@@ -50,7 +50,6 @@ For the kops-maintained AMIs, the following AMIs contain an updated kernel:
 - kope.io/k8s-1.7-debian-jessie-amd64-hvm-ebs-2018-01-05
 - kope.io/k8s-1.8-debian-jessie-amd64-hvm-ebs-2018-01-05
 - kope.io/k8s-1.8-debian-stretch-amd64-hvm-ebs-2018-01-05
-- kope.io/k8s-1.8-debian-stretch-amd64-hvm-ebs-2018-01-05
 
 These are the images that are maintained by the kubernetes/kops project; please refer to
 other vendors for the appropriate AMI version.
