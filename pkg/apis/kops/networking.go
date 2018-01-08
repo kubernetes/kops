@@ -30,6 +30,7 @@ type NetworkingSpec struct {
 	Kuberouter *KuberouterNetworkingSpec `json:"kuberouter,omitempty"`
 	Romana     *RomanaNetworkingSpec     `json:"romana,omitempty"`
 	AmazonVPC  *AmazonVPCNetworkingSpec  `json:"amazonvpc,omitempty"`
+	Cilium     *CiliumNetworkingSpec     `json:"cilium,omitempty"`
 }
 
 // ClassicNetworkingSpec is the specification of classic networking mode, integrated into kubernetes
@@ -118,4 +119,10 @@ type RomanaNetworkingSpec struct {
 
 // AmazonVPCNetworkingSpec declares that we want Amazon VPC CNI networking
 type AmazonVPCNetworkingSpec struct {
+}
+
+// CiliumNetworkingSpec declares that we want Cilium networking
+type CiliumNetworkingSpec struct {
+	Debug  bool   `json:"Debug,omitempty"`
+	Tunnel string `json:"tunnel,omitempty"`
 }
