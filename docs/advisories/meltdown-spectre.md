@@ -15,7 +15,7 @@ kops is currently running the 4.4.x kernel.  A rolling-update or replacement of
 the kops ami image, with kops hosted on AWS is recommended. All platforms are
 affected not just AWS.
 
-Three CVEs have been released with spectre and meltdown.
+The following three CVEs have been created in regards to Spectre and Meltdown.
 
 - Variant 1: bounds check bypass (CVE-2017-5753)
 - Variant 2: branch target injection (CVE-2017-5715)
@@ -31,6 +31,19 @@ includes the intial work to resolve CVE-2017-5753 and CVE-2017-5754.
   is available with 4.4.110
 - If running another image please update to a fixed image, which must be
   provided by your distro
+
+All linux kernels are vulnerable when running on affected hardware, both
+baremetal and cloud based. Fixed in 4.4.110 for 4.4, 4.9.75 for 4.9, 4.14.12
+for 4.14.
+
+By default, kops runs an image that includes the 4.4 kernel. An updated image
+is available with 4.4.110.
+
+If running another image please update to a fixed image, which must be
+provided by your distro.
+
+For more details about Spectre and Meltdown please see the Resources section at
+the end of this document.
 
 ## Diagnosis
 
@@ -91,7 +104,7 @@ Verify that all instance groups will be rolled.
 
 `kops rolling-update cluster --name $CLUSTER --yes`
 
-## Notes
+## Resources / Notes
 - https://coreos.com/blog/container-linux-meltdown-patch
 - https://aws.amazon.com/de/security/security-bulletins/AWS-2018-013/
 - https://security.googleblog.com/2018/01/todays-cpu-vulnerability-what-you-need.html
@@ -104,7 +117,3 @@ Verify that all instance groups will be rolled.
 - http://blog.cyberus-technology.de/posts/2018-01-03-meltdown.html
 - Paper: https://meltdownattack.com/meltdown.pdf
 - https://01.org/security/advisories/intel-oss-10003
-
-
-
-
