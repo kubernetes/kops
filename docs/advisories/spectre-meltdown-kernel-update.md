@@ -1,10 +1,10 @@
-## Kernel Update required for "Meltdown" issue
+## Kernel Update required for "Spectre/Meltdown" issue
 
 | | |
 |-------------|--------|
 | NAME         	| Meltdown and Spectre Hardware Issues |
 | Description  	| Systems with microprocessors utilizing speculative execution and branch prediction may allow unauthorized disclosure of information to an attacker with local user access via a side-channel analysis. 	|
-| CVE(s)       	| [CVE-2017-5754](https://nvd.nist.gov/vuln/detail/CVE-2017-5753) |
+| Related CVE(s) | [CVE-2017-5715](https://nvd.nist.gov/vuln/detail/CVE-2017-5715) [CVE-2017-5753](https://nvd.nist.gov/vuln/detail/CVE-2017-5753) [CVE-2017-5754](https://nvd.nist.gov/vuln/detail/CVE-2017-5754)|
 | NVD Severity 	| medium (attack range: local) |
 | Document Last Updated  | January 07,2018 |
 
@@ -25,7 +25,7 @@ speculative-execution hardware issue:
 - Variant 2: branch target injection (CVE-2017-5715)
 - Variant 3: rogue data cache load (CVE-2017-5754)
 
-The kernel updates that are the subject of this advisory are primarily intended to mitigate CVE-2017-5754.
+The kernel updates that are the subject of this advisory are primarily intended to mitigate CVE-2017-5753 and CVE-2017-5754.
 
 ## Detecting vulnerable software
 
@@ -64,7 +64,7 @@ name.
 
 `kops get ig --name $CLUSTER`
 
-#### Replace the image for each instance group
+#### Update the image for each instance group
 
 Update the instance group with the appropriate image version via a `kops 
 edit` command or `kops replace -f mycluster.yaml`.
@@ -94,10 +94,10 @@ running the updated image.
 
 `kops rolling-update cluster --name $CLUSTER --yes`
 
-## Notes
-- https://coreos.com/blog/container-linux-meltdown-patch
+## Resources / Notes
 - https://aws.amazon.com/de/security/security-bulletins/AWS-2018-013/
 - https://security.googleblog.com/2018/01/todays-cpu-vulnerability-what-you-need.html
+- https://coreos.com/blog/container-linux-meltdown-patch
 - https://spectreattack.com/
 - https://xenbits.xen.org/xsa/advisory-254.html
 - https://googleprojectzero.blogspot.co.uk/2018/01/reading-privileged-memory-with-side.html
