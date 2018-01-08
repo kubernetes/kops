@@ -43,8 +43,13 @@ func (b *EtcdOptionsBuilder) BuildOptions(o interface{}) error {
 		}
 	}
 
-	// TODO put this into API values.  Do that in another PR?
+	// default to gcr.io
 	image := fmt.Sprintf("gcr.io/google_containers/etcd:%s", spec.EtcdClusters[0].Version)
+
+	// override image if set as API value
+	if spec.EtcdClusters[0].Image != "" {
+		image = spec.EtcdClusters[0].Image
+	}
 	image, err := b.Context.AssetBuilder.RemapImage(image)
 	if err != nil {
 		return fmt.Errorf("unable to remap container %q: %v", image, err)
