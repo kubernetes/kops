@@ -279,7 +279,11 @@ func (b *KubeletBuilder) addContainerizedMounter(c *fi.ModelBuilderContext) erro
 
 	{
 		// @TODO Extract to common function?
-		assetName := "gci-mounter"
+		assetName := "mounter"
+		if !b.IsKubernetesGTE("1.9") {
+			// legacy name (and stored in kubernetes-manifests.tar.gz)
+			assetName = "gci-mounter"
+		}
 		assetPath := ""
 		asset, err := b.Assets.Find(assetName, assetPath)
 		if err != nil {
