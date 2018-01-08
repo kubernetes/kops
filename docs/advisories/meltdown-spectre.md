@@ -6,7 +6,7 @@
 | Description  	| Systems with microprocessors utilizing speculative execution and branch prediction may allow unauthorized disclosure of information to an attacker with local user access via a side-channel analysis. 	|
 | CVE(s)       	| [CVE-2017-5753](https://nvd.nist.gov/vuln/detail/CVE-2017-5753)  [CVE-2017-5754](https://nvd.nist.gov/vuln/detail/CVE-2017-5753) |
 | NVD Severity 	| medium (attack range: local) |
-| Last Updated  | Jan 01 2018 |
+| Document Last Updated  | January 07,2018 |
 
 ##  Details
 
@@ -21,21 +21,33 @@ Three CVEs have been released with spectre and meltdown.
 - Variant 2: branch target injection (CVE-2017-5715)
 - Variant 3: rogue data cache load (CVE-2017-5754)
 
-Currently, Variant 1 and Variant 3 are solved with this advisory.
+Variant 2, CVE-2017-5715 is not addressed by this advisory. This advisory
+includes the intial work to resolve CVE-2017-5753 and CVE-2017-5754.
 
+- All linux kernels are vulnerable when running on affected hardware, both
+  baremetal and cloud based. Fixed in 4.4.110 for 4.4, 4.9.75 for 4.9, 4.14.12
+  for 4.14.
+- By default, kops runs an image that includes the 4.4 kernel. An updated image
+  is available with 4.4.110
+- If running another image please update to a fixed image, which must be
+  provided by your distro
 
-### Impacted kops / kubernetes Components
+## Diagnosis
+
+If you do not see "Kernel/User page tables isolation: enabled", you are vulnerable.
+
+```console
+dmesg -H | grep 'page tables isolation'
+      [  +0.000000] Kernel/User page tables isolation: enabled
+```
+
+## Impacted Maintained Component(s)
 
 - kops maintained AMI
-- All AMIs without a patched kernel are impacted
-- All platforms are affected, not just AWS
-- Linux kernel versions needed: 4.4: >= 4.4.110
-- By default, kops runs an image that includes the 4.4 kernel. An updated image is available with 4.4.110
-- If running another image please update to a fixed image, which must be provided by your distro
 
 ### Fixed Versions
 
-The following AMIs contain an updated kernel.
+For the kops-maintained AMIs, the following AMIs contain an updated kernel:
 
 - kope.io/k8s-1.5-debian-jessie-amd64-hvm-ebs-2018-01-05
 - kope.io/k8s-1.6-debian-jessie-amd64-hvm-ebs-2018-01-05
@@ -58,7 +70,7 @@ name.
 
 #### Edit the kops instance groups 
 
-Update the instance group With the appropriate image version via a `kops 
+Update the instance group with the appropriate image version via a `kops 
 edit` command or `kops replace -f mycluster.yaml`.
 
 #### Perform dry-run update, verifying that all instance groups are updated.
@@ -79,15 +91,6 @@ Verify that all instance groups will be rolled.
 
 `kops rolling-update cluster --name $CLUSTER --yes`
 
-## Tools / Diagnosis
-
-If you do not see "Kernel/User page tables isolation: enabled", you are vulnerable.
-
-```console
-dmesg -H | grep 'page tables isolation'
-      [  +0.000000] Kernel/User page tables isolation: enabled
-```
-
 ## Notes
 - https://coreos.com/blog/container-linux-meltdown-patch
 - https://aws.amazon.com/de/security/security-bulletins/AWS-2018-013/
@@ -101,5 +104,7 @@ dmesg -H | grep 'page tables isolation'
 - http://blog.cyberus-technology.de/posts/2018-01-03-meltdown.html
 - Paper: https://meltdownattack.com/meltdown.pdf
 - https://01.org/security/advisories/intel-oss-10003
+
+
 
 
