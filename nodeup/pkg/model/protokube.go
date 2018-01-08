@@ -218,9 +218,9 @@ type ProtokubeFlags struct {
 
 // ProtokubeFlags is responsible for building the command line flags for protokube
 func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*ProtokubeFlags, error) {
-	// @todo: i think we should allow the user to override the source of the image, but for now
-	// lets keep that for another PR and allow the version change
 	imageVersion := t.Cluster.Spec.EtcdClusters[0].Version
+	// overrides imageVersion if set
+	etcdContainerImage := t.Cluster.Spec.EtcdClusters[0].Image
 
 	var leaderElectionTimeout string
 	var heartbeatInterval string
@@ -244,6 +244,10 @@ func (t *ProtokubeBuilder) ProtokubeFlags(k8sVersion semver.Version) (*Protokube
 
 	// TODO this is dupicate code with etcd model
 	image := fmt.Sprintf("gcr.io/google_containers/etcd:%s", imageVersion)
+	// override image if set as API value
+	if etcdContainerImage != "" {
+		image = etcdContainerImage
+	}
 	assets := assets.NewAssetBuilder(t.Cluster.Spec.Assets, "")
 	remapped, err := assets.RemapImage(image)
 	if err != nil {
