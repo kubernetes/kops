@@ -128,14 +128,14 @@ func TestPresignRequest(t *testing.T) {
 
 func TestPresignBodyWithArrayRequest(t *testing.T) {
 	req, body := buildRequest("dynamodb", "us-east-1", "{}")
-	req.URL.RawQuery = "FooB=a&FooA=b&FooA=a&FooB=b"
+	req.URL.RawQuery = "Foo=z&Foo=o&Foo=m&Foo=a"
 
 	signer := buildSigner()
 	signer.Presign(req, body, "dynamodb", "us-east-1", 300*time.Second, time.Unix(0, 0))
 
 	expectedDate := "19700101T000000Z"
 	expectedHeaders := "content-length;content-type;host;x-amz-meta-other-header;x-amz-meta-other-header_with_underscore"
-	expectedSig := "60152079d308a87f036082a236c935261221a32d369ec4b6b75dbc9873d2ab9a"
+	expectedSig := "fef6002062400bbf526d70f1a6456abc0fb2e213fe1416012737eebd42a62924"
 	expectedCred := "AKID/19700101/us-east-1/dynamodb/aws4_request"
 	expectedTarget := "prefix.Operation"
 
@@ -519,7 +519,7 @@ func TestSignWithRequestBody_Overwrite(t *testing.T) {
 
 func TestBuildCanonicalRequest(t *testing.T) {
 	req, body := buildRequest("dynamodb", "us-east-1", "{}")
-	req.URL.RawQuery = "FooB=a&FooA=b&FooA=a&FooB=b"
+	req.URL.RawQuery = "Foo=z&Foo=o&Foo=m&Foo=a"
 	ctx := &signingCtx{
 		ServiceName: "dynamodb",
 		Region:      "us-east-1",
@@ -531,7 +531,7 @@ func TestBuildCanonicalRequest(t *testing.T) {
 	}
 
 	ctx.buildCanonicalString()
-	expected := "https://example.org/bucket/key-._~,!@#$%^&*()?FooA=b&FooA=a&FooB=a&FooB=b"
+	expected := "https://example.org/bucket/key-._~,!@#$%^&*()?Foo=z&Foo=o&Foo=m&Foo=a"
 	if e, a := expected, ctx.Request.URL.String(); e != a {
 		t.Errorf("expect %v, got %v", e, a)
 	}
