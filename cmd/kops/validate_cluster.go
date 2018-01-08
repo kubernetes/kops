@@ -17,12 +17,14 @@ limitations under the License.
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"runtime"
 	"strings"
 
+	"github.com/ghodss/yaml"
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
 	"k8s.io/api/core/v1"
@@ -45,11 +47,16 @@ func init() {
 }
 
 type ValidateClusterOptions struct {
-	// No options yet
+	output string
+}
+
+func (o *ValidateClusterOptions) InitDefaults() {
+	o.output = OutputTable
 }
 
 func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	options := &ValidateClusterOptions{}
+	options.InitDefaults()
 
 	cmd := &cobra.Command{
 		Use:     "cluster",
@@ -63,6 +70,8 @@ func NewCmdValidateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 			}
 		},
 	}
+
+	cmd.Flags().StringVarP(&options.output, "output", "o", options.output, "Ouput format. One of json|yaml|table.")
 
 	return cmd
 }
@@ -88,7 +97,9 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		return fmt.Errorf("cannot get InstanceGroups for %q: %v", cluster.ObjectMeta.Name, err)
 	}
 
-	fmt.Fprintf(out, "Validating cluster %v\n\n", cluster.ObjectMeta.Name)
+	if options.output == OutputTable {
+		fmt.Fprintf(out, "Validating cluster %v\n\n", cluster.ObjectMeta.Name)
+	}
 
 	var instanceGroups []api.InstanceGroup
 	for _, ig := range list.Items {
@@ -116,30 +127,60 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 
 	// Do not use if we are running gossip
 	if !dns.IsGossipHostname(cluster.ObjectMeta.Name) {
+		// TODO we may want to return validation.ValidationCluster instead of building it later on
 		hasPlaceHolderIPAddress, err := validation.HasPlaceHolderIP(contextName)
 		if err != nil {
 			return err
 		}
 
 		if hasPlaceHolderIPAddress {
-			fmt.Println(
-				"Validation Failed\n\n" +
-					"The dns-controller Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address." +
-					"  The API DNS IP address is the placeholder address that kops creates: 203.0.113.123." +
-					"  Please wait about 5-10 minutes for a master to start, dns-controller to launch, and DNS to propagate." +
-					"  The protokube container and dns-controller deployment logs may contain more diagnostic information." +
-					"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start.")
-			return fmt.Errorf("\nCannot reach cluster's API server: unable to Validate Cluster: %s", cluster.ObjectMeta.Name)
+			message := "Validation Failed\n\n" +
+				"The dns-controller Kubernetes deployment has not updated the Kubernetes cluster's API DNS entry to the correct IP address." +
+				"  The API DNS IP address is the placeholder address that kops creates: 203.0.113.123." +
+				"  Please wait about 5-10 minutes for a master to start, dns-controller to launch, and DNS to propagate." +
+				"  The protokube container and dns-controller deployment logs may contain more diagnostic information." +
+				"  Etcd and the API DNS entries must be updated for a kops Kubernetes cluster to start."
+			validationCluster := &validation.ValidationCluster{
+				ClusterName:  cluster.ObjectMeta.Name,
+				ErrorMessage: message,
+				Status:       validation.ClusterValidationFailed,
+			}
+			validationFailed := fmt.Errorf("\nCannot reach cluster's API server: unable to Validate Cluster: %s", cluster.ObjectMeta.Name)
+			switch options.output {
+			case OutputTable:
+				fmt.Println(message)
+				return validationFailed
+			case OutputYaml:
+				return validateClusterOutputYAML(validationCluster, validationFailed, out)
+			case OutputJSON:
+				return validateClusterOutputJSON(validationCluster, validationFailed, out)
+			default:
+				return fmt.Errorf("Unknown output format: %q", options.output)
+			}
+
 		}
 	}
 
 	validationCluster, validationFailed := validation.ValidateCluster(cluster.ObjectMeta.Name, list, k8sClient)
 
 	if validationCluster == nil || validationCluster.NodeList == nil || validationCluster.NodeList.Items == nil {
-		// validationFailed error is already formatted
 		return validationFailed
 	}
 
+	switch options.output {
+	case OutputTable:
+		return validateClusterOutputTable(validationCluster, validationFailed, instanceGroups, out)
+	case OutputYaml:
+		return validateClusterOutputYAML(validationCluster, validationFailed, out)
+	case OutputJSON:
+		return validateClusterOutputJSON(validationCluster, validationFailed, out)
+	default:
+		return fmt.Errorf("Unknown output format: %q", options.output)
+	}
+
+}
+
+func validateClusterOutputTable(validationCluster *validation.ValidationCluster, validationFailed error, instanceGroups []api.InstanceGroup, out io.Writer) error {
 	t := &tables.Table{}
 	t.AddColumn("NAME", func(c api.InstanceGroup) string {
 		return c.ObjectMeta.Name
@@ -161,10 +202,10 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	})
 
 	fmt.Fprintln(out, "INSTANCE GROUPS")
-	err = t.Render(instanceGroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
+	err := t.Render(instanceGroups, out, "NAME", "ROLE", "MACHINETYPE", "MIN", "MAX", "SUBNETS")
 
 	if err != nil {
-		return fmt.Errorf("cannot render nodes for %q: %v", cluster.ObjectMeta.Name, err)
+		return fmt.Errorf("cannot render nodes for %q: %v", validationCluster.ClusterName, err)
 	}
 
 	nodeTable := &tables.Table{}
@@ -191,7 +232,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 	err = nodeTable.Render(validationCluster.NodeList.Items, out, "NAME", "ROLE", "READY")
 
 	if err != nil {
-		return fmt.Errorf("cannot render nodes for %q: %v", cluster.ObjectMeta.Name, err)
+		return fmt.Errorf("cannot render nodes for %q: %v", validationCluster.ClusterName, err)
 	}
 
 	if len(validationCluster.ComponentFailures) != 0 {
@@ -204,7 +245,7 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		err = componentFailuresTable.Render(validationCluster.ComponentFailures, out, "NAME")
 
 		if err != nil {
-			return fmt.Errorf("cannot render components for %q: %v", cluster.ObjectMeta.Name, err)
+			return fmt.Errorf("cannot render components for %q: %v", validationCluster.ClusterName, err)
 		}
 	}
 
@@ -218,12 +259,12 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		err = podFailuresTable.Render(validationCluster.PodFailures, out, "NAME")
 
 		if err != nil {
-			return fmt.Errorf("cannot render pods for %q: %v", cluster.ObjectMeta.Name, err)
+			return fmt.Errorf("cannot render pods for %q: %v", validationCluster.ClusterName, err)
 		}
 	}
 
 	if validationFailed == nil {
-		fmt.Fprintf(out, "\nYour cluster %s is ready\n", cluster.ObjectMeta.Name)
+		fmt.Fprintf(out, "\nYour cluster %s is ready\n", validationCluster.ClusterName)
 		return nil
 	} else {
 		// do we need to print which instance group is not ready?
@@ -233,4 +274,27 @@ func RunValidateCluster(f *util.Factory, cmd *cobra.Command, args []string, out 
 		fmt.Fprintf(out, "Ready Node(s) %d out of %d.\n", len(validationCluster.NodesReadyArray), validationCluster.NodesCount)
 		return validationFailed
 	}
+}
+
+func validateClusterOutputYAML(validationCluster *validation.ValidationCluster, validationFailed error, out io.Writer) error {
+	y, err := yaml.Marshal(validationCluster)
+	if err != nil {
+		return fmt.Errorf("unable to marshall YAML: %v\n", err)
+	}
+	return validateOutput(y, validationFailed, out)
+}
+
+func validateClusterOutputJSON(validationCluster *validation.ValidationCluster, validationFailed error, out io.Writer) error {
+	j, err := json.Marshal(validationCluster)
+	if err != nil {
+		return fmt.Errorf("unable to marshall JSON: %v\n", err)
+	}
+	return validateOutput(j, validationFailed, out)
+}
+
+func validateOutput(b []byte, validationFailed error, out io.Writer) error {
+	if _, err := out.Write(b); err != nil {
+		return fmt.Errorf("unable to print data: %v\n", err)
+	}
+	return validationFailed
 }
