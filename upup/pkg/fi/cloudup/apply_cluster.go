@@ -910,8 +910,17 @@ func (c *ApplyClusterCmd) AddFileAssets(assetBuilder *assets.AssetBuilder) error
 		"/bin/linux/amd64/kubelet",
 		"/bin/linux/amd64/kubectl",
 	}
-	if needsKubernetesManifests(c.Cluster, c.InstanceGroups) {
-		k8sAssetsNames = append(k8sAssetsNames, "/kubernetes-manifests.tar.gz")
+	if needsMounterAsset(c.Cluster, c.InstanceGroups) {
+		k8sVersion, err := util.ParseKubernetesVersion(c.Cluster.Spec.KubernetesVersion)
+		if err != nil {
+			return fmt.Errorf("unable to determine kubernetes version from %q", c.Cluster.Spec.KubernetesVersion)
+		} else if util.IsKubernetesGTE("1.9", *k8sVersion) {
+			// Available directly
+			k8sAssetsNames = append(k8sAssetsNames, "/bin/linux/amd64/mounter")
+		} else {
+			// Only available in the kubernetes-manifests.tar.gz directory
+			k8sAssetsNames = append(k8sAssetsNames, "/kubernetes-manifests.tar.gz")
+		}
 	}
 
 	for _, a := range k8sAssetsNames {
@@ -984,9 +993,9 @@ func ChannelForCluster(c *kops.Cluster) (*kops.Channel, error) {
 	return kops.LoadChannel(channelLocation)
 }
 
-// needsKubernetesManifests checks if we need kubernetes manifests
+// needsMounterAsset checks if we need the mounter program
 // This is only needed currently on ContainerOS i.e. GCE, but we don't have a nice way to detect it yet
-func needsKubernetesManifests(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
+func needsMounterAsset(c *kops.Cluster, instanceGroups []*kops.InstanceGroup) bool {
 	// TODO: Do real detection of ContainerOS (but this has to work with image names, and maybe even forked images)
 	switch kops.CloudProviderID(c.Spec.CloudProvider) {
 	case kops.CloudProviderGCE:
