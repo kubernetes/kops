@@ -3324,3 +3324,55 @@ func (m *MockEC2) CopyFpgaImageRequest(*ec2.CopyFpgaImageInput) (*request.Reques
 	panic("Not implemented")
 	return nil, nil
 }
+
+func (m *MockEC2) DescribeFpgaImageAttribute(*ec2.DescribeFpgaImageAttributeInput) (*ec2.DescribeFpgaImageAttributeOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeFpgaImageAttributeWithContext(aws.Context, *ec2.DescribeFpgaImageAttributeInput, ...request.Option) (*ec2.DescribeFpgaImageAttributeOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeFpgaImageAttributeRequest(*ec2.DescribeFpgaImageAttributeInput) (*request.Request, *ec2.DescribeFpgaImageAttributeOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyFpgaImageAttribute(*ec2.ModifyFpgaImageAttributeInput) (*ec2.ModifyFpgaImageAttributeOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) ModifyFpgaImageAttributeWithContext(aws.Context, *ec2.ModifyFpgaImageAttributeInput, ...request.Option) (*ec2.ModifyFpgaImageAttributeOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) ModifyFpgaImageAttributeRequest(*ec2.ModifyFpgaImageAttributeInput) (*request.Request, *ec2.ModifyFpgaImageAttributeOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ResetFpgaImageAttribute(*ec2.ResetFpgaImageAttributeInput) (*ec2.ResetFpgaImageAttributeOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) ResetFpgaImageAttributeWithContext(aws.Context, *ec2.ResetFpgaImageAttributeInput, ...request.Option) (*ec2.ResetFpgaImageAttributeOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) ResetFpgaImageAttributeRequest(*ec2.ResetFpgaImageAttributeInput) (*request.Request, *ec2.ResetFpgaImageAttributeOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteFpgaImage(*ec2.DeleteFpgaImageInput) (*ec2.DeleteFpgaImageOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteFpgaImageWithContext(aws.Context, *ec2.DeleteFpgaImageInput, ...request.Option) (*ec2.DeleteFpgaImageOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteFpgaImageRequest(*ec2.DeleteFpgaImageInput) (*request.Request, *ec2.DeleteFpgaImageOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
