@@ -598,3 +598,94 @@ func (m *MockRoute53) WaitUntilResourceRecordSetsChangedWithContext(aws.Context,
 	panic("Not implemented")
 	return nil
 }
+
+func (m *MockRoute53) CreateQueryLoggingConfig(*route53.CreateQueryLoggingConfigInput) (*route53.CreateQueryLoggingConfigOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) CreateQueryLoggingConfigWithContext(aws.Context, *route53.CreateQueryLoggingConfigInput, ...request.Option) (*route53.CreateQueryLoggingConfigOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) CreateQueryLoggingConfigRequest(*route53.CreateQueryLoggingConfigInput) (*request.Request, *route53.CreateQueryLoggingConfigOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) DeleteQueryLoggingConfig(*route53.DeleteQueryLoggingConfigInput) (*route53.DeleteQueryLoggingConfigOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) DeleteQueryLoggingConfigWithContext(aws.Context, *route53.DeleteQueryLoggingConfigInput, ...request.Option) (*route53.DeleteQueryLoggingConfigOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) DeleteQueryLoggingConfigRequest(*route53.DeleteQueryLoggingConfigInput) (*request.Request, *route53.DeleteQueryLoggingConfigOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) GetAccountLimit(*route53.GetAccountLimitInput) (*route53.GetAccountLimitOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) GetAccountLimitWithContext(aws.Context, *route53.GetAccountLimitInput, ...request.Option) (*route53.GetAccountLimitOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) GetAccountLimitRequest(*route53.GetAccountLimitInput) (*request.Request, *route53.GetAccountLimitOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) GetHostedZoneLimit(*route53.GetHostedZoneLimitInput) (*route53.GetHostedZoneLimitOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) GetHostedZoneLimitWithContext(aws.Context, *route53.GetHostedZoneLimitInput, ...request.Option) (*route53.GetHostedZoneLimitOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) GetHostedZoneLimitRequest(*route53.GetHostedZoneLimitInput) (*request.Request, *route53.GetHostedZoneLimitOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) GetQueryLoggingConfig(*route53.GetQueryLoggingConfigInput) (*route53.GetQueryLoggingConfigOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) GetQueryLoggingConfigWithContext(aws.Context, *route53.GetQueryLoggingConfigInput, ...request.Option) (*route53.GetQueryLoggingConfigOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) GetQueryLoggingConfigRequest(*route53.GetQueryLoggingConfigInput) (*request.Request, *route53.GetQueryLoggingConfigOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) GetReusableDelegationSetLimit(*route53.GetReusableDelegationSetLimitInput) (*route53.GetReusableDelegationSetLimitOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) GetReusableDelegationSetLimitWithContext(aws.Context, *route53.GetReusableDelegationSetLimitInput, ...request.Option) (*route53.GetReusableDelegationSetLimitOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) GetReusableDelegationSetLimitRequest(*route53.GetReusableDelegationSetLimitInput) (*request.Request, *route53.GetReusableDelegationSetLimitOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockRoute53) ListQueryLoggingConfigs(*route53.ListQueryLoggingConfigsInput) (*route53.ListQueryLoggingConfigsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) ListQueryLoggingConfigsWithContext(aws.Context, *route53.ListQueryLoggingConfigsInput, ...request.Option) (*route53.ListQueryLoggingConfigsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockRoute53) ListQueryLoggingConfigsRequest(*route53.ListQueryLoggingConfigsInput) (*request.Request, *route53.ListQueryLoggingConfigsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}

@@ -24,5 +24,4 @@ go_test(
     ],
     embed = [":go_default_library"],
     importpath = "github.com/aws/aws-sdk-go/service/cloudfront/sign",
-    deps = ["//vendor/github.com/stretchr/testify/assert:go_default_library"],
 )
