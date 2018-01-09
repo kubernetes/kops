@@ -242,7 +242,7 @@ spec:
 
 ## Add Tags on AWS autoscalling groups and instances
 
-If you need to add tags on auto scaling groups or instnaces (propagate ASG tags), you can add it in the instance group specs with *cloudLabels*.
+If you need to add tags on auto scaling groups or instances (propagate ASG tags), you can add it in the instance group specs with *cloudLabels*. Cloud Labels defined at the cluster spec level will also be inherited.
 
 ```
 # Example for nodes
