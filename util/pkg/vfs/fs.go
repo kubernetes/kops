@@ -112,8 +112,20 @@ func (p *FSPath) CreateFile(data []byte, acl ACL) error {
 	return p.WriteFile(data, acl)
 }
 
+// ReadFile implements Path::ReadFile
 func (p *FSPath) ReadFile() ([]byte, error) {
 	return ioutil.ReadFile(p.location)
+}
+
+// WriteTo implements io.WriterTo
+func (p *FSPath) WriteTo(out io.Writer) (int64, error) {
+	f, err := os.Open(p.location)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+
+	return io.Copy(out, f)
 }
 
 func (p *FSPath) ReadDir() ([]Path, error) {

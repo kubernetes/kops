@@ -17,6 +17,7 @@ limitations under the License.
 package vfs
 
 import (
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -105,12 +106,22 @@ func (p *MemFSPath) CreateFile(data []byte, acl ACL) error {
 	return p.WriteFile(data, acl)
 }
 
+// ReadFile implements Path::ReadFile
 func (p *MemFSPath) ReadFile() ([]byte, error) {
 	if p.contents == nil {
 		return nil, os.ErrNotExist
 	}
 	// TODO: Copy?
 	return p.contents, nil
+}
+
+// WriteTo implements io.WriterTo
+func (p *MemFSPath) WriteTo(out io.Writer) (int64, error) {
+	if p.contents == nil {
+		return 0, os.ErrNotExist
+	}
+	n, err := out.Write(p.contents)
+	return int64(n), err
 }
 
 func (p *MemFSPath) ReadDir() ([]Path, error) {
