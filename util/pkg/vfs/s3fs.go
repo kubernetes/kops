@@ -20,7 +20,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path"
 	"strings"
@@ -178,10 +178,21 @@ func (p *S3Path) CreateFile(data []byte, acl ACL) error {
 	return p.WriteFile(data, acl)
 }
 
+// ReadFile implements Path::ReadFile
 func (p *S3Path) ReadFile() ([]byte, error) {
-	client, err := p.client()
+	var b bytes.Buffer
+	_, err := p.WriteTo(&b)
 	if err != nil {
 		return nil, err
+	}
+	return b.Bytes(), nil
+}
+
+// WriteTo implements io.WriterTo
+func (p *S3Path) WriteTo(out io.Writer) (int64, error) {
+	client, err := p.client()
+	if err != nil {
+		return 0, err
 	}
 
 	glog.V(4).Infof("Reading file %q", p)
@@ -193,17 +204,17 @@ func (p *S3Path) ReadFile() ([]byte, error) {
 	response, err := client.GetObject(request)
 	if err != nil {
 		if AWSErrorCode(err) == "NoSuchKey" {
-			return nil, os.ErrNotExist
+			return 0, os.ErrNotExist
 		}
-		return nil, fmt.Errorf("error fetching %s: %v", p, err)
+		return 0, fmt.Errorf("error fetching %s: %v", p, err)
 	}
 	defer response.Body.Close()
 
-	d, err := ioutil.ReadAll(response.Body)
+	n, err := io.Copy(out, response.Body)
 	if err != nil {
-		return nil, fmt.Errorf("error reading %s: %v", p, err)
+		return n, fmt.Errorf("error reading %s: %v", p, err)
 	}
-	return d, nil
+	return n, nil
 }
 
 func (p *S3Path) ReadDir() ([]Path, error) {

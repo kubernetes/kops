@@ -21,7 +21,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path"
@@ -200,37 +200,47 @@ func (p *GSPath) CreateFile(data []byte, acl ACL) error {
 
 // ReadFile implements Path::ReadFile
 func (p *GSPath) ReadFile() ([]byte, error) {
-	var ret []byte
+	var b bytes.Buffer
 	done, err := RetryWithBackoff(gcsReadBackoff, func() (bool, error) {
-		glog.V(4).Infof("Reading file %q", p)
-
-		response, err := p.client.Objects.Get(p.bucket, p.key).Download()
+		b.Reset()
+		_, err := p.WriteTo(&b)
 		if err != nil {
-			if isGCSNotFound(err) {
-				return true, os.ErrNotExist
+			if os.IsNotExist(err) {
+				// Not recoverable
+				return true, err
 			}
-			return false, fmt.Errorf("error reading %s: %v", p, err)
+			return false, err
 		}
-		if response == nil {
-			return false, fmt.Errorf("no response returned from reading %s", p)
-		}
-		defer response.Body.Close()
-
-		data, err := ioutil.ReadAll(response.Body)
-		if err != nil {
-			return false, fmt.Errorf("error reading %s: %v", p, err)
-		}
-		ret = data
+		// Success!
 		return true, nil
 	})
 	if err != nil {
 		return nil, err
 	} else if done {
-		return ret, nil
+		return b.Bytes(), nil
 	} else {
 		// Shouldn't happen - we always return a non-nil error with false
 		return nil, wait.ErrWaitTimeout
 	}
+}
+
+// WriteTo implements io.WriterTo::WriteTo
+func (p *GSPath) WriteTo(out io.Writer) (int64, error) {
+	glog.V(4).Infof("Reading file %q", p)
+
+	response, err := p.client.Objects.Get(p.bucket, p.key).Download()
+	if err != nil {
+		if isGCSNotFound(err) {
+			return 0, os.ErrNotExist
+		}
+		return 0, fmt.Errorf("error reading %s: %v", p, err)
+	}
+	if response == nil {
+		return 0, fmt.Errorf("no response returned from reading %s", p)
+	}
+	defer response.Body.Close()
+
+	return io.Copy(out, response.Body)
 }
 
 // ReadDir implements Path::ReadDir
