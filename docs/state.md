@@ -29,3 +29,13 @@ may prefer to just edit the config file with `kops edit cluster`.
 
 Because the configuration is merged, this is how you can just specify the changed arguments when
 reconfiguring your cluster - for example just `kops create cluster` after a dry-run.
+
+## Moving state between S3 buckets
+
+The state store can easily be moved to a different s3 bucket. The steps for a single cluster are as follows:
+1. Recursively copy all files from `${OLD_KOPS_STATE_STORE}/${CLUSTER_NAME}` to `${NEW_KOPS_STATE_STORE}/${CLUSTER_NAME}` with `aws s3 sync` or a similar tool.
+2. Update the `KOPS_STATE_STORE` environment variable to use the new S3 bucket.
+3. Either run `kops edit cluster ${CLUSTER_NAME}` or edit the cluster manifest yaml file. Update `.spec.configBase` to reference the new s3 bucket.
+4. Run `kops update cluster ${CLUSTER_NAME} --yes` to apply the changes to the cluster. Newly launched nodes will now retrieve their dependent files from the new S3 bucket. The files in the old bucket are now safe to be deleted.
+
+Repeat for each cluster needing to be moved.
