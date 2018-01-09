@@ -528,8 +528,13 @@ func (c *ApplyClusterCmd) Run() error {
 					&gcemodel.ExternalAccessModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
 					&gcemodel.FirewallModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &securityLifecycle},
 					&gcemodel.NetworkModelBuilder{GCEModelContext: gceModelContext, Lifecycle: &networkLifecycle},
-					&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageAclLifecycle},
 				)
+
+				if featureflag.GoogleCloudBucketAcl.Enabled() {
+					l.Builders = append(l.Builders,
+						&gcemodel.StorageAclBuilder{GCEModelContext: gceModelContext, Cloud: cloud.(gce.GCECloud), Lifecycle: &storageAclLifecycle},
+					)
+				}
 
 			case kops.CloudProviderVSphere:
 				// No special settings (yet!)
