@@ -4,11 +4,15 @@ go_library(
     name = "go_default_library",
     srcs = [
         "idempotency.go",
+        "jsonvalue.go",
         "unmarshal.go",
     ],
     importpath = "github.com/aws/aws-sdk-go/private/protocol",
     visibility = ["//visibility:public"],
-    deps = ["//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library"],
+    deps = [
+        "//vendor/github.com/aws/aws-sdk-go/aws:go_default_library",
+        "//vendor/github.com/aws/aws-sdk-go/aws/request:go_default_library",
+    ],
 )
 
 go_test(
@@ -32,4 +36,12 @@ go_test(
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/restxml:go_default_library",
         "//vendor/github.com/stretchr/testify/assert:go_default_library",
     ],
+)
+
+go_test(
+    name = "go_default_test",
+    srcs = ["jsonvalue_test.go"],
+    embed = [":go_default_library"],
+    importpath = "github.com/aws/aws-sdk-go/private/protocol",
+    deps = ["//vendor/github.com/aws/aws-sdk-go/aws:go_default_library"],
 )

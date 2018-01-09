@@ -18,6 +18,5 @@ go_test(
     deps = [
         ":go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/aws/credentials:go_default_library",
-        "//vendor/github.com/stretchr/testify/assert:go_default_library",
     ],
 )

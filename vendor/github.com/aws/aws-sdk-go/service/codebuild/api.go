@@ -11,6 +11,85 @@ import (
 	"github.com/aws/aws-sdk-go/aws/request"
 )
 
+const opBatchDeleteBuilds = "BatchDeleteBuilds"
+
+// BatchDeleteBuildsRequest generates a "aws/request.Request" representing the
+// client's request for the BatchDeleteBuilds operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See BatchDeleteBuilds for more information on using the BatchDeleteBuilds
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the BatchDeleteBuildsRequest method.
+//    req, resp := client.BatchDeleteBuildsRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchDeleteBuilds
+func (c *CodeBuild) BatchDeleteBuildsRequest(input *BatchDeleteBuildsInput) (req *request.Request, output *BatchDeleteBuildsOutput) {
+	op := &request.Operation{
+		Name:       opBatchDeleteBuilds,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &BatchDeleteBuildsInput{}
+	}
+
+	output = &BatchDeleteBuildsOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// BatchDeleteBuilds API operation for AWS CodeBuild.
+//
+// Deletes one or more builds.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodeBuild's
+// API operation BatchDeleteBuilds for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidInputException "InvalidInputException"
+//   The input value that was provided is not valid.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchDeleteBuilds
+func (c *CodeBuild) BatchDeleteBuilds(input *BatchDeleteBuildsInput) (*BatchDeleteBuildsOutput, error) {
+	req, out := c.BatchDeleteBuildsRequest(input)
+	return out, req.Send()
+}
+
+// BatchDeleteBuildsWithContext is the same as BatchDeleteBuilds with the addition of
+// the ability to pass a context and additional request options.
+//
+// See BatchDeleteBuilds for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CodeBuild) BatchDeleteBuildsWithContext(ctx aws.Context, input *BatchDeleteBuildsInput, opts ...request.Option) (*BatchDeleteBuildsOutput, error) {
+	req, out := c.BatchDeleteBuildsRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
 const opBatchGetBuilds = "BatchGetBuilds"
 
 // BatchGetBuildsRequest generates a "aws/request.Request" representing the
@@ -36,7 +115,7 @@ const opBatchGetBuilds = "BatchGetBuilds"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuilds
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuilds
 func (c *CodeBuild) BatchGetBuildsRequest(input *BatchGetBuildsInput) (req *request.Request, output *BatchGetBuildsOutput) {
 	op := &request.Operation{
 		Name:       opBatchGetBuilds,
@@ -68,7 +147,7 @@ func (c *CodeBuild) BatchGetBuildsRequest(input *BatchGetBuildsInput) (req *requ
 //   * ErrCodeInvalidInputException "InvalidInputException"
 //   The input value that was provided is not valid.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuilds
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuilds
 func (c *CodeBuild) BatchGetBuilds(input *BatchGetBuildsInput) (*BatchGetBuildsOutput, error) {
 	req, out := c.BatchGetBuildsRequest(input)
 	return out, req.Send()
@@ -115,7 +194,7 @@ const opBatchGetProjects = "BatchGetProjects"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetProjects
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetProjects
 func (c *CodeBuild) BatchGetProjectsRequest(input *BatchGetProjectsInput) (req *request.Request, output *BatchGetProjectsOutput) {
 	op := &request.Operation{
 		Name:       opBatchGetProjects,
@@ -147,7 +226,7 @@ func (c *CodeBuild) BatchGetProjectsRequest(input *BatchGetProjectsInput) (req *
 //   * ErrCodeInvalidInputException "InvalidInputException"
 //   The input value that was provided is not valid.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetProjects
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetProjects
 func (c *CodeBuild) BatchGetProjects(input *BatchGetProjectsInput) (*BatchGetProjectsOutput, error) {
 	req, out := c.BatchGetProjectsRequest(input)
 	return out, req.Send()
@@ -194,7 +273,7 @@ const opCreateProject = "CreateProject"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateProject
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateProject
 func (c *CodeBuild) CreateProjectRequest(input *CreateProjectInput) (req *request.Request, output *CreateProjectOutput) {
 	op := &request.Operation{
 		Name:       opCreateProject,
@@ -233,7 +312,7 @@ func (c *CodeBuild) CreateProjectRequest(input *CreateProjectInput) (req *reques
 //   * ErrCodeAccountLimitExceededException "AccountLimitExceededException"
 //   An AWS service limit was exceeded for the calling AWS account.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateProject
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateProject
 func (c *CodeBuild) CreateProject(input *CreateProjectInput) (*CreateProjectOutput, error) {
 	req, out := c.CreateProjectRequest(input)
 	return out, req.Send()
@@ -250,6 +329,106 @@ func (c *CodeBuild) CreateProject(input *CreateProjectInput) (*CreateProjectOutp
 // for more information on using Contexts.
 func (c *CodeBuild) CreateProjectWithContext(ctx aws.Context, input *CreateProjectInput, opts ...request.Option) (*CreateProjectOutput, error) {
 	req, out := c.CreateProjectRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opCreateWebhook = "CreateWebhook"
+
+// CreateWebhookRequest generates a "aws/request.Request" representing the
+// client's request for the CreateWebhook operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See CreateWebhook for more information on using the CreateWebhook
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the CreateWebhookRequest method.
+//    req, resp := client.CreateWebhookRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateWebhook
+func (c *CodeBuild) CreateWebhookRequest(input *CreateWebhookInput) (req *request.Request, output *CreateWebhookOutput) {
+	op := &request.Operation{
+		Name:       opCreateWebhook,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &CreateWebhookInput{}
+	}
+
+	output = &CreateWebhookOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// CreateWebhook API operation for AWS CodeBuild.
+//
+// For an existing AWS CodeBuild build project that has its source code stored
+// in a GitHub repository, enables AWS CodeBuild to begin automatically rebuilding
+// the source code every time a code change is pushed to the repository.
+//
+// If you enable webhooks for an AWS CodeBuild project, and the project is used
+// as a build step in AWS CodePipeline, then two identical builds will be created
+// for each commit. One build is triggered through webhooks, and one through
+// AWS CodePipeline. Because billing is on a per-build basis, you will be billed
+// for both builds. Therefore, if you are using AWS CodePipeline, we recommend
+// that you disable webhooks in CodeBuild. In the AWS CodeBuild console, clear
+// the Webhook box. For more information, see step 9 in Change a Build Project’s
+// Settings (http://docs.aws.amazon.com/codebuild/latest/userguide/change-project.html#change-project-console).
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodeBuild's
+// API operation CreateWebhook for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidInputException "InvalidInputException"
+//   The input value that was provided is not valid.
+//
+//   * ErrCodeOAuthProviderException "OAuthProviderException"
+//   There was a problem with the underlying OAuth provider.
+//
+//   * ErrCodeResourceAlreadyExistsException "ResourceAlreadyExistsException"
+//   The specified AWS resource cannot be created, because an AWS resource with
+//   the same settings already exists.
+//
+//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//   The specified AWS resource cannot be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateWebhook
+func (c *CodeBuild) CreateWebhook(input *CreateWebhookInput) (*CreateWebhookOutput, error) {
+	req, out := c.CreateWebhookRequest(input)
+	return out, req.Send()
+}
+
+// CreateWebhookWithContext is the same as CreateWebhook with the addition of
+// the ability to pass a context and additional request options.
+//
+// See CreateWebhook for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CodeBuild) CreateWebhookWithContext(ctx aws.Context, input *CreateWebhookInput, opts ...request.Option) (*CreateWebhookOutput, error) {
+	req, out := c.CreateWebhookRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -280,7 +459,7 @@ const opDeleteProject = "DeleteProject"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteProject
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteProject
 func (c *CodeBuild) DeleteProjectRequest(input *DeleteProjectInput) (req *request.Request, output *DeleteProjectOutput) {
 	op := &request.Operation{
 		Name:       opDeleteProject,
@@ -312,7 +491,7 @@ func (c *CodeBuild) DeleteProjectRequest(input *DeleteProjectInput) (req *reques
 //   * ErrCodeInvalidInputException "InvalidInputException"
 //   The input value that was provided is not valid.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteProject
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteProject
 func (c *CodeBuild) DeleteProject(input *DeleteProjectInput) (*DeleteProjectOutput, error) {
 	req, out := c.DeleteProjectRequest(input)
 	return out, req.Send()
@@ -329,6 +508,175 @@ func (c *CodeBuild) DeleteProject(input *DeleteProjectInput) (*DeleteProjectOutp
 // for more information on using Contexts.
 func (c *CodeBuild) DeleteProjectWithContext(ctx aws.Context, input *DeleteProjectInput, opts ...request.Option) (*DeleteProjectOutput, error) {
 	req, out := c.DeleteProjectRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteWebhook = "DeleteWebhook"
+
+// DeleteWebhookRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteWebhook operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteWebhook for more information on using the DeleteWebhook
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DeleteWebhookRequest method.
+//    req, resp := client.DeleteWebhookRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteWebhook
+func (c *CodeBuild) DeleteWebhookRequest(input *DeleteWebhookInput) (req *request.Request, output *DeleteWebhookOutput) {
+	op := &request.Operation{
+		Name:       opDeleteWebhook,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &DeleteWebhookInput{}
+	}
+
+	output = &DeleteWebhookOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// DeleteWebhook API operation for AWS CodeBuild.
+//
+// For an existing AWS CodeBuild build project that has its source code stored
+// in a GitHub repository, stops AWS CodeBuild from automatically rebuilding
+// the source code every time a code change is pushed to the repository.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodeBuild's
+// API operation DeleteWebhook for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidInputException "InvalidInputException"
+//   The input value that was provided is not valid.
+//
+//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//   The specified AWS resource cannot be found.
+//
+//   * ErrCodeOAuthProviderException "OAuthProviderException"
+//   There was a problem with the underlying OAuth provider.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteWebhook
+func (c *CodeBuild) DeleteWebhook(input *DeleteWebhookInput) (*DeleteWebhookOutput, error) {
+	req, out := c.DeleteWebhookRequest(input)
+	return out, req.Send()
+}
+
+// DeleteWebhookWithContext is the same as DeleteWebhook with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteWebhook for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CodeBuild) DeleteWebhookWithContext(ctx aws.Context, input *DeleteWebhookInput, opts ...request.Option) (*DeleteWebhookOutput, error) {
+	req, out := c.DeleteWebhookRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opInvalidateProjectCache = "InvalidateProjectCache"
+
+// InvalidateProjectCacheRequest generates a "aws/request.Request" representing the
+// client's request for the InvalidateProjectCache operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See InvalidateProjectCache for more information on using the InvalidateProjectCache
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the InvalidateProjectCacheRequest method.
+//    req, resp := client.InvalidateProjectCacheRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/InvalidateProjectCache
+func (c *CodeBuild) InvalidateProjectCacheRequest(input *InvalidateProjectCacheInput) (req *request.Request, output *InvalidateProjectCacheOutput) {
+	op := &request.Operation{
+		Name:       opInvalidateProjectCache,
+		HTTPMethod: "POST",
+		HTTPPath:   "/",
+	}
+
+	if input == nil {
+		input = &InvalidateProjectCacheInput{}
+	}
+
+	output = &InvalidateProjectCacheOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// InvalidateProjectCache API operation for AWS CodeBuild.
+//
+// Resets the cache for a project.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS CodeBuild's
+// API operation InvalidateProjectCache for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeInvalidInputException "InvalidInputException"
+//   The input value that was provided is not valid.
+//
+//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//   The specified AWS resource cannot be found.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/InvalidateProjectCache
+func (c *CodeBuild) InvalidateProjectCache(input *InvalidateProjectCacheInput) (*InvalidateProjectCacheOutput, error) {
+	req, out := c.InvalidateProjectCacheRequest(input)
+	return out, req.Send()
+}
+
+// InvalidateProjectCacheWithContext is the same as InvalidateProjectCache with the addition of
+// the ability to pass a context and additional request options.
+//
+// See InvalidateProjectCache for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *CodeBuild) InvalidateProjectCacheWithContext(ctx aws.Context, input *InvalidateProjectCacheInput, opts ...request.Option) (*InvalidateProjectCacheOutput, error) {
+	req, out := c.InvalidateProjectCacheRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -359,7 +707,7 @@ const opListBuilds = "ListBuilds"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuilds
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuilds
 func (c *CodeBuild) ListBuildsRequest(input *ListBuildsInput) (req *request.Request, output *ListBuildsOutput) {
 	op := &request.Operation{
 		Name:       opListBuilds,
@@ -391,7 +739,7 @@ func (c *CodeBuild) ListBuildsRequest(input *ListBuildsInput) (req *request.Requ
 //   * ErrCodeInvalidInputException "InvalidInputException"
 //   The input value that was provided is not valid.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuilds
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuilds
 func (c *CodeBuild) ListBuilds(input *ListBuildsInput) (*ListBuildsOutput, error) {
 	req, out := c.ListBuildsRequest(input)
 	return out, req.Send()
@@ -438,7 +786,7 @@ const opListBuildsForProject = "ListBuildsForProject"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsForProject
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsForProject
 func (c *CodeBuild) ListBuildsForProjectRequest(input *ListBuildsForProjectInput) (req *request.Request, output *ListBuildsForProjectOutput) {
 	op := &request.Operation{
 		Name:       opListBuildsForProject,
@@ -474,7 +822,7 @@ func (c *CodeBuild) ListBuildsForProjectRequest(input *ListBuildsForProjectInput
 //   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
 //   The specified AWS resource cannot be found.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsForProject
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsForProject
 func (c *CodeBuild) ListBuildsForProject(input *ListBuildsForProjectInput) (*ListBuildsForProjectOutput, error) {
 	req, out := c.ListBuildsForProjectRequest(input)
 	return out, req.Send()
@@ -521,7 +869,7 @@ const opListCuratedEnvironmentImages = "ListCuratedEnvironmentImages"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListCuratedEnvironmentImages
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListCuratedEnvironmentImages
 func (c *CodeBuild) ListCuratedEnvironmentImagesRequest(input *ListCuratedEnvironmentImagesInput) (req *request.Request, output *ListCuratedEnvironmentImagesOutput) {
 	op := &request.Operation{
 		Name:       opListCuratedEnvironmentImages,
@@ -548,7 +896,7 @@ func (c *CodeBuild) ListCuratedEnvironmentImagesRequest(input *ListCuratedEnviro
 //
 // See the AWS API reference guide for AWS CodeBuild's
 // API operation ListCuratedEnvironmentImages for usage and error information.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListCuratedEnvironmentImages
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListCuratedEnvironmentImages
 func (c *CodeBuild) ListCuratedEnvironmentImages(input *ListCuratedEnvironmentImagesInput) (*ListCuratedEnvironmentImagesOutput, error) {
 	req, out := c.ListCuratedEnvironmentImagesRequest(input)
 	return out, req.Send()
@@ -595,7 +943,7 @@ const opListProjects = "ListProjects"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListProjects
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListProjects
 func (c *CodeBuild) ListProjectsRequest(input *ListProjectsInput) (req *request.Request, output *ListProjectsOutput) {
 	op := &request.Operation{
 		Name:       opListProjects,
@@ -628,7 +976,7 @@ func (c *CodeBuild) ListProjectsRequest(input *ListProjectsInput) (req *request.
 //   * ErrCodeInvalidInputException "InvalidInputException"
 //   The input value that was provided is not valid.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListProjects
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListProjects
 func (c *CodeBuild) ListProjects(input *ListProjectsInput) (*ListProjectsOutput, error) {
 	req, out := c.ListProjectsRequest(input)
 	return out, req.Send()
@@ -675,7 +1023,7 @@ const opStartBuild = "StartBuild"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuild
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuild
 func (c *CodeBuild) StartBuildRequest(input *StartBuildInput) (req *request.Request, output *StartBuildOutput) {
 	op := &request.Operation{
 		Name:       opStartBuild,
@@ -713,7 +1061,7 @@ func (c *CodeBuild) StartBuildRequest(input *StartBuildInput) (req *request.Requ
 //   * ErrCodeAccountLimitExceededException "AccountLimitExceededException"
 //   An AWS service limit was exceeded for the calling AWS account.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuild
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuild
 func (c *CodeBuild) StartBuild(input *StartBuildInput) (*StartBuildOutput, error) {
 	req, out := c.StartBuildRequest(input)
 	return out, req.Send()
@@ -760,7 +1108,7 @@ const opStopBuild = "StopBuild"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuild
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuild
 func (c *CodeBuild) StopBuildRequest(input *StopBuildInput) (req *request.Request, output *StopBuildOutput) {
 	op := &request.Operation{
 		Name:       opStopBuild,
@@ -795,7 +1143,7 @@ func (c *CodeBuild) StopBuildRequest(input *StopBuildInput) (req *request.Reques
 //   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
 //   The specified AWS resource cannot be found.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuild
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuild
 func (c *CodeBuild) StopBuild(input *StopBuildInput) (*StopBuildOutput, error) {
 	req, out := c.StopBuildRequest(input)
 	return out, req.Send()
@@ -842,7 +1190,7 @@ const opUpdateProject = "UpdateProject"
 //        fmt.Println(resp)
 //    }
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProject
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProject
 func (c *CodeBuild) UpdateProjectRequest(input *UpdateProjectInput) (req *request.Request, output *UpdateProjectOutput) {
 	op := &request.Operation{
 		Name:       opUpdateProject,
@@ -877,7 +1225,7 @@ func (c *CodeBuild) UpdateProjectRequest(input *UpdateProjectInput) (req *reques
 //   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
 //   The specified AWS resource cannot be found.
 //
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProject
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProject
 func (c *CodeBuild) UpdateProject(input *UpdateProjectInput) (*UpdateProjectOutput, error) {
 	req, out := c.UpdateProjectRequest(input)
 	return out, req.Send()
@@ -899,7 +1247,82 @@ func (c *CodeBuild) UpdateProjectWithContext(ctx aws.Context, input *UpdateProje
 	return out, req.Send()
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuildsInput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchDeleteBuildsInput
+type BatchDeleteBuildsInput struct {
+	_ struct{} `type:"structure"`
+
+	// The IDs of the builds to delete.
+	//
+	// Ids is a required field
+	Ids []*string `locationName:"ids" min:"1" type:"list" required:"true"`
+}
+
+// String returns the string representation
+func (s BatchDeleteBuildsInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s BatchDeleteBuildsInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *BatchDeleteBuildsInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "BatchDeleteBuildsInput"}
+	if s.Ids == nil {
+		invalidParams.Add(request.NewErrParamRequired("Ids"))
+	}
+	if s.Ids != nil && len(s.Ids) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("Ids", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetIds sets the Ids field's value.
+func (s *BatchDeleteBuildsInput) SetIds(v []*string) *BatchDeleteBuildsInput {
+	s.Ids = v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchDeleteBuildsOutput
+type BatchDeleteBuildsOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The IDs of the builds that were successfully deleted.
+	BuildsDeleted []*string `locationName:"buildsDeleted" min:"1" type:"list"`
+
+	// Information about any builds that could not be successfully deleted.
+	BuildsNotDeleted []*BuildNotDeleted `locationName:"buildsNotDeleted" type:"list"`
+}
+
+// String returns the string representation
+func (s BatchDeleteBuildsOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s BatchDeleteBuildsOutput) GoString() string {
+	return s.String()
+}
+
+// SetBuildsDeleted sets the BuildsDeleted field's value.
+func (s *BatchDeleteBuildsOutput) SetBuildsDeleted(v []*string) *BatchDeleteBuildsOutput {
+	s.BuildsDeleted = v
+	return s
+}
+
+// SetBuildsNotDeleted sets the BuildsNotDeleted field's value.
+func (s *BatchDeleteBuildsOutput) SetBuildsNotDeleted(v []*BuildNotDeleted) *BatchDeleteBuildsOutput {
+	s.BuildsNotDeleted = v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuildsInput
 type BatchGetBuildsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -941,7 +1364,7 @@ func (s *BatchGetBuildsInput) SetIds(v []*string) *BatchGetBuildsInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuildsOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetBuildsOutput
 type BatchGetBuildsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -974,7 +1397,7 @@ func (s *BatchGetBuildsOutput) SetBuildsNotFound(v []*string) *BatchGetBuildsOut
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetProjectsInput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetProjectsInput
 type BatchGetProjectsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1016,7 +1439,7 @@ func (s *BatchGetProjectsInput) SetNames(v []*string) *BatchGetProjectsInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetProjectsOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BatchGetProjectsOutput
 type BatchGetProjectsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1050,7 +1473,7 @@ func (s *BatchGetProjectsOutput) SetProjectsNotFound(v []*string) *BatchGetProje
 }
 
 // Information about a build.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/Build
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/Build
 type Build struct {
 	_ struct{} `type:"structure"`
 
@@ -1077,6 +1500,9 @@ type Build struct {
 	//
 	//    * TIMED_OUT: The build timed out.
 	BuildStatus *string `locationName:"buildStatus" type:"string" enum:"StatusType"`
+
+	// Information about the cache for the build.
+	Cache *ProjectCache `locationName:"cache" type:"structure"`
 
 	// The current build phase.
 	CurrentPhase *string `locationName:"currentPhase" type:"string"`
@@ -1105,6 +1531,9 @@ type Build struct {
 	// Information about the build's logs in Amazon CloudWatch Logs.
 	Logs *LogsLocation `locationName:"logs" type:"structure"`
 
+	// Describes a network interface.
+	NetworkInterface *NetworkInterface `locationName:"networkInterface" type:"structure"`
+
 	// Information about all previous build phases that are completed and information
 	// about any current build phase that is not yet complete.
 	Phases []*BuildPhase `locationName:"phases" type:"list"`
@@ -1124,6 +1553,12 @@ type Build struct {
 	// How long, in minutes, for AWS CodeBuild to wait before timing out this build
 	// if it does not get marked as completed.
 	TimeoutInMinutes *int64 `locationName:"timeoutInMinutes" type:"integer"`
+
+	// If your AWS CodeBuild project accesses resources in an Amazon VPC, you provide
+	// this parameter that identifies the VPC ID and the list of security group
+	// IDs and subnet IDs. The security groups and subnets must belong to the same
+	// VPC. You must provide at least one security group and one subnet ID.
+	VpcConfig *VpcConfig `locationName:"vpcConfig" type:"structure"`
 }
 
 // String returns the string representation
@@ -1157,6 +1592,12 @@ func (s *Build) SetBuildComplete(v bool) *Build {
 // SetBuildStatus sets the BuildStatus field's value.
 func (s *Build) SetBuildStatus(v string) *Build {
 	s.BuildStatus = &v
+	return s
+}
+
+// SetCache sets the Cache field's value.
+func (s *Build) SetCache(v *ProjectCache) *Build {
+	s.Cache = v
 	return s
 }
 
@@ -1196,6 +1637,12 @@ func (s *Build) SetLogs(v *LogsLocation) *Build {
 	return s
 }
 
+// SetNetworkInterface sets the NetworkInterface field's value.
+func (s *Build) SetNetworkInterface(v *NetworkInterface) *Build {
+	s.NetworkInterface = v
+	return s
+}
+
 // SetPhases sets the Phases field's value.
 func (s *Build) SetPhases(v []*BuildPhase) *Build {
 	s.Phases = v
@@ -1232,8 +1679,14 @@ func (s *Build) SetTimeoutInMinutes(v int64) *Build {
 	return s
 }
 
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *Build) SetVpcConfig(v *VpcConfig) *Build {
+	s.VpcConfig = v
+	return s
+}
+
 // Information about build output artifacts.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BuildArtifacts
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BuildArtifacts
 type BuildArtifacts struct {
 	_ struct{} `type:"structure"`
 
@@ -1287,8 +1740,42 @@ func (s *BuildArtifacts) SetSha256sum(v string) *BuildArtifacts {
 	return s
 }
 
+// Information about a build that could not be successfully deleted.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BuildNotDeleted
+type BuildNotDeleted struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the build that could not be successfully deleted.
+	Id *string `locationName:"id" min:"1" type:"string"`
+
+	// Additional information about the build that could not be successfully deleted.
+	StatusCode *string `locationName:"statusCode" type:"string"`
+}
+
+// String returns the string representation
+func (s BuildNotDeleted) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s BuildNotDeleted) GoString() string {
+	return s.String()
+}
+
+// SetId sets the Id field's value.
+func (s *BuildNotDeleted) SetId(v string) *BuildNotDeleted {
+	s.Id = &v
+	return s
+}
+
+// SetStatusCode sets the StatusCode field's value.
+func (s *BuildNotDeleted) SetStatusCode(v string) *BuildNotDeleted {
+	s.StatusCode = &v
+	return s
+}
+
 // Information about a stage for a build.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BuildPhase
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/BuildPhase
 type BuildPhase struct {
 	_ struct{} `type:"structure"`
 
@@ -1392,7 +1879,7 @@ func (s *BuildPhase) SetStartTime(v time.Time) *BuildPhase {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateProjectInput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateProjectInput
 type CreateProjectInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1400,6 +1887,14 @@ type CreateProjectInput struct {
 	//
 	// Artifacts is a required field
 	Artifacts *ProjectArtifacts `locationName:"artifacts" type:"structure" required:"true"`
+
+	// Set this to true to generate a publicly-accessible URL for your project's
+	// build badge.
+	BadgeEnabled *bool `locationName:"badgeEnabled" type:"boolean"`
+
+	// Stores recently used information so that it can be quickly accessed at a
+	// later time.
+	Cache *ProjectCache `locationName:"cache" type:"structure"`
 
 	// A description that makes the build project easy to identify.
 	Description *string `locationName:"description" type:"string"`
@@ -1441,6 +1936,9 @@ type CreateProjectInput struct {
 	// until timing out any build that has not been marked as completed. The default
 	// is 60 minutes.
 	TimeoutInMinutes *int64 `locationName:"timeoutInMinutes" min:"5" type:"integer"`
+
+	// VpcConfig enables AWS CodeBuild to access resources in an Amazon VPC.
+	VpcConfig *VpcConfig `locationName:"vpcConfig" type:"structure"`
 }
 
 // String returns the string representation
@@ -1485,6 +1983,11 @@ func (s *CreateProjectInput) Validate() error {
 			invalidParams.AddNested("Artifacts", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.Cache != nil {
+		if err := s.Cache.Validate(); err != nil {
+			invalidParams.AddNested("Cache", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.Environment != nil {
 		if err := s.Environment.Validate(); err != nil {
 			invalidParams.AddNested("Environment", err.(request.ErrInvalidParams))
@@ -1505,6 +2008,11 @@ func (s *CreateProjectInput) Validate() error {
 			}
 		}
 	}
+	if s.VpcConfig != nil {
+		if err := s.VpcConfig.Validate(); err != nil {
+			invalidParams.AddNested("VpcConfig", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -1515,6 +2023,18 @@ func (s *CreateProjectInput) Validate() error {
 // SetArtifacts sets the Artifacts field's value.
 func (s *CreateProjectInput) SetArtifacts(v *ProjectArtifacts) *CreateProjectInput {
 	s.Artifacts = v
+	return s
+}
+
+// SetBadgeEnabled sets the BadgeEnabled field's value.
+func (s *CreateProjectInput) SetBadgeEnabled(v bool) *CreateProjectInput {
+	s.BadgeEnabled = &v
+	return s
+}
+
+// SetCache sets the Cache field's value.
+func (s *CreateProjectInput) SetCache(v *ProjectCache) *CreateProjectInput {
+	s.Cache = v
 	return s
 }
 
@@ -1566,7 +2086,13 @@ func (s *CreateProjectInput) SetTimeoutInMinutes(v int64) *CreateProjectInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateProjectOutput
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *CreateProjectInput) SetVpcConfig(v *VpcConfig) *CreateProjectInput {
+	s.VpcConfig = v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateProjectOutput
 type CreateProjectOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1590,7 +2116,74 @@ func (s *CreateProjectOutput) SetProject(v *Project) *CreateProjectOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteProjectInput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateWebhookInput
+type CreateWebhookInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the build project.
+	//
+	// ProjectName is a required field
+	ProjectName *string `locationName:"projectName" min:"2" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s CreateWebhookInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateWebhookInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *CreateWebhookInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "CreateWebhookInput"}
+	if s.ProjectName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ProjectName"))
+	}
+	if s.ProjectName != nil && len(*s.ProjectName) < 2 {
+		invalidParams.Add(request.NewErrParamMinLen("ProjectName", 2))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetProjectName sets the ProjectName field's value.
+func (s *CreateWebhookInput) SetProjectName(v string) *CreateWebhookInput {
+	s.ProjectName = &v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/CreateWebhookOutput
+type CreateWebhookOutput struct {
+	_ struct{} `type:"structure"`
+
+	// Information about a webhook in GitHub that connects repository events to
+	// a build project in AWS CodeBuild.
+	Webhook *Webhook `locationName:"webhook" type:"structure"`
+}
+
+// String returns the string representation
+func (s CreateWebhookOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s CreateWebhookOutput) GoString() string {
+	return s.String()
+}
+
+// SetWebhook sets the Webhook field's value.
+func (s *CreateWebhookOutput) SetWebhook(v *Webhook) *CreateWebhookOutput {
+	s.Webhook = v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteProjectInput
 type DeleteProjectInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1632,7 +2225,7 @@ func (s *DeleteProjectInput) SetName(v string) *DeleteProjectInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteProjectOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteProjectOutput
 type DeleteProjectOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -1647,8 +2240,65 @@ func (s DeleteProjectOutput) GoString() string {
 	return s.String()
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteWebhookInput
+type DeleteWebhookInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the build project.
+	//
+	// ProjectName is a required field
+	ProjectName *string `locationName:"projectName" min:"2" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteWebhookInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteWebhookInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteWebhookInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteWebhookInput"}
+	if s.ProjectName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ProjectName"))
+	}
+	if s.ProjectName != nil && len(*s.ProjectName) < 2 {
+		invalidParams.Add(request.NewErrParamMinLen("ProjectName", 2))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetProjectName sets the ProjectName field's value.
+func (s *DeleteWebhookInput) SetProjectName(v string) *DeleteWebhookInput {
+	s.ProjectName = &v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/DeleteWebhookOutput
+type DeleteWebhookOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteWebhookOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteWebhookOutput) GoString() string {
+	return s.String()
+}
+
 // Information about a Docker image that is managed by AWS CodeBuild.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/EnvironmentImage
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/EnvironmentImage
 type EnvironmentImage struct {
 	_ struct{} `type:"structure"`
 
@@ -1657,6 +2307,9 @@ type EnvironmentImage struct {
 
 	// The name of the Docker image.
 	Name *string `locationName:"name" type:"string"`
+
+	// A list of environment image versions.
+	Versions []*string `locationName:"versions" type:"list"`
 }
 
 // String returns the string representation
@@ -1681,9 +2334,15 @@ func (s *EnvironmentImage) SetName(v string) *EnvironmentImage {
 	return s
 }
 
+// SetVersions sets the Versions field's value.
+func (s *EnvironmentImage) SetVersions(v []*string) *EnvironmentImage {
+	s.Versions = v
+	return s
+}
+
 // A set of Docker images that are related by programming language and are managed
 // by AWS CodeBuild.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/EnvironmentLanguage
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/EnvironmentLanguage
 type EnvironmentLanguage struct {
 	_ struct{} `type:"structure"`
 
@@ -1718,7 +2377,7 @@ func (s *EnvironmentLanguage) SetLanguage(v string) *EnvironmentLanguage {
 
 // A set of Docker images that are related by platform and are managed by AWS
 // CodeBuild.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/EnvironmentPlatform
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/EnvironmentPlatform
 type EnvironmentPlatform struct {
 	_ struct{} `type:"structure"`
 
@@ -1752,7 +2411,7 @@ func (s *EnvironmentPlatform) SetPlatform(v string) *EnvironmentPlatform {
 }
 
 // Information about an environment variable for a build project or a build.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/EnvironmentVariable
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/EnvironmentVariable
 type EnvironmentVariable struct {
 	_ struct{} `type:"structure"`
 
@@ -1760,6 +2419,14 @@ type EnvironmentVariable struct {
 	//
 	// Name is a required field
 	Name *string `locationName:"name" min:"1" type:"string" required:"true"`
+
+	// The type of environment variable. Valid values include:
+	//
+	//    * PARAMETER_STORE: An environment variable stored in Amazon EC2 Systems
+	//    Manager Parameter Store.
+	//
+	//    * PLAINTEXT: An environment variable in plaintext format.
+	Type *string `locationName:"type" type:"string" enum:"EnvironmentVariableType"`
 
 	// The value of the environment variable.
 	//
@@ -1807,13 +2474,76 @@ func (s *EnvironmentVariable) SetName(v string) *EnvironmentVariable {
 	return s
 }
 
+// SetType sets the Type field's value.
+func (s *EnvironmentVariable) SetType(v string) *EnvironmentVariable {
+	s.Type = &v
+	return s
+}
+
 // SetValue sets the Value field's value.
 func (s *EnvironmentVariable) SetValue(v string) *EnvironmentVariable {
 	s.Value = &v
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsForProjectInput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/InvalidateProjectCacheInput
+type InvalidateProjectCacheInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the build project that the cache will be reset for.
+	//
+	// ProjectName is a required field
+	ProjectName *string `locationName:"projectName" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s InvalidateProjectCacheInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s InvalidateProjectCacheInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *InvalidateProjectCacheInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "InvalidateProjectCacheInput"}
+	if s.ProjectName == nil {
+		invalidParams.Add(request.NewErrParamRequired("ProjectName"))
+	}
+	if s.ProjectName != nil && len(*s.ProjectName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("ProjectName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetProjectName sets the ProjectName field's value.
+func (s *InvalidateProjectCacheInput) SetProjectName(v string) *InvalidateProjectCacheInput {
+	s.ProjectName = &v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/InvalidateProjectCacheOutput
+type InvalidateProjectCacheOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s InvalidateProjectCacheOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s InvalidateProjectCacheOutput) GoString() string {
+	return s.String()
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsForProjectInput
 type ListBuildsForProjectInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1882,7 +2612,7 @@ func (s *ListBuildsForProjectInput) SetSortOrder(v string) *ListBuildsForProject
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsForProjectOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsForProjectOutput
 type ListBuildsForProjectOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1919,7 +2649,7 @@ func (s *ListBuildsForProjectOutput) SetNextToken(v string) *ListBuildsForProjec
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsInput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsInput
 type ListBuildsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -1961,7 +2691,7 @@ func (s *ListBuildsInput) SetSortOrder(v string) *ListBuildsInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListBuildsOutput
 type ListBuildsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -1997,7 +2727,7 @@ func (s *ListBuildsOutput) SetNextToken(v string) *ListBuildsOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListCuratedEnvironmentImagesInput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListCuratedEnvironmentImagesInput
 type ListCuratedEnvironmentImagesInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -2012,7 +2742,7 @@ func (s ListCuratedEnvironmentImagesInput) GoString() string {
 	return s.String()
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListCuratedEnvironmentImagesOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListCuratedEnvironmentImagesOutput
 type ListCuratedEnvironmentImagesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2037,7 +2767,7 @@ func (s *ListCuratedEnvironmentImagesOutput) SetPlatforms(v []*EnvironmentPlatfo
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListProjectsInput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListProjectsInput
 type ListProjectsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2114,7 +2844,7 @@ func (s *ListProjectsInput) SetSortOrder(v string) *ListProjectsInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListProjectsOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ListProjectsOutput
 type ListProjectsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2152,7 +2882,7 @@ func (s *ListProjectsOutput) SetProjects(v []*string) *ListProjectsOutput {
 }
 
 // Information about build logs in Amazon CloudWatch Logs.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/LogsLocation
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/LogsLocation
 type LogsLocation struct {
 	_ struct{} `type:"structure"`
 
@@ -2194,9 +2924,43 @@ func (s *LogsLocation) SetStreamName(v string) *LogsLocation {
 	return s
 }
 
+// Describes a network interface.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/NetworkInterface
+type NetworkInterface struct {
+	_ struct{} `type:"structure"`
+
+	// The ID of the network interface.
+	NetworkInterfaceId *string `locationName:"networkInterfaceId" min:"1" type:"string"`
+
+	// The ID of the subnet.
+	SubnetId *string `locationName:"subnetId" min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s NetworkInterface) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s NetworkInterface) GoString() string {
+	return s.String()
+}
+
+// SetNetworkInterfaceId sets the NetworkInterfaceId field's value.
+func (s *NetworkInterface) SetNetworkInterfaceId(v string) *NetworkInterface {
+	s.NetworkInterfaceId = &v
+	return s
+}
+
+// SetSubnetId sets the SubnetId field's value.
+func (s *NetworkInterface) SetSubnetId(v string) *NetworkInterface {
+	s.SubnetId = &v
+	return s
+}
+
 // Additional information about a build phase that has an error. You can use
 // this information to help troubleshoot a failed build.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/PhaseContext
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/PhaseContext
 type PhaseContext struct {
 	_ struct{} `type:"structure"`
 
@@ -2231,7 +2995,7 @@ func (s *PhaseContext) SetStatusCode(v string) *PhaseContext {
 }
 
 // Information about a build project.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/Project
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/Project
 type Project struct {
 	_ struct{} `type:"structure"`
 
@@ -2240,6 +3004,12 @@ type Project struct {
 
 	// Information about the build output artifacts for the build project.
 	Artifacts *ProjectArtifacts `locationName:"artifacts" type:"structure"`
+
+	// Information about the build badge for the build project.
+	Badge *ProjectBadge `locationName:"badge" type:"structure"`
+
+	// Information about the cache for the build project.
+	Cache *ProjectCache `locationName:"cache" type:"structure"`
 
 	// When the build project was created, expressed in Unix time format.
 	Created *time.Time `locationName:"created" type:"timestamp" timestampFormat:"unix"`
@@ -2282,6 +3052,13 @@ type Project struct {
 	// before timing out any related build that did not get marked as completed.
 	// The default is 60 minutes.
 	TimeoutInMinutes *int64 `locationName:"timeoutInMinutes" min:"5" type:"integer"`
+
+	// Information about the VPC configuration that AWS CodeBuild will access.
+	VpcConfig *VpcConfig `locationName:"vpcConfig" type:"structure"`
+
+	// Information about a webhook in GitHub that connects repository events to
+	// a build project in AWS CodeBuild.
+	Webhook *Webhook `locationName:"webhook" type:"structure"`
 }
 
 // String returns the string representation
@@ -2303,6 +3080,18 @@ func (s *Project) SetArn(v string) *Project {
 // SetArtifacts sets the Artifacts field's value.
 func (s *Project) SetArtifacts(v *ProjectArtifacts) *Project {
 	s.Artifacts = v
+	return s
+}
+
+// SetBadge sets the Badge field's value.
+func (s *Project) SetBadge(v *ProjectBadge) *Project {
+	s.Badge = v
+	return s
+}
+
+// SetCache sets the Cache field's value.
+func (s *Project) SetCache(v *ProjectCache) *Project {
+	s.Cache = v
 	return s
 }
 
@@ -2366,8 +3155,20 @@ func (s *Project) SetTimeoutInMinutes(v int64) *Project {
 	return s
 }
 
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *Project) SetVpcConfig(v *VpcConfig) *Project {
+	s.VpcConfig = v
+	return s
+}
+
+// SetWebhook sets the Webhook field's value.
+func (s *Project) SetWebhook(v *Webhook) *Project {
+	s.Webhook = v
+	return s
+}
+
 // Information about the build output artifacts for the build project.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ProjectArtifacts
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ProjectArtifacts
 type ProjectArtifacts struct {
 	_ struct{} `type:"structure"`
 
@@ -2531,8 +3332,101 @@ func (s *ProjectArtifacts) SetType(v string) *ProjectArtifacts {
 	return s
 }
 
+// Information about the build badge for the build project.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ProjectBadge
+type ProjectBadge struct {
+	_ struct{} `type:"structure"`
+
+	// Set this to true to generate a publicly-accessible URL for your project's
+	// build badge.
+	BadgeEnabled *bool `locationName:"badgeEnabled" type:"boolean"`
+
+	// The publicly-accessible URL through which you can access the build badge
+	// for your project.
+	BadgeRequestUrl *string `locationName:"badgeRequestUrl" type:"string"`
+}
+
+// String returns the string representation
+func (s ProjectBadge) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ProjectBadge) GoString() string {
+	return s.String()
+}
+
+// SetBadgeEnabled sets the BadgeEnabled field's value.
+func (s *ProjectBadge) SetBadgeEnabled(v bool) *ProjectBadge {
+	s.BadgeEnabled = &v
+	return s
+}
+
+// SetBadgeRequestUrl sets the BadgeRequestUrl field's value.
+func (s *ProjectBadge) SetBadgeRequestUrl(v string) *ProjectBadge {
+	s.BadgeRequestUrl = &v
+	return s
+}
+
+// Information about the cache for the build project.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ProjectCache
+type ProjectCache struct {
+	_ struct{} `type:"structure"`
+
+	// Information about the cache location, as follows:
+	//
+	//    * NO_CACHE: This value will be ignored.
+	//
+	//    * S3: This is the S3 bucket name/prefix.
+	Location *string `locationName:"location" type:"string"`
+
+	// The type of cache used by the build project. Valid values include:
+	//
+	//    * NO_CACHE: The build project will not use any cache.
+	//
+	//    * S3: The build project will read and write from/to S3.
+	//
+	// Type is a required field
+	Type *string `locationName:"type" type:"string" required:"true" enum:"CacheType"`
+}
+
+// String returns the string representation
+func (s ProjectCache) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s ProjectCache) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *ProjectCache) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "ProjectCache"}
+	if s.Type == nil {
+		invalidParams.Add(request.NewErrParamRequired("Type"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetLocation sets the Location field's value.
+func (s *ProjectCache) SetLocation(v string) *ProjectCache {
+	s.Location = &v
+	return s
+}
+
+// SetType sets the Type field's value.
+func (s *ProjectCache) SetType(v string) *ProjectCache {
+	s.Type = &v
+	return s
+}
+
 // Information about the build environment of the build project.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ProjectEnvironment
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ProjectEnvironment
 type ProjectEnvironment struct {
 	_ struct{} `type:"structure"`
 
@@ -2570,8 +3464,8 @@ type ProjectEnvironment struct {
 	// with Docker support.)
 	//
 	// - nohup /usr/local/bin/dockerd --host=unix:///var/run/docker.sock --host=tcp://0.0.0.0:2375
-	// --storage-driver=vfs& - timeout -t 15 sh -c "until docker info; do echo .;
-	// sleep 1; done"
+	// --storage-driver=overlay& - timeout -t 15 sh -c "until docker info; do echo
+	// .; sleep 1; done"
 	PrivilegedMode *bool `locationName:"privilegedMode" type:"boolean"`
 
 	// The type of build environment to use for related builds.
@@ -2653,7 +3547,7 @@ func (s *ProjectEnvironment) SetType(v string) *ProjectEnvironment {
 }
 
 // Information about the build input source code for the build project.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ProjectSource
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/ProjectSource
 type ProjectSource struct {
 	_ struct{} `type:"structure"`
 
@@ -2662,7 +3556,7 @@ type ProjectSource struct {
 	//
 	// This information is for the AWS CodeBuild console's use only. Your code should
 	// not get or set this information directly (unless the build project's source
-	// type value is GITHUB).
+	// type value is BITBUCKET or GITHUB).
 	Auth *SourceAuth `locationName:"auth" type:"structure"`
 
 	// The build spec declaration to use for the builds in this build project.
@@ -2699,10 +3593,23 @@ type ProjectSource struct {
 	//    may then leave the AWS CodeBuild console.) To instruct AWS CodeBuild to
 	//    then use this connection, in the source object, set the auth object's
 	//    type value to OAUTH.
+	//
+	//    * For source code in a Bitbucket repository, the HTTPS clone URL to the
+	//    repository that contains the source and the build spec. Also, you must
+	//    connect your AWS account to your Bitbucket account. To do this, use the
+	//    AWS CodeBuild console to begin creating a build project. When you use
+	//    the console to connect (or reconnect) with Bitbucket, on the Bitbucket
+	//    Confirm access to your account page that displays, choose Grant access.
+	//    (After you have connected to your Bitbucket account, you do not need to
+	//    finish creating the build project, and you may then leave the AWS CodeBuild
+	//    console.) To instruct AWS CodeBuild to then use this connection, in the
+	//    source object, set the auth object's type value to OAUTH.
 	Location *string `locationName:"location" type:"string"`
 
 	// The type of repository that contains the source code to be built. Valid values
 	// include:
+	//
+	//    * BITBUCKET: The source code is in a Bitbucket repository.
 	//
 	//    * CODECOMMIT: The source code is in an AWS CodeCommit repository.
 	//
@@ -2775,8 +3682,8 @@ func (s *ProjectSource) SetType(v string) *ProjectSource {
 //
 // This information is for the AWS CodeBuild console's use only. Your code should
 // not get or set this information directly (unless the build project's source
-// type value is GITHUB).
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/SourceAuth
+// type value is BITBUCKET or GITHUB).
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/SourceAuth
 type SourceAuth struct {
 	_ struct{} `type:"structure"`
 
@@ -2825,7 +3732,7 @@ func (s *SourceAuth) SetType(v string) *SourceAuth {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuildInput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuildInput
 type StartBuildInput struct {
 	_ struct{} `type:"structure"`
 
@@ -2849,7 +3756,19 @@ type StartBuildInput struct {
 	// A version of the build input to be built, for this build only. If not specified,
 	// the latest version will be used. If specified, must be one of:
 	//
-	//    * For AWS CodeCommit or GitHub: the commit ID to use.
+	//    * For AWS CodeCommit: the commit ID to use.
+	//
+	//    * For GitHub: the commit ID, pull request ID, branch name, or tag name
+	//    that corresponds to the version of the source code you want to build.
+	//    If a pull request ID is specified, it must use the format pr/pull-request-ID
+	//    (for example pr/25). If a branch name is specified, the branch's HEAD
+	//    commit ID will be used. If not specified, the default branch's HEAD commit
+	//    ID will be used.
+	//
+	//    * For Bitbucket: the commit ID, branch name, or tag name that corresponds
+	//    to the version of the source code you want to build. If a branch name
+	//    is specified, the branch's HEAD commit ID will be used. If not specified,
+	//    the default branch's HEAD commit ID will be used.
 	//
 	//    * For Amazon Simple Storage Service (Amazon S3): the version ID of the
 	//    object representing the build input ZIP file to use.
@@ -2940,7 +3859,7 @@ func (s *StartBuildInput) SetTimeoutInMinutesOverride(v int64) *StartBuildInput 
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuildOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StartBuildOutput
 type StartBuildOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -2964,7 +3883,7 @@ func (s *StartBuildOutput) SetBuild(v *Build) *StartBuildOutput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuildInput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuildInput
 type StopBuildInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3006,7 +3925,7 @@ func (s *StopBuildInput) SetId(v string) *StopBuildInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuildOutput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/StopBuildOutput
 type StopBuildOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3033,7 +3952,7 @@ func (s *StopBuildOutput) SetBuild(v *Build) *StopBuildOutput {
 // A tag, consisting of a key and a value.
 //
 // This tag is available for use by AWS services that support tags in AWS CodeBuild.
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/Tag
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/Tag
 type Tag struct {
 	_ struct{} `type:"structure"`
 
@@ -3082,13 +4001,21 @@ func (s *Tag) SetValue(v string) *Tag {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProjectInput
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProjectInput
 type UpdateProjectInput struct {
 	_ struct{} `type:"structure"`
 
 	// Information to be changed about the build output artifacts for the build
 	// project.
 	Artifacts *ProjectArtifacts `locationName:"artifacts" type:"structure"`
+
+	// Set this to true to generate a publicly-accessible URL for your project's
+	// build badge.
+	BadgeEnabled *bool `locationName:"badgeEnabled" type:"boolean"`
+
+	// Stores recently used information so that it can be quickly accessed at a
+	// later time.
+	Cache *ProjectCache `locationName:"cache" type:"structure"`
 
 	// A new or replacement description of the build project.
 	Description *string `locationName:"description" type:"string"`
@@ -3128,6 +4055,9 @@ type UpdateProjectInput struct {
 	// The replacement value in minutes, from 5 to 480 (8 hours), for AWS CodeBuild
 	// to wait before timing out any related build that did not get marked as completed.
 	TimeoutInMinutes *int64 `locationName:"timeoutInMinutes" min:"5" type:"integer"`
+
+	// VpcConfig enables AWS CodeBuild to access resources in an Amazon VPC.
+	VpcConfig *VpcConfig `locationName:"vpcConfig" type:"structure"`
 }
 
 // String returns the string representation
@@ -3163,6 +4093,11 @@ func (s *UpdateProjectInput) Validate() error {
 			invalidParams.AddNested("Artifacts", err.(request.ErrInvalidParams))
 		}
 	}
+	if s.Cache != nil {
+		if err := s.Cache.Validate(); err != nil {
+			invalidParams.AddNested("Cache", err.(request.ErrInvalidParams))
+		}
+	}
 	if s.Environment != nil {
 		if err := s.Environment.Validate(); err != nil {
 			invalidParams.AddNested("Environment", err.(request.ErrInvalidParams))
@@ -3183,6 +4118,11 @@ func (s *UpdateProjectInput) Validate() error {
 			}
 		}
 	}
+	if s.VpcConfig != nil {
+		if err := s.VpcConfig.Validate(); err != nil {
+			invalidParams.AddNested("VpcConfig", err.(request.ErrInvalidParams))
+		}
+	}
 
 	if invalidParams.Len() > 0 {
 		return invalidParams
@@ -3193,6 +4133,18 @@ func (s *UpdateProjectInput) Validate() error {
 // SetArtifacts sets the Artifacts field's value.
 func (s *UpdateProjectInput) SetArtifacts(v *ProjectArtifacts) *UpdateProjectInput {
 	s.Artifacts = v
+	return s
+}
+
+// SetBadgeEnabled sets the BadgeEnabled field's value.
+func (s *UpdateProjectInput) SetBadgeEnabled(v bool) *UpdateProjectInput {
+	s.BadgeEnabled = &v
+	return s
+}
+
+// SetCache sets the Cache field's value.
+func (s *UpdateProjectInput) SetCache(v *ProjectCache) *UpdateProjectInput {
+	s.Cache = v
 	return s
 }
 
@@ -3244,7 +4196,13 @@ func (s *UpdateProjectInput) SetTimeoutInMinutes(v int64) *UpdateProjectInput {
 	return s
 }
 
-// Please also see https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProjectOutput
+// SetVpcConfig sets the VpcConfig field's value.
+func (s *UpdateProjectInput) SetVpcConfig(v *VpcConfig) *UpdateProjectInput {
+	s.VpcConfig = v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/UpdateProjectOutput
 type UpdateProjectOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3265,6 +4223,88 @@ func (s UpdateProjectOutput) GoString() string {
 // SetProject sets the Project field's value.
 func (s *UpdateProjectOutput) SetProject(v *Project) *UpdateProjectOutput {
 	s.Project = v
+	return s
+}
+
+// Information about the VPC configuration that AWS CodeBuild will access.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/VpcConfig
+type VpcConfig struct {
+	_ struct{} `type:"structure"`
+
+	// A list of one or more security groups IDs in your Amazon VPC.
+	SecurityGroupIds []*string `locationName:"securityGroupIds" type:"list"`
+
+	// A list of one or more subnet IDs in your Amazon VPC.
+	Subnets []*string `locationName:"subnets" type:"list"`
+
+	// The ID of the Amazon VPC.
+	VpcId *string `locationName:"vpcId" min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s VpcConfig) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s VpcConfig) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *VpcConfig) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "VpcConfig"}
+	if s.VpcId != nil && len(*s.VpcId) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("VpcId", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetSecurityGroupIds sets the SecurityGroupIds field's value.
+func (s *VpcConfig) SetSecurityGroupIds(v []*string) *VpcConfig {
+	s.SecurityGroupIds = v
+	return s
+}
+
+// SetSubnets sets the Subnets field's value.
+func (s *VpcConfig) SetSubnets(v []*string) *VpcConfig {
+	s.Subnets = v
+	return s
+}
+
+// SetVpcId sets the VpcId field's value.
+func (s *VpcConfig) SetVpcId(v string) *VpcConfig {
+	s.VpcId = &v
+	return s
+}
+
+// Information about a webhook in GitHub that connects repository events to
+// a build project in AWS CodeBuild.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/codebuild-2016-10-06/Webhook
+type Webhook struct {
+	_ struct{} `type:"structure"`
+
+	// The URL to the webhook.
+	Url *string `locationName:"url" min:"1" type:"string"`
+}
+
+// String returns the string representation
+func (s Webhook) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s Webhook) GoString() string {
+	return s.String()
+}
+
+// SetUrl sets the Url field's value.
+func (s *Webhook) SetUrl(v string) *Webhook {
+	s.Url = &v
 	return s
 }
 
@@ -3328,6 +4368,14 @@ const (
 )
 
 const (
+	// CacheTypeNoCache is a CacheType enum value
+	CacheTypeNoCache = "NO_CACHE"
+
+	// CacheTypeS3 is a CacheType enum value
+	CacheTypeS3 = "S3"
+)
+
+const (
 	// ComputeTypeBuildGeneral1Small is a ComputeType enum value
 	ComputeTypeBuildGeneral1Small = "BUILD_GENERAL1_SMALL"
 
@@ -3341,6 +4389,14 @@ const (
 const (
 	// EnvironmentTypeLinuxContainer is a EnvironmentType enum value
 	EnvironmentTypeLinuxContainer = "LINUX_CONTAINER"
+)
+
+const (
+	// EnvironmentVariableTypePlaintext is a EnvironmentVariableType enum value
+	EnvironmentVariableTypePlaintext = "PLAINTEXT"
+
+	// EnvironmentVariableTypeParameterStore is a EnvironmentVariableType enum value
+	EnvironmentVariableTypeParameterStore = "PARAMETER_STORE"
 )
 
 const (

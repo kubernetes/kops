@@ -37,6 +37,8 @@ const opAddPermission = "AddPermission"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AddPermission
 func (c *Lambda) AddPermissionRequest(input *AddPermissionInput) (req *request.Request, output *AddPermissionOutput) {
 	op := &request.Operation{
 		Name:       opAddPermission,
@@ -92,15 +94,22 @@ func (c *Lambda) AddPermissionRequest(input *AddPermissionInput) (req *request.R
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodePolicyLengthExceededException "PolicyLengthExceededException"
 //   Lambda function access policy is limited to 20 KB.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AddPermission
 func (c *Lambda) AddPermission(input *AddPermissionInput) (*AddPermissionOutput, error) {
 	req, out := c.AddPermissionRequest(input)
 	return out, req.Send()
@@ -146,6 +155,8 @@ const opCreateAlias = "CreateAlias"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateAlias
 func (c *Lambda) CreateAliasRequest(input *CreateAliasInput) (req *request.Request, output *AliasConfiguration) {
 	op := &request.Operation{
 		Name:       opCreateAlias,
@@ -191,12 +202,19 @@ func (c *Lambda) CreateAliasRequest(input *CreateAliasInput) (req *request.Reque
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateAlias
 func (c *Lambda) CreateAlias(input *CreateAliasInput) (*AliasConfiguration, error) {
 	req, out := c.CreateAliasRequest(input)
 	return out, req.Send()
@@ -242,6 +260,8 @@ const opCreateEventSourceMapping = "CreateEventSourceMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateEventSourceMapping
 func (c *Lambda) CreateEventSourceMappingRequest(input *CreateEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
 	op := &request.Operation{
 		Name:       opCreateEventSourceMapping,
@@ -300,19 +320,26 @@ func (c *Lambda) CreateEventSourceMappingRequest(input *CreateEventSourceMapping
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeResourceConflictException "ResourceConflictException"
 //   The resource already exists.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
 //   The resource (for example, a Lambda function or access policy statement)
 //   specified in the request does not exist.
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateEventSourceMapping
 func (c *Lambda) CreateEventSourceMapping(input *CreateEventSourceMappingInput) (*EventSourceMappingConfiguration, error) {
 	req, out := c.CreateEventSourceMappingRequest(input)
 	return out, req.Send()
@@ -358,6 +385,8 @@ const opCreateFunction = "CreateFunction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateFunction
 func (c *Lambda) CreateFunctionRequest(input *CreateFunctionInput) (req *request.Request, output *FunctionConfiguration) {
 	op := &request.Operation{
 		Name:       opCreateFunction,
@@ -401,9 +430,7 @@ func (c *Lambda) CreateFunctionRequest(input *CreateFunctionInput) (req *request
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
 //   The resource (for example, a Lambda function or access policy statement)
@@ -413,10 +440,19 @@ func (c *Lambda) CreateFunctionRequest(input *CreateFunctionInput) (req *request
 //   The resource already exists.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeCodeStorageExceededException "CodeStorageExceededException"
 //   You have exceeded your maximum total code size per account. Limits (http://docs.aws.amazon.com/lambda/latest/dg/limits.html)
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateFunction
 func (c *Lambda) CreateFunction(input *CreateFunctionInput) (*FunctionConfiguration, error) {
 	req, out := c.CreateFunctionRequest(input)
 	return out, req.Send()
@@ -462,6 +498,8 @@ const opDeleteAlias = "DeleteAlias"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteAlias
 func (c *Lambda) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Request, output *DeleteAliasOutput) {
 	op := &request.Operation{
 		Name:       opDeleteAlias,
@@ -501,12 +539,19 @@ func (c *Lambda) DeleteAliasRequest(input *DeleteAliasInput) (req *request.Reque
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteAlias
 func (c *Lambda) DeleteAlias(input *DeleteAliasInput) (*DeleteAliasOutput, error) {
 	req, out := c.DeleteAliasRequest(input)
 	return out, req.Send()
@@ -552,6 +597,8 @@ const opDeleteEventSourceMapping = "DeleteEventSourceMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteEventSourceMapping
 func (c *Lambda) DeleteEventSourceMappingRequest(input *DeleteEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
 	op := &request.Operation{
 		Name:       opDeleteEventSourceMapping,
@@ -594,12 +641,19 @@ func (c *Lambda) DeleteEventSourceMappingRequest(input *DeleteEventSourceMapping
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteEventSourceMapping
 func (c *Lambda) DeleteEventSourceMapping(input *DeleteEventSourceMappingInput) (*EventSourceMappingConfiguration, error) {
 	req, out := c.DeleteEventSourceMappingRequest(input)
 	return out, req.Send()
@@ -645,6 +699,8 @@ const opDeleteFunction = "DeleteFunction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunction
 func (c *Lambda) DeleteFunctionRequest(input *DeleteFunctionInput) (req *request.Request, output *DeleteFunctionOutput) {
 	op := &request.Operation{
 		Name:       opDeleteFunction,
@@ -695,17 +751,24 @@ func (c *Lambda) DeleteFunctionRequest(input *DeleteFunctionInput) (req *request
 //   specified in the request does not exist.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeResourceConflictException "ResourceConflictException"
 //   The resource already exists.
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunction
 func (c *Lambda) DeleteFunction(input *DeleteFunctionInput) (*DeleteFunctionOutput, error) {
 	req, out := c.DeleteFunctionRequest(input)
 	return out, req.Send()
@@ -722,6 +785,106 @@ func (c *Lambda) DeleteFunction(input *DeleteFunctionInput) (*DeleteFunctionOutp
 // for more information on using Contexts.
 func (c *Lambda) DeleteFunctionWithContext(ctx aws.Context, input *DeleteFunctionInput, opts ...request.Option) (*DeleteFunctionOutput, error) {
 	req, out := c.DeleteFunctionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opDeleteFunctionConcurrency = "DeleteFunctionConcurrency"
+
+// DeleteFunctionConcurrencyRequest generates a "aws/request.Request" representing the
+// client's request for the DeleteFunctionConcurrency operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See DeleteFunctionConcurrency for more information on using the DeleteFunctionConcurrency
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the DeleteFunctionConcurrencyRequest method.
+//    req, resp := client.DeleteFunctionConcurrencyRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionConcurrency
+func (c *Lambda) DeleteFunctionConcurrencyRequest(input *DeleteFunctionConcurrencyInput) (req *request.Request, output *DeleteFunctionConcurrencyOutput) {
+	op := &request.Operation{
+		Name:       opDeleteFunctionConcurrency,
+		HTTPMethod: "DELETE",
+		HTTPPath:   "/2017-10-31/functions/{FunctionName}/concurrency",
+	}
+
+	if input == nil {
+		input = &DeleteFunctionConcurrencyInput{}
+	}
+
+	output = &DeleteFunctionConcurrencyOutput{}
+	req = c.newRequest(op, input, output)
+	req.Handlers.Unmarshal.Remove(restjson.UnmarshalHandler)
+	req.Handlers.Unmarshal.PushBackNamed(protocol.UnmarshalDiscardBodyHandler)
+	return
+}
+
+// DeleteFunctionConcurrency API operation for AWS Lambda.
+//
+// Removes concurrent execution limits from this function.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Lambda's
+// API operation DeleteFunctionConcurrency for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeServiceException "ServiceException"
+//   The AWS Lambda service encountered an internal error.
+//
+//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//   The resource (for example, a Lambda function or access policy statement)
+//   specified in the request does not exist.
+//
+//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
+//
+//   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
+//   One of the parameters in the request is invalid. For example, if you provided
+//   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
+//   API, that AWS Lambda is unable to assume you will get this exception.
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionConcurrency
+func (c *Lambda) DeleteFunctionConcurrency(input *DeleteFunctionConcurrencyInput) (*DeleteFunctionConcurrencyOutput, error) {
+	req, out := c.DeleteFunctionConcurrencyRequest(input)
+	return out, req.Send()
+}
+
+// DeleteFunctionConcurrencyWithContext is the same as DeleteFunctionConcurrency with the addition of
+// the ability to pass a context and additional request options.
+//
+// See DeleteFunctionConcurrency for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Lambda) DeleteFunctionConcurrencyWithContext(ctx aws.Context, input *DeleteFunctionConcurrencyInput, opts ...request.Option) (*DeleteFunctionConcurrencyOutput, error) {
+	req, out := c.DeleteFunctionConcurrencyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -751,6 +914,8 @@ const opGetAccountSettings = "GetAccountSettings"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetAccountSettings
 func (c *Lambda) GetAccountSettingsRequest(input *GetAccountSettingsInput) (req *request.Request, output *GetAccountSettingsOutput) {
 	op := &request.Operation{
 		Name:       opGetAccountSettings,
@@ -786,10 +951,19 @@ func (c *Lambda) GetAccountSettingsRequest(input *GetAccountSettingsInput) (req 
 //
 // Returned Error Codes:
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeServiceException "ServiceException"
 //   The AWS Lambda service encountered an internal error.
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetAccountSettings
 func (c *Lambda) GetAccountSettings(input *GetAccountSettingsInput) (*GetAccountSettingsOutput, error) {
 	req, out := c.GetAccountSettingsRequest(input)
 	return out, req.Send()
@@ -835,6 +1009,8 @@ const opGetAlias = "GetAlias"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetAlias
 func (c *Lambda) GetAliasRequest(input *GetAliasInput) (req *request.Request, output *AliasConfiguration) {
 	op := &request.Operation{
 		Name:       opGetAlias,
@@ -877,12 +1053,19 @@ func (c *Lambda) GetAliasRequest(input *GetAliasInput) (req *request.Request, ou
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetAlias
 func (c *Lambda) GetAlias(input *GetAliasInput) (*AliasConfiguration, error) {
 	req, out := c.GetAliasRequest(input)
 	return out, req.Send()
@@ -928,6 +1111,8 @@ const opGetEventSourceMapping = "GetEventSourceMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetEventSourceMapping
 func (c *Lambda) GetEventSourceMappingRequest(input *GetEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
 	op := &request.Operation{
 		Name:       opGetEventSourceMapping,
@@ -969,12 +1154,19 @@ func (c *Lambda) GetEventSourceMappingRequest(input *GetEventSourceMappingInput)
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetEventSourceMapping
 func (c *Lambda) GetEventSourceMapping(input *GetEventSourceMappingInput) (*EventSourceMappingConfiguration, error) {
 	req, out := c.GetEventSourceMappingRequest(input)
 	return out, req.Send()
@@ -1020,6 +1212,8 @@ const opGetFunction = "GetFunction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunction
 func (c *Lambda) GetFunctionRequest(input *GetFunctionInput) (req *request.Request, output *GetFunctionOutput) {
 	op := &request.Operation{
 		Name:       opGetFunction,
@@ -1068,14 +1262,21 @@ func (c *Lambda) GetFunctionRequest(input *GetFunctionInput) (req *request.Reque
 //   specified in the request does not exist.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunction
 func (c *Lambda) GetFunction(input *GetFunctionInput) (*GetFunctionOutput, error) {
 	req, out := c.GetFunctionRequest(input)
 	return out, req.Send()
@@ -1121,6 +1322,8 @@ const opGetFunctionConfiguration = "GetFunctionConfiguration"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionConfiguration
 func (c *Lambda) GetFunctionConfigurationRequest(input *GetFunctionConfigurationInput) (req *request.Request, output *FunctionConfiguration) {
 	op := &request.Operation{
 		Name:       opGetFunctionConfiguration,
@@ -1169,14 +1372,21 @@ func (c *Lambda) GetFunctionConfigurationRequest(input *GetFunctionConfiguration
 //   specified in the request does not exist.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionConfiguration
 func (c *Lambda) GetFunctionConfiguration(input *GetFunctionConfigurationInput) (*FunctionConfiguration, error) {
 	req, out := c.GetFunctionConfigurationRequest(input)
 	return out, req.Send()
@@ -1222,6 +1432,8 @@ const opGetPolicy = "GetPolicy"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetPolicy
 func (c *Lambda) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, output *GetPolicyOutput) {
 	op := &request.Operation{
 		Name:       opGetPolicy,
@@ -1265,14 +1477,21 @@ func (c *Lambda) GetPolicyRequest(input *GetPolicyInput) (req *request.Request, 
 //   specified in the request does not exist.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetPolicy
 func (c *Lambda) GetPolicy(input *GetPolicyInput) (*GetPolicyOutput, error) {
 	req, out := c.GetPolicyRequest(input)
 	return out, req.Send()
@@ -1318,6 +1537,8 @@ const opInvoke = "Invoke"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/Invoke
 func (c *Lambda) InvokeRequest(input *InvokeInput) (req *request.Request, output *InvokeOutput) {
 	op := &request.Operation{
 		Name:       opInvoke,
@@ -1375,13 +1596,19 @@ func (c *Lambda) InvokeRequest(input *InvokeInput) (req *request.Request, output
 //   The content type of the Invoke request body is not JSON.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeEC2UnexpectedException "EC2UnexpectedException"
 //   AWS Lambda received an unexpected EC2 client exception while setting up for
@@ -1431,6 +1658,7 @@ func (c *Lambda) InvokeRequest(input *InvokeInput) (req *request.Request, output
 //   * ErrCodeInvalidRuntimeException "InvalidRuntimeException"
 //   The runtime or runtime version specified is not supported.
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/Invoke
 func (c *Lambda) Invoke(input *InvokeInput) (*InvokeOutput, error) {
 	req, out := c.InvokeRequest(input)
 	return out, req.Send()
@@ -1476,6 +1704,8 @@ const opInvokeAsync = "InvokeAsync"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/InvokeAsync
 func (c *Lambda) InvokeAsyncRequest(input *InvokeAsyncInput) (req *request.Request, output *InvokeAsyncOutput) {
 	if c.Client.Config.Logger != nil {
 		c.Client.Config.Logger.Log("This operation, InvokeAsync, has been deprecated")
@@ -1526,6 +1756,7 @@ func (c *Lambda) InvokeAsyncRequest(input *InvokeAsyncInput) (req *request.Reque
 //   * ErrCodeInvalidRuntimeException "InvalidRuntimeException"
 //   The runtime or runtime version specified is not supported.
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/InvokeAsync
 func (c *Lambda) InvokeAsync(input *InvokeAsyncInput) (*InvokeAsyncOutput, error) {
 	req, out := c.InvokeAsyncRequest(input)
 	return out, req.Send()
@@ -1571,6 +1802,8 @@ const opListAliases = "ListAliases"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListAliases
 func (c *Lambda) ListAliasesRequest(input *ListAliasesInput) (req *request.Request, output *ListAliasesOutput) {
 	op := &request.Operation{
 		Name:       opListAliases,
@@ -1614,12 +1847,19 @@ func (c *Lambda) ListAliasesRequest(input *ListAliasesInput) (req *request.Reque
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListAliases
 func (c *Lambda) ListAliases(input *ListAliasesInput) (*ListAliasesOutput, error) {
 	req, out := c.ListAliasesRequest(input)
 	return out, req.Send()
@@ -1665,6 +1905,8 @@ const opListEventSourceMappings = "ListEventSourceMappings"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListEventSourceMappings
 func (c *Lambda) ListEventSourceMappingsRequest(input *ListEventSourceMappingsInput) (req *request.Request, output *ListEventSourceMappingsOutput) {
 	op := &request.Operation{
 		Name:       opListEventSourceMappings,
@@ -1721,12 +1963,19 @@ func (c *Lambda) ListEventSourceMappingsRequest(input *ListEventSourceMappingsIn
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListEventSourceMappings
 func (c *Lambda) ListEventSourceMappings(input *ListEventSourceMappingsInput) (*ListEventSourceMappingsOutput, error) {
 	req, out := c.ListEventSourceMappingsRequest(input)
 	return out, req.Send()
@@ -1822,6 +2071,8 @@ const opListFunctions = "ListFunctions"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctions
 func (c *Lambda) ListFunctionsRequest(input *ListFunctionsInput) (req *request.Request, output *ListFunctionsOutput) {
 	op := &request.Operation{
 		Name:       opListFunctions,
@@ -1868,14 +2119,21 @@ func (c *Lambda) ListFunctionsRequest(input *ListFunctionsInput) (req *request.R
 //   The AWS Lambda service encountered an internal error.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctions
 func (c *Lambda) ListFunctions(input *ListFunctionsInput) (*ListFunctionsOutput, error) {
 	req, out := c.ListFunctionsRequest(input)
 	return out, req.Send()
@@ -1971,6 +2229,8 @@ const opListTags = "ListTags"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListTags
 func (c *Lambda) ListTagsRequest(input *ListTagsInput) (req *request.Request, output *ListTagsOutput) {
 	op := &request.Operation{
 		Name:       opListTags,
@@ -2010,12 +2270,19 @@ func (c *Lambda) ListTagsRequest(input *ListTagsInput) (req *request.Request, ou
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListTags
 func (c *Lambda) ListTags(input *ListTagsInput) (*ListTagsOutput, error) {
 	req, out := c.ListTagsRequest(input)
 	return out, req.Send()
@@ -2061,6 +2328,8 @@ const opListVersionsByFunction = "ListVersionsByFunction"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListVersionsByFunction
 func (c *Lambda) ListVersionsByFunctionRequest(input *ListVersionsByFunctionInput) (req *request.Request, output *ListVersionsByFunctionOutput) {
 	op := &request.Operation{
 		Name:       opListVersionsByFunction,
@@ -2100,12 +2369,19 @@ func (c *Lambda) ListVersionsByFunctionRequest(input *ListVersionsByFunctionInpu
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListVersionsByFunction
 func (c *Lambda) ListVersionsByFunction(input *ListVersionsByFunctionInput) (*ListVersionsByFunctionOutput, error) {
 	req, out := c.ListVersionsByFunctionRequest(input)
 	return out, req.Send()
@@ -2151,6 +2427,8 @@ const opPublishVersion = "PublishVersion"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PublishVersion
 func (c *Lambda) PublishVersionRequest(input *PublishVersionInput) (req *request.Request, output *FunctionConfiguration) {
 	op := &request.Operation{
 		Name:       opPublishVersion,
@@ -2193,15 +2471,22 @@ func (c *Lambda) PublishVersionRequest(input *PublishVersionInput) (req *request
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeCodeStorageExceededException "CodeStorageExceededException"
 //   You have exceeded your maximum total code size per account. Limits (http://docs.aws.amazon.com/lambda/latest/dg/limits.html)
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PublishVersion
 func (c *Lambda) PublishVersion(input *PublishVersionInput) (*FunctionConfiguration, error) {
 	req, out := c.PublishVersionRequest(input)
 	return out, req.Send()
@@ -2218,6 +2503,109 @@ func (c *Lambda) PublishVersion(input *PublishVersionInput) (*FunctionConfigurat
 // for more information on using Contexts.
 func (c *Lambda) PublishVersionWithContext(ctx aws.Context, input *PublishVersionInput, opts ...request.Option) (*FunctionConfiguration, error) {
 	req, out := c.PublishVersionRequest(input)
+	req.SetContext(ctx)
+	req.ApplyOptions(opts...)
+	return out, req.Send()
+}
+
+const opPutFunctionConcurrency = "PutFunctionConcurrency"
+
+// PutFunctionConcurrencyRequest generates a "aws/request.Request" representing the
+// client's request for the PutFunctionConcurrency operation. The "output" return
+// value will be populated with the request's response once the request complets
+// successfuly.
+//
+// Use "Send" method on the returned Request to send the API call to the service.
+// the "output" return value is not valid until after Send returns without error.
+//
+// See PutFunctionConcurrency for more information on using the PutFunctionConcurrency
+// API call, and error handling.
+//
+// This method is useful when you want to inject custom logic or configuration
+// into the SDK's request lifecycle. Such as custom headers, or retry logic.
+//
+//
+//    // Example sending a request using the PutFunctionConcurrencyRequest method.
+//    req, resp := client.PutFunctionConcurrencyRequest(params)
+//
+//    err := req.Send()
+//    if err == nil { // resp is now filled
+//        fmt.Println(resp)
+//    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PutFunctionConcurrency
+func (c *Lambda) PutFunctionConcurrencyRequest(input *PutFunctionConcurrencyInput) (req *request.Request, output *PutFunctionConcurrencyOutput) {
+	op := &request.Operation{
+		Name:       opPutFunctionConcurrency,
+		HTTPMethod: "PUT",
+		HTTPPath:   "/2017-10-31/functions/{FunctionName}/concurrency",
+	}
+
+	if input == nil {
+		input = &PutFunctionConcurrencyInput{}
+	}
+
+	output = &PutFunctionConcurrencyOutput{}
+	req = c.newRequest(op, input, output)
+	return
+}
+
+// PutFunctionConcurrency API operation for AWS Lambda.
+//
+// Sets a limit on the number of concurrent executions available to this function.
+// It is a subset of your account's total concurrent execution limit per region.
+// Note that Lambda automatically reserves a buffer of 100 concurrent executions
+// for functions without any reserved concurrency limit. This means if your
+// account limit is 1000, you have a total of 900 available to allocate to individual
+// functions.
+//
+// Returns awserr.Error for service API and SDK errors. Use runtime type assertions
+// with awserr.Error's Code and Message methods to get detailed information about
+// the error.
+//
+// See the AWS API reference guide for AWS Lambda's
+// API operation PutFunctionConcurrency for usage and error information.
+//
+// Returned Error Codes:
+//   * ErrCodeServiceException "ServiceException"
+//   The AWS Lambda service encountered an internal error.
+//
+//   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
+//   One of the parameters in the request is invalid. For example, if you provided
+//   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
+//   API, that AWS Lambda is unable to assume you will get this exception.
+//
+//   * ErrCodeResourceNotFoundException "ResourceNotFoundException"
+//   The resource (for example, a Lambda function or access policy statement)
+//   specified in the request does not exist.
+//
+//   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PutFunctionConcurrency
+func (c *Lambda) PutFunctionConcurrency(input *PutFunctionConcurrencyInput) (*PutFunctionConcurrencyOutput, error) {
+	req, out := c.PutFunctionConcurrencyRequest(input)
+	return out, req.Send()
+}
+
+// PutFunctionConcurrencyWithContext is the same as PutFunctionConcurrency with the addition of
+// the ability to pass a context and additional request options.
+//
+// See PutFunctionConcurrency for details on how to use this API operation.
+//
+// The context must be non-nil and will be used for request cancellation. If
+// the context is nil a panic will occur. In the future the SDK may create
+// sub-contexts for http.Requests. See https://golang.org/pkg/context/
+// for more information on using Contexts.
+func (c *Lambda) PutFunctionConcurrencyWithContext(ctx aws.Context, input *PutFunctionConcurrencyInput, opts ...request.Option) (*PutFunctionConcurrencyOutput, error) {
+	req, out := c.PutFunctionConcurrencyRequest(input)
 	req.SetContext(ctx)
 	req.ApplyOptions(opts...)
 	return out, req.Send()
@@ -2247,6 +2635,8 @@ const opRemovePermission = "RemovePermission"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/RemovePermission
 func (c *Lambda) RemovePermissionRequest(input *RemovePermissionInput) (req *request.Request, output *RemovePermissionOutput) {
 	op := &request.Operation{
 		Name:       opRemovePermission,
@@ -2299,12 +2689,19 @@ func (c *Lambda) RemovePermissionRequest(input *RemovePermissionInput) (req *req
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/RemovePermission
 func (c *Lambda) RemovePermission(input *RemovePermissionInput) (*RemovePermissionOutput, error) {
 	req, out := c.RemovePermissionRequest(input)
 	return out, req.Send()
@@ -2350,6 +2747,8 @@ const opTagResource = "TagResource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/TagResource
 func (c *Lambda) TagResourceRequest(input *TagResourceInput) (req *request.Request, output *TagResourceOutput) {
 	op := &request.Operation{
 		Name:       opTagResource,
@@ -2392,12 +2791,19 @@ func (c *Lambda) TagResourceRequest(input *TagResourceInput) (req *request.Reque
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/TagResource
 func (c *Lambda) TagResource(input *TagResourceInput) (*TagResourceOutput, error) {
 	req, out := c.TagResourceRequest(input)
 	return out, req.Send()
@@ -2443,6 +2849,8 @@ const opUntagResource = "UntagResource"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UntagResource
 func (c *Lambda) UntagResourceRequest(input *UntagResourceInput) (req *request.Request, output *UntagResourceOutput) {
 	op := &request.Operation{
 		Name:       opUntagResource,
@@ -2484,12 +2892,19 @@ func (c *Lambda) UntagResourceRequest(input *UntagResourceInput) (req *request.R
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UntagResource
 func (c *Lambda) UntagResource(input *UntagResourceInput) (*UntagResourceOutput, error) {
 	req, out := c.UntagResourceRequest(input)
 	return out, req.Send()
@@ -2535,6 +2950,8 @@ const opUpdateAlias = "UpdateAlias"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateAlias
 func (c *Lambda) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Request, output *AliasConfiguration) {
 	op := &request.Operation{
 		Name:       opUpdateAlias,
@@ -2577,12 +2994,19 @@ func (c *Lambda) UpdateAliasRequest(input *UpdateAliasInput) (req *request.Reque
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateAlias
 func (c *Lambda) UpdateAlias(input *UpdateAliasInput) (*AliasConfiguration, error) {
 	req, out := c.UpdateAliasRequest(input)
 	return out, req.Send()
@@ -2628,6 +3052,8 @@ const opUpdateEventSourceMapping = "UpdateEventSourceMapping"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateEventSourceMapping
 func (c *Lambda) UpdateEventSourceMappingRequest(input *UpdateEventSourceMappingInput) (req *request.Request, output *EventSourceMappingConfiguration) {
 	op := &request.Operation{
 		Name:       opUpdateEventSourceMapping,
@@ -2682,15 +3108,22 @@ func (c *Lambda) UpdateEventSourceMappingRequest(input *UpdateEventSourceMapping
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeResourceConflictException "ResourceConflictException"
 //   The resource already exists.
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateEventSourceMapping
 func (c *Lambda) UpdateEventSourceMapping(input *UpdateEventSourceMappingInput) (*EventSourceMappingConfiguration, error) {
 	req, out := c.UpdateEventSourceMappingRequest(input)
 	return out, req.Send()
@@ -2736,6 +3169,8 @@ const opUpdateFunctionCode = "UpdateFunctionCode"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionCode
 func (c *Lambda) UpdateFunctionCodeRequest(input *UpdateFunctionCodeInput) (req *request.Request, output *FunctionConfiguration) {
 	op := &request.Operation{
 		Name:       opUpdateFunctionCode,
@@ -2782,15 +3217,22 @@ func (c *Lambda) UpdateFunctionCodeRequest(input *UpdateFunctionCodeInput) (req 
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeCodeStorageExceededException "CodeStorageExceededException"
 //   You have exceeded your maximum total code size per account. Limits (http://docs.aws.amazon.com/lambda/latest/dg/limits.html)
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionCode
 func (c *Lambda) UpdateFunctionCode(input *UpdateFunctionCodeInput) (*FunctionConfiguration, error) {
 	req, out := c.UpdateFunctionCodeRequest(input)
 	return out, req.Send()
@@ -2836,6 +3278,8 @@ const opUpdateFunctionConfiguration = "UpdateFunctionConfiguration"
 //    if err == nil { // resp is now filled
 //        fmt.Println(resp)
 //    }
+//
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionConfiguration
 func (c *Lambda) UpdateFunctionConfigurationRequest(input *UpdateFunctionConfigurationInput) (req *request.Request, output *FunctionConfiguration) {
 	op := &request.Operation{
 		Name:       opUpdateFunctionConfiguration,
@@ -2884,15 +3328,22 @@ func (c *Lambda) UpdateFunctionConfigurationRequest(input *UpdateFunctionConfigu
 //   * ErrCodeInvalidParameterValueException "InvalidParameterValueException"
 //   One of the parameters in the request is invalid. For example, if you provided
 //   an IAM role for AWS Lambda to assume in the CreateFunction or the UpdateFunctionConfiguration
-//   API, that AWS Lambda is unable to assume you will get this exception. You
-//   will also get this exception if you have selected a deprecated runtime, such
-//   as Node v0.10.42.
+//   API, that AWS Lambda is unable to assume you will get this exception.
 //
 //   * ErrCodeTooManyRequestsException "TooManyRequestsException"
+//   You will get this exception for the following reasons. ConcurrentInvocationLimitExceeded
+//   is returned if you have no functions with reserved-concurrency and have exceeded
+//   your account concurrent limit or if a function without reserved concurrency
+//   exceeds the account's unreserved concurrency limit. ReservedFunctionConcurrentInvocationLimitExceeded
+//   is returned when a function with reserved concurrency exceeds its configured
+//   concurrent limit. CallerRateLimitExceeded is returned when your account limit
+//   is exceeded and you have not reserved concurrency on any function. For more
+//   information, see concurrent-executions
 //
 //   * ErrCodeResourceConflictException "ResourceConflictException"
 //   The resource already exists.
 //
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionConfiguration
 func (c *Lambda) UpdateFunctionConfiguration(input *UpdateFunctionConfigurationInput) (*FunctionConfiguration, error) {
 	req, out := c.UpdateFunctionConfigurationRequest(input)
 	return out, req.Send()
@@ -2916,6 +3367,7 @@ func (c *Lambda) UpdateFunctionConfigurationWithContext(ctx aws.Context, input *
 
 // Provides limits of code size and concurrency associated with the current
 // account and region.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AccountLimit
 type AccountLimit struct {
 	_ struct{} `type:"structure"`
 
@@ -2931,12 +3383,16 @@ type AccountLimit struct {
 	// Number of simultaneous executions of your function per region. For more information
 	// or to request a limit increase for concurrent executions, see Lambda Function
 	// Concurrent Executions (http://docs.aws.amazon.com/lambda/latest/dg/concurrent-executions.html).
-	// The default limit is 100.
+	// The default limit is 1000.
 	ConcurrentExecutions *int64 `type:"integer"`
 
 	// Maximum size, in bytes, of a code package you can upload per region. The
 	// default size is 75 GB.
 	TotalCodeSize *int64 `type:"long"`
+
+	// The number of concurrent executions available to functions that do not have
+	// concurrency limits set.
+	UnreservedConcurrentExecutions *int64 `type:"integer"`
 }
 
 // String returns the string representation
@@ -2973,8 +3429,15 @@ func (s *AccountLimit) SetTotalCodeSize(v int64) *AccountLimit {
 	return s
 }
 
+// SetUnreservedConcurrentExecutions sets the UnreservedConcurrentExecutions field's value.
+func (s *AccountLimit) SetUnreservedConcurrentExecutions(v int64) *AccountLimit {
+	s.UnreservedConcurrentExecutions = &v
+	return s
+}
+
 // Provides code size usage and function count associated with the current account
 // and region.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AccountUsage
 type AccountUsage struct {
 	_ struct{} `type:"structure"`
 
@@ -3007,6 +3470,7 @@ func (s *AccountUsage) SetTotalCodeSize(v int64) *AccountUsage {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AddPermissionRequest
 type AddPermissionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3177,6 +3641,7 @@ func (s *AddPermissionInput) SetStatementId(v string) *AddPermissionInput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AddPermissionResponse
 type AddPermissionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -3203,6 +3668,7 @@ func (s *AddPermissionOutput) SetStatement(v string) *AddPermissionOutput {
 }
 
 // Provides configuration information about a Lambda function version alias.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AliasConfiguration
 type AliasConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -3219,6 +3685,11 @@ type AliasConfiguration struct {
 
 	// Alias name.
 	Name *string `min:"1" type:"string"`
+
+	// Specifies an additional function versions the alias points to, allowing you
+	// to dictate what percentage of traffic will invoke each version. For more
+	// information, see lambda-traffic-shifting-using-aliases.
+	RoutingConfig *AliasRoutingConfiguration `type:"structure"`
 }
 
 // String returns the string representation
@@ -3255,6 +3726,41 @@ func (s *AliasConfiguration) SetName(v string) *AliasConfiguration {
 	return s
 }
 
+// SetRoutingConfig sets the RoutingConfig field's value.
+func (s *AliasConfiguration) SetRoutingConfig(v *AliasRoutingConfiguration) *AliasConfiguration {
+	s.RoutingConfig = v
+	return s
+}
+
+// The parent object that implements what percentage of traffic will invoke
+// each function version. For more information, see lambda-traffic-shifting-using-aliases.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/AliasRoutingConfiguration
+type AliasRoutingConfiguration struct {
+	_ struct{} `type:"structure"`
+
+	// Set this property value to dictate what percentage of traffic will invoke
+	// the updated function version. If set to an empty string, 100 percent of traffic
+	// will invoke function-version.
+	AdditionalVersionWeights map[string]*float64 `type:"map"`
+}
+
+// String returns the string representation
+func (s AliasRoutingConfiguration) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s AliasRoutingConfiguration) GoString() string {
+	return s.String()
+}
+
+// SetAdditionalVersionWeights sets the AdditionalVersionWeights field's value.
+func (s *AliasRoutingConfiguration) SetAdditionalVersionWeights(v map[string]*float64) *AliasRoutingConfiguration {
+	s.AdditionalVersionWeights = v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateAliasRequest
 type CreateAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3277,6 +3783,11 @@ type CreateAliasInput struct {
 	//
 	// Name is a required field
 	Name *string `min:"1" type:"string" required:"true"`
+
+	// Specifies an additional version your alias can point to, allowing you to
+	// dictate what percentage of traffic will invoke each version. For more information,
+	// see lambda-traffic-shifting-using-aliases.
+	RoutingConfig *AliasRoutingConfiguration `type:"structure"`
 }
 
 // String returns the string representation
@@ -3341,6 +3852,13 @@ func (s *CreateAliasInput) SetName(v string) *CreateAliasInput {
 	return s
 }
 
+// SetRoutingConfig sets the RoutingConfig field's value.
+func (s *CreateAliasInput) SetRoutingConfig(v *AliasRoutingConfiguration) *CreateAliasInput {
+	s.RoutingConfig = v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateEventSourceMappingRequest
 type CreateEventSourceMappingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3468,6 +3986,7 @@ func (s *CreateEventSourceMappingInput) SetStartingPositionTimestamp(v time.Time
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/CreateFunctionRequest
 type CreateFunctionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3537,11 +4056,9 @@ type CreateFunctionInput struct {
 	//
 	// Node v0.10.42 is currently marked as deprecated. You must migrate existing
 	// functions to the newer Node.js runtime versions available on AWS Lambda (nodejs4.3
-	// or nodejs6.10) as soon as possible. You can request a one-time extension
-	// until June 30, 2017 by going to the Lambda console and following the instructions
-	// provided. Failure to do so will result in an invalid parmaeter error being
-	// returned. Note that you will have to follow this procedure for each region
-	// that contains functions written in the Node v0.10.42 runtime.
+	// or nodejs6.10) as soon as possible. Failure to do so will result in an invalid
+	// parmaeter error being returned. Note that you will have to follow this procedure
+	// for each region that contains functions written in the Node v0.10.42 runtime.
 	//
 	// Runtime is a required field
 	Runtime *string `type:"string" required:"true" enum:"Runtime"`
@@ -3705,6 +4222,7 @@ func (s *CreateFunctionInput) SetVpcConfig(v *VpcConfig) *CreateFunctionInput {
 
 // The parent object that contains the target ARN (Amazon Resource Name) of
 // an Amazon SQS queue or Amazon SNS topic.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeadLetterConfig
 type DeadLetterConfig struct {
 	_ struct{} `type:"structure"`
 
@@ -3729,6 +4247,7 @@ func (s *DeadLetterConfig) SetTargetArn(v string) *DeadLetterConfig {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteAliasRequest
 type DeleteAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3790,6 +4309,7 @@ func (s *DeleteAliasInput) SetName(v string) *DeleteAliasInput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteAliasOutput
 type DeleteAliasOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3804,6 +4324,7 @@ func (s DeleteAliasOutput) GoString() string {
 	return s.String()
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteEventSourceMappingRequest
 type DeleteEventSourceMappingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3842,6 +4363,64 @@ func (s *DeleteEventSourceMappingInput) SetUUID(v string) *DeleteEventSourceMapp
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionConcurrencyRequest
+type DeleteFunctionConcurrencyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the function you are removing concurrent execution limits from.
+	//
+	// FunctionName is a required field
+	FunctionName *string `location:"uri" locationName:"FunctionName" min:"1" type:"string" required:"true"`
+}
+
+// String returns the string representation
+func (s DeleteFunctionConcurrencyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteFunctionConcurrencyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *DeleteFunctionConcurrencyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "DeleteFunctionConcurrencyInput"}
+	if s.FunctionName == nil {
+		invalidParams.Add(request.NewErrParamRequired("FunctionName"))
+	}
+	if s.FunctionName != nil && len(*s.FunctionName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FunctionName", 1))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *DeleteFunctionConcurrencyInput) SetFunctionName(v string) *DeleteFunctionConcurrencyInput {
+	s.FunctionName = &v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionConcurrencyOutput
+type DeleteFunctionConcurrencyOutput struct {
+	_ struct{} `type:"structure"`
+}
+
+// String returns the string representation
+func (s DeleteFunctionConcurrencyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s DeleteFunctionConcurrencyOutput) GoString() string {
+	return s.String()
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionRequest
 type DeleteFunctionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -3916,6 +4495,7 @@ func (s *DeleteFunctionInput) SetQualifier(v string) *DeleteFunctionInput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/DeleteFunctionOutput
 type DeleteFunctionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -3931,6 +4511,7 @@ func (s DeleteFunctionOutput) GoString() string {
 }
 
 // The parent object that contains your environment's configuration settings.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/Environment
 type Environment struct {
 	_ struct{} `type:"structure"`
 
@@ -3956,6 +4537,7 @@ func (s *Environment) SetVariables(v map[string]*string) *Environment {
 
 // The parent object that contains error information associated with your configuration
 // settings.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/EnvironmentError
 type EnvironmentError struct {
 	_ struct{} `type:"structure"`
 
@@ -3990,6 +4572,7 @@ func (s *EnvironmentError) SetMessage(v string) *EnvironmentError {
 
 // The parent object returned that contains your environment's configuration
 // settings or any error information associated with your configuration settings.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/EnvironmentResponse
 type EnvironmentResponse struct {
 	_ struct{} `type:"structure"`
 
@@ -4025,6 +4608,7 @@ func (s *EnvironmentResponse) SetVariables(v map[string]*string) *EnvironmentRes
 }
 
 // Describes mapping between an Amazon Kinesis stream and a Lambda function.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/EventSourceMappingConfiguration
 type EventSourceMappingConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -4117,6 +4701,7 @@ func (s *EventSourceMappingConfiguration) SetUUID(v string) *EventSourceMappingC
 }
 
 // The code for the Lambda function.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/FunctionCode
 type FunctionCode struct {
 	_ struct{} `type:"structure"`
 
@@ -4196,6 +4781,7 @@ func (s *FunctionCode) SetZipFile(v []byte) *FunctionCode {
 }
 
 // The object for the Lambda function location.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/FunctionCodeLocation
 type FunctionCodeLocation struct {
 	_ struct{} `type:"structure"`
 
@@ -4230,6 +4816,7 @@ func (s *FunctionCodeLocation) SetRepositoryType(v string) *FunctionCodeLocation
 }
 
 // A complex type that describes function metadata.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/FunctionConfiguration
 type FunctionConfiguration struct {
 	_ struct{} `type:"structure"`
 
@@ -4418,6 +5005,7 @@ func (s *FunctionConfiguration) SetVpcConfig(v *VpcConfigResponse) *FunctionConf
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetAccountSettingsRequest
 type GetAccountSettingsInput struct {
 	_ struct{} `type:"structure"`
 }
@@ -4432,6 +5020,7 @@ func (s GetAccountSettingsInput) GoString() string {
 	return s.String()
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetAccountSettingsResponse
 type GetAccountSettingsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4466,6 +5055,7 @@ func (s *GetAccountSettingsOutput) SetAccountUsage(v *AccountUsage) *GetAccountS
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetAliasRequest
 type GetAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4528,6 +5118,7 @@ func (s *GetAliasInput) SetName(v string) *GetAliasInput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetEventSourceMappingRequest
 type GetEventSourceMappingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4566,6 +5157,7 @@ func (s *GetEventSourceMappingInput) SetUUID(v string) *GetEventSourceMappingInp
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionConfigurationRequest
 type GetFunctionConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4633,6 +5225,7 @@ func (s *GetFunctionConfigurationInput) SetQualifier(v string) *GetFunctionConfi
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionRequest
 type GetFunctionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4647,7 +5240,7 @@ type GetFunctionInput struct {
 	// FunctionName is a required field
 	FunctionName *string `location:"uri" locationName:"FunctionName" min:"1" type:"string" required:"true"`
 
-	// Using this optional parameter to specify a function version or an alias name.
+	// Use this optional parameter to specify a function version or an alias name.
 	// If you specify function version, the API uses qualified function ARN for
 	// the request and returns information about the specific Lambda function version.
 	// If you specify an alias name, the API uses the alias ARN and returns information
@@ -4699,11 +5292,15 @@ func (s *GetFunctionInput) SetQualifier(v string) *GetFunctionInput {
 }
 
 // This response contains the object for the Lambda function location (see FunctionCodeLocation.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetFunctionResponse
 type GetFunctionOutput struct {
 	_ struct{} `type:"structure"`
 
 	// The object for the Lambda function location.
 	Code *FunctionCodeLocation `type:"structure"`
+
+	// The concurrent execution limit set for this function.
+	Concurrency *PutFunctionConcurrencyOutput `type:"structure"`
 
 	// A complex type that describes function metadata.
 	Configuration *FunctionConfiguration `type:"structure"`
@@ -4728,6 +5325,12 @@ func (s *GetFunctionOutput) SetCode(v *FunctionCodeLocation) *GetFunctionOutput 
 	return s
 }
 
+// SetConcurrency sets the Concurrency field's value.
+func (s *GetFunctionOutput) SetConcurrency(v *PutFunctionConcurrencyOutput) *GetFunctionOutput {
+	s.Concurrency = v
+	return s
+}
+
 // SetConfiguration sets the Configuration field's value.
 func (s *GetFunctionOutput) SetConfiguration(v *FunctionConfiguration) *GetFunctionOutput {
 	s.Configuration = v
@@ -4740,6 +5343,7 @@ func (s *GetFunctionOutput) SetTags(v map[string]*string) *GetFunctionOutput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetPolicyRequest
 type GetPolicyInput struct {
 	_ struct{} `type:"structure"`
 
@@ -4805,6 +5409,7 @@ func (s *GetPolicyInput) SetQualifier(v string) *GetPolicyInput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/GetPolicyResponse
 type GetPolicyOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -4830,6 +5435,7 @@ func (s *GetPolicyOutput) SetPolicy(v string) *GetPolicyOutput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/InvokeAsyncRequest
 type InvokeAsyncInput struct {
 	_ struct{} `deprecated:"true" type:"structure" payload:"InvokeArgs"`
 
@@ -4888,6 +5494,7 @@ func (s *InvokeAsyncInput) SetInvokeArgs(v io.ReadSeeker) *InvokeAsyncInput {
 }
 
 // Upon success, it returns empty response. Otherwise, throws an exception.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/InvokeAsyncResponse
 type InvokeAsyncOutput struct {
 	_ struct{} `deprecated:"true" type:"structure"`
 
@@ -4911,6 +5518,7 @@ func (s *InvokeAsyncOutput) SetStatus(v int64) *InvokeAsyncOutput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/InvocationRequest
 type InvokeInput struct {
 	_ struct{} `type:"structure" payload:"Payload"`
 
@@ -4920,7 +5528,8 @@ type InvokeInput struct {
 	// of a ClientContext JSON, see PutEvents (http://docs.aws.amazon.com/mobileanalytics/latest/ug/PutEvents.html)
 	// in the Amazon Mobile Analytics API Reference and User Guide.
 	//
-	// The ClientContext JSON must be base64-encoded.
+	// The ClientContext JSON must be base64-encoded and has a maximum size of 3583
+	// bytes.
 	ClientContext *string `location:"header" locationName:"X-Amz-Client-Context" type:"string"`
 
 	// The Lambda function name.
@@ -5029,8 +5638,13 @@ func (s *InvokeInput) SetQualifier(v string) *InvokeInput {
 }
 
 // Upon success, returns an empty response. Otherwise, throws an exception.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/InvocationResponse
 type InvokeOutput struct {
 	_ struct{} `type:"structure" payload:"Payload"`
+
+	// The function version that has been executed. This value is returned only
+	// if the invocation type is RequestResponse.
+	ExecutedVersion *string `location:"header" locationName:"X-Amz-Executed-Version" min:"1" type:"string"`
 
 	// Indicates whether an error occurred while executing the Lambda function.
 	// If an error occurred this field will have one of two values; Handled or Unhandled.
@@ -5070,6 +5684,12 @@ func (s InvokeOutput) GoString() string {
 	return s.String()
 }
 
+// SetExecutedVersion sets the ExecutedVersion field's value.
+func (s *InvokeOutput) SetExecutedVersion(v string) *InvokeOutput {
+	s.ExecutedVersion = &v
+	return s
+}
+
 // SetFunctionError sets the FunctionError field's value.
 func (s *InvokeOutput) SetFunctionError(v string) *InvokeOutput {
 	s.FunctionError = &v
@@ -5094,6 +5714,7 @@ func (s *InvokeOutput) SetStatusCode(v int64) *InvokeOutput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListAliasesRequest
 type ListAliasesInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5174,6 +5795,7 @@ func (s *ListAliasesInput) SetMaxItems(v int64) *ListAliasesInput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListAliasesResponse
 type ListAliasesOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5206,6 +5828,7 @@ func (s *ListAliasesOutput) SetNextMarker(v string) *ListAliasesOutput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListEventSourceMappingsRequest
 type ListEventSourceMappingsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5286,6 +5909,7 @@ func (s *ListEventSourceMappingsInput) SetMaxItems(v int64) *ListEventSourceMapp
 }
 
 // Contains a list of event sources (see EventSourceMappingConfiguration)
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListEventSourceMappingsResponse
 type ListEventSourceMappingsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5318,6 +5942,7 @@ func (s *ListEventSourceMappingsOutput) SetNextMarker(v string) *ListEventSource
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctionsRequest
 type ListFunctionsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5326,7 +5951,7 @@ type ListFunctionsInput struct {
 	//
 	// Valid value:
 	//
-	// ALL _ Will return all versions, including $LATEST which will have fully qualified
+	// ALL: Will return all versions, including $LATEST which will have fully qualified
 	// ARNs (Amazon Resource Names).
 	FunctionVersion *string `location:"querystring" locationName:"FunctionVersion" type:"string" enum:"FunctionVersion"`
 
@@ -5342,7 +5967,7 @@ type ListFunctionsInput struct {
 	// The region from which the functions are replicated. For example, if you specify
 	// us-east-1, only functions replicated from that region will be returned.
 	//
-	// ALL _ Will return all functions from any region. If specified, you also must
+	// ALL: Will return all functions from any region. If specified, you also must
 	// specify a valid FunctionVersion parameter.
 	MasterRegion *string `location:"querystring" locationName:"MasterRegion" type:"string"`
 
@@ -5399,6 +6024,7 @@ func (s *ListFunctionsInput) SetMaxItems(v int64) *ListFunctionsInput {
 }
 
 // Contains a list of AWS Lambda function configurations (see FunctionConfiguration.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListFunctionsResponse
 type ListFunctionsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5431,6 +6057,7 @@ func (s *ListFunctionsOutput) SetNextMarker(v string) *ListFunctionsOutput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListTagsRequest
 type ListTagsInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5469,6 +6096,7 @@ func (s *ListTagsInput) SetResource(v string) *ListTagsInput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListTagsResponse
 type ListTagsOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5492,6 +6120,7 @@ func (s *ListTagsOutput) SetTags(v map[string]*string) *ListTagsOutput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListVersionsByFunctionRequest
 type ListVersionsByFunctionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5561,6 +6190,7 @@ func (s *ListVersionsByFunctionInput) SetMaxItems(v int64) *ListVersionsByFuncti
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/ListVersionsByFunctionResponse
 type ListVersionsByFunctionOutput struct {
 	_ struct{} `type:"structure"`
 
@@ -5593,13 +6223,15 @@ func (s *ListVersionsByFunctionOutput) SetVersions(v []*FunctionConfiguration) *
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PublishVersionRequest
 type PublishVersionInput struct {
 	_ struct{} `type:"structure"`
 
 	// The SHA256 hash of the deployment package you want to publish. This provides
-	// validation on the code you are publishing. If you provide this parameter
-	// value must match the SHA256 of the $LATEST version for the publication to
-	// succeed.
+	// validation on the code you are publishing. If you provide this parameter,
+	// the value must match the SHA256 of the $LATEST version for the publication
+	// to succeed. You can use the DryRun parameter of UpdateFunctionCode to verify
+	// the hash value that will be returned before publishing your new version.
 	CodeSha256 *string `type:"string"`
 
 	// The description for the version you are publishing. If not provided, AWS
@@ -5661,6 +6293,87 @@ func (s *PublishVersionInput) SetFunctionName(v string) *PublishVersionInput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/PutFunctionConcurrencyRequest
+type PutFunctionConcurrencyInput struct {
+	_ struct{} `type:"structure"`
+
+	// The name of the function you are setting concurrent execution limits on.
+	//
+	// FunctionName is a required field
+	FunctionName *string `location:"uri" locationName:"FunctionName" min:"1" type:"string" required:"true"`
+
+	// The concurrent execution limit reserved for this function.
+	//
+	// ReservedConcurrentExecutions is a required field
+	ReservedConcurrentExecutions *int64 `type:"integer" required:"true"`
+}
+
+// String returns the string representation
+func (s PutFunctionConcurrencyInput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PutFunctionConcurrencyInput) GoString() string {
+	return s.String()
+}
+
+// Validate inspects the fields of the type to determine if they are valid.
+func (s *PutFunctionConcurrencyInput) Validate() error {
+	invalidParams := request.ErrInvalidParams{Context: "PutFunctionConcurrencyInput"}
+	if s.FunctionName == nil {
+		invalidParams.Add(request.NewErrParamRequired("FunctionName"))
+	}
+	if s.FunctionName != nil && len(*s.FunctionName) < 1 {
+		invalidParams.Add(request.NewErrParamMinLen("FunctionName", 1))
+	}
+	if s.ReservedConcurrentExecutions == nil {
+		invalidParams.Add(request.NewErrParamRequired("ReservedConcurrentExecutions"))
+	}
+
+	if invalidParams.Len() > 0 {
+		return invalidParams
+	}
+	return nil
+}
+
+// SetFunctionName sets the FunctionName field's value.
+func (s *PutFunctionConcurrencyInput) SetFunctionName(v string) *PutFunctionConcurrencyInput {
+	s.FunctionName = &v
+	return s
+}
+
+// SetReservedConcurrentExecutions sets the ReservedConcurrentExecutions field's value.
+func (s *PutFunctionConcurrencyInput) SetReservedConcurrentExecutions(v int64) *PutFunctionConcurrencyInput {
+	s.ReservedConcurrentExecutions = &v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/Concurrency
+type PutFunctionConcurrencyOutput struct {
+	_ struct{} `type:"structure"`
+
+	// The number of concurrent executions reserved for this function.
+	ReservedConcurrentExecutions *int64 `type:"integer"`
+}
+
+// String returns the string representation
+func (s PutFunctionConcurrencyOutput) String() string {
+	return awsutil.Prettify(s)
+}
+
+// GoString returns the string representation
+func (s PutFunctionConcurrencyOutput) GoString() string {
+	return s.String()
+}
+
+// SetReservedConcurrentExecutions sets the ReservedConcurrentExecutions field's value.
+func (s *PutFunctionConcurrencyOutput) SetReservedConcurrentExecutions(v int64) *PutFunctionConcurrencyOutput {
+	s.ReservedConcurrentExecutions = &v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/RemovePermissionRequest
 type RemovePermissionInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5740,6 +6453,7 @@ func (s *RemovePermissionInput) SetStatementId(v string) *RemovePermissionInput 
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/RemovePermissionOutput
 type RemovePermissionOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5754,6 +6468,7 @@ func (s RemovePermissionOutput) GoString() string {
 	return s.String()
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/TagResourceRequest
 type TagResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5806,6 +6521,7 @@ func (s *TagResourceInput) SetTags(v map[string]*string) *TagResourceInput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/TagResourceOutput
 type TagResourceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5821,6 +6537,7 @@ func (s TagResourceOutput) GoString() string {
 }
 
 // The parent object that contains your function's tracing settings.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/TracingConfig
 type TracingConfig struct {
 	_ struct{} `type:"structure"`
 
@@ -5849,6 +6566,7 @@ func (s *TracingConfig) SetMode(v string) *TracingConfig {
 }
 
 // Parent object of the tracing information associated with your Lambda function.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/TracingConfigResponse
 type TracingConfigResponse struct {
 	_ struct{} `type:"structure"`
 
@@ -5872,6 +6590,7 @@ func (s *TracingConfigResponse) SetMode(v string) *TracingConfigResponse {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UntagResourceRequest
 type UntagResourceInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5924,6 +6643,7 @@ func (s *UntagResourceInput) SetTagKeys(v []*string) *UntagResourceInput {
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UntagResourceOutput
 type UntagResourceOutput struct {
 	_ struct{} `type:"structure"`
 }
@@ -5938,6 +6658,7 @@ func (s UntagResourceOutput) GoString() string {
 	return s.String()
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateAliasRequest
 type UpdateAliasInput struct {
 	_ struct{} `type:"structure"`
 
@@ -5959,6 +6680,11 @@ type UpdateAliasInput struct {
 	//
 	// Name is a required field
 	Name *string `location:"uri" locationName:"Name" min:"1" type:"string" required:"true"`
+
+	// Specifies an additional version your alias can point to, allowing you to
+	// dictate what percentage of traffic will invoke each version. For more information,
+	// see lambda-traffic-shifting-using-aliases.
+	RoutingConfig *AliasRoutingConfiguration `type:"structure"`
 }
 
 // String returns the string representation
@@ -6020,6 +6746,13 @@ func (s *UpdateAliasInput) SetName(v string) *UpdateAliasInput {
 	return s
 }
 
+// SetRoutingConfig sets the RoutingConfig field's value.
+func (s *UpdateAliasInput) SetRoutingConfig(v *AliasRoutingConfiguration) *UpdateAliasInput {
+	s.RoutingConfig = v
+	return s
+}
+
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateEventSourceMappingRequest
 type UpdateEventSourceMappingInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6107,6 +6840,7 @@ func (s *UpdateEventSourceMappingInput) SetUUID(v string) *UpdateEventSourceMapp
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionCodeRequest
 type UpdateFunctionCodeInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6114,8 +6848,8 @@ type UpdateFunctionCodeInput struct {
 	// update the Lambda function and publish a version as an atomic operation.
 	// It will do all necessary computation and validation of your code but will
 	// not upload it or a publish a version. Each time this operation is invoked,
-	// the CodeSha256 hash value the provided code will also be computed and returned
-	// in the response.
+	// the CodeSha256 hash value of the provided code will also be computed and
+	// returned in the response.
 	DryRun *bool `type:"boolean"`
 
 	// The existing Lambda function name whose code you want to replace.
@@ -6232,6 +6966,7 @@ func (s *UpdateFunctionCodeInput) SetZipFile(v []byte) *UpdateFunctionCodeInput 
 	return s
 }
 
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/UpdateFunctionConfigurationRequest
 type UpdateFunctionConfigurationInput struct {
 	_ struct{} `type:"structure"`
 
@@ -6288,11 +7023,9 @@ type UpdateFunctionConfigurationInput struct {
 	//
 	// Node v0.10.42 is currently marked as deprecated. You must migrate existing
 	// functions to the newer Node.js runtime versions available on AWS Lambda (nodejs4.3
-	// or nodejs6.10) as soon as possible. You can request a one-time extension
-	// until June 30, 2017 by going to the Lambda console and following the instructions
-	// provided. Failure to do so will result in an invalid parameter error being
-	// returned. Note that you will have to follow this procedure for each region
-	// that contains functions written in the Node v0.10.42 runtime.
+	// or nodejs6.10) as soon as possible. Failure to do so will result in an invalid
+	// parameter error being returned. Note that you will have to follow this procedure
+	// for each region that contains functions written in the Node v0.10.42 runtime.
 	Runtime *string `type:"string" enum:"Runtime"`
 
 	// The function execution time at which AWS Lambda should terminate the function.
@@ -6418,6 +7151,7 @@ func (s *UpdateFunctionConfigurationInput) SetVpcConfig(v *VpcConfig) *UpdateFun
 // identifying the list of security group IDs and subnet IDs. These must belong
 // to the same VPC. You must provide at least one security group and one subnet
 // ID.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/VpcConfig
 type VpcConfig struct {
 	_ struct{} `type:"structure"`
 
@@ -6451,6 +7185,7 @@ func (s *VpcConfig) SetSubnetIds(v []*string) *VpcConfig {
 }
 
 // VPC configuration associated with your Lambda function.
+// See also, https://docs.aws.amazon.com/goto/WebAPI/lambda-2015-03-31/VpcConfigResponse
 type VpcConfigResponse struct {
 	_ struct{} `type:"structure"`
 
@@ -6559,6 +7294,12 @@ const (
 
 	// ThrottleReasonFunctionInvocationRateLimitExceeded is a ThrottleReason enum value
 	ThrottleReasonFunctionInvocationRateLimitExceeded = "FunctionInvocationRateLimitExceeded"
+
+	// ThrottleReasonReservedFunctionConcurrentInvocationLimitExceeded is a ThrottleReason enum value
+	ThrottleReasonReservedFunctionConcurrentInvocationLimitExceeded = "ReservedFunctionConcurrentInvocationLimitExceeded"
+
+	// ThrottleReasonReservedFunctionInvocationRateLimitExceeded is a ThrottleReason enum value
+	ThrottleReasonReservedFunctionInvocationRateLimitExceeded = "ReservedFunctionInvocationRateLimitExceeded"
 
 	// ThrottleReasonCallerRateLimitExceeded is a ThrottleReason enum value
 	ThrottleReasonCallerRateLimitExceeded = "CallerRateLimitExceeded"
