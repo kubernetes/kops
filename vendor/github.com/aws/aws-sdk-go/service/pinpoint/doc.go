@@ -3,12 +3,14 @@
 // Package pinpoint provides the client and types for making API
 // requests to Amazon Pinpoint.
 //
+// See https://docs.aws.amazon.com/goto/WebAPI/pinpoint-2016-12-01 for more information on this service.
+//
 // See pinpoint package documentation for more information.
 // https://docs.aws.amazon.com/sdk-for-go/api/service/pinpoint/
 //
 // Using the Client
 //
-// To Amazon Pinpoint with the SDK use the New function to create
+// To contact Amazon Pinpoint with the SDK use the New function to create
 // a new service client. With that client you can make API requests to the service.
 // These clients are safe to use concurrently.
 //
