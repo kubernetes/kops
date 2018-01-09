@@ -37,6 +37,8 @@ when you are happy that it is deleting the right things you run `kops delete clu
 
 * Build a terraform model: `--target=terraform`  The terraform model will be built in `out/terraform`
 
+* Build a Cloudformation model: '--target=cloudformation'  The Cloudformation json file will be built in 'out/cloudformation'
+
 * Specify the k8s build to run: `--kubernetes-version=1.2.2`
 
 * Run nodes in multiple zones: `--zones=us-east-1b,us-east-1c,us-east-1d`
