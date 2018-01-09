@@ -151,6 +151,8 @@ type KubeletConfigSpec struct {
 	RuntimeRequestTimeout *metav1.Duration `json:"runtimeRequestTimeout,omitempty" flag:"runtime-request-timeout"`
 	// VolumeStatsAggPeriod is the interval for kubelet to calculate and cache the volume disk usage for all pods and volumes
 	VolumeStatsAggPeriod *metav1.Duration `json:"volumeStatsAggPeriod,omitempty" flag:"volume-stats-agg-period"`
+	// Tells the Kubelet to fail to start if swap is enabled on the node.
+	FailSwapOn *bool `json:"failSwapOn,omitempty" flag:"fail-swap-on"`
 }
 
 // KubeProxyConfig defined the configuration for a proxy
