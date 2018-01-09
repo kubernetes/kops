@@ -20,6 +20,7 @@ go_test(
     name = "go_default_test",
     srcs = [
         "client_test.go",
+        "default_retryer_test.go",
         "logger_test.go",
     ],
     embed = [":go_default_library"],

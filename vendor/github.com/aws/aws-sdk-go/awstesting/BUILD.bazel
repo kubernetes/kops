@@ -26,8 +26,5 @@ go_test(
         "util_test.go",
     ],
     importpath = "github.com/aws/aws-sdk-go/awstesting_test",
-    deps = [
-        ":go_default_library",
-        "//vendor/github.com/stretchr/testify/assert:go_default_library",
-    ],
+    deps = [":go_default_library"],
 )
