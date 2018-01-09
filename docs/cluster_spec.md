@@ -376,12 +376,26 @@ spec:
 
 ### cloudConfig
 
+#### disableSecurityGroupIngress
 If you are using aws as `cloudProvider`, you can disable authorization of ELB security group to Kubernetes Nodes security group. In other words, it will not add security group rule.
 This can be usefull to avoid AWS limit: 50 rules per security group.
 ```yaml
 spec:
   cloudConfig:
     disableSecurityGroupIngress: true
+```
+
+#### elbSecurityGroup
+*WARNING: this works only for Kubernetes version above 1.7.0.*
+
+To avoid creating a security group per elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name. 
+`api.loadBalancer.additionalSecurityGroups` must be empty, because Kubernetes will add rules per ports that are specified in service file.
+This can be useful to avoid AWS limits: 500 security groups per region and 50 rules per security group.
+
+```yaml
+spec:
+  cloudConfig:
+    elbSecurityGroup: sg-123445678
 ```
 
 ### docker
@@ -414,17 +428,6 @@ docker:
     - "dm.thinpooldev=/dev/mapper/thin-pool"
     - "dm.use_deferred_deletion=true"
     - "dm.use_deferred_removal=true"
-```
-
-#### WARNING: this works only for Kubernetes version above 1.7.0.
-
-For avoid to create security group per each elb, you can specify security group id, that will be assigned to your LoadBalancer. It must be security group id, not name. Also, security group must be empty, because Kubernetes will add rules per ports that are specified in service file.
-This can be usefull to avoid AWS limits: 500 security groups per region and 50 rules per security group.
-
-```yaml
-spec:
-  cloudConfig:
-    elbSecurityGroup: sg-123445678
 ```
 
 ### sshKeyName
