@@ -138,6 +138,9 @@ type CreateClusterOptions struct {
 	DryRun bool
 	// Output type during a DryRun
 	Output string
+
+	// EtcdVersion specifies which etcd version should be deployed
+	EtcdVersion string
 }
 
 func (o *CreateClusterOptions) InitDefaults() {
@@ -324,6 +327,8 @@ func NewCmdCreateCluster(f *util.Factory, out io.Writer) *cobra.Command {
 	// DryRun mode that will print YAML or JSON
 	cmd.Flags().BoolVar(&options.DryRun, "dry-run", options.DryRun, "If true, only print the object that would be sent, without sending it. This flag can be used to create a cluster YAML or JSON manifest.")
 	cmd.Flags().StringVarP(&options.Output, "output", "o", options.Output, "Ouput format. One of json|yaml. Used with the --dry-run flag.")
+
+	cmd.Flags().StringVar(&options.EtcdVersion, "etcd-version", "", "Etcd version which will be used for this deployment")
 
 	if featureflag.SpecOverrideFlag.Enabled() {
 		cmd.Flags().StringSliceVar(&options.Overrides, "override", options.Overrides, "Directly configure values in the spec")
@@ -645,6 +650,7 @@ func RunCreateCluster(f *util.Factory, out io.Writer, c *CreateClusterOptions) e
 		for _, etcdCluster := range cloudup.EtcdClusters {
 			etcd := &api.EtcdClusterSpec{}
 			etcd.Name = etcdCluster
+			etcd.Version = c.EtcdVersion
 
 			var names []string
 			for _, ig := range masters {
