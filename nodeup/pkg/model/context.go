@@ -28,6 +28,7 @@ import (
 	"k8s.io/kops/pkg/apis/nodeup"
 	"k8s.io/kops/pkg/kubeconfig"
 	"k8s.io/kops/upup/pkg/fi"
+	"k8s.io/kops/upup/pkg/fi/nodeup/nodetasks"
 )
 
 // NodeupModelContext is the context supplied the nodeup tasks
@@ -267,4 +268,56 @@ func (c *NodeupModelContext) KubectlPath() string {
 		kubeletCommand = "/home/kubernetes/bin"
 	}
 	return kubeletCommand
+}
+
+// BuildCertificateTask is responsible for build a certificate request task
+func (c *NodeupModelContext) BuildCertificateTask(ctx *fi.ModelBuilderContext, name, filename string) error {
+	cert, err := c.KeyStore.FindCert(name)
+	if err != nil {
+		return err
+	}
+
+	if cert == nil {
+		return fmt.Errorf("certificate %q not found", name)
+	}
+
+	serialized, err := cert.AsString()
+	if err != nil {
+		return err
+	}
+
+	ctx.AddTask(&nodetasks.File{
+		Path:     filepath.Join(c.PathSrvKubernetes(), filename),
+		Contents: fi.NewStringResource(serialized),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0400"),
+	})
+
+	return nil
+}
+
+// BuildPrivateKeyTask is responsible for build a certificate request task
+func (c *NodeupModelContext) BuildPrivateTask(ctx *fi.ModelBuilderContext, name, filename string) error {
+	cert, err := c.KeyStore.FindPrivateKey(name)
+	if err != nil {
+		return err
+	}
+
+	if cert == nil {
+		return fmt.Errorf("private key %q not found", name)
+	}
+
+	serialized, err := cert.AsString()
+	if err != nil {
+		return err
+	}
+
+	ctx.AddTask(&nodetasks.File{
+		Path:     filepath.Join(c.PathSrvKubernetes(), filename),
+		Contents: fi.NewStringResource(serialized),
+		Type:     nodetasks.FileType_File,
+		Mode:     s("0400"),
+	})
+
+	return nil
 }
