@@ -37,8 +37,6 @@ go_test(
         "//vendor/github.com/aws/aws-sdk-go/awstesting/unit:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/kinesis:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/service/s3:go_default_library",
-        "//vendor/github.com/stretchr/testify/assert:go_default_library",
-        "//vendor/github.com/stretchr/testify/require:go_default_library",
         "//vendor/golang.org/x/net/http2:go_default_library",
     ],
 )
