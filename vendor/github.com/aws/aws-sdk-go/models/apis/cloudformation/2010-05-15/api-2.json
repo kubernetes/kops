@@ -5,6 +5,7 @@
     "endpointPrefix":"cloudformation",
     "protocol":"query",
     "serviceFullName":"AWS CloudFormation",
+    "serviceId":"CloudFormation",
     "signatureVersion":"v4",
     "uid":"cloudformation-2010-05-15",
     "xmlNamespace":"http://cloudformation.amazonaws.com/doc/2010-05-15/"
@@ -530,6 +531,26 @@
         {"shape":"TokenAlreadyExistsException"}
       ]
     },
+    "UpdateStackInstances":{
+      "name":"UpdateStackInstances",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateStackInstancesInput"},
+      "output":{
+        "shape":"UpdateStackInstancesOutput",
+        "resultWrapper":"UpdateStackInstancesResult"
+      },
+      "errors":[
+        {"shape":"StackSetNotFoundException"},
+        {"shape":"StackInstanceNotFoundException"},
+        {"shape":"OperationInProgressException"},
+        {"shape":"OperationIdAlreadyExistsException"},
+        {"shape":"StaleRequestException"},
+        {"shape":"InvalidOperationException"}
+      ]
+    },
     "UpdateStackSet":{
       "name":"UpdateStackSet",
       "http":{
@@ -548,6 +569,18 @@
         {"shape":"StaleRequestException"},
         {"shape":"InvalidOperationException"}
       ]
+    },
+    "UpdateTerminationProtection":{
+      "name":"UpdateTerminationProtection",
+      "http":{
+        "method":"POST",
+        "requestUri":"/"
+      },
+      "input":{"shape":"UpdateTerminationProtectionInput"},
+      "output":{
+        "shape":"UpdateTerminationProtectionOutput",
+        "resultWrapper":"UpdateTerminationProtectionResult"
+      }
     },
     "ValidateTemplate":{
       "name":"ValidateTemplate",
@@ -809,7 +842,8 @@
         "StackPolicyBody":{"shape":"StackPolicyBody"},
         "StackPolicyURL":{"shape":"StackPolicyURL"},
         "Tags":{"shape":"Tags"},
-        "ClientRequestToken":{"shape":"ClientRequestToken"}
+        "ClientRequestToken":{"shape":"ClientRequestToken"},
+        "EnableTerminationProtection":{"shape":"EnableTerminationProtection"}
       }
     },
     "CreateStackInstancesInput":{
@@ -823,6 +857,7 @@
         "StackSetName":{"shape":"StackSetName"},
         "Accounts":{"shape":"AccountList"},
         "Regions":{"shape":"RegionList"},
+        "ParameterOverrides":{"shape":"Parameters"},
         "OperationPreferences":{"shape":"StackSetOperationPreferences"},
         "OperationId":{
           "shape":"ClientRequestToken",
@@ -1096,6 +1131,7 @@
       "min":1
     },
     "DisableRollback":{"type":"boolean"},
+    "EnableTerminationProtection":{"type":"boolean"},
     "EstimateTemplateCostInput":{
       "type":"structure",
       "members":{
@@ -1513,7 +1549,8 @@
       "members":{
         "ParameterKey":{"shape":"ParameterKey"},
         "ParameterValue":{"shape":"ParameterValue"},
-        "UsePreviousValue":{"shape":"UsePreviousValue"}
+        "UsePreviousValue":{"shape":"UsePreviousValue"},
+        "ResolvedValue":{"shape":"ParameterValue"}
       }
     },
     "ParameterConstraints":{
@@ -1734,6 +1771,7 @@
         "Description":{"shape":"Description"},
         "Parameters":{"shape":"Parameters"},
         "CreationTime":{"shape":"CreationTime"},
+        "DeletionTime":{"shape":"DeletionTime"},
         "LastUpdatedTime":{"shape":"LastUpdatedTime"},
         "RollbackConfiguration":{"shape":"RollbackConfiguration"},
         "StackStatus":{"shape":"StackStatus"},
@@ -1744,7 +1782,10 @@
         "Capabilities":{"shape":"Capabilities"},
         "Outputs":{"shape":"Outputs"},
         "RoleARN":{"shape":"RoleARN"},
-        "Tags":{"shape":"Tags"}
+        "Tags":{"shape":"Tags"},
+        "EnableTerminationProtection":{"shape":"EnableTerminationProtection"},
+        "ParentId":{"shape":"StackId"},
+        "RootId":{"shape":"StackId"}
       }
     },
     "StackEvent":{
@@ -1781,6 +1822,7 @@
         "Region":{"shape":"Region"},
         "Account":{"shape":"Account"},
         "StackId":{"shape":"StackId"},
+        "ParameterOverrides":{"shape":"Parameters"},
         "Status":{"shape":"StackInstanceStatus"},
         "StatusReason":{"shape":"Reason"}
       }
@@ -1928,8 +1970,7 @@
     "StackSetName":{"type":"string"},
     "StackSetNameOrId":{
       "type":"string",
-      "min":1,
-      "pattern":"[a-zA-Z][-a-zA-Z0-9]*"
+      "pattern":"[a-zA-Z][-a-zA-Z0-9]*(?::[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12})?"
     },
     "StackSetNotEmptyException":{
       "type":"structure",
@@ -2098,7 +2139,9 @@
         "LastUpdatedTime":{"shape":"LastUpdatedTime"},
         "DeletionTime":{"shape":"DeletionTime"},
         "StackStatus":{"shape":"StackStatus"},
-        "StackStatusReason":{"shape":"StackStatusReason"}
+        "StackStatusReason":{"shape":"StackStatusReason"},
+        "ParentId":{"shape":"StackId"},
+        "RootId":{"shape":"StackId"}
       }
     },
     "Stacks":{
@@ -2236,6 +2279,31 @@
         "ClientRequestToken":{"shape":"ClientRequestToken"}
       }
     },
+    "UpdateStackInstancesInput":{
+      "type":"structure",
+      "required":[
+        "StackSetName",
+        "Accounts",
+        "Regions"
+      ],
+      "members":{
+        "StackSetName":{"shape":"StackSetName"},
+        "Accounts":{"shape":"AccountList"},
+        "Regions":{"shape":"RegionList"},
+        "ParameterOverrides":{"shape":"Parameters"},
+        "OperationPreferences":{"shape":"StackSetOperationPreferences"},
+        "OperationId":{
+          "shape":"ClientRequestToken",
+          "idempotencyToken":true
+        }
+      }
+    },
+    "UpdateStackInstancesOutput":{
+      "type":"structure",
+      "members":{
+        "OperationId":{"shape":"ClientRequestToken"}
+      }
+    },
     "UpdateStackOutput":{
       "type":"structure",
       "members":{
@@ -2265,6 +2333,23 @@
       "type":"structure",
       "members":{
         "OperationId":{"shape":"ClientRequestToken"}
+      }
+    },
+    "UpdateTerminationProtectionInput":{
+      "type":"structure",
+      "required":[
+        "EnableTerminationProtection",
+        "StackName"
+      ],
+      "members":{
+        "EnableTerminationProtection":{"shape":"EnableTerminationProtection"},
+        "StackName":{"shape":"StackNameOrId"}
+      }
+    },
+    "UpdateTerminationProtectionOutput":{
+      "type":"structure",
+      "members":{
+        "StackId":{"shape":"StackId"}
       }
     },
     "Url":{"type":"string"},

@@ -35,6 +35,5 @@ go_test(
         "//vendor/github.com/aws/aws-sdk-go/private/protocol:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil:go_default_library",
         "//vendor/github.com/aws/aws-sdk-go/private/util:go_default_library",
-        "//vendor/github.com/stretchr/testify/assert:go_default_library",
     ],
 )

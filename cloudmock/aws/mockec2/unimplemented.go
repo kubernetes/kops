@@ -2959,3 +2959,368 @@ func (m *MockEC2) WaitUntilVpnConnectionDeletedWithContext(aws.Context, *ec2.Des
 	panic("Not implemented")
 	return nil
 }
+
+func (m *MockEC2) AcceptVpcEndpointConnections(*ec2.AcceptVpcEndpointConnectionsInput) (*ec2.AcceptVpcEndpointConnectionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) AcceptVpcEndpointConnectionsWithContext(aws.Context, *ec2.AcceptVpcEndpointConnectionsInput, ...request.Option) (*ec2.AcceptVpcEndpointConnectionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) AcceptVpcEndpointConnectionsRequest(*ec2.AcceptVpcEndpointConnectionsInput) (*request.Request, *ec2.AcceptVpcEndpointConnectionsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateDefaultSubnet(*ec2.CreateDefaultSubnetInput) (*ec2.CreateDefaultSubnetOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateDefaultSubnetWithContext(aws.Context, *ec2.CreateDefaultSubnetInput, ...request.Option) (*ec2.CreateDefaultSubnetOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateDefaultSubnetRequest(*ec2.CreateDefaultSubnetInput) (*request.Request, *ec2.CreateDefaultSubnetOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateLaunchTemplate(*ec2.CreateLaunchTemplateInput) (*ec2.CreateLaunchTemplateOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateLaunchTemplateWithContext(aws.Context, *ec2.CreateLaunchTemplateInput, ...request.Option) (*ec2.CreateLaunchTemplateOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateLaunchTemplateRequest(*ec2.CreateLaunchTemplateInput) (*request.Request, *ec2.CreateLaunchTemplateOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateLaunchTemplateVersion(*ec2.CreateLaunchTemplateVersionInput) (*ec2.CreateLaunchTemplateVersionOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateLaunchTemplateVersionWithContext(aws.Context, *ec2.CreateLaunchTemplateVersionInput, ...request.Option) (*ec2.CreateLaunchTemplateVersionOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateLaunchTemplateVersionRequest(*ec2.CreateLaunchTemplateVersionInput) (*request.Request, *ec2.CreateLaunchTemplateVersionOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateVpcEndpointConnectionNotification(*ec2.CreateVpcEndpointConnectionNotificationInput) (*ec2.CreateVpcEndpointConnectionNotificationOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateVpcEndpointConnectionNotificationWithContext(aws.Context, *ec2.CreateVpcEndpointConnectionNotificationInput, ...request.Option) (*ec2.CreateVpcEndpointConnectionNotificationOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateVpcEndpointConnectionNotificationRequest(*ec2.CreateVpcEndpointConnectionNotificationInput) (*request.Request, *ec2.CreateVpcEndpointConnectionNotificationOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateVpcEndpointServiceConfiguration(*ec2.CreateVpcEndpointServiceConfigurationInput) (*ec2.CreateVpcEndpointServiceConfigurationOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateVpcEndpointServiceConfigurationWithContext(aws.Context, *ec2.CreateVpcEndpointServiceConfigurationInput, ...request.Option) (*ec2.CreateVpcEndpointServiceConfigurationOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CreateVpcEndpointServiceConfigurationRequest(*ec2.CreateVpcEndpointServiceConfigurationInput) (*request.Request, *ec2.CreateVpcEndpointServiceConfigurationOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteLaunchTemplate(*ec2.DeleteLaunchTemplateInput) (*ec2.DeleteLaunchTemplateOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteLaunchTemplateWithContext(aws.Context, *ec2.DeleteLaunchTemplateInput, ...request.Option) (*ec2.DeleteLaunchTemplateOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteLaunchTemplateRequest(*ec2.DeleteLaunchTemplateInput) (*request.Request, *ec2.DeleteLaunchTemplateOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteLaunchTemplateVersions(*ec2.DeleteLaunchTemplateVersionsInput) (*ec2.DeleteLaunchTemplateVersionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteLaunchTemplateVersionsWithContext(aws.Context, *ec2.DeleteLaunchTemplateVersionsInput, ...request.Option) (*ec2.DeleteLaunchTemplateVersionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteLaunchTemplateVersionsRequest(*ec2.DeleteLaunchTemplateVersionsInput) (*request.Request, *ec2.DeleteLaunchTemplateVersionsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteVpcEndpointConnectionNotifications(*ec2.DeleteVpcEndpointConnectionNotificationsInput) (*ec2.DeleteVpcEndpointConnectionNotificationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteVpcEndpointConnectionNotificationsWithContext(aws.Context, *ec2.DeleteVpcEndpointConnectionNotificationsInput, ...request.Option) (*ec2.DeleteVpcEndpointConnectionNotificationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteVpcEndpointConnectionNotificationsRequest(*ec2.DeleteVpcEndpointConnectionNotificationsInput) (*request.Request, *ec2.DeleteVpcEndpointConnectionNotificationsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteVpcEndpointServiceConfigurations(*ec2.DeleteVpcEndpointServiceConfigurationsInput) (*ec2.DeleteVpcEndpointServiceConfigurationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DeleteVpcEndpointServiceConfigurationsWithContext(aws.Context, *ec2.DeleteVpcEndpointServiceConfigurationsInput, ...request.Option) (*ec2.DeleteVpcEndpointServiceConfigurationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DeleteVpcEndpointServiceConfigurationsRequest(*ec2.DeleteVpcEndpointServiceConfigurationsInput) (*request.Request, *ec2.DeleteVpcEndpointServiceConfigurationsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeInstanceCreditSpecifications(*ec2.DescribeInstanceCreditSpecificationsInput) (*ec2.DescribeInstanceCreditSpecificationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeInstanceCreditSpecificationsWithContext(aws.Context, *ec2.DescribeInstanceCreditSpecificationsInput, ...request.Option) (*ec2.DescribeInstanceCreditSpecificationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeInstanceCreditSpecificationsRequest(*ec2.DescribeInstanceCreditSpecificationsInput) (*request.Request, *ec2.DescribeInstanceCreditSpecificationsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeLaunchTemplateVersions(*ec2.DescribeLaunchTemplateVersionsInput) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeLaunchTemplateVersionsWithContext(aws.Context, *ec2.DescribeLaunchTemplateVersionsInput, ...request.Option) (*ec2.DescribeLaunchTemplateVersionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeLaunchTemplateVersionsRequest(*ec2.DescribeLaunchTemplateVersionsInput) (*request.Request, *ec2.DescribeLaunchTemplateVersionsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeLaunchTemplates(*ec2.DescribeLaunchTemplatesInput) (*ec2.DescribeLaunchTemplatesOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeLaunchTemplatesWithContext(aws.Context, *ec2.DescribeLaunchTemplatesInput, ...request.Option) (*ec2.DescribeLaunchTemplatesOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeLaunchTemplatesRequest(*ec2.DescribeLaunchTemplatesInput) (*request.Request, *ec2.DescribeLaunchTemplatesOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeVpcEndpointConnectionNotifications(*ec2.DescribeVpcEndpointConnectionNotificationsInput) (*ec2.DescribeVpcEndpointConnectionNotificationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeVpcEndpointConnectionNotificationsWithContext(aws.Context, *ec2.DescribeVpcEndpointConnectionNotificationsInput, ...request.Option) (*ec2.DescribeVpcEndpointConnectionNotificationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeVpcEndpointConnectionNotificationsRequest(*ec2.DescribeVpcEndpointConnectionNotificationsInput) (*request.Request, *ec2.DescribeVpcEndpointConnectionNotificationsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeVpcEndpointConnections(*ec2.DescribeVpcEndpointConnectionsInput) (*ec2.DescribeVpcEndpointConnectionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeVpcEndpointConnectionsWithContext(aws.Context, *ec2.DescribeVpcEndpointConnectionsInput, ...request.Option) (*ec2.DescribeVpcEndpointConnectionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeVpcEndpointConnectionsRequest(*ec2.DescribeVpcEndpointConnectionsInput) (*request.Request, *ec2.DescribeVpcEndpointConnectionsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeVpcEndpointServiceConfigurations(*ec2.DescribeVpcEndpointServiceConfigurationsInput) (*ec2.DescribeVpcEndpointServiceConfigurationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeVpcEndpointServiceConfigurationsWithContext(aws.Context, *ec2.DescribeVpcEndpointServiceConfigurationsInput, ...request.Option) (*ec2.DescribeVpcEndpointServiceConfigurationsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeVpcEndpointServiceConfigurationsRequest(*ec2.DescribeVpcEndpointServiceConfigurationsInput) (*request.Request, *ec2.DescribeVpcEndpointServiceConfigurationsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeVpcEndpointServicePermissions(*ec2.DescribeVpcEndpointServicePermissionsInput) (*ec2.DescribeVpcEndpointServicePermissionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) DescribeVpcEndpointServicePermissionsWithContext(aws.Context, *ec2.DescribeVpcEndpointServicePermissionsInput, ...request.Option) (*ec2.DescribeVpcEndpointServicePermissionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) DescribeVpcEndpointServicePermissionsRequest(*ec2.DescribeVpcEndpointServicePermissionsInput) (*request.Request, *ec2.DescribeVpcEndpointServicePermissionsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) GetLaunchTemplateData(*ec2.GetLaunchTemplateDataInput) (*ec2.GetLaunchTemplateDataOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) GetLaunchTemplateDataWithContext(aws.Context, *ec2.GetLaunchTemplateDataInput, ...request.Option) (*ec2.GetLaunchTemplateDataOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) GetLaunchTemplateDataRequest(*ec2.GetLaunchTemplateDataInput) (*request.Request, *ec2.GetLaunchTemplateDataOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyInstanceCreditSpecification(*ec2.ModifyInstanceCreditSpecificationInput) (*ec2.ModifyInstanceCreditSpecificationOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+func (m *MockEC2) ModifyInstanceCreditSpecificationWithContext(aws.Context, *ec2.ModifyInstanceCreditSpecificationInput, ...request.Option) (*ec2.ModifyInstanceCreditSpecificationOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyInstanceCreditSpecificationRequest(*ec2.ModifyInstanceCreditSpecificationInput) (*request.Request, *ec2.ModifyInstanceCreditSpecificationOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyLaunchTemplate(*ec2.ModifyLaunchTemplateInput) (*ec2.ModifyLaunchTemplateOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyLaunchTemplateWithContext(aws.Context, *ec2.ModifyLaunchTemplateInput, ...request.Option) (*ec2.ModifyLaunchTemplateOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyLaunchTemplateRequest(*ec2.ModifyLaunchTemplateInput) (*request.Request, *ec2.ModifyLaunchTemplateOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyVpcEndpointConnectionNotification(*ec2.ModifyVpcEndpointConnectionNotificationInput) (*ec2.ModifyVpcEndpointConnectionNotificationOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyVpcEndpointConnectionNotificationWithContext(aws.Context, *ec2.ModifyVpcEndpointConnectionNotificationInput, ...request.Option) (*ec2.ModifyVpcEndpointConnectionNotificationOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyVpcEndpointConnectionNotificationRequest(*ec2.ModifyVpcEndpointConnectionNotificationInput) (*request.Request, *ec2.ModifyVpcEndpointConnectionNotificationOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyVpcEndpointServiceConfiguration(*ec2.ModifyVpcEndpointServiceConfigurationInput) (*ec2.ModifyVpcEndpointServiceConfigurationOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyVpcEndpointServiceConfigurationWithContext(aws.Context, *ec2.ModifyVpcEndpointServiceConfigurationInput, ...request.Option) (*ec2.ModifyVpcEndpointServiceConfigurationOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyVpcEndpointServiceConfigurationRequest(*ec2.ModifyVpcEndpointServiceConfigurationInput) (*request.Request, *ec2.ModifyVpcEndpointServiceConfigurationOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyVpcEndpointServicePermissions(*ec2.ModifyVpcEndpointServicePermissionsInput) (*ec2.ModifyVpcEndpointServicePermissionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyVpcEndpointServicePermissionsWithContext(aws.Context, *ec2.ModifyVpcEndpointServicePermissionsInput, ...request.Option) (*ec2.ModifyVpcEndpointServicePermissionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) ModifyVpcEndpointServicePermissionsRequest(*ec2.ModifyVpcEndpointServicePermissionsInput) (*request.Request, *ec2.ModifyVpcEndpointServicePermissionsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) RejectVpcEndpointConnections(*ec2.RejectVpcEndpointConnectionsInput) (*ec2.RejectVpcEndpointConnectionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) RejectVpcEndpointConnectionsWithContext(aws.Context, *ec2.RejectVpcEndpointConnectionsInput, ...request.Option) (*ec2.RejectVpcEndpointConnectionsOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) RejectVpcEndpointConnectionsRequest(*ec2.RejectVpcEndpointConnectionsInput) (*request.Request, *ec2.RejectVpcEndpointConnectionsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CopyFpgaImage(*ec2.CopyFpgaImageInput) (*ec2.CopyFpgaImageOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CopyFpgaImageWithContext(aws.Context, *ec2.CopyFpgaImageInput, ...request.Option) (*ec2.CopyFpgaImageOutput, error) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CopyFpgaImageRequest(*ec2.CopyFpgaImageInput) (*request.Request, *ec2.CopyFpgaImageOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
