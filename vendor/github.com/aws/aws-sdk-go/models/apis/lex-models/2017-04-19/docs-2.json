@@ -13,8 +13,8 @@
     "DeleteIntentVersion": "<p>Deletes a specific version of an intent. To delete all versions of a intent, use the <a>DeleteIntent</a> operation. </p> <p>This operation requires permissions for the <code>lex:DeleteIntentVersion</code> action.</p>",
     "DeleteSlotType": "<p>Deletes all versions of the slot type, including the <code>$LATEST</code> version. To delete a specific version of the slot type, use the <a>DeleteSlotTypeVersion</a> operation.</p> <p> You can delete a version of a slot type only if it is not referenced. To delete a slot type that is referred to in one or more intents, you must remove those references first. </p> <note> <p> If you get the <code>ResourceInUseException</code> exception, the exception provides an example reference that shows the intent where the slot type is referenced. To remove the reference to the slot type, either update the intent or delete it. If you get the same exception when you attempt to delete the slot type again, repeat until the slot type has no references and the <code>DeleteSlotType</code> call is successful. </p> </note> <p>This operation requires permission for the <code>lex:DeleteSlotType</code> action.</p>",
     "DeleteSlotTypeVersion": "<p>Deletes a specific version of a slot type. To delete all versions of a slot type, use the <a>DeleteSlotType</a> operation. </p> <p>This operation requires permissions for the <code>lex:DeleteSlotTypeVersion</code> action.</p>",
-    "DeleteUtterances": "<p>Deletes stored utterances.</p> <p>Amazon Lex stores the utterances that users send to your bot unless the <code>childDirected</code> field in the bot is set to <code>true</code>. Utterances are stored for 15 days for use with the <a>GetUtterancesView</a> operation, and then stored indefinately for use in improving the ability of your bot to respond to user input.</p> <p>Use the <code>DeleteStoredUtterances</code> operation to manually delete stored utterances for a specific user.</p> <p>This operation requires permissions for the <code>lex:DeleteUtterances</code> action.</p>",
-    "GetBot": "<p>Returns metadata information for a specific bot. You must provide the bot name and the bot version or alias. </p> <p> The GetBot operation requires permissions for the <code>lex:GetBot</code> action. </p>",
+    "DeleteUtterances": "<p>Deletes stored utterances.</p> <p>Amazon Lex stores the utterances that users send to your bot unless the <code>childDirected</code> field in the bot is set to <code>true</code>. Utterances are stored for 15 days for use with the <a>GetUtterancesView</a> operation, and then stored indefinitely for use in improving the ability of your bot to respond to user input.</p> <p>Use the <code>DeleteStoredUtterances</code> operation to manually delete stored utterances for a specific user.</p> <p>This operation requires permissions for the <code>lex:DeleteUtterances</code> action.</p>",
+    "GetBot": "<p>Returns metadata information for a specific bot. You must provide the bot name and the bot version or alias. </p> <p> This operation requires permissions for the <code>lex:GetBot</code> action. </p>",
     "GetBotAlias": "<p>Returns information about an Amazon Lex bot alias. For more information about aliases, see <a>versioning-aliases</a>.</p> <p>This operation requires permissions for the <code>lex:GetBotAlias</code> action.</p>",
     "GetBotAliases": "<p>Returns a list of aliases for a specified Amazon Lex bot.</p> <p>This operation requires permissions for the <code>lex:GetBotAliases</code> action.</p>",
     "GetBotChannelAssociation": "<p>Returns information about the association between an Amazon Lex bot and a messaging platform.</p> <p>This operation requires permissions for the <code>lex:GetBotChannelAssociation</code> action.</p>",
@@ -24,6 +24,7 @@
     "GetBuiltinIntent": "<p>Returns information about a built-in intent.</p> <p>This operation requires permission for the <code>lex:GetBuiltinIntent</code> action.</p>",
     "GetBuiltinIntents": "<p>Gets a list of built-in intents that meet the specified criteria.</p> <p>This operation requires permission for the <code>lex:GetBuiltinIntents</code> action.</p>",
     "GetBuiltinSlotTypes": "<p>Gets a list of built-in slot types that meet the specified criteria.</p> <p>For a list of built-in slot types, see <a href=\"https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/built-in-intent-ref/slot-type-reference\">Slot Type Reference</a> in the <i>Alexa Skills Kit</i>.</p> <p>This operation requires permission for the <code>lex:GetBuiltInSlotTypes</code> action.</p>",
+    "GetExport": "<p>Exports the contents of a Amazon Lex resource in a specified format. </p>",
     "GetIntent": "<p> Returns information about an intent. In addition to the intent name, you must specify the intent version. </p> <p> This operation requires permissions to perform the <code>lex:GetIntent</code> action. </p>",
     "GetIntentVersions": "<p>Gets information about all of the versions of an intent.</p> <p>The <code>GetIntentVersions</code> operation returns an <code>IntentMetadata</code> object for each version of an intent. For example, if an intent has three numbered versions, the <code>GetIntentVersions</code> operation returns four <code>IntentMetadata</code> objects in the response, one for each numbered version and one for the <code>$LATEST</code> version. </p> <p>The <code>GetIntentVersions</code> operation always returns at least one version, the <code>$LATEST</code> version.</p> <p>This operation requires permissions for the <code>lex:GetIntentVersions</code> action.</p>",
     "GetIntents": "<p>Returns intent information as follows: </p> <ul> <li> <p>If you specify the <code>nameContains</code> field, returns the <code>$LATEST</code> version of all intents that contain the specified string.</p> </li> <li> <p> If you don't specify the <code>nameContains</code> field, returns information about the <code>$LATEST</code> version of all intents. </p> </li> </ul> <p> The operation requires permission for the <code>lex:GetIntents</code> action. </p>",
@@ -33,8 +34,8 @@
     "GetUtterancesView": "<p>Use the <code>GetUtterancesView</code> operation to get information about the utterances that your users have made to your bot. You can use this list to tune the utterances that your bot responds to.</p> <p>For example, say that you have created a bot to order flowers. After your users have used your bot for a while, use the <code>GetUtterancesView</code> operation to see the requests that they have made and whether they have been successful. You might find that the utterance \"I want flowers\" is not being recognized. You could add this utterance to the <code>OrderFlowers</code> intent so that your bot recognizes that utterance.</p> <p>After you publish a new version of a bot, you can get information about the old version and the new so that you can compare the performance across the two versions. </p> <p>Data is available for the last 15 days. You can request information for up to 5 versions in each request. The response contains information about a maximum of 100 utterances for each version.</p> <p>If the bot's <code>childDirected</code> field is set to <code>true</code>, utterances for the bot are not stored and cannot be retrieved with the <code>GetUtterancesView</code> operation. For more information, see <a>PutBot</a>.</p> <p>This operation requires permissions for the <code>lex:GetUtterancesView</code> action.</p>",
     "PutBot": "<p>Creates an Amazon Lex conversational bot or replaces an existing bot. When you create or update a bot you are only required to specify a name. You can use this to add intents later, or to remove intents from an existing bot. When you create a bot with a name only, the bot is created or updated but Amazon Lex returns the <code/> response <code>FAILED</code>. You can build the bot after you add one or more intents. For more information about Amazon Lex bots, see <a>how-it-works</a>. </p> <p>If you specify the name of an existing bot, the fields in the request replace the existing values in the <code>$LATEST</code> version of the bot. Amazon Lex removes any fields that you don't provide values for in the request, except for the <code>idleTTLInSeconds</code> and <code>privacySettings</code> fields, which are set to their default values. If you don't specify values for required fields, Amazon Lex throws an exception.</p> <p>This operation requires permissions for the <code>lex:PutBot</code> action. For more information, see <a>auth-and-access-control</a>.</p>",
     "PutBotAlias": "<p>Creates an alias for the specified version of the bot or replaces an alias for the specified bot. To change the version of the bot that the alias points to, replace the alias. For more information about aliases, see <a>versioning-aliases</a>.</p> <p>This operation requires permissions for the <code>lex:PutBotAlias</code> action. </p>",
-    "PutIntent": "<p>Creates an intent or replaces an existing intent.</p> <p>To define the interaction between the user and your bot, you use one or more intents. For a pizza ordering bot, for example, you would create an <code>OrderPizza</code> intent. </p> <p>To create an intent or replace an existing intent, you must provide the following:</p> <ul> <li> <p>Intent name. For example, <code>OrderPizza</code>.</p> </li> <li> <p>Sample utterances. For example, \"Can I order a pizza, please.\" and \"I want to order a pizza.\"</p> </li> <li> <p>Information to be gathered. You specify slot types for the information that your bot will request from the user. You can specify standard slot types, such as a date or a time, or custom slot types such as the size and crust of a pizza.</p> </li> <li> <p>How the intent will be fulfilled. You can provide a Lambda function or configure the intent to return the intent information to the client application. If you use a Lambda function, when all of the intent information is available, Amazon Lex invokes your Lambda function. If you configure your intent to return the intent information to the client application. </p> </li> </ul> <p>You can specify other optional information in the request, such as:</p> <ul> <li> <p>A confirmation prompt to ask the user to confirm an intent. For example, \"Shall I order your pizza?\"</p> </li> <li> <p>A conclusion statement to send to the user after the intent has been fulfilled. For example, \"I placed your pizza order.\"</p> </li> <li> <p>A follow-up prompt that asks the user for additional activity. For example, asking \"Do you want to order a drink with your pizza?\"</p> </li> </ul> <p>If you specify an existing intent name to update the intent, Amazon Lex replaces the values in the <code>$LATEST</code> version of the slot type with the values in the request. Amazon Lex removes fields that you don't provide in the request. If you don't specify the required fields, Amazon Lex throws an exception.</p> <p>For more information, see <a>how-it-works</a>.</p> <p>This operation requires permissions for the <code>lex:PutIntent</code> action.</p>",
-    "PutSlotType": "<p>Creates a custom slot type or replaces an existing custom slot type.</p> <p>To create a custom slot type, specify a name for the slot type and a set of enumeration values, which are the values that a slot of this type can assume. For more information, see <a>how-it-works</a>.</p> <p>If you specify the name of an existing slot type, the fields in the request replace the existing values in the <code>$LATEST</code> version of the slot type. Amazon Lex removes the fields that you don't provide in the request. If you don't specify required fields, Amazon Lex throws an exception.</p> <p>This operation requires permissions for the <code>lex:PutSlotType</code> action.</p>"
+    "PutIntent": "<p>Creates an intent or replaces an existing intent.</p> <p>To define the interaction between the user and your bot, you use one or more intents. For a pizza ordering bot, for example, you would create an <code>OrderPizza</code> intent. </p> <p>To create an intent or replace an existing intent, you must provide the following:</p> <ul> <li> <p>Intent name. For example, <code>OrderPizza</code>.</p> </li> <li> <p>Sample utterances. For example, \"Can I order a pizza, please.\" and \"I want to order a pizza.\"</p> </li> <li> <p>Information to be gathered. You specify slot types for the information that your bot will request from the user. You can specify standard slot types, such as a date or a time, or custom slot types such as the size and crust of a pizza.</p> </li> <li> <p>How the intent will be fulfilled. You can provide a Lambda function or configure the intent to return the intent information to the client application. If you use a Lambda function, when all of the intent information is available, Amazon Lex invokes your Lambda function. If you configure your intent to return the intent information to the client application. </p> </li> </ul> <p>You can specify other optional information in the request, such as:</p> <ul> <li> <p>A confirmation prompt to ask the user to confirm an intent. For example, \"Shall I order your pizza?\"</p> </li> <li> <p>A conclusion statement to send to the user after the intent has been fulfilled. For example, \"I placed your pizza order.\"</p> </li> <li> <p>A follow-up prompt that asks the user for additional activity. For example, asking \"Do you want to order a drink with your pizza?\"</p> </li> </ul> <p>If you specify an existing intent name to update the intent, Amazon Lex replaces the values in the <code>$LATEST</code> version of the intent with the values in the request. Amazon Lex removes fields that you don't provide in the request. If you don't specify the required fields, Amazon Lex throws an exception. When you update the <code>$LATEST</code> version of an intent, the <code>status</code> field of any bot that uses the <code>$LATEST</code> version of the intent is set to <code>NOT_BUILT</code>.</p> <p>For more information, see <a>how-it-works</a>.</p> <p>This operation requires permissions for the <code>lex:PutIntent</code> action.</p>",
+    "PutSlotType": "<p>Creates a custom slot type or replaces an existing custom slot type.</p> <p>To create a custom slot type, specify a name for the slot type and a set of enumeration values, which are the values that a slot of this type can assume. For more information, see <a>how-it-works</a>.</p> <p>If you specify the name of an existing slot type, the fields in the request replace the existing values in the <code>$LATEST</code> version of the slot type. Amazon Lex removes the fields that you don't provide in the request. If you don't specify required fields, Amazon Lex throws an exception. When you update the <code>$LATEST</code> version of a slot type, if a bot uses the <code>$LATEST</code> version of an intent that contains the slot type, the bot's <code>status</code> field is set to <code>NOT_BUILT</code>.</p> <p>This operation requires permissions for the <code>lex:PutSlotType</code> action.</p>"
   },
   "shapes": {
     "AliasName": {
@@ -218,6 +219,13 @@
         "GetBotChannelAssociationResponse$botConfiguration": "<p>Provides information that the messaging platform needs to communicate with the Amazon Lex bot.</p>"
       }
     },
+    "ChannelStatus": {
+      "base": null,
+      "refs": {
+        "BotChannelAssociation$status": "<p>The status of the bot channel. </p> <ul> <li> <p> <code>CREATED</code> - The channel has been created and is ready for use.</p> </li> <li> <p> <code>IN_PROGRESS</code> - Channel creation is in progress.</p> </li> <li> <p> <code>FAILED</code> - There was an error creating the channel. For information about the reason for the failure, see the <code>failureReason</code> field.</p> </li> </ul>",
+        "GetBotChannelAssociationResponse$status": "<p>The status of the bot channel. </p> <ul> <li> <p> <code>CREATED</code> - The channel has been created and is ready for use.</p> </li> <li> <p> <code>IN_PROGRESS</code> - Channel creation is in progress.</p> </li> <li> <p> <code>FAILED</code> - There was an error creating the channel. For information about the reason for the failure, see the <code>failureReason</code> field.</p> </li> </ul>"
+      }
+    },
     "ChannelType": {
       "base": null,
       "refs": {
@@ -378,8 +386,21 @@
       "refs": {
         "CreateSlotTypeVersionResponse$enumerationValues": "<p>A list of <code>EnumerationValue</code> objects that defines the values that the slot type can take.</p>",
         "GetSlotTypeResponse$enumerationValues": "<p>A list of <code>EnumerationValue</code> objects that defines the values that the slot type can take.</p>",
-        "PutSlotTypeRequest$enumerationValues": "<p>A list of <code>EnumerationValue</code> objects that defines the values that the slot type can take.</p>",
+        "PutSlotTypeRequest$enumerationValues": "<p>A list of <code>EnumerationValue</code> objects that defines the values that the slot type can take. Each value can have a list of <code>synonyms</code>, which are additional values that help train the machine learning model about the values that it resolves for a slot. </p> <p>When Amazon Lex resolves a slot value, it generates a resolution list that contains up to five possible values for the slot. If you are using a Lambda function, this resolution list is passed to the function. If you are not using a Lambda function you can choose to return the value that the user entered or the first value in the resolution list as the slot value. The <code>valueSelectionStrategy</code> field indicates the option to use. </p>",
         "PutSlotTypeResponse$enumerationValues": "<p>A list of <code>EnumerationValue</code> objects that defines the values that the slot type can take.</p>"
+      }
+    },
+    "ExportStatus": {
+      "base": null,
+      "refs": {
+        "GetExportResponse$exportStatus": "<p>The status of the export. </p> <ul> <li> <p> <code>IN_PROGRESS</code> - The export is in progress.</p> </li> <li> <p> <code>READY</code> - The export is complete.</p> </li> <li> <p> <code>FAILED</code> - The export could not be completed.</p> </li> </ul>"
+      }
+    },
+    "ExportType": {
+      "base": null,
+      "refs": {
+        "GetExportRequest$exportType": "<p>The format of the exported data.</p>",
+        "GetExportResponse$exportType": "<p>The format of the exported data.</p>"
       }
     },
     "FollowUpPrompt": {
@@ -396,7 +417,7 @@
       "refs": {
         "CreateIntentVersionResponse$fulfillmentActivity": "<p> Describes how the intent is fulfilled. </p>",
         "GetIntentResponse$fulfillmentActivity": "<p>Describes how the intent is fulfilled. For more information, see <a>PutIntent</a>. </p>",
-        "PutIntentRequest$fulfillmentActivity": "<p> Describes how the intent is fulfilled. For example, after a user provides all of the information for a pizza order, <code>fulfillmentActivity</code> defines how the bot places an order with a local pizza store. </p> <p> You might configure Amazon Lex to return all of the intent information to the client application, or direct it to invoke a Lambda function that can process the intent (for example, place an order with a pizzeria). </p>",
+        "PutIntentRequest$fulfillmentActivity": "<p>Required. Describes how the intent is fulfilled. For example, after a user provides all of the information for a pizza order, <code>fulfillmentActivity</code> defines how the bot places an order with a local pizza store. </p> <p> You might configure Amazon Lex to return all of the intent information to the client application, or direct it to invoke a Lambda function that can process the intent (for example, place an order with a pizzeria). </p>",
         "PutIntentResponse$fulfillmentActivity": "<p>If defined in the intent, Amazon Lex invokes this Lambda function to fulfill the intent after the user provides all of the information required by the intent.</p>"
       }
     },
@@ -502,6 +523,16 @@
       }
     },
     "GetBuiltinSlotTypesResponse": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetExportRequest": {
+      "base": null,
+      "refs": {
+      }
+    },
+    "GetExportResponse": {
       "base": null,
       "refs": {
       }
@@ -715,6 +746,8 @@
     "Name": {
       "base": null,
       "refs": {
+        "GetExportRequest$name": "<p>The name of the bot to export.</p>",
+        "GetExportResponse$name": "<p>The name of the bot being exported.</p>",
         "ResourceReference$name": "<p>The name of the resource that is using the resource that you are trying to delete.</p>"
       }
     },
@@ -753,7 +786,9 @@
       "refs": {
         "DeleteBotVersionRequest$version": "<p>The version of the bot to delete. You cannot delete the <code>$LATEST</code> version of the bot. To delete the <code>$LATEST</code> version, use the <a>DeleteBot</a> operation.</p>",
         "DeleteIntentVersionRequest$version": "<p>The version of the intent to delete. You cannot delete the <code>$LATEST</code> version of the intent. To delete the <code>$LATEST</code> version, use the <a>DeleteIntent</a> operation.</p>",
-        "DeleteSlotTypeVersionRequest$version": "<p>The version of the slot type to delete. You cannot delete the <code>$LATEST</code> version of the slot type. To delete the <code>$LATEST</code> version, use the <a>DeleteSlotType</a> operation.</p>"
+        "DeleteSlotTypeVersionRequest$version": "<p>The version of the slot type to delete. You cannot delete the <code>$LATEST</code> version of the slot type. To delete the <code>$LATEST</code> version, use the <a>DeleteSlotType</a> operation.</p>",
+        "GetExportRequest$version": "<p>The version of the bot to export.</p>",
+        "GetExportResponse$version": "<p>The version of the bot being exported.</p>"
       }
     },
     "PreconditionFailedException": {
@@ -851,6 +886,13 @@
         "ResourceInUseException$exampleReference": null
       }
     },
+    "ResourceType": {
+      "base": null,
+      "refs": {
+        "GetExportRequest$resourceType": "<p>The type of resource to export. </p>",
+        "GetExportResponse$resourceType": "<p>The type of the exported resource.</p>"
+      }
+    },
     "ResponseCard": {
       "base": null,
       "refs": {
@@ -885,7 +927,7 @@
       "refs": {
         "CreateIntentVersionResponse$slots": "<p>An array of slot types that defines the information required to fulfill the intent.</p>",
         "GetIntentResponse$slots": "<p>An array of intent slots configured for the intent.</p>",
-        "PutIntentRequest$slots": "<p>An array of intent slots. At runtime, Amazon Lex elicits required slot values from the user using prompts defined in the slots. For more information, see &lt;xref linkend=\"how-it-works\"/&gt;. </p>",
+        "PutIntentRequest$slots": "<p>An array of intent slots. At runtime, Amazon Lex elicits required slot values from the user using prompts defined in the slots. For more information, see <a>how-it-works</a>. </p>",
         "PutIntentResponse$slots": "<p>An array of intent slots that are configured for the intent.</p>"
       }
     },
@@ -930,6 +972,15 @@
         "Slot$sampleUtterances": "<p> If you know a specific pattern with which users might respond to an Amazon Lex request for a slot value, you can provide those utterances to improve accuracy. This is optional. In most cases, Amazon Lex is capable of understanding user utterances. </p>"
       }
     },
+    "SlotValueSelectionStrategy": {
+      "base": null,
+      "refs": {
+        "CreateSlotTypeVersionResponse$valueSelectionStrategy": "<p>The strategy that Amazon Lex uses to determine the value of the slot. For more information, see <a>PutSlotType</a>.</p>",
+        "GetSlotTypeResponse$valueSelectionStrategy": "<p>The strategy that Amazon Lex uses to determine the value of the slot. For more information, see <a>PutSlotType</a>.</p>",
+        "PutSlotTypeRequest$valueSelectionStrategy": "<p>Determines the slot resolution strategy that Amazon Lex uses to return slot type values. The field can be set to one of the following values:</p> <ul> <li> <p> <code>ORIGINAL_VALUE</code> - Returns the value entered by the user, if the user value is similar to the slot value.</p> </li> <li> <p> <code>TOP_RESOLUTION</code> - If there is a resolution list for the slot, return the first value in the resolution list as the slot type value. If there is no resolution list, null is returned.</p> </li> </ul> <p>If you don't specify the <code>valueSelectionStrategy</code>, the default is <code>ORIGINAL_VALUE</code>.</p>",
+        "PutSlotTypeResponse$valueSelectionStrategy": "<p>The slot resolution strategy that Amazon Lex uses to determine the value of the slot. For more information, see <a>PutSlotType</a>.</p>"
+      }
+    },
     "Statement": {
       "base": "<p>A collection of messages that convey information to the user. At runtime, Amazon Lex selects the message to convey. </p>",
       "refs": {
@@ -968,6 +1019,7 @@
       "refs": {
         "BadRequestException$message": null,
         "BotAliasMetadata$checksum": "<p>Checksum of the bot alias.</p>",
+        "BotChannelAssociation$failureReason": "<p>If <code>status</code> is <code>FAILED</code>, Amazon Lex provides the reason that it failed to create the association.</p>",
         "BuiltinIntentSlot$name": "<p>A list of the slots defined for the intent.</p>",
         "ChannelConfigurationMap$key": null,
         "ChannelConfigurationMap$value": null,
@@ -981,12 +1033,15 @@
         "CreateSlotTypeVersionRequest$checksum": "<p>Checksum for the <code>$LATEST</code> version of the slot type that you want to publish. If you specify a checksum and the <code>$LATEST</code> version of the slot type has a different checksum, Amazon Lex returns a <code>PreconditionFailedException</code> exception and doesn't publish the new version. If you don't specify a checksum, Amazon Lex publishes the <code>$LATEST</code> version.</p>",
         "CreateSlotTypeVersionResponse$checksum": "<p>Checksum of the <code>$LATEST</code> version of the slot type.</p>",
         "GetBotAliasResponse$checksum": "<p>Checksum of the bot alias.</p>",
+        "GetBotChannelAssociationResponse$failureReason": "<p>If <code>status</code> is <code>FAILED</code>, Amazon Lex provides the reason that it failed to create the association.</p>",
         "GetBotRequest$versionOrAlias": "<p>The version or alias of the bot.</p>",
         "GetBotResponse$failureReason": "<p>If <code>status</code> is <code>FAILED</code>, Amazon Lex explains why it failed to build the bot.</p>",
         "GetBotResponse$voiceId": "<p>The Amazon Polly voice ID that Amazon Lex uses for voice interaction with the user. For more information, see <a>PutBot</a>.</p>",
         "GetBotResponse$checksum": "<p>Checksum of the bot used to identify a specific revision of the bot's <code>$LATEST</code> version.</p>",
         "GetBuiltinIntentsRequest$signatureContains": "<p>Substring to match in built-in intent signatures. An intent will be returned if any part of its signature matches the substring. For example, \"xyz\" matches both \"xyzabc\" and \"abcxyz.\" To find the signature for an intent, see <a href=\"https://developer.amazon.com/public/solutions/alexa/alexa-skills-kit/docs/built-in-intent-ref/standard-intents\">Standard Built-in Intents</a> in the <i>Alexa Skills Kit</i>.</p>",
         "GetBuiltinSlotTypesRequest$signatureContains": "<p>Substring to match in built-in slot type signatures. A slot type will be returned if any part of its signature matches the substring. For example, \"xyz\" matches both \"xyzabc\" and \"abcxyz.\"</p>",
+        "GetExportResponse$failureReason": "<p>If <code>status</code> is <code>FAILED</code>, Amazon Lex provides the reason that it failed to export the resource.</p>",
+        "GetExportResponse$url": "<p>An S3 pre-signed URL that provides the location of the exported resource. The exported resource is a ZIP archive that contains the exported resource in JSON format. The structure of the archive may change. Your code should not rely on the archive structure.</p>",
         "GetIntentResponse$checksum": "<p>Checksum of the intent.</p>",
         "GetSlotTypeResponse$checksum": "<p>Checksum of the <code>$LATEST</code> version of the slot type.</p>",
         "InternalFailureException$message": null,
@@ -1005,6 +1060,12 @@
         "PutIntentResponse$checksum": "<p>Checksum of the <code>$LATEST</code>version of the intent created or updated.</p>",
         "PutSlotTypeRequest$checksum": "<p>Identifies a specific revision of the <code>$LATEST</code> version.</p> <p>When you create a new slot type, leave the <code>checksum</code> field blank. If you specify a checksum you get a <code>BadRequestException</code> exception.</p> <p>When you want to update a slot type, set the <code>checksum</code> field to the checksum of the most recent revision of the <code>$LATEST</code> version. If you don't specify the <code> checksum</code> field, or if the checksum does not match the <code>$LATEST</code> version, you get a <code>PreconditionFailedException</code> exception.</p>",
         "PutSlotTypeResponse$checksum": "<p>Checksum of the <code>$LATEST</code> version of the slot type.</p>"
+      }
+    },
+    "SynonymList": {
+      "base": null,
+      "refs": {
+        "EnumerationValue$synonyms": "<p>Additional values related to the slot type value.</p>"
       }
     },
     "Timestamp": {
@@ -1080,7 +1141,8 @@
     "Value": {
       "base": null,
       "refs": {
-        "EnumerationValue$value": "<p>The value of the slot type.</p>"
+        "EnumerationValue$value": "<p>The value of the slot type.</p>",
+        "SynonymList$member": null
       }
     },
     "Version": {
