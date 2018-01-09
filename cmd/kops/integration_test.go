@@ -36,14 +36,14 @@ import (
 
 	"k8s.io/kops/cmd/kops/util"
 	"k8s.io/kops/pkg/diff"
+	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/jsonutils"
 	"k8s.io/kops/pkg/testutils"
+	"k8s.io/kops/upup/pkg/fi/cloudup"
+	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 
 	"github.com/ghodss/yaml"
 	"golang.org/x/crypto/ssh"
-	"k8s.io/kops/pkg/featureflag"
-	"k8s.io/kops/upup/pkg/fi/cloudup"
-	"k8s.io/kops/upup/pkg/fi/cloudup/gce"
 )
 
 // updateClusterTestBase is added automatically to the srcDir on all

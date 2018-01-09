@@ -70,12 +70,12 @@ func (t *ProtokubeBuilder) Build(c *fi.ModelBuilderContext) error {
 		// retrieve the etcd peer certificates and private keys from the keystore
 		if t.UseEtcdTLS() {
 			for _, x := range []string{"etcd", "etcd-client"} {
-				if err := t.buildCertificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
+				if err := t.BuildCertificateTask(c, x, fmt.Sprintf("%s.pem", x)); err != nil {
 					return err
 				}
 			}
 			for _, x := range []string{"etcd", "etcd-client"} {
-				if err := t.buildPrivateTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
+				if err := t.BuildPrivateTask(c, x, fmt.Sprintf("%s-key.pem", x)); err != nil {
 					return err
 				}
 			}
@@ -377,56 +377,4 @@ func (t *ProtokubeBuilder) writeProxyEnvVars(buffer *bytes.Buffer) {
 		buffer.WriteString(envVar.Value)
 		buffer.WriteString(" ")
 	}
-}
-
-// buildCertificateTask is responsible for build a certificate request task
-func (t *ProtokubeBuilder) buildCertificateTask(c *fi.ModelBuilderContext, name, filename string) error {
-	cert, err := t.KeyStore.FindCert(name)
-	if err != nil {
-		return err
-	}
-
-	if cert == nil {
-		return fmt.Errorf("certificate %q not found", name)
-	}
-
-	serialized, err := cert.AsString()
-	if err != nil {
-		return err
-	}
-
-	c.AddTask(&nodetasks.File{
-		Path:     filepath.Join(t.PathSrvKubernetes(), filename),
-		Contents: fi.NewStringResource(serialized),
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0400"),
-	})
-
-	return nil
-}
-
-// buildPrivateKeyTask is responsible for build a certificate request task
-func (t *ProtokubeBuilder) buildPrivateTask(c *fi.ModelBuilderContext, name, filename string) error {
-	cert, err := t.KeyStore.FindPrivateKey(name)
-	if err != nil {
-		return err
-	}
-
-	if cert == nil {
-		return fmt.Errorf("private key %q not found", name)
-	}
-
-	serialized, err := cert.AsString()
-	if err != nil {
-		return err
-	}
-
-	c.AddTask(&nodetasks.File{
-		Path:     filepath.Join(t.PathSrvKubernetes(), filename),
-		Contents: fi.NewStringResource(serialized),
-		Type:     nodetasks.FileType_File,
-		Mode:     s("0400"),
-	})
-
-	return nil
 }

@@ -25,6 +25,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
+
 	"k8s.io/kops/pkg/apis/kops"
 	"k8s.io/kops/pkg/featureflag"
 	"k8s.io/kops/pkg/kubemanifest"
@@ -51,7 +52,6 @@ type ContainerAsset struct {
 	// DockerImage will be the name of the container we should run.
 	// This is used to copy a container to a ContainerRegistry.
 	DockerImage string
-
 	// CanonicalLocation will be the source location of the container.
 	CanonicalLocation string
 }
@@ -60,10 +60,8 @@ type ContainerAsset struct {
 type FileAsset struct {
 	// FileURL is the URL of a file that is accessed by a Kubernetes cluster.
 	FileURL *url.URL
-
 	// CanonicalFileURL is the source URL of a file. This is used to copy a file to a FileRepository.
 	CanonicalFileURL *url.URL
-
 	// SHAValue is the SHA hash of the FileAsset.
 	SHAValue string
 }
@@ -84,6 +82,7 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	if !RewriteManifests.Enabled() {
 		return data, nil
 	}
+
 	manifests, err := kubemanifest.LoadManifestsFrom(data)
 	if err != nil {
 		return nil, err
@@ -92,10 +91,10 @@ func (a *AssetBuilder) RemapManifest(data []byte) ([]byte, error) {
 	var yamlSeparator = []byte("\n---\n\n")
 	var remappedManifests [][]byte
 	for _, manifest := range manifests {
-		err := manifest.RemapImages(a.RemapImage)
-		if err != nil {
+		if err := manifest.RemapImages(a.RemapImage); err != nil {
 			return nil, fmt.Errorf("error remapping images: %v", err)
 		}
+
 		y, err := manifest.ToYAML()
 		if err != nil {
 			return nil, fmt.Errorf("error re-marshalling manifest: %v", err)
