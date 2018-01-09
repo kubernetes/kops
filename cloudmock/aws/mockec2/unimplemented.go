@@ -3309,3 +3309,18 @@ func (m *MockEC2) RejectVpcEndpointConnectionsRequest(*ec2.RejectVpcEndpointConn
 	panic("Not implemented")
 	return nil, nil
 }
+
+func (m *MockEC2) CopyFpgaImage(*ec2.CopyFpgaImageInput) (*ec2.CopyFpgaImageOutput, error) (*request.Request, *ec2.RejectVpcEndpointConnectionsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CopyFpgaImageWithContext(aws.Context, *ec2.CopyFpgaImageInput, ...request.Option) (*ec2.CopyFpgaImageOutput, error) (*request.Request, *ec2.RejectVpcEndpointConnectionsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
+
+func (m *MockEC2) CopyFpgaImageRequest(*ec2.CopyFpgaImageInput) (*request.Request, *ec2.CopyFpgaImageOutput) (*request.Request, *ec2.RejectVpcEndpointConnectionsOutput) {
+	panic("Not implemented")
+	return nil, nil
+}
