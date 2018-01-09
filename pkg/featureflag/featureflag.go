@@ -61,6 +61,11 @@ var EnableSeparateConfigBase = New("EnableSeparateConfigBase", Bool(false))
 // SpecOverrideFlag allows setting spec values on create
 var SpecOverrideFlag = New("SpecOverrideFlag", Bool(false))
 
+// GoogleCloudBucketAcl means the ACL will be set on a bucket when using GCS
+// In particular, this is the only (?) way to grant the bucket.list permission
+// However we should no longer need it, with the keyset.yaml fix
+var GoogleCloudBucketAcl = New("GoogleCloudBucketAcl", Bool(false))
+
 var flags = make(map[string]*FeatureFlag)
 var flagsMutex sync.Mutex
 
