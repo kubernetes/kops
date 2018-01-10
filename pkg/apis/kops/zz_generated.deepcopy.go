@@ -2941,6 +2941,15 @@ func (in *KubeletConfigSpec) DeepCopyInto(out *KubeletConfigSpec) {
 			**out = **in
 		}
 	}
+	if in.FailSwapOn != nil {
+		in, out := &in.FailSwapOn, &out.FailSwapOn
+		if *in == nil {
+			*out = nil
+		} else {
+			*out = new(bool)
+			**out = **in
+		}
+	}
 	return
 }
 
