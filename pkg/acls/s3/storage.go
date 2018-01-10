@@ -56,9 +56,9 @@ func (s *s3PublicAclStrategy) GetACL(p vfs.Path, cluster *kops.Cluster) (vfs.ACL
 		return "", fmt.Errorf("unable to parse: %q", fileRepository)
 	}
 
-	// We are checking that the file is in s3.amazonaws.com meaning that it is in s3
-	// This will miss edge cases when the region url is used.
-	if u.Host != "s3.amazonaws.com" {
+	// We are checking that the file repository url is in S3
+	_, err = vfs.VFSPath(fileRepository)
+	if err != nil {
 		glog.V(8).Infof("path %q is not inside of a s3 bucket", u.String)
 		return nil, nil
 	}
