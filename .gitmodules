@@ -394,3 +394,6 @@
 [submodule "_vendor/github.com/inconshreveable/mousetrap"]
 	path = _vendor/github.com/inconshreveable/mousetrap
 	url = https://github.com/inconshreveable/mousetrap
+[submodule "_vendor/github.com/denverdino/aliyungo"]
+	path = _vendor/github.com/denverdino/aliyungo
+	url = https://github.com/denverdino/aliyungo

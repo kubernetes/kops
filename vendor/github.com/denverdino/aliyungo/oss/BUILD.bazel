@@ -1,0 +1,31 @@
+load("@io_bazel_rules_go//go:def.bzl", "go_library", "go_test")
+
+go_library(
+    name = "go_default_library",
+    srcs = [
+        "authenticate_callback.go",
+        "client.go",
+        "export.go",
+        "multi.go",
+        "regions.go",
+        "signature.go",
+    ],
+    importpath = "github.com/denverdino/aliyungo/oss",
+    visibility = ["//visibility:public"],
+    deps = [
+        "//vendor/github.com/denverdino/aliyungo/common:go_default_library",
+        "//vendor/github.com/denverdino/aliyungo/util:go_default_library",
+    ],
+)
+
+go_test(
+    name = "go_default_xtest",
+    srcs = [
+        "client_test.go",
+        "config_test.go",
+        "multi_test.go",
+        "regions_test.go",
+    ],
+    importpath = "github.com/denverdino/aliyungo/oss_test",
+    deps = [":go_default_library"],
+)
